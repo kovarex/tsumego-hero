@@ -4,3 +4,5 @@
 /img/google/*.png
 webroot/mainPageAjax.txt
 webroot/userLogger.html
+.ddev/
+
