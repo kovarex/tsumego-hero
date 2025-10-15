@@ -1,0 +1,75 @@
+body {
+    background: #876e4b;
+    margin: 15px 0;
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    text-align: center;
+}
+
+#contentcolumn {
+    margin: 0 15px;
+    padding: 15px;
+    background: #edffe6;
+}
+
+.links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5em;
+}
+
+.links a {
+    display: block;
+    border: 3px outset #86a17d;
+    background: #b3d6a9;
+    text-decoration: none;
+    font-size: 1.4em;
+    padding: 5px 10px;
+    margin: 8px;
+}
+
+@media (min-width: 1200px) {
+    .links {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+}
+
+@media (min-width: 600px) {
+    #contentcolumn {
+        margin: 0 auto;
+        width: 80%;
+    }
+}
+
+h1, h2, h3, h4 {
+    font-weight: normal;
+}
+
+h1 {
+    margin: 0.2em;
+    font-size: 3.5em;
+}
+
+h2 {
+    font-size: 2em;
+}
+
+h3 {
+    font-size: 1.4em;
+}
+
+h4 {
+    font-size: 1.1em;
+}
+
+ul {
+    text-align: left;
+    font-size: 1.2em;
+    margin: 0 4%;
+}
+
+.besogo-container {
+    margin: 0 auto;
+    text-align: initial;
+}

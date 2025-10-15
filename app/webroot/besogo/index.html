@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BesoGo</title>
+
+<link rel="icon" type="image/png" href="icon32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="icon152.png" sizes="152x152">
+<link rel="icon" type="image/png" href="icon192.png" sizes="192x192">
+<link rel="icon" type="image/png" href="icon512.png" sizes="512x512">
+<link rel="apple-touch-icon-precomposed" href="icon152.png" sizes="152x152">
+<link rel="apple-touch-icon-precomposed" href="icon192.png" sizes="192x192">
+<link rel="icon" href="icon.svg" sizes="any" type="image/svg+xml">
+
+<link rel="stylesheet" type="text/css" href="page.css">
+<link rel="stylesheet" type="text/css" href="css/besogo.css">
+<link rel="stylesheet" type="text/css" href="css/board-wood.css" id="theme">
+
+<script src="js/besogo.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/gameRoot.js"></script>
+<script src="js/svgUtil.js"></script>
+<script src="js/parseSgf.js"></script>
+<script src="js/loadSgf.js"></script>
+<script src="js/saveSgf.js"></script>
+<script src="js/boardDisplay.js"></script>
+<script src="js/coord.js"></script>
+<script src="js/toolPanel.js"></script>
+<script src="js/filePanel.js"></script>
+<script src="js/controlPanel.js"></script>
+<script src="js/commentPanel.js"></script>
+<script src="js/treePanel.js"></script>
+<script src="js/diffInfo.js"></script>
+<script src="js/scaleParameters.js"></script>
+
+<script type="text/javascript">
+var toggleTheme;
+(function() {
+    var current = 0,
+        themes = "wood flat bold dark book eidogo glift kibitz sensei".split(' '),
+        link = document.getElementById('theme');
+    toggleTheme = function(){
+        current = (current + 1) % themes.length;
+        link.href = "css/board-" + themes[current] + ".css";
+    }
+    return false;
+})();
+</script>
+</head>
+
+<body onload="besogo.autoInit()">
+<div id="contentcolumn">
+
+<h1>BesoGo</h1>
+<h3>lightweight javascript go board, sgf editor</h3>
+    
+<div class="besogo-diagram" maxwidth="585" realstones="on" nowheel="true" nokeys="true" sgf="https://yewang.github.io/besogo/example.sgf"></div>
+
+<div class="links">
+<a href="https://github.com/yewang/besogo">Free Code on GitHub</a>
+<a href="testing.html?realstones=on&theme=wood">Editor (realistic theme)</a>
+<a href="testing.html">Editor (flat theme)</a>
+</div>
+
+<h2>Features</h2>
+<ul>
+<li>Web-based <a href="testing.html?realstones=on&theme=wood">SGF editor</a></li>
+<li>Usable offline, cross-platform with no installation (just <a href="https://github.com/yewang/besogo">download the source</a> and open testing.html)</li>
+<li>Embeddable, responsive, and modular</li>
+<li>Editor, viewer, and diagram widgets (see examples below)</li>
+<li>Position editing, custom markup, comment, and game info tools</li>
+<li>Keyboard and mousewheel navigation</li>
+<li>Game tree navigator</li>
+<li>Supports both <a href="http://www.red-bean.com/sgf/user_guide/#variations">"sibling" and "child" variation markup styles</a></li>
+<li>Multiple board coordinate labeling options (toggle with the 四4 button)</li>
+<li>Realistic <a href="https://github.com/jokkebk/jgoboard/blob/master/large/shinkaya.jpg">board</a> and <a href="https://github.com/atarnowsky/go-assets/tree/master/images/stones/style_a/128x128">stone</a> textures (CC-licensed assets from other projects)</li>
+<li>Customizable CSS-based themes (<a href="" onclick="toggleTheme(); return false;">click here to toggle</a>)</li>
+<li>Written in JavaScript, CSS, and HTML5 with no dependencies</li>
+<li><a href="https://github.com/yewang/besogo">Free, open-source software (MIT License)</a></li>
+</ul>
+
+<h2>Embedded Editor</h2>
+<h4>full-width, automatic orientation, all editor panels shown, realistic stones, mousewheel navigation off</h4>
+<div class="besogo-editor" realstones="on" nowheel="true"></div>
+
+<h2>Diagram Example</h2>
+<h4>550px max-width, 19x19 board only, western coordinates, flat stones
+<br><a href="" onclick="toggleTheme(); return false;">Toggle CSS Theme</a></h4>
+<div class="besogo-diagram" maxwidth="550" nowheel="true" nokeys="true" coord="western">
+(;AB[cc][cd][ce][dd][di][dk][ee][ej][el][fd][ig][kc][kg][kp][kq][ld][no][nq][oc][od][qc][qd][qq][rp]AW[co][dc][de][df][dj][dl][dq][ec][ed][ei][ek][fc][gn][hq][jg][jj][kd][lc][og][oh][ok][ol][qg][qi][ql]CR[ci][di][ei]SQ[cj][dj][ej]TR[ck][dk][ek]MA[cl][dl][el]LB[cc:8][cd:4][cf:D][co:小][dc:♞][dd:2][de:1][df:7][dq:飞][ec:5][ed:3][ee:6][ef:C][fc:9][fd:⚔][fe:A][gd:B][gn:大][hq:飞][ig:a][jg:b][jj:☯][kg:c][kp:长][kq:一][no:跳][nq:二][oc:双][og:42][qc:101][qq:三][rp:尖])
+</div>
+
+<h2>Vertical Viewer</h2>
+<h4>500px max-width, vertical orientation, game tree and comment/info panels included, flat stones</h4>
+<div class="besogo-viewer" orient="portrait" panels="control+names+comment+tree" maxwidth="500" sgf="https://raw.githubusercontent.com/gogameguru/commented-go-games/master/2016/05/20160309-Lee-Sedol-vs-AlphaGo-Commentary-An-Younggil.sgf"></div>
+Game review copyright <a href="https://github.com/gogameguru/commented-go-games">GoGameGuru</a>, licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA 4.0</a>
+
+<h2>Minimal Vertical Viewer</h2>
+<h4>650px max-width, vertical orientation, only navigation controls and player names, eastern coordinates, realistic stones</h4>
+<div class="besogo-viewer" coord="eastern" realstones="on" panels="control+names" orient="portrait" portratio="none" maxwidth="650" sgf="https://raw.githubusercontent.com/gogameguru/commented-go-games/master/2016/05/20160309-Lee-Sedol-vs-AlphaGo-Commentary-An-Younggil.sgf"></div>
+Game review copyright <a href="https://github.com/gogameguru/commented-go-games">GoGameGuru</a>, licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA 4.0</a>
+
+<h3>Copyright and Credits</h3>
+Code copyright <a href="https://github.com/yewang/besogo">Ye Wang</a>, MIT License<br>
+Realistic stone textures copyright <a href="https://github.com/atarnowsky/go-assets">Andreas Tarnowsky</a>, licensed under <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA 4.0</a><br>
+Realistic board textures copyright and courtesy of tozgrec (OGS user).<br>
+Realistic board textures copyright <a href="https://github.com/jokkebk/jgoboard">Joonas Pihlajamaa</a>, licensed under <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC 4.0</a><br>
+
+</div>
+</body>
+</html>

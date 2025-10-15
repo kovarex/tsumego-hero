@@ -1,0 +1,3 @@
+RewriteEngine on
+RewriteBase /blog/app/
+RewriteRule (.*) webroot/$1 [L]

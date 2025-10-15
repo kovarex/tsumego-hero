@@ -1,0 +1,13 @@
+html, body {
+    padding: 0px;
+    margin: 0px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    height: 100%;
+    width: 100%;
+}
+
+.besogo-container {
+    height: 100%;
+    width: 100%;
+}

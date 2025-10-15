@@ -1,0 +1,34 @@
+/* Bold board theme */
+
+.besogo-svg-board {
+    fill: #dcb35c;
+}
+
+.besogo-svg-lines {
+    stroke: black;
+    stroke-width: 3.5;
+    fill: none;
+}
+
+.besogo-svg-hoshi {
+    stroke: black;
+    stroke-width: 14;
+}
+
+.besogo-svg-blackStone {
+    fill: black;
+    stroke: black;
+    stroke-width: 4;
+}
+
+.besogo-svg-whiteStone {
+    fill: white;
+    stroke: white;
+    stroke-width: 4;
+}
+
+.besogo-svg-greyStone {
+    fill: #929591;
+    stroke: #929591;
+    stroke-width: 4;
+}

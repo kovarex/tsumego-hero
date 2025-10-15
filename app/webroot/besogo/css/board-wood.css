@@ -1,0 +1,38 @@
+/* Kaya board theme */
+
+.besogo-svg-board {
+    fill: none;
+}
+.besogo-board {
+    background: url("../img/wood.jpg");
+    background-size: cover;
+}
+
+.besogo-svg-lines {
+    stroke: #151515;
+    stroke-width: 2.5;
+    fill: none;
+}
+
+.besogo-svg-hoshi {
+    stroke: #151515;
+    stroke-width: 12;
+}
+
+.besogo-svg-blackStone {
+    fill: #252525;
+    stroke: #252525;
+    stroke-width: 4;
+}
+
+.besogo-svg-whiteStone {
+    fill: #f5f5f5;
+    stroke: #f5f5f5;
+    stroke-width: 4;
+}
+
+.besogo-svg-greyStone {
+    fill: #929591;
+    stroke: #929591;
+    stroke-width: 4;
+}

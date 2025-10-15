@@ -1,0 +1,26 @@
+/* Kaya board theme */
+
+.besogo-svg-board {
+    fill: none;
+}
+.besogo-board {
+    background: url("../img/texture9.jpg");
+    background-size: cover;
+}
+
+.besogo-svg-lines {
+    stroke: #151515;
+    stroke-width: 2.5;
+    fill: none;
+}
+
+.besogo-svg-hoshi {
+    stroke: #151515;
+    stroke-width: 12;
+}
+
+.besogo-svg-greyStone {
+    fill: #929591;
+    stroke: #929591;
+    stroke-width: 4;
+}

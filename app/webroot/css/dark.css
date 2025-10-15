@@ -1,0 +1,312 @@
+body {
+  background: linear-gradient(#2a2a2a, #111);
+  background-color: linear-gradient(#2a2a2a, #111);
+  background-attachment: fixed;
+}
+body,
+font,
+.filterLabel1,
+.timeTableColor11 {
+  color: #f0f0f0;
+}
+.whitebox2,
+.imp {
+  background-color: #2a2a2a;
+}
+.new1 {
+  background: linear-gradient(#3c3c3c, #2a2a2a);
+  color: #f0f0f0;
+}
+.title4 {
+  color: #f0f0f0;
+  background: linear-gradient(#737373, #4a4a4a);
+}
+.deleteComment {
+  color: #f0f0f0;
+}
+.besogo-container {
+  background-color: #2a2a2a;
+}
+#mostPopularToday {
+  color: #f0f0f0;
+}
+#playTitleA {
+  color: #f0f0f0;
+}
+#multipleChoiceText,
+#potionAlerts,
+#customAlerts,
+.alertText,
+.timeModeTable2 {
+  color: black;
+}
+.adminLink2 {
+  font-weight: 800;
+  font-size: 19px;
+  color: #f75959;
+}
+.admin-panel-main-page ul li:hover {
+  background: linear-gradient(#888787, #666666);
+}
+li.setBlank {
+  background-color: #2a2a2a;
+  background-image: none;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
+}
+.sandboxComment {
+  background: linear-gradient(#666, #424242);
+  box-shadow: 2px 2px #0f0f0f;
+}
+.commentBox2,
+.commentAnswer,
+.adminText {
+  color: #70ddff;
+}
+a {
+  color: #f0f0f0;
+}
+li.setV2 {
+  border: 1px solid #f0f0f0;
+}
+.sandboxTable2time {
+  color: #b9b9b9;
+}
+.highscoreTable .color12 {
+  background-color: #404040;
+  color: #f0f0f0;
+}
+.btn {
+  color: #8c8c8c;
+}
+.btn.active,
+.btn:active {
+  background-color: #b5b5b5;
+  color: #323232;
+}
+.btn:active:hover {
+  background-color: #f0f0f0;
+  color: #323232;
+}
+li.setS1,
+li.setC1 {
+  background-color: #0a4;
+}
+li.setF1,
+li.setX1 {
+  background-color: #dd3a4b;
+}
+li.setW1 {
+  background-color: #00aeab;
+}
+li.setV1 {
+  background-color: #0088e3;
+}
+li.setG1 {
+  background-color: #b0bd00;
+}
+li.setN1 {
+  background-color: #444;
+}
+li.setV2,
+li.set2,
+li.setS2,
+li.setW2,
+li.setC2,
+li.setF2,
+li.setX2,
+li.setG2 {
+  border: 2px solid #f0f0f0;
+}
+.setViewAccuracy {
+  color: #c234ff;
+}
+.setViewTime {
+  color: #d55e29;
+}
+.admin-panel,
+.selectable-text,
+.admin-panel font {
+  color: #717171;
+}
+#sandbox {
+  color: #f0f0f0;
+  background-color: #5b5d60;
+}
+.userstatsstbale a {
+  color: #f0f0f0 !important;
+}
+.timeTableColor11 {
+  background: linear-gradient(#666, #424242);
+}
+.highscoreTable {
+  color: black;
+}
+.highscoreTable .color1,
+.highscoreTable .color2,
+.highscoreTable .color3,
+.highscoreTable .color4,
+.highscoreTable .color9d,
+.highscoreTable .color8d,
+.highscoreTable .color7d,
+.highscoreTable .color6d,
+.highscoreTable .color5d,
+.highscoreTable .color4d,
+.highscoreTable .color3d,
+.highscoreTable .color2d,
+.highscoreTable .color1d,
+.highscoreTable .color1k,
+.highscoreTable .color2k,
+.highscoreTable .color3k,
+.highscoreTable .color4k,
+.highscoreTable .color5k,
+.highscoreTable .color6k,
+.highscoreTable .color7k,
+.highscoreTable .color8k,
+.highscoreTable .color9k,
+.highscoreTable .color10k,
+.highscoreTable .color11k,
+.highscoreTable .color12k {
+  background-color: #2a2a2a;
+}
+.admin-panel {
+  background: linear-gradient(#666, #424242);
+  color: #f0f0f0 !important;
+}
+#show,
+#show2,
+#commentPosition,
+#show3,
+.selectable-text,
+.admin-panel #show2,
+.admin-panel #show3,
+.admin-panel #show4,
+.admin-panel #show5,
+.admin-panel font {
+  color: #f0f0f0;
+}
+.achievement1,
+.achievement2,
+.achievementSmall {
+  background: linear-gradient(#dfdfdf, #979797);
+}
+.versionColor a {
+  color: #0066cc;
+}
+.versionColor a:visited {
+  color: #571e8c;
+}
+#status2 font font,
+.titleDescription1 font,
+.modify-description,
+.statsTable font {
+  color: grey;
+}
+.signin {
+  background: #515151;
+}
+#achievementWrapper font {
+  color: #717171;
+}
+.achievementColorBlack2,
+.achievementColorPurple2,
+.achievementColorGreen2,
+.achievementColorOrange2,
+.achievementColorBlue2,
+.achievementColorDarkblue2,
+.achievementColorRed2,
+.achievementColorRating2,
+.achievementColorTime2 {
+  color: #f0f0f0;
+}
+.besogo-container {
+  background: #2a2a2a;
+}
+#theComment {
+  color: black;
+}
+.scheduleTsumego {
+  color: #f0f0f0 !important;
+}
+#levelBarDisplay1 {
+  accent-color: #74d14c;
+}
+#levelBarDisplay1text {
+  color: #74d14c;
+}
+#levelBarDisplay2 {
+  accent-color: #c240f7;
+}
+#levelBarDisplay2text {
+  color: #c240f7;
+}
+.title6 {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+.homeCenter2 {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+#chart1,
+.chart-box,
+#chart2,
+#chart3,
+#chart11,
+#chart22,
+#chart33 {
+  background: #2a2a2a;
+}
+.apexcharts-menu-item {
+  color: black;
+}
+.apexcharts-title-text {
+  color: #fff;
+}
+.h1profile h1,
+.profileTable2 a {
+  color: #fff;
+}
+.dropdown-boxes {
+  background: #222222;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 380px;
+  border: 1px solid black;
+}
+#set-size-input {
+  background: #2a2a2a;
+  width: 90px;
+  border: 1px solid #1b1b1b;
+  padding: 5px;
+  border-radius: 4px;
+  color: #bfc1c4;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 6px 10px;
+  margin: 5px;
+}
+#submit-size-button {
+  border: 1px solid #1b1b1b;
+  background: #2a2a2a;
+}
+#submit-size-button:disabled {
+  background: #2a2a2a;
+  color: #2f2f2f;
+}
+.tile-color4 {
+  background: #ffffff1a;
+}
+#tags-button:hover,
+#difficulty-button:hover,
+#topics-button:hover {
+  background: #333;
+}
+.box1default:hover {
+  background-image: linear-gradient(
+    rgba(200, 200, 200, 0.3),
+    rgba(33, 33, 33, 0.35)
+  ) !important;
+}

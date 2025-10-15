@@ -1,0 +1,35 @@
+/* Sensei's Library mimic board theme */
+
+.besogo-svg-board {
+    fill: #f2b06d;
+}
+
+.besogo-svg-lines {
+    stroke: black;
+    stroke-width: 3;
+    fill: none;
+}
+
+.besogo-svg-hoshi {
+    stroke: black;
+    stroke-width: 15;
+    stroke-linecap: square;
+}
+
+.besogo-svg-blackStone {
+    fill: black;
+    stroke: black;
+    stroke-width: 4;
+}
+
+.besogo-svg-whiteStone {
+    fill: white;
+    stroke: black;
+    stroke-width: 4;
+}
+
+.besogo-svg-greyStone {
+    fill: #929591;
+    stroke: #929591;
+    stroke-width: 4;
+}

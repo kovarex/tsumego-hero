@@ -1,0 +1,196 @@
+.quote-pick-all {
+  font-size: 14px;
+  position: absolute;
+}
+
+.quote-pick-01 .quote1,
+.user-pick-q01 {
+  color: white !important;
+}
+.quote-pick-01 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q01 {
+  left: 316px;
+  top: 172px;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.quote-pick-02 .quote1,
+.user-pick-q02 {
+  color: #fdfdfd !important;
+}
+.quote-pick-02 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q02 {
+  left: 316px;
+  top: 106px;
+  font-family: Impact, Times New Roman, verdana;
+}
+
+.quote-pick-03 .quote1,
+.user-pick-q03 {
+  color: #e05d8f !important;
+}
+.quote-pick-03 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q03 {
+  left: 316px;
+  top: 89px;
+  font-family: Lucida Console, Times New Roman, verdana;
+}
+
+.quote-pick-04 .quote1,
+.user-pick-q04 {
+  color: #fdfdfe !important;
+}
+.quote-pick-04 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q04 {
+  left: 316px;
+  top: 189px;
+  font-weight: bold;
+  font-family: Baskerville, Times New Roman, verdana;
+}
+
+.quote-pick-05 .quote1,
+.user-pick-q05 {
+  color: #fdfdfe !important;
+}
+.quote-pick-05 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q05 {
+  left: 316px;
+  top: 121px;
+  font-size: 22px !important;
+  font-weight: bold;
+  font-family: Geneva, Times New Roman, verdana;
+}
+
+.quote-pick-06 .quote1,
+.user-pick-q06 {
+  color: #ad935e !important;
+}
+.quote-pick-06 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q06 {
+  left: 316px;
+  top: 151px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.quote-pick-07 .quote1,
+.user-pick-q07 {
+  color: #fce1c2 !important;
+}
+.quote-pick-07 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q07 {
+  left: 342px;
+  top: 113px;
+  font-weight: bold;
+  font-family: Comic Sans MS, Times New Roman, verdana;
+}
+
+.quote-pick-08 .quote1,
+.user-pick-q08 {
+  color: black !important;
+}
+.quote-pick-08 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q08 {
+  left: 300px;
+  top: 22px;
+  font-weight: bold;
+  font-family: Garamond, Times New Roman, verdana;
+}
+
+.quote-pick-09 .quote1,
+.user-pick-q09 {
+  color: white !important;
+}
+.quote-pick-09 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q09 {
+  left: 318px;
+  top: 53px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q10 {
+  color: #fed487 !important;
+}
+.quote-pick-10 .quote1 {
+  color: #302f2d !important;
+}
+.quote-pick-10 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q10 {
+  left: 317px;
+  top: 153px;
+  font-weight: bold;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.quote-pick-11 .quote1,
+.user-pick-q11 {
+  color: #fbcc5f !important;
+}
+.quote-pick-11 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q11 {
+  left: 321px;
+  top: 118px;
+  font-size: 15px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.quote-pick-12 .quote1,
+.user-pick-q12 {
+  color: #b83330 !important;
+}
+.quote-pick-12 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q12 {
+  left: 321px;
+  top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.quote-pick-13 .quote1,
+.user-pick-q13 {
+  color: white !important;
+}
+.quote-pick-13 {
+  top: 288px;
+  left: 100px;
+}
+.user-pick-q13 {
+  left: 321px;
+  top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
+}

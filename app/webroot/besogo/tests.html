@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BesoGo</title>
+
+<link rel="icon" type="image/png" href="icon32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="icon152.png" sizes="152x152">
+<link rel="icon" type="image/png" href="icon192.png" sizes="192x192">
+<link rel="icon" type="image/png" href="icon512.png" sizes="512x512">
+<link rel="apple-touch-icon-precomposed" href="icon152.png" sizes="152x152">
+<link rel="apple-touch-icon-precomposed" href="icon192.png" sizes="192x192">
+<link rel="icon" href="icon.svg" sizes="any" type="image/svg+xml">
+<link rel="manifest" href="manifest.json" />
+<meta name="description" content="BesoGo: a web-based SGF Editor">
+<meta property="og:url" content="https://yewang.github.io/besogo/testing.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BesoGo">
+<meta property="og:description" content="BesoGo: a web-based SGF Editor">
+<meta property="og:image" content="https://yewang.github.io/besogo/icon512.png">
+
+<link rel="stylesheet" type="text/css" href="css/besogo.css">
+<link rel="stylesheet" type="text/css" href="css/besogo-fill.css">
+<link rel="stylesheet" type="text/css" href="css/board-flat.css">
+
+<script src="js/besogo.js"></script>
+<script src="js/transformation.js"></script>
+<script src="js/tests.js"></script>
+<script src="js/treeProblemUpdater.js"></script>
+<script src="js/nodeHashTable.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/gameRoot.js"></script>
+<script src="js/gameRootTest.js"></script>
+<script src="js/status.js"></script>
+<script src="js/statusTest.js"></script>
+<script src="js/svgUtil.js"></script>
+<script src="js/parseSgf.js"></script>
+<script src="js/loadSgf.js"></script>
+<script src="js/saveSgf.js"></script>
+<script src="js/boardDisplay.js"></script>
+<script src="js/coord.js"></script>
+<script src="js/toolPanel.js"></script>
+<script src="js/filePanel.js"></script>
+<script src="js/controlPanel.js"></script>
+<script src="js/commentPanel.js"></script>
+<script src="js/treePanel.js"></script>
+<script src="js/diffInfo.js"></script>
+<script src="js/scaleParameters.js"></script>
+
+</head>
+<body>
+<div id="target"></div>
+
+<script type="text/javascript">
+(function() {
+  let table = document.createElement("table");
+  document.body.appendChild(table);
+  
+  for (let i = 0; i < besogo.tests.length; ++i)
+  {
+    let test = besogo.tests[i];
+    var row = table.insertRow(-1);
+    var cell = row.insertCell(-1);
+  
+    let label = document.createElement("label");
+    label.innerHTML = test.suite + "/" + test.name;
+    cell.appendChild(label);
+
+    try
+    {
+      test.method();
+      let success = document.createElement("label");
+      success.innerHTML = "&nbsp;passed";
+      success.style.color = "green";
+      var cell = row.insertCell(-1);
+      cell.appendChild(success);
+    }
+    catch (error)
+    {
+      let fail = document.createElement("label");
+      fail.innerHTML = "&nbsp;failed&nbsp;" + error.message;
+      fail.style.color = "red";
+      var cell = row.insertCell(-1);
+      cell.appendChild(fail);
+      console.log(error);
+    }
+  }
+})();
+</script>
+
+</body>
+
+</html>
