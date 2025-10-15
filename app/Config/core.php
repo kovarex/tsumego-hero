@@ -400,3 +400,12 @@ Cache::config('_cake_model_', array(
 	'serialize' => ($engine === 'File'),
 	'duration' => $duration
 ));
+
+/**
+ * Load local configuration overrides
+ * Create Config/core.local.php to override settings for local development
+ * Add this file to .gitignore to keep local settings out of version control
+ */
+if (file_exists(__DIR__ . '/core.local.php')) {
+	require __DIR__ . '/core.local.php';
+}

@@ -5,4 +5,5 @@
 webroot/mainPageAjax.txt
 webroot/userLogger.html
 .ddev/
+Config/core.local.php
 
