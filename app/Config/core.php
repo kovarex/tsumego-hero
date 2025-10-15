@@ -36,6 +36,11 @@
  */
 	Configure::write('debug', 0);
 	Configure::write('Cache.disable', true);
+
+	if (str_contains($_SERVER['SERVER_NAME'], '.ddev.site')) {
+		Configure::write('debug', 2);
+	}
+
 /**
  * Configure the Error handler used to handle errors for your application. By default
  * ErrorHandler::handleError() is used. It will display errors using Debugger, when debug > 0
@@ -53,7 +58,7 @@
  */
 	Configure::write('Error', array(
 		'handler' => 'ErrorHandler::handleError',
-		'level' => E_ALL & ~E_DEPRECATED,
+		'level' => E_ALL & ~E_DEPRECATED & ~E_WARNING & ~E_NOTICE & ~E_STRICT & ~E_USER_DEPRECATED & ~E_USER_WARNING & ~E_USER_NOTICE,
 		'trace' => true
 	));
 
@@ -225,7 +230,7 @@
 		'autoRegenerate' => true, // causes the session expiration time to reset on each page load
 		'ini' => array(
 			'session.use_trans_sid' => 0, // use other configuration from php default config
-			'session.cookie_samesite' => 'None', 
+			'session.cookie_samesite' => 'None',
 			'session.cookie_path' => "/" // use other configuration from php default config
 		)
 	));

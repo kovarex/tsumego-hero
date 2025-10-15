@@ -6,7 +6,6 @@
 	$cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 ?>
 	<?php
-	phpInfo();
 		$url = parse_url($_SERVER['HTTP_HOST']);
 		$url['path'] = str_replace('tsumego-hero.com','',$url['path']);
 		if($url['path']=='www.') echo '<script type="text/javascript">window.location.href = "https://tsumego-hero.com'.$_SERVER['REQUEST_URI'].'";</script>';
@@ -36,7 +35,7 @@
 	<?php
 		if($lightDark=='dark')
 			echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.3">';
-		
+
 		echo $this->Html->meta('icon');
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
@@ -76,7 +75,7 @@
 		elseif($user['User']['elo_rating_mode']>=200) $td = '19k';
 		elseif($user['User']['elo_rating_mode']>=100) $td = '20k';
 		else $td = '21k';
-		
+
 		$modeSelector = 2;
 		$accountBarLevelToRating = 'account-bar-user';
 		if($mode!=3){
@@ -413,7 +412,7 @@
 		<?php } ?>
 		<div class="footer-space"></div>
 		<div class="footer-element">
-			Supported by Wube Software 
+			Supported by Wube Software
 		</div>
 		<div class="footer-element">
 			<a href="https://www.factorio.com">
@@ -421,16 +420,16 @@
 			</a>
 		</div>
 		<div class="footer-space"></div>
-		<div class="footer-element"> 
+		<div class="footer-element">
 			Tsumego Hero © <?php echo date('Y'); ?>
 		</div>
-		<div class="footer-element"> 
+		<div class="footer-element">
 			<a href="mailto:joschka.zimdars@googlemail.com">joschka.zimdars@googlemail.com</a>
 		</div>
-		<div class="footer-element"> 
+		<div class="footer-element">
 			<a href="/sites/impressum">Legal notice</a>
 		</div>
-		<div class="footer-element"> 
+		<div class="footer-element">
 			<a href="/users/authors">About</a>
 		</div>
 		<br><br><br>
@@ -477,7 +476,7 @@
 
 	lifetime.setTime(lifetime.getTime()+8*24*60*60*1000);
 	lifetime = lifetime.toUTCString()+"";
-	<?php 
+	<?php
 		if(isset($removeCookie)){
 			echo 'setCookie("'.$removeCookie.'", "0");';
 		}
@@ -518,14 +517,14 @@
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
-		
+
 		<?php if($_SESSION['loggedInUser']['User']['id']==72){ ?>
 		<?php } ?>
 	<?php } ?>
 	<?php
 	if($_SESSION['page']!='level mode' && $_SESSION['page']!='rating mode' && $_SESSION['page']!='time mode')
 		echo 'setCookie("mode", 1);';
-	
+
 	for($i=0;$i<count($achievementUpdate);$i++){
 		echo '$("#achievementAlerts'.$i.'").fadeIn(600);';
 		echo '
@@ -536,9 +535,9 @@
 	}
 	?>
 	let light = true;
-	<?php 
+	<?php
 	if($lightDark=='dark'){
-		echo 'light = false;'; 
+		echo 'light = false;';
 		if($_SESSION['page']=='home'){
 			echo '$("#darkButtonImage2").attr("src","/img/dark-icon1.png");';
 			echo '$("#darkButtonImage3").attr("src","/img/dark-icon1.png");';
@@ -576,7 +575,7 @@
 		document.cookie = "correctNoPoints=0;SameSite=none;expires="+lifetime+";Secure=false";
 		document.cookie = "ui=0;SameSite=none;expires="+lifetime+";Secure=false";
 		document.cookie = "requestProblem=0;SameSite=none;expires="+lifetime+";Secure=false";
-		
+
 		setCookie("lightDark", "<?php echo $lightDark; ?>");
 		<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
 			setCookie("levelBar", "<?php echo $levelBar; ?>");
@@ -635,7 +634,7 @@
 				setCookie("sound", "on");
 				updateSoundValue(true);
 			}
-			
+
 			$("#modeSelector").click(function(){
 				levelBarChange(modeSelector);
 			});
@@ -655,7 +654,7 @@
 						$(".account-bar-user-class").removeAttr("id");
 						$(".account-bar-user-class").attr("id", "account-bar-user2");
 					}
-				<?php	
+				<?php
 				}
 			if(isset($loggedInUser)){
 				echo 'var end = new Date("'.$nextDay.' 00:00 AM");';
@@ -714,7 +713,7 @@
 		function updateCookie(c1,c2){
 			document.cookie = c1+c2;
 		}
-		
+
 		function setCookie(cookie, value=""){
 			let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view"];
 			for(let i=0;i<paths.length;i++)
@@ -844,13 +843,13 @@
 
 		function loadBar(){
 			<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
-				
+
 				if(notMode3){
-				<?php 
+				<?php
 				$barPercent2 = substr(round($user['User']['elo_rating_mode']), -2);
-				
+
 				if($mode!=3){ ?>
-				
+
 					if(levelBar==1){
 						$("#xp-increase-fx").css("display","inline-block");
 						$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
@@ -953,7 +952,7 @@
 			if(newXP2>=100){
 				newXP2=100;
 			}
-			
+
 			$("#xp-bar-fill").css({"width":newXP2+"%"});
 			$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 			$("#xp-increase-fx").fadeIn(0);$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
@@ -991,7 +990,7 @@
 				levelBarChange(1);
 			}
 		}
-		
+
 		function deleteAllCookies() {
 			const cookies = document.cookie.split(";");
 
@@ -1002,7 +1001,7 @@
 				document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 			}
 		}
-		
+
 	</script>
 	<?php
 	if(!isset($_SESSION['loggedInUser']['User']['id']))
