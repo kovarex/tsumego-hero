@@ -51,7 +51,7 @@ class RanksController extends AppController {
 			$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
 		}
 		if(isset($this->data['Settings'])){
-			if(count($this->data['Settings']>=41)){
+			if(count($this->data['Settings'])>=41){
 				$rds0 = $this->RankSetting->find('all', array('conditions' => array(
 					'user_id' => $_SESSION['loggedInUser']['User']['id']
 				)));
@@ -80,7 +80,7 @@ class RanksController extends AppController {
 					'set_id' => $sets[$i]['Set']['id']
 				)));
 
-				if(count($settingsSingle>1)){
+				if(count($settingsSingle)>1){
 					for($j=0;$j<count($settingsSingle);$j++){
 						if($j!=0) $this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
 					}

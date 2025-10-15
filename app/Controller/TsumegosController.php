@@ -3279,7 +3279,7 @@ class TsumegosController extends AppController{
 					if(preg_match('/[0-9]/', $xxx[$j])) array_push($xxxx, $xxx[$j]);
 					if(preg_match('/[a-tA-T]/', $xxx[$j])) $coord1 = $this->convertCoord($xxx[$j]);
 				}
-				$coord2 = $this->convertCoord2(implode($xxxx));
+				$coord2 = $this->convertCoord2(implode('', $xxxx));
 				if($coord1!=-1 &&$coord2!=-1) $finalCoord .= $coord1.'-'.$coord2.'-'.$coordForBesogo[$i].' ';
 			}
 		}

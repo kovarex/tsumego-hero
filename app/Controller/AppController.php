@@ -13,7 +13,7 @@ class AppController extends Controller{
 		$boardSizePos = strpos($sgf, 'SZ');
 		$boardSize = 19;
 		$sgfArr = str_split($sgf);
-		if($boardSizePos!=null)
+		if($boardSizePos !== false)
 			$boardSize = $sgfArr[$boardSizePos+3].''.$sgfArr[$boardSizePos+4];
 		if(substr($boardSize, 1) == ']')
 			$boardSize = substr($boardSize, 0, 1);
