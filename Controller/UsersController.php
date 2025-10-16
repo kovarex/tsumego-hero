@@ -778,8 +778,8 @@ class UsersController extends AppController{
 	}
 
 	public function resetpassword(){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Sign In';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
 		if(!empty($this->data)){
 			$u = $this->User->findByEmail($this->data['User']['email']);
 			if($u){
@@ -806,7 +806,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/'.$randomStri
 			$this->set('sent', false);
 		}
 		/*
-		if($_SESSION['loggedInUser']['User']['id']==72){
+		if($this->Session->read('loggedInUser.User.id')==72){
 			$Email = new CakeEmail();
 			$Email->from(array('me@joschkazimdars.com' => 'http://joschkazimdars.com'));
 			$Email->to('support@my-evh.de');
@@ -825,8 +825,8 @@ Joschka Zimdars';
 	}
 
 	public function newpassword($checksum=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Sign In';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
 		$valid = false;
 		$done = false;
 		if($checksum==null) $checksum=1;
@@ -1299,8 +1299,8 @@ Joschka Zimdars';
 	}
 
 	public function userstats($uid = null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'USER STATS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'USER STATS');
 		$this->LoadModel('TsumegoAttempt');
 		$this->LoadModel('Set');
 		$this->LoadModel('Tsumego');
@@ -1339,8 +1339,8 @@ Joschka Zimdars';
 	}
 
 	public function userstats2($uid = null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'USER STATS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'USER STATS');
 		$this->LoadModel('TsumegoAttempt');
 		$this->LoadModel('Set');
 		$this->LoadModel('Tsumego');
@@ -1443,8 +1443,8 @@ Joschka Zimdars';
 	}
 
 	public function userstats3($sid = null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'USER STATS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'USER STATS');
 		$this->LoadModel('TsumegoAttempt');
 		$this->LoadModel('Set');
 		$this->LoadModel('Tsumego');
@@ -1484,8 +1484,8 @@ Joschka Zimdars';
 	}
 
 	public function stats($p=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'PAGE STATS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'PAGE STATS');
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('Comment');
 		$this->LoadModel('User');
@@ -1574,8 +1574,8 @@ Joschka Zimdars';
 	}
 
 	public function uservisits(){
-		$_SESSION['page'] = 'set';
-		$_SESSION['title'] = 'User Visits';
+		$this->Session->write('page', 'set');
+		$this->Session->write('title', 'User Visits');
 		$this->loadModel('Answer');
 
 		$ans = $this->Answer->find('all', array('order' => 'created DESC'));
@@ -1618,8 +1618,8 @@ Joschka Zimdars';
 	}
 
 	public function duplicates(){
-		$_SESSION['page'] = 'sandbox';
-		$_SESSION['title'] = 'Merge Duplicates';
+		$this->Session->write('page', 'sandbox');
+		$this->Session->write('title', 'Merge Duplicates');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Set');
@@ -1670,7 +1670,7 @@ Joschka Zimdars';
 				$sx = $this->Set->findById($remove['Tsumego']['set_id']);
 				$title = $sx['Set']['title'].' - '.$remove['Tsumego']['num'];
 				$adminActivity = array();
-				$adminActivity['AdminActivity']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
+				$adminActivity['AdminActivity']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['removeDuplicate'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: '.$title;
@@ -1735,7 +1735,7 @@ Joschka Zimdars';
 				$sx = $this->Set->findById($newDmain['Tsumego']['set_id']);
 				$title = $sx['Set']['title'].' - '.$newDmain['Tsumego']['num'];
 				$adminActivity = array();
-				$adminActivity['AdminActivity']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
+				$adminActivity['AdminActivity']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['main'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Created duplicate group: '.$title;
@@ -1767,7 +1767,7 @@ Joschka Zimdars';
 		$marks = $this->Tsumego->find('all', array('conditions' => array('duplicate' => -1)));
 		for($i=0; $i<count($marks); $i++)
 			array_push($idMap2, $marks[$i]['Tsumego']['id']);
-		$uts2 = $this->TsumegoStatus->find('all', array('conditions' => array('tsumego_id'=>$idMap2, 'user_id'=>$_SESSION['loggedInUser']['User']['id'])));
+		$uts2 = $this->TsumegoStatus->find('all', array('conditions' => array('tsumego_id'=>$idMap2, 'user_id'=>$this->Session->read('loggedInUser.User.id'))));
 		$counter2 = 0;
 		$markTooltipSgfs = array();
 		$markTooltipInfo = array();
@@ -1818,7 +1818,7 @@ Joschka Zimdars';
 				}
 			}
 
-			$uts = $this->TsumegoStatus->find('all', array('conditions' => array('tsumego_id'=>$idMap, 'user_id'=>$_SESSION['loggedInUser']['User']['id'])));
+			$uts = $this->TsumegoStatus->find('all', array('conditions' => array('tsumego_id'=>$idMap, 'user_id'=>$this->Session->read('loggedInUser.User.id'))));
 			$tooltipSgfs = array();
 			$tooltipInfo = array();
 			$tooltipBoardSize = array();
@@ -1863,8 +1863,8 @@ Joschka Zimdars';
 	}
 
 	public function uploads(){
-		$_SESSION['page'] = 'set';
-		$_SESSION['title'] = 'Uploads';
+		$this->Session->write('page', 'set');
+		$this->Session->write('title', 'Uploads');
 		$this->LoadModel('Sgf');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -1895,8 +1895,8 @@ Joschka Zimdars';
 	}
 
 	public function adminstats($p=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Admin Panel';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Admin Panel');
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('TsumegoAttempts');
 		$this->LoadModel('TsumegoRatingAttempts');
@@ -1913,15 +1913,15 @@ Joschka Zimdars';
 		$this->LoadModel('UserContribution');
 		$this->LoadModel('Reject');
 
-		if($_SESSION['loggedInUser']['User']['isAdmin']>0){
+		if($this->Session->read('loggedInUser')['User']['isAdmin']>0){
 			if(isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])){
-				if(md5($_SESSION['loggedInUser']['User']['id']) == $this->params['url']['hash']){
+				if(md5($this->Session->read('loggedInUser.User.id')) == $this->params['url']['hash']){
 
 					$tagsToApprove = explode("-",$_COOKIE['tagList']);
 					for($i=1; $i<count($tagsToApprove); $i++){
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if($tagToApprove!=null && $tagToApprove['Tag']['approved']!=1){
-							$this->handleContribution($_SESSION['loggedInUser']['User']['id'], 'reviewed');
+							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
 							if(substr($tagsToApprove[$i], 0,1) == 'a'){
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
@@ -1944,7 +1944,7 @@ Joschka Zimdars';
 					for($i=1; $i<count($tagNamesToApprove); $i++){
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if($tagNameToApprove!=null && $tagNameToApprove['TagName']['approved']!=1){
-							$this->handleContribution($_SESSION['loggedInUser']['User']['id'], 'reviewed');
+							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
 							if(substr($tagNamesToApprove[$i], 0,1) == 'a'){
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
@@ -1965,7 +1965,7 @@ Joschka Zimdars';
 					for($i=1; $i<count($proposalsToApprove); $i++){
 						$proposalToApprove =  $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if($proposalToApprove!=null && $proposalToApprove['Sgf']['version']==0){
-							$this->handleContribution($_SESSION['loggedInUser']['User']['id'], 'reviewed');
+							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
 							if(substr($proposalsToApprove[$i], 0,1) == 'a'){
 								$recentSgf = $this->Sgf->find('first', array('order' => 'version DESC', 'conditions' =>  array('tsumego_id' => $proposalToApprove['Sgf']['tsumego_id'])));
 								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
@@ -2043,7 +2043,7 @@ Joschka Zimdars';
 			$approveSgfs[$i]['Sgf']['user'] = $this->checkPicture($au);
 		}
 		$uts = $this->TsumegoStatus->find('all', array('conditions' =>  array(
-			'user_id' => $_SESSION['loggedInUser']['User']['id'],
+			'user_id' => $this->Session->read('loggedInUser.User.id'),
 			'tsumego_id' => $tsIds
 		)));
 
@@ -2166,8 +2166,8 @@ Joschka Zimdars';
 
 	public function login(){
 		$this->loadModel('TsumegoStatus');
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Sign In';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
 
 		$clearSession = true;
 		if(!empty($this->data)){
@@ -2178,7 +2178,7 @@ Joschka Zimdars';
 					$this->signIn($u);
 					$this->Session->setFlash(__('Login successful.', true));
 					$isLoaded = $this->TsumegoStatus->find('first', array('conditions' => array('user_id' => $u['User']['id'])));
-					$_SESSION['redirect'] = 'sets';
+					return $this->redirect(array('controller' => 'sets', 'action' => 'index'));
 				}else{
 					$this->Session->setFlash(__('Login incorrect.', true));
 				}
@@ -2193,8 +2193,8 @@ Joschka Zimdars';
 
 	public function login2(){
 		$this->loadModel('TsumegoStatus');
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Sign In';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
 		if(!empty($this->data)){
 			$u = $this->User->findByEmail($this->data['User']['email']);
 			if($u){
@@ -2202,7 +2202,7 @@ Joschka Zimdars';
 					$this->signIn($u);
 					$this->Session->setFlash(__('Login successful.', true));
 					$isLoaded = $this->TsumegoStatus->find('first', array('conditions' => array('user_id' => $u['User']['id'])));
-					$_SESSION['redirect'] = 'sets';
+					return $this->redirect(array('controller' => 'sets', 'action' => 'index'));
 				}else{
 					$this->Session->setFlash(__('Login incorrect.', true));
 				}
@@ -2216,8 +2216,8 @@ Joschka Zimdars';
 	}
 
 	public function add(){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Sign Up';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Sign Up');
 		if(!empty($this->data)){
 			$userData = $this->data;
 			$userData['User']['pw'] = $this->tinkerEncode($this->data['User']['pw'], 1);
@@ -2237,25 +2237,28 @@ Joschka Zimdars';
 
 			$this->User->create();
 			if($this->User->save($userData, true)){
-				if($this->validateLogin($this->data)) $this->Session->setFlash(__('Registration successful.', true));
-        else $this->Session->setFlash(__('Login incorrect.', true));
-				$_SESSION['redirect'] = 'sets';
+				if($this->validateLogin($this->data)){
+					$this->Session->setFlash(__('Registration successful.', true));
+					return $this->redirect(array('controller' => 'sets', 'action' => 'index'));
+				}else{
+					$this->Session->setFlash(__('Login incorrect.', true));
+				}
 			}
 		}
 	}
 
 	public function highscore(){
-		$_SESSION['page'] = 'levelHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Highscore';
+		$this->Session->write('page', 'levelHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Highscore');
 
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('Activate');
 
-		$this->saveSolvedNumber($_SESSION['loggedInUser']['User']['id']);
+		$this->saveSolvedNumber($this->Session->read('loggedInUser.User.id'));
 
 		$activate = false;
-		if(isset($_SESSION['loggedInUser']))
-			$activate = $this->Activate->find('first', array('conditions' =>  array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if($this->Session->check('loggedInUser'))
+			$activate = $this->Activate->find('first', array('conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 
 		$json = json_decode(file_get_contents('json/level_highscore.json'), true);
 
@@ -2271,13 +2274,13 @@ Joschka Zimdars';
 	}
 
 	public function rating(){
-		$_SESSION['page'] = 'ratingHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Rating';
+		$this->Session->write('page', 'ratingHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Rating');
 
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('Tsumego');
-		if(isset($_SESSION['loggedInUser'])){
-			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser')){
+			$ux = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2290,8 +2293,8 @@ Joschka Zimdars';
 	}
 
 	public function added_tags(){
-		$_SESSION['page'] = 'timeHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Added Tags';
+		$this->Session->write('page', 'timeHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Added Tags');
 		$this->LoadModel('UserContribution');
 
 		$list = array();
@@ -2315,35 +2318,35 @@ Joschka Zimdars';
 
 	public function rewards(){
 		$this->LoadModel('UserContribution');
-		$uc = $this->UserContribution->find('first', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		$uc = $this->UserContribution->find('first', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 
 		if(isset($this->params['url']['action']) && isset($this->params['url']['token'])){
 			if(md5('level') == $this->params['url']['action']){
 				if(md5($uc['UserContribution']['score']) == $this->params['url']['token']){
 					$uc['UserContribution']['reward1'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+					$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 					$u['User']['level'] += 1;
 					$u['User']['nextlvl'] += $this->getXPJump($u['User']['level']);
 					$u['User']['health'] = $this->getHealth($u['User']['level']);
-					$_SESSION['loggedInUser']['User']['level'] = $u['User']['level'];
-					$_SESSION['loggedInUser']['User']['nextlvl'] = $u['User']['nextlvl'];
-					$_SESSION['loggedInUser']['User']['health'] = $u['User']['health'];
+					$this->Session->read('loggedInUser')['User']['level'] = $u['User']['level'];
+					$this->Session->read('loggedInUser')['User']['nextlvl'] = $u['User']['nextlvl'];
+					$this->Session->read('loggedInUser')['User']['health'] = $u['User']['health'];
 					$this->User->save($u);
-					$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
-					$_SESSION['loggedInUser'] = $u;
+					$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
+					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
 			}else if(md5('rank') == $this->params['url']['action']){
 				if(md5($uc['UserContribution']['score']) == $this->params['url']['token']){
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+					$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 					$u['User']['elo_rating_mode'] += 100;
-					$_SESSION['loggedInUser']['User']['elo_rating_mode'] = $u['User']['elo_rating_mode'];
+					$this->Session->read('loggedInUser')['User']['elo_rating_mode'] = $u['User']['elo_rating_mode'];
 					$this->User->save($u);
-					$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
-					$_SESSION['loggedInUser'] = $u;
+					$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
+					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
 			}else if(md5('heropower') == $this->params['url']['action']){
@@ -2353,13 +2356,13 @@ Joschka Zimdars';
 				}
 			}else if(md5('premium') == $this->params['url']['action']){
 				if(md5($uc['UserContribution']['score']) == $this->params['url']['token']){
-					if($_SESSION['loggedInUser']['User']['preium'] == 0){
-						$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+					if($this->Session->read('loggedInUser')['User']['preium'] == 0){
+						$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 						$u['User']['premium'] = 1;
-						$_SESSION['loggedInUser']['User']['premium'] = $u['User']['premium'];
+						$this->Session->read('loggedInUser')['User']['premium'] = $u['User']['premium'];
 						$this->User->save($u);
-						$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
-						$_SESSION['loggedInUser'] = $u;
+						$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
+						$this->Session->write('loggedInUser', $u);
 					}
 				}
 			}
@@ -2382,16 +2385,16 @@ Joschka Zimdars';
 	}
 
 	public function achievements(){
-		$_SESSION['page'] = 'achievementHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Achievements Highscore';
+		$this->Session->write('page', 'achievementHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Achievements Highscore');
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('AchievementStatus');
 		$this->LoadModel('Achievement');
 		$this->LoadModel('User');
 
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser.User.id')){
+			$ux = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2410,8 +2413,8 @@ Joschka Zimdars';
 	}
 
 	public function highscore3(){
-		$_SESSION['page'] = 'timeHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Time Highscore';
+		$this->Session->write('page', 'timeHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Time Highscore');
 
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('Tsumego');
@@ -2420,8 +2423,8 @@ Joschka Zimdars';
 		$params1 = '';
 		$params2 = '';
 
-		if(isset($_SESSION['loggedInUser'])){
-			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser')){
+			$ux = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2435,8 +2438,8 @@ Joschka Zimdars';
 			$params1 = $this->params['url']['category'];
 			$params2 = $this->params['url']['rank'];
 		}else{
-			if(isset($_SESSION['loggedInUser'])){
-				$lastModex = $_SESSION['loggedInUser']['User']['lastMode']-1;
+			if($this->Session->check('loggedInUser')){
+				$lastModex = $this->Session->read('loggedInUser')['User']['lastMode']-1;
 			 }else{
 				$lastModex = 2;
 			}
@@ -2449,7 +2452,7 @@ Joschka Zimdars';
 				'rank' => $params2
 			)));
 			//echo '<pre>'; print_r($ro); echo '</pre>';
-			//echo '<pre>'; print_r($_SESSION['loggedInUser']['User']['lastMode']); echo '</pre>';
+			//echo '<pre>'; print_r($this->Session->read('loggedInUser')['User']['lastMode']); echo '</pre>';
 		}
 		$roAll = array();
 		$roAll['user'] = array();
@@ -2522,8 +2525,8 @@ Joschka Zimdars';
 			}
 		}
 
-		if(isset($_SESSION['loggedInUser'])){
-			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser')){
+			$ux = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$ux['User']['lastHighscore'] = 4;
 			$this->User->save($ux);
 		}
@@ -2539,8 +2542,8 @@ Joschka Zimdars';
 	}
 
 	public function leaderboard(){
-		$_SESSION['page'] = 'dailyHighscore';
-		$_SESSION['title'] = 'Tsumego Hero - Daily Highscore';
+		$this->Session->write('page', 'dailyHighscore');
+		$this->Session->write('title', 'Tsumego Hero - Daily Highscore');
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('DayRecord');
@@ -2561,8 +2564,8 @@ Joschka Zimdars';
 				$userYesterdayName = $userYesterday['User']['name'];
 			}
 		}
-		if(isset($_SESSION['loggedInUser'])){
-			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser')){
+			$ux = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$ux['User']['lastHighscore'] = 3;
 			$this->User->save($ux);
 		}
@@ -2584,7 +2587,7 @@ Joschka Zimdars';
 	}
 
 	public function view($id=null){
-		$_SESSION['page'] = 'user';
+		$this->Session->write('page', 'user');
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('TsumegoAttempt');
 		$this->LoadModel('Tsumego');
@@ -2595,16 +2598,16 @@ Joschka Zimdars';
 		$this->LoadModel('RankOverview');
 		$hideEmail = false;
 
-		$solvedUts2 = $this->saveSolvedNumber($_SESSION['loggedInUser']['User']['id']);
+		$solvedUts2 = $this->saveSolvedNumber($this->Session->read('loggedInUser.User.id'));
 
-		$as = $this->AchievementStatus->find('all', array('limit' => 12, 'order' => 'created DESC', 'conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		$as = $this->AchievementStatus->find('all', array('limit' => 12, 'order' => 'created DESC', 'conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
-		$_SESSION['title'] = 'Profile of '.$user['User']['name'];
+		$this->Session->write('title', 'Profile of '.$user['User']['name']);
 
-		if($_SESSION['loggedInUser']['User']['id']!=$id && $_SESSION['loggedInUser']['User']['id']!=72){
-			$_SESSION['redirect'] = 'sets';
+		if($this->Session->read('loggedInUser.User.id')!=$id && $this->Session->read('loggedInUser.User.id')!=72){
+			$this->Session->write('redirect', 'sets');
 			$user['User']['email'] = '';
 			$hideEmail = true;
 		}
@@ -2620,7 +2623,7 @@ Joschka Zimdars';
 		if(isset($this->params['url']['undo'])){
 			if($this->params['url']['undo']/1111 == $id){
 				$user['User']['dbstorage'] = 1;
-				$_SESSION['loggedInUser']['User']['dbstorage'] = $user['User']['dbstorage'];
+				$this->Session->read('loggedInUser')['User']['dbstorage'] = $user['User']['dbstorage'];
 				$this->User->save($user);
 				$user = $this->User->findById($id);
 			}
@@ -2688,7 +2691,7 @@ Joschka Zimdars';
 		$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
 		$oldest = $oldest->format('Y-m-d');
 		$ta = $this->TsumegoAttempt->find('all', array('limit' => 400, 'order' => 'created DESC', 'conditions' => array(
-			'user_id' => $_SESSION['loggedInUser']['User']['id']
+			'user_id' => $this->Session->read('loggedInUser.User.id')
 		)));
 
 		$taBefore = '';
@@ -2729,7 +2732,7 @@ Joschka Zimdars';
 			}
 		}
 
-		$eloRank = $this->getTsumegoRank($_SESSION['loggedInUser']['User']['elo_rating_mode']);
+		$eloRank = $this->getTsumegoRank($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
 		$highestEloRank = $this->getTsumegoRank($highestElo);
 
 		if($highestElo<$user['User']['elo_rating_mode'])
@@ -2737,7 +2740,7 @@ Joschka Zimdars';
 
 		$timeGraph = array();
 		$ro = $this->RankOverview->find('all', array('order' => 'rank ASC', 'conditions' => array(
-			'user_id' => $_SESSION['loggedInUser']['User']['id']
+			'user_id' => $this->Session->read('loggedInUser.User.id')
 		)));
 		$highestRo = '15k';
 		for($i=0;$i<count($ro);$i++){
@@ -2782,7 +2785,7 @@ Joschka Zimdars';
 			}
 		}
 
-		if($_SESSION['loggedInUser']['User']['id']!=$id)
+		if($this->Session->read('loggedInUser.User.id')!=$id)
 			$deletedProblems = 3;
 
 		for($i=0; $i<count($as); $i++){
@@ -2799,8 +2802,8 @@ Joschka Zimdars';
 		$achievementUpdate2 = $this->checkProblemNumberAchievements();
 		$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
 
-		if(count($achievementUpdate)>0) $this->updateXP($_SESSION['loggedInUser']['User']['id'], $achievementUpdate);
-		$aNum = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if(count($achievementUpdate)>0) $this->updateXP($this->Session->read('loggedInUser.User.id'), $achievementUpdate);
+		$aNum = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		$asx = $this->AchievementStatus->find('first', array('conditions' => array('user_id' => $id, 'achievement_id' => 46)));
 		$aNumx = count($aNum);
 		if($asx!=null)
@@ -2811,8 +2814,8 @@ Joschka Zimdars';
 
 		$user['User']['name'] = $this->checkPicture($user);
 
-		if(substr($_SESSION['loggedInUser']['User']['email'],0,3)=='g__' && $_SESSION['loggedInUser']['User']['external_id']!=null)
-			$user['User']['email'] = substr($_SESSION['loggedInUser']['User']['email'],3);
+		if(substr($this->Session->read('loggedInUser')['User']['email'],0,3)=='g__' && $this->Session->read('loggedInUser')['User']['external_id']!=null)
+			$user['User']['email'] = substr($this->Session->read('loggedInUser')['User']['email'],3);
 
 		$aCount = $this->Achievement->find('all');
 
@@ -2913,8 +2916,8 @@ Joschka Zimdars';
 	}
 
 	public function donate($id = null){
-		$_SESSION['page'] = 'home';
-		$_SESSION['title'] = 'Tsumego Hero - Upgrade';
+		$this->Session->write('page', 'home');
+		$this->Session->write('title', 'Tsumego Hero - Upgrade');
 
 		$overallCounter = 0;
 		$sandboxSets = $this->Set->find('all', array('conditions' => array('public' => 0)));
@@ -2944,8 +2947,8 @@ Joschka Zimdars';
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
-		$_SESSION['page'] = 'about';
-		$_SESSION['title'] = 'Tsumego Hero - About';
+		$this->Session->write('page', 'about');
+		$this->Session->write('title', 'Tsumego Hero - About');
 
 		$authors = $this->Tsumego->find('all', array('order' => 'created DESC', 'conditions' =>  array(
 			'NOT' => array(
@@ -3007,10 +3010,10 @@ Joschka Zimdars';
 	}
 
 	public function success($id = null){
-		$_SESSION['page'] = 'home';
-		$_SESSION['title'] = 'Tsumego Hero - Success';
+		$this->Session->write('page', 'home');
+		$this->Session->write('title', 'Tsumego Hero - Success');
 
-		$s = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		$s = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		$s['User']['reward'] = date('Y-m-d H:i:s');
 		$s['User']['premium'] = 1;
 		$this->User->create();
@@ -3020,16 +3023,16 @@ Joschka Zimdars';
 		$Email->from(array('me@joschkazimdars.com' => 'https://tsumego-hero.com'));
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
-		if(isset($_SESSION['loggedInUser']['User']['id'])) $ans = $_SESSION['loggedInUser']['User']['name'].' '.$_SESSION['loggedInUser']['User']['email'];
+		if($this->Session->check('loggedInUser.User.id')) $ans = $this->Session->read('loggedInUser.User.name').' '.$this->Session->read('loggedInUser')['User']['email'];
 		else $ans = 'no login';
 		$Email->send($ans);
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
+		if($this->Session->check('loggedInUser.User.id')){
 			$Email = new CakeEmail();
 			$Email->from(array('me@joschkazimdars.com' => 'https://tsumego-hero.com'));
-			$Email->to($_SESSION['loggedInUser']['User']['email']);
+			$Email->to($this->Session->read('loggedInUser')['User']['email']);
 			$Email->subject('Tsumego Hero');
 			$ans = '
-Hello '.$_SESSION['loggedInUser']['User']['name'].',
+Hello '.$this->Session->read('loggedInUser.User.name').',
 
 Thank you!. Your account should be upgraded automatically.
 
@@ -3042,10 +3045,10 @@ Joschka Zimdars';
 	}
 
 	public function penalty($id = null){
-		$_SESSION['page'] = 'home';
-		$_SESSION['title'] = 'Tsumego Hero - Penalty';
+		$this->Session->write('page', 'home');
+		$this->Session->write('title', 'Tsumego Hero - Penalty');
 
-		$p = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		$p = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		$p['User']['penalty'] = $p['User']['penalty']+1;
 		$this->User->create();
 		$this->User->save($p);
@@ -3058,9 +3061,9 @@ Joschka Zimdars';
 	}
 
 	public function logout(){
-		unset($_SESSION['loggedInUser']);
+		$this->Session->delete('loggedInUser');
 		//$this->redirect( '/sets' );
-		//$_SESSION['redirect'] = 'sets';
+		//$this->Session->write('redirect', 'sets');
 		//$this->Session->setFlash(__('You have singed out.', true));
 	}
 
@@ -3085,8 +3088,10 @@ Joschka Zimdars';
 
 	private function validateLogin($data){
 		$u = $this->User->findByName($data['User']['name']);
+		if(!$u || !isset($u['User']['pw'])){
+			return false;
+		}
 		if($this->tinkerDecode($u['User']['pw'], 1) == $data['User']['pw']){
-			$_SESSION['loggedInUser'] = $u;
 			return true;
 		}else{
 			return false;
@@ -3095,8 +3100,10 @@ Joschka Zimdars';
 
 	private function validateLogin2($data){
 		$u = $this->User->findByEmail($data['User']['email']);
+		if(!$u || !isset($u['User']['pw'])){
+			return false;
+		}
 		if($this->tinkerDecode($u['User']['pw'], 1) == $data['User']['pw']){
-			$_SESSION['loggedInUser'] = $u;
 			return true;
 		}else{
 			return false;
@@ -3104,9 +3111,12 @@ Joschka Zimdars';
 	}
 
 	private function tinkerEncode($string,$key){
+		 if (!is_string($string)) {
+			 return '';
+		 }
 		 $j = 1.0;
 		 $hash = '';
-		 $key = sha1($key);
+		 $key = sha1((string)$key);
 		 $strLen = strlen($string);
 		 $keyLen = strlen($key);
 		 for ($i = 0; $i < $strLen; $i++) {
@@ -3120,9 +3130,12 @@ Joschka Zimdars';
 	}
 
 	private function tinkerDecode($string,$key){
+		 if (!is_string($string)) {
+			 return '';
+		 }
 		 $j = 1.0;
 		 $hash = '';
-		 $key = sha1($key);
+		 $key = sha1((string)$key);
 		 $strLen = strlen($string);
 		 $keyLen = strlen($key);
 		 for ($i = 0; $i < $strLen; $i+=2) {
@@ -4143,7 +4156,7 @@ Joschka Zimdars';
 			$u = $this->User->find('first', array('conditions' => array('external_id' => $externalId)));
 		}
 		$this->signIn($u);
-		$_SESSION['redirect'] = 'sets';
+		$this->Session->write('redirect', 'sets');
 
 		$this->set('name', $name);
 		$this->set('email', $email);
@@ -4342,15 +4355,15 @@ Joschka Zimdars';
 		$u = null;
 		$redirect = false;
 		$status = '';
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser.User.id')){
+			$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		}
 
 		if(!empty($this->data)){
 			if(isset($this->data['User']['delete'])){
 				if($u['User']['pw'] == $this->tinkerEncode($this->data['User']['delete'], 1)){
 					$u['User']['dbstorage'] = 1111;
-					$_SESSION['loggedInUser']['User']['dbstorage'] = $u['User']['dbstorage'];
+					$this->Session->read('loggedInUser')['User']['dbstorage'] = $u['User']['dbstorage'];
 					$this->User->save($u);
 					$redirect = true;
 				}else{
@@ -4369,15 +4382,15 @@ Joschka Zimdars';
 		$u = null;
 		$redirect = false;
 		$status = '';
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Session->check('loggedInUser.User.id')){
+			$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		}
 
 		if(!empty($this->data)){
 			if(isset($this->data['User']['demote'])){
 				if($u['User']['pw'] == $this->tinkerEncode($this->data['User']['demote'], 1)){
 					$u['User']['isAdmin'] = 0;
-					$_SESSION['loggedInUser']['User']['isAdmin'] = 0;
+					$this->Session->read('loggedInUser')['User']['isAdmin'] = 0;
 					$this->User->save($u);
 					$redirect = true;
 				}else{

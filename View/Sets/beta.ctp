@@ -1,6 +1,6 @@
 	<?php
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			if($_SESSION['loggedInUser']['User']['premium']<1 && $_SESSION['loggedInUser']['User']['isAdmin']<1){
+		if($this->Session->check('loggedInUser.User.id')){
+			if($this->Session->read('loggedInUser.User.premium')<1 && $this->Session->read('loggedInUser.User.isAdmin')<1){
 				echo '<script type="text/javascript">window.location.href = "/";</script>';
 			}
 		}else{
@@ -14,7 +14,7 @@
 		Collections that you find here are not yet published and need to be checked for improvement.
 		While solving them, please look for misplays and bugs.<br><br>
 		<?php
-		if(isset($_SESSION['loggedInUser'])){if($_SESSION['loggedInUser']['User']['isAdmin']>0){
+		if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		?>
 			There are 4 tasks for admins: Accept activities, answer comments, modify problems and create new problems.
 			Here is a compact guide how to do it (1 page): <a class="historyLink2" href="/files/Admin-Guide.pdf" target="_blank">Admin-Guide.pdf</a>

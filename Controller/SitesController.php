@@ -3,8 +3,8 @@ class SitesController extends AppController{
     public $helpers = array('Html', 'Form');
 
 	public function index($var=null){
-		$_SESSION['page'] = 'home';
-		$_SESSION['title'] = 'Tsumego Hero';
+		$this->Session->write('page', 'home');
+		$this->Session->write('title', 'Tsumego Hero');
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('Set');
 		$this->LoadModel('TsumegoStatus');
@@ -107,17 +107,17 @@ class SitesController extends AppController{
 			array_push($tooltipInfo, $tArr[2]);
 			array_push($tooltipBoardSize, $tArr[3]);
 		}
-		
-		if(isset($_SESSION['loggedInUser'])){
+
+		if($this->Session->check('loggedInUser')){
 			$idArray = array();
 			array_push($idArray, $totd['Tsumego']['id']);
 			for($i=0; $i<count($scheduleTsumego); $i++){
 				array_push($idArray, $scheduleTsumego[$i]['Tsumego']['id']);
 			}
-			
+
 
 			$uts = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array(
-				'user_id' => $_SESSION['loggedInUser']['User']['id'],
+				'user_id' => $this->Session->read('loggedInUser.User.id'),
 				'tsumego_id' => $idArray
 			)));
 			if (!$uts) {
@@ -145,10 +145,10 @@ class SitesController extends AppController{
 						$newT['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 			}
 		}
-		if(!isset($_SESSION['loggedInUser'])){
-			if(isset($_SESSION['noLogin'])){
-				$noLogin = $_SESSION['noLogin'];
-				$noLoginStatus = $_SESSION['noLoginStatus'];
+		if(!$this->Session->check('loggedInUser')){
+			if($this->Session->check('noLogin')){
+				$noLogin = $this->Session->read('noLogin');
+				$noLoginStatus = $this->Session->read('noLoginStatus');
 				for($i=0; $i<count($noLogin); $i++){
 					for($f=0; $f<count($newTS); $f++){
 						if($newTS[$f]['Tsumego']['id']==$noLogin[$i]){
@@ -211,15 +211,16 @@ class SitesController extends AppController{
 
 		$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
 		$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
-		
+
+
 		//recently visited
-		/*if(isset($_SESSION['loggedInUser'])){
-			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $_SESSION['loggedInUser']['User']['id'])));
+		/*if($this->Session->check('loggedInUser')){
+			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->Session->read('loggedInUser.User.id'))));
 			$currentUser['User']['created'] = date('Y-m-d H:i:s');
 			$this->User->save($currentUser);
-			
-			$visit = $this->Visit->find('all', 
-				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $_SESSION['loggedInUser']['User']['id']))
+
+			$visit = $this->Visit->find('all',
+				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id')))
 			);
 			
 			$setVisit1 = $this->Set->find('first', array('conditions' => array('id' => $visit[count($visit)-1]['Visit']['set_id'])));
@@ -273,8 +274,8 @@ class SitesController extends AppController{
 		for($i=0;$i<count($scheduleTsumego);$i++)
 			$scheduleTsumego[$i] = $this->checkForLocked($scheduleTsumego[$i], $setsWithPremium);
 
-		if(!isset($_SESSION['loggedInUser']['User']['id'])
-			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
+		if(!$this->Session->check('loggedInUser.User.id')
+			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			$hasPremium = false;
 		else
@@ -307,23 +308,23 @@ class SitesController extends AppController{
 	}
 	
 	public function impressum(){
-		$_SESSION['page'] = 'about';
-		$_SESSION['title'] = 'Tsumego Hero - Legal Notice';
+		$this->Session->write('page', 'about');
+		$this->Session->write('title', 'Tsumego Hero - Legal Notice');
 	}
-	
+
 	public function websitefunctions(){
-		$_SESSION['page'] = 'websitefunctions';
-		$_SESSION['title'] = 'Tsumego Hero - Website Functions';
+		$this->Session->write('page', 'websitefunctions');
+		$this->Session->write('title', 'Tsumego Hero - Website Functions');
 	}
-	
+
 	public function gotutorial(){
-		$_SESSION['page'] = 'gotutorial';
-		$_SESSION['title'] = 'Tsumego Hero - Go Tutorial';
+		$this->Session->write('page', 'gotutorial');
+		$this->Session->write('title', 'Tsumego Hero - Go Tutorial');
 	}
 
 	public function privacypolicy(){
-		$_SESSION['page'] = 'privacypolicy';
-		$_SESSION['title'] = 'Tsumego Hero - Privacy Policy';
+		$this->Session->write('page', 'privacypolicy');
+		$this->Session->write('title', 'Tsumego Hero - Privacy Policy');
 	}
 	
 	public function ugco5ujc(){

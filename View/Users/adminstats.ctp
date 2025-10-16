@@ -1,6 +1,6 @@
 <script src ="/js/previewBoard.js"></script>
 <?php
-	if(!isset($_SESSION['loggedInUser']['User']['id']) || $_SESSION['loggedInUser']['User']['isAdmin']==0)
+	if(!$this->Session->check('loggedInUser.User.id') || $this->Session->read('loggedInUser.User.isAdmin')==0)
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	
 	echo '<div class="homeRight" style="width:40%">';
@@ -45,7 +45,7 @@
 					</li></td>';
 					echo '<td><a class="new-button-default2" id="proposal-accept'.$i.'">Accept</a>
 					<a class="new-button-default2 tag-submit-button" id="proposal-submit'.$i.'" href="/users/adminstats?accept=true&tag_id='
-					.$approveSgfs[$i]['Sgf']['id'].'&hash='.md5($_SESSION['loggedInUser']['User']['id']).'">Submit (1)</a>
+					.$approveSgfs[$i]['Sgf']['id'].'&hash='.md5($this->Session->read('loggedInUser.User.id')).'">Submit (1)</a>
 					<a class="new-button-default2" id="proposal-reject'.$i.'">Reject</a></td>';
 				echo '</tr>';
 			}
@@ -58,10 +58,10 @@
 					echo '<td>'.$tagNames[$i]['TagName']['user'].' created a new tag: <a href="/tag_names/view/'.$tagNames[$i]['TagName']['id'].'">'
 					.$tagNames[$i]['TagName']['name'].'</a></td>';
 					echo '<td>';
-					if($_SESSION['loggedInUser']['User']['id'] != $tags[$i]['Tag']['user_id']){
+					if($this->Session->read('loggedInUser.User.id') != $tags[$i]['Tag']['user_id']){
 						echo '<a class="new-button-default2" id="tagname-accept'.$i.'">Accept</a>
 						<a class="new-button-default2 tag-submit-button" id="tagname-submit'.$i.'" href="/users/adminstats?accept=true&tag_id='
-						.$tagNames[$i]['TagName']['id'].'&hash='.md5($_SESSION['loggedInUser']['User']['id']).'">Submit (1)</a>
+						.$tagNames[$i]['TagName']['id'].'&hash='.md5($this->Session->read('loggedInUser.User.id')).'">Submit (1)</a>
 						<a class="new-button-default2" id="tagname-reject'.$i.'">Reject</a>'; 
 					}
 					echo '</td>';
@@ -95,11 +95,11 @@
 						<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li></td>';
 					echo '<td>';
-					if($_SESSION['loggedInUser']['User']['id'] != $tags[$i]['Tag']['user_id']){
+					if($this->Session->read('loggedInUser.User.id') != $tags[$i]['Tag']['user_id']){
 						echo '<a class="new-button-default2" id="tag-accept'.$i.'">Accept</a>
 						<a class="new-button-default2" id="tag-reject'.$i.'">Reject</a>
 						<a class="new-button-default2 tag-submit-button" id="tag-submit'.$i.'" href="/users/adminstats?accept=true&tag_id='
-						.$tags[$i]['Tag']['id'].'&hash='.md5($_SESSION['loggedInUser']['User']['id']).'">Submit</a>';
+						.$tags[$i]['Tag']['id'].'&hash='.md5($this->Session->read('loggedInUser.User.id')).'">Submit</a>';
 					}
 					echo '</td>';
 					echo '<td style="font-size:13px">'.$tags[$i]['Tag']['created'].'</td>';

@@ -1,7 +1,7 @@
 
 
 <?php
-	if($_SESSION['loggedInUser']['User']['isAdmin']!=1) echo '<script type="text/javascript">window.location.href = "/";</script>';
+	if($this->Session->read('loggedInUser.User.isAdmin')!=1) echo '<script type="text/javascript">window.location.href = "/";</script>';
 
 	echo '<h2>Upload Image for '.$s['Set']['title'].'</h2>';
 ?>

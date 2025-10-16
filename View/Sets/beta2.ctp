@@ -2,8 +2,8 @@
 	<?php
 	
 	
-		if(isset($_SESSION['loggedInUser'])){
-			if($_SESSION['loggedInUser']['User']['completed']!=1){
+		if($this->Session->check('loggedInUser')){
+			if($this->Session->read('loggedInUser.User.completed')!=1){
 				echo '<script type="text/javascript">window.location.href = "/";</script>';
 			}	
 		}else{
@@ -18,8 +18,8 @@
 		$active4 = '';
 		
 		
-		if(isset($_SESSION['loggedInUser'])){
-			if($_SESSION['loggedInUser']['User']['id']==72){
+		if($this->Session->check('loggedInUser')){
+			if($this->Session->read('loggedInUser.User.id')==72){
 				//echo '<pre>';
 				//print_r($test1);
 				//echo '</pre>';

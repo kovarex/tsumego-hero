@@ -10,8 +10,8 @@
 				</p>
 				<div class="achievemetProfileLink">
 					<?php
-						if(isset($_SESSION['loggedInUser']['User']['id'])){
-							echo '<a href="/users/view/'.$_SESSION['loggedInUser']['User']['id'].'">Profile</a>';
+						if($this->Session->check('loggedInUser.User.id')){
+							echo '<a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">Profile</a>';
 						}
 					?>
 				</div>

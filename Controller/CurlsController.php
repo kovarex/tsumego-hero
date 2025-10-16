@@ -3,7 +3,7 @@
 
 class CurlsController extends AppController {
 	public function data() {
-		$_SESSION['title'] = 'CURLs';
+		$this->Session->write('title', 'CURLs');
 		$curls = $this->Curl->find('all', array(
 			'limit' => 1000, 
 			'order' => 'id DESC',

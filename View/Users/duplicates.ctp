@@ -1,7 +1,7 @@
 <script src ="/js/previewBoard.js"></script>
 <?php
-	if(isset($_SESSION['loggedInUser'])){
-		if($_SESSION['loggedInUser']['User']['isAdmin']<1){
+	if($this->Session->check('loggedInUser')){
+		if($this->Session->read('loggedInUser.User.isAdmin')<1){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}	
 	}else{

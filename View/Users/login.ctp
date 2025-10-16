@@ -1,5 +1,5 @@
 	<?php
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
+		if($this->Session->check('loggedInUser.User.id')){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
 	?>

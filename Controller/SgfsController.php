@@ -2,8 +2,8 @@
 class SgfsController extends AppController {
 
 	public function index(){
-		$_SESSION['title'] = 'Tsumego Hero';
-		$_SESSION['page'] = 'play';
+		$this->Session->write('title', 'Tsumego Hero');
+		$this->Session->write('page', 'play');
 		$sgfs = $this->Sgf->find('all');
 		if (!$sgfs) {
 			$sgfs = [];
@@ -13,7 +13,7 @@ class SgfsController extends AppController {
   }
 	
 	public function view($id=null){
-		$_SESSION['page'] = 'play';
+		$this->Session->write('page', 'play');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('User');
@@ -28,7 +28,7 @@ class SgfsController extends AppController {
 		
 		if(isset($this->params['url']['delete'])){
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if($_SESSION['loggedInUser']['User']['id'] == $sDel['Sgf']['user_id'])
+			if($this->Session->read('loggedInUser.User.id') == $sDel['Sgf']['user_id'])
 				$this->Sgf->delete($sDel['Sgf']['id']);
 		}
 		
@@ -49,7 +49,7 @@ class SgfsController extends AppController {
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
 		$name = $set['Set']['title'].' '.$set['Set']['title2'].' '.$t['Tsumego']['num'];
-		$_SESSION['title'] = 'Upload History of '.$name;
+		$this->Session->write('title', 'Upload History of '.$name);
 		
 		if(isset($this->params['url']['user'])){
 			$s = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 100,'conditions' => array(
@@ -84,9 +84,9 @@ class SgfsController extends AppController {
 			$s[$i]['Sgf']['title'] = $set['Set']['title'].' '.$set['Set']['title2'].' #'.$t['Tsumego']['num'];;
 			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
 			
-			if($s[$i]['Sgf']['user']=='noUser') 
+			if($s[$i]['Sgf']['user']=='noUser')
 				$s[$i]['Sgf']['user'] = 'automatically generated';
-			if($_SESSION['loggedInUser']['User']['id'] == $s[$i]['Sgf']['user_id'])
+			if($this->Session->read('loggedInUser.User.id') == $s[$i]['Sgf']['user_id'])
 				$s[$i]['Sgf']['delete'] = true;
 			else
 				$s[$i]['Sgf']['delete'] = false;

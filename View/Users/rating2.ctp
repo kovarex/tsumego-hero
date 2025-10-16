@@ -10,7 +10,7 @@
 		<br>
 		<a class="new-button new-buttonx" href="/users/highscore">level</a>
 		<a class="new-button new-buttonx" href="/users/rating">rating</a>
-		<?php if(isset($_SESSION['loggedInUser'])){ if($_SESSION['loggedInUser']['User']['premium']>1){ ?>
+		<?php if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUser.User.premium')>1){ ?>
 		<a class="new-button new-buttonx" href="/users/leaderboard">daily</a>
 		<?php }} ?>
 		<br><br>
@@ -149,14 +149,14 @@
 	?>
 	</table>
 	<?php
-	//echo '<pre>';print_r($_SESSION['loggedInUser']);echo '</pre>';
+	//echo '<pre>';print_r($this->Session->read('loggedInUser'));echo '</pre>';
 	/*
-	if($_SESSION['loggedInUser']['User']['id']==72){
+	if($this->Session->read('loggedInUser.User.id')==72){
 		echo '<pre>';
 		print_r($users2);
 		echo '</pre>';
 	}
-	if(isset($_SESSION['loggedInUser'])){if($_SESSION['loggedInUser']['User']['id']==72){
+	if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUser.User.id')==72){
 		echo '<pre>';
 		print_r($users);
 		echo '</pre>';

@@ -84,8 +84,8 @@
 		echo '<script type="text/javascript">window.location.href = "/ranks/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
-		if(!isset($_SESSION['loggedInUser']['User']['id'])
-			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
+		if(!$this->Session->check('loggedInUser.User.id')
+			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
@@ -97,8 +97,8 @@
 		echo '<style>#xpDisplay{font-weight:800;color:#60167d;}</style>';
 	}
 	if($t['Tsumego']['premium']==1){
-		if(!isset($_SESSION['loggedInUser']['User']['id'])
-			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
+		if(!$this->Session->check('loggedInUser.User.id')
+			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -125,7 +125,7 @@
 	else if($t['Tsumego']['set_id']==81578) $choice[0] = $boardPositions[50]; //Moves of Resistance
 	else if($t['Tsumego']['set_id']==88156) $choice[0] = $boardPositions[50]; //Hand of God
 	else echo '<script type="text/javascript" src="/'.$boardSize.'/board'.$choice[0][0].'.js"></script>'; // Regular
-	if(isset($_SESSION['lastVisit'])) $lv = $_SESSION['lastVisit'];
+	if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
 	else $lv = '15352';
 	$a1 = '';
 	$b1 = '';
@@ -208,7 +208,7 @@
 					if($partition>0)
 						$hasPartition = '?partition='.$partition;
 					if($query=='difficulty' || $query=='tags'){
-						echo '<a id="playTitleA" href="/sets/view/'.$_SESSION['lastSet'].$hasPartition.'">'.$queryTitle.'</a><br>';
+						echo '<a id="playTitleA" href="/sets/view/'.$this->Session->read('lastSet').$hasPartition.'">'.$queryTitle.'</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
 								('.$set['Set']['title'].$di.$t['Tsumego']['actualNum'].$di2.$amountOfOtherCollection.')
@@ -322,7 +322,7 @@
 				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
 			}
 		}
-		if($_SESSION['loggedInUser']['User']['isAdmin']>0){
+		if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		?>
 		<a class="modify-description" href="#">(Edit)</a>
 		<div class="modify-description-panel">
@@ -330,7 +330,7 @@
 				$placeholder = str_replace($descriptionColor, '[b]', $t['Tsumego']['description']);
 				echo $this->Form->create('Comment');
 				echo $this->Form->input('id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $_SESSION['loggedInUser']['User']['id']));
+				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
 				echo $this->Form->input('modifyDescription', array('value' => $placeholder, 'label' => '', 'type' => 'text', 'placeholder' => 'Description'));
 				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
 				if(true) $modifyDescriptionType = 'text';
@@ -555,11 +555,11 @@
 	<div align="center">
 	<?php 
 	
-	if(isset($_SESSION['loggedInUser']['User']['id'])){
+	if($this->Session->check('loggedInUser.User.id')){
 		if($firstRanks==0){
 			$makeProposal = '';
 			$proposalSentColor = '';
-			if($_SESSION['loggedInUser']['User']['isAdmin'] > 0)
+			if($this->Session->read('loggedInUser.User.isAdmin') > 0)
 				$makeProposal = 'Open';
 			else{
 				if(!$hasSgfProposal){
@@ -601,7 +601,7 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-			if(isset($_SESSION['loggedInUser']['User']['id'])){
+			if($this->Session->check('loggedInUser.User.id')){
 				if($t['Tsumego']['duplicate']!=0 && $t['Tsumego']['duplicate']!=-1 && $mode!=2){
 					echo '<div class="duplicateTable">Is duplicate group:<br>';
 					for($i=0; $i<count($duplicates); $i++){
@@ -618,7 +618,7 @@
 			else
 				$adHighlight = '';
 				
-			if($_SESSION['loggedInUser']['User']['isAdmin']>=1){
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 					echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
 					echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
 					echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
@@ -671,7 +671,7 @@
 							$scoreEstYes = 'checked="checked"';
 						}
 					}
-					if($_SESSION['loggedInUser']['User']['isAdmin']>=1){
+					if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 					echo '<div id="msg4">
 							<br>
 							<form action="" method="POST" enctype="multipart/form-data">
@@ -792,11 +792,11 @@
 					}
 				}
 			}else echo '<br>';
-			//if($_SESSION['loggedInUser']['User']['premium']>=1){
+			//if($this->Session->read('loggedInUser.User.premium')>=1){
 			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
 			$allowed = true;
-			if(isset($_SESSION['loggedInUser']['User']['id'])){
-				if($_SESSION['loggedInUser']['User']['id']!=5080){
+			if($this->Session->check('loggedInUser.User.id')){
+				if($this->Session->read('loggedInUser.User.id')!=5080){
 					echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
 				}else{
 					$allowed = false;
@@ -813,7 +813,7 @@
 				echo $this->Form->input('message', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 			echo $this->Form->input('position', array('label' => '', 'type' => 'hidden'));
 
-			if($_SESSION['loggedInUser']['User']['isAdmin']>=1)
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1)
 				echo $this->Form->input('status', array('type' => 'hidden', 'value' => 97));
 
 			echo $this->Form->end('Submit');
@@ -910,14 +910,14 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($_SESSION['loggedInUser']['User']['id'] == $showComment[$i]['Comment']['user_id']){
+					if($this->Session->read('loggedInUser.User.id') == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($_SESSION['loggedInUser']['User']['isAdmin']==1){
+					if($this->Session->read('loggedInUser.User.isAdmin')==1){
 						if($showComment[$i]['Comment']['status']==0){
 							//echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
 							echo '<br>';
-							if($_SESSION['loggedInUser']['User']['id']!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
+							if($this->Session->read('loggedInUser.User.id')!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
 								echo '<a class="deleteComment" style="text-decoration:none;" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=3">
 									<img class="thumbs-small" title="approve this comment" width="20px" src="/img/thumbs-small.png">
 								</a>';
@@ -936,7 +936,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $_SESSION['loggedInUser']['User']['id']));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1041,10 +1041,10 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($_SESSION['loggedInUser']['User']['id'] == $showComment[$i]['Comment']['user_id']){
+					if($this->Session->read('loggedInUser.User.id') == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($_SESSION['loggedInUser']['User']['isAdmin']==1){
+					if($this->Session->read('loggedInUser.User.isAdmin')==1){
 						if($showComment[$i]['Comment']['status']==0) echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Answer</a>';
 						else echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
 					}
@@ -1056,7 +1056,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $_SESSION['loggedInUser']['User']['id']));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1300,7 +1300,7 @@
 		if($partition>0)
 			$hasPartition = '?partition='.$partition;
 		if($query=='difficulty' || $query=='tags'){
-			$nextButtonLinkSet = $_SESSION['lastSet'].$hasPartition;
+			$nextButtonLinkSet = $this->Session->read('lastSet').$hasPartition;
 		}else if($query=='topics'){
 			$nextButtonLinkSet = $set['Set']['id'].$hasPartition;
 		}
@@ -1376,11 +1376,11 @@
 		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
 	}}
 
-	if(isset($_SESSION['loggedInUser']['User']['id'])){
-		if($_SESSION['loggedInUser']['User']['isAdmin']>0){
+	if($this->Session->check('loggedInUser.User.id')){
+		if($this->Session->read('loggedInUser.User.isAdmin')>0){
 			echo '$(".modify-description-panel").hide();';
 		}
-		echo 'var besogoUserId = '.$_SESSION['loggedInUser']['User']['id'].';';
+		echo 'var besogoUserId = '.$this->Session->read('loggedInUser.User.id').';';
 	}else{
 		echo 'besogoNoLogin = true;';
 	}
@@ -1390,8 +1390,8 @@
 	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236) 
 	echo 'besogoPlayerColor = "black";';
 	
-	if($authorx==$_SESSION['loggedInUser']['User']['name']) echo 'authorProblem = true;';
-	if($_SESSION['loggedInUser']['User']['id']==72){
+	if($authorx==$this->Session->read('loggedInUser.User.name')) echo 'authorProblem = true;';
+	if($this->Session->read('loggedInUser.User.id')==72){
 		echo 'authorProblem = true;';
 		echo 'revelationEnabled = true;';
 	} 
@@ -1762,7 +1762,7 @@
 	if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2'){
 		echo 'var showCommentSpace = true;';
 	}else echo 'var showCommentSpace = false;';
-	if($_SESSION['loggedInUser']['User']['isAdmin']>0){
+	if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		echo 'var showCommentSpace = true;';
 		echo '$("#show5").css("display", "inline-block");';
 	}	
@@ -1882,8 +1882,8 @@
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 		}
-		if(isset($_SESSION['loggedInUser'])){
-			if($_SESSION['loggedInUser']['User']['isAdmin']>=1){
+		if($this->Session->check('loggedInUser')){
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 				if($isSandbox){
 					//$reviewEnabled = true;
 					//echo 'reviewEnabled = true;';
@@ -2248,8 +2248,8 @@
 		});
 		
 		<?php
-			if(isset($_SESSION['loggedInUser']['User']['id'])){
-				//if($_SESSION['loggedInUser']['User']['id']==72) echo '$("#msg5").show();';
+			if($this->Session->check('loggedInUser.User.id')){
+				//if($this->Session->read('loggedInUser.User.id')==72) echo '$("#msg5").show();';
 			}
 		?>
 		$("#show5").click(function(){
@@ -2347,11 +2347,11 @@
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if(isset($_SESSION['loggedInUser']['User']['id'])){if($_SESSION['loggedInUser']['User']['isAdmin']>=1){if(!$requestSolution){ ?>
+		<?php if($this->Session->check('loggedInUser.User.id')){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
 			if(solutionRequest)
 				displaySolutionRequest(); 
 			$("#showx99").click(function(){
-				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $_SESSION['loggedInUser']['User']['id']; ?>;
+				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $this->Session->read('loggedInUser.User.id'); ?>;
 			});	
 		<?php }}} ?>		
 			
@@ -2417,7 +2417,7 @@
 		$("#showx7x").css("display", "inline-block");
 		$("#showx5").css("display", "inline-block");
 		$("#showx5").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
-		<?php if($_SESSION['loggedInUser']['User']['isAdmin']>0){ ?>
+		<?php if($this->Session->read('loggedInUser.User.isAdmin')>0){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
 		<?php }else{
@@ -2566,7 +2566,7 @@
 	function runXPNumber(id, start, end, duration, ulvl){
 	start = Math.round(start);
 	end = Math.round(end);
-	<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+	<?php if($this->Session->check('loggedInUser.User.id')){ ?>
 	let runXPNumberNextLvl = <?php echo $user['User']['nextlvl']; ?>+"";
 	if(start!==end && !ratingBarLock){
 		userXP = end;
@@ -3079,7 +3079,7 @@
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
 					}
-					<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+					<?php if($this->Session->check('loggedInUser.User.id')){ ?>
 					if(mode==1 && levelBar==1){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
@@ -3295,7 +3295,7 @@
 	  
 	  options.panels = "tree+control";
 	  <?php 
-	  if($_SESSION['loggedInUser']['User']['isAdmin']>0) echo 'options.panels = "tree+control+tool+comment+file";';
+	  if($this->Session->read('loggedInUser.User.isAdmin')>0) echo 'options.panels = "tree+control+tool+comment+file";';
 	  ?> 
 	  options.tsumegoPlayTool = 'auto';
 	  options.realstones = true;
@@ -3406,7 +3406,7 @@
     options.reviewMode = false;
     options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
-		//if(isset($_SESSION['loggedInUser'])){ if($_SESSION['loggedInUser']['User']['id']==72){ echo 'options.reviewEnabled = true;'; }}
+		//if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUser.User.id')==72){ echo 'options.reviewEnabled = true;'; }}
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
 	?>

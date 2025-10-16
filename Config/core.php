@@ -225,13 +225,16 @@
  */
 	Configure::write('Session', array(
 		'cookie' => 'myApp',
-		//'defaults' => 'php', // Comment this line
-		'timeout' => '7200000', // Set the timout to 240 hrs
+		'defaults' => 'cake', // Use CakePHP's session handler to store in tmp/sessions
+		'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
 		'autoRegenerate' => true, // causes the session expiration time to reset on each page load
 		'ini' => array(
-			'session.use_trans_sid' => 0, // use other configuration from php default config
-			'session.cookie_samesite' => 'None',
-			'session.cookie_path' => "/" // use other configuration from php default config
+			'session.use_trans_sid' => 0,
+			'session.cookie_samesite' => 'Lax',
+			'session.cookie_httponly' => true,
+			'session.cookie_path' => "/",
+			'session.gc_maxlifetime' => 864000, // 240 hours in seconds
+			'session.cookie_lifetime' => 864000 // 240 hours in seconds
 		)
 	));
 

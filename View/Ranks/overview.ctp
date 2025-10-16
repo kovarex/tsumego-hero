@@ -1,4 +1,4 @@
-	<?php	if(!isset($_SESSION['loggedInUser']['User']['id'])) echo '<script type="text/javascript">window.location.href = "/";</script>';	?>
+	<?php	if(!$this->Session->check('loggedInUser.User.id')) echo '<script type="text/javascript">window.location.href = "/";</script>';	?>
 	
 	<div align="center">
 		<h2>Time Mode Select</h2>

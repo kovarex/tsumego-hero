@@ -9,22 +9,22 @@
 		$url = parse_url($_SERVER['HTTP_HOST']);
 		$url['path'] = str_replace('tsumego-hero.com','',$url['path']);
 		if($url['path']=='www.') echo '<script type="text/javascript">window.location.href = "https://tsumego-hero.com'.$_SERVER['REQUEST_URI'].'";</script>';
-		if(isset($_SESSION['redirect']) && $_SESSION['redirect']=='sets'){
-			unset($_SESSION['redirect']);
-			$_SESSION['initialLoading'] = 'true';
+		if($this->Session->check('redirect') && $this->Session->read('redirect')=='sets'){
+			$this->Session->delete('redirect');
+			$this->Session->write('initialLoading', 'true');
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
-		if(isset($_SESSION['redirect']) && $_SESSION['redirect']=='loading'){
-			unset($_SESSION['redirect']);
-			$_SESSION['initialLoading'] = 'true';
+		if($this->Session->check('redirect') && $this->Session->read('redirect')=='loading'){
+			$this->Session->delete('redirect');
+			$this->Session->write('initialLoading', 'true');
 			echo '<script type="text/javascript">window.location.href = "/users/loading";</script>';
 		}
 		echo $this->Html->charset();
 	?>
 	<title>
 		<?php
-			if(!isset($_SESSION['title'])) echo 'Tsumego Hero';
-			else echo $_SESSION['title'];
+			if(!$this->Session->check('title')) echo 'Tsumego Hero';
+			else echo $this->Session->read('title');
 		?>
 	</title>
 	<meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
@@ -111,13 +111,13 @@
 		</div>
 		<div class="outerMenu1">
 			<?php
-				if(isset($_SESSION['lastVisit'])) $lv = $_SESSION['lastVisit'];
+				if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
 				else $lv = '15352';
 
-				if(isset($_SESSION['loggedInUser'])){
-					if($_SESSION['loggedInUser']['User']['premium']>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
+				if($this->Session->check('loggedInUser')){
+					if($this->Session->read('loggedInUser.User.premium')>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
 					else $sand = '';
-					if($_SESSION['loggedInUser']['User']['premium']>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
+					if($this->Session->read('loggedInUser.User.premium')>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
 					else $leaderboard = '';
 				}else{
 					$sand = '';
@@ -152,46 +152,46 @@
 				$gotutorialA = '';
 				$aboutA = '';
 
-				if($_SESSION['page'] == 'home') $homeA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'set') $collectionsA = 'style="color:#74d14c;"';
-				else if($_SESSION['page']=='play' || $_SESSION['page']=='level mode' || $_SESSION['page']=='rating mode' || $_SESSION['page']=='time mode'){
+				if($this->Session->read('page') == 'home') $homeA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'set') $collectionsA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page')=='play' || $this->Session->read('page')=='level mode' || $this->Session->read('page')=='rating mode' || $this->Session->read('page')=='time mode'){
 					$refreshLinkToStart = 'id="refreshLinkToStart"';
 					$refreshLinkToSets = 'id="refreshLinkToSets"';
 					$refreshLinkToHighscore = 'id="refreshLinkToHighscore"';
 					$refreshLinkToLeaderboard = 'id="refreshLinkToLeaderboard"';
 					$refreshLinkToSandbox = 'id="refreshLinkToSandbox"';
 					$refreshLinkToDiscuss = 'id="refreshLinkToDiscuss"';
-					if($_SESSION['page'] == 'level mode') $levelModeA = 'style="color:#74d14c;"';
-					else if($_SESSION['page'] == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
-					else if($_SESSION['page'] == 'time mode') $timeModeA = 'style="color:#74d14c;"';
+					if($this->Session->read('page') == 'level mode') $levelModeA = 'style="color:#74d14c;"';
+					else if($this->Session->read('page') == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
+					else if($this->Session->read('page') == 'time mode') $timeModeA = 'style="color:#74d14c;"';
 				}
-				else if($_SESSION['page'] == 'highscore') $highscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'discuss') $discussA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'about') $aboutA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
-				else if($_SESSION['page'] == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'highscore') $highscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'discuss') $discussA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'about') $aboutA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
+				else if($this->Session->read('page') == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
 
 				if(isset($nextMode['Tsumego']['id'])){
 					if($nextMode['Tsumego']['id']==null) $nextMode['Tsumego']['id'] = 15352;
 				}else{
 					$nextMode['Tsumego']['id'] = 15352;
 				}
-				if(isset($_SESSION['loggedInUser']['User']['id'])){
-					if($_SESSION['loggedInUser']['User']['isAdmin']==0) $discussFilter = '';
+				if($this->Session->check('loggedInUser.User.id')){
+					if($this->Session->read('loggedInUser.User.isAdmin')==0) $discussFilter = '';
 					else $discussFilter = '?filter=false';
-					if($_SESSION['loggedInUser']['User']['completed']==1 || $_SESSION['loggedInUser']['User']['premium']>=1){
+					if($this->Session->read('loggedInUser.User.completed')==1 || $this->Session->read('loggedInUser.User.premium')>=1){
 					}else{
 						$refreshLinkToSandboxBackup = '<a id="refreshLinkToSandbox"></a>';
 					}
-					if($_SESSION['loggedInUser']['User']['premium']>=1){
+					if($this->Session->read('loggedInUser.User.premium')>=1){
 					}else{
 						$refreshLinkToLeaderboardBackup = '<a id="refreshLinkToLeaderboard"></a>';
 					}
@@ -211,13 +211,13 @@
 					echo '</ul>';
 					echo '</li>';
 					echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
-					if(isset($_SESSION['loggedInUser']['User']['id'])){
-						if($_SESSION['loggedInUser']['User']['premium']>=1 || $_SESSION['loggedInUser']['User']['isAdmin']>=1 || $hasFavs){
+					if($this->Session->check('loggedInUser.User.id')){
+						if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1 || $hasFavs){
 							echo '<ul class="newMenuLi2">';
-							if($_SESSION['loggedInUser']['User']['premium']>=1 || $_SESSION['loggedInUser']['User']['isAdmin']>=1)
+							if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1)
 								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/beta">Sandbox</a></li>';
 							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/1">Favorites</a></li>';
-							if($_SESSION['loggedInUser']['User']['isAdmin']>=1){
+							if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
@@ -231,13 +231,13 @@
 							echo '</ul>';
 						}
 					}
-					if(isset($_SESSION['lastVisit'])) $sessionLastVisit = $_SESSION['lastVisit'];
+					if($this->Session->check('lastVisit')) $sessionLastVisit = $this->Session->read('lastVisit');
 					else $sessionLastVisit = 15352;
 					echo '</li>';
 					echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
 					echo '<ul class="newMenuLi3">';
 						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
-						if(isset($_SESSION['loggedInUser']['User']['id'])){
+						if($this->Session->check('loggedInUser.User.id')){
 							echo '<li><a href="/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/ranks/overview" '.$timeModeA.'>Time</a></li>';
 						}
@@ -250,13 +250,13 @@
 						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
 					echo '</ul>';
-					if(isset($_SESSION['loggedInUser']['User']['id']))
+					if($this->Session->check('loggedInUser.User.id'))
 						echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
 					else
 						echo '<li><a style="color:#aaa;">Discuss</a></li>';
-					if($_SESSION['loggedInUser']['User']['sound'] == 'off')
+					if($this->Session->read('loggedInUser.User.sound') == 'off')
 						$soundButtonImageValue = 'sound-icon2.png';
-					else if($_SESSION['loggedInUser']['User']['sound'] == 'on')
+					else if($this->Session->read('loggedInUser.User.sound') == 'on')
 						$soundButtonImageValue = 'sound-icon1.png';
 					else
 						$soundButtonImageValue = 'sound-icon1.png';
@@ -327,20 +327,20 @@
 		<div class="outerMenu3">
 			<?php
 				$currentPage = '';
-				if($_SESSION['page'] == 'user') $currentPage = 'style="color:#74d14c;" ';
-				if(!isset($_SESSION['loggedInUser']['User']['id'])) echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
+				if($this->Session->read('page') == 'user') $currentPage = 'style="color:#74d14c;" ';
+				if(!$this->Session->check('loggedInUser.User.id')) echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
 			?>
 		</div>
 
 	</div>
 	<?php
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
+		if($this->Session->check('loggedInUser.User.id')){
 			if($levelBar==1) $textBarInMenu = "Rating Bar";
 			else $textBarInMenu = "Level Bar";
 			echo '<div id="account-bar-wrapper" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					  <div id="account-bar">
 							<div id="'.$accountBarLevelToRating.'" class="account-bar-user-class">
-								<a href="/users/view/'.$_SESSION['loggedInUser']['User']['id'].'">
+								<a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">
 									'.$user['User']['name'].'
 								</a>
 							</div>
@@ -362,7 +362,7 @@
 					  </div>
 				</div>
 				<div id="heroProfile" onmouseover="xpHover()" onmouseout="xpNoHover()">
-					<li><a href="/users/view/'.$_SESSION['loggedInUser']['User']['id'].'">Profile</a></li>
+					<li><a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">Profile</a></li>
 				</div>
 				<div id="heroBar" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					<li><a id="textBarInMenu" onclick="switchBarInMenu()">'.$textBarInMenu.'</a></li>
@@ -395,8 +395,8 @@
 	<div id="footer" class="footerLinks">
 		<div class="footer-space"></div>
 		<?php if(
-			!isset($_SESSION['loggedInUser']['User']['id'])
-			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
+			!$this->Session->check('loggedInUser.User.id')
+			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 		){ ?>
 			<div class="footer-element">
 				<a href="/users/donate">
@@ -435,7 +435,7 @@
 		<br><br><br>
 	</div>
 	<?php
-	if(isset($_SESSION['loggedInUser']['User']['id'])){
+	if($this->Session->check('loggedInUser.User.id')){
 		$xpBonus = 0;
 		for($i=0;$i<count($achievementUpdate);$i++){
 			echo '
@@ -455,7 +455,7 @@
 			';
 			$xpBonus += $achievementUpdate[$i][4];
 		}
-		if($_SESSION['loggedInUser']['User']['xp']+$xpBonus>=$_SESSION['loggedInUser']['User']['nextlvl']){
+		if($this->Session->read('loggedInUser.User.xp')+$xpBonus>=$this->Session->read('loggedInUser.User.nextlvl')){
 			$increaseValue = 100;
 		}else $increaseValue = 50;
 	}
@@ -480,7 +480,7 @@
 		if(isset($removeCookie)){
 			echo 'setCookie("'.$removeCookie.'", "0");';
 		}
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
+		if($this->Session->check('loggedInUser.User.id')){
 		if($_COOKIE['PHPSESSID']!=0 && $_COOKIE['PHPSESSID']!=-1){
 	?>
 			var PHPSESSID = getCookie("PHPSESSID");
@@ -489,8 +489,8 @@
 			setCookie("z_sess", PHPSESSID);
 			localStorage.setItem("z_sess", PHPSESSID);
 
-			setCookie("z_user_hash", "<?php echo md5($_SESSION['loggedInUser']['User']['name']); ?>");
-			localStorage.setItem("z_user_hash", "<?php echo md5($_SESSION['loggedInUser']['User']['name']); ?>");
+			setCookie("z_user_hash", "<?php echo md5($this->Session->read('loggedInUser.User.name')); ?>");
+			localStorage.setItem("z_user_hash", "<?php echo md5($this->Session->read('loggedInUser.User.name')); ?>");
 
 			setCookie("z_hash", "0");
 			localStorage.setItem("z_hash", "0");
@@ -511,18 +511,18 @@
 	<?php
 			}
 		}
-		if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+		if($this->Session->check('loggedInUser.User.id')){ ?>
 		var barPercent1 = <?php echo $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
 		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
 
-		<?php if($_SESSION['loggedInUser']['User']['id']==72){ ?>
+		<?php if($this->Session->read('loggedInUser.User.id')==72){ ?>
 		<?php } ?>
 	<?php } ?>
 	<?php
-	if($_SESSION['page']!='level mode' && $_SESSION['page']!='rating mode' && $_SESSION['page']!='time mode')
+	if($this->Session->read('page')!='level mode' && $this->Session->read('page')!='rating mode' && $this->Session->read('page')!='time mode')
 		echo 'setCookie("mode", 1);';
 
 	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
@@ -540,7 +540,7 @@
 	<?php
 	if($lightDark=='dark'){
 		echo 'light = false;';
-		if($_SESSION['page']=='home'){
+		if($this->Session->read('page')=='home'){
 			echo '$("#darkButtonImage2").attr("src","/img/dark-icon1.png");';
 			echo '$("#darkButtonImage3").attr("src","/img/dark-icon1.png");';
 		}
@@ -579,7 +579,7 @@
 		document.cookie = "requestProblem=0;SameSite=none;expires="+lifetime+";Secure=false";
 
 		setCookie("lightDark", "<?php echo $lightDark; ?>");
-		<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
 			setCookie("levelBar", "<?php echo $levelBar; ?>");
 		<?php } ?>
 		setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
@@ -607,7 +607,7 @@
 		var soundsEnabled = true;
 		var notMode3 = true;
 
-		<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
 			var userXP = <?php echo $user['User']['xp']; ?> ;
 			var userLevel = <?php echo $user['User']['level']; ?> ;
 			var userNextLvl = <?php echo $user['User']['nextlvl']; ?> ;
@@ -616,7 +616,7 @@
 			let modeSelector = <?php echo $modeSelector; ?>;
 			let levelBar = <?php echo $levelBar; ?>+"";
 			<?php
-			echo 'soundValue = "'.$_SESSION['loggedInUser']['User']['sound'].'";';
+			echo 'soundValue = "'.$this->Session->read('loggedInUser.User.sound').'";';
 		}else{
 		?>
 			let levelBar = 1;
@@ -844,7 +844,7 @@
 		}
 
 		function loadBar(){
-			<?php if(isset($_SESSION['loggedInUser']['User']['id'])){ ?>
+			<?php if($this->Session->check('loggedInUser.User.id')){ ?>
 
 				if(notMode3){
 				<?php
@@ -877,7 +877,7 @@
 		function xpHover(){
 			if(notMode3){
 				<?php
-				if(isset($_SESSION['loggedInUser']['User']['id'])){
+				if($this->Session->check('loggedInUser.User.id')){
 					if($mode==1 || $mode==2){
 					?>
 					if(levelBar==1)
@@ -1006,7 +1006,7 @@
 
 	</script>
 	<?php
-	if(!isset($_SESSION['loggedInUser']['User']['id']))
+	if(!$this->Session->check('loggedInUser.User.id'))
 		echo '<style>.outerMenu1{left: 224px;}</style>';
 	?>
 </body>

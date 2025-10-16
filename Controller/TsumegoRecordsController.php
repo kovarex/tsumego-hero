@@ -2,8 +2,8 @@
 class TsumegoRecordsController extends AppController {
 
 	public function index($trid=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'TSUMEGO RECORDS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'TSUMEGO RECORDS');
 		if($trid == null){
 			$trs = $this->TsumegoRecord->find('all', array('limit' => 500, 'order' => 'created DESC'));
 			if (!$trs) {
@@ -22,8 +22,8 @@ class TsumegoRecordsController extends AppController {
     }
 	
 	public function json($type=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'TSUMEGO RECORDS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'TSUMEGO RECORDS');
 		$this->LoadModel('UserRecord');
 		$this->LoadModel('User');
 		$this->LoadModel('Tsumego');
@@ -100,8 +100,8 @@ class TsumegoRecordsController extends AppController {
     }
 
 	public function csv($type=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'TSUMEGO RECORDS';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'TSUMEGO RECORDS');
 		$this->LoadModel('UserRecord');
 		$this->LoadModel('User');
 		
@@ -220,11 +220,11 @@ class TsumegoRecordsController extends AppController {
     }
 
 	public function user($trid){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'History of '.$_SESSION['loggedInUser']['User']['name'];
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'History of '.$this->Session->read('loggedInUser.User.name'));
 		$this->LoadModel('Set');
 		$this->LoadModel('Tsumego');
-		if($_SESSION['loggedInUser']['User']['id']!=$trid && $_SESSION['loggedInUser']['User']['id']!=72) $_SESSION['redirect'] = 'sets';
+		if($this->Session->read('loggedInUser.User.id')!=$trid && $this->Session->read('loggedInUser.User.id')!=72) $this->Session->write('redirect', 'sets');
 		$trs = $this->TsumegoRecord->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array(
 			'user_id' => $trid,
 			'OR' => array(

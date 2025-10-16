@@ -3,8 +3,8 @@ App::uses('CakeEmail', 'Network/Email');
 class ActivatesController extends AppController{
 
 	public function index(){
-		$_SESSION['page'] = 'home';
-		$_SESSION['title'] = 'Tsumego Hero - Activate';
+		$this->Session->write('page', 'home');
+		$this->Session->write('title', 'Tsumego Hero - Activate');
 		$this->loadModel('User');
 		
 		
@@ -90,8 +90,8 @@ Joschka Zimdars
 		$key = 0;
 		if(!empty($this->data)){
 			$ac = $this->Activate->find('first', array('conditions' =>  array('string' => $this->data['Activate']['Key'])));
-			if($ac){ 
-				$ac['Activate']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
+			if($ac){
+				$ac['Activate']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$this->Activate->save($ac);
 				$key = 1;
 			}else{
@@ -99,9 +99,9 @@ Joschka Zimdars
 			}
 		}
 		
-		if($this->Activate->find('first', array('conditions' =>  array('user_id' => $_SESSION['loggedInUser']['User']['id'])))) $key = 1;
-		
-		$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
+		if($this->Activate->find('first', array('conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id'))))) $key = 1;
+
+		$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		$u['User']['readingTrial'] = 30;
 		$this->User->save($u);
 		

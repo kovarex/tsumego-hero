@@ -1,7 +1,7 @@
 	<div align="center">
 	<?php if(
-		!isset($_SESSION['loggedInUser']['User']['id'])
-		|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
+		!$this->Session->check('loggedInUser.User.id')
+		|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 	)
 		$upgrade = true;
 	else

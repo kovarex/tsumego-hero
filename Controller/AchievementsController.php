@@ -2,8 +2,8 @@
 class AchievementsController extends AppController {
 
 	public function index(){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Achievements';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Achievements');
 		$this->LoadModel('AchievementStatus');
 		$existingAs = array();
 		$unlockedCounter2 = 0;
@@ -13,8 +13,8 @@ class AchievementsController extends AppController {
 			$a = [];
 		}
 
-		if(isset($_SESSION['loggedInUser'])){
-			$as = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if($this->Session->check('loggedInUser')){
+			$as = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 			if (!$as) {
 				$as = [];
 			}
@@ -42,8 +42,8 @@ class AchievementsController extends AppController {
   }
 	
 	public function view($id=null){
-		$_SESSION['page'] = 'user';
-		$_SESSION['title'] = 'Tsumego Hero - Achievements';
+		$this->Session->write('page', 'user');
+		$this->Session->write('title', 'Tsumego Hero - Achievements');
 		$this->LoadModel('AchievementCondition');
 		$this->LoadModel('AchievementStatus');
 		$this->LoadModel('User');
@@ -55,8 +55,8 @@ class AchievementsController extends AppController {
 			$asAll = [];
 		}
 		$aCount = count($asAll);
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if($this->Session->check('loggedInUser.User.id')){
+			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $this->Session->read('loggedInUser.User.id'))));
 		}
 		if(!empty($as)){
 			$date = date_create($as['AchievementStatus']['created']);
@@ -73,9 +73,9 @@ class AchievementsController extends AppController {
 			array_push($asAll2, $asAll[$i]);
 		}
 		$asAll = $asAll2;
-		
-		if(isset($_SESSION['loggedInUser']['User']['id'])){
-			$acGolden = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'golden')));
+
+		if($this->Session->check('loggedInUser.User.id')){
+			$acGolden = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'), 'category' => 'golden')));
 			if (!$acGolden) {
 				$acGolden = [];
 			}

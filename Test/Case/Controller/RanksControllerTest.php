@@ -7,23 +7,23 @@ class RanksControllerTest extends ControllerTestCase  {
 		$this->loadModel('RankOverview');
 		$this->loadModel('RankSetting');
 		$this->loadModel('Set');
-		$_SESSION['title'] = 'Time Mode - Select';
-		$_SESSION['page'] = 'time mode';
-		
-		
+		CakeSession::write('title', 'Time Mode - Select');
+		CakeSession::write('page', 'time mode');
+
+
 	}
-	
+
 	public function result($hash=null){
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('RankOverview');
-		$_SESSION['title'] = 'Time Mode - Result';
-		$_SESSION['page'] = 'time mode';
-		$sess = $_SESSION['loggedInUser']['User']['activeRank'];
-		$_SESSION['loggedInUser']['User']['activeRank'] = 0;
-		$_SESSION['loggedInUser']['User']['mode'] = 1;
-		
-		
+		CakeSession::write('title', 'Time Mode - Result');
+		CakeSession::write('page', 'time mode');
+		$sess = CakeSession::read('loggedInUser.User.activeRank');
+		CakeSession::write('loggedInUser.User.activeRank', 0);
+		CakeSession::write('loggedInUser.User.mode', 1);
+
+
 	}
 
 	private function calculatePoints($time=null, $max=null){

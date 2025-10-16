@@ -10,7 +10,7 @@ class TagNamesController extends AppController{
 				$tn['TagName']['description'] = $this->data['TagName']['description'];
 				$tn['TagName']['hint'] = $this->data['TagName']['hint'];
 				$tn['TagName']['link'] = $this->data['TagName']['link'];
-				$tn['TagName']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
+				$tn['TagName']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$tn['TagName']['approved'] = 0;
 				$this->TagName->save($tn);
 				$saved = $this->TagName->find('first', array('conditions' => array('name' => $this->data['TagName']['name'])));
