@@ -479,7 +479,3 @@ class CommentsController extends AppController{
 		$this->set('token', $token);
 	}
 }
-
-?>
-
-

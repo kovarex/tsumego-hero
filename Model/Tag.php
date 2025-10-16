@@ -4,4 +4,3 @@ class Tag extends AppModel {
 
 }
 
-?>

@@ -4,6 +4,3 @@
 class StatusesController extends AppController {
 	
 }
-
-
-?>

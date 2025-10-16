@@ -6,4 +6,3 @@ class Sgf extends AppModel {
 	
 }
 
-?>

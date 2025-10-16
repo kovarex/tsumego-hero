@@ -2,4 +2,3 @@
 class Site extends AppModel {
    
 }
-?>

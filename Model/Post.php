@@ -13,4 +13,3 @@ class Post extends AppModel {
 	
 }
 
-?>

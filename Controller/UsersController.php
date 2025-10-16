@@ -4517,8 +4517,3 @@ Joschka Zimdars';
 		$this->set('params', $this->params['url']['t']);
 	}
 }
-
-
-
-
-?>

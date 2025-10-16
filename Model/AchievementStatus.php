@@ -6,4 +6,3 @@ class AchievementStatus extends AppModel {
 	
 }
 
-?>

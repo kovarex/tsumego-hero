@@ -6,4 +6,3 @@ class ProgressDeletion extends AppModel {
 	
 }
 
-?>

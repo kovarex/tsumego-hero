@@ -6,4 +6,3 @@ class TsumegoRatingAttempt extends AppModel {
 	
 }
 
-?>

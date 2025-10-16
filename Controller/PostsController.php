@@ -114,6 +114,3 @@ class PostsController extends AppController {
 		$this->set('patternsInPosts', $patternsInPosts);
     }
 }
-
-
-?>

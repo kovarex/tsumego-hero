@@ -17,4 +17,3 @@ class UserTest extends CakeTestCase {
         $this->assertEquals($expected, $result);
     }
 }
-?>

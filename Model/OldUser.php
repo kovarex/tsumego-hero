@@ -6,4 +6,3 @@ class OldUser extends AppModel {
 	
 
 }
-?>

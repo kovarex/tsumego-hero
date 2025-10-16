@@ -6,4 +6,3 @@ class DayRecord extends AppModel {
 	
 }
 
-?>

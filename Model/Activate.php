@@ -6,4 +6,3 @@ class Activate extends AppModel {
 	
 }
 
-?>

@@ -6,4 +6,3 @@ class Duplicate extends AppModel{
 	
 }
 
-?>

@@ -6,4 +6,3 @@ class TsumegoAttempt extends AppModel {
 	
 }
 
-?>

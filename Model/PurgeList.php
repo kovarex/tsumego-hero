@@ -6,4 +6,3 @@ class PurgeList extends AppModel {
 	
 }
 
-?>

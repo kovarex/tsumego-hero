@@ -6,4 +6,3 @@ class SetConnection extends AppModel {
 	
 }
 
-?>

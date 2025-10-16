@@ -10,4 +10,3 @@ class Poll extends AppModel {
 	
 }
 
-?>

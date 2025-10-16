@@ -6,4 +6,3 @@ class Answer extends AppModel {
 	
 }
 
-?>

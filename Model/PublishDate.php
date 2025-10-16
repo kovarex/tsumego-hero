@@ -4,4 +4,3 @@ class PublishDate extends AppModel{
 	
 }
 
-?>

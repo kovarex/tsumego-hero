@@ -6,4 +6,3 @@ class AchievementCondition extends AppModel {
 	
 }
 
-?>

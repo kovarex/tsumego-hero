@@ -2366,5 +2366,3 @@ class SetsController extends AppController{
 		return $c[$pos];
 	}
 }
-
-?>

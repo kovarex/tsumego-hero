@@ -10,4 +10,3 @@ class Solve extends AppModel {
 	
 }
 
-?>

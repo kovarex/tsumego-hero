@@ -3699,6 +3699,3 @@ class TsumegosController extends AppController{
 		$this->set('loss4', $loss4);
 	}
 }
-?>
-
-

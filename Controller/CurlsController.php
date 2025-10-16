@@ -12,6 +12,3 @@ class CurlsController extends AppController {
 		$this->set('curls', $curls);
     }
 }
-
-
-?>

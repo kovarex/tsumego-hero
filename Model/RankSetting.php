@@ -6,4 +6,3 @@ class RankSetting extends AppModel {
 	
 }
 
-?>

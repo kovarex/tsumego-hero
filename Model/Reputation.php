@@ -6,4 +6,3 @@ class Reputation extends AppModel {
 	
 }
 
-?>

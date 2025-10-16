@@ -6,4 +6,3 @@ class Favorite extends AppModel {
 	
 }
 
-?>

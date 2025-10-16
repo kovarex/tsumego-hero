@@ -6,4 +6,3 @@ class RankOverview extends AppModel {
 	
 }
 
-?>

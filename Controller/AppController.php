@@ -408,7 +408,7 @@ class AppController extends Controller{
 					array('public' => 1),
 					array('public' => 0),
 				)
-			)));
+			));
 			if($test3==null){
 				$this->TsumegoStatus->delete($ut[$i]['TsumegoStatus']['id']);
 			}

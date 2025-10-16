@@ -6,4 +6,3 @@ class UserRecord extends AppModel {
 	
 }
 
-?>
