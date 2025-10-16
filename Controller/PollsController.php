@@ -2,29 +2,33 @@
 
 
 class PollsController extends AppController {
-	
+
     public $helpers = array('Html', 'Form');
 
     public function index() {
 		$this->loadModel('Post');
 		$polls = $this->Poll->find('all');
-        $posts;
-		
-		
-		
+		if (!$polls) {
+			$polls = [];
+		}
+        $posts = [];
+
 		for ($i = 0; $i < count($polls); $i++) {
 			$posts[$i] = $this->Post->findById($polls[$i]['Poll']['post_id']);
 		}
 
 
 		$this->set('posts', $posts);
-		$this->set('polls', $polls);		
+		$this->set('polls', $polls);
     }
 
     public function view($id = null) {
         $poll = $this->Poll->findById($id);
 		$polls = $this->Poll->find('all');
-		$post;
+		if (!$polls) {
+			$polls = [];
+		}
+		$post = [];
 		$samePost = 0;
 		for ($i = 0; $i < count($polls); $i++) {
 			if($polls[$i]['Poll']['post_id'] == $poll['Poll']['post_id']){
@@ -36,9 +40,9 @@ class PollsController extends AppController {
         $this->set('poll', $poll);
 		$this->set('polls', $polls);
     }
-	
+
 	public function add() {
-	
+
         if ($this->request['data'] != null) {
             $this->Poll->create();
             if ($this->Poll->save($this->request->data)) {
@@ -49,7 +53,7 @@ class PollsController extends AppController {
         }
     }
 
-	
+
 
 }
 

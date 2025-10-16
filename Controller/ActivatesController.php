@@ -38,16 +38,22 @@ class ActivatesController extends AppController{
 				'id' => array(2781, 4580, 1543, 1206, 453, 4363, 4275, 72, 73, 81, 87, 89, 94)
 			)
 		)));
-		
+		if (!$us) {
+			$us = [];
+		}
+
 		$us2 = $this->User->find('all', array('conditions' =>  array(
 			'OR' => array(
 				array('id' => 88),
 				array('id' => 4370)
 			)
 		)));
-		
-		
-		
+		if (!$us2) {
+			$us2 = [];
+		}
+
+
+
 		
 		for($i=0; $i<count($us); $i++){
 			/*

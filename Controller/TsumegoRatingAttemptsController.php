@@ -6,8 +6,14 @@ class TsumegoRatingAttemptsController extends AppController {
 		$_SESSION['title'] = 'TSUMEGO RECORDS';
 		if($trid == null){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 500, 'order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}else{
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array('user_id' => $trid)));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
 		$this->set('trs', $trs);
 		$this->set('trs2', $trs2);
@@ -28,7 +34,10 @@ class TsumegoRatingAttemptsController extends AppController {
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 12000, 'order' => 'created DESC', 'conditions' =>  array(
 				'tsumego_id >' => 17000
 			)));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$header = array('user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_elo', 'tsumego_set', 'status', 'seconds', 'created');
 			
 			$posts = array();
@@ -36,6 +45,9 @@ class TsumegoRatingAttemptsController extends AppController {
 				$user = $this->User->findById($trs[$i]['TsumegoRatingAttempt']['user_id']);
 				$tsumego = $this->Tsumego->findById($trs[$i]['TsumegoRatingAttempt']['tsumego_id']);
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tsumego['Tsumego']['id'])));
+				if (!$scT) {
+					continue;
+				}
 				$tsumego['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$set = $this->Set->findById($tsumego['Tsumego']['set_id']);
 				$values = array();
@@ -84,12 +96,15 @@ class TsumegoRatingAttemptsController extends AppController {
 
 		}else{
 			$trs = $this->TsumegoRatingAttempt->find('all', array('order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
-		
-		
+
+
 		$this->set('trs', $trs);
     }
-	
+
 	public function csv($type=null){
 		$_SESSION['page'] = 'user';
 		$_SESSION['title'] = 'TSUMEGO RECORDS';
@@ -98,7 +113,10 @@ class TsumegoRatingAttemptsController extends AppController {
 		
 		if($type==0){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 1000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
@@ -115,7 +133,10 @@ class TsumegoRatingAttemptsController extends AppController {
 			fclose($file);
 		}elseif($type==1){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
@@ -132,7 +153,10 @@ class TsumegoRatingAttemptsController extends AppController {
 			fclose($file);
 		}elseif($type==2){
 			$trs = $this->TsumegoAttempt->find('all', array('limit' => 1000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
@@ -149,7 +173,10 @@ class TsumegoRatingAttemptsController extends AppController {
 			fclose($file);
 		}elseif($type==3){
 			$trs = $this->TsumegoAttempt->find('all', array('limit' => 200000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
@@ -166,7 +193,10 @@ class TsumegoRatingAttemptsController extends AppController {
 			fclose($file);
 		}elseif($type==4){
 			$u = $this->User->find('all');
-		
+			if (!$u) {
+				$u = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'ip');
 			array_push($csv, $header);
@@ -186,12 +216,15 @@ class TsumegoRatingAttemptsController extends AppController {
 			fclose($file);
 		}else{
 			$trs = $this->TsumegoRatingAttempt->find('all', array('order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
-		
-		
+
+
 		$this->set('trs', $trs);
     }
-	
+
 	public function user($trid){
 		$_SESSION['page'] = 'user';
 		$_SESSION['title'] = 'History of '.$_SESSION['loggedInUser']['User']['name'];
@@ -200,11 +233,14 @@ class TsumegoRatingAttemptsController extends AppController {
 		$this->LoadModel('SetConnection');
 		$this->LoadModel('TsumegoAttempt');
 		if($_SESSION['loggedInUser']['User']['id']!=$trid && $_SESSION['loggedInUser']['User']['id']!=72) $_SESSION['redirect'] = 'sets';
-		
+
 		$trs = $this->TsumegoAttempt->find('all', array('limit' => 200, 'order' => 'created DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'],
 			'mode' => 2
 		)));
+		if (!$trs) {
+			$trs = [];
+		}
 		/*
 		$trsx = $this->TsumegoAttempt->find('all', array('limit' => 10, 'order' => 'created DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id']
@@ -219,6 +255,9 @@ class TsumegoRatingAttemptsController extends AppController {
 			$t = $this->Tsumego->findById($trs[$i]['TsumegoAttempt']['tsumego_id']);
 			$trs[$i]['TsumegoAttempt']['tsumego_elo'] = $t['Tsumego']['elo_rating_mode'];
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
+			if (!$scT) {
+				continue;
+			}
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$trs[$i]['TsumegoAttempt']['title'] = '<a target="_blank" href="/tsumegos/play/'.$trs[$i]['TsumegoAttempt']['tsumego_id'].'?mode=1">'.$s['Set']['title'].' '

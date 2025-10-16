@@ -9,14 +9,20 @@ class AchievementsController extends AppController {
 		$unlockedCounter2 = 0;
 		
 		$a = $this->Achievement->find('all', array('order' => 'order ASC'));
-		
+		if (!$a) {
+			$a = [];
+		}
+
 		if(isset($_SESSION['loggedInUser'])){
 			$as = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
-			
+			if (!$as) {
+				$as = [];
+			}
+
 			for($i=0; $i<count($as); $i++)
 				$existingAs[$as[$i]['AchievementStatus']['achievement_id']] = $as[$i];
 		}
-		
+
 		for($i=0; $i<count($a); $i++){
 			$a[$i]['Achievement']['unlocked'] = false;
 			$a[$i]['Achievement']['created'] = '';
@@ -45,6 +51,9 @@ class AchievementsController extends AppController {
 		
 		$as = array();
 		$asAll = $this->AchievementStatus->find('all', array('order' => 'created DESC','conditions' => array('achievement_id' => $id)));
+		if (!$asAll) {
+			$asAll = [];
+		}
 		$aCount = count($asAll);
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $_SESSION['loggedInUser']['User']['id'])));
@@ -67,6 +76,9 @@ class AchievementsController extends AppController {
 		
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$acGolden = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'golden')));
+			if (!$acGolden) {
+				$acGolden = [];
+			}
 			if(count($acGolden)==0)
 				$acGoldenCount = 0;
 			else

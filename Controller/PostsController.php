@@ -8,11 +8,17 @@ class PostsController extends AppController {
     public function index() {
 		$this->loadModel('Poll');
 		$posts = $this->Post->find('all', array('order' => array('Post.created DESC')));
-		$pollsInPosts;
-		$patternsInPosts;
-		
+		if (!$posts) {
+			$posts = [];
+		}
+		$pollsInPosts = [];
+		$patternsInPosts = [];
+
 		for ($i = 0; $i < count($posts); $i++) {
 			$polls = $this->Poll->find('all', array('conditions' => array('Poll.post_id' => $posts[$i]['Post']['id'])));
+			if (!$polls) {
+				$polls = [];
+			}
 			$numPolls = count($polls);
 			$pollsInPosts[$i] = $numPolls;
 			$countPatterns = 0;
@@ -34,6 +40,9 @@ class PostsController extends AppController {
 		
 		$this->loadModel('Poll');
 		$polls = $this->Poll->find('all', array('conditions' => array('Poll.post_id' => $id)));
+		if (!$polls) {
+			$polls = [];
+		}
 		$this->set('polls', $polls);
     }
 	
@@ -92,7 +101,10 @@ class PostsController extends AppController {
 	
 	public function patterns() {
 		$posts = $this->Post->find('all', array('order' => array('Post.created DESC')));
-		$patternsInPosts;
+		if (!$posts) {
+			$posts = [];
+		}
+		$patternsInPosts = [];
 		for ($i = 0; $i < count($posts); $i++) {
 			if($posts[$i]['Post']['sgf2']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf2'];
 			if($posts[$i]['Post']['sgf3']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf3'];

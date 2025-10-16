@@ -17,9 +17,18 @@ class RanksController extends AppController {
 		$settings['id'] = array();
 		$settings['checked'] = array();
 		$ro = $this->RankOverview->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$ro) {
+			$ro = [];
+		}
 		$sets = $this->Set->find('all', array('conditions' => array('public' => 1)));
+		if (!$sets) {
+			$sets = [];
+		}
 
 		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$rs) {
+			$rs = [];
+		}
 		$rsIndexes = array();
 		for($i=0;$i<count($rs);$i++){
 			$rsIndexes[$rs[$i]['RankSetting']['set_id']] = $rs[$i]['RankSetting']['status'];
@@ -49,12 +58,18 @@ class RanksController extends AppController {
 				}
 			}
 			$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$rs) {
+				$rs = [];
+			}
 		}
 		if(isset($this->data['Settings'])){
 			if(count($this->data['Settings'])>=41){
 				$rds0 = $this->RankSetting->find('all', array('conditions' => array(
 					'user_id' => $_SESSION['loggedInUser']['User']['id']
 				)));
+				if (!$rds0) {
+					$rds0 = [];
+				}
 				for($i=0;$i<count($rds0);$i++){
 					$rds0[$i]['RankSetting']['status'] = 0;
 					$this->RankSetting->save($rds0[$i]);
@@ -64,8 +79,10 @@ class RanksController extends AppController {
 						'user_id' => $_SESSION['loggedInUser']['User']['id'],
 						'set_id' => $ds
 					)));
-					$rds['RankSetting']['status'] = 1;
-					$this->RankSetting->save($rds);
+					if ($rds) {
+						$rds['RankSetting']['status'] = 1;
+						$this->RankSetting->save($rds);
+					}
 				}
 			}
 		}
@@ -79,6 +96,9 @@ class RanksController extends AppController {
 					'user_id' => $_SESSION['loggedInUser']['User']['id'],
 					'set_id' => $sets[$i]['Set']['id']
 				)));
+				if (!$settingsSingle) {
+					$settingsSingle = [];
+				}
 
 				if(count($settingsSingle)>1){
 					for($j=0;$j<count($settingsSingle);$j++){
@@ -196,6 +216,9 @@ class RanksController extends AppController {
 		$_SESSION['loggedInUser']['User']['mode'] = 1;
 		
 		$ranks = $this->Rank->find('all', array('conditions' =>  array('session' => $sess)));
+		if (!$ranks) {
+			$ranks = [];
+		}
 		$solved = 0;
 		$c = 0;
 		$points = array();
@@ -261,6 +284,9 @@ class RanksController extends AppController {
 			for($i=0;$i<count($ranks);$i++){
 				$t = $this->Tsumego->findById($ranks[$i]['Rank']['tsumego_id']);
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
+				if (!$scT) {
+					continue;
+				}
 				$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$s = $this->Set->findById($t['Tsumego']['set_id']);
 				
@@ -315,7 +341,10 @@ class RanksController extends AppController {
 				'mode' => $stopParameter,
 				'status' => 's'
 			)));
-			
+			if (!$roxBefore) {
+				$roxBefore = [];
+			}
+
 			$ro = array();
 			$ro['RankOverview']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
 			$ro['RankOverview']['session'] = $sess;
@@ -370,14 +399,20 @@ class RanksController extends AppController {
 		}
 		
 		$allR = $this->Rank->find('all', array('conditions' =>  array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
-		
+		if (!$allR) {
+			$allR = [];
+		}
+
 		for($i=0;$i<3;$i++){
 			for($j=0;$j<count($modes[$i]);$j++){
 				$rox = $this->RankOverview->find('all', array('conditions' =>  array(
-					'user_id' => $_SESSION['loggedInUser']['User']['id'], 
+					'user_id' => $_SESSION['loggedInUser']['User']['id'],
 					'rank' => $modes[$i][$j],
 					'mode' => $i
 				)));
+				if (!$rox) {
+					$rox = [];
+				}
 				$highest = 0;
 				$highestId = 0;
 				for($k=0;$k<count($rox);$k++){
@@ -404,6 +439,9 @@ class RanksController extends AppController {
 					if($rox[$k]['RankOverview']['id']!=$highestId && $sess!=$rox[$k]['RankOverview']['session']){
 						$this->RankOverview->delete($rox[$k]['RankOverview']['id']);
 						$rDel = $this->Rank->find('all', array('conditions' => array('session' => $rox[$k]['RankOverview']['session'])));
+						if (!$rDel) {
+							$rDel = [];
+						}
 						for($l=0;$l<count($rDel);$l++){
 							//$this->Rank->delete($rDel[$l]['Rank']['id']);
 						}
@@ -418,9 +456,15 @@ class RanksController extends AppController {
 			for($i=0;$i<count($modes[$h]);$i++){
 				if($h==$openCard1 && $i==$openCard2){
 					$allR[$h][$i] = $this->Rank->find('all', array('order' => 'num ASC', 'conditions' => array('session' => $modes[$h][$i]['RankOverview']['session'])));
+					if (!$allR[$h][$i]) {
+						$allR[$h][$i] = [];
+					}
 					for($j=0;$j<count($allR[$h][$i]);$j++){
 						$tx = $this->Tsumego->findById($allR[$h][$i][$j]['Rank']['tsumego_id']);
 						$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
+						if (!$scT) {
+							continue;
+						}
 						$tx['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 						$sx = $this->Set->findById($tx['Tsumego']['set_id']);
 						$foundSkipped = false;
@@ -524,6 +568,9 @@ class RanksController extends AppController {
 			}
 		}
 		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$rs) {
+			$rs = [];
+		}
 		return $rs;
 	}
 }

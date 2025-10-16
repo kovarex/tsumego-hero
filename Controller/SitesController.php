@@ -26,6 +26,9 @@ class SitesController extends AppController{
 		
 		for($i=0; $i<count($tdates); $i++){
 			$ts1 = $this->Tsumego->find('all', array('conditions' =>  array('created' => $tdates[$i])));
+			if (!$ts1) {
+				$ts1 = [];
+			}
 			for($j=0; $j<count($ts1); $j++){
 				array_push($tSum, $ts1[$j]);
 			}
@@ -50,19 +53,31 @@ class SitesController extends AppController{
 			}
 		}*/
 		$uReward = $this->User->find('all', array('limit' => 5, 'order' => 'reward DESC'));
+		if (!$uReward) {
+			$uReward = [];
+		}
 		$urNames = array();
 		for($i=0;$i<count($uReward);$i++)
 			array_push($urNames, $this->checkPicture($uReward[$i]));
 		
 		$today = date('Y-m-d');
 		$dateUser = $this->DayRecord->find('first', array('conditions' =>  array('date' => $today)));
-		if(count($dateUser)==0) $dateUser = $this->DayRecord->find('first', array('conditions' =>  array('date' => date('Y-m-d', strtotime('yesterday')))));
-		
+		if (!$dateUser) {
+			$dateUser = $this->DayRecord->find('first', array('conditions' =>  array('date' => date('Y-m-d', strtotime('yesterday')))));
+		}
+		if (!$dateUser) {
+			$this->redirect(['controller' => 'sets', 'action' => 'index']);
+			return;
+		}
+
 		$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
 		$popularTooltip = array();
 		$popularTooltipInfo = array();
 		$popularTooltipBoardSize = array();
 		$ptts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $totd['Tsumego']['id'])));
+		if (!$ptts) {
+			$ptts = [];
+		}
 		$ptArr = $this->processSGF($ptts[0]['Sgf']['sgf']);
 		$popularTooltip = $ptArr[0];
 		$popularTooltipInfo = $ptArr[2];
@@ -70,7 +85,10 @@ class SitesController extends AppController{
 		
 		$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
 		$newTschedule = $this->Schedule->find('all', array('conditions' =>  array('date' => $today)));
-		
+		if (!$newTschedule) {
+			$newTschedule = [];
+		}
+
 		$scheduleTsumego = array();
 		for($i=0; $i<count($newTschedule); $i++){
 			array_push($scheduleTsumego, $this->Tsumego->findById($newTschedule[$i]['Schedule']['tsumego_id']));
@@ -81,6 +99,9 @@ class SitesController extends AppController{
 		$tooltipBoardSize = array();
 		for($i=0; $i<count($scheduleTsumego); $i++){
 			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $scheduleTsumego[$i]['Tsumego']['id'])));
+			if (!$tts) {
+				$tts = [];
+			}
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs, $tArr[0]);
 			array_push($tooltipInfo, $tArr[2]);
@@ -94,12 +115,15 @@ class SitesController extends AppController{
 				array_push($idArray, $scheduleTsumego[$i]['Tsumego']['id']);
 			}
 			
-		
+
 			$uts = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array(
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $idArray
 			)));
-			
+			if (!$uts) {
+				$uts = [];
+			}
+
 			for($i=0; $i<count($uts); $i++){
 				for($j=0; $j<count($newTS); $j++){
 					if($uts[$i]['TsumegoStatus']['tsumego_id'] == $newTS[$j]['Tsumego']['id']){
@@ -159,20 +183,30 @@ class SitesController extends AppController{
 		$currentQuote = $dateUser['DayRecord']['quote'];
 		$currentQuote = 'q13';
 		$userOfTheDay = $this->User->find('first', array('conditions' => array('id' => $dateUser['DayRecord']['user_id'])));
+		if (!$userOfTheDay) {
+			$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
+		}
 		
 		//echo '<pre>';print_r($dateUser);echo '</pre>';
 
 		$totdSc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $totd['Tsumego']['id'])));
-		$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);
+		if ($totdSc) {
+			$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);
+			if ($totdS) {
+				$totd['Tsumego']['set'] = $totdS['Set']['title'];
+				$totd['Tsumego']['set2'] = $totdS['Set']['title2'];
+				$totd['Tsumego']['set_id'] = $totdS['Set']['id'];
+			}
+		}
 		$newTSc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $newT['Tsumego']['id'])));
-		$newTS = $this->Set->findById($newTSc['SetConnection']['set_id']);
-		
-		$totd['Tsumego']['set'] = $totdS['Set']['title'];
-		$totd['Tsumego']['set2'] = $totdS['Set']['title2'];
-		$totd['Tsumego']['set_id'] = $totdS['Set']['id'];
-		$newT['Tsumego']['set'] = $newTS['Set']['title'];
-		$newT['Tsumego']['set2'] = $newTS['Set']['title2'];
-		$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
+		if ($newTSc) {
+			$newTS = $this->Set->findById($newTSc['SetConnection']['set_id']);
+			if ($newTS) {
+				$newT['Tsumego']['set'] = $newTS['Set']['title'];
+				$newT['Tsumego']['set2'] = $newTS['Set']['title2'];
+				$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
+			}
+		}
 		
 
 		$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
@@ -220,12 +254,18 @@ class SitesController extends AppController{
 		*/
 		$tsumegoDates = array();
 		$pd = $this->PublishDate->find('all', array('order' => 'date ASC'));
+		if (!$pd) {
+			$pd = [];
+		}
 		for($j=0; $j<count($pd); $j++)
 			array_push($tsumegoDates, $pd[$j]['PublishDate']['date']);
 		$deletedS = $this->getDeletedSets();
 		
 		$setsWithPremium = array();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
+		if (!$swp) {
+			$swp = [];
+		}
 		for($i=0;$i<count($swp);$i++)
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
 		$totd = $this->checkForLocked($totd, $setsWithPremium);

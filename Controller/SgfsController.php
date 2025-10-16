@@ -5,6 +5,9 @@ class SgfsController extends AppController {
 		$_SESSION['title'] = 'Tsumego Hero';
 		$_SESSION['page'] = 'play';
 		$sgfs = $this->Sgf->find('all');
+		if (!$sgfs) {
+			$sgfs = [];
+		}
 		//echo '<pre>'; print_r($sgfs); echo '</pre>';
 		$this->set('sgfs', $sgfs);
   }
@@ -53,12 +56,18 @@ class SgfsController extends AppController {
 				'user_id' => $this->params['url']['user'],
 				'NOT' => array('version' => 0)
 			)));
+			if (!$s) {
+				$s = [];
+			}
 			$type = 'user';
 		}else{
 			$s = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 100,'conditions' => array(
 				'tsumego_id' => $id,
 				'NOT' => array('version' => 0)
 			)));
+			if (!$s) {
+				$s = [];
+			}
 		}
 		
 		for($i=0; $i<count($s); $i++){
@@ -83,6 +92,9 @@ class SgfsController extends AppController {
 				$s[$i]['Sgf']['delete'] = false;
 			if($type=='user'){
 				$sDiff = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 2,'conditions' => array('tsumego_id' => $s[$i]['Sgf']['tsumego_id'])));
+				if (!$sDiff) {
+					$sDiff = [];
+				}
 				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
 			}else{
 				if($i!=count($s)-1) 

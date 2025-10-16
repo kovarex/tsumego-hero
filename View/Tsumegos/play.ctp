@@ -247,6 +247,7 @@
 				?>
 				<br>
 				<?php
+				if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99], 'mode' => 0];
 				if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161){
 					if($additionalInfo['mode']==0){
 				?>
@@ -1800,6 +1801,7 @@
 		echo 'var noXP=false;';
 	}
 
+	if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
 	if($t['Tsumego']['set_id']==156 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161){
 		if($additionalInfo['lastPlayed'][0]!=99) echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['lastPlayed'][0].', '.$additionalInfo['lastPlayed'][1].'), JGO.MARK.CIRCLE);';
 		for($i=0; $i<count($additionalInfo['triangle']); $i++){
@@ -2928,6 +2930,8 @@
 
 			document.getElementById("status").innerHTML = "";
 			<?php
+				if (!isset($black)) $black = [];
+				if (!isset($white)) $white = [];
 				for($i=0; $i<count($black); $i++){
 					if($i%2 == 0){
 						echo 'jboard.setType(new JGO.Coordinate('.$black[$i].', '.$black[$i+1].'), JGO.'.$playerColor[0].');';
@@ -2941,6 +2945,7 @@
 			?>
 
 			<?php
+			if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
 			if($t['Tsumego']['set_id']==156 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161){
 				echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['lastPlayed'][0].', '.$additionalInfo['lastPlayed'][1].'), JGO.MARK.CIRCLE);';
 				for($i=0; $i<count($additionalInfo['triangle']); $i++){
@@ -2952,6 +2957,7 @@
 			}
 			?>
 			<?php
+			if (!isset($visual)) $visual = [];
 			for($i=0; $i<count($visual); $i++){
 				if($visual[$i][3] === '+') echo 'jboard.setMark(new JGO.Coordinate('.$visual[$i][0].', '.$visual[$i][1].'), JGO.MARK.CORRECT);';
 				else echo 'jboard.setMark(new JGO.Coordinate('.$visual[$i][0].', '.$visual[$i][1].'), JGO.MARK.INCORRECT);';
@@ -2964,7 +2970,8 @@
 	$dynamicCommentCoords = array();
 	$dynamicCommentCoords[0] = array();
 	$dynamicCommentCoords[1] = array();
-	
+
+	if (!isset($commentCoordinates)) $commentCoordinates = [];
 	$fn1 = 1;
 	for($i=0; $i<count($commentCoordinates); $i++){
 		$n2x = explode(' ', $commentCoordinates[$i]);

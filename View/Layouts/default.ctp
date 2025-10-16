@@ -525,7 +525,9 @@
 	if($_SESSION['page']!='level mode' && $_SESSION['page']!='rating mode' && $_SESSION['page']!='time mode')
 		echo 'setCookie("mode", 1);';
 
-	for($i=0;$i<count($achievementUpdate);$i++){
+	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
+
+	for($i=0;$i<$count;$i++){
 		echo '$("#achievementAlerts'.$i.'").fadeIn(600);';
 		echo '
 		$("#alertCheckbox'.$i.'").change(function(){

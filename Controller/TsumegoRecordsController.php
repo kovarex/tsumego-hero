@@ -6,8 +6,14 @@ class TsumegoRecordsController extends AppController {
 		$_SESSION['title'] = 'TSUMEGO RECORDS';
 		if($trid == null){
 			$trs = $this->TsumegoRecord->find('all', array('limit' => 500, 'order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}else{
 			$trs = $this->TsumegoRecord->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array('user_id' => $trid)));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
 		$this->set('trs', $trs);
 		$this->set('trs2', $trs2);
@@ -27,7 +33,10 @@ class TsumegoRecordsController extends AppController {
 			$trs = $this->TsumegoRecord->find('all', array('limit' => 12000, 'order' => 'created DESC', 'conditions' =>  array(
 				'tsumego_id >' => 17000
 			)));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$header = array('user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_elo', 'tsumego_set', 'status', 'seconds', 'created');
 			
 			$posts = array();
@@ -81,12 +90,15 @@ class TsumegoRecordsController extends AppController {
 
 		}else{
 			$trs = $this->TsumegoRecord->find('all', array('order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
-		
-		
+
+
 		$this->set('trs', $trs);
     }
-	
+
 	public function csv($type=null){
 		$_SESSION['page'] = 'user';
 		$_SESSION['title'] = 'TSUMEGO RECORDS';
@@ -95,7 +107,10 @@ class TsumegoRecordsController extends AppController {
 		
 		if($type==0){
 			$trs = $this->TsumegoRecord->find('all', array('limit' => 1000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
@@ -112,7 +127,10 @@ class TsumegoRecordsController extends AppController {
 			fclose($file);
 		}elseif($type==1){
 			$trs = $this->TsumegoRecord->find('all', array('order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
@@ -129,7 +147,10 @@ class TsumegoRecordsController extends AppController {
 			fclose($file);
 		}elseif($type==2){
 			$trs = $this->UserRecord->find('all', array('limit' => 1000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
@@ -146,7 +167,10 @@ class TsumegoRecordsController extends AppController {
 			fclose($file);
 		}elseif($type==3){
 			$trs = $this->UserRecord->find('all', array('limit' => 200000, 'order' => 'created DESC'));
-		
+			if (!$trs) {
+				$trs = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
@@ -163,7 +187,10 @@ class TsumegoRecordsController extends AppController {
 			fclose($file);
 		}elseif($type==4){
 			$u = $this->User->find('all');
-		
+			if (!$u) {
+				$u = [];
+			}
+
 			$csv = array();
 			$header = array('id', 'ip');
 			array_push($csv, $header);
@@ -183,12 +210,15 @@ class TsumegoRecordsController extends AppController {
 			fclose($file);
 		}else{
 			$trs = $this->TsumegoRecord->find('all', array('order' => 'created DESC'));
+			if (!$trs) {
+				$trs = [];
+			}
 		}
-		
-		
+
+
 		$this->set('trs', $trs);
     }
-	
+
 	public function user($trid){
 		$_SESSION['page'] = 'user';
 		$_SESSION['title'] = 'History of '.$_SESSION['loggedInUser']['User']['name'];
@@ -202,7 +232,10 @@ class TsumegoRecordsController extends AppController {
 				array('status' => 'F')
 			)
 		)));
-		
+		if (!$trs) {
+			$trs = [];
+		}
+
 		for($i=0; $i<count($trs); $i++){
 			$t = $this->Tsumego->findById($trs[$i]['TsumegoRecord']['tsumego_id']);
 			$s = $this->Set->findById($t['Tsumego']['set_id']);

@@ -14,10 +14,12 @@ class TagNamesController extends AppController{
 				$tn['TagName']['approved'] = 0;
 				$this->TagName->save($tn);
 				$saved = $this->TagName->find('first', array('conditions' => array('name' => $this->data['TagName']['name'])));
+				if ($saved) {
+					$this->set('saved', $saved['TagName']['id']);
+				}
 			}else{
 				$alreadyExists = true;
 			}
-			$this->set('saved', $saved['TagName']['id']);
 		}
 		$allTags = $this->getAllTags([]);
 
@@ -49,14 +51,32 @@ class TagNamesController extends AppController{
 		
 		$u = $this->User->findById($id);
 		$tagNames = $this->TagName->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'approved' => 1)));
+		if (!$tagNames) {
+			$tagNames = [];
+		}
 		$tags = $this->Tag->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'approved' => 1)));
+		if (!$tags) {
+			$tags = [];
+		}
 		$proposals = $this->Sgf->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array(
 			'user_id' => $id,
 			'NOT' => array('version' => 0)
 		)));
+		if (!$proposals) {
+			$proposals = [];
+		}
 		$rejectedProposals = $this->Reject->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'type' => 'proposal')));
+		if (!$rejectedProposals) {
+			$rejectedProposals = [];
+		}
 		$rejectedTags = $this->Reject->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'type' => 'tag')));
+		if (!$rejectedTags) {
+			$rejectedTags = [];
+		}
 		$rejectedTagNames = $this->Reject->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'type' => 'tag name')));
+		if (!$rejectedTagNames) {
+			$rejectedTagNames = [];
+		}
 
 		for($i=0; $i<count($tagNames); $i++){
 			$ux = $this->User->findById($tagNames[$i]['TagName']['user_id']);
@@ -95,6 +115,9 @@ class TagNamesController extends AppController{
 			$tnx = $this->TagName->findById($tags[$i]['Tag']['tag_name_id']);
 			$tx = $this->Tsumego->findById($tags[$i]['Tag']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
+			if (!$scx) {
+				continue;
+			}
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($tags[$i]['Tag']['user_id']);
 			if($tnx['TagName']['name']=='') $tags[$i]['Tag']['tag_name'] = '<i>[not found]</i>';
@@ -115,11 +138,14 @@ class TagNamesController extends AppController{
 		for($i=0; $i<count($rejectedTags); $i++){
 			$tx = $this->Tsumego->findById($rejectedTags[$i]['Reject']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
+			if (!$scx) {
+				continue;
+			}
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($rejectedTags[$i]['Reject']['user_id']);
 			$r = array();
-			$r['Tag']['tsumego_id'] = $rejectedTags[$i]['Reject']['tsumego_id']; 
-			$r['Tag']['tag_name'] = $rejectedTags[$i]['Reject']['text']; 
+			$r['Tag']['tsumego_id'] = $rejectedTags[$i]['Reject']['tsumego_id'];
+			$r['Tag']['tag_name'] = $rejectedTags[$i]['Reject']['text'];
 			$r['Tag']['tsumego'] = $sx['Set']['title'].' - '.$tx['Tsumego']['num'];
 			$r['Tag']['user'] = $ux['User']['name'];
 			$r['Tag']['type'] = $rejectedTags[$i]['Reject']['type'];
@@ -139,6 +165,9 @@ class TagNamesController extends AppController{
 		for($i=0; $i<count($proposals); $i++){
 			$tx = $this->Tsumego->findById($proposals[$i]['Sgf']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
+			if (!$scx) {
+				continue;
+			}
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($proposals[$i]['Sgf']['user_id']);
 			$proposals[$i]['Sgf']['tsumego'] = $sx['Set']['title'].' - '.$tx['Tsumego']['num'];
@@ -157,15 +186,18 @@ class TagNamesController extends AppController{
 		for($i=0; $i<count($rejectedProposals); $i++){
 			$tx = $this->Tsumego->findById($rejectedProposals[$i]['Reject']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
+			if (!$scx) {
+				continue;
+			}
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($rejectedProposals[$i]['Reject']['user_id']);
 			$r = array();
-			$r['Sgf']['tsumego_id'] = $rejectedProposals[$i]['Reject']['tsumego_id']; 
+			$r['Sgf']['tsumego_id'] = $rejectedProposals[$i]['Reject']['tsumego_id'];
 			$r['Sgf']['tsumego'] = $sx['Set']['title'].' - '.$tx['Tsumego']['num'];
 			$r['Sgf']['status'] = '<b style="color:#ce3a47">rejected</b>';
 			$r['Sgf']['type'] = $rejectedProposals[$i]['Reject']['type'];
 			$r['Sgf']['user'] = $ux['User']['name'];
-			$r['Sgf']['created'] = $rejectedProposals[$i]['Reject']['created']; 
+			$r['Sgf']['created'] = $rejectedProposals[$i]['Reject']['created'];
 			array_push($proposals, $r);
 
 			array_push($listCreated, $r['Sgf']['created']);
@@ -225,6 +257,9 @@ class TagNamesController extends AppController{
 		if(isset($this->data['TagName'])){
 			if($this->data['TagName']['delete']==$id){
 				$tags = $this->Tag->find('all', array('conditions' => array('tag_name_id' => $id)));
+				if (!$tags) {
+					$tags = [];
+				}
 				for($i=0; $i<count($tags); $i++)
 					$this->Tag->delete($tags[$i]['Tag']['id']);
 				$this->TagName->delete($id);

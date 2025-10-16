@@ -162,32 +162,39 @@ class CommentsController extends AppController{
 								$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
 							else
 								$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'], 'set_id' => $comments[$i]['Comment']['set_id'])));
-							$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-							$s = $this->Set->findById($t['Tsumego']['set_id']);
-							$counter++;
-							$comments[$i]['Comment']['counter'] = $counter+$index;
-							$comments[$i]['Comment']['user_name'] = $this->checkPicture($u);
-							$comments[$i]['Comment']['set'] = $s['Set']['title'];
-							$comments[$i]['Comment']['set2'] = $s['Set']['title2'];
-							$comments[$i]['Comment']['num'] = $scT['SetConnection']['num'];
-							
-							if(!in_array($t['Tsumego']['id'], $keyList)) $comments[$i]['Comment']['user_tsumego'] = 'N';
-							else $comments[$i]['Comment']['user_tsumego'] = $keyListStatus[array_search($t['Tsumego']['id'], $keyList)];
-							$comments[$i]['Comment']['solved'] = $solved;
-							if($comments[$i]['Comment']['admin_id']!=null){
-								$au = $this->User->findById($comments[$i]['Comment']['admin_id']);
-								if($au['User']['name']=='Morty') $au['User']['name'] = 'Admin';
-								$comments[$i]['Comment']['admin_name'] = $au['User']['name'];
+
+							if ($scT && isset($scT['SetConnection']['set_id'])) {
+								$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
+								$s = $this->Set->findById($t['Tsumego']['set_id']);
+								if ($s && isset($s['Set']['title'])) {
+									$counter++;
+									$comments[$i]['Comment']['counter'] = $counter+$index;
+									$comments[$i]['Comment']['user_name'] = $this->checkPicture($u);
+									$comments[$i]['Comment']['set'] = $s['Set']['title'];
+									$comments[$i]['Comment']['set2'] = $s['Set']['title2'];
+									$comments[$i]['Comment']['num'] = $scT['SetConnection']['num'];
+
+									if(!in_array($t['Tsumego']['id'], $keyList)) $comments[$i]['Comment']['user_tsumego'] = 'N';
+									else $comments[$i]['Comment']['user_tsumego'] = $keyListStatus[array_search($t['Tsumego']['id'], $keyList)];
+									$comments[$i]['Comment']['solved'] = $solved;
+									if($comments[$i]['Comment']['admin_id']!=null){
+										$au = $this->User->findById($comments[$i]['Comment']['admin_id']);
+										if($au && isset($au['User']['name'])){
+											if($au['User']['name']=='Morty') $au['User']['name'] = 'Admin';
+											$comments[$i]['Comment']['admin_name'] = $au['User']['name'];
+										}
+									}
+
+									$date = new DateTime($comments[$i]['Comment']['created']);
+									$month = date("F", strtotime($comments[$i]['Comment']['created']));
+									$tday = $date->format('d. ');
+									$tyear = $date->format('Y');
+									$tClock = $date->format('H:i');
+									if($tday[0]==0) $tday = substr($tday, -3);
+									$comments[$i]['Comment']['created'] = $tday.$month.' '.$tyear.'<br>'.$tClock;
+									array_push($c, $comments[$i]);
+								}
 							}
-							
-							$date = new DateTime($comments[$i]['Comment']['created']);
-							$month = date("F", strtotime($comments[$i]['Comment']['created']));
-							$tday = $date->format('d. ');
-							$tyear = $date->format('Y');
-							$tClock = $date->format('H:i');
-							if($tday[0]==0) $tday = substr($tday, -3);
-							$comments[$i]['Comment']['created'] = $tday.$month.' '.$tyear.'<br>'.$tClock;
-							array_push($c, $comments[$i]);
 						}
 					}
 				}
@@ -387,7 +394,7 @@ class CommentsController extends AppController{
 			$this->set('comments3', count($this->Comment->find('all', array('order' => 'created DESC', 'conditions' =>  array('status' => 0,
 			array(
 				'NOT' => array('user_id' => 0)
-			))))));
+			)))) ?: []));
 		}
 		
 		$currentPositionPlaceholder = '<img src="/img/positionIcon1.png" class="positionIcon1" style="cursor:context-menu;">';

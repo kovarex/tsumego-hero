@@ -211,7 +211,9 @@ class AppController extends Controller{
 		$d = 1;
 		while($d<=10){
 			$ru = $this->DayRecord->find('first', array('conditions' =>  array('date' => date('Y-m-d', strtotime('-'.$d.' days')))));
-			array_push($recentlyUsed, $ru);
+			if ($ru) {
+				array_push($recentlyUsed, $ru);
+			}
 			$d++;
 		}
 		$currentQuote = 'q01';
@@ -334,7 +336,9 @@ class AppController extends Controller{
 		foreach($duplicates as $key => $value){
 			while($duplicates[$key]>1){
 				$drd = $this->DayRecord->find('first', array('conditions' => array('date' => $key)));
-				$this->DayRecord->delete($drd['DayRecord']['id']);
+				if ($drd) {
+					$this->DayRecord->delete($drd['DayRecord']['id']);
+				}
 				$duplicates[$key]--;
 			}
 		}
@@ -394,7 +398,11 @@ class AppController extends Controller{
 		for($i=0; $i<count($ut); $i++){
 			$test1 = $this->Tsumego->findById($ut[$i]['TsumegoStatus']['tsumego_id']);
 			$test2 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $test1['Tsumego']['id'])));
-			$test3 = $this->Set->find('first', array('conditions' => array(
+			if (!$test2) {
+				$this->TsumegoStatus->delete($ut[$i]['TsumegoStatus']['id']);
+				continue;
+			}
+			$test3 = $this->Set->find('first', array(
 				'id' => $test2['SetConnection']['set_id'],
 				'OR' => array(
 					array('public' => 1),
@@ -881,6 +889,9 @@ class AppController extends Controller{
 		$ts = $this->Tsumego->findById($t);
 
 		$id = $this->Tsumego->find('first', array('limit' => 1, 'order' => 'id DESC'));
+		if (!$id) {
+			return null;
+		}
 		$id = $id['Tsumego']['id'];
 		$id += 1;
 
@@ -1016,13 +1027,13 @@ class AppController extends Controller{
 					$x['status'] = $out2[$i]['TsumegoAttempt']['solved'];
 					$x['seconds'] = $out2[$i]['TsumegoAttempt']['seconds'];
 
-					array_push($newBest[$j], $x);
+					$newBest[$j][] = $x;
 				}
 			}
 		}
 		for($i=0; $i<count($newBest); $i++){
 			$sum = 0;
-			for($j=0; $j<count($newBest[$j]); $j++){
+			for($j=0; $j<count($newBest[$i]); $j++){
 				if($newBest[$i][$j]['seconds']!=null){
 					if($newBest[$i][$j]['seconds']>300){
 						$newBest[$i][$j]['seconds'] = 300;
@@ -1325,7 +1336,7 @@ class AppController extends Controller{
 			$danSolveCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 				'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => $danSolveCategory
 			)));
-			if($danSolveCondition==null){
+			if(!$danSolveCondition){
 				$danSolveCondition = array();
 				$danSolveCondition['AchievementCondition']['value'] = 0;
 				$this->AchievementCondition->create();
@@ -1345,7 +1356,7 @@ class AppController extends Controller{
 			$sprintCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 				'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'sprint'
 			)));
-			if($sprintCondition==null){
+			if(!$sprintCondition){
 				$sprintCondition = array();
 				$sprintCondition['AchievementCondition']['value'] = 0;
 				$this->AchievementCondition->create();
@@ -1364,7 +1375,7 @@ class AppController extends Controller{
 		$goldenCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'golden'
 		)));
-		if($goldenCondition==null){
+		if(!$goldenCondition){
 			$goldenCondition = array();
 			$goldenCondition['AchievementCondition']['value'] = 0;
 			$this->AchievementCondition->create();
@@ -1382,7 +1393,7 @@ class AppController extends Controller{
 		$potionCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'potion'
 		)));
-		if($potionCondition==null){
+		if(!$potionCondition){
 			$potionCondition = array();
 			$this->AchievementCondition->create();
 		}
@@ -1822,7 +1833,7 @@ class AppController extends Controller{
 		else
 			$hasPremium = true;
 		$scCheck = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
-		if(in_array($scCheck['SetConnection']['set_id'], $setsWithPremium) && !$hasPremium)
+		if($scCheck && in_array($scCheck['SetConnection']['set_id'], $setsWithPremium) && !$hasPremium)
 			$t['Tsumego']['locked'] = true;
 		else
 			$t['Tsumego']['locked'] = false;
@@ -2250,6 +2261,9 @@ class AppController extends Controller{
 		$ac = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'set'
 		)));
+		if (!$ac) {
+			return array();
+		}
 
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
 		if (!$buffer) {
@@ -2526,6 +2540,9 @@ class AppController extends Controller{
 		$acA = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'set_id' => $sid, 'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => '%'
 		)));
+		if (!$acA) {
+			return array();
+		}
 		$acS = $this->AchievementCondition->find('first', array('order' => 'value ASC', 'conditions' => array(
 			'set_id' => $sid, 'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 's'
 		)));
@@ -2856,8 +2873,12 @@ class AppController extends Controller{
 	}
 
 	public function getPartitionRange($amountRemaining, $collectionSize, $partition){
-		$amountPartitions = floor($amountRemaining / $collectionSize) + 1;
-		if($amountRemaining % $collectionSize == 0)
+		if ($collectionSize > 0) {
+			$amountPartitions = floor($amountRemaining / $collectionSize) + 1;
+		} else {
+			$amountPartitions = 1;
+		}
+		if($collectionSize > 0 && $amountRemaining % $collectionSize == 0)
 			$amountPartitions--;
 		$amountCounter = 0;
 		$amountFrom = 0;
@@ -2984,7 +3005,7 @@ class AppController extends Controller{
 	public function signIn($u){
 		$_SESSION['loggedInUser'] = $u;
 		$vs = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('user_id' => $u['User']['id'])));
-		if($vs!=null)
+		if($vs)
 			$_SESSION['lastVisit'] = $vs['TsumegoStatus']['tsumego_id'];
 		$_SESSION['texture'] = $u['User']['texture'];
 		$_SESSION['check1'] = $u['User']['id'];
@@ -3098,12 +3119,14 @@ class AppController extends Controller{
 				$newAddTag = explode("-", $_COOKIE['addTag']);
 				$tagId = $newAddTag[0];
 				$newTagName = $this->TagName->find('first', array('conditions' => array('name' => str_replace($tagId.'-', '', $_COOKIE['addTag']))));
-				$saveTag = array();
-				$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
-				$saveTag['Tag']['tsumego_id'] = $tagId;
-				$saveTag['Tag']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
-				$saveTag['Tag']['approved'] = 0;
-				$this->Tag->save($saveTag);
+				if ($newTagName) {
+					$saveTag = array();
+					$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
+					$saveTag['Tag']['tsumego_id'] = $tagId;
+					$saveTag['Tag']['user_id'] = $_SESSION['loggedInUser']['User']['id'];
+					$saveTag['Tag']['approved'] = 0;
+					$this->Tag->save($saveTag);
+				}
 				$this->set('removeCookie', 'addTag');
 			}
 			if(isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0){
@@ -3214,7 +3237,9 @@ class AppController extends Controller{
 			if (!$preSc) {
 				$preSc = [];
 			}
-			$preTsumego['Tsumego']['set_id'] = $preSc[0]['SetConnection']['set_id'];
+			if (count($preSc) > 0) {
+				$preTsumego['Tsumego']['set_id'] = $preSc[0]['SetConnection']['set_id'];
+			}
 			$utPre = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('tsumego_id' => $_COOKIE['preId'], 'user_id' => $_SESSION['loggedInUser']['User']['id'])));
 		}
 		if($_COOKIE['sprint']!=1)
