@@ -183,4 +183,42 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 		$this->assertTrue($result);
 		$this->assertSame('', $this->Model->data['EmptyIntegerTestModel']['non_existent_field']);
 	}
+
+	/**
+	 * Test that non-numeric strings are converted to 0 or null
+	 *
+	 * @return void
+	 */
+	public function testNonNumericStringConversion() {
+		$this->Model->data = array(
+			'EmptyIntegerTestModel' => array(
+				'nullable_int' => 'light',
+				'not_null_int' => 'dark',
+			),
+		);
+
+		$result = $this->Model->beforeSave();
+		$this->assertTrue($result);
+		$this->assertNull($this->Model->data['EmptyIntegerTestModel']['nullable_int']);
+		$this->assertSame(0, $this->Model->data['EmptyIntegerTestModel']['not_null_int']);
+	}
+
+	/**
+	 * Test that numeric strings are preserved
+	 *
+	 * @return void
+	 */
+	public function testNumericStringsPreserved() {
+		$this->Model->data = array(
+			'EmptyIntegerTestModel' => array(
+				'nullable_int' => '42',
+				'not_null_int' => '100',
+			),
+		);
+
+		$result = $this->Model->beforeSave();
+		$this->assertTrue($result);
+		$this->assertSame('42', $this->Model->data['EmptyIntegerTestModel']['nullable_int']);
+		$this->assertSame('100', $this->Model->data['EmptyIntegerTestModel']['not_null_int']);
+	}
 }

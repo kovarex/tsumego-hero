@@ -39,14 +39,36 @@ class EmptyIntegerBehavior extends ModelBehavior {
 
 			$fieldSchema = $schema[$field];
 
-			// Check if field is an integer type and value is empty string
-			if ($this->_isIntegerType($fieldSchema['type']) && $value === '') {
+			// Check if field is an integer type
+			if (!$this->_isIntegerType($fieldSchema['type'])) {
+				continue;
+			}
+
+			// Handle empty string
+			if ($value === '') {
 				// Convert empty string based on null constraint
 				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
 					// Nullable column: set to null
 					$Model->data[$Model->alias][$field] = null;
 				} else {
 					// NOT NULL column: set to 0
+					$Model->data[$Model->alias][$field] = 0;
+				}
+			}
+			// Handle non-numeric strings
+			elseif (is_string($value) && !is_numeric($value)) {
+				// Log warning about non-numeric string
+				CakeLog::warning(sprintf(
+					'Non-numeric string "%s" provided for integer field %s.%s, converting to 0',
+					$value,
+					$Model->alias,
+					$field
+				));
+
+				// Convert to 0 or null based on null constraint
+				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
+					$Model->data[$Model->alias][$field] = null;
+				} else {
 					$Model->data[$Model->alias][$field] = 0;
 				}
 			}

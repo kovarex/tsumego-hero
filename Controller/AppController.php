@@ -3161,8 +3161,10 @@ class AppController extends Controller{
 		if(isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0'){
 			$lightDark = $_COOKIE['lightDark'];
 			if($this->Session->check('loggedInUser.User.id')){
-				$this->Session->write('loggedInUser.User.lastLight', $lightDark);
-				$u['User']['lastLight'] = $lightDark;
+				// Convert string to integer for database storage
+				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
+				$this->Session->write('loggedInUser.User.lastLight', $lightDarkInt);
+				$u['User']['lastLight'] = $lightDarkInt;
 			}
 		}else{
 			if($this->Session->check('loggedInUser.User.id')){
