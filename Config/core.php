@@ -225,7 +225,7 @@
  */
 	Configure::write('Session', array(
 		'cookie' => 'myApp',
-		'defaults' => 'cake', // Use CakePHP's session handler to store in tmp/sessions
+		//'defaults' => 'cake', // Use CakePHP's session handler to store in tmp/sessions
 		'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
 		'autoRegenerate' => true, // causes the session expiration time to reset on each page load
 		'ini' => array(
