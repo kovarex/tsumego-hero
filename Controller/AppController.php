@@ -7,7 +7,8 @@ define('C', 30.0);
 define('Q', 0.0057564);
 
 class AppController extends Controller{
-	public function processSGF($sgf){
+
+	protected function processSGF($sgf){
 		$aw = strpos($sgf, 'AW');
 		$ab = strpos($sgf, 'AB');
 		$boardSizePos = strpos($sgf, 'SZ');
@@ -69,19 +70,19 @@ class AppController extends Controller{
 		return $arr;
 	}
 
-	public function xFlip($stones){
+	protected function xFlip($stones){
 		for($i=0; $i<count($stones); $i++)
 			$stones[$i][0] = 18-$stones[$i][0];
 		return $stones;
 	}
 
-	public function yFlip($stones){
+	protected function yFlip($stones){
 		for($i=0; $i<count($stones); $i++)
 			$stones[$i][1] = 18-$stones[$i][1];
 		return $stones;
 	}
 
-	public function getInitialPositionEnd($pos, $sgfArr){
+	protected function getInitialPositionEnd($pos, $sgfArr){
 		$endCondition = 0;
 		$currentPos1 = $pos+2;
 		$currentPos2 = $pos+5;
@@ -93,7 +94,7 @@ class AppController extends Controller{
 		return $endCondition;
 	}
 
-	public function getInitialPosition($pos, $sgfArr, $color){
+	protected function getInitialPosition($pos, $sgfArr, $color){
 		$arr = array();
 		$end = $this->getInitialPositionEnd($pos, $sgfArr);
 		for($i=$pos+2; $i<$end; $i++)
@@ -118,7 +119,7 @@ class AppController extends Controller{
 		return $arr2;
 	}
 
-	public function getInvisibleSets(){
+	protected function getInvisibleSets(){
 		$this->LoadModel('Set');
 		$invisibleSets = array();
 		$in = $this->Set->find('all', array('conditions' => array('public' => 0)));
@@ -131,7 +132,7 @@ class AppController extends Controller{
 		return $invisibleSets;
 	}
 
-	public function getDeletedSets(){
+	protected function getDeletedSets(){
 		$dSets = array();
 		$de = $this->Set->find('all', array('conditions' => array('public' => -1)));
 		if (!$de) {
@@ -143,7 +144,7 @@ class AppController extends Controller{
 		return $dSets;
 	}
 
-	public function startPageUpdate(){
+	protected function startPageUpdate(){
 		$this->LoadModel('User');
 		$this->LoadModel('Achievement');
 		$this->LoadModel('AchievementStatus');
@@ -170,7 +171,7 @@ class AppController extends Controller{
 		file_put_contents('mainPageAjax.txt', $str);
 	}
 
-	public function uotd(){//routine1
+	protected function uotd(){//routine1
 		$this->LoadModel('User');
 		$this->LoadModel('DayRecord');
 		$this->LoadModel('TsumegoAttempt');
@@ -344,7 +345,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function findTsumegoSet($id){
+	protected function findTsumegoSet($id){
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('SetConnection');
 		$scIds = array();
@@ -369,7 +370,7 @@ class AppController extends Controller{
 		return $tsx;
 	}
 
-	public function deleteUnusedStatuses($uid){
+	protected function deleteUnusedStatuses($uid){
 		$s = $this->Set->find('all', array('conditions' => array(
 			'OR' => array(
 				array('public' => 1),
@@ -415,7 +416,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function saveSolvedNumber($uid){
+	protected function saveSolvedNumber($uid){
 		$this->loadModel('User');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Set');
@@ -462,13 +463,13 @@ class AppController extends Controller{
 		return $solvedUts2;
 	}
 
-	public function convertEloToXp($elo){
+	protected function convertEloToXp($elo){
 		$xp = round(pow($elo/100, 1.55)-6);
 		if($xp<10) $xp = 10;
 		return $xp;
 	}
 
-	public function resetUserElos(){
+	protected function resetUserElos(){
 		$this->loadModel('User');
 
 		$u = $this->User->find('all', array('conditions' => array(
@@ -486,7 +487,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function getNewElo($diff, $eloBigger, $activityValue, $tid, $outcome){
+	protected function getNewElo($diff, $eloBigger, $activityValue, $tid, $outcome){
 		$t = $this->Tsumego->findById($tid);
 		if($t['Tsumego']['activity_value']>300)
 			$t['Tsumego']['activity_value'] = 300;
@@ -569,7 +570,7 @@ class AppController extends Controller{
 		return $return;
 	}
 
-	public function getActivityValue($uid, $tid){
+	protected function getActivityValue($uid, $tid){
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoAttempt');
 		$tsumegoNum = 90;
@@ -628,7 +629,7 @@ class AppController extends Controller{
 		return $hours;
 	}
 
-	public function createNewVersionNumber($lastV, $lastU){
+	protected function createNewVersionNumber($lastV, $lastU){
 		if($lastV['Sgf']['version']==1){
 			$version = 1.1;
 		}else{
@@ -653,7 +654,7 @@ class AppController extends Controller{
 		return $version;
 	}
 
-	public function handleContribution($uid, $action){
+	protected function handleContribution($uid, $action){
 		$this->LoadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', array('conditions' => array('user_id' => $uid)));
 		if($uc==null){
@@ -675,7 +676,7 @@ class AppController extends Controller{
 		$this->UserContribution->save($uc);
 	}
 
-	public function getAllTags($not){
+	protected function getAllTags($not){
 		$a = array();
 		$notApproved = $this->TagName->find('all', array('conditions' => array('approved' => 0)));
 		if (!$notApproved) {
@@ -704,7 +705,7 @@ class AppController extends Controller{
 		return $s2;
 	}
 
-	public function userRefresh($range = null){
+	protected function userRefresh($range = null){
 		$this->LoadModel('User');
 		$this->LoadModel('TsumegoStatus');
 		if($range==1){
@@ -842,12 +843,12 @@ class AppController extends Controller{
 		}
 	}
 
-	public function deleteUserBoards(){
+	protected function deleteUserBoards(){
 		$this->LoadModel('UserBoard');
 		$this->UserBoard->deleteAll(array('1 = 1'));
 	}
 
-	public function halfXP(){
+	protected function halfXP(){
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('DayRecord');
 		$week = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array('status' => 'S')));
@@ -865,7 +866,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function getNewTsumego(){
+	protected function getNewTsumego(){
 		$this->LoadModel('Schedule');
 		$date = date('Y-m-d', strtotime('today'));
 		$s = $this->Schedule->find('all', array('conditions' =>  array('date' => $date)));
@@ -881,7 +882,7 @@ class AppController extends Controller{
 		return $id;
 	}
 
-	public function publishSingle($t=null, $to=null, $date=null){
+	protected function publishSingle($t=null, $to=null, $date=null){
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('Sgf');
 		$this->LoadModel('SetConnection');
@@ -938,7 +939,7 @@ class AppController extends Controller{
 		return $id;
 	}
 
-	public function getTsumegoOfTheDay(){
+	protected function getTsumegoOfTheDay(){
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('Schedule');
@@ -1061,7 +1062,7 @@ class AppController extends Controller{
 		return $newBest[$hid][0]['tid'];
 	}
 
-	public function ratingMatch($elo){
+	protected function ratingMatch($elo){
 		if($elo>=3000) $td = 10;//10d
 		elseif($elo>=2900) $td = 10;//9d
 		elseif($elo>=2800) $td = 10;//8d
@@ -1096,7 +1097,7 @@ class AppController extends Controller{
 		return $td;
 	}
 
-	public function rating2($d){
+	protected function rating2($d){
 		if($d==10) $elo = 2700;
 		elseif($d==9) $elo = 2600;
 		elseif($d==8) $elo = 2500;
@@ -1111,7 +1112,7 @@ class AppController extends Controller{
 		return $elo;
 	}
 
-	public function encrypt($str=null){
+	protected function encrypt($str=null){
 		$secret_key = 'my_simple_secret_keyx';
 		$secret_iv = 'my_simple_secret_ivx';
 		$encrypt_method = "AES-256-CBC";
@@ -1120,7 +1121,7 @@ class AppController extends Controller{
 		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
 	}
 
-	public function decrypt($str=null){
+	protected function decrypt($str=null){
 		$string = $str;
 		$secret_key = 'my_simple_secret_keyx';
 		$secret_iv = 'my_simple_secret_ivx';
@@ -1131,18 +1132,18 @@ class AppController extends Controller{
 		return openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
 	}
 
-	public function checkPictureLarge($u){
+	protected function checkPictureLarge($u){
 		if(substr($u['User']['name'],0,3)=='g__' && $u['User']['external_id']!=null)
 			return '<img class="google-profile-image-large" src="/img/google/'.$u['User']['picture'].'">'.substr($u['User']['name'],3);
 		return $u['User']['name'];
 	}
-	public function checkPicture($u){
+	protected function checkPicture($u){
 		if(substr($u['User']['name'],0,3)=='g__' && $u['User']['external_id']!=null)
 			return '<img class="google-profile-image" src="/img/google/'.$u['User']['picture'].'">'.substr($u['User']['name'],3);
 		return $u['User']['name'];
 	}
 
-	public function getTsumegoRank($t){
+	protected function getTsumegoRank($t){
 		if($t<100) return '21k';
 		else if($t<200) return '20k';
 		else if($t<300) return '19k';
@@ -1174,7 +1175,7 @@ class AppController extends Controller{
 		else if($t<2900) return '8d';
 		else return '9d';
 	}
-	public function getTsumegoRankx($t){
+	protected function getTsumegoRankx($t){
 		if($t<=0) return '15k';
 		if($t>0 && $t<=22) $tRank='5d';
 		elseif($t<=26.5) $tRank='4d';
@@ -1198,7 +1199,7 @@ class AppController extends Controller{
 		else $tRank='15k';
 		return $tRank;
 	}
-	public function adjustElo($v){
+	protected function adjustElo($v){
 		$add = 0;
 		if($v>=1700)
 			$add = 110;
@@ -1225,7 +1226,7 @@ class AppController extends Controller{
 		return $v + $add;
 	}
 
-	public function getTsumegoElo($rank, $p=null){
+	protected function getTsumegoElo($rank, $p=null){
 		if($p!=null)
 			$p *= 100;
 		else
@@ -1282,7 +1283,7 @@ class AppController extends Controller{
 		}
 		return $elo;
 	}
-	public function getTsumegoRankVal($t){
+	protected function getTsumegoRankVal($t){
 		if($t<=0) return 0;
 		if($t>0 && $t<=22) return 22-$t;
 		elseif($t<=26.5) return 26.5-$t;
@@ -1305,7 +1306,7 @@ class AppController extends Controller{
 		elseif($t<=96) return 96-$t;
 		else return 100-$t;
 	}
-	public function getTsumegoRankMax($t){
+	protected function getTsumegoRankMax($t){
 		if($t<=0) return 100-96;
 		if($t>0 && $t<=22) return 22;
 		elseif($t<=26.5) return 26.5-22;
@@ -1329,7 +1330,7 @@ class AppController extends Controller{
 		else return 100-96;
 	}
 
-	public function saveDanSolveCondition($solvedTsumegoRank, $tId){
+	protected function saveDanSolveCondition($solvedTsumegoRank, $tId){
 		$this->loadModel('AchievementCondition');
 		if($solvedTsumegoRank=='1d'||$solvedTsumegoRank=='2d'||$solvedTsumegoRank=='3d'||$solvedTsumegoRank=='4d'||$solvedTsumegoRank=='5d'){
 			$danSolveCategory = 'danSolve'.$solvedTsumegoRank;
@@ -1351,7 +1352,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function updateSprintCondition($trigger){
+	protected function updateSprintCondition($trigger){
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$sprintCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 				'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'sprint'
@@ -1371,7 +1372,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function updateGoldenCondition($trigger){
+	protected function updateGoldenCondition($trigger){
 		$goldenCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'golden'
 		)));
@@ -1389,7 +1390,7 @@ class AppController extends Controller{
 		$this->AchievementCondition->save($goldenCondition);
 	}
 
-	public function setPotionCondition(){
+	protected function setPotionCondition(){
 		$potionCondition = $this->AchievementCondition->find('first', array('order' => 'value DESC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 'potion'
 		)));
@@ -1403,7 +1404,7 @@ class AppController extends Controller{
 		$this->AchievementCondition->save($potionCondition);
 	}
 
-	public function updateGems($r){
+	protected function updateGems($r){
 		$this->loadModel('DayRecord');
 		$this->loadModel('AchievementCondition');
 		$datex = new DateTime('today');
@@ -1515,7 +1516,7 @@ class AppController extends Controller{
 		$this->DayRecord->save($dateGem);
 	}
 
-	public function checkDanSolveAchievements(){
+	protected function checkDanSolveAchievements(){
 	if(isset($_SESSION['loggedInUser']['User']['id'])){
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
@@ -1713,7 +1714,7 @@ class AppController extends Controller{
 	}
 	}
 
-	public function checkProblemNumberAchievements(){
+	protected function checkProblemNumberAchievements(){
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$this->loadModel('Achievement');
 			$this->loadModel('AchievementStatus');
@@ -1825,7 +1826,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function checkForLocked($t, $setsWithPremium){
+	protected function checkForLocked($t, $setsWithPremium){
 		if(!isset($_SESSION['loggedInUser']['User']['id'])
 			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
 		)
@@ -1839,7 +1840,7 @@ class AppController extends Controller{
 			$t['Tsumego']['locked'] = false;
 		return $t;
 	}
-	public function checkNoErrorAchievements(){
+	protected function checkNoErrorAchievements(){
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$this->loadModel('Set');
 			$this->loadModel('Tsumego');
@@ -1918,7 +1919,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function checkTimeModeAchievements(){
+	protected function checkTimeModeAchievements(){
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('RankOverview');
@@ -2037,7 +2038,7 @@ class AppController extends Controller{
 		return $updated;
 	}
 
-	public function checkRatingAchievements(){
+	protected function checkRatingAchievements(){
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$this->loadModel('User');
 			$this->loadModel('Achievement');
@@ -2145,7 +2146,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function checkLevelAchievements(){
+	protected function checkLevelAchievements(){
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$this->loadModel('Achievement');
 			$this->loadModel('AchievementStatus');
@@ -2251,7 +2252,7 @@ class AppController extends Controller{
 		}
 	}
 
-	public function checkSetCompletedAchievements(){
+	protected function checkSetCompletedAchievements(){
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Achievement');
@@ -2331,7 +2332,7 @@ class AppController extends Controller{
 		return $updated;
 	}
 
-	public function setAchievementSpecial($s=null){
+	protected function setAchievementSpecial($s=null){
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
@@ -2527,7 +2528,7 @@ class AppController extends Controller{
 		return $updated;
 	}
 
-	public function checkSetAchievements($sid=null){
+	protected function checkSetAchievements($sid=null){
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Achievement');
@@ -2775,7 +2776,7 @@ class AppController extends Controller{
 		return $updated;
 	}
 
-	public function getXPJump($lvl=null){
+	protected function getXPJump($lvl=null){
 		if($lvl>=102) return 0;
 		else if($lvl==101) return 1150;
 		else if($lvl==100) return 50000;
@@ -2786,7 +2787,7 @@ class AppController extends Controller{
 		else return 10;
 	}
 
-	public function getHealth($lvl = null){
+	protected function getHealth($lvl = null){
 		if($lvl>=100) return 30;
 		else if($lvl>=95) return 29;
 		else if($lvl>=90) return 28;
@@ -2810,7 +2811,7 @@ class AppController extends Controller{
 		else return 10;
   }
 
-	public function updateXP($id, $a){
+	protected function updateXP($id, $a){
 		$this->loadModel('User');
 		$xpBonus = 0;
 		for($i=0;$i<count($a);$i++){
@@ -2864,7 +2865,7 @@ class AppController extends Controller{
 		$this->User->save($u);
 	}
 
-	public function removeEmptyFields($arr){
+	protected function removeEmptyFields($arr){
 		$arr2 = array();
 		for($i=0; $i<count($arr); $i++)
 			if(strlen($arr[$i]) > 0)
@@ -2872,7 +2873,7 @@ class AppController extends Controller{
 		return $arr2;
 	}
 
-	public function getPartitionRange($amountRemaining, $collectionSize, $partition){
+	protected function getPartitionRange($amountRemaining, $collectionSize, $partition){
 		if ($collectionSize > 0) {
 			$amountPartitions = floor($amountRemaining / $collectionSize) + 1;
 		} else {
@@ -2900,7 +2901,7 @@ class AppController extends Controller{
 		return $a;
 	}
 
-	public function handleSearchSettings($uid){
+	protected function handleSearchSettings($uid){
 		$this->LoadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', array('conditions' => array('user_id' => $uid)));
 		if($uc==null){
@@ -2917,7 +2918,7 @@ class AppController extends Controller{
 		$this->processSearchParameters($uid);
 	}
 
-	public function processSearchParameters($uid=null){
+	protected function processSearchParameters($uid=null){
 		$query = 'topics';
 		$collectionSize = 200;
 		$search1 = array();
@@ -3002,13 +3003,18 @@ class AppController extends Controller{
 		return $r;
 	}
 
-	public function signIn($u){
+	protected function signIn($u){
 		$_SESSION['loggedInUser'] = $u;
-		$vs = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('user_id' => $u['User']['id'])));
-		if($vs)
+		$this->Session->write('loggedInUser', $u);
+		$vs = $this->TsumegoStatus->find('first', array('conditions' => array('user_id' => $u['User']['id']), 'order' => 'created DESC'));
+		if($vs){
 			$_SESSION['lastVisit'] = $vs['TsumegoStatus']['tsumego_id'];
+			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
+		}
 		$_SESSION['texture'] = $u['User']['texture'];
+		$this->Session->write('texture', $u['User']['texture']);
 		$_SESSION['check1'] = $u['User']['id'];
+		$this->Session->write('check1', $u['User']['id']);
 	}
 
 	private function storeUts($id){
@@ -3035,7 +3041,7 @@ class AppController extends Controller{
 		$_SESSION['loggedInUser']['_utsDate'] = date('Y-m-d');
 	}
 
-	function beforeFilter(){
+	public function beforeFilter(){
 		$this->loadModel('User');
 		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
@@ -3056,8 +3062,6 @@ class AppController extends Controller{
 		$this->loadModel('TagName');
 		$this->loadModel('Favorite');
 
-		ini_set('session.gc_maxlifetime', 7200000);
-		session_set_cookie_params(7200000);
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
 		$resetCookies = false;
@@ -3724,7 +3728,7 @@ class AppController extends Controller{
 		$this->set('hasFavs', $hasFavs);
   }
 
-	function afterFilter(){
+	public function afterFilter(){
 		$this->loadModel('Rank');
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			if($_SESSION['page']!='time mode' && $_SESSION['loggedInUser']['User']['mode'] == 3 || $_SESSION['page']!='time mode' && strlen($_SESSION['loggedInUser']['User']['activeRank'])==15){
