@@ -2,10 +2,10 @@
 <?php
 	$noImage = false;
 	if($isFav) $noImage = true;
-	if($set['Set']['id']==11969 || $set['Set']['id']==29156 || $set['Set']['id']==31813 || $set['Set']['id']==33007 
+	if($set['Set']['id']==11969 || $set['Set']['id']==29156 || $set['Set']['id']==31813 || $set['Set']['id']==33007
 	|| $set['Set']['id']==71790 || $set['Set']['id']==74761 || $set['Set']['id']==81578 || $set['Set']['id']==88156)
 		$noImage = true;
-	
+
 	if($set['Set']['premium']==1){
 		if(!isset($_SESSION['loggedInUser']['User']['id'])
 			|| isset($_SESSION['loggedInUser']['User']['id']) && $_SESSION['loggedInUser']['User']['premium']<1
@@ -32,18 +32,18 @@
 		<?php
 		if($set['Set']['id']!='1') $fav = '';
 		else $fav = '?favorite=1';
-		if($set['Set']['id']!=58 && $set['Set']['id']!=62 && $set['Set']['id']!=91 && $set['Set']['id']!=72 && $set['Set']['id']!=73 && $set['Set']['id']!=74 
+		if($set['Set']['id']!=58 && $set['Set']['id']!=62 && $set['Set']['id']!=91 && $set['Set']['id']!=72 && $set['Set']['id']!=73 && $set['Set']['id']!=74
 		&& $set['Set']['id']!=75 && $set['Set']['id']!=76 && $set['Set']['id']!=77 && $set['Set']['id']!=78 && $set['Set']['id']!=79 && $set['Set']['id']!=80
-		&& $set['Set']['id']!=51 && $set['Set']['id']!=56 && $set['Set']['id']!=57 && $set['Set']['id']!=119 
+		&& $set['Set']['id']!=51 && $set['Set']['id']!=56 && $set['Set']['id']!=57 && $set['Set']['id']!=119
 		&& $set['Set']['id']!=119 && $set['Set']['id']!=126 && $set['Set']['id']!=129 && $set['Set']['id']!=134 && $set['Set']['id']!=135){
 			$beta2 = false;
 		}else $beta2 = true;
 		if($_SESSION['loggedInUser']['User']['id']==72) $beta2 = false;
-		
+
 		if(!$beta2){
 			for($i=0; $i<count($ts); $i++){
 				if(!isset($ts[$i]['Tsumego']['status'])) $ts[$i]['Tsumego']['status'] = 'N';
-				
+
 				if(!isset($ts[$i]['Tsumego']['duplicateLink']))
 					$duplicateLink = '';
 				else{
@@ -59,14 +59,14 @@
 				if($ts[$i]['Tsumego']['seconds']=='') $num3 = '-';
 				else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 				$num3 = '<div class="setViewButtons3">'.$num3.'</div>';
-				
+
 				echo '<li class="set'.$ts[$i]['Tsumego']['status'].'1">
 					<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$ts[$i]['Tsumego']['id'].$duplicateLink.$fav.'">
 					'.$num.$num2.$num3.'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 				</li>';
 			}
 		}
-		
+
 		if($set['Set']['public']==0){
 			if(isset($_SESSION['loggedInUser']['User']['id'])){
 				if($_SESSION['loggedInUser']['User']['isAdmin']>0){
@@ -76,7 +76,7 @@
 						if($_SESSION['loggedInUser']['User']['id']==72 && $set['Set']['id']==161){
 							if($josekiOrder==0) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=order">show order</a>';
 							elseif($josekiOrder==1) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=num">show num</a>';
-							
+
 							echo '<a class="new-button new-buttonx" href="/sets/view/161?sort=1">sort</a>';
 							echo '<a class="new-button new-buttonx" href="/sets/view/161?rename=1">rename</a>';
 							echo '<br><br>';
@@ -95,7 +95,7 @@
 		<table border="0" width="100%">
 		<tr>
 			<td style="vertical-align:top;">
-				<?php 
+				<?php
 				$saNum;
 				$tierReward = array();
 				$tierReward[11] = '';
@@ -107,7 +107,7 @@
 				$tierReward[5] = 'Premium collection.';
 				$tierReward[4] = 'Premium collection.';
 				$tierReward[3] = 'Premium collection.';
-				
+
 				if($set['Set']['image']=='sa-pretty.jpg') $saNum=9;
 				else if($set['Set']['image']=='sa-hunting.jpg') $saNum=8;
 				else if($set['Set']['image']=='sa-ghost.jpg') $saNum=7;
@@ -116,18 +116,18 @@
 				else if($set['Set']['image']=='sa-giant.jpg') $saNum=4;
 				else if($set['Set']['image']=='sa-resistance.jpg') $saNum=3;
 				else $saNum=11;
-				
+
 				if($saNum+$user['User']['premium']>10) $accessOutput = $tierReward[10];
 				else $accessOutput = $tierReward[$saNum+$user['User']['premium']];
-				
+
 				if($saNum==11)
 					$accessOutput = '';
 				if($accessOutput!='')
 					echo $accessOutput.'<br><br>';
-				echo $set['Set']['description']; 
+				echo $set['Set']['description'];
 				?>
 			</td>
-				<?php 
+				<?php
 				if($set['Set']['id']!=1)
 					$fav = '';
 				else
@@ -137,13 +137,13 @@
 						if($set['Set']['image'][2]!='-'){
 							echo '<td width="195px" style="vertical-align:top;"><div align="center">
 								<a href="/tsumegos/play/'.$set['Set']['t'].'">
-								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'" 
+								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 								</a></div></td>';
 						}else{
 							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center">
 								<a href="/tsumegos/play/'.$set['Set']['t'].'">
-								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'" 
+								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'" width="210">
 								</a></div></td>';
 						}
@@ -157,7 +157,7 @@
 						}
 						echo '<td width="195px" style="vertical-align:top;"><div '.$lightDarkImageBackground.' align="center">
 							<a href="/tsumegos/play/'.$set['Set']['t'].'">
-							<img width="182" '.$lightDarkBorder.' src="/img/'. $set['Set']['image'].'" 
+							<img width="182" '.$lightDarkBorder.' src="/img/'. $set['Set']['image'].'"
 							alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 							</a></div></td>';
 					}else{
@@ -173,13 +173,13 @@
 						<td style="vertical-align:top;" width="50%">
 						<div align="center">
 						<br>
-						<?php 
+						<?php
 							if(isset($set['Set']['solved'])){
 								$solvedColor = '#a7a7a7';
 								if($set['Set']['solved']>0){
 									$solvedColor = '#247bb5';
 								}
-								if($set['Set']['solved']==100){ 
+								if($set['Set']['solved']==100){
 									$solvedColor = '#3ecf78';
 								}
 							}
@@ -190,14 +190,14 @@
 						<td style="vertical-align:bottom;" width="50%">
 						<div align="center">
 							<br>
-							Difficulty: 
-							<?php 
+							Difficulty:
+							<?php
 							echo '<b>'.$set['Set']['difficultyRank'].'</b>';
 							if($viewType != 'topics'){
 								?>
 								<br><br>
 								Solved:
-								<?php echo '<b>'.$set['Set']['solved'].'%</b>'; 
+								<?php echo '<b>'.$set['Set']['solved'].'%</b>';
 							}
 							?>
 						</div>
@@ -206,16 +206,16 @@
 				</table>
 			</td>
 			<td style="vertical-align:top;">
-				<div align="center"> 
+				<div align="center">
 				<br><br>
-					<?php	
+					<?php
 					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/tsumegos/play/'.$set['Set']['t'].'">Start</a>';
 					?>
 				</div>
 			</td>
 		</tr>
 		<tr>
-		<?php if($viewType == 'topics'){ ?>	
+		<?php if($viewType == 'topics'){ ?>
 			<td>
 			<br>
 			<div align="center">
@@ -231,11 +231,11 @@
 					echo '</td></tr></table>';
 				} ?>
 			</div>
-			
+
 			</td>
-			
+
 			<td>
-			<?php 
+			<?php
 			if(isset($_SESSION['loggedInUser']['User']['id'])){
 				if($pdCounter>0){
 					$plural = 's';
@@ -243,7 +243,7 @@
 					}else if($pdCounter==2) $pdCounterValue = 80;
 					else if($pdCounter==3) $pdCounterValue = 90;
 					else $pdCounterValue = 99;
-					
+
 					echo '<font color="gray">XP reduced by '.$pdCounterValue.'%. ('.$pdCounter.' reset'.$plural.' this month.)</font>';
 				}
 				if($set['Set']['solved']>=50){ ?>
@@ -440,11 +440,11 @@
 					</div>
 					</td>';
 				}
-			}		
+			}
 			?>
 			</tr>
 		<?php } ?>
-			
+
 		</table>
 		</div>
 		<?php if(!$isFav) echo '<br><br><br><br><br>'; ?>
@@ -465,7 +465,7 @@
 	$("#msg3").hide();
 	$("#msg5").hide();
 	$("#msg6").hide();
-	
+
 	$("#show").click(function(){
 		if(!t1){
 			$("#msg1").show();
@@ -540,7 +540,7 @@
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
 
-	<?php 
+	<?php
 		if($query!='topics')
 			for($i=0; $i<count($search1); $i++)
 				echo 'activeTopicTiles.push("'.$search1[$i].'");';
@@ -590,7 +590,7 @@
 		$("#ratioButton").removeClass("new-button-time-inactive");
 		$("#timeButton").addClass("new-button-time");
 		$("#timeButton").removeClass("new-button-time-inactive");
-		
+
 		$("#showx").click(function(){
 			if(!msg2selected){
 				$("#msg2x").fadeIn(250);
@@ -612,7 +612,7 @@
 			}
 			msgFilterSelected = !msgFilterSelected;
 		});
-	
+
 		function d1(){
 			$("#numbersButton").addClass("new-button-time-inactive");
 			$("#numbersButton").removeClass("new-button-time");
@@ -664,7 +664,7 @@
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "1px solid #b34717");
 		}
-		
+
 	let tags = [];
 	let unapprovedTags = [];
 	let idTags = [];
@@ -694,7 +694,7 @@
 				tagLink = '';
 				tagLinkId = '';
 			}
-			$(".tag-list").append('<a '+tagLink+' '+isNewTag+' '+tagLinkId+'>'+tags[i]+'</a>');	
+			$(".tag-list").append('<a '+tagLink+' '+isNewTag+' '+tagLinkId+'>'+tags[i]+'</a>');
 			if(i<tags.length-1)
 				$(".tag-list").append(', ');
 		}
@@ -709,7 +709,7 @@
 		for(let i=0;i<allTags.length;i++){
 			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="tag-'
 			+allTags[i].replaceAll(' ', '-')+'">'
-			+allTags[i]+'</a>');	
+			+allTags[i]+'</a>');
 			if(i<allTags.length-1)
 				$(".add-tag-list").append(', ');
 		}
@@ -726,7 +726,7 @@
 			for(let i=0;i<allTags.length;i++){
 				if(allTags[i] !== $(currentIdValue).text())
 					newAllTags.push(allTags[i]);
-			}	
+			}
 			allTags = newAllTags;
 			tags.push($(currentIdValue).text());
 			$(".tag-list").html("");
@@ -745,6 +745,8 @@
 		allTags = [];
 		newTag = null;
 		<?php
+		$tags  = (array)$tags;
+		$allTags = (array)$allTags;
 			for($i=0;$i<count($tags);$i++)
 				echo 'tags.push("'.$tags[$i]['Tag']['name'].'");';
 			for($i=0;$i<count($allTags);$i++)
@@ -761,7 +763,7 @@
 		let tooltipSgfs = [];
 		<?php
 			if($refreshView) echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";';
-			
+
 			for($a=0; $a<count($tooltipSgfs); $a++){
 				echo 'tooltipSgfs['.$a.'] = [];';
 				for($y=0; $y<count($tooltipSgfs[$a]); $y++){
@@ -783,10 +785,10 @@
 		margin:0 4px 8px
 	}
 	#showFilters, .showFilters{
-		<?php 
+		<?php
 		$displayNone = false;
 		if($set['Set']['id']==1 || (count($search1)==0 && count($search2)==0 && count($search3)==0))
-			$displayNone = true;	
+			$displayNone = true;
 		else if($query=='topics' && count($search2)==0 && count($search3)==0)
 			$displayNone = true;
 		else if($query=='difficulty' && count($search1)==0 && count($search3)==0)

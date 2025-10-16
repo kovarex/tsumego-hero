@@ -354,6 +354,10 @@ class Shell extends CakeObject {
  * @link https://book.cakephp.org/2.0/en/console-and-shells.html#Shell::hasMethod
  */
 	public function hasMethod($name) {
+		if (!$name) {
+			return false;
+		}
+
 		try {
 			$method = new ReflectionMethod($this, $name);
 			if (!$method->isPublic() || substr($name, 0, 1) === '_') {
@@ -983,7 +987,7 @@ class Shell extends CakeObject {
 
 /**
  * Configure the stdout logger
- * 
+ *
  * @return void
  */
 	protected function _configureStdOutLogger() {
@@ -996,7 +1000,7 @@ class Shell extends CakeObject {
 
 /**
  * Configure the stderr logger
- * 
+ *
  * @return void
  */
 	protected function _configureStdErrLogger() {
@@ -1009,8 +1013,8 @@ class Shell extends CakeObject {
 
 /**
  * Checks if the given logger is configured
- * 
- * @param string $logger The name of the logger to check 
+ *
+ * @param string $logger The name of the logger to check
  * @return bool
  */
 	protected function _loggerIsConfigured($logger) {

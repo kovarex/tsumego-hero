@@ -2237,13 +2237,16 @@ Joschka Zimdars';
 		for($i=0; $i<count($uc); $i++){
 			$x = array();
 			$x['id'] = $uc[$i]['UserContribution']['user_id'];
-			$x['name'] =  $this->checkPicture($this->User->findById($uc[$i]['UserContribution']['user_id']));
-			$x['score'] = $uc[$i]['UserContribution']['score'];
-			$x['added_tag'] = $uc[$i]['UserContribution']['added_tag'];
-			$x['created_tag'] = $uc[$i]['UserContribution']['created_tag'];
-			$x['made_proposal'] = $uc[$i]['UserContribution']['made_proposal'];
-			$x['reviewed'] = $uc[$i]['UserContribution']['reviewed'];
-			array_push($list, $x);
+			$user = $this->User->findById($uc[$i]['UserContribution']['user_id']);
+			if($user && isset($user['User'])){
+				$x['name'] =  $this->checkPicture($user);
+				$x['score'] = $uc[$i]['UserContribution']['score'];
+				$x['added_tag'] = $uc[$i]['UserContribution']['added_tag'];
+				$x['created_tag'] = $uc[$i]['UserContribution']['created_tag'];
+				$x['made_proposal'] = $uc[$i]['UserContribution']['made_proposal'];
+				$x['reviewed'] = $uc[$i]['UserContribution']['reviewed'];
+				array_push($list, $x);
+			}
 		}
 		$this->set('a', $list);
 	}
@@ -2334,7 +2337,9 @@ Joschka Zimdars';
 
 		for($i=count($json['uaId'])-1; $i>=count($json['uaId'])-100; $i--){
 			$u = $this->User->findById($json['uaId'][$i]);
-			$json['uaId'][$i] = $u['User']['name'];
+			if($u && isset($u['User']['name'])){
+				$json['uaId'][$i] = $u['User']['name'];
+			}
 		}
 
 		$this->set('uaNum', $json['uaNum']);
@@ -2479,27 +2484,41 @@ Joschka Zimdars';
 		$this->LoadModel('DayRecord');
 
 		$adminsList = $this->User->find('all', array('order' => 'id ASC', 'conditions' =>  array('isAdmin >' => 0)));
+		if (!$adminsList) {
+			$adminsList = [];
+		}
 		$admins = array();
 		for($i=0; $i<count($adminsList); $i++){
 			array_push($admins, $adminsList[$i]['User']['name']);
 		}
 		$dayRecord = $this->DayRecord->find('all', array('limit' => 2, 'order' => 'id DESC'));
-		$userYesterday = $this->User->findById($dayRecord[0]['DayRecord']['user_id']);
+		$userYesterdayName = 'Unknown';
+		if(count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id'])){
+			$userYesterday = $this->User->findById($dayRecord[0]['DayRecord']['user_id']);
+			if($userYesterday && isset($userYesterday['User']['name'])){
+				$userYesterdayName = $userYesterday['User']['name'];
+			}
+		}
 		if(isset($_SESSION['loggedInUser'])){
 			$ux = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
 			$ux['User']['lastHighscore'] = 3;
 			$this->User->save($ux);
 		}
 		$json = json_decode(file_get_contents('json/daily_highscore.json'), true);
+		if (!$json) {
+			$json = [];
+		}
 		for($i=0; $i<count($json); $i++){
 			$u = $this->User->findById($json[$i]['id']);
-			$json[$i]['name'] = $u['User']['name'];
+			if($u && isset($u['User']['name'])){
+				$json[$i]['name'] = $u['User']['name'];
+			}
 		}
 
 		$this->set('a', $json);
 		$this->set('uNum', count($json));
 		$this->set('admins', $admins);
-		$this->set('dayRecord', $userYesterday['User']['name']);
+		$this->set('dayRecord', $userYesterdayName);
 	}
 	
 	public function view($id=null){
@@ -2546,14 +2565,23 @@ Joschka Zimdars';
 		}
 		
 		$tsumegos = $this->SetConnection->find('all');
+		if (!$tsumegos) {
+			$tsumegos = [];
+		}
 		$uts = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' =>  array('user_id' => $id)));
+		if (!$uts) {
+			$uts = [];
+		}
 		$tsumegoDates = array();
-		
+
 		$setKeys = array();
 		$setArray = $this->Set->find('all', array('conditions' => array('public' => 1)));
+		if (!$setArray) {
+			$setArray = [];
+		}
 		for($i=0; $i<count($setArray); $i++)
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
-		
+
 		$scs = array();
 		for($j=0; $j<count($tsumegos); $j++){
 			if(isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']])){

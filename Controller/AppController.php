@@ -122,6 +122,9 @@ class AppController extends Controller{
 		$this->LoadModel('Set');
 		$invisibleSets = array();
 		$in = $this->Set->find('all', array('conditions' => array('public' => 0)));
+		if (!$in) {
+			$in = [];
+		}
 		for($i=0; $i<count($in); $i++){
 			array_push($invisibleSets, $in[$i]['Set']['id']);
 		}
@@ -131,6 +134,9 @@ class AppController extends Controller{
 	public function getDeletedSets(){
 		$dSets = array();
 		$de = $this->Set->find('all', array('conditions' => array('public' => -1)));
+		if (!$de) {
+			$de = [];
+		}
 		for($i=0; $i<count($de); $i++){
 			array_push($dSets, $de[$i]['Set']['id']);
 		}
@@ -143,6 +149,9 @@ class AppController extends Controller{
 		$this->LoadModel('AchievementStatus');
 		$str = '';
 		$latest = $this->AchievementStatus->find('all', array('limit' => 7, 'order' => 'created DESC'));
+		if (!$latest) {
+			$latest = [];
+		}
 		for($i=0; $i<count($latest); $i++){
 			$a = $this->Achievement->findById($latest[$i]['AchievementStatus']['achievement_id']);
 			$u = $this->User->findById($latest[$i]['AchievementStatus']['user_id']);
@@ -171,7 +180,13 @@ class AppController extends Controller{
 		$ux2 = $this->User->find('all', array('limit' => '8', 'order' => 'reuse3 DESC', 'conditions' => array(
 			'NOT' => array('id' => array(33))
 		)));
+		if (!$ux2) {
+			$ux2 = [];
+		}
 		$last = $this->DayRecord->find('all', array('limit' => '7', 'order' => 'date DESC'));
+		if (!$last) {
+			$last = [];
+		}
 		$lastUotds = array();
 		$lastUsers = array();
 		for($i=0; $i<count($last); $i++)
@@ -225,11 +240,17 @@ class AppController extends Controller{
 			if(!$f) $uotdChosen = true;
 		}
 		$activity = $this->TsumegoAttempt->find('all', array('limit' => 40000, 'conditions' =>  array('DATE(TsumegoAttempt.created)' => date('Y-m-d', strtotime('yesterday')))));
+		if (!$activity) {
+			$activity = [];
+		}
 		$visitedProblems = count($activity);
 
 		//how many users today
 		$usersNum = array();
 		$activity = $this->User->find('all', array('limit' => 400, 'order' => 'created DESC'));
+		if (!$activity) {
+			$activity = [];
+		}
 		for($i=0; $i<count($activity); $i++){
 			$a = new DateTime($activity[$i]['User']['created']);
 			if($a->format('Y-m-d')==$today) array_push($usersNum, $activity[$i]['User']);
@@ -290,6 +311,9 @@ class AppController extends Controller{
 
 		//delete duplicated DayRecords
 		$dr = $this->DayRecord->find('all');
+		if (!$dr) {
+			$dr = [];
+		}
 		$duplicates = array();
 		for($i=0; $i<count($dr); $i++){
 			$alreadyFound = array();
@@ -323,11 +347,17 @@ class AppController extends Controller{
 		$scMap = array();
 		$tsx = array();
 		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array('set_id' => $id)));
+		if (!$sc) {
+			$sc = [];
+		}
 		for($i=0; $i<count($sc); $i++){
 			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
 			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
 		}
 		$ts = $this->Tsumego->find('all', array('conditions' => array('id' => $scIds)));
+		if (!$ts) {
+			$ts = [];
+		}
 		for($i=0; $i<count($ts); $i++){
 			$ts[$i]['Tsumego']['set_id'] = $id;
 			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
@@ -342,6 +372,9 @@ class AppController extends Controller{
 				array('public' => 0),
 			)
 		)));
+		if (!$s) {
+			$s = [];
+		}
 		$ids = array();
 		for($i=0; $i<count($s); $i++){
 			$tSet = $this->findTsumegoSet($s[$i]['Set']['id']);
@@ -355,6 +388,9 @@ class AppController extends Controller{
 				'tsumego_id' => $ids
 			)
 		)));
+		if (!$ut) {
+			$ut = [];
+		}
 		for($i=0; $i<count($ut); $i++){
 			$test1 = $this->Tsumego->findById($ut[$i]['TsumegoStatus']['tsumego_id']);
 			$test2 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $test1['Tsumego']['id'])));
@@ -379,9 +415,18 @@ class AppController extends Controller{
 
 		$solvedUts2 = 0;
 		$tsumegos = $this->SetConnection->find('all');
+		if (!$tsumegos) {
+			$tsumegos = [];
+		}
 		$uts = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' =>  array('user_id' => $uid)));
+		if (!$uts) {
+			$uts = [];
+		}
 		$setKeys = array();
 		$setArray = $this->Set->find('all', array('conditions' => array('public' => 1)));
+		if (!$setArray) {
+			$setArray = [];
+		}
 
 		for($i=0; $i<count($setArray); $i++)
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
@@ -422,6 +467,9 @@ class AppController extends Controller{
 			'id >=' => 15000,
 			'id <=' => 19000
 		)));
+		if (!$u) {
+			$u = [];
+		}
 
 		for($i=0; $i<count($u); $i++){
 			$u[$i]['User']['elo_rating_mode'] = 900;
@@ -518,6 +566,9 @@ class AppController extends Controller{
 		$this->loadModel('TsumegoAttempt');
 		$tsumegoNum = 90;
 		$ra = $this->TsumegoAttempt->find('all', array('limit' => $tsumegoNum, 'order' => 'created DESC', 'conditions' => array('user_id' => $uid)));
+		if (!$ra) {
+			$ra = [];
+		}
 		if(count($ra)<$tsumegoNum){
 			$missing = $tsumegoNum-count($ra);
 			$raSize = count($ra);
@@ -619,6 +670,9 @@ class AppController extends Controller{
 	public function getAllTags($not){
 		$a = array();
 		$notApproved = $this->TagName->find('all', array('conditions' => array('approved' => 0)));
+		if (!$notApproved) {
+			$notApproved = [];
+		}
 		for($i=0;$i<count($not);$i++)
 			array_push($a, $not[$i]['Tag']['tag_name_id']);
 		for($i=0;$i<count($notApproved);$i++)
@@ -626,6 +680,9 @@ class AppController extends Controller{
 		$tn = $this->TagName->find('all', array('conditions' => array(
 			'NOT' => array('id' => $a)
 		)));
+		if (!$tn) {
+			$tn = [];
+		}
 		$sorted = array();
 		$keys = array();
 		for($i=0;$i<count($tn);$i++){
@@ -646,60 +703,96 @@ class AppController extends Controller{
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id <' => 2000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==2){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 2000,
 				'id <' => 4000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==3){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 4000,
 				'id <' => 6000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==4){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 6000,
 				'id <' => 8000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==5){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 8000,
 				'id <' => 10000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==6){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 10000,
 				'id <' => 12000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==7){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 12000,
 				'id <' => 14000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==8){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 14000,
 				'id <' => 16000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==9){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 16000,
 				'id <' => 18000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==10){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 18000,
 				'id <' => 20000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==11){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 20000,
 				'id <' => 22000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}elseif($range==12){
 			$u = $this->User->find('all', array('order' => 'id DESC', 'conditions' =>  array(
 				'id >=' => 22000
 			)));
+			if (!$u) {
+				$u = [];
+			}
 		}
 		for($i=0; $i<count($u); $i++){
 			$this->User->create();
@@ -724,11 +817,17 @@ class AppController extends Controller{
 			$this->User->save($u[$i]);
 		}
 		$uts = $this->TsumegoStatus->find('all', array('conditions' =>  array('status' => 'F')));
+		if (!$uts) {
+			$uts = [];
+		}
 		for($i=0; $i<count($uts); $i++){
 			$uts[$i]['TsumegoStatus']['status'] = 'V';
 			$this->TsumegoStatus->save($uts[$i]);
 		}
 		$uts = $this->TsumegoStatus->find('all', array('conditions' =>  array('status' => 'X')));
+		if (!$uts) {
+			$uts = [];
+		}
 		for($i=0; $i<count($uts); $i++){
 			$uts[$i]['TsumegoStatus']['status'] = 'W';
 			$this->TsumegoStatus->save($uts[$i]);
@@ -744,6 +843,9 @@ class AppController extends Controller{
 		$this->LoadModel('TsumegoStatus');
 		$this->LoadModel('DayRecord');
 		$week = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array('status' => 'S')));
+		if (!$week) {
+			$week = [];
+		}
 		$oneWeek = date('Y-m-d H:i:s', strtotime("-7 days"));
 		for($i=0; $i<count($week); $i++){
 			if($week[$i]['TsumegoStatus']['created'] < $oneWeek){
@@ -759,6 +861,9 @@ class AppController extends Controller{
 		$this->LoadModel('Schedule');
 		$date = date('Y-m-d', strtotime('today'));
 		$s = $this->Schedule->find('all', array('conditions' =>  array('date' => $date)));
+		if (!$s) {
+			$s = [];
+		}
 		for($i=0; $i<count($s); $i++){
 			$id = $this->publishSingle($s[$i]['Schedule']['tsumego_id'], $s[$i]['Schedule']['set_id'], $s[$i]['Schedule']['date']);
 			$s[$i]['Schedule']['tsumego_id'] = $id;
@@ -806,6 +911,9 @@ class AppController extends Controller{
 		$this->Tsumego->delete($sid);
 
 		$sgfs = $this->Sgf->find('all', array('conditions' => array('tsumego_id' => $t)));
+		if (!$sgfs) {
+			$sgfs = [];
+		}
 		for($i=0; $i<count($sgfs); $i++){
 			$sgfs[$i]['Sgf']['tsumego_id'] = $id;
 			$this->Sgf->save($sgfs[$i]);
@@ -827,10 +935,19 @@ class AppController extends Controller{
 		$this->loadModel('SetConnection');
 
 		$ut = $this->TsumegoRatingAttempt->find('all', array('limit' => 10000, 'order' => 'created DESC', 'conditions' => array('status' => 'S')));
+		if (!$ut) {
+			$ut = [];
+		}
 		$out = $this->TsumegoAttempt->find('all', array('limit' => 30000, 'order' => 'created DESC', 'conditions' => array('gain >=' => 40)));
+		if (!$out) {
+			$out = [];
+		}
 
 		$date = date('Y-m-d', strtotime('yesterday'));
 		$s = $this->Schedule->find('all', array('conditions' => array('date' => $date)));
+		if (!$s) {
+			$s = [];
+		}
 		$ids = array();
 		for($i=0; $i<count($ut); $i++){
 			$date2 = new DateTime($ut[$i]['TsumegoRatingAttempt']['created']);
@@ -1393,6 +1510,9 @@ class AppController extends Controller{
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$buffer) {
+			$buffer = [];
+		}
 		$ac = $this->AchievementCondition->find('all', array('order' => 'category ASC', 'conditions' => array(
 			'user_id' => $_SESSION['loggedInUser']['User']['id'],
 			'OR' => array(
@@ -1409,6 +1529,9 @@ class AppController extends Controller{
 				array('category' => 'potion')
 			)
 		)));
+		if (!$ac) {
+			$ac = [];
+		}
 		for($i=0;$i<count($ac);$i++){
 			if($ac[$i]['AchievementCondition']['category']=='danSolve1d')
 				$ac1['1d'] = $ac[$i]['AchievementCondition']['value'];
@@ -1585,6 +1708,9 @@ class AppController extends Controller{
 			$this->loadModel('AchievementStatus');
 			$this->loadModel('AchievementCondition');
 			$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$buffer) {
+				$buffer = [];
+			}
 			$existingAs = array();
 			for($i=0; $i<count($buffer); $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -1715,6 +1841,9 @@ class AppController extends Controller{
 			)));
 
 			$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$buffer) {
+				$buffer = [];
+			}
 			$existingAs = array();
 			for($i=0; $i<count($buffer); $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -1784,6 +1913,9 @@ class AppController extends Controller{
 		$this->loadModel('RankOverview');
 
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$buffer) {
+			$buffer = [];
+		}
 		$existingAs = array();
 		for($i=0; $i<count($buffer); $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -1795,6 +1927,9 @@ class AppController extends Controller{
 		$rFast = $this->RankOverview->find('all', array('conditions' =>  array('mode' => 1, 'user_id' => $_SESSION['loggedInUser']['User']['id'])));//fast
 		$rSlow = $this->RankOverview->find('all', array('conditions' =>  array('mode' => 2, 'user_id' => $_SESSION['loggedInUser']['User']['id'])));//slow
 		$r = $this->RankOverview->find('all', array('conditions' =>  array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$r) {
+			$r = [];
+		}
 
 		$timeModeAchievements = array();
 		for($i=70;$i<=91;$i++){
@@ -1898,6 +2033,9 @@ class AppController extends Controller{
 			$this->loadModel('AchievementStatus');
 			$u = $this->User->findById($_SESSION['loggedInUser']['User']['id']);
 			$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$buffer) {
+				$buffer = [];
+			}
 			$existingAs = array();
 			for($i=0; $i<count($buffer); $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -2001,6 +2139,9 @@ class AppController extends Controller{
 			$this->loadModel('Achievement');
 			$this->loadModel('AchievementStatus');
 			$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$buffer) {
+				$buffer = [];
+			}
 			$existingAs = array();
 			for($i=0; $i<count($buffer); $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -2111,6 +2252,9 @@ class AppController extends Controller{
 		)));
 
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$buffer) {
+			$buffer = [];
+		}
 		$existingAs = array();
 		for($i=0; $i<count($buffer); $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -2182,6 +2326,9 @@ class AppController extends Controller{
 		$this->loadModel('SetConnection');
 
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$buffer) {
+			$buffer = [];
+		}
 		$existingAs = array();
 		for($i=0; $i<count($buffer); $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -2203,6 +2350,9 @@ class AppController extends Controller{
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $tsIds
 			)));
+			if (!$uts) {
+				$uts = [];
+			}
 			$counter = 0;
 			for($j=0; $j<count($uts); $j++){
 				for($k=0; $k<count($ts); $k++){
@@ -2226,6 +2376,9 @@ class AppController extends Controller{
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $tsIds
 			)));
+			if (!$uts) {
+				$uts = [];
+			}
 			$counter = 0;
 			for($j=0; $j<count($uts); $j++){
 				for($k=0; $k<count($ts); $k++){
@@ -2249,6 +2402,9 @@ class AppController extends Controller{
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $tsIds
 			)));
+			if (!$uts) {
+				$uts = [];
+			}
 			$counter = 0;
 			for($j=0; $j<count($uts); $j++){
 				for($k=0; $k<count($ts); $k++){
@@ -2271,6 +2427,9 @@ class AppController extends Controller{
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $tsIds
 			)));
+			if (!$uts) {
+				$uts = [];
+			}
 			$counter = 0;
 			for($j=0; $j<count($uts); $j++){
 				for($k=0; $k<count($ts); $k++){
@@ -2290,6 +2449,9 @@ class AppController extends Controller{
 				'user_id' => $_SESSION['loggedInUser']['User']['id'],
 				'tsumego_id' => $tsIds
 			)));
+			if (!$uts) {
+				$uts = [];
+			}
 			$counter = 0;
 			for($j=0; $j<count($uts); $j++){
 				for($k=0; $k<count($ts); $k++){
@@ -2368,6 +2530,9 @@ class AppController extends Controller{
 			'set_id' => $sid, 'user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => 's'
 		)));
 		$buffer = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+		if (!$buffer) {
+			$buffer = [];
+		}
 		$existingAs = array();
 		for($i=0; $i<count($buffer); $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
@@ -2559,6 +2724,9 @@ class AppController extends Controller{
 			$achievementId = 46;
 			if($acA['AchievementCondition']['value']>=100){
 				$ac100 = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'], 'category' => '%', 'value >=' => 100)));
+				if (!$ac100) {
+					$ac100 = [];
+				}
 				$ac100counter = 0;
 				for($j=0; $j<count($ac100); $j++)
 					if(count($this->findTsumegoSet($ac100[$j]['AchievementCondition']['set_id']))>=100)
@@ -2824,6 +2992,9 @@ class AppController extends Controller{
 
 	private function storeUts($id){
 		$uts = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $id)));
+		if (!$uts) {
+			$uts = [];
+		}
 		$d = array();
 		$dFound = array();
 		for($l=0; $l<count($uts); $l++){
@@ -2979,6 +3150,9 @@ class AppController extends Controller{
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			$this->handleSearchSettings($u['User']['id']);
 			$favx = $this->Favorite->find('all', array('conditions' => array('user_id' => $_SESSION['loggedInUser']['User']['id'])));
+			if (!$favx) {
+				$favx = [];
+			}
 			if(count($favx) > 0)
 				$hasFavs = true;
 			if(isset($_COOKIE['levelBar']) && $_COOKIE['levelBar']!='0'){
@@ -3028,12 +3202,18 @@ class AppController extends Controller{
 				$utsx = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array(
 					'user_id' => $_SESSION['loggedInUser']['User']['id'], 'tsumego_id' => $_COOKIE['preId']
 				)));
+				if (!$utsx) {
+					$utsx = [];
+				}
 				if(count($utsx) > 1)
 					for($i=1;$i<count($utsx);$i++)
 						$this->TsumegoStatus->delete($utsx[$i]['TsumegoStatus']['id']);
 			}
 			$preTsumego = $this->Tsumego->findById($_COOKIE['preId']);
 			$preSc = $this->SetConnection->find('all', array('conditions' => array('tsumego_id' => $_COOKIE['preId'])));
+			if (!$preSc) {
+				$preSc = [];
+			}
 			$preTsumego['Tsumego']['set_id'] = $preSc[0]['SetConnection']['set_id'];
 			$utPre = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('tsumego_id' => $_COOKIE['preId'], 'user_id' => $_SESSION['loggedInUser']['User']['id'])));
 		}
@@ -3220,6 +3400,9 @@ class AppController extends Controller{
 								}
 								if(isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0'){
 									$ranks = $this->Rank->find('all', array('conditions' =>  array('session' => $_SESSION['loggedInUser']['User']['activeRank'])));
+									if (!$ranks) {
+										$ranks = [];
+									}
 									$currentNum = $ranks[0]['Rank']['currentNum'];
 									for($i=0; $i<count($ranks); $i++){
 										if($ranks[$i]['Rank']['num'] == $currentNum-1){
@@ -3521,6 +3704,9 @@ class AppController extends Controller{
 		if(isset($_SESSION['loggedInUser']['User']['id'])){
 			if($_SESSION['page']!='time mode' && $_SESSION['loggedInUser']['User']['mode'] == 3 || $_SESSION['page']!='time mode' && strlen($_SESSION['loggedInUser']['User']['activeRank'])==15){
 				$ranks = $this->Rank->find('all', array('conditions' => array('session' => $_SESSION['loggedInUser']['User']['activeRank'])));
+				if (!$ranks) {
+					$ranks = [];
+				}
 				for($i=0;$i<count($ranks);$i++){
 					$this->Rank->delete($ranks[$i]['Rank']['id']);
 				}

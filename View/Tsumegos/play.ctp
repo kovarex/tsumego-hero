@@ -1836,7 +1836,7 @@
 				echo 'notMode3 = false;';
 				echo '$("#account-bar-xp").text("'.$raName.'");';
 				?>
-				<?php $barPercent = ($crs/$stopParameter)*100; ?>
+				<?php $barPercent = $stopParameter > 0 ? ($crs/$stopParameter)*100 : 0; ?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
 				<?php echo '$("#xp-bar-fill").css("width","'.$barPercent.'%");'; ?>
@@ -2547,7 +2547,7 @@
 			}
 		}else if(mode==3){
 			<?php
-				$xxx2 = (($crs+1)/$stopParameter)*100; 
+				$xxx2 = $stopParameter > 0 ? (($crs+1)/$stopParameter)*100 : 0; 
 				if($xxx2>100) $xxx2 = 100;
 			?>
 			$("#xp-bar-fill").css({"width":"<?php echo $xxx2; ?>%"});

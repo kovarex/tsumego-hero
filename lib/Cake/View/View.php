@@ -968,7 +968,27 @@ class View extends CakeObject {
 		extract($dataForView);
 		ob_start();
 
-		include $this->__viewFile;
+		try {
+			include $this->__viewFile;
+		} catch (Throwable $e) {
+			ob_end_clean();
+			unset($this->__viewFile);
+
+			// The exception already contains the correct file and line
+			// Just enhance the message to make it clearer this is from a template
+			$errorMessage = sprintf(
+				'%s in [%s, line %d]',
+				$e->getMessage(),
+				$e->getFile(),
+				$e->getLine()
+			);
+
+			throw new RuntimeException(
+				$errorMessage,
+				$e->getCode(),
+				$e
+			);
+		}
 
 		unset($this->__viewFile);
 		return ob_get_clean();
