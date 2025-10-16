@@ -2230,7 +2230,7 @@ Joschka Zimdars';
 				}
 			}
 
-			// defaults to prevent SQL error
+			// defaults to prevent SQL error //FIXME
 			$userData['User']['potion'] = 0;
 			$userData['User']['reuse1'] = 0;
 			$userData['User']['penalty'] = 0;
