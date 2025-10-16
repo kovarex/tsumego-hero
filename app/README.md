@@ -1,2 +1,0 @@
-# tsumego-hero-app
- 
