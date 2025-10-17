@@ -3711,7 +3711,13 @@ class AppController extends Controller{
 			$achievementUpdate3 = $this->checkRatingAchievements();
 			$achievementUpdate4 = $this->checkTimeModeAchievements();
 			$achievementUpdate5 = $this->checkDanSolveAchievements();
-			$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2, $achievementUpdate3, $achievementUpdate4, $achievementUpdate5);
+			$achievementUpdate = array_merge(
+				$achievementUpdate1 ?: [],
+				$achievementUpdate2 ?: [],
+				$achievementUpdate3 ?: [],
+				$achievementUpdate4 ?: [],
+				$achievementUpdate5 ?: []
+			);
 			$this->Session->delete('initialLoading');
 		}
 

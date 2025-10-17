@@ -2800,10 +2800,12 @@ Joschka Zimdars';
 			$as[$i]['AchievementStatus']['a_xp'] = $ach[$as[$i]['AchievementStatus']['achievement_id']-1]['Achievement']['xp'];
 		}
 
-		$achievementUpdate = array();
 		$achievementUpdate1 = $this->checkLevelAchievements();
 		$achievementUpdate2 = $this->checkProblemNumberAchievements();
-		$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
+		$achievementUpdate = array_merge(
+			$achievementUpdate1 ?: [],
+			$achievementUpdate2 ?: []
+		);
 
 		if(count($achievementUpdate)>0) $this->updateXP($this->Session->read('loggedInUser.User.id'), $achievementUpdate);
 		$aNum = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
