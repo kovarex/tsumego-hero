@@ -2479,7 +2479,7 @@ class TsumegosController extends AppController{
 				}
 			}
 			if(!$this->Session->check('loggedInUser.User.id') && $this->Session->check('loggedInUser.User.premium'))
-				$this->Session->delete('loggedInUser');
+				//$this->Session->delete('loggedInUser');
 			$achievementUpdate1 = $this->checkLevelAchievements();
 			$achievementUpdate2 = $this->checkProblemNumberAchievements();
 			$achievementUpdate3 = $this->checkNoErrorAchievements();
