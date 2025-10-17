@@ -2266,8 +2266,11 @@ Joschka Zimdars';
 		$uMap = array();
 		for($i=0; $i<count($uAll); $i++)
 			$uMap[$uAll[$i]['User']['id']] = $uAll[$i]['User']['name'];
-		for($i=0; $i<count($json); $i++)
-			$json[$i]['name'] = $uMap[$json[$i]['id']];
+		for($i=0; $i<count($json); $i++) {
+			if (isset($uMap[$json[$i]['id']]) && $uMap[$json[$i]['id']]) {
+				$json[$i]['name'] = $uMap[$json[$i]['id']];
+			}
+		}
 
 		$this->set('users', $json);
 		$this->set('activate', $activate);
