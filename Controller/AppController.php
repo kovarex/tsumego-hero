@@ -3109,7 +3109,7 @@ class AppController extends Controller{
 		}
 
 		if($this->Session->check('loggedInUser.User') && !$this->Session->check('loggedInUser.User.id'))
-			$this->Session->delete('loggedInUser');
+			//$this->Session->delete('loggedInUser');
 		$u = null;
 		if($this->Session->check('loggedInUser.User.id')){
 			$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
