@@ -224,17 +224,19 @@
  * the cake shell command: cake schema create Sessions
  */
 	Configure::write('Session', array(
+		'defaults' => 'php',
 		'cookie' => 'myApp',
-		//'defaults' => 'cake', // Use CakePHP's session handler to store in tmp/sessions
 		'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
-		'autoRegenerate' => true, // causes the session expiration time to reset on each page load
+		'cookieTimeout' => 14400, // Match session timeout
+		'autoRegenerate' => false, // DISABLED: Prevents race conditions and session loss
+		'checkAgent' => false, // Don't check user agent (helps with proxies/mobile)
 		'ini' => array(
 			'session.use_trans_sid' => 0,
 			'session.cookie_samesite' => 'Lax',
 			'session.cookie_httponly' => true,
-			'session.cookie_path' => "/",
+			'session.cookie_path' => '/',
 			'session.gc_maxlifetime' => 864000, // 240 hours in seconds
-			'session.cookie_lifetime' => 864000 // 240 hours in seconds
+			'session.cookie_lifetime' => 864000, // 240 hours in seconds
 		)
 	));
 
