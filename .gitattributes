@@ -13,7 +13,6 @@
 *.js text
 *.css text
 *.ini text
-*.properties text
 *.txt text
 *.xml text
 *.yml text
@@ -36,3 +35,6 @@
 *.ttf binary
 *.eot binary
 *.mp3 binary
+*.PNG binary
+*.JPG binary
+*.GIF binary

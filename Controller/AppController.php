@@ -1936,8 +1936,11 @@ class AppController extends Controller{
 		$updated = array();
 
 		$rBlitz = $this->RankOverview->find('all', array('conditions' =>  array('mode' => 0, 'user_id' => $this->Session->read('loggedInUser.User.id'))));//blitz
+		if (!$rBlitz) $rBlitz = [];
 		$rFast = $this->RankOverview->find('all', array('conditions' =>  array('mode' => 1, 'user_id' => $this->Session->read('loggedInUser.User.id'))));//fast
+		if (!$rFast) $rFast = [];
 		$rSlow = $this->RankOverview->find('all', array('conditions' =>  array('mode' => 2, 'user_id' => $this->Session->read('loggedInUser.User.id'))));//slow
+		if (!$rSlow) $rSlow = [];
 		$r = $this->RankOverview->find('all', array('conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		if (!$r) {
 			$r = [];
