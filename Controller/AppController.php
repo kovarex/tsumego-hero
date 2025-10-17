@@ -3076,7 +3076,7 @@ class AppController extends Controller{
 			$hasPremium = true;
 
 		if($this->Session->check('loggedInUser.User.id')){
-			if($this->Session->read('loggedInUser.User.id')==33) $this->Session->delete('loggedInUser');
+			//if($this->Session->read('loggedInUser.User.id')==33) $this->Session->delete('loggedInUser');
 			$loggedInUser = $this->Session->read('loggedInUser');
 			$this->set('loggedInUser', $loggedInUser);
 		}else{

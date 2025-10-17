@@ -483,9 +483,11 @@
 		if($this->Session->check('loggedInUser.User.id')){
 		if($_COOKIE['PHPSESSID']!=0 && $_COOKIE['PHPSESSID']!=-1){
 	?>
-			var PHPSESSID = getCookie("PHPSESSID");
-			setCookie("PHPSESSID", PHPSESSID);
+			// REMOVED: Never manually set PHPSESSID - PHP manages this automatically
+			// var PHPSESSID = getCookie("PHPSESSID");
+			// setCookie("PHPSESSID", PHPSESSID);
 
+			var PHPSESSID = getCookie("PHPSESSID");
 			setCookie("z_sess", PHPSESSID);
 			localStorage.setItem("z_sess", PHPSESSID);
 
@@ -555,28 +557,28 @@
 		}
 		soundsEnabled = value;
     }
-		document.cookie = "score=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "misplay=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "preId=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "sprint=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "intuition=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "rejuvenation=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "rejuvenationx=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "refinement=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "favorite=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "mode=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "skip=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "transition=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "difficulty=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "seconds=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "sequence=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "reputation=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "rank=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "lastMode=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "sound=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "correctNoPoints=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "ui=0;SameSite=none;expires="+lifetime+";Secure=false";
-		document.cookie = "requestProblem=0;SameSite=none;expires="+lifetime+";Secure=false";
+		document.cookie = "score=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "misplay=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "preId=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "sprint=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "intuition=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "rejuvenation=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "rejuvenationx=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "refinement=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "favorite=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "mode=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "skip=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "transition=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "difficulty=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "seconds=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "sequence=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "reputation=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "rank=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "lastMode=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "sound=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "correctNoPoints=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "ui=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "requestProblem=0;SameSite=Lax;expires="+lifetime+";path=/";
 
 		setCookie("lightDark", "<?php echo $lightDark; ?>");
 		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
@@ -601,7 +603,7 @@
 		setCookie("texture", "0");
 		<?php
 			if(isset($textureCookies))
-				echo 'document.cookie = "texture="+"'.$textureCookies.'"+";SameSite=none;expires="+lifetime+";Secure=false";';
+				echo 'document.cookie = "texture="+"'.$textureCookies.'"+";SameSite=Lax;expires="+lifetime+";path=/";';
 				//echo 'setCookie("texture", '.$textureCookies.');';
 		?>
 		var soundsEnabled = true;
@@ -719,10 +721,10 @@
 		function setCookie(cookie, value=""){
 			let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view"];
 			for(let i=0;i<paths.length;i++)
-				document.cookie = cookie+"="+value+";SameSite=none;Secure=false;expires="+lifetime+";path="+paths[i];
+				document.cookie = cookie+"="+value+";SameSite=Lax;expires="+lifetime+";path="+paths[i];
 		}
 		function setCookie2(cookie, value=""){
-			document.cookie = cookie+"="+value+";SameSite=none;Secure=false;expires="+lifetime+";"
+			document.cookie = cookie+"="+value+";SameSite=Lax;expires="+lifetime+";path=/"
 		}
 		function logoHover(img){
 			img.src = '/img/<?php echo $logoH ?>.png';
@@ -777,7 +779,7 @@
 						boardSettingsString += "1";
 				}
 				//setCookie("texture", boardSettingsString);
-				document.cookie = "texture="+boardSettingsString+";SameSite=none;expires="+lifetime+";Secure=false";
+				document.cookie = "texture="+boardSettingsString+";SameSite=Lax;expires="+lifetime+";path=/";
 				e.stopPropagation();
 			});
 		<?php } ?>
@@ -787,13 +789,13 @@
 				for(let i=1;i<=51;i++)
 					document.getElementById("newCheck"+i).checked = false;
 				//setCookie("texture", "111111111111111111111111111111111111111111111111111");
-				document.cookie = "texture=111111111111111111111111111111111111111111111111111;SameSite=none;expires="+lifetime+";Secure=false";
+				document.cookie = "texture=111111111111111111111111111111111111111111111111111;SameSite=Lax;expires="+lifetime+";path=/";
 				$("#boards-unselect-all").html("Select all");
 			}else{
 				for(let i=1;i<=51;i++)
 					document.getElementById("newCheck"+i).checked = true;
 				//setCookie("texture", "222222222222222222222222222222222222222222222222222");
-				document.cookie = "texture=222222222222222222222222222222222222222222222222222;SameSite=none;expires="+lifetime+";Secure=false";
+				document.cookie = "texture=222222222222222222222222222222222222222222222222222;SameSite=Lax;expires="+lifetime+";path=/";
 				$("#boards-unselect-all").html("Unselect all");
 			}
 			boardsUnselectAll = !boardsUnselectAll;
