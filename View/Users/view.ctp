@@ -374,12 +374,12 @@
 		$("#msg2").show();
 	});
 	function userShow1(num){
-		document.cookie = "lastProfileLeft="+num+";path=/;SameSite=none;Secure=false";
-		document.cookie = "lastProfileLeft="+num+";path=/sets;SameSite=none;Secure=false";
-		document.cookie = "lastProfileLeft="+num+";path=/sets/view;SameSite=none;Secure=false";
-		document.cookie = "lastProfileLeft="+num+";path=/tsumegos/play;SameSite=none;Secure=false";
-		document.cookie = "lastProfileLeft="+num+";path=/users;SameSite=none;Secure=false";
-		document.cookie = "lastProfileLeft="+num+";path=/users/view;SameSite=none;Secure=false";
+		document.cookie = "lastProfileLeft="+num+";path=/;SameSite=Lax";
+		document.cookie = "lastProfileLeft="+num+";path=/sets;SameSite=Lax";
+		document.cookie = "lastProfileLeft="+num+";path=/sets/view;SameSite=Lax";
+		document.cookie = "lastProfileLeft="+num+";path=/tsumegos/play;SameSite=Lax";
+		document.cookie = "lastProfileLeft="+num+";path=/users;SameSite=Lax";
+		document.cookie = "lastProfileLeft="+num+";path=/users/view;SameSite=Lax";
 		if(num==1){
 			$("#userShowLevel1Button").addClass("new-button-time");
 			$("#userShowLevel1Button").removeClass("new-button-time-inactive");
@@ -436,12 +436,12 @@
 	}
 	
 	function userShow2(num){
-		document.cookie = "lastProfileRight="+num+";path=/;SameSite=none;Secure=false";
-		document.cookie = "lastProfileRight="+num+";path=/sets;SameSite=none;Secure=false";
-		document.cookie = "lastProfileRight="+num+";path=/sets/view;SameSite=none;Secure=false";
-		document.cookie = "lastProfileRight="+num+";path=/tsumegos/play;SameSite=none;Secure=false";
-		document.cookie = "lastProfileRight="+num+";path=/users;SameSite=none;Secure=false";
-		document.cookie = "lastProfileRight="+num+";path=/users/view;SameSite=none;Secure=false";
+		document.cookie = "lastProfileRight="+num+";path=/;SameSite=Lax";
+		document.cookie = "lastProfileRight="+num+";path=/sets;SameSite=Lax";
+		document.cookie = "lastProfileRight="+num+";path=/sets/view;SameSite=Lax";
+		document.cookie = "lastProfileRight="+num+";path=/tsumegos/play;SameSite=Lax";
+		document.cookie = "lastProfileRight="+num+";path=/users;SameSite=Lax";
+		document.cookie = "lastProfileRight="+num+";path=/users/view;SameSite=Lax";
 		if(num==1){
 			$("#userShowLevel2Button").addClass("new-button-time");
 			$("#userShowLevel2Button").removeClass("new-button-time-inactive");

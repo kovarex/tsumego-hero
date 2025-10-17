@@ -246,13 +246,13 @@ function levelBarChange(num) {
     modeSelector = 2;
     levelBar = 1;
     levelToRatingHover = num;
-    document.cookie = "levelBar=1;path=/;SameSite=none;Secure=false";
-    document.cookie = "levelBar=1;path=/sets;SameSite=none;Secure=false";
-    document.cookie = "levelBar=1;path=/sets/view;SameSite=none;Secure=false";
+    document.cookie = "levelBar=1;path=/;SameSite=Lax";
+    document.cookie = "levelBar=1;path=/sets;SameSite=Lax";
+    document.cookie = "levelBar=1;path=/sets/view;SameSite=Lax";
     document.cookie =
-      "levelBar=1;path=/tsumegos/play;SameSite=none;Secure=false";
-    document.cookie = "levelBar=1;path=/users;SameSite=none;Secure=false";
-    document.cookie = "levelBar=1;path=/users/view;SameSite=none;Secure=false";
+      "levelBar=1;path=/tsumegos/play;SameSite=Lax";
+    document.cookie = "levelBar=1;path=/users;SameSite=Lax";
+    document.cookie = "levelBar=1;path=/users/view;SameSite=Lax";
   } else {
     $(".account-bar-user-class").removeAttr("id");
     $(".account-bar-user-class").attr("id", "account-bar-user2");
@@ -265,12 +265,12 @@ function levelBarChange(num) {
     modeSelector = 1;
     levelBar = 2;
     levelToRatingHover = num;
-    document.cookie = "levelBar=2;path=/;SameSite=none;Secure=false";
-    document.cookie = "levelBar=2;path=/sets;SameSite=none;Secure=false";
-    document.cookie = "levelBar=2;path=/sets/view;SameSite=none;Secure=false";
+    document.cookie = "levelBar=2;path=/;SameSite=Lax";
+    document.cookie = "levelBar=2;path=/sets;SameSite=Lax";
+    document.cookie = "levelBar=2;path=/sets/view;SameSite=Lax";
     document.cookie =
-      "levelBar=2;path=/tsumegos/play;SameSite=none;Secure=false";
-    document.cookie = "levelBar=2;path=/users;SameSite=none;Secure=false";
-    document.cookie = "levelBar=2;path=/users/view;SameSite=none;Secure=false";
+      "levelBar=2;path=/tsumegos/play;SameSite=Lax";
+    document.cookie = "levelBar=2;path=/users;SameSite=Lax";
+    document.cookie = "levelBar=2;path=/users/view;SameSite=Lax";
   }
 }

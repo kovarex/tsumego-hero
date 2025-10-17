@@ -156,7 +156,7 @@
       };
     </script>
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let elo = [];
 		let variance = [];
 		<?php
@@ -271,7 +271,7 @@
     </script>
 	
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let elo4 = [];
 		let variance4 = [];
 		<?php
@@ -328,7 +328,7 @@
         chart.render();
     </script>
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let elo3 = [];
 		let variance3 = [];
 		<?php
@@ -386,7 +386,7 @@
         chart.render();
     </script>
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let eloA2 = [];
 		let varianceA2 = [];
 		<?php
@@ -499,7 +499,7 @@
         chart.render();
     </script>
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let eloA3 = [];
 		let varianceA3 = [];
 		<?php
@@ -612,7 +612,7 @@
         chart.render();
     </script>
 	<script>
-		document.cookie = "lightDark=light;SameSite=none;Secure=false";
+		document.cookie = "lightDark=light;SameSite=Lax";
 		let eloA4 = [];
 		let varianceA4 = [];
 		<?php
