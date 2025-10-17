@@ -985,7 +985,7 @@ class View extends CakeObject {
 
 			throw new RuntimeException(
 				$errorMessage,
-				$e->getCode(),
+				is_int($e->getCode()) ? $e->getCode() : 0,
 				$e
 			);
 		}
