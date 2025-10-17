@@ -2545,9 +2545,9 @@ class TsumegosController extends AppController{
 				if(count($scNext)>1 && $scNext[$i]['SetConnection']['set_id']==$t['Tsumego']['set_id'])
 					$next .= '?sid='.$t['Tsumego']['set_id'];
 		}else if($mode==2){
-			$next = $nextMode['Tsumego']['id'];
+			$next = isset($nextMode['Tsumego']['id']) ? $nextMode['Tsumego']['id'] : 0;
 		}else if($mode==3){
-			$next = $currentRank2['Tsumego']['id'];
+			$next = isset($currentRank2['Tsumego']['id']) ? $currentRank2['Tsumego']['id'] : 0;
 		}
 		$this->startPageUpdate();
 		$startingPlayer = $this->getStartingPlayer($sgf2);

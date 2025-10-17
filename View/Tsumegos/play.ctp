@@ -1397,12 +1397,12 @@
 	} 
 	if($requestSolution)
 		echo 'authorProblem = true;';
-	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=none;Secure=false";';
+	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
 	if($mode==3){
 		echo 'seconds = 0.0;';
 		echo 'var besogoMode3Next = '.$next.';';
 	}else if($mode==2)
-		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=none;Secure=false";';
+		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
 	echo '
 	';
 	if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
@@ -1721,7 +1721,7 @@
 	<?php } ?>
 	<?php
 	if($potionSuccess){
-		echo 'document.cookie = "rejuvenationx=2;path=/tsumegos/play;SameSite=none;Secure=false";';
+		echo 'document.cookie = "rejuvenationx=2;path=/tsumegos/play;SameSite=Lax";';
 		echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'?potionAlert=1";';
 	}
 
@@ -1827,12 +1827,12 @@
 		if($t['Tsumego']['set_id']==210){ 
 			echo '$("#author-notice").hide();';
 		}
-			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=none;Secure=false";';
-			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=none;Secure=false";';
+			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
+			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
-			if($mode==1) echo 'document.cookie = "mode=1;path=/tsumegos/play;SameSite=none;Secure=false";';
-			if($mode==2) echo 'document.cookie = "mode=2;path=/tsumegos/play;SameSite=none;Secure=false";';
-			if($mode==3) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=none;Secure=false";';
+			if($mode==1) echo 'document.cookie = "mode=1;path=/tsumegos/play;SameSite=Lax";';
+			if($mode==2) echo 'document.cookie = "mode=2;path=/tsumegos/play;SameSite=Lax";';
+			if($mode==3) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
 
 			if($mode==3){
 				echo 'notMode3 = false;';
@@ -2080,7 +2080,7 @@
 					var seconds2 = Math.floor((distance % (1000 * 60)) / 1000);
 					var timeOutput;
 					if(minutes>2)
-						document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=none;Secure=false";
+						document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=Lax";
 					if(distance >= 0){
 						if(!sprintLockedInSecretArea){
 							if(seconds2<10)
@@ -2100,7 +2100,7 @@
 								echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4"><div class="eloTooltip">+'.$eloScoreRounded.'<span class="eloTooltiptext">+'.$eloScore.'</span></div>/<div class="eloTooltip">'.$eloScore2dRounded.' <span class="eloTooltiptext">'.$eloScore2d.'</span></div> '.$avActiveText.'</font>\';';
 							}
 							?>
-							document.cookie = "sprint=1;path=/tsumegos/play;SameSite=none;Secure=false";
+							document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
 						}else{
 							window.location.href = "/sets";
 						}
@@ -2108,8 +2108,8 @@
 						clearInterval(x);
 						<?php
 						if(isset($sprintActivated)){
-							echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=none;Secure=false";';
-							echo 'document.cookie = "doublexp=0;path=/tsumegos/play;SameSite=none;Secure=false";';
+							echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=Lax";';
+							echo 'document.cookie = "doublexp=0;path=/tsumegos/play;SameSite=Lax";';
 						}
 						if($levelBar==1){
 							if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
@@ -2180,7 +2180,7 @@
 						locked = true;
 						tryAgainTomorrow = true;
 						document.cookie = "rank=<?php echo $mode3ScoreArray[2]; ?>";
-						document.cookie = "misplay=1;path=/tsumegos/play;SameSite=none;Secure=false";
+						document.cookie = "misplay=1;path=/tsumegos/play;SameSite=Lax";
 						$("#time-mode-countdown").css("color","#e03c4b");
 						document.getElementById("status").style.color = "#e03c4b";
 						document.getElementById("status").innerHTML = "<h2>Time up</h2>";
@@ -2489,7 +2489,7 @@
 		freePlayMode2done = false;
 		if(heartLoss){
 			misplays++;
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=none;Secure=false";
+			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			updateHealth();
 		}
 		move = 0;
@@ -2501,7 +2501,7 @@
 	function skip(){
 		if( $("#skipButton").text()!="Next" ) {
 			document.cookie = "skip=1";
-			document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=none;Secure=false";
+			document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
 		}
 		<?php echo 'window.location.href = "/tsumegos/play/'.$nextMode['Tsumego']['id'].'";'; ?>
 	}
@@ -2613,9 +2613,9 @@
 			countDownDate = new Date();
 			countDownDate.setMinutes(countDownDate.getMinutes() + 2);
 			//setCookie("doublexp", countDownDate.getTime());
-			document.cookie = "doublexp="+countDownDate.getTime()+";path=/tsumegos/play;SameSite=none;Secure=false";
-			document.cookie = "sprint=1;path=/tsumegos/play;SameSite=none;Secure=false";
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=none;Secure=false";
+			document.cookie = "doublexp="+countDownDate.getTime()+";path=/tsumegos/play;SameSite=Lax";
+			document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
+			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			document.getElementById("sprint").src = "/img/hp1x.png";
 			document.getElementById("sprint").style = "cursor: context-menu;";
 
@@ -2628,7 +2628,7 @@
 						var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 						var timeOutput;
 						if(minutes>2)
-							document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=none;Secure=false";
+							document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=Lax";
 						if(distance>=0){
 							if(!sprintLockedInSecretArea){
 								if(seconds<10)
@@ -2642,7 +2642,7 @@
 								//if(!$goldenTsumego) echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].'×2 XP</font>\';';
 								//else echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].' XP</font>\';';
 								?>
-								document.cookie = "sprint=1;path=/tsumegos/play;SameSite=none;Secure=false";
+								document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
 							}else{
 								window.location.href = "/sets";
 							}
@@ -2650,7 +2650,7 @@
 							clearInterval(x);
 							<?php
 							if(isset($sprintActivated)) 
-								echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=none;Secure=false";';
+								echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=Lax";';
 							if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$playGreenColor.'";
@@ -2707,10 +2707,10 @@
 				for($i=0; $i<$user['User']['health']; $i++){
 					echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
 				}
-				echo 'document.cookie = "rejuvenationx=1;path=/tsumegos/play;SameSite=none;Secure=false";';
+				echo 'document.cookie = "rejuvenationx=1;path=/tsumegos/play;SameSite=Lax";';
 			?>
 			misplays = 0;
-			document.cookie = "rejuvenation=1;path=/tsumegos/play;SameSite=none;Secure=false";
+			document.cookie = "rejuvenation=1;path=/tsumegos/play;SameSite=Lax";
 			document.getElementById("rejuvenation").src = "/img/hp3x.png";
 			document.getElementById("rejuvenation").style = "cursor: context-menu;";
 			<?php if(isset($intuitionEnabled) &&!$intuitionEnabled) echo 'setCookie(intuition, 2);'; ?>
@@ -3037,7 +3037,7 @@
 				if(mode==3){
 					document.cookie = "rank=<?php echo $mode3ScoreArray[0]; ?>";
 					secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
-					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					timeModeEnabled = false;
 					setCookie("score", "<?php echo $score1; ?>");
 					setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
@@ -3073,7 +3073,7 @@
 					ulvl = <?php echo $user['User']['level']; ?>;
 					if(mode==1 || mode==2) secondsy = seconds;
 					if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
-					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;
@@ -3096,7 +3096,7 @@
 					if(mode==1){
 						secondsy = seconds;
 						document.cookie = "correctNoPoints=1";
-						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						if(levelBar==2){
 							runXPBar(true);
 							runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, ulvl);
@@ -3125,7 +3125,7 @@
 					if(goldenTsumego)
 						setCookie("type", "g");
 					secondsy = seconds;
-					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					document.cookie = "sequence="+sequence;
 					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>) + <?php echo $user['User']['xp']; ?>;
 					userNextlvl = <?php echo $user['User']['nextlvl']; ?>;
@@ -3163,7 +3163,7 @@
 					document.cookie = "rank=<?php echo $mode3ScoreArray[1]; ?>";
 					seconds = seconds.toFixed(1);
 					secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
-					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
 					toggleBoardLock(true);
@@ -3178,10 +3178,10 @@
 				if(!noXP){
 					if(!freePlayMode){
 						misplays++;
-						document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=none;Secure=false";
+						document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
 						if(mode==1 || mode==2) secondsy = seconds;
 						if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
-						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=none;Secure=false";
+						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						hoverLocked = false;
 						if(mode==1) updateHealth();
 					}
@@ -3223,9 +3223,9 @@
 					document.cookie = "sequence="+sequence;
 					playedWrong = true;
 					$("#skipButton").text("Next");
-					document.cookie = "misplay="+eloScore+";path=/tsumegos/play;SameSite=none;Secure=false";
-					document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=none;Secure=false";
-					document.cookie = "transition=2;path=/tsumegos/play;SameSite=none;Secure=false";
+					document.cookie = "misplay="+eloScore+";path=/tsumegos/play;SameSite=Lax";
+					document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
+					document.cookie = "transition=2;path=/tsumegos/play;SameSite=Lax";
 					hoverLocked = false;
 					tryAgainTomorrow = true;
 					freePlayMode = true;
@@ -3273,7 +3273,7 @@
 		freePlayMode = false;
 		if(heartLoss){
 			misplays++;
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=none;Secure=false";
+			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 			updateHealth();
 		}
