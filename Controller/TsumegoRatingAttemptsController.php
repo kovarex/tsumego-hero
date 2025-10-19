@@ -41,7 +41,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$header = array('user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_elo', 'tsumego_set', 'status', 'seconds', 'created');
 			
 			$posts = array();
-			for($i=0; $i<count($trs); $i++){
+			$trsCount = count($trs);
+			for($i=0; $i<$trsCount; $i++){
 				$user = $this->User->findById($trs[$i]['TsumegoRatingAttempt']['user_id']);
 				$tsumego = $this->Tsumego->findById($trs[$i]['TsumegoRatingAttempt']['tsumego_id']);
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tsumego['Tsumego']['id'])));
@@ -52,7 +53,8 @@ class TsumegoRatingAttemptsController extends AppController {
 				$set = $this->Set->findById($tsumego['Tsumego']['set_id']);
 				$values = array();
 				$hash = substr($user['User']['ip'], 0, 1);
-				for($j=0; $j<count($header); $j++){
+				$headerCount = count($header);
+				for($j=0; $j<$headerCount; $j++){
 					$a=array();
 					if($header[$j]=='user_ip'){
 						$a['name'] = $header[$j];
@@ -120,7 +122,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
-			for($i=0; $i<count($trs); $i++){
+			$trsCount = count($trs);
+			for($i=0; $i<$trsCount; $i++){
 				array_push($csv, $trs[$i]['TsumegoRatingAttempt']);
 			}
 			
@@ -140,7 +143,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
 			array_push($csv, $header);
-			for($i=0; $i<count($trs); $i++){
+			$trsCount = count($trs);
+			for($i=0; $i<$trsCount; $i++){
 				array_push($csv, $trs[$i]['TsumegoRatingAttempt']);
 			}
 			
@@ -160,7 +164,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
-			for($i=0; $i<count($trs); $i++){
+			$trsCount = count($trs);
+			for($i=0; $i<$trsCount; $i++){
 				array_push($csv, $trs[$i]['TsumegoAttempt']);
 			}
 			
@@ -180,7 +185,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
 			array_push($csv, $header);
-			for($i=0; $i<count($trs); $i++){
+			$trsCount = count($trs);
+			for($i=0; $i<$trsCount; $i++){
 				array_push($csv, $trs[$i]['TsumegoAttempt']);
 			}
 			
@@ -200,7 +206,8 @@ class TsumegoRatingAttemptsController extends AppController {
 			$csv = array();
 			$header = array('id', 'ip');
 			array_push($csv, $header);
-			for($i=0; $i<count($u); $i++){
+			$uCount = count($u);
+			for($i=0; $i<$uCount; $i++){
 				$a = array();
 				array_push($a, $u[$i]['User']['id']);
 				array_push($a, $u[$i]['User']['ip']);
@@ -247,7 +254,8 @@ class TsumegoRatingAttemptsController extends AppController {
 		)));
 		echo '<pre>'; print_r($trsx); echo '</pre>';
 		*/
-		for($i=0; $i<count($trs); $i++){
+		$trsCount = count($trs);
+		for($i=0; $i<$trsCount; $i++){
 			if($trs[$i]['TsumegoAttempt']['solved']==1)
 				$trs[$i]['TsumegoAttempt']['status'] = '<b style="color:#0cbb0c;">Solved</b>';
 			else

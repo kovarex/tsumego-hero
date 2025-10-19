@@ -34,7 +34,8 @@ class AppController extends Controller{
 		$lowestY = 18;
 		$highestX = 0;
 		$highestY = 0;
-		for($i=0; $i<count($stones); $i++){
+		$stonesCount = count($stones);
+		for($i=0; $i<$stonesCount; $i++){
 			if($stones[$i][0]<$lowestX)
 				$lowestX = $stones[$i][0];
 			if($stones[$i][0]>$highestX)
@@ -52,7 +53,8 @@ class AppController extends Controller{
 		}
 		$highestX = 0;
 		$highestY = 0;
-		for($i=0; $i<count($stones); $i++){
+		$stonesCount = count($stones);
+		for($i=0; $i<$stonesCount; $i++){
 			if($stones[$i][0]>$highestX)
 				$highestX = $stones[$i][0];
 			if($stones[$i][1]>$highestY)
@@ -71,13 +73,15 @@ class AppController extends Controller{
 	}
 
 	protected function xFlip($stones){
-		for($i=0; $i<count($stones); $i++)
+		$stonesCount = count($stones);
+		for($i=0; $i<$stonesCount; $i++)
 			$stones[$i][0] = 18-$stones[$i][0];
 		return $stones;
 	}
 
 	protected function yFlip($stones){
-		for($i=0; $i<count($stones); $i++)
+		$stonesCount = count($stones);
+		for($i=0; $i<$stonesCount; $i++)
 			$stones[$i][1] = 18-$stones[$i][1];
 		return $stones;
 	}
@@ -104,7 +108,8 @@ class AppController extends Controller{
 		$xy = true;
 		$arr2 = array();
 		$c = 0;
-		for($i=0; $i<count($arr); $i++){
+		$arrCount = count($arr);
+		for($i=0; $i<$arrCount; $i++){
 			$arr[$i] = $alphabet[$arr[$i]];
 			if($xy){
 				$arr2[$c] = array();
@@ -126,7 +131,8 @@ class AppController extends Controller{
 		if (!$in) {
 			$in = [];
 		}
-		for($i=0; $i<count($in); $i++){
+		$inCount = count($in);
+		for($i=0; $i<$inCount; $i++){
 			array_push($invisibleSets, $in[$i]['Set']['id']);
 		}
 		return $invisibleSets;
@@ -138,7 +144,8 @@ class AppController extends Controller{
 		if (!$de) {
 			$de = [];
 		}
-		for($i=0; $i<count($de); $i++){
+		$deCount = count($de);
+		for($i=0; $i<$deCount; $i++){
 			array_push($dSets, $de[$i]['Set']['id']);
 		}
 		return $dSets;
@@ -153,7 +160,8 @@ class AppController extends Controller{
 		if (!$latest) {
 			$latest = [];
 		}
-		for($i=0; $i<count($latest); $i++){
+		$latestCount = count($latest);
+		for($i=0; $i<$latestCount; $i++){
 			$a = $this->Achievement->findById($latest[$i]['AchievementStatus']['achievement_id']);
 			$u = $this->User->findById($latest[$i]['AchievementStatus']['user_id']);
 			if(substr($u['User']['name'],0,3)=='g__' && $u['User']['external_id']!=null){
@@ -190,14 +198,18 @@ class AppController extends Controller{
 		}
 		$lastUotds = array();
 		$lastUsers = array();
-		for($i=0; $i<count($last); $i++)
+		$lastCount = count($last);
+		for($i=0; $i<$lastCount; $i++)
 			array_push($lastUotds, $last[$i]['DayRecord']['user_id']);
-		for($i=0; $i<count($ux2); $i++)
+		$ux2Count = count($ux2);
+		for($i=0; $i<$ux2Count; $i++)
 			array_push($lastUsers, $ux2[$i]['User']['id']);
 		$resultUser = 72;
-		for($i=0; $i<count($lastUsers); $i++){
+		$lastUsersCount = count($lastUsers);
+		for($i=0; $i<$lastUsersCount; $i++){
 			$foundUser = false;
-			for($j=0; $j<count($lastUotds); $j++){
+			$lastUotdsCount = count($lastUotds);
+			for($j=0; $j<$lastUotdsCount; $j++){
 				if($lastUsers[$i] == $lastUotds[$j])
 					$foundUser = true;
 			}
@@ -226,7 +238,8 @@ class AppController extends Controller{
 			else $newQuote='q'.$newQuote;
 
 			$f = false;
-			for($i=0; $i<count($recentlyUsed); $i++){
+			$recentlyUsedCount = count($recentlyUsed);
+			for($i=0; $i<$recentlyUsedCount; $i++){
 				if($newQuote==$recentlyUsed[$i]['DayRecord']['quote']) $f = true;
 			}
 			if(!$f) $quoteChosen = true;
@@ -237,7 +250,8 @@ class AppController extends Controller{
 		while(!$uotdChosen){
 			$dayUserRand = rand(1,39);
 			$f = false;
-			for($i=0; $i<count($recentlyUsed); $i++){
+			$recentlyUsedCount = count($recentlyUsed);
+			for($i=0; $i<$recentlyUsedCount; $i++){
 				if($dayUserRand==$recentlyUsed[$i]['DayRecord']['userbg']) $f = true;
 			}
 			if(!$f) $uotdChosen = true;
@@ -254,7 +268,8 @@ class AppController extends Controller{
 		if (!$activity) {
 			$activity = [];
 		}
-		for($i=0; $i<count($activity); $i++){
+		$activityCount = count($activity);
+		for($i=0; $i<$activityCount; $i++){
 			$a = new DateTime($activity[$i]['User']['created']);
 			if($a->format('Y-m-d')==$today) array_push($usersNum, $activity[$i]['User']);
 		}
@@ -318,12 +333,14 @@ class AppController extends Controller{
 			$dr = [];
 		}
 		$duplicates = array();
-		for($i=0; $i<count($dr); $i++){
+		$drCount = count($dr);
+		for($i=0; $i<$drCount; $i++){
 			$alreadyFound = array();
-			for($j=0; $j<count($dr); $j++){
+			for($j=0; $j<$drCount; $j++){
 				if($i!=$j && $dr[$j]['DayRecord']['date']==$dr[$i]['DayRecord']['date']){
 					$found = false;
-					for($k=0; $k<count($alreadyFound); $k++){
+					$alreadyFoundCount = count($alreadyFound);
+					for($k=0; $k<$alreadyFoundCount; $k++){
 						if($alreadyFound[$k]['DayRecord']['id']==$dr[$i]['DayRecord']['id'] || $alreadyFound[$k]['DayRecord']['id']==$dr[$j]['DayRecord']['id']) $found = true;
 					}
 					if(!$found){
@@ -355,7 +372,8 @@ class AppController extends Controller{
 		if (!$sc) {
 			$sc = [];
 		}
-		for($i=0; $i<count($sc); $i++){
+		$scCount = count($sc);
+		for($i=0; $i<$scCount; $i++){
 			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
 			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
 		}
@@ -363,7 +381,8 @@ class AppController extends Controller{
 		if (!$ts) {
 			$ts = [];
 		}
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$ts[$i]['Tsumego']['set_id'] = $id;
 			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
 		}
@@ -381,9 +400,11 @@ class AppController extends Controller{
 			$s = [];
 		}
 		$ids = array();
-		for($i=0; $i<count($s); $i++){
+		$sCount = count($s);
+		for($i=0; $i<$sCount; $i++){
 			$tSet = $this->findTsumegoSet($s[$i]['Set']['id']);
-			for($j=0; $j<count($tSet); $j++){
+			$tSetCount = count($tSet);
+			for($j=0; $j<$tSetCount; $j++){
 				array_push($ids, $tSet[$j]['Tsumego']['id']);
 			}
 		}
@@ -396,7 +417,8 @@ class AppController extends Controller{
 		if (!$ut) {
 			$ut = [];
 		}
-		for($i=0; $i<count($ut); $i++){
+		$utCount = count($ut);
+		for($i=0; $i<$utCount; $i++){
 			$test1 = $this->Tsumego->findById($ut[$i]['TsumegoStatus']['tsumego_id']);
 			$test2 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $test1['Tsumego']['id'])));
 			if (!$test2) {
@@ -437,17 +459,20 @@ class AppController extends Controller{
 			$setArray = [];
 		}
 
-		for($i=0; $i<count($setArray); $i++)
+		$setArrayCount = count($setArray);
+		for($i=0; $i<$setArrayCount; $i++)
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
 
 		$scs = array();
-		for($j=0; $j<count($tsumegos); $j++){
+		$tsumegosCount = count($tsumegos);
+		for($j=0; $j<$tsumegosCount; $j++){
 			if(!isset($scs[$tsumegos[$j]['SetConnection']['tsumego_id']]))
 				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']] = 1;
 			else
 				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']]++;
 		}
-		for($j=0; $j<count($uts); $j++){
+		$utsCount = count($uts);
+		for($j=0; $j<$utsCount; $j++){
 			if($uts[$j]['TsumegoStatus']['status']=='S' || $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C'){
 				if(isset($scs[$uts[$j]['TsumegoStatus']['tsumego_id']]))
 					$solvedUts2 += $scs[$uts[$j]['TsumegoStatus']['tsumego_id']];
@@ -480,7 +505,8 @@ class AppController extends Controller{
 			$u = [];
 		}
 
-		for($i=0; $i<count($u); $i++){
+		$uCount = count($u);
+		for($i=0; $i<$uCount; $i++){
 			$u[$i]['User']['elo_rating_mode'] = 900;
 			$u[$i]['User']['solved2'] = 0;
 			$this->User->save($u[$i]);
@@ -593,7 +619,8 @@ class AppController extends Controller{
 		$x = array();
 		$avg = 0;
 		$foundTsumego = 0;
-		for($i=0;$i<count($ra);$i++){
+		$raCount = count($ra);
+		for($i=0;$i<$raCount;$i++){
 			if($ra[$i]['TsumegoAttempt']['tsumego_id']==$tid)
 				$foundTsumego = 1;
 			$d = $this->getActivityValueSingle($ra[$i]['TsumegoAttempt']['created']);
@@ -682,9 +709,11 @@ class AppController extends Controller{
 		if (!$notApproved) {
 			$notApproved = [];
 		}
-		for($i=0;$i<count($not);$i++)
+		$notCount = count($not);
+		for($i=0;$i<$notCount;$i++)
 			array_push($a, $not[$i]['Tag']['tag_name_id']);
-		for($i=0;$i<count($notApproved);$i++)
+		$notApprovedCount = count($notApproved);
+		for($i=0;$i<$notApprovedCount;$i++)
 			array_push($a, $notApproved[$i]['TagName']['id']);
 		$tn = $this->TagName->find('all', array('conditions' => array(
 			'NOT' => array('id' => $a)
@@ -694,13 +723,15 @@ class AppController extends Controller{
 		}
 		$sorted = array();
 		$keys = array();
-		for($i=0;$i<count($tn);$i++){
+		$tnCount = count($tn);
+		for($i=0;$i<$tnCount;$i++){
 			array_push($sorted, $tn[$i]['TagName']['name']);
 			$keys[$tn[$i]['TagName']['name']] = $tn[$i];
 		}
 		sort($sorted);
 		$s2 = array();
-		for($i=0;$i<count($sorted);$i++)
+		$sortedCount = count($sorted);
+		for($i=0;$i<$sortedCount;$i++)
 			array_push($s2, $keys[$sorted[$i]]);
 		return $s2;
 	}
@@ -803,7 +834,8 @@ class AppController extends Controller{
 				$u = [];
 			}
 		}
-		for($i=0; $i<count($u); $i++){
+		$uCount = count($u);
+		for($i=0; $i<$uCount; $i++){
 			$this->User->create();
 			$u[$i]['User']['reuse2'] = 0;//#
 			$u[$i]['User']['reuse3'] = 0;//xp
@@ -829,7 +861,8 @@ class AppController extends Controller{
 		if (!$uts) {
 			$uts = [];
 		}
-		for($i=0; $i<count($uts); $i++){
+		$utsCount = count($uts);
+		for($i=0; $i<$utsCount; $i++){
 			$uts[$i]['TsumegoStatus']['status'] = 'V';
 			$this->TsumegoStatus->save($uts[$i]);
 		}
@@ -837,7 +870,8 @@ class AppController extends Controller{
 		if (!$uts) {
 			$uts = [];
 		}
-		for($i=0; $i<count($uts); $i++){
+		$utsCount = count($uts);
+		for($i=0; $i<$utsCount; $i++){
 			$uts[$i]['TsumegoStatus']['status'] = 'W';
 			$this->TsumegoStatus->save($uts[$i]);
 		}
@@ -856,7 +890,8 @@ class AppController extends Controller{
 			$week = [];
 		}
 		$oneWeek = date('Y-m-d H:i:s', strtotime("-7 days"));
-		for($i=0; $i<count($week); $i++){
+		$weekCount = count($week);
+		for($i=0; $i<$weekCount; $i++){
 			if($week[$i]['TsumegoStatus']['created'] < $oneWeek){
 				if($week[$i]['TsumegoStatus']['status']=='S'){
 					$week[$i]['TsumegoStatus']['status'] = 'W';
@@ -873,7 +908,8 @@ class AppController extends Controller{
 		if (!$s) {
 			$s = [];
 		}
-		for($i=0; $i<count($s); $i++){
+		$sCount = count($s);
+		for($i=0; $i<$sCount; $i++){
 			$id = $this->publishSingle($s[$i]['Schedule']['tsumego_id'], $s[$i]['Schedule']['set_id'], $s[$i]['Schedule']['date']);
 			$s[$i]['Schedule']['tsumego_id'] = $id;
 			$s[$i]['Schedule']['published'] = 1;
@@ -926,7 +962,8 @@ class AppController extends Controller{
 		if (!$sgfs) {
 			$sgfs = [];
 		}
-		for($i=0; $i<count($sgfs); $i++){
+		$sgfsCount = count($sgfs);
+		for($i=0; $i<$sgfsCount; $i++){
 			$sgfs[$i]['Sgf']['tsumego_id'] = $id;
 			$this->Sgf->save($sgfs[$i]);
 		}
@@ -961,7 +998,8 @@ class AppController extends Controller{
 			$s = [];
 		}
 		$ids = array();
-		for($i=0; $i<count($ut); $i++){
+		$utCount = count($ut);
+		for($i=0; $i<$utCount; $i++){
 			$date2 = new DateTime($ut[$i]['TsumegoRatingAttempt']['created']);
 			$date2 = $date2->format('Y-m-d');
 			if($date===$date2){
@@ -983,7 +1021,8 @@ class AppController extends Controller{
 		}
 		$ids2 = array();
 		$out2 = array();
-		for($i=0; $i<count($out); $i++){
+		$outCount = count($out);
+		for($i=0; $i<$outCount; $i++){
 			$date2 = new DateTime($out[$i]['TsumegoAttempt']['created']);
 			$date2 = $date2->format('Y-m-d');
 			if($date===$date2){
@@ -1016,7 +1055,8 @@ class AppController extends Controller{
 		}
 		$newBest = array();
 		for($j=0; $j<$findNum; $j++) $newBest[$j] = array();
-		for($i=0; $i<count($out2); $i++){
+		$out2Count = count($out2);
+		for($i=0; $i<$out2Count; $i++){
 			for($j=0; $j<$findNum; $j++){
 				if($out2[$i]['TsumegoAttempt']['tsumego_id']==$best2[$j]){
 					$x = array();
@@ -1032,9 +1072,11 @@ class AppController extends Controller{
 				}
 			}
 		}
-		for($i=0; $i<count($newBest); $i++){
+		$newBestCount = count($newBest);
+		for($i=0; $i<$newBestCount; $i++){
 			$sum = 0;
-			for($j=0; $j<count($newBest[$i]); $j++){
+			$newBestICount = count($newBest[$i]);
+			for($j=0; $j<$newBestICount; $j++){
 				if($newBest[$i][$j]['seconds']!=null){
 					if($newBest[$i][$j]['seconds']>300){
 						$newBest[$i][$j]['seconds'] = 300;
@@ -1047,10 +1089,12 @@ class AppController extends Controller{
 		}
 		$highest = 0;
 		$hid = 0;
-		for($i=0; $i<count($newBest); $i++){
+		$newBestCount = count($newBest);
+		for($i=0; $i<$newBestCount; $i++){
 			if($newBest[$i]['sum']>$highest && $newBest[$i][0]['sid']!=104 && $newBest[$i][0]['sid']!=105 && $newBest[$i][0]['sid']!=117){
 				$yesterday = false;
-				for($j=0; $j<count($s); $j++){
+				$sCount = count($s);
+				for($j=0; $j<$sCount; $j++){
 					if($newBest[$i][0]['tid']==$s[$j]['Schedule']['tsumego_id']) $yesterday = true;
 				}
 				if(!$yesterday){
@@ -1544,7 +1588,8 @@ class AppController extends Controller{
 		if (!$ac) {
 			$ac = [];
 		}
-		for($i=0;$i<count($ac);$i++){
+		$acCount = count($ac);
+		for($i=0;$i<$acCount;$i++){
 			if($ac[$i]['AchievementCondition']['category']=='danSolve1d')
 				$ac1['1d'] = $ac[$i]['AchievementCondition']['value'];
 			else if($ac[$i]['AchievementCondition']['category']=='danSolve2d')
@@ -1570,7 +1615,8 @@ class AppController extends Controller{
 		}
 
 		$existingAs = array();
-		for($i=0; $i<count($buffer); $i++)
+		$bufferCount = count($buffer);
+		for($i=0; $i<$bufferCount; $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		$as = array();
 		$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -1700,7 +1746,8 @@ class AppController extends Controller{
 			$this->AchievementStatus->save($as);
 			array_push($updated, $achievementId);
 		}
-		for($i=0; $i<count($updated); $i++){
+		$updatedCount = count($updated);
+		for($i=0; $i<$updatedCount; $i++){
 			$a = $this->Achievement->findById($updated[$i]);
 			$updated[$i] = array();
 			$updated[$i][0] = $a['Achievement']['name'];
@@ -1724,7 +1771,8 @@ class AppController extends Controller{
 				$buffer = [];
 			}
 			$existingAs = array();
-			for($i=0; $i<count($buffer); $i++)
+			$bufferCount = count($buffer);
+			for($i=0; $i<$bufferCount; $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			$as = array();
 			$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -1812,7 +1860,8 @@ class AppController extends Controller{
 				}
 			}
 
-			for($i=0; $i<count($updated); $i++){
+			$updatedCount = count($updated);
+			for($i=0; $i<$updatedCount; $i++){
 				$a = $this->Achievement->findById($updated[$i]);
 				$updated[$i] = array();
 				$updated[$i][0] = $a['Achievement']['name'];
@@ -1857,7 +1906,8 @@ class AppController extends Controller{
 				$buffer = [];
 			}
 			$existingAs = array();
-			for($i=0; $i<count($buffer); $i++)
+			$bufferCount = count($buffer);
+			for($i=0; $i<$bufferCount; $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			$as = array();
 			$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -1905,7 +1955,8 @@ class AppController extends Controller{
 				$this->AchievementStatus->save($as);
 				array_push($updated, $achievementId);
 			}
-			for($i=0; $i<count($updated); $i++){
+			$updatedCount = count($updated);
+			for($i=0; $i<$updatedCount; $i++){
 				$a = $this->Achievement->findById($updated[$i]);
 				$updated[$i] = array();
 				$updated[$i][0] = $a['Achievement']['name'];
@@ -1929,7 +1980,8 @@ class AppController extends Controller{
 			$buffer = [];
 		}
 		$existingAs = array();
-		for($i=0; $i<count($buffer); $i++)
+		$bufferCount = count($buffer);
+		for($i=0; $i<$bufferCount; $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		$as = array();
 		$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -1950,7 +2002,8 @@ class AppController extends Controller{
 		for($i=70;$i<=91;$i++){
 			$timeModeAchievements[$i] = false;
 		}
-		for($i=0;$i<count($r);$i++){
+		$rCount = count($r);
+		for($i=0;$i<$rCount;$i++){
 			if($r[$i]['RankOverview']['status']=='s'){
 				if($r[$i]['RankOverview']['rank']=='5k'){
 					if($r[$i]['RankOverview']['mode']==2)
@@ -2028,7 +2081,8 @@ class AppController extends Controller{
 				array_push($updated, $achievementId);
 			}
 		}
-		for($i=0; $i<count($updated); $i++){
+		$updatedCount = count($updated);
+		for($i=0; $i<$updatedCount; $i++){
 			$a = $this->Achievement->findById($updated[$i]);
 			$updated[$i] = array();
 			$updated[$i][0] = $a['Achievement']['name'];
@@ -2052,7 +2106,8 @@ class AppController extends Controller{
 				$buffer = [];
 			}
 			$existingAs = array();
-			for($i=0; $i<count($buffer); $i++)
+			$bufferCount = count($buffer);
+			for($i=0; $i<$bufferCount; $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			$as = array();
 			$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -2135,7 +2190,8 @@ class AppController extends Controller{
 				$this->AchievementStatus->save($as);
 				array_push($updated, $achievementId);
 			}
-			for($i=0; $i<count($updated); $i++){
+			$updatedCount = count($updated);
+			for($i=0; $i<$updatedCount; $i++){
 				$a = $this->Achievement->findById($updated[$i]);
 				$updated[$i] = array();
 				$updated[$i][0] = $a['Achievement']['name'];
@@ -2158,7 +2214,8 @@ class AppController extends Controller{
 				$buffer = [];
 			}
 			$existingAs = array();
-			for($i=0; $i<count($buffer); $i++)
+			$bufferCount = count($buffer);
+			for($i=0; $i<$bufferCount; $i++)
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			$as = array();
 			$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -2241,7 +2298,8 @@ class AppController extends Controller{
 				$this->AchievementStatus->save($as);
 				array_push($updated, $achievementId);
 			}
-			for($i=0; $i<count($updated); $i++){
+			$updatedCount = count($updated);
+			for($i=0; $i<$updatedCount; $i++){
 				$a = $this->Achievement->findById($updated[$i]);
 				$updated[$i] = array();
 				$updated[$i][0] = $a['Achievement']['name'];
@@ -2274,7 +2332,8 @@ class AppController extends Controller{
 			$buffer = [];
 		}
 		$existingAs = array();
-		for($i=0; $i<count($buffer); $i++)
+		$bufferCount = count($buffer);
+		for($i=0; $i<$bufferCount; $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		$as = array();
 		$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -2322,7 +2381,8 @@ class AppController extends Controller{
 			$this->AchievementStatus->save($as);
 			array_push($updated, $achievementId);
 		}
-		for($i=0; $i<count($updated); $i++){
+		$updatedCount = count($updated);
+		for($i=0; $i<$updatedCount; $i++){
 			$a = $this->Achievement->findById($updated[$i]);
 			$updated[$i] = array();
 			$updated[$i][0] = $a['Achievement']['name'];
@@ -2348,7 +2408,8 @@ class AppController extends Controller{
 			$buffer = [];
 		}
 		$existingAs = array();
-		for($i=0; $i<count($buffer); $i++)
+		$bufferCount = count($buffer);
+		for($i=0; $i<$bufferCount; $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		$as = array();
 		$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -2362,7 +2423,8 @@ class AppController extends Controller{
 			$ts3 = $this->findTsumegoSet(53);
 			$ts4 = $this->findTsumegoSet(54);
 			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			for($i=0; $i<count($ts); $i++)
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $this->Session->read('loggedInUser.User.id'),
@@ -2372,8 +2434,9 @@ class AppController extends Controller{
 				$uts = [];
 			}
 			$counter = 0;
-			for($j=0; $j<count($uts); $j++){
-				for($k=0; $k<count($ts); $k++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
+				for($k=0; $k<$tsCount; $k++){
 					if($uts[$j]['TsumegoStatus']['tsumego_id']==$ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status']=='S'
 					|| $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C')){
 						$counter++;
@@ -2388,7 +2451,8 @@ class AppController extends Controller{
 			$ts3 = $this->findTsumegoSet(65);
 			$ts4 = $this->findTsumegoSet(66);
 			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			for($i=0; $i<count($ts); $i++)
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $this->Session->read('loggedInUser.User.id'),
@@ -2398,8 +2462,9 @@ class AppController extends Controller{
 				$uts = [];
 			}
 			$counter = 0;
-			for($j=0; $j<count($uts); $j++){
-				for($k=0; $k<count($ts); $k++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
+				for($k=0; $k<$tsCount; $k++){
 					if($uts[$j]['TsumegoStatus']['tsumego_id']==$ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status']=='S'
 					|| $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C')){
 						$counter++;
@@ -2414,7 +2479,8 @@ class AppController extends Controller{
 			$ts3 = $this->findTsumegoSet(196);
 			$ts4 = $this->findTsumegoSet(203);
 			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
-			for($i=0; $i<count($ts); $i++)
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $this->Session->read('loggedInUser.User.id'),
@@ -2424,8 +2490,9 @@ class AppController extends Controller{
 				$uts = [];
 			}
 			$counter = 0;
-			for($j=0; $j<count($uts); $j++){
-				for($k=0; $k<count($ts); $k++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
+				for($k=0; $k<$tsCount; $k++){
 					if($uts[$j]['TsumegoStatus']['tsumego_id']==$ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status']=='S'
 					|| $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C')){
 						$counter++;
@@ -2439,7 +2506,8 @@ class AppController extends Controller{
 			$ts2 = $this->findTsumegoSet(193);
 			$ts3 = $this->findTsumegoSet(198);
 			$ts = array_merge($ts1, $ts2, $ts3);
-			for($i=0; $i<count($ts); $i++)
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $this->Session->read('loggedInUser.User.id'),
@@ -2449,8 +2517,9 @@ class AppController extends Controller{
 				$uts = [];
 			}
 			$counter = 0;
-			for($j=0; $j<count($uts); $j++){
-				for($k=0; $k<count($ts); $k++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
+				for($k=0; $k<$tsCount; $k++){
 					if($uts[$j]['TsumegoStatus']['tsumego_id']==$ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status']=='S'
 					|| $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C')){
 						$counter++;
@@ -2461,7 +2530,8 @@ class AppController extends Controller{
 				$completed = $s;
 		}else if($s=='1000w2'){
 			$ts = $this->findTsumegoSet(216);
-			for($i=0; $i<count($ts); $i++)
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++)
 				array_push($tsIds, $ts[$i]['Tsumego']['id']);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $this->Session->read('loggedInUser.User.id'),
@@ -2471,8 +2541,9 @@ class AppController extends Controller{
 				$uts = [];
 			}
 			$counter = 0;
-			for($j=0; $j<count($uts); $j++){
-				for($k=0; $k<count($ts); $k++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
+				for($k=0; $k<$tsCount; $k++){
 					if($uts[$j]['TsumegoStatus']['tsumego_id']==$ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status']=='S'
 					|| $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C')){
 						$counter++;
@@ -2518,7 +2589,8 @@ class AppController extends Controller{
 			$this->AchievementStatus->save($as);
 			array_push($updated, $achievementId);
 		}
-		for($i=0; $i<count($updated); $i++){
+		$updatedCount = count($updated);
+		for($i=0; $i<$updatedCount; $i++){
 			$a = $this->Achievement->findById($updated[$i]);
 			$updated[$i] = array();
 			$updated[$i][0] = $a['Achievement']['name'];
@@ -2555,7 +2627,8 @@ class AppController extends Controller{
 			$buffer = [];
 		}
 		$existingAs = array();
-		for($i=0; $i<count($buffer); $i++)
+		$bufferCount = count($buffer);
+		for($i=0; $i<$bufferCount; $i++)
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		$as = array();
 		$as['AchievementStatus']['user_id'] = $this->Session->read('loggedInUser.User.id');
@@ -2749,7 +2822,8 @@ class AppController extends Controller{
 					$ac100 = [];
 				}
 				$ac100counter = 0;
-				for($j=0; $j<count($ac100); $j++)
+				$ac100Count = count($ac100);
+				for($j=0; $j<$ac100Count; $j++)
 					if(count($this->findTsumegoSet($ac100[$j]['AchievementCondition']['set_id']))>=100)
 						$ac100counter++;
 				$as100 = $this->AchievementStatus->find('first', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'), 'achievement_id' => $achievementId)));
@@ -2766,7 +2840,8 @@ class AppController extends Controller{
 				}
 			}
 		}
-		for($i=0; $i<count($updated); $i++){
+		$updatedCount = count($updated);
+		for($i=0; $i<$updatedCount; $i++){
 			$a = $this->Achievement->findById($updated[$i]);
 			$updated[$i] = array();
 			$updated[$i][0] = $a['Achievement']['name'];
@@ -2817,7 +2892,8 @@ class AppController extends Controller{
 	protected function updateXP($id, $a){
 		$this->loadModel('User');
 		$xpBonus = 0;
-		for($i=0;$i<count($a);$i++){
+		$aCount = count($a);
+		for($i=0;$i<$aCount;$i++){
 			$xpBonus += $a[$i][4];
 		}
 		$u = $this->User->findById($id);
@@ -2870,7 +2946,8 @@ class AppController extends Controller{
 
 	protected function removeEmptyFields($arr){
 		$arr2 = array();
-		for($i=0; $i<count($arr); $i++)
+		$arrCount = count($arr);
+		for($i=0; $i<$arrCount; $i++)
 			if(strlen($arr[$i]) > 0)
 				array_push($arr2, $arr[$i]);
 		return $arr2;
@@ -3024,7 +3101,8 @@ class AppController extends Controller{
 		$d = array();
 		$dFound = array();
 		$sessionUts = array();
-		for($l=0; $l<count($uts); $l++){
+		$utsCount = count($uts);
+		for($l=0; $l<$utsCount; $l++){
 			$sessionUts[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
 			if(isset($d[$uts[$l]['TsumegoStatus']['tsumego_id']]))
 				array_push($dFound, $uts[$l]['TsumegoStatus']['tsumego_id']);
@@ -3235,9 +3313,11 @@ class AppController extends Controller{
 				if (!$utsx) {
 					$utsx = [];
 				}
-				if(count($utsx) > 1)
-					for($i=1;$i<count($utsx);$i++)
+				if(count($utsx) > 1){
+					$utsxCount = count($utsx);
+					for($i=1;$i<$utsxCount;$i++)
 						$this->TsumegoStatus->delete($utsx[$i]['TsumegoStatus']['id']);
+				}
 			}
 			$preTsumego = $this->Tsumego->findById($_COOKIE['preId']);
 			$preSc = $this->SetConnection->find('all', array('conditions' => array('tsumego_id' => $_COOKIE['preId'])));
@@ -3342,7 +3422,8 @@ class AppController extends Controller{
 				$isSet = true;
 				$isNumSc = false;
 				$isSetSc = false;
-				for($i=0;$i<count($preSc);$i++){
+				$preScCount = count($preSc);
+				for($i=0;$i<$preScCount;$i++){
 					if($preSc[$i]['SetConnection']['set_id']==$preTsumego['Tsumego']['set_id'])
 						$isSetSc = true;
 					if($preSc[$i]['SetConnection']['num']==$preTsumego['Tsumego']['num'])
@@ -3441,7 +3522,8 @@ class AppController extends Controller{
 										$ranks = [];
 									}
 									$currentNum = $ranks[0]['Rank']['currentNum'];
-									for($i=0; $i<count($ranks); $i++){
+									$ranksCount = count($ranks);
+									for($i=0; $i<$ranksCount; $i++){
 										if($ranks[$i]['Rank']['num'] == $currentNum-1){
 											if($_COOKIE['rank']!='solved' && $_COOKIE['rank']!='failed' && $_COOKIE['rank']!='skipped' && $_COOKIE['rank']!='timeout'){
 												$_COOKIE['rank']='failed';
@@ -3637,14 +3719,16 @@ class AppController extends Controller{
 					$this->Session->write('texture', $u['User']['texture']);
 				$textureCookies = $this->Session->read('texture');
 				$splitTextureCookies = str_split($textureCookies);
-				for($i=0;$i<count($splitTextureCookies);$i++)
+				$splitTextureCookiesCount = count($splitTextureCookies);
+				for($i=0;$i<$splitTextureCookiesCount;$i++)
 					if($splitTextureCookies[$i]==2)
 						$enabledBoards[$i+1] = 'checked';
 					else
 						$enabledBoards[$i+1] = '';
 			}
 
-			for($i=0;$i<count($splitCookie);$i++)
+			$splitCookieCount = count($splitCookie);
+			for($i=0;$i<$splitCookieCount;$i++)
 				if($splitCookie[$i]==2)
 					$enabledBoards[$i+1] = 'checked';
 				else
@@ -3756,7 +3840,8 @@ class AppController extends Controller{
 				if (!$ranks) {
 					$ranks = [];
 				}
-				for($i=0;$i<count($ranks);$i++){
+				$ranksCount = count($ranks);
+				for($i=0;$i<$ranksCount;$i++){
 					$this->Rank->delete($ranks[$i]['Rank']['id']);
 				}
 				$this->Session->write('loggedInUser.User.activeRank', 0);

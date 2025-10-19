@@ -19,11 +19,13 @@ class AchievementsController extends AppController {
 				$as = [];
 			}
 
-			for($i=0; $i<count($as); $i++)
+			$asCount = count($as);
+			for($i=0; $i<$asCount; $i++)
 				$existingAs[$as[$i]['AchievementStatus']['achievement_id']] = $as[$i];
 		}
 
-		for($i=0; $i<count($a); $i++){
+		$aCount = count($a);
+		for($i=0; $i<$aCount; $i++){
 			$a[$i]['Achievement']['unlocked'] = false;
 			$a[$i]['Achievement']['created'] = '';
 			if(isset($existingAs[$a[$i]['Achievement']['id']])){
@@ -58,7 +60,7 @@ class AchievementsController extends AppController {
 		if($this->Session->check('loggedInUser.User.id')){
 			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $this->Session->read('loggedInUser.User.id'))));
 		}
-		if(!empty($as)){
+		if($as){
 			$date = date_create($as['AchievementStatus']['created']);
 			$as['AchievementStatus']['created'] = date_format($date,"d.m.Y H:i");
 		}
@@ -83,7 +85,7 @@ class AchievementsController extends AppController {
 				$acGoldenCount = 0;
 			else
 				$acGoldenCount = $acGolden[0]['AchievementCondition']['value'];
-			if(!empty($as))
+			if($as)
 				$acGoldenCount = 10;
 			if($a['Achievement']['id']==97)
 				$a['Achievement']['additionalDescription'] = 'Progress: '.$acGoldenCount.'/10';

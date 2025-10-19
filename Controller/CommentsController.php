@@ -38,7 +38,8 @@ class CommentsController extends AppController{
 		if (!$swp) {
 			$swp = [];
 		}
-		for($i=0;$i<count($swp);$i++)
+		$swpCount = count($swp);
+		for($i=0;$i<$swpCount;$i++)
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
 
 		if($filter1=='true'){
@@ -64,7 +65,8 @@ class CommentsController extends AppController{
 		
 		$keyList = array();
 		$keyListStatus = array();
-		for($i=0; $i<count($userTsumegos); $i++){
+		$userTsumegosCount = count($userTsumegos);
+		for($i=0; $i<$userTsumegosCount; $i++){
 			$keyList[$i] = $userTsumegos[$i]['TsumegoStatus']['tsumego_id'];
 			$keyListStatus[$i] = $userTsumegos[$i]['TsumegoStatus']['status'];
 		}
@@ -140,7 +142,8 @@ class CommentsController extends AppController{
 		}
 		if($filter1=='true'){
 			$commentsBuffer = array();
-			for($i=0; $i<count($comments); $i++){
+			$commentsCount = count($comments);
+			for($i=0; $i<$commentsCount; $i++){
 				$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
 				$premiumLock = false;
 				if(!$hasPremium)
@@ -201,7 +204,8 @@ class CommentsController extends AppController{
 			}
 		}else{
 			$commentsBuffer = array();
-			for($i=0; $i<count($comments); $i++){
+			$commentsCount = count($comments);
+			for($i=0; $i<$commentsCount; $i++){
 				if($counter<11){
 					$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
 					$premiumLock = false;
@@ -261,7 +265,8 @@ class CommentsController extends AppController{
 		if($reverseOrder){
 			$c = array_reverse($c);
 			$counter = 0;
-			for($i=0; $i<count($c); $i++){
+			$cCount = count($c);
+			for($i=0; $i<$cCount; $i++){
 				$counter++;
 				$c[$i]['Comment']['counter'] = $counter+$index;
 			}
@@ -306,8 +311,9 @@ class CommentsController extends AppController{
 			}
 			$yourindex = $this->params['url']['your-index'];
 		}
-		
-		for($i=0; $i<count($yourComments); $i++){
+
+		$yourCommentsCount = count($yourComments);
+		for($i=0; $i<$yourCommentsCount; $i++){
 			if($yourcounter<11){
 				$t = $this->Tsumego->findById($yourComments[$i]['Comment']['tsumego_id']);
 				if(!isset($t['Tsumego']['id'])) $t['Tsumego']['id'] = 0;
@@ -355,14 +361,16 @@ class CommentsController extends AppController{
 		if($yourreverseOrder){
 			$yourc = array_reverse($yourc);
 			$yourcounter = 0;
-			for($i=0; $i<count($yourc); $i++){
+			$yourcCount = count($yourc);
+			for($i=0; $i<$yourcCount; $i++){
 				$yourcounter++;
 				$yourc[$i]['Comment']['counter'] = $yourcounter+$yourindex;
 			}
 		}
-		
+
 		$yourComments2 = array();
-		for($i=0; $i<count($yourComments); $i++){
+		$yourCommentsCount2 = count($yourComments);
+		for($i=0; $i<$yourCommentsCount2; $i++){
 			if($counter<10){
 				$u = $this->User->findById($yourComments[$i]['Comment']['user_id']);
 				$t = $this->Tsumego->findById($yourComments[$i]['Comment']['tsumego_id']);
@@ -405,7 +413,8 @@ class CommentsController extends AppController{
 		$tooltipSgfs2 = array();
 		$tooltipInfo2 = array();
 		$tooltipBoardSize2 = array();
-		for($i=0; $i<count($c); $i++){
+		$cCount2 = count($c);
+		for($i=0; $i<$cCount2; $i++){
 			if(strpos($c[$i]['Comment']['message'], '<a href="/files/ul1/') === false)
 				$c[$i]['Comment']['message'] = htmlspecialchars($c[$i]['Comment']['message']);
 			$c[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $c[$i]['Comment']['message']);
@@ -419,7 +428,8 @@ class CommentsController extends AppController{
 				array_push($tooltipBoardSize, $tArr[3]);
 			}
 		}
-		for($i=0; $i<count($yourc); $i++){
+		$yourcCount2 = count($yourc);
+		for($i=0; $i<$yourcCount2; $i++){
 			$yourc[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $yourc[$i]['Comment']['message']);
 			
 			$tBuffer = $this->Tsumego->findById($yourc[$i]['Comment']['tsumego_id']);
@@ -441,7 +451,8 @@ class CommentsController extends AppController{
 			if (!$uc) {
 				$uc = [];
 			}
-			for($i=0; $i<count($uc); $i++)
+			$ucCount = count($uc);
+			for($i=0; $i<$ucCount; $i++)
 				$this->Comment->delete($uc[$i]['Comment']['id']);
 		}
 

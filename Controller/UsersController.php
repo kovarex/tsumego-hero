@@ -38,7 +38,8 @@ class UsersController extends AppController{
 				'num >=' => $numFrom,
 				'num <=' => $numTo
 			)));
-			for($i=0; $i<count($sc); $i++){
+			$scCount = count($sc);
+			for($i=0; $i<$scCount; $i++){
 				if($startDay>9) $digit = '';
 				else $digit = '0';
 				$s = array();
@@ -62,7 +63,8 @@ class UsersController extends AppController{
 			'num <=' => 20
 		)));
 
-		for($i=0; $i<count($t); $i++){
+		$tCount = count($t);
+		for($i=0; $i<$tCount; $i++){
 			$tag = array();
 			$tag['Tag']['tsumego_id'] = $t[$i]['Tsumego']['id'];
 			$tag['Tag']['user_id'] = 72;
@@ -80,7 +82,8 @@ class UsersController extends AppController{
 		)));
 		$counter=0;
 
-		for($i=0;$i<count($st);$i++){
+		$stCount = count($st);
+		for($i=0; $i<$stCount; $i++){
 			if(strpos(' '.$st[$i]['Tsumego']['description'], 'b ')){
 				$st[$i]['Tsumego']['description'] = str_replace('b ', '[b] ', $st[$i]['Tsumego']['description']);
 				$this->Tsumego->save($st[$i]);
@@ -92,7 +95,8 @@ class UsersController extends AppController{
 		echo '<pre>'; print_r(count($st)); echo '</pre>';
 		//
 		$tn = $this->TagName->find('all');
-		for($i=0;$i<count($tn);$i++){
+		$tnCount = count($tn);
+		for($i=0; $i<$tnCount; $i++){
 			$tn[$i]['TagName']['color'] = rand(0,24);
 			$this->TagName->save($tn[$i]);
 		}
@@ -125,7 +129,8 @@ class UsersController extends AppController{
 			'num <=' => 10
 		)));
 
-		for($i=0; $i<count($sc); $i++){
+		$scCount = count($sc);
+		for($i=0; $i<$scCount; $i++){
 			$s = array();
 			$s['Schedule']['published'] = '0';
 			$s['Schedule']['date'] = '2024-03-25';
@@ -141,7 +146,8 @@ class UsersController extends AppController{
 			'num <=' => 210
 		)));
 
-		for($i=0; $i<count($sc); $i++){
+		$scCount = count($sc);
+		for($i=0; $i<$scCount; $i++){
 			$s = array();
 			$s['Schedule']['published'] = '0';
 			$s['Schedule']['date'] = '2024-03-21';
@@ -151,7 +157,8 @@ class UsersController extends AppController{
 			$this->Schedule->save($s);
 		}
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			//$this->setTsumegoElo($ts[$i]['Tsumego']['id']);
 			$this->setTsumegoElo($ts[$i]);
 		}
@@ -161,7 +168,8 @@ class UsersController extends AppController{
 			'id <=' => 20000
 		)));
 
-		for($i=0; $i<count($u); $i++){
+		$uCount = count($u);
+		for($i=0; $i<$uCount; $i++){
 			if($u[$i]['User']['elo_rating_mode']!=100){
 				$u[$i]['User']['elo_rating_mode'] = 100;
 				$u[$i]['User']['rd'] = 200;
@@ -175,7 +183,8 @@ class UsersController extends AppController{
 			'id <=' => 29643
 		)));
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$sc['SetConnection']['set_id'] = 216;
 			$sc['SetConnection']['tsumego_id'] = $ts[$i]['Tsumego']['id'];
 			$sc['SetConnection']['num'] = $ts[$i]['Tsumego']['num'];
@@ -185,7 +194,8 @@ class UsersController extends AppController{
 
 		$comments = $this->Comment->find('all');
 		$c = array();
-		for($i=0; $i<count($comments); $i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			array_push($c, $comments[$i]['Comment']['user_id']);
 		}
 		$c = array_count_values($c);
@@ -200,7 +210,8 @@ class UsersController extends AppController{
 		//$s = $this->Tsumego->find('all', array('conditions' => array('id >' => 14000)));
 		//echo '<pre>'; print_r(count($s)); echo '</pre>';
 		/*
-		for($j=0; $j<count($s); $j++){
+		$sCount = count($s);
+		for($j=0; $j<$sCount; $j++){
 			//$this->SetConnection->create();
 			$sc = array();
 			$sc['SetConnection']['tsumego_id'] = $s[$j]['Tsumego']['id'];
@@ -212,7 +223,8 @@ class UsersController extends AppController{
 		$ts1 = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => 5080)));
 		$correctCounter = 0;
 		$ts2 = array();
-		for($j=0; $j<count($ts1); $j++){
+		$ts1Count = count($ts1);
+		for($j=0; $j<$ts1Count; $j++){
 			if($ts1[$j]['TsumegoStatus']['status']=='S' || $ts1[$j]['TsumegoStatus']['status']=='W' || $ts1[$j]['TsumegoStatus']['status']=='C'){
 				$correctCounter++;
 
@@ -240,7 +252,8 @@ class UsersController extends AppController{
 			)
 		)));
 		$cc = array();
-		for($i=0; $i<count($c); $i++){
+		$cCount = count($c);
+		for($i=0; $i<$cCount; $i++){
 			$u = $this->User->findById($c[$i]['Comment']['user_id']);
 			array_push($cc, $u['User']['name']);
 		}
@@ -248,12 +261,14 @@ class UsersController extends AppController{
 
 		$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => 42)));
 		$sgfs = array();
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			//$this->Tsumego->delete($ts[$i]['Tsumego']['id']);
 			array_push($sgfs, $this->Sgf->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id']))));
 		}
 
-		for($i=0; $i<count($sgfs); $i++){
+		$sgfsCount = count($sgfs);
+		for($i=0; $i<$sgfsCount; $i++){
 			$this->Sgf->delete($sgfs[$i]['Sgf']['id']);
 		}
 		echo '<pre>'; print_r(count($ts)); echo '</pre>';
@@ -265,7 +280,8 @@ class UsersController extends AppController{
 			'num <=' => 540
 		)));
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$s = array();
 			$s['Schedule']['published'] = '0';
 			$s['Schedule']['date'] = '2023-11-05';
@@ -290,7 +306,8 @@ class UsersController extends AppController{
 		$ta = $this->TsumegoAttempt->find('all', array('limit' => 5000, 'order' => 'created ASC'));
 		echo '<pre>'; print_r($ta[0]['TsumegoAttempt']['created']); echo '</pre>';
 
-		for($i=0; $i<count($ta); $i++)
+		$taCount = count($ta);
+		for($i=0; $i<$taCount; $i++)
 			$this->TsumegoAttempt->delete($ta[$i]['TsumegoAttempt']['id']);
 
 		$this->set('x', '2023-08-01 00:00:00');
@@ -304,7 +321,8 @@ class UsersController extends AppController{
 			'id >=' => 20000,
 			'id <=' => 30000
 		)));
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$this->set_elo($ts[$i]['Tsumego']['id']);
 		}
 	}
@@ -362,7 +380,8 @@ class UsersController extends AppController{
 			$counter+=.5;
 		}
 		echo '<table>';
-		for($i=0; $i<count($a['c']); $i++){
+		$aCount = count($a['c']);
+		for($i=0; $i<$aCount; $i++){
 			echo '<tr>';
 			echo '<td>'.$a['c'][$i].'</td><td>'.$a['rank'][$i].'</td><td>'.$a['rank3'][$i].'</td><td>'.$a['elo'][$i].'</td><td>'.$a['elo2'][$i].'</td>';
 			echo '</tr>';
@@ -373,13 +392,15 @@ class UsersController extends AppController{
 	private function transferCollection($from, $to){
 		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array('set_id' => $from)));
 		$tsIds = array();
-		for($i=0; $i<count($sc); $i++){
+		$scCount = count($sc);
+		for($i=0; $i<$scCount; $i++){
 			array_push($tsIds, $sc[$i]['SetConnection']['tsumego_id']);
 			$sc[$i]['SetConnection']['set_id'] = $to;
 			$this->SetConnection->save($sc[$i]);
 		}
 		$ts = $this->Tsumego->find('all', array('conditions' => array('id' => $tsIds)));
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$ts[$i]['Tsumego']['set_id'] = $to;
 			$this->Tsumego->save($ts[$i]);
 		}
@@ -391,7 +412,8 @@ class UsersController extends AppController{
 		$ts = $this->Tsumego->find('all', array('order' => 'elo_rating_mode ASC'));
 		echo '<pre>'; print_r(count($ts)); echo '</pre>';
 		echo '<table>';
-		for($i=0; $i<count($ts); $i++)
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++)
 			echo '<tr><td>'.$ts[$i]['Tsumego']['id'].'</td><td>'.$ts[$i]['Tsumego']['difficulty']
 			.'</td><td>'.$ts[$i]['Tsumego']['userWin'].'</td><td>'.$ts[$i]['Tsumego']['elo_rating_mode'].'</td></tr>';
 		echo '</table>';
@@ -455,7 +477,8 @@ class UsersController extends AppController{
 		$t = $this->Tsumego->find('all', array('conditions' => array(
 			'rd <' => -500
 		)));
-		for($i=0; $i<count($t); $i++){
+		$tCount = count($t);
+		for($i=0; $i<$tCount; $i++){
 			$ta = $this->TsumegoAttempt->find('all', array('limit' => 2, 'order' => 'created ASC', 'conditions' => array(
 				'tsumego_id' => $t[$i]['Tsumego']['id'],
 				'NOT' => array(
@@ -480,7 +503,8 @@ class UsersController extends AppController{
 			'author' => ''
 		)));
 		/*
-		for($i=0; $i<count($t); $i++){
+		$tCount = count($t);
+		for($i=0; $i<$tCount; $i++){
 			$ta = $this->TsumegoAttempt->find('all', array('limit' => 2, 'order' => 'created ASC', 'conditions' => array(
 				'tsumego_id' => $t[$i]['Tsumego']['id'],
 				'NOT' => array(
@@ -511,7 +535,8 @@ class UsersController extends AppController{
 		$x2min = 2200;
 		$x2max = 2900;
 
-		for($i=0;$i<count($ts);$i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$sc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));
 			if (!$sc) {
 				continue;
@@ -549,7 +574,8 @@ class UsersController extends AppController{
 		$x2min = 100;
 		$x2max = 1200;
 
-		for($i=0;$i<count($ts);$i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$sc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));
 			if (!$sc) {
 				continue;
@@ -590,7 +616,8 @@ class UsersController extends AppController{
 		$x2min = 2200;
 		$x2max = 2900;
 
-		for($i=0;$i<count($ts);$i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$sc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));
 			if (!$sc) {
 				continue;
@@ -645,7 +672,8 @@ class UsersController extends AppController{
 		$more = array();
 		$less = array();
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			if($ts[$i]['Tsumego']['rd']>0)
 				array_push($more, $ts[$i]['Tsumego']['rd']);
 			if($ts[$i]['Tsumego']['rd']<0)
@@ -677,7 +705,8 @@ class UsersController extends AppController{
 		}
 
 		echo '<table>';
-		for($i=0; $i<count($ts); $i++)
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++)
 			echo '<tr><td>'.$ts[$i]['elo'].'</td><td>'.$ts[$i]['xp'].'</td></tr>';
 		echo '</table>';
 	}
@@ -688,7 +717,8 @@ class UsersController extends AppController{
 		$this->loadModel('Set');
 		$this->loadModel('PublishDate');
 		$ts = $this->Tsumego->find('all', array('order' => 'created ASC'));
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$pdsc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));
 			if (!$pdsc) {
 				continue;
@@ -711,7 +741,8 @@ class UsersController extends AppController{
 		$this->loadModel('SetConnection');
 
 		$ts = $this->Tsumego->find('all', array('conditions' => array('id >=' => 18000)));
-		for($j=0; $j<count($ts); $j++){
+		$tsCount = count($ts);
+		for($j=0; $j<$tsCount; $j++){
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$j]['Tsumego']['id'], 'set_id' => $ts[$j]['Tsumego']['set_id'])));
 			if($scx==null){
 				$sc = array();
@@ -732,7 +763,8 @@ class UsersController extends AppController{
 
 		$p = $this->Schedule->find('all', array('order' => 'date ASC', 'conditions' => array('published' => 0)));
 
-		for($i=0; $i<count($p); $i++){
+		$pCount = count($p);
+		for($i=0; $i<$pCount; $i++){
 			$t = $this->Tsumego->findById($p[$i]['Schedule']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -751,7 +783,8 @@ class UsersController extends AppController{
 		$this->PurgeList->save($pl);
 
 		$ut = $this->TsumegoStatus->find('all', array('limit' => 10000, 'conditions' =>  array('user_id' => 33)));
-		for($i=0; $i<count($ut); $i++){
+		$utCount = count($ut);
+		for($i=0; $i<$utCount; $i++){
 			$this->TsumegoStatus->delete($ut[$i]['TsumegoStatus']['id']);
 		}
 		$this->set('ut', count($ut));
@@ -853,7 +886,8 @@ Joschka Zimdars';
 		$activity = $this->User->find('all', array('order' => array('User.reuse3 DESC')));
 		$todaysUsers = array();
 		$today = date('Y-m-d', strtotime('today'));
-		for($i=0; $i<count($activity); $i++){
+		$activityCount = count($activity);
+		for($i=0; $i<$activityCount; $i++){
 			$a = new DateTime($activity[$i]['User']['created']);
 			if($a->format('Y-m-d')==$today) array_push($todaysUsers, $activity[$i]['User']);
 		}
@@ -886,12 +920,14 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoRatingAttempt');
 		$ux = $this->User->find('all', array('limit' => 1000, 'order' => 'created DESC'));
 
-		for($i=0; $i<count($ux); $i++){
+		$uxCount = count($ux);
+		for($i=0; $i<$uxCount; $i++){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('order' => 'created DESC', 'conditions' => array('user_id' => $ux[$i]['User']['id'])));
 			$activeToday = false;
 			$d1 = date('Y-m-d', strtotime('yesterday'));
 
-			for($j=0; $j<count($trs); $j++){
+			$trsCount = count($trs);
+			for($j=0; $j<$trsCount; $j++){
 				$date = new DateTime($trs[$j]['TsumegoRatingAttempt']['created']);
 				$date = $date->format('Y-m-d');
 				$trs[$j]['TsumegoRatingAttempt']['created'] = $date;
@@ -955,7 +991,8 @@ Joschka Zimdars';
 	public function routine20(){//popular tags
 		$tags = $this->Tag->find('all', array('conditions' => array('approved' => 1)));
 		$tagCount = array();
-		for($i=0; $i<count($tags); $i++)
+		$tagsCount = count($tags);
+		for($i=0; $i<$tagsCount; $i++)
 			array_push($tagCount, $tags[$i]['Tag']['tag_name_id']);
 
 		$tagCount = array_count_values($tagCount);
@@ -967,7 +1004,8 @@ Joschka Zimdars';
 		}
 		array_multisort($tagNum, $tagId);
 		$array = array();
-		for($i=count($tagId)-1; $i>=0; $i--){
+		$tagIdCount = count($tagId);
+		for($i=$tagIdCount-1; $i>=0; $i--){
 			$a = array();
 			$a['id'] = $tagId[$i];
 			$a['num'] = $tagNum[$i];
@@ -979,7 +1017,8 @@ Joschka Zimdars';
 		$users = $this->User->find('all', array('limit' => 1000, 'order' => 'level DESC'));
 		$userP = array();
 		$stop = 1;
-		for($i=0;$i<count($users);$i++){
+		$usersCount = count($users);
+		for($i=0; $i<$usersCount; $i++){
 			if($stop<=1000){
 				$lvl = 1;
 				$toplvl = $users[$i]['User']['level'];
@@ -1012,7 +1051,8 @@ Joschka Zimdars';
 		$anz = 0;
 		$rand = rand(0,9);
 		echo $rand;
-		for($i=0;$i<count($users);$i++){
+		$usersCount = count($users);
+		for($i=0; $i<$usersCount; $i++){
 			if($stop<=1000 && $anz<1000){
 				array_push($UxpSum, $users[$i]['User']['xpSum']);
 				if(strlen($users[$i]['User']['name'])>20) $users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
@@ -1030,7 +1070,8 @@ Joschka Zimdars';
 		}
 		array_multisort($UxpSum, $Uname, $Ulevel, $Uid, $Utype, $Usolved);
 		$users2 = array();
-		for($i=0; $i<count($UxpSum); $i++){
+		$UxpSumCount = count($UxpSum);
+		for($i=0; $i<$UxpSumCount; $i++){
 			$a = array();
 			$a['xpSum'] = $UxpSum[$i];
 			$a['name'] = mb_convert_encoding($Uname[$i], 'UTF-8', 'ISO-8859-1');
@@ -1048,7 +1089,8 @@ Joschka Zimdars';
 		$as = $this->AchievementStatus->find('all');
 		$as2 = array();
 
-		for($i=0; $i<count($as); $i++){
+		$asCount = count($as);
+		for($i=0; $i<$asCount; $i++){
 			if($as[$i]['AchievementStatus']['achievement_id']!=46){
 				array_push($as2, $as[$i]['AchievementStatus']['user_id']);
 			}else{
@@ -1082,7 +1124,8 @@ Joschka Zimdars';
 		$activity = $this->User->find('all', array('order' => array('User.reuse3 DESC')));
 		$todaysUsers = array();
 		$today = date('Y-m-d', strtotime('today'));
-		for($i=0; $i<count($activity); $i++){
+		$activityCount = count($activity);
+		for($i=0; $i<$activityCount; $i++){
 			$activity[$i]['User']['name'] =  mb_convert_encoding($activity[$i]['User']['name'], 'UTF-8', 'ISO-8859-1');
 			$a = new DateTime($activity[$i]['User']['created']);
 			if($a->format('Y-m-d')==$today) array_push($todaysUsers, $activity[$i]['User']);
@@ -1093,9 +1136,11 @@ Joschka Zimdars';
 	public function routine24(){//time mode overview
 		$sets = $this->Set->find('all', array('conditions' => array('public' => 1)));
 		$tsumegos = array();
-		for($i=0;$i<count($sets);$i++){
+		$setsCount = count($sets);
+		for($i=0; $i<$setsCount; $i++){
 			$tx = $this->findTsumegoSet($sets[$i]['Set']['id']);
-			for($j=0;$j<count($tx);$j++){
+			$txCount = count($tx);
+			for($j=0; $j<$txCount; $j++){
 				array_push($tsumegos, $tx[$j]);
 			}
 		}
@@ -1121,9 +1166,11 @@ Joschka Zimdars';
 		array_push($rx, '4d');
 		array_push($rx, '5d');
 		$rxx = array();
-		for($i=0;$i<count($rx);$i++)
+		$rxCount = count($rx);
+		for($i=0; $i<$rxCount; $i++)
 			$rxx[$rx[$i]] = array();
-		for($i=0;$i<count($tsumegos);$i++){
+		$tsumegosCount = count($tsumegos);
+		for($i=0; $i<$tsumegosCount; $i++){
 			if($tsumegos[$i]['Tsumego']['elo_rating_mode']>=2500) array_push($rxx['5d'], $tsumegos[$i]);
 			elseif($tsumegos[$i]['Tsumego']['elo_rating_mode']>=2400) array_push($rxx['4d'], $tsumegos[$i]);
 			elseif($tsumegos[$i]['Tsumego']['elo_rating_mode']>=2300) array_push($rxx['3d'], $tsumegos[$i]);
@@ -1172,9 +1219,11 @@ Joschka Zimdars';
 
 	public function routine25(){//tsumego public and set_id
 		$sets = $this->Set->find('all', array('conditions' => array('public' => 1)));
-		for($i=0; $i<count($sets); $i++){
+		$setsCount = count($sets);
+		for($i=0; $i<$setsCount; $i++){
 			$ts = $this->findTsumegoSet($sets[$i]['Set']['id']);
-			for($j=0; $j<count($ts); $j++){
+			$tsCount = count($ts);
+			for($j=0; $j<$tsCount; $j++){
 				$save = false;
 				if($ts[$j]['Tsumego']['public']!=1){
 					$ts[$j]['Tsumego']['public'] = 1;
@@ -1199,7 +1248,8 @@ Joschka Zimdars';
 			$u = $this->User->find('all', array('conditions' =>  array(
 				'NOT' => array('lastRefresh' => date('Y-m-d'))
 			)));
-			for($i=0; $i<count($u); $i++){
+			$uCount = count($u);
+			for($i=0; $i<$uCount; $i++){
 				$this->User->create();
 				$u[$i]['User']['reuse2'] = 0;//#
 				$u[$i]['User']['reuse3'] = 0;//xp
@@ -1229,7 +1279,8 @@ Joschka Zimdars';
 		$ux = $this->User->find('all', array('limit' => 1000, 'order' => 'created DESC'));
 		$u = array();
 		$d1 = date('Y-m-d', strtotime('-7 days'));
-		for($i=0; $i<count($ux); $i++){
+		$uxCount = count($ux);
+		for($i=0; $i<$uxCount; $i++){
 			$date = new DateTime($ux[$i]['User']['created']);
 			$date = $date->format('Y-m-d');
 			if($date==$d1){
@@ -1242,19 +1293,22 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoStatus');
 
 		$users = $this->User->find('all', array('limit' => 100, 'order' => 'created DESC'));
-		for($i=0; $i<count($users); $i++){
+		$usersCount = count($users);
+		for($i=0; $i<$usersCount; $i++){
 			$uid = $users[$i]['User']['id'];
 			$ux = $this->User->findById($uid);
 			$uts = $this->TsumegoStatus->find('all', array('conditions' =>  array('user_id' => $uid)));
 			$solvedUts = array();
-			for($j=0; $j<count($uts); $j++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
 				if($uts[$j]['TsumegoStatus']['status']=='S' || $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C'){
 					array_push($solvedUts, $uts[$j]);
 				}
 			}
 			/*$uts = $this->OldTsumegoStatus->find('all', array('conditions' =>  array('user_id' => $uid)));
 			$solvedUts2 = array();
-			for($j=0; $j<count($uts); $j++){
+			$utsCount = count($uts);
+			for($j=0; $j<$utsCount; $j++){
 				if($uts[$j]['OldTsumegoStatus']['status']=='S' || $uts[$j]['OldTsumegoStatus']['status']=='W' || $uts[$j]['OldTsumegoStatus']['status']=='C'){
 					array_push($solvedUts2, $uts[$j]);
 				}
@@ -1274,7 +1328,8 @@ Joschka Zimdars';
 			'id >' => $a['Answer']['message'],
 			'id <=' => $a['Answer']['dismissed']
 		)));
-		for($i=0; $i<count($u); $i++){
+		$uCount = count($u);
+		for($i=0; $i<$uCount; $i++){
 			$solvedUts = $this->TsumegoStatus->find('all', array('conditions' =>  array(
 				'user_id' => $u[$i]['User']['id'],
 				'OR' => array(
@@ -1316,7 +1371,8 @@ Joschka Zimdars';
 			$ur = $this->TsumegoAttempt->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array('user_id' => $uid)));
 		}
 
-		for($i=0; $i<count($ur); $i++){
+		$urCount = count($ur);
+		for($i=0; $i<$urCount; $i++){
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
 			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
 			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
@@ -1381,7 +1437,8 @@ Joschka Zimdars';
 		$performance['p90F'] = 0;
 		$performance['pX'] = 0;
 
-		for($i=0; $i<count($ur); $i++){
+		$urCount = count($ur);
+		for($i=0; $i<$urCount; $i++){
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
 			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
@@ -1452,7 +1509,8 @@ Joschka Zimdars';
 
 		$ts = $this->findTsumegoSet($sid);
 		$ids = array();
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			array_push($ids, $ts[$i]['Tsumego']['id']);
 		}
 
@@ -1462,7 +1520,8 @@ Joschka Zimdars';
 			$ur = $this->TsumegoAttempt->find('all', array('order' => 'created DESC', 'conditions' => array('tsumego_id' => $ids)));
 		}
 
-		for($i=0; $i<count($ur); $i++){
+		$urCount = count($ur);
+		for($i=0; $i<$urCount; $i++){
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
 			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
@@ -1507,13 +1566,15 @@ Joschka Zimdars';
 		$c1 = array();
 		$c2 = array();
 		$c3 = array();
-		for($i=0; $i<count($comments); $i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			if(is_numeric($comments[$i]['Comment']['status'])){
 				if($comments[$i]['Comment']['status']==0) array_push($c1, $comments[$i]);
 			}
 		}
 		$comments = $c1;
-		for($i=0; $i<count($comments); $i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -1532,9 +1593,11 @@ Joschka Zimdars';
 		$todaysUsers = array();
 		$activity = $this->User->find('all', array('order' => array('User.reuse3 DESC')));
 
-		for($i=0; $i<count($comments); $i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			$userID = $comments[$i]['Comment']['user_id'];
-			for($j=0; $j<count($activity); $j++){
+			$activityCount = count($activity);
+			for($j=0; $j<$activityCount; $j++){
 				if($activity[$j]['User']['id']==$userID){
 					$comments[$i]['Comment']['user_id'] = $activity[$j]['User']['id'];
 					$comments[$i]['Comment']['user_name'] = $activity[$j]['User']['name'];
@@ -1550,14 +1613,16 @@ Joschka Zimdars';
 			}
 		}
 		$comments2 = array();
-		for($i=0; $i<count($comments); $i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			if(is_numeric($comments[$i]['Comment']['status'])){
 				if($comments[$i]['Comment']['status']==0) array_push($comments2, $comments[$i]);
 			}
 		}
 		$comments = $comments2;
 
-		for($i=0; $i<count($activity); $i++){
+		$activityCount = count($activity);
+		for($i=0; $i<$activityCount; $i++){
 			$a = new DateTime($activity[$i]['User']['created']);
 			if($a->format('Y-m-d')==$today) array_push($todaysUsers, $activity[$i]['User']);
 		}
@@ -1580,7 +1645,8 @@ Joschka Zimdars';
 
 		$ans = $this->Answer->find('all', array('order' => 'created DESC'));
 		$a = array();
-		for($i=0; $i<count($ans); $i++){
+		$ansCount = count($ans);
+		for($i=0; $i<$ansCount; $i++){
 			$a[$i]['date'] = $ans[$i]['Answer']['created'];
 			$a[$i]['num'] = $ans[$i]['Answer']['dismissed'];
 			$a[$i]['y'] = date('Y', strtotime($ans[$i]['Answer']['created']));
@@ -1645,7 +1711,7 @@ Joschka Zimdars';
 
 		if(isset($this->params['url']['remove'])){
 			$remove = $this->Tsumego->findById($this->params['url']['remove']);
-			if(!empty($remove)){
+			if($remove){
 				$remove['Tsumego']['duplicate'] = 0;
 				$this->Tsumego->save($remove);
 			}
@@ -1659,7 +1725,8 @@ Joschka Zimdars';
 				$r2 = $this->Tsumego->find('all', array('conditions' => array('duplicate' => $remove['Tsumego']['duplicate'])));
 				array_push($r2, $r1);
 				if(count($r2)==2){
-					for($i=0; $i<count($r2); $i++){
+					$r2Count = count($r2);
+					for($i=0; $i<$r2Count; $i++){
 						$r2[$i]['Tsumego']['duplicate'] = 0;
 						$this->Tsumego->save($r2[$i]);
 					}
@@ -1693,7 +1760,8 @@ Joschka Zimdars';
 				$errNotNull = 'Already set as duplicate.';
 			}
 			$newD0check = array();
-			for($i=0; $i<count($newDuplicates); $i++){
+			$newDuplicatesCount = count($newDuplicates);
+			for($i=0; $i<$newDuplicatesCount; $i++){
 				$newD0 = $this->Tsumego->findById($newDuplicates[$i]);
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $newD0['Tsumego']['id'])));
 				$newD0['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -1707,7 +1775,8 @@ Joschka Zimdars';
 				}
 
 			if($validSc){
-				for($i=0; $i<count($newDuplicates); $i++){
+				$newDuplicatesCount = count($newDuplicates);
+				for($i=0; $i<$newDuplicatesCount; $i++){
 					$newD = $this->Tsumego->findById($newDuplicates[$i]);
 					$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $newD['Tsumego']['id'])));
 					$newD['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -1717,7 +1786,8 @@ Joschka Zimdars';
 						$this->Tsumego->save($newD);
 					}else{
 						$comments = $this->Comment->find('all', array('conditions' => array('tsumego_id' => $newD['Tsumego']['id'])));
-						for($j=0; $j<count($comments); $j++)
+						$commentsCount = count($comments);
+						for($j=0; $j<$commentsCount; $j++)
 							$this->Comment->delete($comments[$j]['Comment']['id']);
 						$this->Tsumego->delete($newD['Tsumego']['id']);
 					}
@@ -1729,7 +1799,8 @@ Joschka Zimdars';
 					$this->SetConnection->create();
 					$this->SetConnection->save($setC);
 					$dupDel = $this->Duplicate->find('all', array('conditions' => array('tsumego_id' => $newDuplicates[$i])));
-					for($j=0; $j<count($dupDel); $j++)
+					$dupDelCount = count($dupDel);
+					for($j=0; $j<$dupDelCount; $j++)
 						$this->Duplicate->delete($dupDel[$j]['Duplicate']['id']);
 				}
 				$sx = $this->Set->findById($newDmain['Tsumego']['set_id']);
@@ -1758,21 +1829,24 @@ Joschka Zimdars';
 				$scTx['SetConnection']['tsumego_id'] = $this->data['Mark2']['group_id'];
 				$this->SetConnection->save($scTx);
 				$comments = $this->Comment->find('all', array('conditions' => array('tsumego_id' => $mark['Tsumego']['id'])));
-				for($j=0; $j<count($comments); $j++)
+				$commentsCount = count($comments);
+				for($j=0; $j<$commentsCount; $j++)
 					$this->Comment->delete($comments[$j]['Comment']['id']);
 				$this->Tsumego->delete($mark['Tsumego']['id']);
 			}
 		}
 
 		$marks = $this->Tsumego->find('all', array('conditions' => array('duplicate' => -1)));
-		for($i=0; $i<count($marks); $i++)
+		$marksCount = count($marks);
+		for($i=0; $i<$marksCount; $i++)
 			array_push($idMap2, $marks[$i]['Tsumego']['id']);
 		$uts2 = $this->TsumegoStatus->find('all', array('conditions' => array('tsumego_id'=>$idMap2, 'user_id'=>$this->Session->read('loggedInUser.User.id'))));
 		$counter2 = 0;
 		$markTooltipSgfs = array();
 		$markTooltipInfo = array();
 		$markTooltipBoardSize = array();
-		for($i=0; $i<count($marks); $i++){
+		$marksCount = count($marks);
+		for($i=0; $i<$marksCount; $i++){
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $marks[$i]['Tsumego']['id'])));
 			$marks[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($marks[$i]['Tsumego']['set_id']);
@@ -1789,7 +1863,8 @@ Joschka Zimdars';
 		$sc = $this->SetConnection->find('all');
 		$scCount = array();
 		$scCount2 = array();
-		for($i=0; $i<count($sc); $i++)
+		$scCount = count($sc);
+		for($i=0; $i<$scCount; $i++)
 			array_push($scCount, $sc[$i]['SetConnection']['tsumego_id']);
 		$scCount = array_count_values($scCount);
 		foreach($scCount as $key => $value){
@@ -1804,9 +1879,11 @@ Joschka Zimdars';
 		if(isset($this->params['url']['load'])){
 			$showAll = true;
 			$counter = 0;
-			for($i=0; $i<count($scCount2); $i++){
+			$scCount2Count = count($scCount2);
+			for($i=0; $i<$scCount2Count; $i++){
 				$duplicates1[$i] = array();
-				for($j=0; $j<count($sc); $j++){
+				$scCount = count($sc);
+				for($j=0; $j<$scCount; $j++){
 					if($sc[$j]['SetConnection']['tsumego_id']==$scCount2[$i]){
 						$scT1 = $this->Tsumego->findById($sc[$j]['SetConnection']['tsumego_id']);
 						$scT1['Tsumego']['num'] = $sc[$j]['SetConnection']['num'];
@@ -1822,18 +1899,21 @@ Joschka Zimdars';
 			$tooltipSgfs = array();
 			$tooltipInfo = array();
 			$tooltipBoardSize = array();
-			for($i=0; $i<count($duplicates1); $i++){
+			$duplicates1Count = count($duplicates1);
+			for($i=0; $i<$duplicates1Count; $i++){
 				$tooltipSgfs[$i] = array();
 				$tooltipInfo[$i] = array();
 				$tooltipBoardSize[$i] = array();
-				for($j=0; $j<count($duplicates1[$i]); $j++){
+				$duplicates1Count = count($duplicates1[$i]);
+				for($j=0; $j<$duplicates1Count; $j++){
 					$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id'], 'set_id' => $duplicates1[$i][$j]['Tsumego']['set_id'])));
 					$duplicates1[$i][$j]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 					$s = $this->Set->findById($duplicates1[$i][$j]['Tsumego']['set_id']);
 					if($s!=null){
 						$duplicates1[$i][$j]['Tsumego']['title'] = $s['Set']['title'].' - '.$duplicates1[$i][$j]['Tsumego']['num'];
 						$duplicates1[$i][$j]['Tsumego']['duplicateLink'] = '?sid='.$duplicates1[$i][$j]['Tsumego']['set_id'];
-						for($k=0; $k<count($uts); $k++)
+						$utsCount = count($uts);
+						for($k=0; $k<$utsCount; $k++)
 							if($uts[$k]['TsumegoStatus']['tsumego_id'] == $duplicates1[$i][$j]['Tsumego']['id'])
 								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
 						$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id'])));
@@ -1874,7 +1954,8 @@ Joschka Zimdars';
 			'NOT' => array('user_id' => 33, 'version' => 0)
 		)));
 
-		for($i=0; $i<count($s); $i++){
+		$sCount = count($s);
+		for($i=0; $i<$sCount; $i++){
 			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
 			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
 
@@ -1918,7 +1999,8 @@ Joschka Zimdars';
 				if(md5($this->Session->read('loggedInUser.User.id')) == $this->params['url']['hash']){
 
 					$tagsToApprove = explode("-",$_COOKIE['tagList']);
-					for($i=1; $i<count($tagsToApprove); $i++){
+					$tagsToApproveCount = count($tagsToApprove);
+					for($i=1; $i<$tagsToApproveCount; $i++){
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if($tagToApprove!=null && $tagToApprove['Tag']['approved']!=1){
 							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
@@ -1941,7 +2023,8 @@ Joschka Zimdars';
 					}
 
 					$tagNamesToApprove = explode("-",$_COOKIE['tagNameList']);
-					for($i=1; $i<count($tagNamesToApprove); $i++){
+					$tagNamesToApproveCount = count($tagNamesToApprove);
+					for($i=1; $i<$tagNamesToApproveCount; $i++){
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if($tagNameToApprove!=null && $tagNameToApprove['TagName']['approved']!=1){
 							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
@@ -1962,7 +2045,8 @@ Joschka Zimdars';
 					}
 
 					$proposalsToApprove = explode("-",$_COOKIE['proposalList']);
-					for($i=1; $i<count($proposalsToApprove); $i++){
+					$proposalsToApproveCount = count($proposalsToApprove);
+					for($i=1; $i<$proposalsToApproveCount; $i++){
 						$proposalToApprove =  $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if($proposalToApprove!=null && $proposalToApprove['Sgf']['version']==0){
 							$this->handleContribution($this->Session->read('loggedInUser.User.id'), 'reviewed');
@@ -1991,11 +2075,14 @@ Joschka Zimdars';
 				$del2 = $this->TsumegoAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
 				$del3 = $this->TsumegoRatingAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
 				if(md5($toDelete['User']['name']) == $this->params['url']['hash']){
-					for($i=0; $i<count($del1); $i++)
+					$del1Count = count($del1);
+					for($i=0; $i<$del1Count; $i++)
 						$this->TsumegoStatus->delete($del1[$i]['TsumegoStatus']['id']);
-					for($i=0; $i<count($del2); $i++)
+					$del2Count = count($del2);
+					for($i=0; $i<$del2Count; $i++)
 						$this->TsumegoAttempts->delete($del2[$i]['TsumegoAttempts']['id']);
-					for($i=0; $i<count($del3); $i++)
+					$del3Count = count($del3);
+					for($i=0; $i<$del3Count; $i++)
 						$this->TsumegoRatingAttempts->delete($del3[$i]['TsumegoRatingAttempts']['id']);
 					$this->User->delete($toDelete['User']['id']);
 					echo '<pre>'; print_r('Deleted user '.$toDelete['User']['name']); echo '</pre>';
@@ -2007,12 +2094,14 @@ Joschka Zimdars';
 		$tagNames = $this->TagName->find('all', array('conditions' => array('approved' => 0)));
 		$tagsByKey = $this->TagName->find('all');
 		$tKeys = array();
-		for($i=0; $i<count($tagsByKey); $i++)
+		$tagsByKeyCount = count($tagsByKey);
+		for($i=0; $i<$tagsByKeyCount; $i++)
 			$tKeys[$tagsByKey[$i]['TagName']['id']] = $tagsByKey[$i]['TagName']['name'];
 
 		$tsIds = array();
 		$tagTsumegos = array();
-		for($i=0; $i<count($tags); $i++){
+		$tagsCount = count($tags);
+		for($i=0; $i<$tagsCount; $i++){
 			$at = $this->Tsumego->find('first', array('conditions' => array('id' => $tags[$i]['Tag']['tsumego_id'])));
 			array_push($tsIds, $at['Tsumego']['id']);
 			array_push($tagTsumegos, $at);
@@ -2023,7 +2112,8 @@ Joschka Zimdars';
 			$tags[$i]['Tag']['tsumego'] = $as['Set']['title'].' - '.$at['Tsumego']['num'];
 			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
-		for($i=0; $i<count($tagNames); $i++){
+		$tagNamesCount = count($tagNames);
+		for($i=0; $i<$tagNamesCount; $i++){
 			$au = $this->User->findById($tagNames[$i]['TagName']['user_id']);
 			$tagNames[$i]['TagName']['user'] = $this->checkPicture($au);
 		}
@@ -2031,7 +2121,8 @@ Joschka Zimdars';
 		$approveSgfs = $this->Sgf->find('all', array('conditions' => array('version' => 0)));
 		$sgfTsumegos = array();
 		$latestVersionTsumegos = array();
-		for($i=0; $i<count($approveSgfs); $i++){
+		$approveSgfsCount = count($approveSgfs);
+		for($i=0; $i<$approveSgfsCount; $i++){
 			$at = $this->Tsumego->find('first', array('conditions' => array('id' => $approveSgfs[$i]['Sgf']['tsumego_id'])));
 			array_push($latestVersionTsumegos, $this->Sgf->find('first', array('order' => 'version DESC', 'conditions' =>  array('tsumego_id' => $at['Tsumego']['id']))));
 			array_push($sgfTsumegos, $at);
@@ -2048,13 +2139,15 @@ Joschka Zimdars';
 		)));
 
 		$tsMap = array();
-		for($i=0; $i<count($uts); $i++)
+		$utsCount = count($uts);
+		for($i=0; $i<$utsCount; $i++)
 			$tsMap[$uts[$i]['TsumegoStatus']['tsumego_id']] = $uts[$i]['TsumegoStatus']['status'];
 
 		$tooltipSgfs = array();
 		$tooltipInfo = array();
 		$tooltipBoardSize = array();
-		for($i=0; $i<count($tagTsumegos); $i++){
+		$tagTsumegosCount = count($tagTsumegos);
+		for($i=0; $i<$tagTsumegosCount; $i++){
 			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $tagTsumegos[$i]['Tsumego']['id'])));
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
@@ -2065,7 +2158,8 @@ Joschka Zimdars';
 		$tooltipSgfs2 = array();
 		$tooltipInfo2 = array();
 		$tooltipBoardSize2 = array();
-		for($i=0; $i<count($sgfTsumegos); $i++){
+		$sgfTsumegosCount = count($sgfTsumegos);
+		for($i=0; $i<$sgfTsumegosCount; $i++){
 			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id'])));
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
@@ -2076,7 +2170,8 @@ Joschka Zimdars';
 
 		$u = $this->User->find('all', array('conditions' => array('isAdmin >' => 0)));
 		$uArray = array();
-		for($i=0; $i<count($u); $i++)
+		$uCount = count($u);
+		for($i=0; $i<$uCount; $i++)
 			array_push($uArray, $u[$i]['User']['id']);
 
 		$aa = $this->AdminActivity->find('all', array('limit' => 100, 'order' => 'created DESC'));
@@ -2089,7 +2184,8 @@ Joschka Zimdars';
 		$ca['name'] = array();
 		$ca['answer'] = array();
 		$ca['type'] = array();
-		for($i=0; $i<count($aa); $i++){
+		$aaCount = count($aa);
+		for($i=0; $i<$aaCount; $i++){
 			$at = $this->Tsumego->find('first', array('conditions' => array('id' => $aa[$i]['AdminActivity']['tsumego_id'])));
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $at['Tsumego']['id'])));
 			$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -2129,7 +2225,8 @@ Joschka Zimdars';
 				'status' => array(99)
 			)
 		)));
-		for($i=0; $i<count($adminComments); $i++){
+		$adminCommentsCount = count($adminComments);
+		for($i=0; $i<$adminCommentsCount; $i++){
 			$at = $this->Tsumego->find('first', array('conditions' => array('id' => $adminComments[$i]['Comment']['tsumego_id'])));
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $at['Tsumego']['id'])));$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$as = $this->Set->find('first', array('conditions' => array('id' => $at['Tsumego']['set_id'])));
@@ -2141,7 +2238,8 @@ Joschka Zimdars';
 			array_push($ca['answer'], $adminComments[$i]['Comment']['message']);
 			array_push($ca['type'], 'Comment');
 		}
-		for($i=0; $i<count($ca['tsumego_id']); $i++)
+		$caCount = count($ca['tsumego_id']);
+		for($i=0; $i<$caCount; $i++)
 			array_multisort($ca['created'], $ca['tsumego_id'], $ca['tsumego'], $ca['name'], $ca['answer'], $ca['type']);
 
 		$requestDeletion = $this->User->find('all', array('conditions' => array('dbstorage' => 1111)));
@@ -2264,9 +2362,11 @@ Joschka Zimdars';
 
 		$uAll = $this->User->find('all', array('limit' => 1250, 'order' => 'level DESC'));
 		$uMap = array();
-		for($i=0; $i<count($uAll); $i++)
+		$uAllCount = count($uAll);
+		for($i=0; $i<$uAllCount; $i++)
 			$uMap[$uAll[$i]['User']['id']] = $uAll[$i]['User']['name'];
-		for($i=0; $i<count($json); $i++) {
+		$jsonCount = count($json);
+		for($i=0; $i<$jsonCount; $i++){
 			if (isset($uMap[$json[$i]['id']]) && $uMap[$json[$i]['id']]) {
 				$json[$i]['name'] = $uMap[$json[$i]['id']];
 			}
@@ -2302,7 +2402,8 @@ Joschka Zimdars';
 
 		$list = array();
 		$uc = $this->UserContribution->find('all', array('limit' => 100, 'order' => 'score DESC'));
-		for($i=0; $i<count($uc); $i++){
+		$ucCount = count($uc);
+		for($i=0; $i<$ucCount; $i++){
 			$x = array();
 			$x['id'] = $uc[$i]['UserContribution']['user_id'];
 			$user = $this->User->findById($uc[$i]['UserContribution']['user_id']);
@@ -2377,7 +2478,8 @@ Joschka Zimdars';
 		$goals[2] = $reachedGoals >= 3;
 		$goals[3] = $reachedGoals >= 4;
 		$goalsColor = array();
-		for($i=0; $i<count($goals); $i++){
+		$goalsCount = count($goals);
+		for($i=0; $i<$goalsCount; $i++){
 			if($goals[$i]) $goalsColor[$i] = '#e9cc2c';
 			else $goalsColor[$i] = 'black';
 		}
@@ -2402,8 +2504,8 @@ Joschka Zimdars';
 			$this->User->save($ux);
 		}
 		$json = json_decode(file_get_contents('json/achievement_highscore.json'), true);
-
-		for($i=count($json['uaId'])-1; $i>=count($json['uaId'])-100; $i--){
+		$jsonUaIdCount = count($json['uaId']);
+		for($i=$jsonUaIdCount-1; $i>=$jsonUaIdCount-100; $i--){
 			$u = $this->User->findById($json['uaId'][$i]);
 			if($u && isset($u['User']['name'])){
 				$json['uaId'][$i] = $u['User']['name'];
@@ -2463,10 +2565,12 @@ Joschka Zimdars';
 		$roAll['points'] = array();
 		$roAll['result'] = array();
 
-		for($i=0; $i<count($ro); $i++){
+		$roCount = count($ro);
+		for($i=0; $i<$roCount; $i++){
 			$us = $this->User->findById($ro[$i]['RankOverview']['user_id']);
 			$alreadyIn = false;
-			for($j=0; $j<count($roAll['user']); $j++){
+			$roAllCount = count($roAll['user']);
+			for($j=0; $j<$roAllCount; $j++){
 				if($roAll['user'][$j]==$us['User']['name']) $alreadyIn = true;
 			}
 			if(!$alreadyIn){
@@ -2518,13 +2622,15 @@ Joschka Zimdars';
 			}
 		}
 
-		for($i=0;$i<count($modes);$i++){
-			for($j=0;$j<count($modes[$i]);$j++){
+		$modesCount = count($modes);
+		for($i=0; $i<$modesCount; $i++){
+			$modesCount = count($modes[$i]);
+			for($j=0; $j<$modesCount; $j++){
 				$mx = $this->RankOverview->find('first', array('conditions' => array(
 					'rank' => $modes[$i][$j],
 					'mode' => $i
 				)));
-				if(!empty($mx)) $modes[$i][$j] = 1;
+				if($mx) $modes[$i][$j] = 1;
 			}
 		}
 
@@ -2556,7 +2662,8 @@ Joschka Zimdars';
 			$adminsList = [];
 		}
 		$admins = array();
-		for($i=0; $i<count($adminsList); $i++){
+		$adminsListCount = count($adminsList);
+		for($i=0; $i<$adminsListCount; $i++){
 			array_push($admins, $adminsList[$i]['User']['name']);
 		}
 		$dayRecord = $this->DayRecord->find('all', array('limit' => 2, 'order' => 'id DESC'));
@@ -2576,7 +2683,8 @@ Joschka Zimdars';
 		if (!$json) {
 			$json = [];
 		}
-		for($i=0; $i<count($json); $i++){
+		$jsonCount = count($json);
+		for($i=0; $i<$jsonCount; $i++){
 			$u = $this->User->findById($json[$i]['id']);
 			if($u && isset($u['User']['name'])){
 				$json[$i]['name'] = $u['User']['name'];
@@ -2647,11 +2755,13 @@ Joschka Zimdars';
 		if (!$setArray) {
 			$setArray = [];
 		}
-		for($i=0; $i<count($setArray); $i++)
+		$setArrayCount = count($setArray);
+		for($i=0; $i<$setArrayCount; $i++)
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
 
 		$scs = array();
-		for($j=0; $j<count($tsumegos); $j++){
+		$tsumegosCount = count($tsumegos);
+		for($j=0; $j<$tsumegosCount; $j++){
 			if(isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']])){
 				array_push($tsumegoDates, $tsumegos[$j]);
 			}
@@ -2661,7 +2771,8 @@ Joschka Zimdars';
 		$lastYear = date('Y-m-d', strtotime('-1 year'));
 		$dNum = 0;
 
-		for($j=0; $j<count($uts); $j++){
+		$utsCount = count($uts);
+		for($j=0; $j<$utsCount; $j++){
 			$date = new DateTime($uts[$j]['TsumegoStatus']['created']);
 			$uts[$j]['TsumegoStatus']['created'] = $date->format('Y-m-d');
 			if($uts[$j]['TsumegoStatus']['status']=='S' || $uts[$j]['TsumegoStatus']['status']=='W' || $uts[$j]['TsumegoStatus']['status']=='C'){
@@ -2703,7 +2814,8 @@ Joschka Zimdars';
 		$ta2['date'] = array();
 		$ta2['elo'] = array();
 
-		for($i=0;$i<count($ta);$i++){
+		$taCount = count($ta);
+		for($i=0; $i<$taCount; $i++){
 			if($ta[$i]['TsumegoAttempt']['elo']!=null){
 				if($ta[$i]['TsumegoAttempt']['elo']>$highestElo)
 					$highestElo = $taBefore=$ta[$i]['TsumegoAttempt']['elo'];
@@ -2746,7 +2858,8 @@ Joschka Zimdars';
 			'user_id' => $this->Session->read('loggedInUser.User.id')
 		)));
 		$highestRo = '15k';
-		for($i=0;$i<count($ro);$i++){
+		$roCount = count($ro);
+		for($i=0; $i<$roCount; $i++){
 			$highestRo = $this->getHighestRo($ro[$i]['RankOverview']['rank'], $highestRo);
 			if(isset($timeGraph[$ro[$i]['RankOverview']['rank']][$ro[$i]['RankOverview']['status']]))
 				$timeGraph[$ro[$i]['RankOverview']['rank']][$ro[$i]['RankOverview']['status']]++;
@@ -2765,13 +2878,15 @@ Joschka Zimdars';
 		$deletedProblems = 1;
 		if(isset($this->params['url']['delete-uts'])){
 			if($this->params['url']['delete-uts']=='true' && $p>=75){
-				for($j=0; $j<count($uts); $j++){
+				$utsCount = count($uts);
+				for($j=0; $j<$utsCount; $j++){
 					if($uts[$j]['TsumegoStatus']['created']<$lastYear) $this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
 				}
 				$deletedProblems = 2;
 				$utx = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $id)));
 				$correctCounter = 0;
-				for($j=0; $j<count($utx); $j++){
+				$utxCount = count($utx);
+				for($j=0; $j<$utxCount; $j++){
 					if($utx[$j]['TsumegoStatus']['status']=='S' || $utx[$j]['TsumegoStatus']['status']=='W' || $utx[$j]['TsumegoStatus']['status']=='C'){
 						$correctCounter++;
 					}
@@ -2791,7 +2906,8 @@ Joschka Zimdars';
 		if($this->Session->read('loggedInUser.User.id')!=$id)
 			$deletedProblems = 3;
 
-		for($i=0; $i<count($as); $i++){
+		$asCount = count($as);
+		for($i=0; $i<$asCount; $i++){
 			$as[$i]['AchievementStatus']['a_title'] = $ach[$as[$i]['AchievementStatus']['achievement_id']-1]['Achievement']['name'];
 			$as[$i]['AchievementStatus']['a_description'] = $ach[$as[$i]['AchievementStatus']['achievement_id']-1]['Achievement']['description'];
 			$as[$i]['AchievementStatus']['a_image'] = $ach[$as[$i]['AchievementStatus']['achievement_id']-1]['Achievement']['image'];
@@ -2909,7 +3025,8 @@ Joschka Zimdars';
 		$a[21] = '13k';
 		$a[22] = '14k';
 		$a[23] = '15k';
-		for($i=0;$i<count($a);$i++){
+		$aCount = count($a);
+		for($i=0; $i<$aCount; $i++){
 			if($a[$i]==$new)
 				$newNum = $i;
 			if($a[$i]==$old)
@@ -2926,7 +3043,8 @@ Joschka Zimdars';
 
 		$overallCounter = 0;
 		$sandboxSets = $this->Set->find('all', array('conditions' => array('public' => 0)));
-		for($i=0; $i<count($sandboxSets); $i++){
+		$sandboxSetsCount = count($sandboxSets);
+		for($i=0; $i<$sandboxSetsCount; $i++){
 			$ts = $this->findTsumegoSet($sandboxSets[$i]['Set']['id']);
 			$overallCounter += count($ts);
 		}
@@ -2934,10 +3052,12 @@ Joschka Zimdars';
 		$setsWithPremium = array();
 		$tsumegosWithPremium = array();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
-		for($i=0;$i<count($swp);$i++){
+		$swpCount = count($swp);
+		for($i=0; $i<$swpCount; $i++){
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
 			$twp = $this->findTsumegoSet($swp[$i]['Set']['id']);
-			for($j=0;$j<count($twp);$j++)
+			$twpCount = count($twp);
+			for($j=0; $j<$twpCount; $j++)
 				array_push($tsumegosWithPremium, $twp[$j]);
 		}
 
@@ -2963,7 +3083,8 @@ Joschka Zimdars';
 		$set = $this->Set->find('all');
 		$setMap = array();
 		$setMap2 = array();
-		for($i=0; $i<count($set); $i++){
+		$setCount = count($set);
+		for($i=0; $i<$setCount; $i++){
 			$divider = ' ';
 			$setMap[$set[$i]['Set']['id']] = $set[$i]['Set']['title'].$divider.$set[$i]['Set']['title2'];
 			$setMap2[$set[$i]['Set']['id']] = $set[$i]['Set']['public'];
@@ -3157,7 +3278,8 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoStatus');
 		$ux = $this->User->find('all', array('limit' => 300, 'order' => 'created DESC'));
 		$u = array();
-		for($i=0; $i<count($ux); $i++){
+		$uxCount = count($ux);
+		for($i=0; $i<$uxCount; $i++){
 			$uts1 = $this->TsumegoStatus->find('first', array('conditions' => array('user_id' => $ux[$i]['User']['id'])));
 			$date = new DateTime($ux[$i]['User']['created']);
 			$date = $date->format('Y-m-d');
@@ -3181,11 +3303,13 @@ Joschka Zimdars';
 
 		$sets = $this->Set->find('all', array('conditions' => array('public' => 1)));
 		$xxx = array();
-		for($i=0; $i<count($sets); $i++){
+		$setsCount = count($sets);
+		for($i=0; $i<$setsCount; $i++){
 			$xxx[$i] = array();
 			$tsx = $this->findTsumegoSet($sets[$i]['Set']['id']);
 
-			for($j=0; $j<count($tsx); $j++){
+			$tsxCount = count($tsx);
+			for($j=0; $j<$tsxCount; $j++){
 				$tsx[$j]['Tsumego']['set'] = $sets[$i]['Set']['title'];
 				$tsx[$j]['Tsumego']['setid'] = $sets[$i]['Set']['id'];
 				$tsx[$j]['Tsumego']['multiplier'] = $sets[$i]['Set']['multiplier'];
@@ -3210,11 +3334,13 @@ Joschka Zimdars';
 		$setPercent = array();
 		$setCount = array();
 		$setDifficulty = array();
-		for($i=0; $i<count($xxx); $i++){
+		$xxxCount = count($xxx);
+		for($i=0; $i<$xxxCount; $i++){
 			$jc = 0;
 			$sp = 0;
 			$sc = 0;
-			for($k=0; $k<count($xxx[$i]); $k++){
+			$xxxCount = count($xxx[$i]);
+			for($k=0; $k<$xxxCount; $k++){
 				$distance = array();
 
 				$sp += $xxx[$i][$k]['Tsumego']['elo_rating_mode'];
@@ -3227,7 +3353,8 @@ Joschka Zimdars';
 				}
 				$lowest = 100;
 				$pos = 0;
-				for($j=0; $j<count($distance); $j++){
+				$distanceCount = count($distance);
+				for($j=0; $j<$distanceCount; $j++){
 					if($distance[$j]<$lowest){
 						$pos = $j;
 						$lowest = $distance[$j];
@@ -3266,7 +3393,8 @@ Joschka Zimdars';
 			}
 			$lowest = 100;
 			$pos = 0;
-			for($j=0; $j<count($distance); $j++){
+			$distanceCount = count($distance);
+			for($j=0; $j<$distanceCount; $j++){
 				if($distance[$j]<$lowest){
 					$pos = $j;
 					$lowest = $distance[$j];
@@ -3277,11 +3405,13 @@ Joschka Zimdars';
 			//$setDifficulty[$i] = $pos+1;
 		}
 
-		for($i=0; $i<count($newTs3['id']); $i++){
+		$newTs3Count = count($newTs3['id']);
+		for($i=0; $i<$newTs3Count; $i++){
 			array_multisort($newTs3['num'][$i], $newTs3['set'][$i], $newTs3['percent'][$i], $newTs3['id'][$i], $newTs3['xp'][$i], $newTs3['newxp'][$i], $newTs3['count'][$i], $newTs3['multiplier'][$i], $newTs3['multiplied'][$i], $newTs3['setid'][$i]);
 		}
 
-		for($i=0; $i<count($setDifficulty); $i++){
+		$setDifficultyCount = count($setDifficulty);
+		for($i=0; $i<$setDifficultyCount; $i++){
 			//echo $newTs3['setid'][$i][0].':'.$setDifficulty[$i].'<br>';
 			$s = $this->Set->findById($newTs3['setid'][$i][0]);
 			$s['Set']['difficulty'] = $setDifficulty[$i];
@@ -3311,7 +3441,8 @@ Joschka Zimdars';
 		$ts2 = array();
 		$tsx = array();
 		$ts = $this->Tsumego->find('all', array('order' => 'userWin ASC'));
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$s = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
 			if($s['Set']['public']==1 && $ts[$i]['Tsumego']['userWin']!=0){
 				$ts[$i]['Tsumego']['userWin'] = round($ts[$i]['Tsumego']['userWin']);
@@ -3335,7 +3466,8 @@ Joschka Zimdars';
 		$ratio = array();
 		$ratio['s'] = 0;
 		$ratio['f'] = 0;
-		for($i=0; $i<count($ur); $i++){
+		$urCount = count($ur);
+		for($i=0; $i<$urCount; $i++){
 			if($ur[$i]['TsumegoAttempt']['solved'] == 'S' || $ur[$i]['TsumegoAttempt']['solved'] == 1) $ratio['s']++;
 			elseif($ur[$i]['TsumegoAttempt']['solved'] == 'F' || $ur[$i]['TsumegoAttempt']['solved'] == 0) $ratio['f']++;
 		}
@@ -3364,7 +3496,8 @@ Joschka Zimdars';
 			$counter = 0;
 			$sum = 0;
 
-			for($i=0; $i<count($ts); $i++){
+			$tsCount = count($ts);
+			for($i=0; $i<$tsCount; $i++){
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));$ts[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 				$s = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
@@ -3381,7 +3514,8 @@ Joschka Zimdars';
 
 		$tsx= array();
 		$tsCount = $this->Tsumego->find('all', array('order' => 'difficulty ASC'));
-		for($i=0; $i<count($tsCount); $i++){
+		$tsCountCount = count($tsCount);
+		for($i=0; $i<$tsCountCount; $i++){
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tsCount[$i]['Tsumego']['id'])));$tsCount[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 			$s = $this->Set->findById($tsCount[$i]['Tsumego']['set_id']);
@@ -3417,7 +3551,8 @@ Joschka Zimdars';
 			'difficulty >' => 103
 		)));
 		/*
-		for($i=0; $i<count($x1); $i++){
+		$x1Count = count($x1);
+		for($i=0; $i<$x1Count; $i++){
 			$s = $this->Set->findById($x1[$i]['Tsumego']['set_id']);
 			if($s['Set']['public']==1){
 				array_push($xx, $x1[$i]);
@@ -3488,7 +3623,8 @@ Joschka Zimdars';
 		)));
 		$ts2 = $ts;
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			/*
 			$set = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
 			$sgf = array();
@@ -3503,7 +3639,8 @@ Joschka Zimdars';
 			$ratio = array();
 			$ratio['s'] = 0;
 			$ratio['f'] = 0;
-			for($j=0; $j<count($ur); $j++){
+			$urCount = count($ur);
+			for($j=0; $j<$urCount; $j++){
 				if($ur[$j]['TsumegoAttempt']['solved'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) $ratio['s']++;
 				elseif($ur[$j]['TsumegoAttempt']['solved'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) $ratio['f']++;
 			}
@@ -3563,12 +3700,14 @@ Joschka Zimdars';
 			'id <=' => $to
 		)));
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$ur = $this->TsumegoAttempt->find('all', array('order' => 'created DESC', 'limit' => 1000, 'conditions' =>  array('tsumego_id' => $ts[$i]['Tsumego']['id'])));
 			$ratio = array();
 			$ratio['s'] = 0;
 			$ratio['f'] = 0;
-			for($j=0; $j<count($ur); $j++){
+			$urCount = count($ur);
+			for($j=0; $j<$urCount; $j++){
 				if($ur[$j]['TsumegoAttempt']['status'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) $ratio['s']++;
 				elseif($ur[$j]['TsumegoAttempt']['status'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) $ratio['f']++;
 			}
@@ -3591,7 +3730,8 @@ Joschka Zimdars';
 
 		$ts = $this->Tsumego->find('all');
 
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$count = $ts[$i]['Tsumego']['solved']+$ts[$i]['Tsumego']['failed'];
 			$percent = $ts[$i]['Tsumego']['solved']/$count;
 			$percent*=100;
@@ -3621,7 +3761,8 @@ Joschka Zimdars';
 
 		$ts2 = array();
 		$ts = $this->Tsumego->find('all');
-		for($i=0; $i<count($ts); $i++){
+		$tsCount = count($ts);
+		for($i=0; $i<$tsCount; $i++){
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id'])));$ts[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 			$s = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
@@ -3630,7 +3771,8 @@ Joschka Zimdars';
 			}
 		}
 
-		for($i=0; $i<count($ts2); $i++){
+		$ts2Count = count($ts2);
+		for($i=0; $i<$ts2Count; $i++){
 			$distance = array();
 			$lowest = 100;
 			$pos = 0;
@@ -3658,7 +3800,8 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoStatus');
 		$ux = $this->User->find('all', array('order' => 'created DESC'));
 		$u = array();
-		for($i=0; $i<count($ux); $i++){
+		$uxCount = count($ux);
+		for($i=0; $i<$uxCount; $i++){
 			if($ux[$i]['User']['dbstorage']==1){
 				$uts = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $ux[$i]['User']['id'])));
 				array_push($u, count($uts));
@@ -3713,7 +3856,8 @@ Joschka Zimdars';
 			$idMap = array();
 			$status = array();
 
-			for($i=0; $i<count($uts); $i++){
+			$utsCount = count($uts);
+			for($i=0; $i<$utsCount; $i++){
 				array_push($idMap, $uts[$i]['TsumegoStatus']['tsumego_id']);
 			}
 			$result = array_unique(array_diff_assoc($idMap, array_unique($idMap)));
@@ -3765,7 +3909,8 @@ Joschka Zimdars';
 			'id <=' => $start+$increment
 		)));
 		$u = array();
-		for($i=0; $i<count($ux); $i++){
+		$uxCount = count($ux);
+		for($i=0; $i<$uxCount; $i++){
 			$ut = $this->TsumegoStatus->find('all', array('conditions' => array(
 				'user_id' => $ux[$i]['User']['id'],
 				'OR' => array(
@@ -3801,15 +3946,18 @@ Joschka Zimdars';
 		$keep = 0;
 		$deleted = 0;
 		$all = count($ut);
-		for($i=0; $i<count($ut); $i++){
+		$utCount = count($ut);
+		for($i=0; $i<$utCount; $i++){
 			array_push($uty, $ut[$i]['TsumegoStatus']['tsumego_id']);
 		}
-		for($i=0; $i<count($ut); $i++){
+		$utCount = count($ut);
+		for($i=0; $i<$utCount; $i++){
 			$t = $this->Tsumego->findById($ut[$i]['TsumegoStatus']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 			$isMain = false;
-			for($j=0; $j<count($st2); $j++){
+			$st2Count = count($st2);
+			for($j=0; $j<$st2Count; $j++){
 				if($t['Tsumego']['set_id']==$st2[$j]['Set']['id']) $isMain = true;
 			}
 			if($isMain)	$keep++;
@@ -3826,7 +3974,8 @@ Joschka Zimdars';
 		$answer = array();
 		$answer['Purge']['user_id'] = $id;
 		$answer['Purge']['duplicates'] = '|';
-		for($i=0; $i<count($a); $i++){
+		$aCount = count($a);
+		for($i=0; $i<$aCount; $i++){
 			$utd = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $id, 'tsumego_id' => $a[$i])));
 			$c = count($utd);
 			$j = 0;
@@ -3857,7 +4006,8 @@ Joschka Zimdars';
 		$u = $this->User->findById($id);
 		$ut = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $id)));
 		$correctCounter1 = 0;
-		for($j=0; $j<count($ut); $j++){
+		$utCount = count($ut);
+		for($j=0; $j<$utCount; $j++){
 			if($ut[$j]['TsumegoStatus']['status']=='S' || $ut[$j]['TsumegoStatus']['status']=='W' || $ut[$j]['TsumegoStatus']['status']=='C'){
 				$correctCounter1++;
 			}
@@ -3996,7 +4146,8 @@ Joschka Zimdars';
 		$repPos = $this->Reputation->find('all', array('conditions' => array('value' => 1)));
 		$repPos2 = array();
 		$repPos3 = array();
-		for($i=0; $i<count($repPos); $i++){
+		$repPosCount = count($repPos);
+		for($i=0; $i<$repPosCount; $i++){
 			$tx = $this->Tsumego->findById($repPos[$i]['Reputation']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));$tx['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
@@ -4009,7 +4160,8 @@ Joschka Zimdars';
 		$repNeg = $this->Reputation->find('all', array('conditions' => array('value' => -1)));
 		$repNeg2 = array();
 		$repNeg3 = array();
-		for($i=0; $i<count($repNeg); $i++){
+		$repNegCount = count($repNeg);
+		for($i=0; $i<$repNegCount; $i++){
 			$tx = $this->Tsumego->findById($repNeg[$i]['Reputation']['tsumego_id']);
 			$repNeg[$i]['Reputation']['set_id'] = $tx['Tsumego']['set_id'];
 			array_push($repNeg2, $repNeg[$i]['Reputation']['set_id']);
@@ -4032,7 +4184,8 @@ Joschka Zimdars';
 
 		foreach ($repNeg3 as $key => $value){
 			$found = false;
-			for($i=0; $i<count($repSets); $i++){
+			$repSetsCount = count($repSets);
+			for($i=0; $i<$repSetsCount; $i++){
 				if($repSets[$i]['set_id']==$key){
 					$repSets[$i]['neg'] = $value;
 					$found = true;
@@ -4048,7 +4201,8 @@ Joschka Zimdars';
 		}
 
 		$as = array();
-		for($i=0; $i<count($repSets); $i++){
+		$repSetsCount = count($repSets);
+		for($i=0; $i<$repSetsCount; $i++){
 			$sx = $this->Set->findById($repSets[$i]['set_id']);
 			$repSets[$i]['set_name'] = $sx['Set']['title'].' '.$sx['Set']['title2'];
 			array_push($as, $repSets[$i]['set_id']);
@@ -4056,7 +4210,8 @@ Joschka Zimdars';
 		sort($as);
 
 		$all = $this->Reputation->find('all', array('order' => 'created DESC'));
-		for($i=0; $i<count($all); $i++){
+		$allCount = count($all);
+		for($i=0; $i<$allCount; $i++){
 			$allT = $this->Tsumego->findById($all[$i]['Reputation']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $allT['Tsumego']['id'])));$allT['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
@@ -4093,7 +4248,8 @@ Joschka Zimdars';
 		$a = array();
 
 		$r = $this->Reputation->find('all', array('order' => 'created DESC'));
-		for($i=0;$i<count($r);$i++){
+		$rCount = count($r);
+		for($i=0; $i<$rCount; $i++){
 			$t = $this->Tsumego->findById($r[$i]['Reputation']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
@@ -4102,7 +4258,8 @@ Joschka Zimdars';
 		$likes = 0;
 		$dislikes = 0;
 
-		for($i=0;$i<count($a);$i++){
+		$aCount = count($a);
+		for($i=0; $i<$aCount; $i++){
 			if($a[$i]['Reputation']['value']==1) $likes++;
 			else $dislikes++;
 
@@ -4228,7 +4385,8 @@ Joschka Zimdars';
 		));
 		$comments2 = array();
 		$monthBack = date('Y-m-d', strtotime("-10 years"));
-		for($i=0;$i<count($comments);$i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			$u = $this->User->findById($comments[$i]['Comment']['user_id']);
 			$comments[$i]['Comment']['user'] = $u['User']['name'];
 			$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
@@ -4250,7 +4408,8 @@ Joschka Zimdars';
 		$users = array();
 		$adminIds = array();
 
-		for($i=0;$i<count($comments);$i++){
+		$commentsCount = count($comments);
+		for($i=0; $i<$commentsCount; $i++){
 			array_push($users, $comments[$i]['Comment']['user']);
 			array_push($adminIds, $comments[$i]['Comment']['admin_id']);
 		}
@@ -4267,7 +4426,8 @@ Joschka Zimdars';
 
 		$u2['name'] = array();
 		$u2['value'] = array();
-		for($i=count($uName)-1;$i>=0;$i--){
+		$uNameCount = count($uName);
+		for($i=$uNameCount-1;$i>=0;$i--){
 			array_push($u2['name'], $uName[$i]);
 			array_push($u2['value'], $uValue[$i]);
 		}
@@ -4306,7 +4466,8 @@ Joschka Zimdars';
 		if(isset($this->params['url']['p'])){
 			if($this->params['url']['p']==1){
 				$p = $this->Purge->find('all');
-				for($i=0; $i<count($p); $i++){
+				$pCount = count($p);
+				for($i=0; $i<$pCount; $i++){
 					if($p[$i]['Purge']['id']!=1 && $p[$i]['Purge']['id']!=2 && $p[$i]['Purge']['id']!=3){
 						$this->Purge->delete($p[$i]['Purge']['id']);
 					}else{
@@ -4332,13 +4493,15 @@ Joschka Zimdars';
 		$in = $this->Set->find('all', array('conditions' => array('public' => 0)));
 
 		$a = array();
-		for($i=0; $i<count($in); $i++){
+		$inCount = count($in);
+		for($i=0; $i<$inCount; $i++){
 			array_push($a, $in[$i]['Set']['id']);
 		}
 		$in = $a;
 
 		$a = array();
-		for($i=0; $i<count($de); $i++){
+		$deCount = count($de);
+		for($i=0; $i<$deCount; $i++){
 			array_push($a, $de[$i]['Set']['id']);
 		}
 		$de = $a;
@@ -4419,11 +4582,13 @@ Joschka Zimdars';
 		//$sets = $this->Set->find('all', array('conditions' => array('id' => 74761)));
 		$ts = array();
 		$xxx = array();
-		for($i=0; $i<count($sets); $i++){
+		$setsCount = count($sets);
+		for($i=0; $i<$setsCount; $i++){
 			$xxx[$i] = array();
 			//$tsx = $this->Tsumego->find('all', array('conditions' =>  array('set_id' => $sets[$i]['Set']['id'])));
 			$tsx = $this->findTsumegoSet($sets[$i]['Set']['id']);
-			for($j=0; $j<count($tsx); $j++){
+			$tsxCount = count($tsx);
+			for($j=0; $j<$tsxCount; $j++){
 				$tsx[$j]['Tsumego']['set'] = $sets[$i]['Set']['title'];
 				$tsx[$j]['Tsumego']['setid'] = $sets[$i]['Set']['id'];
 				$tsx[$j]['Tsumego']['multiplier'] = $sets[$i]['Set']['multiplier'];
@@ -4449,11 +4614,13 @@ Joschka Zimdars';
 		$setPercent = array();
 		$setCount = array();
 		$setDifficulty = array();
-		for($i=0; $i<count($xxx); $i++){
+		$xxxCount = count($xxx);
+		for($i=0; $i<$xxxCount; $i++){
 			$jc = 0;
 			$sp = 0;
 			$sc = 0;
-			for($k=0; $k<count($xxx[$i]); $k++){
+			$xxxCount = count($xxx[$i]);
+			for($k=0; $k<$xxxCount; $k++){
 				$distance = array();
 
 				$sp += $xxx[$i][$k]['Tsumego']['userWin'];
@@ -4466,7 +4633,8 @@ Joschka Zimdars';
 				}
 				$lowest = 100;
 				$pos = 0;
-				for($j=0; $j<count($distance); $j++){
+				$distanceCount = count($distance);
+				for($j=0; $j<$distanceCount; $j++){
 					if($distance[$j]<$lowest){
 						$pos = $j;
 						$lowest = $distance[$j];
@@ -4501,7 +4669,8 @@ Joschka Zimdars';
 			}
 			$lowest = 100;
 			$pos = 0;
-			for($j=0; $j<count($distance); $j++){
+			$distanceCount = count($distance);
+			for($j=0; $j<$distanceCount; $j++){
 				if($distance[$j]<$lowest){
 					$pos = $j;
 					$lowest = $distance[$j];
@@ -4515,7 +4684,8 @@ Joschka Zimdars';
 			*/
 		}
 
-		for($i=0; $i<count($newTs3['id']); $i++){
+		$newTs3Count = count($newTs3['id']);
+		for($i=0; $i<$newTs3Count; $i++){
 			array_multisort($newTs3['num'][$i], $newTs3['set'][$i], $newTs3['percent'][$i], $newTs3['id'][$i], $newTs3['xp'][$i], $newTs3['newxp'][$i], $newTs3['count'][$i], $newTs3['multiplier'][$i], $newTs3['multiplied'][$i], $newTs3['setid'][$i]);
 		}
 

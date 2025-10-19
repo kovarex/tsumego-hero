@@ -55,7 +55,8 @@ class ActivatesController extends AppController{
 
 
 		
-		for($i=0; $i<count($us); $i++){
+		$usCount = count($us);
+		for($i=0; $i<$usCount; $i++){
 			/*
 			$this->Activate->create();
 			$s = $this->rdm();

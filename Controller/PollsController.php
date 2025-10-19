@@ -13,7 +13,8 @@ class PollsController extends AppController {
 		}
         $posts = [];
 
-		for ($i = 0; $i < count($polls); $i++) {
+		$pollsCount = count($polls);
+		for ($i = 0; $i < $pollsCount; $i++) {
 			$posts[$i] = $this->Post->findById($polls[$i]['Poll']['post_id']);
 		}
 
@@ -30,7 +31,8 @@ class PollsController extends AppController {
 		}
 		$post = [];
 		$samePost = 0;
-		for ($i = 0; $i < count($polls); $i++) {
+		$pollsCount = count($polls);
+		for ($i = 0; $i < $pollsCount; $i++) {
 			if($polls[$i]['Poll']['post_id'] == $poll['Poll']['post_id']){
 				$post[$samePost] = $polls[$i];
 				$samePost++;

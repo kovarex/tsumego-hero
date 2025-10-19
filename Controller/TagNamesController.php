@@ -78,7 +78,8 @@ class TagNamesController extends AppController{
 			$rejectedTagNames = [];
 		}
 
-		for($i=0; $i<count($tagNames); $i++){
+		$tagNamesCount = count($tagNames);
+		for($i=0; $i<$tagNamesCount; $i++){
 			$ux = $this->User->findById($tagNames[$i]['TagName']['user_id']);
 			$tagNames[$i]['TagName']['status'] = '<b style="color:#047804">accepted</b>';
 			$tagNames[$i]['TagName']['type'] = 'tag name';
@@ -92,7 +93,8 @@ class TagNamesController extends AppController{
 			array_push($listStatus, $tagNames[$i]['TagName']['status']);
 			array_push($listTag, $tagNames[$i]['TagName']['name']);
 		}
-		for($i=0; $i<count($rejectedTagNames); $i++){
+		$rejectedTagNamesCount = count($rejectedTagNames);
+		for($i=0; $i<$rejectedTagNamesCount; $i++){
 			$ux = $this->User->findById($rejectedTagNames[$i]['Reject']['user_id']);
 			$r = array();
 			$r['TagName']['name'] = $rejectedTagNames[$i]['Reject']['text'];
@@ -111,7 +113,8 @@ class TagNamesController extends AppController{
 			array_push($listTag, $r['TagName']['name']);
 		}
 		
-		for($i=0; $i<count($tags); $i++){
+		$tagsCount = count($tags);
+		for($i=0; $i<$tagsCount; $i++){
 			$tnx = $this->TagName->findById($tags[$i]['Tag']['tag_name_id']);
 			$tx = $this->Tsumego->findById($tags[$i]['Tag']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
@@ -135,7 +138,8 @@ class TagNamesController extends AppController{
 			array_push($listStatus, $tags[$i]['Tag']['status']);
 			array_push($listTag, $tags[$i]['Tag']['tag_name']);
 		}
-		for($i=0; $i<count($rejectedTags); $i++){
+		$rejectedTagsCount = count($rejectedTags);
+		for($i=0; $i<$rejectedTagsCount; $i++){
 			$tx = $this->Tsumego->findById($rejectedTags[$i]['Reject']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
 			if (!$scx) {
@@ -162,7 +166,8 @@ class TagNamesController extends AppController{
 			array_push($listTag, $r['Tag']['tag_name']);
 		}
 
-		for($i=0; $i<count($proposals); $i++){
+		$proposalsCount = count($proposals);
+		for($i=0; $i<$proposalsCount; $i++){
 			$tx = $this->Tsumego->findById($proposals[$i]['Sgf']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
 			if (!$scx) {
@@ -183,7 +188,8 @@ class TagNamesController extends AppController{
 			array_push($listStatus, $proposals[$i]['Sgf']['status']);
 			array_push($listTag, '');
 		}
-		for($i=0; $i<count($rejectedProposals); $i++){
+		$rejectedProposalsCount = count($rejectedProposals);
+		for($i=0; $i<$rejectedProposalsCount; $i++){
 			$tx = $this->Tsumego->findById($rejectedProposals[$i]['Reject']['tsumego_id']);
 			$scx = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $tx['Tsumego']['id'])));
 			if (!$scx) {
@@ -211,7 +217,8 @@ class TagNamesController extends AppController{
 
 		array_multisort($listCreated, $listType, $listTid, $listTsumego, $listUser, $listStatus, $listTag);
 		$index = 0;
-		for($i=count($listCreated)-1; $i>=0; $i--){
+		$listCreatedCount = count($listCreated);
+		for($i=$listCreatedCount-1; $i>=0; $i--){
 			$list[$index]['created'] = $listCreated[$i];
 			$list[$index]['type'] = $listType[$i];
 			$list[$index]['tsumego_id'] = $listTid[$i];
@@ -260,7 +267,8 @@ class TagNamesController extends AppController{
 				if (!$tags) {
 					$tags = [];
 				}
-				for($i=0; $i<count($tags); $i++)
+				$tagsCount = count($tags);
+				for($i=0; $i<$tagsCount; $i++)
 					$this->Tag->delete($tags[$i]['Tag']['id']);
 				$this->TagName->delete($id);
 				$this->set('del', 'del');

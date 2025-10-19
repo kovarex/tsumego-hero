@@ -34,7 +34,8 @@ class SgfsController extends AppController {
 		
 		if(isset($this->params['url']['duplicates'])){
 			$newDuplicates = explode('-', $this->params['url']['duplicates']);
-			for($i=0; $i<count($newDuplicates); $i++){
+			$newDuplicatesCount = count($newDuplicates);
+			for($i=0; $i<$newDuplicatesCount; $i++){
 				$dupl = $this->Tsumego->findById($newDuplicates[$i]);
 				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $dupl['Tsumego']['id'])));
 				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -70,7 +71,8 @@ class SgfsController extends AppController {
 			}
 		}
 		
-		for($i=0; $i<count($s); $i++){
+		$sCount = count($s);
+		for($i=0; $i<$sCount; $i++){
 			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
 			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
 			

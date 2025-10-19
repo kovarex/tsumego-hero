@@ -14,7 +14,8 @@ class PostsController extends AppController {
 		$pollsInPosts = [];
 		$patternsInPosts = [];
 
-		for ($i = 0; $i < count($posts); $i++) {
+		$postsCount = count($posts);
+		for ($i = 0; $i < $postsCount; $i++) {
 			$polls = $this->Poll->find('all', array('conditions' => array('Poll.post_id' => $posts[$i]['Post']['id'])));
 			if (!$polls) {
 				$polls = [];
@@ -105,7 +106,8 @@ class PostsController extends AppController {
 			$posts = [];
 		}
 		$patternsInPosts = [];
-		for ($i = 0; $i < count($posts); $i++) {
+		$postsCount = count($posts);
+		for ($i = 0; $i < $postsCount; $i++) {
 			if($posts[$i]['Post']['sgf2']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf2'];
 			if($posts[$i]['Post']['sgf3']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf3'];
 			if($posts[$i]['Post']['sgf4']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf4'];
