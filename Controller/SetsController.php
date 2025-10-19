@@ -21,16 +21,16 @@ class SetsController extends AppController{
 			if (!$unmark) {
 				$unmark = [];
 			}
-			$unmarkCount = count($unmark);
-			for($i=0; $i<$unmarkCount; $i++)
-				$this->Duplicate->delete($unmark[$i]['Duplicate']['id']);
+			foreach ($unmark as $item) {
+				$this->Duplicate->delete($item['Duplicate']['id']);
+			}
 		}
 
 		$ts = $this->findTsumegoSet($id);
 		$set = $this->Set->findById($ts[0]['Tsumego']['set_id']);
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++)
-			array_push($tIds, $ts[$i]['Tsumego']['id']);
+		foreach ($ts as $item) {
+			$tIds[] = $item['Tsumego']['id'];
+		}
 		$d0 = $this->Duplicate->find('all', array('conditions' => array('tsumego_id' => $tIds)));
 		if (!$d0) {
 			$d0 = [];
@@ -47,9 +47,8 @@ class SetsController extends AppController{
 				$d01 = [];
 			}
 			array_push($d, $d0[$i]);
-			$d01Count2 = count($d01);
-			for($j=0; $j<$d01Count2; $j++){
-				array_push($d, $d01[$j]);
+			foreach ($d01 as $item) {
+				$d[] = $item;
 			}
 		}
 		$dNew = array();
@@ -135,9 +134,8 @@ class SetsController extends AppController{
 			//$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => $s[$i]['Set']['id'])));
 			$ts = $this->findTsumegoSet($s[$i]['Set']['id']);
 			$tsIds = array();
-			$tsCount2 = count($ts);
-			for($j=0; $j<$tsCount2; $j++){
-				array_push($tsIds, $ts[$j]['Tsumego']['id']);
+			foreach ($ts as $item) {
+				$tsIds[] = $item['Tsumego']['id'];
 			}
 			$d = $this->Duplicate->find('all', array('conditions' => array('tsumego_id' => $tsIds)));
 			if (!$d) {
@@ -252,9 +250,8 @@ class SetsController extends AppController{
 			$accessList = [];
 		}
 		$access = array();
-		$accessListCount = count($accessList);
-		for($i=0; $i<$accessListCount; $i++){
-			array_push($access, $accessList[$i]['User']['name']);
+		foreach ($accessList as $item) {
+			$access[] = $item['User']['name'];
 		}
 
 		$adminsList = $this->User->find('all', array('order' => 'id ASC', 'conditions' => array('isAdmin >' => 0)));
@@ -262,9 +259,8 @@ class SetsController extends AppController{
 			$adminsList = [];
 		}
 		$admins = array();
-		$adminsListCount = count($adminsList);
-		for($i=0; $i<$adminsListCount; $i++){
-			array_push($admins, $adminsList[$i]['User']['name']);
+		foreach ($adminsList as $item) {
+			$admins[] = $item['User']['name'];
 		}
 
 		$this->set('admins', $admins);
@@ -351,9 +347,8 @@ class SetsController extends AppController{
 				if($s['Set']['public']==0 || $s['Set']['public']==-1) $this->Set->delete($set);
 				$ts = $this->findTsumegoSet($set);
 				if(count($ts)<50){
-					$tsCount = count($ts);
-					for($i=0; $i<$tsCount; $i++){
-						$this->Tsumego->delete($ts[$i]['Tsumego']['id']);
+					foreach ($ts as $item) {
+						$this->Tsumego->delete($item['Tsumego']['id']);
 					}
 				}
 				$redirect = true;
@@ -428,9 +423,9 @@ class SetsController extends AppController{
 		if (!$swp) {
 			$swp = [];
 		}
-		$swpCount = count($swp);
-		for($i=0; $i<$swpCount; $i++)
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+		foreach ($swp as $item) {
+			$setsWithPremium[] = $item['Set']['id'];
+		}
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', array(
@@ -447,9 +442,9 @@ class SetsController extends AppController{
 
 		//difficultyTiles
 		$dt = $this->getExistingRanksArray();
-		$dtCount = count($dt);
-		for($i=0; $i<$dtCount; $i++)
-			array_push($difficultyTiles, $dt[$i]['rank']);
+		foreach ($dt as $item) {
+			$difficultyTiles[] = $item['rank'];
+		}
 
 		//tagTiles
 		$tags = $this->Tag->find('all', array('conditions' => array('approved' => 1)));

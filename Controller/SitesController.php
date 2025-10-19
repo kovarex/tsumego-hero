@@ -24,15 +24,13 @@ class SitesController extends AppController{
 		array_push($tdates, '2021-06-10 22:00:00');
 		//array_push($tdates, '2020-11-22 22:00:00');
 		
-		$tdatesCount = count($tdates);
-		for($i=0;$i<$tdatesCount;$i++){
-			$ts1 = $this->Tsumego->find('all', array('conditions' =>  array('created' => $tdates[$i])));
+		foreach ($tdates as $tdate) {
+			$ts1 = $this->Tsumego->find('all', array('conditions' =>  array('created' => $tdate)));
 			if (!$ts1) {
 				$ts1 = [];
 			}
-			$ts1Count = count($ts1);
-			for($j=0;$j<$ts1Count;$j++){
-				array_push($tSum, $ts1[$j]);
+			foreach ($ts1 as $item) {
+				$tSum[] = $item;
 			}
 		}
 		
@@ -60,9 +58,9 @@ class SitesController extends AppController{
 			$uReward = [];
 		}
 		$urNames = array();
-		$uRewardCount = count($uReward);
-		for($i=0;$i<$uRewardCount;$i++)
-			array_push($urNames, $this->checkPicture($uReward[$i]));
+		foreach ($uReward as $user) {
+			$urNames[] = $this->checkPicture($user);
+		}
 		
 		$today = date('Y-m-d');
 		$dateUser = $this->DayRecord->find('first', array('conditions' =>  array('date' => $today)));
@@ -94,32 +92,29 @@ class SitesController extends AppController{
 		}
 
 		$scheduleTsumego = array();
-		$newTscheduleCount = count($newTschedule);
-		for($i=0;$i<$newTscheduleCount;$i++){
-			array_push($scheduleTsumego, $this->Tsumego->findById($newTschedule[$i]['Schedule']['tsumego_id']));
+		foreach ($newTschedule as $scheduleItem) {
+			$scheduleTsumego[] = $this->Tsumego->findById($scheduleItem['Schedule']['tsumego_id']);
 		}
 		
 		$tooltipSgfs = array();
 		$tooltipInfo = array();
 		$tooltipBoardSize = array();
-		$scheduleTsumegoCount = count($scheduleTsumego);
-		for($i=0;$i<$scheduleTsumegoCount;$i++){
-			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $scheduleTsumego[$i]['Tsumego']['id'])));
+		foreach ($scheduleTsumego as $tsumego) {
+			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $tsumego['Tsumego']['id'])));
 			if (!$tts) {
 				$tts = [];
 			}
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs, $tArr[0]);
-			array_push($tooltipInfo, $tArr[2]);
-			array_push($tooltipBoardSize, $tArr[3]);
+			$tooltipSgfs[] = $tArr[0];
+			$tooltipInfo[] = $tArr[2];
+			$tooltipBoardSize[] = $tArr[3];
 		}
 
 		if($this->Session->check('loggedInUser')){
 			$idArray = array();
-			array_push($idArray, $totd['Tsumego']['id']);
-			$scheduleTsumegoCount = count($scheduleTsumego);
-			for($i=0;$i<$scheduleTsumegoCount;$i++){
-				array_push($idArray, $scheduleTsumego[$i]['Tsumego']['id']);
+			$idArray[] = $totd['Tsumego']['id'];
+			foreach ($scheduleTsumego as $tsumego) {
+				$idArray[] = $tsumego['Tsumego']['id'];
 			}
 
 
@@ -255,9 +250,9 @@ class SitesController extends AppController{
 		
 		$setKeys = array();
 		$setArray = $this->Set->find('all', array('conditions' => array('public' => 1)));
-		$setArrayCount = count($setArray);
-		for($i=0; $i<$setArrayCount; $i++)
-			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
+		foreach ($setArray as $set) {
+			$setKeys[$set['Set']['id']] = $set['Set']['id'];
+		}
 
 		$tsumegosCount = count($tsumegos);
 		for($j=0; $j<$tsumegosCount; $j++)
@@ -275,9 +270,9 @@ class SitesController extends AppController{
 		if (!$pd) {
 			$pd = [];
 		}
-		$pdCount = count($pd);
-		for($j=0; $j<$pdCount; $j++)
-			array_push($tsumegoDates, $pd[$j]['PublishDate']['date']);
+		foreach ($pd as $date) {
+			$tsumegoDates[] = $date['PublishDate']['date'];
+		}
 		$deletedS = $this->getDeletedSets();
 		
 		$setsWithPremium = array();
@@ -285,14 +280,14 @@ class SitesController extends AppController{
 		if (!$swp) {
 			$swp = [];
 		}
-		$swpCount = count($swp);
-		for($i=0;$i<$swpCount;$i++)
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+		foreach ($swp as $set) {
+			$setsWithPremium[] = $set['Set']['id'];
+		}
 		$totd = $this->checkForLocked($totd, $setsWithPremium);
 
-		$scheduleTsumegoCount = count($scheduleTsumego);
-		for($i=0;$i<$scheduleTsumegoCount;$i++)
-			$scheduleTsumego[$i] = $this->checkForLocked($scheduleTsumego[$i], $setsWithPremium);
+		foreach ($scheduleTsumego as $i => $tsumego) {
+			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
+		}
 
 		if(!$this->Session->check('loggedInUser.User.id')
 			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1

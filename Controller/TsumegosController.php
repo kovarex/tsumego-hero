@@ -108,9 +108,9 @@ class TsumegosController extends AppController{
 		if (!$swp) {
 			$swp = [];
 		}
-		$swpCount = count($swp);
-		for($i=0;$i<$swpCount;$i++)
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+		foreach ($swp as $item) {
+			$setsWithPremium[] = $item['Set']['id'];
+		}
 
 		$hasDuplicateGroup = count($this->SetConnection->find('all', array('conditions' => array('tsumego_id' => $id))) ?: [])>1;
 		if($hasDuplicateGroup){
@@ -194,9 +194,8 @@ class TsumegosController extends AppController{
 							$ranks = [];
 						}
 						if(count($ranks)!=10){
-							$ranksCount = count($ranks);
-							for($i=0;$i<$ranksCount;$i++){
-								$this->Rank->delete($ranks[$i]['Rank']['id']);
+							foreach ($ranks as $item) {
+								$this->Rank->delete($item['Rank']['id']);
 							}
 						}
 						$this->Session->write('loggedInUser.User.activeRank', 0);
@@ -1669,8 +1668,9 @@ class TsumegosController extends AppController{
 		$search3ids = array();
 		$search3Count = count($search3);
 
-		for($i=0; $i<$search3Count; $i++)
-			array_push($search3ids, $this->TagName->findByName($search3[$i])['TagName']['id']);
+		foreach ($search3 as $item) {
+			$search3ids[] = $this->TagName->findByName($item)['TagName']['id'];
+		}
 
 		$sgf = array();
 		if($t['Tsumego']['duplicate']<=9)

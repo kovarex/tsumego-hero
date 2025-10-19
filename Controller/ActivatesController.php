@@ -55,22 +55,21 @@ class ActivatesController extends AppController{
 
 
 		
-		$usCount = count($us);
-		for($i=0; $i<$usCount; $i++){
+		foreach ($us as $user) {
 			/*
 			$this->Activate->create();
 			$s = $this->rdm();
 			$a = array();
 			$a['Activate']['string'] = $s;
 			$this->Activate->save($a);
-			
-			
+
+
 			$Email = new CakeEmail();
 			$Email->from(array('me@joschkazimdars.com' => 'https://tsumego-hero.com'));
-			$Email->to($us[$i]['User']['email']);
+			$Email->to($user['User']['email']);
 			$Email->subject('Tsumego Hero - key for rating mode');
 			$ans = '
-Hello '.$us[$i]['User']['name'].',
+Hello '.$user['User']['name'].',
 
 this is an invitation for the new rating mode on Tsumego Hero. The rating mode gives you a rank for your ability to solve tsumego. The system is based on elo rating, which is used for tournaments in chess, go and other games. As in tournaments players get opponents around their rank, the rating mode matches you with go problems around your skill level.
 
@@ -78,7 +77,7 @@ In the next few weeks, we evaluate the user data and try to find the best config
 
 Here is your key: '.$a['Activate']['string'].'
 
--- 
+--
 Best Regards
 Joschka Zimdars
 

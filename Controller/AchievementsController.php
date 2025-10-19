@@ -19,9 +19,9 @@ class AchievementsController extends AppController {
 				$as = [];
 			}
 
-			$asCount = count($as);
-			for($i=0; $i<$asCount; $i++)
-				$existingAs[$as[$i]['AchievementStatus']['achievement_id']] = $as[$i];
+			foreach ($as as $item) {
+				$existingAs[$item['AchievementStatus']['achievement_id']] = $item;
+			}
 		}
 
 		$aCount = count($a);
@@ -72,7 +72,7 @@ class AchievementsController extends AppController {
 		for($i=0; $i<$count; $i++){
 			$u = $this->User->findById($asAll[$i]['AchievementStatus']['user_id']);
 			$asAll[$i]['AchievementStatus']['name'] = $this->checkPicture($u);
-			array_push($asAll2, $asAll[$i]);
+			$asAll2[] = $asAll[$i];
 		}
 		$asAll = $asAll2;
 

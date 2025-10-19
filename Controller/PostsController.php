@@ -106,12 +106,11 @@ class PostsController extends AppController {
 			$posts = [];
 		}
 		$patternsInPosts = [];
-		$postsCount = count($posts);
-		for ($i = 0; $i < $postsCount; $i++) {
-			if($posts[$i]['Post']['sgf2']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf2'];
-			if($posts[$i]['Post']['sgf3']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf3'];
-			if($posts[$i]['Post']['sgf4']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf4'];
-			if($posts[$i]['Post']['sgf5']!=null)$patternsInPosts[] = $posts[$i]['Post']['sgf5'];
+		foreach ($posts as $post) {
+			if($post['Post']['sgf2']!=null)$patternsInPosts[] = $post['Post']['sgf2'];
+			if($post['Post']['sgf3']!=null)$patternsInPosts[] = $post['Post']['sgf3'];
+			if($post['Post']['sgf4']!=null)$patternsInPosts[] = $post['Post']['sgf4'];
+			if($post['Post']['sgf5']!=null)$patternsInPosts[] = $post['Post']['sgf5'];
 		}
 		$this->set('patternsInPosts', $patternsInPosts);
     }

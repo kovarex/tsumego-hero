@@ -85,13 +85,13 @@ class TagNamesController extends AppController{
 			$tagNames[$i]['TagName']['type'] = 'tag name';
 			$tagNames[$i]['TagName']['user'] = $ux['User']['name'];
 
-			array_push($listCreated, $tagNames[$i]['TagName']['created']);
-			array_push($listType, 'tag name');
-			array_push($listTid, '');
-			array_push($listTsumego, '');
-			array_push($listUser, $tagNames[$i]['TagName']['user']);
-			array_push($listStatus, $tagNames[$i]['TagName']['status']);
-			array_push($listTag, $tagNames[$i]['TagName']['name']);
+			$listCreated[] = $tagNames[$i]['TagName']['created'];
+			$listType[] = 'tag name';
+			$listTid[] = '';
+			$listTsumego[] = '';
+			$listUser[] = $tagNames[$i]['TagName']['user'];
+			$listStatus[] = $tagNames[$i]['TagName']['status'];
+			$listTag[] = $tagNames[$i]['TagName']['name'];
 		}
 		$rejectedTagNamesCount = count($rejectedTagNames);
 		for($i=0; $i<$rejectedTagNamesCount; $i++){
@@ -102,15 +102,15 @@ class TagNamesController extends AppController{
 			$r['TagName']['status'] = '<b style="color:#ce3a47">rejected</b>';
 			$r['TagName']['created'] = $rejectedTagNames[$i]['Reject']['created'];
 			$r['TagName']['user'] = $ux['User']['name'];
-			array_push($tagNames, $r);
+			$tagNames[] = $r;
 
-			array_push($listCreated, $r['TagName']['created']);
-			array_push($listType, 'tag name');
-			array_push($listTid, '');
-			array_push($listTsumego, '');
-			array_push($listUser, $r['TagName']['user']);
-			array_push($listStatus, $r['TagName']['status']);
-			array_push($listTag, $r['TagName']['name']);
+			$listCreated[] = $r['TagName']['created'];
+			$listType[] = 'tag name';
+			$listTid[] = '';
+			$listTsumego[] = '';
+			$listUser[] = $r['TagName']['user'];
+			$listStatus[] = $r['TagName']['status'];
+			$listTag[] = $r['TagName']['name'];
 		}
 		
 		$tagsCount = count($tags);
@@ -130,13 +130,13 @@ class TagNamesController extends AppController{
 			$tags[$i]['Tag']['type'] = 'tag';
 			$tags[$i]['Tag']['status'] = '<b style="color:#047804">accepted</b>';
 
-			array_push($listCreated, $tags[$i]['Tag']['created']);
-			array_push($listType, 'tag');
-			array_push($listTid, $tags[$i]['Tag']['tsumego_id']);
-			array_push($listTsumego, $tags[$i]['Tag']['tsumego']);
-			array_push($listUser, $tags[$i]['Tag']['user']);
-			array_push($listStatus, $tags[$i]['Tag']['status']);
-			array_push($listTag, $tags[$i]['Tag']['tag_name']);
+			$listCreated[] = $tags[$i]['Tag']['created'];
+			$listType[] = 'tag';
+			$listTid[] = $tags[$i]['Tag']['tsumego_id'];
+			$listTsumego[] = $tags[$i]['Tag']['tsumego'];
+			$listUser[] = $tags[$i]['Tag']['user'];
+			$listStatus[] = $tags[$i]['Tag']['status'];
+			$listTag[] = $tags[$i]['Tag']['tag_name'];
 		}
 		$rejectedTagsCount = count($rejectedTags);
 		for($i=0; $i<$rejectedTagsCount; $i++){
@@ -155,15 +155,15 @@ class TagNamesController extends AppController{
 			$r['Tag']['type'] = $rejectedTags[$i]['Reject']['type'];
 			$r['Tag']['status'] = '<b style="color:#ce3a47">rejected</b>';
 			$r['Tag']['created'] = $rejectedTags[$i]['Reject']['created'];
-			array_push($tags, $r);
+			$tags[] = $r;
 
-			array_push($listCreated, $r['Tag']['created']);
-			array_push($listType, 'tag');
-			array_push($listTid, $r['Tag']['tsumego_id']);
-			array_push($listTsumego, $r['Tag']['tsumego']);
-			array_push($listUser, $r['Tag']['user']);
-			array_push($listStatus, $r['Tag']['status']);
-			array_push($listTag, $r['Tag']['tag_name']);
+			$listCreated[] = $r['Tag']['created'];
+			$listType[] = 'tag';
+			$listTid[] = $r['Tag']['tsumego_id'];
+			$listTsumego[] = $r['Tag']['tsumego'];
+			$listUser[] = $r['Tag']['user'];
+			$listStatus[] = $r['Tag']['status'];
+			$listTag[] = $r['Tag']['tag_name'];
 		}
 
 		$proposalsCount = count($proposals);
@@ -179,14 +179,14 @@ class TagNamesController extends AppController{
 			$proposals[$i]['Sgf']['status'] = '<b style="color:#047804">accepted</b>';
 			$proposals[$i]['Sgf']['user'] = $ux['User']['name'];
 			$proposals[$i]['Sgf']['type'] = 'proposal';
-			
-			array_push($listCreated, $proposals[$i]['Sgf']['created']);
-			array_push($listType, 'proposal');
-			array_push($listTid, $proposals[$i]['Sgf']['tsumego_id']);
-			array_push($listTsumego, $proposals[$i]['Sgf']['tsumego']);
-			array_push($listUser, $proposals[$i]['Sgf']['user']);
-			array_push($listStatus, $proposals[$i]['Sgf']['status']);
-			array_push($listTag, '');
+
+			$listCreated[] = $proposals[$i]['Sgf']['created'];
+			$listType[] = 'proposal';
+			$listTid[] = $proposals[$i]['Sgf']['tsumego_id'];
+			$listTsumego[] = $proposals[$i]['Sgf']['tsumego'];
+			$listUser[] = $proposals[$i]['Sgf']['user'];
+			$listStatus[] = $proposals[$i]['Sgf']['status'];
+			$listTag[] = '';
 		}
 		$rejectedProposalsCount = count($rejectedProposals);
 		for($i=0; $i<$rejectedProposalsCount; $i++){
@@ -204,15 +204,15 @@ class TagNamesController extends AppController{
 			$r['Sgf']['type'] = $rejectedProposals[$i]['Reject']['type'];
 			$r['Sgf']['user'] = $ux['User']['name'];
 			$r['Sgf']['created'] = $rejectedProposals[$i]['Reject']['created'];
-			array_push($proposals, $r);
+			$proposals[] = $r;
 
-			array_push($listCreated, $r['Sgf']['created']);
-			array_push($listType, 'proposal');
-			array_push($listTid, $r['Sgf']['tsumego_id']);
-			array_push($listTsumego, $r['Sgf']['tsumego']);
-			array_push($listUser, $r['Sgf']['user']);
-			array_push($listStatus, $r['Sgf']['status']);
-			array_push($listTag, '');
+			$listCreated[] = $r['Sgf']['created'];
+			$listType[] = 'proposal';
+			$listTid[] = $r['Sgf']['tsumego_id'];
+			$listTsumego[] = $r['Sgf']['tsumego'];
+			$listUser[] = $r['Sgf']['user'];
+			$listStatus[] = $r['Sgf']['status'];
+			$listTag[] = '';
 		}
 
 		array_multisort($listCreated, $listType, $listTid, $listTsumego, $listUser, $listStatus, $listTag);
@@ -267,9 +267,9 @@ class TagNamesController extends AppController{
 				if (!$tags) {
 					$tags = [];
 				}
-				$tagsCount = count($tags);
-				for($i=0; $i<$tagsCount; $i++)
-					$this->Tag->delete($tags[$i]['Tag']['id']);
+				foreach ($tags as $tag) {
+					$this->Tag->delete($tag['Tag']['id']);
+				}
 				$this->TagName->delete($id);
 				$this->set('del', 'del');
 			}

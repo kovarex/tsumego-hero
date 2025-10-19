@@ -53,26 +53,25 @@ class TsumegoRatingAttemptsController extends AppController {
 				$set = $this->Set->findById($tsumego['Tsumego']['set_id']);
 				$values = array();
 				$hash = substr($user['User']['ip'], 0, 1);
-				$headerCount = count($header);
-				for($j=0; $j<$headerCount; $j++){
+				foreach ($header as $headerItem) {
 					$a=array();
-					if($header[$j]=='user_ip'){
-						$a['name'] = $header[$j];
+					if($headerItem=='user_ip'){
+						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['ip'];
-					}elseif($header[$j]=='user_country'){
-						$a['name'] = $header[$j];
+					}elseif($headerItem=='user_country'){
+						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['location'];
-					}elseif($header[$j]=='user_country_code'){
-						$a['name'] = $header[$j];
+					}elseif($headerItem=='user_country_code'){
+						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['location'];
-					}elseif($header[$j]=='tsumego_set'){
-						$a['name'] = $header[$j];
+					}elseif($headerItem=='tsumego_set'){
+						$a['name'] = $headerItem;
 						$a['value'] = $set['Set']['title'];
 					}else{
-						$a['name'] = $header[$j];
-						$a['value'] = $trs[$i]['TsumegoRatingAttempt'][$header[$j]];
+						$a['name'] = $headerItem;
+						$a['value'] = $trs[$i]['TsumegoRatingAttempt'][$headerItem];
 					}
-					array_push($values, $a);
+					$values[] = $a;
 				}
 				/*
 				$values['user_id'] = $trs[$i]['TsumegoRatingAttempt']['user_id'];
@@ -121,10 +120,9 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
-			array_push($csv, $header);
-			$trsCount = count($trs);
-			for($i=0; $i<$trsCount; $i++){
-				array_push($csv, $trs[$i]['TsumegoRatingAttempt']);
+			$csv[] = $header;
+			foreach ($trs as $tr) {
+				$csv[] = $tr['TsumegoRatingAttempt'];
 			}
 			
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
@@ -142,10 +140,9 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			$csv = array();
 			$header = array('id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created');
-			array_push($csv, $header);
-			$trsCount = count($trs);
-			for($i=0; $i<$trsCount; $i++){
-				array_push($csv, $trs[$i]['TsumegoRatingAttempt']);
+			$csv[] = $header;
+			foreach ($trs as $tr) {
+				$csv[] = $tr['TsumegoRatingAttempt'];
 			}
 			
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
@@ -163,10 +160,9 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
-			array_push($csv, $header);
-			$trsCount = count($trs);
-			for($i=0; $i<$trsCount; $i++){
-				array_push($csv, $trs[$i]['TsumegoAttempt']);
+			$csv[] = $header;
+			foreach ($trs as $tr) {
+				$csv[] = $tr['TsumegoAttempt'];
 			}
 			
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
@@ -184,10 +180,9 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			$csv = array();
 			$header = array('id', 'user_id', 'tsumego_id', 'level', 'xp', 'gain', 'status', 'seconds', 'created');
-			array_push($csv, $header);
-			$trsCount = count($trs);
-			for($i=0; $i<$trsCount; $i++){
-				array_push($csv, $trs[$i]['TsumegoAttempt']);
+			$csv[] = $header;
+			foreach ($trs as $tr) {
+				$csv[] = $tr['TsumegoAttempt'];
 			}
 			
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
@@ -205,13 +200,12 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			$csv = array();
 			$header = array('id', 'ip');
-			array_push($csv, $header);
-			$uCount = count($u);
-			for($i=0; $i<$uCount; $i++){
+			$csv[] = $header;
+			foreach ($u as $user) {
 				$a = array();
-				array_push($a, $u[$i]['User']['id']);
-				array_push($a, $u[$i]['User']['ip']);
-				if($u[$i]['User']['ip']!=null) array_push($csv, $a);
+				$a[] = $user['User']['id'];
+				$a[] = $user['User']['ip'];
+				if($user['User']['ip']!=null) $csv[] = $a;
 			}
 			
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");

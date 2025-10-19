@@ -63,10 +63,9 @@ class UsersController extends AppController{
 			'num <=' => 20
 		)));
 
-		$tCount = count($t);
-		for($i=0; $i<$tCount; $i++){
+		foreach ($t as $item) {
 			$tag = array();
-			$tag['Tag']['tsumego_id'] = $t[$i]['Tsumego']['id'];
+			$tag['Tag']['tsumego_id'] = $item['Tsumego']['id'];
 			$tag['Tag']['user_id'] = 72;
 			$tag['Tag']['tag_name_id'] = 10;
 			$tag['Tag']['approved'] = 1;
@@ -157,10 +156,9 @@ class UsersController extends AppController{
 			$this->Schedule->save($s);
 		}
 
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++){
-			//$this->setTsumegoElo($ts[$i]['Tsumego']['id']);
-			$this->setTsumegoElo($ts[$i]);
+		foreach ($ts as $item) {
+			//$this->setTsumegoElo($item['Tsumego']['id']);
+			$this->setTsumegoElo($item);
 		}
 
 		$u = $this->User->find('all', array('conditions' => array(
@@ -194,9 +192,8 @@ class UsersController extends AppController{
 
 		$comments = $this->Comment->find('all');
 		$c = array();
-		$commentsCount = count($comments);
-		for($i=0; $i<$commentsCount; $i++){
-			array_push($c, $comments[$i]['Comment']['user_id']);
+		foreach ($comments as $item) {
+			$c[] = $item['Comment']['user_id'];
 		}
 		$c = array_count_values($c);
 		$this->set('c', $c);
@@ -252,24 +249,21 @@ class UsersController extends AppController{
 			)
 		)));
 		$cc = array();
-		$cCount = count($c);
-		for($i=0; $i<$cCount; $i++){
-			$u = $this->User->findById($c[$i]['Comment']['user_id']);
-			array_push($cc, $u['User']['name']);
+		foreach ($c as $item) {
+			$u = $this->User->findById($item['Comment']['user_id']);
+			$cc[] = $u['User']['name'];
 		}
 		echo '<pre>'; print_r(array_count_values($cc)); echo '</pre>';
 
 		$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => 42)));
 		$sgfs = array();
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++){
-			//$this->Tsumego->delete($ts[$i]['Tsumego']['id']);
-			array_push($sgfs, $this->Sgf->find('first', array('conditions' => array('tsumego_id' => $ts[$i]['Tsumego']['id']))));
+		foreach ($ts as $item) {
+			//$this->Tsumego->delete($item['Tsumego']['id']);
+			$sgfs[] = $this->Sgf->find('first', array('conditions' => array('tsumego_id' => $item['Tsumego']['id'])));
 		}
 
-		$sgfsCount = count($sgfs);
-		for($i=0; $i<$sgfsCount; $i++){
-			$this->Sgf->delete($sgfs[$i]['Sgf']['id']);
+		foreach ($sgfs as $sgf) {
+			$this->Sgf->delete($sgf['Sgf']['id']);
 		}
 		echo '<pre>'; print_r(count($ts)); echo '</pre>';
 		echo '<pre>'; print_r(count($sgfs)); echo '</pre>';
@@ -306,9 +300,9 @@ class UsersController extends AppController{
 		$ta = $this->TsumegoAttempt->find('all', array('limit' => 5000, 'order' => 'created ASC'));
 		echo '<pre>'; print_r($ta[0]['TsumegoAttempt']['created']); echo '</pre>';
 
-		$taCount = count($ta);
-		for($i=0; $i<$taCount; $i++)
-			$this->TsumegoAttempt->delete($ta[$i]['TsumegoAttempt']['id']);
+		foreach ($ta as $item) {
+			$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
+		}
 
 		$this->set('x', '2023-08-01 00:00:00');
 		$this->set('date', $ta[0]['TsumegoAttempt']['created']);
@@ -321,9 +315,8 @@ class UsersController extends AppController{
 			'id >=' => 20000,
 			'id <=' => 30000
 		)));
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++){
-			$this->set_elo($ts[$i]['Tsumego']['id']);
+		foreach ($ts as $item) {
+			$this->set_elo($item['Tsumego']['id']);
 		}
 	}
 
@@ -412,10 +405,10 @@ class UsersController extends AppController{
 		$ts = $this->Tsumego->find('all', array('order' => 'elo_rating_mode ASC'));
 		echo '<pre>'; print_r(count($ts)); echo '</pre>';
 		echo '<table>';
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++)
-			echo '<tr><td>'.$ts[$i]['Tsumego']['id'].'</td><td>'.$ts[$i]['Tsumego']['difficulty']
-			.'</td><td>'.$ts[$i]['Tsumego']['userWin'].'</td><td>'.$ts[$i]['Tsumego']['elo_rating_mode'].'</td></tr>';
+		foreach ($ts as $item) {
+			echo '<tr><td>'.$item['Tsumego']['id'].'</td><td>'.$item['Tsumego']['difficulty']
+			.'</td><td>'.$item['Tsumego']['userWin'].'</td><td>'.$item['Tsumego']['elo_rating_mode'].'</td></tr>';
+		}
 		echo '</table>';
 	}
 
@@ -672,12 +665,13 @@ class UsersController extends AppController{
 		$more = array();
 		$less = array();
 
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++){
-			if($ts[$i]['Tsumego']['rd']>0)
-				array_push($more, $ts[$i]['Tsumego']['rd']);
-			if($ts[$i]['Tsumego']['rd']<0)
-				array_push($less, $ts[$i]['Tsumego']['rd']);
+		foreach ($ts as $item) {
+			if($item['Tsumego']['rd']>0) {
+				$more[] = $item['Tsumego']['rd'];
+			}
+			if($item['Tsumego']['rd']<0) {
+				$less[] = $item['Tsumego']['rd'];
+			}
 		}
 		echo '<pre>'; print_r(count($less)); echo '</pre>';
 		echo '<pre>'; print_r(count($more)); echo '</pre>';
@@ -705,9 +699,9 @@ class UsersController extends AppController{
 		}
 
 		echo '<table>';
-		$tsCount = count($ts);
-		for($i=0; $i<$tsCount; $i++)
-			echo '<tr><td>'.$ts[$i]['elo'].'</td><td>'.$ts[$i]['xp'].'</td></tr>';
+		foreach ($ts as $item) {
+			echo '<tr><td>'.$item['elo'].'</td><td>'.$item['xp'].'</td></tr>';
+		}
 		echo '</table>';
 	}
 
@@ -783,9 +777,8 @@ class UsersController extends AppController{
 		$this->PurgeList->save($pl);
 
 		$ut = $this->TsumegoStatus->find('all', array('limit' => 10000, 'conditions' =>  array('user_id' => 33)));
-		$utCount = count($ut);
-		for($i=0; $i<$utCount; $i++){
-			$this->TsumegoStatus->delete($ut[$i]['TsumegoStatus']['id']);
+		foreach ($ut as $item) {
+			$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
 		}
 		$this->set('ut', count($ut));
 	}
@@ -2075,15 +2068,15 @@ Joschka Zimdars';
 				$del2 = $this->TsumegoAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
 				$del3 = $this->TsumegoRatingAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
 				if(md5($toDelete['User']['name']) == $this->params['url']['hash']){
-					$del1Count = count($del1);
-					for($i=0; $i<$del1Count; $i++)
-						$this->TsumegoStatus->delete($del1[$i]['TsumegoStatus']['id']);
-					$del2Count = count($del2);
-					for($i=0; $i<$del2Count; $i++)
-						$this->TsumegoAttempts->delete($del2[$i]['TsumegoAttempts']['id']);
-					$del3Count = count($del3);
-					for($i=0; $i<$del3Count; $i++)
-						$this->TsumegoRatingAttempts->delete($del3[$i]['TsumegoRatingAttempts']['id']);
+					foreach ($del1 as $item) {
+						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
+					}
+					foreach ($del2 as $item) {
+						$this->TsumegoAttempts->delete($item['TsumegoAttempts']['id']);
+					}
+					foreach ($del3 as $item) {
+						$this->TsumegoRatingAttempts->delete($item['TsumegoRatingAttempts']['id']);
+					}
 					$this->User->delete($toDelete['User']['id']);
 					echo '<pre>'; print_r('Deleted user '.$toDelete['User']['name']); echo '</pre>';
 				}

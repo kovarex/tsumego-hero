@@ -30,9 +30,8 @@ class RanksController extends AppController {
 			$rs = [];
 		}
 		$rsIndexes = array();
-		$rsCount = count($rs);
-		for($i=0;$i<$rsCount;$i++){
-			$rsIndexes[$rs[$i]['RankSetting']['set_id']] = $rs[$i]['RankSetting']['status'];
+		foreach ($rs as $item) {
+			$rsIndexes[$item['RankSetting']['set_id']] = $item['RankSetting']['status'];
 		}
 		$rs = $this->checkForNewCollections($rsIndexes);
 
@@ -119,26 +118,26 @@ class RanksController extends AppController {
 		}
 
 		$rx = array();
-		array_push($rx, '15k');
-		array_push($rx, '14k');
-		array_push($rx, '13k');
-		array_push($rx, '12k');
-		array_push($rx, '11k');
-		array_push($rx, '10k');
-		array_push($rx, '9k');
-		array_push($rx, '8k');
-		array_push($rx, '7k');
-		array_push($rx, '6k');
-		array_push($rx, '5k');
-		array_push($rx, '4k');
-		array_push($rx, '3k');
-		array_push($rx, '2k');
-		array_push($rx, '1k');
-		array_push($rx, '1d');
-		array_push($rx, '2d');
-		array_push($rx, '3d');
-		array_push($rx, '4d');
-		array_push($rx, '5d');
+		$rx[] = '15k';
+		$rx[] = '14k';
+		$rx[] = '13k';
+		$rx[] = '12k';
+		$rx[] = '11k';
+		$rx[] = '10k';
+		$rx[] = '9k';
+		$rx[] = '8k';
+		$rx[] = '7k';
+		$rx[] = '6k';
+		$rx[] = '5k';
+		$rx[] = '4k';
+		$rx[] = '3k';
+		$rx[] = '2k';
+		$rx[] = '1k';
+		$rx[] = '1d';
+		$rx[] = '2d';
+		$rx[] = '3d';
+		$rx[] = '4d';
+		$rx[] = '5d';
 		
 		$modes = array();
 		$modes[0] = array();
@@ -197,9 +196,8 @@ class RanksController extends AppController {
 				if($locks[$i][$j]=='x') $lowestMode[$i] = $j;
 			}
 		}
-		$lowestModeCount = count($lowestMode);
-		for($i=0;$i<$lowestModeCount;$i++){
-			$lowestMode[$i] =$rx[$lowestMode[$i]]; 
+		foreach ($lowestMode as $i => $value) {
+			$lowestMode[$i] = $rx[$value];
 		}
 		
 		$achievementUpdate = $this->checkTimeModeAchievements();
@@ -585,12 +583,11 @@ class RanksController extends AppController {
 	
 	private function checkForNewCollections($indexes){
 		$check = array(186,187,190,192,193,195,196,197,198,200,203,204,214,216,226,227,231);
-		$checkCount = count($check);
-		for($i=0;$i<$checkCount;$i++){
-			if(!isset($indexes[$check[$i]])){
+		foreach ($check as $checkId) {
+			if(!isset($indexes[$checkId])){
 				$newRsx = array();
 				$newRsx['RankSetting']['user_id'] = $this->Session->read('loggedInUser.User.id');
-				$newRsx['RankSetting']['set_id'] = $check[$i];
+				$newRsx['RankSetting']['set_id'] = $checkId;
 				$newRsx['RankSetting']['status'] = '1';
 				$this->RankSetting->create();
 				$this->RankSetting->save($newRsx);

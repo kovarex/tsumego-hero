@@ -38,9 +38,9 @@ class CommentsController extends AppController{
 		if (!$swp) {
 			$swp = [];
 		}
-		$swpCount = count($swp);
-		for($i=0;$i<$swpCount;$i++)
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+		foreach ($swp as $item) {
+			$setsWithPremium[] = $item['Set']['id'];
+		}
 
 		if($filter1=='true'){
 			$userTsumegos = $this->TsumegoStatus->find('all', array('conditions' =>  array(
@@ -451,9 +451,9 @@ class CommentsController extends AppController{
 			if (!$uc) {
 				$uc = [];
 			}
-			$ucCount = count($uc);
-			for($i=0; $i<$ucCount; $i++)
-				$this->Comment->delete($uc[$i]['Comment']['id']);
+			foreach ($uc as $item) {
+				$this->Comment->delete($item['Comment']['id']);
+			}
 		}
 
 		$this->set('admins', $admins);

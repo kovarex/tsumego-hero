@@ -131,9 +131,8 @@ class AppController extends Controller{
 		if (!$in) {
 			$in = [];
 		}
-		$inCount = count($in);
-		for($i=0; $i<$inCount; $i++){
-			array_push($invisibleSets, $in[$i]['Set']['id']);
+		foreach ($in as $item) {
+			$invisibleSets[] = $item['Set']['id'];
 		}
 		return $invisibleSets;
 	}
@@ -144,9 +143,8 @@ class AppController extends Controller{
 		if (!$de) {
 			$de = [];
 		}
-		$deCount = count($de);
-		for($i=0; $i<$deCount; $i++){
-			array_push($dSets, $de[$i]['Set']['id']);
+		foreach ($de as $item) {
+			$dSets[] = $item['Set']['id'];
 		}
 		return $dSets;
 	}
@@ -198,12 +196,12 @@ class AppController extends Controller{
 		}
 		$lastUotds = array();
 		$lastUsers = array();
-		$lastCount = count($last);
-		for($i=0; $i<$lastCount; $i++)
-			array_push($lastUotds, $last[$i]['DayRecord']['user_id']);
-		$ux2Count = count($ux2);
-		for($i=0; $i<$ux2Count; $i++)
-			array_push($lastUsers, $ux2[$i]['User']['id']);
+		foreach ($last as $item) {
+			$lastUotds[] = $item['DayRecord']['user_id'];
+		}
+		foreach ($ux2 as $item) {
+			$lastUsers[] = $item['User']['id'];
+		}
 		$resultUser = 72;
 		$lastUsersCount = count($lastUsers);
 		for($i=0; $i<$lastUsersCount; $i++){
@@ -403,9 +401,8 @@ class AppController extends Controller{
 		$sCount = count($s);
 		for($i=0; $i<$sCount; $i++){
 			$tSet = $this->findTsumegoSet($s[$i]['Set']['id']);
-			$tSetCount = count($tSet);
-			for($j=0; $j<$tSetCount; $j++){
-				array_push($ids, $tSet[$j]['Tsumego']['id']);
+			foreach ($tSet as $item) {
+				$ids[] = $item['Tsumego']['id'];
 			}
 		}
 		$ut = $this->TsumegoStatus->find('all', array('conditions' => array(
