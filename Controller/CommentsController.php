@@ -27,7 +27,7 @@ class CommentsController extends AppController{
 		else $unresolved = $this->params['url']['unresolved'];
 		if(!isset($this->params['url']['filter'])) $filter1 = 'true';
 		else $filter1 = $this->params['url']['filter'];
-		
+
 		if(!$this->Session->check('loggedInUser.User.id')
 			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
 		)
@@ -62,7 +62,7 @@ class CommentsController extends AppController{
 				$userTsumegos = [];
 			}
 		}
-		
+
 		$keyList = array();
 		$keyListStatus = array();
 		$userTsumegosCount = count($userTsumegos);
@@ -70,6 +70,8 @@ class CommentsController extends AppController{
 			$keyList[$i] = $userTsumegos[$i]['TsumegoStatus']['tsumego_id'];
 			$keyListStatus[$i] = $userTsumegos[$i]['TsumegoStatus']['status'];
 		}
+
+		$comments = [];
 		if(!isset($this->params['url']['comment-id'])){
 			if($unresolved=='false'){
 				$comments = $this->Comment->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array(
@@ -80,8 +82,8 @@ class CommentsController extends AppController{
 				}
 			}elseif($unresolved=='true'){
 				$comments = $this->Comment->find('all', array(
-					'limit' => 500, 
-					'order' => 'created DESC', 
+					'limit' => 500,
+					'order' => 'created DESC',
 					'conditions' =>  array(
 						'status' => 0,
 						array(
@@ -154,12 +156,12 @@ class CommentsController extends AppController{
 						if($counter<11){
 							if(!in_array($t['Tsumego']['id'], $keyList)) $solved = 0;
 							else{
-								if($keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='S' || 
-								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='C' || 
-								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='W') 
+								if($keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='S' ||
+								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='C' ||
+								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='W')
 								   $solved = 1;
 								else $solved = 0;
-							}					
+							}
 							$u = $this->User->findById($comments[$i]['Comment']['user_id']);
 							if($comments[$i]['Comment']['set_id']==null)
 								$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
@@ -215,9 +217,9 @@ class CommentsController extends AppController{
 					if(!$premiumLock){
 						if(!in_array($t['Tsumego']['id'], $keyList)) $solved = 0;
 						else{
-							if($keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='S' || 
-								$keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='C' || 
-								$keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='W') 
+							if($keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='S' ||
+								$keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='C' ||
+								$keyListStatus[array_search($t['Tsumego']['id'], $keyList)]=='W')
 								$solved = 1;
 							else $solved = 0;
 						}
@@ -261,7 +263,7 @@ class CommentsController extends AppController{
 				}
 			}
 		}
-		
+
 		if($reverseOrder){
 			$c = array_reverse($c);
 			$counter = 0;
@@ -270,7 +272,7 @@ class CommentsController extends AppController{
 				$counter++;
 				$c[$i]['Comment']['counter'] = $counter+$index;
 			}
-		}			
+		}
 		///////////////////////////////////
 		$yourc = array();
 		$yourindex = 0;
@@ -394,7 +396,7 @@ class CommentsController extends AppController{
 				}
 			}
 		}
-		
+
 		if(isset($this->params['url']['filter'])) $this->set('filter1', $filter1);
 		if($filter1=='falsex') $this->set('filter1', 'false');
 		if($unresolvedSet == 'true'){
@@ -404,9 +406,9 @@ class CommentsController extends AppController{
 				'NOT' => array('user_id' => 0)
 			)))) ?: []));
 		}
-		
+
 		$currentPositionPlaceholder = '<img src="/img/positionIcon1.png" class="positionIcon1" style="cursor:context-menu;">';
-		
+
 		$tooltipSgfs = array();
 		$tooltipInfo = array();
 		$tooltipBoardSize = array();
@@ -418,7 +420,7 @@ class CommentsController extends AppController{
 			if(strpos($c[$i]['Comment']['message'], '<a href="/files/ul1/') === false)
 				$c[$i]['Comment']['message'] = htmlspecialchars($c[$i]['Comment']['message']);
 			$c[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $c[$i]['Comment']['message']);
-			
+
 			$tBuffer = $this->Tsumego->findById($c[$i]['Comment']['tsumego_id']);
 			$tts = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $tBuffer['Tsumego']['id'])));
 			if(count($tts) > 0){
@@ -431,7 +433,7 @@ class CommentsController extends AppController{
 		$yourcCount2 = count($yourc);
 		for($i=0; $i<$yourcCount2; $i++){
 			$yourc[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $yourc[$i]['Comment']['message']);
-			
+
 			$tBuffer = $this->Tsumego->findById($yourc[$i]['Comment']['tsumego_id']);
 			$tts2 = $this->Sgf->find('all', array('limit' => 1, 'order' => 'version DESC', 'conditions' => array('tsumego_id' => $tBuffer['Tsumego']['id'])));
 			if(count($tts2) > 0){

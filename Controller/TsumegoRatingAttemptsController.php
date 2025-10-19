@@ -16,11 +16,11 @@ class TsumegoRatingAttemptsController extends AppController {
 			}
 		}
 		$this->set('trs', $trs);
-		$this->set('trs2', $trs2);
+		//$this->set('trs2', $trs2);
 		$this->set('x', '');
 		if($trid!=null) $this->set('x', '<a href="/tsumego_records/"><< back to overview</a>');
     }
-	
+
 	public function json($type=null){
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'TSUMEGO RECORDS');
@@ -29,7 +29,7 @@ class TsumegoRatingAttemptsController extends AppController {
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('Set');
 		$this->LoadModel('SetConnection');
-		
+
 		if($type==0){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 12000, 'order' => 'created DESC', 'conditions' =>  array(
 				'tsumego_id >' => 17000
@@ -39,7 +39,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			}
 
 			$header = array('user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_elo', 'tsumego_set', 'status', 'seconds', 'created');
-			
+
 			$posts = array();
 			$trsCount = count($trs);
 			for($i=0; $i<$trsCount; $i++){
@@ -89,7 +89,7 @@ class TsumegoRatingAttemptsController extends AppController {
 				$posts[$i] = array('id'=> $trs[$i]['TsumegoRatingAttempt']['id']);
 				$posts[$i]['values'] = $values;
 			}
-			
+
 			$response = $posts;
 			$fp = fopen('files/tsumego-hero-user-activities.json', 'w');
 			fwrite($fp, json_encode($response));
@@ -111,7 +111,8 @@ class TsumegoRatingAttemptsController extends AppController {
 		$this->Session->write('title', 'TSUMEGO RECORDS');
 		$this->LoadModel('TsumegoAttempt');
 		$this->LoadModel('User');
-		
+
+		$trs = [];
 		if($type==0){
 			$trs = $this->TsumegoRatingAttempt->find('all', array('limit' => 1000, 'order' => 'created DESC'));
 			if (!$trs) {
@@ -124,7 +125,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			foreach ($trs as $tr) {
 				$csv[] = $tr['TsumegoRatingAttempt'];
 			}
-			
+
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
 
 			foreach ($csv as $line){
@@ -144,7 +145,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			foreach ($trs as $tr) {
 				$csv[] = $tr['TsumegoRatingAttempt'];
 			}
-			
+
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
 
 			foreach ($csv as $line){
@@ -164,7 +165,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			foreach ($trs as $tr) {
 				$csv[] = $tr['TsumegoAttempt'];
 			}
-			
+
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
 
 			foreach ($csv as $line){
@@ -184,7 +185,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			foreach ($trs as $tr) {
 				$csv[] = $tr['TsumegoAttempt'];
 			}
-			
+
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
 
 			foreach ($csv as $line){
@@ -207,7 +208,7 @@ class TsumegoRatingAttemptsController extends AppController {
 				$a[] = $user['User']['ip'];
 				if($user['User']['ip']!=null) $csv[] = $a;
 			}
-			
+
 			$file = fopen("files/tsumego-hero-user-activities.csv","w");
 
 			foreach ($csv as $line){
@@ -264,7 +265,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$trs[$i]['TsumegoAttempt']['title'] = '<a target="_blank" href="/tsumegos/play/'.$trs[$i]['TsumegoAttempt']['tsumego_id'].'?mode=1">'.$s['Set']['title'].' '
 			.$s['Set']['title2'].' - '.$t['Tsumego']['num'].'</a>';
-			
+
 			$date = new DateTime($trs[$i]['TsumegoAttempt']['created']);
 			$month = date("F", strtotime($trs[$i]['TsumegoAttempt']['created']));
 			$tday = $date->format('d. ');
@@ -280,20 +281,20 @@ class TsumegoRatingAttemptsController extends AppController {
 				$minutes-=60;
 				$hours2--;
 			}
-			
+
 			if($minutes==0 && $hours==0) $minutes = '';
 			else $minutes .= 'm ';
 			if($hours==0) $hours = '';
 			else $hours .= 'h ';
 			$trs[$i]['TsumegoAttempt']['seconds'] = $hours.$minutes.$seconds.'s';
-			
+
 		}
-		
+
 		$u = $this->User->findById($trid);
 		$this->set('uname', $u['User']['name']);
 		$this->set('trs', $trs);
     }
-	
+
 }
 
 
