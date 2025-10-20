@@ -16,7 +16,7 @@ class RanksController extends AppController {
 		$settings['title'] = array();
 		$settings['id'] = array();
 		$settings['checked'] = array();
-		$ro = $this->RankOverview->find('all', array('conditions' => array('user_id' => $this->loggedInUserID())));
+		$ro = $this->RankOverview->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		if (!$ro) {
 			$ro = [];
 		}
@@ -25,7 +25,7 @@ class RanksController extends AppController {
 			$sets = [];
 		}
 
-		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->loggedInUserID())));
+		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		if (!$rs) {
 			$rs = [];
 		}
@@ -35,11 +35,11 @@ class RanksController extends AppController {
 		}
 		$rs = $this->checkForNewCollections($rsIndexes);
 
-		if($this->isLoggedIn()){
-			$u = $this->User->findById($this->loggedInUserID());
+		if($this->Session->check('loggedInUser')){
+			$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 			$lastMode = $u['User']['lastMode'];
 		}
-
+		
 		if($rs==null){
 			$setsCount = count($sets);
 			for($i=0;$i<$setsCount;$i++){
@@ -47,7 +47,7 @@ class RanksController extends AppController {
 				if($unlocked){
 					$this->RankSetting->create();
 					$rsNew = array();
-					$rsNew['RankSetting']['user_id'] = $this->loggedInUserID();
+					$rsNew['RankSetting']['user_id'] = $this->Session->read('loggedInUser.User.id');
 					$rsNew['RankSetting']['set_id'] = $sets[$i]['Set']['id'];
 					$y = $sets[$i]['Set']['id'];
 					if($y==42 || $y==109 || $y==114 || $y==143 || $y==172 || $y==29156 || $y==33007 || $y==74761){
@@ -58,7 +58,7 @@ class RanksController extends AppController {
 					$this->RankSetting->save($rsNew);
 				}
 			}
-			$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->loggedInUserID())));
+			$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 			if (!$rs) {
 				$rs = [];
 			}
@@ -66,7 +66,7 @@ class RanksController extends AppController {
 		if(isset($this->data['Settings'])){
 			if(count($this->data['Settings'])>=41){
 				$rds0 = $this->RankSetting->find('all', array('conditions' => array(
-					'user_id' => $this->loggedInUserID()
+					'user_id' => $this->Session->read('loggedInUser.User.id')
 				)));
 				if (!$rds0) {
 					$rds0 = [];
@@ -78,7 +78,7 @@ class RanksController extends AppController {
 				}
 				foreach($this->data['Settings'] as $ds){
 					$rds = $this->RankSetting->find('first', array('conditions' => array(
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->Session->read('loggedInUser.User.id'),
 						'set_id' => $ds
 					)));
 					if ($rds) {
@@ -94,9 +94,9 @@ class RanksController extends AppController {
 			if($unlocked){
 				array_push($settings['title'], $sets[$i]['Set']['title'].' '.$sets[$i]['Set']['title2']);
 				array_push($settings['id'], $sets[$i]['Set']['id']);
-
+				
 				$settingsSingle = $this->RankSetting->find('all', array('conditions' => array(
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->Session->read('loggedInUser.User.id'),
 					'set_id' => $sets[$i]['Set']['id']
 				)));
 				if (!$settingsSingle) {
@@ -138,7 +138,7 @@ class RanksController extends AppController {
 		$rx[] = '3d';
 		$rx[] = '4d';
 		$rx[] = '5d';
-
+		
 		$modes = array();
 		$modes[0] = array();
 		$modes[1] = array();
@@ -150,7 +150,7 @@ class RanksController extends AppController {
 				$kd = 'k';
 				$rank2 = $rank;
 				if($rank>=1) $kd = 'k';
-				else{
+				else{ 
 					$rank2 = ($rank-1)*(-1);
 					$kd = 'd';
 				}
@@ -187,7 +187,7 @@ class RanksController extends AppController {
 				}
 			}
 		}
-
+		
 		$lowestMode = array();
 		$locksCount = count($locks);
 		for($i=0;$i<$locksCount;$i++){
@@ -199,10 +199,10 @@ class RanksController extends AppController {
 		foreach ($lowestMode as $i => $value) {
 			$lowestMode[$i] = $rx[$value];
 		}
-
+		
 		$achievementUpdate = $this->checkTimeModeAchievements();
-		if(count($achievementUpdate)>0) $this->updateXP($this->loggedInUserID(), $achievementUpdate);
-
+		if(count($achievementUpdate)>0) $this->updateXP($this->Session->read('loggedInUser.User.id'), $achievementUpdate);
+		
 		$json = json_decode(file_get_contents('json/time_mode_overview.json'), true);
 
 		$this->set('lastMode', $lastMode);
@@ -214,7 +214,7 @@ class RanksController extends AppController {
 		$this->set('ro', $ro);
 		$this->set('achievementUpdate', $achievementUpdate);
 	}
-
+	
 	public function result($hash=null){
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -225,7 +225,7 @@ class RanksController extends AppController {
 		$sess = $this->Session->read('loggedInUser.User.activeRank');
 		$this->Session->write('loggedInUser.User.activeRank', 0);
 		$this->Session->write('loggedInUser.User.mode', 1);
-
+		
 		$ranks = $this->Rank->find('all', array('conditions' =>  array('session' => $sess)));
 		if (!$ranks) {
 			$ranks = [];
@@ -235,7 +235,7 @@ class RanksController extends AppController {
 		$points = array();
 		$ro = array();
 		$roxBefore = array();
-
+		
 		$stopParameter = 0;
 		$stopParameterNum = 10;
 		$stopParameterPass = 0;
@@ -256,7 +256,7 @@ class RanksController extends AppController {
 			$stopParameterPass = 8;
 			$stopParameterSec = 240;
 		}
-
+		
 		$modes = array();
 		$modes[0] = array();
 		$modes[1] = array();
@@ -268,7 +268,7 @@ class RanksController extends AppController {
 				$kd = 'k';
 				$rank2 = $rank;
 				if($rank>=1) $kd = 'k';
-				else{
+				else{ 
 					$rank2 = ($rank-1)*(-1);
 					$kd = 'd';
 				}
@@ -277,7 +277,7 @@ class RanksController extends AppController {
 				$j++;
 			}
 		}
-
+		
 		if($ranks!=null){
 			$openCard1 = -1;
 			$openCard2 = -1;
@@ -285,7 +285,7 @@ class RanksController extends AppController {
 			if($stopParameter==0) $cardV = 0;
 			elseif($stopParameter==1) $cardV = 1;
 			elseif($stopParameter==2) $cardV = 2;
-
+			
 			$modesCount = count($modes[$cardV]);
 			for($i=0;$i<$modesCount;$i++){
 				if($ranks[0]['Rank']['rank']==$modes[$cardV][$i]){
@@ -302,21 +302,21 @@ class RanksController extends AppController {
 				}
 				$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$s = $this->Set->findById($t['Tsumego']['set_id']);
-
+				
 				$ranks[$i]['Rank']['tsumegoNum'] = $t['Tsumego']['num'];
 				$ranks[$i]['Rank']['set1'] = $s['Set']['title'];
 				$ranks[$i]['Rank']['set2'] = $s['Set']['title2'];
-
+				
 				$ranks[$i]['Rank']['seconds'] = round($ranks[$i]['Rank']['seconds'], 1);
 				$rx = $stopParameterSec-$ranks[$i]['Rank']['seconds'];
-
+				
 				$ranksMinutes = floor($rx/60);
 				$ranksSeconds = $rx%60;
-
+				
 				$ranksDecimal = $rx-floor($rx);
 				$ranksDecimal = round($ranksDecimal, 1);
 				$ranksDecimal *= 10;
-
+				
 				$points[$i] = $this->calculatePoints($rx, $stopParameterSec);
 				if($rx>=10){
 					$rx1 = '';
@@ -324,10 +324,10 @@ class RanksController extends AppController {
 					$rx1 = '0';
 					if($ranksMinutes>0) $rx1 = '00';
 				}
-
+				
 				$ranks[$i]['Rank']['seconds'] = $ranksMinutes.':'.$rx1.$ranksSeconds.'.'.$ranksDecimal;
 				$ranks[$i]['Rank']['points'] = $points[$i];
-
+				
 				if($ranks[$i]['Rank']['result'] == 'failed' || $ranks[$i]['Rank']['result'] == 'timeout' || $ranks[$i]['Rank']['result'] == 'skipped'){
 					$c++;
 					$points[$i] = 0;
@@ -342,15 +342,15 @@ class RanksController extends AppController {
 				$rSingle['Rank']['points'] = $ranks[$i]['Rank']['points'];
 				$this->Rank->save($rSingle);
 			}
-
+			
 			$sum = 0;
 			$pointsCount = count($points);
 			for($i=0;$i<$pointsCount;$i++){
 				$sum+=$points[$i];
 			}
-
+			
 			$roxBefore = $this->RankOverview->find('all', array('conditions' => array(
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->Session->read('loggedInUser.User.id'),
 				'rank' => $ranks[0]['Rank']['rank'],
 				'mode' => $stopParameter,
 				'status' => 's'
@@ -360,7 +360,7 @@ class RanksController extends AppController {
 			}
 
 			$ro = array();
-			$ro['RankOverview']['user_id'] = $this->loggedInUserID();
+			$ro['RankOverview']['user_id'] = $this->Session->read('loggedInUser.User.id');
 			$ro['RankOverview']['session'] = $sess;
 			$ro['RankOverview']['rank'] = $ranks[0]['Rank']['rank'];
 			if($solved>=$stopParameterPass) $ro['RankOverview']['status'] = 's';
@@ -370,7 +370,28 @@ class RanksController extends AppController {
 			$this->RankOverview->create();
 			$this->RankOverview->save($ro);
 		}
-
+		
+		/*$all2 = $this->RankOverview->find('all', array('conditions' =>  array(
+			'user_id' => $this->Session->read('loggedInUser.User.id'),
+			'mode' => 2
+		)));
+		$all1 = $this->RankOverview->find('all', array('conditions' =>  array(
+			'user_id' => $this->Session->read('loggedInUser.User.id'),
+			'mode' => 1
+		)));
+		$all0 = $this->RankOverview->find('all', array('conditions' =>  array(
+			'user_id' => $this->Session->read('loggedInUser.User.id'),
+			'mode' => 0
+		)));
+		
+		$all = array();
+		$all[0] = array();
+		$all[1] = array();
+		$all[2] = array();
+		$all2Count = count($all2);
+		for($i=0;$i<$all2Count;$i++){
+			
+		}*/
 		$sessArray = array();
 		$sessArray[0] = array();
 		$sessArray[1] = array();
@@ -382,7 +403,7 @@ class RanksController extends AppController {
 				$kd = 'k';
 				$rank2 = $rank;
 				if($rank>=1) $kd = 'k';
-				else{
+				else{ 
 					$rank2 = ($rank-1)*(-1);
 					$kd = 'd';
 				}
@@ -391,8 +412,8 @@ class RanksController extends AppController {
 				$j++;
 			}
 		}
-
-		$allR = $this->Rank->find('all', array('conditions' =>  array('user_id' => $this->loggedInUserID())));
+		
+		$allR = $this->Rank->find('all', array('conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		if (!$allR) {
 			$allR = [];
 		}
@@ -401,7 +422,7 @@ class RanksController extends AppController {
 			$modesCount = count($modes[$i]);
 			for($j=0;$j<$modesCount;$j++){
 				$rox = $this->RankOverview->find('all', array('conditions' =>  array(
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->Session->read('loggedInUser.User.id'),
 					'rank' => $modes[$i][$j],
 					'mode' => $i
 				)));
@@ -447,7 +468,7 @@ class RanksController extends AppController {
 				}
 			}
 		}
-
+		
 		$allR = array();
 		$modesCount = count($modes);
 		for($h=0;$h<$modesCount;$h++){
@@ -508,12 +529,12 @@ class RanksController extends AppController {
 		for($h=0;$h<$modesCount;$h++){
 			if(isset($modes[$lastModeIndex][$h]['RankOverview'])) $lastModeV = $modes[$lastModeIndex][$h]['RankOverview']['rank'];
 		}
-
+		
 		//echo '<pre>'; print_r($lastModeV); echo '</pre>';
 		//echo '<pre>'; print_r($allR); echo '</pre>';
 		//echo '<pre>'; print_r($all); echo '</pre>';
 		//echo '<pre>'; print_r(count($all)); echo '</pre>';
-
+		
 		//echo '<pre>'; print_r($openCard1); echo '</pre>';
 		//echo '<pre>'; print_r($openCard2); echo '</pre>';
 		//echo '<pre>'; print_r($sessArray); echo '</pre>';
@@ -528,10 +549,10 @@ class RanksController extends AppController {
 		}
 		//echo '<pre>'; print_r($ro); echo '</pre>';
 		//echo '<pre>'; print_r($roxBefore); echo '</pre>';
-
+		
 		if(count($roxBefore)>0) $newUnlock = false;
 		else $newUnlock = true;
-
+		
 		$this->set('c', $c);
 		$this->set('solved', $solved);
 		$this->set('ranks', $ranks);
@@ -559,20 +580,20 @@ class RanksController extends AppController {
 		}
 		return $rx;
 	}
-
+	
 	private function checkForNewCollections($indexes){
 		$check = array(186,187,190,192,193,195,196,197,198,200,203,204,214,216,226,227,231);
 		foreach ($check as $checkId) {
 			if(!isset($indexes[$checkId])){
 				$newRsx = array();
-				$newRsx['RankSetting']['user_id'] = $this->loggedInUserID();
+				$newRsx['RankSetting']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$newRsx['RankSetting']['set_id'] = $checkId;
 				$newRsx['RankSetting']['status'] = '1';
 				$this->RankSetting->create();
 				$this->RankSetting->save($newRsx);
 			}
 		}
-		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->loggedInUserID())));
+		$rs = $this->RankSetting->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 		if (!$rs) {
 			$rs = [];
 		}

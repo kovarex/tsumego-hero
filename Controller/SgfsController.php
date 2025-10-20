@@ -11,7 +11,7 @@ class SgfsController extends AppController {
 		//echo '<pre>'; print_r($sgfs); echo '</pre>';
 		$this->set('sgfs', $sgfs);
   }
-
+	
 	public function view($id=null){
 		$this->Session->write('page', 'play');
 		$this->loadModel('Tsumego');
@@ -25,13 +25,13 @@ class SgfsController extends AppController {
 		$id /= 1337;
 		$dId = array();
 		$dTitle = array();
-
+		
 		if(isset($this->params['url']['delete'])){
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if($this->loggedInUserID() == $sDel['Sgf']['user_id'])
+			if($this->Session->read('loggedInUser.User.id') == $sDel['Sgf']['user_id'])
 				$this->Sgf->delete($sDel['Sgf']['id']);
 		}
-
+		
 		if(isset($this->params['url']['duplicates'])){
 			$newDuplicates = explode('-', $this->params['url']['duplicates']);
 			foreach ($newDuplicates as $duplicateId) {
@@ -43,14 +43,14 @@ class SgfsController extends AppController {
 				$dTitle[] = $dSet['Set']['title'].' - '.$dupl['Tsumego']['num'];
 			}
 		}
-
+		
 		$t = $this->Tsumego->findById($id);
 		$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
 		$name = $set['Set']['title'].' '.$set['Set']['title2'].' '.$t['Tsumego']['num'];
 		$this->Session->write('title', 'Upload History of '.$name);
-
+		
 		if(isset($this->params['url']['user'])){
 			$s = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 100,'conditions' => array(
 				'user_id' => $this->params['url']['user'],
@@ -69,12 +69,12 @@ class SgfsController extends AppController {
 				$s = [];
 			}
 		}
-
+		
 		$sCount = count($s);
 		for($i=0; $i<$sCount; $i++){
 			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
 			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
-
+			
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
 			$s[$i]['Sgf']['user'] = $u['User']['name'];
 			$ux = $u['User']['name'];
@@ -84,10 +84,10 @@ class SgfsController extends AppController {
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
 			$s[$i]['Sgf']['title'] = $set['Set']['title'].' '.$set['Set']['title2'].' #'.$t['Tsumego']['num'];;
 			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
-
+			
 			if($s[$i]['Sgf']['user']=='noUser')
 				$s[$i]['Sgf']['user'] = 'automatically generated';
-			if($this->loggedInUserID() == $s[$i]['Sgf']['user_id'])
+			if($this->Session->read('loggedInUser.User.id') == $s[$i]['Sgf']['user_id'])
 				$s[$i]['Sgf']['delete'] = true;
 			else
 				$s[$i]['Sgf']['delete'] = false;
@@ -98,11 +98,11 @@ class SgfsController extends AppController {
 				}
 				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
 			}else{
-				if($i!=count($s)-1)
+				if($i!=count($s)-1) 
 					$s[$i]['Sgf']['diff'] = $s[$i+1]['Sgf']['id'];
 			}
 		}
-
+		
 		$this->set('ux', $ux);
 		$this->set('type', $type);
 		$this->set('name', $name);
@@ -113,7 +113,7 @@ class SgfsController extends AppController {
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);
 	}
-
+	
 }
 
 

@@ -6,22 +6,22 @@ class ActivatesController extends AppController{
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Activate');
 		$this->loadModel('User');
-
-
-
+		
+		
+		
 		/*
 		$this->Activate->create();
 		$s = $this->rdm();
 		$a = array();
 		$a['Activate']['string'] = $s;
 		$this->Activate->save($a);
-
+		
 		$this->Activate->create();
 		$s = $this->rdm();
 		$a = array();
 		$a['Activate']['string'] = $s;
 		$this->Activate->save($a);
-
+		
 		for($i=3; $i<14; $i++){
 			$this->Activate->create();
 			$s = $this->rdm();
@@ -31,7 +31,7 @@ class ActivatesController extends AppController{
 			$this->Activate->save($a);
 		}
 		*/
-
+		
 		$us = $this->User->find('all', array('conditions' =>  array(
 			'premium' => 2,
 			'NOT' => array(
@@ -54,7 +54,7 @@ class ActivatesController extends AppController{
 
 
 
-
+		
 		foreach ($us as $user) {
 			/*
 			$this->Activate->create();
@@ -83,36 +83,36 @@ Joschka Zimdars
 
 ';
 			$Email->send($ans);*/
-		}
-
-
-
+		}	
+		
+		
+		
 		$key = 0;
 		if(!empty($this->data)){
 			$ac = $this->Activate->find('first', array('conditions' =>  array('string' => $this->data['Activate']['Key'])));
 			if($ac){
-				$ac['Activate']['user_id'] = $this->loggedInUserID();
+				$ac['Activate']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$this->Activate->save($ac);
 				$key = 1;
 			}else{
 				$key = 2;
 			}
 		}
+		
+		if($this->Activate->find('first', array('conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id'))))) $key = 1;
 
-		if($this->Activate->find('first', array('conditions' =>  array('user_id' => $this->loggedInUserID())))) $key = 1;
-
-		$u = $this->User->findById($this->loggedInUserID());
+		$u = $this->User->findById($this->Session->read('loggedInUser.User.id'));
 		$u['User']['readingTrial'] = 30;
 		$this->User->save($u);
-
+		
 		$this->set('key', $key);
 		$this->set('a', $a);
 		$this->set('s', $s);
 		$this->set('us', $us);
 		$this->set('us2', $us2);
     }
-
-
+	
+	
 	private function rdm(){
 		$length = 15;
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

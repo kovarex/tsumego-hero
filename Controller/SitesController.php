@@ -16,14 +16,14 @@ class SitesController extends AppController{
 		$this->LoadModel('Sgf');
 		$this->LoadModel('SetConnection');
 		$this->LoadModel('PublishDate');
-
+		
 		$tdates = array();
 		$tSum = array();
-
+		
 		array_push($tdates, '2021-06-09 22:00:00');
 		array_push($tdates, '2021-06-10 22:00:00');
 		//array_push($tdates, '2020-11-22 22:00:00');
-
+		
 		foreach ($tdates as $tdate) {
 			$ts1 = $this->Tsumego->find('all', array('conditions' =>  array('created' => $tdate)));
 			if (!$ts1) {
@@ -33,7 +33,7 @@ class SitesController extends AppController{
 				$tSum[] = $item;
 			}
 		}
-
+		
 		$newTS = array();
 		$setIDs = array();
 		//$setNames = array();
@@ -61,7 +61,7 @@ class SitesController extends AppController{
 		foreach ($uReward as $user) {
 			$urNames[] = $this->checkPicture($user);
 		}
-
+		
 		$today = date('Y-m-d');
 		$dateUser = $this->DayRecord->find('first', array('conditions' =>  array('date' => $today)));
 		if (!$dateUser) {
@@ -84,7 +84,7 @@ class SitesController extends AppController{
 		$popularTooltip = $ptArr[0];
 		$popularTooltipInfo = $ptArr[2];
 		$popularTooltipBoardSize = $ptArr[3];
-
+		
 		$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
 		$newTschedule = $this->Schedule->find('all', array('conditions' =>  array('date' => $today)));
 		if (!$newTschedule) {
@@ -95,7 +95,7 @@ class SitesController extends AppController{
 		foreach ($newTschedule as $scheduleItem) {
 			$scheduleTsumego[] = $this->Tsumego->findById($scheduleItem['Schedule']['tsumego_id']);
 		}
-
+		
 		$tooltipSgfs = array();
 		$tooltipInfo = array();
 		$tooltipBoardSize = array();
@@ -110,7 +110,7 @@ class SitesController extends AppController{
 			$tooltipBoardSize[] = $tArr[3];
 		}
 
-		if($this->isLoggedIn()){
+		if($this->Session->check('loggedInUser')){
 			$idArray = array();
 			$idArray[] = $totd['Tsumego']['id'];
 			foreach ($scheduleTsumego as $tsumego) {
@@ -119,7 +119,7 @@ class SitesController extends AppController{
 
 
 			$uts = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array(
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->Session->read('loggedInUser.User.id'),
 				'tsumego_id' => $idArray
 			)));
 			if (!$uts) {
@@ -140,17 +140,17 @@ class SitesController extends AppController{
 						$scheduleTsumego[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 					}
 				}
-
+				
 				if(isset($totd['Tsumego']['id']))
-					if($uts[$i]['TsumegoStatus']['tsumego_id'] == $totd['Tsumego']['id'])
+					if($uts[$i]['TsumegoStatus']['tsumego_id'] == $totd['Tsumego']['id']) 
 						$totd['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-
+				
 				if(isset($newT['Tsumego']['id']))
-					if($uts[$i]['TsumegoStatus']['tsumego_id'] == $newT['Tsumego']['id'])
+					if($uts[$i]['TsumegoStatus']['tsumego_id'] == $newT['Tsumego']['id']) 
 						$newT['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 			}
 		}
-		if(!$this->isLoggedIn()){
+		if(!$this->Session->check('loggedInUser')){
 			if($this->Session->check('noLogin')){
 				$noLogin = $this->Session->read('noLogin');
 				$noLoginStatus = $this->Session->read('noLoginStatus');
@@ -173,7 +173,7 @@ class SitesController extends AppController{
 				}
 			}
 		}
-
+		
 		if(!isset($totd['Tsumego']['status'])) $totd['Tsumego']['status'] = 'N';
 		if(!isset($newT['Tsumego']['status'])) $newT['Tsumego']['status'] = 'N';
 		$scheduleTsumegoCount = count($scheduleTsumego);
@@ -181,7 +181,7 @@ class SitesController extends AppController{
 			if(!isset($scheduleTsumego[$i]['Tsumego']['status']))
 				$scheduleTsumego[$i]['Tsumego']['status'] = 'N';
 		}
-
+		
 		$d1 = date(' d, Y');
 		$d1day = date('d. ');
 		$d1year = date('Y');
@@ -195,7 +195,7 @@ class SitesController extends AppController{
 		if (!$userOfTheDay) {
 			$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
 		}
-
+		
 		//echo '<pre>';print_r($dateUser);echo '</pre>';
 
 		$totdSc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $totd['Tsumego']['id'])));
@@ -216,22 +216,22 @@ class SitesController extends AppController{
 				$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
 			}
 		}
-
+		
 
 		$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
 		$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
 
 
 		//recently visited
-		/*if($this->isLoggedIn()){
-			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->loggedInUserID())));
+		/*if($this->Session->check('loggedInUser')){
+			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->Session->read('loggedInUser.User.id'))));
 			$currentUser['User']['created'] = date('Y-m-d H:i:s');
 			$this->User->save($currentUser);
 
 			$visit = $this->Visit->find('all',
-				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->loggedInUserID()))
+				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->Session->read('loggedInUser.User.id')))
 			);
-
+			
 			$setVisit1 = $this->Set->find('first', array('conditions' => array('id' => $visit[count($visit)-1]['Visit']['set_id'])));
 			$this->set('visit1', $setVisit1);
 			if(count($visit)>1){
@@ -243,11 +243,11 @@ class SitesController extends AppController{
 				}
 			}
 		}
-
+		
 		$tsumegoDates = array();
 		$scDates = array();
 		$tsumegos = $this->SetConnection->find('all');
-
+		
 		$setKeys = array();
 		$setArray = $this->Set->find('all', array('conditions' => array('public' => 1)));
 		foreach ($setArray as $set) {
@@ -258,7 +258,7 @@ class SitesController extends AppController{
 		for($j=0; $j<$tsumegosCount; $j++)
 			if(isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']]))
 				array_push($scDates, $tsumegos[$j]['SetConnection']['tsumego_id']);
-
+		
 		$tdates = $this->Tsumego->find('all', array('conditions' => array('id' => $scDates)));
 		$tdatesCount = count($tdates);
 		for($j=0;$j<$tdatesCount;$j++){
@@ -274,7 +274,7 @@ class SitesController extends AppController{
 			$tsumegoDates[] = $date['PublishDate']['date'];
 		}
 		$deletedS = $this->getDeletedSets();
-
+		
 		$setsWithPremium = array();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
 		if (!$swp) {
@@ -289,7 +289,16 @@ class SitesController extends AppController{
 			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
 		}
 
-		$this->set('hasPremium', $this->hasPremium());
+		if(!$this->Session->check('loggedInUser.User.id')
+			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
+		)
+			$hasPremium = false;
+		else
+			$hasPremium = true;
+
+		//echo '<pre>';print_r($currentQuote);echo '</pre>';
+
+		$this->set('hasPremium', $hasPremium);
 		$this->set('tsumegos', $tsumegoDates);
 		$this->set('quote', $currentQuote);
 		$this->set('d1', $d1);
@@ -307,12 +316,12 @@ class SitesController extends AppController{
 		$this->set('popularTooltipBoardSize', $popularTooltipBoardSize);
 		$this->set('urNames', $urNames);
     }
-
+	
 	public function view($id=null){
-		$news = $this->Site->find('all');
+		$news = $this->Site->find('all');	
 		$this->set('news', $news[$id]);
 	}
-
+	
 	public function impressum(){
 		$this->Session->write('page', 'about');
 		$this->Session->write('title', 'Tsumego Hero - Legal Notice');
@@ -332,9 +341,9 @@ class SitesController extends AppController{
 		$this->Session->write('page', 'privacypolicy');
 		$this->Session->write('title', 'Tsumego Hero - Privacy Policy');
 	}
-
+	
 	public function ugco5ujc(){
-
+	
 	}
 }
 

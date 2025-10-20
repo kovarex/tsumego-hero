@@ -7,14 +7,14 @@ class AchievementsController extends AppController {
 		$this->LoadModel('AchievementStatus');
 		$existingAs = array();
 		$unlockedCounter2 = 0;
-
+		
 		$a = $this->Achievement->find('all', array('order' => 'order ASC'));
 		if (!$a) {
 			$a = [];
 		}
 
-		if($this->isLoggedIn()){
-			$as = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $this->loggedInUserID())));
+		if($this->Session->check('loggedInUser')){
+			$as = $this->AchievementStatus->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'))));
 			if (!$as) {
 				$as = [];
 			}
@@ -42,7 +42,7 @@ class AchievementsController extends AppController {
 		$this->set('a', $a);
 		$this->set('unlockedCounter2', $unlockedCounter2);
   }
-
+	
 	public function view($id=null){
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Achievements');
@@ -50,15 +50,15 @@ class AchievementsController extends AppController {
 		$this->LoadModel('AchievementStatus');
 		$this->LoadModel('User');
 		$a = $this->Achievement->findById($id);
-
+		
 		$as = array();
 		$asAll = $this->AchievementStatus->find('all', array('order' => 'created DESC','conditions' => array('achievement_id' => $id)));
 		if (!$asAll) {
 			$asAll = [];
 		}
 		$aCount = count($asAll);
-		if($this->isLoggedIn()){
-			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $this->loggedInUserID())));
+		if($this->Session->check('loggedInUser.User.id')){
+			$as = $this->AchievementStatus->find('first', array('conditions' => array('achievement_id' => $id, 'user_id' => $this->Session->read('loggedInUser.User.id'))));
 		}
 		if($as){
 			$date = date_create($as['AchievementStatus']['created']);
@@ -76,8 +76,8 @@ class AchievementsController extends AppController {
 		}
 		$asAll = $asAll2;
 
-		if($this->isLoggedIn()){
-			$acGolden = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $this->loggedInUserID(), 'category' => 'golden')));
+		if($this->Session->check('loggedInUser.User.id')){
+			$acGolden = $this->AchievementCondition->find('all', array('conditions' => array('user_id' => $this->Session->read('loggedInUser.User.id'), 'category' => 'golden')));
 			if (!$acGolden) {
 				$acGolden = [];
 			}
@@ -91,14 +91,14 @@ class AchievementsController extends AppController {
 				$a['Achievement']['additionalDescription'] = 'Progress: '.$acGoldenCount.'/10';
 		}
 
-
+		
 		$this->set('a', $a);
 		$this->set('as', $as);
 		$this->set('asAll', $asAll);
 		$this->set('aCount', $aCount);
 		$this->set('andMore', $andMore);
 	}
-
+	
 }
 
 

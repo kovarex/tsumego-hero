@@ -10,7 +10,7 @@ class TagNamesController extends AppController{
 				$tn['TagName']['description'] = $this->data['TagName']['description'];
 				$tn['TagName']['hint'] = $this->data['TagName']['hint'];
 				$tn['TagName']['link'] = $this->data['TagName']['link'];
-				$tn['TagName']['user_id'] = $this->loggedInUserID();
+				$tn['TagName']['user_id'] = $this->Session->read('loggedInUser.User.id');
 				$tn['TagName']['approved'] = 0;
 				$this->TagName->save($tn);
 				$saved = $this->TagName->find('first', array('conditions' => array('name' => $this->data['TagName']['name'])));
@@ -26,7 +26,7 @@ class TagNamesController extends AppController{
 		$this->set('allTags', $allTags);
 		$this->set('alreadyExists', $alreadyExists);
 	}
-
+	
 	public function view($id=null){
 		$tn = $this->TagName->findById($id);
 		$allTags = $this->getAllTags([]);
@@ -48,7 +48,7 @@ class TagNamesController extends AppController{
 		$listUser = array();
 		$listStatus = array();
 		$listTag = array();
-
+		
 		$u = $this->User->findById($id);
 		$tagNames = $this->TagName->find('all', array('limit' => 50, 'order' => 'created DESC', 'conditions' => array('user_id' => $id, 'approved' => 1)));
 		if (!$tagNames) {
@@ -112,7 +112,7 @@ class TagNamesController extends AppController{
 			$listStatus[] = $r['TagName']['status'];
 			$listTag[] = $r['TagName']['name'];
 		}
-
+		
 		$tagsCount = count($tags);
 		for($i=0; $i<$tagsCount; $i++){
 			$tnx = $this->TagName->findById($tags[$i]['Tag']['tag_name_id']);
@@ -228,7 +228,7 @@ class TagNamesController extends AppController{
 			$list[$index]['tag'] = $listTag[$i];
 			$index++;
 		}
-
+		
 		$this->set('list', $list);
 	}
 
