@@ -515,7 +515,7 @@
 			}
 		}
 		if($this->isLoggedIn()){ ?>
-		var barPercent1 = <?php echo empty($user['User']['nextlvl']) ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
+		var barPercent1 = <?php echo $user['User']['nextlvl'] == 0 ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
 		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
