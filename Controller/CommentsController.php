@@ -28,7 +28,7 @@ class CommentsController extends AppController{
 		if(!isset($this->params['url']['filter'])) $filter1 = 'true';
 		else $filter1 = $this->params['url']['filter'];
 
-		$hasPremium = this->hasPremium();
+		$hasPremium = $this->hasPremium();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
 		if (!$swp) {
 			$swp = [];

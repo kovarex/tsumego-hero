@@ -16,7 +16,7 @@ class AppController extends Controller
 
   protected function loggedInUserID(): int
   {
-    return $this->Session->read('loggedInUser.User.id');
+    return (int)$this->Session->read('loggedInUser.User.id');
   }
 
   protected function hasPremium(): bool
@@ -3310,10 +3310,10 @@ class AppController extends Controller
 			if($this->Session->read('loggedInUser.User.mode')==2) $mode = 2;
 		}
 
-		if(isset($_COOKIE['preId']) && $_COOKIE['preId'] != '0'){
+		if(isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] > 0){
 			if($this->isLoggedIn()){
 				$utsx = $this->TsumegoStatus->find('all', array('order' => 'created DESC', 'conditions' => array(
-					'user_id' => $this->loggedInUserID(), 'tsumego_id' => $_COOKIE['preId']
+					'user_id' => $this->loggedInUserID(), 'tsumego_id' => (int)$_COOKIE['preId']
 				)));
 				if (!$utsx) {
 					$utsx = [];
@@ -3324,15 +3324,15 @@ class AppController extends Controller
 						$this->TsumegoStatus->delete($utsx[$i]['TsumegoStatus']['id']);
 				}
 			}
-			$preTsumego = $this->Tsumego->findById($_COOKIE['preId']);
-			$preSc = $this->SetConnection->find('all', array('conditions' => array('tsumego_id' => $_COOKIE['preId'])));
+			$preTsumego = $this->Tsumego->findById((int)$_COOKIE['preId']);
+			$preSc = $this->SetConnection->find('all', array('conditions' => array('tsumego_id' => (int)$_COOKIE['preId'])));
 			if (!$preSc) {
 				$preSc = [];
 			}
 			if (count($preSc) > 0) {
 				$preTsumego['Tsumego']['set_id'] = $preSc[0]['SetConnection']['set_id'];
 			}
-			$utPre = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('tsumego_id' => $_COOKIE['preId'], 'user_id' => $this->loggedInUserID())));
+			$utPre = $this->TsumegoStatus->find('first', array('order' => 'created DESC', 'conditions' => array('tsumego_id' => (int)$_COOKIE['preId'], 'user_id' => $this->loggedInUserID())));
 		}
 		if($_COOKIE['sprint']!=1)
 			$this->updateSprintCondition(false);
@@ -3345,7 +3345,7 @@ class AppController extends Controller
 			}
 
 			//Incorrect
-			if(isset($_COOKIE['misplay']) && $_COOKIE['misplay']!=0 && $_COOKIE['preId'] != '0'){
+			if(isset($_COOKIE['misplay']) && $_COOKIE['misplay']!=0 && (int)$_COOKIE['preId'] > 0){
 				$eloDifference = abs($this->Session->read('loggedInUser.User.elo_rating_mode') - $preTsumego['Tsumego']['elo_rating_mode']);
 				if($this->Session->read('loggedInUser.User.elo_rating_mode') > $preTsumego['Tsumego']['elo_rating_mode'])
 					$eloBigger = 'u';
@@ -3370,7 +3370,7 @@ class AppController extends Controller
 						if($preTsumego==null){
 							$preTsumego['TsumegoStatus'] = array();
 							$preTsumego['TsumegoStatus']['user_id'] = $u['User']['id'];
-							$preTsumego['TsumegoStatus']['tsumego_id'] = $_COOKIE['preId'];
+							$preTsumego['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['preId'];
 						}
 
 						if(!$this->hasPremium()){
@@ -3395,7 +3395,7 @@ class AppController extends Controller
 			}
 			//Correct!
 			if(isset($_COOKIE['mode']) && isset($_COOKIE['score']) && isset($_COOKIE['preId'])){
-			if($_COOKIE['score'] != '0' && $_COOKIE['preId'] != '0'){
+			if($_COOKIE['score'] != '0' && (int)$_COOKIE['preId'] > 0){
 				$eloDifference = abs($this->Session->read('loggedInUser.User.elo_rating_mode') - $preTsumego['Tsumego']['elo_rating_mode']);
 				if($this->Session->read('loggedInUser.User.elo_rating_mode') > $preTsumego['Tsumego']['elo_rating_mode'])
 					$eloBigger = 'u';
@@ -3416,7 +3416,7 @@ class AppController extends Controller
 					$this->Tsumego->save($preTsumego);
 			}
 
-			if(($_COOKIE['mode']=='1' || $_COOKIE['mode']=='2') && $_COOKIE['score'] != '0' && $_COOKIE['preId'] != '0'){
+			if(($_COOKIE['mode']=='1' || $_COOKIE['mode']=='2') && $_COOKIE['score'] != '0' && (int)$_COOKIE['preId'] > 0){
 				$u = $this->User->findById($this->loggedInUserID());
 				$suspiciousBehavior=false;
 				$exploit=null;
@@ -3441,7 +3441,7 @@ class AppController extends Controller
 
 				if($isNum && $isSet){
 					if(isset($_COOKIE['preId'])){
-						$tPre = $this->Tsumego->findById($_COOKIE['preId']);
+						$tPre = $this->Tsumego->findById((int)$_COOKIE['preId']);
 						$resetCookies = true;
 					}
 					if($mode==1||$mode==2){
@@ -3450,7 +3450,7 @@ class AppController extends Controller
 								//$exploit = $this->UserBoard->find('first', array('conditions' => array('user_id' => $u['User']['id'], 'b1' => $_COOKIE['preId'])));
 								$ub = array();
 								$ub['UserBoard']['user_id'] = $this->loggedInUserID();
-								$ub['UserBoard']['b1'] = $_COOKIE['preId'];
+								$ub['UserBoard']['b1'] = (int)$_COOKIE['preId'];
 								$this->UserBoard->create();
 								$this->UserBoard->save($ub);
 								if($_COOKIE['score']<3000) ;
@@ -3484,7 +3484,7 @@ class AppController extends Controller
 								}
 								if($mode==1 && $u['User']['id']!=33){
 									if($this->isLoggedIn()){
-										if(isset($_COOKIE['preId']) && $_COOKIE['preId']!=0){
+										if(isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] > 0){
 											if(!isset($_COOKIE['seconds']))
 												$cookieSeconds = 0;
 											else
@@ -3493,7 +3493,7 @@ class AppController extends Controller
 											$ur = array();
 											$ur['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 											$ur['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
-											$ur['TsumegoAttempt']['tsumego_id'] = $_COOKIE['preId'];
+											$ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['preId'];
 											$ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
 											$ur['TsumegoAttempt']['seconds'] = $cookieSeconds;
 											$ur['TsumegoAttempt']['solved'] = '1';
@@ -3534,7 +3534,7 @@ class AppController extends Controller
 												$_COOKIE['rank']='failed';
 											}
 											$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-											$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds']/10/$_COOKIE['preId'];
+											$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds']/10/(int)$_COOKIE['preId'];
 											$this->Rank->save($ranks[$i]);
 										}
 									}
@@ -3552,12 +3552,12 @@ class AppController extends Controller
 				unset($_COOKIE['sequence']);
 				unset($_COOKIE['type']);
 			}
-			if($_COOKIE['score'] != '0' && $_COOKIE['preId'] != '0'){
+			if($_COOKIE['score'] != '0' && (int)$_COOKIE['preId'] > 0){
 
 				if($utPre==null){
 					$utPre['TsumegoStatus'] = array();
 					$utPre['TsumegoStatus']['user_id'] = $u['User']['id'];
-					$utPre['TsumegoStatus']['tsumego_id'] = $_COOKIE['preId'];
+					$utPre['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['preId'];
 					$utPre['TsumegoStatus']['status'] = 'V';
 				}
 				$_COOKIE['preTsumegoBuffer'] = $utPre['TsumegoStatus']['status'];
