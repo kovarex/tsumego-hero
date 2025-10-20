@@ -1,6 +1,4 @@
 <?php
 
-class PublishDate extends AppModel{
-	
+class PublishDate extends AppModel {
 }
-

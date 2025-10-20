@@ -1,7 +1,10 @@
 <?php
-class RanksControllerTest extends ControllerTestCase  {
+class RanksControllerTest extends ControllerTestCase {
 
-	public function overview(){
+	/**
+	 * @return void
+	 */
+	public function overview(): void {
 		$this->loadModel('Tsumego');
 		$this->loadModel('User');
 		$this->loadModel('RankOverview');
@@ -9,11 +12,12 @@ class RanksControllerTest extends ControllerTestCase  {
 		$this->loadModel('Set');
 		CakeSession::write('title', 'Time Mode - Select');
 		CakeSession::write('page', 'time mode');
-
-
 	}
 
-	public function result($hash=null){
+	/**
+	 * @return void
+	 */
+	public function result($hash = null): void {
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('RankOverview');
@@ -22,24 +26,19 @@ class RanksControllerTest extends ControllerTestCase  {
 		$sess = CakeSession::read('loggedInUser.User.activeRank');
 		CakeSession::write('loggedInUser.User.activeRank', 0);
 		CakeSession::write('loggedInUser.User.mode', 1);
-
-
 	}
 
-	private function calculatePoints($time=null, $max=null){
+	private function calculatePoints($time = null, $max = null) {
 		$rx = 0;
-		if($max==240){
-			$rx = 20+round($time/3);
-		}elseif($max==60){
-			$rx = 40+round($time);
-		}elseif($max==30){
-			$rx = 40+round($time*2);
+		if($max == 240){
+			$rx = 20 + round($time / 3);
+		}elseif($max == 60){
+			$rx = 40 + round($time);
+		}elseif($max == 30){
+			$rx = 40 + round($time * 2);
 		}
+
 		return $rx;
 	}
-	
+
 }
-
-
-
-

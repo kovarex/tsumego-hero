@@ -6,6 +6,7 @@ App::uses('AppModel', 'Model');
  * Test model for EmptyIntegerBehavior
  */
 class EmptyIntegerTestModel extends AppModel {
+
 	public $useTable = false;
 
 	/**
@@ -13,21 +14,22 @@ class EmptyIntegerTestModel extends AppModel {
 	 *
 	 * @return array
 	 */
-	public function schema($field = false) {
-		$schema = array(
-			'id' => array('type' => 'integer', 'null' => false, 'key' => 'primary'),
-			'nullable_int' => array('type' => 'integer', 'null' => true),
-			'not_null_int' => array('type' => 'integer', 'null' => false),
-			'bigint_field' => array('type' => 'biginteger', 'null' => false),
-			'string_field' => array('type' => 'string', 'null' => true),
-		);
+	public function schema($field = false): array {
+		$schema = [
+			'id' => ['type' => 'integer', 'null' => false, 'key' => 'primary'],
+			'nullable_int' => ['type' => 'integer', 'null' => true],
+			'not_null_int' => ['type' => 'integer', 'null' => false],
+			'bigint_field' => ['type' => 'biginteger', 'null' => false],
+			'string_field' => ['type' => 'string', 'null' => true],
+		];
 
 		if ($field === false) {
 			return $schema;
 		}
 
-		return isset($schema[$field]) ? $schema[$field] : null;
+		return $schema[$field] ?? null;
 	}
+
 }
 
 /**
@@ -60,12 +62,12 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testEmptyStringToNullForNullableInt() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testEmptyStringToNullForNullableInt(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => '',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -77,12 +79,12 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testEmptyStringToZeroForNotNullInt() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testEmptyStringToZeroForNotNullInt(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'not_null_int' => '',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -94,13 +96,13 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testActualIntegerValuesPreserved() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testActualIntegerValuesPreserved(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => 42,
 				'not_null_int' => 100,
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -113,13 +115,13 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testZeroValuesPreserved() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testZeroValuesPreserved(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => 0,
 				'not_null_int' => 0,
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -132,12 +134,12 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testStringFieldsNotAffected() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testStringFieldsNotAffected(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'string_field' => '',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -149,15 +151,15 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testMultipleFields() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testMultipleFields(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => '',
 				'not_null_int' => '',
 				'bigint_field' => '',
 				'string_field' => '',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -172,12 +174,12 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testNonExistentFieldIgnored() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testNonExistentFieldIgnored(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'non_existent_field' => '',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -189,13 +191,13 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testNonNumericStringConversion() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testNonNumericStringConversion(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => 'light',
 				'not_null_int' => 'dark',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
@@ -208,17 +210,18 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function testNumericStringsPreserved() {
-		$this->Model->data = array(
-			'EmptyIntegerTestModel' => array(
+	public function testNumericStringsPreserved(): void {
+		$this->Model->data = [
+			'EmptyIntegerTestModel' => [
 				'nullable_int' => '42',
 				'not_null_int' => '100',
-			),
-		);
+			],
+		];
 
 		$result = $this->Model->beforeSave();
 		$this->assertTrue($result);
 		$this->assertSame('42', $this->Model->data['EmptyIntegerTestModel']['nullable_int']);
 		$this->assertSame('100', $this->Model->data['EmptyIntegerTestModel']['not_null_int']);
 	}
+
 }

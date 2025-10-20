@@ -1,29 +1,33 @@
 <?php
 
-
 class PollsController extends AppController {
 
-    public $helpers = array('Html', 'Form');
+	public $helpers = ['Html', 'Form'];
 
-    public function index() {
+	/**
+	 * @return void
+	 */
+	public function index() {
 		$this->loadModel('Post');
 		$polls = $this->Poll->find('all');
 		if (!$polls) {
 			$polls = [];
 		}
-        $posts = [];
+		$posts = [];
 
 		foreach ($polls as $i => $poll) {
 			$posts[$i] = $this->Post->findById($poll['Poll']['post_id']);
 		}
 
-
 		$this->set('posts', $posts);
 		$this->set('polls', $polls);
-    }
+	}
 
-    public function view($id = null) {
-        $poll = $this->Poll->findById($id);
+	/**
+	 * @return void
+	 */
+	public function view($id = null) {
+		$poll = $this->Poll->findById($id);
 		$polls = $this->Poll->find('all');
 		if (!$polls) {
 			$polls = [];
@@ -31,28 +35,26 @@ class PollsController extends AppController {
 		$post = [];
 		$samePost = 0;
 		foreach ($polls as $pollItem) {
-			if($pollItem['Poll']['post_id'] == $poll['Poll']['post_id']){
+			if ($pollItem['Poll']['post_id'] == $poll['Poll']['post_id']) {
 				$post[$samePost] = $pollItem;
 				$samePost++;
 			}
 		}
 		$this->set('related', $post);
-        $this->set('poll', $poll);
+		$this->set('poll', $poll);
 		$this->set('polls', $polls);
-    }
+	}
 
 	public function add() {
+		if ($this->request['data'] != null) {
+			$this->Poll->create();
+			if ($this->Poll->save($this->request->data)) {
+				return $this->redirect(['action' => 'index']);
 
-        if ($this->request['data'] != null) {
-            $this->Poll->create();
-            if ($this->Poll->save($this->request->data)) {
-                return $this->redirect(array('action' => 'index'));
 				 $this->Flash->success(__('Your puzzle has been saved.'));
-            }
-            $this->Flash->error(__('Unable to add your puzzle.'));
-        }
-    }
-
-
+			}
+			$this->Flash->error(__('Unable to add your puzzle.'));
+		}
+	}
 
 }

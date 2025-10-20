@@ -1,7 +1,10 @@
 <?php
 class SgfsController extends AppController {
 
-	public function index(){
+	/**
+	 * @return void
+	 */
+	public function index() {
 		$this->Session->write('title', 'Tsumego Hero');
 		$this->Session->write('page', 'play');
 		$sgfs = $this->Sgf->find('all');
@@ -10,9 +13,12 @@ class SgfsController extends AppController {
 		}
 		//echo '<pre>'; print_r($sgfs); echo '</pre>';
 		$this->set('sgfs', $sgfs);
-  }
+	}
 
-	public function view($id=null){
+	/**
+	 * @return void
+	 */
+	public function view($id = null) {
 		$this->Session->write('page', 'play');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -23,55 +29,64 @@ class SgfsController extends AppController {
 		$type = 'tsumego';
 		$id2 = $id;
 		$id /= 1337;
-		$dId = array();
-		$dTitle = array();
+		$dId = [];
+		$dTitle = [];
 
-		if(isset($this->params['url']['delete'])){
+		if (isset($this->params['url']['delete'])) {
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if($this->loggedInUserID() == $sDel['Sgf']['user_id'])
+			if ($this->loggedInUserID() == $sDel['Sgf']['user_id']) {
 				$this->Sgf->delete($sDel['Sgf']['id']);
+			}
 		}
 
-		if(isset($this->params['url']['duplicates'])){
+		if (isset($this->params['url']['duplicates'])) {
 			$newDuplicates = explode('-', $this->params['url']['duplicates']);
 			foreach ($newDuplicates as $duplicateId) {
 				$dupl = $this->Tsumego->findById($duplicateId);
-				$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $dupl['Tsumego']['id'])));
+				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $dupl['Tsumego']['id']]]);
 				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$dSet = $this->Set->findById($dupl['Tsumego']['set_id']);
 				$dId[] = $dupl['Tsumego']['id'];
-				$dTitle[] = $dSet['Set']['title'].' - '.$dupl['Tsumego']['num'];
+				$dTitle[] = $dSet['Set']['title'] . ' - ' . $dupl['Tsumego']['num'];
 			}
 		}
 
 		$t = $this->Tsumego->findById($id);
-		$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
+		$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
-		$name = $set['Set']['title'].' '.$set['Set']['title2'].' '.$t['Tsumego']['num'];
-		$this->Session->write('title', 'Upload History of '.$name);
+		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $t['Tsumego']['num'];
+		$this->Session->write('title', 'Upload History of ' . $name);
 
-		if(isset($this->params['url']['user'])){
-			$s = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 100,'conditions' => array(
-				'user_id' => $this->params['url']['user'],
-				'NOT' => array('version' => 0)
-			)));
+		if (isset($this->params['url']['user'])) {
+			$s = $this->Sgf->find('all', [
+				'order' => 'version DESC',
+				'limit' => 100,
+				'conditions' => [
+					'user_id' => $this->params['url']['user'],
+					'NOT' => ['version' => 0],
+				],
+			]);
 			if (!$s) {
 				$s = [];
 			}
 			$type = 'user';
-		}else{
-			$s = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 100,'conditions' => array(
-				'tsumego_id' => $id,
-				'NOT' => array('version' => 0)
-			)));
+		} else {
+			$s = $this->Sgf->find('all', [
+				'order' => 'version DESC',
+				'limit' => 100,
+				'conditions' => [
+					'tsumego_id' => $id,
+					'NOT' => ['version' => 0],
+				],
+			]);
 			if (!$s) {
 				$s = [];
 			}
 		}
 
 		$sCount = count($s);
-		for($i=0; $i<$sCount; $i++){
+		for ($i = 0; $i < $sCount; $i++) {
 			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
 			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
 
@@ -79,27 +94,31 @@ class SgfsController extends AppController {
 			$s[$i]['Sgf']['user'] = $u['User']['name'];
 			$ux = $u['User']['name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $t['Tsumego']['id'])));
+			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
-			$s[$i]['Sgf']['title'] = $set['Set']['title'].' '.$set['Set']['title2'].' #'.$t['Tsumego']['num'];;
+			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $t['Tsumego']['num'];
+
 			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
 
-			if($s[$i]['Sgf']['user']=='noUser')
+			if ($s[$i]['Sgf']['user'] == 'noUser') {
 				$s[$i]['Sgf']['user'] = 'automatically generated';
-			if($this->loggedInUserID() == $s[$i]['Sgf']['user_id'])
+			}
+			if ($this->loggedInUserID() == $s[$i]['Sgf']['user_id']) {
 				$s[$i]['Sgf']['delete'] = true;
-			else
+			} else {
 				$s[$i]['Sgf']['delete'] = false;
-			if($type=='user'){
-				$sDiff = $this->Sgf->find('all', array('order' => 'version DESC','limit' => 2,'conditions' => array('tsumego_id' => $s[$i]['Sgf']['tsumego_id'])));
+			}
+			if ($type == 'user') {
+				$sDiff = $this->Sgf->find('all', ['order' => 'version DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
 				if (!$sDiff) {
 					$sDiff = [];
 				}
 				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
-			}else{
-				if($i!=count($s)-1)
-					$s[$i]['Sgf']['diff'] = $s[$i+1]['Sgf']['id'];
+			} else {
+				if ($i != count($s) - 1) {
+					$s[$i]['Sgf']['diff'] = $s[$i + 1]['Sgf']['id'];
+				}
 			}
 		}
 
@@ -115,7 +134,3 @@ class SgfsController extends AppController {
 	}
 
 }
-
-
-
-

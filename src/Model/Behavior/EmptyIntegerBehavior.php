@@ -15,7 +15,7 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 *
 	 * @var array
 	 */
-	protected $_schemaCache = array();
+	protected $_schemaCache = [];
 
 	/**
 	 * Before save callback
@@ -24,7 +24,7 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 * @param array $options Options array
 	 * @return bool True to continue save, false to abort
 	 */
-	public function beforeSave(Model $Model, $options = array()) {
+	public function beforeSave(Model $Model, $options = []) {
 		if (empty($Model->data[$Model->alias])) {
 			return true;
 		}
@@ -62,7 +62,7 @@ class EmptyIntegerBehavior extends ModelBehavior {
 					'Non-numeric string "%s" provided for integer field %s.%s, converting to 0',
 					$value,
 					$Model->alias,
-					$field
+					$field,
 				));
 
 				// Convert to 0 or null based on null constraint
@@ -100,7 +100,9 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 * @return bool True if integer type
 	 */
 	protected function _isIntegerType($type) {
-		$integerTypes = array('integer', 'biginteger', 'smallinteger', 'tinyinteger');
+		$integerTypes = ['integer', 'biginteger', 'smallinteger', 'tinyinteger'];
+
 		return in_array($type, $integerTypes);
 	}
+
 }

@@ -11,11 +11,11 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @package       app.Config.Schema
- * @since         CakePHP(tm) v 0.2.9
- * @license       https://opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link https://cakephp.org CakePHP(tm) Project
+ * @package app.Config.Schema
+ * @since CakePHP(tm) v 0.2.9
+ * @license https://opensource.org/licenses/mit-license.php MIT License
  */
 
 /**
@@ -25,48 +25,47 @@
  *
  * cake schema run create i18n
  */
-class I18nSchema extends CakeSchema
-{
-    /**
-     * The name property
-     *
-     * @var string
-     */
-    public $name = 'i18n';
+class I18nSchema extends CakeSchema {
 
-    /**
-     * Before callback.
-     *
-     * @param array $event Schema object properties
-     * @return bool Should process continue
-     */
-    public function before($event = [])
-    {
-        return true;
-    }
+	/**
+	 * The name property
+	 *
+	 * @var string
+	 */
+	public $name = 'i18n';
 
-    /**
-     * After callback.
-     *
-     * @param array $event Schema object properties
-     * @return void
-     */
-    public function after($event = [])
-    {
-    }
+	/**
+	 * Before callback.
+	 *
+	 * @param array $event Schema object properties
+	 * @return bool Should process continue
+	 */
+	public function before($event = []) {
+		return true;
+	}
 
-    /**
-     * The i18n table definition
-     *
-     * @var array
-     */
-    public $i18n = [
-        'id' => ['type' => 'integer', 'null' => false, 'default' => null, 'length' => 10, 'key' => 'primary'],
-        'locale' => ['type' => 'string', 'null' => false, 'length' => 6, 'key' => 'index'],
-        'model' => ['type' => 'string', 'null' => false, 'key' => 'index'],
-        'foreign_key' => ['type' => 'integer', 'null' => false, 'length' => 10, 'key' => 'index'],
-        'field' => ['type' => 'string', 'null' => false, 'key' => 'index'],
-        'content' => ['type' => 'text', 'null' => true, 'default' => null],
-        'indexes' => ['PRIMARY' => ['column' => 'id', 'unique' => 1], 'locale' => ['column' => 'locale', 'unique' => 0], 'model' => ['column' => 'model', 'unique' => 0], 'row_id' => ['column' => 'foreign_key', 'unique' => 0], 'field' => ['column' => 'field', 'unique' => 0]],
-    ];
+	/**
+	 * After callback.
+	 *
+	 * @param array $event Schema object properties
+	 * @return void
+	 */
+	public function after($event = []) {
+	}
+
+	/**
+	 * The i18n table definition
+	 *
+	 * @var array
+	 */
+	public $i18n = [
+		'id' => ['type' => 'integer', 'null' => false, 'default' => null, 'length' => 10, 'key' => 'primary'],
+		'locale' => ['type' => 'string', 'null' => false, 'length' => 6, 'key' => 'index'],
+		'model' => ['type' => 'string', 'null' => false, 'key' => 'index'],
+		'foreign_key' => ['type' => 'integer', 'null' => false, 'length' => 10, 'key' => 'index'],
+		'field' => ['type' => 'string', 'null' => false, 'key' => 'index'],
+		'content' => ['type' => 'text', 'null' => true, 'default' => null],
+		'indexes' => ['PRIMARY' => ['column' => 'id', 'unique' => 1], 'locale' => ['column' => 'locale', 'unique' => 0], 'model' => ['column' => 'model', 'unique' => 0], 'row_id' => ['column' => 'foreign_key', 'unique' => 0], 'field' => ['column' => 'field', 'unique' => 0]],
+	];
+
 }

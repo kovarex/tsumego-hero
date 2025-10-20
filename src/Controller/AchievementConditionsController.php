@@ -1,14 +1,16 @@
 <?php
 class AchievementConditionsController extends AppController {
 
-	public function index(){
-    }
-	
-	public function view($id=null){
+	/**
+	 * @return void
+	 */
+	public function index() {
 	}
-	
+
+	/**
+	 * @return void
+	 */
+	public function view($id = null) {
+	}
+
 }
-
-
-
-

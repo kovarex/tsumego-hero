@@ -1,13 +1,12 @@
 <?php
-class SitesControllerTest extends ControllerTestCase  {
+class SitesControllerTest extends ControllerTestCase {
 
-	public function testIndex(){
+	/**
+	 * @return void
+	 */
+	public function testIndex(): void {
 		$result = $this->testAction('/sites/index');
-        debug($result);
-		
+		debug($result);
 	}
+
 }
-
-
-
-

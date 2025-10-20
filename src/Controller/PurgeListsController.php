@@ -1,12 +1,10 @@
 <?php
 class PurgeListsController extends AppController {
 
-	public function index(){
-    }
-	
-	
+	/**
+	 * @return void
+	 */
+	public function index() {
+	}
+
 }
-
-
-
-

@@ -7,11 +7,11 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @package       app.Config
- * @since         CakePHP(tm) v 2.0.0
- * @license       https://opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link https://cakephp.org CakePHP(tm) Project
+ * @package app.Config
+ * @since CakePHP(tm) v 2.0.0
+ * @license https://opensource.org/licenses/mit-license.php MIT License
  */
 
 /**
@@ -36,16 +36,16 @@
  */
 class EmailConfig {
 
-	public $default = array(
+	public $default = [
 		'transport' => 'Mail',
 		'from' => 'you@localhost',
 		//'charset' => 'utf-8',
 		//'headerCharset' => 'utf-8',
-	);
+	];
 
-	public $smtp = array(
+	public $smtp = [
 		'transport' => 'Smtp',
-		'from' => array('site@localhost' => 'My Site'),
+		'from' => ['site@localhost' => 'My Site'],
 		'host' => 'localhost',
 		'port' => 25,
 		'timeout' => 30,
@@ -55,9 +55,9 @@ class EmailConfig {
 		'log' => false,
 		//'charset' => 'utf-8',
 		//'headerCharset' => 'utf-8',
-	);
+	];
 
-	public $fast = array(
+	public $fast = [
 		'from' => 'you@localhost',
 		'sender' => null,
 		'to' => null,
@@ -86,6 +86,6 @@ class EmailConfig {
 		'log' => true,
 		//'charset' => 'utf-8',
 		//'headerCharset' => 'utf-8',
-	);
+	];
 
 }

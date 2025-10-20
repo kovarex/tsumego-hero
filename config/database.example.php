@@ -7,11 +7,11 @@
  * For full copyright and license information, please see the LICENSE.txt
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
- * @link          http://cakephp.org CakePHP(tm) Project
- * @package       app.Config
- * @since         CakePHP(tm) v 0.2.9
- * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link http://cakephp.org CakePHP(tm) Project
+ * @package app.Config
+ * @since CakePHP(tm) v 0.2.9
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
 /**
@@ -66,7 +66,7 @@
  */
 class DATABASE_CONFIG {
 
-	public $default = array(
+	public $default = [
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,
 		'host' => 'db',
@@ -74,8 +74,8 @@ class DATABASE_CONFIG {
 		'password' => 'db',
 		'database' => 'db',
 		'prefix' => '',
-		//'encoding' => 'utf8',
-	);
+		'encoding' => 'utf8',
+	];
 
 	public function __construct() {
 		if (Configure::read('debug') > 0) {
@@ -83,14 +83,15 @@ class DATABASE_CONFIG {
 		}
 	}
 
-	public $test = array(
+	public $test = [
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,
-		'host' => 'localhost',
-		'login' => 'root',
-		'password' => '',
-		'database' => 'gostrats',
+		'host' => 'db',
+		'login' => 'db',
+		'password' => 'db',
+		'database' => 'test',
 		'prefix' => '',
-		//'encoding' => 'utf8',
-	);
+		'encoding' => 'utf8',
+	];
+
 }
