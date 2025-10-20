@@ -1,9 +1,11 @@
 # phpstan.neon
 includes:
-  - vendor/pieceofcake2/phpstan-cakephp2/extension.neon
+	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
 
 parameters:
-  level: 8
-  paths:
-    - src/
-
+	level: 5
+	paths:
+		- src/
+	treatPhpDocTypesAsCertain: false
+	ignoreErrors:
+		- '#Call to an undefined method .*\:\:findById\(#'

@@ -9,7 +9,7 @@
         "pieceofcake2/cakephp": "^2.12"
     },
     "require-dev": {
-        "cakephp/cakephp-codesniffer": "^5.0",
+        "fig-r/psr2r-sniffer": "^2.4.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^9.6",
         "pieceofcake2/bake": "^1.0",
@@ -19,6 +19,15 @@
     "autoload": {
         "classmap": ["src/"]
     },
+	"scripts": {
+		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
+		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
+		"test": "phpunit",
+		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
+		"cs-check": "phpcs --extensions=php",
+		"cs-fix": "phpcbf --extensions=php",
+		"stan": "phpstan analyse"
+	},
     "config": {
         "sort-packages": true,
         "allow-plugins": {

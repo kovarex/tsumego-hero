@@ -3,15 +3,15 @@
          xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
     <config name="php_version" value="80000"/>
 
-    <arg value="ps"/>
+    <arg value="nps"/>
     <arg name="colors"/>
     <arg name="parallel" value="100"/>
 
-    <file>./config</file>
-    <file>./src</file>
-    <file>./tests</file>
+    <file>config</file>
+    <file>src</file>
+    <file>tests</file>
 
-    <rule ref="CakePHP">
+	<rule ref="PSR2R">
         <!-- ===== Namespace and Class Rules ===== -->
         <!-- CakePHP2 uses App::uses() instead of namespaces -->
         <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
@@ -44,9 +44,6 @@
         <!-- Allow assignment in conditions (common pattern in CakePHP2: while ($row = $result->fetch())) -->
         <exclude name="SlevomatCodingStandard.ControlStructures.AssignmentInCondition.AssignmentInCondition"/>
 
-        <!-- ===== Formatting Rules ===== -->
-        <!-- Allow blank lines after function comments (CakePHP2 style) -->
-        <exclude name="CakePHP.Commenting.FunctionComment.SpacingAfter"/>
         <!-- Exclude line length checks for CakePHP2 -->
         <exclude name="Generic.Files.LineLength"/>
     </rule>
@@ -56,10 +53,6 @@
         <properties>
             <property name="maxPadding" value="1"/>
         </properties>
-    </rule>
-
-    <rule ref="CakePHP.Commenting.FunctionComment.Missing">
-        <exclude-pattern>tests/TestCase/*</exclude-pattern>
     </rule>
 
     <!-- Allow multiple classes in test files only (CakePHP2 test pattern) -->

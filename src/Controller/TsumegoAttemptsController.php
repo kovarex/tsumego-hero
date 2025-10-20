@@ -1,12 +1,12 @@
 <?php
-class JosekiesController extends AppController {
+class TsumegoAttemptsController extends AppController {
 
 	public function index(){
     }
-	
+
 	public function view($id=null){
 	}
-	
+
 }
 
 
