@@ -27,8 +27,7 @@ config/email.php
 webroot/mainPageAjax.txt
 webroot/userLogger.html
 .ddev/
-Config/database.php
-Config/core.local.php
+config/core.local.php
 .idea/
 
 # IDE and editor specific files #
