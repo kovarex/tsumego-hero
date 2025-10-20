@@ -1335,9 +1335,7 @@ class TsumegosController extends AppController {
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
 					if ($mode != 3) {
-						if ($onlineMode) {
-							$this->TsumegoStatus->save($utPre);
-						}
+						$this->TsumegoStatus->save($utPre);
 						$this->Session->read('loggedInUser.uts')[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 						$utsMap[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 					}
@@ -1579,9 +1577,7 @@ class TsumegosController extends AppController {
 							$utPre['TsumegoStatus']['status'] = 'V';
 						}
 						if ($mode == 1) {
-							if ($onlineMode) {
-								$this->TsumegoStatus->save($utPre);
-							}
+							$this->TsumegoStatus->save($utPre);
 							$this->Session->read('loggedInUser.uts')[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 							$utsMap[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 						}
@@ -1861,9 +1857,7 @@ class TsumegosController extends AppController {
 				$ut['TsumegoStatus']['tsumego_id'] = $id;
 				$ut['TsumegoStatus']['status'] = 'V';
 				if ($mode != 3) {
-					if ($onlineMode) {
-						$this->TsumegoStatus->save($ut);
-					}
+					$this->TsumegoStatus->save($ut);
 					$this->Session->read('loggedInUser.uts')[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
 					$utsMap[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
 				}
@@ -4074,8 +4068,8 @@ class TsumegosController extends AppController {
 			$n2xCount = count($n2x);
 			for ($i = $n2xCount - 1; $i >= 0; $i--) {
 				$n2xx = explode('/', $n2x[$i]);
-				$a = substr($c, 0, $n2xx[0]);
-				$cx = substr($c, $n2xx[0], $n2xx[1] - $n2xx[0] + 1);
+				$a = substr($c, 0, (int)$n2xx[0]);
+				$cx = substr($c, (int)$n2xx[0], (int)$n2xx[1] - (int)$n2xx[0] + 1);
 				if ($noSyntax) {
 					$b = '<a href="#" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '()" onmouseout="ccOut' . $counter . $fn . '()" return false;>';
 				} else {

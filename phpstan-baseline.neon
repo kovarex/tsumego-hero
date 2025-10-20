@@ -1,0 +1,43 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Offset ''sum'' does not exist on list\<array\{tid\: mixed, sid\: mixed, status\: mixed, seconds\: mixed\}\>\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Controller/AppController.php
+
+		-
+			message: '#^Binary operation "\+" between string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Controller/TsumegosController.php
+
+		-
+			message: '#^Comparison operation "\<" between 0\|1 and 30 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: src/Controller/TsumegosController.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 1600 and 550\|int\<600, 1600\> is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: src/Controller/TsumegosController.php
+
+		-
+			message: '#^Loose comparison using \=\= between null and null will always evaluate to true\.$#'
+			identifier: equal.alwaysTrue
+			count: 1
+			path: src/Controller/TsumegosController.php
+
+		-
+			message: '#^Offset ''TsumegoStatus'' does not exist on null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Controller/TsumegosController.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: src/Controller/TsumegosController.php

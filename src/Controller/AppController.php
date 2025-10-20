@@ -4539,7 +4539,6 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	public function afterFilter() {
-		dd('$x');
 		$this->loadModel('Rank');
 		if ($this->isLoggedIn()) {
 			if ($this->Session->read('page') != 'time mode' && $this->Session->read('loggedInUser.User.mode') == 3 || $this->Session->read('page') != 'time mode' && strlen($this->Session->read('loggedInUser.User.activeRank')) == 15) {

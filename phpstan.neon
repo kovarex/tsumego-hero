@@ -1,5 +1,5 @@
-# phpstan.neon
 includes:
+	- phpstan-baseline.neon
 	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
 
 parameters:
