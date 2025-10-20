@@ -82,3 +82,10 @@ DELETE sgfs.* FROM sgfs LEFT JOIN tsumegos on sgfs.tsumego_id=tsumegos.id WHERE 
 ALTER TABLE `sgfs` ADD CONSTRAINT `sgfs_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* When tsumego is deleted it is ok to remove all of its sgf versions*/
 
 ALTER TABLE tsumegos DROP COLUMN `file`;
+
+/* I'm not 100% sure about this, but set_id should be deprecated on tsumegos, as they are now conncted through set_connections.
+ Some tsumegos, even new ones still have set_id set, but I'm suspecting it is some artifact of how the set id is filled in the controller, and then it is saved sometimes.
+ Fast testing shows that the sites works fine with this column gone, and if something breaks, it probably means the logic should be fixed, not the set_id restored.
+ */
+
+ALTER TABLE tsumegos DROP COLUMN `set_id`;
