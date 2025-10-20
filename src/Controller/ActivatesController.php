@@ -88,6 +88,8 @@ class ActivatesController extends AppController {
 		}
 
 		$key = 0;
+		$a = [];
+		$s = '';
 		if (!empty($this->data)) {
 			$ac = $this->Activate->find('first', ['conditions' => ['string' => $this->data['Activate']['Key']]]);
 			if ($ac) {

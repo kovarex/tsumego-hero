@@ -300,9 +300,9 @@ class RanksController extends AppController {
 			}
 		}
 
+		$openCard1 = -1;
+		$openCard2 = -1;
 		if ($ranks != null) {
-			$openCard1 = -1;
-			$openCard2 = -1;
 			$cardV = 0;
 			if ($stopParameter == 0) {
 				$cardV = 0;
@@ -566,6 +566,7 @@ class RanksController extends AppController {
 		}
 
 		$lastModeIndex = $this->Session->read('loggedInUser.User.lastMode') - 1;
+		$lastModeV = null;
 		$modesCount = count($modes[$lastModeIndex]);
 		for ($h = 0;$h < $modesCount;$h++) {
 			if (isset($modes[$lastModeIndex][$h]['RankOverview'])) {

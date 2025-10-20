@@ -625,6 +625,10 @@ class AppController extends Controller {
 		if ($diff == 0) {
 			$diff = .1;
 		}
+		$tWin = 0;
+		$tLoss = 0;
+		$uWin = 0;
+		$uLoss = 0;
 		if ($eloBigger == 'u') {
 			$tWin = $diff / $tsumegoAvtivityValue;
 			$tLoss = 0;
@@ -743,7 +747,6 @@ class AppController extends Controller {
 
 	private function getActivityValueSingle($date2) {
 		$date1 = new DateTime('now');
-		$date1->format('Y-m-d H:i:s');
 		$date2 = new DateTime($date2);
 		$interval = $date1->diff($date2);
 		$m = $interval->m;
@@ -868,6 +871,7 @@ class AppController extends Controller {
 	protected function userRefresh($range = null) {
 		$this->LoadModel('User');
 		$this->LoadModel('TsumegoStatus');
+		$u = [];
 		if ($range == 1) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
@@ -1080,6 +1084,7 @@ class AppController extends Controller {
 		if (!$s) {
 			$s = [];
 		}
+		$id = 0;
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++) {
 			$id = $this->publishSingle($s[$i]['Schedule']['tsumego_id'], $s[$i]['Schedule']['set_id'], $s[$i]['Schedule']['date']);
@@ -3501,9 +3506,7 @@ class AppController extends Controller {
 		$xLvlupXp = 10;
 
 		for ($i = 1;$i < 102;$i++) {
-			if ($i >= 102) {
-				$j = 0;
-			} elseif ($i == 101) {
+			if ($i == 101) {
 				$j = 1150;
 			} elseif ($i == 100) {
 				$j = 50000;
@@ -3801,6 +3804,7 @@ class AppController extends Controller {
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
 		$hasFavs = false;
+		$u = [];
 
 		if ($this->isLoggedIn()) {
 			//if ($this->loggedInUserID()==33) $this->Session->delete('loggedInUser');
@@ -3968,6 +3972,9 @@ class AppController extends Controller {
 			}
 		}
 
+		$preTsumego = null;
+		$preSc = [];
+		$utPre = null;
 		if (isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] > 0) {
 			if ($this->isLoggedIn()) {
 				$utsx = $this->TsumegoStatus->find('all', [

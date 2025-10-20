@@ -576,7 +576,7 @@ class CommentsController extends AppController {
 		$token = true;
 		if (!$this->isAdmin()) {
 			$token = false;
-		} elseif ($this->params['url']['token'] != md5($id)) {
+		} elseif ($this->params['url']['token'] != md5((string)$id)) {
 			$token = false;
 		}
 		if ($token) {

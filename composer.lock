@@ -681,17 +681,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig-rectified/psr2r-sniffer.git",
-                "reference": "be93173412f3314128972d34de47f647ff33c89e"
+                "reference": "cef6b91410a6d35d9217d184823549c6456119df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/be93173412f3314128972d34de47f647ff33c89e",
-                "reference": "be93173412f3314128972d34de47f647ff33c89e",
+                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/cef6b91410a6d35d9217d184823549c6456119df",
+                "reference": "cef6b91410a6d35d9217d184823549c6456119df",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.1",
-                "php-collective/code-sniffer": "^0.4",
+                "php-collective/code-sniffer": "^0.4.1",
                 "squizlabs/php_codesniffer": "^4.0.0"
             },
             "require-dev": {
@@ -731,7 +731,7 @@
                 "issues": "https://github.com/php-fig-rectified/psr2r-sniffer/issues",
                 "source": "https://github.com/php-fig-rectified/psr2r-sniffer/tree/master"
             },
-            "time": "2025-10-20T17:09:59+00:00"
+            "time": "2025-10-20T17:42:56+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -971,16 +971,16 @@
         },
         {
             "name": "php-collective/code-sniffer",
-            "version": "0.4.0",
+            "version": "0.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-collective/code-sniffer.git",
-                "reference": "fb181c886fc9ab152725c6b2c189b412d683cf7b"
+                "reference": "111725adb94a393c0cd2d50c7b52b1e4e130b5fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-collective/code-sniffer/zipball/fb181c886fc9ab152725c6b2c189b412d683cf7b",
-                "reference": "fb181c886fc9ab152725c6b2c189b412d683cf7b",
+                "url": "https://api.github.com/repos/php-collective/code-sniffer/zipball/111725adb94a393c0cd2d50c7b52b1e4e130b5fe",
+                "reference": "111725adb94a393c0cd2d50c7b52b1e4e130b5fe",
                 "shasum": ""
             },
             "require": {
@@ -1030,7 +1030,7 @@
                 "issues": "https://github.com/php-collective/code-sniffer/issues",
                 "source": "https://github.com/php-collective/code-sniffer"
             },
-            "time": "2025-09-29T23:22:32+00:00"
+            "time": "2025-10-20T17:38:41+00:00"
         },
         {
             "name": "phpcsstandards/phpcsextra",

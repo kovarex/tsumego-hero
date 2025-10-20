@@ -453,6 +453,7 @@ class SetsController extends AppController {
 		$setsWithPremium = [];
 		$overallCounter = 0;
 		$searchCounter = 0;
+		$achievementUpdate = [];
 		$searchPatameters = $this->processSearchParameters($this->loggedInUserID());
 		$query = $searchPatameters[0];
 		$collectionSize = $searchPatameters[1];
@@ -619,7 +620,7 @@ class SetsController extends AppController {
 				$setsRaw = [];
 			}
 
-			$achievementUpdate = 0;
+			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
 			for ($i = 0; $i < $setsRawCount; $i++) {
 				if (count($rankConditions) > 0) {
@@ -1009,7 +1010,7 @@ class SetsController extends AppController {
 		}
 		$tl['name'] = $list['name'];
 		$tl['amount'] = $size;
-		$tl['color'] = str_replace('[o]', $colorValue, $list['color']);
+		$tl['color'] = str_replace('[o]', (string)$colorValue, $list['color']);
 		if (isset($list['premium'])) {
 			$tl['premium'] = $list['premium'];
 		} else {
@@ -1217,7 +1218,7 @@ class SetsController extends AppController {
 			$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
 			$adminActivity['AdminActivity']['tsumego_id'] = 0;
 			$adminActivity['AdminActivity']['file'] = 'description';
-			$adminActivity['AdminActivity']['answer'] = 'Added problem for ' . $set['Set']['title'];
+			$adminActivity['AdminActivity']['answer'] = 'Added problem for ' . $s['Set']['title'];
 			$this->AdminActivity->save($adminActivity);
 		}
 

@@ -38,6 +38,8 @@ class TsumegosController extends AppController {
 		$noUser = null;
 		$noLogin = [];
 		$noLoginStatus = [];
+		$u = [];
+		$preTsumego = null;
 		$rejuvenation = false;
 		$doublexp = null;
 		$exploit = null;
@@ -156,6 +158,7 @@ class TsumegosController extends AppController {
 			unset($_COOKIE['ui']);
 		}
 		if (isset($this->params['url']['modelink'])) {
+			$tlength = 15;
 			if ($this->params['url']['modelink'] == 1) {
 				$tlength = 15;
 			} elseif ($this->params['url']['modelink'] == 2) {

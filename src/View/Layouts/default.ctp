@@ -435,9 +435,10 @@
 		<br><br><br>
 	</div>
 	<?php
+	$achievementUpdate = $achievementUpdate ?? [];
 	if($this->Session->check('loggedInUser.User.id')){
 		$xpBonus = 0;
-    $count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
+    	$count = count($achievementUpdate);
 		for($i=0;$i<$count;$i++){
 			echo '
 			<label>

@@ -2483,7 +2483,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		if ($this->isAdmin()) {
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
-				if (md5($this->loggedInUserID()) == $this->params['url']['hash']) {
+				if (md5((string)$this->loggedInUserID()) == $this->params['url']['hash']) {
 
 					$tagsToApprove = explode('-', $_COOKIE['tagList']);
 					$tagsToApproveCount = count($tagsToApprove);
