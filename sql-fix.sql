@@ -61,3 +61,11 @@ ALTER TABLE `user_boards` convert to character set utf8mb4 collate utf8mb4_unico
 ALTER TABLE `user_contributions` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `user_sa_maps` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `user_texture_maps` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
+
+ALTER TABLE `set_connections` MODIFY `set_id` INT UNSIGNED NOT NULL;
+ALTER TABLE `set_connections` ADD CONSTRAINT `set_connections_set_id` FOREIGN KEY (`set_id`) REFERENCES `sets`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `set_connections` MODIFY `tsumego_id` INT UNSIGNED NOT NULL;
+
+/* Invalid set_connections as the tsumego was removed (1 entry in current import) */
+DELETE set_connections.* from set_connections LEFT JOIN tsumegos on set_connections.tsumego_id=tsumegos.id WHERE tsumegos.id is null;
+ALTER TABLE `set_connections` ADD CONSTRAINT `set_connections_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
