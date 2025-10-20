@@ -80,3 +80,5 @@ DELETE FROM sgfs WHERE sgfs.tsumego_id is null; /* nonsensual record, sgf withou
 ALTER TABLE `sgfs` MODIFY `tsumego_id` INT UNSIGNED NOT NULL;
 DELETE sgfs.* FROM sgfs LEFT JOIN tsumegos on sgfs.tsumego_id=tsumegos.id WHERE tsumegos.id is null; /* 3800 entries in the database 22k, nonsensual to have these */
 ALTER TABLE `sgfs` ADD CONSTRAINT `sgfs_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* When tsumego is deleted it is ok to remove all of its sgf versions*/
+
+ALTER TABLE tsumegos DROP COLUMN `file`;

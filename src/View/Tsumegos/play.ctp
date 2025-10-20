@@ -194,14 +194,8 @@
 		<td align="center">
 			<div id="playTitle">
 				<?php
-					if(strlen($t['Tsumego']['file'])>4){
-						$di = ' - ';
-						$di2 = '';
-						$anz = '';
-					}else{
-						$di = ' ';
-						$di2 = '/';
-					}
+					$di = ' ';
+					$di2 = '/';
 					if($mode==2)
 						$inFavorite='';
 					$hasPartition = '';
@@ -218,15 +212,12 @@
 						if($inFavorite==''){
 							if($mode==1){
 								if($t['Tsumego']['set_id']==38){
-									if($t['Tsumego']['file']<=17) $altTitle = 'Essential Tsumego Vol. I';
-									elseif($t['Tsumego']['file']<=28) $altTitle = 'Essential Tsumego Vol. II';
-									else $altTitle = 'How to win the capturing race';
-									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$t['Tsumego']['file'].$di2.$anz.'</a>';
+									$altTitle = 'How to win the capturing race';
+									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$di2.$anz.'</a>';
 								}else{
-									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$hasPartition.'">'.$set['Set']['title'].' '.$queryTitleSets.' '.$di.$t['Tsumego']['file'].$di2.$anz.'</a>';
+									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$hasPartition.'">'.$set['Set']['title'].' '.$queryTitleSets.' '.$di.$di2.$anz.'</a>';
 								}
 							}elseif($mode==2){
-								//echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$set['Set']['title'].$di.$t['Tsumego']['file'].$di2.$anz.'</a>';
 								echo '<div class="slidecontainer">
 									<input type="range" min="1" max="7" value="'.$difficulty.'" class="slider" id="rangeInput" name="rangeInput">
 									<div id="sliderText">regular</div>
@@ -240,7 +231,7 @@
 						echo '<a id="playTitleA" href="/sets/view/1">Favorites</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
-								('.$set['Set']['title'].$di.$t['Tsumego']['file'].$di2.$anz.')
+								('.$set['Set']['title'].$di.$di2.$anz.')
 							</a>
 						</font>';
 					}
