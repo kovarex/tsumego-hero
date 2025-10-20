@@ -1,6 +1,6 @@
 <?php
 class Schedule extends AppModel {
 
-	var $name = 'Schedule';
+	public $name = 'Schedule';
 
 }

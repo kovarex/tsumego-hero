@@ -20,18 +20,18 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	/**
 	 * Before save callback
 	 *
-	 * @param Model $Model Model instance
+	 * @param Model $model Model instance
 	 * @param array $options Options array
 	 * @return bool True to continue save, false to abort
 	 */
-	public function beforeSave(Model $Model, $options = []) {
-		if (empty($Model->data[$Model->alias])) {
+	public function beforeSave(Model $model, $options = []) {
+		if (empty($model->data[$model->alias])) {
 			return true;
 		}
 
-		$schema = $this->_getSchema($Model);
+		$schema = $this->_getSchema($model);
 
-		foreach ($Model->data[$Model->alias] as $field => $value) {
+		foreach ($model->data[$model->alias] as $field => $value) {
 			// Skip if field doesn't exist in schema
 			if (!isset($schema[$field])) {
 				continue;
@@ -49,27 +49,25 @@ class EmptyIntegerBehavior extends ModelBehavior {
 				// Convert empty string based on null constraint
 				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
 					// Nullable column: set to null
-					$Model->data[$Model->alias][$field] = null;
+					$model->data[$model->alias][$field] = null;
 				} else {
 					// NOT NULL column: set to 0
-					$Model->data[$Model->alias][$field] = 0;
+					$model->data[$model->alias][$field] = 0;
 				}
-			}
-			// Handle non-numeric strings
-			elseif (is_string($value) && !is_numeric($value)) {
+			} elseif (is_string($value) && !is_numeric($value)) { // Handle non-numeric strings
 				// Log warning about non-numeric string
 				CakeLog::warning(sprintf(
 					'Non-numeric string "%s" provided for integer field %s.%s, converting to 0',
 					$value,
-					$Model->alias,
+					$model->alias,
 					$field,
 				));
 
 				// Convert to 0 or null based on null constraint
 				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
-					$Model->data[$Model->alias][$field] = null;
+					$model->data[$model->alias][$field] = null;
 				} else {
-					$Model->data[$Model->alias][$field] = 0;
+					$model->data[$model->alias][$field] = 0;
 				}
 			}
 		}
@@ -80,14 +78,14 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	/**
 	 * Get schema for model (with caching)
 	 *
-	 * @param Model $Model Model instance
+	 * @param Model $model Model instance
 	 * @return array Schema array
 	 */
-	protected function _getSchema(Model $Model) {
-		$cacheKey = $Model->alias;
+	protected function _getSchema(Model $model) {
+		$cacheKey = $model->alias;
 
 		if (!isset($this->_schemaCache[$cacheKey])) {
-			$this->_schemaCache[$cacheKey] = $Model->schema();
+			$this->_schemaCache[$cacheKey] = $model->schema();
 		}
 
 		return $this->_schemaCache[$cacheKey];

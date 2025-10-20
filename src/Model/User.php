@@ -1,10 +1,9 @@
 <?php
 class User extends AppModel {
 
-	var $name = 'User';
+	public $name = 'User';
 
-	var $validate = [
-
+	public $validate = [
 		'name' => [
 
 			'notempty' => [
@@ -67,7 +66,7 @@ class User extends AppModel {
 		return $valid;
 	}
 
-	function checkPasswords() {
+	public function checkPasswords() {
 		if (isset($this->data['User']['pw2'])) {
 			return $this->data['User']['pw'] == $this->data['User']['pw2'];
 		}

@@ -290,14 +290,14 @@ class UsersController extends AppController {
 			$this->Schedule->save($s);
 		}*/
 
-		$this->set('t', $t);
-		$this->set('u', $u);
-		$this->set('ou', $ou);
-		$this->set('ouc', $ouc);
-		$this->set('tr', $tr);
-		$this->set('ut', $ut);
-		$this->set('out', $out);
-		$this->set('ux', $ux);
+		//$this->set('t', $t);
+		//$this->set('u', $u);
+		//$this->set('ou', $ou);
+		//$this->set('ouc', $ouc);
+		//$this->set('tr', $tr);
+		//$this->set('ut', $ut);
+		//$this->set('out', $out);
+		//$this->set('ux', $ux);
 	}
 
 	/**
@@ -990,7 +990,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$activityCount = count($activity);
 		for ($i = 0; $i < $activityCount; $i++) {
 			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today) { array_push($todaysUsers, $activity[$i]['User']);
+			if ($a->format('Y-m-d') == $today) {
+				array_push($todaysUsers, $activity[$i]['User']);
 			}
 		}
 
@@ -1224,13 +1225,15 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0; $i < $usersCount; $i++) {
 			if ($stop <= 1000 && $anz < 1000) {
 				array_push($UxpSum, $users[$i]['User']['xpSum']);
-				if (strlen($users[$i]['User']['name']) > 20) { $users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
+				if (strlen($users[$i]['User']['name']) > 20) {
+					$users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
 				}
 				array_push($Uname, $this->checkPicture($users[$i]));
 				array_push($Ulevel, $users[$i]['User']['level']);
 				array_push($Uid, $users[$i]['User']['id']);
 				array_push($Utype, $users[$i]['User']['premium']);
-				if ($users[$i]['User']['solved'] == null) { $users[$i]['User']['solved'] = 0;
+				if ($users[$i]['User']['solved'] == null) {
+					$users[$i]['User']['solved'] = 0;
 				}
 				if (($i + $rand) % 9 == 0) {
 					array_push($Usolved, $this->saveSolvedNumber($users[$i]['User']['id']));
@@ -1306,7 +1309,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0; $i < $activityCount; $i++) {
 			$activity[$i]['User']['name'] = mb_convert_encoding($activity[$i]['User']['name'], 'UTF-8', 'ISO-8859-1');
 			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today) { array_push($todaysUsers, $activity[$i]['User']);
+			if ($a->format('Y-m-d') == $today) {
+				array_push($todaysUsers, $activity[$i]['User']);
 			}
 		}
 		file_put_contents('json/daily_highscore.json', json_encode($todaysUsers));
@@ -1354,26 +1358,46 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		$tsumegosCount = count($tsumegos);
 		for ($i = 0; $i < $tsumegosCount; $i++) {
-			if ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2500) { array_push($rxx['5d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2400) { array_push($rxx['4d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2300) { array_push($rxx['3d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2200) { array_push($rxx['2d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2100) { array_push($rxx['1d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2000) { array_push($rxx['1k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1900) { array_push($rxx['2k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1800) { array_push($rxx['3k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1700) { array_push($rxx['4k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1600) { array_push($rxx['5k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1500) { array_push($rxx['6k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1400) { array_push($rxx['7k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1300) { array_push($rxx['8k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1200) { array_push($rxx['9k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1100) { array_push($rxx['10k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1000) { array_push($rxx['11k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 900) { array_push($rxx['12k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 800) { array_push($rxx['13k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 700) { array_push($rxx['14k'], $tsumegos[$i]);
-			} else { array_push($rxx['15k'], $tsumegos[$i]);
+			if ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2500) {
+				array_push($rxx['5d'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2400) {
+				array_push($rxx['4d'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2300) {
+				array_push($rxx['3d'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2200) {
+				array_push($rxx['2d'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2100) {
+				array_push($rxx['1d'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2000) {
+				array_push($rxx['1k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1900) {
+				array_push($rxx['2k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1800) {
+				array_push($rxx['3k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1700) {
+				array_push($rxx['4k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1600) {
+				array_push($rxx['5k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1500) {
+				array_push($rxx['6k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1400) {
+				array_push($rxx['7k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1300) {
+				array_push($rxx['8k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1200) {
+				array_push($rxx['9k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1100) {
+				array_push($rxx['10k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1000) {
+				array_push($rxx['11k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 900) {
+				array_push($rxx['12k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 800) {
+				array_push($rxx['13k'], $tsumegos[$i]);
+			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 700) {
+				array_push($rxx['14k'], $tsumegos[$i]);
+			} else {
+				array_push($rxx['15k'], $tsumegos[$i]);
 			}
 		}
 		$rxxCount = [];
@@ -1604,8 +1628,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		if ($uid != null) {
 			$noIndex = true;
 		}
-		if (isset($this->params['url']['c'])) { $this->set('count', 1);
-		} else { $this->set('count', 0);
+		if (isset($this->params['url']['c'])) {
+			$this->set('count', 1);
+		} else {
+			$this->set('count', 0);
 		}
 		$this->set('noIndex', $noIndex);
 		$this->set('ur', $ur);
@@ -1670,52 +1696,71 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
 
-			if ($ur[$i]['TsumegoAttempt']['solved'] != 'S' && $ur[$i]['TsumegoAttempt']['solved'] != 'F') { $performance['pX']++;
+			if ($ur[$i]['TsumegoAttempt']['solved'] != 'S' && $ur[$i]['TsumegoAttempt']['solved'] != 'F') {
+				$performance['pX']++;
 			}
 
 			if ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 10) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p10S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p10F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p10S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p10F']++;
 				}
 				$performance['p10']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 20) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p20S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p20F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p20S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p20F']++;
 				}
 				$performance['p20']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 30) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p30S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p30F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p30S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p30F']++;
 				}
 				$performance['p30']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 40) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p40S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p40F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p40S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p40F']++;
 				}
 				$performance['p40']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 50) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p50S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p50F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p50S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p50F']++;
 				}
 				$performance['p50']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 60) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p60S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p60F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p60S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p60F']++;
 				}
 				$performance['p60']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 70) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p70S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p70F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p70S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p70F']++;
 				}
 				$performance['p70']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 80) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p80S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p80F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p80S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p80F']++;
 				}
 				$performance['p80']++;
 			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 90) {
-				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p90S']++;
-				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p90F']++;
+				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') {
+					$performance['p90S']++;
+				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') {
+					$performance['p90F']++;
 				}
 				$performance['p90']++;
 			}
@@ -1773,8 +1818,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		if ($uid != null) {
 			$noIndex = true;
 		}
-		if (isset($this->params['url']['c'])) { $this->set('count', 1);
-		} else { $this->set('count', 0);
+		if (isset($this->params['url']['c'])) {
+			$this->set('count', 1);
+		} else {
+			$this->set('count', 0);
 		}
 		$this->set('noIndex', $noIndex);
 		$this->set('ur', $ur);
@@ -1811,7 +1858,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$commentsCount = count($comments);
 		for ($i = 0; $i < $commentsCount; $i++) {
 			if (is_numeric($comments[$i]['Comment']['status'])) {
-				if ($comments[$i]['Comment']['status'] == 0) { array_push($c1, $comments[$i]);
+				if ($comments[$i]['Comment']['status'] == 0) {
+					array_push($c1, $comments[$i]);
 				}
 			}
 		}
@@ -1822,8 +1870,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			if ($s['Set']['public'] == 1) { array_push($c2, $comments[$i]);
-			} else { array_push($c3, $comments[$i]);
+			if ($s['Set']['public'] == 1) {
+				array_push($c2, $comments[$i]);
+			} else {
+				array_push($c3, $comments[$i]);
 			}
 		}
 		if ($p == 'public') {
@@ -1860,7 +1910,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$commentsCount = count($comments);
 		for ($i = 0; $i < $commentsCount; $i++) {
 			if (is_numeric($comments[$i]['Comment']['status'])) {
-				if ($comments[$i]['Comment']['status'] == 0) { array_push($comments2, $comments[$i]);
+				if ($comments[$i]['Comment']['status'] == 0) {
+					array_push($comments2, $comments[$i]);
 				}
 			}
 		}
@@ -1869,7 +1920,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$activityCount = count($activity);
 		for ($i = 0; $i < $activityCount; $i++) {
 			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today) { array_push($todaysUsers, $activity[$i]['User']);
+			if ($a->format('Y-m-d') == $today) {
+				array_push($todaysUsers, $activity[$i]['User']);
 			}
 		}
 
@@ -2622,13 +2674,17 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$aa[$i]['AdminActivity']['name'] = $au['User']['name'];
 			$aa[$i]['AdminActivity']['isAdmin'] = $au['User']['isAdmin'];
 			$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			if ($aa[$i]['AdminActivity']['answer'] == 96) { $aa[$i]['AdminActivity']['answer'] = 'Approved.';
+			if ($aa[$i]['AdminActivity']['answer'] == 96) {
+				$aa[$i]['AdminActivity']['answer'] = 'Approved.';
 			}
-			if ($aa[$i]['AdminActivity']['answer'] == 97) { $aa[$i]['AdminActivity']['answer'] = 'No answer necessary.';
+			if ($aa[$i]['AdminActivity']['answer'] == 97) {
+				$aa[$i]['AdminActivity']['answer'] = 'No answer necessary.';
 			}
-			if ($aa[$i]['AdminActivity']['answer'] == 98) { $aa[$i]['AdminActivity']['answer'] = 'Can\'t resolve this.';
+			if ($aa[$i]['AdminActivity']['answer'] == 98) {
+				$aa[$i]['AdminActivity']['answer'] = 'Can\'t resolve this.';
 			}
-			if ($aa[$i]['AdminActivity']['answer'] == 99) { $aa[$i]['AdminActivity']['answer'] = 'Deleted.';
+			if ($aa[$i]['AdminActivity']['answer'] == 99) {
+				$aa[$i]['AdminActivity']['answer'] = 'Deleted.';
 			}
 			if (!strpos($aa[$i]['AdminActivity']['answer'], '.sgf')) {
 				array_push($aa2, $aa[$i]);
@@ -2941,8 +2997,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$goalsColor = [];
 		$goalsCount = count($goals);
 		for ($i = 0; $i < $goalsCount; $i++) {
-			if ($goals[$i]) { $goalsColor[$i] = '#e9cc2c';
-			} else { $goalsColor[$i] = 'black';
+			if ($goals[$i]) {
+				$goalsColor[$i] = '#e9cc2c';
+			} else {
+				$goalsColor[$i] = 'black';
 			}
 		}
 		//echo '<pre>'; print_r($goals); echo '</pre>';
@@ -3108,7 +3166,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 						'mode' => $i,
 					],
 				]);
-				if ($mx) { $modes[$i][$j] = 1;
+				if ($mx) {
+					$modes[$i][$j] = 1;
 				}
 			}
 		}
@@ -3395,7 +3454,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			if ($this->params['url']['delete-uts'] == 'true' && $p >= 75) {
 				$utsCount = count($uts);
 				for ($j = 0; $j < $utsCount; $j++) {
-					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) { $this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
+					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
+						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
 					}
 				}
 				$deletedProblems = 2;
@@ -3444,7 +3504,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$achievementUpdate2 ?: [],
 		);
 
-		if (count($achievementUpdate) > 0) { $this->updateXP($this->loggedInUserID(), $achievementUpdate);
+		if (count($achievementUpdate) > 0) {
+			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
 		}
 		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
@@ -3694,8 +3755,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
-		if ($this->isLoggedIn()) { $ans = $this->Session->read('loggedInUser.User.name') . ' ' . $this->Session->read('loggedInUser')['User']['email'];
-		} else { $ans = 'no login';
+		if ($this->isLoggedIn()) {
+			$ans = $this->Session->read('loggedInUser.User.name') . ' ' . $this->Session->read('loggedInUser')['User']['email'];
+		} else {
+			$ans = 'no login';
 		}
 		$Email->send($ans);
 		if ($this->isLoggedIn()) {
@@ -3799,7 +3862,8 @@ Joschka Zimdars';
 		 $keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i++) {
 			$ordStr = ord(substr($string, $i, 1));
-			if ($j == $keyLen) { $j = 0; }
+			if ($j == $keyLen) {
+				$j = 0; }
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
@@ -3819,7 +3883,8 @@ Joschka Zimdars';
 		 $keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i += 2) {
 			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
-			if ($j == $keyLen) { $j = 0; }
+			if ($j == $keyLen) {
+				$j = 0; }
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= chr($ordStr - $ordKey);
@@ -3909,7 +3974,8 @@ Joschka Zimdars';
 				for ($l = 0; $l < 9; $l++) {
 					$xp = ($l + 1) * 10;
 					$distance[$l] = $xxx[$i][$k]['Tsumego']['userWin'] - $avg[$xp];
-					if ($distance[$l] < 0) { $distance[$l] *= -1;
+					if ($distance[$l] < 0) {
+						$distance[$l] *= -1;
 					}
 				}
 				$lowest = 100;
@@ -3949,7 +4015,8 @@ Joschka Zimdars';
 			for ($l = 0; $l < 9; $l++) {
 				$xp = ($l + 1) * 10;
 				$distance[$l] = $setPercent[$i] - $avg[$xp];
-				if ($distance[$l] < 0) { $distance[$l] *= -1;
+				if ($distance[$l] < 0) {
+					$distance[$l] *= -1;
 				}
 			}
 			$lowest = 100;
@@ -4035,8 +4102,10 @@ Joschka Zimdars';
 		$ratio['f'] = 0;
 		$urCount = count($ur);
 		for ($i = 0; $i < $urCount; $i++) {
-			if ($ur[$i]['TsumegoAttempt']['solved'] == 'S' || $ur[$i]['TsumegoAttempt']['solved'] == 1) { $ratio['s']++;
-			} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F' || $ur[$i]['TsumegoAttempt']['solved'] == 0) { $ratio['f']++;
+			if ($ur[$i]['TsumegoAttempt']['solved'] == 'S' || $ur[$i]['TsumegoAttempt']['solved'] == 1) {
+				$ratio['s']++;
+			} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F' || $ur[$i]['TsumegoAttempt']['solved'] == 0) {
+				$ratio['f']++;
 			}
 		}
 		$ratio['count'] = $ratio['s'] + $ratio['f'];
@@ -4166,7 +4235,8 @@ Joschka Zimdars';
 		$pos = 0;
 		for ($i = 10; $i <= 90; $i += 10) {
 			$distance[$i] = $t['Tsumego']['userWin'] - $avg[$i];
-			if ($distance[$i] < 0) { $distance[$i] *= -1;
+			if ($distance[$i] < 0) {
+				$distance[$i] *= -1;
 			}
 			if ($distance[$i] < $lowest) {
 				$pos = $i;
@@ -4227,8 +4297,10 @@ Joschka Zimdars';
 			$ratio['f'] = 0;
 			$urCount = count($ur);
 			for ($j = 0; $j < $urCount; $j++) {
-				if ($ur[$j]['TsumegoAttempt']['solved'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) { $ratio['s']++;
-				} elseif ($ur[$j]['TsumegoAttempt']['solved'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) { $ratio['f']++;
+				if ($ur[$j]['TsumegoAttempt']['solved'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) {
+					$ratio['s']++;
+				} elseif ($ur[$j]['TsumegoAttempt']['solved'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) {
+					$ratio['f']++;
 				}
 			}
 			$ts[$i]['Tsumego']['solved'] = $ratio['s'];
@@ -4244,23 +4316,40 @@ Joschka Zimdars';
 			$ts[$i]['Tsumego']['difficultyOld'] = $ts[$i]['Tsumego']['difficulty'];
 			$ts[$i]['Tsumego']['difficulty'] = $newXp;
 
-			if ($percent >= 1 && $percent <= 23) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2500;//$tRank='5d';
-			} elseif ($percent <= 26) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2400;//$tRank='4d';
-			} elseif ($percent <= 29) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2300;//$tRank='3d';
-			} elseif ($percent <= 32) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2200;//$tRank='2d';
-			} elseif ($percent <= 35) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2100;//$tRank='1d';
-			} elseif ($percent <= 38) { $ts[$i]['Tsumego']['elo_rating_mode'] = 2000;//$tRank='1k';
-			} elseif ($percent <= 42) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1900;//$tRank='2k';
-			} elseif ($percent <= 46) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1800;//$tRank='3k';
-			} elseif ($percent <= 50) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1700;//$tRank='4k';
-			} elseif ($percent <= 55) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1600;//$tRank='5k';
-			} elseif ($percent <= 60) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1500;//$tRank='6k';
-			} elseif ($percent <= 65) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1400;//$tRank='7k';
-			} elseif ($percent <= 70) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1300;//$tRank='8k';
-			} elseif ($percent <= 75) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1200;//$tRank='9k';
-			} elseif ($percent <= 80) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1100;//$tRank='10k';
-			} elseif ($percent <= 85) { $ts[$i]['Tsumego']['elo_rating_mode'] = 1000;//$tRank='11k';
-			} else { $ts[$i]['Tsumego']['elo_rating_mode'] = 900;
+			if ($percent >= 1 && $percent <= 23) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2500;//$tRank='5d';
+			} elseif ($percent <= 26) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2400;//$tRank='4d';
+			} elseif ($percent <= 29) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2300;//$tRank='3d';
+			} elseif ($percent <= 32) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2200;//$tRank='2d';
+			} elseif ($percent <= 35) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2100;//$tRank='1d';
+			} elseif ($percent <= 38) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2000;//$tRank='1k';
+			} elseif ($percent <= 42) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1900;//$tRank='2k';
+			} elseif ($percent <= 46) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1800;//$tRank='3k';
+			} elseif ($percent <= 50) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1700;//$tRank='4k';
+			} elseif ($percent <= 55) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1600;//$tRank='5k';
+			} elseif ($percent <= 60) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1500;//$tRank='6k';
+			} elseif ($percent <= 65) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1400;//$tRank='7k';
+			} elseif ($percent <= 70) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1300;//$tRank='8k';
+			} elseif ($percent <= 75) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1200;//$tRank='9k';
+			} elseif ($percent <= 80) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1100;//$tRank='10k';
+			} elseif ($percent <= 85) {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1000;//$tRank='11k';
+			} else {
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 900;
 			}
 
 			$this->Tsumego->save($ts[$i]);
@@ -4301,8 +4390,10 @@ Joschka Zimdars';
 			$ratio['f'] = 0;
 			$urCount = count($ur);
 			for ($j = 0; $j < $urCount; $j++) {
-				if ($ur[$j]['TsumegoAttempt']['status'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) { $ratio['s']++;
-				} elseif ($ur[$j]['TsumegoAttempt']['status'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) { $ratio['f']++;
+				if ($ur[$j]['TsumegoAttempt']['status'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) {
+					$ratio['s']++;
+				} elseif ($ur[$j]['TsumegoAttempt']['status'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) {
+					$ratio['f']++;
 				}
 			}
 			$ts[$i]['Tsumego']['solved'] = $ratio['s'];
@@ -4379,7 +4470,8 @@ Joschka Zimdars';
 			$pos = 0;
 			for ($j = 10; $j <= 90; $j += 10) {
 				$distance[$j] = $ts2[$i]['Tsumego']['userWin'] - $avg[$j];
-				if ($distance[$j] < 0) { $distance[$j] *= -1;
+				if ($distance[$j] < 0) {
+					$distance[$j] *= -1;
 				}
 				if ($distance[$j] < $lowest) {
 					$pos = $j;
@@ -4620,7 +4712,8 @@ Joschka Zimdars';
 			while ($c > 1) {
 				$this->TsumegoStatus->delete($utd[$j]['TsumegoStatus']['id']);
 				$b[$i]['count']++;
-				if ($c == 2) { $answer['Purge']['duplicates'] .= $b[$i]['count'] . '|';
+				if ($c == 2) {
+					$answer['Purge']['duplicates'] .= $b[$i]['count'] . '|';
 				}
 				$c--;
 				$j++;
@@ -4716,12 +4809,15 @@ Joschka Zimdars';
 		$start = $dbToken['Purge']['user_id'];
 		$u = $this->User->find('all', ['order' => 'id ASC']);
 		$uCount = count($u) + 50;
-		if (isset($u[$start]['User']['id'])) { $this->purgesingle($u[$start]['User']['id']);
+		if (isset($u[$start]['User']['id'])) {
+			$this->purgesingle($u[$start]['User']['id']);
 		}
 		$dbToken['Purge']['user_id']++;
 		$this->Purge->save($dbToken);
-		if ($start < $uCount) { $this->set('stop', 'f');
-		} else { $this->set('stop', 't');
+		if ($start < $uCount) {
+			$this->set('stop', 'f');
+		} else {
+			$this->set('stop', 't');
 		}
 		$this->set('x', $u[$start]['User']['id']);
 		$this->set('s', $start);
@@ -4746,12 +4842,15 @@ Joschka Zimdars';
 		$start = $dbToken['Purge']['user_id'];
 		$u = $this->User->find('all', ['order' => 'id ASC']);
 		$uCount = count($u) + 50;
-		if (isset($u[$start]['User']['id'])) { $this->countsingle($u[$start]['User']['id']);
+		if (isset($u[$start]['User']['id'])) {
+			$this->countsingle($u[$start]['User']['id']);
 		}
 		$dbToken['Purge']['user_id']++;
 		$this->Purge->save($dbToken);
-		if ($start < $uCount) { $this->set('stop', 'f');
-		} else { $this->set('stop', 't');
+		if ($start < $uCount) {
+			$this->set('stop', 'f');
+		} else {
+			$this->set('stop', 't');
 		}
 		$this->set('s', $start);
 		$this->set('u', $u[$start]);
@@ -4776,12 +4875,15 @@ Joschka Zimdars';
 		$start = $dbToken['Purge']['user_id'];
 		$u = $this->User->find('all', ['order' => 'id ASC']);
 		$uCount = count($u) + 50;
-		if (isset($u[$start]['User']['id'])) { $this->archivesingle($u[$start]['User']['id']);
+		if (isset($u[$start]['User']['id'])) {
+			$this->archivesingle($u[$start]['User']['id']);
 		}
 		$dbToken['Purge']['user_id']++;
 		$this->Purge->save($dbToken);
-		if ($start < $uCount) { $this->set('stop', 'f');
-		} else { $this->set('stop', 't');
+		if ($start < $uCount) {
+			$this->set('stop', 'f');
+		} else {
+			$this->set('stop', 't');
 		}
 		$this->set('s', $start);
 		$this->set('u', $u[$start]);
@@ -4886,8 +4988,10 @@ Joschka Zimdars';
 			$allU = $this->User->findById($all[$i]['Reputation']['user_id']);
 			$all[$i]['Reputation']['user'] = $allU['User']['name'];
 
-			if ($all[$i]['Reputation']['value'] == 1) { $all[$i]['Reputation']['value'] = 'like';
-			} else { $all[$i]['Reputation']['value'] = 'dislike';
+			if ($all[$i]['Reputation']['value'] == 1) {
+				$all[$i]['Reputation']['value'] = 'like';
+			} else {
+				$all[$i]['Reputation']['value'] = 'dislike';
 			}
 		}
 
@@ -4921,7 +5025,8 @@ Joschka Zimdars';
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
-			if ($t['Tsumego']['set_id'] == $id) { array_push($a, $r[$i]);
+			if ($t['Tsumego']['set_id'] == $id) {
+				array_push($a, $r[$i]);
 			}
 		}
 		$likes = 0;
@@ -4931,7 +5036,8 @@ Joschka Zimdars';
 		for ($i = 0; $i < $aCount; $i++) {
 			if ($a[$i]['Reputation']['value'] == 1) {
 				$likes++;
-			} else { $dislikes++;
+			} else {
+				$dislikes++;
 			}
 
 			$u = $this->User->findById($a[$i]['Reputation']['user_id']);
@@ -5080,7 +5186,8 @@ Joschka Zimdars';
 
 			$comments[$i]['Comment']['created2'] = $date->format('Y-m-d');
 
-			if ($comments[$i]['Comment']['created2'] > $monthBack && $comments[$i]['Comment']['user_id'] != 0) { array_push($comments2, $comments[$i]);
+			if ($comments[$i]['Comment']['created2'] > $monthBack && $comments[$i]['Comment']['user_id'] != 0) {
+				array_push($comments2, $comments[$i]);
 			}
 		}
 		$comments = $comments2;
@@ -5320,7 +5427,8 @@ Joschka Zimdars';
 				for ($l = 0; $l < 9; $l++) {
 					$xp = ($l + 1) * 10;
 					$distance[$l] = $xxx[$i][$k]['Tsumego']['userWin'] - $avg[$xp];
-					if ($distance[$l] < 0) { $distance[$l] *= -1;
+					if ($distance[$l] < 0) {
+						$distance[$l] *= -1;
 					}
 				}
 				$lowest = 100;
@@ -5357,7 +5465,8 @@ Joschka Zimdars';
 			for ($l = 0; $l < 9; $l++) {
 				$xp = ($l + 1) * 10;
 				$distance[$l] = $setPercent[$i] - $avg[$xp];
-				if ($distance[$l] < 0) { $distance[$l] *= -1;
+				if ($distance[$l] < 0) {
+					$distance[$l] *= -1;
 				}
 			}
 			$lowest = 100;
@@ -5382,17 +5491,17 @@ Joschka Zimdars';
 			array_multisort($newTs3['num'][$i], $newTs3['set'][$i], $newTs3['percent'][$i], $newTs3['id'][$i], $newTs3['xp'][$i], $newTs3['newxp'][$i], $newTs3['count'][$i], $newTs3['multiplier'][$i], $newTs3['multiplied'][$i], $newTs3['setid'][$i]);
 		}
 
-		$this->set('t', $t);
+		//$this->set('t', $t);
 		//$this->set('ts', $newTs2);
 		$this->set('newTs3', $newTs3);
 		$this->set('setPercent', $setPercent);
 		$this->set('setCount', $setCount);
 		$this->set('setDifficulty', $setDifficulty);
 		$this->set('xxx', $xxx);
-		$this->set('ur', $ur);
-		$this->set('ratio', $ratio);
-		$this->set('from', $from);
-		$this->set('to', $to);
+		//$this->set('ur', $ur);
+		//$this->set('ratio', $ratio);
+		//$this->set('from', $from);
+		//$this->set('to', $to);
 		$this->set('sets', $sets);
 		$this->set('params', $this->params['url']['t']);
 	}

@@ -1,6 +1,6 @@
 <?php
 class Comment extends AppModel {
 
-	var $name = 'Comment';
+	public $name = 'Comment';
 
 }

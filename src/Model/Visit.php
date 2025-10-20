@@ -1,6 +1,6 @@
 <?php
 class Visit extends AppModel {
 
-	var $name = 'Visit';
+	public $name = 'Visit';
 
 }

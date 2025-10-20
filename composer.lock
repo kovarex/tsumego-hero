@@ -681,12 +681,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig-rectified/psr2r-sniffer.git",
-                "reference": "13e4f36d0e795c791a3207652f714bfe133e65f8"
+                "reference": "be93173412f3314128972d34de47f647ff33c89e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/13e4f36d0e795c791a3207652f714bfe133e65f8",
-                "reference": "13e4f36d0e795c791a3207652f714bfe133e65f8",
+                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/be93173412f3314128972d34de47f647ff33c89e",
+                "reference": "be93173412f3314128972d34de47f647ff33c89e",
                 "shasum": ""
             },
             "require": {
@@ -731,7 +731,7 @@
                 "issues": "https://github.com/php-fig-rectified/psr2r-sniffer/issues",
                 "source": "https://github.com/php-fig-rectified/psr2r-sniffer/tree/master"
             },
-            "time": "2025-10-20T16:15:29+00:00"
+            "time": "2025-10-20T17:09:59+00:00"
         },
         {
             "name": "myclabs/deep-copy",

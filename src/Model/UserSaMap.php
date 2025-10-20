@@ -1,6 +1,6 @@
 <?php
 class UserSaMap extends AppModel {
 
-	var $name = 'UserSaMap';
+	public $name = 'UserSaMap';
 
 }

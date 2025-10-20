@@ -55,7 +55,7 @@
         </properties>
     </rule>
 
-	<rule ref="PhpCollective.Commenting.DocBlockVar.VarDocBlockMissin">
+	<rule ref="PhpCollective.Commenting.DocBlockVar.VarDocBlockMissing">
 		<severity>0</severity>
 	</rule>
 	<rule ref="PSR2R.Commenting.DocBlock.DocBlockMissing">

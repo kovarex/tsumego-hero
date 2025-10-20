@@ -1,6 +1,6 @@
 <?php
 class Rank extends AppModel {
 
-	var $name = 'Rank';
+	public $name = 'Rank';
 
 }

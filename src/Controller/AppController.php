@@ -454,6 +454,8 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $uid User ID
+	 *
 	 * @return void
 	 */
 	protected function deleteUnusedStatuses($uid) {
@@ -790,6 +792,9 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $uid User ID
+	 * @param string $action Action type
+	 *
 	 * @return void
 	 */
 	protected function handleContribution($uid, $action) {
@@ -854,6 +859,8 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param int|null $range Range parameter
+	 *
 	 * @return void
 	 */
 	protected function userRefresh($range = null) {
@@ -1772,6 +1779,9 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $solvedTsumegoRank Solved tsumego rank
+	 * @param string $tId Tsumego ID
+	 *
 	 * @return void
 	 */
 	protected function saveDanSolveCondition($solvedTsumegoRank, $tId) {
@@ -1801,6 +1811,8 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $trigger Trigger type
+	 *
 	 * @return void
 	 */
 	protected function updateSprintCondition($trigger) {

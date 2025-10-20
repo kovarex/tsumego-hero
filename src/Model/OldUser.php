@@ -1,6 +1,6 @@
 <?php
 class OldUser extends AppModel {
 
-	var $name = 'OldUser';
+	public $name = 'OldUser';
 
 }

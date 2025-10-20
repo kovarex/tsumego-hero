@@ -1,6 +1,6 @@
 <?php
 class UserTsumego extends AppModel {
 
-	var $name = 'UserTsumego';
+	public $name = 'UserTsumego';
 
 }
