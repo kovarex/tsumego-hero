@@ -343,7 +343,7 @@ class UsersController extends AppController {
 		$t = $this->Tsumego->findById($tid);
 		$rank = $this->getTsumegoRankx($t['Tsumego']['userWin']);
 		$tMax = $this->getTsumegoRankMax($t['Tsumego']['userWin']);
-		$tVal = $this->getTsumegoRankVal($t['Tsumego']['userWin'], $tMax);
+		$tVal = $this->getTsumegoRankVal($t['Tsumego']['userWin']);
 		if ($tMax != 0) {
 			$p = $tVal / $tMax;
 		} else {
@@ -377,7 +377,7 @@ class UsersController extends AppController {
 			$tMax = $this->getTsumegoRankMax($counter);
 			array_push($a['rank2'], $tMax);
 
-			$tVal = $this->getTsumegoRankVal($counter, $tMax);
+			$tVal = $this->getTsumegoRankVal($counter);
 			if ($tMax != 0) {
 				$p = $tVal / $tMax;
 			} else {
@@ -504,6 +504,7 @@ class UsersController extends AppController {
 				'rd <' => -500,
 			],
 		]);
+		$ta = [];
 		$tCount = count($t);
 		for ($i = 0; $i < $tCount; $i++) {
 			$ta = $this->TsumegoAttempt->find('all', [
@@ -596,6 +597,7 @@ class UsersController extends AppController {
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
+			/** @phpstan-ignore-next-line */
 			if ($x1max != $x1min) {
 				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
 				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
@@ -641,6 +643,7 @@ class UsersController extends AppController {
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
+			/** @phpstan-ignore-next-line */
 			if ($x1max != $x1min) {
 				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
 				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
@@ -689,6 +692,7 @@ class UsersController extends AppController {
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
+			/** @phpstan-ignore-next-line */
 			if ($x1max != $x1min) {
 				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
 				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
@@ -720,6 +724,7 @@ class UsersController extends AppController {
 
 		$x = 700;
 
+		/** @phpstan-ignore-next-line */
 		if ($x1max != $x1min) {
 			$result = $x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($x - $x1min);
 		} else {
@@ -965,6 +970,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('TsumegoRatingAttempt');
 		$ux = $this->User->find('all', ['limit' => 1000, 'order' => 'created DESC']);
 
+		$trs = [];
+		$activeToday = false;
 		$uxCount = count($ux);
 		for ($i = 0; $i < $uxCount; $i++) {
 			$trs = $this->TsumegoRatingAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $ux[$i]['User']['id']]]);
@@ -1752,7 +1759,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 
 		$noIndex = false;
-		if ($uid != null) {
+		if ($sid != null) {
 			$noIndex = true;
 		}
 		if (isset($this->params['url']['c'])) {
@@ -1762,7 +1769,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		$this->set('noIndex', $noIndex);
 		$this->set('ur', $ur);
-		$this->set('uid', $uid);
+		//$this->set('uid', $uid);
 	}
 
 	/**
@@ -2093,6 +2100,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$aMessage = null;
 		$errSet = '';
 		$errNotNull = '';
+		$tooltipSgfs = [];
+		$tooltipInfo = [];
+		$tooltipBoardSize = [];
 		//$sc1 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => 3537, 'set_id' => 71790)));
 		//$sc2 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => 25984, 'set_id' => 190)));
 		//$sc2['SetConnection']['tsumego_id'] = 25984;
@@ -3314,6 +3324,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$ta2 = [];
 		$ta2['date'] = [];
 		$ta2['elo'] = [];
+		$testCounter = 0;
 
 		$taCount = count($ta);
 		for ($i = 0; $i < $taCount; $i++) {
@@ -3866,6 +3877,11 @@ Joschka Zimdars';
 		$pl['PurgeList']['set_scores'] = date('Y-m-d H:i:s');
 		$this->PurgeList->save($pl);
 
+		$t = null;
+		$ur = [];
+		$ratio = 0;
+		$from = 0;
+		$to = 0;
 		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
 		$xxx = [];
 		$setsCount = count($sets);
@@ -4158,6 +4174,8 @@ Joschka Zimdars';
 	public function set_single_tsumego_score() {
 		$this->loadModel('Tsumego');
 
+		$ts2 = [];
+		$ts3 = [];
 		$avg = [];
 		$avg[10] = 87.382505764796;
 		$avg[20] = 73.129444444444;
@@ -4205,6 +4223,7 @@ Joschka Zimdars';
 		$pl['PurgeList']['tsumego_scores'] = date('Y-m-d H:i:s');
 		$this->PurgeList->save($pl);
 
+		$ur = [];
 		$from = $this->params['url']['t'];
 		$to = $this->params['url']['t'] + 10;
 
@@ -4322,6 +4341,7 @@ Joschka Zimdars';
 			],
 		]);
 
+		$ur = [];
 		$tsCount = count($ts);
 		for ($i = 0; $i < $tsCount; $i++) {
 			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'limit' => 1000, 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
@@ -4403,6 +4423,9 @@ Joschka Zimdars';
 			}
 		}
 
+		$distance = [];
+		$lowest = 100;
+		$pos = 0;
 		$ts2Count = count($ts2);
 		for ($i = 0; $i < $ts2Count; $i++) {
 			$distance = [];
@@ -4749,6 +4772,7 @@ Joschka Zimdars';
 		$pl['PurgeList']['count'] = date('Y-m-d H:i:s');
 		$this->PurgeList->save($pl);
 
+		$ux = [];
 		$dbToken = $this->Purge->findById(2);
 		$start = $dbToken['Purge']['user_id'];
 		$u = $this->User->find('all', ['order' => 'id ASC']);
@@ -4782,6 +4806,7 @@ Joschka Zimdars';
 		$pl['PurgeList']['archive'] = date('Y-m-d H:i:s');
 		$this->PurgeList->save($pl);
 
+		$ux = [];
 		$dbToken = $this->Purge->findById(1);
 		$start = $dbToken['Purge']['user_id'];
 		$u = $this->User->find('all', ['order' => 'id ASC']);

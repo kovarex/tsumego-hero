@@ -40,6 +40,12 @@ class TsumegosController extends AppController {
 		$noLoginStatus = [];
 		$u = [];
 		$preTsumego = null;
+		$ut = null;
+		$ts = [];
+		$anzahl2 = 0;
+		$tsTsumegosMap = [];
+		$tsFirst = null;
+		$nextMode = null;
 		$rejuvenation = false;
 		$doublexp = null;
 		$exploit = null;
@@ -1248,7 +1254,7 @@ class TsumegosController extends AppController {
 					}
 				}
 				if ($_COOKIE['type'] == 'g') {
-					$this->updateGoldenCondition(false);
+					$this->updateGoldenCondition();
 				}
 			} elseif ($mode == 2) {
 				$userEloBefore = $u['User']['elo_rating_mode'];
@@ -1269,7 +1275,7 @@ class TsumegosController extends AppController {
 					$preTsumego['Tsumego']['elo_rating_mode'] += $newUserEloWRating['tsumego'];
 					$preTsumego['Tsumego']['activity_value']++;
 					if ($_COOKIE['type'] == 'g') {
-						$this->updateGoldenCondition(false);
+						$this->updateGoldenCondition();
 					}
 
 					if ($preTsumego['Tsumego']['elo_rating_mode'] > 100) {
@@ -1453,7 +1459,7 @@ class TsumegosController extends AppController {
 									if ($_COOKIE['sprint'] == 1) {
 										$this->updateSprintCondition(true);
 									} else {
-										$this->updateSprintCondition(false);
+										$this->updateSprintCondition();
 									}
 									if ($_COOKIE['type'] == 'g') {
 										$this->updateGoldenCondition(true);
@@ -3876,6 +3882,7 @@ class TsumegosController extends AppController {
 	 * @return void
 	 */
 	private function displayArray($b, $trigger = false) {
+		$bCount = 0;
 		if ($trigger) {
 			$bCount = count($b);
 		}

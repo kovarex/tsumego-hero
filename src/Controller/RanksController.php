@@ -47,20 +47,17 @@ class RanksController extends AppController {
 		if ($rs == null) {
 			$setsCount = count($sets);
 			for ($i = 0;$i < $setsCount;$i++) {
-				$unlocked = true;
-				if ($unlocked) {
-					$this->RankSetting->create();
-					$rsNew = [];
-					$rsNew['RankSetting']['user_id'] = $this->loggedInUserID();
-					$rsNew['RankSetting']['set_id'] = $sets[$i]['Set']['id'];
-					$y = $sets[$i]['Set']['id'];
-					if ($y == 42 || $y == 109 || $y == 114 || $y == 143 || $y == 172 || $y == 29156 || $y == 33007 || $y == 74761) {
-						$rsNew['RankSetting']['status'] = 0;
-					} else {
-						$rsNew['RankSetting']['status'] = 1;
-					}
-					$this->RankSetting->save($rsNew);
+				$this->RankSetting->create();
+				$rsNew = [];
+				$rsNew['RankSetting']['user_id'] = $this->loggedInUserID();
+				$rsNew['RankSetting']['set_id'] = $sets[$i]['Set']['id'];
+				$y = $sets[$i]['Set']['id'];
+				if ($y == 42 || $y == 109 || $y == 114 || $y == 143 || $y == 172 || $y == 29156 || $y == 33007 || $y == 74761) {
+					$rsNew['RankSetting']['status'] = 0;
+				} else {
+					$rsNew['RankSetting']['status'] = 1;
 				}
+				$this->RankSetting->save($rsNew);
 			}
 			$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 			if (!$rs) {
@@ -98,34 +95,32 @@ class RanksController extends AppController {
 		}
 		$setsCount = count($sets);
 		for ($i = 0;$i < $setsCount;$i++) {
-			$unlocked = true;
-			if ($unlocked) {
-				array_push($settings['title'], $sets[$i]['Set']['title'] . ' ' . $sets[$i]['Set']['title2']);
-				array_push($settings['id'], $sets[$i]['Set']['id']);
 
-				$settingsSingle = $this->RankSetting->find('all', [
-					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
-						'set_id' => $sets[$i]['Set']['id'],
-					],
-				]);
-				if (!$settingsSingle) {
-					$settingsSingle = [];
-				}
+			array_push($settings['title'], $sets[$i]['Set']['title'] . ' ' . $sets[$i]['Set']['title2']);
+			array_push($settings['id'], $sets[$i]['Set']['id']);
 
-				if (count($settingsSingle) > 1) {
-					$settingsSingleCount = count($settingsSingle);
-					for ($j = 0;$j < $settingsSingleCount;$j++) {
-						if ($j != 0) {
-							$this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
-						}
+			$settingsSingle = $this->RankSetting->find('all', [
+				'conditions' => [
+					'user_id' => $this->loggedInUserID(),
+					'set_id' => $sets[$i]['Set']['id'],
+				],
+			]);
+			if (!$settingsSingle) {
+				$settingsSingle = [];
+			}
+
+			if (count($settingsSingle) > 1) {
+				$settingsSingleCount = count($settingsSingle);
+				for ($j = 0;$j < $settingsSingleCount;$j++) {
+					if ($j != 0) {
+						$this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
 					}
 				}
-				if (isset($settingsSingle[0]) && $settingsSingle[0]['RankSetting']['status'] == 1) {
-					array_push($settings['checked'], 'checked');
-				} else {
-					array_push($settings['checked'], '');
-				}
+			}
+			if (isset($settingsSingle[0]) && $settingsSingle[0]['RankSetting']['status'] == 1) {
+				array_push($settings['checked'], 'checked');
+			} else {
+				array_push($settings['checked'], '');
 			}
 		}
 

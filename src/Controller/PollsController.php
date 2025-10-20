@@ -50,10 +50,11 @@ class PollsController extends AppController {
 		if ($this->request['data'] != null) {
 			$this->Poll->create();
 			if ($this->Poll->save($this->request->data)) {
-				return $this->redirect(['action' => 'index']);
+				$this->Flash->success(__('Your puzzle has been saved.'));
 
-				 $this->Flash->success(__('Your puzzle has been saved.'));
+				return $this->redirect(['action' => 'index']);
 			}
+
 			$this->Flash->error(__('Unable to add your puzzle.'));
 		}
 	}

@@ -2471,11 +2471,13 @@ class SetsController extends AppController {
 
 		$sets = [];
 		$setsXCount = count($setsX);
+		/*
 		for ($i = 0; $i < $setsXCount; $i++) {
 			if (!isset($removeMap[$setsX[$i]['Set']['id']])) {
 				array_push($sets, $setsX[$i]);
 			}
 		}
+		*/
 		if ($this->isLoggedIn()) {
 			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 			if (!$uts) {

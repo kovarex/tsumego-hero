@@ -123,6 +123,7 @@ class TsumegoRecordsController extends AppController {
 		$this->LoadModel('UserRecord');
 		$this->LoadModel('User');
 
+		$trs = [];
 		if ($type == 0) {
 			$trs = $this->TsumegoRecord->find('all', ['limit' => 1000, 'order' => 'created DESC']);
 			if (!$trs) {

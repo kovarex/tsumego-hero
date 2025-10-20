@@ -6,6 +6,8 @@ parameters:
 	level: 5
 	paths:
 		- src/
+	bootstrapFiles:
+		- config/define.php
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
 		- '#Call to an undefined method .*\:\:findBy.+\(#'
