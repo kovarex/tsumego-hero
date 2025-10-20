@@ -413,8 +413,7 @@ class SetsController extends AppController{
 		$search1 = $searchPatameters[2] ?? [];
 		$search2 = $searchPatameters[3] ?? [];
 		$search3 = $searchPatameters[4] ?? [];
-		$this->loadModel('Sets');
-var_export($this->Sets);die();
+
 		$hasPremium = $this->hasPremium();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
 		if (!$swp) {

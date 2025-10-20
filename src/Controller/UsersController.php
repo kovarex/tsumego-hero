@@ -1955,8 +1955,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/'.$randomStri
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Admin Panel');
 		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('TsumegoAttempts');
-		$this->LoadModel('TsumegoRatingAttempts');
+		$this->LoadModel('TsumegoAttempt');
+		$this->LoadModel('TsumegoRatingAttempt');
 		$this->LoadModel('Comment');
 		$this->LoadModel('User');
 		$this->LoadModel('DayRecord');
@@ -2048,17 +2048,17 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/'.$randomStri
 			if(isset($this->params['url']['delete']) && isset($this->params['url']['hash'])){
 				$toDelete = $this->User->findById($this->params['url']['delete']/1111);
 				$del1 = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
-				$del2 = $this->TsumegoAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
-				$del3 = $this->TsumegoRatingAttempts->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
+				$del2 = $this->TsumegoAttempt->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
+				$del3 = $this->TsumegoRatingAttempt->find('all', array('conditions' => array('user_id' => $toDelete['User']['id'])));
 				if(md5($toDelete['User']['name']) == $this->params['url']['hash']){
 					foreach ($del1 as $item) {
 						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
 					}
 					foreach ($del2 as $item) {
-						$this->TsumegoAttempts->delete($item['TsumegoAttempts']['id']);
+						$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
 					}
 					foreach ($del3 as $item) {
-						$this->TsumegoRatingAttempts->delete($item['TsumegoRatingAttempts']['id']);
+						$this->TsumegoRatingAttempt->delete($item['TsumegoRatingAttempt']['id']);
 					}
 					$this->User->delete($toDelete['User']['id']);
 					echo '<pre>'; print_r('Deleted user '.$toDelete['User']['name']); echo '</pre>';
