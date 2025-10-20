@@ -569,6 +569,7 @@ class CommentsController extends AppController {
 	}
 
 	/**
+	 * @param int $id Comment ID
 	 * @return void
 	 */
 	public function remove($id) {

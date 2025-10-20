@@ -4,6 +4,7 @@ class SitesController extends AppController {
 	public $helpers = ['Html', 'Form'];
 
 	/**
+	 * @param mixed $var Variable parameter
 	 * @return void
 	 */
 	public function index($var = null) {
@@ -329,6 +330,7 @@ class SitesController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id
 	 * @return void
 	 */
 	public function view($id = null) {

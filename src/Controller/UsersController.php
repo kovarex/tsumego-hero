@@ -336,6 +336,7 @@ class UsersController extends AppController {
 	}
 
 	/**
+	 * @param string|int $tid Tsumego ID
 	 * @return void
 	 */
 	private function set_elo($tid) {
@@ -404,6 +405,8 @@ class UsersController extends AppController {
 	}
 
 	/**
+	 * @param string|int $from Source set ID
+	 * @param string|int $to Destination set ID
 	 * @return void
 	 */
 	private function transferCollection($from, $to) {
@@ -442,6 +445,7 @@ class UsersController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function tsumego_rating($id = null) {
@@ -475,6 +479,7 @@ class UsersController extends AppController {
 
 	//scan for glitches
 	/**
+	 * @param string|int|null $x Index value
 	 * @return void
 	 */
 	public function test1a($x = null) {
@@ -511,6 +516,7 @@ class UsersController extends AppController {
 
 	//fix glitched problems
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function test1b($id = null) {
@@ -551,6 +557,7 @@ class UsersController extends AppController {
 
 	//no author
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function test1c($id = null) {
@@ -951,6 +958,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|null $checksum Password reset checksum
 	 * @return void
 	 */
 	public function newpassword($checksum = null) {
@@ -1452,6 +1460,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $filter Filter type
 	 * @return void
 	 */
 	public function refresh_dates($filter = null) {//0:17 refresh rest (routine999)
@@ -1587,6 +1596,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $uid User ID
 	 * @return void
 	 */
 	public function userstats($uid = null) {
@@ -1639,6 +1649,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $uid User ID
 	 * @return void
 	 */
 	public function userstats2($uid = null) {
@@ -1778,6 +1789,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $sid Set ID
 	 * @return void
 	 */
 	public function userstats3($sid = null) {
@@ -1829,6 +1841,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $p Page parameter
 	 * @return void
 	 */
 	public function stats($p = null) {
@@ -2446,6 +2459,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $p Page parameter
 	 * @return void
 	 */
 	public function adminstats($p = null) {
@@ -3239,6 +3253,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $id
 	 * @return void
 	 */
 	public function view($id = null) {
@@ -3631,6 +3646,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $id Donation ID
 	 * @return void
 	 */
 	public function donate($id = null) {
@@ -3739,6 +3755,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	/**
+	 * @param string|int|null $id Success ID
 	 * @return void
 	 */
 	public function success($id = null) {
@@ -3780,6 +3797,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int|null $id Penalty ID
 	 * @return void
 	 */
 	public function penalty($id = null) {
@@ -3795,6 +3813,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int|null $id Set ID
 	 * @return void
 	 */
 	public function sets($id = null) {
@@ -4653,6 +4672,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int $id User ID
 	 * @return void
 	 */
 	public function purgesingle($id) {
@@ -4728,6 +4748,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int $id User ID
 	 * @return void
 	 */
 	private function countsingle($id) {
@@ -4758,6 +4779,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int $id User ID
 	 * @return void
 	 */
 	public function archivesingle($id) {
@@ -5007,6 +5029,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int|null $id Set ID
 	 * @return void
 	 */
 	public function i($id = null) {
@@ -5107,6 +5130,7 @@ Joschka Zimdars';
 	}
 
 	/**
+	 * @param string|int|null $id User ID
 	 * @return void
 	 */
 	public function fbsignin($id = null) {

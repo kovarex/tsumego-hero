@@ -233,6 +233,7 @@ class RanksController extends AppController {
 	}
 
 	/**
+	 * @param string|null $hash Hash value
 	 * @return void
 	 */
 	public function result($hash = null) {

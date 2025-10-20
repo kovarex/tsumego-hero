@@ -6,6 +6,7 @@ class SetsController extends AppController {
 	public $title = 'tsumego-hero.com';
 
 	/**
+	 * @param int|null $id Set ID
 	 * @return void
 	 */
 	public function duplicates($id = null) {
@@ -292,6 +293,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int|null $tid Tsumego ID
 	 * @return void
 	 */
 	public function create($tid = null) {
@@ -364,6 +366,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int $id Set ID
 	 * @return void
 	 */
 	public function remove($id) {
@@ -392,6 +395,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int $tid Tsumego ID
 	 * @return void
 	 */
 	public function add($tid) {
@@ -410,6 +414,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param string|null $date Date value
 	 * @return void
 	 */
 	private function newDate($date = null) {
@@ -1054,6 +1059,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int|null $id Set ID
 	 * @return void
 	 */
 	public function ui($id = null) {
@@ -1101,6 +1107,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id
 	 * @return void
 	 */
 	public function view($id = null) {
@@ -2293,6 +2300,7 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int|null $id Set ID
 	 * @return void
 	 */
 	public function download_archive2($id = null) {
@@ -2392,6 +2400,9 @@ class SetsController extends AppController {
 	}
 
 	/**
+	 * @param int $sid Set ID
+	 * @param float $avgTime Average time
+	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
 	public function updateAchievementConditions($sid, $avgTime, $accuracy) {

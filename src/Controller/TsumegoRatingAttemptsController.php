@@ -2,6 +2,7 @@
 class TsumegoRatingAttemptsController extends AppController {
 
 	/**
+	 * @param string|int|null $trid User ID for filtering
 	 * @return void
 	 */
 	public function index($trid = null) {
@@ -27,6 +28,7 @@ class TsumegoRatingAttemptsController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $type Type of JSON output
 	 * @return void
 	 */
 	public function json($type = null) {
@@ -118,6 +120,7 @@ class TsumegoRatingAttemptsController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $type Type of CSV export
 	 * @return void
 	 */
 	public function csv($type = null) {
@@ -243,6 +246,7 @@ class TsumegoRatingAttemptsController extends AppController {
 	}
 
 	/**
+	 * @param string|int $trid User ID
 	 * @return void
 	 */
 	public function user($trid) {

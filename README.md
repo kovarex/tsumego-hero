@@ -58,9 +58,12 @@ composer cs-check   # PHP CodeSniffer
 composer cs-fix     # Auto-fix CS issues
 composer stan       # PHPStan static analysis
 
+### also:
+composer cs-modified # Only run phpcs on modified files
+```
+
 ### Development Commands Quick Reference
 ```bash
-
 # Specific folder analysis
 composer stan -- src/Controller
 composer cs-check -- src/Utility

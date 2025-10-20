@@ -24,6 +24,7 @@
 		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
 		"test": "phpunit",
 		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
+		"cs-modified": "sh cs-modified.sh",
 		"cs-check": "phpcs --extensions=php",
 		"cs-fix": "phpcbf --extensions=php",
 		"stan": "phpstan analyse"

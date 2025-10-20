@@ -4,6 +4,7 @@ class TsumegosController extends AppController {
 	public $helpers = ['Html', 'Form'];
 
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function play($id = null) {
@@ -3361,6 +3362,9 @@ class TsumegosController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id Tsumego ID
+	 * @param string|int|null $sgf1 First SGF ID
+	 * @param string|int|null $sgf2 Second SGF ID
 	 * @return void
 	 */
 	public function open($id = null, $sgf1 = null, $sgf2 = null) {
@@ -3387,6 +3391,7 @@ class TsumegosController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function duplicatesearchx($id = null) {
@@ -3533,6 +3538,7 @@ class TsumegosController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
 	public function duplicatesearch($id = null) {
@@ -3858,6 +3864,8 @@ class TsumegosController extends AppController {
 		return $a;
 	}
 	/**
+	 * @param array $b Board array
+	 * @param bool $trigger Trigger flag
 	 * @return void
 	 */
 	private function displayArray($b, $trigger = false) {

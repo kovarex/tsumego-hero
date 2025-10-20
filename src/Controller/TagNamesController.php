@@ -32,6 +32,7 @@ class TagNamesController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id
 	 * @return void
 	 */
 	public function view($id = null) {
@@ -44,6 +45,7 @@ class TagNamesController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id User ID
 	 * @return void
 	 */
 	public function user($id) {
@@ -250,6 +252,7 @@ class TagNamesController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id Tag name ID
 	 * @return void
 	 */
 	public function edit($id = null) {
@@ -278,6 +281,7 @@ class TagNamesController extends AppController {
 	}
 
 	/**
+	 * @param string|int $id Tag name ID
 	 * @return void
 	 */
 	public function delete($id) {

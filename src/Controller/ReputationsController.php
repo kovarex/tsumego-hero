@@ -8,6 +8,7 @@ class ReputationsController extends AppController {
 	}
 
 	/**
+	 * @param string|int|null $id
 	 * @return void
 	 */
 	public function view($id = null) {

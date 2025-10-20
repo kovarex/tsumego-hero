@@ -1841,6 +1841,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $trigger Trigger value
 	 * @return void
 	 */
 	protected function updateGoldenCondition($trigger) {
@@ -1888,6 +1889,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param array $r Result data
 	 * @return void
 	 */
 	protected function updateGems($r) {
@@ -3478,6 +3480,8 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param int $id User ID
+	 * @param array $a Achievement data
 	 * @return void
 	 */
 	protected function updateXP($id, $a) {
@@ -3601,6 +3605,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param int $uid User ID
 	 * @return void
 	 */
 	protected function handleSearchSettings($uid) {
@@ -3717,6 +3722,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param array $u User data
 	 * @return void
 	 */
 	protected function signIn($u) {
@@ -3730,6 +3736,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param int $id User ID
 	 * @return void
 	 */
 	private function storeUts($id) {
