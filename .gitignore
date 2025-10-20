@@ -19,7 +19,6 @@
 *.mo
 .phpunit.result.cache
 /phpunit.xml
-composer.lock
 config/database.php
 config/email.php
 
