@@ -1,0 +1,9 @@
+# phpstan.neon
+includes:
+  - vendor/pieceofcake2/phpstan-cakephp2/extension.neon
+
+parameters:
+  level: 8
+  paths:
+    - src/
+

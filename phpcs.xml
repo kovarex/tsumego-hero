@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+    <config name="php_version" value="80000"/>
+
+    <arg value="ps"/>
+    <arg name="colors"/>
+    <arg name="parallel" value="100"/>
+
+    <file>./config</file>
+    <file>./src</file>
+    <file>./tests</file>
+
+    <rule ref="CakePHP">
+        <!-- ===== Namespace and Class Rules ===== -->
+        <!-- CakePHP2 uses App::uses() instead of namespaces -->
+        <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+        <!-- CakePHP2 uses App::uses() which PSR1 considers side effects -->
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+        <!-- Don't enforce filename matching class name (CakePHP2 has specific conventions) -->
+        <exclude name="Squiz.Classes.ClassFileName.NoMatch"/>
+
+        <!-- ===== Namespace/Import Rules ===== -->
+        <!-- Allow fully qualified class names without namespace (CakePHP2 uses global namespace) -->
+        <exclude name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedNameWithoutNamespace"/>
+        <!-- Don't require fully qualified class names in annotations (CakePHP2 has no namespaces) -->
+        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation.NonFullyQualifiedClassName"/>
+
+        <!-- ===== Type Hints Rules ===== -->
+        <!-- Exclude type hints rules as CakePHP2 doesn't support PHP 7+ type declarations -->
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.DeclareStrictTypesMissing"/>
+
+        <!-- ===== Variable Naming Rules ===== -->
+        <!-- Allow CakePHP2 style variable naming ($Model, $LinkModel, $_locale, etc.) -->
+        <exclude name="Zend.NamingConventions.ValidVariableName.StringVarNotCamelCaps"/>
+        <!-- Allow underscore in public properties (CakePHP2 convention) -->
+        <exclude name="Zend.NamingConventions.ValidVariableName.PublicHasUnderscore"/>
+        <!-- Allow double underscore public properties (CakePHP2 internal convention) -->
+        <exclude name="Zend.NamingConventions.ValidVariableName.PublicVarHasUnderscore"/>
+
+        <!-- ===== Control Structure Rules ===== -->
+        <!-- Allow assignment in conditions (common pattern in CakePHP2: while ($row = $result->fetch())) -->
+        <exclude name="SlevomatCodingStandard.ControlStructures.AssignmentInCondition.AssignmentInCondition"/>
+
+        <!-- ===== Formatting Rules ===== -->
+        <!-- Allow blank lines after function comments (CakePHP2 style) -->
+        <exclude name="CakePHP.Commenting.FunctionComment.SpacingAfter"/>
+        <!-- Exclude line length checks for CakePHP2 -->
+        <exclude name="Generic.Files.LineLength"/>
+    </rule>
+
+    <!-- Include additional whitespace checking rule -->
+    <rule ref="Generic.Formatting.MultipleStatementAlignment">
+        <properties>
+            <property name="maxPadding" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="CakePHP.Commenting.FunctionComment.Missing">
+        <exclude-pattern>tests/TestCase/*</exclude-pattern>
+    </rule>
+
+    <!-- Allow multiple classes in test files only (CakePHP2 test pattern) -->
+    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+        <exclude-pattern>tests/TestCase/*</exclude-pattern>
+    </rule>
+
+    <!-- Allow non-camelCase method names in Controllers (CakePHP2 action naming convention) -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>src/Controller/*</exclude-pattern>
+        <exclude-pattern>src/Console/Command/*</exclude-pattern>
+        <exclude-pattern>src/Model/Behavior/*</exclude-pattern>
+    </rule>
+
+    <!-- Require return type hints for Test/Case only -->
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingNativeTypeHint">
+        <include-pattern>tests/TestCase/*</include-pattern>
+    </rule>
+
+    <rule ref="Squiz.Classes.ValidClassName.NotPascalCase">
+        <exclude-pattern>config/database.php</exclude-pattern>
+    </rule>
+
+    <rule ref="Squiz.PHP.NonExecutableCode.Unreachable">
+        <exclude-pattern>config/acl.ini.php</exclude-pattern>
+    </rule>
+</ruleset>

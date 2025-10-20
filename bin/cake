@@ -1,6 +1,7 @@
+#!/usr/bin/env php
 <?php
 /**
- * The Front Controller for handling every request
+ * Command-line code generation utility to automate programmer chores.
  *
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -11,12 +12,10 @@
  *
  * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  * @link          https://cakephp.org CakePHP(tm) Project
- * @package       app.webroot
- * @since         CakePHP(tm) v 0.2.9
+ * @package       app.Console
+ * @since         CakePHP(tm) v 2.0
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
-
-use Composer\InstalledVersions;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -31,35 +30,20 @@ if (!is_file(dirname(__DIR__) . DS . 'config' . DS . 'define.php')) {
 }
 require_once dirname(__DIR__) . DS . 'config' . DS . 'define.php';
 
-// For the built-in server
-if (PHP_SAPI === 'cli-server') {
-    if ($_SERVER['PHP_SELF'] !== '/' . basename(__FILE__) && file_exists(WWW_ROOT . $_SERVER['PHP_SELF'])) {
-        return false;
-    }
-    $_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
-}
-$_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
-
 if (!is_dir(VENDORS)) {
     trigger_error(
         'Composer vendors directory not found at "' . VENDORS . '". ' .
         'Please run "composer install" in the project root directory to install dependencies.',
-        E_USER_ERROR,
+        E_USER_ERROR
     );
 }
 if (!is_file(VENDORS . 'autoload.php')) {
     trigger_error(
         'Composer autoload file not found at "' . VENDORS . 'autoload.php". ' .
         'Please run "composer install" to generate the autoload file.',
-        E_USER_ERROR,
+        E_USER_ERROR
     );
 }
 require_once VENDORS . 'autoload.php';
 
-require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'src' . DS . 'Cake' . DS . 'bootstrap.php';
-
-$dispatcher = new Dispatcher();
-$dispatcher->dispatch(
-    new CakeRequest(),
-    new CakeResponse(),
-);
+ShellDispatcher::run($argv);

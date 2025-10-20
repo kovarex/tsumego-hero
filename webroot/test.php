@@ -1,22 +1,25 @@
 <?php
 /**
- * The Front Controller for handling every request
+ * Web Access Frontend for TestSuite
  *
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * CakePHP(tm) Tests <https://book.cakephp.org/2.0/en/development/testing.html>
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  *
  * Licensed under The MIT License
  * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
+ * Redistributions of files must retain the above copyright notice
  *
  * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
+ * @link          https://book.cakephp.org/2.0/en/development/testing.html
  * @package       app.webroot
- * @since         CakePHP(tm) v 0.2.9
+ * @since         CakePHP(tm) v 1.2.0.4433
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
 use Composer\InstalledVersions;
+
+set_time_limit(0);
+ini_set('display_errors', 1);
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -30,15 +33,6 @@ if (!is_file(dirname(__DIR__) . DS . 'config' . DS . 'define.php')) {
     );
 }
 require_once dirname(__DIR__) . DS . 'config' . DS . 'define.php';
-
-// For the built-in server
-if (PHP_SAPI === 'cli-server') {
-    if ($_SERVER['PHP_SELF'] !== '/' . basename(__FILE__) && file_exists(WWW_ROOT . $_SERVER['PHP_SELF'])) {
-        return false;
-    }
-    $_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
-}
-$_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
 
 if (!is_dir(VENDORS)) {
     trigger_error(
@@ -58,8 +52,7 @@ require_once VENDORS . 'autoload.php';
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'src' . DS . 'Cake' . DS . 'bootstrap.php';
 
-$dispatcher = new Dispatcher();
-$dispatcher->dispatch(
-    new CakeRequest(),
-    new CakeResponse(),
-);
+if (Configure::read('debug') < 1) {
+    throw new NotFoundException(__d('cake_dev', 'Debug setting does not allow access to this URL.'));
+}
+CakeTestSuiteDispatcher::run();

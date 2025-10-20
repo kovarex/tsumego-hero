@@ -1,5 +1,28 @@
-*.sgf
-/tmp
+# User specific & automatically generated files #
+#################################################
+/tmp/cache/*
+!/tmp/cache/*/
+/tmp/cache/*/*
+!/tmp/cache/*/.gitkeep
+/tmp/sessions/*
+!/tmp/sessions/.gitkeep
+/tmp/tests/*
+!/tmp/tests/.gitkeep
+/logs/*
+!/logs/.gitkeep
+/app/Plugin/*
+!/app/Plugin/empty
+/app/Vendor/*
+!/app/Vendor/empty
+/vendor
+/plugins
+*.mo
+.phpunit.result.cache
+/phpunit.xml
+composer.lock
+config/database.php
+config/email.php
+
 /img/set_*
 /img/google/*.png
 webroot/mainPageAjax.txt
@@ -8,3 +31,22 @@ webroot/userLogger.html
 Config/database.php
 Config/core.local.php
 .idea/
+
+# IDE and editor specific files #
+#################################
+/nbproject
+.idea
+/.project
+/.buildpath
+/.settings/
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
