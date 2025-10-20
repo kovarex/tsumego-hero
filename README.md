@@ -7,6 +7,10 @@
 - PHP 8.2
 - MySQL 8.0
 
+Also:
+- For best PHP dev I recommend [PHPStorm IDE](https://www.jetbrains.com/phpstorm/).
+- For local env best to use [ddev](https://ddev.com/get-started/).
+
 ## Setup
 
 To locally develop and setup, use ddev from inside app/ folder:
