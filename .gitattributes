@@ -39,3 +39,6 @@
 *.PNG binary
 *.JPG binary
 *.GIF binary
+*.otf binary
+*.woff2 binary
+*.xcf binary
