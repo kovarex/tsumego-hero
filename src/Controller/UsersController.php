@@ -1156,7 +1156,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		echo $rand;
 		$usersCount = count($users);
 		for ($i = 0; $i < $usersCount; $i++) {
-			if ($stop <= 1000 && $anz < 1000) {
+			if ($anz < 1000) {
 				array_push($UxpSum, $users[$i]['User']['xpSum']);
 				if (strlen($users[$i]['User']['name']) > 20) {
 					$users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);

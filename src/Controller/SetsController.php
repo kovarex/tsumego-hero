@@ -1133,6 +1133,16 @@ class SetsController extends AppController {
 		$utsMap = [];
 		$setsWithPremium = [];
 		$setDifficulty = 1200;
+		$currentIds = [];
+		$allVcActive = false;
+		$allVcInactive = false;
+		$allArActive = false;
+		$allArInactive = false;
+		$allPassActive = false;
+		$allPassInactive = false;
+		$pdCounter = 0;
+		$acS = null;
+		$acA = null;
 		$hasPremium = $this->hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 		if (!$swp) {
@@ -2126,6 +2136,7 @@ class SetsController extends AppController {
 			}
 			$avgTime2 = $avgTime;
 			$achievementUpdate2 = [];
+			$achievementUpdate1 = [];
 			if ($set['Set']['solved'] >= 100) {
 				if ($set['Set']['id'] != 210) {
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
@@ -2455,6 +2466,8 @@ class SetsController extends AppController {
 
 		$secretPoints = 0;
 		$removeMap = [];
+		$globalSolvedCounter = 0;
+		$percent = 0;
 
 		$sets = [];
 		$setsXCount = count($setsX);
