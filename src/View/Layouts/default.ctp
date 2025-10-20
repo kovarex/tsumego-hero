@@ -514,7 +514,7 @@
 	<?php
 			}
 		}
-		if($this->isLoggedIn()){ ?>
+		if($this->Session->check('loggedInUser.User.id')){ ?>
 		var barPercent1 = <?php echo $user['User']['nextlvl'] == 0 ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
 		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
