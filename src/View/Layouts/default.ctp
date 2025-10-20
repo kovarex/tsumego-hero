@@ -437,7 +437,8 @@
 	<?php
 	if($this->Session->check('loggedInUser.User.id')){
 		$xpBonus = 0;
-		for($i=0;$i<count($achievementUpdate);$i++){
+    $count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
+		for($i=0;$i<$count;$i++){
 			echo '
 			<label>
 		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox'.$i.'" autocomplete="off" />
