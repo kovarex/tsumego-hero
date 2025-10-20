@@ -96,3 +96,7 @@ ALTER TABLE tsumegos MODIFY `virtual_children` boolean NOT NULL DEFAULT true COM
 
 DROP TABLE user_sa_maps; /* unknown has one weird entry */
 DROP TABLE user_texture_maps; /* unknown - empty */
+
+ALTER TABLE `day_records` MODIFY `user_id` INT UNSIGNED NOT NULL;
+DELETE day_records.* FROM day_records LEFT JOIN users on day_records.user_id=users.id WHERE users.id is null; /* 9 deleted out of many */
+ALTER TABLE `day_records` ADD CONSTRAINT `day_records_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* If user would be deleted, we delete his day record I guess */
