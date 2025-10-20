@@ -454,7 +454,7 @@ class AppController extends Controller {
 	}
 
 	/**
-	 * @param string $uid User ID
+	 * @param int $uid User ID
 	 *
 	 * @return void
 	 */
@@ -599,6 +599,7 @@ class AppController extends Controller {
 	}
 
 	protected function getNewElo($diff, $eloBigger, $activityValue, $tid, $outcome) {
+		$return = [];
 		$t = $this->Tsumego->findById($tid);
 		if ($t['Tsumego']['activity_value'] > 300) {
 			$t['Tsumego']['activity_value'] = 300;
@@ -701,6 +702,7 @@ class AppController extends Controller {
 	}
 
 	protected function getActivityValue($uid, $tid) {
+		$return = [];
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoAttempt');
 		$tsumegoNum = 90;
@@ -792,7 +794,7 @@ class AppController extends Controller {
 	}
 
 	/**
-	 * @param string $uid User ID
+	 * @param int $uid User ID
 	 * @param string $action Action type
 	 *
 	 * @return void
@@ -2051,6 +2053,7 @@ class AppController extends Controller {
 			if (!$ac) {
 				$ac = [];
 			}
+			$ac1 = [];
 			$acCount = count($ac);
 			for ($i = 0;$i < $acCount;$i++) {
 				if ($ac[$i]['AchievementCondition']['category'] == 'danSolve1d') {

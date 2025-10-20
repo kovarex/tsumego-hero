@@ -1968,6 +1968,9 @@ class TsumegosController extends AppController {
 				$setConditions['set_id'] = $search1ids;
 			}
 			$lastSet = $this->getTsumegoElo($this->Session->read('lastSet'));
+			$ftFrom = [];
+			$ftTo = [];
+			$notPremiumArray = [];
 			$ftFrom['elo_rating_mode >='] = $lastSet;
 			$ftTo['elo_rating_mode <'] = $lastSet + 100;
 			if ($this->Session->read('lastSet') == '15k') {

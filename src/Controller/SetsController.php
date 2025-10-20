@@ -751,6 +751,8 @@ class SetsController extends AppController {
 			}
 			$ranksArrayCount = count($ranksArray);
 			for ($i = 0; $i < $ranksArrayCount; $i++) {
+				$ftFrom = [];
+				$ftTo = [];
 				$ftFrom['elo_rating_mode >='] = $this->getTsumegoElo($ranksArray[$i]['rank']);
 				$ftTo['elo_rating_mode <'] = $ftFrom['elo_rating_mode >='] + 100;
 				if ($ranksArray[$i]['rank'] == '15k') {
@@ -1274,6 +1276,8 @@ class SetsController extends AppController {
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
 				$elo = $this->getTsumegoElo($id);
+				$ftFrom = [];
+				$ftTo = [];
 				$ftFrom['elo_rating_mode >='] = $elo;
 				$ftTo['elo_rating_mode <'] = $elo + 100;
 				if ($id == '15k') {

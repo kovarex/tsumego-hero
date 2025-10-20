@@ -3391,6 +3391,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$taBefore = '';
 		$graph = [];
 		$highestElo = 0;
+		$ta2 = [];
 		$ta2['date'] = [];
 		$ta2['elo'] = [];
 
@@ -5235,6 +5236,7 @@ Joschka Zimdars';
 		}
 		array_multisort($uValue, $uName);
 
+		$u2 = [];
 		$u2['name'] = [];
 		$u2['value'] = [];
 		$uNameCount = count($uName);

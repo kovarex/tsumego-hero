@@ -5,12 +5,14 @@ App::uses('AppModel', 'Model');
 /**
  * Test model for EmptyIntegerBehavior
  */
-class EmptyIntegerTestModel extends AppModel {
+class EmptyIntegerBehaviorTest extends AppModel {
 
 	public $useTable = false;
 
 	/**
 	 * Mock schema for testing
+	 *
+	 * @param string|false $field
 	 *
 	 * @return array
 	 */
@@ -27,7 +29,7 @@ class EmptyIntegerTestModel extends AppModel {
 			return $schema;
 		}
 
-		return $schema[$field] ?? null;
+		return $schema[$field] ?? [];
 	}
 
 }

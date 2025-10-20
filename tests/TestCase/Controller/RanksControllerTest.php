@@ -15,6 +15,7 @@ class RanksControllerTest extends ControllerTestCase {
 	}
 
 	/**
+	 * @param string|null $hash
 	 * @return void
 	 */
 	public function result($hash = null): void {
