@@ -34,7 +34,12 @@
  * In production mode, flash messages redirect after a time interval.
  * In development mode, you need to click the flash message to continue.
  */
-Configure::write('debug', 2);
+	Configure::write('debug', 2);
+	Configure::write('Cache.disable', true);
+
+	if (str_contains($_SERVER['SERVER_NAME'], '.ddev.site')) {
+		Configure::write('debug', 2);
+	}
 
 /**
  * Configure the Error handler used to handle errors for your application. By default
@@ -51,11 +56,11 @@ Configure::write('debug', 2);
  *
  * @see ErrorHandler for more information on error handling and configuration.
  */
-Configure::write('Error', [
-    'handler' => 'ErrorHandler::handleError',
-    'level' => E_ALL & ~E_DEPRECATED,
-    'trace' => true,
-]);
+	Configure::write('Error', array(
+		'handler' => 'ErrorHandler::handleError',
+		'level' => E_ALL & ~E_DEPRECATED & ~E_WARNING & ~E_NOTICE & ~E_STRICT & ~E_USER_DEPRECATED & ~E_USER_WARNING & ~E_USER_NOTICE,
+		'trace' => true
+	));
 
 /**
  * Configure the Exception handler used for uncaught exceptions. By default,
@@ -175,7 +180,7 @@ Configure::write('App.encoding', 'UTF-8');
  * You can either set it controller-wide by setting public $cacheAction = true,
  * or in each action using $this->cacheAction = true.
  */
-//Configure::write('Cache.check', true);
+	//Configure::write('Cache.check', true);
 
 /**
  * Enable cache view prefixes.
@@ -185,7 +190,7 @@ Configure::write('App.encoding', 'UTF-8');
  * for instance. Each version can then have its own view cache namespace.
  * Note: The final cache file name will then be `prefix_cachefilename`.
  */
-//Configure::write('Cache.viewPrefix', 'prefix');
+	//Configure::write('Cache.viewPrefix', 'prefix');
 
 /**
  * Session configuration.
@@ -198,7 +203,6 @@ Configure::write('App.encoding', 'UTF-8');
  *
  * - `Session.cookie` - The name of the cookie to use. Defaults to 'CAKEPHP'
  * - `Session.timeout` - The number of minutes you want sessions to live for. This timeout is handled by CakePHP
- * - `Session.useForwardsCompatibleTimeout` - Whether or not to make timeout 3.x compatible.
  * - `Session.cookieTimeout` - The number of minutes you want session cookies to live for.
  * - `Session.checkAgent` - Do you want the user agent to be checked when starting sessions? You might want to set the
  *    value to false, when dealing with older versions of IE, Chrome Frame or certain web-browsing devices and AJAX
@@ -226,19 +230,32 @@ Configure::write('App.encoding', 'UTF-8');
  * To use database sessions, run the app/Config/Schema/sessions.php schema using
  * the cake shell command: cake schema create Sessions
  */
-Configure::write('Session', [
-    'defaults' => 'php',
-]);
+	Configure::write('Session', array(
+		'defaults' => 'php',
+		'cookie' => 'myApp',
+		'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
+		'cookieTimeout' => 14400, // Match session timeout
+		'autoRegenerate' => false, // DISABLED: Prevents race conditions and session loss
+		'checkAgent' => false, // Don't check user agent (helps with proxies/mobile)
+		'ini' => array(
+			'session.use_trans_sid' => 0,
+			'session.cookie_samesite' => 'Lax',
+			'session.cookie_httponly' => true,
+			'session.cookie_path' => '/',
+			'session.gc_maxlifetime' => 864000, // 240 hours in seconds
+			'session.cookie_lifetime' => 864000, // 240 hours in seconds
+		)
+	));
 
 /**
  * A random string used in security hashing methods.
  */
-Configure::write('Security.salt', '1YhG93b0qyJfIxfs2guVoUubWwvniR2G0FgaC9mi');
+	Configure::write('Security.salt', 'DYhG93b0qyJfliouholkuzglR2G0FgaC9mi');
 
 /**
  * A random numeric string (digits only) used to encrypt/decrypt strings.
  */
-Configure::write('Security.cipherSeed', '16859309657453542496749683645');
+	Configure::write('Security.cipherSeed', '76859309657453555596749683645');
 
 /**
  * Apply timestamps with the last modified time to static assets (js, css, images).
@@ -248,7 +265,7 @@ Configure::write('Security.cipherSeed', '16859309657453542496749683645');
  * Set to `true` to apply timestamps when debug > 0. Set to 'force' to always enable
  * timestamping regardless of debug value.
  */
-//Configure::write('Asset.timestamp', true);
+	//Configure::write('Asset.timestamp', true);
 
 /**
  * Compress CSS output by removing comments, whitespace, repeating tags, etc.
@@ -257,7 +274,7 @@ Configure::write('Security.cipherSeed', '16859309657453542496749683645');
  *
  * To use, prefix the CSS link URL with '/ccss/' instead of '/css/' or use HtmlHelper::css().
  */
-//Configure::write('Asset.filter.css', 'css.php');
+	//Configure::write('Asset.filter.css', 'css.php');
 
 /**
  * Plug in your own custom JavaScript compressor by dropping a script in your webroot to handle the
@@ -265,7 +282,7 @@ Configure::write('Security.cipherSeed', '16859309657453542496749683645');
  *
  * To use, prefix your JavaScript link URLs with '/cjs/' instead of '/js/' or use JsHelper::link().
  */
-//Configure::write('Asset.filter.js', 'custom_javascript_output_filter.php');
+	//Configure::write('Asset.filter.js', 'custom_javascript_output_filter.php');
 
 /**
  * The class name and database used in CakePHP's
@@ -286,7 +303,7 @@ Configure::write('Acl.database', 'default');
  * then the value of `Config.timezone` will be used. This feature allows you to set users' timezone just
  * once instead of passing it each time in function calls.
  */
-//Configure::write('Config.timezone', 'Europe/Paris');
+	//Configure::write('Config.timezone', 'Europe/Paris');
 
 /**
  * Cache Engine Configuration
@@ -294,61 +311,61 @@ Configure::write('Acl.database', 'default');
  *
  * File storage engine.
  *
- *   Cache::config('default', array(
- *      'engine' => 'File', //[required]
- *      'duration' => 3600, //[optional]
- *      'probability' => 100, //[optional]
- *      'path' => CACHE, //[optional] use system tmp directory - remember to use absolute path
- *      'prefix' => 'cake_', //[optional]  prefix every cache file with this string
- *      'lock' => false, //[optional]  use file locking
- *      'serialize' => true, //[optional]
- *      'mask' => 0664, //[optional]
- *  ));
+ * 	 Cache::config('default', array(
+ *		'engine' => 'File', //[required]
+ *		'duration' => 3600, //[optional]
+ *		'probability' => 100, //[optional]
+ * 		'path' => CACHE, //[optional] use system tmp directory - remember to use absolute path
+ * 		'prefix' => 'cake_', //[optional]  prefix every cache file with this string
+ * 		'lock' => false, //[optional]  use file locking
+ * 		'serialize' => true, //[optional]
+ * 		'mask' => 0664, //[optional]
+ *	));
  *
  * APC (http://pecl.php.net/package/APC)
  *
- *   Cache::config('default', array(
- *      'engine' => 'Apc', //[required]
- *      'duration' => 3600, //[optional]
- *      'probability' => 100, //[optional]
- *      'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
- *  ));
+ * 	 Cache::config('default', array(
+ *		'engine' => 'Apc', //[required]
+ *		'duration' => 3600, //[optional]
+ *		'probability' => 100, //[optional]
+ * 		'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
+ *	));
  *
  * Xcache (http://xcache.lighttpd.net/)
  *
- *   Cache::config('default', array(
- *      'engine' => 'Xcache', //[required]
- *      'duration' => 3600, //[optional]
- *      'probability' => 100, //[optional]
- *      'prefix' => Inflector::slug(APP_DIR) . '_', //[optional] prefix every cache file with this string
- *      'user' => 'user', //user from xcache.admin.user settings
- *      'password' => 'password', //plaintext password (xcache.admin.pass)
- *  ));
+ * 	 Cache::config('default', array(
+ *		'engine' => 'Xcache', //[required]
+ *		'duration' => 3600, //[optional]
+ *		'probability' => 100, //[optional]
+ *		'prefix' => Inflector::slug(APP_DIR) . '_', //[optional] prefix every cache file with this string
+ *		'user' => 'user', //user from xcache.admin.user settings
+ *		'password' => 'password', //plaintext password (xcache.admin.pass)
+ *	));
  *
  * Memcached (http://www.danga.com/memcached/)
  *
  * Uses the memcached extension. See http://php.net/memcached
  *
- *   Cache::config('default', array(
- *      'engine' => 'Memcached', //[required]
- *      'duration' => 3600, //[optional]
- *      'probability' => 100, //[optional]
- *      'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
- *      'servers' => array(
- *          '127.0.0.1:11211' // localhost, default port 11211
- *      ), //[optional]
- *      'persistent' => 'my_connection', // [optional] The name of the persistent connection.
- *      'compress' => false, // [optional] compress data in Memcached (slower, but uses less memory)
- *  ));
+ * 	 Cache::config('default', array(
+ *		'engine' => 'Memcached', //[required]
+ *		'duration' => 3600, //[optional]
+ *		'probability' => 100, //[optional]
+ * 		'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
+ * 		'servers' => array(
+ * 			'127.0.0.1:11211' // localhost, default port 11211
+ * 		), //[optional]
+ * 		'persistent' => 'my_connection', // [optional] The name of the persistent connection.
+ * 		'compress' => false, // [optional] compress data in Memcached (slower, but uses less memory)
+ *	));
  *
  *  Wincache (http://php.net/wincache)
  *
- *   Cache::config('default', array(
- *      'engine' => 'Wincache', //[required]
- *      'duration' => 3600, //[optional]
- *      'probability' => 100, //[optional]
- *      'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
- *  ));
+ * 	 Cache::config('default', array(
+ *		'engine' => 'Wincache', //[required]
+ *		'duration' => 3600, //[optional]
+ *		'probability' => 100, //[optional]
+ *		'prefix' => Inflector::slug(APP_DIR) . '_', //[optional]  prefix every cache file with this string
+ *	));
  */
 
 /**
@@ -366,7 +383,7 @@ $engine = 'File';
 // In development mode, caches should expire quickly.
 $duration = '+999 days';
 if (Configure::read('debug') > 0) {
-    $duration = '+10 seconds';
+	$duration = '+10 seconds';
 }
 
 // Prefix each application on the same server with a different string, to avoid Memcache and APC conflicts.
@@ -376,22 +393,31 @@ $prefix = 'myapp_';
  * Configure the cache used for general framework caching. Path information,
  * object listings, and translation cache files are stored with this configuration.
  */
-Cache::config('_cake_core_', [
-'engine' => $engine,
-'prefix' => $prefix . 'cake_core_',
-'path' => CACHE . 'persistent' . DS,
-'serialize' => ($engine === 'File'),
-'duration' => $duration,
-]);
+Cache::config('_cake_core_', array(
+	'engine' => $engine,
+	'prefix' => $prefix . 'cake_core_',
+	'path' => CACHE . 'persistent' . DS,
+	'serialize' => ($engine === 'File'),
+	'duration' => $duration
+));
 
 /**
  * Configure the cache for model and datasource caches. This cache configuration
  * is used to store schema descriptions, and table listings in connections.
  */
-Cache::config('_cake_model_', [
-'engine' => $engine,
-'prefix' => $prefix . 'cake_model_',
-'path' => CACHE . 'models' . DS,
-'serialize' => ($engine === 'File'),
-'duration' => $duration,
-]);
+Cache::config('_cake_model_', array(
+	'engine' => $engine,
+	'prefix' => $prefix . 'cake_model_',
+	'path' => CACHE . 'models' . DS,
+	'serialize' => ($engine === 'File'),
+	'duration' => $duration
+));
+
+/**
+ * Load local configuration overrides
+ * Create Config/core.local.php to override settings for local development
+ * Add this file to .gitignore to keep local settings out of version control
+ */
+if (file_exists(__DIR__ . '/core.local.php')) {
+	require __DIR__ . '/core.local.php';
+}

@@ -27,6 +27,14 @@
  *
  * @package       app.Model
  */
-class AppModel extends Model
-{
+class AppModel extends Model {
+
+	/**
+	 * Behaviors to attach to all models
+	 *
+	 * @var array
+	 */
+	public $actsAs = array(
+		'EmptyInteger',
+	);
 }

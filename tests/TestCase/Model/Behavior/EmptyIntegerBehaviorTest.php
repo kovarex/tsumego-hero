@@ -40,7 +40,7 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->Model = new EmptyIntegerTestModel();
 	}
@@ -50,7 +50,7 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	 *
 	 * @return void
 	 */
-	public function tearDown() {
+	public function tearDown(): void {
 		unset($this->Model);
 		parent::tearDown();
 	}
