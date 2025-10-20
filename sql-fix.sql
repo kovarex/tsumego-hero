@@ -69,3 +69,14 @@ ALTER TABLE `set_connections` MODIFY `tsumego_id` INT UNSIGNED NOT NULL;
 /* Invalid set_connections as the tsumego was removed (1 entry in current import) */
 DELETE set_connections.* from set_connections LEFT JOIN tsumegos on set_connections.tsumego_id=tsumegos.id WHERE tsumegos.id is null;
 ALTER TABLE `set_connections` ADD CONSTRAINT `set_connections_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+ALTER TABLE `sgfs` MODIFY `id` INT UNSIGNED;
+UPDATE `sgfs` SET user_id = null where user_id=33; /* the mysterious noUser :) */
+ALTER TABLE `sgfs` MODIFY `user_id` INT UNSIGNED;
+ALTER TABLE `sgfs` ADD CONSTRAINT `sgfs_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT; /* We dont delete sgfs because of potential user removal. */
+
+DELETE FROM sgfs WHERE sgfs.tsumego_id is null; /* nonsensual record, sgf without a tsumego has no meaning, 1 record in database */
+ALTER TABLE `sgfs` MODIFY `tsumego_id` INT UNSIGNED NOT NULL;
+DELETE sgfs.* FROM sgfs LEFT JOIN tsumegos on sgfs.tsumego_id=tsumegos.id WHERE tsumegos.id is null; /* 3800 entries in the database 22k, nonsensual to have these */
+ALTER TABLE `sgfs` ADD CONSTRAINT `sgfs_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* When tsumego is deleted it is ok to remove all of its sgf versions*/
