@@ -89,3 +89,10 @@ ALTER TABLE tsumegos DROP COLUMN `file`;
  */
 
 ALTER TABLE tsumegos DROP COLUMN `set_id`;
+ALTER TABLE tsumegos MODIFY public boolean;
+
+ALTER TABLE tsumegos MODIFY `alternative_response` boolean NOT NULL DEFAULT true COMMENT 'If the user has to counter all possible countrplays. Should be eventually removed and used for all tsumegos, more than 90% have it on.';
+ALTER TABLE tsumegos MODIFY `virtual_children` boolean NOT NULL DEFAULT true COMMENT 'Specifies if the variations in the sgf trees are merged, is used on all but few tsumegos, probably because of past or current bugs, should be checked and this field removed once not needed.';
+
+DROP TABLE user_sa_maps; /* unknown has one weird entry */
+DROP TABLE user_texture_maps; /* unknown - empty */
