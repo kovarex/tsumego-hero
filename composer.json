@@ -9,7 +9,7 @@
         "pieceofcake2/cakephp": "^2.12"
     },
     "require-dev": {
-        "fig-r/psr2r-sniffer": "^2.4.0",
+        "fig-r/psr2r-sniffer": "dev-master as 2.4.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^9.6",
         "pieceofcake2/bake": "^1.0",

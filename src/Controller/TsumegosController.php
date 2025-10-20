@@ -1265,11 +1265,11 @@ class TsumegosController extends AppController {
 				if (!$hasPremium) {
 					if ($utPre['TsumegoStatus']['status'] == 'W') {
 						$utPre['TsumegoStatus']['status'] = 'X';//W => X
-					} else if ($utPre['TsumegoStatus']['status'] == 'V') {
+					} elseif ($utPre['TsumegoStatus']['status'] == 'V') {
 						$utPre['TsumegoStatus']['status'] = 'F';// V => F
-					} else if ($utPre['TsumegoStatus']['status'] == 'G') {
+					} elseif ($utPre['TsumegoStatus']['status'] == 'G') {
 						$utPre['TsumegoStatus']['status'] = 'F';// G => F
-					} else if ($utPre['TsumegoStatus']['status'] == 'S') {
+					} elseif ($utPre['TsumegoStatus']['status'] == 'S') {
 						$utPre['TsumegoStatus']['status'] = 'S';//S => S
 					}
 				}
@@ -2820,9 +2820,9 @@ class TsumegosController extends AppController {
 		$hash = $this->encrypt($folderString);
 
 		if ($pdCounter == 1) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .5);
-		} else if ($pdCounter == 2) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .2);
-		} else if ($pdCounter == 3) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .1);
-		} else if ($pdCounter > 3) { $t['Tsumego']['difficulty'] = 1;
+		} elseif ($pdCounter == 2) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .2);
+		} elseif ($pdCounter == 3) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .1);
+		} elseif ($pdCounter > 3) { $t['Tsumego']['difficulty'] = 1;
 		}
 
 		if ($pdCounter > 0) { $sandboxComment2 = true;
@@ -3020,7 +3020,7 @@ class TsumegosController extends AppController {
 		if ($this->isLoggedIn()) {
 			if ($this->Session->read('loggedInUser.User.level') >= 40) {
 				$isAllowedToContribute = true;
-			} else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 1500) {
+			} elseif ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 1500) {
 				$isAllowedToContribute = true;
 			}
 
@@ -3392,11 +3392,11 @@ class TsumegosController extends AppController {
 							array_push($similarArrBoardSize, $sgfArr[3]);
 							array_push($similarDiff, $compare[0]);
 							if ($compare[1] == 0) { array_push($similarDiffType, '');
-							} else if ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
-							} else if ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
-							} else if ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
-							} else if ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
-							} else if ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
+							} elseif ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
+							} elseif ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
+							} elseif ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
+							} elseif ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
+							} elseif ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
 							}
 							array_push($similarOrder, $compare[2]);
 							$set = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
@@ -3501,11 +3501,11 @@ class TsumegosController extends AppController {
 				array_push($similarArrBoardSize, $sgfArr[3]);
 				array_push($similarDiff, $compare[0]);
 				if ($compare[1] == 0) { array_push($similarDiffType, '');
-				} else if ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
-				} else if ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
-				} else if ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
-				} else if ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
-				} else if ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
+				} elseif ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
+				} elseif ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
+				} elseif ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
+				} elseif ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
+				} elseif ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
 				}
 				array_push($similarOrder, $compare[2]);
 				$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
@@ -3816,7 +3816,7 @@ class TsumegosController extends AppController {
 		}
 		if ($lowestCompareNum < 10) {
 			$lowestCompareNum = '0' . $lowestCompareNum;
-		} else if ($lowestCompareNum > 99) {
+		} elseif ($lowestCompareNum > 99) {
 			$lowestCompareNum = 99;
 		}
 		$order = $lowestCompareNum . '-' . $lowestCompare;
@@ -3833,7 +3833,7 @@ class TsumegosController extends AppController {
 			for ($x = 0; $x < $bYCount; $x++) {
 				if ($b[$x][$y] == 'x') {
 					$b[$x][$y] = 'o';
-				} else if ($b[$x][$y] == 'o') {
+				} elseif ($b[$x][$y] == 'o') {
 					$b[$x][$y] = 'x';
 				}
 			}
@@ -4296,7 +4296,7 @@ class TsumegosController extends AppController {
 				$diff = abs($u - $t);
 				if ($u > $t) {
 					$eloBigger = 'u';
-				} else if ($t >= $u) {
+				} elseif ($t >= $u) {
 					$eloBigger = 't';
 				}
 				if ($diff == 0) { $diff = .1;

@@ -936,9 +936,9 @@ class SetsController extends AppController {
 		}
 		if ($query == 'topics' && count($search1) == 0) {
 			$queryRefresh = false;
-		} else if ($query == 'difficulty' && count($search2) == 0) {
+		} elseif ($query == 'difficulty' && count($search2) == 0) {
 			$queryRefresh = false;
-		} else if ($query == 'tags' && count($search3) == 0) {
+		} elseif ($query == 'tags' && count($search3) == 0) {
 			$queryRefresh = false;
 		} else {
 			$queryRefresh = true;
@@ -1890,10 +1890,10 @@ class SetsController extends AppController {
 			}
 			$difficultyCount /= $sizeCount;
 			if ($difficultyCount <= 2) { $difficultyCount = 1;
-			} else if ($difficultyCount > 2 && $difficultyCount <= 3) { $difficultyCount = 2;
-			} else if ($difficultyCount > 3 && $difficultyCount <= 4) { $difficultyCount = 3;
-			} else if ($difficultyCount > 4 && $difficultyCount <= 6) { $difficultyCount = 4;
-			} else if ($difficultyCount > 6) { $difficultyCount = 5;
+			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) { $difficultyCount = 2;
+			} elseif ($difficultyCount > 3 && $difficultyCount <= 4) { $difficultyCount = 3;
+			} elseif ($difficultyCount > 4 && $difficultyCount <= 6) { $difficultyCount = 4;
+			} elseif ($difficultyCount > 6) { $difficultyCount = 5;
 			}
 			$percent = $solvedCount / $sizeCount * 100;
 			$set = [];

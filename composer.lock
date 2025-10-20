@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "edda6a7a5de95ee23a7a6d50dc57e6b9",
+    "content-hash": "1d66433a6faf2310955153a4659a1b92",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -677,16 +677,16 @@
         },
         {
             "name": "fig-r/psr2r-sniffer",
-            "version": "2.4.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig-rectified/psr2r-sniffer.git",
-                "reference": "96db0285d8d805695a91f6570a0f9bf42c5934b1"
+                "reference": "13e4f36d0e795c791a3207652f714bfe133e65f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/96db0285d8d805695a91f6570a0f9bf42c5934b1",
-                "reference": "96db0285d8d805695a91f6570a0f9bf42c5934b1",
+                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/13e4f36d0e795c791a3207652f714bfe133e65f8",
+                "reference": "13e4f36d0e795c791a3207652f714bfe133e65f8",
                 "shasum": ""
             },
             "require": {
@@ -699,6 +699,7 @@
                 "phpstan/phpstan": "^2.1.0",
                 "phpunit/phpunit": "^10.3 || ^11.5 || ^12.0"
             },
+            "default-branch": true,
             "bin": [
                 "bin/tokenize",
                 "bin/sniff"
@@ -728,9 +729,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-fig-rectified/psr2r-sniffer/issues",
-                "source": "https://github.com/php-fig-rectified/psr2r-sniffer/tree/2.4.1"
+                "source": "https://github.com/php-fig-rectified/psr2r-sniffer/tree/master"
             },
-            "time": "2025-10-20T15:10:23+00:00"
+            "time": "2025-10-20T16:15:29+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3087,9 +3088,18 @@
             "time": "2024-03-03T12:36:25+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "fig-r/psr2r-sniffer",
+            "version": "9999999-dev",
+            "alias": "2.4.0",
+            "alias_normalized": "2.4.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "fig-r/psr2r-sniffer": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

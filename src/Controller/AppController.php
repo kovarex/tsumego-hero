@@ -331,27 +331,27 @@ class AppController extends Controller {
 		$arch1 = $this->Achievement->findById(111);
 		if ($gemRand1 == 0) {
 			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on an easy ddk problem.';
-		} else if ($gemRand1 == 1) {
+		} elseif ($gemRand1 == 1) {
 			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on a regular ddk problem.';
-		} else if ($gemRand1 == 2) {
+		} elseif ($gemRand1 == 2) {
 			$arch1['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult ddk problem.';
 		}
 		$this->Achievement->save($arch1);
 		$arch2 = $this->Achievement->findById(112);
 		if ($gemRand2 == 0) {
 			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on an easy sdk problem.';
-		} else if ($gemRand2 == 1) {
+		} elseif ($gemRand2 == 1) {
 			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on a regular sdk problem.';
-		} else if ($gemRand2 == 2) {
+		} elseif ($gemRand2 == 2) {
 			$arch2['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult sdk problem.';
 		}
 		$this->Achievement->save($arch2);
 		$arch3 = $this->Achievement->findById(113);
 		if ($gemRand3 == 0) {
 			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on an easy dan problem.';
-		} else if ($gemRand3 == 1) {
+		} elseif ($gemRand3 == 1) {
 			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on a regular dan problem.';
-		} else if ($gemRand3 == 2) {
+		} elseif ($gemRand3 == 2) {
 			$arch3['Achievement']['description'] = 'Has a chance to trigger once a day on a difficult dan problem.';
 		}
 		$this->Achievement->save($arch3);
@@ -656,9 +656,9 @@ class AppController extends Controller {
 		$activityValueBase = 1;
 		if ($activityValue < 30) {
 			$activityValueAdd = 0;
-		} else if ($activityValue < 50) {
+		} elseif ($activityValue < 50) {
 			$activityValueAdd = 0.6;
-		} else if ($activityValue < 70) {
+		} elseif ($activityValue < 70) {
 			$activityValueAdd = 1.2;
 		} else {
 			$activityValueAdd = 1.8;
@@ -1353,61 +1353,61 @@ class AppController extends Controller {
 	protected function getTsumegoRank($t) {
 		if ($t < 100) {
 			return '21k';
-		} else if ($t < 200) {
+		} elseif ($t < 200) {
 			return '20k';
-		} else if ($t < 300) {
+		} elseif ($t < 300) {
 			return '19k';
-		} else if ($t < 400) {
+		} elseif ($t < 400) {
 			return '18k';
-		} else if ($t < 500) {
+		} elseif ($t < 500) {
 			return '17k';
-		} else if ($t < 600) {
+		} elseif ($t < 600) {
 			return '16k';
-		} else if ($t < 700) {
+		} elseif ($t < 700) {
 			return '15k';
-		} else if ($t < 800) {
+		} elseif ($t < 800) {
 			return '14k';
-		} else if ($t < 900) {
+		} elseif ($t < 900) {
 			return '13k';
-		} else if ($t < 1000) {
+		} elseif ($t < 1000) {
 			return '12k';
-		} else if ($t < 1100) {
+		} elseif ($t < 1100) {
 			return '11k';
-		} else if ($t < 1200) {
+		} elseif ($t < 1200) {
 			return '10k';
-		} else if ($t < 1300) {
+		} elseif ($t < 1300) {
 			return '9k';
-		} else if ($t < 1400) {
+		} elseif ($t < 1400) {
 			return '8k';
-		} else if ($t < 1500) {
+		} elseif ($t < 1500) {
 			return '7k';
-		} else if ($t < 1600) {
+		} elseif ($t < 1600) {
 			return '6k';
-		} else if ($t < 1700) {
+		} elseif ($t < 1700) {
 			return '5k';
-		} else if ($t < 1800) {
+		} elseif ($t < 1800) {
 			return '4k';
-		} else if ($t < 1900) {
+		} elseif ($t < 1900) {
 			return '3k';
-		} else if ($t < 2000) {
+		} elseif ($t < 2000) {
 			return '2k';
-		} else if ($t < 2100) {
+		} elseif ($t < 2100) {
 			return '1k';
-		} else if ($t < 2200) {
+		} elseif ($t < 2200) {
 			return '1d';
-		} else if ($t < 2300) {
+		} elseif ($t < 2300) {
 			return '2d';
-		} else if ($t < 2400) {
+		} elseif ($t < 2400) {
 			return '3d';
-		} else if ($t < 2500) {
+		} elseif ($t < 2500) {
 			return '4d';
-		} else if ($t < 2600) {
+		} elseif ($t < 2600) {
 			return '5d';
-		} else if ($t < 2700) {
+		} elseif ($t < 2700) {
 			return '6d';
-		} else if ($t < 2800) {
+		} elseif ($t < 2800) {
 			return '7d';
-		} else if ($t < 2900) {
+		} elseif ($t < 2900) {
 			return '8d';
 		}
 
@@ -1445,23 +1445,23 @@ class AppController extends Controller {
 		$add = 0;
 		if ($v >= 1700) {
 			$add = 110;
-		} else if ($v >= 1600) {
+		} elseif ($v >= 1600) {
 			$add = 110;
-		} else if ($v >= 1700) {
+		} elseif ($v >= 1700) {
 			$add = 100;
-		} else if ($v >= 1600) {
+		} elseif ($v >= 1600) {
 			$add = 90;
-		} else if ($v >= 1500) {
+		} elseif ($v >= 1500) {
 			$add = 80;
-		} else if ($v >= 1400) {
+		} elseif ($v >= 1400) {
 			$add = 70;
-		} else if ($v >= 1300) {
+		} elseif ($v >= 1300) {
 			$add = 60;
-		} else if ($v >= 1200) {
+		} elseif ($v >= 1200) {
 			$add = 60;
-		} else if ($v >= 1100) {
+		} elseif ($v >= 1100) {
 			$add = 50;
-		} else if ($v >= 1000) {
+		} elseif ($v >= 1000) {
 			$add = 50;
 		} else {
 			$add = 0;
@@ -1785,9 +1785,9 @@ class AppController extends Controller {
 			if ($r == '15k' || $r == '14k' || $r == '13k' || $r == '12k' || $r == '11k' || $r == '10k') {
 				if ($gems[0] == 0) {
 					$gemValue = '15k';
-				} else if ($gems[0] == 1) {
+				} elseif ($gems[0] == 1) {
 					$gemValue = '12k';
-				} else if ($gems[0] == 2) {
+				} elseif ($gems[0] == 2) {
 					$gemValue = '10k';
 				}
 				if ($r == $gemValue) {
@@ -1928,25 +1928,25 @@ class AppController extends Controller {
 			for ($i = 0;$i < $acCount;$i++) {
 				if ($ac[$i]['AchievementCondition']['category'] == 'danSolve1d') {
 					$ac1['1d'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'danSolve2d') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve2d') {
 					$ac1['2d'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'danSolve3d') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve3d') {
 					$ac1['3d'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'danSolve4d') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve4d') {
 					$ac1['4d'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'danSolve5d') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve5d') {
 					$ac1['5d'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'emerald') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'emerald') {
 					$ac1['emerald'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'sapphire') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'sapphire') {
 					$ac1['sapphire'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'ruby') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'ruby') {
 					$ac1['ruby'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'sprint') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'sprint') {
 					$ac1['sprint'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'golden') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'golden') {
 					$ac1['golden'] = $ac[$i]['AchievementCondition']['value'];
-				} else if ($ac[$i]['AchievementCondition']['category'] == 'potion') {
+				} elseif ($ac[$i]['AchievementCondition']['category'] == 'potion') {
 					$ac1['potion'] = $ac[$i]['AchievementCondition']['value'];
 				}
 			}
@@ -2355,49 +2355,49 @@ class AppController extends Controller {
 				if ($r[$i]['RankOverview']['rank'] == '5k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[70] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[76] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[82] = true;
 					}
 				}else if ($r[$i]['RankOverview']['rank'] == '4k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[71] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[77] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[83] = true;
 					}
 				}else if ($r[$i]['RankOverview']['rank'] == '3k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[72] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[78] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[84] = true;
 					}
 				}else if ($r[$i]['RankOverview']['rank'] == '2k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[73] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[79] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[85] = true;
 					}
 				}else if ($r[$i]['RankOverview']['rank'] == '1k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[74] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[80] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[86] = true;
 					}
 				}else if ($r[$i]['RankOverview']['rank'] == '1d') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[75] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[81] = true;
-					} else if ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[87] = true;
 					}
 				}
@@ -3261,17 +3261,17 @@ class AppController extends Controller {
 	protected function getXPJump($lvl = null) {
 		if ($lvl >= 102) {
 			return 0;
-		} else if ($lvl == 101) {
+		} elseif ($lvl == 101) {
 			return 1150;
-		} else if ($lvl == 100) {
+		} elseif ($lvl == 100) {
 			return 50000;
-		} else if ($lvl >= 70) {
+		} elseif ($lvl >= 70) {
 			return 150;
-		} else if ($lvl >= 40) {
+		} elseif ($lvl >= 40) {
 			return 100;
-		} else if ($lvl >= 20) {
+		} elseif ($lvl >= 20) {
 			return 50;
-		} else if ($lvl >= 12) {
+		} elseif ($lvl >= 12) {
 			return 25;
 		}
 
@@ -3281,43 +3281,43 @@ class AppController extends Controller {
 	protected function getHealth($lvl = null) {
 		if ($lvl >= 100) {
 			return 30;
-		} else if ($lvl >= 95) {
+		} elseif ($lvl >= 95) {
 			return 29;
-		} else if ($lvl >= 90) {
+		} elseif ($lvl >= 90) {
 			return 28;
-		} else if ($lvl >= 85) {
+		} elseif ($lvl >= 85) {
 			return 27;
-		} else if ($lvl >= 80) {
+		} elseif ($lvl >= 80) {
 			return 26;
-		} else if ($lvl >= 75) {
+		} elseif ($lvl >= 75) {
 			return 25;
-		} else if ($lvl >= 70) {
+		} elseif ($lvl >= 70) {
 			return 24;
-		} else if ($lvl >= 65) {
+		} elseif ($lvl >= 65) {
 			return 23;
-		} else if ($lvl >= 60) {
+		} elseif ($lvl >= 60) {
 			return 22;
-		} else if ($lvl >= 55) {
+		} elseif ($lvl >= 55) {
 			return 21;
-		} else if ($lvl >= 50) {
+		} elseif ($lvl >= 50) {
 			return 20;
-		} else if ($lvl >= 45) {
+		} elseif ($lvl >= 45) {
 			return 19;
-		} else if ($lvl >= 40) {
+		} elseif ($lvl >= 40) {
 			return 18;
-		} else if ($lvl >= 35) {
+		} elseif ($lvl >= 35) {
 			return 17;
-		} else if ($lvl >= 30) {
+		} elseif ($lvl >= 30) {
 			return 16;
-		} else if ($lvl >= 25) {
+		} elseif ($lvl >= 25) {
 			return 15;
-		} else if ($lvl >= 20) {
+		} elseif ($lvl >= 20) {
 			return 14;
-		} else if ($lvl >= 15) {
+		} elseif ($lvl >= 15) {
 			return 13;
-		} else if ($lvl >= 10) {
+		} elseif ($lvl >= 10) {
 			return 12;
-		} else if ($lvl >= 4) {
+		} elseif ($lvl >= 4) {
 			return 11;
 		}
 
@@ -3342,12 +3342,12 @@ class AppController extends Controller {
 
 		for ($i = 1;$i < 102;$i++) {
 			if ($i >= 102) { $j = 0;
-			} else if ($i == 101) { $j = 1150;
-			} else if ($i == 100) { $j = 50000;
-			} else if ($i >= 70) { $j = 150;
-			} else if ($i >= 40) { $j = 100;
-			} else if ($i >= 20) { $j = 50;
-			} else if ($i >= 12) { $j = 25;
+			} elseif ($i == 101) { $j = 1150;
+			} elseif ($i == 100) { $j = 50000;
+			} elseif ($i >= 70) { $j = 150;
+			} elseif ($i >= 40) { $j = 100;
+			} elseif ($i >= 20) { $j = 50;
+			} elseif ($i >= 12) { $j = 25;
 			} else { $j = 10;
 			}
 			$xStart += $j;
@@ -3857,11 +3857,11 @@ class AppController extends Controller {
 						if (!$this->hasPremium()) {
 							if ($preTsumego['TsumegoStatus']['status'] == 'W') {
 								$preTsumego['TsumegoStatus']['status'] = 'X';//W => X
-							} else if ($preTsumego['TsumegoStatus']['status'] == 'V') {
+							} elseif ($preTsumego['TsumegoStatus']['status'] == 'V') {
 								$preTsumego['TsumegoStatus']['status'] = 'F';// V => F
-							} else if ($preTsumego['TsumegoStatus']['status'] == 'G') {
+							} elseif ($preTsumego['TsumegoStatus']['status'] == 'G') {
 								$preTsumego['TsumegoStatus']['status'] = 'F';// G => F
-							} else if ($preTsumego['TsumegoStatus']['status'] == 'S') {
+							} elseif ($preTsumego['TsumegoStatus']['status'] == 'S') {
 								$preTsumego['TsumegoStatus']['status'] = 'S';//S => S
 							}
 						}
