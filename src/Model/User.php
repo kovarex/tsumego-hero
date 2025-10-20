@@ -58,7 +58,7 @@ class User extends AppModel {
 		],
 	];
 
-	function checkUnique($data, $field) {
+	public function checkUnique($data, $field) {
 		$valid = false;
 		if ($this->hasField($field)) {
 			$valid = $this->isUnique([$field => $data]);
