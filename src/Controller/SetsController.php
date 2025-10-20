@@ -244,7 +244,8 @@ class SetsController extends AppController {
 			$sets[$i]['Set']['created'] = $date->format('Ymd');
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
 			$percent = 0;
-			if (count($ts) > 0) { $percent = $counter / count($ts) * 100;
+			if (count($ts) > 0) {
+				$percent = $counter / count($ts) * 100;
 			}
 			$overallCounter += count($ts);
 			$sets[$i]['Set']['solvedNum'] = $counter;
@@ -306,14 +307,16 @@ class SetsController extends AppController {
 			$ss = [];
 			$sCount = count($s);
 			for ($i = 0; $i < $sCount; $i++) {
-				if ($s[$i]['Set']['id'] < 6472) { array_push($ss, $s[$i]);
+				if ($s[$i]['Set']['id'] < 6472) {
+					array_push($ss, $s[$i]);
 				}
 			}
 
 			$seed = str_split('abcdefghijklmnopqrstuvwxyz0123456789');
 			shuffle($seed);
 			$rand = '';
-			foreach (array_rand($seed, 6) as $k) { $rand .= $seed[$k];
+			foreach (array_rand($seed, 6) as $k) {
+				$rand .= $seed[$k];
 			}
 			$hashName = '6473k339312/_' . $rand . '_' . $this->data['Set']['title'];
 			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
@@ -372,7 +375,8 @@ class SetsController extends AppController {
 				$set = str_replace('6473k339312-', '', $this->data['Set']['hash']);
 
 				$s = $this->Set->findById($set);
-				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) { $this->Set->delete($set);
+				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
+					$this->Set->delete($set);
 				}
 				$ts = $this->findTsumegoSet($set);
 				if (count($ts) < 50) {
@@ -1073,7 +1077,8 @@ class SetsController extends AppController {
 			$file_ext = strtolower(end($array));
 			$extensions = ['png', 'jpg'];
 
-			if (in_array($file_ext, $extensions) === false) { $errors[] = 'png/jpg allowed.';
+			if (in_array($file_ext, $extensions) === false) {
+				$errors[] = 'png/jpg allowed.';
 			}
 			if ($file_size > 2097152) {
 				$errors[] = 'The file is too large.';
@@ -1188,10 +1193,14 @@ class SetsController extends AppController {
 			$setCount['Tsumego']['set_id'] = $scTcount['SetConnection']['set_id'];
 			$setCount['Tsumego']['num'] += 1;
 			$setCount['Tsumego']['variance'] = 100;
-			if ($this->loggedInUserID() == 72) { $setCount['Tsumego']['author'] = 'Joschka Zimdars';
-			} elseif ($this->loggedInUserID() == 1206) { $setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
-			} elseif ($this->loggedInUserID() == 3745) { $setCount['Tsumego']['author'] = 'Dennis Olevanov';
-			} else { $setCount['Tsumego']['author'] = $this->Session->read('loggedInUser.User.name');
+			if ($this->loggedInUserID() == 72) {
+				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
+			} elseif ($this->loggedInUserID() == 1206) {
+				$setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
+			} elseif ($this->loggedInUserID() == 3745) {
+				$setCount['Tsumego']['author'] = 'Dennis Olevanov';
+			} else {
+				$setCount['Tsumego']['author'] = $this->Session->read('loggedInUser.User.name');
 			}
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
@@ -1591,7 +1600,8 @@ class SetsController extends AppController {
 						$tsIdCount = count($tsId);
 						for ($i = 0; $i < $tsIdCount; $i++) {
 							$tsu = $this->Tsumego->findById($tsId[$i]);
-							if ($tsu['Tsumego']['num'] != $nr) { rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
+							if ($tsu['Tsumego']['num'] != $nr) {
+								rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
 							}
 							$nr++;
 						}
@@ -1902,10 +1912,14 @@ class SetsController extends AppController {
 			$difficultyCount /= $sizeCount;
 			if ($difficultyCount <= 2) {
 				$difficultyCount = 1;
-			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) { $difficultyCount = 2;
-			} elseif ($difficultyCount > 3 && $difficultyCount <= 4) { $difficultyCount = 3;
-			} elseif ($difficultyCount > 4 && $difficultyCount <= 6) { $difficultyCount = 4;
-			} elseif ($difficultyCount > 6) { $difficultyCount = 5;
+			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) {
+				$difficultyCount = 2;
+			} elseif ($difficultyCount > 3 && $difficultyCount <= 4) {
+				$difficultyCount = 3;
+			} elseif ($difficultyCount > 4 && $difficultyCount <= 6) {
+				$difficultyCount = 4;
+			} elseif ($difficultyCount > 6) {
+				$difficultyCount = 5;
 			}
 			$percent = $solvedCount / $sizeCount * 100;
 			$set = [];
@@ -2069,7 +2083,8 @@ class SetsController extends AppController {
 			for ($i = 0; $i < $pdCount; $i++) {
 				$date = date_create($pd[$i]['ProgressDeletion']['created']);
 				$pd[$i]['ProgressDeletion']['d'] = $date->format('Y') . '-' . $date->format('m');
-				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d']) { $pdCounter++;
+				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d']) {
+					$pdCounter++;
 				}
 			}
 			$urSecCounter = 0;
@@ -2136,7 +2151,8 @@ class SetsController extends AppController {
 				}
 				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
 			}
-			if (count($achievementUpdate) > 0) { $this->updateXP($this->loggedInUserID(), $achievementUpdate);
+			if (count($achievementUpdate) > 0) {
+				$this->updateXP($this->loggedInUserID(), $achievementUpdate);
 			}
 
 			$acS = $this->AchievementCondition->find('first', [
@@ -2446,7 +2462,8 @@ class SetsController extends AppController {
 		$sets = [];
 		$setsXCount = count($setsX);
 		for ($i = 0; $i < $setsXCount; $i++) {
-			if (!isset($removeMap[$setsX[$i]['Set']['id']])) { array_push($sets, $setsX[$i]);
+			if (!isset($removeMap[$setsX[$i]['Set']['id']])) {
+				array_push($sets, $setsX[$i]);
 			}
 		}
 		if ($this->isLoggedIn()) {
@@ -2523,8 +2540,10 @@ class SetsController extends AppController {
 	private function findUt($id = null, $allUts = null, $map = null) {
 		$currentUt = array_search($id, $map);
 		$ut = $allUts[$currentUt];
-		if ($currentUt == 0) { if ($id != $map[0]) { $ut = null;
-		}
+		if ($currentUt == 0) {
+			if ($id != $map[0]) {
+				$ut = null;
+			}
 		}
 
 		return $ut;

@@ -116,7 +116,8 @@ class RanksController extends AppController {
 				if (count($settingsSingle) > 1) {
 					$settingsSingleCount = count($settingsSingle);
 					for ($j = 0;$j < $settingsSingleCount;$j++) {
-						if ($j != 0) { $this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
+						if ($j != 0) {
+							$this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
 						}
 					}
 				}
@@ -205,7 +206,8 @@ class RanksController extends AppController {
 		for ($i = 0;$i < $locksCount;$i++) {
 			$locksICount = count($locks[$i]);
 			for ($j = 0;$j < $locksICount;$j++) {
-				if ($locks[$i][$j] == 'x') { $lowestMode[$i] = $j;
+				if ($locks[$i][$j] == 'x') {
+					$lowestMode[$i] = $j;
 				}
 			}
 		}
@@ -214,7 +216,8 @@ class RanksController extends AppController {
 		}
 
 		$achievementUpdate = $this->checkTimeModeAchievements();
-		if (count($achievementUpdate) > 0) { $this->updateXP($this->loggedInUserID(), $achievementUpdate);
+		if (count($achievementUpdate) > 0) {
+			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
 		}
 
 		$json = json_decode(file_get_contents('json/time_mode_overview.json'), true);
@@ -302,8 +305,10 @@ class RanksController extends AppController {
 			$cardV = 0;
 			if ($stopParameter == 0) {
 				$cardV = 0;
-			} elseif ($stopParameter == 1) { $cardV = 1;
-			} elseif ($stopParameter == 2) { $cardV = 2;
+			} elseif ($stopParameter == 1) {
+				$cardV = 1;
+			} elseif ($stopParameter == 2) {
+				$cardV = 2;
 			}
 
 			$modesCount = count($modes[$cardV]);
@@ -354,7 +359,8 @@ class RanksController extends AppController {
 					$c++;
 					$points[$i] = 0;
 					$ranks[$i]['Rank']['points'] = 0;
-					if ($ranks[$i]['Rank']['result'] == 'timeout' || $ranks[$i]['Rank']['result'] == 'skipped') { $ranks[$i]['Rank']['seconds'] = '0:00.0';
+					if ($ranks[$i]['Rank']['result'] == 'timeout' || $ranks[$i]['Rank']['result'] == 'skipped') {
+						$ranks[$i]['Rank']['seconds'] = '0:00.0';
 					}
 				} elseif ($ranks[$i]['Rank']['result'] == 'solved') {
 					$solved++;
@@ -388,8 +394,10 @@ class RanksController extends AppController {
 			$ro['RankOverview']['user_id'] = $this->loggedInUserID();
 			$ro['RankOverview']['session'] = $sess;
 			$ro['RankOverview']['rank'] = $ranks[0]['Rank']['rank'];
-			if ($solved >= $stopParameterPass) { $ro['RankOverview']['status'] = 's';
-			} else { $ro['RankOverview']['status'] = 'f';
+			if ($solved >= $stopParameterPass) {
+				$ro['RankOverview']['status'] = 's';
+			} else {
+				$ro['RankOverview']['status'] = 'f';
 			}
 			$ro['RankOverview']['mode'] = $stopParameter;
 			$ro['RankOverview']['points'] = $sum;
@@ -446,12 +454,17 @@ class RanksController extends AppController {
 						$highest = $rox[$k]['RankOverview']['points'];
 						$highestId = $rox[$k]['RankOverview']['id'];
 						$modes[$i][$j] = $rox[$k];
-						if ($modes[$i][$j]['RankOverview']['status'] == 's') { $modes[$i][$j]['RankOverview']['status'] = 'passed';
-						} elseif ($modes[$i][$j]['RankOverview']['status'] == 'f') { $modes[$i][$j]['RankOverview']['status'] = 'failed';
+						if ($modes[$i][$j]['RankOverview']['status'] == 's') {
+							$modes[$i][$j]['RankOverview']['status'] = 'passed';
+						} elseif ($modes[$i][$j]['RankOverview']['status'] == 'f') {
+							$modes[$i][$j]['RankOverview']['status'] = 'failed';
 						}
-						if ($modes[$i][$j]['RankOverview']['mode'] == 2) { $modes[$i][$j]['RankOverview']['mode'] = 'Slow';
-						} elseif ($modes[$i][$j]['RankOverview']['mode'] == 1) { $modes[$i][$j]['RankOverview']['mode'] = 'Fast';
-						} elseif ($modes[$i][$j]['RankOverview']['mode'] == 0) { $modes[$i][$j]['RankOverview']['mode'] = 'Blitz';
+						if ($modes[$i][$j]['RankOverview']['mode'] == 2) {
+							$modes[$i][$j]['RankOverview']['mode'] = 'Slow';
+						} elseif ($modes[$i][$j]['RankOverview']['mode'] == 1) {
+							$modes[$i][$j]['RankOverview']['mode'] = 'Fast';
+						} elseif ($modes[$i][$j]['RankOverview']['mode'] == 0) {
+							$modes[$i][$j]['RankOverview']['mode'] = 'Blitz';
 						}
 						$date = new DateTime($modes[$i][$j]['RankOverview']['created']);
 						$month = $date->format('m.');
@@ -505,15 +518,19 @@ class RanksController extends AppController {
 						$timeFieldColor = '#e03c4b';
 						if ($h == 0) {
 							$ss = 30;
-						} elseif ($h == 1) { $ss = 60;
-						} elseif ($h == 2) { $ss = 240;
+						} elseif ($h == 1) {
+							$ss = 60;
+						} elseif ($h == 2) {
+							$ss = 240;
 						}
 						$allR[$h][$i][$j]['Rank']['tsumego'] = $sx['Set']['title'] . ' ' . $sx['Set']['title2'] . ' - ' . $tx['Tsumego']['num'];
 						if ($allR[$h][$i][$j]['Rank']['result'] == 'solved') {
 							$hh = 'green';
-						} else { $hh = '#e03c4b';
+						} else {
+							$hh = '#e03c4b';
 						}
-						if ($allR[$h][$i][$j]['Rank']['result'] == 'timeout') { $allR[$h][$i][$j]['Rank']['seconds'] = $ss;
+						if ($allR[$h][$i][$j]['Rank']['result'] == 'timeout') {
+							$allR[$h][$i][$j]['Rank']['seconds'] = $ss;
 						}
 						if ($allR[$h][$i][$j]['Rank']['result'] == 'skipped') {
 							$foundSkipped = true;
@@ -550,7 +567,8 @@ class RanksController extends AppController {
 		$lastModeIndex = $this->Session->read('loggedInUser.User.lastMode') - 1;
 		$modesCount = count($modes[$lastModeIndex]);
 		for ($h = 0;$h < $modesCount;$h++) {
-			if (isset($modes[$lastModeIndex][$h]['RankOverview'])) { $lastModeV = $modes[$lastModeIndex][$h]['RankOverview']['rank'];
+			if (isset($modes[$lastModeIndex][$h]['RankOverview'])) {
+				$lastModeV = $modes[$lastModeIndex][$h]['RankOverview']['rank'];
 			}
 		}
 
@@ -576,8 +594,10 @@ class RanksController extends AppController {
 		//echo '<pre>'; print_r($ro); echo '</pre>';
 		//echo '<pre>'; print_r($roxBefore); echo '</pre>';
 
-		if (count($roxBefore) > 0) { $newUnlock = false;
-		} else { $newUnlock = true;
+		if (count($roxBefore) > 0) {
+			$newUnlock = false;
+		} else {
+			$newUnlock = true;
 		}
 
 		$this->set('c', $c);

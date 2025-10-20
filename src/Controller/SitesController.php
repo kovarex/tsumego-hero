@@ -179,17 +179,21 @@ class SitesController extends AppController {
 							$scheduleTsumego[$f]['Tsumego']['status'] = $noLoginStatus[$i];
 						}
 					}
-					if ($noLogin[$i] == $totd['Tsumego']['id']) { $totd['Tsumego']['status'] = $noLoginStatus[$i];
+					if ($noLogin[$i] == $totd['Tsumego']['id']) {
+						$totd['Tsumego']['status'] = $noLoginStatus[$i];
 					}
-					if ($noLogin[$i] == $newT['Tsumego']['id']) { $newT['Tsumego']['status'] = $noLoginStatus[$i];
+					if ($noLogin[$i] == $newT['Tsumego']['id']) {
+						$newT['Tsumego']['status'] = $noLoginStatus[$i];
 					}
 				}
 			}
 		}
 
-		if (!isset($totd['Tsumego']['status'])) { $totd['Tsumego']['status'] = 'N';
+		if (!isset($totd['Tsumego']['status'])) {
+			$totd['Tsumego']['status'] = 'N';
 		}
-		if (!isset($newT['Tsumego']['status'])) { $newT['Tsumego']['status'] = 'N';
+		if (!isset($newT['Tsumego']['status'])) {
+			$newT['Tsumego']['status'] = 'N';
 		}
 		$scheduleTsumegoCount = count($scheduleTsumego);
 		for ($i = 0;$i < $scheduleTsumegoCount;$i++) {

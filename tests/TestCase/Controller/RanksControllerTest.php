@@ -30,11 +30,11 @@ class RanksControllerTest extends ControllerTestCase {
 
 	private function calculatePoints($time = null, $max = null) {
 		$rx = 0;
-		if($max == 240){
+		if ($max == 240) {
 			$rx = 20 + round($time / 3);
-		}elseif($max == 60){
+		} elseif ($max == 60) {
 			$rx = 40 + round($time);
-		}elseif($max == 30){
+		} elseif ($max == 30) {
 			$rx = 40 + round($time * 2);
 		}
 

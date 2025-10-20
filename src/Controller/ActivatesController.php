@@ -99,7 +99,8 @@ class ActivatesController extends AppController {
 			}
 		}
 
-		if ($this->Activate->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]])) { $key = 1;
+		if ($this->Activate->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]])) {
+			$key = 1;
 		}
 
 		$u = $this->User->findById($this->loggedInUserID());

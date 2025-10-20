@@ -21,7 +21,8 @@ class TsumegoRatingAttemptsController extends AppController {
 		$this->set('trs', $trs);
 		//$this->set('trs2', $trs2);
 		$this->set('x', '');
-		if ($trid != null) { $this->set('x', '<a href="/tsumego_records/"><< back to overview</a>');
+		if ($trid != null) {
+			$this->set('x', '<a href="/tsumego_records/"><< back to overview</a>');
 		}
 	}
 
@@ -251,7 +252,8 @@ class TsumegoRatingAttemptsController extends AppController {
 		$this->LoadModel('Tsumego');
 		$this->LoadModel('SetConnection');
 		$this->LoadModel('TsumegoAttempt');
-		if ($this->loggedInuserID() != $trid && $this->loggedInuserID() != 72) { $this->Session->write('redirect', 'sets');
+		if ($this->loggedInuserID() != $trid && $this->loggedInuserID() != 72) {
+			$this->Session->write('redirect', 'sets');
 		}
 
 		$trs = $this->TsumegoAttempt->find('all', [
@@ -309,11 +311,13 @@ class TsumegoRatingAttemptsController extends AppController {
 
 			if ($minutes == 0 && $hours == 0) {
 				$minutes = '';
-			} else { $minutes .= 'm ';
+			} else {
+				$minutes .= 'm ';
 			}
 			if ($hours == 0) {
 				$hours = '';
-			} else { $hours .= 'h ';
+			} else {
+				$hours .= 'h ';
 			}
 			$trs[$i]['TsumegoAttempt']['seconds'] = $hours . $minutes . $seconds . 's';
 

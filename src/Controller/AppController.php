@@ -4119,10 +4119,8 @@ class AppController extends Controller {
 									$ub['UserBoard']['b1'] = (int)$_COOKIE['preId'];
 									$this->UserBoard->create();
 									$this->UserBoard->save($ub);
-									if ($_COOKIE['score'] < 3000);
-									else { $_COOKIE['score'] = 0;
-									}
 									if ($_COOKIE['score'] >= 3000) {
+										$_COOKIE['score'] = 0;
 										$suspiciousBehavior = true;
 										//$this->Session->write('loggedInUser.User.reuse5', 1);
 										//$u['User']['reuse5'] = 1;

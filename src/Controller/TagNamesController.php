@@ -137,8 +137,10 @@ class TagNamesController extends AppController {
 			}
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($tags[$i]['Tag']['user_id']);
-			if ($tnx['TagName']['name'] == '') { $tags[$i]['Tag']['tag_name'] = '<i>[not found]</i>';
-			} else { $tags[$i]['Tag']['tag_name'] = $tnx['TagName']['name'];
+			if ($tnx['TagName']['name'] == '') {
+				$tags[$i]['Tag']['tag_name'] = '<i>[not found]</i>';
+			} else {
+				$tags[$i]['Tag']['tag_name'] = $tnx['TagName']['name'];
 			}
 			$tags[$i]['Tag']['tsumego'] = $sx['Set']['title'] . ' - ' . $tx['Tsumego']['num'];
 			$tags[$i]['Tag']['user'] = $ux['User']['name'];

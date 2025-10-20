@@ -21,7 +21,8 @@ class TsumegoRecordsController extends AppController {
 		$this->set('trs', $trs);
 		//$this->set('trs2', $trs2);
 		$this->set('x', '');
-		if ($trid != null) { $this->set('x', '<a href="/tsumego_records/"><< back to overview</a>');
+		if ($trid != null) {
+			$this->set('x', '<a href="/tsumego_records/"><< back to overview</a>');
 		}
 	}
 
@@ -242,7 +243,8 @@ class TsumegoRecordsController extends AppController {
 		$this->Session->write('title', 'History of ' . $this->Session->read('loggedInUser.User.name'));
 		$this->LoadModel('Set');
 		$this->LoadModel('Tsumego');
-		if ($this->Session->read('loggedInUser.User.id') != $trid && $this->Session->read('loggedInUser.User.id') != 72) { $this->Session->write('redirect', 'sets');
+		if ($this->Session->read('loggedInUser.User.id') != $trid && $this->Session->read('loggedInUser.User.id') != 72) {
+			$this->Session->write('redirect', 'sets');
 		}
 		$trs = $this->TsumegoRecord->find('all', [
 			'limit' => 500,
@@ -285,11 +287,13 @@ class TsumegoRecordsController extends AppController {
 
 			if ($minutes == 0 && $hours == 0) {
 				$minutes = '';
-			} else { $minutes .= 'm ';
+			} else {
+				$minutes .= 'm ';
 			}
 			if ($hours == 0) {
 				$hours = '';
-			} else { $hours .= 'h ';
+			} else {
+				$hours .= 'h ';
 			}
 			$trs[$i]['TsumegoRecord']['seconds'] = $hours . $minutes . $seconds . 's';
 

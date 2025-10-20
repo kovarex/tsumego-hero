@@ -72,10 +72,13 @@ class AchievementsController extends AppController {
 		}
 		$asAll2 = [];
 		$count = 10;
-		if (count($asAll) < 10) { $count = count($asAll);
+		if (count($asAll) < 10) {
+			$count = count($asAll);
 		}
-		if (count($asAll) > 10) { $andMore = ' and more.';
-		} else { $andMore = '.';
+		if (count($asAll) > 10) {
+			$andMore = ' and more.';
+		} else {
+			$andMore = '.';
 		}
 		for ($i = 0; $i < $count; $i++) {
 			$u = $this->User->findById($asAll[$i]['AchievementStatus']['user_id']);
