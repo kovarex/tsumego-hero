@@ -3801,14 +3801,14 @@ class TsumegosController extends AppController {
 		if ($wStart == 0) {
 			return 0;
 		}
-		if ($bStart == 0 && $wStart != 0) {
+		if ($bStart == 0) {
 			return 1;
 		}
 		if ($bStart <= $wStart) {
 			return 0;
 		}
 
-			return 1;
+		return 1;
 	}
 
 	private function getLowest($a) {
@@ -3869,6 +3869,7 @@ class TsumegosController extends AppController {
 
 		return $a;
 	}
+
 	/**
 	 * @param array $b Board array
 	 * @param bool $trigger Trigger flag
@@ -4015,85 +4016,6 @@ class TsumegosController extends AppController {
 		return $ut;
 	}
 
-	private function compileBoardState($black = null, $white = null, $m = null, $ms = null, $index = null) {
-		$array = [];
-		$bString = '';
-		$blackCount = count($black);
-
-		for ($i = 0; $i < $blackCount; $i++) {
-			if ($i % 2 == 0) {
-				array_push($array, 'B-' . $black[$i] . '-' . $black[$i + 1] . ';');
-			}
-		}
-		$whiteCount = count($white);
-
-		for ($i = 0; $i < $whiteCount; $i++) {
-			if ($i % 2 == 0) {
-				array_push($array, 'W-' . $white[$i] . '-' . $white[$i + 1] . ';');
-			}
-		}
-
-		$array2 = [];
-		array_push($array2, 'B-' . $ms[$index][0] . '-' . $ms[$index][1] . ';');
-		if (is_numeric($ms[$index][4])) {
-			array_push($array2, 'W-' . $ms[$index][4] . '-' . $ms[$index][5] . ';');
-		}
-
-		$parent = $ms[$index][3];
-		$layer = $ms[$index][2];
-		while ($layer != 0) {
-			$layer--;
-			$msCount = count($ms);
-
-			for ($i = 0; $i < $msCount; $i++) {
-				if ($ms[$i][6] == $parent && $ms[$i][2] == $layer) {
-					array_push($array2, 'B-' . $ms[$i][0] . '-' . $ms[$i][1] . ';');
-					array_push($array2, 'W-' . $ms[$i][4] . '-' . $ms[$i][5] . ';');
-					$parent = $ms[$i][3];
-				}
-			}
-
-		}
-
-		$array3 = $array2;
-		sort($array3);
-
-		$array3Count = count($array3);
-
-		for ($i = 0; $i < $array3Count; $i++) {
-			$bString .= $array3[$i];
-		}
-
-		return $bString;
-	}
-
-	private function findCoords($master = null) {
-		$m = str_split($master);
-		$n = '';
-		$mCount = count($m);
-
-		for ($i = 0; $i < $mCount; $i++) {
-			if (preg_match('/[a-tA-T]/', $m[$i]) && is_numeric($m[$i + 1])) {
-				if (!preg_match('/[a-tA-T]/', $m[$i - 1]) && !is_numeric($m[$i - 1])) {
-					if (is_numeric($m[$i + 2])) {
-						if (!preg_match('/[a-tA-T]/', $m[$i + 3]) && !is_numeric($m[$i + 3])) {
-							$n .= $m[$i] . $m[$i + 1] . $m[$i + 2] . ' ' . $i . '/' . ($i + 2) . ' ';
-						}
-					} else {
-						if (!preg_match('/[a-tA-T]/', $m[$i + 2])) {
-							$n .= $m[$i] . $m[$i + 1] . ' ' . $i . '/' . ($i + 1) . ' ';
-						}
-					}
-				}
-			}
-		}
-		if (substr($n, -1) == ' ') {
-			$n = substr($n, 0, -1);
-		}
-
-		return $n;
-	}
-
 	private function commentCoordinates($c = null, $counter = null, $noSyntax = null) {
 		if (!is_string($c)) {
 			return [$c, ''];
@@ -4197,43 +4119,6 @@ class TsumegosController extends AppController {
 		return $array;
 	}
 
-	private function findNextMoves($master = null, $m = null) {
-		$a = [];
-		$solves = [];
-		$root = $m[6];
-		$rootlen = strlen($root);
-		$level = $m[2];
-		if ($m[8] !== 'w') {
-			$masterCount = count($master);
-
-			for ($i = 0; $i < $masterCount; $i++) {
-				if (substr($master[$i][6], 0, $rootlen) === $root) {
-					if ($master[$i][2] == $level + 1) {
-						array_push($a, $master[$i]);
-					}
-					if ($master[$i][8] === '+') {
-						array_push($solves, $master[$i]);
-					}
-				}
-
-			}
-			$subrootlen = strlen($a[0][6]);
-			$aCount = count($a);
-
-			for ($i = 0; $i < $aCount; $i++) {
-				$solvesCount = count($solves);
-
-				for ($j = 0; $j < $solvesCount; $j++) {
-					if (substr($solves[$j][6], 0, $subrootlen) === $a[$i][6]) {
-						$a[$i][3] = '+';
-					}
-				}
-			}
-		}
-
-		return $a;
-	}
-
 	private function convertCoord($l = null) {
 		switch (strtolower($l)) {
 			case 'a':
@@ -4323,19 +4208,6 @@ class TsumegosController extends AppController {
 		return 0;
 	}
 
-	private function isAllowedSet($sets, $s) {
-		$found = false;
-		$setsCount = count($sets);
-
-		for ($i = 0; $i < $setsCount; $i++) {
-			if ($sets[$i] == $s) {
-				$found = true;
-			}
-		}
-
-		return $found;
-	}
-
 	// Returns 2 updated ratings, RD initialization for user has to be done manually before this function
 	// old_u is an array [old_r, old_rd] for the user and old_t for the tsumego
 	// Success is given from the point of view of the user and is 1.0 or 0
@@ -4382,27 +4254,6 @@ class TsumegosController extends AppController {
 
 	private function E_s($r_0, $r_i, $g_rd_i) {
 		return 1.0 / (1.0 + 10.0 ** ($g_rd_i * ($r_0 - $r_i) / -400.0));
-	}
-
-	// Computes the rating deviation of a user after t days
-	// Resets days not played to 0
-	// Does nothing if the user already played rating mode today
-	// This function has to be called before computing the new user rating and RD
-	// TODO do we also do it for tsumego and not only for user ?
-	private function compute_initial_user_rd($user) {
-		if (false) {
-			$t = $user['User']['t_glicko'];
-			$old_rd = $user['User']['rd'];
-			// Computes new RD after some time
-			$current_rd = min(sqrt($old_rd ** 2 + C ** 2 * $t), INITIAL_RD);
-			// Resets counter for next day
-			$user['User']['t_glicko'] = 0;
-			// Assigns initial RD for the day
-			$user['User']['rd'] = $current_rd;
-
-		}
-
-		return $user;
 	}
 
 	/**

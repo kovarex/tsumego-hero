@@ -275,7 +275,6 @@ class TsumegoRatingAttemptsController extends AppController {
 		$trsx = $this->TsumegoAttempt->find('all', array('limit' => 10, 'order' => 'created DESC', 'conditions' => array(
 			'user_id' => $this->Session->read('loggedInUser.User.id')
 		)));
-		echo '<pre>'; print_r($trsx); echo '</pre>';
 		*/
 		$trsCount = count($trs);
 		for ($i = 0; $i < $trsCount; $i++) {

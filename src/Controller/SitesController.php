@@ -219,8 +219,6 @@ class SitesController extends AppController {
 			$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
 		}
 
-		//echo '<pre>';print_r($dateUser);echo '</pre>';
-
 		$totdSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
 		if ($totdSc) {
 			$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);

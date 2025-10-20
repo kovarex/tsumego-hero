@@ -11,7 +11,7 @@ class SgfsController extends AppController {
 		if (!$sgfs) {
 			$sgfs = [];
 		}
-		//echo '<pre>'; print_r($sgfs); echo '</pre>';
+
 		$this->set('sgfs', $sgfs);
 	}
 

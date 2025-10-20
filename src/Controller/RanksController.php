@@ -574,15 +574,6 @@ class RanksController extends AppController {
 			}
 		}
 
-		//echo '<pre>'; print_r($lastModeV); echo '</pre>';
-		//echo '<pre>'; print_r($allR); echo '</pre>';
-		//echo '<pre>'; print_r($all); echo '</pre>';
-		//echo '<pre>'; print_r(count($all)); echo '</pre>';
-
-		//echo '<pre>'; print_r($openCard1); echo '</pre>';
-		//echo '<pre>'; print_r($openCard2); echo '</pre>';
-		//echo '<pre>'; print_r($sessArray); echo '</pre>';
-		//echo '<pre>'; print_r($ranks[0]['Rank']['session']); echo '</pre>';
 		$sessionFound = false;
 		$sessArrayCount = count($sessArray);
 		for ($i = 0;$i < $sessArrayCount;$i++) {
@@ -593,8 +584,6 @@ class RanksController extends AppController {
 				}
 			}
 		}
-		//echo '<pre>'; print_r($ro); echo '</pre>';
-		//echo '<pre>'; print_r($roxBefore); echo '</pre>';
 
 		if (count($roxBefore) > 0) {
 			$newUnlock = false;

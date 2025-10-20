@@ -414,22 +414,6 @@ class SetsController extends AppController {
 	}
 
 	/**
-	 * @param string|null $date Date value
-	 * @return void
-	 */
-	private function newDate($date = null) {
-		$this->LoadModel('Tsumego');
-		$ts = $this->findTsumegoSet(94);
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			if ($ts[$i]['Tsumego']['num'] > 200 && $ts[$i]['Tsumego']['num'] <= 300) {
-				$ts[$i]['Tsumego']['created'] = $date;
-				$this->Tsumego->save($ts[$i]);
-			}
-		}
-	}
-
-	/**
 	 * @return void
 	 */
 	public function index() {
@@ -1218,7 +1202,8 @@ class SetsController extends AppController {
 			$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
 			$adminActivity['AdminActivity']['tsumego_id'] = 0;
 			$adminActivity['AdminActivity']['file'] = 'description';
-			$adminActivity['AdminActivity']['answer'] = 'Added problem for ' . $s['Set']['title'];
+			$set = $this->Set->findById($id);
+			$adminActivity['AdminActivity']['answer'] = 'Added problem for ' . $set['Set']['title'];
 			$this->AdminActivity->save($adminActivity);
 		}
 
@@ -1456,8 +1441,7 @@ class SetsController extends AppController {
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($ts);
-				//set
-			} else if ($viewType == 'topics') {
+			} else {
 				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
 				$ts = [];
 				$scTs = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $set['Set']['id']]]);
@@ -1962,18 +1946,15 @@ class SetsController extends AppController {
 		$set['Set']['anz'] = count($ts);
 
 		if ($this->isLoggedIn() && $viewType == 'topics') {
-			$ur = [];
-			if ($viewType == 'topics') {
-				$ur = $this->TsumegoAttempt->find('all', [
-					'order' => 'created DESC',
-					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
-						'tsumego_id' => $tsIds,
-					],
-				]);
-				if (!$ur) {
-					$ur = [];
-				}
+			$ur = $this->TsumegoAttempt->find('all', [
+				'order' => 'created DESC',
+				'conditions' => [
+					'user_id' => $this->loggedInUserID(),
+					'tsumego_id' => $tsIds,
+				],
+			]);
+			if (!$ur) {
+				$ur = [];
 			}
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++) {

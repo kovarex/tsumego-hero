@@ -56,7 +56,7 @@ class UsersController extends AppController {
 				$this->Schedule->create();
 				$this->Schedule->save($s);
 			}
-			echo '<pre>'; print_r($startDay); echo '</pre>';
+
 			$numFrom += $step;
 			$numTo += $step;
 			$startDay += 1;
@@ -79,7 +79,7 @@ class UsersController extends AppController {
 			$this->Tag->save($tag);
 		}
 
-		echo '<pre>'; print_r(count($t)); echo '</pre>';
+
 		//
 		$st = $this->Tsumego->find('all', array('conditions' => array(
 			'id >=' => 1,
@@ -95,9 +95,9 @@ class UsersController extends AppController {
 				$counter++;
 			}
 		}
-		echo '<pre>'; print_r($counter); echo '</pre>';
-		echo '<pre>'; print_r(' | '); echo '</pre>';
-		echo '<pre>'; print_r(count($st)); echo '</pre>';
+
+
+
 		//
 		$tn = $this->TagName->find('all');
 		$tnCount = count($tn);
@@ -107,26 +107,26 @@ class UsersController extends AppController {
 		}
 
 		$test = $this->findTsumegoSet(50);
-		echo '<pre>'; print_r(count($test)); echo '</pre>';
+
 
 		$ts = $this->Tsumego->find('all', array('order' => 'id ASC', 'conditions' => array(
 			'set_id' => 50
 		)));
-		echo '<pre>'; print_r(count($ts)); echo '</pre>';
+
 
 		$u = $this->Tsumego->find('all', array('conditions' => array(
 			'NOT' => array('set_id' => null)
 		)));
-		echo '<pre>'; print_r(count($u)); echo '</pre>';
+
 		$u = $this->Tsumego->find('all', array('conditions' => array(
 			'public' => 1
 		)));
-		echo '<pre>'; print_r(count($u)); echo '</pre>';
+
 		$ux = $this->Tsumego->find('all', array('conditions' => array(
 			'public' => 1,
 			'set_id' => null
 		)));
-		echo '<pre>'; print_r(count($ux)); echo '</pre>';
+
 
 		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array(
 			'set_id' => 194,
@@ -204,13 +204,12 @@ class UsersController extends AppController {
 		$c = array_count_values($c);
 		$this->set('c', $c);
 
-		echo '<pre>'; print_r(count($comments)); echo '</pre>';
-		echo '<pre>'; print_r(count($c)); echo '</pre>';
+
+
 		*/
 
 		//$this->SetConnection->save($sc);
 		//$s = $this->Tsumego->find('all', array('conditions' => array('id >' => 14000)));
-		//echo '<pre>'; print_r(count($s)); echo '</pre>';
 		/*
 		$sCount = count($s);
 		for ($j=0; $j<$sCount; $j++) {
@@ -233,8 +232,8 @@ class UsersController extends AppController {
 			}
 			array_push($ts2, $ts1[$j]['TsumegoStatus']['tsumego_id']);
 		}
-		echo '<pre>'; print_r($correctCounter); echo '</pre>';
-		echo '<pre>'; print_r(array_count_values($ts2)); echo '</pre>';
+
+
 		$t1['Tsumego']['duplicate'] = 2;
 		$t2['Tsumego']['duplicate'] = $t1['Tsumego']['id'];
 		$t3['Tsumego']['duplicate'] = $t1['Tsumego']['id'];
@@ -258,7 +257,7 @@ class UsersController extends AppController {
 			$u = $this->User->findById($item['Comment']['user_id']);
 			$cc[] = $u['User']['name'];
 		}
-		echo '<pre>'; print_r(array_count_values($cc)); echo '</pre>';
+
 
 		$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => 42)));
 		$sgfs = array();
@@ -270,8 +269,8 @@ class UsersController extends AppController {
 		foreach ($sgfs as $sgf) {
 			$this->Sgf->delete($sgf['Sgf']['id']);
 		}
-		echo '<pre>'; print_r(count($ts)); echo '</pre>';
-		echo '<pre>'; print_r(count($sgfs)); echo '</pre>';
+
+
 
 		$ts = $this->Tsumego->find('all', array('order' => 'num ASC', 'conditions' => array(
 			'set_id' => 185,
@@ -402,29 +401,6 @@ class UsersController extends AppController {
 			echo '</tr>';
 		}
 		echo '</table>';
-	}
-
-	/**
-	 * @param string|int $from Source set ID
-	 * @param string|int $to Destination set ID
-	 * @return void
-	 */
-	private function transferCollection($from, $to) {
-		$sc = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $from]]);
-		$tsIds = [];
-		$scCount = count($sc);
-		for ($i = 0; $i < $scCount; $i++) {
-			array_push($tsIds, $sc[$i]['SetConnection']['tsumego_id']);
-			$sc[$i]['SetConnection']['set_id'] = $to;
-			$this->SetConnection->save($sc[$i]);
-		}
-		$ts = $this->Tsumego->find('all', ['conditions' => ['id' => $tsIds]]);
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$ts[$i]['Tsumego']['set_id'] = $to;
-			$this->Tsumego->save($ts[$i]);
-		}
-		$this->Set->delete($from);
 	}
 
 	/**
@@ -581,7 +557,6 @@ class UsersController extends AppController {
 			$t[$i]['Tsumego']['rd'] = 0;
 			$t[$i]['Tsumego']['elo_rating_mode'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
 			$this->Tsumego->save($t[$i]);
-			echo '<pre>'; print_r('saved '.$t[$i]['Tsumego']['id']); echo '</pre>';
 		}
 		*/
 		echo '<pre>';
@@ -809,56 +784,6 @@ class UsersController extends AppController {
 			echo '<tr><td>' . $item['elo'] . '</td><td>' . $item['xp'] . '</td></tr>';
 		}
 		echo '</table>';
-	}
-
-	/**
-	 * @return void
-	 */
-	private function publishDates() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-		$this->loadModel('Set');
-		$this->loadModel('PublishDate');
-		$ts = $this->Tsumego->find('all', ['order' => 'created ASC']);
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$pdsc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-			if (!$pdsc) {
-				continue;
-			}
-			$pds = $this->Set->findById($pdsc['SetConnection']['set_id']);
-			if (!$pds) {
-				continue;
-			}
-			if ($pds['Set']['public'] == -1) {
-				$pd['PublishDate']['tsumego_id'] = $ts[$i]['Tsumego']['id'];
-				$pd['PublishDate']['date'] = $ts[$i]['Tsumego']['created'];
-				$this->PublishDate->create();
-				$this->PublishDate->save($pd);
-			}
-		}
-	}
-
-	/**
-	 * @return void
-	 */
-	private function fillSetConnection() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('SetConnection');
-
-		$ts = $this->Tsumego->find('all', ['conditions' => ['id >=' => 18000]]);
-		$tsCount = count($ts);
-		for ($j = 0; $j < $tsCount; $j++) {
-			$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$j]['Tsumego']['id'], 'set_id' => $ts[$j]['Tsumego']['set_id']]]);
-			if ($scx == null) {
-				$sc = [];
-				$sc['SetConnection']['tsumego_id'] = $ts[$j]['Tsumego']['id'];
-				$sc['SetConnection']['set_id'] = $ts[$j]['Tsumego']['set_id'];
-				$sc['SetConnection']['num'] = $ts[$j]['Tsumego']['num'];
-				$this->SetConnection->create();
-				$this->SetConnection->save($sc);
-			}
-		}
 	}
 
 	/**
@@ -2173,9 +2098,6 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		//$sc2['SetConnection']['tsumego_id'] = 25984;
 		//$this->SetConnection->save($sc2);
 
-		//echo '<pre>'; print_r($sc1); echo '</pre>';
-		//echo '<pre>'; print_r($sc2); echo '</pre>';
-
 		if (isset($this->params['url']['remove'])) {
 			$remove = $this->Tsumego->findById($this->params['url']['remove']);
 			if ($remove) {
@@ -3017,7 +2939,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$goalsColor[$i] = 'black';
 			}
 		}
-		//echo '<pre>'; print_r($goals); echo '</pre>';
+
 		$this->set('goals', $goals);
 		$this->set('goalsColor', $goalsColor);
 		$this->set('uc', $uc);
@@ -3192,8 +3114,6 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$this->User->save($ux);
 		}
 
-		//echo '<pre>'; print_r($modes); echo '</pre>';
-		//echo '<pre>'; print_r($modes2); echo '</pre>';
 		$this->set('roAll', $roAll);
 		$this->set('rank', $currentRank);
 		$this->set('params1', $params1);
@@ -4030,7 +3950,7 @@ Joschka Zimdars';
 			}
 			$setCount[$i] = $sc;
 			$setPercent[$i] = round($sp / $sc, 2);
-			//echo '<pre>'; print_r($setPercent); echo '</pre>';
+
 			$distance = [];
 			for ($l = 0; $l < 9; $l++) {
 				$xp = ($l + 1) * 10;
@@ -4593,38 +4513,6 @@ Joschka Zimdars';
 		$this->set('u', $u);
 	}
 
-	private function ratingMatch2($d) {
-		if ($d == 1) {
-			return 900;
-		}
-		if ($d == 2) {
-			return 1200;
-		}
-		if ($d == 3) {
-			return 1500;
-		}
-		if ($d == 4) {
-			return 1750;
-		}
-		if ($d == 5) {
-			return 1950;
-		}
-		if ($d == 6) {
-			return 2150;
-		}
-		if ($d == 7) {
-			return 2350;
-		}
-		if ($d == 8) {
-			return 2500;
-		}
-		if ($d == 9) {
-			return 2600;
-		}
-
-		return 1750;
-	}
-
 	/**
 	 * @return void
 	 */
@@ -4966,9 +4854,6 @@ Joschka Zimdars';
 			$ii++;
 		}
 
-		//echo '<pre>'; print_r($repPos3); echo '</pre>';
-		//echo '<pre>'; print_r($repNeg3); echo '</pre>';
-
 		foreach ($repNeg3 as $key => $value) {
 			$found = false;
 			$repSetsCount = count($repSets);
@@ -5183,14 +5068,12 @@ Joschka Zimdars';
 			],
 		]);
 
-		//echo '<pre>'; print_r($test); echo '</pre>';
-
 		$comments = $this->Comment->find('all', [
 			'order' => 'created DESC',
 			'conditions' => [
 				[
-					'NOT' => ['user_id' => 0],
-					'NOT' => ['status' => 99],
+					['NOT' => ['user_id' => 0]],
+					['NOT' => ['status' => 99]],
 				],
 			],
 		]);

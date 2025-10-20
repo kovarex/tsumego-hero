@@ -8,4 +8,5 @@ parameters:
 		- src/
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
-		- '#Call to an undefined method .*\:\:findById\(#'
+		- '#Call to an undefined method .*\:\:findBy.+\(#'
+		- '#Call to an undefined method FlashComponent.+\(#'
