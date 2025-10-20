@@ -28,12 +28,7 @@ class CommentsController extends AppController{
 		if(!isset($this->params['url']['filter'])) $filter1 = 'true';
 		else $filter1 = $this->params['url']['filter'];
 
-		if(!$this->Session->check('loggedInUser.User.id')
-			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
-		)
-			$hasPremium = false;
-		else
-			$hasPremium = true;
+		$hasPremium = this->hasPremium();
 		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
 		if (!$swp) {
 			$swp = [];
@@ -44,7 +39,7 @@ class CommentsController extends AppController{
 
 		if($filter1=='true'){
 			$userTsumegos = $this->TsumegoStatus->find('all', array('conditions' =>  array(
-				'user_id' => $this->Session->read('loggedInUser.User.id'),
+				'user_id' => $this->loggedInUserID(),
 				'OR' => array(
 					array('status' => 'S'),
 					array('status' => 'C'),
@@ -56,7 +51,7 @@ class CommentsController extends AppController{
 			}
 		}else{
 			$userTsumegos = $this->TsumegoStatus->find('all', array('conditions' =>  array(
-				'user_id' => $this->Session->read('loggedInUser.User.id')
+				'user_id' => $this->loggedInUserID()
 			)));
 			if (!$userTsumegos) {
 				$userTsumegos = [];
@@ -283,7 +278,7 @@ class CommentsController extends AppController{
 		$yourComments = array();
 		if(!isset($this->params['url']['your-comment-id'])){
 			$yourComments = $this->Comment->find('all', array('limit' => 500, 'order' => 'created DESC', 'conditions' => array(
-				'user_id' => $this->Session->read('loggedInUser.User.id')
+				'user_id' => $this->loggedInUserID()
 			)));
 			if (!$yourComments) {
 				$yourComments = [];
@@ -296,7 +291,7 @@ class CommentsController extends AppController{
 			if($this->params['url']['your-direction']=='next'){
 				$yourComments = $this->Comment->find('all', array('limit' => 500, 'order' => 'created DESC','conditions' => array(
 					'Comment.id <' => $this->params['url']['your-comment-id'],
-					'user_id' => $this->Session->read('loggedInUser.User.id')
+					'user_id' => $this->loggedInUserID()
 				)));
 				if (!$yourComments) {
 					$yourComments = [];
@@ -304,7 +299,7 @@ class CommentsController extends AppController{
 			}else if(($this->params['url']['your-direction']=='prev')){
 				$yourComments = $this->Comment->find('all', array('limit' => 500, 'order' => 'created ASC','conditions' => array(
 					'Comment.id >' => $this->params['url']['your-comment-id'],
-					'user_id' => $this->Session->read('loggedInUser.User.id')
+					'user_id' => $this->loggedInUserID()
 				)));
 				if (!$yourComments) {
 					$yourComments = [];
@@ -445,7 +440,7 @@ class CommentsController extends AppController{
 		}
 		$admins = $this->User->find('all', array('conditions' => array('isAdmin' => 1)));
 
-		if($this->Session->read('loggedInUser.User.isAdmin') > 0){
+		if($this->isAdmin()){
 			$uc = $this->Comment->find('all', array('conditions' => array(
 				'user_id' => 0,
 				'tsumego_id' => 0
@@ -482,7 +477,7 @@ class CommentsController extends AppController{
 
 	public function remove($id){
 		$token = true;
-		if($this->Session->read('loggedInUser.User.isAdmin')<1)
+		if(!$this->isAdmin())
 			$token = false;
 		else if($this->params['url']['token']!=md5($id))
 			$token = false;

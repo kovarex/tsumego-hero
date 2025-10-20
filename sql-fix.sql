@@ -11,3 +11,8 @@ CREATE TABLE IF NOT EXISTS `cake_sessions` (
   `expires` INT(11) DEFAULT NULL,
   INDEX `expires_idx` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE users MODIFY premium boolean;
+UPDATE users set premium=1 WHERE premium > 1;
+
+ALTER TABLE users MODIFY isAdmin boolean;
