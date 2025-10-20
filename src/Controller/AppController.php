@@ -4,7 +4,7 @@ class AppController extends Controller {
 
 	public $components = [
 		'Session',
-		'DebugKit.Toolbar',
+		//'DebugKit.Toolbar',
 		'Flash',
 	];
 
