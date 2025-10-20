@@ -328,7 +328,6 @@ class SetsController extends AppController {
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
 			$set['Set']['image'] = 'b1.png';
-			$set['Set']['folder'] = $hashName2;
 			$set['Set']['difficulty'] = 4;
 			$set['Set']['author'] = 'various creators';
 			$set['Set']['order'] = 999;
@@ -1934,7 +1933,6 @@ class SetsController extends AppController {
 			$set['Set']['title2'] = null;
 			$set['Set']['author'] = $this->Session->read('loggedInUser.User.name');
 			$set['Set']['description'] = '';
-			$set['Set']['folder'] = '';
 			$set['Set']['difficulty'] = $difficultyCount;
 			$set['Set']['image'] = 'fav';
 			$set['Set']['order'] = 0;

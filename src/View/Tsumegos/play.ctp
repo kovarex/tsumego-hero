@@ -49,7 +49,7 @@
 	$heroPower3 = 'hp3x';
 	$heroPower4 = 'hp4x';
 	$heroPower5 = 'hp5x';
-	
+
 	if($eloScore2==0)
 		$eloScore2d = '-0';
 	else
@@ -58,7 +58,7 @@
 		$eloScore2dRounded = '-0';
 	else
 		$eloScore2dRounded = $eloScore2Rounded;
-	
+
 	if($lightDark=='dark'){
 		$playGreenColor = '#0cbb0c';
 		$playBlueColor = '#72a7f2';
@@ -68,7 +68,7 @@
 		$playBlueColor = 'blue';
 		$xpDisplayColor = 'black';
 	}
-	
+
 	if($goldenTsumego){
 		$xpDisplayColor = '#b5910b';
 		echo '<style>#xpDisplay{font-weight:800;color:#b5910b;}</style>';
@@ -114,7 +114,7 @@
 	else if($t['Tsumego']['set_id']==88156) echo '<script type="text/javascript" src="/'.$boardSize.'/board30.js"></script>'; //Hand of God
 	else if($t['Tsumego']['set_id']==6473) echo '<script type="text/javascript" src="/'.$boardSize.'/board55.js"></script>'; //Tsumego Grandmaster
 	else echo '<script type="text/javascript" src="/'.$boardSize.'/board'.$choice[0][0].'.js"></script>'; // Regular
-	
+
 	if($goldenTsumego) $choice[0] = array(46,'texture46','black34.png','white34.png'); //Golden
 	else if($t['Tsumego']['set_id']==11969) $choice[0] = $boardPositions[44]; //Pretty Area
 	else if($t['Tsumego']['set_id']==29156) $choice[0] = $boardPositions[45]; //Hunting
@@ -136,9 +136,9 @@
 	$playerColor = array();
 	$pl = 0;
 	$plRand = false;
-	if($colorOrientation=='black') 
+	if($colorOrientation=='black')
 		$pl = 0;
-	else if($colorOrientation=='white') 
+	else if($colorOrientation=='white')
 		$pl = 1;
 	else if($tv!=null){
 		$pl = 0;
@@ -146,7 +146,7 @@
 		$pl = rand(0,1);
 		$plRand = true;
 	}
-	if($checkBSize!=19 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161 || $t['Tsumego']['set_id']==239 
+	if($checkBSize!=19 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161 || $t['Tsumego']['set_id']==239
 	|| $t['Tsumego']['set_id']==243 || $t['Tsumego']['set_id']==244 || $t['Tsumego']['set_id']==246 || $t['Tsumego']['set_id']==251 || $t['Tsumego']['set_id']==253)
 		$pl=0;
 	if($pl==0){
@@ -158,15 +158,15 @@
 	}
 	if($pl==0)
 		$descriptionColor = 'Black ';
-	else 
+	else
 		$descriptionColor = 'White ';
-		
+
 	if($startingPlayer==1 && $plRand==true){
 		if($descriptionColor=='Black ')
 			$descriptionColor = 'White ';
 		else if($descriptionColor=='White ')
 			$descriptionColor = 'Black ';
-	}	
+	}
 	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if($nothingInRange!=false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
@@ -303,15 +303,15 @@
 	</tr>
 	<tr>
 		<td align="center">
-		<?php 
+		<?php
 		if($mode==1)
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif($mode==2  || $mode==3)
 			echo '<div id="titleDescription" class="titleDescription2">';
 		if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
-			echo '<b>'.$t['Tsumego']['description'].'</b> '; 
+			echo '<b>'.$t['Tsumego']['description'].'</b> ';
 		else
-			echo '<a id="descriptionText">'.$t['Tsumego']['description'].'</a> '; 
+			echo '<a id="descriptionText">'.$t['Tsumego']['description'].'</a> ';
 		if(isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.$t['Tsumego']['hint'].')</font>';
 		if($tv!=null){
@@ -534,7 +534,7 @@
 					$duplicateLink = $navi[$i]['Tsumego']['duplicateLink'];
 				if($inFavorite=='?favorite=1')
 					$duplicateLink = '';
-				
+
 				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="'.$navi[$i]['Tsumego']['status'].'">
 					<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$navi[$i]['Tsumego']['id'].$duplicateLink.$inFavorite.'">
 					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
@@ -544,17 +544,17 @@
 			?>
 		</div>
 	</div>
-	<?php 
+	<?php
 		}else{
 			echo '<div id="currentElement"></div>';
-		}		
+		}
 	}else{
 		echo '<div id="currentElement"></div>';
 	}
 ?>
 	<div align="center">
-	<?php 
-	
+	<?php
+
 	if($this->Session->check('loggedInUser.User.id')){
 		if($firstRanks==0){
 			$makeProposal = '';
@@ -617,7 +617,7 @@
 				$adHighlight = 'historyLink';
 			else
 				$adHighlight = '';
-				
+
 			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 					echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
 					echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
@@ -699,7 +699,7 @@
 											echo '<td><input type="radio" id="r40" name="data[Settings][r40]" value="off" '.$duOff.'><label for="r40">no</label></td>
 											<td><input type="radio" id="r40" name="data[Settings][r40]" value="on" '.$duOn.'><label for="r40">yes</label></td>';
 										}else{
-											
+
 										}
 									echo '</tr>';
 									echo '<tr>
@@ -828,7 +828,7 @@
 				</form>
 			</div>
 		</div>
-		
+
 		<?php }
 		if($firstRanks==0){
 		?>
@@ -836,7 +836,7 @@
 		<table class="sandboxTable" width="62%">
 		<tr>
 		<td>
-		
+
 		<?php
 		echo '<div id="commentSpace">';
 			$showComment2 = array();
@@ -862,7 +862,7 @@
 					}
 					if($commentColorCheck) $commentColor = 'commentBox2';
 					else $commentColor = 'commentBox1';
-					
+
 					$cpArray = null;
 					if($showComment[$i]['Comment']['position']!=null){
 						$cpNew = null;
@@ -882,7 +882,7 @@
 						$showComment[$i]['Comment']['message'] = str_replace('[current position]', $cpArray, $showComment[$i]['Comment']['message']);
 					}
 					$showComment[$i]['Comment']['message'] = substr($showComment[$i]['Comment']['message'], 1);
-					
+
 					echo '<div class="sandboxComment">';
 					echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
 					echo '<div class="'.$commentColor.'">'.$showComment[$i]['Comment']['user'].':<br>';
@@ -1150,7 +1150,7 @@
 		</label>
 	<?php } ?>
 	<?php } ?>
-	
+
 	<?php echo '</div>'; ?>
 	<div class="loader-container">
 		<div class="loader-content">
@@ -1168,8 +1168,8 @@
 	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
-	
-	/* 
+
+	/*
 	§TESTING AREA§
 	echo '<pre>'; print_r($levelBar); echo '</pre>';
 	*/
@@ -1254,7 +1254,6 @@
 	var deleteNextMoveGroup = false;
 	var file = "<?php echo $file; ?>";
 	var clearFile = "<?php echo $set['Set']['title'].' - '.$t['Tsumego']['num']; ?>";
-	var clearFile2 = "<?php echo $set['Set']['folder'].'/'.$t['Tsumego']['num']; ?>";
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
 	var idForSignature = "<?php echo $idForSignature; ?>";
@@ -1336,7 +1335,7 @@
 
 	$("#msgFilters").css("display", "none");
 
-	<?php 
+	<?php
 		if($query!='topics')
 			for($i=0; $i<count($search1); $i++)
 				echo 'activeTopicTiles.push("'.$search1[$i].'");';
@@ -1370,7 +1369,7 @@
 		window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
 	});
 
-	<?php 
+	<?php
 	if($tv!=null){
 	if($tv['TsumegoVariant']['type']=='multiple_choice' && $tv['TsumegoVariant']['explanation']!=""){
 		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
@@ -1384,17 +1383,17 @@
 	}else{
 		echo 'besogoNoLogin = true;';
 	}
-	
+
 	if($pl==1) echo 'besogoPlayerColor = "white";';
 	if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $t['Tsumego']['set_id']==109
-	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236) 
+	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236)
 	echo 'besogoPlayerColor = "black";';
-	
+
 	if($authorx==$this->Session->read('loggedInUser.User.name')) echo 'authorProblem = true;';
 	if($this->Session->read('loggedInUser.User.id')==72){
 		echo 'authorProblem = true;';
 		echo 'revelationEnabled = true;';
-	} 
+	}
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
@@ -1414,7 +1413,7 @@
 
 	var eloScore = <?php echo $eloScore; ?>;
 	var eloScore2 = <?php echo $eloScore2; ?>;
-	
+
 	<?php
 		if($corner=='t' || $corner=='b' || $corner=='full board'){
 			echo '$("#plus2").css("left", "340px");';
@@ -1765,7 +1764,7 @@
 	if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		echo 'var showCommentSpace = true;';
 		echo '$("#show5").css("display", "inline-block");';
-	}	
+	}
 	if($set['Set']['public']==0) echo 'var showCommentSpace = true;';
 	if($goldenTsumego) echo 'var goldenTsumego = true;';
 	else echo 'var goldenTsumego = false;';
@@ -1824,7 +1823,7 @@
 
 	$(document).ready(function(){
 		<?php
-		if($t['Tsumego']['set_id']==210){ 
+		if($t['Tsumego']['set_id']==210){
 			echo '$("#author-notice").hide();';
 		}
 			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
@@ -1937,7 +1936,7 @@
 				tagLink = '';
 				tagLinkId = '';
 			}
-			$(".tag-list").append('<a '+tagLink+' class="'+isNewTag+'" '+tagLinkId+'>'+tags[i]+'</a>');	
+			$(".tag-list").append('<a '+tagLink+' class="'+isNewTag+'" '+tagLinkId+'>'+tags[i]+'</a>');
 			if(i<tags.length-1){
 				if(tagsGivesHint[i]==1){
 					$(".tag-list").append('<p class="tag-gives-hint">, </p>');
@@ -1958,7 +1957,7 @@
 		$(".add-tag-list-popular").append("Add tag: ");
 		for(let i=0;i<popularTags.length;i++){
 			$(".add-tag-list-popular").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(popularTags[i])+'">'
-			+popularTags[i]+'</a>');	
+			+popularTags[i]+'</a>');
 			if(i<popularTags.length-1)
 				$(".add-tag-list-popular").append(', ');
 		}
@@ -1967,12 +1966,12 @@
 		$(".add-tag-list").append("Add tag: ");
 		for(let i=0;i<allTags.length;i++){
 			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
-			+allTags[i]+'</a>');	
+			+allTags[i]+'</a>');
 			if(i<allTags.length-1)
 				$(".add-tag-list").append(', ');
 		}
 		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
-		<?php 
+		<?php
 			if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2')
 				echo '$(".tag-gives-hint").css("display", "inline");';
 		?>
@@ -2010,7 +2009,7 @@
 			for(let i=0;i<allTags.length;i++){
 				if(allTags[i] !== $(currentIdValue).text())
 					newAllTags.push(allTags[i]);
-			}	
+			}
 			allTags = newAllTags;
 			tags.push($(currentIdValue).text());
 			$(".tag-list").html("");
@@ -2085,7 +2084,7 @@
 						if(!sprintLockedInSecretArea){
 							if(seconds2<10)
 								timeOutput = minutes + ":0" + seconds2;
-							else	
+							else
 								timeOutput = minutes + ":" + seconds2;
 							document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
 							document.getElementById("xpDisplay").style.color = "<?php echo $playBlueColor; ?>";
@@ -2235,7 +2234,7 @@
 			}
 			msg3selected = !msg3selected;
 		});
-		
+
 		$("#show4").click(function(){
 			if(!msg4selected){
 				$("#msg4").fadeIn(250);
@@ -2246,7 +2245,7 @@
 			}
 			msg4selected = !msg4selected;
 		});
-		
+
 		<?php
 			if($this->Session->check('loggedInUser.User.id')){
 				//if($this->Session->read('loggedInUser.User.id')==72) echo '$("#msg5").show();';
@@ -2298,7 +2297,7 @@
 			besogoOrientation[0] = besogoOrientation[1];
 		  let isInTree = besogo.editor.isMoveInTree(current);
 		  current = isInTree[0];
-		  
+
 		  if(isInTree[1]['x'].length>0){
 			  for(let i=isInTree[1]['x'].length-1;i>=0;i--)
 				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
@@ -2308,7 +2307,7 @@
 			 commentContent = commentContent.replace('[current position]','');
 		  }
 		  $("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
-		  
+
 		  if(current===null || current.move===null){
 			$("#CommentPosition").val(
 				"-1/-1/0/0/0/0/0/0/0"
@@ -2327,7 +2326,7 @@
 				cX = current.children[0].move.x;
 				cY = current.children[0].move.y;
 			}
-			
+
 			let newP = current.parent;
 			let newPcoords = current.move.x+"/"+current.move.y+"+";
 			  while(newP!==null && newP.move!==null){
@@ -2349,12 +2348,12 @@
 			displaySettings();
 		<?php if($this->Session->check('loggedInUser.User.id')){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
 			if(solutionRequest)
-				displaySolutionRequest(); 
+				displaySolutionRequest();
 			$("#showx99").click(function(){
 				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $this->Session->read('loggedInUser.User.id'); ?>;
-			});	
-		<?php }}} ?>		
-			
+			});
+		<?php }}} ?>
+
 		<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
@@ -2376,18 +2375,18 @@
 			$('.loader-container').css({"display":"flex"});
 			window.location.href="/tsumegos/duplicatesearch/<?php echo $t['Tsumego']['id']; ?>";
 		});
-		
+
 		//if(cvn) setTimeout(function () {window.location.href = "/tsumegos/play/"+nextButtonLink}, 50);
-		
+
 		var mouseX;
 		var mouseY;
 		$(document).mousemove(function(e){
-		   mouseX = e.pageX; 
+		   mouseX = e.pageX;
 		   mouseY = e.pageY;
 		});
-		
+
 		let tooltipSgfs = [];
-		
+
 		<?php
 		if($mode!=3){
 			for($a=0; $a<count($tooltipSgfs); $a++){
@@ -2404,7 +2403,7 @@
 		}
 		?>
 	});
-	
+
 	function displaySolutionRequest(){
 		if(!authorProblem)
 			$("#showx99").css("display", "inline-block");
@@ -2449,7 +2448,7 @@
 		$("#showx8").css("display", "inline-block");
 		<?php } ?>
 	}
-	
+
 	function jsCreateDownloadFile(name){
 		if(enableDownloads){
 			var blob = new Blob(["<?php echo $sgf['Sgf']['sgf']; ?>"],{
@@ -2549,7 +2548,7 @@
 			}
 		}else if(mode==3){
 			<?php
-				$xxx2 = $stopParameter > 0 ? (($crs+1)/$stopParameter)*100 : 0; 
+				$xxx2 = $stopParameter > 0 ? (($crs+1)/$stopParameter)*100 : 0;
 				if($xxx2>100) $xxx2 = 100;
 			?>
 			$("#xp-bar-fill").css({"width":"<?php echo $xxx2; ?>%"});
@@ -2562,7 +2561,7 @@
 			},1000);
 		}
 	}
-	
+
 	function runXPNumber(id, start, end, duration, ulvl){
 	start = Math.round(start);
 	end = Math.round(end);
@@ -2594,7 +2593,7 @@
 	}
 	<?php } ?>
 	}
-	
+
 	function updateHealth(){
 		<?php
 			$m = 1;
@@ -2649,7 +2648,7 @@
 						}else{
 							clearInterval(x);
 							<?php
-							if(isset($sprintActivated)) 
+							if(isset($sprintActivated))
 								echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=Lax";';
 							if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
 								echo '
@@ -2676,7 +2675,7 @@
 			sprintEnabled = false;
 		}
 	}
-	
+
 	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
 		positionParams = [];
 		positionParams[0] = x;
@@ -2692,7 +2691,7 @@
 			positionParams[9] = newX;
 		besogo.editor.commentPosition(positionParams);
 	}
-	
+
 	function intuition(){
 		setCookie("intuition", 1);
 		document.getElementById("intuition").src = "/img/hp2x.png";
@@ -2848,7 +2847,7 @@
 	function selectFav(){
 		document.getElementById("ans2").innerHTML = "";
 	}
-	
+
 	$(document).keydown(function(event){
 		var keycode = (event.keyCode ? event.keyCode : event.which);
 		if(mode!=2){
@@ -3074,7 +3073,7 @@
 					if(mode==1 || mode==2) secondsy = seconds;
 					if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
 					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
-					
+
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
@@ -3107,7 +3106,7 @@
 				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 				document.getElementById("xpDisplay").style.color = "white";
-				if(light==true) 
+				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
 				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
@@ -3155,7 +3154,7 @@
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
-				if(light==true) 
+				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
 				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
@@ -3214,7 +3213,7 @@
 				besogoMode2Solved = true;
 				$("#besogo-next-button-inactive").attr("id","besogo-next-button");
 				setCookie("mode", mode);
-				if(light==true) 
+				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
 				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
@@ -3240,7 +3239,7 @@
 		}
 		setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 	}
-	
+
 	function toggleBoardLock(t, multipleChoice=false){
 		if(tryAgainTomorrow)
 			t = true;
@@ -3251,7 +3250,7 @@
 		if(multipleChoice)
 			multipleChoiceEnabled = true;
 	}
-	
+
 	function displayMessage(message='text', topic='Message', color='red'){
 		$('#customText').html(message);
 		$("#customAlerts").fadeIn(500);
@@ -3261,7 +3260,7 @@
 			$(".alertBanner").addClass("alertBannerCorrect");
 		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
 	}
-	
+
 	function resetParameters(isAtStart){
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 		if(tStatus=="setS2"||tStatus=="setC2") heartLoss = false;
@@ -3292,11 +3291,11 @@
 			value = params[i].split("=");
 			options[value.shift()] = value.join("=");
 	  }
-	  
+
 	  options.panels = "tree+control";
-	  <?php 
+	  <?php
 	  if($this->Session->read('loggedInUser.User.isAdmin')>0) echo 'options.panels = "tree+control+tool+comment+file";';
-	  ?> 
+	  ?>
 	  options.tsumegoPlayTool = 'auto';
 	  options.realstones = true;
 	  options.nowheel = true;
@@ -3451,10 +3450,10 @@
 			margin:0 4px 8px
 		}
 		#showFilters, .showFilters{
-			<?php 
+			<?php
 			$displayNone = false;
 			if($set['Set']['id']==1 || (count($search1)==0 && count($search2)==0 && count($search3)==0))
-				$displayNone = true;	
+				$displayNone = true;
 			else if($query=='topics' && count($search2)==0 && count($search3)==0)
 				$displayNone = true;
 			else if($query=='difficulty' && count($search1)==0 && count($search3)==0)

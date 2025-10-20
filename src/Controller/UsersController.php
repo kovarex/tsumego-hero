@@ -4240,16 +4240,6 @@ Joschka Zimdars';
 
 		$tsCount = count($ts);
 		for ($i = 0; $i < $tsCount; $i++) {
-			/*
-			$set = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
-			$sgf = array();
-			$sgf['Sgf']['sgf'] = file_get_contents('6473k339312/'.$set['Set']['folder'].'/'.$ts[$i]['Tsumego']['num'].'.sgf');
-			$sgf['Sgf']['user_id'] = 33;
-			$sgf['Sgf']['tsumego_id'] = $ts[$i]['Tsumego']['id'];
-			$sgf['Sgf']['version'] = 1.0;
-			$this->Sgf->create();
-			$this->Sgf->save($sgf);
-			*/
 			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'limit' => 1000, 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 			$ratio = [];
 			$ratio['s'] = 0;

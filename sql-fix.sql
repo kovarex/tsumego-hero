@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS `cake_sessions` (
   INDEX `expires_idx` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE `sets` DROP COLUMN `folder`;
+
 ALTER TABLE `achievements` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_conditions` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_statuses` convert to character set utf8mb4 collate utf8mb4_unicode_ci;

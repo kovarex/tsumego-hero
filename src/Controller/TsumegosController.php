@@ -2909,8 +2909,7 @@ class TsumegosController extends AppController {
 		]);
 
 		$hasAnyFavorite = $this->Favorite->find('first', ['conditions' => ['user_id' => $u['User']['id']]]);
-		$folderString = $t['Tsumego']['num'] . 'number' . $set['Set']['folder'];
-		$hash = $this->encrypt($folderString);
+		$hash = $this->encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
 
 		if ($pdCounter == 1) {
 			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .5);
