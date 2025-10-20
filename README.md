@@ -68,3 +68,10 @@ composer cs-check -- src/Utility
 # Test specific methods (side ddev container!):
 vendor/bin/phpunit path/to/test.php --filter=testMethodName
 ```
+
+## Deploy
+On the server in ROOT:
+```
+sh deploy.sh
+```
+It will run git pull + composer install etc.
