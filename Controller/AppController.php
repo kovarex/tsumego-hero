@@ -538,7 +538,7 @@ class AppController extends Controller
 		$tsumegoAvtivityValue = max(round((2/3)*$t['Tsumego']['activity_value']),15);
 		$kFactor1 = 1;
 		$kFactor2 = 1;
-		if($isLoggedIn()){
+		if($this->isLoggedIn()){
 			if($this->Session->read('loggedInUser.User.elo_rating_mode')>=1500){
 				$kFactor1 = 1.5;
 				$kFactor2 = 0.9;
