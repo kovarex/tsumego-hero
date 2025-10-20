@@ -514,15 +514,12 @@
 	<?php
 			}
 		}
-		if($this->Session->check('loggedInUser.User.id')){ ?>
-		var barPercent1 = <?php echo $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
+		if($this->isLoggedIn()){ ?>
+		var barPercent1 = <?php echo empty($user['User']['nextlvl']) ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
 		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
-
-		<?php if($this->Session->read('loggedInUser.User.id')==72){ ?>
-		<?php } ?>
 	<?php } ?>
 	<?php
 	if($this->Session->read('page')!='level mode' && $this->Session->read('page')!='rating mode' && $this->Session->read('page')!='time mode')
