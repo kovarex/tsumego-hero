@@ -82,7 +82,7 @@ class RanksController extends AppController {
 					$rds0[$i]['RankSetting']['status'] = 0;
 					$this->RankSetting->save($rds0[$i]);
 				}
-				foreach($this->data['Settings'] as $ds) {
+				foreach ($this->data['Settings'] as $ds) {
 					$rds = $this->RankSetting->find('first', [
 						'conditions' => [
 							'user_id' => $this->loggedInUserID(),
@@ -157,11 +157,12 @@ class RanksController extends AppController {
 		for ($i = 0;$i < 3;$i++) {
 			$rank = 15;
 			$j = 0;
-			while($rank > -5) {
+			while ($rank > -5) {
 				$kd = 'k';
 				$rank2 = $rank;
-				if ($rank >= 1) { $kd = 'k';
-				} else{
+				if ($rank >= 1) {
+					$kd = 'k';
+				} else {
 					$rank2 = ($rank - 1) * (-1);
 					$kd = 'd';
 				}
@@ -261,12 +262,12 @@ class RanksController extends AppController {
 			$stopParameterNum = 10;
 			$stopParameterPass = 8;
 			$stopParameterSec = 30;
-		}elseif (strlen($sess) == 16) {
+		} elseif (strlen($sess) == 16) {
 			$stopParameter = 1;
 			$stopParameterNum = 10;
 			$stopParameterPass = 8;
 			$stopParameterSec = 60;
-		}elseif (strlen($sess) == 17) {
+		} elseif (strlen($sess) == 17) {
 			$stopParameter = 2;
 			$stopParameterNum = 10;
 			$stopParameterPass = 8;
@@ -280,11 +281,12 @@ class RanksController extends AppController {
 		for ($i = 0;$i < 3;$i++) {
 			$rank = 15;
 			$j = 0;
-			while($rank > -5) {
+			while ($rank > -5) {
 				$kd = 'k';
 				$rank2 = $rank;
-				if ($rank >= 1) { $kd = 'k';
-				} else{
+				if ($rank >= 1) {
+					$kd = 'k';
+				} else {
 					$rank2 = ($rank - 1) * (-1);
 					$kd = 'd';
 				}
@@ -298,7 +300,8 @@ class RanksController extends AppController {
 			$openCard1 = -1;
 			$openCard2 = -1;
 			$cardV = 0;
-			if ($stopParameter == 0) { $cardV = 0;
+			if ($stopParameter == 0) {
+				$cardV = 0;
 			} elseif ($stopParameter == 1) { $cardV = 1;
 			} elseif ($stopParameter == 2) { $cardV = 2;
 			}
@@ -339,7 +342,8 @@ class RanksController extends AppController {
 					$rx1 = '';
 				} else {
 					$rx1 = '0';
-					if ($ranksMinutes > 0) { $rx1 = '00';
+					if ($ranksMinutes > 0) {
+						$rx1 = '00';
 					}
 				}
 
@@ -352,7 +356,7 @@ class RanksController extends AppController {
 					$ranks[$i]['Rank']['points'] = 0;
 					if ($ranks[$i]['Rank']['result'] == 'timeout' || $ranks[$i]['Rank']['result'] == 'skipped') { $ranks[$i]['Rank']['seconds'] = '0:00.0';
 					}
-				}elseif ($ranks[$i]['Rank']['result'] == 'solved') {
+				} elseif ($ranks[$i]['Rank']['result'] == 'solved') {
 					$solved++;
 				} else {
 					$c++;
@@ -400,11 +404,12 @@ class RanksController extends AppController {
 		for ($i = 0;$i < 3;$i++) {
 			$rank = 15;
 			$j = 0;
-			while($rank > -5) {
+			while ($rank > -5) {
 				$kd = 'k';
 				$rank2 = $rank;
-				if ($rank >= 1) { $kd = 'k';
-				} else{
+				if ($rank >= 1) {
+					$kd = 'k';
+				} else {
 					$rank2 = ($rank - 1) * (-1);
 					$kd = 'd';
 				}
@@ -453,7 +458,8 @@ class RanksController extends AppController {
 						$tday = $date->format('d.');
 						$tyear = $date->format('Y');
 						$tClock = $date->format('H:i');
-						if ($tday[0] == 0) { $tday = substr($tday, -3);
+						if ($tday[0] == 0) {
+							$tday = substr($tday, -3);
 						}
 						$modes[$i][$j]['RankOverview']['created'] = $tClock . ' ' . $tday . $month . $tyear;
 					}
@@ -497,19 +503,23 @@ class RanksController extends AppController {
 						$sx = $this->Set->findById($tx['Tsumego']['set_id']);
 						$foundSkipped = false;
 						$timeFieldColor = '#e03c4b';
-						if ($h == 0) { $ss = 30;
+						if ($h == 0) {
+							$ss = 30;
 						} elseif ($h == 1) { $ss = 60;
 						} elseif ($h == 2) { $ss = 240;
 						}
 						$allR[$h][$i][$j]['Rank']['tsumego'] = $sx['Set']['title'] . ' ' . $sx['Set']['title2'] . ' - ' . $tx['Tsumego']['num'];
-						if ($allR[$h][$i][$j]['Rank']['result'] == 'solved') { $hh = 'green';
+						if ($allR[$h][$i][$j]['Rank']['result'] == 'solved') {
+							$hh = 'green';
 						} else { $hh = '#e03c4b';
 						}
 						if ($allR[$h][$i][$j]['Rank']['result'] == 'timeout') { $allR[$h][$i][$j]['Rank']['seconds'] = $ss;
 						}
-						if ($allR[$h][$i][$j]['Rank']['result'] == 'skipped') { $foundSkipped = true;
+						if ($allR[$h][$i][$j]['Rank']['result'] == 'skipped') {
+							$foundSkipped = true;
 						}
-						if ($allR[$h][$i][$j]['Rank']['result'] == 'solved') { $timeFieldColor = 'green';
+						if ($allR[$h][$i][$j]['Rank']['result'] == 'solved') {
+							$timeFieldColor = 'green';
 						}
 						$allR[$h][$i][$j]['Rank']['result'] = '<b style="color:' . $hh . ';">' . $allR[$h][$i][$j]['Rank']['result'] . '</b>';
 						$allR[$h][$i][$j]['Rank']['seconds'] = round($allR[$h][$i][$j]['Rank']['seconds'], 1);
@@ -523,7 +533,8 @@ class RanksController extends AppController {
 							$rx1 = '';
 						} else {
 							$rx1 = '0';
-							if ($ranksMinutes > 0) { $rx1 = '00';
+							if ($ranksMinutes > 0) {
+								$rx1 = '00';
 							}
 						}
 						$allR[$h][$i][$j]['Rank']['seconds'] = $ranksMinutes . ':' . $rx1 . $ranksSeconds . '.' . $ranksDecimal;
@@ -557,7 +568,8 @@ class RanksController extends AppController {
 		for ($i = 0;$i < $sessArrayCount;$i++) {
 			$sessArrayICount = count($sessArray[$i]);
 			for ($j = 0;$j < $sessArrayICount;$j++) {
-				if ($sessArray[$i][$j] == $ranks[0]['Rank']['session']) { $sessionFound = true;
+				if ($sessArray[$i][$j] == $ranks[0]['Rank']['session']) {
+					$sessionFound = true;
 				}
 			}
 		}
@@ -588,9 +600,9 @@ class RanksController extends AppController {
 		$rx = 0;
 		if ($max == 240) {
 			$rx = 20 + round($time / 3);
-		}elseif ($max == 60) {
+		} elseif ($max == 60) {
 			$rx = 40 + round($time);
-		}elseif ($max == 30) {
+		} elseif ($max == 30) {
 			$rx = 40 + round($time * 2);
 		}
 

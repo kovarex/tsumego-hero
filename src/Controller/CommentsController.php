@@ -90,7 +90,7 @@ class CommentsController extends AppController {
 				if (!$comments) {
 					$comments = [];
 				}
-			}elseif ($unresolved == 'true') {
+			} elseif ($unresolved == 'true') {
 				$comments = $this->Comment->find('all', [
 					'limit' => 500,
 					'order' => 'created DESC',
@@ -124,7 +124,7 @@ class CommentsController extends AppController {
 					if (!$comments) {
 						$comments = [];
 					}
-				}elseif (($this->params['url']['direction'] == 'prev')) {
+				} elseif (($this->params['url']['direction'] == 'prev')) {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created ASC',
@@ -138,7 +138,7 @@ class CommentsController extends AppController {
 					}
 					$reverseOrder = true;
 				}
-			}elseif ($unresolved == 'true') {
+			} elseif ($unresolved == 'true') {
 				if ($this->params['url']['direction'] == 'next') {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
@@ -151,7 +151,7 @@ class CommentsController extends AppController {
 					if (!$comments) {
 						$comments = [];
 					}
-				}elseif (($this->params['url']['direction'] == 'prev')) {
+				} elseif (($this->params['url']['direction'] == 'prev')) {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created ASC',
@@ -183,7 +183,7 @@ class CommentsController extends AppController {
 					if (in_array($t['Tsumego']['id'], $keyList)) {
 						if ($counter < 11) {
 							if (!in_array($t['Tsumego']['id'], $keyList)) { $solved = 0;
-							} else{
+							} else {
 								if ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S' ||
 								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C' ||
 								   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W') {
@@ -227,7 +227,8 @@ class CommentsController extends AppController {
 									$tday = $date->format('d. ');
 									$tyear = $date->format('Y');
 									$tClock = $date->format('H:i');
-									if ($tday[0] == 0) { $tday = substr($tday, -3);
+									if ($tday[0] == 0) {
+										$tday = substr($tday, -3);
 									}
 									$comments[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
 									array_push($c, $comments[$i]);
@@ -251,7 +252,7 @@ class CommentsController extends AppController {
 					}
 					if (!$premiumLock) {
 						if (!in_array($t['Tsumego']['id'], $keyList)) { $solved = 0;
-						} else{
+						} else {
 							if ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S' ||
 							$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C' ||
 							$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W') {
@@ -293,7 +294,8 @@ class CommentsController extends AppController {
 								$tday = $date->format('d. ');
 								$tyear = $date->format('Y');
 								$tClock = $date->format('H:i');
-								if ($tday[0] == 0) { $tday = substr($tday, -3);
+								if ($tday[0] == 0) {
+									$tday = substr($tday, -3);
 								}
 								$comments[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
 								array_push($c, $comments[$i]);
@@ -349,7 +351,7 @@ class CommentsController extends AppController {
 				if (!$yourComments) {
 					$yourComments = [];
 				}
-			}elseif (($this->params['url']['your-direction'] == 'prev')) {
+			} elseif (($this->params['url']['your-direction'] == 'prev')) {
 				$yourComments = $this->Comment->find('all', [
 					'limit' => 500,
 					'order' => 'created ASC',
@@ -404,7 +406,8 @@ class CommentsController extends AppController {
 							$tday = $date->format('d. ');
 							$tyear = $date->format('Y');
 							$tClock = $date->format('H:i');
-							if ($tday[0] == 0) { $tday = substr($tday, -3);
+							if ($tday[0] == 0) {
+								$tday = substr($tday, -3);
 							}
 							$yourComments[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
 

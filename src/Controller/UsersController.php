@@ -38,7 +38,7 @@ class UsersController extends AppController {
 		$month = '09';
 
 		$numTo = $numFrom + $step - 1;
-		while($startDay <= $endDay) {
+		while ($startDay <= $endDay) {
 			$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array(
 				'set_id' => $setFrom,
 				'num >=' => $numFrom,
@@ -369,7 +369,7 @@ class UsersController extends AppController {
 		$a['elo'] = [];
 		$a['elo2'] = [];
 		$counter = 0;
-		while($counter <= 100) {
+		while ($counter <= 100) {
 			array_push($a['c'], $counter);
 			$rank = $this->getTsumegoRankx($counter);
 			array_push($a['rank'], $rank);
@@ -945,7 +945,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$Email->send($ans);
 			}
 			$this->set('sent', true);
-		}else{
+		} else {
 			$this->set('sent', false);
 		}
 	}
@@ -958,7 +958,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
 		$valid = false;
 		$done = false;
-		if ($checksum == null) { $checksum = 1;
+		if ($checksum == null) {
+			$checksum = 1;
 		}
 		$u = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
 		if (!empty($this->data)) {
@@ -966,7 +967,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$u['User']['pw'] = $newPw;
 			$this->User->save($u);
 			$done = true;
-		}else{
+		} else {
 			if ($u != null) {
 				$valid = true;
 			}
@@ -1149,7 +1150,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$tagCount = array_count_values($tagCount);
 		$tagId = [];
 		$tagNum = [];
-		foreach($tagCount as $key => $value) {
+		foreach ($tagCount as $key => $value) {
 			array_push($tagId, $key);
 			array_push($tagNum, $value);
 		}
@@ -1180,19 +1181,26 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$sum = 0;
 				$xpJump = 10;
 				for ($j = 1; $j < $toplvl; $j++) {
-					if ($j >= 11) { $xpJump = 25;
+					if ($j >= 11) {
+						$xpJump = 25;
 					}
-					if ($j >= 19) { $xpJump = 50;
+					if ($j >= 19) {
+						$xpJump = 50;
 					}
-					if ($j >= 39) { $xpJump = 100;
+					if ($j >= 39) {
+						$xpJump = 100;
 					}
-					if ($j >= 69) { $xpJump = 150;
+					if ($j >= 69) {
+						$xpJump = 150;
 					}
-					if ($j == 99) { $xpJump = 50000;
+					if ($j == 99) {
+						$xpJump = 50000;
 					}
-					if ($j == 100) { $xpJump = 1150;
+					if ($j == 100) {
+						$xpJump = 1150;
 					}
-					if ($j >= 101) { $xpJump = 0;
+					if ($j >= 101) {
+						$xpJump = 0;
 					}
 					$sum += $startxp;
 					$startxp += $xpJump;
@@ -1260,9 +1268,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0; $i < $asCount; $i++) {
 			if ($as[$i]['AchievementStatus']['achievement_id'] != 46) {
 				array_push($as2, $as[$i]['AchievementStatus']['user_id']);
-			}else{
+			} else {
 				$as46counter = $as[$i]['AchievementStatus']['value'];
-				while($as46counter > 0) {
+				while ($as46counter > 0) {
 					array_push($as2, $as[$i]['AchievementStatus']['user_id']);
 					$as46counter--;
 				}
@@ -1429,7 +1437,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					'NOT' => ['lastRefresh' => date('Y-m-d')],
 				],
 			]);
-		}elseif ($filter == 2) {
+		} elseif ($filter == 2) {
 			$u = $this->User->find('all', [
 				'conditions' => [
 					'NOT' => ['lastRefresh' => date('Y-m-d')],
@@ -1455,7 +1463,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$u[$i]['User']['lastRefresh'] = date('Y-m-d');
 				$this->User->save($u[$i]);
 			}
-		}else{
+		} else {
 			$u = $this->User->find('all', ['limit' => 50, 'order' => 'lastRefresh ASC']);
 		}
 		$this->set('u', $u);
@@ -1546,7 +1554,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		if ($uLast['User']['id'] < $a['Answer']['message']) {
 			$a['Answer']['message'] = 0;
 			$a['Answer']['dismissed'] = 300;
-		}else{
+		} else {
 			$a['Answer']['message'] += 300;
 			$a['Answer']['dismissed'] += 300;
 		}
@@ -1566,7 +1574,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->LoadModel('SetConnection');
 		if ($uid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
-		}elseif ($uid == 99) {
+		} elseif ($uid == 99) {
 			$ur = $this->TsumegoAttempt->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
@@ -1574,7 +1582,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					'tsumego_id <=' => 19761,
 				],
 			]);
-		}else{
+		} else {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
 		}
 
@@ -1593,7 +1601,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 
 		$noIndex = false;
-		if ($uid != null) { $noIndex = true;
+		if ($uid != null) {
+			$noIndex = true;
 		}
 		if (isset($this->params['url']['c'])) { $this->set('count', 1);
 		} else { $this->set('count', 0);
@@ -1615,7 +1624,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->LoadModel('SetConnection');
 		if ($uid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
-		}else{
+		} else {
 			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
 		}
 
@@ -1669,42 +1678,42 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p10F']++;
 				}
 				$performance['p10']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 20) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 20) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p20S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p20F']++;
 				}
 				$performance['p20']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 30) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 30) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p30S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p30F']++;
 				}
 				$performance['p30']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 40) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 40) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p40S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p40F']++;
 				}
 				$performance['p40']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 50) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 50) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p50S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p50F']++;
 				}
 				$performance['p50']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 60) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 60) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p60S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p60F']++;
 				}
 				$performance['p60']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 70) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 70) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p70S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p70F']++;
 				}
 				$performance['p70']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 80) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 80) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p80S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p80F']++;
 				}
 				$performance['p80']++;
-			}elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 90) {
+			} elseif ($ur[$i]['TsumegoAttempt']['tsumego_xp'] == 90) {
 				if ($ur[$i]['TsumegoAttempt']['solved'] == 'S') { $performance['p90S']++;
 				} elseif ($ur[$i]['TsumegoAttempt']['solved'] == 'F') { $performance['p90F']++;
 				}
@@ -1713,7 +1722,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 
 		$noIndex = false;
-		if ($uid != null) { $noIndex = true;
+		if ($uid != null) {
+			$noIndex = true;
 		}
 
 		$this->set('noIndex', $noIndex);
@@ -1742,7 +1752,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		if ($sid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
-		}else{
+		} else {
 			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
 		}
 
@@ -1760,7 +1770,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 
 		$noIndex = false;
-		if ($uid != null) { $noIndex = true;
+		if ($uid != null) {
+			$noIndex = true;
 		}
 		if (isset($this->params['url']['c'])) { $this->set('count', 1);
 		} else { $this->set('count', 0);
@@ -1817,9 +1828,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		if ($p == 'public') {
 			$comments = $c2;
-		}else if ($p == 'sandbox') {
+		} else if ($p == 'sandbox') {
 			$comments = $c3;
-		}else if ($p != 0 && is_numeric($p)) {
+		} else if ($p != 0 && is_numeric($p)) {
 			$comments = $this->Comment->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $p]]);
 		}
 
@@ -2121,7 +2132,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 						$r2[$i]['Tsumego']['duplicate'] = 0;
 						$this->Tsumego->save($r2[$i]);
 					}
-				}elseif (count($r2) > 2) {
+				} elseif (count($r2) > 2) {
 					$remove['Tsumego']['duplicate'] = 0;
 					$this->Tsumego->save($remove);
 				}
@@ -2133,7 +2144,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: ' . $title;
 				$this->AdminActivity->save($adminActivity);
-			}else{
+			} else {
 				$aMessage = 'You can\'t remove the main duplicate.';
 			}
 		}
@@ -2146,7 +2157,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$errNotNull = '';
 			if (count($checkSc) <= 1) {
 				$validSc = true;
-			}else{
+			} else {
 				$validSc = false;
 				$errNotNull = 'Already set as duplicate.';
 			}
@@ -2159,7 +2170,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				array_push($newD0check, $newD0['Tsumego']['set_id']);
 			}
 			$newD0check = array_count_values($newD0check);
-			foreach($newD0check as $key => $value) {
+			foreach ($newD0check as $key => $value) {
 				if ($value > 1) {
 					$validSc = false;
 					$errSet = 'You can\'t link duplicates in the same collection.';
@@ -2176,7 +2187,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 						$newDmain = $newD;
 						$newD['Tsumego']['duplicate'] = $this->params['url']['main'];
 						$this->Tsumego->save($newD);
-					}else{
+					} else {
 						$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
 						$commentsCount = count($comments);
 						for ($j = 0; $j < $commentsCount; $j++) {
@@ -2264,7 +2275,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			array_push($scCount, $sc[$i]['SetConnection']['tsumego_id']);
 		}
 		$scCount = array_count_values($scCount);
-		foreach($scCount as $key => $value) {
+		foreach ($scCount as $key => $value) {
 			if ($value > 1) {
 				array_push($scCount2, $key);
 			}
@@ -2418,7 +2429,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
 								$this->handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
-							}else{
+							} else {
 								$reject = [];
 								$reject['Reject']['tsumego_id'] = $tagToApprove['Tag']['tsumego_id'];
 								$reject['Reject']['user_id'] = $tagToApprove['Tag']['user_id'];
@@ -2442,7 +2453,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
 								$this->handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
-							}else{
+							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $tagNameToApprove['TagName']['user_id'];
 								$reject['Reject']['type'] = 'tag name';
@@ -2465,7 +2476,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
 								$this->Sgf->save($proposalToApprove);
 								$this->handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
-							}else{
+							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $proposalToApprove['Sgf']['user_id'];
 								$reject['Reject']['tsumego_id'] = $proposalToApprove['Sgf']['tsumego_id'];
@@ -2627,7 +2638,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
 				array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
 				array_push($ca['type'], 'Answer');
-			}else{
+			} else {
 				if ($aa[$i]['AdminActivity']['isAdmin'] > 0) {
 					array_push($aa2, $aa[$i]);
 					array_push($ca['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
@@ -2707,10 +2718,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 
 				$this->Session->setFlash(__('Login incorrect.', true));
-			}else{
+			} else {
 				$this->Session->setFlash(__('Login incorrect.', true));
 			}
-		}else{
+		} else {
 			$clearSession = true;
 		}
 		$this->set('clearSession', $clearSession);
@@ -2732,7 +2743,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 
 				$this->Session->setFlash(__('Login incorrect.', true));
-			}else{
+			} else {
 				$this->Session->setFlash(__('Login incorrect.', true));
 			}
 		}
@@ -2891,7 +2902,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
-			}elseif (md5('rank') == $this->params['url']['action']) {
+			} elseif (md5('rank') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
@@ -2903,12 +2914,12 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
-			}elseif (md5('heropower') == $this->params['url']['action']) {
+			} elseif (md5('heropower') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward3'] = 1;
 					$this->UserContribution->save($uc);
 				}
-			}elseif (md5('premium') == $this->params['url']['action']) {
+			} elseif (md5('premium') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					if (!$this->hasPremium()) {
 						$u = $this->User->findById($this->loggedInUserID());
@@ -3002,10 +3013,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$currentRank = $this->params['url']['rank'];
 			$params1 = $this->params['url']['category'];
 			$params2 = $this->params['url']['rank'];
-		}else{
+		} else {
 			if ($this->isLoggedIn()) {
 				$lastModex = $this->Session->read('loggedInUser')['User']['lastMode'] - 1;
-			}else{
+			} else {
 				$lastModex = 2;
 			}
 
@@ -3032,7 +3043,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$alreadyIn = false;
 			$roAllCount = count($roAll['user']);
 			for ($j = 0; $j < $roAllCount; $j++) {
-				if ($roAll['user'][$j] == $us['User']['name']) { $alreadyIn = true;
+				if ($roAll['user'][$j] == $us['User']['name']) {
+					$alreadyIn = true;
 				}
 			}
 			if (!$alreadyIn) {
@@ -3050,11 +3062,12 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0;$i < 3;$i++) {
 			$rank = 15;
 			$j = 0;
-			while($rank > -5) {
+			while ($rank > -5) {
 				$kd = 'k';
 				$rank2 = $rank;
-				if ($rank >= 1) { $kd = 'k';
-				} else{
+				if ($rank >= 1) {
+					$kd = 'k';
+				} else {
 					$rank2 = ($rank - 1) * (-1);
 					$kd = 'd';
 				}
@@ -3070,11 +3083,12 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0;$i < 3;$i++) {
 			$rank = 15;
 			$j = 0;
-			while($rank > -5) {
+			while ($rank > -5) {
 				$kd = 'k';
 				$rank2 = $rank;
-				if ($rank >= 1) { $kd = 'k';
-				} else{
+				if ($rank >= 1) {
+					$kd = 'k';
+				} else {
 					$rank2 = ($rank - 1) * (-1);
 					$kd = 'd';
 				}
@@ -3264,19 +3278,26 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$xpJump = 10;
 
 		for ($i = 1; $i < $toplvl; $i++) {
-			if ($i >= 11) { $xpJump = 25;
+			if ($i >= 11) {
+				$xpJump = 25;
 			}
-			if ($i >= 19) { $xpJump = 50;
+			if ($i >= 19) {
+				$xpJump = 50;
 			}
-			if ($i >= 39) { $xpJump = 100;
+			if ($i >= 39) {
+				$xpJump = 100;
 			}
-			if ($i >= 69) { $xpJump = 150;
+			if ($i >= 69) {
+				$xpJump = 150;
 			}
-			if ($i >= 99) { $xpJump = 50000;
+			if ($i >= 99) {
+				$xpJump = 50000;
 			}
-			if ($i == 100) { $xpJump = 1150;
+			if ($i == 100) {
+				$xpJump = 1150;
 			}
-			if ($i >= 101) { $xpJump = 0;
+			if ($i >= 101) {
+				$xpJump = 0;
 			}
 			$sumx += $startxp;
 			$startxp += $xpJump;
@@ -3319,12 +3340,12 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['f']++;
 						}
 						$testCounter++;
-					}else{
+					} else {
 						$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
 						if ($ta[$i]['TsumegoAttempt']['solved'] == 1) {
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 1;
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
-						}else{
+						} else {
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 1;
 						}
@@ -3393,9 +3414,11 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 				$p = $user['User']['solved'] / $tsumegoNum * 100;
 				$p = round($p);
-				if ($p == 100 && $user['User']['solved'] < $tsumegoNum) { $p = 99;
+				if ($p == 100 && $user['User']['solved'] < $tsumegoNum) {
+					$p = 99;
 				}
-				if ($p > 100) { $p = 100;
+				if ($p > 100) {
+					$p = 100;
 				}
 			}
 		}
@@ -4566,11 +4589,13 @@ Joschka Zimdars';
 			$isMain = false;
 			$st2Count = count($st2);
 			for ($j = 0; $j < $st2Count; $j++) {
-				if ($t['Tsumego']['set_id'] == $st2[$j]['Set']['id']) { $isMain = true;
+				if ($t['Tsumego']['set_id'] == $st2[$j]['Set']['id']) {
+					$isMain = true;
 				}
 			}
-			if ($isMain) { $keep++;
-			} else{
+			if ($isMain) {
+				$keep++;
+			} else {
 				//$this->TsumegoStatus->delete($ut[$i]['TsumegoStatus']['id']);
 				$deleted++;
 			}
@@ -4592,7 +4617,7 @@ Joschka Zimdars';
 			$b[$i]['tid'] = $a[$i];
 			$b[$i]['count'] = 1;
 			$answer['Purge']['duplicates'] .= $b[$i]['tid'] . '-';
-			while($c > 1) {
+			while ($c > 1) {
 				$this->TsumegoStatus->delete($utd[$j]['TsumegoStatus']['id']);
 				$b[$i]['count']++;
 				if ($c == 2) { $answer['Purge']['duplicates'] .= $b[$i]['count'] . '|';
@@ -4652,7 +4677,7 @@ Joschka Zimdars';
 
 		if ($ux == null) {
 			$ux['User']['d2'] = 'null';
-		}else{
+		} else {
 			$d1 = date('Y-m-d', strtotime('-7 days'));
 			$date = new DateTime($ux['User']['created']);
 			$date = $date->format('Y-m-d');
@@ -4660,10 +4685,11 @@ Joschka Zimdars';
 			if ($date < $d1) {
 				$ux['User']['d2'] = 'archive';
 				$c = count($this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $ux['User']['id']]]) ?: []);
-				if ($c == 0) { $c = '';
+				if ($c == 0) {
+					$c = '';
 				}
 				$p['Purge']['duplicates'] = '-' . $c;
-			}else{
+			} else {
 				$ux['User']['d2'] = 'ok';
 				$p['Purge']['duplicates'] = '+';
 			}
@@ -4903,7 +4929,8 @@ Joschka Zimdars';
 
 		$aCount = count($a);
 		for ($i = 0; $i < $aCount; $i++) {
-			if ($a[$i]['Reputation']['value'] == 1) { $likes++;
+			if ($a[$i]['Reputation']['value'] == 1) {
+				$likes++;
 			} else { $dislikes++;
 			}
 
@@ -4939,7 +4966,7 @@ Joschka Zimdars';
 			$name = $token_data['name'];
 			$email = $token_data['email'];
 			$picture = $token_data['picture'];
-		}else{
+		} else {
 			echo 'Invalid token';
 		}
 		$externalId = 'g__' . $token_data['sub'];
@@ -4957,7 +4984,7 @@ Joschka Zimdars';
 
 			if ($imageContent === false) {
 				$userData['User']['picture'] = 'default.png';
-			}else{
+			} else {
 				$userData['User']['picture'] = $externalId . '.png';
 				file_put_contents('img/google/' . $externalId . '.png', $imageContent);
 			}
@@ -5071,7 +5098,7 @@ Joschka Zimdars';
 		$users = array_count_values($users);
 		$uValue = [];
 		$uName = [];
-		foreach($users as $key => $value) {
+		foreach ($users as $key => $value) {
 			array_push($uValue, $value);
 			array_push($uName, $key);
 		}
@@ -5126,7 +5153,7 @@ Joschka Zimdars';
 				for ($i = 0; $i < $pCount; $i++) {
 					if ($p[$i]['Purge']['id'] != 1 && $p[$i]['Purge']['id'] != 2 && $p[$i]['Purge']['id'] != 3) {
 						$this->Purge->delete($p[$i]['Purge']['id']);
-					}else{
+					} else {
 						$p[$i]['Purge']['user_id'] = 1;
 						$this->Purge->save($p[$i]);
 					}
@@ -5192,7 +5219,7 @@ Joschka Zimdars';
 					$this->Session->read('loggedInUser')['User']['dbstorage'] = $u['User']['dbstorage'];
 					$this->User->save($u);
 					$redirect = true;
-				}else{
+				} else {
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 				}
 			}
@@ -5222,7 +5249,7 @@ Joschka Zimdars';
 					$this->Session->read('loggedInUser')['User']['isAdmin'] = 0;
 					$this->User->save($u);
 					$redirect = true;
-				}else{
+				} else {
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 				}
 			}

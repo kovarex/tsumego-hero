@@ -119,7 +119,7 @@ class AppController extends Controller {
 		$endCondition = 0;
 		$currentPos1 = $pos + 2;
 		$currentPos2 = $pos + 5;
-		while($sgfArr[$currentPos1] == '[' && $sgfArr[$currentPos2] == ']') {
+		while ($sgfArr[$currentPos1] == '[' && $sgfArr[$currentPos2] == ']') {
 			$endCondition = $currentPos2;
 			$currentPos1 += 4;
 			$currentPos2 += 4;
@@ -267,7 +267,7 @@ class AppController extends Controller {
 
 		$recentlyUsed = [];
 		$d = 1;
-		while($d <= 10) {
+		while ($d <= 10) {
 			$ru = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('-' . $d . ' days'))]]);
 			if ($ru) {
 				array_push($recentlyUsed, $ru);
@@ -277,33 +277,39 @@ class AppController extends Controller {
 		$currentQuote = 'q01';
 		$newQuote = 'q01';
 		$quoteChosen = false;
-		while(!$quoteChosen) {
+		while (!$quoteChosen) {
 			$newQuote = rand(1, 45);
-			if ($newQuote < 10) { $newQuote = 'q0' . $newQuote;
-			} else { $newQuote = 'q' . $newQuote;
+			if ($newQuote < 10) {
+				$newQuote = 'q0' . $newQuote;
+			} else {
+				$newQuote = 'q' . $newQuote;
 			}
 
 			$f = false;
 			$recentlyUsedCount = count($recentlyUsed);
 			for ($i = 0; $i < $recentlyUsedCount; $i++) {
-				if ($newQuote == $recentlyUsed[$i]['DayRecord']['quote']) { $f = true;
+				if ($newQuote == $recentlyUsed[$i]['DayRecord']['quote']) {
+					$f = true;
 				}
 			}
-			if (!$f) { $quoteChosen = true;
+			if (!$f) {
+				$quoteChosen = true;
 			}
 		}
 		$currentQuote = $newQuote;
 		$dayUserRand = 1;
 		$uotdChosen = false;
-		while(!$uotdChosen) {
+		while (!$uotdChosen) {
 			$dayUserRand = rand(1, 39);
 			$f = false;
 			$recentlyUsedCount = count($recentlyUsed);
 			for ($i = 0; $i < $recentlyUsedCount; $i++) {
-				if ($dayUserRand == $recentlyUsed[$i]['DayRecord']['userbg']) { $f = true;
+				if ($dayUserRand == $recentlyUsed[$i]['DayRecord']['userbg']) {
+					$f = true;
 				}
 			}
-			if (!$f) { $uotdChosen = true;
+			if (!$f) {
+				$uotdChosen = true;
 			}
 		}
 		$activity = $this->TsumegoAttempt->find('all', ['limit' => 40000, 'conditions' => ['DATE(TsumegoAttempt.created)' => date('Y-m-d', strtotime('yesterday'))]]);
@@ -321,7 +327,8 @@ class AppController extends Controller {
 		$activityCount = count($activity);
 		for ($i = 0; $i < $activityCount; $i++) {
 			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today) { array_push($usersNum, $activity[$i]['User']);
+			if ($a->format('Y-m-d') == $today) {
+				array_push($usersNum, $activity[$i]['User']);
 			}
 		}
 		$gemRand1 = rand(0, 2);
@@ -395,7 +402,8 @@ class AppController extends Controller {
 					$found = false;
 					$alreadyFoundCount = count($alreadyFound);
 					for ($k = 0; $k < $alreadyFoundCount; $k++) {
-						if ($alreadyFound[$k]['DayRecord']['id'] == $dr[$i]['DayRecord']['id'] || $alreadyFound[$k]['DayRecord']['id'] == $dr[$j]['DayRecord']['id']) { $found = true;
+						if ($alreadyFound[$k]['DayRecord']['id'] == $dr[$i]['DayRecord']['id'] || $alreadyFound[$k]['DayRecord']['id'] == $dr[$j]['DayRecord']['id']) {
+							$found = true;
 						}
 					}
 					if (!$found) {
@@ -406,8 +414,8 @@ class AppController extends Controller {
 			}
 		}
 		$duplicates = array_count_values($duplicates);
-		foreach($duplicates as $key => $value) {
-			while($duplicates[$key] > 1) {
+		foreach ($duplicates as $key => $value) {
+			while ($duplicates[$key] > 1) {
 				$drd = $this->DayRecord->find('first', ['conditions' => ['date' => $key]]);
 				if ($drd) {
 					$this->DayRecord->delete($drd['DayRecord']['id']);
@@ -557,7 +565,8 @@ class AppController extends Controller {
 
 	protected function convertEloToXp($elo) {
 		$xp = round(pow($elo / 100, 1.55) - 6);
-		if ($xp < 10) { $xp = 10;
+		if ($xp < 10) {
+			$xp = 10;
 		}
 
 		return $xp;
@@ -599,35 +608,40 @@ class AppController extends Controller {
 			if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 1500) {
 				$kFactor1 = 1.5;
 				$kFactor2 = 0.9;
-			}else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 1800) {
+			} else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 1800) {
 				$kFactor1 = 2;
 				$kFactor2 = 0.8;
-			}else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 2100) {
+			} else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 2100) {
 				$kFactor1 = 2.5;
 				$kFactor2 = 0.7;
-			}else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 2400) {
+			} else if ($this->Session->read('loggedInUser.User.elo_rating_mode') >= 2400) {
 				$kFactor1 = 3;
 				$kFactor2 = 0.6;
 			}
 		}
-		if ($diff == 0) { $diff = .1;
+		if ($diff == 0) {
+			$diff = .1;
 		}
 		if ($eloBigger == 'u') {
 			$tWin = $diff / $tsumegoAvtivityValue;
 			$tLoss = 0;
 
 			$uWin = log($diff, 2) - $diff / 70;
-			if ($diff <= 100) { $uWin = 5;
+			if ($diff <= 100) {
+				$uWin = 5;
 			}
 			$uWin *= $kFactor2;
-			if ($uWin < 1) { $uWin = 1 - $diff / 1400;
+			if ($uWin < 1) {
+				$uWin = 1 - $diff / 1400;
 			}
-			if ($uWin > 5) { $uWin = 5;
+			if ($uWin > 5) {
+				$uWin = 5;
 			}
 
 			$uLoss = log($diff, 2) * 2.2 - 12;
 			$uLoss *= $kFactor2;
-			if ($uLoss < 5) { $uLoss = 5;
+			if ($uLoss < 5) {
+				$uLoss = 5;
 			}
 			$uLoss *= -1;
 
@@ -635,20 +649,23 @@ class AppController extends Controller {
 				$uWin = 0;
 				$uLoss = 0;
 			}
-		}else if ($eloBigger == 't') {
+		} else if ($eloBigger == 't') {
 			$tWin = 0;
 			$tLoss = $diff / $tsumegoAvtivityValue * (-1);
 
 			$uWin = log($diff, 2) * 2.2 - 11;
 			$uWin *= $kFactor2;
-			if ($uWin < 5) { $uWin = 5;
+			if ($uWin < 5) {
+				$uWin = 5;
 			}
 
 			$uLoss = log($diff, 2) - $diff / 70 - 1;
-			if ($diff < 100) { $uLoss = 4;
+			if ($diff < 100) {
+				$uLoss = 4;
 			}
 			$uLoss *= $kFactor2;
-			if ($uLoss < 1) { $uLoss = 1 - $diff / 1400;
+			if ($uLoss < 1) {
+				$uLoss = 1 - $diff / 1400;
 			}
 			$uLoss *= -1;
 		}
@@ -693,7 +710,7 @@ class AppController extends Controller {
 			$missing = $tsumegoNum - count($ra);
 			$raSize = count($ra);
 			$datex = new DateTime('-1 month');
-			while($missing != 0) {
+			while ($missing != 0) {
 				$ra[$raSize]['TsumegoAttempt']['created'] = $datex->format('Y-m-d H:i:s');
 				$ra[$raSize]['TsumegoAttempt']['tsumego_id'] = 1;
 				$raSize++;
@@ -730,12 +747,12 @@ class AppController extends Controller {
 		$h = $interval->h;
 		$i = $interval->i;
 		$months = 0;
-		while($m > 0) {
+		while ($m > 0) {
 			$months += 672;
 			$m--;
 		}
 		$hours = $h;
-		while($d > 0) {
+		while ($d > 0) {
 			$hours += 24;
 			$d--;
 		}
@@ -852,7 +869,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 2) {
+		} elseif ($range == 2) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -863,7 +880,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 3) {
+		} elseif ($range == 3) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -874,7 +891,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 4) {
+		} elseif ($range == 4) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -885,7 +902,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 5) {
+		} elseif ($range == 5) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -896,7 +913,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 6) {
+		} elseif ($range == 6) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -907,7 +924,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 7) {
+		} elseif ($range == 7) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -918,7 +935,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 8) {
+		} elseif ($range == 8) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -929,7 +946,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 9) {
+		} elseif ($range == 9) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -940,7 +957,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 10) {
+		} elseif ($range == 10) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -951,7 +968,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 11) {
+		} elseif ($range == 11) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -962,7 +979,7 @@ class AppController extends Controller {
 			if (!$u) {
 				$u = [];
 			}
-		}elseif ($range == 12) {
+		} elseif ($range == 12) {
 			$u = $this->User->find('all', [
 				'order' => 'id DESC',
 				'conditions' => [
@@ -1157,7 +1174,8 @@ class AppController extends Controller {
 		$highest = 0;
 		$best = [];
 		foreach ($ids as $key => $value) {
-			if ($value > $highest) { $highest = $value;
+			if ($value > $highest) {
+				$highest = $value;
 			}
 		}
 		foreach ($ids as $key => $value) {
@@ -1182,7 +1200,8 @@ class AppController extends Controller {
 		$highest = 0;
 		$best2 = [];
 		foreach ($ids2 as $key => $value) {
-			if ($value > $highest) { $highest = $value;
+			if ($value > $highest) {
+				$highest = $value;
 			}
 		}
 		$done = false;
@@ -1190,7 +1209,7 @@ class AppController extends Controller {
 		$decrement = 0;
 		$best3 = [];
 		$findNum = 20;
-		while(!$done) {
+		while (!$done) {
 			foreach ($ids2 as $key => $value) {
 				if ($value == $highest - $decrement) {
 					array_push($best2, $key);
@@ -1199,12 +1218,15 @@ class AppController extends Controller {
 				}
 			}
 			$decrement++;
-			if ($found < $findNum) { $done = false;
-			} else { $done = true;
+			if ($found < $findNum) {
+				$done = false;
+			} else {
+				$done = true;
 			}
 		}
 		$newBest = [];
-		for ($j = 0; $j < $findNum; $j++) { $newBest[$j] = [];
+		for ($j = 0; $j < $findNum; $j++) {
+			$newBest[$j] = [];
 		}
 		$out2Count = count($out2);
 		for ($i = 0; $i < $out2Count; $i++) {
@@ -1246,7 +1268,8 @@ class AppController extends Controller {
 				$yesterday = false;
 				$sCount = count($s);
 				for ($j = 0; $j < $sCount; $j++) {
-					if ($newBest[$i][0]['tid'] == $s[$j]['Schedule']['tsumego_id']) { $yesterday = true;
+					if ($newBest[$i][0]['tid'] == $s[$j]['Schedule']['tsumego_id']) {
+						$yesterday = true;
 					}
 				}
 				if (!$yesterday) {
@@ -1260,54 +1283,96 @@ class AppController extends Controller {
 	}
 
 	protected function ratingMatch($elo) {
-		if ($elo >= 3000) { $td = 10;//10d
-		} elseif ($elo >= 2900) { $td = 10;//9d
-		} elseif ($elo >= 2800) { $td = 10;//8d
-		} elseif ($elo >= 2700) { $td = 10;//7d x2700
-		} elseif ($elo >= 2600) { $td = 9;//6d x2600
-		} elseif ($elo >= 2500) { $td = 8;//5d x2500
-		} elseif ($elo >= 2400) { $td = 7;//4d
-		} elseif ($elo >= 2300) { $td = 7;//3d x2350
-		} elseif ($elo >= 2200) { $td = 6;//2d
-		} elseif ($elo >= 2100) { $td = 6;//1d x2150
-		} elseif ($elo >= 2000) { $td = 5;//1k
-		} elseif ($elo >= 1900) { $td = 5;//2k x1950
-		} elseif ($elo >= 1800) { $td = 4;//3k
-		} elseif ($elo >= 1700) { $td = 4;//4k x1750
-		} elseif ($elo >= 1600) { $td = 3;//5k
-		} elseif ($elo >= 1500) { $td = 3;//6k x1500
-		} elseif ($elo >= 1400) { $td = 3;//7k
-		} elseif ($elo >= 1300) { $td = 2;//8k
-		} elseif ($elo >= 1200) { $td = 2;//9k x1200
-		} elseif ($elo >= 1100) { $td = 2;//10k
-		} elseif ($elo >= 1000) { $td = 1;//11k
-		} elseif ($elo >= 900) { $td = 1;//12k x900
-		} elseif ($elo >= 800) { $td = 1;//13k
-		} elseif ($elo >= 700) { $td = 1;//14k
-		} elseif ($elo >= 600) { $td = 1;//15k
-		} elseif ($elo >= 500) { $td = 1;//16k
-		} elseif ($elo >= 400) { $td = 1;//17k
-		} elseif ($elo >= 300) { $td = 1;//18k
-		} elseif ($elo >= 200) { $td = 1;//19k
-		} elseif ($elo >= 100) { $td = 1;//20k
-		} else { $td = 1;
+		if ($elo >= 3000) {
+			$td = 10;//10d
+		} elseif ($elo >= 2900) {
+			$td = 10;//9d
+		} elseif ($elo >= 2800) {
+			$td = 10;//8d
+		} elseif ($elo >= 2700) {
+			$td = 10;//7d x2700
+		} elseif ($elo >= 2600) {
+			$td = 9;//6d x2600
+		} elseif ($elo >= 2500) {
+			$td = 8;//5d x2500
+		} elseif ($elo >= 2400) {
+			$td = 7;//4d
+		} elseif ($elo >= 2300) {
+			$td = 7;//3d x2350
+		} elseif ($elo >= 2200) {
+			$td = 6;//2d
+		} elseif ($elo >= 2100) {
+			$td = 6;//1d x2150
+		} elseif ($elo >= 2000) {
+			$td = 5;//1k
+		} elseif ($elo >= 1900) {
+			$td = 5;//2k x1950
+		} elseif ($elo >= 1800) {
+			$td = 4;//3k
+		} elseif ($elo >= 1700) {
+			$td = 4;//4k x1750
+		} elseif ($elo >= 1600) {
+			$td = 3;//5k
+		} elseif ($elo >= 1500) {
+			$td = 3;//6k x1500
+		} elseif ($elo >= 1400) {
+			$td = 3;//7k
+		} elseif ($elo >= 1300) {
+			$td = 2;//8k
+		} elseif ($elo >= 1200) {
+			$td = 2;//9k x1200
+		} elseif ($elo >= 1100) {
+			$td = 2;//10k
+		} elseif ($elo >= 1000) {
+			$td = 1;//11k
+		} elseif ($elo >= 900) {
+			$td = 1;//12k x900
+		} elseif ($elo >= 800) {
+			$td = 1;//13k
+		} elseif ($elo >= 700) {
+			$td = 1;//14k
+		} elseif ($elo >= 600) {
+			$td = 1;//15k
+		} elseif ($elo >= 500) {
+			$td = 1;//16k
+		} elseif ($elo >= 400) {
+			$td = 1;//17k
+		} elseif ($elo >= 300) {
+			$td = 1;//18k
+		} elseif ($elo >= 200) {
+			$td = 1;//19k
+		} elseif ($elo >= 100) {
+			$td = 1;//20k
+		} else {
+			$td = 1;
 		}
 
 		return $td;
 	}
 
 	protected function rating2($d) {
-		if ($d == 10) { $elo = 2700;
-		} elseif ($d == 9) { $elo = 2600;
-		} elseif ($d == 8) { $elo = 2500;
-		} elseif ($d == 7) { $elo = 2350;
-		} elseif ($d == 6) { $elo = 2150;
-		} elseif ($d == 5) { $elo = 1950;
-		} elseif ($d == 4) { $elo = 1750;
-		} elseif ($d == 3) { $elo = 1500;
-		} elseif ($d == 2) { $elo = 1200;
-		} elseif ($d == 1) { $elo = 900;
-		} else { $elo = 1500;
+		if ($d == 10) {
+			$elo = 2700;
+		} elseif ($d == 9) {
+			$elo = 2600;
+		} elseif ($d == 8) {
+			$elo = 2500;
+		} elseif ($d == 7) {
+			$elo = 2350;
+		} elseif ($d == 6) {
+			$elo = 2150;
+		} elseif ($d == 5) {
+			$elo = 1950;
+		} elseif ($d == 4) {
+			$elo = 1750;
+		} elseif ($d == 3) {
+			$elo = 1500;
+		} elseif ($d == 2) {
+			$elo = 1200;
+		} elseif ($d == 1) {
+			$elo = 900;
+		} else {
+			$elo = 1500;
 		}
 
 		return $elo;
@@ -1353,61 +1418,89 @@ class AppController extends Controller {
 	protected function getTsumegoRank($t) {
 		if ($t < 100) {
 			return '21k';
-		} elseif ($t < 200) {
+		}
+		if ($t < 200) {
 			return '20k';
-		} elseif ($t < 300) {
+		}
+		if ($t < 300) {
 			return '19k';
-		} elseif ($t < 400) {
+		}
+		if ($t < 400) {
 			return '18k';
-		} elseif ($t < 500) {
+		}
+		if ($t < 500) {
 			return '17k';
-		} elseif ($t < 600) {
+		}
+		if ($t < 600) {
 			return '16k';
-		} elseif ($t < 700) {
+		}
+		if ($t < 700) {
 			return '15k';
-		} elseif ($t < 800) {
+		}
+		if ($t < 800) {
 			return '14k';
-		} elseif ($t < 900) {
+		}
+		if ($t < 900) {
 			return '13k';
-		} elseif ($t < 1000) {
+		}
+		if ($t < 1000) {
 			return '12k';
-		} elseif ($t < 1100) {
+		}
+		if ($t < 1100) {
 			return '11k';
-		} elseif ($t < 1200) {
+		}
+		if ($t < 1200) {
 			return '10k';
-		} elseif ($t < 1300) {
+		}
+		if ($t < 1300) {
 			return '9k';
-		} elseif ($t < 1400) {
+		}
+		if ($t < 1400) {
 			return '8k';
-		} elseif ($t < 1500) {
+		}
+		if ($t < 1500) {
 			return '7k';
-		} elseif ($t < 1600) {
+		}
+		if ($t < 1600) {
 			return '6k';
-		} elseif ($t < 1700) {
+		}
+		if ($t < 1700) {
 			return '5k';
-		} elseif ($t < 1800) {
+		}
+		if ($t < 1800) {
 			return '4k';
-		} elseif ($t < 1900) {
+		}
+		if ($t < 1900) {
 			return '3k';
-		} elseif ($t < 2000) {
+		}
+		if ($t < 2000) {
 			return '2k';
-		} elseif ($t < 2100) {
+		}
+		if ($t < 2100) {
 			return '1k';
-		} elseif ($t < 2200) {
+		}
+		if ($t < 2200) {
 			return '1d';
-		} elseif ($t < 2300) {
+		}
+		if ($t < 2300) {
 			return '2d';
-		} elseif ($t < 2400) {
+		}
+		if ($t < 2400) {
 			return '3d';
-		} elseif ($t < 2500) {
+		}
+		if ($t < 2500) {
 			return '4d';
-		} elseif ($t < 2600) {
+		}
+		if ($t < 2600) {
 			return '5d';
-		} elseif ($t < 2700) {
+		}
+		if ($t < 2700) {
 			return '6d';
-		} elseif ($t < 2800) {
+		}
+		if ($t < 2800) {
 			return '7d';
-		} elseif ($t < 2900) {
+		}
+		if ($t < 2900) {
 			return '8d';
 		}
 
@@ -1417,26 +1510,46 @@ class AppController extends Controller {
 		if ($t <= 0) {
 			return '15k';
 		}
-		if ($t > 0 && $t <= 22) { $tRank = '5d';
-		} elseif ($t <= 26.5) { $tRank = '4d';
-		} elseif ($t <= 30) { $tRank = '3d';
-		} elseif ($t <= 34) { $tRank = '2d';
-		} elseif ($t <= 38) { $tRank = '1d';
-		} elseif ($t <= 42) { $tRank = '1k';
-		} elseif ($t <= 46) { $tRank = '2k';
-		} elseif ($t <= 50) { $tRank = '3k';
-		} elseif ($t <= 54.5) { $tRank = '4k';
-		} elseif ($t <= 58.5) { $tRank = '5k';
-		} elseif ($t <= 63) { $tRank = '6k';
-		} elseif ($t <= 67) { $tRank = '7k';
-		} elseif ($t <= 70.8) { $tRank = '8k';
-		} elseif ($t <= 74.8) { $tRank = '9k';
-		} elseif ($t <= 79) { $tRank = '10k';
-		} elseif ($t <= 83.5) { $tRank = '11k';
-		} elseif ($t <= 88) { $tRank = '12k';
-		} elseif ($t <= 92) { $tRank = '13k';
-		} elseif ($t <= 96) { $tRank = '14k';
-		} else { $tRank = '15k';
+		if ($t > 0 && $t <= 22) {
+			$tRank = '5d';
+		} elseif ($t <= 26.5) {
+			$tRank = '4d';
+		} elseif ($t <= 30) {
+			$tRank = '3d';
+		} elseif ($t <= 34) {
+			$tRank = '2d';
+		} elseif ($t <= 38) {
+			$tRank = '1d';
+		} elseif ($t <= 42) {
+			$tRank = '1k';
+		} elseif ($t <= 46) {
+			$tRank = '2k';
+		} elseif ($t <= 50) {
+			$tRank = '3k';
+		} elseif ($t <= 54.5) {
+			$tRank = '4k';
+		} elseif ($t <= 58.5) {
+			$tRank = '5k';
+		} elseif ($t <= 63) {
+			$tRank = '6k';
+		} elseif ($t <= 67) {
+			$tRank = '7k';
+		} elseif ($t <= 70.8) {
+			$tRank = '8k';
+		} elseif ($t <= 74.8) {
+			$tRank = '9k';
+		} elseif ($t <= 79) {
+			$tRank = '10k';
+		} elseif ($t <= 83.5) {
+			$tRank = '11k';
+		} elseif ($t <= 88) {
+			$tRank = '12k';
+		} elseif ($t <= 92) {
+			$tRank = '13k';
+		} elseif ($t <= 96) {
+			$tRank = '14k';
+		} else {
+			$tRank = '15k';
 		}
 
 		return $tRank;
@@ -1479,51 +1592,51 @@ class AppController extends Controller {
 		$elo = 600;
 		if ($rank == '9d') {
 			$elo = round(2900 + $p);
-		}else if ($rank == '8d') {
+		} else if ($rank == '8d') {
 			$elo = round(2800 + $p);
-		}else if ($rank == '7d') {
+		} else if ($rank == '7d') {
 			$elo = round(2700 + $p);
-		}else if ($rank == '6d') {
+		} else if ($rank == '6d') {
 			$elo = round(2600 + $p);
-		}else if ($rank == '5d') {
+		} else if ($rank == '5d') {
 			$elo = round(2500 + $p);
-		}else if ($rank == '4d') {
+		} else if ($rank == '4d') {
 			$elo = round(2400 + $p);
-		}else if ($rank == '3d') {
+		} else if ($rank == '3d') {
 			$elo = round(2300 + $p);
-		}else if ($rank == '2d') {
+		} else if ($rank == '2d') {
 			$elo = round(2200 + $p);
-		}else if ($rank == '1d') {
+		} else if ($rank == '1d') {
 			$elo = round(2100 + $p);
-		}else if ($rank == '1k') {
+		} else if ($rank == '1k') {
 			$elo = round(2000 + $p);
-		}else if ($rank == '2k') {
+		} else if ($rank == '2k') {
 			$elo = round(1900 + $p);
-		}else if ($rank == '3k') {
+		} else if ($rank == '3k') {
 			$elo = round(1800 + $p);
-		}else if ($rank == '4k') {
+		} else if ($rank == '4k') {
 			$elo = round(1700 + $p);
-		}else if ($rank == '5k') {
+		} else if ($rank == '5k') {
 			$elo = round(1600 + $p);
-		}else if ($rank == '6k') {
+		} else if ($rank == '6k') {
 			$elo = round(1500 + $p);
-		}else if ($rank == '7k') {
+		} else if ($rank == '7k') {
 			$elo = round(1400 + $p);
-		}else if ($rank == '8k') {
+		} else if ($rank == '8k') {
 			$elo = round(1300 + $p);
-		}else if ($rank == '9k') {
+		} else if ($rank == '9k') {
 			$elo = round(1200 + $p);
-		}else if ($rank == '10k') {
+		} else if ($rank == '10k') {
 			$elo = round(1100 + $p);
-		}else if ($rank == '11k') {
+		} else if ($rank == '11k') {
 			$elo = round(1000 + $p);
-		}else if ($rank == '12k') {
+		} else if ($rank == '12k') {
 			$elo = round(900 + $p);
-		}else if ($rank == '13k') {
+		} else if ($rank == '13k') {
 			$elo = round(800 + $p);
-		}else if ($rank == '14k') {
+		} else if ($rank == '14k') {
 			$elo = round(700 + $p);
-		}else if ($rank == '15k' || $rank == '16k' || $rank == '17k' || $rank == '18k' || $rank == '19k' || $rank == '20k' || $rank == '21k') {
+		} else if ($rank == '15k' || $rank == '16k' || $rank == '17k' || $rank == '18k' || $rank == '19k' || $rank == '20k' || $rank == '21k') {
 			$elo = round(600 + $p);
 		}
 
@@ -1796,16 +1909,16 @@ class AppController extends Controller {
 						$found1 = true;
 					}
 				}
-			}else if ($r == '9k' || $r == '8k' || $r == '7k' || $r == '6k' || $r == '5k' || $r == '4k' || $r == '3k' || $r == '2k' || $r == '1k') {
+			} else if ($r == '9k' || $r == '8k' || $r == '7k' || $r == '6k' || $r == '5k' || $r == '4k' || $r == '3k' || $r == '2k' || $r == '1k') {
 				if ($gems[1] == 0) {
 					$gemValue = '9k';
 					$gemValue2 = 'x';
 					$gemValue3 = 'y';
-				}else if ($gems[1] == 1) {
+				} else if ($gems[1] == 1) {
 					$gemValue = '6k';
 					$gemValue2 = '5k';
 					$gemValue3 = '4k';
-				}else if ($gems[1] == 2) {
+				} else if ($gems[1] == 2) {
 					$gemValue = 'x';
 					$gemValue2 = '2k';
 					$gemValue3 = '1k';
@@ -1816,16 +1929,16 @@ class AppController extends Controller {
 						$found2 = true;
 					}
 				}
-			}else if ($r == '1d' || $r == '2d' || $r == '3d' || $r == '4d' || $r == '5d' || $r == '6d' || $r == '7d') {
+			} else if ($r == '1d' || $r == '2d' || $r == '3d' || $r == '4d' || $r == '5d' || $r == '6d' || $r == '7d') {
 				if ($gems[2] == 0) {
 					$gemValue = '1d';
 					$gemValue2 = '2d';
 					$gemValue3 = '3d';
-				}else if ($gems[2] == 1) {
+				} else if ($gems[2] == 1) {
 					$gemValue = '2d';
 					$gemValue2 = '3d';
 					$gemValue3 = '4d';
-				}else if ($gems[2] == 2) {
+				} else if ($gems[2] == 2) {
 					$gemValue = '5d';
 					$gemValue2 = '6d';
 					$gemValue3 = '7d';
@@ -1854,7 +1967,7 @@ class AppController extends Controller {
 				} else {
 					$dateGem['DayRecord']['gemCounter1']--;
 				}
-			}else if ($found2) {
+			} else if ($found2) {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
@@ -1871,7 +1984,7 @@ class AppController extends Controller {
 				} else {
 					$dateGem['DayRecord']['gemCounter2']--;
 				}
-			}else if ($found3) {
+			} else if ($found3) {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
@@ -2332,13 +2445,16 @@ class AppController extends Controller {
 		$updated = [];
 
 		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => $this->loggedInUserID()]]);//blitz
-		if (!$rBlitz) { $rBlitz = [];
+		if (!$rBlitz) {
+			$rBlitz = [];
 		}
 		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => $this->loggedInUserID()]]);//fast
-		if (!$rFast) { $rFast = [];
+		if (!$rFast) {
+			$rFast = [];
 		}
 		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => $this->loggedInUserID()]]);//slow
-		if (!$rSlow) { $rSlow = [];
+		if (!$rSlow) {
+			$rSlow = [];
 		}
 		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		if (!$r) {
@@ -2360,7 +2476,7 @@ class AppController extends Controller {
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[82] = true;
 					}
-				}else if ($r[$i]['RankOverview']['rank'] == '4k') {
+				} else if ($r[$i]['RankOverview']['rank'] == '4k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[71] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
@@ -2368,7 +2484,7 @@ class AppController extends Controller {
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[83] = true;
 					}
-				}else if ($r[$i]['RankOverview']['rank'] == '3k') {
+				} else if ($r[$i]['RankOverview']['rank'] == '3k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[72] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
@@ -2376,7 +2492,7 @@ class AppController extends Controller {
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[84] = true;
 					}
-				}else if ($r[$i]['RankOverview']['rank'] == '2k') {
+				} else if ($r[$i]['RankOverview']['rank'] == '2k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[73] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
@@ -2384,7 +2500,7 @@ class AppController extends Controller {
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[85] = true;
 					}
-				}else if ($r[$i]['RankOverview']['rank'] == '1k') {
+				} else if ($r[$i]['RankOverview']['rank'] == '1k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[74] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
@@ -2392,7 +2508,7 @@ class AppController extends Controller {
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[86] = true;
 					}
-				}else if ($r[$i]['RankOverview']['rank'] == '1d') {
+				} else if ($r[$i]['RankOverview']['rank'] == '1d') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
 						$timeModeAchievements[75] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
@@ -2818,7 +2934,7 @@ class AppController extends Controller {
 			if ($counter == count($ts)) {
 				$completed = $s;
 			}
-		}else if ($s == 'cc2') {
+		} else if ($s == 'cc2') {
 			$ts1 = $this->findTsumegoSet(41);
 			$ts2 = $this->findTsumegoSet(49);
 			$ts3 = $this->findTsumegoSet(65);
@@ -2850,7 +2966,7 @@ class AppController extends Controller {
 			if ($counter == count($ts)) {
 				$completed = $s;
 			}
-		}else if ($s == 'cc3') {
+		} else if ($s == 'cc3') {
 			$ts1 = $this->findTsumegoSet(186);
 			$ts2 = $this->findTsumegoSet(187);
 			$ts3 = $this->findTsumegoSet(196);
@@ -2882,7 +2998,7 @@ class AppController extends Controller {
 			if ($counter == count($ts)) {
 				$completed = $s;
 			}
-		}else if ($s == '1000w1') {
+		} else if ($s == '1000w1') {
 			$ts1 = $this->findTsumegoSet(190);
 			$ts2 = $this->findTsumegoSet(193);
 			$ts3 = $this->findTsumegoSet(198);
@@ -2913,7 +3029,7 @@ class AppController extends Controller {
 			if ($counter == count($ts)) {
 				$completed = $s;
 			}
-		}else if ($s == '1000w2') {
+		} else if ($s == '1000w2') {
 			$ts = $this->findTsumegoSet(216);
 			$tsCount = count($ts);
 			for ($i = 0; $i < $tsCount; $i++) {
@@ -3086,7 +3202,7 @@ class AppController extends Controller {
 					$this->AchievementStatus->save($as);
 					array_push($updated, $achievementId);
 				}
-			}else if ($s['Set']['difficulty'] >= 1300 && $s['Set']['difficulty'] < 1500) {
+			} else if ($s['Set']['difficulty'] >= 1300 && $s['Set']['difficulty'] < 1500) {
 				$achievementId = 15;
 				if ($acA['AchievementCondition']['value'] >= 75 && !isset($existingAs[$achievementId])) {
 					$as['AchievementStatus']['achievement_id'] = $achievementId;
@@ -3129,7 +3245,7 @@ class AppController extends Controller {
 					$this->AchievementStatus->save($as);
 					array_push($updated, $achievementId);
 				}
-			}else if ($s['Set']['difficulty'] >= 1500 && $s['Set']['difficulty'] < 1700) {
+			} else if ($s['Set']['difficulty'] >= 1500 && $s['Set']['difficulty'] < 1700) {
 				$achievementId = 18;
 				if ($acA['AchievementCondition']['value'] >= 75 && !isset($existingAs[$achievementId])) {
 					$as['AchievementStatus']['achievement_id'] = $achievementId;
@@ -3236,7 +3352,7 @@ class AppController extends Controller {
 					$this->AchievementStatus->create();
 					$this->AchievementStatus->save($as);
 					array_push($updated, $achievementId);
-				}else if ($as100['AchievementStatus']['value'] != $ac100counter) {
+				} else if ($as100['AchievementStatus']['value'] != $ac100counter) {
 					$as100['AchievementStatus']['value'] = $ac100counter;
 					$this->AchievementStatus->save($as100);
 					array_push($updated, $achievementId);
@@ -3261,17 +3377,23 @@ class AppController extends Controller {
 	protected function getXPJump($lvl = null) {
 		if ($lvl >= 102) {
 			return 0;
-		} elseif ($lvl == 101) {
+		}
+		if ($lvl == 101) {
 			return 1150;
-		} elseif ($lvl == 100) {
+		}
+		if ($lvl == 100) {
 			return 50000;
-		} elseif ($lvl >= 70) {
+		}
+		if ($lvl >= 70) {
 			return 150;
-		} elseif ($lvl >= 40) {
+		}
+		if ($lvl >= 40) {
 			return 100;
-		} elseif ($lvl >= 20) {
+		}
+		if ($lvl >= 20) {
 			return 50;
-		} elseif ($lvl >= 12) {
+		}
+		if ($lvl >= 12) {
 			return 25;
 		}
 
@@ -3281,43 +3403,62 @@ class AppController extends Controller {
 	protected function getHealth($lvl = null) {
 		if ($lvl >= 100) {
 			return 30;
-		} elseif ($lvl >= 95) {
+		}
+		if ($lvl >= 95) {
 			return 29;
-		} elseif ($lvl >= 90) {
+		}
+		if ($lvl >= 90) {
 			return 28;
-		} elseif ($lvl >= 85) {
+		}
+		if ($lvl >= 85) {
 			return 27;
-		} elseif ($lvl >= 80) {
+		}
+		if ($lvl >= 80) {
 			return 26;
-		} elseif ($lvl >= 75) {
+		}
+		if ($lvl >= 75) {
 			return 25;
-		} elseif ($lvl >= 70) {
+		}
+		if ($lvl >= 70) {
 			return 24;
-		} elseif ($lvl >= 65) {
+		}
+		if ($lvl >= 65) {
 			return 23;
-		} elseif ($lvl >= 60) {
+		}
+		if ($lvl >= 60) {
 			return 22;
-		} elseif ($lvl >= 55) {
+		}
+		if ($lvl >= 55) {
 			return 21;
-		} elseif ($lvl >= 50) {
+		}
+		if ($lvl >= 50) {
 			return 20;
-		} elseif ($lvl >= 45) {
+		}
+		if ($lvl >= 45) {
 			return 19;
-		} elseif ($lvl >= 40) {
+		}
+		if ($lvl >= 40) {
 			return 18;
-		} elseif ($lvl >= 35) {
+		}
+		if ($lvl >= 35) {
 			return 17;
-		} elseif ($lvl >= 30) {
+		}
+		if ($lvl >= 30) {
 			return 16;
-		} elseif ($lvl >= 25) {
+		}
+		if ($lvl >= 25) {
 			return 15;
-		} elseif ($lvl >= 20) {
+		}
+		if ($lvl >= 20) {
 			return 14;
-		} elseif ($lvl >= 15) {
+		}
+		if ($lvl >= 15) {
 			return 13;
-		} elseif ($lvl >= 10) {
+		}
+		if ($lvl >= 10) {
 			return 12;
-		} elseif ($lvl >= 4) {
+		}
+		if ($lvl >= 4) {
 			return 11;
 		}
 
@@ -3341,14 +3482,22 @@ class AppController extends Controller {
 		$xLvlupXp = 10;
 
 		for ($i = 1;$i < 102;$i++) {
-			if ($i >= 102) { $j = 0;
-			} elseif ($i == 101) { $j = 1150;
-			} elseif ($i == 100) { $j = 50000;
-			} elseif ($i >= 70) { $j = 150;
-			} elseif ($i >= 40) { $j = 100;
-			} elseif ($i >= 20) { $j = 50;
-			} elseif ($i >= 12) { $j = 25;
-			} else { $j = 10;
+			if ($i >= 102) {
+				$j = 0;
+			} elseif ($i == 101) {
+				$j = 1150;
+			} elseif ($i == 100) {
+				$j = 50000;
+			} elseif ($i >= 70) {
+				$j = 150;
+			} elseif ($i >= 40) {
+				$j = 100;
+			} elseif ($i >= 20) {
+				$j = 50;
+			} elseif ($i >= 12) {
+				$j = 25;
+			} else {
+				$j = 10;
 			}
 			$xStart += $j;
 			$jumps[$i] = $xStart;
@@ -3357,8 +3506,10 @@ class AppController extends Controller {
 		$uLevel = $u['User']['level'];
 		$uXp = $u['User']['xp'];
 
-		if ($uLevel < 101) { $currentJump = $jumps[$uLevel];
-		} else { $currentJump = 60000;
+		if ($uLevel < 101) {
+			$currentJump = $jumps[$uLevel];
+		} else {
+			$currentJump = 60000;
 		}
 
 		$firstJump = $currentJump;
@@ -3366,21 +3517,27 @@ class AppController extends Controller {
 		if ($uXp + $xpBonus >= $currentJump) {
 			$next = $uXp + $xpBonus - $currentJump;
 			$uLevel++;
-			if ($uLevel < 101) { $currentJump = $jumps[$uLevel];
-			} else { $currentJump = 60000;
+			if ($uLevel < 101) {
+				$currentJump = $jumps[$uLevel];
+			} else {
+				$currentJump = 60000;
 			}
 		}
-		while($next >= $currentJump) {
+		while ($next >= $currentJump) {
 			$next = $next - $currentJump;
 			$uLevel++;
-			if ($uLevel < 101) { $currentJump = $jumps[$uLevel];
-			} else { $currentJump = 60000;
+			if ($uLevel < 101) {
+				$currentJump = $jumps[$uLevel];
+			} else {
+				$currentJump = 60000;
 			}
 		}
 
 		$u['User']['level'] = $uLevel;
-		if ($uXp + $xpBonus < $firstJump) { $u['User']['xp'] += $xpBonus;
-		} else { $u['User']['xp'] = $next;
+		if ($uXp + $xpBonus < $firstJump) {
+			$u['User']['xp'] += $xpBonus;
+		} else {
+			$u['User']['xp'] = $next;
 		}
 		$u['User']['nextlvl'] = $currentJump;
 
@@ -3411,7 +3568,7 @@ class AppController extends Controller {
 		$amountCounter = 0;
 		$amountFrom = 0;
 		$amountTo = $collectionSize - 1;
-		while($amountRemaining > $collectionSize) {
+		while ($amountRemaining > $collectionSize) {
 			if ($partition == $amountCounter) {
 				break;
 			}
@@ -3688,10 +3845,14 @@ class AppController extends Controller {
 					$this->User->save($u);
 				}
 			}
-			if ($u['User']['lastHighscore'] == 1) { $highscoreLink = 'highscore';
-			} elseif ($u['User']['lastHighscore'] == 2) { $highscoreLink = 'rating';
-			} elseif ($u['User']['lastHighscore'] == 3) { $highscoreLink = 'leaderboard';
-			} elseif ($u['User']['lastHighscore'] == 4) { $highscoreLink = 'highscore3';
+			if ($u['User']['lastHighscore'] == 1) {
+				$highscoreLink = 'highscore';
+			} elseif ($u['User']['lastHighscore'] == 2) {
+				$highscoreLink = 'rating';
+			} elseif ($u['User']['lastHighscore'] == 3) {
+				$highscoreLink = 'leaderboard';
+			} elseif ($u['User']['lastHighscore'] == 4) {
+				$highscoreLink = 'highscore3';
 			}
 
 			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0) {
@@ -3773,12 +3934,15 @@ class AppController extends Controller {
 		}
 		$mode = 1;
 		if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0') {
-			if ($_COOKIE['mode'] == 1) { $mode = 1;
-			} else { $mode = 2;
+			if ($_COOKIE['mode'] == 1) {
+				$mode = 1;
+			} else {
+				$mode = 2;
 			}
 		}
 		if ($this->Session->read('loggedInUser.User.mode')) {
-			if ($this->Session->read('loggedInUser.User.mode') == 2) { $mode = 2;
+			if ($this->Session->read('loggedInUser.User.mode') == 2) {
+				$mode = 2;
 			}
 		}
 
@@ -3870,7 +4034,8 @@ class AppController extends Controller {
 							$preTsumego['TsumegoStatus']['status'] = 'V';
 						}
 						$sessionUts = $this->Session->read('loggedInUser.uts');
-						if (!$sessionUts) { $sessionUts = [];
+						if (!$sessionUts) {
+							$sessionUts = [];
 						}
 						$sessionUts[$preTsumego['TsumegoStatus']['tsumego_id']] = $preTsumego['TsumegoStatus']['status'];
 						$this->Session->write('loggedInUser.uts', $sessionUts);
@@ -4010,7 +4175,8 @@ class AppController extends Controller {
 														'category' => 'err',
 													],
 												]);
-												if ($aCondition == null) { $aCondition = [];
+												if ($aCondition == null) {
+													$aCondition = [];
 												}
 												$aCondition['AchievementCondition']['category'] = 'err';
 												$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -4059,8 +4225,10 @@ class AppController extends Controller {
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
 					$_COOKIE['preTsumegoBuffer'] = $utPre['TsumegoStatus']['status'];
-					if ($utPre['TsumegoStatus']['status'] == 'W') { $utPre['TsumegoStatus']['status'] = 'C';
-					} else { $utPre['TsumegoStatus']['status'] = 'S';
+					if ($utPre['TsumegoStatus']['status'] == 'W') {
+						$utPre['TsumegoStatus']['status'] = 'C';
+					} else {
+						$utPre['TsumegoStatus']['status'] = 'S';
 					}
 
 					$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
@@ -4070,7 +4238,8 @@ class AppController extends Controller {
 						}
 						$this->TsumegoStatus->save($utPre);
 						$sessionUts = $this->Session->read('loggedInUser.uts');
-						if (!$sessionUts) { $sessionUts = [];
+						if (!$sessionUts) {
+							$sessionUts = [];
 						}
 						$sessionUts[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 						$this->Session->write('loggedInUser.uts', $sessionUts);
@@ -4091,13 +4260,16 @@ class AppController extends Controller {
 							$utPreX['TsumegoStatus']['user_id'] = $u['User']['id'];
 							$utPreX['TsumegoStatus']['tsumego_id'] = $_COOKIE['noPreId'];
 						}
-						if ($utPreX['TsumegoStatus']['status'] == 'W') { $utPreX['TsumegoStatus']['status'] = 'C';
-						} else { $utPreX['TsumegoStatus']['status'] = 'S';
+						if ($utPreX['TsumegoStatus']['status'] == 'W') {
+							$utPreX['TsumegoStatus']['status'] = 'C';
+						} else {
+							$utPreX['TsumegoStatus']['status'] = 'S';
 						}
 						$utPreX['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 						$this->TsumegoStatus->save($utPreX);
 						$sessionUts = $this->Session->read('loggedInUser.uts');
-						if (!$sessionUts) { $sessionUts = [];
+						if (!$sessionUts) {
+							$sessionUts = [];
 						}
 						$sessionUts[$utPreX['TsumegoStatus']['tsumego_id']] = $utPreX['TsumegoStatus']['status'];
 						$this->Session->write('loggedInUser.uts', $sessionUts);

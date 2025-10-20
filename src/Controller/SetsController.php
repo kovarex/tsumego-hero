@@ -238,7 +238,8 @@ class SetsController extends AppController {
 			$month = date('F', strtotime($sets[$i]['Set']['created']));
 			$setday = $date->format('d. ');
 			$setyear = $date->format('Y');
-			if ($setday[0] == 0) { $setday = substr($setday, -3);
+			if ($setday[0] == 0) {
+				$setday = substr($setday, -3);
 			}
 			$sets[$i]['Set']['created'] = $date->format('Ymd');
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
@@ -693,7 +694,8 @@ class SetsController extends AppController {
 						'category' => 'set',
 					],
 				]);
-				if ($aCondition == null) { $aCondition = [];
+				if ($aCondition == null) {
+					$aCondition = [];
 				}
 				$aCondition['AchievementCondition']['category'] = 'set';
 				$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -969,7 +971,7 @@ class SetsController extends AppController {
 			$amountCounter = 0;
 			$amountFrom = 0;
 			$amountTo = $size - 1;
-			while($amountTags > $size) {
+			while ($amountTags > $size) {
 				$newList = $this->partitionCollection($newList, $list[$i], $size, $utsMap, $amountFrom, $amountTo + 1, $amountCounter, true);
 				$amountTags -= $size;
 				$amountCounter++;
@@ -1073,7 +1075,8 @@ class SetsController extends AppController {
 
 			if (in_array($file_ext, $extensions) === false) { $errors[] = 'png/jpg allowed.';
 			}
-			if ($file_size > 2097152) { $errors[] = 'The file is too large.';
+			if ($file_size > 2097152) {
+				$errors[] = 'The file is too large.';
 			}
 
 			if (empty($errors) == true) {
@@ -1201,9 +1204,11 @@ class SetsController extends AppController {
 		}
 
 		if (isset($this->params['url']['show'])) {
-			if ($this->params['url']['show'] == 'order') { $josekiOrder = 1;
+			if ($this->params['url']['show'] == 'order') {
+				$josekiOrder = 1;
 			}
-			if ($this->params['url']['show'] == 'num') { $josekiOrder = 0;
+			if ($this->params['url']['show'] == 'num') {
+				$josekiOrder = 0;
 			}
 		}
 		if ($id != '1') {
@@ -1296,7 +1301,7 @@ class SetsController extends AppController {
 						if ($tagForTsumego != null) {
 							$tagValid = true;
 						}
-					}else {
+					} else {
 						$tagValid = true;
 					}
 					if ($tagValid) {
@@ -1319,7 +1324,7 @@ class SetsController extends AppController {
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($ts);
-			}else if ($viewType == 'tags') {
+			} else if ($viewType == 'tags') {
 				$set['Set']['id'] = $id;
 				if (!$hasPartition) {
 					$set['Set']['title'] = $id;
@@ -1431,7 +1436,7 @@ class SetsController extends AppController {
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($ts);
 				//set
-			}else if ($viewType == 'topics') {
+			} else if ($viewType == 'topics') {
 				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
 				$ts = [];
 				$scTs = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $set['Set']['id']]]);
@@ -1472,7 +1477,7 @@ class SetsController extends AppController {
 						if ($tagForTsumego != null) {
 							$tagValid = true;
 						}
-					}else {
+					} else {
 						$tagValid = true;
 					}
 					if ($scT != null && $tagValid) {
@@ -1626,9 +1631,11 @@ class SetsController extends AppController {
 					}
 				}
 				if (isset($this->data['Set']['title'])) {
-					if ($set['Set']['title'] != $this->data['Set']['title']) { $formChange = true;
+					if ($set['Set']['title'] != $this->data['Set']['title']) {
+						$formChange = true;
 					}
-					if ($set['Set']['title2'] != $this->data['Set']['title2']) { $formChange = true;
+					if ($set['Set']['title2'] != $this->data['Set']['title2']) {
+						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
@@ -1644,7 +1651,8 @@ class SetsController extends AppController {
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				}
 				if (isset($this->data['Set']['description'])) {
-					if ($set['Set']['description'] != $this->data['Set']['description']) { $formChange = true;
+					if ($set['Set']['description'] != $this->data['Set']['description']) {
+						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
@@ -1675,7 +1683,8 @@ class SetsController extends AppController {
 					}
 				}
 				if (isset($this->data['Set']['color'])) {
-					if ($set['Set']['color'] != $this->data['Set']['color']) { $formChange = true;
+					if ($set['Set']['color'] != $this->data['Set']['color']) {
+						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
@@ -1691,7 +1700,8 @@ class SetsController extends AppController {
 					$this->AdminActivity->save($adminActivity);
 				}
 				if (isset($this->data['Set']['order'])) {
-					if ($set['Set']['order'] != $this->data['Set']['order']) { $formChange = true;
+					if ($set['Set']['order'] != $this->data['Set']['order']) {
+						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
@@ -1874,7 +1884,8 @@ class SetsController extends AppController {
 				$tx = $this->Tsumego->find('first', ['conditions' => ['id' => $fav[$i]['Favorite']['tsumego_id']]]);
 				$difficultyCount += $tx['Tsumego']['difficulty'];
 				$utx = $this->findUt($fav[$i]['Favorite']['tsumego_id'], $allUts, $idMap);
-				if ($utx['TsumegoStatus']['status'] == 'S' || $utx['TsumegoStatus']['status'] == 'W' || $utx['TsumegoStatus']['status'] == 'C') { $solvedCount++;
+				if ($utx['TsumegoStatus']['status'] == 'S' || $utx['TsumegoStatus']['status'] == 'W' || $utx['TsumegoStatus']['status'] == 'C') {
+					$solvedCount++;
 				}
 				$sizeCount++;
 				array_push($ts, $tx);
@@ -1889,7 +1900,8 @@ class SetsController extends AppController {
 				}
 			}
 			$difficultyCount /= $sizeCount;
-			if ($difficultyCount <= 2) { $difficultyCount = 1;
+			if ($difficultyCount <= 2) {
+				$difficultyCount = 1;
 			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) { $difficultyCount = 2;
 			} elseif ($difficultyCount > 3 && $difficultyCount <= 4) { $difficultyCount = 3;
 			} elseif ($difficultyCount > 4 && $difficultyCount <= 6) { $difficultyCount = 4;
@@ -1951,9 +1963,10 @@ class SetsController extends AppController {
 						}
 						if ($ur[$j]['TsumegoAttempt']['solved'] == 0) {
 							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
-							if ($mis == 0) { $mis = 1;
+							if ($mis == 0) {
+								$mis = 1;
 							}
-							while($mis > 0) {
+							while ($mis > 0) {
 								$urSum .= 'F';
 								$mis--;
 							}
@@ -1992,7 +2005,8 @@ class SetsController extends AppController {
 		} else {
 			$t = null;
 		}
-		if ($t == null) { $t = $ts[0];
+		if ($t == null) {
+			$t = $ts[0];
 		}
 		$set['Set']['t'] = $t['Tsumego']['id'];
 
@@ -2111,13 +2125,13 @@ class SetsController extends AppController {
 				}
 				if ($id == 50 || $id == 52 || $id == 53 || $id == 54) {
 					$achievementUpdate2 = $this->setAchievementSpecial('cc1');
-				}else if ($id == 41 || $id == 49 || $id == 65 || $id == 66) {
+				} else if ($id == 41 || $id == 49 || $id == 65 || $id == 66) {
 					$achievementUpdate2 = $this->setAchievementSpecial('cc2');
-				}else if ($id == 186 || $id == 187 || $id == 196 || $id == 203) {
+				} else if ($id == 186 || $id == 187 || $id == 196 || $id == 203) {
 					$achievementUpdate2 = $this->setAchievementSpecial('cc3');
-				}else if ($id == 190 || $id == 193 || $id == 198) {
+				} else if ($id == 190 || $id == 193 || $id == 198) {
 					$achievementUpdate2 = $this->setAchievementSpecial('1000w1');
-				}else if ($id == 216) {
+				} else if ($id == 216) {
 					$achievementUpdate2 = $this->setAchievementSpecial('1000w2');
 				}
 				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
@@ -2486,7 +2500,8 @@ class SetsController extends AppController {
 			$month = date('F', strtotime($sets[$i]['Set']['created']));
 			$setday = $date->format('d. ');
 			$setyear = $date->format('Y');
-			if ($setday[0] == 0) { $setday = substr($setday, -3);
+			if ($setday[0] == 0) {
+				$setday = substr($setday, -3);
 			}
 			$sets[$i]['Set']['created'] = $date->format('Ymd');
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;

@@ -55,6 +55,13 @@
         </properties>
     </rule>
 
+	<rule ref="PhpCollective.Commenting.DocBlockVar.VarDocBlockMissin">
+		<severity>0</severity>
+	</rule>
+	<rule ref="PSR2R.Commenting.DocBlock.DocBlockMissing">
+		<severity>0</severity>
+	</rule>
+
     <!-- Allow multiple classes in test files only (CakePHP2 test pattern) -->
     <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
         <exclude-pattern>tests/TestCase/*</exclude-pattern>
@@ -74,9 +81,5 @@
 
     <rule ref="Squiz.Classes.ValidClassName.NotPascalCase">
         <exclude-pattern>config/database.php</exclude-pattern>
-    </rule>
-
-    <rule ref="Squiz.PHP.NonExecutableCode.Unreachable">
-        <exclude-pattern>config/acl.ini.php</exclude-pattern>
     </rule>
 </ruleset>

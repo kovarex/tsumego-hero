@@ -25,13 +25,17 @@ class PostsController extends AppController {
 			$numPolls = count($polls);
 			$pollsInPosts[$i] = $numPolls;
 			$countPatterns = 0;
-			if ($posts[$i]['Post']['sgf2'] != null) { $countPatterns++;
+			if ($posts[$i]['Post']['sgf2'] != null) {
+				$countPatterns++;
 			}
-			if ($posts[$i]['Post']['sgf3'] != null) { $countPatterns++;
+			if ($posts[$i]['Post']['sgf3'] != null) {
+				$countPatterns++;
 			}
-			if ($posts[$i]['Post']['sgf4'] != null) { $countPatterns++;
+			if ($posts[$i]['Post']['sgf4'] != null) {
+				$countPatterns++;
 			}
-			if ($posts[$i]['Post']['sgf5'] != null) { $countPatterns++;
+			if ($posts[$i]['Post']['sgf5'] != null) {
+				$countPatterns++;
 			}
 			$patternsInPosts[$i] = $countPatterns;
 		}
@@ -121,13 +125,17 @@ class PostsController extends AppController {
 		}
 		$patternsInPosts = [];
 		foreach ($posts as $post) {
-			if ($post['Post']['sgf2'] != null) { $patternsInPosts[] = $post['Post']['sgf2'];
+			if ($post['Post']['sgf2'] != null) {
+				$patternsInPosts[] = $post['Post']['sgf2'];
 			}
-			if ($post['Post']['sgf3'] != null) { $patternsInPosts[] = $post['Post']['sgf3'];
+			if ($post['Post']['sgf3'] != null) {
+				$patternsInPosts[] = $post['Post']['sgf3'];
 			}
-			if ($post['Post']['sgf4'] != null) { $patternsInPosts[] = $post['Post']['sgf4'];
+			if ($post['Post']['sgf4'] != null) {
+				$patternsInPosts[] = $post['Post']['sgf4'];
 			}
-			if ($post['Post']['sgf5'] != null) { $patternsInPosts[] = $post['Post']['sgf5'];
+			if ($post['Post']['sgf5'] != null) {
+				$patternsInPosts[] = $post['Post']['sgf5'];
 			}
 		}
 		$this->set('patternsInPosts', $patternsInPosts);

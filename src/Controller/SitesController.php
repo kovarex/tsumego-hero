@@ -201,7 +201,8 @@ class SitesController extends AppController {
 		$d1 = date(' d, Y');
 		$d1day = date('d. ');
 		$d1year = date('Y');
-		if ($d1day[0] == 0) { $d1day = substr($d1day, -3);
+		if ($d1day[0] == 0) {
+			$d1day = substr($d1day, -3);
 		}
 		$d2 = date('Y-m-d H:i:s');
 		$month = date('F', strtotime(date('Y-m-d')));

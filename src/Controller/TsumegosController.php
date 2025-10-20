@@ -155,9 +155,12 @@ class TsumegosController extends AppController {
 			unset($_COOKIE['ui']);
 		}
 		if (isset($this->params['url']['modelink'])) {
-			if ($this->params['url']['modelink'] == 1) { $tlength = 15;
-			} elseif ($this->params['url']['modelink'] == 2) { $tlength = 16;
-			} elseif ($this->params['url']['modelink'] == 3) { $tlength = 17;
+			if ($this->params['url']['modelink'] == 1) {
+				$tlength = 15;
+			} elseif ($this->params['url']['modelink'] == 2) {
+				$tlength = 16;
+			} elseif ($this->params['url']['modelink'] == 3) {
+				$tlength = 17;
 			}
 			if (isset($this->params['url']['modelink'])) { $_COOKIE['mode'] = 3;
 			}
@@ -225,10 +228,10 @@ class TsumegosController extends AppController {
 				if (strlen($this->Session->read('loggedInUser.User.activeRank')) == 15) {
 					$stopParameter = 10;
 					$stopParameter2 = 0;
-				}elseif (strlen($this->Session->read('loggedInUser.User.activeRank')) == 16) {
+				} elseif (strlen($this->Session->read('loggedInUser.User.activeRank')) == 16) {
 					$stopParameter = 10;
 					$stopParameter2 = 1;
-				}elseif (strlen($this->Session->read('loggedInUser.User.activeRank')) == 17) {
+				} elseif (strlen($this->Session->read('loggedInUser.User.activeRank')) == 17) {
 					$stopParameter = 10;
 					$stopParameter2 = 2;
 				}
@@ -240,7 +243,8 @@ class TsumegosController extends AppController {
 				}
 				if (count($ranks) == 0) {
 					$r = $this->params['url']['rank'];
-					if ($r == '5d') { $r1 = 2500;
+					if ($r == '5d') {
+						$r1 = 2500;
 						$r2 = 10000; }
 					elseif ($r == '4d') { $r1 = 2400;
 						$r2 = 2500; }
@@ -307,7 +311,8 @@ class TsumegosController extends AppController {
 						$rm['Rank']['session'] = $this->Session->read('loggedInUser.User.activeRank');
 						$rm['Rank']['user_id'] = $this->loggedInUserID();
 						$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
-						if ($rm['Rank']['tsumego_id'] == null) { $rm['Rank']['tsumego_id'] = 5127;
+						if ($rm['Rank']['tsumego_id'] == null) {
+							$rm['Rank']['tsumego_id'] = 5127;
 						}
 						$rm['Rank']['rank'] = $r;
 						$rm['Rank']['num'] = $i + 1;
@@ -362,7 +367,7 @@ class TsumegosController extends AppController {
 			}
 			$mode = 3;
 			$currentRank2 = $rankTs[1]['Tsumego']['id'];
-		}elseif ($firstRanks == 2) {
+		} elseif ($firstRanks == 2) {
 			$id = $currentRank['Tsumego']['id'];
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id]]);
 			if (!$scT) {
@@ -386,14 +391,22 @@ class TsumegosController extends AppController {
 				unset($_COOKIE['difficulty']);
 			}
 			if ($mode == 2) {
-				if ($difficulty == 1) { $adjustDifficulty = -450;
-				} elseif ($difficulty == 2) { $adjustDifficulty = -300;
-				} elseif ($difficulty == 3) { $adjustDifficulty = -150;
-				} elseif ($difficulty == 4) { $adjustDifficulty = 0;
-				} elseif ($difficulty == 5) { $adjustDifficulty = 150;
-				} elseif ($difficulty == 6) { $adjustDifficulty = 300;
-				} elseif ($difficulty == 7) { $adjustDifficulty = 450;
-				} else { $adjustDifficulty = 0;
+				if ($difficulty == 1) {
+					$adjustDifficulty = -450;
+				} elseif ($difficulty == 2) {
+					$adjustDifficulty = -300;
+				} elseif ($difficulty == 3) {
+					$adjustDifficulty = -150;
+				} elseif ($difficulty == 4) {
+					$adjustDifficulty = 0;
+				} elseif ($difficulty == 5) {
+					$adjustDifficulty = 150;
+				} elseif ($difficulty == 6) {
+					$adjustDifficulty = 300;
+				} elseif ($difficulty == 7) {
+					$adjustDifficulty = 450;
+				} else {
+					$adjustDifficulty = 0;
 				}
 
 				$eloRange = $u['User']['elo_rating_mode'] + $adjustDifficulty;
@@ -413,7 +426,7 @@ class TsumegosController extends AppController {
 				$ratingFound = false;
 				$nothingInRange = false;
 				$ratingFoundCounter = 0;
-				while(!$ratingFound) {
+				while (!$ratingFound) {
 					if ($ratingFoundCounter < count($range)) {
 						$rafSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $range[$ratingFoundCounter]['Tsumego']['id']]]);
 						if (!$rafSc) {
@@ -472,7 +485,8 @@ class TsumegosController extends AppController {
 		$t = $this->Tsumego->findById($id);//the tsumego
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
-		if ($t['Tsumego']['elo_rating_mode'] < 1000) { $t = $this->checkEloAdjust($t);
+		if ($t['Tsumego']['elo_rating_mode'] < 1000) {
+			$t = $this->checkEloAdjust($t);
 		}
 
 		$activityValue = $this->getActivityValue($this->loggedInUserID(), $t['Tsumego']['id']);
@@ -483,7 +497,7 @@ class TsumegosController extends AppController {
 			if ($eloDifference > 1000) {
 				$avActive2 = false;
 			}
-		}else {
+		} else {
 			$eloBigger = 't';
 		}
 		$newUserEloW = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'w');
@@ -530,14 +544,15 @@ class TsumegosController extends AppController {
 		if (!$fSet) {
 			$fSet = $this->Set->findById(1);
 		}
-		if ($t == null) { $t = $this->Tsumego->findById($this->Session->read('lastVisit'));
+		if ($t == null) {
+			$t = $this->Tsumego->findById($this->Session->read('lastVisit'));
 		}
 
 		if ($mode == 1 || $mode == 3) {
 			$nextMode = $t;
 		}
-		if (isset($this->params['url']['rcheat'])) { if ($this->params['url']['rcheat'] == 1) { $reviewCheat = true;
-		}
+		if (isset($this->params['url']['rcheat']) && $this->params['url']['rcheat'] == 1) {
+			$reviewCheat = true;
 		}
 		$this->Session->write('lastVisit', $id);
 		if (!empty($this->data)) {
@@ -549,7 +564,7 @@ class TsumegosController extends AppController {
 				$adminActivity['AdminActivity']['answer'] = $this->data['Comment']['status'];
 				$this->AdminActivity->save($adminActivity);
 				$this->Comment->save($this->data, true);
-			}elseif (isset($this->data['Comment']['modifyDescription'])) {
+			} elseif (isset($this->data['Comment']['modifyDescription'])) {
 				$adminActivity = [];
 				$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
 				$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
@@ -583,7 +598,7 @@ class TsumegosController extends AppController {
 					}
 				}
 				$this->AdminActivity->save($adminActivity);
-			}elseif (isset($this->data['Study'])) {
+			} elseif (isset($this->data['Study'])) {
 				$tv['TsumegoVariant']['answer1'] = $this->data['Study']['study1'];
 				$tv['TsumegoVariant']['answer2'] = $this->data['Study']['study2'];
 				$tv['TsumegoVariant']['answer3'] = $this->data['Study']['study3'];
@@ -591,13 +606,13 @@ class TsumegosController extends AppController {
 				$tv['TsumegoVariant']['explanation'] = $this->data['Study']['explanation'];
 				$tv['TsumegoVariant']['numAnswer'] = $this->data['Study']['studyCorrect'];
 				$this->TsumegoVariant->save($tv);
-			}elseif (isset($this->data['Study2'])) {
+			} elseif (isset($this->data['Study2'])) {
 				$tv['TsumegoVariant']['winner'] = $this->data['Study2']['winner'];
 				$tv['TsumegoVariant']['answer1'] = $this->data['Study2']['answer1'];
 				$tv['TsumegoVariant']['answer2'] = $this->data['Study2']['answer2'];
 				$tv['TsumegoVariant']['answer3'] = $this->data['Study2']['answer3'];
 				$this->TsumegoVariant->save($tv);
-			}elseif (isset($this->data['Settings'])) {
+			} elseif (isset($this->data['Settings'])) {
 				if ($this->data['Settings']['r38'] == 'on' && $t['Tsumego']['virtual_children'] != 1) {
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
@@ -708,17 +723,25 @@ class TsumegosController extends AppController {
 					$this->TsumegoVariant->delete($tv['TsumegoVariant']['id']);
 					$tv = null;
 				}
-				if ($this->data['Settings']['r38'] == 'on') { $t['Tsumego']['virtual_children'] = 1;
-				} else { $t['Tsumego']['virtual_children'] = 0;
+				if ($this->data['Settings']['r38'] == 'on') {
+					$t['Tsumego']['virtual_children'] = 1;
+				} else {
+					$t['Tsumego']['virtual_children'] = 0;
 				}
-				if ($this->data['Settings']['r39'] == 'on') { $t['Tsumego']['alternative_response'] = 1;
-				} else { $t['Tsumego']['alternative_response'] = 0;
+				if ($this->data['Settings']['r39'] == 'on') {
+					$t['Tsumego']['alternative_response'] = 1;
+				} else {
+					$t['Tsumego']['alternative_response'] = 0;
 				}
-				if ($this->data['Settings']['r43'] == 'yes') { $t['Tsumego']['pass'] = 1;
-				} else { $t['Tsumego']['pass'] = 0;
+				if ($this->data['Settings']['r43'] == 'yes') {
+					$t['Tsumego']['pass'] = 1;
+				} else {
+					$t['Tsumego']['pass'] = 0;
 				}
-				if ($this->data['Settings']['r40'] == 'on') { $t['Tsumego']['duplicate'] = -1;
-				} else { $t['Tsumego']['duplicate'] = 0;
+				if ($this->data['Settings']['r40'] == 'on') {
+					$t['Tsumego']['duplicate'] = -1;
+				} else {
+					$t['Tsumego']['duplicate'] = 0;
 				}
 				if ($t['Tsumego']['elo_rating_mode'] > 100) {
 					$this->Tsumego->save($t, true);
@@ -745,12 +768,17 @@ class TsumegosController extends AppController {
 		if (isset($this->params['url']['deleteComment'])) {
 			$deleteComment = $this->Comment->findById($this->params['url']['deleteComment']);
 			if (isset($this->params['url']['changeComment'])) {
-				if ($this->params['url']['changeComment'] == 1) { $deleteComment['Comment']['status'] = 97;
-				} elseif ($this->params['url']['changeComment'] == 2) { $deleteComment['Comment']['status'] = 98;
-				} elseif ($this->params['url']['changeComment'] == 3) { $deleteComment['Comment']['status'] = 96;
-				} elseif ($this->params['url']['changeComment'] == 4) { $deleteComment['Comment']['status'] = 0;
+				if ($this->params['url']['changeComment'] == 1) {
+					$deleteComment['Comment']['status'] = 97;
+				} elseif ($this->params['url']['changeComment'] == 2) {
+					$deleteComment['Comment']['status'] = 98;
+				} elseif ($this->params['url']['changeComment'] == 3) {
+					$deleteComment['Comment']['status'] = 96;
+				} elseif ($this->params['url']['changeComment'] == 4) {
+					$deleteComment['Comment']['status'] = 0;
 				}
-			}else { $deleteComment['Comment']['status'] = 99;
+			} else {
+				$deleteComment['Comment']['status'] = 99;
 			}
 			$adminActivity = [];
 			$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
@@ -777,7 +805,8 @@ class TsumegosController extends AppController {
 			}
 			$cox = count($this->Comment->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
 			if (empty($fSet['Set']['title2'])) { $title2 = '';
-			} else { $title2 = '-';
+			} else {
+				$title2 = '-';
 			}
 			$file_name = $fSet['Set']['title'] . $title2 . $fSet['Set']['title2'] . '-' . $t['Tsumego']['num'] . '-' . $cox . '.sgf';
 			$sgfComment = [];
@@ -804,7 +833,8 @@ class TsumegosController extends AppController {
 			$extensions = ['sgf'];
 			if (in_array($file_ext, $extensions) === false) { $errors[] = 'Only SGF files are allowed.';
 			}
-			if ($file_size > 2097152) { $errors[] = 'The file is too large.';
+			if ($file_size > 2097152) {
+				$errors[] = 'The file is too large.';
 			}
 			$fSet = $this->Set->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
 			$this->AdminActivity->create();
@@ -915,10 +945,12 @@ class TsumegosController extends AppController {
 		}
 		$sandboxSetsCount = count($sandboxSets);
 		for ($i = 0; $i < $sandboxSetsCount; $i++) {
-			if ($t['Tsumego']['set_id'] == $sandboxSets[$i]['Set']['id']) { $isSandbox = true;
+			if ($t['Tsumego']['set_id'] == $sandboxSets[$i]['Set']['id']) {
+				$isSandbox = true;
 			}
 		}
-		if ($t['Tsumego']['set_id'] == 161) { $isSandbox = false;
+		if ($t['Tsumego']['set_id'] == 161) {
+			$isSandbox = false;
 		}
 
 		$co = $this->Comment->find('all', ['conditions' => (['tsumego_id' => $id])]);
@@ -938,7 +970,8 @@ class TsumegosController extends AppController {
 			$co[$i]['Comment']['user'] = $this->checkPicture($cou);
 			$cad = $this->User->findById($co[$i]['Comment']['admin_id']);
 			if ($cad != null) {
-				if ($cad['User']['id'] == 73) { $cad['User']['name'] = 'Admin';
+				if ($cad['User']['id'] == 73) {
+					$cad['User']['name'] = 'Admin';
 				}
 				$co[$i]['Comment']['admin'] = $cad['User']['name'];
 			}
@@ -947,7 +980,8 @@ class TsumegosController extends AppController {
 			$tday = $date->format('d. ');
 			$tyear = $date->format('Y');
 			$tClock = $date->format('H:i');
-			if ($tday[0] == 0) { $tday = substr($tday, -3);
+			if ($tday[0] == 0) {
+				$tday = substr($tday, -3);
 			}
 			$co[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
 			$array = $this->commentCoordinates($co[$i]['Comment']['message'], $counter1, true);
@@ -976,7 +1010,7 @@ class TsumegosController extends AppController {
 				$allUts = null;
 				$ut = null;
 			}
-		}elseif ($mode == 2) {
+		} elseif ($mode == 2) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $u['User']['id'], 'tsumego_id' => $t['Tsumego']['id']]]);
 			$this->Session->write('loggedInUser.User.mode', 2);
 			$allUts = [];
@@ -1000,11 +1034,12 @@ class TsumegosController extends AppController {
 			$ratingDeviationArray = $this->compute_rating($old_u, $old_t, 0);
 
 			$diff = $t['Tsumego']['elo_rating_mode'] - $u['User']['elo_rating_mode'];
-			if ($diff <= -600) { $diff = -595;
+			if ($diff <= -600) {
+				$diff = -595;
 			}
 			$newV = (($diff - $oldmin) / ($oldmax - $oldmin)) * ($newmax - $newmin);
 
-		}else if ($mode == 3) {
+		} else if ($mode == 3) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $u['User']['id'], 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];
 			$allUts2 = [];
@@ -1019,7 +1054,8 @@ class TsumegosController extends AppController {
 		}
 
 		if (isset($ut['TsumegoStatus']['status'])) {
-			if ($ut['TsumegoStatus']['status'] == 'G') { $goldenTsumego = true;
+			if ($ut['TsumegoStatus']['status'] == 'G') {
+				$goldenTsumego = true;
 			}
 		}
 
@@ -1028,7 +1064,8 @@ class TsumegosController extends AppController {
 			$preSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $preTsumego['Tsumego']['id']]]);
 			$preTsumego['Tsumego']['set_id'] = $preSc['SetConnection']['set_id'];
 			$utPre = $this->findUt((int)$_COOKIE['preId'], $utsMap);
-		}else { $utPre = $this->findUt(15352, $utsMap);
+		} else {
+			$utPre = $this->findUt(15352, $utsMap);
 		}
 
 		if ($mode == 1 || $mode == 3) {
@@ -1045,14 +1082,16 @@ class TsumegosController extends AppController {
 				if ($_COOKIE['misplay'] != 0) {
 					if ($u['User']['damage'] + $_COOKIE['misplay'] > $u['User']['health']) {
 						if (!$hasPremium) {
-							if ($utPre['TsumegoStatus']['status'] != 'W') { $ut['TsumegoStatus']['status'] = 'F';
-							} else { $ut['TsumegoStatus']['status'] = 'X';
+							if ($utPre['TsumegoStatus']['status'] != 'W') {
+								$ut['TsumegoStatus']['status'] = 'F';
+							} else {
+								$ut['TsumegoStatus']['status'] = 'X';
 							}
 						}
 					}
 				}
 			}
-		}elseif ($mode == 2) {
+		} elseif ($mode == 2) {
 			if (isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] == $t['Tsumego']['id']) {
 			}
 		}
@@ -1111,7 +1150,7 @@ class TsumegosController extends AppController {
 				$u['User']['intuition'] = 1;
 				$u['User']['damage'] = 0;
 				$rejuvenation = true;
-			}else if ($_COOKIE['rejuvenationx'] == 2) {
+			} else if ($_COOKIE['rejuvenationx'] == 2) {
 				$u['User']['damage'] = 0;
 			}
 			$_COOKIE['misplay'] = 0;
@@ -1136,7 +1175,8 @@ class TsumegosController extends AppController {
 				}
 			}
 			if ($mode == 1 || $mode == 3) {
-				if ($mode == 1 && $_COOKIE['transition'] != 2) { $u['User']['damage'] += $_COOKIE['misplay'];
+				if ($mode == 1 && $_COOKIE['transition'] != 2) {
+					$u['User']['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
 					$ranks = $this->Rank->find('all', ['conditions' => ['session' => $this->Session->read('loggedInUser.User.activeRank')]]);
@@ -1201,7 +1241,7 @@ class TsumegosController extends AppController {
 				if ($_COOKIE['type'] == 'g') {
 					$this->updateGoldenCondition(false);
 				}
-			}elseif ($mode == 2) {
+			} elseif ($mode == 2) {
 				$userEloBefore = $u['User']['elo_rating_mode'];
 				$tsumegoEloBefore = $preTsumego['Tsumego']['elo_rating_mode'];
 				$newV = 1;
@@ -1250,7 +1290,8 @@ class TsumegosController extends AppController {
 					'category' => 'err',
 				],
 			]);
-			if ($aCondition == null) { $aCondition = [];
+			if ($aCondition == null) {
+				$aCondition = [];
 			}
 			$aCondition['AchievementCondition']['category'] = 'err';
 			$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -1279,7 +1320,8 @@ class TsumegosController extends AppController {
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
 					if ($mode != 3) {
-						if ($onlineMode) { $this->TsumegoStatus->save($utPre);
+						if ($onlineMode) {
+							$this->TsumegoStatus->save($utPre);
 						}
 						$this->Session->read('loggedInUser.uts')[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 						$utsMap[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
@@ -1304,7 +1346,8 @@ class TsumegosController extends AppController {
 						}
 					}
 				}
-				if ($mode == 1) { $u['User']['damage'] = $u['User']['health'];
+				if ($mode == 1) {
+					$u['User']['damage'] = $u['User']['health'];
 				}
 				if (!$this->Session->check('loggedInUser')) {
 					$noLoginCount = count($noLogin);
@@ -1442,7 +1485,7 @@ class TsumegosController extends AppController {
 
 							if ($ratingModeUt['TsumegoStatus']['status'] == 'W') {
 								$ratingModeXp = $preTsumego['Tsumego']['difficulty'] / 2;
-							}else if ($ratingModeUt['TsumegoStatus']['status'] == 'S' || $ratingModeUt['TsumegoStatus']['status'] == 'C') {
+							} else if ($ratingModeUt['TsumegoStatus']['status'] == 'S' || $ratingModeUt['TsumegoStatus']['status'] == 'C') {
 								$ratingModeXp = 0;
 							} else {
 								$ratingModeXp = $preTsumego['Tsumego']['difficulty'];
@@ -1455,7 +1498,7 @@ class TsumegosController extends AppController {
 								$u['User']['nextlvl'] += $this->getXPJump($u['User']['level']);
 								$u['User']['health'] = $this->getHealth($u['User']['level']);
 								$this->Session->write('loggedInUser.User.level', $u['User']['level']);
-							}else {
+							} else {
 								$u['User']['xp'] = $xpOld;
 							}
 
@@ -1512,8 +1555,10 @@ class TsumegosController extends AppController {
 						$utPre['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['preId'];
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
-					if ($utPre['TsumegoStatus']['status'] == 'W') { $utPre['TsumegoStatus']['status'] = 'C';
-					} else { $utPre['TsumegoStatus']['status'] = 'S';
+					if ($utPre['TsumegoStatus']['status'] == 'W') {
+						$utPre['TsumegoStatus']['status'] = 'C';
+					} else {
+						$utPre['TsumegoStatus']['status'] = 'S';
 					}
 
 					$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
@@ -1521,13 +1566,14 @@ class TsumegosController extends AppController {
 						if (!isset($utPre['TsumegoStatus']['status'])) { $utPre['TsumegoStatus']['status'] = 'V';
 						}
 						if ($mode == 1) {
-							if ($onlineMode) { $this->TsumegoStatus->save($utPre);
+							if ($onlineMode) {
+								$this->TsumegoStatus->save($utPre);
 							}
 							$this->Session->read('loggedInUser.uts')[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 							$utsMap[$utPre['TsumegoStatus']['tsumego_id']] = $utPre['TsumegoStatus']['status'];
 						}
 					}
-				}elseif ($mode == 2 && $_COOKIE['transition'] != 1) {
+				} elseif ($mode == 2 && $_COOKIE['transition'] != 1) {
 					$userEloBefore = $u['User']['elo_rating_mode'];
 					$tsumegoEloBefore = $preTsumego['Tsumego']['elo_rating_mode'];
 					$diff = $preTsumego['Tsumego']['elo_rating_mode'] - $u['User']['elo_rating_mode'];
@@ -1536,7 +1582,7 @@ class TsumegosController extends AppController {
 
 					if ($ratingModeUt['TsumegoStatus']['status'] == 'W') {
 						$ratingModeXp = $preTsumego['Tsumego']['difficulty'] / 2;
-					}else if ($ratingModeUt['TsumegoStatus']['status'] == 'S' || $ratingModeUt['TsumegoStatus']['status'] == 'C') {
+					} else if ($ratingModeUt['TsumegoStatus']['status'] == 'S' || $ratingModeUt['TsumegoStatus']['status'] == 'C') {
 						$ratingModeXp = 0;
 					} else {
 						$ratingModeXp = $preTsumego['Tsumego']['difficulty'];
@@ -1602,7 +1648,8 @@ class TsumegosController extends AppController {
 						'category' => 'err',
 					],
 				]);
-				if ($aCondition == null) { $aCondition = [];
+				if ($aCondition == null) {
+					$aCondition = [];
 				}
 				$aCondition['AchievementCondition']['category'] = 'err';
 				$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -1646,16 +1693,20 @@ class TsumegosController extends AppController {
 		}
 		if (isset($_COOKIE['sprint']) && $_COOKIE['sprint'] != '0') {
 			$u['User']['sprint'] = 0;
-			if ($_COOKIE['sprint'] == 1) { $this->set('sprintActivated', true);
+			if ($_COOKIE['sprint'] == 1) {
+				$this->set('sprintActivated', true);
 			}
-			if ($_COOKIE['sprint'] == 2) { $u['User']['usedSprint'] = 1;
+			if ($_COOKIE['sprint'] == 2) {
+				$u['User']['usedSprint'] = 1;
 			}
 			unset($_COOKIE['sprint']);
 		}
 		if (isset($_COOKIE['intuition']) && $_COOKIE['intuition'] != '0') {
-			if ($_COOKIE['intuition'] == '1') { $u['User']['intuition'] = 0;
+			if ($_COOKIE['intuition'] == '1') {
+				$u['User']['intuition'] = 0;
 			}
-			if ($_COOKIE['intuition'] == '2') { $u['User']['intuition'] = 1;
+			if ($_COOKIE['intuition'] == '2') {
+				$u['User']['intuition'] = 1;
 			}
 			unset($_COOKIE['intuition']);
 		}
@@ -1692,8 +1743,10 @@ class TsumegosController extends AppController {
 					$this->Session->read('loggedInUser.uts')[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
 					$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
 
-					if (!$ut) { $ut = $refinementUT;
-					} else { $ut['TsumegoStatus']['status'] = 'G';
+					if (!$ut) {
+						$ut = $refinementUT;
+					} else {
+						$ut['TsumegoStatus']['status'] = 'G';
 					}
 					$goldenTsumego = true;
 					$u['User']['usedRefinement'] = 1;
@@ -1713,8 +1766,10 @@ class TsumegosController extends AppController {
 					$this->Session->read('loggedInUser.uts')[$resetRefinement['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
 					$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
 				}
-				if (!$ut) { $ut = $resetRefinement;
-				} else { $ut['TsumegoStatus']['status'] = 'V';
+				if (!$ut) {
+					$ut = $resetRefinement;
+				} else {
+					$ut['TsumegoStatus']['status'] = 'V';
 				}
 				$goldenTsumego = false;
 			}
@@ -1756,8 +1811,10 @@ class TsumegosController extends AppController {
 			$reputation = [];
 			$reputation['Reputation']['user_id'] = $this->loggedInUserID();
 			$reputation['Reputation']['tsumego_id'] = abs($_COOKIE['reputation']);
-			if ($_COOKIE['reputation'] > 0) { $reputation['Reputation']['value'] = 1;
-			} else { $reputation['Reputation']['value'] = -1;
+			if ($_COOKIE['reputation'] > 0) {
+				$reputation['Reputation']['value'] = 1;
+			} else {
+				$reputation['Reputation']['value'] = -1;
 			}
 			$this->Reputation->create();
 			$this->Reputation->save($reputation);
@@ -1790,13 +1847,14 @@ class TsumegosController extends AppController {
 				$ut['TsumegoStatus']['tsumego_id'] = $id;
 				$ut['TsumegoStatus']['status'] = 'V';
 				if ($mode != 3) {
-					if ($onlineMode) { $this->TsumegoStatus->save($ut);
+					if ($onlineMode) {
+						$this->TsumegoStatus->save($ut);
 					}
 					$this->Session->read('loggedInUser.uts')[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
 					$utsMap[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
 				}
 			}
-		}elseif ($mode == 2) {
+		} elseif ($mode == 2) {
 			$ut['TsumegoStatus'] = [];
 			$ut['TsumegoStatus']['user_id'] = $u['User']['id'];
 			$ut['TsumegoStatus']['tsumego_id'] = $id;
@@ -1823,7 +1881,7 @@ class TsumegosController extends AppController {
 			$sgf['Sgf']['tsumego_id'] = $id;
 			$sgf['Sgf']['version'] = 1;
 			$this->Sgf->save($sgf);
-		}else {
+		} else {
 			$sgf = $sgfdb;
 		}
 		if ($t['Tsumego']['set_id'] == 208 || $t['Tsumego']['set_id'] == 210) {
@@ -1942,7 +2000,7 @@ class TsumegosController extends AppController {
 					if ($tagForTsumego != null) {
 						$tagValid = true;
 					}
-				}else {
+				} else {
 					$tagValid = true;
 				}
 				if ($tagValid) {
@@ -1988,7 +2046,7 @@ class TsumegosController extends AppController {
 				}
 			}
 			$queryTitle = $this->Session->read('lastSet') . ' ' . $partitionText . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2;
-		}else if ($query == 'tags') {
+		} else if ($query == 'tags') {
 			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
 			$setConditions = [];
 			$rankConditions = [];
@@ -2114,7 +2172,7 @@ class TsumegosController extends AppController {
 				}
 			}
 			$queryTitle = $this->Session->read('lastSet') . ' ' . $partitionText . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2;
-		}else if ($query == 'topics') {
+		} else if ($query == 'topics') {
 			$setConnectionIds = [];
 			$tsTsumegosMap = [];
 			$rankConditions = [];
@@ -2235,7 +2293,7 @@ class TsumegosController extends AppController {
 				for ($i = 0; $i < $tsCount; $i++) {
 					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
 						$a = 5;
-						while($a > 0) {
+						while ($a > 0) {
 							if ($i - $a >= 0) {
 								$tsBackA = $ts[$i - $a];
 								array_push($tsBack, $tsBackA);
@@ -2252,9 +2310,10 @@ class TsumegosController extends AppController {
 						}
 						$bMax = 10 - count($tsBack);
 						$b = 1;
-						if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) { $bMax++;
+						if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
+							$bMax++;
 						}
-						while($b <= $bMax) {
+						while ($b <= $bMax) {
 							if ($i + $b < count($ts)) {
 								$tsNextA = $ts[$i + $b];
 								array_push($tsNext, $tsNextA);
@@ -2273,7 +2332,7 @@ class TsumegosController extends AppController {
 							$tsBack = [];
 							$a = 5 + (5 - count($tsNext));
 							$a++;
-							while($a > 0) {
+							while ($a > 0) {
 								if ($i - $a >= 0) {
 									$tsBackA = $ts[$i - $a];
 									array_push($tsBack, $tsBackA);
@@ -2293,7 +2352,7 @@ class TsumegosController extends AppController {
 							$tsNextAdjust = count($tsNext) + 1;
 							$tsNext = [];
 							$b = 1;
-							while($b <= $tsNextAdjust) {
+							while ($b <= $tsNextAdjust) {
 								if ($i + $b < count($ts)) {
 									$tsNextA = $ts[$i + $b];
 									array_push($tsNext, $tsNextA);
@@ -2311,14 +2370,14 @@ class TsumegosController extends AppController {
 						}
 					}
 				}
-			}else if ($query == 'topics') {
+			} else if ($query == 'topics') {
 				//topics
 				$tsCount = count($ts);
 
 				for ($i = 0; $i < $tsCount; $i++) {
 					if ($ts[$i]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
 						$a = 5;
-						while($a > 0) {
+						while ($a > 0) {
 							if ($i - $a >= 0) {
 								$tsBackA = $tsTsumegosMap[$ts[$i - $a]['SetConnection']['tsumego_id']];
 								$scTsBack = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i - $a]['SetConnection']['tsumego_id']]]);
@@ -2345,9 +2404,10 @@ class TsumegosController extends AppController {
 						}
 						$bMax = 10 - count($tsBack);
 						$b = 1;
-						if ($ts[0]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) { $bMax++;
+						if ($ts[0]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
+							$bMax++;
 						}
-						while($b <= $bMax) {
+						while ($b <= $bMax) {
 							if ($i + $b < count($ts)) {
 								$tsNextA = $tsTsumegosMap[$ts[$i + $b]['SetConnection']['tsumego_id']];
 								$scTsNext = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i + $b]['SetConnection']['tsumego_id']]]);
@@ -2376,7 +2436,7 @@ class TsumegosController extends AppController {
 							$tsBack = [];
 							$a = 5 + (5 - count($tsNext));
 							$a++;
-							while($a > 0) {
+							while ($a > 0) {
 								if ($i - $a >= 0) {
 									$tsBackA = $tsTsumegosMap[$ts[$i - $a]['SetConnection']['tsumego_id']];
 									$scTsBack = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i - $a]['SetConnection']['tsumego_id']]]);
@@ -2406,7 +2466,7 @@ class TsumegosController extends AppController {
 							$tsNextAdjust = count($tsNext) + 1;
 							$tsNext = [];
 							$b = 1;
-							while($b <= $tsNextAdjust) {
+							while ($b <= $tsNextAdjust) {
 								if ($i + $b < count($ts)) {
 									$tsNextA = $tsTsumegosMap[$ts[$i + $b]['SetConnection']['tsumego_id']];
 									$scTsNext = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i + $b]['SetConnection']['tsumego_id']]]);
@@ -2454,10 +2514,11 @@ class TsumegosController extends AppController {
 			for ($i = 0; $i < $tsCount; $i++) {
 				if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
 					$a = 5;
-					while($a > 0) {
+					while ($a > 0) {
 						if ($i - $a >= 0) {
 							array_push($tsBack, $ts[$i - $a]);
-							if ($a == 1) { $prev = $ts[$i - $a]['Tsumego']['id'];
+							if ($a == 1) {
+								$prev = $ts[$i - $a]['Tsumego']['id'];
 							}
 							$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 							if (!isset($newUT['TsumegoStatus']['status'])) { $newUT['TsumegoStatus']['status'] = 'N';
@@ -2468,12 +2529,14 @@ class TsumegosController extends AppController {
 					}
 					$bMax = 10 - count($tsBack);
 					$b = 1;
-					if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) { $bMax++;
+					if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
+						$bMax++;
 					}
-					while($b <= $bMax) {
+					while ($b <= $bMax) {
 						if ($i + $b < count($ts)) {
 							array_push($tsNext, $ts[$i + $b]);
-							if ($b == 1) { $next = $ts[$i + $b]['Tsumego']['id'];
+							if ($b == 1) {
+								$next = $ts[$i + $b]['Tsumego']['id'];
 							}
 							$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 							if (!isset($newUT['TsumegoStatus']['status'])) { $newUT['TsumegoStatus']['status'] = 'N';
@@ -2486,10 +2549,11 @@ class TsumegosController extends AppController {
 						$tsBack = [];
 						$a = 5 + (5 - count($tsNext));
 						$a++;
-						while($a > 0) {
+						while ($a > 0) {
 							if ($i - $a >= 0) {
 								array_push($tsBack, $ts[$i - $a]);
-								if ($a == 1) { $prev = $ts[$i - $a]['Tsumego']['id'];
+								if ($a == 1) {
+									$prev = $ts[$i - $a]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) { $newUT['TsumegoStatus']['status'] = 'N';
@@ -2503,10 +2567,11 @@ class TsumegosController extends AppController {
 						$tsNextAdjust = count($tsNext) + 1;
 						$tsNext = [];
 						$b = 1;
-						while($b <= $tsNextAdjust) {
+						while ($b <= $tsNextAdjust) {
 							if ($i + $b < count($ts)) {
 								array_push($tsNext, $ts[$i + $b]);
-								if ($b == 1) { $next = $ts[$i + $b]['Tsumego']['id'];
+								if ($b == 1) {
+									$next = $ts[$i + $b]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) { $newUT['TsumegoStatus']['status'] = 'N';
@@ -2558,7 +2623,7 @@ class TsumegosController extends AppController {
 				$tsNext = array_values($tsNext);
 			}
 			$newUT = $this->findUt($ts[count($ts) - 1]['Tsumego']['id'], $utsMap);
-		}else if ($query == 'topics' && !$inFavorite) {
+		} else if ($query == 'topics' && !$inFavorite) {
 			//tsFirst
 			$tsFirst = $this->Tsumego->findById($ts[0]['SetConnection']['tsumego_id']);
 			$scTsFirst = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[0]['SetConnection']['tsumego_id']]]);
@@ -2575,7 +2640,8 @@ class TsumegosController extends AppController {
 			$tsBackCount = count($tsBack);
 
 			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($tsBack[$i]['Tsumego']['id'] == $tsFirst['Tsumego']['id']) { $isInArray = $i;
+				if ($tsBack[$i]['Tsumego']['id'] == $tsFirst['Tsumego']['id']) {
+					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
@@ -2615,7 +2681,7 @@ class TsumegosController extends AppController {
 				$tsNext = array_values($tsNext);
 			}
 			$newUT = $this->findUt($ts[count($ts) - 1]['SetConnection']['tsumego_id'], $utsMap);
-		}else if ($inFavorite) {
+		} else if ($inFavorite) {
 			//tsFirst
 			$tsFirst = $this->Tsumego->findById($fav[0]['Favorite']['tsumego_id']);
 			$tsFirst['Tsumego']['duplicateLink'] = '';
@@ -2623,7 +2689,8 @@ class TsumegosController extends AppController {
 			$tsBackCount = count($tsBack);
 
 			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($tsBack[$i]['Tsumego']['id'] == $tsFirst['Tsumego']['id']) { $isInArray = $i;
+				if ($tsBack[$i]['Tsumego']['id'] == $tsFirst['Tsumego']['id']) {
+					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
@@ -2680,14 +2747,15 @@ class TsumegosController extends AppController {
 				$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] / 2);
 				$half = '(1/2)';
 			}
-		}else {
+		} else {
 			$t['Tsumego']['status'] = 'setV2';
 		}
 
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '') { $t['Tsumego']['file'] = $t['Tsumego']['num'];
 		}
 		$file = 'placeholder2.sgf';
-		if ($t['Tsumego']['variance'] == 100) { $file = 'placeholder2.sgf';
+		if ($t['Tsumego']['variance'] == 100) {
+			$file = 'placeholder2.sgf';
 		}
 		$orientation = null;
 		$colorOrientation = null;
@@ -2787,7 +2855,8 @@ class TsumegosController extends AppController {
 			$this->set('rejuvenationEnabled', $u['User']['rejuvenation']);
 			$this->set('refinementEnabled', $u['User']['refinement']);
 			$this->set('maxNoUserLevel', false);
-			if ($u['User']['reuse4'] == 0) { $this->Session->write('loggedInUser.User.reuse4', 0);
+			if ($u['User']['reuse4'] == 0) {
+				$this->Session->write('loggedInUser.User.reuse4', 0);
 			}
 			if ($this->hasPremium()) { $this->Session->write('loggedInUser.User.reuse4', 0);
 			}
@@ -2796,8 +2865,10 @@ class TsumegosController extends AppController {
 			if ($this->Session->read('loggedInUser.User.reuse5') == 1) { $suspiciousBehavior = true;
 			}
 		} else {
-			if ($noUser['level'] >= 10) { $this->set('maxNoUserLevel', true);
-			} else { $this->set('maxNoUserLevel', false);
+			if ($noUser['level'] >= 10) {
+				$this->set('maxNoUserLevel', true);
+			} else {
+				$this->set('maxNoUserLevel', false);
 			}
 		}
 		if ($isSandbox || $t['Tsumego']['set_id'] == 51) {
@@ -2819,14 +2890,20 @@ class TsumegosController extends AppController {
 		$folderString = $t['Tsumego']['num'] . 'number' . $set['Set']['folder'];
 		$hash = $this->encrypt($folderString);
 
-		if ($pdCounter == 1) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .5);
-		} elseif ($pdCounter == 2) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .2);
-		} elseif ($pdCounter == 3) { $t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .1);
-		} elseif ($pdCounter > 3) { $t['Tsumego']['difficulty'] = 1;
+		if ($pdCounter == 1) {
+			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .5);
+		} elseif ($pdCounter == 2) {
+			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .2);
+		} elseif ($pdCounter == 3) {
+			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .1);
+		} elseif ($pdCounter > 3) {
+			$t['Tsumego']['difficulty'] = 1;
 		}
 
-		if ($pdCounter > 0) { $sandboxComment2 = true;
-		} else { $sandboxComment2 = false;
+		if ($pdCounter > 0) {
+			$sandboxComment2 = true;
+		} else {
+			$sandboxComment2 = false;
 		}
 
 		$score1 = $t['Tsumego']['num'] . '-' . $t['Tsumego']['difficulty'] . '-' . $t['Tsumego']['set_id'];
@@ -2843,7 +2920,7 @@ class TsumegosController extends AppController {
 		$refinementPublic = false;
 		$refinementPublicCounter = 0;
 
-		while(!$refinementPublic) {
+		while (!$refinementPublic) {
 			$scRefinement = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $refinementT[$refinementPublicCounter]['Tsumego']['id']]]);
 			$setScRefinement = $this->Set->findById($scRefinement['SetConnection']['set_id']);
 			if ($setScRefinement['Set']['public'] == 1 && $setScRefinement['Set']['premium'] != 1) {
@@ -2856,7 +2933,8 @@ class TsumegosController extends AppController {
 		if ($this->isLoggedIn()) {
 			if ($this->hasPremium() || $this->Session->read('loggedInUser.User.level') >= 50) {
 				if ($u['User']['potion'] != -69) {
-					if ($u['User']['health'] - $u['User']['damage'] <= 0) { $potionActive = true;
+					if ($u['User']['health'] - $u['User']['damage'] <= 0) {
+						$potionActive = true;
 					}
 				}
 			}
@@ -2877,9 +2955,11 @@ class TsumegosController extends AppController {
 		}
 
 		$admins = $this->User->find('all', ['conditions' => ['isAdmin' => 1]]);
-		if ($mode == 2 || $mode == 3) { $this->Session->write('title', 'Tsumego Hero');
+		if ($mode == 2 || $mode == 3) {
+			$this->Session->write('title', 'Tsumego Hero');
 		}
-		if ($isSandbox) { $t['Tsumego']['userWin'] = 0;
+		if ($isSandbox) {
+			$t['Tsumego']['userWin'] = 0;
 		}
 
 		$crs = 0;
@@ -2888,12 +2968,13 @@ class TsumegosController extends AppController {
 			$ranksCount = count($ranks);
 
 			for ($i = 0;$i < $ranksCount;$i++) {
-				if ($ranks[$i]['Rank']['result'] == 'solved') { $crs++;
+				if ($ranks[$i]['Rank']['result'] == 'solved') {
+					$crs++;
 				}
 			}
 		}
 		if (isset($this->params['url']['rank'])) { $raName = $this->params['url']['rank'];
-		} else{
+		} else {
 			if (!isset($ranks[0]['Rank']['rank'])) { $ranks[0]['Rank']['rank'] = '';
 			}
 			$raName = $ranks[0]['Rank']['rank'];
@@ -2940,9 +3021,9 @@ class TsumegosController extends AppController {
 					$next .= '?sid=' . $t['Tsumego']['set_id'];
 				}
 			}
-		}else if ($mode == 2) {
+		} else if ($mode == 2) {
 			$next = $nextMode['Tsumego']['id'] ?? 0;
-		}else if ($mode == 3) {
+		} else if ($mode == 3) {
 			$next = $currentRank2['Tsumego']['id'] ?? 0;
 		}
 		$this->startPageUpdate();
@@ -3199,7 +3280,7 @@ class TsumegosController extends AppController {
 		$aNew = [];
 		$added = 0;
 		$x = 0;
-		while($added < 10 && $x < count($a)) {
+		while ($added < 10 && $x < count($a)) {
 			$found = false;
 			$tagsCount = count($tags);
 
@@ -3391,12 +3472,18 @@ class TsumegosController extends AppController {
 							array_push($similarArrInfo, $sgfArr[2]);
 							array_push($similarArrBoardSize, $sgfArr[3]);
 							array_push($similarDiff, $compare[0]);
-							if ($compare[1] == 0) { array_push($similarDiffType, '');
-							} elseif ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
-							} elseif ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
-							} elseif ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
-							} elseif ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
-							} elseif ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
+							if ($compare[1] == 0) {
+								array_push($similarDiffType, '');
+							} elseif ($compare[1] == 1) {
+								array_push($similarDiffType, 'Shifted position.');
+							} elseif ($compare[1] == 2) {
+								array_push($similarDiffType, 'Shifted and rotated.');
+							} elseif ($compare[1] == 3) {
+								array_push($similarDiffType, 'Switched colors.');
+							} elseif ($compare[1] == 4) {
+								array_push($similarDiffType, 'Switched colors and shifted position.');
+							} elseif ($compare[1] == 5) {
+								array_push($similarDiffType, 'Switched colors, shifted and rotated.');
 							}
 							array_push($similarOrder, $compare[2]);
 							$set = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
@@ -3500,12 +3587,18 @@ class TsumegosController extends AppController {
 				array_push($similarArrInfo, $sgfArr[2]);
 				array_push($similarArrBoardSize, $sgfArr[3]);
 				array_push($similarDiff, $compare[0]);
-				if ($compare[1] == 0) { array_push($similarDiffType, '');
-				} elseif ($compare[1] == 1) { array_push($similarDiffType, 'Shifted position.');
-				} elseif ($compare[1] == 2) { array_push($similarDiffType, 'Shifted and rotated.');
-				} elseif ($compare[1] == 3) { array_push($similarDiffType, 'Switched colors.');
-				} elseif ($compare[1] == 4) { array_push($similarDiffType, 'Switched colors and shifted position.');
-				} elseif ($compare[1] == 5) { array_push($similarDiffType, 'Switched colors, shifted and rotated.');
+				if ($compare[1] == 0) {
+					array_push($similarDiffType, '');
+				} elseif ($compare[1] == 1) {
+					array_push($similarDiffType, 'Shifted position.');
+				} elseif ($compare[1] == 2) {
+					array_push($similarDiffType, 'Shifted and rotated.');
+				} elseif ($compare[1] == 3) {
+					array_push($similarDiffType, 'Switched colors.');
+				} elseif ($compare[1] == 4) {
+					array_push($similarDiffType, 'Switched colors and shifted position.');
+				} elseif ($compare[1] == 5) {
+					array_push($similarDiffType, 'Switched colors, shifted and rotated.');
 				}
 				array_push($similarOrder, $compare[2]);
 				$scx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
@@ -3518,7 +3611,7 @@ class TsumegosController extends AppController {
 		if (count($similarOrder) > 30) {
 			$orderCounter = 0;
 			$orderThreshold = 5;
-			while($orderCounter < 30) {
+			while ($orderCounter < 30) {
 				$orderThreshold++;
 				$orderCounter = 0;
 				$similarOrderCount = count($similarOrder);
@@ -3761,7 +3854,8 @@ class TsumegosController extends AppController {
 			for ($x = 0; $x < $bYCount; $x++) {
 				echo '&nbsp;&nbsp;' . $b[$x][$y] . ' ';
 			}
-			if ($y != 18) { echo '<br>';
+			if ($y != 18) {
+				echo '<br>';
 			}
 		}
 	}
@@ -3915,7 +4009,7 @@ class TsumegosController extends AppController {
 
 		$parent = $ms[$index][3];
 		$layer = $ms[$index][2];
-		while($layer != 0) {
+		while ($layer != 0) {
 			$layer--;
 			$msCount = count($ms);
 
@@ -3996,7 +4090,8 @@ class TsumegosController extends AppController {
 				}
 			}
 
-			if ($m[$i] == '<' && $m[$i + 1] == '/' && $m[$i + 2] == 'a' && $m[$i + 3] == '>') { $hasLink = true;
+			if ($m[$i] == '<' && $m[$i + 1] == '/' && $m[$i + 2] == 'a' && $m[$i + 3] == '>') {
+				$hasLink = true;
 			}
 		}
 		if (substr($n, -1) == ' ') { $n = substr($n, 0, -1);
@@ -4017,8 +4112,10 @@ class TsumegosController extends AppController {
 				$n2xx = explode('/', $n2x[$i]);
 				$a = substr($c, 0, $n2xx[0]);
 				$cx = substr($c, $n2xx[0], $n2xx[1] - $n2xx[0] + 1);
-				if ($noSyntax) { $b = '<a href="#" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '()" onmouseout="ccOut' . $counter . $fn . '()" return false;>';
-				} else { $b = '<a href=\"#\" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '()\" onmouseout=\"ccOut' . $counter . $fn . '()\" return false;>';
+				if ($noSyntax) {
+					$b = '<a href="#" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '()" onmouseout="ccOut' . $counter . $fn . '()" return false;>';
+				} else {
+					$b = '<a href=\"#\" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '()\" onmouseout=\"ccOut' . $counter . $fn . '()\" return false;>';
 				}
 
 				$d = '</a>';
@@ -4047,7 +4144,8 @@ class TsumegosController extends AppController {
 					}
 				}
 				$coord2 = $this->convertCoord2(implode('', $xxxx));
-				if ($coord1 != -1 && $coord2 != -1) { $finalCoord .= $coord1 . '-' . $coord2 . '-' . $coordForBesogo[$i] . ' ';
+				if ($coord1 != -1 && $coord2 != -1) {
+					$finalCoord .= $coord1 . '-' . $coord2 . '-' . $coordForBesogo[$i] . ' ';
 				}
 			}
 		}
@@ -4287,11 +4385,11 @@ class TsumegosController extends AppController {
 		$add = 50;
 		$activityValue = 29;
 
-		while($activityValue <= 90) {
+		while ($activityValue <= 90) {
 			$u = 500;
 			$t = 1600;
 			$add = 50;
-			while($u <= 2600) {
+			while ($u <= 2600) {
 				$u += $add;
 				$diff = abs($u - $t);
 				if ($u > $t) {
@@ -4299,7 +4397,8 @@ class TsumegosController extends AppController {
 				} elseif ($t >= $u) {
 					$eloBigger = 't';
 				}
-				if ($diff == 0) { $diff = .1;
+				if ($diff == 0) {
+					$diff = .1;
 				}
 				$newUserEloW = $this->getNewElo($diff, $eloBigger, $activityValue, 15352, 'w');
 				$newUserEloL = $this->getNewElo($diff, $eloBigger, $activityValue, 15352, 'l');
@@ -4319,10 +4418,10 @@ class TsumegosController extends AppController {
 					$loss[$diff] = round($varianceLoss, 2);
 					$twin[$diff] = round($varianceTsumegoWin);
 					$tloss[$diff] = round($varianceTsumegoLoss);
-				}else if ($activityValue == 49) {
+				} else if ($activityValue == 49) {
 					$win2[$diff] = round($varianceWin, 2);
 					$loss2[$diff] = round($varianceLoss, 2);
-				}else if ($activityValue == 69) {
+				} else if ($activityValue == 69) {
 					$win3[$diff] = round($varianceWin, 2);
 					$loss3[$diff] = round($varianceLoss, 2);
 				} else {

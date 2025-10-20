@@ -63,13 +63,13 @@ class TsumegoRecordsController extends AppController {
 					if ($headerItem == 'user_ip') {
 						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['ip'];
-					}elseif ($headerItem == 'user_country') {
+					} elseif ($headerItem == 'user_country') {
 						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['location'];
-					}elseif ($headerItem == 'user_country_code') {
+					} elseif ($headerItem == 'user_country_code') {
 						$a['name'] = $headerItem;
 						$a['value'] = $user['User']['location'];
-					}elseif ($headerItem == 'tsumego_set') {
+					} elseif ($headerItem == 'tsumego_set') {
 						$a['name'] = $headerItem;
 						$a['value'] = $set['Set']['title'];
 					} else {
@@ -139,7 +139,7 @@ class TsumegoRecordsController extends AppController {
 			}
 
 			fclose($file);
-		}elseif ($type == 1) {
+		} elseif ($type == 1) {
 			$trs = $this->TsumegoRecord->find('all', ['order' => 'created DESC']);
 			if (!$trs) {
 				$trs = [];
@@ -159,7 +159,7 @@ class TsumegoRecordsController extends AppController {
 			}
 
 			fclose($file);
-		}elseif ($type == 2) {
+		} elseif ($type == 2) {
 			$trs = $this->UserRecord->find('all', ['limit' => 1000, 'order' => 'created DESC']);
 			if (!$trs) {
 				$trs = [];
@@ -179,7 +179,7 @@ class TsumegoRecordsController extends AppController {
 			}
 
 			fclose($file);
-		}elseif ($type == 3) {
+		} elseif ($type == 3) {
 			$trs = $this->UserRecord->find('all', ['limit' => 200000, 'order' => 'created DESC']);
 			if (!$trs) {
 				$trs = [];
@@ -199,7 +199,7 @@ class TsumegoRecordsController extends AppController {
 			}
 
 			fclose($file);
-		}elseif ($type == 4) {
+		} elseif ($type == 4) {
 			$u = $this->User->find('all');
 			if (!$u) {
 				$u = [];
@@ -212,7 +212,8 @@ class TsumegoRecordsController extends AppController {
 				$a = [];
 				$a[] = $user['User']['id'];
 				$a[] = $user['User']['ip'];
-				if ($user['User']['ip'] != null) { $csv[] = $a;
+				if ($user['User']['ip'] != null) {
+					$csv[] = $a;
 				}
 			}
 
@@ -269,22 +270,25 @@ class TsumegoRecordsController extends AppController {
 			$tday = $date->format('d. ');
 			$tyear = $date->format('Y');
 			$tClock = $date->format('H:i');
-			if ($tday[0] == 0) { $tday = substr($tday, -3);
+			if ($tday[0] == 0) {
+				$tday = substr($tday, -3);
 			}
 			$trs[$i]['TsumegoRecord']['created'] = $tClock . ' | ' . $tday . $month . ' ' . $tyear;
 			$seconds = $trs[$i]['TsumegoRecord']['seconds'] % 60;
 			$minutes = floor($trs[$i]['TsumegoRecord']['seconds'] / 60);
 			$hours = floor($trs[$i]['TsumegoRecord']['seconds'] / 3600);
 			$hours2 = $hours;
-			while($hours2 > 0) {
+			while ($hours2 > 0) {
 				$minutes -= 60;
 				$hours2--;
 			}
 
-			if ($minutes == 0 && $hours == 0) { $minutes = '';
+			if ($minutes == 0 && $hours == 0) {
+				$minutes = '';
 			} else { $minutes .= 'm ';
 			}
-			if ($hours == 0) { $hours = '';
+			if ($hours == 0) {
+				$hours = '';
 			} else { $hours .= 'h ';
 			}
 			$trs[$i]['TsumegoRecord']['seconds'] = $hours . $minutes . $seconds . 's';
