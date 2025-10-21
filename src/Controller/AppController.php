@@ -1,5 +1,4 @@
 <?php
-require_once("Component/RatingComponent.php"); // this should be included through components in the AppController, but when I do it, it gets included twice for some reason.
 require_once("Component/PlayResultProcessorComponent.php"); // this should be included through components in the AppController, but when I do it, it gets included twice for some reason.
 
 class AppController extends Controller
@@ -10,7 +9,6 @@ class AppController extends Controller
     'Session',
     //'DebugKit.Toolbar',
     'Flash'
-    //'RatingComponent' // gets included twice when used
   ];
 
   protected function isLoggedIn(): bool

@@ -1,4 +1,6 @@
 <?php
+App::uses('Rating', 'Utility');
+
 class PlayResultProcessor
 {
   static public function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
