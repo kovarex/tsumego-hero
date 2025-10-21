@@ -3,25 +3,27 @@ App::uses('Rating', 'Utility');
 
 class PlayResultProcessorComponent extends Component
 {
-  static public function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
+  public $components = ['Session'];
+
+  function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
   {
     if (!$previousTsumego)
       return;
-    $result = PlayResultProcessorComponent::checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
-    PlayResultProcessorComponent::updateTsumegoStatus($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
-    PlayResultProcessorComponent::processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    $result = $this->checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
+    $this->updateTsumegoStatus($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    $this->processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
   }
 
-  static public function checkPreviousPlayAndGetResult($appController, &$loggedInUserFromDatabase, &$previousTsumego): string
+  public function checkPreviousPlayAndGetResult($appController, &$loggedInUserFromDatabase, &$previousTsumego): string
   {
-    if (PlayResultProcessorComponent::checkMisplay($appController, $loggedInUserFromDatabase, $previousTsumego))
+    if ($this->checkMisplay())
       return 'l';
-    if (PlayResultProcessorComponent::checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
+    if ($this->checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
       return 'w';
     return '';
   }
 
-  static private function updateTsumegoStatus($appController, &$loggedInUserFromDatabase, &$previousTsumego, $result): void
+  private function updateTsumegoStatus($appController, &$loggedInUserFromDatabase, &$previousTsumego, $result): void
   {
     $previousTsumegoStatus = $appController->TsumegoStatus->find('first', ['order' => 'created DESC',
                                                                            'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
@@ -54,19 +56,14 @@ class PlayResultProcessorComponent extends Component
 
     $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
     $appController->TsumegoStatus->save($previousTsumegoStatus);
-    $sessionUts = $appController->Session->read('loggedInUser.uts');
-    if (!$sessionUts)
-      $sessionUts = [];
-    $sessionUts[$previousTsumegoStatus['TsumegoStatus']['tsumego_id']] = $previousTsumegoStatus['TsumegoStatus']['status'];
-    //$appController->Session->write('loggedInUser.uts', $sessionUts);
   }
 
-  static private function processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result): void
+  private function processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result): void
   {
     if ($result == '')
       return;
 
-    $userRating = (float) $appController->Session->read('loggedInUser.User.elo_rating_mode');
+    $userRating = (float) $this->Session->read('loggedInUser.User.elo_rating_mode');
     $tsumegoRating = (float) $previousTsumego['Tsumego']['elo_rating_mode'];
     $eloDifference = abs($userRating - $tsumegoRating);
     if ($userRating > $tsumegoRating)
@@ -83,8 +80,9 @@ class PlayResultProcessorComponent extends Component
       $activityValue = 1;
     $newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result);
     $newEloRating = $userRating + $newUserElo['user'];
-    $appController->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
+    $this->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
     $loggedInUserFromDatabase['User']['elo_rating_mode'] = $newEloRating;
+    $appController->User->saveField('elo_rating_mode', $newEloRating);
     $previousTsumego['Tsumego']['elo_rating_mode'] += $newUserElo['tsumego'];
     $previousTsumego['Tsumego']['activity_value']++;
     $previousTsumego['Tsumego']['difficulty'] = $appController->convertEloToXp($previousTsumego['Tsumego']['elo_rating_mode']);
@@ -92,7 +90,7 @@ class PlayResultProcessorComponent extends Component
       $appController->Tsumego->save($previousTsumego);
   }
 
-  static private function checkMisplay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
+  private function checkMisplay(): bool
   {
     if (empty($_COOKIE['misplay']))
       return false;
@@ -100,7 +98,7 @@ class PlayResultProcessorComponent extends Component
     return true;
   }
 
-  static private function checkCorrectPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
+  private function checkCorrectPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
   {
     if (empty($_COOKIE['mode']))
       return false;
@@ -139,7 +137,7 @@ class PlayResultProcessorComponent extends Component
         if (isset($_COOKIE['previousTsumegoID']))
           $resetCookies = true;
 
-        if (!$appController->Session->check('noLogin'))
+        if (!$this->Session->check('noLogin'))
         {
           $ub = [];
           $ub['UserBoard']['user_id'] = $loggedInUserFromDatabase['User']['id'];
@@ -153,7 +151,7 @@ class PlayResultProcessorComponent extends Component
           }
           if ($loggedInUserFromDatabase['User']['reuse3'] > 12000)
           {
-            $appController->Session->write('loggedInUser.User.reuse4', 1);
+            $this->Session->write('loggedInUser.User.reuse4', 1);
             $loggedInUserFromDatabase['User']['reuse4'] = 1;
           }
         }
@@ -169,7 +167,7 @@ class PlayResultProcessorComponent extends Component
             $loggedInUserFromDatabase['User']['level'] += 1;
             $loggedInUserFromDatabase['User']['nextlvl'] += $appController->getXPJump($loggedInUserFromDatabase['User']['level']);
             $loggedInUserFromDatabase['User']['health'] = $appController->getHealth($loggedInUserFromDatabase['User']['level']);
-            $appController->Session->write('loggedInUser.User.level', $loggedInUserFromDatabase['User']['level']);
+            $this->Session->write('loggedInUser.User.level', $loggedInUserFromDatabase['User']['level']);
           }
           else
           {
@@ -185,7 +183,7 @@ class PlayResultProcessorComponent extends Component
             $appController->TsumegoAttempt->create();
             $ur = [];
             $ur['TsumegoAttempt']['user_id'] = $appController->loggedInUserID();
-            $ur['TsumegoAttempt']['elo'] = $appController->Session->read('loggedInUser.User.elo_rating_mode');
+            $ur['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
             $ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
             $ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
             $ur['TsumegoAttempt']['seconds'] = $cookieSeconds;
@@ -219,7 +217,7 @@ class PlayResultProcessorComponent extends Component
           }
           if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0')
           {
-            $ranks = $appController->Rank->find('all', ['conditions' => ['session' => $appController->Session->read('loggedInUser.User.activeRank')]]);
+            $ranks = $appController->Rank->find('all', ['conditions' => ['session' => $this->Session->read('loggedInUser.User.activeRank')]]);
             if (!$ranks)
               $ranks = [];
             $currentNum = $ranks[0]['Rank']['currentNum'];
@@ -270,11 +268,6 @@ class PlayResultProcessorComponent extends Component
 
       $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
       //$appController->TsumegoStatus->save($previousTsumegoStatus);
-      $sessionUts = $appController->Session->read('loggedInUser.uts');
-      if (!$sessionUts)
-        $sessionUts = [];
-      $sessionUts[$previousTsumegoStatus['TsumegoStatus']['tsumego_id']] = $previousTsumegoStatus['TsumegoStatus']['status'];
-      //$appController->Session->write('loggedInUser.uts', $sessionUts);
     }
     return true;
   }
