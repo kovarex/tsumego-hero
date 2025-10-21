@@ -1,30 +1,38 @@
 <?php
+require_once("Component/RatingComponent.php"); // this should be included through components in the AppController, but when I do it, it gets included twice for some reason.
 
-class AppController extends Controller {
+class AppController extends Controller
+{
 
-	public $components = [
+	public $components =
+  [
 		'Session',
 		//'DebugKit.Toolbar',
 		'Flash',
+    //'RatingComponent' // gets included twice when used
 	];
 
-	protected function isLoggedIn(): bool {
+	protected function isLoggedIn(): bool
+  {
 		return $this->Session->check('loggedInUser.User.id');
 	}
 
-	protected function loggedInUserID(): int {
+	protected function loggedInUserID(): int
+  {
 		return (int)$this->Session->read('loggedInUser.User.id');
 	}
 
-	protected function hasPremium(): bool {
+	protected function hasPremium(): bool
+  {
 		return $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium') > 0;
 	}
 
-	protected function isAdmin(): bool {
+	protected function isAdmin(): bool
+  {
 		return $this->isLoggedIn() && $this->Session->read('loggedInUser.User.isAdmin') > 0;
 	}
 
-	protected function processSGF($sgf) {
+	protected function processSGF($sgf){
 		$aw = strpos($sgf, 'AW');
 		$ab = strpos($sgf, 'AB');
 		$boardSizePos = strpos($sgf, 'SZ');
@@ -1429,97 +1437,6 @@ class AppController extends Controller {
 		return $u['User']['name'];
 	}
 
-	protected function getTsumegoRank($t) {
-		if ($t < 100) {
-			return '21k';
-		}
-		if ($t < 200) {
-			return '20k';
-		}
-		if ($t < 300) {
-			return '19k';
-		}
-		if ($t < 400) {
-			return '18k';
-		}
-		if ($t < 500) {
-			return '17k';
-		}
-		if ($t < 600) {
-			return '16k';
-		}
-		if ($t < 700) {
-			return '15k';
-		}
-		if ($t < 800) {
-			return '14k';
-		}
-		if ($t < 900) {
-			return '13k';
-		}
-		if ($t < 1000) {
-			return '12k';
-		}
-		if ($t < 1100) {
-			return '11k';
-		}
-		if ($t < 1200) {
-			return '10k';
-		}
-		if ($t < 1300) {
-			return '9k';
-		}
-		if ($t < 1400) {
-			return '8k';
-		}
-		if ($t < 1500) {
-			return '7k';
-		}
-		if ($t < 1600) {
-			return '6k';
-		}
-		if ($t < 1700) {
-			return '5k';
-		}
-		if ($t < 1800) {
-			return '4k';
-		}
-		if ($t < 1900) {
-			return '3k';
-		}
-		if ($t < 2000) {
-			return '2k';
-		}
-		if ($t < 2100) {
-			return '1k';
-		}
-		if ($t < 2200) {
-			return '1d';
-		}
-		if ($t < 2300) {
-			return '2d';
-		}
-		if ($t < 2400) {
-			return '3d';
-		}
-		if ($t < 2500) {
-			return '4d';
-		}
-		if ($t < 2600) {
-			return '5d';
-		}
-		if ($t < 2700) {
-			return '6d';
-		}
-		if ($t < 2800) {
-			return '7d';
-		}
-		if ($t < 2900) {
-			return '8d';
-		}
-
-		return '9d';
-	}
 	protected function getTsumegoRankx($t) {
 		if ($t <= 0) {
 			return '15k';
@@ -4118,7 +4035,7 @@ class AppController extends Controller {
 					$isNum = $isNumSc;
 					$isSet = $isSetSc;
 					$_COOKIE['score'] = $scoreArr[1];
-					$solvedTsumegoRank = $this->getTsumegoRank($preTsumego['Tsumego']['elo_rating_mode']);
+					$solvedTsumegoRank = Rating::getReadableRankFromRating($preTsumego['Tsumego']['elo_rating_mode']);
 
 					if ($isNum && $isSet) {
 						if (isset($_COOKIE['preId'])) {

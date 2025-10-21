@@ -536,7 +536,7 @@ class TsumegosController extends AppController {
 				}
 			}
 		}
-		$tRank = $this->getTsumegoRank($t['Tsumego']['elo_rating_mode']);
+		$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
 
 		if ($t['Tsumego']['duplicate'] > 9) {//duplicate and not main
 			$tDuplicate = $this->Tsumego->findById($t['Tsumego']['duplicate']);

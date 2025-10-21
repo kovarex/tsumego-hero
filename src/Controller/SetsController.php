@@ -1,6 +1,6 @@
 <?php
-class SetsController extends AppController {
-
+class SetsController extends AppController
+{
 	public $helpers = ['Html', 'Form'];
 
 	public $title = 'tsumego-hero.com';
@@ -262,7 +262,7 @@ class SetsController extends AppController {
 			$sn['name'] = $sets[$i]['Set']['title'];
 			$sn['amount'] = count($ts);
 			$sn['color'] = $sets[$i]['Set']['color'];
-			$sn['difficulty'] = $this->getTsumegoRank($elo);
+			$sn['difficulty'] = Rating::getReadableRankFromRating($elo);
 			$sn['solved'] = round($percent, 1);
 			array_push($setsNew, $sn);
 		}
@@ -1032,7 +1032,7 @@ class SetsController extends AppController {
 		} else {
 			$tagDifficultyResult = 0;
 		}
-		$tagDifficultyResult = $this->getTsumegoRank($tagDifficultyResult);
+		$tagDifficultyResult = Rating::getReadableRankFromRating($tagDifficultyResult);
 		$return = [];
 		$return['difficulty'] = $tagDifficultyResult;
 		if (count($currentTagIds) > 0) {

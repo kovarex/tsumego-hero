@@ -45,37 +45,6 @@
 	<script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
 	<script src="/js/dark.js"></script>
 	<?php
-		if($user['User']['elo_rating_mode']>=2900) $td = '9d';
-		elseif($user['User']['elo_rating_mode']>=2800) $td = '8d';
-		elseif($user['User']['elo_rating_mode']>=2700) $td = '7d';
-		elseif($user['User']['elo_rating_mode']>=2600) $td = '6d';
-		elseif($user['User']['elo_rating_mode']>=2500) $td = '5d';
-		elseif($user['User']['elo_rating_mode']>=2400) $td = '4d';
-		elseif($user['User']['elo_rating_mode']>=2300) $td = '3d';
-		elseif($user['User']['elo_rating_mode']>=2200) $td = '2d';
-		elseif($user['User']['elo_rating_mode']>=2100) $td = '1d';
-		elseif($user['User']['elo_rating_mode']>=2000) $td = '1k';
-		elseif($user['User']['elo_rating_mode']>=1900) $td = '2k';
-		elseif($user['User']['elo_rating_mode']>=1800) $td = '3k';
-		elseif($user['User']['elo_rating_mode']>=1700) $td = '4k';
-		elseif($user['User']['elo_rating_mode']>=1600) $td = '5k';
-		elseif($user['User']['elo_rating_mode']>=1500) $td = '6k';
-		elseif($user['User']['elo_rating_mode']>=1400) $td = '7k';
-		elseif($user['User']['elo_rating_mode']>=1300) $td = '8k';
-		elseif($user['User']['elo_rating_mode']>=1200) $td = '9k';
-		elseif($user['User']['elo_rating_mode']>=1100) $td = '10k';
-		elseif($user['User']['elo_rating_mode']>=1000) $td = '11k';
-		elseif($user['User']['elo_rating_mode']>=900) $td = '12k';
-		elseif($user['User']['elo_rating_mode']>=800) $td = '13k';
-		elseif($user['User']['elo_rating_mode']>=700) $td = '14k';
-		elseif($user['User']['elo_rating_mode']>=600) $td = '15k';
-		elseif($user['User']['elo_rating_mode']>=500) $td = '16k';
-		elseif($user['User']['elo_rating_mode']>=400) $td = '17k';
-		elseif($user['User']['elo_rating_mode']>=300) $td = '18k';
-		elseif($user['User']['elo_rating_mode']>=200) $td = '19k';
-		elseif($user['User']['elo_rating_mode']>=100) $td = '20k';
-		else $td = '21k';
-
 		$modeSelector = 2;
 		$accountBarLevelToRating = 'account-bar-user';
 		if($mode!=3){
@@ -87,7 +56,7 @@
 				$accountBarLevelToRating = 'account-bar-user';
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
-				$levelNum = $td;
+				$levelNum = Rating::getReadableRankFroMRating($user['User']['elo_rating_mode']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
 			}
