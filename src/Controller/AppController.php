@@ -3679,14 +3679,6 @@ class AppController extends Controller
       $d[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
     }
     $this->Session->write('loggedInUser.uts', $sessionUts);
-    /*
-    for ($l=0; $l<count($dFound); $l++) {
-      $delUt = $this->TsumegoStatus->find('first', array('conditions' => array(
-        'tsumego_id' => $dFound[$l]
-      )));
-      $this->TsumegoStatus->delete($delUt['TsumegoStatus']['id']);
-    }
-    */
     $this->Session->write('loggedInUser._utsDate', date('Y-m-d'));
   }
 
@@ -3721,57 +3713,24 @@ class AppController extends Controller
     $lastProfileLeft = 1;
     $lastProfileRight = 2;
     $hasFavs = false;
-    $u = [];
 
-    if ($this->isLoggedIn()) {
-      //if ($this->loggedInUserID()==33) $this->Session->delete('loggedInUser');
+    if ($this->isLoggedIn())
+    {
       $loggedInUser = $this->Session->read('loggedInUser');
       $this->set('loggedInUser', $loggedInUser);
-    } else {
-      $reLoginSuccessful = '';
-      if (isset($_COOKIE['z_sess'])) {
-        if (strlen($_COOKIE['z_sess']) > 5) {
-          if (isset($_COOKIE['z_user_hash'])) {
-            if (strlen($_COOKIE['z_user_hash']) > 3) {
-              $uRelogin = $this->User->find('first', ['conditions' => ['_sessid' => $_COOKIE['z_sess']]]);
-              if ($uRelogin != null) {
-                if ($_COOKIE['z_user_hash'] == md5($uRelogin['User']['name']) && $_COOKIE['z_sess'] == $uRelogin['User']['_sessid']) {
-                  if ($_COOKIE['z_hash'] != 1) {
-                    $this->signIn($uRelogin);
-                    $reLoginSuccessful = 'relogin successful';
-                  }
-                }
-              } else {
-                $reLoginSuccessful = 'no uRelogin found';
-              }
-            }
-          } else {
-            $reLoginSuccessful = 'z_user_hash not set';
-          }
-        } else {
-          $reLoginSuccessful = '???';
-        }
-      } else {
-        $reLoginSuccessful = 'z_sess not set';
-      }
-    }
+      $loggedInUserFromDatabase = $this->User->findById($this->loggedInUserID());
 
-    if ($this->Session->check('loggedInUser.User') && !$this->isLoggedIn()) {
-      //$this->Session->delete('loggedInUser');
-      $u = null;
-    }
-    if ($this->isLoggedIn()) {
-      $u = $this->User->findById($this->loggedInUserID());
-
-      if (!$this->Session->check('loggedInUser.uts') || date('Y-m-d') != $this->Session->read('loggedInUser._utsDate')) {
+      if (!$this->Session->check('loggedInUser.uts') ||
+          date('Y-m-d') != $this->Session->read('loggedInUser._utsDate'))
         $this->storeUts($this->loggedInUserID());
-      }
 
-      if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set') {
+      if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set')
+      {
         $newAddTag = explode('-', $_COOKIE['addTag']);
         $tagId = $newAddTag[0];
         $newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagId . '-', '', $_COOKIE['addTag'])]]);
-        if ($newTagName) {
+        if ($newTagName)
+        {
           $saveTag = [];
           $saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
           $saveTag['Tag']['tsumego_id'] = $tagId;
@@ -3781,36 +3740,35 @@ class AppController extends Controller
         }
         $this->set('removeCookie', 'addTag');
       }
-      if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0) {
-        if (strlen($_COOKIE['z_sess']) > 5) {
-          $u['User']['_sessid'] = $_COOKIE['z_sess'];
-          $this->Session->write('loggedInUser.User._sessid', $_COOKIE['z_sess']);
-          $this->User->save($u);
-        }
+      if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0 &&
+          strlen($_COOKIE['z_sess']) > 5)
+      {
+        $loggedInUserFromDatabase['User']['_sessid'] = $_COOKIE['z_sess'];
+        $this->Session->write('loggedInUser.User._sessid', $_COOKIE['z_sess']);
+        $this->User->save($loggedInUserFromDatabase);
       }
-      if ($u['User']['lastHighscore'] == 1) {
+      if ($loggedInUserFromDatabase['User']['lastHighscore'] == 1)
         $highscoreLink = 'highscore';
-      } elseif ($u['User']['lastHighscore'] == 2) {
+      elseif ($loggedInUserFromDatabase['User']['lastHighscore'] == 2)
         $highscoreLink = 'rating';
-      } elseif ($u['User']['lastHighscore'] == 3) {
+      elseif ($loggedInUserFromDatabase['User']['lastHighscore'] == 3)
         $highscoreLink = 'leaderboard';
-      } elseif ($u['User']['lastHighscore'] == 4) {
+      elseif ($loggedInUserFromDatabase['User']['lastHighscore'] == 4)
         $highscoreLink = 'highscore3';
-      }
 
       if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0) {
-        $u['User']['lastMode'] = $_COOKIE['lastMode'];
+        $loggedInUserFromDatabase['User']['lastMode'] = $_COOKIE['lastMode'];
         $this->Session->write('loggedInUser.User.lastMode', $_COOKIE['lastMode']);
-        $this->User->save($u);
+        $this->User->save($loggedInUserFromDatabase);
       }
       if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0') {
         $this->Session->write('loggedInUser.User.sound', $_COOKIE['sound']);
-        $u['User']['sound'] = $_COOKIE['sound'];
-        $this->User->save($u);
+        $loggedInUserFromDatabase['User']['sound'] = $_COOKIE['sound'];
+        $this->User->save($loggedInUserFromDatabase);
         unset($_COOKIE['sound']);
       }
       $this->set('ac', true);
-      $this->set('user', $u);
+      $this->set('user', $loggedInUserFromDatabase);
     }
 
     if (isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0') {
@@ -3819,7 +3777,7 @@ class AppController extends Controller
         // Convert string to integer for database storage
         $lightDarkInt = ($lightDark === 'light') ? 0 : 2;
         $this->Session->write('loggedInUser.User.lastLight', $lightDarkInt);
-        $u['User']['lastLight'] = $lightDarkInt;
+        $loggedInUserFromDatabase['User']['lastLight'] = $lightDarkInt;
       }
     } else {
       if ($this->isLoggedIn()) {
@@ -3831,7 +3789,7 @@ class AppController extends Controller
       }
     }
     if ($this->isLoggedIn()) {
-      $this->handleSearchSettings($u['User']['id']);
+      $this->handleSearchSettings($loggedInUserFromDatabase['User']['id']);
       $favx = $this->Favorite->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
       if (!$favx) {
         $favx = [];
@@ -3842,7 +3800,7 @@ class AppController extends Controller
       if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0') {
         $levelBar = $_COOKIE['levelBar'];
         $this->Session->write('loggedInUser.User.levelBar', $levelBar);
-        $u['User']['levelBar'] = $levelBar;
+        $loggedInUserFromDatabase['User']['levelBar'] = $levelBar;
       } else {
         if ($this->isLoggedIn()) {
           if ($this->Session->read('loggedInUser.User.levelBar') == 0 || $this->Session->read('loggedInUser.User.levelBar') == 'level') {
@@ -3855,7 +3813,7 @@ class AppController extends Controller
       if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0') {
         $lastProfileLeft = $_COOKIE['lastProfileLeft'];
         $this->Session->write('loggedInUser.User.lastProfileLeft', $lastProfileLeft);
-        $u['User']['lastProfileLeft'] = $lastProfileLeft;
+        $loggedInUserFromDatabase['User']['lastProfileLeft'] = $lastProfileLeft;
       } else {
         if ($this->isLoggedIn()) {
           $lastProfileLeft = $this->Session->read('loggedInUser.User.lastProfileLeft');
@@ -3867,7 +3825,7 @@ class AppController extends Controller
       if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0') {
         $lastProfileRight = $_COOKIE['lastProfileRight'];
         $this->Session->write('loggedInUser.User.lastProfileRight', $lastProfileRight);
-        $u['User']['lastProfileRight'] = $lastProfileRight;
+        $loggedInUserFromDatabase['User']['lastProfileRight'] = $lastProfileRight;
       } else {
         $lastProfileRight = $this->Session->read('loggedInUser.User.lastProfileRight');
         if ($lastProfileRight == 0) {
@@ -3928,7 +3886,7 @@ class AppController extends Controller
 
     if ($this->isLoggedIn()) {
       if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0) {
-        $u['User']['revelation'] -= 1;
+        $loggedInUserFromDatabase['User']['revelation'] -= 1;
         $this->Session->write('loggedInUser.User.revelation', $this->Session->read('loggedInUser.User.revelation') - 1);
       }
 
@@ -3947,7 +3905,7 @@ class AppController extends Controller
         $newUserEloL = $this->getNewElo($eloDifference, $eloBigger, $activityValue, $preTsumego['Tsumego']['id'], 'l');
         $newEloRating = $this->Session->read('loggedInUser.User.elo_rating_mode') + $newUserEloL['user'];
         $this->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
-        $u['User']['elo_rating_mode'] = $newEloRating;
+        $loggedInUserFromDatabase['User']['elo_rating_mode'] = $newEloRating;
         $this->User->save($u);
         $preTsumego['Tsumego']['elo_rating_mode'] += $newUserEloL['tsumego'];
         $preTsumego['Tsumego']['activity_value']++;
@@ -3956,10 +3914,10 @@ class AppController extends Controller
           $this->Tsumego->save($preTsumego);
         }
 
-        if ($u['User']['damage'] > $u['User']['health']) {
+        if ($loggedInUserFromDatabase['User']['damage'] > $loggedInUserFromDatabase['User']['health']) {
           if ($preTsumego == null) {
             $preTsumego['TsumegoStatus'] = [];
-            $preTsumego['TsumegoStatus']['user_id'] = $u['User']['id'];
+            $preTsumego['TsumegoStatus']['user_id'] = $loggedInUserFromDatabase['User']['id'];
             $preTsumego['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['preId'];
           }
 
@@ -4002,8 +3960,8 @@ class AppController extends Controller
           $newUserEloW = $this->getNewElo($eloDifference, $eloBigger, $activityValue, $preTsumego['Tsumego']['id'], 'w');
           $newEloRating = $this->Session->read('loggedInUser.User.elo_rating_mode') + $newUserEloW['user'];
           $this->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
-          $u['User']['elo_rating_mode'] = $newEloRating;
-          $this->User->save($u);
+          $loggedInUserFromDatabase['User']['elo_rating_mode'] = $newEloRating;
+          $this->User->save($loggedInUserFromDatabase);
           $preTsumego['Tsumego']['elo_rating_mode'] += $newUserEloW['tsumego'];
           $preTsumego['Tsumego']['activity_value']++;
           $preTsumego['Tsumego']['difficulty'] = $this->convertEloToXp($preTsumego['Tsumego']['elo_rating_mode']);
@@ -4013,7 +3971,7 @@ class AppController extends Controller
         }
 
         if (($_COOKIE['mode'] == '1' || $_COOKIE['mode'] == '2') && $_COOKIE['score'] != '0' && (int)$_COOKIE['preId'] > 0) {
-          $u = $this->User->findById($this->loggedInUserID());
+          $loggedInUserFromDatabase = $this->User->findById($this->loggedInUserID());
           $suspiciousBehavior = false;
           $exploit = null;
           $_COOKIE['score'] = $this->decrypt($_COOKIE['score']);
@@ -4044,7 +4002,6 @@ class AppController extends Controller
             }
             if ($mode == 1) {
               if (!$this->Session->check('noLogin')) {
-                //$exploit = $this->UserBoard->find('first', array('conditions' => array('user_id' => $u['User']['id'], 'b1' => $_COOKIE['preId'])));
                 $ub = [];
                 $ub['UserBoard']['user_id'] = $this->loggedInUserID();
                 $ub['UserBoard']['b1'] = (int)$_COOKIE['preId'];
@@ -4053,31 +4010,31 @@ class AppController extends Controller
                 if ($_COOKIE['score'] >= 3000) {
                   $_COOKIE['score'] = 0;
                   $suspiciousBehavior = true;
-                  //$this->Session->write('loggedInUser.User.reuse5', 1);
-                  //$u['User']['reuse5'] = 1;
                 }
-                if ($u['User']['reuse3'] > 12000) {
+                if ($loggedInUserFromDatabase['User']['reuse3'] > 12000) {
                   $this->Session->write('loggedInUser.User.reuse4', 1);
-                  $u['User']['reuse4'] = 1;
+                  $loggedInUserFromDatabase['User']['reuse4'] = 1;
                 }
               }
               /** @phpstan-ignore-next-line */
               if ($exploit == null && !$suspiciousBehavior) {
-                $xpOld = $u['User']['xp'] + ((int)($_COOKIE['score']));
-                $u['User']['reuse2']++;
-                $u['User']['reuse3'] += (int)($_COOKIE['score']);
-                if ($xpOld >= $u['User']['nextlvl']) {
-                  $xpOnNewLvl = -1 * ($u['User']['nextlvl'] - $xpOld);
-                  $u['User']['xp'] = $xpOnNewLvl;
-                  $u['User']['level'] += 1;
-                  $u['User']['nextlvl'] += $this->getXPJump($u['User']['level']);
-                  $u['User']['health'] = $this->getHealth($u['User']['level']);
-                  $this->Session->write('loggedInUser.User.level', $u['User']['level']);
-                } else {
-                  $u['User']['xp'] = $xpOld;
-                  $u['User']['ip'] = $_SERVER['REMOTE_ADDR'];
+                $xpOld = $loggedInUserFromDatabase['User']['xp'] + ((int)($_COOKIE['score']));
+                $loggedInUserFromDatabase['User']['reuse2']++;
+                $loggedInUserFromDatabase['User']['reuse3'] += (int)($_COOKIE['score']);
+                if ($xpOld >= $loggedInUserFromDatabase['User']['nextlvl']) {
+                  $xpOnNewLvl = -1 * ($loggedInUserFromDatabase['User']['nextlvl'] - $xpOld);
+                  $loggedInUserFromDatabase['User']['xp'] = $xpOnNewLvl;
+                  $loggedInUserFromDatabase['User']['level'] += 1;
+                  $loggedInUserFromDatabase['User']['nextlvl'] += $this->getXPJump($loggedInUserFromDatabase['User']['level']);
+                  $loggedInUserFromDatabase['User']['health'] = $this->getHealth($loggedInUserFromDatabase['User']['level']);
+                  $this->Session->write('loggedInUser.User.level', $loggedInUserFromDatabase['User']['level']);
                 }
-                if ($u['User']['id'] != 33) {
+                else
+                {
+                  $loggedInUserFromDatabase['User']['xp'] = $xpOld;
+                  $loggedInUserFromDatabase['User']['ip'] = $_SERVER['REMOTE_ADDR'];
+                }
+                if ($loggedInUserFromDatabase['User']['id'] != 33) {
                   if (isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] > 0) {
                     if (!isset($_COOKIE['seconds'])) {
                       $cookieSeconds = 0;
@@ -4144,7 +4101,7 @@ class AppController extends Controller
               }
             }
           } else {
-            $u['User']['penalty'] += 1;
+            $loggedInUserFromDatabase['User']['penalty'] += 1;
           }
           if ($mode == 1) {
             unset($_COOKIE['score']);
@@ -4157,7 +4114,7 @@ class AppController extends Controller
 
           if ($utPre == null) {
             $utPre['TsumegoStatus'] = [];
-            $utPre['TsumegoStatus']['user_id'] = $u['User']['id'];
+            $utPre['TsumegoStatus']['user_id'] = $loggedInUserFromDatabase['User']['id'];
             $utPre['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['preId'];
             $utPre['TsumegoStatus']['status'] = 'V';
           }
@@ -4193,7 +4150,7 @@ class AppController extends Controller
           $utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => $this->loggedInUserID()]]);
           if ($utPreX == null) {
             $utPreX['TsumegoStatus'] = [];
-            $utPreX['TsumegoStatus']['user_id'] = $u['User']['id'];
+            $utPreX['TsumegoStatus']['user_id'] = $loggedInUserFromDatabase['User']['id'];
             $utPreX['TsumegoStatus']['tsumego_id'] = $_COOKIE['noPreId'];
           }
           if ($utPreX['TsumegoStatus']['status'] == 'W') {
@@ -4321,44 +4278,43 @@ class AppController extends Controller
 
     $boardCount = 51;
 
-    if ($this->Session->check('texture') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')) {
+    if ($this->Session->check('texture') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
+    {
       $splitCookie = [];
-      if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0') {
+      if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')
+      {
         $splitCookie = str_split($_COOKIE['texture']);
         $textureCookies = $_COOKIE['texture'];
-        $u['User']['texture'] = $this->Session->read('texture');
+        $loggedInUserFromDatabase['User']['texture'] = $this->Session->read('texture');
         $this->Session->write('texture', $_COOKIE['texture']);
         $this->set('textureCookies', $textureCookies);
-      } else {
-        if ($u != null) {
-          $this->Session->write('texture', $u['User']['texture']);
-        }
+      }
+      else
+      {
+        if ($loggedInUserFromDatabase != null)
+          $this->Session->write('texture', $loggedInUserFromDatabase['User']['texture']);
         $textureCookies = $this->Session->read('texture');
         $splitTextureCookies = str_split($textureCookies);
         $splitTextureCookiesCount = count($splitTextureCookies);
-        for ($i = 0;$i < $splitTextureCookiesCount;$i++) {
-          if ($splitTextureCookies[$i] == 2) {
+        for ($i = 0;$i < $splitTextureCookiesCount;$i++)
+          if ($splitTextureCookies[$i] == 2)
             $enabledBoards[$i + 1] = 'checked';
-          } else {
+          else
             $enabledBoards[$i + 1] = '';
-          }
-        }
       }
 
       $splitCookieCount = count($splitCookie);
-      for ($i = 0;$i < $splitCookieCount;$i++) {
-        if ($splitCookie[$i] == 2) {
+      for ($i = 0;$i < $splitCookieCount;$i++)
+        if ($splitCookie[$i] == 2)
           $enabledBoards[$i + 1] = 'checked';
-        } else {
+        else
           $enabledBoards[$i + 1] = '';
-        }
-      }
-      if ($u != null) {
+      if ($loggedInUserFromDatabase != null)
         $this->User->save($u);
-      }
     }
 
-    if (!$this->Session->check('texture')) {
+    if (!$this->Session->check('texture'))
+    {
       $this->Session->write('texture', '222222221111111111111111111111111111111111111111111');
       $enabledBoards[1] = 'checked';
       $enabledBoards[2] = 'checked';
@@ -4413,19 +4369,18 @@ class AppController extends Controller
       $enabledBoards[51] = '';
     }
     $achievementUpdate = [];
-    if ($this->Session->check('initialLoading')) {
+    if ($this->Session->check('initialLoading'))
+    {
       $achievementUpdate1 = $this->checkLevelAchievements();
       $achievementUpdate2 = $this->checkProblemNumberAchievements();
       $achievementUpdate3 = $this->checkRatingAchievements();
       $achievementUpdate4 = $this->checkTimeModeAchievements();
       $achievementUpdate5 = $this->checkDanSolveAchievements();
-      $achievementUpdate = array_merge(
-        $achievementUpdate1 ?: [],
-        $achievementUpdate2 ?: [],
-        $achievementUpdate3 ?: [],
-        $achievementUpdate4 ?: [],
-        $achievementUpdate5 ?: [],
-      );
+      $achievementUpdate = array_merge($achievementUpdate1 ?: [],
+                                       $achievementUpdate2 ?: [],
+                                       $achievementUpdate3 ?: [],
+                                       $achievementUpdate4 ?: [],
+                                       $achievementUpdate5 ?: []);
       $this->Session->delete('initialLoading');
     }
 
@@ -4434,9 +4389,9 @@ class AppController extends Controller
     }
 
     $nextDay = new DateTime('tomorrow');
-    $u['User']['name'] = $this->checkPicture($u);
+    $loggedInUserFromDatabase['User']['name'] = $this->checkPicture($loggedInUserFromDatabase);
 
-    $this->set('user', $u);
+    $this->set('user', $loggedInUserFromDatabase);
     $this->set('mode', $mode);
     $this->set('nextDay', $nextDay->format('m/d/Y'));
     $this->set('boardNames', $boardNames);
