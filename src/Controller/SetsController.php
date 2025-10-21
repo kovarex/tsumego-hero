@@ -1,4 +1,5 @@
 <?php
+require_once("Component/StatusHelper.php");
 class SetsController extends AppController
 {
   public $helpers = ['Html', 'Form'];
@@ -1178,7 +1179,7 @@ class SetsController extends AppController
       }
     }
     if ($this->isLoggedIn()) {
-      //$tsumegoStatusMap = $this->Session->read('loggedInUser.uts');
+      $tsumegoStatusMap = generateTsumegoStatusMap($this);
       if ($this->isAdmin()) {
         $aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
         if ($aad['AdminActivity']['file'] == '/delete') {

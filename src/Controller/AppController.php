@@ -18,7 +18,7 @@ class AppController extends Controller
     return $this->Session->check('loggedInUser.User.id');
   }
 
-  protected function loggedInUserID(): int
+  public function loggedInUserID(): int
   {
     return (int)$this->Session->read('loggedInUser.User.id');
   }
@@ -458,7 +458,6 @@ class AppController extends Controller
       $ts[$i]['Tsumego']['set_id'] = $id;
       $tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
     }
-
     return $tsx;
   }
 
