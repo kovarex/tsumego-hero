@@ -1,5 +1,4 @@
 <?php
-
 class PlayResultProcessor
 {
   static public function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
@@ -14,9 +13,9 @@ class PlayResultProcessor
   static public function checkPreviousPlayAndGetResult($appController, &$loggedInUserFromDatabase, &$previousTsumego): string
   {
     if (PlayResultProcessor::checkMisplay($appController, $loggedInUserFromDatabase, $previousTsumego))
-      return 'w';
-    if (PlayResultProcessor::checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
       return 'l';
+    if (PlayResultProcessor::checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
+      return 'w';
     return '';
   }
 
@@ -32,16 +31,16 @@ class PlayResultProcessor
       $previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
       $previousTsumegoStatus['TsumegoStatus']['status'] = 'V';
     }
-    $_COOKIE['previosTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
+    $_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
-    if ($result = 'w')
+    if ($result == 'w')
     {
       if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') // half xp state
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
       else
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
     }
-    else if ($result = 'l')
+    else if ($result == 'l')
     {
       if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') // failed already
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
@@ -57,7 +56,7 @@ class PlayResultProcessor
     if (!$sessionUts)
       $sessionUts = [];
     $sessionUts[$previousTsumegoStatus['TsumegoStatus']['tsumego_id']] = $previousTsumegoStatus['TsumegoStatus']['status'];
-    $appController->Session->write('loggedInUser.uts', $sessionUts);
+    //$appController->Session->write('loggedInUser.uts', $sessionUts);
   }
 
   static private function processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result): void
@@ -72,10 +71,11 @@ class PlayResultProcessor
       $eloBigger = 'u';
     else
       $eloBigger = 't';
-    if (isset($_COOKIE['av']))
+    if (!empty($_COOKIE['av']))
     {
       $activityValue = $_COOKIE['av'];
       unset($_COOKIE['av']);
+      setcookie('av', false);
     }
     else
       $activityValue = 1;
@@ -92,17 +92,17 @@ class PlayResultProcessor
 
   static private function checkMisplay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
   {
-    if (!isset($_COOKIE['misplay']))
+    if (empty($_COOKIE['misplay']))
       return false;
-    unset($_COOKIE['misplay']);
+    setcookie('misplay', false);
     return true;
   }
 
   static private function checkCorrectPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
   {
-    if (!isset($_COOKIE['mode']))
+    if (empty($_COOKIE['mode']))
       return false;
-    if (!isset($_COOKIE['score']))
+    if (empty($_COOKIE['score']))
       return false;
 
     if (($_COOKIE['mode'] == '1' || $_COOKIE['mode'] == '2') && $_COOKIE['score'] != '0')
@@ -111,33 +111,37 @@ class PlayResultProcessor
       $exploit = null;
       $_COOKIE['score'] = $appController->decrypt($_COOKIE['score']);
       $scoreArr = explode('-', $_COOKIE['score']);
-      $isNum = $previosTsumego['Tsumego']['num'] == $scoreArr[0];
+      $isNum = $previousTsumego['Tsumego']['num'] == $scoreArr[0];
       $isSet = true;
       $isNumSc = false;
       $isSetSc = false;
+
+      $preSc = $appController->SetConnection->find('all', ['conditions' => ['tsumego_id' => (int)$_COOKIE['previousTsumegoID']]]);
+      if (!$preSc)
+        $preSc = [];
       $preScCount = count($preSc);
       for ($i = 0;$i < $preScCount;$i++)
       {
-        if ($preSc[$i]['SetConnection']['set_id'] == $previosTsumego['Tsumego']['set_id'])
+        if ($preSc[$i]['SetConnection']['set_id'] == $previousTsumego['Tsumego']['set_id'])
           $isSetSc = true;
-        if ($preSc[$i]['SetConnection']['num'] == $previosTsumego['Tsumego']['num'])
+        if ($preSc[$i]['SetConnection']['num'] == $previousTsumego['Tsumego']['num'])
           $isNumSc = true;
       }
       $isNum = $isNumSc;
       $isSet = $isSetSc;
       $_COOKIE['score'] = $scoreArr[1];
-      $solvedTsumegoRank = Rating::getReadableRankFromRating($previosTsumego['Tsumego']['elo_rating_mode']);
+      $solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['elo_rating_mode']);
 
       if ($isNum && $isSet)
       {
-        if (isset($_COOKIE['preId']))
+        if (isset($_COOKIE['previousTsumegoID']))
           $resetCookies = true;
 
         if (!$appController->Session->check('noLogin'))
         {
           $ub = [];
           $ub['UserBoard']['user_id'] = $loggedInUserFromDatabase['User']['id'];
-          $ub['UserBoard']['b1'] = (int)$_COOKIE['preId'];
+          $ub['UserBoard']['b1'] = (int)$_COOKIE['previousTsumegoID'];
           $appController->UserBoard->create();
           $appController->UserBoard->save($ub);
           if ($_COOKIE['score'] >= 3000)
@@ -180,16 +184,16 @@ class PlayResultProcessor
             $ur = [];
             $ur['TsumegoAttempt']['user_id'] = $appController->loggedInUserID();
             $ur['TsumegoAttempt']['elo'] = $appController->Session->read('loggedInUser.User.elo_rating_mode');
-            $ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['preId'];
+            $ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
             $ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
             $ur['TsumegoAttempt']['seconds'] = $cookieSeconds;
             $ur['TsumegoAttempt']['solved'] = '1';
             $ur['TsumegoAttempt']['mode'] = 1;
-            $ur['TsumegoAttempt']['tsumego_elo'] = $previosTsumego['Tsumego']['elo_rating_mode'];
+            $ur['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
             $appController->TsumegoAttempt->save($ur);
             $correctSolveAttempt = true;
 
-            $appController->saveDanSolveCondition($solvedTsumegoRank, $previosTsumego['Tsumego']['id']);
+            $appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
             $appController->updateGems($solvedTsumegoRank);
             if ($_COOKIE['sprint'] == 1)
               $appController->updateSprintCondition(true);
@@ -224,7 +228,7 @@ class PlayResultProcessor
                 if ($_COOKIE['rank'] != 'solved' && $_COOKIE['rank'] != 'failed' && $_COOKIE['rank'] != 'skipped' && $_COOKIE['rank'] != 'timeout')
                   $_COOKIE['rank'] = 'failed';
                 $ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-                $ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10 / (int)$_COOKIE['preId'];
+                $ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
                 $appController->Rank->save($ranks[$i]);
               }
           }
@@ -235,16 +239,20 @@ class PlayResultProcessor
 
       if ($mode == 1)
       {
-        unset($_COOKIE['score']);
         unset($_COOKIE['transition']);
+        setcookie('transition', false);
       }
+      unset($_COOKIE['score']);
+      setcookie('score', false);
       unset($_COOKIE['sequence']);
+      setcookie('sequence', false);
       unset($_COOKIE['type']);
+      setcookie('type', false);
     }
 
     if ($_COOKIE['score'] != '0')
     {
-      $previousTsumegoStatus = $this->TsumegoStatus->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'], 'user_id' => $appController->loggedInUserID()]]);
+      $previousTsumegoStatus = $appController->TsumegoStatus->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'], 'user_id' => $loggedInUserFromDatabase['User']['id']]]);
       if ($previousTsumegoStatus == null)
       {
         $previousTsumegoStatus['TsumegoStatus'] = [];
@@ -252,19 +260,19 @@ class PlayResultProcessor
         $previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'V';
       }
-      $_COOKIE['previosTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
+      $_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
       if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W')
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'C';
       else
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'S';
 
       $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-      $appController->TsumegoStatus->save($previousTsumegoStatus);
+      //$appController->TsumegoStatus->save($previousTsumegoStatus);
       $sessionUts = $appController->Session->read('loggedInUser.uts');
       if (!$sessionUts)
         $sessionUts = [];
       $sessionUts[$previousTsumegoStatus['TsumegoStatus']['tsumego_id']] = $previousTsumegoStatus['TsumegoStatus']['status'];
-      $appController->Session->write('loggedInUser.uts', $sessionUts);
+      //$appController->Session->write('loggedInUser.uts', $sessionUts);
     }
     return true;
   }

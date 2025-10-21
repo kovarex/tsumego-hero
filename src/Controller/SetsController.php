@@ -546,7 +546,7 @@ class SetsController extends AppController
 		}
 		if ($this->isLoggedIn()) {
 			$u = $this->User->findById($this->loggedInUserID());
-			$utsMap = $this->Session->read('loggedInUser.uts');
+			//$utsMap = $this->Session->read('loggedInUser.uts');
 		} else {
 			$noLoginUts = [];
 			$noLoginCount = count($this->Session->read('noLogin') ?? []);
@@ -1176,7 +1176,7 @@ class SetsController extends AppController
 			}
 		}
 		if ($this->isLoggedIn()) {
-			$utsMap = $this->Session->read('loggedInUser.uts');
+			//$utsMap = $this->Session->read('loggedInUser.uts');
 			if ($this->isAdmin()) {
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
 				if ($aad['AdminActivity']['file'] == '/delete') {
@@ -2055,13 +2055,13 @@ class SetsController extends AppController
 					for ($i = 0; $i < $urCount; $i++) {
 						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
 					}
-					$loggedInUserUts = $this->Session->read('loggedInUser.uts');
+					//$loggedInUserUts = $this->Session->read('loggedInUser.uts');
 					$utsCount = count($uts);
 					for ($i = 0; $i < $utsCount; $i++) {
 						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
 						unset($loggedInUserUts[$uts[$i]['TsumegoStatus']['tsumego_id']]);
 					}
-					$this->Session->write('loggedInUser.uts', $loggedInUserUts);
+					//$this->Session->write('loggedInUser.uts', $loggedInUserUts);
 					$pr = [];
 					$pr['ProgressDeletion']['user_id'] = $this->loggedInUserID();
 					$pr['ProgressDeletion']['set_id'] = $id;

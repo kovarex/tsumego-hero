@@ -9,7 +9,7 @@ class AppController extends Controller
   [
     'Session',
     //'DebugKit.Toolbar',
-    'Flash',
+    'Flash'
     //'RatingComponent' // gets included twice when used
   ];
 
@@ -1043,7 +1043,7 @@ class AppController extends Controller
     $utsCount = count($uts);
     for ($i = 0; $i < $utsCount; $i++) {
       $uts[$i]['TsumegoStatus']['status'] = 'V';
-      $this->TsumegoStatus->save($uts[$i]);
+      //$this->TsumegoStatus->save($uts[$i]);
     }
     $uts = $this->TsumegoStatus->find('all', ['conditions' => ['status' => 'X']]);
     if (!$uts) {
@@ -1052,7 +1052,7 @@ class AppController extends Controller
     $utsCount = count($uts);
     for ($i = 0; $i < $utsCount; $i++) {
       $uts[$i]['TsumegoStatus']['status'] = 'W';
-      $this->TsumegoStatus->save($uts[$i]);
+      //$this->TsumegoStatus->save($uts[$i]);
     }
   }
 
@@ -1080,7 +1080,7 @@ class AppController extends Controller
       if ($week[$i]['TsumegoStatus']['created'] < $oneWeek) {
         if ($week[$i]['TsumegoStatus']['status'] == 'S') {
           $week[$i]['TsumegoStatus']['status'] = 'W';
-          $this->TsumegoStatus->save($week[$i]);
+          //$this->TsumegoStatus->save($week[$i]);
         }
       }
     }
@@ -1411,7 +1411,7 @@ class AppController extends Controller
     return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
   }
 
-  protected function decrypt($str = null) {
+  public function decrypt($str = null) {
     $string = $str;
     $secret_key = 'my_simple_secret_keyx';
     $secret_iv = 'my_simple_secret_ivx';
@@ -3679,8 +3679,8 @@ class AppController extends Controller
       }
       $d[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
     }
-    $this->Session->write('loggedInUser.uts', $sessionUts);
-    $this->Session->write('loggedInUser._utsDate', date('Y-m-d'));
+    //$this->Session->write('loggedInUser.uts', $sessionUts);
+    //$this->Session->write('loggedInUser._utsDate', date('Y-m-d'));
   }
 
   /**
@@ -3722,9 +3722,9 @@ class AppController extends Controller
       $this->set('loggedInUser', $loggedInUser);
       $loggedInUserFromDatabase = $this->User->findById($this->loggedInUserID());
 
-      if (!$this->Session->check('loggedInUser.uts') ||
+      /*if (!$this->Session->check('loggedInUser.uts') ||
           date('Y-m-d') != $this->Session->read('loggedInUser._utsDate'))
-        $this->storeUts($this->loggedInUserID());
+        $this->storeUts($this->loggedInUserID());*/
 
       if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set')
       {
@@ -3850,14 +3850,13 @@ class AppController extends Controller
     }
 
     $previosTsumego = null;
-    $preSc = [];
-    if (isset($_COOKIE['preId']) && (int)$_COOKIE['preId'] > 0) {
+    if (isset($_COOKIE['previousTsumegoID'])) {
       if ($this->isLoggedIn()) {
         $utsx = $this->TsumegoStatus->find('all', [
           'order' => 'created DESC',
           'conditions' => [
             'user_id' => $this->loggedInUserID(),
-            'tsumego_id' => (int)$_COOKIE['preId'],
+            'tsumego_id' => (int)$_COOKIE['previousTsumegoID'],
           ],
         ]);
         if (!$utsx) {
@@ -3870,14 +3869,7 @@ class AppController extends Controller
           }
         }
       }
-      $previousTsumego = $this->Tsumego->findById((int)$_COOKIE['preId']);
-      $preSc = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => (int)$_COOKIE['preId']]]);
-      if (!$preSc) {
-        $preSc = [];
-      }
-      if (count($preSc) > 0) {
-        $previousTsumego['Tsumego']['set_id'] = $preSc[0]['SetConnection']['set_id'];
-      }
+      $previousTsumego = $this->Tsumego->findById((int)$_COOKIE['previousTsumegoID']);
     }
     if ($_COOKIE['sprint'] != 1) {
       $this->updateSprintCondition();
@@ -3910,13 +3902,13 @@ class AppController extends Controller
             $utPreX['TsumegoStatus']['status'] = 'S';
           }
           $utPreX['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-          $this->TsumegoStatus->save($utPreX);
-          $sessionUts = $this->Session->read('loggedInUser.uts');
-          if (!$sessionUts) {
+          //$this->TsumegoStatus->save($utPreX);
+          //$sessionUts = $this->Session->read('loggedInUser.uts');
+          /*if (!$sessionUts) {
             $sessionUts = [];
           }
           $sessionUts[$utPreX['TsumegoStatus']['tsumego_id']] = $utPreX['TsumegoStatus']['status'];
-          $this->Session->write('loggedInUser.uts', $sessionUts);
+          $this->Session->write('loggedInUser.uts', $sessionUts);*/
         }
       }
     }
