@@ -187,17 +187,17 @@ class PlayResultProcessorComponent extends Component
               $cookieSeconds = 0;
             else
               $cookieSeconds = $_COOKIE['seconds'];
-            $this->TsumegoAttempt->create();
-            $ur = [];
-            $ur['TsumegoAttempt']['user_id'] = $loggedInUserFromDatabase['User']['id'];
-            $ur['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
-            $ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
-            $ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
-            $ur['TsumegoAttempt']['seconds'] = $cookieSeconds;
-            $ur['TsumegoAttempt']['solved'] = '1';
-            $ur['TsumegoAttempt']['mode'] = 1;
-            $ur['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
-            $this->TsumegoAttempt->save($ur);
+
+            $tsumegoAttempt = [];
+            $tsumegoAttempt['TsumegoAttempt']['user_id'] = $loggedInUserFromDatabase['User']['id'];
+			$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
+			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+			$tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
+            $tsumegoAttempt['TsumegoAttempt']['seconds'] = $cookieSeconds;
+            $tsumegoAttempt['TsumegoAttempt']['solved'] = '1';
+            $tsumegoAttempt['TsumegoAttempt']['mode'] = 1;
+            $tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
+            ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
             $correctSolveAttempt = true;
 
             $appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
@@ -244,11 +244,6 @@ class PlayResultProcessorComponent extends Component
       else
         $loggedInUserFromDatabase['User']['penalty'] += 1;
 
-      if ($mode == 1)
-      {
-        unset($_COOKIE['transition']);
-        setcookie('transition', false);
-      }
       unset($_COOKIE['score']);
       setcookie('score', false);
       unset($_COOKIE['sequence']);
