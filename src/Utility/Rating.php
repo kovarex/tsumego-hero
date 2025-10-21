@@ -33,4 +33,3 @@ class Rating
     return Rating::getReadableRank(Rating::getRankFromRating($rating));
   }
 }
-?>
