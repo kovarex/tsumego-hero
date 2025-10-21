@@ -10,17 +10,17 @@ class SitesController extends AppController {
 	public function index($var = null) {
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('User');
-		$this->LoadModel('DayRecord');
-		$this->LoadModel('UserBoard');
-		$this->LoadModel('Schedule');
-		$this->LoadModel('RankOverview');
-		$this->LoadModel('Sgf');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('PublishDate');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('User');
+		$this->loadModel('DayRecord');
+		$this->loadModel('UserBoard');
+		$this->loadModel('Schedule');
+		$this->loadModel('RankOverview');
+		$this->loadModel('Sgf');
+		$this->loadModel('SetConnection');
+		$this->loadModel('PublishDate');
 
 		$tdates = [];
 		$tSum = [];

@@ -10,10 +10,10 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function duplicates($id = null) {
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Sgf');
-		$this->LoadModel('Duplicate');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Sgf');
+		$this->loadModel('Duplicate');
+		$this->loadModel('SetConnection');
 
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Tsumego Hero - Duplicates');
@@ -128,8 +128,8 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function duplicatesearch() {
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Duplicate');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Duplicate');
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Duplicate Search Results');
 		$s = $this->Set->find('all', [
@@ -170,13 +170,13 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function beta() {
-		$this->LoadModel('User');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Comment');
-		$this->LoadModel('Favorite');
-		$this->LoadModel('Comment');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('User');
+		$this->loadModel('Tsumego');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Comment');
+		$this->loadModel('Favorite');
+		$this->loadModel('Comment');
+		$this->loadModel('SetConnection');
 
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Tsumego Hero - Collections');
@@ -297,8 +297,8 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function create($tid = null) {
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
 		$redirect = false;
 		$t = [];
 		if (isset($this->data['Set'])) {
@@ -369,7 +369,7 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function remove($id) {
-		$this->LoadModel('Tsumego');
+		$this->loadModel('Tsumego');
 		$redirect = false;
 
 		if (isset($this->data['Set'])) {
@@ -398,7 +398,7 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function add($tid) {
-		$this->LoadModel('Tsumego');
+		$this->loadModel('Tsumego');
 
 		if (isset($this->data['Tsumego'])) {
 			$t = [];
@@ -416,13 +416,13 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function index() {
-		$this->LoadModel('User');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Favorite');
-		$this->LoadModel('AchievementCondition');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('UserContribution');
+		$this->loadModel('User');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Favorite');
+		$this->loadModel('AchievementCondition');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('SetConnection');
+		$this->loadModel('UserContribution');
 		$this->Session->write('page', 'set');
 		$this->Session->write('title', 'Tsumego Hero - Collections');
 
@@ -1097,22 +1097,22 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function view($id = null) {
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Favorite');
-		$this->LoadModel('AdminActivity');
-		$this->LoadModel('Joseki');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('ProgressDeletion');
-		$this->LoadModel('Achievement');
-		$this->LoadModel('AchievementStatus');
-		$this->LoadModel('AchievementCondition');
-		$this->LoadModel('Sgf');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('TagName');
-		$this->LoadModel('Tag');
-		$this->LoadModel('User');
-		$this->LoadModel('UserContribution');
+		$this->loadModel('Tsumego');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Favorite');
+		$this->loadModel('AdminActivity');
+		$this->loadModel('Joseki');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('ProgressDeletion');
+		$this->loadModel('Achievement');
+		$this->loadModel('AchievementStatus');
+		$this->loadModel('AchievementCondition');
+		$this->loadModel('Sgf');
+		$this->loadModel('SetConnection');
+		$this->loadModel('TagName');
+		$this->loadModel('Tag');
+		$this->loadModel('User');
+		$this->loadModel('UserContribution');
 
 		if ($id != '1') {
 			$this->Session->write('page', 'set');
@@ -2439,9 +2439,9 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function beta2() {
-		$this->LoadModel('User');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('TsumegoStatus');
+		$this->loadModel('User');
+		$this->loadModel('Tsumego');
+		$this->loadModel('TsumegoStatus');
 
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Deleted Collections');

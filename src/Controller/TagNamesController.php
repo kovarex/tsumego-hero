@@ -285,7 +285,7 @@ class TagNamesController extends AppController {
 	 * @return void
 	 */
 	public function delete($id) {
-		$this->LoadModel('Tag');
+		$this->loadModel('Tag');
 		$tn = $this->TagName->findById($id);
 
 		if (isset($this->data['TagName'])) {

@@ -34,11 +34,11 @@ class TsumegoRatingAttemptsController extends AppController {
 	public function json($type = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'TSUMEGO RECORDS');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('User');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('User');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('SetConnection');
 
 		if ($type == 0) {
 			$trs = $this->TsumegoRatingAttempt->find('all', [
@@ -126,8 +126,8 @@ class TsumegoRatingAttemptsController extends AppController {
 	public function csv($type = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'TSUMEGO RECORDS');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('User');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('User');
 
 		$trs = [];
 		if ($type == 0) {
@@ -252,10 +252,10 @@ class TsumegoRatingAttemptsController extends AppController {
 	public function user($trid) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'History of ' . $this->Session->read('loggedInUser.User.name'));
-		$this->LoadModel('Set');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('TsumegoAttempt');
+		$this->loadModel('Set');
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
+		$this->loadModel('TsumegoAttempt');
 		if ($this->loggedInuserID() != $trid && $this->loggedInuserID() != 72) {
 			$this->Session->write('redirect', 'sets');
 		}

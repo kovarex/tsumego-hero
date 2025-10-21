@@ -5,12 +5,12 @@ class CommentsController extends AppController {
 	 * @return void
 	 */
 	public function index() {
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Set');
-		$this->LoadModel('User');
-		$this->LoadModel('Sgf');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('Tsumego');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Set');
+		$this->loadModel('User');
+		$this->loadModel('Sgf');
+		$this->loadModel('SetConnection');
 		$this->Session->write('title', 'Tsumego Hero - Discuss');
 		$this->Session->write('page', 'discuss');
 		$c = [];
