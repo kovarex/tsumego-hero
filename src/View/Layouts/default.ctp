@@ -56,7 +56,8 @@
 				$accountBarLevelToRating = 'account-bar-user';
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
-				$levelNum = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
+        if ($user['User']['elo_rating_mode'])
+				  $levelNum = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
 			}
