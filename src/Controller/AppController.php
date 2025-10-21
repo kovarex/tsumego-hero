@@ -164,7 +164,7 @@ class AppController extends Controller
   }
 
   protected function getInvisibleSets() {
-    $this->LoadModel('Set');
+    $this->loadModel('Set');
     $invisibleSets = [];
     $in = $this->Set->find('all', ['conditions' => ['public' => 0]]);
     if (!$in) {
@@ -194,9 +194,9 @@ class AppController extends Controller
    * @return void
    */
   protected function startPageUpdate() {
-    $this->LoadModel('User');
-    $this->LoadModel('Achievement');
-    $this->LoadModel('AchievementStatus');
+    $this->loadModel('User');
+    $this->loadModel('Achievement');
+    $this->loadModel('AchievementStatus');
     $str = '';
     $latest = $this->AchievementStatus->find('all', ['limit' => 7, 'order' => 'created DESC']);
     if (!$latest) {
@@ -225,11 +225,11 @@ class AppController extends Controller
    * @return void
    */
   protected function uotd() {//routine1
-    $this->LoadModel('User');
-    $this->LoadModel('DayRecord');
-    $this->LoadModel('TsumegoAttempt');
-    $this->LoadModel('Achievement');
-    $this->LoadModel('AchievementCondition');
+    $this->loadModel('User');
+    $this->loadModel('DayRecord');
+    $this->loadModel('TsumegoAttempt');
+    $this->loadModel('Achievement');
+    $this->loadModel('AchievementCondition');
     $today = date('Y-m-d');
     $ux2 = $this->User->find('all', [
       'limit' => '8',
@@ -432,8 +432,8 @@ class AppController extends Controller
   }
 
   protected function findTsumegoSet($id) {
-    $this->LoadModel('Tsumego');
-    $this->LoadModel('SetConnection');
+    $this->loadModel('Tsumego');
+    $this->loadModel('SetConnection');
     $scIds = [];
     $scMap = [];
     $tsx = [];
@@ -808,7 +808,7 @@ class AppController extends Controller
    * @return void
    */
   protected function handleContribution($uid, $action) {
-    $this->LoadModel('UserContribution');
+    $this->loadModel('UserContribution');
     $uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
     if ($uc == null) {
       $uc = [];
@@ -874,8 +874,8 @@ class AppController extends Controller
    * @return void
    */
   protected function userRefresh($range = null) {
-    $this->LoadModel('User');
-    $this->LoadModel('TsumegoStatus');
+    $this->loadModel('User');
+    $this->loadModel('TsumegoStatus');
     $u = [];
     if ($range == 1) {
       $u = $this->User->find('all', [
@@ -1056,7 +1056,7 @@ class AppController extends Controller
    * @return void
    */
   protected function deleteUserBoards() {
-    $this->LoadModel('UserBoard');
+    $this->loadModel('UserBoard');
     $this->UserBoard->deleteAll(['1 = 1']);
   }
 
@@ -1064,8 +1064,8 @@ class AppController extends Controller
    * @return void
    */
   protected function halfXP() {
-    $this->LoadModel('TsumegoStatus');
-    $this->LoadModel('DayRecord');
+    $this->loadModel('TsumegoStatus');
+    $this->loadModel('DayRecord');
     $week = $this->TsumegoStatus->find('all', ['order' => 'created DESC', 'conditions' => ['status' => 'S']]);
     if (!$week) {
       $week = [];
@@ -1083,7 +1083,7 @@ class AppController extends Controller
   }
 
   protected function getNewTsumego() {
-    $this->LoadModel('Schedule');
+    $this->loadModel('Schedule');
     $date = date('Y-m-d', strtotime('today'));
     $s = $this->Schedule->find('all', ['conditions' => ['date' => $date]]);
     if (!$s) {
@@ -1102,10 +1102,10 @@ class AppController extends Controller
   }
 
   protected function publishSingle($t = null, $to = null, $date = null) {
-    $this->LoadModel('Tsumego');
-    $this->LoadModel('Sgf');
-    $this->LoadModel('SetConnection');
-    $this->LoadModel('PublishDate');
+    $this->loadModel('Tsumego');
+    $this->loadModel('Sgf');
+    $this->loadModel('SetConnection');
+    $this->loadModel('PublishDate');
     $ts = $this->Tsumego->findById($t);
 
     $id = $this->Tsumego->find('first', ['limit' => 1, 'order' => 'id DESC']);
@@ -3529,7 +3529,7 @@ class AppController extends Controller
    * @return void
    */
   protected function handleSearchSettings($uid) {
-    $this->LoadModel('UserContribution');
+    $this->loadModel('UserContribution');
     $uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
     if ($uc == null) {
       $uc = [];
@@ -3690,12 +3690,12 @@ class AppController extends Controller
     $this->loadModel('TsumegoRatingAttempt');
     $this->loadModel('Set');
     $this->loadModel('Rank');
-    $this->LoadModel('TsumegoStatus');
-    $this->LoadModel('Comment');
-    $this->LoadModel('UserBoard');
-    $this->LoadModel('TsumegoAttempt');
-    $this->LoadModel('AdminActivity');
-    $this->LoadModel('RankSetting');
+    $this->loadModel('TsumegoStatus');
+    $this->loadModel('Comment');
+    $this->loadModel('UserBoard');
+    $this->loadModel('TsumegoAttempt');
+    $this->loadModel('AdminActivity');
+    $this->loadModel('RankSetting');
     $this->loadModel('Achievement');
     $this->loadModel('AchievementStatus');
     $this->loadModel('AchievementCondition');
@@ -4166,5 +4166,4 @@ class AppController extends Controller
       }
     }
   }
-
 }

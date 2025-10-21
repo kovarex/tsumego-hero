@@ -34,10 +34,10 @@ class TsumegoRecordsController extends AppController {
 	public function json($type = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'TSUMEGO RECORDS');
-		$this->LoadModel('UserRecord');
-		$this->LoadModel('User');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
+		$this->loadModel('UserRecord');
+		$this->loadModel('User');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
 
 		if ($type == 0) {
 			$trs = $this->TsumegoRecord->find('all', [
@@ -120,8 +120,8 @@ class TsumegoRecordsController extends AppController {
 	public function csv($type = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'TSUMEGO RECORDS');
-		$this->LoadModel('UserRecord');
-		$this->LoadModel('User');
+		$this->loadModel('UserRecord');
+		$this->loadModel('User');
 
 		$trs = [];
 		if ($type == 0) {
@@ -246,8 +246,8 @@ class TsumegoRecordsController extends AppController {
 	public function user($trid) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'History of ' . $this->Session->read('loggedInUser.User.name'));
-		$this->LoadModel('Set');
-		$this->LoadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('Tsumego');
 		if ($this->Session->read('loggedInUser.User.id') != $trid && $this->Session->read('loggedInUser.User.id') != 72) {
 			$this->Session->write('redirect', 'sets');
 		}

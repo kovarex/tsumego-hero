@@ -10,18 +10,18 @@ class TsumegosController extends AppController {
 	public function play($id = null) {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
-		$this->LoadModel('Set');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Comment');
-		$this->LoadModel('UserBoard');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('Favorite');
-		$this->LoadModel('AdminActivity');
-		$this->LoadModel('Activate');
-		$this->LoadModel('Joseki');
-		$this->LoadModel('Reputation');
-		$this->LoadModel('Rank');
-		$this->LoadModel('RankSetting');
+		$this->loadModel('Set');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Comment');
+		$this->loadModel('UserBoard');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('Favorite');
+		$this->loadModel('AdminActivity');
+		$this->loadModel('Activate');
+		$this->loadModel('Joseki');
+		$this->loadModel('Reputation');
+		$this->loadModel('Rank');
+		$this->loadModel('RankSetting');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
@@ -32,7 +32,7 @@ class TsumegosController extends AppController {
 		$this->loadModel('Signature');
 		$this->loadModel('Tag');
 		$this->loadModel('TagName');
-		$this->LoadModel('UserContribution');
+		$this->loadModel('UserContribution');
 
 		$onlineMode = true;
 		$noUser = null;

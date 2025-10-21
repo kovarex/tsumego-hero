@@ -1516,10 +1516,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function userstats($uid = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'USER STATS');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('Set');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('Set');
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
 		if ($uid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		} elseif ($uid == 99) {
@@ -1569,10 +1569,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function userstats2($uid = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'USER STATS');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('Set');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('Set');
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
 		if ($uid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		} else {
@@ -1709,10 +1709,10 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function userstats3($sid = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'USER STATS');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('Set');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('Set');
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
 
 		$ts = $this->findTsumegoSet($sid);
 		$ids = [];
@@ -1761,14 +1761,14 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function stats($p = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'PAGE STATS');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Comment');
-		$this->LoadModel('User');
-		$this->LoadModel('DayRecord');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
-		$this->LoadModel('AdminActivity');
-		$this->LoadModel('SetConnection');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Comment');
+		$this->loadModel('User');
+		$this->loadModel('DayRecord');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('AdminActivity');
+		$this->loadModel('SetConnection');
 
 		$today = date('Y-m-d', strtotime('today'));
 
@@ -2338,7 +2338,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function uploads() {
 		$this->Session->write('page', 'set');
 		$this->Session->write('title', 'Uploads');
-		$this->LoadModel('Sgf');
+		$this->loadModel('Sgf');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
@@ -2379,21 +2379,21 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function adminstats($p = null) {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Admin Panel');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('TsumegoRatingAttempt');
-		$this->LoadModel('Comment');
-		$this->LoadModel('User');
-		$this->LoadModel('DayRecord');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
-		$this->LoadModel('AdminActivity');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('Tag');
-		$this->LoadModel('TagName');
-		$this->LoadModel('Sgf');
-		$this->LoadModel('UserContribution');
-		$this->LoadModel('Reject');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('TsumegoRatingAttempt');
+		$this->loadModel('Comment');
+		$this->loadModel('User');
+		$this->loadModel('DayRecord');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('AdminActivity');
+		$this->loadModel('SetConnection');
+		$this->loadModel('Tag');
+		$this->loadModel('TagName');
+		$this->loadModel('Sgf');
+		$this->loadModel('UserContribution');
+		$this->loadModel('Reject');
 
 		if ($this->isAdmin()) {
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
@@ -2779,8 +2779,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('page', 'levelHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Highscore');
 
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Activate');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Activate');
 
 		$this->saveSolvedNumber($this->loggedInUserID());
 
@@ -2815,8 +2815,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('page', 'ratingHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Rating');
 
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Tsumego');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
 		if ($this->isLoggedIn()) {
 			$ux = $this->User->findById($this->loggedInUserID());
 			$ux['User']['lastHighscore'] = 2;
@@ -2840,7 +2840,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function added_tags() {
 		$this->Session->write('page', 'timeHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Added Tags');
-		$this->LoadModel('UserContribution');
+		$this->loadModel('UserContribution');
 
 		$list = [];
 		$uc = $this->UserContribution->find('all', ['limit' => 100, 'order' => 'score DESC']);
@@ -2866,7 +2866,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 * @return void
 	 */
 	public function rewards() {
-		$this->LoadModel('UserContribution');
+		$this->loadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 
 		if (isset($this->params['url']['action']) && isset($this->params['url']['token'])) {
@@ -2943,11 +2943,11 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function achievements() {
 		$this->Session->write('page', 'achievementHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Achievements Highscore');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('AchievementStatus');
-		$this->LoadModel('Achievement');
-		$this->LoadModel('User');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
+		$this->loadModel('AchievementStatus');
+		$this->loadModel('Achievement');
+		$this->loadModel('User');
 
 		if ($this->isLoggedIn()) {
 			$ux = $this->User->findById($this->loggedInUserID());
@@ -2975,9 +2975,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('page', 'timeHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Time Highscore');
 
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('RankOverview');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
+		$this->loadModel('RankOverview');
 		$currentRank = '';
 		$params1 = '';
 		$params2 = '';
@@ -3120,9 +3120,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function leaderboard() {
 		$this->Session->write('page', 'dailyHighscore');
 		$this->Session->write('title', 'Tsumego Hero - Daily Highscore');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('DayRecord');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
+		$this->loadModel('DayRecord');
 
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]);
 		if (!$adminsList) {
@@ -3170,14 +3170,14 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 */
 	public function view($id = null) {
 		$this->Session->write('page', 'user');
-		$this->LoadModel('TsumegoStatus');
-		$this->LoadModel('TsumegoAttempt');
-		$this->LoadModel('Tsumego');
-		$this->LoadModel('Set');
-		$this->LoadModel('Achievement');
-		$this->LoadModel('AchievementStatus');
-		$this->LoadModel('SetConnection');
-		$this->LoadModel('RankOverview');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('TsumegoAttempt');
+		$this->loadModel('Tsumego');
+		$this->loadModel('Set');
+		$this->loadModel('Achievement');
+		$this->loadModel('AchievementStatus');
+		$this->loadModel('SetConnection');
+		$this->loadModel('RankOverview');
 		$hideEmail = false;
 
 		$solvedUts2 = $this->saveSolvedNumber($this->loggedInUserID());
@@ -3598,7 +3598,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 * @return void
 	 */
 	public function authors() {
-		$this->LoadModel('Comment');
+		$this->loadModel('Comment');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
@@ -3742,7 +3742,7 @@ Joschka Zimdars';
 	}
 
 	public function delete($id) {
-		$this->LoadModel('Comment');
+		$this->loadModel('Comment');
 		if ($this->request->is('get')) {
 			throw new MethodNotAllowedException();
 		}
