@@ -12,7 +12,7 @@ class PlayResultProcessorComponent extends Component
     if (!$previousTsumego)
       return;
     $result = $this->checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
-    $this->updateTsumegoStatus($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    $this->updateTsumegoStatus($loggedInUserFromDatabase, $previousTsumego, $result);
     $this->processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
   }
 
@@ -25,12 +25,12 @@ class PlayResultProcessorComponent extends Component
     return '';
   }
 
-  private function updateTsumegoStatus($appController, &$loggedInUserFromDatabase, &$previousTsumego, $result): void
+  private function updateTsumegoStatus($loggedInUserFromDatabase, $previousTsumego, $result): void
   {
     $tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
     $previousTsumegoStatus = $tsumegoStatusModel->find('first', ['order' => 'created DESC',
                                                                  'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
-                                                                                  'user_id' => $loggedInUserFromDatabase['User']['id']]]);
+                                                                                  'user_id' => (int)$loggedInUserFromDatabase['User']['id']]]);
     if ($previousTsumegoStatus == null)
     {
       $previousTsumegoStatus['TsumegoStatus'] = [];
