@@ -100,3 +100,21 @@ DROP TABLE user_texture_maps; /* unknown - empty */
 ALTER TABLE `day_records` MODIFY `user_id` INT UNSIGNED NOT NULL;
 DELETE day_records.* FROM day_records LEFT JOIN users on day_records.user_id=users.id WHERE users.id is null; /* 9 deleted out of many */
 ALTER TABLE `day_records` ADD CONSTRAINT `day_records_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* If user would be deleted, we delete his day record I guess */
+
+DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
+DELIMITER //
+CREATE PROCEDURE remove_duplicate_tsumego_statuses()
+BEGIN
+  DECLARE count_to_delete int unsigned;
+  (SELECT MAX(tmp.count) FROM (SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1) as tmp) INTO count_to_delete;
+  WHILE (count_to_delete > 0) DO
+    DELETE to_remove FROM `tsumego_statuses` as to_remove JOIN(SELECT MIN(id) as id, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1) as tmp ON tmp.id=to_remove.id;
+    SET count_to_delete = count_to_delete - 1;
+  END WHILE;
+END //
+DELIMITER ;
+CALL remove_duplicate_tsumego_statuses();
+SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1 ORDER BY 1 DESC;
+DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
+
+ALTER TABLE `tsumego_statuses` DROP INDEX `user_id_and_tsumego_id_index`, ADD UNIQUE `user_id_and_tsumego_id_index` (`user_id`, `tsumego_id`) USING BTREE;
