@@ -1,5 +1,6 @@
 <?php
 App::uses('Rating', 'Utility');
+App::uses('Util', 'Utility');
 App::uses('TsumegoStatus', 'Model');
 App::uses('SetConnection', 'Model');
 
@@ -101,7 +102,8 @@ class PlayResultProcessorComponent extends Component
   {
     if (empty($_COOKIE['misplay']))
       return false;
-    setcookie('misplay', false);
+    Util::clearCookie('misplay', '');
+    assert(empty($_COOKIE['misplay']));
     return true;
   }
 
@@ -190,9 +192,9 @@ class PlayResultProcessorComponent extends Component
 
             $tsumegoAttempt = [];
             $tsumegoAttempt['TsumegoAttempt']['user_id'] = $loggedInUserFromDatabase['User']['id'];
-			$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
-			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
-			$tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
+            $tsumegoAttempt['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
+            $tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+            $tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
             $tsumegoAttempt['TsumegoAttempt']['seconds'] = $cookieSeconds;
             $tsumegoAttempt['TsumegoAttempt']['solved'] = '1';
             $tsumegoAttempt['TsumegoAttempt']['mode'] = 1;
@@ -244,12 +246,9 @@ class PlayResultProcessorComponent extends Component
       else
         $loggedInUserFromDatabase['User']['penalty'] += 1;
 
-      unset($_COOKIE['score']);
-      setcookie('score', false);
-      unset($_COOKIE['sequence']);
-      setcookie('sequence', false);
-      unset($_COOKIE['type']);
-      setcookie('type', false);
+      Util::clearCookie('score');
+      Util::clearCookie('sequence');
+      Util::clearCookie('type');
     }
     return true;
   }

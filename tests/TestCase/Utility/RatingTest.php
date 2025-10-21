@@ -2,7 +2,7 @@
 
 App::uses('Rating', 'Utility');
 
-class RatingComponentTest extends UtilityTestCase
+class RatingComponentTest extends CakeTestCase
 {
   public function testRatingToReadableRank(): void
   {
