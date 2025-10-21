@@ -5,7 +5,7 @@ App::uses('AppModel', 'Model');
 /**
  * Test model for EmptyIntegerBehavior
  */
-class EmptyIntegerBehaviorTest extends AppModel {
+class EmptyIntegerTestModel extends AppModel {
 
 	public $useTable = false;
 
