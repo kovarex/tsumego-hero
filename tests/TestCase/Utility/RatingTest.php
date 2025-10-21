@@ -1,9 +1,8 @@
 <?php
 
-// App::uses('Component', 'Rating'); or anything similar doesn't work
-require_once("src/Controller/Component/RatingComponent.php");
+App::uses('Rating', 'Utility');
 
-class RatingComponentTest extends ControllerTestCase
+class RatingComponentTest extends UtilityTestCase
 {
   public function testRatingToReadableRank(): void
   {
