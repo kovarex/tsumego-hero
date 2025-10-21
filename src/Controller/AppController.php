@@ -1,6 +1,4 @@
 <?php
-require_once("Component/PlayResultProcessorComponent.php"); // this should be included through components in the AppController, but when I do it, it gets included twice for some reason.
-
 class AppController extends Controller
 {
 
@@ -8,7 +6,8 @@ class AppController extends Controller
   [
     'Session',
     //'DebugKit.Toolbar',
-    'Flash'
+    'Flash',
+    'PlayResultProcessor'
   ];
 
   protected function isLoggedIn(): bool
@@ -3879,7 +3878,7 @@ class AppController extends Controller
         $this->Session->write('loggedInUser.User.revelation', $this->Session->read('loggedInUser.User.revelation') - 1);
       }
 
-      PlayResultProcessor::checkPreviousPlay($this, $loggedInUserFromDatabase, $previousTsumego);
+      $this->PlayResultProcessor->checkPreviousPlay($this, $loggedInUserFromDatabase, $previousTsumego);
 
       if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
         if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {

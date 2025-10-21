@@ -1,7 +1,7 @@
 <?php
 App::uses('Rating', 'Utility');
 
-class PlayResultProcessor
+class PlayResultProcessorComponent extends Component
 {
   static public function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
   {
@@ -278,5 +278,4 @@ class PlayResultProcessor
     }
     return true;
   }
-};
-?>
+}
