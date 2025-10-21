@@ -1,5 +1,7 @@
 <?php
 App::uses('Rating', 'Utility');
+App::uses('TsumegoStatus', 'Model');
+App::uses('SetConnection', 'Model');
 
 class PlayResultProcessorComponent extends Component
 {
@@ -25,9 +27,10 @@ class PlayResultProcessorComponent extends Component
 
   private function updateTsumegoStatus($appController, &$loggedInUserFromDatabase, &$previousTsumego, $result): void
   {
-    $previousTsumegoStatus = $appController->TsumegoStatus->find('first', ['order' => 'created DESC',
-                                                                           'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
-                                                                                            'user_id' => $loggedInUserFromDatabase['User']['id']]]);
+    $tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
+    $previousTsumegoStatus = $tsumegoStatusModel->find('first', ['order' => 'created DESC',
+                                                                 'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
+                                                                                  'user_id' => $loggedInUserFromDatabase['User']['id']]]);
     if ($previousTsumegoStatus == null)
     {
       $previousTsumegoStatus['TsumegoStatus'] = [];
@@ -55,7 +58,7 @@ class PlayResultProcessorComponent extends Component
       return; // don't update the status date when we just visited and it already has some state, this is to present times of when user solved problems
 
     $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-    $appController->TsumegoStatus->save($previousTsumegoStatus);
+    $tsumegoStatusModel->save($previousTsumegoStatus);
   }
 
   private function processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result): void
@@ -82,12 +85,16 @@ class PlayResultProcessorComponent extends Component
     $newEloRating = $userRating + $newUserElo['user'];
     $this->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
     $loggedInUserFromDatabase['User']['elo_rating_mode'] = $newEloRating;
-    $appController->User->saveField('elo_rating_mode', $newEloRating);
+
+    $userModel = ClassRegistry::init('User');
+    $userModel->id = $loggedInUserFromDatabase['User']['id'];
+    $userModel->saveField('elo_rating_mode', $newEloRating);
+
     $previousTsumego['Tsumego']['elo_rating_mode'] += $newUserElo['tsumego'];
     $previousTsumego['Tsumego']['activity_value']++;
     $previousTsumego['Tsumego']['difficulty'] = $appController->convertEloToXp($previousTsumego['Tsumego']['elo_rating_mode']);
     if ($previousTsumego['Tsumego']['elo_rating_mode'] > 100)
-      $appController->Tsumego->save($previousTsumego);
+      ClassRegistry::init('Tsumego')->save($previousTsumego);
   }
 
   private function checkMisplay(): bool
@@ -116,7 +123,7 @@ class PlayResultProcessorComponent extends Component
       $isNumSc = false;
       $isSetSc = false;
 
-      $preSc = $appController->SetConnection->find('all', ['conditions' => ['tsumego_id' => (int)$_COOKIE['previousTsumegoID']]]);
+      $preSc = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id']]]);
       if (!$preSc)
         $preSc = [];
       $preScCount = count($preSc);
@@ -180,9 +187,9 @@ class PlayResultProcessorComponent extends Component
               $cookieSeconds = 0;
             else
               $cookieSeconds = $_COOKIE['seconds'];
-            $appController->TsumegoAttempt->create();
+            $this->TsumegoAttempt->create();
             $ur = [];
-            $ur['TsumegoAttempt']['user_id'] = $appController->loggedInUserID();
+            $ur['TsumegoAttempt']['user_id'] = $loggedInUserFromDatabase['User']['id'];
             $ur['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
             $ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
             $ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
@@ -190,7 +197,7 @@ class PlayResultProcessorComponent extends Component
             $ur['TsumegoAttempt']['solved'] = '1';
             $ur['TsumegoAttempt']['mode'] = 1;
             $ur['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
-            $appController->TsumegoAttempt->save($ur);
+            $this->TsumegoAttempt->save($ur);
             $correctSolveAttempt = true;
 
             $appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
@@ -204,14 +211,14 @@ class PlayResultProcessorComponent extends Component
             $aCondition = $appController->AchievementCondition->find('first', [
               'order' => 'value DESC',
               'conditions' => [
-                'user_id' => $appController->loggedInUserID(),
+                'user_id' => $loggedInUserFromDatabase['User']['id'],
                 'category' => 'err',
               ],
             ]);
             if ($aCondition == null)
               $aCondition = [];
             $aCondition['AchievementCondition']['category'] = 'err';
-            $aCondition['AchievementCondition']['user_id'] = $appController->loggedInUserID();
+            $aCondition['AchievementCondition']['user_id'] = $loggedInUserFromDatabase['User']['id'];
             $aCondition['AchievementCondition']['value']++;
             $appController->AchievementCondition->save($aCondition);
           }
@@ -248,26 +255,6 @@ class PlayResultProcessorComponent extends Component
       setcookie('sequence', false);
       unset($_COOKIE['type']);
       setcookie('type', false);
-    }
-
-    if ($_COOKIE['score'] != '0')
-    {
-      $previousTsumegoStatus = $appController->TsumegoStatus->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'], 'user_id' => $loggedInUserFromDatabase['User']['id']]]);
-      if ($previousTsumegoStatus == null)
-      {
-        $previousTsumegoStatus['TsumegoStatus'] = [];
-        $previousTsumegoStatus['TsumegoStatus']['user_id'] = $loggedInUserFromDatabase['User']['id'];
-        $previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
-        $previousTsumegoStatus['TsumegoStatus']['status'] = 'V';
-      }
-      $_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
-      if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W')
-        $previousTsumegoStatus['TsumegoStatus']['status'] = 'C';
-      else
-        $previousTsumegoStatus['TsumegoStatus']['status'] = 'S';
-
-      $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-      //$appController->TsumegoStatus->save($previousTsumegoStatus);
     }
     return true;
   }
