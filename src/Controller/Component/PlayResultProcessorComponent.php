@@ -7,16 +7,16 @@ class PlayResultProcessorComponent extends Component
   {
     if (!$previousTsumego)
       return;
-    $result = PlayResultProcessor::checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
-    PlayResultProcessor::updateTsumegoStatus($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
-    PlayResultProcessor::processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    $result = PlayResultProcessorComponent::checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
+    PlayResultProcessorComponent::updateTsumegoStatus($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    PlayResultProcessorComponent::processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
   }
 
   static public function checkPreviousPlayAndGetResult($appController, &$loggedInUserFromDatabase, &$previousTsumego): string
   {
-    if (PlayResultProcessor::checkMisplay($appController, $loggedInUserFromDatabase, $previousTsumego))
+    if (PlayResultProcessorComponent::checkMisplay($appController, $loggedInUserFromDatabase, $previousTsumego))
       return 'l';
-    if (PlayResultProcessor::checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
+    if (PlayResultProcessorComponent::checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
       return 'w';
     return '';
   }
