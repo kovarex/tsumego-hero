@@ -100,8 +100,7 @@ class PlayResultProcessorComponent extends Component
   {
     if (empty($_COOKIE['misplay']))
       return false;
-    Util::clearCookie('misplay', '');
-    assert(empty($_COOKIE['misplay']));
+    Util::clearCookie('misplay');
     return true;
   }
 
