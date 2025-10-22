@@ -118,3 +118,6 @@ SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY u
 DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
 
 ALTER TABLE `tsumego_statuses` DROP INDEX `user_id_and_tsumego_id_index`, ADD UNIQUE `user_id_and_tsumego_id_index` (`user_id`, `tsumego_id`) USING BTREE;
+
+ALTER TABLE users ALTER COLUMN potion SET DEFAULT 0;
+ALTER TABLE users ALTER COLUMN penalty SET DEFAULT 0;
