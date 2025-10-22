@@ -19,20 +19,8 @@ parameters:
 			path: src/Controller/TsumegosController.php
 
 		-
-			message: '#^Comparison operation "\>\=" between 1600 and 550\|int\<600, 1600\> is always true\.$#'
-			identifier: greaterOrEqual.alwaysTrue
-			count: 1
-			path: src/Controller/TsumegosController.php
-
-		-
 			message: '#^Loose comparison using \=\= between null and null will always evaluate to true\.$#'
 			identifier: equal.alwaysTrue
-			count: 1
-			path: src/Controller/TsumegosController.php
-
-		-
-			message: '#^Offset ''TsumegoStatus'' does not exist on null\.$#'
-			identifier: offsetAccess.notFound
 			count: 1
 			path: src/Controller/TsumegosController.php
 
