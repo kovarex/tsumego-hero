@@ -91,6 +91,12 @@ jobs:
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
           chmod -R 777 tmp
 
+      - name: Import database schema
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot test < config/schema.sql
+          mysql -h 127.0.0.1 -uroot -proot test < sql-fix.sql
+          mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
+
       - name: Run tests
         run: composer test
 
