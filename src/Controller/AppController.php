@@ -410,7 +410,7 @@ class AppController extends Controller {
 					$alreadyFoundCount = count($alreadyFound);
 					for ($k = 0; $k < $alreadyFoundCount; $k++) {
 						if ($alreadyFound[$k]['DayRecord']['id'] == $dr[$i]['DayRecord']['id'] || $alreadyFound[$k]['DayRecord']['id'] == $dr[$j]['DayRecord']['id']) {
-							  $found = true;
+							$found = true;
 						}
 					}
 					if (!$found) {
@@ -883,7 +883,7 @@ class AppController extends Controller {
 				],
 			]);
 			if (!$u) {
-				  $u = [];
+				$u = [];
 			}
 		} elseif ($range == 2) {
 			$u = $this->User->find('all', [
@@ -1715,9 +1715,9 @@ class AppController extends Controller {
 				],
 			]);
 			if (!$danSolveCondition) {
-				  $danSolveCondition = [];
-				  $danSolveCondition['AchievementCondition']['value'] = 0;
-				  $this->AchievementCondition->create();
+				$danSolveCondition = [];
+				$danSolveCondition['AchievementCondition']['value'] = 0;
+				$this->AchievementCondition->create();
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
 			$danSolveCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -1744,9 +1744,9 @@ class AppController extends Controller {
 				],
 			]);
 			if (!$sprintCondition) {
-				  $sprintCondition = [];
-				  $sprintCondition['AchievementCondition']['value'] = 0;
-				  $this->AchievementCondition->create();
+				$sprintCondition = [];
+				$sprintCondition['AchievementCondition']['value'] = 0;
+				$this->AchievementCondition->create();
 			}
 			$sprintCondition['AchievementCondition']['category'] = 'sprint';
 			$sprintCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -1892,11 +1892,11 @@ class AppController extends Controller {
 					],
 				]);
 				if ($aCondition == null) {
-					  $aCondition = [];
-					  $aCondition['AchievementCondition']['category'] = 'emerald';
-					  $aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
-					  $aCondition['AchievementCondition']['value'] = 1;
-					  $this->AchievementCondition->save($aCondition);
+					$aCondition = [];
+					$aCondition['AchievementCondition']['category'] = 'emerald';
+					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['value'] = 1;
+					$this->AchievementCondition->save($aCondition);
 				} else {
 					$dateGem['DayRecord']['gemCounter1']--;
 				}
@@ -1968,7 +1968,7 @@ class AppController extends Controller {
 				],
 			]);
 			if (!$ac) {
-				  $ac = [];
+				$ac = [];
 			}
 			$ac1 = [];
 			$acCount = count($ac);
@@ -2294,7 +2294,7 @@ class AppController extends Controller {
 
 			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 			if (!$buffer) {
-				  $buffer = [];
+				$buffer = [];
 			}
 			$existingAs = [];
 			$bufferCount = count($buffer);
@@ -2431,7 +2431,7 @@ class AppController extends Controller {
 					}
 				} elseif ($r[$i]['RankOverview']['rank'] == '2k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
-							  $timeModeAchievements[73] = true;
+							$timeModeAchievements[73] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[79] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
@@ -2447,7 +2447,7 @@ class AppController extends Controller {
 					}
 				} elseif ($r[$i]['RankOverview']['rank'] == '1d') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
-							  $timeModeAchievements[75] = true;
+							$timeModeAchievements[75] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 								$timeModeAchievements[81] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
@@ -3781,7 +3781,7 @@ class AppController extends Controller {
 				$levelBar = $_COOKIE['levelBar'];
 				$this->loggedInUser['User']['levelBar'] = $levelBar;
 			} elseif ($this->loggedInUser['User']['levelBar'] == 0 ||
-			   $this->loggedInUser['User']['levelBar'] == 'level') {
+				$this->loggedInUser['User']['levelBar'] == 'level') {
 				$levelBar = 1;
 			} else {
 				$levelBar = 2;
@@ -3830,7 +3830,7 @@ class AppController extends Controller {
 					],
 				]);
 				if (!$utsx) {
-					  $utsx = [];
+					$utsx = [];
 				}
 				if (count($utsx) > 1) {
 					$utsxCount = count($utsx);
@@ -4007,7 +4007,7 @@ class AppController extends Controller {
 				$splitTextureCookiesCount = count($splitTextureCookies);
 				for ($i = 0;$i < $splitTextureCookiesCount;$i++) {
 					if ($splitTextureCookies[$i] == 2) {
-						  $enabledBoards[$i + 1] = 'checked';
+						$enabledBoards[$i + 1] = 'checked';
 					} else {
 						$enabledBoards[$i + 1] = '';
 					}

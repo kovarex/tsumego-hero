@@ -227,7 +227,7 @@ class SetsController extends AppController {
 				if ($this->isLoggedIn()) {
 					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])) {
 						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C') {
-							  $counter++;
+							$counter++;
 						}
 					}
 				}
@@ -579,7 +579,7 @@ class SetsController extends AppController {
 						],
 					]);
 					if ($search1id) {
-						  $search1ids[$i] = $search1id['Set']['id'];
+						$search1ids[$i] = $search1id['Set']['id'];
 					}
 				}
 				$setConditions['id'] = $search1ids;
@@ -616,7 +616,7 @@ class SetsController extends AppController {
 						],
 					]);
 					if (!$ts) {
-							  $ts = [];
+						$ts = [];
 					}
 				} else {
 					$ts = $this->findTsumegoSet($setsRaw[$i]['Set']['id']);
@@ -689,7 +689,7 @@ class SetsController extends AppController {
 					],
 				]);
 				if ($aCondition == null) {
-					  $aCondition = [];
+					$aCondition = [];
 				}
 				$aCondition['AchievementCondition']['category'] = 'set';
 				$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
@@ -758,7 +758,7 @@ class SetsController extends AppController {
 					],
 				]);
 				if (!$ts1) {
-					  $ts1 = [];
+					$ts1 = [];
 				}
 				$setAmount = count($ts1);
 				$currentIds = [];
@@ -820,7 +820,7 @@ class SetsController extends AppController {
 						$search1idx = $this->findTsumegoSet($search1id['Set']['id']);
 						$search1idxCount2 = count($search1idx);
 						for ($j = 0; $j < $search1idxCount2; $j++) {
-							  array_push($search1idxx, $search1idx[$j]['Tsumego']['id']);
+							array_push($search1idxx, $search1idx[$j]['Tsumego']['id']);
 						}
 					}
 				}
@@ -843,35 +843,35 @@ class SetsController extends AppController {
 							],
 						]);
 						if (!$tagsx) {
-							  $tagsx = [];
+							$tagsx = [];
 						}
-						  $currentIds = [];
-						  $tagsxCount2 = count($tagsx);
+						$currentIds = [];
+						$tagsxCount2 = count($tagsx);
 						for ($j = 0; $j < $tagsxCount2; $j++) {
 							array_push($currentIds, $tagsx[$j]['Tag']['tsumego_id']);
 						}
 
 						if (!$hasPremium) {
-							  $currentIdsNew = [];
-							  $pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $currentIds]]);
+							$currentIdsNew = [];
+							$pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $currentIds]]);
 							if (!$pTest) {
 								$pTest = [];
 							}
-							  $pTestCount2 = count($pTest);
+							$pTestCount2 = count($pTest);
 							for ($j = 0; $j < $pTestCount2; $j++) {
 								if (!in_array($pTest[$j]['Tsumego']['set_id'], $setsWithPremium)) {
 									array_push($currentIdsNew, $pTest[$j]['Tsumego']['id']);
 								}
 							}
-							  $currentIds = $currentIdsNew;
+							$currentIds = $currentIdsNew;
 						}
 						$amountTags = count($currentIds);
 
 						if (count($search2) > 0) {
-							  $rankConditions = [];
-							  $fromTo = [];
-							  $idsTemp = [];
-							  $search2Count2 = count($search2);
+							$rankConditions = [];
+							$fromTo = [];
+							$idsTemp = [];
+							$search2Count2 = count($search2);
 							for ($j = 0; $j < $search2Count2; $j++) {
 								$ft = [];
 								$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$j]);
@@ -881,25 +881,26 @@ class SetsController extends AppController {
 								}
 								array_push($fromTo, $ft);
 							}
-							  $rankConditions['OR'] = $fromTo;
 
-							  $ts = $this->Tsumego->find('all', [
-								  'order' => 'id ASC',
-								  'conditions' => [
-									  'id' => $currentIds,
-									  'public' => 1,
-									  $rankConditions,
-								  ],
-							  ]);
+							$rankConditions['OR'] = $fromTo;
+
+							$ts = $this->Tsumego->find('all', [
+								'order' => 'id ASC',
+								'conditions' => [
+									'id' => $currentIds,
+									'public' => 1,
+									$rankConditions,
+								],
+							]);
 							if (!$ts) {
-									$ts = [];
+								$ts = [];
 							}
-								$tsCount2 = count($ts);
+							$tsCount2 = count($ts);
 							for ($j = 0; $j < $tsCount2; $j++) {
 								array_push($idsTemp, $ts[$j]['Tsumego']['id']);
 							}
-							  $currentIds = array_unique($idsTemp);
-							  $amountTags = count($currentIds);
+							$currentIds = array_unique($idsTemp);
+							$amountTags = count($currentIds);
 						}
 						$searchCounter += $amountTags;
 
@@ -1299,7 +1300,7 @@ class SetsController extends AppController {
 					],
 				]);
 				if (!$ts) {
-					  $ts = [];
+					$ts = [];
 				}
 
 				$ts1 = [];
@@ -1315,7 +1316,7 @@ class SetsController extends AppController {
 							],
 						]);
 						if ($tagForTsumego != null) {
-							  $tagValid = true;
+							$tagValid = true;
 						}
 					} else {
 						$tagValid = true;
@@ -1363,8 +1364,8 @@ class SetsController extends AppController {
 					for ($i = 0; $i < $search1Count; $i++) {
 						$search1id = $this->Set->find('first', ['conditions' => ['title' => $search1[$i]]]);
 						if ($search1id) {
-							  $search1idx = $this->findTsumegoSet($search1id['Set']['id']);
-							  $search1idxCount2 = count($search1idx);
+							$search1idx = $this->findTsumegoSet($search1id['Set']['id']);
+							$search1idxCount2 = count($search1idx);
 							for ($j = 0; $j < $search1idxCount2; $j++) {
 								array_push($search1idxx, $search1idx[$j]['Tsumego']['id']);
 							}
@@ -1412,7 +1413,7 @@ class SetsController extends AppController {
 						$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$j]);
 						$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
 						if ($search2[$j] == '15k') {
-							  $ft['elo_rating_mode >='] = 50;
+							$ft['elo_rating_mode >='] = 50;
 						}
 						array_push($fromTo, $ft);
 					}
@@ -1467,7 +1468,7 @@ class SetsController extends AppController {
 						$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$i]);
 						$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
 						if ($search2[$i] == '15k') {
-							  $ft['elo_rating_mode >='] = 50;
+							$ft['elo_rating_mode >='] = 50;
 						}
 						array_push($fromTo, $ft);
 					}
@@ -1490,7 +1491,7 @@ class SetsController extends AppController {
 								],
 							]);
 						if ($tagForTsumego != null) {
-							  $tagValid = true;
+							$tagValid = true;
 						}
 					} else {
 						$tagValid = true;
@@ -1597,9 +1598,9 @@ class SetsController extends AppController {
 						$tsOrder = [];
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
-							  array_push($tsId, $ts[$i]['Tsumego']['id']);
-							  array_push($tsNum, $ts[$i]['Tsumego']['num']);
-							  array_push($tsOrder, $ts[$i]['Tsumego']['order']);
+							array_push($tsId, $ts[$i]['Tsumego']['id']);
+							array_push($tsNum, $ts[$i]['Tsumego']['num']);
+							array_push($tsOrder, $ts[$i]['Tsumego']['order']);
 						}
 						array_multisort($tsOrder, $tsId, $tsNum);
 						$nr = 1;
@@ -1631,9 +1632,9 @@ class SetsController extends AppController {
 						$tsOrder = [];
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
-							  array_push($tsId, $ts[$i]['Tsumego']['id']);
-							  array_push($tsNum, $ts[$i]['Tsumego']['num']);
-							  array_push($tsOrder, $ts[$i]['Tsumego']['order']);
+							array_push($tsId, $ts[$i]['Tsumego']['id']);
+							array_push($tsNum, $ts[$i]['Tsumego']['num']);
+							array_push($tsOrder, $ts[$i]['Tsumego']['order']);
 						}
 						array_multisort($tsOrder, $tsId, $tsNum);
 						$nr = 1;
@@ -1688,8 +1689,8 @@ class SetsController extends AppController {
 						$setDifficulty = $this->data['Set']['setDifficulty'];
 						$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
 						for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
-							  $setDifficultyTsumegoSet[$i]['Tsumego']['elo_rating_mode'] = $this->data['Set']['setDifficulty'];
-							  $this->Tsumego->save($setDifficultyTsumegoSet[$i]);
+							$setDifficultyTsumegoSet[$i]['Tsumego']['elo_rating_mode'] = $this->data['Set']['setDifficulty'];
+							$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 						}
 						$adminActivity = [];
 						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
@@ -1736,8 +1737,8 @@ class SetsController extends AppController {
 					if ($this->data['Settings']['r38'] == 'on') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
-							  $ts[$i]['Tsumego']['virtual_children'] = 1;
-							  $this->Tsumego->save($ts[$i]);
+							$ts[$i]['Tsumego']['virtual_children'] = 1;
+							$this->Tsumego->save($ts[$i]);
 						}
 						$allVcActive = true;
 						$adminActivity = [];
@@ -1825,11 +1826,11 @@ class SetsController extends AppController {
 						$scFormChange = $this->SetConnection->find('first', ['order' => 'num DESC', 'conditions' => ['set_id' => $id]]);
 						$tFormChange = $this->Tsumego->findById($scFormChange['SetConnection']['tsumego_id']);
 						if ($scFormChange == null) {
-							  $scFormChange = [];
-							  $scFormChange['SetConnection']['set_id'] = $id;
-							  $scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
-							  $tFormChange = [];
-							  $tFormChange['Tsumego']['elo_rating_mode'] = 1000;
+							$scFormChange = [];
+							$scFormChange['SetConnection']['set_id'] = $id;
+							$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
+							$tFormChange = [];
+							$tFormChange['Tsumego']['elo_rating_mode'] = 1000;
 						}
 						$tf = [];
 						$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
@@ -1975,7 +1976,7 @@ class SetsController extends AppController {
 					if ($ts[$i]['Tsumego']['id'] == $ur[$j]['TsumegoAttempt']['tsumego_id']) {
 						array_push($urTemp, $ur[$j]);
 						if ($ur[$j]['TsumegoAttempt']['solved'] == 1) {
-							  $ts[$i]['Tsumego']['seconds'] = $ur[$j]['TsumegoAttempt']['seconds'];
+							$ts[$i]['Tsumego']['seconds'] = $ur[$j]['TsumegoAttempt']['seconds'];
 						}
 						if ($ur[$j]['TsumegoAttempt']['solved'] == 0) {
 							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
@@ -2022,21 +2023,21 @@ class SetsController extends AppController {
 					if (!$uts) {
 						$uts = [];
 					}
-					  $ur = $this->TsumegoAttempt->find('all', [
-						  'conditions' => [
-							  'user_id' => $this->loggedInUserID(),
-							  'tsumego_id' => $currentIds,
-						  ],
-					  ]);
+					$ur = $this->TsumegoAttempt->find('all', [
+						'conditions' => [
+							'user_id' => $this->loggedInUserID(),
+							'tsumego_id' => $currentIds,
+						],
+					]);
 					if (!$ur) {
 						$ur = [];
 					}
-					  $urCount = count($ur);
+					$urCount = count($ur);
 					for ($i = 0; $i < $urCount; $i++) {
 						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
 					}
-					  //$loggedInUserUts = $this->Session->read('loggedInUser.uts');
-					  $utsCount = count($uts);
+					//$loggedInUserUts = $this->Session->read('loggedInUser.uts');
+					$utsCount = count($uts);
 					for ($i = 0; $i < $utsCount; $i++) {
 						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
 						unset($loggedInUserUts[$uts[$i]['TsumegoStatus']['tsumego_id']]);

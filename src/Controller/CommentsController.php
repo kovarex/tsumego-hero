@@ -189,8 +189,9 @@ class CommentsController extends AppController {
 									$solved = 0;
 								} else {
 									if ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S' ||
-									   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C' ||
-									   $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W') {
+										$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C' ||
+										$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W'
+									) {
 										$solved = 1;
 									} else {
 										$solved = 0;
