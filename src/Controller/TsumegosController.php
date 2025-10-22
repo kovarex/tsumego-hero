@@ -130,7 +130,7 @@ class TsumegosController extends AppController {
 				$duplicates = [];
 			}
 			$duplicatesCount = count($duplicates);
-			for ($i = 0;$i < $duplicatesCount;$i++) {
+			for ($i = 0; $i < $duplicatesCount; $i++) {
 				$duplicateSet = $this->Set->findById($duplicates[$i]['SetConnection']['set_id']);
 				$duplicates[$i]['SetConnection']['title'] = $duplicateSet['Set']['title'] . ' ' . $duplicates[$i]['SetConnection']['num'];
 			}
@@ -180,7 +180,7 @@ class TsumegosController extends AppController {
 			$tcharacters = '0123456789abcdefghijklmnopqrstuvwxyz';
 			$tcharactersLength = strlen($tcharacters);
 			$trandomString = '';
-			for ($i = 0;$i < $tlength;$i++) {
+			for ($i = 0; $i < $tlength; $i++) {
 				$trandomString .= $tcharacters[rand(0, $tcharactersLength - 1)];
 			}
 			if ($this->loggedInUser) {
@@ -1784,7 +1784,7 @@ class TsumegosController extends AppController {
 			$sqX = str_split(substr($p5, 2), 4);
 			$sqXCount = count($sqX);
 
-			for ($i = 0;$i < $sqXCount;$i++) {
+			for ($i = 0; $i < $sqXCount; $i++) {
 				if (strlen($sqX[$i]) < 4) {
 					unset($sqX[$i]);
 				}
@@ -2858,7 +2858,7 @@ class TsumegosController extends AppController {
 			$t['Tsumego']['status'] = 'setV2';
 			$ranksCount = count($ranks);
 
-			for ($i = 0;$i < $ranksCount;$i++) {
+			for ($i = 0; $i < $ranksCount; $i++) {
 				if ($ranks[$i]['Rank']['result'] == 'solved') {
 					$crs++;
 				}
@@ -2898,7 +2898,7 @@ class TsumegosController extends AppController {
 			}
 			$scPrevCount = count($scPrev);
 
-			for ($i = 0;$i < $scPrevCount;$i++) {
+			for ($i = 0; $i < $scPrevCount; $i++) {
 				if (count($scPrev) > 1 && $scPrev[$i]['SetConnection']['set_id'] == $t['Tsumego']['set_id']) {
 					$prev .= '?sid=' . $t['Tsumego']['set_id'];
 				}
@@ -2909,7 +2909,7 @@ class TsumegosController extends AppController {
 			}
 			$scNextCount = count($scNext);
 
-			for ($i = 0;$i < $scNextCount;$i++) {
+			for ($i = 0; $i < $scNextCount; $i++) {
 				if (count($scNext) > 1 && $scNext[$i]['SetConnection']['set_id'] == $t['Tsumego']['set_id']) {
 					$next .= '?sid=' . $t['Tsumego']['set_id'];
 				}
@@ -2949,12 +2949,12 @@ class TsumegosController extends AppController {
 
 			$oldSignaturesCount = count($oldSignatures);
 
-			for ($i = 0;$i < $oldSignaturesCount;$i++) {
+			for ($i = 0; $i < $oldSignaturesCount; $i++) {
 				$this->Signature->delete($oldSignatures[$i]['Signature']['id']);
 			}
 
 			$signatureCountMinus1 = count($signature) - 1;
-			for ($i = 0;$i < $signatureCountMinus1;$i++) {
+			for ($i = 0; $i < $signatureCountMinus1; $i++) {
 				$this->Signature->create();
 				$newSignature = [];
 				$newSignature['Signature']['tsumego_id'] = $signature[count($signature) - 1];
@@ -3162,12 +3162,12 @@ class TsumegosController extends AppController {
 		$tnKeys = [];
 		$tnCount = count($tn);
 
-		for ($i = 0;$i < $tnCount;$i++) {
+		for ($i = 0; $i < $tnCount; $i++) {
 			$tnKeys[$tn[$i]['TagName']['id']] = $tn[$i]['TagName']['name'];
 		}
 		$jsonCount = count($json);
 
-		for ($i = 0;$i < $jsonCount;$i++) {
+		for ($i = 0; $i < $jsonCount; $i++) {
 			array_push($a, $tnKeys[$json[$i]->id]);
 		}
 		$aNew = [];
@@ -3177,7 +3177,7 @@ class TsumegosController extends AppController {
 			$found = false;
 			$tagsCount = count($tags);
 
-			for ($i = 0;$i < $tagsCount;$i++) {
+			for ($i = 0; $i < $tagsCount; $i++) {
 				if ($a[$x] == $tags[$i]['Tag']['name']) {
 					$found = true;
 				}
@@ -3199,7 +3199,7 @@ class TsumegosController extends AppController {
 		}
 		$tagsCount = count($tags);
 
-		for ($i = 0;$i < $tagsCount;$i++) {
+		for ($i = 0; $i < $tagsCount; $i++) {
 			$tn = $this->TagName->findById($tags[$i]['Tag']['tag_name_id']);
 			$tags[$i]['Tag']['name'] = $tn['TagName']['name'];
 			$tags[$i]['Tag']['hint'] = $tn['TagName']['hint'];
@@ -3615,7 +3615,7 @@ class TsumegosController extends AppController {
 		$jumpI = 99;
 		$taCount = count($ta);
 
-		for ($i = 0;$i < $taCount;$i++) {
+		for ($i = 0; $i < $taCount; $i++) {
 			$taPreSum = $ta[$i]['TsumegoAttempt']['tsumego_elo'] - $taPre;
 			$taPre = $ta[$i]['TsumegoAttempt']['tsumego_elo'];
 			if ($taPreSum > 500) {
@@ -3628,7 +3628,7 @@ class TsumegosController extends AppController {
 		if ($jumpBackAmount != 0) {
 			$taCount = count($ta);
 
-			for ($i = 0;$i < $taCount;$i++) {
+			for ($i = 0; $i < $taCount; $i++) {
 				if ($i < $jumpI) {
 					$this->TsumegoAttempt->delete($ta[$i]['TsumegoAttempt']['id']);
 				}
@@ -3649,7 +3649,7 @@ class TsumegosController extends AppController {
 		$limitReachedCounter = 0;
 		$commentsCount = count($comments);
 
-		for ($i = 0;$i < $commentsCount;$i++) {
+		for ($i = 0; $i < $commentsCount; $i++) {
 			$d = new DateTime($comments[$i]['Comment']['created']);
 			$d = $d->format('Y-m-d');
 			if ($d == date('Y-m-d')) {

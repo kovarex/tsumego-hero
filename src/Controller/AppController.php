@@ -735,7 +735,7 @@ class AppController extends Controller {
 		$avg = 0;
 		$foundTsumego = 0;
 		$raCount = count($ra);
-		for ($i = 0;$i < $raCount;$i++) {
+		for ($i = 0; $i < $raCount; $i++) {
 			if ($ra[$i]['TsumegoAttempt']['tsumego_id'] == $tid) {
 				$foundTsumego = 1;
 			}
@@ -836,11 +836,11 @@ class AppController extends Controller {
 			$notApproved = [];
 		}
 		$notCount = count($not);
-		for ($i = 0;$i < $notCount;$i++) {
+		for ($i = 0; $i < $notCount; $i++) {
 			array_push($a, $not[$i]['Tag']['tag_name_id']);
 		}
 		$notApprovedCount = count($notApproved);
-		for ($i = 0;$i < $notApprovedCount;$i++) {
+		for ($i = 0; $i < $notApprovedCount; $i++) {
 			array_push($a, $notApproved[$i]['TagName']['id']);
 		}
 		$tn = $this->TagName->find('all', [
@@ -854,14 +854,14 @@ class AppController extends Controller {
 		$sorted = [];
 		$keys = [];
 		$tnCount = count($tn);
-		for ($i = 0;$i < $tnCount;$i++) {
+		for ($i = 0; $i < $tnCount; $i++) {
 			array_push($sorted, $tn[$i]['TagName']['name']);
 			$keys[$tn[$i]['TagName']['name']] = $tn[$i];
 		}
 		sort($sorted);
 		$s2 = [];
 		$sortedCount = count($sorted);
-		for ($i = 0;$i < $sortedCount;$i++) {
+		for ($i = 0; $i < $sortedCount; $i++) {
 			array_push($s2, $keys[$sorted[$i]]);
 		}
 
@@ -1974,7 +1974,7 @@ class AppController extends Controller {
 			}
 			$ac1 = [];
 			$acCount = count($ac);
-			for ($i = 0;$i < $acCount;$i++) {
+			for ($i = 0; $i < $acCount; $i++) {
 				if ($ac[$i]['AchievementCondition']['category'] == 'danSolve1d') {
 					$ac1['1d'] = $ac[$i]['AchievementCondition']['value'];
 				} elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve2d') {
@@ -2401,11 +2401,11 @@ class AppController extends Controller {
 		}
 
 		$timeModeAchievements = [];
-		for ($i = 70;$i <= 91;$i++) {
+		for ($i = 70; $i <= 91; $i++) {
 			$timeModeAchievements[$i] = false;
 		}
 		$rCount = count($r);
-		for ($i = 0;$i < $rCount;$i++) {
+		for ($i = 0; $i < $rCount; $i++) {
 			if ($r[$i]['RankOverview']['status'] == 's') {
 				if ($r[$i]['RankOverview']['rank'] == '5k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
@@ -2484,7 +2484,7 @@ class AppController extends Controller {
 				$timeModeAchievements[88] = true;
 			}
 		}
-		for ($i = 70;$i <= 91;$i++) {
+		for ($i = 70; $i <= 91; $i++) {
 			$achievementId = $i;
 			if ($timeModeAchievements[$achievementId] == true && !isset($existingAs[$achievementId])) {
 				$as['AchievementStatus']['achievement_id'] = $achievementId;
@@ -3418,7 +3418,7 @@ class AppController extends Controller {
 		$this->loadModel('User');
 		$xpBonus = 0;
 		$aCount = count($a);
-		for ($i = 0;$i < $aCount;$i++) {
+		for ($i = 0; $i < $aCount; $i++) {
 			$xpBonus += $a[$i][4];
 		}
 		$u = $this->User->findById($id);
@@ -3427,7 +3427,7 @@ class AppController extends Controller {
 		$xCurrentLvl = 1;
 		$xLvlupXp = 10;
 
-		for ($i = 1;$i < 102;$i++) {
+		for ($i = 1; $i < 102; $i++) {
 			if ($i == 101) {
 				$j = 1150;
 			} elseif ($i == 100) {
@@ -3836,7 +3836,7 @@ class AppController extends Controller {
 				}
 				if (count($utsx) > 1) {
 					$utsxCount = count($utsx);
-					for ($i = 1;$i < $utsxCount;$i++) {
+					for ($i = 1; $i < $utsxCount; $i++) {
 						$this->TsumegoStatus->delete($utsx[$i]['TsumegoStatus']['id']);
 					}
 				}
@@ -4007,7 +4007,7 @@ class AppController extends Controller {
 				$textureCookies = $this->Session->read('texture');
 				$splitTextureCookies = str_split($textureCookies);
 				$splitTextureCookiesCount = count($splitTextureCookies);
-				for ($i = 0;$i < $splitTextureCookiesCount;$i++) {
+				for ($i = 0; $i < $splitTextureCookiesCount; $i++) {
 					if ($splitTextureCookies[$i] == 2) {
 						$enabledBoards[$i + 1] = 'checked';
 					} else {
@@ -4017,7 +4017,7 @@ class AppController extends Controller {
 			}
 
 			$splitCookieCount = count($splitCookie);
-			for ($i = 0;$i < $splitCookieCount;$i++) {
+			for ($i = 0; $i < $splitCookieCount; $i++) {
 				if ($splitCookie[$i] == 2) {
 					$enabledBoards[$i + 1] = 'checked';
 				} else {
@@ -4142,7 +4142,7 @@ class AppController extends Controller {
 			$ranks = [];
 		}
 		$ranksCount = count($ranks);
-		for ($i = 0;$i < $ranksCount;$i++) {
+		for ($i = 0; $i < $ranksCount; $i++) {
 			$this->Rank->delete($ranks[$i]['Rank']['id']);
 		}
 

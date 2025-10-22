@@ -3040,7 +3040,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$modes[0] = [];
 		$modes[1] = [];
 		$modes[2] = [];
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$rank = 15;
 			$j = 0;
 			while ($rank > -5) {
@@ -3061,7 +3061,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$modes2[0] = [];
 		$modes2[1] = [];
 		$modes2[2] = [];
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$rank = 15;
 			$j = 0;
 			while ($rank > -5) {
@@ -5115,7 +5115,7 @@ Joschka Zimdars';
 		$u2['name'] = [];
 		$u2['value'] = [];
 		$uNameCount = count($uName);
-		for ($i = $uNameCount - 1;$i >= 0;$i--) {
+		for ($i = $uNameCount - 1; $i >= 0; $i--) {
 			array_push($u2['name'], $uName[$i]);
 			array_push($u2['value'], $uValue[$i]);
 		}

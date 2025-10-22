@@ -147,7 +147,7 @@ class PlayResultProcessorComponent extends Component {
 				$preSc = [];
 			}
 			$preScCount = count($preSc);
-			for ($i = 0;$i < $preScCount;$i++) {
+			for ($i = 0; $i < $preScCount; $i++) {
 				if ($preSc[$i]['SetConnection']['set_id'] == $previousTsumego['Tsumego']['set_id']) {
 					$isSetSc = true;
 				}

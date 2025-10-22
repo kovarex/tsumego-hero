@@ -46,7 +46,7 @@ class RanksController extends AppController {
 
 		if ($rs == null) {
 			$setsCount = count($sets);
-			for ($i = 0;$i < $setsCount;$i++) {
+			for ($i = 0; $i < $setsCount; $i++) {
 				$this->RankSetting->create();
 				$rsNew = [];
 				$rsNew['RankSetting']['user_id'] = $this->loggedInUserID();
@@ -75,7 +75,7 @@ class RanksController extends AppController {
 					$rds0 = [];
 				}
 				$rds0Count = count($rds0);
-				for ($i = 0;$i < $rds0Count;$i++) {
+				for ($i = 0; $i < $rds0Count; $i++) {
 					$rds0[$i]['RankSetting']['status'] = 0;
 					$this->RankSetting->save($rds0[$i]);
 				}
@@ -94,7 +94,7 @@ class RanksController extends AppController {
 			}
 		}
 		$setsCount = count($sets);
-		for ($i = 0;$i < $setsCount;$i++) {
+		for ($i = 0; $i < $setsCount; $i++) {
 
 			array_push($settings['title'], $sets[$i]['Set']['title'] . ' ' . $sets[$i]['Set']['title2']);
 			array_push($settings['id'], $sets[$i]['Set']['id']);
@@ -111,7 +111,7 @@ class RanksController extends AppController {
 
 			if (count($settingsSingle) > 1) {
 				$settingsSingleCount = count($settingsSingle);
-				for ($j = 0;$j < $settingsSingleCount;$j++) {
+				for ($j = 0; $j < $settingsSingleCount; $j++) {
 					if ($j != 0) {
 						$this->RankSetting->delete($settingsSingle[$j]['RankSetting']['id']);
 					}
@@ -150,7 +150,7 @@ class RanksController extends AppController {
 		$modes[0] = [];
 		$modes[1] = [];
 		$modes[2] = [];
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$rank = 15;
 			$j = 0;
 			while ($rank > -5) {
@@ -173,9 +173,9 @@ class RanksController extends AppController {
 		$locks[2] = [];
 
 		$modesCount = count($modes);
-		for ($h = 0;$h < $modesCount;$h++) {
+		for ($h = 0; $h < $modesCount; $h++) {
 			$modesHCount = count($modes[$h]);
-			for ($i = 0;$i < $modesHCount;$i++) {
+			for ($i = 0; $i < $modesHCount; $i++) {
 				$locks[$h][$i] = '';
 			}
 		}
@@ -183,11 +183,11 @@ class RanksController extends AppController {
 		$locks[1][0] = 'x';
 		$locks[2][0] = 'x';
 		$modesCount = count($modes);
-		for ($h = 0;$h < $modesCount;$h++) {
+		for ($h = 0; $h < $modesCount; $h++) {
 			$modesHCount = count($modes[$h]);
-			for ($i = 0;$i < $modesHCount;$i++) {
+			for ($i = 0; $i < $modesHCount; $i++) {
 				$roCount = count($ro);
-				for ($j = 0;$j < $roCount;$j++) {
+				for ($j = 0; $j < $roCount; $j++) {
 					if ($modes[$h][$i] == $ro[$j]['RankOverview']['rank'] && $ro[$j]['RankOverview']['mode'] == $h && $ro[$j]['RankOverview']['status'] == 's') {
 						$locks[$h][$i] = 'x';
 						$locks[$h][$i + 1] = 'x';
@@ -198,9 +198,9 @@ class RanksController extends AppController {
 
 		$lowestMode = [];
 		$locksCount = count($locks);
-		for ($i = 0;$i < $locksCount;$i++) {
+		for ($i = 0; $i < $locksCount; $i++) {
 			$locksICount = count($locks[$i]);
-			for ($j = 0;$j < $locksICount;$j++) {
+			for ($j = 0; $j < $locksICount; $j++) {
 				if ($locks[$i][$j] == 'x') {
 					$lowestMode[$i] = $j;
 				}
@@ -277,7 +277,7 @@ class RanksController extends AppController {
 		$modes[0] = [];
 		$modes[1] = [];
 		$modes[2] = [];
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$rank = 15;
 			$j = 0;
 			while ($rank > -5) {
@@ -308,14 +308,14 @@ class RanksController extends AppController {
 			}
 
 			$modesCount = count($modes[$cardV]);
-			for ($i = 0;$i < $modesCount;$i++) {
+			for ($i = 0; $i < $modesCount; $i++) {
 				if ($ranks[0]['Rank']['rank'] == $modes[$cardV][$i]) {
 					$openCard1 = $cardV;
 					$openCard2 = $i;
 				}
 			}
 			$ranksCount = count($ranks);
-			for ($i = 0;$i < $ranksCount;$i++) {
+			for ($i = 0; $i < $ranksCount; $i++) {
 				$t = $this->Tsumego->findById($ranks[$i]['Rank']['tsumego_id']);
 				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 				if (!$scT) {
@@ -370,7 +370,7 @@ class RanksController extends AppController {
 
 			$sum = 0;
 			$pointsCount = count($points);
-			for ($i = 0;$i < $pointsCount;$i++) {
+			for ($i = 0; $i < $pointsCount; $i++) {
 				$sum += $points[$i];
 			}
 
@@ -405,7 +405,7 @@ class RanksController extends AppController {
 		$sessArray[0] = [];
 		$sessArray[1] = [];
 		$sessArray[2] = [];
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$rank = 15;
 			$j = 0;
 			while ($rank > -5) {
@@ -428,9 +428,9 @@ class RanksController extends AppController {
 			$allR = [];
 		}
 
-		for ($i = 0;$i < 3;$i++) {
+		for ($i = 0; $i < 3; $i++) {
 			$modesCount = count($modes[$i]);
-			for ($j = 0;$j < $modesCount;$j++) {
+			for ($j = 0; $j < $modesCount; $j++) {
 				$rox = $this->RankOverview->find('all', [
 					'conditions' => [
 						'user_id' => $this->loggedInUserID(),
@@ -444,7 +444,7 @@ class RanksController extends AppController {
 				$highest = 0;
 				$highestId = 0;
 				$roxCount = count($rox);
-				for ($k = 0;$k < $roxCount;$k++) {
+				for ($k = 0; $k < $roxCount; $k++) {
 					if ($rox[$k]['RankOverview']['points'] > $highest) {
 						$sessArray[$i][$j] = $rox[$k]['RankOverview']['session'];
 						$highest = $rox[$k]['RankOverview']['points'];
@@ -474,7 +474,7 @@ class RanksController extends AppController {
 					}
 				}
 				$roxCount = count($rox);
-				for ($k = 0;$k < $roxCount;$k++) {
+				for ($k = 0; $k < $roxCount; $k++) {
 					if ($rox[$k]['RankOverview']['id'] != $highestId && $sess != $rox[$k]['RankOverview']['session']) {
 						$this->RankOverview->delete($rox[$k]['RankOverview']['id']);
 						$rDel = $this->Rank->find('all', ['conditions' => ['session' => $rox[$k]['RankOverview']['session']]]);
@@ -482,7 +482,7 @@ class RanksController extends AppController {
 							$rDel = [];
 						}
 						$rDelCount = count($rDel);
-						for ($l = 0;$l < $rDelCount;$l++) {
+						for ($l = 0; $l < $rDelCount; $l++) {
 							//$this->Rank->delete($rDel[$l]['Rank']['id']);
 						}
 					}
@@ -492,17 +492,17 @@ class RanksController extends AppController {
 
 		$allR = [];
 		$modesCount = count($modes);
-		for ($h = 0;$h < $modesCount;$h++) {
+		for ($h = 0; $h < $modesCount; $h++) {
 			$allR[$h] = [];
 			$modesHCount = count($modes[$h]);
-			for ($i = 0;$i < $modesHCount;$i++) {
+			for ($i = 0; $i < $modesHCount; $i++) {
 				if ($h == $openCard1 && $i == $openCard2) {
 					$allR[$h][$i] = $this->Rank->find('all', ['order' => 'num ASC', 'conditions' => ['session' => $modes[$h][$i]['RankOverview']['session']]]);
 					if (!$allR[$h][$i]) {
 						$allR[$h][$i] = [];
 					}
 					$allRCount = count($allR[$h][$i]);
-					for ($j = 0;$j < $allRCount;$j++) {
+					for ($j = 0; $j < $allRCount; $j++) {
 						$tx = $this->Tsumego->findById($allR[$h][$i][$j]['Rank']['tsumego_id']);
 						$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
 						if (!$scT) {
@@ -563,7 +563,7 @@ class RanksController extends AppController {
 		$lastModeIndex = $this->Session->read('loggedInUser.User.lastMode') - 1;
 		$lastModeV = null;
 		$modesCount = count($modes[$lastModeIndex]);
-		for ($h = 0;$h < $modesCount;$h++) {
+		for ($h = 0; $h < $modesCount; $h++) {
 			if (isset($modes[$lastModeIndex][$h]['RankOverview'])) {
 				$lastModeV = $modes[$lastModeIndex][$h]['RankOverview']['rank'];
 			}
@@ -571,9 +571,9 @@ class RanksController extends AppController {
 
 		$sessionFound = false;
 		$sessArrayCount = count($sessArray);
-		for ($i = 0;$i < $sessArrayCount;$i++) {
+		for ($i = 0; $i < $sessArrayCount; $i++) {
 			$sessArrayICount = count($sessArray[$i]);
-			for ($j = 0;$j < $sessArrayICount;$j++) {
+			for ($j = 0; $j < $sessArrayICount; $j++) {
 				if ($sessArray[$i][$j] == $ranks[0]['Rank']['session']) {
 					$sessionFound = true;
 				}

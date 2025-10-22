@@ -135,15 +135,15 @@ class SitesController extends AppController {
 			}
 
 			$utsCount = count($uts);
-			for ($i = 0;$i < $utsCount;$i++) {
+			for ($i = 0; $i < $utsCount; $i++) {
 				$newTSCount = count($newTS);
-				for ($j = 0;$j < $newTSCount;$j++) {
+				for ($j = 0; $j < $newTSCount; $j++) {
 					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newTS[$j]['Tsumego']['id']) {
 						$newTS[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 					}
 				}
 				$scheduleTsumegoCount = count($scheduleTsumego);
-				for ($j = 0;$j < $scheduleTsumegoCount;$j++) {
+				for ($j = 0; $j < $scheduleTsumegoCount; $j++) {
 					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $scheduleTsumego[$j]['Tsumego']['id']) {
 						$scheduleTsumego[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 					}
@@ -167,15 +167,15 @@ class SitesController extends AppController {
 				$noLogin = $this->Session->read('noLogin');
 				$noLoginStatus = $this->Session->read('noLoginStatus');
 				$noLoginCount = count($noLogin);
-				for ($i = 0;$i < $noLoginCount;$i++) {
+				for ($i = 0; $i < $noLoginCount; $i++) {
 					$newTSCount = count($newTS);
-					for ($f = 0;$f < $newTSCount;$f++) {
+					for ($f = 0; $f < $newTSCount; $f++) {
 						if ($newTS[$f]['Tsumego']['id'] == $noLogin[$i]) {
 							$newTS[$f]['Tsumego']['status'] = $noLoginStatus[$i];
 						}
 					}
 					$scheduleTsumegoCount = count($scheduleTsumego);
-					for ($f = 0;$f < $scheduleTsumegoCount;$f++) {
+					for ($f = 0; $f < $scheduleTsumegoCount; $f++) {
 						if ($scheduleTsumego[$f]['Tsumego']['id'] == $noLogin[$i]) {
 							$scheduleTsumego[$f]['Tsumego']['status'] = $noLoginStatus[$i];
 						}
@@ -197,7 +197,7 @@ class SitesController extends AppController {
 			$newT['Tsumego']['status'] = 'N';
 		}
 		$scheduleTsumegoCount = count($scheduleTsumego);
-		for ($i = 0;$i < $scheduleTsumegoCount;$i++) {
+		for ($i = 0; $i < $scheduleTsumegoCount; $i++) {
 			if (!isset($scheduleTsumego[$i]['Tsumego']['status'])) {
 				$scheduleTsumego[$i]['Tsumego']['status'] = 'N';
 			}
