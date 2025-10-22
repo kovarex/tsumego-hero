@@ -41,6 +41,11 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
+      - name: Setup tmp directories
+        run: |
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
+          chmod -R 777 tmp
+
       - name: Run tests
         run: composer test
 
