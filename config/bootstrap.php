@@ -23,6 +23,9 @@
  */
 require 'functions.php';
 
+// Load custom AppView class
+App::uses('AppView', 'View');
+
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', ['engine' => 'File']);
 

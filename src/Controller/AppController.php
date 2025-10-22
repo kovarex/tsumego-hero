@@ -1,10 +1,12 @@
 <?php
 class AppController extends Controller {
 
+	public $viewClass = 'App';
+
 	public $components =
 	[
 		'Session',
-	//'DebugKit.Toolbar',
+		//'DebugKit.Toolbar',
 		'Flash',
 		'PlayResultProcessor',
 	];
@@ -3652,10 +3654,10 @@ class AppController extends Controller {
 	 * @param array $user User data
 	 * @return void
 	 */
-	protected function signIn($user) {
+	protected function signIn(array $user) {
 		$this->Session->write('loggedUserID', $user['User']['id']);
 		$this->loggedInUser = $user;
-		$this->user &= $this->loggedInUser;
+		$this->user = &$this->loggedInUser;
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'created DESC']);
 		if ($vs) {
 			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
@@ -3699,14 +3701,14 @@ class AppController extends Controller {
 		if ($this->isLoggedIn()) {
 			$this->loggedInUser = $this->User->findById($this->loggedInUserID());
 			$this->user = &$this->loggedInUser;
-			unset($this->sessionUser);
+			$this->sessionUser = null;
 		} else {
 			$this->sessionUser = $this->Session->read('sessionUser');
 			if (!$this->sessionUser) {
 				$this->sessionUser = [];
 			}
 			$this->user = &$this->sessionUser;
-			unset($this->loggedInUser);
+			$this->loggedInUser = null;
 		}
 
 		if ($this->isLoggedIn()) {

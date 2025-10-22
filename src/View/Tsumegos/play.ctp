@@ -2497,8 +2497,8 @@
 	}
 
 	function runXPBar(increase){
-		<?php $newXP = ($user['User']['xp'] + $t['Tsumego']['difficulty'])/$user['User']['nextlvl']*100; ?>
-		if(mode==1 || mode==2){
+		<?php $newXP = $user['User']['nextlvl'] ? (($user['User']['xp'] + $t['Tsumego']['difficulty']) / $user['User']['nextlvl'] * 100) : 0; ?>
+		if(mode==1 || mode==2) {
 			if(levelBar==1 && increase==true){
 				if(!doubleXP) x2 = 1;
 				else x2 = 2;
