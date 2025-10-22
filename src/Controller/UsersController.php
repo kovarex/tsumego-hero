@@ -596,15 +596,9 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
-			/** @phpstan-ignore-next-line */
-			if ($x1max != $x1min) {
-				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
-			} else {
-				$ts[$i]['Tsumego']['shift'] = $x2min;
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank($x2min);
-			}
+			$ts[$i]['Tsumego']['rank'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['shift'] = $x2min;
+			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 		}
 		$this->set('ts', $ts);
 	}
@@ -642,15 +636,9 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
-			/** @phpstan-ignore-next-line */
-			if ($x1max != $x1min) {
-				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
-			} else {
-				$ts[$i]['Tsumego']['shift'] = $x2min;
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank($x2min);
-			}
+			$ts[$i]['Tsumego']['rank'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['shift'] = $x2min;
+			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 			if ($ts[$i]['Tsumego']['public'] == 1) {
 				$ts[$i]['Tsumego']['elo_rating_mode'] = $ts[$i]['Tsumego']['shift'];
 				//$this->Tsumego->save($ts[$i]);
@@ -691,15 +679,9 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['rank'] = $this->getTsumegoRank($ts[$i]['Tsumego']['elo_rating_mode']);
-			/** @phpstan-ignore-next-line */
-			if ($x1max != $x1min) {
-				$ts[$i]['Tsumego']['shift'] = round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min));
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank(round($x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($ts[$i]['Tsumego']['elo_rating_mode'] - $x1min)));
-			} else {
-				$ts[$i]['Tsumego']['shift'] = $x2min;
-				$ts[$i]['Tsumego']['rank2'] = $this->getTsumegoRank($x2min);
-			}
+			$ts[$i]['Tsumego']['rank'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['shift'] = $x2min;
+			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 			if ($ts[$i]['Tsumego']['public'] == 1) {
 				$ts[$i]['Tsumego']['elo_rating_mode'] = $ts[$i]['Tsumego']['shift'];
 				//$this->Tsumego->save($ts[$i]);
@@ -1823,9 +1805,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		if ($p == 'public') {
 			$comments = $c2;
-		} else if ($p == 'sandbox') {
+		} elseif ($p == 'sandbox') {
 			$comments = $c3;
-		} else if ($p != 0 && is_numeric($p)) {
+		} elseif ($p != 0 && is_numeric($p)) {
 			$comments = $this->Comment->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $p]]);
 		}
 
@@ -3356,8 +3338,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 
-		$eloRank = $this->getTsumegoRank($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
-		$highestEloRank = $this->getTsumegoRank($highestElo);
+		$eloRank = Rating::getReadableRankFromRating($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
+		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
 
 		if ($highestElo < $user['User']['elo_rating_mode']) {
 			$highestElo = $user['User']['elo_rating_mode'];

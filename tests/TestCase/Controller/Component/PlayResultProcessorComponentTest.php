@@ -1,0 +1,206 @@
+<?php
+
+class PlayResultProcessorComponentTest extends ControllerTestCase {
+
+	/**
+	 * @param TsumegoVisitContext $context Context object
+	 * @return void
+	 */
+	private function performVisit(&$context): void {
+		$statusCondition = [
+			'conditions' => [
+				'user_id' => $context->user['User']['id'],
+				['tsumego_id' => $context->tsumego['Tsumego']['id']],
+			],
+		];
+		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
+		if ($originalTsumegoStatus) {
+			if (!$context->originalStatus) {
+				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
+			} else {
+				$originalTsumegoStatus['TsumegoStatus']['status'] = $context->originalStatus;
+				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+			}
+		} elseif ($context->originalStatus) {
+			$originalTsumegoStatus = [];
+			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $context->user['User']['id'];
+			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $context->tsumego['Tsumego']['id'];
+			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
+		}
+
+		CakeSession::write('loggedInUserID', $context->user['User']['id']);
+		$_COOKIE['previousTsumegoID'] = $context->tsumego['Tsumego']['id'];
+
+		$this->testAction('sets/view/');
+
+		$context->resultTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
+		$this->assertTrue(!empty($context->resultTsumegoStatus));
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['user_id'], $context->user['User']['id']);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['tsumego_id'], $context->tsumego['Tsumego']['id']);
+	}
+
+	/**
+	 * @param TsumegoVisitContext $context Context object
+	 * @return void
+	 */
+	private function performSolve(&$context): void {
+		$_COOKIE['mode'] = '1';
+		$_COOKIE['score'] = '1';
+		$this->performVisit($context);
+		$this->assertTrue(empty($_COOKIE['score'])); // should be processed and cleared
+	}
+
+	/**
+	 * @param TsumegoVisitContext $context Context object
+	 * @return void
+	 */
+	private function performMisplay(&$context): void {
+		$_COOKIE['misplay'] = '1';
+		$this->performVisit($context);
+		$this->assertTrue(empty($_COOKIE['misplay'])); // should be processed and cleared
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testVisitFromEmpty(): void {
+		$context = new TsumegoVisitContext();
+		$this->performVisit($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'V');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testSolveFromEmpty(): void {
+		$context = new TsumegoVisitContext();
+		$this->performSolve($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailFromEmpty(): void {
+		$context = new TsumegoVisitContext();
+		$this->performMisplay($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testVisitFromSolved(): void {
+		$context = new TsumegoVisitContext('S');
+		$this->performVisit($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testHalfXpStatusToDoubleSolved(): void {
+		$context = new TsumegoVisitContext('W');
+		$this->performSolve($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testSolveFromFailed(): void {
+		$context = new TsumegoVisitContext('F');
+		$this->performSolve($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailFromVisited(): void {
+		$context = new TsumegoVisitContext('V');
+		$this->performMisplay($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailFromFailed(): void {
+		$context = new TsumegoVisitContext('F');
+		$this->performMisplay($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'X');
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailFromSolved(): void {
+		$context = new TsumegoVisitContext('S');
+		$this->performMisplay($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S'); // shouldn't be affected
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailFromDoubleSolved(): void {
+		$context = new TsumegoVisitContext('C');
+		$this->performMisplay($context);
+		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C'); // shouldn't be affected
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testSolvingAddsRating(): void {
+		$context = new TsumegoVisitContext();
+		$originalRating = $context->user['User']['elo_rating_mode'];
+		$this->performSolve($context);
+		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
+		$this->assertLessThan($newUser['User']['elo_rating_mode'], $originalRating);
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testFailingDropsRating(): void {
+		$context = new TsumegoVisitContext();
+		$originalRating = $context->user['User']['elo_rating_mode'];
+		$this->performMisplay($context);
+		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
+		$this->assertLessThan($originalRating, $newUser['User']['elo_rating_mode']);
+	}
+
+}
+
+class TsumegoVisitContext {
+
+	/**
+	 * @param string|null $originalStatus Original status
+	 * @param array|null $user User data
+	 * @param array|null $tsumego Tsumego data
+	 */
+	public function __construct($originalStatus = null, $user = null, $tsumego = null) {
+		$this->user = $user;
+		if (!$this->user) {
+			$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		}
+
+		$this->tsumego = $tsumego;
+		if (!$this->tsumego) {
+			$this->tsumego = ClassRegistry::init('Tsumego')->find('first');
+		}
+
+		$this->originalStatus = $originalStatus;
+	}
+
+	public $user;
+
+	public $tsumego;
+
+	public $originalStatus;
+
+	public $resultTsumegoStatus;
+
+}

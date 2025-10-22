@@ -17,6 +17,16 @@ jobs:
         php-version:
           - '8.2'
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - uses: actions/checkout@v5
 
@@ -41,10 +51,51 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
+      - name: Setup database config
+        run: |
+          cat > config/database.php << 'EOF'
+          <?php
+          class DATABASE_CONFIG {
+              public $default = [
+                  'datasource' => 'Database/Mysql',
+                  'persistent' => false,
+                  'host' => '127.0.0.1',
+                  'login' => 'root',
+                  'password' => 'root',
+                  'database' => 'test',
+                  'prefix' => '',
+                  'encoding' => 'utf8',
+              ];
+
+              public function __construct() {
+                  if (Configure::read('debug') > 0) {
+                      $this->default['log'] = true;
+                  }
+              }
+
+              public $test = [
+                  'datasource' => 'Database/Mysql',
+                  'persistent' => false,
+                  'host' => '127.0.0.1',
+                  'login' => 'root',
+                  'password' => 'root',
+                  'database' => 'test',
+                  'prefix' => '',
+                  'encoding' => 'utf8',
+              ];
+          }
+          EOF
+
       - name: Setup tmp directories
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
           chmod -R 777 tmp
+
+      - name: Import database schema
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot test < config/schema.sql
+          mysql -h 127.0.0.1 -uroot -proot test < sql-fix.sql
+          mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
 
       - name: Run tests
         run: composer test
