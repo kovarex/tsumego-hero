@@ -55,8 +55,6 @@ class PlayResultProcessorComponent extends Component
       else if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') // if it was just visited so far (so we don't overwrite solved
         $previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
     }
-    else if ($previousTsumegoStatus['TsumegoStatus']['status'] != 'V')
-      return; // don't update the status date when we just visited and it already has some state, this is to present times of when user solved problems
 
     $previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
     $tsumegoStatusModel->save($previousTsumegoStatus);
