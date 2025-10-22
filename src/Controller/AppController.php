@@ -614,13 +614,13 @@ class AppController extends Controller {
 			if ($rating >= 1500) {
 				$kFactor1 = 1.5;
 				$kFactor2 = 0.9;
-			} elseif ( ($rating >= 1800) {
+			} elseif ($rating >= 1800) {
 				$kFactor1 = 2;
 				$kFactor2 = 0.8;
-			} elseif ( ($rating >= 2100) {
+			} elseif ($rating >= 2100) {
 				$kFactor1 = 2.5;
 				$kFactor2 = 0.7;
-			} elseif ( ($rating >= 2400) {
+			} elseif ($rating >= 2400) {
 				$kFactor1 = 3;
 				$kFactor2 = 0.6;
 			}
@@ -3759,7 +3759,7 @@ class AppController extends Controller {
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
 				$this->loggedInUser['User']['lastLight'] = $lightDarkInt;
 			}
-		} else if ($this->loggedInUser) {
+		} elseif ($this->loggedInUser) {
 			if ($this->loggedInUser['User']['lastLight'] == 0 ||
 			$this->loggedInUser['User']['lastLight'] == 1) {
 				$lightDark = 'light';
@@ -3780,7 +3780,7 @@ class AppController extends Controller {
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0') {
 				$levelBar = $_COOKIE['levelBar'];
 				$this->loggedInUser['User']['levelBar'] = $levelBar;
-			} elseif ( ($this->loggedInUser['User']['levelBar'] == 0 ||
+			} elseif ($this->loggedInUser['User']['levelBar'] == 0 ||
 			   $this->loggedInUser['User']['levelBar'] == 'level') {
 				$levelBar = 1;
 			} else {

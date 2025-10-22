@@ -63,7 +63,7 @@ class PlayResultProcessorComponent extends Component {
 			} else {
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
 			}
-		} else if ($result == 'l') {
+		} elseif ($result == 'l') {
 			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
 			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved

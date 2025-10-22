@@ -999,7 +999,7 @@ class TsumegosController extends AppController {
 			}
 			$newV = (($diff - $oldmin) / ($oldmax - $oldmin)) * ($newmax - $newmin);
 
-		} else if ($mode == 3) {
+		} elseif ($mode == 3) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $this->loggedInUser['User']['id'], 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];
 			$allUts2 = [];
@@ -1090,7 +1090,7 @@ class TsumegosController extends AppController {
 				$this->user['User']['intuition'] = 1;
 				$this->user['User']['damage'] = 0;
 				$rejuvenation = true;
-			} elseif ( ($_COOKIE['rejuvenationx'] == 2) {
+			} elseif ($_COOKIE['rejuvenationx'] == 2) {
 				$this->user['User']['damage'] = 0;
 			}
 			$_COOKIE['misplay'] = 0;
