@@ -908,11 +908,6 @@ class TsumegosController extends AppController
 					$pdCounter++;
 				}
 			}
-			if (isset($_COOKIE['sandbox']) && $_COOKIE['sandbox'] != '0')
-      {
-				$this->loggedInUser['User']['reuse1'] = $_COOKIE['sandbox'];
-				$this->User->save($this->loggedInUser);
-			}
 		}
 
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && $this->loggedInUser)
