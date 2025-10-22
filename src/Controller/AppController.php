@@ -4025,7 +4025,7 @@ class AppController extends Controller
         else
           $enabledBoards[$i + 1] = '';
       if ($loggedInUserFromDatabase != null)
-        $this->User->save($u);
+        $this->User->save($loggedInUserFromDatabase);
     }
 
     if (!$this->Session->check('texture'))
