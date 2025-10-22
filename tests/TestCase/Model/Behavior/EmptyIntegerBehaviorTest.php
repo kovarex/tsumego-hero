@@ -3,38 +3,6 @@ App::uses('Model', 'Model');
 App::uses('AppModel', 'Model');
 
 /**
- * Test model for EmptyIntegerBehavior
- */
-class EmptyIntegerTestModel extends AppModel {
-
-	public $useTable = false;
-
-	/**
-	 * Mock schema for testing
-	 *
-	 * @param string|false $field
-	 *
-	 * @return array
-	 */
-	public function schema($field = false): array {
-		$schema = [
-			'id' => ['type' => 'integer', 'null' => false, 'key' => 'primary'],
-			'nullable_int' => ['type' => 'integer', 'null' => true],
-			'not_null_int' => ['type' => 'integer', 'null' => false],
-			'bigint_field' => ['type' => 'biginteger', 'null' => false],
-			'string_field' => ['type' => 'string', 'null' => true],
-		];
-
-		if ($field === false) {
-			return $schema;
-		}
-
-		return $schema[$field] ?? [];
-	}
-
-}
-
-/**
  * EmptyIntegerBehavior Test Case
  */
 class EmptyIntegerBehaviorTest extends CakeTestCase {
@@ -47,7 +15,8 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 	public function setUp(): void {
 		parent::setUp();
 		$this->Model = new EmptyIntegerTestModel();
-    $this->skipIf(true, '//FIXME');
+
+		$this->skipIf(true, '//FIXME');
 	}
 
 	/**
@@ -73,6 +42,8 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 		];
 
 		$result = $this->Model->beforeSave();
+		var_dump($this->Model->data);
+		die();
 		$this->assertTrue($result);
 		$this->assertNull($this->Model->data['EmptyIntegerTestModel']['nullable_int']);
 	}
@@ -225,6 +196,40 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
 		$this->assertTrue($result);
 		$this->assertSame('42', $this->Model->data['EmptyIntegerTestModel']['nullable_int']);
 		$this->assertSame('100', $this->Model->data['EmptyIntegerTestModel']['not_null_int']);
+	}
+
+}
+
+/**
+ * Test model for EmptyIntegerBehavior
+ */
+class EmptyIntegerTestModel extends AppModel {
+
+	public $useTable = false;
+
+	public $actsAs = ['EmptyInteger'];
+
+	/**
+	 * Mock schema for testing
+	 *
+	 * @param string|false $field
+	 *
+	 * @return array
+	 */
+	public function schema($field = false): array {
+		$schema = [
+			'id' => ['type' => 'integer', 'null' => false, 'key' => 'primary'],
+			'nullable_int' => ['type' => 'integer', 'null' => true],
+			'not_null_int' => ['type' => 'integer', 'null' => false],
+			'bigint_field' => ['type' => 'biginteger', 'null' => false],
+			'string_field' => ['type' => 'string', 'null' => true],
+		];
+
+		if ($field === false) {
+			return $schema;
+		}
+
+		return $schema[$field] ?? [];
 	}
 
 }
