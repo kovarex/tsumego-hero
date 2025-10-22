@@ -3656,30 +3656,6 @@ class AppController extends Controller
   }
 
   /**
-   * @param int $id User ID
-   * @return void
-   */
-  private function storeUts($id) {
-    $uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
-    if (!$uts) {
-      $uts = [];
-    }
-    $d = [];
-    $dFound = [];
-    $sessionUts = [];
-    $utsCount = count($uts);
-    for ($l = 0; $l < $utsCount; $l++) {
-      $sessionUts[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
-      if (isset($d[$uts[$l]['TsumegoStatus']['tsumego_id']])) {
-        array_push($dFound, $uts[$l]['TsumegoStatus']['tsumego_id']);
-      }
-      $d[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
-    }
-    //$this->Session->write('loggedInUser.uts', $sessionUts);
-    //$this->Session->write('loggedInUser._utsDate', date('Y-m-d'));
-  }
-
-  /**
    * @return void
    */
   public function beforeFilter()
