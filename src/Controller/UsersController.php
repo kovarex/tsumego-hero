@@ -1805,9 +1805,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		if ($p == 'public') {
 			$comments = $c2;
-		} else if ($p == 'sandbox') {
+		} elseif ($p == 'sandbox') {
 			$comments = $c3;
-		} else if ($p != 0 && is_numeric($p)) {
+		} elseif ($p != 0 && is_numeric($p)) {
 			$comments = $this->Comment->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $p]]);
 		}
 
