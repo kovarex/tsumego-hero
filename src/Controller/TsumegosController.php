@@ -225,8 +225,7 @@ class TsumegosController extends AppController {
 				$mode = $_COOKIE['mode'];
 			}
 			unset($_COOKIE['mode']);
-		}
-		else {
+		} else {
 			$nextMode = $this->Tsumego->findById(15352);
 			$mode = 1;
 		}
@@ -235,12 +234,10 @@ class TsumegosController extends AppController {
 				if (strlen($this->loggedInUser['User']['activeRank']) == 15) {
 					$stopParameter = 10;
 					$stopParameter2 = 0;
-				}
-				elseif (strlen($this->loggedInUser['User']['activeRank']) == 16) {
+				} elseif (strlen($this->loggedInUser['User']['activeRank']) == 16) {
 					$stopParameter = 10;
 					$stopParameter2 = 1;
-				}
-				elseif (strlen($this->loggedInUser['User']['activeRank']) == 17) {
+				} elseif (strlen($this->loggedInUser['User']['activeRank']) == 17) {
 					$stopParameter = 10;
 					$stopParameter2 = 2;
 				}
@@ -975,8 +972,7 @@ class TsumegosController extends AppController {
 				$allUts = null;
 				$ut = null;
 			}
-		}
-		elseif ($mode == 2) {
+		} elseif ($mode == 2) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $this->loggedInUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
 			$this->loggedInUser['User']['mode'] = 2;
 			$allUts = [];
@@ -1003,8 +999,7 @@ class TsumegosController extends AppController {
 			}
 			$newV = (($diff - $oldmin) / ($oldmax - $oldmin)) * ($newmax - $newmin);
 
-		}
-		else if ($mode == 3) {
+		} else if ($mode == 3) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $this->loggedInUser['User']['id'], 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];
 			$allUts2 = [];
@@ -1402,8 +1397,7 @@ class TsumegosController extends AppController {
 								$this->user['User']['nextlvl'] += $this->getXPJump($this->user['User']['level']);
 								$this->user['User']['health'] = $this->getHealth($this->user['User']['level']);
 								$this->Session->write('loggedInUser.User.level', $this->user['User']['level']);
-							}
-							else {
+							} else {
 								$this->user['User']['xp'] = $xpOld;
 							}
 

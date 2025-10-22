@@ -3,6 +3,7 @@
 class PlayResultProcessorComponentTest extends ControllerTestCase {
 
 	/**
+	 * @param TsumegoVisitContext $context Context object
 	 * @return void
 	 */
 	private function performVisit(&$context): void {
@@ -20,8 +21,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 				$originalTsumegoStatus['TsumegoStatus']['status'] = $context->originalStatus;
 				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 			}
-		}
-		elseif ($context->originalStatus) {
+		} elseif ($context->originalStatus) {
 			$originalTsumegoStatus = [];
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $context->user['User']['id'];
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $context->tsumego['Tsumego']['id'];
@@ -40,6 +40,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 	}
 
 	/**
+	 * @param TsumegoVisitContext $context Context object
 	 * @return void
 	 */
 	private function performSolve(&$context): void {
@@ -50,6 +51,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 	}
 
 	/**
+	 * @param TsumegoVisitContext $context Context object
 	 * @return void
 	 */
 	private function performMisplay(&$context): void {
@@ -174,6 +176,11 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 
 class TsumegoVisitContext {
 
+	/**
+	 * @param string|null $originalStatus Original status
+	 * @param array|null $user User data
+	 * @param array|null $tsumego Tsumego data
+	 */
 	public function __construct($originalStatus = null, $user = null, $tsumego = null) {
 		$this->user = $user;
 		if (!$this->user) {

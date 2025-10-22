@@ -1808,6 +1808,7 @@ class AppController extends Controller {
 	}
 
 	/**
+	 * @param string $rank Rank
 	 * @return void
 	 */
 	protected function updateGems(string $rank) {
@@ -3648,6 +3649,7 @@ class AppController extends Controller {
 
 	// @param array $u User data
 	/**
+	 * @param array $user User data
 	 * @return void
 	 */
 	protected function signIn($user) {
@@ -3698,8 +3700,7 @@ class AppController extends Controller {
 			$this->loggedInUser = $this->User->findById($this->loggedInUserID());
 			$this->user = &$this->loggedInUser;
 			unset($this->sessionUser);
-		}
-		else {
+		} else {
 			$this->sessionUser = $this->Session->read('sessionUser');
 			if (!$this->sessionUser) {
 				$this->sessionUser = [];
@@ -3758,8 +3759,7 @@ class AppController extends Controller {
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
 				$this->loggedInUser['User']['lastLight'] = $lightDarkInt;
 			}
-		}
-		else if ($this->loggedInUser) {
+		} else if ($this->loggedInUser) {
 			if ($this->loggedInUser['User']['lastLight'] == 0 ||
 			$this->loggedInUser['User']['lastLight'] == 1) {
 				$lightDark = 'light';

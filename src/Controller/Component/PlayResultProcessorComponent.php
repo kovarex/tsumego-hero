@@ -8,7 +8,13 @@ class PlayResultProcessorComponent extends Component {
 
 	public $components = ['Session'];
 
-	function checkPreviousPlay($appController, &$loggedInUser, &$previousTsumego): void {
+	/**
+	 * @param AppController $appController App controller
+	 * @param array $loggedInUser Logged in user
+	 * @param array $previousTsumego Previous tsumego
+	 * @return void
+	 */
+	public function checkPreviousPlay($appController, &$loggedInUser, &$previousTsumego): void {
 		if (!$previousTsumego) {
 			return;
 		}
@@ -29,6 +35,9 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	/**
+	 * @param array $loggedInUser Logged in user
+	 * @param array $previousTsumego Previous tsumego
+	 * @param string $result Result
 	 * @return void
 	 */
 	private function updateTsumegoStatus($loggedInUser, $previousTsumego, $result): void {
@@ -54,8 +63,7 @@ class PlayResultProcessorComponent extends Component {
 			} else {
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
 			}
-		}
-		else if ($result == 'l') {
+		} else if ($result == 'l') {
 			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
 			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
@@ -68,6 +76,10 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	/**
+	 * @param AppController $appController App controller
+	 * @param array $loggedInUser Logged in user
+	 * @param array $previousTsumego Previous tsumego
+	 * @param string $result Result
 	 * @return void
 	 */
 	private function processEloChange($appController, &$loggedInUser, $previousTsumego, $result): void {
@@ -86,8 +98,7 @@ class PlayResultProcessorComponent extends Component {
 		if (!empty($_COOKIE['av'])) {
 			$activityValue = $_COOKIE['av'];
 			Util::clearCookie('av');
-		}
-		else {
+		} else {
 			$activityValue = 1;
 		}
 		$newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result);
@@ -174,8 +185,7 @@ class PlayResultProcessorComponent extends Component {
 						$loggedInUser['User']['level'] += 1;
 						$loggedInUser['User']['nextlvl'] += $appController->getXPJump($loggedInUser['User']['level']);
 						$loggedInUser['User']['health'] = $appController->getHealth($loggedInUser['User']['level']);
-					}
-					else {
+					} else {
 						$loggedInUser['User']['xp'] = $xpOld;
 						$loggedInUser['User']['ip'] = $_SERVER['REMOTE_ADDR'];
 					}
