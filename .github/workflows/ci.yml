@@ -94,7 +94,7 @@ jobs:
       - name: Import database schema
         run: |
           mysql -h 127.0.0.1 -uroot -proot test < config/schema.sql
-          mysql -h 127.0.0.1 -uroot -proot test < sql-fix.sql
+          # mysql -h 127.0.0.1 -uroot -proot test < sql-fix.sql
           mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
 
       - name: Run tests
