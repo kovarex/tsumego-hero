@@ -910,12 +910,6 @@ class TsumegosController extends AppController {
 					$pdCounter++;
 				}
 			}
-			if (isset($_COOKIE['sandbox']) && $_COOKIE['sandbox'] != '0') {
-				$ux = $this->User->findById($this->loggedInUserID());
-				$ux['User']['reuse1'] = $_COOKIE['sandbox'];
-				$this->Session->write('loggedInUser.User.reuse1', $_COOKIE['sandbox']);
-				$this->User->save($ux);
-			}
 		} else {
 			if ($this->Session->check('noLogin')) {
 				$noLogin = $this->Session->read('noLogin');

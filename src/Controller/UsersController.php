@@ -2772,11 +2772,6 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 			}
 
-			// defaults to prevent SQL error //FIXME
-			$userData['User']['potion'] = 0;
-			$userData['User']['reuse1'] = 0;
-			$userData['User']['penalty'] = 0;
-
 			$this->User->create();
 			if ($this->User->save($userData, true)) {
 				if ($this->validateLogin($this->data)) {
