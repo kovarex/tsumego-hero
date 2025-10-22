@@ -8,34 +8,34 @@ class PlayResultProcessorComponent extends Component
 {
   public $components = ['Session'];
 
-  function checkPreviousPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): void
+  function checkPreviousPlay($appController, &$loggedInUser, &$previousTsumego): void
   {
     if (!$previousTsumego)
       return;
-    $result = $this->checkPreviousPlayAndGetResult($appController, $loggedInUserFromDatabase, $previousTsumego);
-    $this->updateTsumegoStatus($loggedInUserFromDatabase, $previousTsumego, $result);
-    $this->processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result);
+    $result = $this->checkPreviousPlayAndGetResult($appController, $loggedInUser, $previousTsumego);
+    $this->updateTsumegoStatus($loggedInUser, $previousTsumego, $result);
+    $this->processEloChange($appController, $loggedInUser, $previousTsumego, $result);
   }
 
-  public function checkPreviousPlayAndGetResult($appController, &$loggedInUserFromDatabase, &$previousTsumego): string
+  public function checkPreviousPlayAndGetResult($appController, &$loggedInUser, &$previousTsumego): string
   {
     if ($this->checkMisplay())
       return 'l';
-    if ($this->checkCorrectPlay($appController, $loggedInUserFromDatabase, $previousTsumego))
+    if ($this->checkCorrectPlay($appController, $loggedInUser, $previousTsumego))
       return 'w';
     return '';
   }
 
-  private function updateTsumegoStatus($loggedInUserFromDatabase, $previousTsumego, $result): void
+  private function updateTsumegoStatus($loggedInUser, $previousTsumego, $result): void
   {
     $tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
     $previousTsumegoStatus = $tsumegoStatusModel->find('first', ['order' => 'created DESC',
                                                                  'conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
-                                                                                  'user_id' => (int)$loggedInUserFromDatabase['User']['id']]]);
+                                                                                  'user_id' => (int)$loggedInUser['User']['id']]]);
     if ($previousTsumegoStatus == null)
     {
       $previousTsumegoStatus['TsumegoStatus'] = [];
-      $previousTsumegoStatus['TsumegoStatus']['user_id'] = $loggedInUserFromDatabase['User']['id'];
+      $previousTsumegoStatus['TsumegoStatus']['user_id'] = $loggedInUser['User']['id'];
       $previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
       $previousTsumegoStatus['TsumegoStatus']['status'] = 'V';
     }
@@ -60,12 +60,12 @@ class PlayResultProcessorComponent extends Component
     $tsumegoStatusModel->save($previousTsumegoStatus);
   }
 
-  private function processEloChange($appController, $loggedInUserFromDatabase, $previousTsumego, $result): void
+  private function processEloChange($appController, &$loggedInUser, $previousTsumego, $result): void
   {
     if ($result == '')
       return;
 
-    $userRating = (float) $this->Session->read('loggedInUser.User.elo_rating_mode');
+    $userRating = (float) $loggedInUser['User']['elo_rating_mode'];
     $tsumegoRating = (float) $previousTsumego['Tsumego']['elo_rating_mode'];
     $eloDifference = abs($userRating - $tsumegoRating);
     if ($userRating > $tsumegoRating)
@@ -75,19 +75,15 @@ class PlayResultProcessorComponent extends Component
     if (!empty($_COOKIE['av']))
     {
       $activityValue = $_COOKIE['av'];
-      unset($_COOKIE['av']);
-      setcookie('av', false);
+      Util::clearCookie('av');
     }
     else
       $activityValue = 1;
     $newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result);
     $newEloRating = $userRating + $newUserElo['user'];
-    $this->Session->write('loggedInUser.User.elo_rating_mode', $newEloRating);
-    $loggedInUserFromDatabase['User']['elo_rating_mode'] = $newEloRating;
+    $loggedInUser['User']['elo_rating_mode'] = $newEloRating;
 
-    $userModel = ClassRegistry::init('User');
-    $userModel->id = $loggedInUserFromDatabase['User']['id'];
-    $userModel->saveField('elo_rating_mode', $newEloRating);
+    ClassRegistry::init('User')->save($loggedInUser);
 
     $previousTsumego['Tsumego']['elo_rating_mode'] += $newUserElo['tsumego'];
     $previousTsumego['Tsumego']['activity_value']++;
@@ -104,7 +100,7 @@ class PlayResultProcessorComponent extends Component
     return true;
   }
 
-  private function checkCorrectPlay($appController, &$loggedInUserFromDatabase, &$previousTsumego): bool
+  private function checkCorrectPlay($appController, &$loggedInUser, &$previousTsumego): bool
   {
     if (empty($_COOKIE['mode']))
       return false;
@@ -140,13 +136,10 @@ class PlayResultProcessorComponent extends Component
 
       if ($isNum && $isSet)
       {
-        if (isset($_COOKIE['previousTsumegoID']))
-          $resetCookies = true;
-
         if (!$this->Session->check('noLogin'))
         {
           $ub = [];
-          $ub['UserBoard']['user_id'] = $loggedInUserFromDatabase['User']['id'];
+          $ub['UserBoard']['user_id'] = $loggedInUser['User']['id'];
           $ub['UserBoard']['b1'] = (int)$_COOKIE['previousTsumegoID'];
           $appController->UserBoard->create();
           $appController->UserBoard->save($ub);
@@ -155,32 +148,28 @@ class PlayResultProcessorComponent extends Component
             $_COOKIE['score'] = 0;
             $suspiciousBehavior = true;
           }
-          if ($loggedInUserFromDatabase['User']['reuse3'] > 12000)
-          {
-            $this->Session->write('loggedInUser.User.reuse4', 1);
-            $loggedInUserFromDatabase['User']['reuse4'] = 1;
-          }
+          if ($loggedInUser['User']['reuse3'] > 12000)
+            $loggedInUser['User']['reuse4'] = 1;
         }
         if (!$suspiciousBehavior)
         {
-          $xpOld = $loggedInUserFromDatabase['User']['xp'] + (int)($_COOKIE['score']);
-          $loggedInUserFromDatabase['User']['reuse2']++;
-          $loggedInUserFromDatabase['User']['reuse3'] += (int)($_COOKIE['score']);
-          if ($xpOld >= $loggedInUserFromDatabase['User']['nextlvl'])
+          $xpOld = $loggedInUser['User']['xp'] + (int)($_COOKIE['score']);
+          $loggedInUser['User']['reuse2']++;
+          $loggedInUser['User']['reuse3'] += (int)($_COOKIE['score']);
+          if ($xpOld >= $loggedInUser['User']['nextlvl'])
           {
-            $xpOnNewLvl = -1 * ($loggedInUserFromDatabase['User']['nextlvl'] - $xpOld);
-            $loggedInUserFromDatabase['User']['xp'] = $xpOnNewLvl;
-            $loggedInUserFromDatabase['User']['level'] += 1;
-            $loggedInUserFromDatabase['User']['nextlvl'] += $appController->getXPJump($loggedInUserFromDatabase['User']['level']);
-            $loggedInUserFromDatabase['User']['health'] = $appController->getHealth($loggedInUserFromDatabase['User']['level']);
-            $this->Session->write('loggedInUser.User.level', $loggedInUserFromDatabase['User']['level']);
+            $xpOnNewLvl = -1 * ($loggedInUser['User']['nextlvl'] - $xpOld);
+            $loggedInUser['User']['xp'] = $xpOnNewLvl;
+            $loggedInUser['User']['level'] += 1;
+            $loggedInUser['User']['nextlvl'] += $appController->getXPJump($loggedInUser['User']['level']);
+            $loggedInUser['User']['health'] = $appController->getHealth($loggedInUser['User']['level']);
           }
           else
           {
-            $loggedInUserFromDatabase['User']['xp'] = $xpOld;
-            $loggedInUserFromDatabase['User']['ip'] = $_SERVER['REMOTE_ADDR'];
+            $loggedInUser['User']['xp'] = $xpOld;
+            $loggedInUser['User']['ip'] = $_SERVER['REMOTE_ADDR'];
           }
-          if ($loggedInUserFromDatabase['User']['id'] != 33) // noUser
+          if ($loggedInUser['User']['id'] != 33) // noUser
           {
             if (!isset($_COOKIE['seconds']))
               $cookieSeconds = 0;
@@ -188,8 +177,8 @@ class PlayResultProcessorComponent extends Component
               $cookieSeconds = $_COOKIE['seconds'];
 
             $tsumegoAttempt = [];
-            $tsumegoAttempt['TsumegoAttempt']['user_id'] = $loggedInUserFromDatabase['User']['id'];
-            $tsumegoAttempt['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
+            $tsumegoAttempt['TsumegoAttempt']['user_id'] = $loggedInUser['User']['id'];
+            $tsumegoAttempt['TsumegoAttempt']['elo'] = $loggedInUser['User']['elo_rating_mode'];
             $tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
             $tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
             $tsumegoAttempt['TsumegoAttempt']['seconds'] = $cookieSeconds;
@@ -210,20 +199,20 @@ class PlayResultProcessorComponent extends Component
             $aCondition = $appController->AchievementCondition->find('first', [
               'order' => 'value DESC',
               'conditions' => [
-                'user_id' => $loggedInUserFromDatabase['User']['id'],
+                'user_id' => $loggedInUser['User']['id'],
                 'category' => 'err',
               ],
             ]);
             if ($aCondition == null)
               $aCondition = [];
             $aCondition['AchievementCondition']['category'] = 'err';
-            $aCondition['AchievementCondition']['user_id'] = $loggedInUserFromDatabase['User']['id'];
+            $aCondition['AchievementCondition']['user_id'] = $loggedInUser['User']['id'];
             $aCondition['AchievementCondition']['value']++;
             $appController->AchievementCondition->save($aCondition);
           }
           if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0')
           {
-            $ranks = $appController->Rank->find('all', ['conditions' => ['session' => $this->Session->read('loggedInUser.User.activeRank')]]);
+            $ranks = $appController->Rank->find('all', ['conditions' => ['session' => $loggedInUser['User']['ActiveRank']]]);
             if (!$ranks)
               $ranks = [];
             $currentNum = $ranks[0]['Rank']['currentNum'];
@@ -241,7 +230,7 @@ class PlayResultProcessorComponent extends Component
         }
       }
       else
-        $loggedInUserFromDatabase['User']['penalty'] += 1;
+        $loggedInUser['User']['penalty'] += 1;
 
       Util::clearCookie('score');
       Util::clearCookie('sequence');

@@ -1,5 +1,6 @@
 <?php
-require_once("Component/StatusHelper.php");
+App::uses('TsumegoStatusHelper', 'Utility');
+
 class SetsController extends AppController
 {
   public $helpers = ['Html', 'Form'];
@@ -546,10 +547,7 @@ class SetsController extends AppController
       }
     }
     if ($this->isLoggedIn())
-    {
-      $u = $this->User->findById($this->loggedInUserID());
-      $tsumegoStatusMap = generateTsumegoStatusMap($this);
-    }
+      $tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
     else
     {
       $noLoginUts = [];
@@ -698,7 +696,7 @@ class SetsController extends AppController
         $aCondition['AchievementCondition']['value'] = $overallCounter;
         $this->AchievementCondition->save($aCondition);
       }
-      $this->User->save($u);
+      $this->User->save($this->loggedInUser);
       $achievementUpdate = $this->checkSetCompletedAchievements();
       if (count($achievementUpdate) > 0) {
         $this->updateXP($this->loggedInUserID(), $achievementUpdate);
@@ -1178,8 +1176,9 @@ class SetsController extends AppController
         array_push($search3ids, $tagName['TagName']['id']);
       }
     }
-    if ($this->isLoggedIn()) {
-      $tsumegoStatusMap = generateTsumegoStatusMap($this);
+    if ($this->isLoggedIn())
+    {
+      $tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
       if ($this->isAdmin()) {
         $aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
         if ($aad['AdminActivity']['file'] == '/delete') {
@@ -1996,27 +1995,6 @@ class SetsController extends AppController
         $ts[$i]['Tsumego']['performance'] = $urSum;
       }
     }
-    if (!$this->isLoggedIn()) {
-      $counter = 0;
-      if ($this->Session->check('noLogin')) {
-        $noLogin = $this->Session->read('noLogin');
-        $noLoginStatus = $this->Session->read('noLoginStatus');
-        $noLoginCount = count($noLogin);
-        for ($i = 0; $i < $noLoginCount; $i++) {
-          $tsCount5 = count($ts);
-          for ($f = 0; $f < $tsCount5; $f++) {
-            if ($ts[$f]['Tsumego']['id'] == $noLogin[$i]) {
-              $ts[$f]['Tsumego']['status'] = $noLoginStatus[$i];
-              if ($noLoginStatus[$i] == 'S' || $noLoginStatus[$i] == 'W' || $noLoginStatus[$i] == 'C') {
-                $counter++;
-              }
-            }
-          }
-        }
-      }
-      $percent = $counter / count($ts) * 100;
-      $set['Set']['solved'] = round($percent, 1);
-    }
     $scTt = $this->SetConnection->find('first', ['conditions' => ['set_id' => $set['Set']['id'], 'num' => 1]]);
     if ($scTt != null) {
       $t = $this->Tsumego->findById($scTt['SetConnection']['tsumego_id']);
@@ -2480,7 +2458,7 @@ class SetsController extends AppController
     }
     */
     if ($this->isLoggedIn())
-      $tsumegoStatusMap = generateTsumegoStatusMap($this);
+      $tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
 
     $setsCount = count($sets);
     for ($i = 0; $i < $setsCount; $i++)

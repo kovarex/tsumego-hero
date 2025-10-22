@@ -46,7 +46,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase
       ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
     }
 
-    CakeSession::write('loggedInUser.User.id', $context->user['User']['id']);
+    CakeSession::write('loggedInUserID', $context->user['User']['id']);
     $_COOKIE['previousTsumegoID'] = $context->tsumego['Tsumego']['id'];
 
     $this->testAction('sets/view/');
@@ -148,7 +148,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase
     $originalRating = $context->user['User']['elo_rating_mode'];
     $this->performSolve($context);
     $newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
-    $this->assertTrue($newUser['User']['elo_rating_mode'] > $originalRating);
+    $this->assertLessThan($newUser['User']['elo_rating_mode'], $originalRating);
   }
 
   public function testFailingDropsRating(): void
@@ -157,6 +157,6 @@ class PlayResultProcessorComponentTest extends ControllerTestCase
     $originalRating = $context->user['User']['elo_rating_mode'];
     $this->performMisplay($context);
     $newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
-    $this->assertTrue($newUser['User']['elo_rating_mode'] < $originalRating);
+    $this->assertLessThan($originalRating, $newUser['User']['elo_rating_mode']);
   }
 }

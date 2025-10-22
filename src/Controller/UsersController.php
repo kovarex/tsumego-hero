@@ -3343,8 +3343,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 
-		$eloRank = $this->getTsumegoRank($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
-		$highestEloRank = $this->getTsumegoRank($highestElo);
+		$eloRank = Rating::getReadableRankFromRating($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
+		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
 
 		if ($highestElo < $user['User']['elo_rating_mode']) {
 			$highestElo = $user['User']['elo_rating_mode'];
