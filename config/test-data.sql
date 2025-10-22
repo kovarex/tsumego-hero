@@ -4,17 +4,15 @@ INSERT INTO `users` (
     `id`,
     `name`,
     `email`,
-    `password`,
+    `pw`,
     `elo_rating_mode`,
-    `created`,
-    `modified`
+    `created`
 ) VALUES (
     1,
     'kovarex',
     'test@example.com',
     'test',
     1500,
-    NOW(),
     NOW()
 );
 
@@ -22,11 +20,9 @@ INSERT INTO `users` (
 INSERT INTO `tsumegos` (
     `id`,
     `num`,
-    `created`,
-    `modified`
+    `created`
 ) VALUES (
     1,
     1,
-    NOW(),
     NOW()
 );
