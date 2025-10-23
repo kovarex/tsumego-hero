@@ -4244,37 +4244,37 @@ Joschka Zimdars';
 			$ts[$i]['Tsumego']['difficulty'] = $newXp;
 
 			if ($percent >= 1 && $percent <= 23) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2500;//$tRank='5d';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2500;
 			} elseif ($percent <= 26) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2400;//$tRank='4d';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2400;
 			} elseif ($percent <= 29) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2300;//$tRank='3d';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2300;
 			} elseif ($percent <= 32) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2200;//$tRank='2d';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2200;
 			} elseif ($percent <= 35) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2100;//$tRank='1d';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2100;
 			} elseif ($percent <= 38) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2000;//$tRank='1k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 2000;
 			} elseif ($percent <= 42) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1900;//$tRank='2k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1900;
 			} elseif ($percent <= 46) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1800;//$tRank='3k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1800;
 			} elseif ($percent <= 50) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1700;//$tRank='4k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1700;
 			} elseif ($percent <= 55) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1600;//$tRank='5k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1600;
 			} elseif ($percent <= 60) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1500;//$tRank='6k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1500;
 			} elseif ($percent <= 65) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1400;//$tRank='7k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1400;
 			} elseif ($percent <= 70) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1300;//$tRank='8k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1300;
 			} elseif ($percent <= 75) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1200;//$tRank='9k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1200;
 			} elseif ($percent <= 80) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1100;//$tRank='10k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1100;
 			} elseif ($percent <= 85) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1000;//$tRank='11k';
+				$ts[$i]['Tsumego']['elo_rating_mode'] = 1000;
 			} else {
 				$ts[$i]['Tsumego']['elo_rating_mode'] = 900;
 			}
