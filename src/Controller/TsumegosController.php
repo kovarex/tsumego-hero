@@ -251,83 +251,104 @@ class TsumegosController extends AppController {
 					$r = $this->params['url']['rank'];
 					if ($r == '5d') {
 						$r1 = 2500;
-						$r2 = 10000; } elseif ($r == '4d') {
+						$r2 = 10000;
+					} elseif ($r == '4d') {
 						$r1 = 2400;
-						$r2 = 2500; } elseif ($r == '3d') {
-							$r1 = 2300;
-							$r2 = 2400; } elseif ($r == '2d') {
-							$r1 = 2200;
-							$r2 = 2300; } elseif ($r == '1d') {
-								$r1 = 2100;
-								$r2 = 2200; } elseif ($r == '1k') {
-								$r1 = 2000;
-								$r2 = 2100; } elseif ($r == '2k') {
-									$r1 = 1900;
-									$r2 = 2000; } elseif ($r == '3k') {
-									$r1 = 1800;
-									$r2 = 1900; } elseif ($r == '4k') {
-										$r1 = 1700;
-										$r2 = 1800; } elseif ($r == '5k') {
-										$r1 = 1600;
-										$r2 = 1700; } elseif ($r == '6k') {
-											$r1 = 1500;
-											$r2 = 1600; } elseif ($r == '7k') {
-											$r1 = 1400;
-											$r2 = 1500; } elseif ($r == '8k') {
-												$r1 = 1300;
-												$r2 = 1400; } elseif ($r == '9k') {
-												$r1 = 1200;
-												$r2 = 1300; } elseif ($r == '10k') {
-													$r1 = 1100;
-													$r2 = 1200; } elseif ($r == '11k') {
-													$r1 = 1000;
-													$r2 = 1100; } elseif ($r == '12k') {
-														$r1 = 900;
-														$r2 = 1000; } elseif ($r == '13k') {
-														$r1 = 800;
-														$r2 = 900; } elseif ($r == '14k') {
-															$r1 = 700;
-															$r2 = 800; } elseif ($r == '15k') {
-															$r1 = 0;
-															$r2 = 700; } else {
-																$r1 = 0;
-																$r2 = 700; }
+						$r2 = 2500;
+					} elseif ($r == '3d') {
+						$r1 = 2300;
+						$r2 = 2400;
+					} elseif ($r == '2d') {
+						$r1 = 2200;
+						$r2 = 2300;
+					} elseif ($r == '1d') {
+						$r1 = 2100;
+						$r2 = 2200;
+					} elseif ($r == '1k') {
+						$r1 = 2000;
+						$r2 = 2100;
+					} elseif ($r == '2k') {
+						$r1 = 1900;
+						$r2 = 2000;
+					} elseif ($r == '3k') {
+						$r1 = 1800;
+						$r2 = 1900;
+					} elseif ($r == '4k') {
+						$r1 = 1700;
+						$r2 = 1800;
+					} elseif ($r == '5k') {
+						$r1 = 1600;
+						$r2 = 1700;
+					} elseif ($r == '6k') {
+						$r1 = 1500;
+						$r2 = 1600;
+					} elseif ($r == '7k') {
+						$r1 = 1400;
+						$r2 = 1500;
+					} elseif ($r == '8k') {
+						$r1 = 1300;
+						$r2 = 1400;
+					} elseif ($r == '9k') {
+						$r1 = 1200;
+						$r2 = 1300;
+					} elseif ($r == '10k') {
+						$r1 = 1100;
+						$r2 = 1200;
+					} elseif ($r == '11k') {
+						$r1 = 1000;
+						$r2 = 1100;
+					} elseif ($r == '12k') {
+						$r1 = 900;
+						$r2 = 1000;
+					} elseif ($r == '13k') {
+						$r1 = 800;
+						$r2 = 900;
+					} elseif ($r == '14k') {
+						$r1 = 700;
+						$r2 = 800;
+					} elseif ($r == '15k') {
+						$r1 = 0;
+						$r2 = 700;
+					} else {
+						$r1 = 0;
+						$r2 = 700;
+					}
 
-															$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->loggedInUserID()]]);
-															if (!$rs) {
-																$rs = [];
-															}
-															$allowedRs = [];
-															$rankTs = [];
-															$rsCount = count($rs);
-															for ($i = 0; $i < $rsCount; $i++) {
-																$timeSc = $this->findTsumegoSet($rs[$i]['RankSetting']['set_id']);
-																$timeScCount = count($timeSc);
-																for ($g = 0; $g < $timeScCount; $g++) {
-																	if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
-																		if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || $hasPremium) {
-																			array_push($rankTs, $timeSc[$g]);
-																		}
-																	}
-																}
-															}
-															shuffle($rankTs);
-															for ($i = 0; $i < $stopParameter; $i++) {
-																$rm = [];
-																$rm['Rank']['session'] = $this->loggedInUser['User']['activeRank'];
-																$rm['Rank']['user_id'] = $this->loggedInUser['User']['id'];
-																$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
-																if ($rm['Rank']['tsumego_id'] == null) {
-																	$rm['Rank']['tsumego_id'] = 5127;
-																}
-																$rm['Rank']['rank'] = $r;
-																$rm['Rank']['num'] = $i + 1;
-																$rm['Rank']['currentNum'] = 1;
-																$this->Rank->create();
-																$this->Rank->save($rm);
-															}
-															$currentRankNum = 1;
-															$firstRanks = 1;
+					$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->loggedInUserID()]]);
+					if (!$rs) {
+						$rs = [];
+					}
+					$allowedRs = [];
+					$rankTs = [];
+					$rsCount = count($rs);
+					for ($i = 0; $i < $rsCount; $i++) {
+						$timeSc = $this->findTsumegoSet($rs[$i]['RankSetting']['set_id']);
+						$timeScCount = count($timeSc);
+						for ($g = 0; $g < $timeScCount; $g++) {
+							if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
+								if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || $hasPremium) {
+									array_push($rankTs, $timeSc[$g]);
+								}
+							}
+						}
+					}
+					shuffle($rankTs);
+					for ($i = 0; $i < $stopParameter; $i++) {
+						$rm = [];
+						$rm['Rank']['session'] = $this->loggedInUser['User']['activeRank'];
+						$rm['Rank']['user_id'] = $this->loggedInUser['User']['id'];
+						$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
+						if ($rm['Rank']['tsumego_id'] == null) {
+							$rm['Rank']['tsumego_id'] = 5127;
+						}
+						$rm['Rank']['rank'] = $r;
+						$rm['Rank']['num'] = $i + 1;
+						$rm['Rank']['currentNum'] = 1;
+						$this->Rank->create();
+						$this->Rank->save($rm);
+					}
+					$currentRankNum = 1;
+					$firstRanks = 1;
 				} else {
 					$ranksCount = count($ranks);
 					for ($i = 0; $i < $ranksCount; $i++) {
@@ -451,7 +472,7 @@ class TsumegosController extends AppController {
 								}
 							}
 						}
-						if ($ratingFound == false) {
+						if (!$ratingFound) {
 							$ratingFoundCounter++;
 						}
 					} else {
@@ -483,7 +504,7 @@ class TsumegosController extends AppController {
 			}
 		}
 
-		$t = $this->Tsumego->findById($id);//the tsumego
+		$t = $this->Tsumego->findById($id);
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 		if ($t['Tsumego']['elo_rating_mode'] < 1000) {
@@ -1313,7 +1334,7 @@ class TsumegosController extends AppController {
 						$exploit = null;
 						$suspiciousBehavior = false;
 					}
-					if ($exploit == null && $suspiciousBehavior == false) {
+					if ($exploit == null && !$suspiciousBehavior) {
 						if ($mode == 1) {
 							$xpOld = $this->user['User']['xp'] + ((int)($_COOKIE['score']));
 							$this->user['User']['reuse2']++;
@@ -2922,12 +2943,12 @@ class TsumegosController extends AppController {
 		$this->startPageUpdate();
 		$startingPlayer = $this->getStartingPlayer($sgf2);
 
-		if ($avActive == true) {
+		if ($avActive) {
 			$avActiveText = '';
 		} else {
 			$avActiveText = '<font style="color:gray;"> (recently played)</font>';
 		}
-		if ($avActive2 == false) {
+		if (!$avActive2) {
 			$avActiveText = '<font style="color:gray;"> (out of range)</font>';
 		}
 

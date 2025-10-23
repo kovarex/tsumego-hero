@@ -3791,7 +3791,8 @@ Joschka Zimdars';
 		for ($i = 0; $i < $strLen; $i++) {
 			$ordStr = ord(substr($string, $i, 1));
 			if ($j == $keyLen) {
-				$j = 0; }
+				$j = 0;
+			}
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
@@ -3812,7 +3813,8 @@ Joschka Zimdars';
 		for ($i = 0; $i < $strLen; $i += 2) {
 			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
 			if ($j == $keyLen) {
-				$j = 0; }
+				$j = 0;
+			}
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= chr($ordStr - $ordKey);
@@ -4855,7 +4857,7 @@ Joschka Zimdars';
 					$found = true;
 				}
 			}
-			if ($found == false) {
+			if (!$found) {
 				$ax = [];
 				$ax['set_id'] = $key;
 				$ax['pos'] = 0;
