@@ -3,7 +3,6 @@
 App::uses('Rating', 'Utility');
 
 class RatingTest extends CakeTestCase {
-
 	/**
 	 * @return void
 	 */

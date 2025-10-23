@@ -1,7 +1,6 @@
 <?php
 
 class PlayResultProcessorComponentTest extends ControllerTestCase {
-
 	/**
 	 * @param TsumegoVisitContext $context Context object
 	 * @return void
@@ -175,7 +174,6 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 }
 
 class TsumegoVisitContext {
-
 	/**
 	 * @param string|null $originalStatus Original status
 	 * @param array|null $user User data

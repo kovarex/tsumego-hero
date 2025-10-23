@@ -1,7 +1,6 @@
 <?php
 
 class CommentsController extends AppController {
-
 	/**
 	 * @return void
 	 */

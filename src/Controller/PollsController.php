@@ -1,7 +1,6 @@
 <?php
 
 class PollsController extends AppController {
-
 	public $helpers = ['Html', 'Form'];
 
 	/**

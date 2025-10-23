@@ -1,7 +1,6 @@
 <?php
 
 class ReputationsController extends AppController {
-
 	/**
 	 * @return void
 	 */

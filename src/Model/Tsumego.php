@@ -1,7 +1,6 @@
 <?php
 
 class Tsumego extends AppModel {
-
 	public $validate = [
 		'title' => [
 			'rule' => 'notBlank',

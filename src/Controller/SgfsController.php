@@ -1,7 +1,6 @@
 <?php
 
 class SgfsController extends AppController {
-
 	/**
 	 * @return void
 	 */

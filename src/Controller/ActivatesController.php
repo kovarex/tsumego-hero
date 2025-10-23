@@ -2,7 +2,6 @@
 
 App::uses('CakeEmail', 'Network/Email');
 class ActivatesController extends AppController {
-
 	/**
 	 * @return void
 	 */

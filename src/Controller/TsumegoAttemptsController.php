@@ -1,7 +1,6 @@
 <?php
 
 class TsumegoAttemptsController extends AppController {
-
 	/**
 	 * @return void
 	 */

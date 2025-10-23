@@ -1,7 +1,6 @@
 <?php
 
 class RankSettingsController extends AppController {
-
 	/**
 	 * @return void
 	 */

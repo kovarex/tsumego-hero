@@ -6,7 +6,6 @@ App::uses('TsumegoStatus', 'Model');
 App::uses('SetConnection', 'Model');
 
 class PlayResultProcessorComponent extends Component {
-
 	public $components = ['Session'];
 
 	/**

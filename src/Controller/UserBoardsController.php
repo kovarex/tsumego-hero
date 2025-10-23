@@ -1,7 +1,6 @@
 <?php
 
 class UserBoardsController extends AppController {
-
 	/**
 	 * @return void
 	 */

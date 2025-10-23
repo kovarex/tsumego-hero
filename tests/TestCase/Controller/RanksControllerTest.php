@@ -1,7 +1,6 @@
 <?php
 
 class RanksControllerTest extends ControllerTestCase {
-
 	/**
 	 * @return void
 	 */

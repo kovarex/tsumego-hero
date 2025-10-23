@@ -27,7 +27,6 @@
  * will inherit them.
  */
 class AppModel extends Model {
-
 	/**
 	 * Behaviors to attach to all models
 	 *

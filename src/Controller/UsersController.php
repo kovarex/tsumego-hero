@@ -2,7 +2,6 @@
 
 App::uses('CakeEmail', 'Network/Email');
 class UsersController extends AppController {
-
 	public $name = 'Users';
 
 	public $pageTitle = 'Users';

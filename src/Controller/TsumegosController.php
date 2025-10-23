@@ -3,7 +3,6 @@
 App::uses('TsumegoStatusHelper', 'Utility');
 
 class TsumegosController extends AppController {
-
 	public $helpers = ['Html', 'Form'];
 
 	/**

@@ -1,7 +1,6 @@
 <?php
 
 class SitesController extends AppController {
-
 	public $helpers = ['Html', 'Form'];
 
 	/**

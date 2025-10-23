@@ -1,7 +1,6 @@
 <?php
 
 class AchievementStatusesController extends AppController {
-
 	/**
 	 * @return void
 	 */

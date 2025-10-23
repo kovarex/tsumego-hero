@@ -1,7 +1,6 @@
 <?php
 
 class Util {
-
 	/**
 	 * @param string $name
 	 * @return void

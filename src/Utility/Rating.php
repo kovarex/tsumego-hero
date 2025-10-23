@@ -1,7 +1,6 @@
 <?php
 
 class Rating {
-
 	public static function getReadableRank(int $rank): string {
 		if ($rank <= 30) {
 			return (string) (31 - $rank) . 'k';

@@ -1,7 +1,6 @@
 <?php
 
 class SetConnectionsController extends AppController {
-
 	/**
 	 * @return void
 	 */

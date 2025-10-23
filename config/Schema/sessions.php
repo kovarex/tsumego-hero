@@ -24,7 +24,6 @@
  * cake schema run create Sessions
  */
 class SessionsSchema extends CakeSchema {
-
 	/**
 	 * Name property
 	 *

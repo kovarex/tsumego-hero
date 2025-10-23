@@ -1,7 +1,6 @@
 <?php
 
 class JosekisController extends AppController {
-
 	/**
 	 * @return void
 	 */

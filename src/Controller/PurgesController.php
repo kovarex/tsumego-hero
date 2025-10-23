@@ -1,7 +1,6 @@
 <?php
 
 class PurgesController extends AppController {
-
 	/**
 	 * @return void
 	 */

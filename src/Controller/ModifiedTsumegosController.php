@@ -1,7 +1,6 @@
 <?php
 
 class ModifiedTsumegosController extends AppController {
-
 	/**
 	 * @return void
 	 */

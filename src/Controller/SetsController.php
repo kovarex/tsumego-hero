@@ -3,7 +3,6 @@
 App::uses('TsumegoStatusHelper', 'Utility');
 
 class SetsController extends AppController {
-
 	public $helpers = ['Html', 'Form'];
 
 	public $title = 'tsumego-hero.com';

@@ -10,7 +10,6 @@
  * This prevents database errors when saving form data with empty integer fields.
  */
 class EmptyIntegerBehavior extends ModelBehavior {
-
 	/**
 	 * Cached schema information per model
 	 *

@@ -66,7 +66,6 @@
  * A key/value array of driver specific connection options.
  */
 class DATABASE_CONFIG {
-
 	public $default = [
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,

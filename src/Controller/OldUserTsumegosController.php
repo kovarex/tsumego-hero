@@ -1,7 +1,6 @@
 <?php
 
 class OldUserTsumegosController extends AppController {
-
 	/**
 	 * @return void
 	 */

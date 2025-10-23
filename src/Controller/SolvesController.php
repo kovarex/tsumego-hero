@@ -1,7 +1,6 @@
 <?php
 
 class SolvesController extends AppController {
-
 	public $helpers = ['Html', 'Form'];
 
 	/**

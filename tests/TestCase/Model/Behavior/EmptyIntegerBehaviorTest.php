@@ -7,7 +7,6 @@ App::uses('AppModel', 'Model');
  * EmptyIntegerBehavior Test Case
  */
 class EmptyIntegerBehaviorTest extends CakeTestCase {
-
 	/**
 	 * setUp method
 	 *
@@ -205,7 +204,6 @@ class EmptyIntegerBehaviorTest extends CakeTestCase {
  * Test model for EmptyIntegerBehavior
  */
 class EmptyIntegerTestModel extends AppModel {
-
 	public $useTable = false;
 
 	public $actsAs = ['EmptyInteger'];

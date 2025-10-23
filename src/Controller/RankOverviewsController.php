@@ -1,7 +1,6 @@
 <?php
 
 class RankOverviewsController extends AppController {
-
 	/**
 	 * @return void
 	 */

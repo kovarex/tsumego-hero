@@ -1,7 +1,6 @@
 <?php
 
 class FavoritesController extends AppController {
-
 	/**
 	 * @return void
 	 */

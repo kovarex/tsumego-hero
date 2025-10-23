@@ -8,7 +8,6 @@ App::uses('View', 'View');
  * Extends CakePHP's View class with enhanced error handling for templates
  */
 class AppView extends View {
-
 	/**
 	 * Sandbox method to evaluate a template / view script with better error handling.
 	 *

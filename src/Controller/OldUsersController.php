@@ -1,7 +1,6 @@
 <?php
 
 class OldUsersController extends AppController {
-
 	/**
 	 * @return void
 	 */

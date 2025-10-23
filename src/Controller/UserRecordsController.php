@@ -1,7 +1,6 @@
 <?php
 
 class UserRecordsController extends AppController {
-
 	/**
 	 * @return void
 	 */

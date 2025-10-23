@@ -27,7 +27,6 @@
  * cake schema run create i18n
  */
 class I18nSchema extends CakeSchema {
-
 	/**
 	 * The name property
 	 *

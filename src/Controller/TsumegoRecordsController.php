@@ -1,7 +1,6 @@
 <?php
 
 class TsumegoRecordsController extends AppController {
-
 	/**
 	 * @param string|int|null $trid User ID for filtering
 	 * @return void
