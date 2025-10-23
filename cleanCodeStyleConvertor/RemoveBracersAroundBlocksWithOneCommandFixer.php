@@ -43,8 +43,10 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 
 	private function processStatementBeforeBraces($tokens, $index) {
 		$result = [];
-		if ($tokens[$index]->getContent() == 'if' || $tokens[$index]->getContent() == 'while'
-		 || $tokens[$index]->getContent() == 'elseif') {
+		if ($tokens[$index]->getContent() == 'if'
+		 || $tokens[$index]->getContent() == 'while'
+		 || $tokens[$index]->getContent() == 'elseif'
+		 || $tokens[$index]->getContent() == 'for') {
 			$result['else-check-needed'] = $tokens[$index]->getContent() == 'if' || $tokens[$index]->getContent() == 'elseif';
 			$ifConditionStartIndex = $tokens->getNextNonWhitespace($index);
 			if ($tokens[$ifConditionStartIndex]->getContent() != '(') {
