@@ -26,7 +26,7 @@
 		"test": "phpunit",
 		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
 		"cs-modified": "sh cs-modified.sh",
-		"cs-check": "./vendor/bin/php-cs-fixer check src;./vendor/bin/php-cs-fixer check tests",
+		"cs-check": "./vendor/bin/php-cs-fixer check",
 		"cs-fix": "./vendor/bin/php-cs-fixer fix",
 		"stan": "phpstan analyse"
 	},
