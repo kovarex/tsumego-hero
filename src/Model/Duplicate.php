@@ -1,4 +1,3 @@
 <?php
 
-class Duplicate extends AppModel {
-}
+class Duplicate extends AppModel {}

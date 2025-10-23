@@ -1,4 +1,3 @@
 <?php
 
-class TagName extends AppModel {
-}
+class TagName extends AppModel {}

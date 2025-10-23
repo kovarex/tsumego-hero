@@ -1,4 +1,5 @@
 <?php
+
 App::uses('Rating', 'Utility');
 App::uses('Util', 'Utility');
 App::uses('TsumegoStatus', 'Model');
@@ -45,8 +46,8 @@ class PlayResultProcessorComponent extends Component {
 		$previousTsumegoStatus = $tsumegoStatusModel->find('first', [
 			'order' => 'created DESC',
 			'conditions' => [
-				'tsumego_id' => (int)$previousTsumego['Tsumego']['id'],
-				'user_id' => (int)$loggedInUser['User']['id'],
+				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
+				'user_id' => (int) $loggedInUser['User']['id'],
 			],
 		]);
 		if ($previousTsumegoStatus == null) {
@@ -87,8 +88,8 @@ class PlayResultProcessorComponent extends Component {
 			return;
 		}
 
-		$userRating = (float)$loggedInUser['User']['elo_rating_mode'];
-		$tsumegoRating = (float)$previousTsumego['Tsumego']['elo_rating_mode'];
+		$userRating = (float) $loggedInUser['User']['elo_rating_mode'];
+		$tsumegoRating = (float) $previousTsumego['Tsumego']['elo_rating_mode'];
 		$eloDifference = abs($userRating - $tsumegoRating);
 		if ($userRating > $tsumegoRating) {
 			$eloBigger = 'u';
@@ -142,7 +143,7 @@ class PlayResultProcessorComponent extends Component {
 			$isNumSc = false;
 			$isSetSc = false;
 
-			$preSc = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => (int)$previousTsumego['Tsumego']['id']]]);
+			$preSc = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => (int) $previousTsumego['Tsumego']['id']]]);
 			if (!$preSc) {
 				$preSc = [];
 			}
@@ -164,7 +165,7 @@ class PlayResultProcessorComponent extends Component {
 				if (!$this->Session->check('noLogin')) {
 					$ub = [];
 					$ub['UserBoard']['user_id'] = $loggedInUser['User']['id'];
-					$ub['UserBoard']['b1'] = (int)$_COOKIE['previousTsumegoID'];
+					$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
 					$appController->UserBoard->create();
 					$appController->UserBoard->save($ub);
 					if ($_COOKIE['score'] >= 3000) {
@@ -176,9 +177,9 @@ class PlayResultProcessorComponent extends Component {
 					}
 				}
 				if (!$suspiciousBehavior) {
-					$xpOld = $loggedInUser['User']['xp'] + (int)($_COOKIE['score']);
+					$xpOld = $loggedInUser['User']['xp'] + (int) ($_COOKIE['score']);
 					$loggedInUser['User']['reuse2']++;
-					$loggedInUser['User']['reuse3'] += (int)($_COOKIE['score']);
+					$loggedInUser['User']['reuse3'] += (int) ($_COOKIE['score']);
 					if ($xpOld >= $loggedInUser['User']['nextlvl']) {
 						$xpOnNewLvl = -1 * ($loggedInUser['User']['nextlvl'] - $xpOld);
 						$loggedInUser['User']['xp'] = $xpOnNewLvl;
@@ -199,7 +200,7 @@ class PlayResultProcessorComponent extends Component {
 						$tsumegoAttempt = [];
 						$tsumegoAttempt['TsumegoAttempt']['user_id'] = $loggedInUser['User']['id'];
 						$tsumegoAttempt['TsumegoAttempt']['elo'] = $loggedInUser['User']['elo_rating_mode'];
-						$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+						$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 						$tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
 						$tsumegoAttempt['TsumegoAttempt']['seconds'] = $cookieSeconds;
 						$tsumegoAttempt['TsumegoAttempt']['solved'] = '1';

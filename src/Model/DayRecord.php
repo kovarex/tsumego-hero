@@ -1,4 +1,3 @@
 <?php
 
-class DayRecord extends AppModel {
-}
+class DayRecord extends AppModel {}

@@ -1,4 +1,3 @@
 <?php
 
-class Curl extends AppModel {
-}
+class Curl extends AppModel {}

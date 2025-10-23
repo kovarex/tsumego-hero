@@ -1,4 +1,3 @@
 <?php
 
-class AchievementCondition extends AppModel {
-}
+class AchievementCondition extends AppModel {}

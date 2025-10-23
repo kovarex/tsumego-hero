@@ -1,4 +1,3 @@
 <?php
 
-class RankOverview extends AppModel {
-}
+class RankOverview extends AppModel {}

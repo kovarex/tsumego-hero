@@ -1,3 +1,3 @@
 <?php
-class Set extends AppModel {
-}
+
+class Set extends AppModel {}

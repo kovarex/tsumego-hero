@@ -1,4 +1,3 @@
 <?php
 
-class SetType extends AppModel {
-}
+class SetType extends AppModel {}

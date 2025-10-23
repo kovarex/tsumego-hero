@@ -1,4 +1,3 @@
 <?php
 
-class TsumegoAttempt extends AppModel {
-}
+class TsumegoAttempt extends AppModel {}

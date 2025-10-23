@@ -1,12 +1,13 @@
 <?php
+
 class Rating {
 
 	public static function getReadableRank(int $rank): string {
 		if ($rank <= 30) {
-			return (string)(31 - $rank) . 'k';
+			return (string) (31 - $rank) . 'k';
 		}
 
-		return (string)($rank - 30) . 'd';
+		return (string) ($rank - 30) . 'd';
 	}
 
 	public static function getRankFromRating(float $rating): int {
@@ -23,10 +24,10 @@ class Rating {
 		// 11d   = rating [2810, 2840) = rank 41
 		// .....
 		if ($rating < 2750) {
-			return (int)floor(max(($rating + 1050) / 100, 1));
+			return (int) floor(max(($rating + 1050) / 100, 1));
 		}
 
-		return (int)floor(($rating - 2750) / 30) + 38;
+		return (int) floor(($rating - 2750) / 30) + 38;
 	}
 
 	public static function getReadableRankFromRating(float $rating): string {

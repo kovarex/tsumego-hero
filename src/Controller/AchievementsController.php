@@ -1,4 +1,5 @@
 <?php
+
 class AchievementsController extends AppController {
 
 	/**

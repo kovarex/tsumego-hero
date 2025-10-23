@@ -1,4 +1,3 @@
 <?php
 
-class UserBoard extends AppModel {
-}
+class UserBoard extends AppModel {}

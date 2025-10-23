@@ -1,4 +1,5 @@
 <?php
+
 App::uses('CakeEmail', 'Network/Email');
 class UsersController extends AppController {
 
@@ -901,7 +902,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine0() {//23:55 signed in users today
+	public function routine0() { //23:55 signed in users today
 		$this->loadModel('Answer');
 
 		$activity = $this->User->find('all', ['order' => ['User.reuse3 DESC']]);
@@ -927,7 +928,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine1() {//0:00 uotd
+	public function routine1() { //0:00 uotd
 		$this->loadModel('DayRecord');
 		$today = date('Y-m-d');
 		$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -940,14 +941,14 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine2() {//0:02 halfXP
+	public function routine2() { //0:02 halfXP
 		$this->halfXP();
 	}
 
 	/**
 	 * @return void
 	 */
-	public function routine3() {//0:04 t_glicko
+	public function routine3() { //0:04 t_glicko
 		$this->loadModel('User');
 		$this->loadModel('TsumegoRatingAttempt');
 		$ux = $this->User->find('all', ['limit' => 1000, 'order' => 'created DESC']);
@@ -990,79 +991,79 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine11() {//0:05 userRefresh
+	public function routine11() { //0:05 userRefresh
 		$this->userRefresh(1);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine12() {//0:06 userRefresh
+	public function routine12() { //0:06 userRefresh
 		$this->userRefresh(2);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine13() {//0:07 userRefresh
+	public function routine13() { //0:07 userRefresh
 		$this->userRefresh(3);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine14() {//0:08 userRefresh
+	public function routine14() { //0:08 userRefresh
 		$this->userRefresh(4);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine15() {//0:09 userRefresh
+	public function routine15() { //0:09 userRefresh
 		$this->userRefresh(5);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine16() {//0:10 userRefresh
+	public function routine16() { //0:10 userRefresh
 		$this->userRefresh(6);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine17() {//0:11 userRefresh
+	public function routine17() { //0:11 userRefresh
 		$this->userRefresh(7);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine18() {//0:12 userRefresh
+	public function routine18() { //0:12 userRefresh
 		$this->userRefresh(8);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine19() {//0:13 userRefresh
+	public function routine19() { //0:13 userRefresh
 		$this->userRefresh(9);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine110() {//0:14 userRefresh
+	public function routine110() { //0:14 userRefresh
 		$this->userRefresh(10);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine111() {//0:15 userRefresh
+	public function routine111() { //0:15 userRefresh
 		$this->userRefresh(11);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine112() {//0:16 userRefresh
+	public function routine112() { //0:16 userRefresh
 		$this->userRefresh(12);
 	}
 	/**
 	 * @return void
 	 */
-	public function routine20() {//popular tags
+	public function routine20() { //popular tags
 		$tags = $this->Tag->find('all', ['conditions' => ['approved' => 1]]);
 		$tagCount = [];
 		$tagsCount = count($tags);
@@ -1091,7 +1092,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine21() {//level highscore
+	public function routine21() { //level highscore
 		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC']);
 		$userP = [];
 		$stop = 1;
@@ -1184,7 +1185,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine22() {//achievement highscore
+	public function routine22() { //achievement highscore
 		$aNum = count($this->Achievement->find('all') ?: []);
 		$as = $this->AchievementStatus->find('all');
 		$as2 = [];
@@ -1223,7 +1224,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine23() {//daily highscore
+	public function routine23() { //daily highscore
 		$activity = $this->User->find('all', ['order' => ['User.reuse3 DESC']]);
 		$todaysUsers = [];
 		$today = date('Y-m-d', strtotime('today'));
@@ -1241,7 +1242,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine24() {//time mode overview
+	public function routine24() { //time mode overview
 		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
 		$tsumegos = [];
 		$setsCount = count($sets);
@@ -1350,7 +1351,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine25() {//tsumego public and set_id
+	public function routine25() { //tsumego public and set_id
 		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
@@ -1377,7 +1378,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 * @param string|int|null $filter Filter type
 	 * @return void
 	 */
-	public function refresh_dates($filter = null) {//0:17 refresh rest (routine999)
+	public function refresh_dates($filter = null) { //0:17 refresh rest (routine999)
 		if ($filter == 1) {
 			$u = $this->User->find('all', [
 				'conditions' => [
@@ -1419,7 +1420,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine4x() {//0:20 remove inactive players 2
+	public function routine4x() { //0:20 remove inactive players 2
 		$this->loadModel('TsumegoStatus');
 		$ux = $this->User->find('all', ['limit' => 1000, 'order' => 'created DESC']);
 		$u = [];
@@ -1437,7 +1438,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine5() {//0:25 update user solved field
+	public function routine5() { //0:25 update user solved field
 		$this->loadModel('TsumegoStatus');
 
 		$users = $this->User->find('all', ['limit' => 100, 'order' => 'created DESC']);
@@ -1471,7 +1472,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function routine6() {//0:30 update user solved field
+	public function routine6() { //0:30 update user solved field
 		$this->loadModel('Answer');
 		$this->loadModel('TsumegoStatus');
 		$a = $this->Answer->findById(1);
@@ -2397,7 +2398,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		if ($this->isAdmin()) {
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
-				if (md5((string)$this->loggedInUserID()) == $this->params['url']['hash']) {
+				if (md5((string) $this->loggedInUserID()) == $this->params['url']['hash']) {
 
 					$tagsToApprove = explode('-', $_COOKIE['tagList']);
 					$tagsToApproveCount = count($tagsToApprove);
@@ -2736,8 +2737,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	/**
 	 * @return void
 	 */
-	public function loading() {
-	}
+	public function loading() {}
 
 	public function add() {
 		$this->Session->write('page', 'user');
@@ -3764,7 +3764,7 @@ Joschka Zimdars';
 			return true;
 		}
 
-			return false;
+		return false;
 	}
 
 	private function validateLogin2($data) {
@@ -3776,49 +3776,51 @@ Joschka Zimdars';
 			return true;
 		}
 
-			return false;
+		return false;
 	}
 
 	private function tinkerEncode($string, $key) {
 		if (!is_string($string)) {
 			return '';
 		}
-		 $j = 1.0;
-		 $hash = '';
-		 $key = sha1((string)$key);
-		 $strLen = strlen($string);
-		 $keyLen = strlen($key);
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string) $key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i++) {
 			$ordStr = ord(substr($string, $i, 1));
 			if ($j == $keyLen) {
-				$j = 0; }
+				$j = 0;
+			}
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
 		}
 
-		 return $hash;
+		return $hash;
 	}
 
 	private function tinkerDecode($string, $key) {
 		if (!is_string($string)) {
 			return '';
 		}
-		 $j = 1.0;
-		 $hash = '';
-		 $key = sha1((string)$key);
-		 $strLen = strlen($string);
-		 $keyLen = strlen($key);
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string) $key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i += 2) {
 			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
 			if ($j == $keyLen) {
-				$j = 0; }
+				$j = 0;
+			}
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= chr($ordStr - $ordKey);
 		}
 
-		 return $hash;
+		return $hash;
 	}
 
 	/**
@@ -5013,35 +5015,35 @@ Joschka Zimdars';
 	 */
 	public function fbsignin($id = null) {
 		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-				// Get the access token from the request
-				$input = json_decode(file_get_contents('php://input'), true);
-				$accessToken = $input['accessToken'];
+			// Get the access token from the request
+			$input = json_decode(file_get_contents('php://input'), true);
+			$accessToken = $input['accessToken'];
 
-				// Your app credentials
-				$app_id = '866506025665869';
-				$app_secret = '6f7fd195f177db9fe30205fc52dba785';
+			// Your app credentials
+			$app_id = '866506025665869';
+			$app_secret = '6f7fd195f177db9fe30205fc52dba785';
 
-				// Exchange the short-lived token for a long-lived one (optional)
-				$url = 'https://graph.facebook.com/oauth/access_token?'
-						. 'grant_type=fb_exchange_token&'
-						. "client_id={$app_id}&"
-						. "client_secret={$app_secret}&"
-						. "fb_exchange_token={$accessToken}";
+			// Exchange the short-lived token for a long-lived one (optional)
+			$url = 'https://graph.facebook.com/oauth/access_token?'
+					. 'grant_type=fb_exchange_token&'
+					. "client_id={$app_id}&"
+					. "client_secret={$app_secret}&"
+					. "fb_exchange_token={$accessToken}";
 
-				$response = file_get_contents($url);
-				$responseData = json_decode($response, true);
+			$response = file_get_contents($url);
+			$responseData = json_decode($response, true);
 
-				// Get user info from Facebook
-				$url = 'https://graph.facebook.com/me?fields=id,name,email&access_token=' . $responseData['access_token'];
-				$userInfo = file_get_contents($url);
-				$userInfoData = json_decode($userInfo, true);
+			// Get user info from Facebook
+			$url = 'https://graph.facebook.com/me?fields=id,name,email&access_token=' . $responseData['access_token'];
+			$userInfo = file_get_contents($url);
+			$userInfoData = json_decode($userInfo, true);
 
-				// Handle login logic here, such as checking if the user exists in your database
-				// and creating a session.
+			// Handle login logic here, such as checking if the user exists in your database
+			// and creating a session.
 
-				echo json_encode($userInfoData); // Return user info as JSON
+			echo json_encode($userInfoData); // Return user info as JSON
 		} else {
-				echo json_encode(['error' => 'Invalid request']);
+			echo json_encode(['error' => 'Invalid request']);
 		}
 	}
 

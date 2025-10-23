@@ -1,4 +1,3 @@
 <?php
 
-class ProgressDeletion extends AppModel {
-}
+class ProgressDeletion extends AppModel {}

@@ -1,4 +1,5 @@
 <?php
+
 App::uses('TsumegoStatusHelper', 'Utility');
 
 class SetsController extends AppController {
@@ -517,9 +518,9 @@ class SetsController extends AppController {
 		}
 		/*
 		else if ($json2amount[$i] >= 10) {
-        array_push($group10, $json2[$i]);
+		array_push($group10, $json2[$i]);
 		} else {
-        array_push($group1, $json2[$i]);
+		array_push($group1, $json2[$i]);
 		}
 		*/
 
@@ -636,7 +637,7 @@ class SetsController extends AppController {
 						],
 					]);
 					if (!$tsTagsFiltered) {
-							$tsTagsFiltered = [];
+						$tsTagsFiltered = [];
 					}
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++) {
@@ -776,7 +777,7 @@ class SetsController extends AppController {
 						],
 					]);
 					if (!$tsTagsFiltered) {
-							$tsTagsFiltered = [];
+						$tsTagsFiltered = [];
 					}
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++) {
@@ -991,11 +992,11 @@ class SetsController extends AppController {
 		} else {
 			$tl['partition'] = $amountCounter;
 			$step = 1.5;
-			$colorValue = 1 - ($amountCounter * 0.1 * $step );
+			$colorValue = 1 - ($amountCounter * 0.1 * $step);
 		}
 		$tl['name'] = $list['name'];
 		$tl['amount'] = $size;
-		$tl['color'] = str_replace('[o]', (string)$colorValue, $list['color']);
+		$tl['color'] = str_replace('[o]', (string) $colorValue, $list['color']);
 		if (isset($list['premium'])) {
 			$tl['premium'] = $list['premium'];
 		} else {
@@ -1484,12 +1485,12 @@ class SetsController extends AppController {
 					]);
 					$tagValid = false;
 					if (count($search3) > 0) {
-							$tagForTsumego = $this->Tag->find('first', [
-								'conditions' => [
-									'tsumego_id' => $scTs[$i]['SetConnection']['tsumego_id'],
-									'tag_name_id' => $search3ids,
-								],
-							]);
+						$tagForTsumego = $this->Tag->find('first', [
+							'conditions' => [
+								'tsumego_id' => $scTs[$i]['SetConnection']['tsumego_id'],
+								'tag_name_id' => $search3ids,
+							],
+						]);
 						if ($tagForTsumego != null) {
 							$tagValid = true;
 						}
@@ -1941,7 +1942,7 @@ class SetsController extends AppController {
 			$set['Set']['public'] = 1;
 			$set['Set']['created'] = 20180322;
 			$set['Set']['t'] = '222';
-			$set['Set']['anz'] = (int)50;
+			$set['Set']['anz'] = (int) 50;
 			$set['Set']['createdDisplay'] = '22. March 2018';
 			$set['Set']['solvedNum'] = $sizeCount;
 			$set['Set']['solved'] = round($percent, 1);
@@ -2205,13 +2206,13 @@ class SetsController extends AppController {
 							],
 						]);
 						if ($tagAlreadyThere == null) {
-								$saveTag = [];
-								$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
-								$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
-								$saveTag['Tag']['user_id'] = $this->loggedInUserID();
-								$saveTag['Tag']['approved'] = 1;
-								$this->Tag->create();
-								$this->Tag->save($saveTag);
+							$saveTag = [];
+							$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
+							$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
+							$saveTag['Tag']['user_id'] = $this->loggedInUserID();
+							$saveTag['Tag']['approved'] = 1;
+							$this->Tag->create();
+							$this->Tag->save($saveTag);
 						}
 					}
 					$this->set('removeCookie', 'addTag');
@@ -2453,7 +2454,7 @@ class SetsController extends AppController {
 		/*
 		for ($i = 0; $i < $setsXCount; $i++) {
 		if (!isset($removeMap[$setsX[$i]['Set']['id']])) {
-        array_push($sets, $setsX[$i]);
+		array_push($sets, $setsX[$i]);
 		}
 		}
 		*/
@@ -2470,8 +2471,8 @@ class SetsController extends AppController {
 			if ($this->isLoggedIn()) {
 				$tsCount3 = count($ts);
 				for ($k = 0; $k < $tsCount3; $k++) {
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]) &&
-					($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')) {
+					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
+					&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')) {
 						$counter++;
 						$globalSolvedCounter++;
 					}

@@ -1,4 +1,3 @@
 <?php
 
-class StatusesController extends AppController {
-}
+class StatusesController extends AppController {}

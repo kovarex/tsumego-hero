@@ -1,4 +1,3 @@
 <?php
 
-class Answer extends AppModel {
-}
+class Answer extends AppModel {}

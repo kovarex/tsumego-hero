@@ -1,4 +1,3 @@
 <?php
 
-class UserContribution extends AppModel {
-}
+class UserContribution extends AppModel {}

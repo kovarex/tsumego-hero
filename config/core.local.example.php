@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Local configuration overrides
  * This file is not tracked in git

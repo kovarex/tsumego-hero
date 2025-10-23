@@ -8,7 +8,7 @@ class SolvesController extends AppController {
 	 * @return void
 	 */
 	public function index() {
-		 $this->set('solves', $this->Solve->find('all'));
+		$this->set('solves', $this->Solve->find('all'));
 	}
 
 	/**

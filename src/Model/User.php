@@ -1,4 +1,5 @@
 <?php
+
 class User extends AppModel {
 
 	public $name = 'User';
@@ -71,7 +72,7 @@ class User extends AppModel {
 			return $this->data['User']['pw'] == $this->data['User']['pw2'];
 		}
 
-			return true;
+		return true;
 	}
 
 }

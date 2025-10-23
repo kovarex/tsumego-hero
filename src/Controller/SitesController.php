@@ -1,4 +1,5 @@
 <?php
+
 class SitesController extends AppController {
 
 	public $helpers = ['Html', 'Form'];
@@ -371,7 +372,6 @@ class SitesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function ugco5ujc() {
-	}
+	public function ugco5ujc() {}
 
 }

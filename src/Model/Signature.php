@@ -1,4 +1,3 @@
 <?php
 
-class Signature extends AppModel {
-}
+class Signature extends AppModel {}

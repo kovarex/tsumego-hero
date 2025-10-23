@@ -1,4 +1,5 @@
 <?php
+
 class TagNamesController extends AppController {
 
 	/**
@@ -308,7 +309,6 @@ class TagNamesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function index() {
-	}
+	public function index() {}
 
 }

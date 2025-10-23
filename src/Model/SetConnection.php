@@ -1,4 +1,3 @@
 <?php
 
-class SetConnection extends AppModel {
-}
+class SetConnection extends AppModel {}

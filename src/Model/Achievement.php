@@ -1,4 +1,3 @@
 <?php
 
-class Achievement extends AppModel {
-}
+class Achievement extends AppModel {}

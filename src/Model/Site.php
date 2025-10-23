@@ -1,3 +1,3 @@
 <?php
-class Site extends AppModel {
-}
+
+class Site extends AppModel {}

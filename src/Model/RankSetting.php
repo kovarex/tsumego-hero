@@ -1,4 +1,3 @@
 <?php
 
-class RankSetting extends AppModel {
-}
+class RankSetting extends AppModel {}

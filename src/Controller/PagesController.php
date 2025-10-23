@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Static content controller.
  *

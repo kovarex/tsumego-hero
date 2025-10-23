@@ -1,4 +1,3 @@
 <?php
 
-class Purge extends AppModel {
-}
+class Purge extends AppModel {}

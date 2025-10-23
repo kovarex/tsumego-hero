@@ -1,3 +1,3 @@
 <?php
-class AdminActivity extends AppModel {
-}
+
+class AdminActivity extends AppModel {}

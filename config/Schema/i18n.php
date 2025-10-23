@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is i18n Schema file
  *
@@ -50,8 +51,7 @@ class I18nSchema extends CakeSchema {
 	 * @param array $event Schema object properties
 	 * @return void
 	 */
-	public function after($event = []) {
-	}
+	public function after($event = []) {}
 
 	/**
 	 * The i18n table definition

@@ -1,3 +1,3 @@
 <?php
-class OldTsumegoStatus extends AppModel {
-}
+
+class OldTsumegoStatus extends AppModel {}

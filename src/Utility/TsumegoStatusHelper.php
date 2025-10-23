@@ -1,4 +1,5 @@
 <?php
+
 class TsumegoStatusHelper {
 
 	public static function getMapForUser(int $loggedInUserID, $conditions = null): array {

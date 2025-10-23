@@ -220,7 +220,7 @@ class TsumegosController extends AppController {
 						$this->User->save($this->loggedInUser);
 					}
 				} elseif ($_COOKIE['mode'] == 3) {
-						$_COOKIE['mode'] = 1;
+					$_COOKIE['mode'] = 1;
 				}
 				$mode = $_COOKIE['mode'];
 			}
@@ -251,83 +251,104 @@ class TsumegosController extends AppController {
 					$r = $this->params['url']['rank'];
 					if ($r == '5d') {
 						$r1 = 2500;
-						$r2 = 10000; } elseif ($r == '4d') {
+						$r2 = 10000;
+					} elseif ($r == '4d') {
 						$r1 = 2400;
-						$r2 = 2500; } elseif ($r == '3d') {
-							$r1 = 2300;
-							$r2 = 2400; } elseif ($r == '2d') {
-							$r1 = 2200;
-							$r2 = 2300; } elseif ($r == '1d') {
-								$r1 = 2100;
-								$r2 = 2200; } elseif ($r == '1k') {
-								$r1 = 2000;
-								$r2 = 2100; } elseif ($r == '2k') {
-									$r1 = 1900;
-									$r2 = 2000; } elseif ($r == '3k') {
-									$r1 = 1800;
-									$r2 = 1900; } elseif ($r == '4k') {
-										$r1 = 1700;
-										$r2 = 1800; } elseif ($r == '5k') {
-										$r1 = 1600;
-										$r2 = 1700; } elseif ($r == '6k') {
-											$r1 = 1500;
-											$r2 = 1600; } elseif ($r == '7k') {
-											$r1 = 1400;
-											$r2 = 1500; } elseif ($r == '8k') {
-												$r1 = 1300;
-												$r2 = 1400; } elseif ($r == '9k') {
-												$r1 = 1200;
-												$r2 = 1300; } elseif ($r == '10k') {
-													$r1 = 1100;
-													$r2 = 1200; } elseif ($r == '11k') {
-													$r1 = 1000;
-													$r2 = 1100; } elseif ($r == '12k') {
-														$r1 = 900;
-														$r2 = 1000; } elseif ($r == '13k') {
-														$r1 = 800;
-														$r2 = 900; } elseif ($r == '14k') {
-															$r1 = 700;
-															$r2 = 800; } elseif ($r == '15k') {
-															$r1 = 0;
-															$r2 = 700; } else {
-																$r1 = 0;
-																$r2 = 700; }
+						$r2 = 2500;
+					} elseif ($r == '3d') {
+						$r1 = 2300;
+						$r2 = 2400;
+					} elseif ($r == '2d') {
+						$r1 = 2200;
+						$r2 = 2300;
+					} elseif ($r == '1d') {
+						$r1 = 2100;
+						$r2 = 2200;
+					} elseif ($r == '1k') {
+						$r1 = 2000;
+						$r2 = 2100;
+					} elseif ($r == '2k') {
+						$r1 = 1900;
+						$r2 = 2000;
+					} elseif ($r == '3k') {
+						$r1 = 1800;
+						$r2 = 1900;
+					} elseif ($r == '4k') {
+						$r1 = 1700;
+						$r2 = 1800;
+					} elseif ($r == '5k') {
+						$r1 = 1600;
+						$r2 = 1700;
+					} elseif ($r == '6k') {
+						$r1 = 1500;
+						$r2 = 1600;
+					} elseif ($r == '7k') {
+						$r1 = 1400;
+						$r2 = 1500;
+					} elseif ($r == '8k') {
+						$r1 = 1300;
+						$r2 = 1400;
+					} elseif ($r == '9k') {
+						$r1 = 1200;
+						$r2 = 1300;
+					} elseif ($r == '10k') {
+						$r1 = 1100;
+						$r2 = 1200;
+					} elseif ($r == '11k') {
+						$r1 = 1000;
+						$r2 = 1100;
+					} elseif ($r == '12k') {
+						$r1 = 900;
+						$r2 = 1000;
+					} elseif ($r == '13k') {
+						$r1 = 800;
+						$r2 = 900;
+					} elseif ($r == '14k') {
+						$r1 = 700;
+						$r2 = 800;
+					} elseif ($r == '15k') {
+						$r1 = 0;
+						$r2 = 700;
+					} else {
+						$r1 = 0;
+						$r2 = 700;
+					}
 
-															$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->loggedInUserID()]]);
-															if (!$rs) {
-																$rs = [];
-															}
-															$allowedRs = [];
-															$rankTs = [];
-															$rsCount = count($rs);
-															for ($i = 0; $i < $rsCount; $i++) {
-																$timeSc = $this->findTsumegoSet($rs[$i]['RankSetting']['set_id']);
-																$timeScCount = count($timeSc);
-																for ($g = 0; $g < $timeScCount; $g++) {
-																	if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
-																		if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || $hasPremium) {
-																			array_push($rankTs, $timeSc[$g]);
-																		}
-																	}
-																}
-															}
-															shuffle($rankTs);
-															for ($i = 0; $i < $stopParameter; $i++) {
-																$rm = [];
-																$rm['Rank']['session'] = $this->loggedInUser['User']['activeRank'];
-																$rm['Rank']['user_id'] = $this->loggedInUser['User']['id'];
-																$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
-																if ($rm['Rank']['tsumego_id'] == null) {
-																	$rm['Rank']['tsumego_id'] = 5127;
-																}
-																$rm['Rank']['rank'] = $r;
-																$rm['Rank']['num'] = $i + 1;
-																$rm['Rank']['currentNum'] = 1;
-																$this->Rank->create();
-																$this->Rank->save($rm);
-															}
-															$currentRankNum = 1;
-															$firstRanks = 1;
+					$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->loggedInUserID()]]);
+					if (!$rs) {
+						$rs = [];
+					}
+					$allowedRs = [];
+					$rankTs = [];
+					$rsCount = count($rs);
+					for ($i = 0; $i < $rsCount; $i++) {
+						$timeSc = $this->findTsumegoSet($rs[$i]['RankSetting']['set_id']);
+						$timeScCount = count($timeSc);
+						for ($g = 0; $g < $timeScCount; $g++) {
+							if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
+								if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || $hasPremium) {
+									array_push($rankTs, $timeSc[$g]);
+								}
+							}
+						}
+					}
+					shuffle($rankTs);
+					for ($i = 0; $i < $stopParameter; $i++) {
+						$rm = [];
+						$rm['Rank']['session'] = $this->loggedInUser['User']['activeRank'];
+						$rm['Rank']['user_id'] = $this->loggedInUser['User']['id'];
+						$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
+						if ($rm['Rank']['tsumego_id'] == null) {
+							$rm['Rank']['tsumego_id'] = 5127;
+						}
+						$rm['Rank']['rank'] = $r;
+						$rm['Rank']['num'] = $i + 1;
+						$rm['Rank']['currentNum'] = 1;
+						$this->Rank->create();
+						$this->Rank->save($rm);
+					}
+					$currentRankNum = 1;
+					$firstRanks = 1;
 				} else {
 					$ranksCount = count($ranks);
 					for ($i = 0; $i < $ranksCount; $i++) {
@@ -443,9 +464,9 @@ class TsumegosController extends AppController {
 						}
 						$raS = $this->Set->findById($rafSc['SetConnection']['set_id']);
 						if ($raS['Set']['public'] == 1) {
-							if ($raS['Set']['id'] != 210 && $raS['Set']['id'] != 191 && $raS['Set']['id'] != 181 && $raS['Set']['id'] != 207 && $raS['Set']['id'] != 172 &&
-							$raS['Set']['id'] != 202 && $raS['Set']['id'] != 237 && $raS['Set']['id'] != 81578 && $raS['Set']['id'] != 74761 && $raS['Set']['id'] != 71790 && $raS['Set']['id'] != 33007 &&
-							$raS['Set']['id'] != 31813 && $raS['Set']['id'] != 29156 && $raS['Set']['id'] != 11969 && $raS['Set']['id'] != 6473) {
+							if ($raS['Set']['id'] != 210 && $raS['Set']['id'] != 191 && $raS['Set']['id'] != 181 && $raS['Set']['id'] != 207 && $raS['Set']['id'] != 172
+							&& $raS['Set']['id'] != 202 && $raS['Set']['id'] != 237 && $raS['Set']['id'] != 81578 && $raS['Set']['id'] != 74761 && $raS['Set']['id'] != 71790 && $raS['Set']['id'] != 33007
+							&& $raS['Set']['id'] != 31813 && $raS['Set']['id'] != 29156 && $raS['Set']['id'] != 11969 && $raS['Set']['id'] != 6473) {
 								if (!in_array($raS['Set']['id'], $setsWithPremium) || $hasPremium) {
 									$ratingFound = true;
 								}
@@ -1016,18 +1037,18 @@ class TsumegosController extends AppController {
 		}
 
 		if (isset($ut['TsumegoStatus']['status']) && $ut['TsumegoStatus']['status'] == 'G') {
-				$goldenTsumego = true;
+			$goldenTsumego = true;
 		}
 
 		if (isset($_COOKIE['previousTsumegoID'])) {
-			$preTsumego = $this->Tsumego->findById((int)$_COOKIE['previousTsumegoID']);
+			$preTsumego = $this->Tsumego->findById((int) $_COOKIE['previousTsumegoID']);
 			$preSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $preTsumego['Tsumego']['id']]]);
 			$preTsumego['Tsumego']['set_id'] = $preSc['SetConnection']['set_id'];
-			$utPre = $this->findUt((int)$_COOKIE['previousTsumegoID'], $utsMap);
+			$utPre = $this->findUt((int) $_COOKIE['previousTsumegoID'], $utsMap);
 		}
 
 		if ($mode == 1 || $mode == 3) {
-			if (isset($_COOKIE['previousTsumegoID']) && (int)$_COOKIE['previousTsumegoID'] == $t['Tsumego']['id']) {
+			if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] == $t['Tsumego']['id']) {
 				if ($_COOKIE['score'] != 0) {
 					$_COOKIE['score'] = $this->decrypt($_COOKIE['score']);
 					$scoreArr = explode('-', $_COOKIE['score']);
@@ -1102,12 +1123,12 @@ class TsumegosController extends AppController {
 		if (isset($_COOKIE['misplay']) && $_COOKIE['misplay'] != 0) {
 			if ($mode == 1 && $this->user['User']['id'] != 33) {
 				if ($this->isLoggedIn()) {
-					if (isset($_COOKIE['previousTsumegoID']) && (int)$_COOKIE['previousTsumegoID'] > 0) {
+					if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] > 0) {
 						$this->TsumegoAttempt->create();
 						$ur1 = [];
 						$ur1['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 						$ur1['TsumegoAttempt']['elo'] = $this->loggedInUser['User']['elo_rating_mode'];
-						$ur1['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+						$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 						$ur1['TsumegoAttempt']['gain'] = 0;
 						$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
 						$ur1['TsumegoAttempt']['solved'] = '0';
@@ -1164,7 +1185,7 @@ class TsumegosController extends AppController {
 						$ur1 = [];
 						$ur1['TsumegoAttempt']['user_id'] = $userId;
 						$ur1['TsumegoAttempt']['elo'] = $this->loggedInUser['User']['elo_rating_mode'];
-						$ur1['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+						$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 						$ur1['TsumegoAttempt']['gain'] = 0;
 						$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
 						$ur1['TsumegoAttempt']['solved'] = '0';
@@ -1204,7 +1225,7 @@ class TsumegosController extends AppController {
 					$ur1 = [];
 					$ur1['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 					$ur1['TsumegoAttempt']['elo'] = $this->loggedInUser['User']['elo_rating_mode'];
-					$ur1['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+					$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 					$ur1['TsumegoAttempt']['gain'] = $this->loggedInUser['User']['elo_rating_mode'];
 					$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
 					$ur1['TsumegoAttempt']['solved'] = '0';
@@ -1234,7 +1255,7 @@ class TsumegosController extends AppController {
 				if (empty($utPre)) {
 					$utPre['TsumegoStatus'] = [];
 					$utPre['TsumegoStatus']['user_id'] = $this->loggedInUser['User']['id'];
-					$utPre['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+					$utPre['TsumegoStatus']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 				}
 				if (!$hasPremium) {
 					if ($utPre['TsumegoStatus']['status'] == 'W') {
@@ -1297,7 +1318,7 @@ class TsumegosController extends AppController {
 					if ($this->loggedInUser && !$this->Session->check('noLogin')) {
 						$ub = [];
 						$ub['UserBoard']['user_id'] = $this->loggedInUserID();
-						$ub['UserBoard']['b1'] = (int)$_COOKIE['previousTsumegoID'];
+						$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
 						$this->UserBoard->create();
 						$this->UserBoard->save($ub);
 
@@ -1315,9 +1336,9 @@ class TsumegosController extends AppController {
 					}
 					if ($exploit == null && $suspiciousBehavior == false) {
 						if ($mode == 1) {
-							$xpOld = $this->user['User']['xp'] + ((int)($_COOKIE['score']));
+							$xpOld = $this->user['User']['xp'] + ((int) ($_COOKIE['score']));
 							$this->user['User']['reuse2']++;
-							$this->user['User']['reuse3'] += (int)($_COOKIE['score']);
+							$this->user['User']['reuse3'] += (int) ($_COOKIE['score']);
 							if ($xpOld >= $this->user['User']['nextlvl']) {
 								$xpOnNewLvl = -1 * ($this->user['User']['nextlvl'] - $xpOld);
 								$this->user['User']['xp'] = $xpOnNewLvl;
@@ -1341,7 +1362,7 @@ class TsumegosController extends AppController {
 									$ur = [];
 									$ur['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 									$ur['TsumegoAttempt']['elo'] = $this->user['User']['elo_rating_mode'];
-									$ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+									$ur['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 									$ur['TsumegoAttempt']['gain'] = $_COOKIE['score'];
 									$ur['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
 									$ur['TsumegoAttempt']['solved'] = '1';
@@ -1377,7 +1398,7 @@ class TsumegosController extends AppController {
 										$_COOKIE['rank'] = 'failed';
 									}
 									$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-		 							$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
+									$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
 									$this->Rank->save($ranks[$i]);
 								}
 							}
@@ -1424,7 +1445,7 @@ class TsumegosController extends AppController {
 							$ur1 = [];
 							$ur1['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 							$ur1['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
-							$ur1['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+							$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 							$ur1['TsumegoAttempt']['gain'] = 1;
 							$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
 							$ur1['TsumegoAttempt']['solved'] = '1';
@@ -1439,7 +1460,7 @@ class TsumegosController extends AppController {
 					if (empty($utPre)) {
 						$utPre['TsumegoStatus'] = [];
 						$utPre['TsumegoStatus']['user_id'] = $this->user['User']['id'];
-						$utPre['TsumegoStatus']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+						$utPre['TsumegoStatus']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
 					if ($utPre['TsumegoStatus']['status'] == 'W') {
@@ -1485,7 +1506,7 @@ class TsumegosController extends AppController {
 						$this->user['User']['xp'] = $xpOld;
 						$this->Session->write('loggedInUser.User.xp', $xpOld);
 					}
-					if ((int)($_COOKIE['score'] > 100)) {
+					if ((int) ($_COOKIE['score'] > 100)) {
 						$_COOKIE['score'] = 100;
 					}
 
@@ -1517,7 +1538,7 @@ class TsumegosController extends AppController {
 					$ur = [];
 					$ur['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 					$ur['TsumegoAttempt']['elo'] = $this->user['User']['elo_rating_mode'];
-					$ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+					$ur['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 					$ur['TsumegoAttempt']['gain'] = $this->user['User']['elo_rating_mode'];
 					$ur['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
 					$ur['TsumegoAttempt']['solved'] = '1';
@@ -1558,7 +1579,7 @@ class TsumegosController extends AppController {
 					$ur = [];
 					$ur['TsumegoAttempt']['user_id'] = $this->loggedInUserID();
 					$ur['TsumegoAttempt']['elo'] = $this->Session->read('loggedInUser.User.elo_rating_mode');
-					$ur['TsumegoAttempt']['tsumego_id'] = (int)$_COOKIE['previousTsumegoID'];
+					$ur['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 					$ur['TsumegoAttempt']['gain'] = 0;
 					$ur['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
 					$ur['TsumegoAttempt']['solved'] = '1';
@@ -3347,8 +3368,8 @@ class TsumegosController extends AppController {
 		$setsCount = count($sets);
 
 		for ($h = 0; $h < $setsCount; $h++) {
-				$ts = $this->findTsumegoSet($sets[$h]['Set']['id']);
-				$tsCount = count($ts);
+			$ts = $this->findTsumegoSet($sets[$h]['Set']['id']);
+			$tsCount = count($ts);
 
 			for ($i = 0; $i < $tsCount; $i++) {
 				if ($ts[$i]['Tsumego']['id'] != $id) {
@@ -3936,8 +3957,8 @@ class TsumegosController extends AppController {
 			$n2xCount = count($n2x);
 			for ($i = $n2xCount - 1; $i >= 0; $i--) {
 				$n2xx = explode('/', $n2x[$i]);
-				$a = substr($c, 0, (int)$n2xx[0]);
-				$cx = substr($c, (int)$n2xx[0], (int)$n2xx[1] - (int)$n2xx[0] + 1);
+				$a = substr($c, 0, (int) $n2xx[0]);
+				$cx = substr($c, (int) $n2xx[0], (int) $n2xx[1] - (int) $n2xx[0] + 1);
 				if ($noSyntax) {
 					$b = '<a href="#" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '()" onmouseout="ccOut' . $counter . $fn . '()" return false;>';
 				} else {

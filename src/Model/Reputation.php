@@ -1,4 +1,3 @@
 <?php
 
-class Reputation extends AppModel {
-}
+class Reputation extends AppModel {}

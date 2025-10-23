@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Web Access Frontend for TestSuite
  *
@@ -22,37 +23,37 @@ set_time_limit(0);
 ini_set('display_errors', 1);
 
 if (!defined('DS')) {
-    define('DS', DIRECTORY_SEPARATOR);
+	define('DS', DIRECTORY_SEPARATOR);
 }
 
 if (!is_file(dirname(__DIR__) . DS . 'config' . DS . 'define.php')) {
-    trigger_error(
-        'Configuration file "config' . DS . 'define.php" could not be loaded. ' .
-        'Please ensure this file exists and is readable.',
-        E_USER_ERROR
-    );
+	trigger_error(
+		'Configuration file "config' . DS . 'define.php" could not be loaded. '
+		. 'Please ensure this file exists and is readable.',
+		E_USER_ERROR,
+	);
 }
 require_once dirname(__DIR__) . DS . 'config' . DS . 'define.php';
 
 if (!is_dir(VENDORS)) {
-    trigger_error(
-        'Composer vendors directory not found at "' . VENDORS . '". ' .
-        'Please run "composer install" in the project root directory to install dependencies.',
-        E_USER_ERROR,
-    );
+	trigger_error(
+		'Composer vendors directory not found at "' . VENDORS . '". '
+		. 'Please run "composer install" in the project root directory to install dependencies.',
+		E_USER_ERROR,
+	);
 }
 if (!is_file(VENDORS . 'autoload.php')) {
-    trigger_error(
-        'Composer autoload file not found at "' . VENDORS . 'autoload.php". ' .
-        'Please run "composer install" to generate the autoload file.',
-        E_USER_ERROR,
-    );
+	trigger_error(
+		'Composer autoload file not found at "' . VENDORS . 'autoload.php". '
+		. 'Please run "composer install" to generate the autoload file.',
+		E_USER_ERROR,
+	);
 }
 require_once VENDORS . 'autoload.php';
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'src' . DS . 'Cake' . DS . 'bootstrap.php';
 
 if (Configure::read('debug') < 1) {
-    throw new NotFoundException(__d('cake_dev', 'Debug setting does not allow access to this URL.'));
+	throw new NotFoundException(__d('cake_dev', 'Debug setting does not allow access to this URL.'));
 }
 CakeTestSuiteDispatcher::run();

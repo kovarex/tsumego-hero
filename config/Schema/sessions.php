@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is Sessions Schema file
  *
@@ -47,8 +48,7 @@ class SessionsSchema extends CakeSchema {
 	 * @param array $event Schema object properties
 	 * @return void
 	 */
-	public function after($event = []) {
-	}
+	public function after($event = []) {}
 
 	/**
 	 * The cake_sessions table definition

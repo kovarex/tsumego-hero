@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Application model for CakePHP.
  *

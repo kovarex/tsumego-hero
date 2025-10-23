@@ -1,4 +1,5 @@
 <?php
+
 class TsumegoRatingAttemptsController extends AppController {
 
 	/**

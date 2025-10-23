@@ -1,4 +1,3 @@
 <?php
 
-class TsumegoRecord extends AppModel {
-}
+class TsumegoRecord extends AppModel {}

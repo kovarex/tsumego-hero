@@ -9,13 +9,14 @@
         "pieceofcake2/cakephp": "^2.12"
     },
     "require-dev": {
-        "fig-r/psr2r-sniffer": "dev-master as 2.4.0",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^9.6",
-        "pieceofcake2/bake": "^1.0",
-        "pieceofcake2/debug_kit": "^2.2",
-        "pieceofcake2/phpstan-cakephp2": "^0.2.1"
-    },
+		"fig-r/psr2r-sniffer": "dev-master as 2.4.0",
+		"friendsofphp/php-cs-fixer": "^3.89",
+		"phpstan/phpstan": "^2.1",
+		"phpunit/phpunit": "^9.6",
+		"pieceofcake2/bake": "^1.0",
+		"pieceofcake2/debug_kit": "^2.2",
+		"pieceofcake2/phpstan-cakephp2": "^0.2.1"
+	},
     "autoload": {
         "classmap": ["src/"]
     },
@@ -26,7 +27,7 @@
 		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
 		"cs-modified": "sh cs-modified.sh",
 		"cs-check": "phpcs --extensions=php",
-		"cs-fix": "phpcbf --extensions=php",
+		"cs-fix": "./vendor/bin/php-cs-fixer fix",
 		"stan": "phpstan analyse"
 	},
     "config": {

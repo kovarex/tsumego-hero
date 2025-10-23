@@ -1,4 +1,3 @@
 <?php
 
-class ModifiedTsumego extends AppModel {
-}
+class ModifiedTsumego extends AppModel {}

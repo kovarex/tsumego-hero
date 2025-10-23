@@ -1,4 +1,5 @@
 <?php
+
 class SgfsController extends AppController {
 
 	/**

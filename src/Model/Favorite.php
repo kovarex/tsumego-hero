@@ -1,4 +1,3 @@
 <?php
 
-class Favorite extends AppModel {
-}
+class Favorite extends AppModel {}

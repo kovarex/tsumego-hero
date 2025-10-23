@@ -1,4 +1,5 @@
 <?php
+
 class TsumegoRecordsController extends AppController {
 
 	/**

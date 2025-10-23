@@ -1,4 +1,3 @@
 <?php
 
-class Activate extends AppModel {
-}
+class Activate extends AppModel {}

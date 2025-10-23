@@ -1,4 +1,3 @@
 <?php
 
-class Sgf extends AppModel {
-}
+class Sgf extends AppModel {}

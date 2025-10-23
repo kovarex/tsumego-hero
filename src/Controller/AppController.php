@@ -1,4 +1,5 @@
 <?php
+
 class AppController extends Controller {
 
 	public $viewClass = 'App';
@@ -21,7 +22,7 @@ class AppController extends Controller {
 	}
 
 	public function loggedInUserID(): int {
-		return (int)$this->Session->read('loggedInUserID');
+		return (int) $this->Session->read('loggedInUserID');
 	}
 
 	protected function hasPremium(): bool {
@@ -226,7 +227,7 @@ class AppController extends Controller {
 	/**
 	 * @return void
 	 */
-	protected function uotd() {//routine1
+	protected function uotd() { //routine1
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
 		$this->loadModel('TsumegoAttempt');
@@ -820,8 +821,8 @@ class AppController extends Controller {
 			$this->UserContribution->create();
 		}
 		$uc['UserContribution'][$action] += 1;
-		$uc['UserContribution']['score'] =
-		$uc['UserContribution']['added_tag']
+		$uc['UserContribution']['score']
+		= $uc['UserContribution']['added_tag']
 		+ $uc['UserContribution']['created_tag'] * 3
 		+ $uc['UserContribution']['made_proposal'] * 5
 		+ $uc['UserContribution']['reviewed'] * 2;
@@ -2432,7 +2433,7 @@ class AppController extends Controller {
 					}
 				} elseif ($r[$i]['RankOverview']['rank'] == '2k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
-							$timeModeAchievements[73] = true;
+						$timeModeAchievements[73] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[79] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
@@ -2440,7 +2441,7 @@ class AppController extends Controller {
 					}
 				} elseif ($r[$i]['RankOverview']['rank'] == '1k') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
-							$timeModeAchievements[74] = true;
+						$timeModeAchievements[74] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
 						$timeModeAchievements[80] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
@@ -2448,35 +2449,35 @@ class AppController extends Controller {
 					}
 				} elseif ($r[$i]['RankOverview']['rank'] == '1d') {
 					if ($r[$i]['RankOverview']['mode'] == 2) {
-							$timeModeAchievements[75] = true;
+						$timeModeAchievements[75] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
-								$timeModeAchievements[81] = true;
+						$timeModeAchievements[81] = true;
 					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
 						$timeModeAchievements[87] = true;
 					}
 				}
 			}
-			if ($r[$i]['RankOverview']['points'] >= 850 &&
-			($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
+			if ($r[$i]['RankOverview']['points'] >= 850
+			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
 			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
 			|| $r[$i]['RankOverview']['rank'] == '5d')) {
 				$timeModeAchievements[91] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 875 &&
-			($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
+			if ($r[$i]['RankOverview']['points'] >= 875
+			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
 			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
 			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k')) {
 				$timeModeAchievements[90] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 900 &&
-			($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
+			if ($r[$i]['RankOverview']['points'] >= 900
+			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
 			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
 			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k' || $r[$i]['RankOverview']['rank'] == '7k'
 			|| $r[$i]['RankOverview']['rank'] == '8k')) {
 				$timeModeAchievements[89] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 950 &&
-			($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
+			if ($r[$i]['RankOverview']['points'] >= 950
+			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
 			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
 			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k' || $r[$i]['RankOverview']['rank'] == '7k'
 			|| $r[$i]['RankOverview']['rank'] == '8k' || $r[$i]['RankOverview']['rank'] == '9k' || $r[$i]['RankOverview']['rank'] == '10k')) {
@@ -3725,8 +3726,8 @@ class AppController extends Controller {
 				}
 				$this->set('removeCookie', 'addTag');
 			}
-			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0 &&
-			strlen($_COOKIE['z_sess']) > 5) {
+			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
+			&& strlen($_COOKIE['z_sess']) > 5) {
 				$this->loggedInUser['User']['_sessid'] = $_COOKIE['z_sess'];
 				$this->User->save($this->loggedInUser);
 			}
@@ -3761,8 +3762,8 @@ class AppController extends Controller {
 				$this->loggedInUser['User']['lastLight'] = $lightDarkInt;
 			}
 		} elseif ($this->loggedInUser) {
-			if ($this->loggedInUser['User']['lastLight'] == 0 ||
-			$this->loggedInUser['User']['lastLight'] == 1) {
+			if ($this->loggedInUser['User']['lastLight'] == 0
+			|| $this->loggedInUser['User']['lastLight'] == 1) {
 				$lightDark = 'light';
 			} else {
 				$lightDark = 'dark';
@@ -3781,8 +3782,8 @@ class AppController extends Controller {
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0') {
 				$levelBar = $_COOKIE['levelBar'];
 				$this->loggedInUser['User']['levelBar'] = $levelBar;
-			} elseif ($this->loggedInUser['User']['levelBar'] == 0 ||
-				$this->loggedInUser['User']['levelBar'] == 'level') {
+			} elseif ($this->loggedInUser['User']['levelBar'] == 0
+				|| $this->loggedInUser['User']['levelBar'] == 'level') {
 				$levelBar = 1;
 			} else {
 				$levelBar = 2;
@@ -3827,7 +3828,7 @@ class AppController extends Controller {
 					'order' => 'created DESC',
 					'conditions' => [
 						'user_id' => $this->loggedInUserID(),
-						'tsumego_id' => (int)$_COOKIE['previousTsumegoID'],
+						'tsumego_id' => (int) $_COOKIE['previousTsumegoID'],
 					],
 				]);
 				if (!$utsx) {
@@ -3840,7 +3841,7 @@ class AppController extends Controller {
 					}
 				}
 			}
-			$previousTsumego = $this->Tsumego->findById((int)$_COOKIE['previousTsumegoID']);
+			$previousTsumego = $this->Tsumego->findById((int) $_COOKIE['previousTsumegoID']);
 		}
 		if ($_COOKIE['sprint'] != 1) {
 			$this->updateSprintCondition();
@@ -4130,8 +4131,8 @@ class AppController extends Controller {
 			return;
 		}
 
-		if (($this->Session->read('page') == 'time mode' || $this->loggedInUser['User']['mode'] != 3) &&
-		($this->Session->read('page') == 'time mode' || strlen($this->loggedInUser['User']['activeRank']) != 15)) {
+		if (($this->Session->read('page') == 'time mode' || $this->loggedInUser['User']['mode'] != 3)
+		&& ($this->Session->read('page') == 'time mode' || strlen($this->loggedInUser['User']['activeRank']) != 15)) {
 			return;
 		}
 

@@ -1,4 +1,3 @@
 <?php
 
-class UserRecord extends AppModel {
-}
+class UserRecord extends AppModel {}

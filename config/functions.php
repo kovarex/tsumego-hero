@@ -40,7 +40,7 @@ HTML;
 			$locationInfo = sprintf(
 				'<strong>%s</strong> (line <strong>%s</strong>)',
 				trimPath($location['file']),
-				$location['line']
+				$location['line'],
 			);
 		}
 
@@ -136,7 +136,7 @@ HTML;
 			$locationInfo = sprintf(
 				'<strong>%s</strong> (line <strong>%s</strong>)',
 				trimPath($location['file']),
-				$location['line']
+				$location['line'],
 			);
 		}
 
@@ -185,7 +185,7 @@ if (!function_exists('_exportVarRecursive')) {
 				return $var ? 'true' : 'false';
 			case 'integer':
 			case 'double':
-				return (string)$var;
+				return (string) $var;
 			case 'string':
 				return "'" . $var . "'";
 			case 'NULL':

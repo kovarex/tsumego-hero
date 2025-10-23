@@ -1,4 +1,3 @@
 <?php
 
-class Joseki extends AppModel {
-}
+class Joseki extends AppModel {}
