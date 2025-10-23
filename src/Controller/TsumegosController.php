@@ -1398,7 +1398,7 @@ class TsumegosController extends AppController {
 										$_COOKIE['rank'] = 'failed';
 									}
 									$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-		 							$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
+									$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
 									$this->Rank->save($ranks[$i]);
 								}
 							}

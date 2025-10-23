@@ -2,10 +2,10 @@
 
 class Poll extends AppModel {
 
-	 public $validate = [
-		 'img' => [
-			 'rule' => 'notBlank',
-		 ],
-	 ];
+	public $validate = [
+		'img' => [
+			'rule' => 'notBlank',
+		],
+	];
 
 }

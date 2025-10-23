@@ -3783,11 +3783,11 @@ Joschka Zimdars';
 		if (!is_string($string)) {
 			return '';
 		}
-		 $j = 1.0;
-		 $hash = '';
-		 $key = sha1((string)$key);
-		 $strLen = strlen($string);
-		 $keyLen = strlen($key);
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string)$key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i++) {
 			$ordStr = ord(substr($string, $i, 1));
 			if ($j == $keyLen) {
@@ -3798,18 +3798,18 @@ Joschka Zimdars';
 			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
 		}
 
-		 return $hash;
+		return $hash;
 	}
 
 	private function tinkerDecode($string, $key) {
 		if (!is_string($string)) {
 			return '';
 		}
-		 $j = 1.0;
-		 $hash = '';
-		 $key = sha1((string)$key);
-		 $strLen = strlen($string);
-		 $keyLen = strlen($key);
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string)$key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
 		for ($i = 0; $i < $strLen; $i += 2) {
 			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
 			if ($j == $keyLen) {
@@ -3820,7 +3820,7 @@ Joschka Zimdars';
 			$hash .= chr($ordStr - $ordKey);
 		}
 
-		 return $hash;
+		return $hash;
 	}
 
 	/**
