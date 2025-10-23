@@ -887,10 +887,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$u['User']['pw'] = $newPw;
 			$this->User->save($u);
 			$done = true;
-		} else {
-			if ($u != null) {
-				$valid = true;
-			}
+		} elseif ($u != null) {
+			$valid = true;
 		}
 		$this->set('u', $u['User']['name']);
 		$this->set('valid', $valid);
@@ -971,7 +969,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					break;
 				}
 			}
-			if ($ux[$i]['User']['rd'] < 90) {//125
+			if ($ux[$i]['User']['rd'] < 90) { //125
 				$ux[$i]['User']['rd'] += 35;
 				$this->User->save($ux[$i]);
 			}
@@ -2622,16 +2620,14 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
 				array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
 				array_push($ca['type'], 'Answer');
-			} else {
-				if ($aa[$i]['AdminActivity']['isAdmin'] > 0) {
-					array_push($aa2, $aa[$i]);
-					array_push($ca['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
-					array_push($ca['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
-					array_push($ca['created'], $aa[$i]['AdminActivity']['created']);
-					array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
-					array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
-					array_push($ca['type'], 'Upload');
-				}
+			} elseif ($aa[$i]['AdminActivity']['isAdmin'] > 0) {
+				array_push($aa2, $aa[$i]);
+				array_push($ca['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
+				array_push($ca['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
+				array_push($ca['created'], $aa[$i]['AdminActivity']['created']);
+				array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
+				array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
+				array_push($ca['type'], 'Upload');
 			}
 		}
 		$adminComments = $this->Comment->find('all', [
