@@ -205,7 +205,7 @@ class TsumegosController extends AppController {
 			$this->loggedInUser['User']['mode'] = 1;
 			if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0') {
 				if (strlen($this->loggedInUser['User']['activeRank']) >= 15) {
-					if ($_COOKIE['mode'] != 3) {//switch 3=>2, 3=>1
+					if ($_COOKIE['mode'] != 3) { //switch 3=>2, 3=>1
 						$ranks = $this->Rank->find('all', ['conditions' => ['session' => $this->loggedInUser['User']['activeRank']]]);
 						if (!$ranks) {
 							$ranks = [];
@@ -549,7 +549,7 @@ class TsumegosController extends AppController {
 			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
 		}
 
-		if ($t['Tsumego']['duplicate'] > 9) {//duplicate and not main
+		if ($t['Tsumego']['duplicate'] > 9) { //duplicate and not main
 			$tDuplicate = $this->Tsumego->findById($t['Tsumego']['duplicate']);
 			$t['Tsumego']['difficulty'] = $tDuplicate['Tsumego']['difficulty'];
 			$t['Tsumego']['description'] = $tDuplicate['Tsumego']['description'];
