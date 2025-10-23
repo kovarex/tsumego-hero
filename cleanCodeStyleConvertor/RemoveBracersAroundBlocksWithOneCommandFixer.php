@@ -18,7 +18,6 @@ use PhpCsFixer\Tokenizer\Tokens;
 /**
  * @author Your name <kovarex@email.com>
  * // TODO: For internal testing for now
- * // TODO: add for support
  * // TODO: integrate properly and add tests
  */
 final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
