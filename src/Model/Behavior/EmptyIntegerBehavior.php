@@ -54,7 +54,8 @@ class EmptyIntegerBehavior extends ModelBehavior {
 					// NOT NULL column: set to 0
 					$model->data[$model->alias][$field] = 0;
 				}
-			} elseif (is_string($value) && !is_numeric($value)) { // Handle non-numeric strings
+			} elseif (is_string($value) && !is_numeric($value)) {
+				// Handle non-numeric strings
 				// Log warning about non-numeric string
 				CakeLog::warning(sprintf(
 					'Non-numeric string "%s" provided for integer field %s.%s, converting to 0',
