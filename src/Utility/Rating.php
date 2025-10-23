@@ -26,7 +26,7 @@ class Rating {
 			return (int)floor(max(($rating + 1050) / 100, 1));
 		}
 
-			return (int)floor(($rating - 2750) / 30) + 38;
+		return (int)floor(($rating - 2750) / 30) + 38;
 	}
 
 	public static function getReadableRankFromRating(float $rating): string {

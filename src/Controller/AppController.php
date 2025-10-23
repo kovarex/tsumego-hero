@@ -3,8 +3,7 @@ class AppController extends Controller {
 
 	public $viewClass = 'App';
 
-	public $components =
-	[
+	public $components = [
 		'Session',
 		//'DebugKit.Toolbar',
 		'Flash',
