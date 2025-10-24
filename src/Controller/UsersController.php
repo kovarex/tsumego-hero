@@ -2396,7 +2396,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		if ($this->isAdmin()) {
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
-				if (md5((string) $this->loggedInUserID()) == $this->params['url']['hash']) {
+				if (md5((string) $this->getLoggedInUserID()) == $this->params['url']['hash']) {
 
 					$tagsToApprove = explode('-', $_COOKIE['tagList']);
 					$tagsToApproveCount = count($tagsToApprove);
@@ -2748,7 +2748,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('Tsumego');
 		$this->loadModel('Activate');
 
-		$this->saveSolvedNumber($this->loggedInUserID());
+		$this->saveSolvedNumber($this->getLoggedInUserID());
 
 		$activate = false;
 		if ($this->isLoggedIn()) {
@@ -2784,7 +2784,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
 		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+			$ux = $this->User->findById($this->getLoggedInUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2840,7 +2840,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward1'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($this->loggedInUserID());
+					$u = $this->User->findById($this->getLoggedInUserID());
 					$u['User']['level'] += 1;
 					$u['User']['nextlvl'] += $this->getXPJump($u['User']['level']);
 					$u['User']['health'] = $this->getHealth($u['User']['level']);
@@ -2848,7 +2848,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					$this->Session->read('loggedInUser')['User']['nextlvl'] = $u['User']['nextlvl'];
 					$this->Session->read('loggedInUser')['User']['health'] = $u['User']['health'];
 					$this->User->save($u);
-					$u = $this->User->findById($this->loggedInUserID());
+					$u = $this->User->findById($this->getLoggedInUserID());
 					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
@@ -2856,11 +2856,11 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($this->loggedInUserID());
+					$u = $this->User->findById($this->getLoggedInUserID());
 					$u['User']['elo_rating_mode'] += 100;
 					$this->Session->read('loggedInUser')['User']['elo_rating_mode'] = $u['User']['elo_rating_mode'];
 					$this->User->save($u);
-					$u = $this->User->findById($this->loggedInUserID());
+					$u = $this->User->findById($this->getLoggedInUserID());
 					$this->Session->write('loggedInUser', $u);
 					$this->set('refresh', 'refresh');
 				}
@@ -2872,11 +2872,11 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			} elseif (md5('premium') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					if (!$this->hasPremium()) {
-						$u = $this->User->findById($this->loggedInUserID());
+						$u = $this->User->findById($this->getLoggedInUserID());
 						$u['User']['premium'] = 1;
 						$this->Session->read('loggedInUser')['User']['premium'] = $u['User']['premium'];
 						$this->User->save($u);
-						$u = $this->User->findById($this->loggedInUserID());
+						$u = $this->User->findById($this->getLoggedInUserID());
 						$this->Session->write('loggedInUser', $u);
 					}
 				}
@@ -2916,7 +2916,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('User');
 
 		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+			$ux = $this->User->findById($this->getLoggedInUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2949,7 +2949,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$params2 = '';
 
 		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+			$ux = $this->User->findById($this->getLoggedInUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -3067,7 +3067,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 
 		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+			$ux = $this->User->findById($this->getLoggedInUserID());
 			$ux['User']['lastHighscore'] = 4;
 			$this->User->save($ux);
 		}
@@ -3108,7 +3108,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+			$ux = $this->User->findById($this->getLoggedInUserID());
 			$ux['User']['lastHighscore'] = 3;
 			$this->User->save($ux);
 		}
@@ -3146,7 +3146,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('RankOverview');
 		$hideEmail = false;
 
-		$solvedUts2 = $this->saveSolvedNumber($this->loggedInUserID());
+		$solvedUts2 = $this->saveSolvedNumber($this->getLoggedInUserID());
 
 		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		$ach = $this->Achievement->find('all');
@@ -3642,7 +3642,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Success');
 
-		$s = $this->User->findById($this->loggedInUserID());
+		$s = $this->User->findById($this->getLoggedInUserID());
 		$s['User']['reward'] = date('Y-m-d H:i:s');
 		$s['User']['premium'] = 1;
 		$this->User->create();
@@ -3684,7 +3684,7 @@ Joschka Zimdars';
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Penalty');
 
-		$p = $this->User->findById($this->loggedInUserID());
+		$p = $this->User->findById($this->getLoggedInUserID());
 		$p['User']['penalty'] = $p['User']['penalty'] + 1;
 		$this->User->create();
 		$this->User->save($p);
@@ -5185,7 +5185,7 @@ Joschka Zimdars';
 		$redirect = false;
 		$status = '';
 		if ($this->isLoggedIn()) {
-			$u = $this->User->findById($this->loggedInUserID());
+			$u = $this->User->findById($this->getLoggedInUserID());
 		}
 
 		if (!empty($this->data)) {
@@ -5215,7 +5215,7 @@ Joschka Zimdars';
 		$redirect = false;
 		$status = '';
 		if ($this->isLoggedIn()) {
-			$u = $this->User->findById($this->loggedInUserID());
+			$u = $this->User->findById($this->getLoggedInUserID());
 		}
 
 		if (!empty($this->data)) {

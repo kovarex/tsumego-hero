@@ -105,7 +105,7 @@ class ActivatesController extends AppController {
 			$key = 1;
 		}
 
-		$u = $this->User->findById($this->loggedInUserID());
+		$u = $this->User->findById($this->getLoggedInUserID());
 		$u['User']['readingTrial'] = 30;
 		$this->User->save($u);
 

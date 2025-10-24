@@ -40,7 +40,7 @@ class RanksController extends AppController {
 		$rs = $this->checkForNewCollections($rsIndexes);
 
 		if ($this->isLoggedIn()) {
-			$u = $this->User->findById($this->loggedInUserID());
+			$u = $this->User->findById($this->getLoggedInUserID());
 			$lastMode = $u['User']['lastMode'];
 		}
 

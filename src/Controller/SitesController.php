@@ -243,12 +243,12 @@ class SitesController extends AppController {
 
 		//recently visited
 		/*if ($this->isLoggedIn()) {
-			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->loggedInUserID())));
+			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->getLoggedInUserID())));
 			$currentUser['User']['created'] = date('Y-m-d H:i:s');
 			$this->User->save($currentUser);
 
 			$visit = $this->Visit->find('all',
-				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->loggedInUserID()))
+				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->getLoggedInUserID()))
 			);
 
 			$setVisit1 = $this->Set->find('first', array('conditions' => array('id' => $visit[count($visit)-1]['Visit']['set_id'])));

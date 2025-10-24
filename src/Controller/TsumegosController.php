@@ -187,7 +187,7 @@ class TsumegosController extends AppController {
 			}
 			$this->User->save($this->loggedInUser);
 		}
-		$searchPatameters = $this->processSearchParameters($this->loggedInUserID());
+		$searchPatameters = $this->processSearchParameters($this->getLoggedInUserID());
 		$query = $searchPatameters[0];
 		$collectionSize = $searchPatameters[1];
 		$search1 = $searchPatameters[2];
@@ -198,7 +198,7 @@ class TsumegosController extends AppController {
 			if ($this->params['url']['search'] == 'topics') {
 				$query = $this->params['url']['search'];
 				$_COOKIE['query'] = $this->params['url']['search'];
-				$this->processSearchParameters($this->loggedInUserID());
+				$this->processSearchParameters($this->getLoggedInUserID());
 			}
 		}
 		if ($this->loggedInUser) {
@@ -313,7 +313,7 @@ class TsumegosController extends AppController {
 						$r2 = 700;
 					}
 
-					$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->loggedInUserID()]]);
+					$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $$this->getLoggedInUserID()]]);
 					if (!$rs) {
 						$rs = [];
 					}
@@ -772,7 +772,7 @@ class TsumegosController extends AppController {
 			} else {
 				if ($this->data['Comment']['user_id'] != 33) {
 					$this->Comment->create();
-					if ($this->checkCommentValid($this->loggedInUserID())) {
+					if ($this->checkCommentValid($this->getLoggedInUserID())) {
 						$this->Comment->save($this->data, true);
 					}
 				}
@@ -893,7 +893,7 @@ class TsumegosController extends AppController {
 					$sgf['Sgf']['tsumego_id'] = $t['Tsumego']['duplicate'];
 				}
 
-				$sgf['Sgf']['version'] = $this->createNewVersionNumber($lastV, $this->loggedInUserID());
+				$sgf['Sgf']['version'] = $this->createNewVersionNumber($lastV, $this->getLoggedInUserID());
 				$this->handleContribution($this->getLoggedInUserID(), 'made_proposal');
 				$this->Sgf->save($sgf);
 			}
@@ -1743,7 +1743,7 @@ class TsumegosController extends AppController {
 			$userDate = $userDate->format('Y-m-d');
 			if ($userDate != date('Y-m-d')) {
 				$this->user['User']['created'] = date('Y-m-d H:i:s');
-				$this->deleteUnusedStatuses($this->loggedInUserID());
+				$this->deleteUnusedStatuses($this->getLoggedInUserID());
 			}
 			$this->User->save($this->loggedInUser);
 		}
@@ -1832,7 +1832,7 @@ class TsumegosController extends AppController {
 					$sgf['Sgf']['user_id'] = $this->getLoggedInUserID();
 					$sgf['Sgf']['tsumego_id'] = $id;
 					if ($this->Session->read('loggedInUser.User.isAdmin') > 0) {
-						$sgf['Sgf']['version'] = $this->createNewVersionNumber($lastV, $this->loggedInUserID());
+						$sgf['Sgf']['version'] = $this->createNewVersionNumber($lastV, $this->getLoggedInUserID());
 					} else {
 						$sgf['Sgf']['version'] = 0;
 					}
