@@ -10,7 +10,7 @@
 	<p>Created by <?php echo $tn['TagName']['user'] ?>.</p>
 	<?php if($this->Session->read('loggedInUser.User.isAdmin')>0){ ?>
 		<a href="/tag_names/edit/<?php echo $tn['TagName']['id']; ?>">Edit</a> 
-		<?php if($this->Session->read('loggedInUser.User.id')==72){ ?>
+		<?php if($this->Session->read('loggedInUserID')==72){ ?>
 			| 
 			<a href="/tag_names/delete/<?php echo $tn['TagName']['id']; ?>">Delete</a>
 		<?php } ?>

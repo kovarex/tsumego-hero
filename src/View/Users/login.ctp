@@ -1,5 +1,5 @@
 	<?php
-		if($this->Session->check('loggedInUser.User.id')){
+		if($this->Session->check('loggedInUserID')){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
 	?>
@@ -12,7 +12,7 @@
 	</div>
 	<div id="login-box" class="users form">
 		<div class="left signin">
-			<?php echo $this->Session->flash(); ?>
+			<?php echo $this->Flash->render(); ?>
 			 <h1>Sign in</h1>
 			<?php echo $this->Form->create('User', array('action' => 'login')); ?>
 			<label for="UserName"></label>
@@ -22,8 +22,8 @@
 			</div>
 			<label for="UserPassword"></label>
 			<div class="input password required">
-				<label for="UserPw"></label>
-				<input name="data[User][pw]" type="password" placeholder="Password" id="UserPw" required="required"/>
+				<label for="password"></label>
+				<input name="data[User][password]" type="password" placeholder="Password" id="password" required="required"/>
 			</div>
 			<?php echo $this->Form->end('Submit'); ?>
 			Need an account?<br>
@@ -38,16 +38,14 @@
 				data-context="signin"
 				data-ux_mode="popup"
 				data-login_uri="/users/googlesignin"
-				data-auto_prompt="false"
-			></div>
+				data-auto_prompt="false"></div>
 			<div
 				class="g_id_signin"
 				data-type="standard"
 				data-shape="rectangular"
 				data-theme="outline"
 				data-text="sign_in_with"
-				data-size="large"
-			></div>
+				data-size="large"></div>
 		</div>
 		<div class="right">
 		</div>
@@ -55,25 +53,13 @@
 	<br>
 
 	<script>
-		<?php
-			if($clearSession){
-				?> 
-				var PHPSESSID = getCookie("PHPSESSID");
-				setCookie("PHPSESSID", PHPSESSID);
-				<?php
-			}
-		?>
 		var cacheLifetime = new Date();
 		cacheLifetime.setTime(cacheLifetime.getTime()+1*1*1*5*1000);
 		cacheLifetime = cacheLifetime.toUTCString()+"";
 		
 		let cache = getCookie("cache_settings");
-		if(cache == 0){
-			//deleteAllCookies();
+		if (cache == 0)
 			document.cookie = "cache_settings=1;SameSite=none;expires="+cacheLifetime+";Secure=false";
-		}else{
-			//alert("f")
-		}
 		setCookie("z_hash", "0");
 		localStorage.setItem("z_hash", "0");
 		function deleteAllCookies() {

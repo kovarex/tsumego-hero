@@ -19,7 +19,7 @@
 		
 		
 		if($this->Session->check('loggedInUser')){
-			if($this->Session->read('loggedInUser.User.id')==72){
+			if($this->Session->read('loggedInUserID')==72){
 				//echo '<pre>';
 				//print_r($test1);
 				//echo '</pre>';

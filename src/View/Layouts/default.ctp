@@ -154,7 +154,7 @@
 				}else{
 					$nextMode['Tsumego']['id'] = 15352;
 				}
-				if($this->Session->check('loggedInUser.User.id')){
+				if($this->Session->check('loggedInUserID')){
 					if($this->Session->read('loggedInUser.User.isAdmin')==0) $discussFilter = '';
 					else $discussFilter = '?filter=false';
 					if($this->Session->read('loggedInUser.User.completed')==1 || $this->Session->read('loggedInUser.User.premium')>=1){
@@ -181,7 +181,7 @@
 					echo '</ul>';
 					echo '</li>';
 					echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
-					if($this->Session->check('loggedInUser.User.id')){
+					if($this->Session->check('loggedInUserID')){
 						if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1 || $hasFavs){
 							echo '<ul class="newMenuLi2">';
 							if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1)
@@ -207,7 +207,7 @@
 					echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
 					echo '<ul class="newMenuLi3">';
 						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
-						if($this->Session->check('loggedInUser.User.id')){
+						if($this->Session->check('loggedInUserID')){
 							echo '<li><a href="/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/ranks/overview" '.$timeModeA.'>Time</a></li>';
 						}
@@ -220,7 +220,7 @@
 						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
 					echo '</ul>';
-					if($this->Session->check('loggedInUser.User.id'))
+					if($this->Session->check('loggedInUserID'))
 						echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
 					else
 						echo '<li><a style="color:#aaa;">Discuss</a></li>';
@@ -297,20 +297,22 @@
 		<div class="outerMenu3">
 			<?php
 				$currentPage = '';
-				if($this->Session->read('page') == 'user') $currentPage = 'style="color:#74d14c;" ';
-				if(!$this->Session->check('loggedInUser.User.id')) echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
+				if($this->Session->read('page') == 'user')
+          $currentPage = 'style="color:#74d14c;" ';
+				if(!$this->Session->check('loggedInUserID'))
+          echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
 			?>
 		</div>
 
 	</div>
 	<?php
-		if($this->Session->check('loggedInUser.User.id')){
+		if($this->Session->check('loggedInUserID')){
 			if($levelBar==1) $textBarInMenu = "Rating Bar";
 			else $textBarInMenu = "Level Bar";
 			echo '<div id="account-bar-wrapper" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					  <div id="account-bar">
 							<div id="'.$accountBarLevelToRating.'" class="account-bar-user-class">
-								<a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">
+								<a href="/users/view/'.$this->Session->read('loggedInUserID').'">
 									'.$user['User']['name'].'
 								</a>
 							</div>
@@ -332,7 +334,7 @@
 					  </div>
 				</div>
 				<div id="heroProfile" onmouseover="xpHover()" onmouseout="xpNoHover()">
-					<li><a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">Profile</a></li>
+					<li><a href="/users/view/'.$this->Session->read('loggedInUserID').'">Profile</a></li>
 				</div>
 				<div id="heroBar" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					<li><a id="textBarInMenu" onclick="switchBarInMenu()">'.$textBarInMenu.'</a></li>
@@ -365,8 +367,8 @@
 	<div id="footer" class="footerLinks">
 		<div class="footer-space"></div>
 		<?php if(
-			!$this->Session->check('loggedInUser.User.id')
-			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
+			!$this->Session->check('loggedInUserID')
+			|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')<1
 		){ ?>
 			<div class="footer-element">
 				<a href="/users/donate">
@@ -406,7 +408,7 @@
 	</div>
 	<?php
 	$achievementUpdate = $achievementUpdate ?? [];
-	if($this->Session->check('loggedInUser.User.id')){
+	if($this->Session->check('loggedInUserID')){
 		$xpBonus = 0;
     	$count = count($achievementUpdate);
 		for($i=0;$i<$count;$i++){
@@ -452,7 +454,7 @@
 		if(isset($removeCookie)){
 			echo 'setCookie("'.$removeCookie.'", "0");';
 		}
-		if($this->Session->check('loggedInUser.User.id')){
+		if($this->Session->check('loggedInUserID')){
 		if($_COOKIE['PHPSESSID']!=0 && $_COOKIE['PHPSESSID']!=-1){
 	?>
 			// REMOVED: Never manually set PHPSESSID - PHP manages this automatically
@@ -485,7 +487,7 @@
 	<?php
 			}
 		}
-		if($this->Session->check('loggedInUser.User.id')){ ?>
+		if($this->Session->check('loggedInUserID')){ ?>
 		var barPercent1 = <?php echo $user['User']['nextlvl'] == 0 ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
 		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
@@ -550,7 +552,7 @@
 		document.cookie = "requestProblem=0;SameSite=Lax;expires="+lifetime+";path=/";
 
 		setCookie("lightDark", "<?php echo $lightDark; ?>");
-		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+		<?php if($this->Session->check('loggedInUserID')){ ?>
 			setCookie("levelBar", "<?php echo $levelBar; ?>");
 		<?php } ?>
 		setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
@@ -578,7 +580,7 @@
 		var soundsEnabled = true;
 		var notMode3 = true;
 
-		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+		<?php if($this->Session->check('loggedInUserID')){ ?>
 			var userXP = <?php echo $user['User']['xp']; ?> ;
 			var userLevel = <?php echo $user['User']['level']; ?> ;
 			var userNextLvl = <?php echo $user['User']['nextlvl']; ?> ;
@@ -815,7 +817,7 @@
 		}
 
 		function loadBar(){
-			<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+			<?php if($this->Session->check('loggedInUserID')){ ?>
 
 				if(notMode3){
 				<?php
@@ -848,7 +850,7 @@
 		function xpHover(){
 			if(notMode3){
 				<?php
-				if($this->Session->check('loggedInUser.User.id')){
+				if($this->Session->check('loggedInUserID')){
 					if($mode==1 || $mode==2){
 					?>
 					if(levelBar==1)
@@ -977,7 +979,7 @@
 
 	</script>
 	<?php
-	if(!$this->Session->check('loggedInUser.User.id'))
+	if(!$this->Session->check('loggedInUserID'))
 		echo '<style>.outerMenu1{left: 224px;}</style>';
 	?>
 </body>

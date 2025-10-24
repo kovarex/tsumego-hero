@@ -151,12 +151,12 @@
 	<?php
 	//echo '<pre>';print_r($this->Session->read('loggedInUser'));echo '</pre>';
 	/*
-	if($this->Session->read('loggedInUser.User.id')==72){
+	if($this->Session->read('loggedInUserID')==72){
 		echo '<pre>';
 		print_r($users2);
 		echo '</pre>';
 	}
-	if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUser.User.id')==72){
+	if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUserID')==72){
 		echo '<pre>';
 		print_r($users);
 		echo '</pre>';

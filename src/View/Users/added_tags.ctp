@@ -42,8 +42,8 @@
 	<table class="dailyHighscoreTable">
 	<?php
 		$showLinks = false;
-		if($this->Session->check('loggedInUser.User.id')){
-			if($this->Session->read('loggedInUser.User.id')==72){
+		if($this->Session->check('loggedInUserID')){
+			if($this->Session->read('loggedInUserID')==72){
 				$showLinks = true;
 			}
 		}

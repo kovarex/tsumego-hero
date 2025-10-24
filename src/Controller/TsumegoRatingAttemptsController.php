@@ -273,7 +273,7 @@ class TsumegoRatingAttemptsController extends AppController {
 		}
 		/*
 		$trsx = $this->TsumegoAttempt->find('all', array('limit' => 10, 'order' => 'created DESC', 'conditions' => array(
-			'user_id' => $this->Session->read('loggedInUser.User.id')
+			'user_id' => $this->Session->read('loggedInUserID')
 		)));
 		*/
 		$trsCount = count($trs);
