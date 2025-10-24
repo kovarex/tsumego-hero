@@ -2,6 +2,7 @@
 
 App::uses('CakeEmail', 'Network/Email');
 class UsersController extends AppController {
+	public $components = ['Flash'];
 	public $name = 'Users';
 
 	public $pageTitle = 'Users';
@@ -2679,60 +2680,32 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->set('latestVersionTsumegos', $latestVersionTsumegos);
 	}
 
+	private function getUserFromNameOrEmail() {
+		if (!empty($this->data['User']['name'])) {
+			return $this->User->findByName($this->data['User']['name']);
+		}
+		if (!empty($this->data['User']['email'])) {
+			return $this->User->findByEmail($this->data['User']['email']);
+		}
+		return null;
+	}
+
 	public function login() {
-		$this->loadModel('TsumegoStatus');
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Sign In');
-
-		$clearSession = true;
-		if (!empty($this->data)) {
-			$clearSession = false;
-			$u = $this->User->findByName($this->data['User']['name']);
-			if ($u) {
-				if ($this->validateLogin($this->data)) {
-					$this->signIn($u);
-					$this->Session->setFlash(__('Login successful.', true));
-					$isLoaded = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $u['User']['id']]]);
-
-					return $this->redirect(['controller' => 'sets', 'action' => 'index']);
-				}
-
-				$this->Session->setFlash(__('Login incorrect.', true));
-			} else {
-				$this->Session->setFlash(__('Login incorrect.', true));
-			}
-		} else {
-			$clearSession = true;
+		$user = $this->getUserFromNameOrEmail();
+		if (!$user) {
+			$this->Flash->set('Unknown user');
+			return;
 		}
-		$this->set('clearSession', $clearSession);
-	}
 
-	public function login2() {
-		$this->loadModel('TsumegoStatus');
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Sign In');
-		if (!empty($this->data)) {
-			$u = $this->User->findByEmail($this->data['User']['email']);
-			if ($u) {
-				if ($this->validateLogin2($this->data)) {
-					$this->signIn($u);
-					$this->Session->setFlash(__('Login successful.', true));
-					$isLoaded = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $u['User']['id']]]);
-
-					return $this->redirect(['controller' => 'sets', 'action' => 'index']);
-				}
-
-				$this->Session->setFlash(__('Login incorrect.', true));
-			} else {
-				$this->Session->setFlash(__('Login incorrect.', true));
-			}
+		if (!$this->validateLogin($this->data, $user)) {
+			$this->Flash->set('Incorrect password');
+			return;
 		}
-	}
 
-	/**
-	 * @return void
-	 */
-	public function loading() {}
+		$this->signIn($user);
+		$this->Flash->set('Login successful.');
+		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
+	}
 
 	public function add() {
 		$this->Session->write('page', 'user');
@@ -3750,16 +3723,11 @@ Joschka Zimdars';
 		return $this->redirect(['action' => '/stats']);
 	}
 
-	private function validateLogin($data) {
-		$u = $this->User->findByName($data['User']['name']);
-		if (!$u || !isset($u['User']['pw'])) {
+	private function validateLogin($data, $user): bool {
+		if (!$user) {
 			return false;
 		}
-		if ($this->tinkerDecode($u['User']['pw'], 1) == $data['User']['pw']) {
-			return true;
-		}
-
-		return false;
+		return password_verify($data['User']['password'], $user['User']['password_hash']);
 	}
 
 	private function validateLogin2($data) {

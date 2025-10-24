@@ -122,3 +122,4 @@ ALTER TABLE `tsumego_statuses` DROP INDEX `user_id_and_tsumego_id_index`, ADD UN
 ALTER TABLE users ALTER COLUMN potion SET DEFAULT 0;
 ALTER TABLE users ALTER COLUMN penalty SET DEFAULT 0;
 ALTER TABLE users DROP COLUMN reuse1;
+ALTER TABLE users ADD COLUMN password_hash CHAR(60) NOT NULL;

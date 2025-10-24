@@ -3654,9 +3654,8 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	protected function signIn(array $user) {
-		$this->Session->write('loggedUserID', $user['User']['id']);
+		$this->Session->write('loggedInUserID', $user['User']['id']);
 		$this->loggedInUser = $user;
-		$this->user = &$this->loggedInUser;
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'created DESC']);
 		if ($vs) {
 			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
