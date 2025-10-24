@@ -1,7 +1,7 @@
 <?php
 	
 	if($this->Session->check('loggedInUser')){
-		if($this->getLoggedInUserID()!=72){
+		if($this->Session->read('loggedInUserID')!=72){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}	
 	}else{

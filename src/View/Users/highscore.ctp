@@ -42,7 +42,7 @@
 		$statsLink1 = '';
 		$statsLink2 = '';
 		$statsLink3 = '';
-		if($this->Session->check('loggedInUser')){if($this->getLoggedInUserID()==72){
+		if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUserID')==72){
 			$statsLink1 = '<a style="color:black;text-decoration:none;" target="_blank" href="/users/view';
 			$statsLink2 = '">';
 			$statsLink3 = '</a>';
@@ -52,7 +52,7 @@
 			if($users[$i]['solved'] == 0) $users[$i]['solved'] = 'missing data';
 			$bgColor = '#dddddd';
 			$statsLink4 = '';
-			if($this->Session->check('loggedInUser')){if($this->getLoggedInUserID()==72){
+			if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUserID')==72){
 				$statsLink4 = '/'.$users[$i]['id'];
 			}}
 			$uType = '';
@@ -104,12 +104,12 @@
 	<?php
 	
 	/*
-	if($this->getLoggedInUserID()==72){
+	if($this->Session->read('loggedInUserID')==72){
 		echo '<pre>';
 		print_r($users2);
 		echo '</pre>';
 	}
-	if($this->Session->check('loggedInUser')){if($this->getLoggedInUserID()==72){
+	if($this->Session->check('loggedInUser')){if($this->Session->read('loggedInUserID')==72){
 		echo '<pre>';
 		print_r($users);
 		echo '</pre>';

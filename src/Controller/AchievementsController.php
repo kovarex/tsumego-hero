@@ -17,7 +17,7 @@ class AchievementsController extends AppController {
 		}
 
 		if ($this->isLoggedIn()) {
-			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 			if (!$as) {
 				$as = [];
 			}
@@ -65,7 +65,7 @@ class AchievementsController extends AppController {
 		}
 		$aCount = count($asAll);
 		if ($this->isLoggedIn()) {
-			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => $this->getLoggedInUserID()]]);
+			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => $this->loggedInUserID()]]);
 		}
 		if ($as) {
 			$date = date_create($as['AchievementStatus']['created']);
@@ -89,7 +89,7 @@ class AchievementsController extends AppController {
 		$asAll = $asAll2;
 
 		if ($this->isLoggedIn()) {
-			$acGolden = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID(), 'category' => 'golden']]);
+			$acGolden = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => $this->loggedInUserID(), 'category' => 'golden']]);
 			if (!$acGolden) {
 				$acGolden = [];
 			}

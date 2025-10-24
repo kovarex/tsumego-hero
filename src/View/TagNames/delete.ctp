@@ -1,4 +1,4 @@
-<?php if(!$this->isLoggedIn() || $this->Session->read('loggedInUser.User.isAdmin')==0)
+<?php if(!$this->Session->check('loggedInUserID') || $this->Session->read('loggedInUser.User.isAdmin')==0)
 		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
 <?php if(isset($del)) echo '<script type="text/javascript">window.location.href = "/users/adminstats";</script>'; ?>
 <div align="center">

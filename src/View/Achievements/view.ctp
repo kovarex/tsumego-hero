@@ -10,8 +10,8 @@
 				</p>
 				<div class="achievemetProfileLink">
 					<?php
-						if($this->isLoggedIn()){
-							echo '<a href="/users/view/'.$this->getLoggedInUserID().'">Profile</a>';
+						if($this->Session->check('loggedInUserID')){
+							echo '<a href="/users/view/'.$this->Session->read('loggedInUserID').'">Profile</a>';
 						}
 					?>
 				</div>

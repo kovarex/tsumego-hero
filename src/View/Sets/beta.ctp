@@ -1,5 +1,5 @@
 	<?php
-		if($this->isLoggedIn()){
+		if($this->Session->check('loggedInUserID')){
 			if($this->Session->read('loggedInUser.User.premium')<1 && $this->Session->read('loggedInUser.User.isAdmin')<1){
 				echo '<script type="text/javascript">window.location.href = "/";</script>';
 			}

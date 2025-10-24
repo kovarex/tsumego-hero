@@ -361,7 +361,7 @@
 	<div class="homeLeft">
 		<div class="new-tsumego-box">
 		<?php
-		if($this->isLoggedIn())
+		if($this->Session->check('loggedInUserID'))
 			echo '<img id="title-image" src="/img/modeSelect24.png?v=1.1" width="100%" alt="Tsumego Hero Modes" title="Tsumego Hero Modes">';
 		else
 			echo '<img id="title-image" src="/img/modeSelect24x.png?v=1.1" width="100%" alt="Tsumego Hero Modes" title="Tsumego Hero Modes">';
@@ -387,7 +387,7 @@
 		<a href="/tsumegos/play/<?php echo $this->Session->read('lastVisit'); ?>?mode=1">
 			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<?php if($this->isLoggedIn()){ ?>
+		<?php if($this->Session->check('loggedInUserID')){ ?>
 		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
 			<div class="modeBox2" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
@@ -410,8 +410,8 @@
 		<img src="/img/new_startpage/<?php echo $quote; ?>e.PNG?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
 		
 		<?php if(
-			!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')==0
+			!$this->Session->check('loggedInUserID')
+			|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')==0
 		){ ?>
 			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
 			<div class="new1">
@@ -422,7 +422,7 @@
 			</div>
 			</div>
 		<?php } ?>
-		<p class="title4"<?php if($this->isLoggedIn()) echo ' style="margin-top:2px;"'; ?>>Recent Upgrades</p>
+		<p class="title4"<?php if($this->Session->check('loggedInUserID')) echo ' style="margin-top:2px;"'; ?>>Recent Upgrades</p>
 		<div class="new1">
 			<table class="newx">
 				<?php 
@@ -611,7 +611,7 @@
 			• Option to delete all account related data.<br>
 			<div align="center">
 				<div class="g-signin">
-					<?php if($this->isLoggedIn()){ ?>
+					<?php if($this->Session->check('loggedInUserID')){ ?>
 					<img src="/img/google-logo.png" title="google-logo" alt="google-logo" width="40px" style="border-radius:25%">
 					<?php }else{ ?>
 					<div
@@ -734,7 +734,7 @@
 		$link1 = '';
 		$link2 = '';
 		$link3 = '';
-		if($this->isLoggedIn()){
+		if($this->Session->check('loggedInUserID')){
 			$link1 = '/tsumegos/play/'.$this->Session->read('lastVisit').'?mode=1';
 			$link2 = '/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2';
 			$link3 = '/ranks/overview';
@@ -748,8 +748,8 @@
 		
 		<b>Profile page</b><br><br>
 		<?php
-		if($this->isLoggedIn())
-			echo 'The <a href="/users/view/'.$this->getLoggedInUserID().'">profile page</a> contains more data and is organized in line and bar charts.';
+		if($this->Session->check('loggedInUserID'))
+			echo 'The <a href="/users/view/'.$this->Session->read('loggedInUserID').'">profile page</a> contains more data and is organized in line and bar charts.';
 		else
 			echo 'The profile page contains more data and is organized in line and bar charts.';
 		?>
@@ -945,7 +945,7 @@
 			document.getElementById("sandboxVolunteers").style = "display:none;";
 		}
 		function mode1hover(){
-			<?php if($this->isLoggedIn()){ ?>
+			<?php if($this->Session->check('loggedInUserID')){ ?>
 				$("#title-image").attr("src", "/img/modeSelect24-1.png?v=1.1");
 			<?php }else{ ?>
 				$("#title-image").attr("src", "/img/modeSelect24x-1.png?v=1.1");
@@ -961,7 +961,7 @@
 			$("#title-image").attr("src", "/img/modeSelect24-4.png?v=1.1");
 		}
 		function modeNoHover(){
-			<?php if($this->isLoggedIn()){ ?>
+			<?php if($this->Session->check('loggedInUserID')){ ?>
 				$("#title-image").attr("src", "/img/modeSelect24.png?v=1.1");
 			<?php }else{ ?>
 				$("#title-image").attr("src", "/img/modeSelect24x.png?v=1.1");
@@ -1028,7 +1028,7 @@
 		?>
 	</script>
 	<?php
-	if(!$this->isLoggedIn()){
+	if(!$this->Session->check('loggedInUserID')){
 		echo '<style>
 			#progressBarInLevelMode{
 				display:none;

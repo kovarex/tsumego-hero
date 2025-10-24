@@ -20,7 +20,7 @@ class RanksController extends AppController {
 		$settings['title'] = [];
 		$settings['id'] = [];
 		$settings['checked'] = [];
-		$ro = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+		$ro = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		if (!$ro) {
 			$ro = [];
 		}
@@ -29,7 +29,7 @@ class RanksController extends AppController {
 			$sets = [];
 		}
 
-		$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+		$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		if (!$rs) {
 			$rs = [];
 		}
@@ -49,7 +49,7 @@ class RanksController extends AppController {
 			for ($i = 0; $i < $setsCount; $i++) {
 				$this->RankSetting->create();
 				$rsNew = [];
-				$rsNew['RankSetting']['user_id'] = $this->getLoggedInUserID();
+				$rsNew['RankSetting']['user_id'] = $this->loggedInUserID();
 				$rsNew['RankSetting']['set_id'] = $sets[$i]['Set']['id'];
 				$y = $sets[$i]['Set']['id'];
 				if ($y == 42 || $y == 109 || $y == 114 || $y == 143 || $y == 172 || $y == 29156 || $y == 33007 || $y == 74761) {
@@ -59,7 +59,7 @@ class RanksController extends AppController {
 				}
 				$this->RankSetting->save($rsNew);
 			}
-			$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+			$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 			if (!$rs) {
 				$rs = [];
 			}
@@ -68,7 +68,7 @@ class RanksController extends AppController {
 			if (count($this->data['Settings']) >= 41) {
 				$rds0 = $this->RankSetting->find('all', [
 					'conditions' => [
-						'user_id' => $this->getLoggedInUserID(),
+						'user_id' => $this->loggedInUserID(),
 					],
 				]);
 				if (!$rds0) {
@@ -82,7 +82,7 @@ class RanksController extends AppController {
 				foreach ($this->data['Settings'] as $ds) {
 					$rds = $this->RankSetting->find('first', [
 						'conditions' => [
-							'user_id' => $this->getLoggedInUserID(),
+							'user_id' => $this->loggedInUserID(),
 							'set_id' => $ds,
 						],
 					]);
@@ -101,7 +101,7 @@ class RanksController extends AppController {
 
 			$settingsSingle = $this->RankSetting->find('all', [
 				'conditions' => [
-					'user_id' => $this->getLoggedInUserID(),
+					'user_id' => $this->loggedInUserID(),
 					'set_id' => $sets[$i]['Set']['id'],
 				],
 			]);
@@ -212,7 +212,7 @@ class RanksController extends AppController {
 
 		$achievementUpdate = $this->checkTimeModeAchievements();
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP($this->getLoggedInUserID(), $achievementUpdate);
+			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
 		}
 
 		$json = json_decode(file_get_contents('json/time_mode_overview.json'), true);
@@ -376,7 +376,7 @@ class RanksController extends AppController {
 
 			$roxBefore = $this->RankOverview->find('all', [
 				'conditions' => [
-					'user_id' => $this->getLoggedInUserID(),
+					'user_id' => $this->loggedInUserID(),
 					'rank' => $ranks[0]['Rank']['rank'],
 					'mode' => $stopParameter,
 					'status' => 's',
@@ -387,7 +387,7 @@ class RanksController extends AppController {
 			}
 
 			$ro = [];
-			$ro['RankOverview']['user_id'] = $this->getLoggedInUserID();
+			$ro['RankOverview']['user_id'] = $this->loggedInUserID();
 			$ro['RankOverview']['session'] = $sess;
 			$ro['RankOverview']['rank'] = $ranks[0]['Rank']['rank'];
 			if ($solved >= $stopParameterPass) {
@@ -423,7 +423,7 @@ class RanksController extends AppController {
 			}
 		}
 
-		$allR = $this->Rank->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+		$allR = $this->Rank->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		if (!$allR) {
 			$allR = [];
 		}
@@ -433,7 +433,7 @@ class RanksController extends AppController {
 			for ($j = 0; $j < $modesCount; $j++) {
 				$rox = $this->RankOverview->find('all', [
 					'conditions' => [
-						'user_id' => $this->getLoggedInUserID(),
+						'user_id' => $this->loggedInUserID(),
 						'rank' => $modes[$i][$j],
 						'mode' => $i,
 					],
@@ -620,14 +620,14 @@ class RanksController extends AppController {
 		foreach ($check as $checkId) {
 			if (!isset($indexes[$checkId])) {
 				$newRsx = [];
-				$newRsx['RankSetting']['user_id'] = $this->getLoggedInUserID();
+				$newRsx['RankSetting']['user_id'] = $this->loggedInUserID();
 				$newRsx['RankSetting']['set_id'] = $checkId;
 				$newRsx['RankSetting']['status'] = '1';
 				$this->RankSetting->create();
 				$this->RankSetting->save($newRsx);
 			}
 		}
-		$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
+		$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
 		if (!$rs) {
 			$rs = [];
 		}

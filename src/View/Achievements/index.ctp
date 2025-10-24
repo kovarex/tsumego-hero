@@ -9,8 +9,8 @@
 				</div>
 				<div class="achievemetProfileLink">
 					<?php
-						if($this->isLoggedIn()){
-							echo '<a href="/users/view/'.$this->getLoggedInUserID().'">Profile</a>';
+						if($this->Session->check('loggedInUserID')){
+							echo '<a href="/users/view/'.$this->Session->read('loggedInUserID').'">Profile</a>';
 						}
 					?>
 				</div>
@@ -68,7 +68,7 @@
 			<br>
 			<br>
 			<?php
-				if($this->isLoggedIn()){
+				if($this->Session->check('loggedInUserID')){
 					echo 'You completed '.($unlockedCounter+$unlockedCounter2).' of '.count($a).' achievements.';
 				}
 			?>
