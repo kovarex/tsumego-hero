@@ -19,4 +19,12 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->testAction('users/logout/');
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 	}
+
+	public function testSignUp(): void {
+		$this->assertFalse(Auth::isLoggedIn());
+		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$newUsername = 'kovarex' . strval($userWithBiggestID);
+		$this->testAction('users/logout/');
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+	}
 }

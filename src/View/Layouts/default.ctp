@@ -49,15 +49,15 @@
 		$accountBarLevelToRating = 'account-bar-user';
 		if($mode!=3){
 			if($levelBar==1){
-				if(isset($user['User']['level'])) $levelNum = 'Level '.$user['User']['level'];
+				if(isset(Auth::getUser()['level'])) $levelNum = 'Level '.Auth::getUser()['level'];
 				else $levelNum = 1;
 				$xpBarFill = 'xp-bar-fill-c1';
 				$modeSelector = 2;
 				$accountBarLevelToRating = 'account-bar-user';
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
-        if ($user['User']['elo_rating_mode'])
-				  $levelNum = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
+        if (Auth::getUser()['elo_rating_mode'])
+				  $levelNum = Rating::getReadableRankFromRating(Auth::getUser()['elo_rating_mode']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
 			}
@@ -223,10 +223,11 @@
 						echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
 					else
 						echo '<li><a style="color:#aaa;">Discuss</a></li>';
-					if(Auth::getUser()['sound'] == 'off')
-						$soundButtonImageValue = 'sound-icon2.png';
-					else if(Auth::getUser()['sound'] == 'on')
-						$soundButtonImageValue = 'sound-icon1.png';
+          if (Auth::isLoggedIn())
+  					if(Auth::getUser()['sound'] == 'off')
+							$soundButtonImageValue = 'sound-icon2.png';
+						else if(Auth::getUser()['sound'] == 'on')
+							$soundButtonImageValue = 'sound-icon1.png';
 					else
 						$soundButtonImageValue = 'sound-icon1.png';
 					echo '<li class="menuIcons1">
@@ -312,7 +313,7 @@
 					  <div id="account-bar">
 							<div id="'.$accountBarLevelToRating.'" class="account-bar-user-class">
 								<a href="/users/view/'.Auth::getUserID().'">
-									'.$user['User']['name'].'
+									'.Auth::getUser()['name'].'
 								</a>
 							</div>
 							<div id="xp-bar">
@@ -484,9 +485,9 @@
 			}
 		}
 		if(Auth::isLoggedIn()){ ?>
-		var barPercent1 = <?php echo $user['User']['nextlvl'] == 0 ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
-		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
-		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
+		var barPercent1 = <?php echo Auth::getUser()['nextlvl'] == 0 ? "0" : Auth::getUser()['xp']/Auth::getUser()['nextlvl']*100; ?>;
+		var barPercent2 = <?php echo substr(round(Auth::getUser()['elo_rating_mode']), -2); ?>;
+		var barLevelNum = "<?php echo 'Level '.Auth::getUser()['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
 	<?php } ?>
@@ -577,10 +578,10 @@
 		var notMode3 = true;
 
 		<?php if(Auth::isLoggedIn()){ ?>
-			var userXP = <?php echo $user['User']['xp']; ?> ;
-			var userLevel = <?php echo $user['User']['level']; ?> ;
-			var userNextLvl = <?php echo $user['User']['nextlvl']; ?> ;
-			var userElo = <?php echo round($user['User']['elo_rating_mode']); ?> ;
+			var userXP = <?php echo Auth::getUser()['xp']; ?> ;
+			var userLevel = <?php echo Auth::getUser()['level']; ?> ;
+			var userNextLvl = <?php echo Auth::getUser()['nextlvl']; ?> ;
+			var userElo = <?php echo round(Auth::getUser()['elo_rating_mode']); ?> ;
 			var soundValue = 0;
 			let modeSelector = <?php echo $modeSelector; ?>;
 			let levelBar = <?php echo $levelBar; ?>+"";
@@ -817,7 +818,7 @@
 
 				if(notMode3){
 				<?php
-				$barPercent2 = substr(round($user['User']['elo_rating_mode']), -2);
+				$barPercent2 = substr(round(Auth::getUser()['elo_rating_mode']), -2);
 
 				if($mode!=3){ ?>
 

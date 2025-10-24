@@ -7,7 +7,7 @@
 <br><br>
 
 <?php
-	if($u['User']['external_id']==null){
+	if(Auth::getUser()['external_id']==null){
 		echo 'Confirm deletion request by entering your password.<br><br>';
 		echo $this->Form->create('User');
 		echo $this->Form->input('delete', array('value' => '', 'label' => '', 'type' => 'password', 'placeholder' => 'password'));
@@ -25,6 +25,6 @@
 </div>
 <?php
 	if($redirect){
-		echo '<script type="text/javascript">window.location.href = "/users/view/'.$u['User']['id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "/users/view/'.Auth::getUser()['id'].'";</script>';
 	}
 ?>

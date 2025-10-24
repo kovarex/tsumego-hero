@@ -157,7 +157,7 @@
 		</tr>
 		<tr>
 			<td>Rating:</td>
-			<td><?php echo $user['User']['elo_rating_mode']; ?></td>
+			<td><?php echo Auth::getWithDefault('elo_rating_mode', 0); ?></td>
 		</tr>
 		<tr>
 			<td>Highest rank:</td>

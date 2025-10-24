@@ -13,7 +13,7 @@ class Auth {
 			return;
 		}
 
-		Auth::$user = ClassRegistry::init('User')->findById(CakeSession::read('loggedInUserID'))['User'];
+		Auth::$user = ClassRegistry::init('User')->findById((int) CakeSession::read('loggedInUserID'))['User'];
 	}
 
 	public static function isLoggedIn(): bool {
@@ -21,10 +21,13 @@ class Auth {
 	}
 
 	public static function getUserID(): int {
-		return Auth::getUser() ? Auth::getUser()['id'] : 0;
+		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
-	public static function &getUser(): ?array {
+	public static function &getUser() {
+		if (!Auth::$user) {
+			die("Accessing user for writing when null");
+		}
 		return Auth::$user;
 	}
 
@@ -33,21 +36,28 @@ class Auth {
 	}
 
 	public static function hasPremium(): bool {
-		return Auth::getUser() && Auth::getUser()['premium'];
+		return Auth::isLoggedIn() && Auth::getUser()['premium'];
 	}
 
 	public static function premiumLevel(): int {
-		return Auth::getUser() ? Auth::getUser()['premium'] : 0;
+		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
 	public static function saveUser() {
-		assert(Auth::getUser());
+		assert(Auth::isLoggedIn());
 		ClassRegistry::init('User')->save(Auth::getUser());
 	}
 
 	public static function logout() {
 		CakeSession::delete('loggedInUserID');
 		Auth::$user = null;
+	}
+
+	public static function getWithDefault($key, $default) {
+		if (!Auth::isLoggedIn()) {
+			return $default;
+		}
+		return Auth::getUser()[$key];
 	}
 
 	private static $user = null;

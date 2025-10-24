@@ -1405,8 +1405,8 @@ class AppController extends Controller {
 
 		return $u['User']['name'];
 	}
-	protected function checkPicture($ser) {
-		if (substr($ser['name'], 0, 3) == 'g__' && $user['external_id'] != null) {
+	protected function checkPicture($user) {
+		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null) {
 			return '<img class="google-profile-image" src="/img/google/' . $user['picture'] . '">' . substr($user['name'], 3);
 		}
 
@@ -3721,12 +3721,12 @@ class AppController extends Controller {
 
 		if (isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0') {
 			$lightDark = $_COOKIE['lightDark'];
-			if (Auth::getUser()) {
+			if (Auth::isLoggedIn()) {
 				// Convert string to integer for database storage
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
 				Auth::getUser()['lastLight'] = $lightDarkInt;
 			}
-		} elseif (Auth::getUser()) {
+		} elseif (Auth::isLoggedIn()) {
 			if (Auth::getUser()['lastLight'] == 0
 			|| Auth::getUser()['lastLight'] == 1) {
 				$lightDark = 'light';
@@ -3735,8 +3735,8 @@ class AppController extends Controller {
 			}
 		}
 
-		if (Auth::getUser()) {
-			$this->handleSearchSettings(Auth::getUser()['id']);
+		if (Auth::isLoggedIn()) {
+			$this->handleSearchSettings(Auth::getUserID());
 			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 			if (!$favx) {
 				$favx = [];
@@ -3782,7 +3782,7 @@ class AppController extends Controller {
 			}
 		}
 
-		if (Auth::getUser()['mode'] == 2) {
+		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2) {
 			$mode = 2;
 		}
 
@@ -3813,7 +3813,7 @@ class AppController extends Controller {
 		}
 		$correctSolveAttempt = false;
 
-		if (Auth::getUser()) {
+		if (Auth::isLoggedIn()) {
 			if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0) {
 				Auth::getUser()['revelation'] -= 1;
 			}
@@ -3966,7 +3966,7 @@ class AppController extends Controller {
 				$this->Session->write('texture', $_COOKIE['texture']);
 				$this->set('textureCookies', $textureCookies);
 			} else {
-				if (Auth::getUser() != null) {
+				if (Auth::isLoggedIn()) {
 					$this->Session->write('texture', Auth::getUser()['texture']);
 				}
 				$textureCookies = $this->Session->read('texture');
@@ -3989,8 +3989,8 @@ class AppController extends Controller {
 					$enabledBoards[$i + 1] = '';
 				}
 			}
-			if (Auth::getUser()) {
-				$this->User->save(Auth::getUser());
+			if (Auth::isLoggedIn()) {
+				Auth::saveUser();
 			}
 		}
 
@@ -4070,9 +4070,10 @@ class AppController extends Controller {
 		}
 
 		$nextDay = new DateTime('tomorrow');
-		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
-
-		$this->set('user', Auth::getUser());
+		if (Auth::isLoggedIn()) {
+			Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+			$this->set('user', Auth::getUser());
+		}
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
@@ -4092,7 +4093,7 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	public function afterFilter() {
-		if (!Auth::getUser()) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 

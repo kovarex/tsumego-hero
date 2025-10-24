@@ -446,7 +446,6 @@ class SetsController extends AppController {
 		$search2 = $searchPatameters[3] ?? [];
 		$search3 = $searchPatameters[4] ?? [];
 
-		$hasPremium = Auth::hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 		if (!$swp) {
 			$swp = [];
@@ -465,7 +464,7 @@ class SetsController extends AppController {
 		}
 		$setsRawCount = count($setsRaw);
 		for ($i = 0; $i < $setsRawCount; $i++) {
-			if ($hasPremium || $setsRaw[$i]['Set']['premium'] != 1) {
+			if (Auth::hasPremium() || $setsRaw[$i]['Set']['premium'] != 1) {
 				array_push($setTiles, $setsRaw[$i]['Set']['title']);
 			}
 		}
@@ -547,7 +546,7 @@ class SetsController extends AppController {
 			}
 		}
 		if (Auth::isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser(Auth::getUserID());
+			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser();
 		} else {
 			$noLoginUts = [];
 			$noLoginCount = count($this->Session->read('noLogin') ?? []);
@@ -645,7 +644,7 @@ class SetsController extends AppController {
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
 				}
-				if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || $hasPremium) {
+				if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || Auth::hasPremium()) {
 					$searchCounter += $setAmount;
 				}
 
@@ -744,7 +743,7 @@ class SetsController extends AppController {
 					$ftFrom['elo_rating_mode >='] = 50;
 				}
 				$notPremiumArray = [];
-				if (!$hasPremium) {
+				if (!Auth::hasPremium()) {
 					$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
 				}
 				$ts1 = $this->Tsumego->find('all', [
@@ -851,7 +850,7 @@ class SetsController extends AppController {
 							array_push($currentIds, $tagsx[$j]['Tag']['tsumego_id']);
 						}
 
-						if (!$hasPremium) {
+						if (!Auth::hasPremium()) {
 							$currentIdsNew = [];
 							$pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $currentIds]]);
 							if (!$pTest) {
@@ -956,7 +955,7 @@ class SetsController extends AppController {
 		$this->set('search3', $search3);
 		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('searchCounter', $searchCounter);
-		$this->set('hasPremium', $hasPremium);
+		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('queryRefresh', $queryRefresh);
 	}
 
@@ -1144,7 +1143,6 @@ class SetsController extends AppController {
 		$pdCounter = 0;
 		$acS = null;
 		$acA = null;
-		$hasPremium = Auth::hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 		if (!$swp) {
 			$swp = [];
@@ -1288,7 +1286,7 @@ class SetsController extends AppController {
 
 				$set['Set']['difficulty'] = $elo;
 				$notPremiumArray = [];
-				if (!$hasPremium) {
+				if (!Auth::hasPremium()) {
 					$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
 				}
 				$ts = $this->Tsumego->find('all', [
@@ -1391,7 +1389,7 @@ class SetsController extends AppController {
 					array_push($tagIds, $tagsx[$i]['Tag']['tsumego_id']);
 				}
 
-				if (!$hasPremium) {
+				if (!Auth::hasPremium()) {
 					$currentIdsNew = [];
 					$pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $tagIds]]);
 					if (!$pTest) {
@@ -1435,7 +1433,7 @@ class SetsController extends AppController {
 				$tsCount = count($ts);
 				for ($i = 0; $i < $tsCount; $i++) {
 					$ts[$i]['Tsumego']['num'] = $i + 1;
-					if (in_array($ts[$i]['Tsumego']['set_id'], $setsWithPremium) && !$hasPremium) {
+					if (in_array($ts[$i]['Tsumego']['set_id'], $setsWithPremium) && !Auth::hasPremium()) {
 						$ts[$i]['Tsumego']['locked'] = true;
 					} else {
 						$ts[$i]['Tsumego']['locked'] = false;
@@ -2460,7 +2458,7 @@ class SetsController extends AppController {
 		}
 		*/
 		if (Auth::isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser(Auth::getUserID());
+			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser();
 		}
 
 		$setsCount = count($sets);

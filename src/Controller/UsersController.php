@@ -4883,7 +4883,7 @@ Joschka Zimdars';
 
 		if (!empty($this->data)) {
 			if (isset($this->data['User']['delete'])) {
-				if (password_check($this->data['User']['delete'], Auth::getUser()['password_hash'])) {
+				if (password_verify($this->data['User']['delete'], Auth::getUser()['password_hash'])) {
 					Auth::getUser()['dbstorage'] = 1111;
 					Auth::saveUser();
 					$redirect = true;
@@ -4911,7 +4911,7 @@ Joschka Zimdars';
 
 		if (!empty($this->data)) {
 			if (isset($this->data['User']['demote'])) {
-				if (password_check($this->data['User']['demote'], Auth::getUser()['password_hash'])) {
+				if (password_verify($this->data['User']['demote'], Auth::getUser()['password_hash'])) {
 					Auth::getUser()['isAdmin'] = 0;
 					Auth::saveUser();
 					$redirect = true;

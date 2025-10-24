@@ -115,8 +115,10 @@
 				else if($set['Set']['image']=='sa-resistance.jpg') $saNum=3;
 				else $saNum=11;
 
-				if($saNum+$user['User']['premium']>10) $accessOutput = $tierReward[10];
-				else $accessOutput = $tierReward[$saNum+$user['User']['premium']];
+				if($saNum+Auth::premiumLevel() > 10)
+          $accessOutput = $tierReward[10];
+				else
+          $accessOutput = $tierReward[$saNum + Auth::premiumLevel()];
 
 				if($saNum==11)
 					$accessOutput = '';

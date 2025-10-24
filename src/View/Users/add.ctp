@@ -1,12 +1,6 @@
-<?php
-	if(Auth::isLoggedIn()){
-		//echo '<script type="text/javascript">window.location.href = "/sets";</script>';
-	}
-?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <div id="login-box" class="users form">
   <div class="left signin">
-		<?php //echo $this->Session->flash(); ?>
 		<h1>Sign up</h1>
 		<?php echo $this->Form->create('User');?>
 		<?php echo $this->Form->input('name', array('label' => '', 'placeholder' => 'Name')); ?>
