@@ -1,7 +1,7 @@
 	<div align="center">
 	<?php if(
 		!$this->isLoggedIn()
-		|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
+		|| $this->isLoggedIn() && $this->$this->isPremium()<1
 	)
 		$upgrade = true;
 	else

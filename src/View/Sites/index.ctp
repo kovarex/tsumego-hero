@@ -275,7 +275,7 @@
 		</div>
 
 			<?php
-			if($this->Session->check('loggedInUser')){
+			if($this->isLoggedIn()){
 			if(false){
 			?>
 			<div id="sandboxVolunteers2">
@@ -376,7 +376,7 @@
 			if(!$this->Session->check('lastVisit')) $this->Session->write('lastVisit', 15352);
 			$modeActions = '';
 			$modeActions2 = 'class="modeboxes"';
-			if($this->Session->check('loggedInUser') && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
+			if($this->isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
 			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper"></div>';
@@ -411,7 +411,7 @@
 		
 		<?php if(
 			!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')==0
+			|| $this->isLoggedIn() && $this->$this->isPremium()==0
 		){ ?>
 			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
 			<div class="new1">

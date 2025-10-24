@@ -116,7 +116,7 @@
       <div align="center">
         <div class="reward-element-points">120 points</div>
         <div class="reward-element-description">Premium account</div>
-          <?php if($this->Session->read('loggedInUser.User.premium')==0){ ?>
+          <?php if($this->$this->isPremium()==0){ ?>
             <?php if($goals[3]){ ?>
               <a href="#">
                 <img id="nr4" src="/img/hpP.png" title="Premium account"

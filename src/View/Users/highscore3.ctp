@@ -13,7 +13,7 @@
 		<a class="new-button buttonx-current" href="/users/highscore3">time</a>
 		<a class="new-button new-buttonx" href="/users/achievements">achievements</a>
 		<a class="new-button new-buttonx" href="/users/leaderboard">daily</a>
-		<?php if($this->Session->check('loggedInUser')){
+		<?php if($this->isLoggedIn()){
 		$lastMode = $this->Session->read('loggedInUser.User.lastMode')-1;
 		 }else{
 			$lastMode = 2;

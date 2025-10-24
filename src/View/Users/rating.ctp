@@ -164,7 +164,7 @@
 		print_r($users2);
 		echo '</pre>';
 	}
-	if($this->Session->check('loggedInUser')){if($this->getLoggedInUserID()==72){
+	if($this->isLoggedIn()){if($this->getLoggedInUserID()==72){
 		echo '<pre>';
 		print_r($users);
 		echo '</pre>';

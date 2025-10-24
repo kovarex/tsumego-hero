@@ -1,6 +1,6 @@
 <script src ="/js/previewBoard.js"></script>
 <?php 
-	if(!$this->Session->check('loggedInUser'))
+	if(!$this->isLoggedIn())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 
 	$empty = false;
@@ -31,7 +31,7 @@
 ?>
 
 <div class="imp">
-<?php if($this->Session->read('loggedInUser.User.isAdmin') > 0){ ?>
+<?php if($this->isAdmin() > 0){ ?>
 	<div class="admin-panel-main-page" style="top:10px;left:540px">
 		<ul>
 			<li><a class="adminLink2" href="/users/adminstats">Activities</a></li>
@@ -47,7 +47,7 @@
 				<br>
 				<?php 
 					if(!$empty){
-						if($this->Session->read('loggedInUser.User.isAdmin')==1){
+						if($this->isAdmin()==1){
 							if(!isset($unresolved)){ $unresolved = 'false'; $unresolvedSet = 'false'; }
 							else $unresolvedSet = 'true';
 							if($unresolvedSet == 'false'){
@@ -83,7 +83,7 @@
 							if(count($comments)==11) echo '<a href="/comments?'.$unresolvedSet.$filter1.'direction=next&index='.$num1.'&comment-id='.$idToken1.$moreparams.'" class="new-button" >next page</a>';
 							else echo '<a class="new-button-inactive" >next page</a>';
 						}
-						if($this->Session->read('loggedInUser.User.isAdmin')==1){
+						if($this->isAdmin()==1){
 							if($unresolved=='false'){
 								echo '<div style="float:right;">
 									<a href="/comments?unresolved=true" class="new-button2">all</a>
@@ -111,7 +111,7 @@
 					if($j<100) $display = " ";
 					else $display = 'style="display:none;"';
 					echo '<div class="sandboxComment" id="comment'.$j.'" '.$display.'>';
-					if($comments[$j]['Comment']['solved']==1 || $this->Session->read('loggedInUser.User.isAdmin')>0){
+					if($comments[$j]['Comment']['solved']==1 || $this->isAdmin()>0){
 						$commentColor = 'commentBox1';
 						for($a=0; $a<count($admins); $a++)
 							if($comments[$j]['Comment']['user_name']==$admins[$a]['User']['name'])

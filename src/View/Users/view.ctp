@@ -23,10 +23,10 @@
 		<table class="userTopTable1" border="0">
 		<tr>
 		<td>
-			<?php if($this->Session->read('loggedInUser.User.premium') == 2){ ?>
+			<?php if($this->$this->isPremium() == 2){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px"></div>
-			<?php }else if($this->Session->read('loggedInUser.User.premium') == 1){ ?>
+			<?php }else if($this->$this->isPremium() == 1){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px"></div>
 			<?php }else{ ?>
@@ -357,7 +357,7 @@
 					echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
 				}
 				if($this->isLoggedIn()){
-					if($this->Session->read('loggedInUser.User.isAdmin')!=0){
+					if($this->isAdmin()!=0){
 						echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
 					}
 				}

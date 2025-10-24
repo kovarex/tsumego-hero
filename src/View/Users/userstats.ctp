@@ -1,6 +1,6 @@
 <?php
-	if($this->Session->check('loggedInUser')){
-		if($this->Session->read('loggedInUser.User.isAdmin')==0){
+	if($this->isLoggedIn()){
+		if($this->isAdmin()==0){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
 	}else{

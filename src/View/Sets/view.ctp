@@ -8,7 +8,7 @@
 
 	if($set['Set']['premium']==1){
 		if(!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
+			|| $this->isLoggedIn() && $this->$this->isPremium()<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -69,10 +69,10 @@
 
 		if($set['Set']['public']==0){
 			if($this->isLoggedIn()){
-				if($this->Session->read('loggedInUser.User.isAdmin')>0){
+				if($this->isAdmin()>0){
 					echo '<div align="left" width="100%">';
 					echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>';
-					if($this->Session->check('loggedInUser')){
+					if($this->isLoggedIn()){
 						if($this->getLoggedInUserID()==72 && $set['Set']['id']==161){
 							if($josekiOrder==0) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=order">show order</a>';
 							elseif($josekiOrder==1) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=num">show num</a>';
@@ -296,7 +296,7 @@
 			<?php
 			//if($set['Set']['public']==0){
 			if(true){
-				if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+				if($this->isAdmin()>=1){
 					echo '<tr><td colspan="2">
 					<div class="admin-panel">
 					<div align="center"><h1> Admin Panel </h1></div>

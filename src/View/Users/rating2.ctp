@@ -10,7 +10,7 @@
 		<br>
 		<a class="new-button new-buttonx" href="/users/highscore">level</a>
 		<a class="new-button new-buttonx" href="/users/rating">rating</a>
-		<?php if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUser.User.premium')>1){ ?>
+		<?php if($this->isLoggedIn()){ if($this->$this->isPremium()>1){ ?>
 		<a class="new-button new-buttonx" href="/users/leaderboard">daily</a>
 		<?php }} ?>
 		<br><br>
@@ -156,7 +156,7 @@
 		print_r($users2);
 		echo '</pre>';
 	}
-	if($this->Session->check('loggedInUser')){if($this->getLoggedInUserID()==72){
+	if($this->isLoggedIn()){if($this->getLoggedInUserID()==72){
 		echo '<pre>';
 		print_r($users);
 		echo '</pre>';

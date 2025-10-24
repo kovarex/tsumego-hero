@@ -2,7 +2,7 @@
 	<?php
 	
 	
-		if($this->Session->check('loggedInUser')){
+		if($this->isLoggedIn()){
 			if($this->Session->read('loggedInUser.User.completed')!=1){
 				echo '<script type="text/javascript">window.location.href = "/";</script>';
 			}	
@@ -18,7 +18,7 @@
 		$active4 = '';
 		
 		
-		if($this->Session->check('loggedInUser')){
+		if($this->isLoggedIn()){
 			if($this->getLoggedInUserID()==72){
 				//echo '<pre>';
 				//print_r($test1);

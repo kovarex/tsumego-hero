@@ -1469,7 +1469,7 @@ class TsumegosController extends AppController {
 					}
 
 					$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-					if ($this->Session->check('loggedInUser') && !$this->Session->check('noLogin')) {
+					if ($this->isLoggedIn() && !$this->Session->check('noLogin')) {
 						if (!isset($utPre['TsumegoStatus']['status'])) {
 							$utPre['TsumegoStatus']['status'] = 'V';
 						}
@@ -1831,7 +1831,7 @@ class TsumegosController extends AppController {
 					$sgf['Sgf']['sgf'] = $requestProblem;
 					$sgf['Sgf']['user_id'] = $this->getLoggedInUserID();
 					$sgf['Sgf']['tsumego_id'] = $id;
-					if ($this->Session->read('loggedInUser.User.isAdmin') > 0) {
+					if ($this->isAdmin() > 0) {
 						$sgf['Sgf']['version'] = $this->createNewVersionNumber($lastV, $this->getLoggedInUserID());
 					} else {
 						$sgf['Sgf']['version'] = 0;
@@ -1839,7 +1839,7 @@ class TsumegosController extends AppController {
 					$this->Sgf->save($sgf);
 					$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 					$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
-					if ($this->Session->read('loggedInUser.User.isAdmin') > 0) {
+					if ($this->isAdmin() > 0) {
 						$this->AdminActivity->create();
 						$adminActivity = [];
 						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
@@ -2686,7 +2686,7 @@ class TsumegosController extends AppController {
 				$checkBSize = $i;
 			}
 		}
-		if (!$this->Session->check('loggedInUser')) {
+		if (!$this->isLoggedIn()) {
 			$this->user['User'] = $noUser;
 		}
 
@@ -3018,7 +3018,7 @@ class TsumegosController extends AppController {
 				$isAllowedToContribute = true;
 			}
 
-			if ($this->Session->read('loggedInUser.User.isAdmin') > 0) {
+			if ($this->isAdmin() > 0) {
 				$isAllowedToContribute2 = true;
 			} else {
 				$tagsToCheck = $this->Tag->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => $this->getLoggedInUserID()]]);

@@ -84,10 +84,10 @@
 				if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
 				else $lv = '15352';
 
-				if($this->Session->check('loggedInUser')){
-					if($this->Session->read('loggedInUser.User.premium')>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
+				if($this->isLoggedIn()){
+					if($this->$this->isPremium()>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
 					else $sand = '';
-					if($this->Session->read('loggedInUser.User.premium')>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
+					if($this->$this->isPremium()>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
 					else $leaderboard = '';
 				}else{
 					$sand = '';
@@ -155,13 +155,13 @@
 					$nextMode['Tsumego']['id'] = 15352;
 				}
 				if($this->isLoggedIn()){
-					if($this->Session->read('loggedInUser.User.isAdmin')==0) $discussFilter = '';
+					if($this->isAdmin()==0) $discussFilter = '';
 					else $discussFilter = '?filter=false';
-					if($this->Session->read('loggedInUser.User.completed')==1 || $this->Session->read('loggedInUser.User.premium')>=1){
+					if($this->Session->read('loggedInUser.User.completed')==1 || $this->$this->isPremium()>=1){
 					}else{
 						$refreshLinkToSandboxBackup = '<a id="refreshLinkToSandbox"></a>';
 					}
-					if($this->Session->read('loggedInUser.User.premium')>=1){
+					if($this->$this->isPremium()>=1){
 					}else{
 						$refreshLinkToLeaderboardBackup = '<a id="refreshLinkToLeaderboard"></a>';
 					}
@@ -182,12 +182,12 @@
 					echo '</li>';
 					echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
 					if($this->isLoggedIn()){
-						if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1 || $hasFavs){
+						if($this->$this->isPremium()>=1 || $this->isAdmin()>=1 || $hasFavs){
 							echo '<ul class="newMenuLi2">';
-							if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1)
+							if($this->$this->isPremium()>=1 || $this->isAdmin()>=1)
 								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/beta">Sandbox</a></li>';
 							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/1">Favorites</a></li>';
-							if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+							if($this->isAdmin()>=1){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
@@ -368,7 +368,7 @@
 		<div class="footer-space"></div>
 		<?php if(
 			!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
+			|| $this->isLoggedIn() && $this->$this->isPremium()<1
 		){ ?>
 			<div class="footer-element">
 				<a href="/users/donate">
