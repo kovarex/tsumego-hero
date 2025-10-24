@@ -2727,7 +2727,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 			$this->User->create();
 			if ($this->User->save($userData, true)) {
-				if ($this->validateLogin($this->data)) {
+				if ($this->validateLogin($this->data, $userData)) {
 					$this->Session->setFlash(__('Registration successful.', true));
 
 					return $this->redirect(['controller' => 'sets', 'action' => 'index']);
@@ -3733,18 +3733,6 @@ Joschka Zimdars';
 		return password_verify($data['User']['password'], $user['User']['password_hash']);
 	}
 
-	private function validateLogin2($data) {
-		$u = $this->User->findByEmail($data['User']['email']);
-		if (!$u || !isset($u['User']['pw'])) {
-			return false;
-		}
-		if ($this->tinkerDecode($u['User']['pw'], 1) == $data['User']['pw']) {
-			return true;
-		}
-
-		return false;
-	}
-
 	private function tinkerEncode($string, $key) {
 		if (!is_string($string)) {
 			return '';
@@ -3767,27 +3755,27 @@ Joschka Zimdars';
 		return $hash;
 	}
 
-	private function tinkerDecode($string, $key) {
-		if (!is_string($string)) {
-			return '';
-		}
-		$j = 1.0;
-		$hash = '';
-		$key = sha1((string) $key);
-		$strLen = strlen($string);
-		$keyLen = strlen($key);
-		for ($i = 0; $i < $strLen; $i += 2) {
-			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
-			if ($j == $keyLen) {
-				$j = 0;
+	/*	private function tinkerDecode($string, $key) {
+			if (!is_string($string)) {
+				return '';
 			}
-			$ordKey = ord(substr($key, $j, 1));
-			$j++;
-			$hash .= chr($ordStr - $ordKey);
-		}
+			$j = 1.0;
+			$hash = '';
+			$key = sha1((string) $key);
+			$strLen = strlen($string);
+			$keyLen = strlen($key);
+			for ($i = 0; $i < $strLen; $i += 2) {
+				$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
+				if ($j == $keyLen) {
+					$j = 0;
+				}
+				$ordKey = ord(substr($key, $j, 1));
+				$j++;
+				$hash .= chr($ordStr - $ordKey);
+			}
 
-		return $hash;
-	}
+			return $hash;
+		}*/
 
 	/**
 	 * @return void
