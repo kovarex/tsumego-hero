@@ -2691,6 +2691,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	}
 
 	public function login() {
+		if (!$this->data['User']) {
+			return;
+		}
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user) {
 			$this->Flash->set('Unknown user');
