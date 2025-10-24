@@ -85,7 +85,7 @@
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
 		if(!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->$this->isPremium()<1
+			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
@@ -98,7 +98,7 @@
 	}
 	if($t['Tsumego']['premium']==1){
 		if(!$this->isLoggedIn()
-			|| $this->isLoggedIn() && $this->$this->isPremium()<1
+			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -313,7 +313,7 @@
 				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
 			}
 		}
-		if($this->isAdmin()>0){
+		if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		?>
 		<a class="modify-description" href="#">(Edit)</a>
 		<div class="modify-description-panel">
@@ -550,7 +550,7 @@
 		if($firstRanks==0){
 			$makeProposal = '';
 			$proposalSentColor = '';
-			if($this->isAdmin() > 0)
+			if($this->Session->read('loggedInUser.User.isAdmin') > 0)
 				$makeProposal = 'Open';
 			else{
 				if(!$hasSgfProposal){
@@ -609,7 +609,7 @@
 			else
 				$adHighlight = '';
 
-			if($this->isAdmin()>=1){
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 					echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
 					echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
 					echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
@@ -662,7 +662,7 @@
 							$scoreEstYes = 'checked="checked"';
 						}
 					}
-					if($this->isAdmin()>=1){
+					if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 					echo '<div id="msg4">
 							<br>
 							<form action="" method="POST" enctype="multipart/form-data">
@@ -783,7 +783,7 @@
 					}
 				}
 			}else echo '<br>';
-			//if($this->$this->isPremium()>=1){
+			//if($this->Session->read('loggedInUser.User.premium')>=1){
 			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
 			$allowed = true;
 			if($this->isLoggedIn()){
@@ -804,7 +804,7 @@
 				echo $this->Form->input('message', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 			echo $this->Form->input('position', array('label' => '', 'type' => 'hidden'));
 
-			if($this->isAdmin()>=1)
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1)
 				echo $this->Form->input('status', array('type' => 'hidden', 'value' => 97));
 
 			echo $this->Form->end('Submit');
@@ -904,7 +904,7 @@
 					if($this->getLoggedInUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($this->isAdmin()==1){
+					if($this->Session->read('loggedInUser.User.isAdmin')==1){
 						if($showComment[$i]['Comment']['status']==0){
 							//echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
 							echo '<br>';
@@ -1035,7 +1035,7 @@
 					if($this->getLoggedInUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($this->isAdmin()==1){
+					if($this->Session->read('loggedInUser.User.isAdmin')==1){
 						if($showComment[$i]['Comment']['status']==0) echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Answer</a>';
 						else echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
 					}
@@ -1367,7 +1367,7 @@
 	}}
 
 	if($this->isLoggedIn()){
-		if($this->isAdmin()>0){
+		if($this->Session->read('loggedInUser.User.isAdmin')>0){
 			echo '$(".modify-description-panel").hide();';
 		}
 		echo 'var besogoUserId = '.$this->getLoggedInUserID().';';
@@ -1752,7 +1752,7 @@
 	if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2'){
 		echo 'var showCommentSpace = true;';
 	}else echo 'var showCommentSpace = false;';
-	if($this->isAdmin()>0){
+	if($this->Session->read('loggedInUser.User.isAdmin')>0){
 		echo 'var showCommentSpace = true;';
 		echo '$("#show5").css("display", "inline-block");';
 	}
@@ -1872,8 +1872,8 @@
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 		}
-		if($this->isLoggedIn()){
-			if($this->isAdmin()>=1){
+		if($this->Session->check('loggedInUser')){
+			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 				if($isSandbox){
 					//$reviewEnabled = true;
 					//echo 'reviewEnabled = true;';
@@ -2337,7 +2337,7 @@
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if($this->isLoggedIn()){if($this->isAdmin()>=1){if(!$requestSolution){ ?>
+		<?php if($this->isLoggedIn()){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
@@ -2407,7 +2407,7 @@
 		$("#showx7x").css("display", "inline-block");
 		$("#showx5").css("display", "inline-block");
 		$("#showx5").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
-		<?php if($this->isAdmin()>0){ ?>
+		<?php if($this->Session->read('loggedInUser.User.isAdmin')>0){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
 		<?php }else{
@@ -3285,7 +3285,7 @@
 
 	  options.panels = "tree+control";
 	  <?php
-	  if($this->isAdmin()>0) echo 'options.panels = "tree+control+tool+comment+file";';
+	  if($this->Session->read('loggedInUser.User.isAdmin')>0) echo 'options.panels = "tree+control+tool+comment+file";';
 	  ?>
 	  options.tsumegoPlayTool = 'auto';
 	  options.realstones = true;
@@ -3396,7 +3396,7 @@
     options.reviewMode = false;
     options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
-		//if($this->isLoggedIn()){ if($this->getLoggedInUserID()==72){ echo 'options.reviewEnabled = true;'; }}
+		//if($this->Session->check('loggedInUser')){ if($this->getLoggedInUserID()==72){ echo 'options.reviewEnabled = true;'; }}
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
 	?>

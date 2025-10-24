@@ -8,7 +8,7 @@
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>
 	<p>Created by <?php echo $tn['TagName']['user'] ?>.</p>
-	<?php if($this->isAdmin()>0){ ?>
+	<?php if($this->Session->read('loggedInUser.User.isAdmin')>0){ ?>
 		<a href="/tag_names/edit/<?php echo $tn['TagName']['id']; ?>">Edit</a> 
 		<?php if($this->getLoggedInUserID()==72){ ?>
 			| 

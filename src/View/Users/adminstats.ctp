@@ -1,6 +1,6 @@
 <script src ="/js/previewBoard.js"></script>
 <?php
-	if(!$this->isLoggedIn() || $this->isAdmin()==0)
+	if(!$this->isLoggedIn() || $this->Session->read('loggedInUser.User.isAdmin')==0)
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	
 	echo '<div class="homeRight" style="width:40%">';

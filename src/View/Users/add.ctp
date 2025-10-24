@@ -1,5 +1,5 @@
 <?php
-	if($this->isLoggedIn()){
+	if($this->Session->check('loggedInUser')){
 		//echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 	}
 ?>
