@@ -84,7 +84,7 @@
 				if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
 				else $lv = '15352';
 
-				if($this->Session->check('loggedInUser')){
+				if($this->Session->check('loggedInUserID')){
 					if($this->Session->read('loggedInUser.User.premium')>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
 					else $sand = '';
 					if($this->Session->read('loggedInUser.User.premium')>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';

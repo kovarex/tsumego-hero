@@ -1469,7 +1469,7 @@ class TsumegosController extends AppController {
 					}
 
 					$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-					if ($this->Session->check('loggedInUser') && !$this->Session->check('noLogin')) {
+					if ($this->Session->check('loggedInUserID') && !$this->Session->check('noLogin')) {
 						if (!isset($utPre['TsumegoStatus']['status'])) {
 							$utPre['TsumegoStatus']['status'] = 'V';
 						}
@@ -2686,7 +2686,7 @@ class TsumegosController extends AppController {
 				$checkBSize = $i;
 			}
 		}
-		if (!$this->Session->check('loggedInUser')) {
+		if (!$this->Session->check('loggedInUserID')) {
 			$this->user['User'] = $noUser;
 		}
 

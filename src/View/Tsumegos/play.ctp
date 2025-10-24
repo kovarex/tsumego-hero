@@ -1872,7 +1872,7 @@
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 		}
-		if($this->Session->check('loggedInUser')){
+		if($this->Session->check('loggedInUserID')){
 			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
 				if($isSandbox){
 					//$reviewEnabled = true;
@@ -3396,7 +3396,7 @@
     options.reviewMode = false;
     options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
-		//if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUserID')==72){ echo 'options.reviewEnabled = true;'; }}
+		//if($this->Session->check('loggedInUserID')){ if($this->Session->read('loggedInUserID')==72){ echo 'options.reviewEnabled = true;'; }}
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
 	?>

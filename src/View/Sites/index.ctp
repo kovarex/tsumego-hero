@@ -275,7 +275,7 @@
 		</div>
 
 			<?php
-			if($this->Session->check('loggedInUser')){
+			if($this->Session->check('loggedInUserID')){
 			if(false){
 			?>
 			<div id="sandboxVolunteers2">
@@ -376,7 +376,7 @@
 			if(!$this->Session->check('lastVisit')) $this->Session->write('lastVisit', 15352);
 			$modeActions = '';
 			$modeActions2 = 'class="modeboxes"';
-			if($this->Session->check('loggedInUser') && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
+			if($this->Session->check('loggedInUserID') && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
 			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper"></div>';

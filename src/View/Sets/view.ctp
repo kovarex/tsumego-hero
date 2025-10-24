@@ -72,7 +72,7 @@
 				if($this->Session->read('loggedInUser.User.isAdmin')>0){
 					echo '<div align="left" width="100%">';
 					echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>';
-					if($this->Session->check('loggedInUser')){
+					if($this->Session->check('loggedInUserID')){
 						if($this->Session->read('loggedInUserID')==72 && $set['Set']['id']==161){
 							if($josekiOrder==0) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=order">show order</a>';
 							elseif($josekiOrder==1) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=num">show num</a>';

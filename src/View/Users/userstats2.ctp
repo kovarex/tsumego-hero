@@ -1,5 +1,5 @@
 <?php
-	if($this->Session->check('loggedInUser')){
+	if($this->Session->check('loggedInUserID')){
 		if($this->Session->read('loggedInUserID')!=72 && $this->Session->read('loggedInUserID')!=1543 && $this->Session->read('loggedInUserID')!=1565){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}	

@@ -1,6 +1,6 @@
 <script src ="/js/previewBoard.js"></script>
 <?php 
-	if(!$this->Session->check('loggedInUser'))
+	if(!$this->Session->check('loggedInUserID'))
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 
 	$empty = false;
