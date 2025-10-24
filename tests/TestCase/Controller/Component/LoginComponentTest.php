@@ -5,8 +5,18 @@ class LoginComponentTest extends ControllerTestCase {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
-		$this->assertTrue(CakeSession::read('loggedInUserID') == null);
+		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'test']], 'method' => 'POST']);
-		$this->assertTrue(CakeSession::read('loggedInUserID') != null);
+		$this->assertNotNull(CakeSession::read('loggedInUserID'));
+	}
+
+	public function testLogout(): void {
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotEmpty($user);
+		CakeSession::write('loggedInUserID', $user['User']['id']);
+
+		$this->assertNotNull(CakeSession::read('loggedInUserID'));
+		$this->testAction('users/logout/');
+		$this->assertNull(CakeSession::read('loggedInUserID'));
 	}
 }

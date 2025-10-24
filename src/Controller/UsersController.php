@@ -3701,7 +3701,7 @@ Joschka Zimdars';
 	 * @return void
 	 */
 	public function logout() {
-		$this->Session->delete('loggedInUser');
+		$this->Session->delete('loggedInUserID');
 	}
 
 	public function delete($id) {
