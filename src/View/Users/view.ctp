@@ -15,7 +15,7 @@
 			
 		</div>
 		<div class="user-header2">
-			<a href="/tag_names/user/<?php echo $this->Session->read('loggedInUserID'); ?>" class="new-button-time">contributions</a>
+			<a href="/tag_names/user/<?php echo Auth::getUserID(); ?>" class="new-button-time">contributions</a>
 		</div>
 	</div>
 	<div class="userMain1">
@@ -23,10 +23,10 @@
 		<table class="userTopTable1" border="0">
 		<tr>
 		<td>
-			<?php if($this->Session->read('loggedInUser.User.premium') == 2){ ?>
+			<?php if(Auth::premiumLevel() == 2){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px"></div>
-			<?php }else if($this->Session->read('loggedInUser.User.premium') == 1){ ?>
+			<?php }else if(Auth::premiumLevel() == 1){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px"></div>
 			<?php }else{ ?>
@@ -243,7 +243,7 @@
 							<div id="chart2"></div>
 						</div>
 						<div align="center">
-							<a href="/tsumego_rating_attempts/user/<?php echo $this->Session->read('loggedInUserID'); ?>">Show rating mode history</a>
+							<a href="/tsumego_rating_attempts/user/<?php echo Auth::getUserID(); ?>">Show rating mode history</a>
 						</div>
 					</div>
 					<div id="userShowTime1">
@@ -300,7 +300,7 @@
 							<div id="chart22"></div>
 						</div>
 						<div align="center">
-							<a href="/tsumego_rating_attempts/user/<?php echo $this->Session->read('loggedInUserID'); ?>">Show rating mode history</a>
+							<a href="/tsumego_rating_attempts/user/<?php echo Auth::getUserID(); ?>">Show rating mode history</a>
 						</div>
 					</div>
 					<div id="userShowTime2">
@@ -356,8 +356,8 @@
 					echo '<p style="color:#d63a49;">You have requested account deletion.&nbsp;';
 					echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
 				}
-				if($this->Session->check('loggedInUserID')){
-					if($this->Session->read('loggedInUser.User.isAdmin')!=0){
+				if(Auth::isLoggedIn()){
+					if(Auth::isAdmin()){
 						echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
 					}
 				}
@@ -499,7 +499,7 @@
 	
 	function delUts(){
 		var dNum = "<?php echo $dNum; ?>";
-		var suid = "<?php echo $this->Session->read('loggedInUserID'); ?>";
+		var suid = "<?php echo Auth::getUserID(); ?>";
 		var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
 		if(confirmed) window.location.href = "/users/view/"+suid+"?delete-uts=true";
 	}

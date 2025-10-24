@@ -29,275 +29,6 @@ class UsersController extends AppController {
 		$this->loadModel('Duplicate');
 		$this->loadModel('PublishDate');
 		$this->loadModel('TagName');
-		/*
-		$setFrom = 259;
-		$setTo = 263;
-		$step = 10;
-		$numFrom = 111;
-		$startDay = 1;
-		$endDay = 20;
-		$month = '09';
-
-		$numTo = $numFrom + $step - 1;
-		while ($startDay <= $endDay) {
-			$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array(
-				'set_id' => $setFrom,
-				'num >=' => $numFrom,
-				'num <=' => $numTo
-			)));
-			$scCount = count($sc);
-			for ($i=0; $i<$scCount; $i++) {
-				if ($startDay>9) $digit = '';
-				else $digit = '0';
-				$s = array();
-				$s['Schedule']['published'] = '0';
-				$s['Schedule']['date'] = '2025-'.$month.'-'.$digit.$startDay;
-				$s['Schedule']['set_id'] = $setTo;
-				$s['Schedule']['tsumego_id'] = $sc[$i]['SetConnection']['tsumego_id'];
-				$this->Schedule->create();
-				$this->Schedule->save($s);
-			}
-
-			$numFrom += $step;
-			$numTo += $step;
-			$startDay += 1;
-		}
-
-		////////////////
-
-		$t = $this->Tsumego->find('all', array('conditions' => array(
-			'set_id' => 210,
-			'num <=' => 20
-		)));
-
-		foreach ($t as $item) {
-			$tag = array();
-			$tag['Tag']['tsumego_id'] = $item['Tsumego']['id'];
-			$tag['Tag']['user_id'] = 72;
-			$tag['Tag']['tag_name_id'] = 10;
-			$tag['Tag']['approved'] = 1;
-			$this->Tag->create();
-			$this->Tag->save($tag);
-		}
-
-
-		//
-		$st = $this->Tsumego->find('all', array('conditions' => array(
-			'id >=' => 1,
-			'id <=' => 10000
-		)));
-		$counter=0;
-
-		$stCount = count($st);
-		for ($i=0; $i<$stCount; $i++) {
-			if (strpos(' '.$st[$i]['Tsumego']['description'], 'b ')) {
-				$st[$i]['Tsumego']['description'] = str_replace('b ', '[b] ', $st[$i]['Tsumego']['description']);
-				$this->Tsumego->save($st[$i]);
-				$counter++;
-			}
-		}
-
-
-
-		//
-		$tn = $this->TagName->find('all');
-		$tnCount = count($tn);
-		for ($i=0; $i<$tnCount; $i++) {
-			$tn[$i]['TagName']['color'] = rand(0,24);
-			$this->TagName->save($tn[$i]);
-		}
-
-		$test = $this->findTsumegoSet(50);
-
-
-		$ts = $this->Tsumego->find('all', array('order' => 'id ASC', 'conditions' => array(
-			'set_id' => 50
-		)));
-
-
-		$u = $this->Tsumego->find('all', array('conditions' => array(
-			'NOT' => array('set_id' => null)
-		)));
-
-		$u = $this->Tsumego->find('all', array('conditions' => array(
-			'public' => 1
-		)));
-
-		$ux = $this->Tsumego->find('all', array('conditions' => array(
-			'public' => 1,
-			'set_id' => null
-		)));
-
-
-		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array(
-			'set_id' => 194,
-			'num >=' => 1,
-			'num <=' => 10
-		)));
-
-		$scCount = count($sc);
-		for ($i=0; $i<$scCount; $i++) {
-			$s = array();
-			$s['Schedule']['published'] = '0';
-			$s['Schedule']['date'] = '2024-03-25';
-			$s['Schedule']['set_id'] = '228';
-			$s['Schedule']['tsumego_id'] = $sc[$i]['SetConnection']['tsumego_id'];
-			$this->Schedule->create();
-			$this->Schedule->save($s);
-		}
-
-		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array(
-			'set_id' => 213,
-			'num >=' => 201,
-			'num <=' => 210
-		)));
-
-		$scCount = count($sc);
-		for ($i=0; $i<$scCount; $i++) {
-			$s = array();
-			$s['Schedule']['published'] = '0';
-			$s['Schedule']['date'] = '2024-03-21';
-			$s['Schedule']['set_id'] = '227';
-			$s['Schedule']['tsumego_id'] = $sc[$i]['SetConnection']['tsumego_id'];
-			$this->Schedule->create();
-			$this->Schedule->save($s);
-		}
-
-		foreach ($ts as $item) {
-			//$this->setTsumegoElo($item['Tsumego']['id']);
-			$this->setTsumegoElo($item);
-		}
-
-		$u = $this->User->find('all', array('conditions' => array(
-			'id >=' => 10000,
-			'id <=' => 20000
-		)));
-
-		$uCount = count($u);
-		for ($i=0; $i<$uCount; $i++) {
-			if ($u[$i]['User']['elo_rating_mode']!=100) {
-				$u[$i]['User']['elo_rating_mode'] = 100;
-				$u[$i]['User']['rd'] = 200;
-				$u[$i]['User']['solved2'] = 0;
-				$this->User->save($u[$i]);
-			}
-		}
-
-		$ts = $this->Tsumego->find('all', array('conditions' => array(
-			'id >=' => 29634,
-			'id <=' => 29643
-		)));
-
-		$tsCount = count($ts);
-		for ($i=0; $i<$tsCount; $i++) {
-			$sc['SetConnection']['set_id'] = 216;
-			$sc['SetConnection']['tsumego_id'] = $ts[$i]['Tsumego']['id'];
-			$sc['SetConnection']['num'] = $ts[$i]['Tsumego']['num'];
-			$this->SetConnection->create();
-			$this->SetConnection->save($sc);
-		}
-
-		$comments = $this->Comment->find('all');
-		$c = array();
-		foreach ($comments as $item) {
-			$c[] = $item['Comment']['user_id'];
-		}
-		$c = array_count_values($c);
-		$this->set('c', $c);
-
-
-
-		*/
-
-		//$this->SetConnection->save($sc);
-		//$s = $this->Tsumego->find('all', array('conditions' => array('id >' => 14000)));
-		/*
-		$sCount = count($s);
-		for ($j=0; $j<$sCount; $j++) {
-			//$this->SetConnection->create();
-			$sc = array();
-			$sc['SetConnection']['tsumego_id'] = $s[$j]['Tsumego']['id'];
-			$sc['SetConnection']['set_id'] = $s[$j]['Tsumego']['set_id'];
-			$sc['SetConnection']['num'] = $s[$j]['Tsumego']['num'];
-			//$this->SetConnection->save($sc);
-		}
-
-		$ts1 = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => 5080)));
-		$correctCounter = 0;
-		$ts2 = array();
-		$ts1Count = count($ts1);
-		for ($j=0; $j<$ts1Count; $j++) {
-			if ($ts1[$j]['TsumegoStatus']['status']=='S' || $ts1[$j]['TsumegoStatus']['status']=='W' || $ts1[$j]['TsumegoStatus']['status']=='C') {
-				$correctCounter++;
-
-			}
-			array_push($ts2, $ts1[$j]['TsumegoStatus']['tsumego_id']);
-		}
-
-
-		$t1['Tsumego']['duplicate'] = 2;
-		$t2['Tsumego']['duplicate'] = $t1['Tsumego']['id'];
-		$t3['Tsumego']['duplicate'] = $t1['Tsumego']['id'];
-		$this->Tsumego->save($t1);
-		$this->Tsumego->save($t2);
-		$this->Tsumego->save($t3);
-		*/
-		/*
-		2270 stephalamy@gmail.com
-		441  marioaliandoe@gmail.com
-		7732 semelis@gmail.com
-
-		$c = $this->Comment->find('all', array('order' => 'created DESC', 'conditions' => array(
-			'created >' => '2023-10-00 07:58:47',
-			'NOT' => array(
-				'user_id' => 33,
-			)
-		)));
-		$cc = array();
-		foreach ($c as $item) {
-			$u = $this->User->findById($item['Comment']['user_id']);
-			$cc[] = $u['User']['name'];
-		}
-
-
-		$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => 42)));
-		$sgfs = array();
-		foreach ($ts as $item) {
-			//$this->Tsumego->delete($item['Tsumego']['id']);
-			$sgfs[] = $this->Sgf->find('first', array('conditions' => array('tsumego_id' => $item['Tsumego']['id'])));
-		}
-
-		foreach ($sgfs as $sgf) {
-			$this->Sgf->delete($sgf['Sgf']['id']);
-		}
-
-
-
-		$ts = $this->Tsumego->find('all', array('order' => 'num ASC', 'conditions' => array(
-			'set_id' => 185,
-			'num >=' => 531,
-			'num <=' => 540
-		)));
-
-		$tsCount = count($ts);
-		for ($i=0; $i<$tsCount; $i++) {
-			$s = array();
-			$s['Schedule']['published'] = '0';
-			$s['Schedule']['date'] = '2023-11-05';
-			$s['Schedule']['set_id'] = '198';
-			$s['Schedule']['tsumego_id'] = $ts[$i]['Tsumego']['id'];
-			$this->Schedule->create();
-			$this->Schedule->save($s);
-		}*/
-
-		//$this->set('t', $t);
-		//$this->set('u', $u);
-		//$this->set('ou', $ou);
-		//$this->set('ouc', $ouc);
-		//$this->set('tr', $tr);
-		//$this->set('ut', $ut);
-		//$this->set('out', $out);
-		//$this->set('ux', $ux);
 	}
 
 	/**
@@ -2117,7 +1848,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$sx = $this->Set->findById($remove['Tsumego']['set_id']);
 				$title = $sx['Set']['title'] . ' - ' . $remove['Tsumego']['num'];
 				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['removeDuplicate'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: ' . $title;
@@ -2189,7 +1920,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$sx = $this->Set->findById($newDmain['Tsumego']['set_id']);
 				$title = $sx['Set']['title'] . ' - ' . $newDmain['Tsumego']['num'];
 				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['main'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Created duplicate group: ' . $title;
@@ -2225,7 +1956,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0; $i < $marksCount; $i++) {
 			array_push($idMap2, $marks[$i]['Tsumego']['id']);
 		}
-		$uts2 = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap2, 'user_id' => $this->loggedInUserID()]]);
+		$uts2 = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap2, 'user_id' => Auth::getUserID()]]);
 		$counter2 = 0;
 		$markTooltipSgfs = [];
 		$markTooltipInfo = [];
@@ -2282,7 +2013,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 			}
 
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap, 'user_id' => $this->loggedInUserID()]]);
+			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap, 'user_id' => Auth::getUserID()]]);
 			$tooltipSgfs = [];
 			$tooltipInfo = [];
 			$tooltipBoardSize = [];
@@ -2394,16 +2125,16 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('UserContribution');
 		$this->loadModel('Reject');
 
-		if ($this->isAdmin()) {
+		if (Auth::isAdmin()) {
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
-				if (md5((string) $this->loggedInUserID()) == $this->params['url']['hash']) {
+				if (md5((string) Auth::getUserID()) == $this->params['url']['hash']) {
 
 					$tagsToApprove = explode('-', $_COOKIE['tagList']);
 					$tagsToApproveCount = count($tagsToApprove);
 					for ($i = 1; $i < $tagsToApproveCount; $i++) {
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if ($tagToApprove != null && $tagToApprove['Tag']['approved'] != 1) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagsToApprove[$i], 0, 1) == 'a') {
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
@@ -2427,7 +2158,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++) {
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if ($tagNameToApprove != null && $tagNameToApprove['TagName']['approved'] != 1) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagNamesToApprove[$i], 0, 1) == 'a') {
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
@@ -2449,7 +2180,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					for ($i = 1; $i < $proposalsToApproveCount; $i++) {
 						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
 								$recentSgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
 								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
@@ -2538,7 +2269,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		$uts = $this->TsumegoStatus->find('all', [
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'tsumego_id' => $tsIds,
 			],
 		]);
@@ -2748,11 +2479,11 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('Tsumego');
 		$this->loadModel('Activate');
 
-		$this->saveSolvedNumber($this->loggedInUserID());
+		$this->saveSolvedNumber(Auth::getUserID());
 
 		$activate = false;
-		if ($this->isLoggedIn()) {
-			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		if (Auth::isLoggedIn()) {
+			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		}
 
 		$json = json_decode(file_get_contents('json/level_highscore.json'), true);
@@ -2783,8 +2514,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
-		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+		if (Auth::isLoggedIn()) {
+			$ux = $this->User->findById(Auth::getUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2833,35 +2564,25 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 */
 	public function rewards() {
 		$this->loadModel('UserContribution');
-		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
 		if (isset($this->params['url']['action']) && isset($this->params['url']['token'])) {
 			if (md5('level') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward1'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($this->loggedInUserID());
-					$u['User']['level'] += 1;
-					$u['User']['nextlvl'] += $this->getXPJump($u['User']['level']);
-					$u['User']['health'] = $this->getHealth($u['User']['level']);
-					$this->Session->read('loggedInUser')['User']['level'] = $u['User']['level'];
-					$this->Session->read('loggedInUser')['User']['nextlvl'] = $u['User']['nextlvl'];
-					$this->Session->read('loggedInUser')['User']['health'] = $u['User']['health'];
-					$this->User->save($u);
-					$u = $this->User->findById($this->loggedInUserID());
-					$this->Session->write('loggedInUser', $u);
+					Auth::getUser()['level'] += 1;
+					Auth::getUser()['nextlvl'] += $this->getXPJump(Auth::getUser()['level']);
+					Auth::getUser()['health'] = $this->getHealth(Auth::getUser()['level']);
+					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
 			} elseif (md5('rank') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
-					$u = $this->User->findById($this->loggedInUserID());
-					$u['User']['elo_rating_mode'] += 100;
-					$this->Session->read('loggedInUser')['User']['elo_rating_mode'] = $u['User']['elo_rating_mode'];
-					$this->User->save($u);
-					$u = $this->User->findById($this->loggedInUserID());
-					$this->Session->write('loggedInUser', $u);
+					Auth::getUser()['elo_rating_mode'] += 100;
+					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
 			} elseif (md5('heropower') == $this->params['url']['action']) {
@@ -2871,13 +2592,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 			} elseif (md5('premium') == $this->params['url']['action']) {
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
-					if (!$this->hasPremium()) {
-						$u = $this->User->findById($this->loggedInUserID());
-						$u['User']['premium'] = 1;
-						$this->Session->read('loggedInUser')['User']['premium'] = $u['User']['premium'];
-						$this->User->save($u);
-						$u = $this->User->findById($this->loggedInUserID());
-						$this->Session->write('loggedInUser', $u);
+					if (!Auth::hasPremium()) {
+						Auth::getUser()['premium'] = 1;
+						Auth::saveUser();
 					}
 				}
 			}
@@ -2915,8 +2632,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('Achievement');
 		$this->loadModel('User');
 
-		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+		if (Auth::isLoggedIn()) {
+			$ux = $this->User->findById(Auth::getUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2948,8 +2665,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$params1 = '';
 		$params2 = '';
 
-		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+		if (Auth::isLoggedIn()) {
+			$ux = $this->User->findById(Auth::getUserID());
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
@@ -2966,8 +2683,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			$params1 = $this->params['url']['category'];
 			$params2 = $this->params['url']['rank'];
 		} else {
-			if ($this->isLoggedIn()) {
-				$lastModex = $this->Session->read('loggedInUser')['User']['lastMode'] - 1;
+			if (Auth::isLoggedIn()) {
+				$lastModex = Auth::getUser()['lastMode'] - 1;
 			} else {
 				$lastModex = 2;
 			}
@@ -3066,8 +2783,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 
-		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+		if (Auth::isLoggedIn()) {
+			$ux = $this->User->findById(Auth::getUserID());
 			$ux['User']['lastHighscore'] = 4;
 			$this->User->save($ux);
 		}
@@ -3107,8 +2824,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$userYesterdayName = $userYesterday['User']['name'];
 			}
 		}
-		if ($this->isLoggedIn()) {
-			$ux = $this->User->findById($this->loggedInUserID());
+		if (Auth::isLoggedIn()) {
+			$ux = $this->User->findById(Auth::getUserID());
 			$ux['User']['lastHighscore'] = 3;
 			$this->User->save($ux);
 		}
@@ -3146,15 +2863,15 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->loadModel('RankOverview');
 		$hideEmail = false;
 
-		$solvedUts2 = $this->saveSolvedNumber($this->loggedInUserID());
+		$solvedUts2 = $this->saveSolvedNumber(Auth::getUserID());
 
-		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
 		$this->Session->write('title', 'Profile of ' . $user['User']['name']);
 
-		if ($this->loggedInUserID() != $id && $this->loggedInUserID() != 72) {
+		if (Auth::getUserID() != $id && Auth::getUserID() != 72) {
 			$this->Session->write('redirect', 'sets');
 			$user['User']['email'] = '';
 			$hideEmail = true;
@@ -3165,15 +2882,12 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$changeUser['User']['email'] = $this->data['User']['email'];
 				$this->set('data', $changeUser['User']['email']);
 				$this->User->save($changeUser, true);
-				$user = $this->User->findById($id);
 			}
 		}
 		if (isset($this->params['url']['undo'])) {
 			if ($this->params['url']['undo'] / 1111 == $id) {
 				$user['User']['dbstorage'] = 1;
-				$this->Session->read('loggedInUser')['User']['dbstorage'] = $user['User']['dbstorage'];
 				$this->User->save($user);
-				$user = $this->User->findById($id);
 			}
 		}
 
@@ -3262,7 +2976,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			'limit' => 400,
 			'order' => 'created DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 			],
 		]);
 
@@ -3320,7 +3034,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$ro = $this->RankOverview->find('all', [
 			'order' => 'rank ASC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 			],
 		]);
 		$highestRo = '15k';
@@ -3378,7 +3092,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 
-		if ($this->loggedInUserID() != $id) {
+		if (Auth::getUserID() != $id) {
 			$deletedProblems = 3;
 		}
 
@@ -3400,9 +3114,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		);
 
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+			$this->updateXP(Auth::getUserID(), $achievementUpdate);
 		}
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
 		$aNumx = count($aNum);
 		if ($asx != null) {
@@ -3414,8 +3128,8 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		$user['User']['name'] = $this->checkPicture($user);
 
-		if (substr($this->Session->read('loggedInUser')['User']['email'], 0, 3) == 'g__' && $this->Session->read('loggedInUser')['User']['external_id'] != null) {
-			$user['User']['email'] = substr($this->Session->read('loggedInUser')['User']['email'], 3);
+		if (substr(Auth::getUser()['email'], 0, 3) == 'g__' && Auth::getUser()['external_id'] != null) {
+			Auth::getUser()['email'] = substr(Auth::getUser()['email'], 3);
 		}
 
 		$aCount = $this->Achievement->find('all');
@@ -3642,29 +3356,28 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Success');
 
-		$s = $this->User->findById($this->loggedInUserID());
-		$s['User']['reward'] = date('Y-m-d H:i:s');
-		$s['User']['premium'] = 1;
-		$this->User->create();
-		$this->User->save($s);
+		$s = $this->User->findById(Auth::getUserID());
+		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
+		Auth::getUser()['premium'] = 1;
+		Auth::saveUser();
 
 		$Email = new CakeEmail();
 		$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
-		if ($this->isLoggedIn()) {
-			$ans = $this->Session->read('loggedInUser.User.name') . ' ' . $this->Session->read('loggedInUser')['User']['email'];
+		if (Auth::isLoggedIn()) {
+			$ans = Auth::getUser()['name'] . ' ' . Auth::getUser()['email'];
 		} else {
 			$ans = 'no login';
 		}
 		$Email->send($ans);
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			$Email = new CakeEmail();
 			$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
-			$Email->to($this->Session->read('loggedInUser')['User']['email']);
+			$Email->to(Auth::getUser()['email']);
 			$Email->subject('Tsumego Hero');
 			$ans = '
-Hello ' . $this->Session->read('loggedInUser.User.name') . ',
+Hello ' . Auth::getUser()['name'] . ',
 
 Thank you!. Your account should be upgraded automatically.
 
@@ -3683,12 +3396,8 @@ Joschka Zimdars';
 	public function penalty($id = null) {
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Penalty');
-
-		$p = $this->User->findById($this->loggedInUserID());
-		$p['User']['penalty'] = $p['User']['penalty'] + 1;
-		$this->User->create();
-		$this->User->save($p);
-
+		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
+		Auth::saveUser();
 		$this->set('id', $id);
 	}
 
@@ -3704,7 +3413,7 @@ Joschka Zimdars';
 	 * @return void
 	 */
 	public function logout() {
-		$this->Session->delete('loggedInUserID');
+		Auth::logout();
 	}
 
 	public function delete($id) {
@@ -5169,60 +4878,53 @@ Joschka Zimdars';
 	 * @return void
 	 */
 	public function delete_account() {
-		$u = null;
 		$redirect = false;
 		$status = '';
-		if ($this->isLoggedIn()) {
-			$u = $this->User->findById($this->loggedInUserID());
-		}
 
 		if (!empty($this->data)) {
 			if (isset($this->data['User']['delete'])) {
-				if ($u['User']['pw'] == $this->tinkerEncode($this->data['User']['delete'], 1)) {
-					$u['User']['dbstorage'] = 1111;
-					$this->Session->read('loggedInUser')['User']['dbstorage'] = $u['User']['dbstorage'];
-					$this->User->save($u);
+				if (password_check($this->data['User']['delete'], Auth::getUser()['password_hash'])) {
+					Auth::getUser()['dbstorage'] = 1111;
+					Auth::saveUser();
 					$redirect = true;
 				} else {
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 				}
 			}
 		}
-		$u['User']['name'] = $this->checkPicture($u);
+		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', $u);
+		$this->set('u', Auth::getUser());
 	}
 
 	/**
 	 * @return void
 	 */
 	public function demote_admin() {
-		$u = null;
 		$redirect = false;
 		$status = '';
-		if ($this->isLoggedIn()) {
-			$u = $this->User->findById($this->loggedInUserID());
+		if (!Auth::isLoggedIn()) {
+			return;
 		}
 
 		if (!empty($this->data)) {
 			if (isset($this->data['User']['demote'])) {
-				if ($u['User']['pw'] == $this->tinkerEncode($this->data['User']['demote'], 1)) {
-					$u['User']['isAdmin'] = 0;
-					$this->Session->read('loggedInUser')['User']['isAdmin'] = 0;
-					$this->User->save($u);
+				if (password_check($this->data['User']['demote'], Auth::getUser()['password_hash'])) {
+					Auth::getUser()['isAdmin'] = 0;
+					Auth::saveUser();
 					$redirect = true;
 				} else {
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 				}
 			}
 		}
-		$u['User']['name'] = $this->checkPicture($u);
+		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', $u);
+		$this->set('u', Auth::getUser());
 	}
 
 	/**

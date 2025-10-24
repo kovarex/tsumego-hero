@@ -10,9 +10,9 @@
 		<br>
 		<a class="new-button new-buttonx" href="/users/highscore">level</a>
 		<a class="new-button new-buttonx" href="/users/rating">rating</a>
-		<?php if($this->Session->check('loggedInUserID')){ if($this->Session->read('loggedInUser.User.premium')>1){ ?>
+		<?php if(Auth::premiumLevel() > 1){ ?>
 		<a class="new-button new-buttonx" href="/users/leaderboard">daily</a>
-		<?php }} ?>
+		<?php } ?>
 		<br><br>
 		</div>
 	</td>

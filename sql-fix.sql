@@ -5,9 +5,9 @@ SET @@sql_mode='';
 UPDATE `users` SET reward=null where reward='0000-00-00 00:00:00';
 UPDATE `tsumego_rating_attempts` SET created='2022-01-31 01:02:04' where created='0000-00-00 00:00:00'; /* around 1200 out of 800k records with this error, around this time */
 SET @@sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-ALTER TABLE users MODIFY premium boolean;
-UPDATE users set premium=1 WHERE premium > 1;
-ALTER TABLE users MODIFY isAdmin boolean;
+ALTER TABLE users MODIFY premium SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=no premium, 1=basic premium, 2=golden premium';
+ALTER TABLE users MODIFY isAdmin boolean NOT NULL DEFAULT 0;
+ALTER TABLE users DROP column completed;
 
 ALTER TABLE `user_boards` DROP COLUMN `id`;
 ALTER TABLE ranks ALTER COLUMN points SET DEFAULT 0;

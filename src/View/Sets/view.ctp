@@ -7,13 +7,11 @@
 		$noImage = true;
 
 	if($set['Set']['premium']==1){
-		if(!$this->Session->check('loggedInUserID')
-			|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')<1
-		)
+		if(!Auth::hasPremium())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
 	if($set['Set']['public']==0){
-		if($this->Session->check('loggedInUserID')){
+		if(Auth::isLoggedIn()){
 		}else{
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
@@ -38,7 +36,7 @@
 		&& $set['Set']['id']!=119 && $set['Set']['id']!=126 && $set['Set']['id']!=129 && $set['Set']['id']!=134 && $set['Set']['id']!=135){
 			$beta2 = false;
 		}else $beta2 = true;
-		if($this->Session->read('loggedInUserID')==72) $beta2 = false;
+		if(Auth::getUserID()==72) $beta2 = false;
 
 		if(!$beta2){
 			for($i=0; $i<count($ts); $i++){
@@ -68,12 +66,12 @@
 		}
 
 		if($set['Set']['public']==0){
-			if($this->Session->check('loggedInUserID')){
-				if($this->Session->read('loggedInUser.User.isAdmin')>0){
+			if(Auth::isLoggedIn()){
+				if(Auth::isAdmin()){
 					echo '<div align="left" width="100%">';
 					echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>';
-					if($this->Session->check('loggedInUserID')){
-						if($this->Session->read('loggedInUserID')==72 && $set['Set']['id']==161){
+					if(Auth::isLoggedIn()){
+						if(Auth::getUserID()==72 && $set['Set']['id']==161){
 							if($josekiOrder==0) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=order">show order</a>';
 							elseif($josekiOrder==1) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=num">show num</a>';
 
@@ -219,7 +217,7 @@
 			<td>
 			<br>
 			<div align="center">
-				<?php if($this->Session->check('loggedInUserID')){ ?>
+				<?php if(Auth::isLoggedIn()){ ?>
 					<?php
 					if($set['Set']['solved']>100) $set['Set']['solved'] = 100;
 					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: '.$set['Set']['solved'].'%</b></div></td><td></td></tr></table>
@@ -236,7 +234,7 @@
 
 			<td>
 			<?php
-			if($this->Session->check('loggedInUserID')){
+			if(Auth::isLoggedIn()){
 				if($pdCounter>0){
 					$plural = 's';
 					if($pdCounter==1){ $pdCounterValue = 50; $plural = '';
@@ -296,7 +294,7 @@
 			<?php
 			//if($set['Set']['public']==0){
 			if(true){
-				if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+				if(Auth::isAdmin()){
 					echo '<tr><td colspan="2">
 					<div class="admin-panel">
 					<div align="center"><h1> Admin Panel </h1></div>

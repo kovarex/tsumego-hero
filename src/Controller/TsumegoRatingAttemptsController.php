@@ -251,12 +251,12 @@ class TsumegoRatingAttemptsController extends AppController {
 	 */
 	public function user($trid) {
 		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'History of ' . $this->Session->read('loggedInUser.User.name'));
+		$this->Session->write('title', 'History of ' . Auth::getUser()['name']);
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$this->loadModel('TsumegoAttempt');
-		if ($this->loggedInuserID() != $trid && $this->loggedInuserID() != 72) {
+		if (Auth::getUserID() != $trid && Auth::getUserID() != 72) {
 			$this->Session->write('redirect', 'sets');
 		}
 
@@ -264,7 +264,7 @@ class TsumegoRatingAttemptsController extends AppController {
 			'limit' => 200,
 			'order' => 'created DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInuserID(),
+				'user_id' => Auth::getUserID(),
 				'mode' => 2,
 			],
 		]);
@@ -273,7 +273,7 @@ class TsumegoRatingAttemptsController extends AppController {
 		}
 		/*
 		$trsx = $this->TsumegoAttempt->find('all', array('limit' => 10, 'order' => 'created DESC', 'conditions' => array(
-			'user_id' => $this->Session->read('loggedInUserID')
+			'user_id' => Auth::getUserID()
 		)));
 		*/
 		$trsCount = count($trs);

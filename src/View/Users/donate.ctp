@@ -1,12 +1,5 @@
 	<div align="center">
-	<?php if(
-		!$this->Session->check('loggedInUserID')
-		|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')<1
-	)
-		$upgrade = true;
-	else
-		$upgrade = false;
-		?>
+	<?php $upgrade = !Auth::hasPremium(); ?>
 	</div>
 	<div id="login-box2" class="users form">
 		<div class="left2 signin">

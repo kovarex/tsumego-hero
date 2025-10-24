@@ -245,10 +245,10 @@ class TsumegoRecordsController extends AppController {
 	 */
 	public function user($trid) {
 		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'History of ' . $this->Session->read('loggedInUser.User.name'));
+		$this->Session->write('title', 'History of ' . Auth::getUser()['name']);
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
-		if ($this->Session->read('loggedInUserID') != $trid && $this->Session->read('loggedInUserID') != 72) {
+		if (Auth::getUserID() != $trid && Auth::getUserID() != 72) {
 			$this->Session->write('redirect', 'sets');
 		}
 		$trs = $this->TsumegoRecord->find('all', [
