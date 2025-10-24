@@ -2117,7 +2117,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$sx = $this->Set->findById($remove['Tsumego']['set_id']);
 				$title = $sx['Set']['title'] . ' - ' . $remove['Tsumego']['num'];
 				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+				$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['removeDuplicate'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: ' . $title;
@@ -2189,7 +2189,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				$sx = $this->Set->findById($newDmain['Tsumego']['set_id']);
 				$title = $sx['Set']['title'] . ' - ' . $newDmain['Tsumego']['num'];
 				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+				$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['main'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Created duplicate group: ' . $title;
@@ -2225,7 +2225,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		for ($i = 0; $i < $marksCount; $i++) {
 			array_push($idMap2, $marks[$i]['Tsumego']['id']);
 		}
-		$uts2 = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap2, 'user_id' => $this->loggedInUserID()]]);
+		$uts2 = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap2, 'user_id' => $this->getLoggedInUserID()]]);
 		$counter2 = 0;
 		$markTooltipSgfs = [];
 		$markTooltipInfo = [];
@@ -2282,7 +2282,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 				}
 			}
 
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap, 'user_id' => $this->loggedInUserID()]]);
+			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap, 'user_id' => $this->getLoggedInUserID()]]);
 			$tooltipSgfs = [];
 			$tooltipInfo = [];
 			$tooltipBoardSize = [];
@@ -2403,7 +2403,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					for ($i = 1; $i < $tagsToApproveCount; $i++) {
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if ($tagToApprove != null && $tagToApprove['Tag']['approved'] != 1) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution($this->getLoggedInUserID(), 'reviewed');
 							if (substr($tagsToApprove[$i], 0, 1) == 'a') {
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
@@ -2427,7 +2427,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++) {
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if ($tagNameToApprove != null && $tagNameToApprove['TagName']['approved'] != 1) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution($this->getLoggedInUserID(), 'reviewed');
 							if (substr($tagNamesToApprove[$i], 0, 1) == 'a') {
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
@@ -2449,7 +2449,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 					for ($i = 1; $i < $proposalsToApproveCount; $i++) {
 						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0) {
-							$this->handleContribution($this->loggedInUserID(), 'reviewed');
+							$this->handleContribution($this->getLoggedInUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
 								$recentSgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
 								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
@@ -2538,7 +2538,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		$uts = $this->TsumegoStatus->find('all', [
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'tsumego_id' => $tsIds,
 			],
 		]);
@@ -2752,7 +2752,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		$activate = false;
 		if ($this->isLoggedIn()) {
-			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		}
 
 		$json = json_decode(file_get_contents('json/level_highscore.json'), true);
@@ -2833,7 +2833,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	 */
 	public function rewards() {
 		$this->loadModel('UserContribution');
-		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 
 		if (isset($this->params['url']['action']) && isset($this->params['url']['token'])) {
 			if (md5('level') == $this->params['url']['action']) {
@@ -3148,13 +3148,13 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 
 		$solvedUts2 = $this->saveSolvedNumber($this->loggedInUserID());
 
-		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
 		$this->Session->write('title', 'Profile of ' . $user['User']['name']);
 
-		if ($this->loggedInUserID() != $id && $this->loggedInUserID() != 72) {
+		if ($this->getLoggedInUserID() != $id && $this->getLoggedInUserID() != 72) {
 			$this->Session->write('redirect', 'sets');
 			$user['User']['email'] = '';
 			$hideEmail = true;
@@ -3262,7 +3262,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			'limit' => 400,
 			'order' => 'created DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 			],
 		]);
 
@@ -3320,7 +3320,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		$ro = $this->RankOverview->find('all', [
 			'order' => 'rank ASC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 			],
 		]);
 		$highestRo = '15k';
@@ -3378,7 +3378,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 			}
 		}
 
-		if ($this->loggedInUserID() != $id) {
+		if ($this->getLoggedInUserID() != $id) {
 			$deletedProblems = 3;
 		}
 
@@ -3400,9 +3400,9 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		);
 
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+			$this->updateXP($this->getLoggedInUserID(), $achievementUpdate);
 		}
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
 		$aNumx = count($aNum);
 		if ($asx != null) {

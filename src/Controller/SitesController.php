@@ -126,7 +126,7 @@ class SitesController extends AppController {
 			$uts = $this->TsumegoStatus->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $idArray,
 				],
 			]);

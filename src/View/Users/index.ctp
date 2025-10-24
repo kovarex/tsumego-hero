@@ -44,7 +44,7 @@
 			if($this->Session->check('loggedInUser')){
 			//if($this->Session->read('loggedInUser.User.completed')==1){
 			if(false){
-			//if($this->Session->read('loggedInUserID')==72){
+			//if($this->getLoggedInUserID()==72){
 			//echo '<pre>';print_r($ux);echo '</pre>';
 			?>
 			<div id="sandboxVolunteers2">
@@ -846,7 +846,7 @@
 		<br>
 		<?php
 			if($this->Session->check('loggedInUser')){
-				if($this->Session->read('loggedInUserID')==72){
+				if($this->getLoggedInUserID()==72){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/stats">Page Stats</a><br>';
 					echo '<a href="/users/userstats">User Stats</a><br>';
@@ -854,12 +854,12 @@
 					//echo '<pre>';print_r($asdf);echo '</pre>';
 					echo '</div>';
 				}
-				if($this->Session->read('loggedInUserID')==2781 || $this->Session->read('loggedInUserID')==1206){
+				if($this->getLoggedInUserID()==2781 || $this->getLoggedInUserID()==1206){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/adminstats">Admin Stats</a><br>';
 					echo '</div>';
 				}
-				if($this->Session->read('loggedInUserID')==1543){
+				if($this->getLoggedInUserID()==1543){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/userstats">User Stats</a><br>';
 					echo '</div>';

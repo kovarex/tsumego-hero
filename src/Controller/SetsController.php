@@ -202,7 +202,7 @@ class SetsController extends AppController {
 		$u = $this->User->findById($this->loggedInUserID());
 
 		if ($this->isLoggedIn()) {
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$uts) {
 				$uts = [];
 			}
@@ -684,7 +684,7 @@ class SetsController extends AppController {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 						'category' => 'set',
 					],
 				]);
@@ -692,14 +692,14 @@ class SetsController extends AppController {
 					$aCondition = [];
 				}
 				$aCondition['AchievementCondition']['category'] = 'set';
-				$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+				$aCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 				$aCondition['AchievementCondition']['value'] = $overallCounter;
 				$this->AchievementCondition->save($aCondition);
 			}
 			$this->User->save($this->loggedInUser);
 			$achievementUpdate = $this->checkSetCompletedAchievements();
 			if (count($achievementUpdate) > 0) {
-				$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+				$this->updateXP($this->getLoggedInUserID(), $achievementUpdate);
 			}
 		}
 		//difficulty
@@ -1198,11 +1198,11 @@ class SetsController extends AppController {
 			$setCount['Tsumego']['set_id'] = $scTcount['SetConnection']['set_id'];
 			$setCount['Tsumego']['num'] += 1;
 			$setCount['Tsumego']['variance'] = 100;
-			if ($this->loggedInUserID() == 72) {
+			if ($this->getLoggedInUserID() == 72) {
 				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
-			} elseif ($this->loggedInUserID() == 1206) {
+			} elseif ($this->getLoggedInUserID() == 1206) {
 				$setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
-			} elseif ($this->loggedInUserID() == 3745) {
+			} elseif ($this->getLoggedInUserID() == 3745) {
 				$setCount['Tsumego']['author'] = 'Dennis Olevanov';
 			} else {
 				$setCount['Tsumego']['author'] = $this->Session->read('loggedInUser.User.name');
@@ -1210,7 +1210,7 @@ class SetsController extends AppController {
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
 			$adminActivity = [];
-			$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+			$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 			$adminActivity['AdminActivity']['tsumego_id'] = 0;
 			$adminActivity['AdminActivity']['file'] = 'description';
 			$set = $this->Set->findById($id);
@@ -1662,7 +1662,7 @@ class SetsController extends AppController {
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+					$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
@@ -1678,7 +1678,7 @@ class SetsController extends AppController {
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+					$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
@@ -1693,7 +1693,7 @@ class SetsController extends AppController {
 							$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 						}
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
@@ -1710,7 +1710,7 @@ class SetsController extends AppController {
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+					$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
@@ -1727,7 +1727,7 @@ class SetsController extends AppController {
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+					$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
@@ -1742,7 +1742,7 @@ class SetsController extends AppController {
 						}
 						$allVcActive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions for set ' . $set['Set']['title'];
@@ -1757,7 +1757,7 @@ class SetsController extends AppController {
 						}
 						$allVcInactive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions for set ' . $set['Set']['title'];
@@ -1771,7 +1771,7 @@ class SetsController extends AppController {
 						}
 						$allArActive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
@@ -1785,7 +1785,7 @@ class SetsController extends AppController {
 						}
 						$allArInactive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
@@ -1799,7 +1799,7 @@ class SetsController extends AppController {
 						}
 						$allPassActive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
@@ -1813,7 +1813,7 @@ class SetsController extends AppController {
 						}
 						$allPassInactive = true;
 						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = $this->loggedInUserID();
+						$adminActivity['AdminActivity']['user_id'] = $this->getLoggedInUserID();
 						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Disabled passing for set ' . $set['Set']['title'];
@@ -1874,7 +1874,7 @@ class SetsController extends AppController {
 
 			//favs
 		} else {
-			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$allUts) {
 				$allUts = [];
 			}
@@ -1885,7 +1885,7 @@ class SetsController extends AppController {
 				array_push($idMap, $allUts[$i]['TsumegoStatus']['tsumego_id']);
 				array_push($statusMap, $allUts[$i]['TsumegoStatus']['status']);
 			}
-			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$fav) {
 				$fav = [];
 			}
@@ -1959,7 +1959,7 @@ class SetsController extends AppController {
 			$ur = $this->TsumegoAttempt->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2016,7 +2016,7 @@ class SetsController extends AppController {
 				if ($this->data['Comment']['reset'] == 'reset') {
 					$uts = $this->TsumegoStatus->find('all', [
 						'conditions' => [
-							'user_id' => $this->loggedInUserID(),
+							'user_id' => $this->getLoggedInUserID(),
 							'tsumego_id' => $currentIds,
 						],
 					]);
@@ -2025,7 +2025,7 @@ class SetsController extends AppController {
 					}
 					$ur = $this->TsumegoAttempt->find('all', [
 						'conditions' => [
-							'user_id' => $this->loggedInUserID(),
+							'user_id' => $this->getLoggedInUserID(),
 							'tsumego_id' => $currentIds,
 						],
 					]);
@@ -2044,7 +2044,7 @@ class SetsController extends AppController {
 					}
 					//$this->Session->write('loggedInUser.uts', $loggedInUserUts);
 					$pr = [];
-					$pr['ProgressDeletion']['user_id'] = $this->loggedInUserID();
+					$pr['ProgressDeletion']['user_id'] = $this->getLoggedInUserID();
 					$pr['ProgressDeletion']['set_id'] = $id;
 					$this->ProgressDeletion->create();
 					$this->ProgressDeletion->save($pr);
@@ -2053,7 +2053,7 @@ class SetsController extends AppController {
 			}
 			$pd = $this->ProgressDeletion->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'set_id' => $id,
 				],
 			]);
@@ -2135,14 +2135,14 @@ class SetsController extends AppController {
 				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
 			}
 			if (count($achievementUpdate) > 0) {
-				$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+				$this->updateXP($this->getLoggedInUserID(), $achievementUpdate);
 			}
 
 			$acS = $this->AchievementCondition->find('first', [
 				'order' => 'value ASC',
 				'conditions' => [
 					'set_id' => $id,
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'category' => 's',
 				],
 			]);
@@ -2150,7 +2150,7 @@ class SetsController extends AppController {
 				'order' => 'value DESC',
 				'conditions' => [
 					'set_id' => $id,
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'category' => '%',
 				],
 			]);
@@ -2208,7 +2208,7 @@ class SetsController extends AppController {
 							$saveTag = [];
 							$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
 							$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
-							$saveTag['Tag']['user_id'] = $this->loggedInUserID();
+							$saveTag['Tag']['user_id'] = $this->getLoggedInUserID();
 							$saveTag['Tag']['approved'] = 1;
 							$this->Tag->create();
 							$this->Tag->save($saveTag);
@@ -2287,7 +2287,7 @@ class SetsController extends AppController {
 		$title = '';
 		$t = [];
 
-		if ($this->loggedInUserID() == 72) {
+		if ($this->getLoggedInUserID() == 72) {
 			$s = $this->Set->findById($id);
 			$title = $s['Set']['title'] . ' ' . $s['Set']['title2'];
 
@@ -2382,7 +2382,7 @@ class SetsController extends AppController {
 	 * @return void
 	 */
 	public function updateAchievementConditions($sid, $avgTime, $accuracy) {
-		$uid = $this->loggedInUserID();
+		$uid = $this->getLoggedInUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
 		$acA = $this->AchievementCondition->find('first', ['order' => 'value DESC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => '%']]);
 

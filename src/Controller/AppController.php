@@ -20,7 +20,7 @@ class AppController extends Controller {
 		return $this->Session->check('loggedInUserID');
 	}
 
-	public function loggedInUserID(): int {
+	public function getLoggedInUserID(): int {
 		return (int) $this->Session->read('loggedInUserID');
 	}
 
@@ -1711,7 +1711,7 @@ class AppController extends Controller {
 			$danSolveCondition = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'category' => $danSolveCategory,
 				],
 			]);
@@ -1721,7 +1721,7 @@ class AppController extends Controller {
 				$this->AchievementCondition->create();
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
-			$danSolveCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+			$danSolveCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 			$danSolveCondition['AchievementCondition']['set_id'] = $tId;
 			$danSolveCondition['AchievementCondition']['value']++;
 
@@ -1740,7 +1740,7 @@ class AppController extends Controller {
 			$sprintCondition = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'category' => 'sprint',
 				],
 			]);
@@ -1750,7 +1750,7 @@ class AppController extends Controller {
 				$this->AchievementCondition->create();
 			}
 			$sprintCondition['AchievementCondition']['category'] = 'sprint';
-			$sprintCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+			$sprintCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 			if ($trigger) {
 				$sprintCondition['AchievementCondition']['value']++;
 			} else {
@@ -1768,7 +1768,7 @@ class AppController extends Controller {
 		$goldenCondition = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'category' => 'golden',
 			],
 		]);
@@ -1778,7 +1778,7 @@ class AppController extends Controller {
 			$this->AchievementCondition->create();
 		}
 		$goldenCondition['AchievementCondition']['category'] = 'golden';
-		$goldenCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+		$goldenCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 		if ($trigger) {
 			$goldenCondition['AchievementCondition']['value']++;
 		} else {
@@ -1794,7 +1794,7 @@ class AppController extends Controller {
 		$potionCondition = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'category' => 'potion',
 			],
 		]);
@@ -1803,7 +1803,7 @@ class AppController extends Controller {
 			$this->AchievementCondition->create();
 		}
 		$potionCondition['AchievementCondition']['category'] = 'potion';
-		$potionCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+		$potionCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 		$potionCondition['AchievementCondition']['value'] = 1;
 		$this->AchievementCondition->save($potionCondition);
 	}
@@ -1888,14 +1888,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 						'category' => 'emerald',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'emerald';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1905,14 +1905,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 						'category' => 'sapphire',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'sapphire';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1922,14 +1922,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 						'category' => 'ruby',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'ruby';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = $this->getLoggedInUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1945,14 +1945,14 @@ class AppController extends Controller {
 			$this->loadModel('Achievement');
 			$this->loadModel('AchievementStatus');
 			$this->loadModel('AchievementCondition');
-			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$buffer) {
 				$buffer = [];
 			}
 			$ac = $this->AchievementCondition->find('all', [
 				'order' => 'category ASC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'OR' => [
 						['category' => 'danSolve1d'],
 						['category' => 'danSolve2d'],
@@ -2005,7 +2005,7 @@ class AppController extends Controller {
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			}
 			$as = [];
-			$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+			$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 			$updated = [];
 			$achievementId = 101;
 			if ($ac1['1d'] > 0 && !isset($existingAs[$achievementId])) {
@@ -2156,7 +2156,7 @@ class AppController extends Controller {
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2166,7 +2166,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$achievementId = 1;
@@ -2243,7 +2243,7 @@ class AppController extends Controller {
 		//uotd achievement
 		$achievementId = 11;
 		if (!isset($existingAs[$achievementId])) {
-			$condition = $this->AchievementCondition->find('first', ['conditions' => ['user_id' => $this->loggedInUserID(), 'category' => 'uotd']]);
+			$condition = $this->AchievementCondition->find('first', ['conditions' => ['user_id' => $this->getLoggedInUserID(), 'category' => 'uotd']]);
 			if ($condition != null) {
 				$as['AchievementStatus']['achievement_id'] = $achievementId;
 				$this->AchievementStatus->create();
@@ -2288,12 +2288,12 @@ class AppController extends Controller {
 			$ac = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'category' => 'err',
 				],
 			]);
 
-			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$buffer) {
 				$buffer = [];
 			}
@@ -2303,7 +2303,7 @@ class AppController extends Controller {
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			}
 			$as = [];
-			$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+			$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 			$updated = [];
 
 			$achievementId = 53;
@@ -2369,7 +2369,7 @@ class AppController extends Controller {
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('RankOverview');
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2379,22 +2379,22 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
-		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => $this->loggedInUserID()]]);//blitz
+		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => $this->getLoggedInUserID()]]);//blitz
 		if (!$rBlitz) {
 			$rBlitz = [];
 		}
-		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => $this->loggedInUserID()]]);//fast
+		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => $this->getLoggedInUserID()]]);//fast
 		if (!$rFast) {
 			$rFast = [];
 		}
-		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => $this->loggedInUserID()]]);//slow
+		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => $this->getLoggedInUserID()]]);//slow
 		if (!$rSlow) {
 			$rSlow = [];
 		}
-		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$r) {
 			$r = [];
 		}
@@ -2515,7 +2515,7 @@ class AppController extends Controller {
 		$this->loadModel('User');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2525,7 +2525,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$achievementId = 59;
@@ -2627,7 +2627,7 @@ class AppController extends Controller {
 		}
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2637,7 +2637,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$achievementId = 36;
@@ -2743,7 +2743,7 @@ class AppController extends Controller {
 		$ac = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'category' => 'set',
 			],
 		]);
@@ -2752,7 +2752,7 @@ class AppController extends Controller {
 			return [];
 		}
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2762,7 +2762,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$achievementId = 47;
@@ -2830,7 +2830,7 @@ class AppController extends Controller {
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2840,7 +2840,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$tsIds = [];
@@ -2857,7 +2857,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2889,7 +2889,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2921,7 +2921,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2952,7 +2952,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2980,7 +2980,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -3066,7 +3066,7 @@ class AppController extends Controller {
 			'order' => 'value DESC',
 			'conditions' => [
 				'set_id' => $sid,
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'category' => '%',
 			],
 		]);
@@ -3077,11 +3077,11 @@ class AppController extends Controller {
 			'order' => 'value ASC',
 			'conditions' => [
 				'set_id' => $sid,
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => $this->getLoggedInUserID(),
 				'category' => 's',
 			],
 		]);
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -3091,7 +3091,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = $this->getLoggedInUserID();
 		$updated = [];
 
 		$achievementId = 99;
@@ -3277,7 +3277,7 @@ class AppController extends Controller {
 			}
 			$achievementId = 46;
 			if ($acA['AchievementCondition']['value'] >= 100) {
-				$ac100 = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => $this->loggedInUserID(), 'category' => '%', 'value >=' => 100]]);
+				$ac100 = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID(), 'category' => '%', 'value >=' => 100]]);
 				if (!$ac100) {
 					$ac100 = [];
 				}
@@ -3288,7 +3288,7 @@ class AppController extends Controller {
 						$ac100counter++;
 					}
 				}
-				$as100 = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $this->loggedInUserID(), 'achievement_id' => $achievementId]]);
+				$as100 = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $this->getLoggedInUserID(), 'achievement_id' => $achievementId]]);
 				if ($as100 == null) {
 					$as['AchievementStatus']['achievement_id'] = $achievementId;
 					$as['AchievementStatus']['value'] = 1;
@@ -3718,7 +3718,7 @@ class AppController extends Controller {
 					$saveTag = [];
 					$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
 					$saveTag['Tag']['tsumego_id'] = $tagId;
-					$saveTag['Tag']['user_id'] = $this->loggedInUserID();
+					$saveTag['Tag']['user_id'] = $this->getLoggedInUserID();
 					$saveTag['Tag']['approved'] = 0;
 					$this->Tag->save($saveTag);
 				}
@@ -3770,7 +3770,7 @@ class AppController extends Controller {
 
 		if ($this->loggedInUser) {
 			$this->handleSearchSettings($this->loggedInUser['User']['id']);
-			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
 			if (!$favx) {
 				$favx = [];
 			}
@@ -3825,7 +3825,7 @@ class AppController extends Controller {
 				$utsx = $this->TsumegoStatus->find('all', [
 					'order' => 'created DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 						'tsumego_id' => (int) $_COOKIE['previousTsumegoID'],
 					],
 				]);
@@ -3859,7 +3859,7 @@ class AppController extends Controller {
 					//$previosTsumegoXsc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $_COOKIE['noPreId'])));
 					//$scoreArrX = explode('-', $this->decrypt($_COOKIE['noScore']));
 
-					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => $this->loggedInUserID()]]);
+					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => $this->getLoggedInUserID()]]);
 					if ($utPreX == null) {
 						$utPreX['TsumegoStatus'] = [];
 						$utPreX['TsumegoStatus']['user_id'] = $this->loggedInUser['User']['id'];
@@ -4099,7 +4099,7 @@ class AppController extends Controller {
 		}
 
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+			$this->updateXP($this->getLoggedInUserID(), $achievementUpdate);
 		}
 
 		$nextDay = new DateTime('tomorrow');

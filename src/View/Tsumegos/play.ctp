@@ -84,8 +84,8 @@
 		echo '<script type="text/javascript">window.location.href = "/ranks/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
-		if(!$this->Session->check('loggedInUserID')
-			|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')<1
+		if(!$this->isLoggedIn()
+			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
@@ -97,8 +97,8 @@
 		echo '<style>#xpDisplay{font-weight:800;color:#60167d;}</style>';
 	}
 	if($t['Tsumego']['premium']==1){
-		if(!$this->Session->check('loggedInUserID')
-			|| $this->Session->check('loggedInUserID') && $this->Session->read('loggedInUser.User.premium')<1
+		if(!$this->isLoggedIn()
+			|| $this->isLoggedIn() && $this->Session->read('loggedInUser.User.premium')<1
 		)
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -321,7 +321,7 @@
 				$placeholder = str_replace($descriptionColor, '[b]', $t['Tsumego']['description']);
 				echo $this->Form->create('Comment');
 				echo $this->Form->input('id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUserID')));
+				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->getLoggedInUserID()));
 				echo $this->Form->input('modifyDescription', array('value' => $placeholder, 'label' => '', 'type' => 'text', 'placeholder' => 'Description'));
 				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
 				if(true) $modifyDescriptionType = 'text';
@@ -546,7 +546,7 @@
 	<div align="center">
 	<?php
 
-	if($this->Session->check('loggedInUserID')){
+	if($this->isLoggedIn()){
 		if($firstRanks==0){
 			$makeProposal = '';
 			$proposalSentColor = '';
@@ -592,7 +592,7 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-			if($this->Session->check('loggedInUserID')){
+			if($this->isLoggedIn()){
 				if($t['Tsumego']['duplicate']!=0 && $t['Tsumego']['duplicate']!=-1 && $mode!=2){
 					echo '<div class="duplicateTable">Is duplicate group:<br>';
 					for($i=0; $i<count($duplicates); $i++){
@@ -786,8 +786,8 @@
 			//if($this->Session->read('loggedInUser.User.premium')>=1){
 			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
 			$allowed = true;
-			if($this->Session->check('loggedInUserID')){
-				if($this->Session->read('loggedInUserID')!=5080){
+			if($this->isLoggedIn()){
+				if($this->getLoggedInUserID()!=5080){
 					echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
 				}else{
 					$allowed = false;
@@ -901,14 +901,14 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($this->Session->read('loggedInUserID') == $showComment[$i]['Comment']['user_id']){
+					if($this->getLoggedInUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
 					if($this->Session->read('loggedInUser.User.isAdmin')==1){
 						if($showComment[$i]['Comment']['status']==0){
 							//echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
 							echo '<br>';
-							if($this->Session->read('loggedInUserID')!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
+							if($this->getLoggedInUserID()!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
 								echo '<a class="deleteComment" style="text-decoration:none;" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=3">
 									<img class="thumbs-small" title="approve this comment" width="20px" src="/img/thumbs-small.png">
 								</a>';
@@ -927,7 +927,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUserID')));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->getLoggedInUserID()));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1032,7 +1032,7 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($this->Session->read('loggedInUserID') == $showComment[$i]['Comment']['user_id']){
+					if($this->getLoggedInUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
 					if($this->Session->read('loggedInUser.User.isAdmin')==1){
@@ -1047,7 +1047,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUserID')));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->getLoggedInUserID()));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1366,11 +1366,11 @@
 		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
 	}}
 
-	if($this->Session->check('loggedInUserID')){
+	if($this->isLoggedIn()){
 		if($this->Session->read('loggedInUser.User.isAdmin')>0){
 			echo '$(".modify-description-panel").hide();';
 		}
-		echo 'var besogoUserId = '.$this->Session->read('loggedInUserID').';';
+		echo 'var besogoUserId = '.$this->getLoggedInUserID().';';
 	}else{
 		echo 'besogoNoLogin = true;';
 	}
@@ -1381,7 +1381,7 @@
 	echo 'besogoPlayerColor = "black";';
 
 	if($authorx==$this->Session->read('loggedInUser.User.name')) echo 'authorProblem = true;';
-	if($this->Session->read('loggedInUserID')==72){
+	if($this->getLoggedInUserID()==72){
 		echo 'authorProblem = true;';
 		echo 'revelationEnabled = true;';
 	}
@@ -2238,8 +2238,8 @@
 		});
 
 		<?php
-			if($this->Session->check('loggedInUserID')){
-				//if($this->Session->read('loggedInUserID')==72) echo '$("#msg5").show();';
+			if($this->isLoggedIn()){
+				//if($this->getLoggedInUserID()==72) echo '$("#msg5").show();';
 			}
 		?>
 		$("#show5").click(function(){
@@ -2337,11 +2337,11 @@
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if($this->Session->check('loggedInUserID')){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
+		<?php if($this->isLoggedIn()){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
-				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $this->Session->read('loggedInUserID'); ?>;
+				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $this->getLoggedInUserID(); ?>;
 			});
 		<?php }}} ?>
 
@@ -2556,7 +2556,7 @@
 	function runXPNumber(id, start, end, duration, ulvl){
 	start = Math.round(start);
 	end = Math.round(end);
-	<?php if($this->Session->check('loggedInUserID')){ ?>
+	<?php if($this->isLoggedIn()){ ?>
 	let runXPNumberNextLvl = <?php echo $user['User']['nextlvl']; ?>+"";
 	if(start!==end && !ratingBarLock){
 		userXP = end;
@@ -3069,7 +3069,7 @@
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
 					}
-					<?php if($this->Session->check('loggedInUserID')){ ?>
+					<?php if($this->isLoggedIn()){ ?>
 					if(mode==1 && levelBar==1){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
@@ -3396,7 +3396,7 @@
     options.reviewMode = false;
     options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
-		//if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUserID')==72){ echo 'options.reviewEnabled = true;'; }}
+		//if($this->Session->check('loggedInUser')){ if($this->getLoggedInUserID()==72){ echo 'options.reviewEnabled = true;'; }}
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
 	?>

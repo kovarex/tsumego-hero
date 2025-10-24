@@ -93,7 +93,7 @@ class ActivatesController extends AppController {
 		if (!empty($this->data)) {
 			$ac = $this->Activate->find('first', ['conditions' => ['string' => $this->data['Activate']['Key']]]);
 			if ($ac) {
-				$ac['Activate']['user_id'] = $this->loggedInUserID();
+				$ac['Activate']['user_id'] = $this->getLoggedInUserID();
 				$this->Activate->save($ac);
 				$key = 1;
 			} else {
@@ -101,7 +101,7 @@ class ActivatesController extends AppController {
 			}
 		}
 
-		if ($this->Activate->find('first', ['conditions' => ['user_id' => $this->loggedInUserID()]])) {
+		if ($this->Activate->find('first', ['conditions' => ['user_id' => $this->getLoggedInUserID()]])) {
 			$key = 1;
 		}
 

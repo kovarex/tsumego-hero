@@ -51,7 +51,7 @@ class CommentsController extends AppController {
 		if ($filter1 == 'true') {
 			$userTsumegos = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 					'OR' => [
 						['status' => 'S'],
 						['status' => 'C'],
@@ -65,7 +65,7 @@ class CommentsController extends AppController {
 		} else {
 			$userTsumegos = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 				],
 			]);
 			if (!$userTsumegos) {
@@ -343,7 +343,7 @@ class CommentsController extends AppController {
 				'limit' => 500,
 				'order' => 'created DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => $this->getLoggedInUserID(),
 				],
 			]);
 			if (!$yourComments) {
@@ -360,7 +360,7 @@ class CommentsController extends AppController {
 					'order' => 'created DESC',
 					'conditions' => [
 						'Comment.id <' => $this->params['url']['your-comment-id'],
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 					],
 				]);
 				if (!$yourComments) {
@@ -372,7 +372,7 @@ class CommentsController extends AppController {
 					'order' => 'created ASC',
 					'conditions' => [
 						'Comment.id >' => $this->params['url']['your-comment-id'],
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => $this->getLoggedInUserID(),
 					],
 				]);
 				if (!$yourComments) {
