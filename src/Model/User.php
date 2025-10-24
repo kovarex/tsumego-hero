@@ -39,22 +39,6 @@ class User extends AppModel {
 				'message' => 'Email already exists',
 			],
 		],
-
-		'pw' => [
-			'notempty' => [
-				'rule' => 'notBlank',
-				'message' => 'Please insert Password',
-			],
-
-			'minmax' => [
-				'rule' => ['between', 4, 40],
-				'message' => 'The password should have at least 4 characters',
-			],
-			'match' => [
-				'rule' => 'checkPasswords',
-				'message' => 'Passwords do not match',
-			],
-		],
 	];
 
 	public function checkUnique($data, $field) {
