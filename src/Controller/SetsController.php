@@ -199,7 +199,7 @@ class SetsController extends AppController {
 		if (!$sets) {
 			$sets = [];
 		}
-		$u = $this->User->findById($this->getLoggedInUserID());
+		$u = $this->User->findById($this->loggedInUserID());
 
 		if ($this->isLoggedIn()) {
 			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $this->getLoggedInUserID()]]);
@@ -439,7 +439,7 @@ class SetsController extends AppController {
 		$overallCounter = 0;
 		$searchCounter = 0;
 		$achievementUpdate = [];
-		$searchPatameters = $this->processSearchParameters($this->getLoggedInUserID());
+		$searchPatameters = $this->processSearchParameters($this->loggedInUserID());
 		$query = $searchPatameters[0];
 		$collectionSize = $searchPatameters[1];
 		$search1 = $searchPatameters[2] ?? [];
@@ -547,7 +547,7 @@ class SetsController extends AppController {
 			}
 		}
 		if ($this->isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->getLoggedInUserID());
+			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
 		} else {
 			$noLoginUts = [];
 			$noLoginCount = count($this->Session->read('noLogin') ?? []);
@@ -1162,7 +1162,7 @@ class SetsController extends AppController {
 			$partition = 0;
 		}
 
-		$searchParameters = $this->processSearchParameters($this->getLoggedInUserID());
+		$searchParameters = $this->processSearchParameters($this->loggedInUserID());
 		$query = $searchParameters[0];
 		$collectionSize = $searchParameters[1];
 		$search1 = $searchParameters[2];
@@ -1178,7 +1178,7 @@ class SetsController extends AppController {
 			}
 		}
 		if ($this->isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->getLoggedInUserID());
+			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
 			if ($this->isAdmin()) {
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
 				if ($aad['AdminActivity']['file'] == '/delete') {
@@ -1246,7 +1246,7 @@ class SetsController extends AppController {
 			}
 			$query = $viewType;
 			$_COOKIE['query'] = $query;
-			$searchParameters = $this->processSearchParameters($this->getLoggedInUserID());
+			$searchParameters = $this->processSearchParameters($this->loggedInUserID());
 
 			$this->Session->write('lastSet', $id);
 			if ($viewType == 'difficulty') {
@@ -2458,7 +2458,7 @@ class SetsController extends AppController {
 		}
 		*/
 		if ($this->isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->getLoggedInUserID());
+			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser($this->loggedInUserID());
 		}
 
 		$setsCount = count($sets);

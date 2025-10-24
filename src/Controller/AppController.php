@@ -3697,7 +3697,7 @@ class AppController extends Controller {
 		$hasFavs = false;
 
 		if ($this->isLoggedIn()) {
-			$this->loggedInUser = $this->User->findById($this->getLoggedInUserID());
+			$this->loggedInUser = $this->User->findById($this->loggedInUserID());
 			$this->user = &$this->loggedInUser;
 			$this->sessionUser = null;
 		} else {
