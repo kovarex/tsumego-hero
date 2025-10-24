@@ -11,7 +11,7 @@ INSERT INTO `users` (
     1,
     'kovarex',
     'test@example.com',
-    '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG', --password hash of 'test'
+    '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG',
     1500,
     NOW()
 );
