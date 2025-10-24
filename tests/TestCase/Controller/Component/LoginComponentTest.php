@@ -10,6 +10,16 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 	}
 
+	public function testLoginWithWrongPassword(): void {
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotEmpty($user);
+		CakeSession::destroy(); // so sessisions are persistent between tests, TODO: better solution than manual clear
+
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'testx']], 'method' => 'POST']);
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+	}
+
 	public function testLogout(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
