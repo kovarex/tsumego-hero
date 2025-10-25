@@ -44,12 +44,12 @@ class PlayResultProcessorComponent extends Component {
 			'order' => 'created DESC',
 			'conditions' => [
 				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
-				'user_id' => (int) Auth::getUser()['id'],
+				'user_id' => (int) Auth::getUserID(),
 			],
 		]);
 		if ($previousTsumegoStatus == null) {
 			$previousTsumegoStatus['TsumegoStatus'] = [];
-			$previousTsumegoStatus['TsumegoStatus']['user_id'] = Auth::getUser()['id'];
+			$previousTsumegoStatus['TsumegoStatus']['user_id'] = Auth::getUserID();
 			$previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
 			$previousTsumegoStatus['TsumegoStatus']['status'] = 'V';
 		}
@@ -173,7 +173,7 @@ class PlayResultProcessorComponent extends Component {
 					}
 				}
 				if (!$suspiciousBehavior) {
-					$xpOld =  Auth::getUser()['xp'] + (int) ($_COOKIE['score']);
+					$xpOld = Auth::getUser()['xp'] + (int) ($_COOKIE['score']);
 					Auth::getUser()['reuse2']++;
 					Auth::getUser()['reuse3'] += (int) ($_COOKIE['score']);
 					if ($xpOld >= Auth::getUser()['nextlvl']) {
@@ -186,7 +186,7 @@ class PlayResultProcessorComponent extends Component {
 						Auth::getUser()['xp'] = $xpOld;
 						Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
 					}
-					if (Auth::getUser()['id'] != 33) { // noUser
+					if (Auth::getUserID() != 33) { // noUser
 						if (!isset($_COOKIE['seconds'])) {
 							$cookieSeconds = 0;
 						} else {
@@ -194,7 +194,7 @@ class PlayResultProcessorComponent extends Component {
 						}
 
 						$tsumegoAttempt = [];
-						$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUser()['id'];
+						$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
 						$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
 						$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 						$tsumegoAttempt['TsumegoAttempt']['gain'] = $_COOKIE['score'];
@@ -218,7 +218,7 @@ class PlayResultProcessorComponent extends Component {
 						$aCondition = $appController->AchievementCondition->find('first', [
 							'order' => 'value DESC',
 							'conditions' => [
-								'user_id' => Auth::getUser()['id'],
+								'user_id' => Auth::getUserID(),
 								'category' => 'err',
 							],
 						]);
@@ -226,7 +226,7 @@ class PlayResultProcessorComponent extends Component {
 							$aCondition = [];
 						}
 						$aCondition['AchievementCondition']['category'] = 'err';
-						$aCondition['AchievementCondition']['user_id'] = Auth::getUser()['id'];
+						$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 						$aCondition['AchievementCondition']['value']++;
 						$appController->AchievementCondition->save($aCondition);
 					}

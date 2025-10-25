@@ -1,7 +1,7 @@
 <div align="center">
 <p class="title">
 	Request account deletion
-	<br> 
+	<br>
 </p>
 
 <br><br>
@@ -17,7 +17,7 @@
 		echo $this->Form->create('User');
 		echo $this->Form->input('delete', array('value' => 'o474w544a4n4q5g4y2', 'label' => '', 'type' => 'hidden'));
 	}
-	
+
 	echo $this->Form->end('Submit');
 	echo '<br>';
 	echo $status;
@@ -25,6 +25,6 @@
 </div>
 <?php
 	if($redirect){
-		echo '<script type="text/javascript">window.location.href = "/users/view/'.Auth::getUser()['id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "/users/view/'.Auth::getUserID().'";</script>';
 	}
 ?>

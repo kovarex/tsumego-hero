@@ -328,7 +328,7 @@ class TsumegosController extends AppController {
 					for ($i = 0; $i < $stopParameter; $i++) {
 						$rm = [];
 						$rm['Rank']['session'] = Auth::getUser()['activeRank'];
-						$rm['Rank']['user_id'] = Auth::getUser()['id'];
+						$rm['Rank']['user_id'] = Auth::getUserID();
 						$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
 						if ($rm['Rank']['tsumego_id'] == null) {
 							$rm['Rank']['tsumego_id'] = 5127;
@@ -973,7 +973,7 @@ class TsumegosController extends AppController {
 			$newV = (($diff - $oldmin) / ($oldmax - $oldmin)) * ($newmax - $newmin);
 
 		} elseif ($mode == 3) {
-			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUser()['id'], 'tsumego_id' => $t['Tsumego']['id']]]);
+			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];
 			$allUts2 = [];
 			$allUts2['TsumegoStatus']['id'] = 59;
@@ -1199,7 +1199,7 @@ class TsumegosController extends AppController {
 			if (Auth::getUser()['damage'] > Auth::getUser()['health']) {
 				if (empty($utPre)) {
 					$utPre['TsumegoStatus'] = [];
-					$utPre['TsumegoStatus']['user_id'] = Auth::getUser()['id'];
+					$utPre['TsumegoStatus']['user_id'] = Auth::getUserID();
 					$utPre['TsumegoStatus']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 				}
 				if (!$hasPremium) {
@@ -1295,7 +1295,7 @@ class TsumegosController extends AppController {
 								Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
 							}
 						}
-						if ($mode == 1 && Auth::getUser()['id'] != 33) {
+						if ($mode == 1 && Auth::getUserID() != 33) {
 							if (isset($_COOKIE['previousTsumegoID'])) {
 								$this->TsumegoAttempt->create();
 								$ur = [];
