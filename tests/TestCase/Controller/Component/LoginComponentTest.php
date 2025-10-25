@@ -1,7 +1,6 @@
 <?php
 
 App::uses('Auth', 'Utility');
-use Cake\TestSuite\EmailTrait;
 
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer {
