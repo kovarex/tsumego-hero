@@ -3445,50 +3445,6 @@ Joschka Zimdars';
 		return password_verify($data['User']['password'], $user['User']['password_hash']);
 	}
 
-	private function tinkerEncode($string, $key) {
-		if (!is_string($string)) {
-			return '';
-		}
-		$j = 1.0;
-		$hash = '';
-		$key = sha1((string) $key);
-		$strLen = strlen($string);
-		$keyLen = strlen($key);
-		for ($i = 0; $i < $strLen; $i++) {
-			$ordStr = ord(substr($string, $i, 1));
-			if ($j == $keyLen) {
-				$j = 0;
-			}
-			$ordKey = ord(substr($key, $j, 1));
-			$j++;
-			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
-		}
-
-		return $hash;
-	}
-
-	/*	private function tinkerDecode($string, $key) {
-			if (!is_string($string)) {
-				return '';
-			}
-			$j = 1.0;
-			$hash = '';
-			$key = sha1((string) $key);
-			$strLen = strlen($string);
-			$keyLen = strlen($key);
-			for ($i = 0; $i < $strLen; $i += 2) {
-				$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
-				if ($j == $keyLen) {
-					$j = 0;
-				}
-				$ordKey = ord(substr($key, $j, 1));
-				$j++;
-				$hash .= chr($ordStr - $ordKey);
-			}
-
-			return $hash;
-		}*/
-
 	/**
 	 * @return void
 	 */
@@ -5068,4 +5024,61 @@ Joschka Zimdars';
 		$this->set('params', $this->params['url']['t']);
 	}
 
+	// The following 3 methods (tinkerEncode, tinkerDecode and migratePasswordsToHashes can be removed once the migration
+	// is applied on the live database
+	private function tinkerDecode($string, $key) {
+		if (!is_string($string)) {
+			return '';
+		}
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string) $key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
+		for ($i = 0; $i < $strLen; $i += 2) {
+			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
+			if ($j == $keyLen) {
+				$j = 0;
+			}
+			$ordKey = ord(substr($key, $j, 1));
+			$j++;
+			$hash .= chr($ordStr - $ordKey);
+		}
+
+		return $hash;
+	}
+
+	private function tinkerEncode($string, $key) {
+		if (!is_string($string)) {
+			return '';
+		}
+		$j = 1.0;
+		$hash = '';
+		$key = sha1((string) $key);
+		$strLen = strlen($string);
+		$keyLen = strlen($key);
+		for ($i = 0; $i < $strLen; $i++) {
+			$ordStr = ord(substr($string, $i, 1));
+			if ($j == $keyLen) {
+				$j = 0;
+			}
+			$ordKey = ord(substr($key, $j, 1));
+			$j++;
+			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
+		}
+
+		return $hash;
+	}
+
+	public function migratePasswordsToHashes($limit = 1000) {
+		$users = ClassRegistry::init('User')->find('all', ['limit' => $limit]);
+		foreach ($users as $user) {
+			$password = $this->tinkerDecode($user['User']['pw'], 1);
+			$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+			$user['User']['pw'] = null;
+			ClassRegistry::init('User')->save($user);
+		}
+		$this->Flash->set(count($users) . " passwords properly hashed");
+		return $this->redirect(['controller' => 'users', 'action' => 'login']);
+	}
 }

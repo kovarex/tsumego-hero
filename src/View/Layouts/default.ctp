@@ -48,15 +48,17 @@
 		$modeSelector = 2;
 		$accountBarLevelToRating = 'account-bar-user';
 		if($mode!=3){
-			if($levelBar==1){
-				if(isset(Auth::getUser()['level'])) $levelNum = 'Level '.Auth::getUser()['level'];
-				else $levelNum = 1;
+      if($levelBar==1){
+				if(Auth::isLoggedIn())
+					$levelNum = 'Level '.Auth::getUser()['level'];
+				else
+					$levelNum = 1;
 				$xpBarFill = 'xp-bar-fill-c1';
 				$modeSelector = 2;
 				$accountBarLevelToRating = 'account-bar-user';
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
-        if (Auth::getUser()['elo_rating_mode'])
+        if (Auth::isLoggedIn())
 				  $levelNum = Rating::getReadableRankFromRating(Auth::getUser()['elo_rating_mode']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
