@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS `cake_sessions` (
 
 ALTER TABLE `sets` DROP COLUMN `folder`;
 
+ALTER TABLE `progress_deletions` MODIFY created DATETIME NOT NULL;
+
+/* These are now probably redundant as we already modify the script (as it can't run on the weird collations anyway
+* But I'm keeping it
+*/
 ALTER TABLE `achievements` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_conditions` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_statuses` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
