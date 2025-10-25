@@ -5014,7 +5014,7 @@ Joschka Zimdars';
 		$this->set('params', $this->params['url']['t']);
 	}
 
-	// The following 3 methods (tinkerEncode, tinkerDecode and migratePasswordsToHashes can be removed once the migration
+	// The following 2 methods (tinkerDecode and migratePasswordsToHashes can be removed once the migration
 	// is applied on the live database
 	private function tinkerDecode($string, $key) {
 		if (!is_string($string)) {
@@ -5033,28 +5033,6 @@ Joschka Zimdars';
 			$ordKey = ord(substr($key, $j, 1));
 			$j++;
 			$hash .= chr($ordStr - $ordKey);
-		}
-
-		return $hash;
-	}
-
-	private function tinkerEncode($string, $key) {
-		if (!is_string($string)) {
-			return '';
-		}
-		$j = 1.0;
-		$hash = '';
-		$key = sha1((string) $key);
-		$strLen = strlen($string);
-		$keyLen = strlen($key);
-		for ($i = 0; $i < $strLen; $i++) {
-			$ordStr = ord(substr($string, $i, 1));
-			if ($j == $keyLen) {
-				$j = 0;
-			}
-			$ordKey = ord(substr($key, $j, 1));
-			$j++;
-			$hash .= strrev(base_convert(dechex($ordStr + $ordKey), 16, 36));
 		}
 
 		return $hash;
