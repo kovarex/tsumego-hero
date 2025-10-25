@@ -93,8 +93,8 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => $newPassword]], 'method' => 'POST']);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 
-    // changing the password to test again, to not break other tests
-    $user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
-    ClassRegistry::init('User')->save($user);
+		// changing the password to test again to not break other tests
+		$user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
+		ClassRegistry::init('User')->save($user);
 	}
 }
