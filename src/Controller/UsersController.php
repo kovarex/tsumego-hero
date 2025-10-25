@@ -577,13 +577,7 @@ class UsersController extends AppController {
 		if (!empty($this->data)) {
 			$u = $this->User->findByEmail($this->data['User']['email']);
 			if ($u) {
-				$length = 20;
-				$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-				$charactersLength = strlen($characters);
-				$randomString = '';
-				for ($i = 0; $i < $length; $i++) {
-					$randomString .= $characters[rand(0, $charactersLength - 1)];
-				}
+				$randomString = Util::generateRandomString(20);
 				$u['User']['passwordreset'] = $randomString;
 				$this->User->save($u);
 
@@ -613,19 +607,15 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		if ($checksum == null) {
 			$checksum = 1;
 		}
-		$u = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
-		if (!empty($this->data)) {
-			$newPw = $this->tinkerEncode($this->data['User']['pw'], 1);
-			$u['User']['pw'] = $newPw;
-			$this->User->save($u);
+		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
+		if ($user) {
+			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
+			$this->User->save($user);
 			$done = true;
-		} elseif ($u != null) {
-			$valid = true;
 		}
-		$this->set('u', $u['User']['name']);
+
 		$this->set('valid', $valid);
 		$this->set('done', $done);
-		$this->set('checksum', $checksum);
 	}
 
 	/**

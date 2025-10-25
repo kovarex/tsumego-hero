@@ -73,4 +73,28 @@ class LoginComponentTest extends ControllerTestCase {
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
 		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
 	}
+
+	public function testNewPassword(): void {
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotEmpty($user);
+
+		$resetSecret = 'reset_checksum_abc';
+		$user['User']['passwordreset'] = $resetSecret;
+		ClassRegistry::init('User')->save($user);
+
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$newPassword = Util::generateRandomString(20);
+
+		$this->testAction('users/newpassword/' . $resetSecret, ['data' => ['User' => ['password' => $newPassword]], 'method' => 'POST']);
+
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$this->assertFalse(Auth::isLoggedIn());
+
+		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => $newPassword]], 'method' => 'POST']);
+		$this->assertNotNull(CakeSession::read('loggedInUserID'));
+
+    // changing the password to test again, to not break other tests
+    $user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
+    ClassRegistry::init('User')->save($user);
+	}
 }
