@@ -5044,12 +5044,13 @@ Joschka Zimdars';
 	}
 
 	public function migratePasswordsToHashes($limit = 1000) {
-		$users = ClassRegistry::init('User')->find('all', ['limit' => $limit]);
+		$users = ClassRegistry::init('User')->find('all', ['conditions' => ['password_hash' => ''], 'limit' => $limit]);
+		$userModel = ClassRegistry::init('User');
 		foreach ($users as $user) {
 			$password = $this->tinkerDecode($user['User']['pw'], 1);
 			$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
 			$user['User']['pw'] = null;
-			ClassRegistry::init('User')->save($user);
+			$userModel->save($user);
 		}
 		$this->Flash->set(count($users) . " passwords properly hashed");
 		return $this->redirect(['controller' => 'users', 'action' => 'login']);
