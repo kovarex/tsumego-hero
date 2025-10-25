@@ -8,6 +8,8 @@ SET @@sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_D
 ALTER TABLE users MODIFY premium SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=no premium, 1=basic premium, 2=golden premium';
 ALTER TABLE users MODIFY isAdmin boolean NOT NULL DEFAULT 0;
 ALTER TABLE users DROP column completed;
+ALTER TABLE users MODIFY passwordreset VARCHAR(50) NULL DEFAULT NULL;
+UPDATE users set passwordreset=null where passwordreset='0';
 
 ALTER TABLE `user_boards` DROP COLUMN `id`;
 ALTER TABLE ranks ALTER COLUMN points SET DEFAULT 0;

@@ -1,11 +1,40 @@
 <?php
 
 App::uses('Auth', 'Utility');
+use Cake\TestSuite\EmailTrait;
+
+// this is hack until nicer solution in newer cake is possible to be used
+class TestEmailer {
+	public function __construct() {
+		self::$lastEmail = [];
+	}
+
+	public function from($from) {
+		self::$lastEmail['from'] = $from;
+	}
+
+	public function to($to) {
+		self::$lastEmail['to'] = $to;
+	}
+
+	public function subject($subject) {
+		self::$lastEmail['subject'] = $subject;
+	}
+
+	public function send($body) {
+		self::$lastEmail['body'] = $body;
+	}
+	public static $lastEmail = null;
+};
 
 class LoginComponentTest extends ControllerTestCase {
 	public function testLogin(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
+
+		// making sure the password is what we expect it to be
+		$user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
+		ClassRegistry::init('User')->save($user);
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'test']], 'method' => 'POST']);
@@ -74,6 +103,33 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
 	}
 
+	public function registerTestEmailer() {
+		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
+		$emailer = new TestEmailer();
+		$controller
+			->expects($this->any())
+			->method('_getEmailer')
+			->will($this->returnValue($emailer));
+	}
+
+	public function testResetPassword(): void {
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotEmpty($user);
+		$user['User']['passwordreset'] = null;
+		ClassRegistry::init('User')->save($user);
+
+		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$this->registerTestEmailer();
+		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['User']['email']]], 'method' => 'POST']);
+
+		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotEmpty($userNew['User']['passwordreset']);
+		$this->assertNotNull(TestEmailer::$lastEmail);
+		$this->assertSame(TestEmailer::$lastEmail['to'], $user['User']['email']);
+		$this->assertTextContains('Password reset', TestEmailer::$lastEmail['subject']);
+		$this->assertTextContains('https://' . $_SERVER['http_host'] . '/users/newpassword/' . $userNew['User']['passwordreset'], TestEmailer::$lastEmail['body']);
+	}
+
 	public function testNewPassword(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
@@ -87,6 +143,8 @@ class LoginComponentTest extends ControllerTestCase {
 
 		$this->testAction('users/newpassword/' . $resetSecret, ['data' => ['User' => ['password' => $newPassword]], 'method' => 'POST']);
 
+		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNull($newUser['User']['passwordreset']); // password reset was cleared
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->assertFalse(Auth::isLoggedIn());
 
@@ -94,7 +152,7 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 
 		// changing the password to test again to not break other tests
-		$user['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
-		ClassRegistry::init('User')->save($user);
+		$newUser['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
+		ClassRegistry::init('User')->save($newUser);
 	}
 }

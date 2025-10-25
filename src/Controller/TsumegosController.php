@@ -97,7 +97,6 @@ class TsumegosController extends AppController {
 		$requestSolution = false;
 		$currentRank2 = null;
 		$nothingInRange = false;
-		$avActive = true;
 		$avActive2 = true;
 		$utsMap = [];
 		$allUts = [];
@@ -1261,7 +1260,7 @@ class TsumegosController extends AppController {
 
 			if ($isNum && $isSet || $mode == 2) {
 				if ($mode == 1 || $mode == 3) {
-					if (Auth::isLoggedIn() && !$this->Session->check('noLogin')) {
+					if (!$this->Session->check('noLogin')) {
 						$ub = [];
 						$ub['UserBoard']['user_id'] = Auth::getUserID();
 						$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
@@ -2849,14 +2848,8 @@ class TsumegosController extends AppController {
 		$this->startPageUpdate();
 		$startingPlayer = $this->getStartingPlayer($sgf2);
 
-		if ($avActive == true) {
-			$avActiveText = '';
-		} else {
-			$avActiveText = '<font style="color:gray;"> (recently played)</font>';
-		}
-		if ($avActive2 == false) {
-			$avActiveText = '<font style="color:gray;"> (out of range)</font>';
-		}
+		$avActiveText = '';
+		$avActiveText = '<font style="color:gray;"> (out of range)</font>';
 
 		$eloScoreRounded = round($eloScore);
 		$eloScore2Rounded = round($eloScore2);
@@ -2979,7 +2972,9 @@ class TsumegosController extends AppController {
 		$this->set('idForSignature', $idForSignature);
 		$this->set('idForSignature2', $idForSignature2);
 		$this->set('score3', $score3);
-		$this->set('activityValue', $activityValue);
+		if (isset($activityValue)) {
+			$this->set('activityValue', $activityValue);
+		}
 		$this->set('avActiveText', $avActiveText);
 		$this->set('nothingInRange', $nothingInRange);
 		$this->set('tRank', $tRank);

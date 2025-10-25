@@ -574,25 +574,29 @@ class UsersController extends AppController {
 	public function resetpassword() {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
-		if (!empty($this->data)) {
-			$u = $this->User->findByEmail($this->data['User']['email']);
-			if ($u) {
-				$randomString = Util::generateRandomString(20);
-				$u['User']['passwordreset'] = $randomString;
-				$this->User->save($u);
-
-				$Email = new CakeEmail();
-				$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
-				$Email->to($this->data['User']['email']);
-				$Email->subject('Password reset for your Tsumego Hero account');
-				$ans = 'Click the following button to reset your password. If you have not requested the password reset,
-then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomString;
-				$Email->send($ans);
-			}
-			$this->set('sent', true);
-		} else {
-			$this->set('sent', false);
+		$this->set('sent', !empty($this->data));
+		if (empty($this->data)) {
+			return;
 		}
+
+		$user = $this->User->findByEmail($this->data['User']['email']);
+		if (!$user) {
+			return;
+		}
+		$randomString = Util::generateRandomString(20);
+		$user['User']['passwordreset'] = $randomString;
+		$this->User->save($user);
+
+		$email = $this->_getEmailer();
+		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$email->to($this->data['User']['email']);
+		$email->subject('Password reset for your Tsumego Hero account');
+		$email->send('Click the following button to reset your password. If you have not requested the password reset,
+then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
+	}
+
+	public function _getEmailer() {
+		return new CakeEmail();
 	}
 
 	/**
@@ -609,6 +613,7 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 		}
 		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
 		if ($user) {
+			$user['User']['passwordreset'] = null;
 			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
 			$done = true;
