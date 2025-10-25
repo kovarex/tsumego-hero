@@ -2444,29 +2444,32 @@ then ignore this email. https://tsumego-hero.com/users/newpassword/' . $randomSt
 	public function add() {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign Up');
-		if (!empty($this->data)) {
-			$userData = $this->data;
-			$userData['User']['pw'] = $this->tinkerEncode($this->data['User']['pw'], 1);
-			$userData['User']['pw2'] = $this->tinkerEncode($this->data['User']['pw2'], 1);
-
-			if ($this->data['User']['pw'] == $this->data['User']['pw2']) {
-				if (strlen($this->data['User']['pw']) < 4) {
-					$userData['User']['pw'] = 'x';
-					$userData['User']['pw2'] = 'x';
-				}
-			}
-
-			$this->User->create();
-			if ($this->User->save($userData, true)) {
-				if ($this->validateLogin($this->data, $userData)) {
-					$this->Session->setFlash(__('Registration successful.', true));
-
-					return $this->redirect(['controller' => 'sets', 'action' => 'index']);
-				}
-
-				$this->Session->setFlash(__('Login incorrect.', true));
-			}
+		if (empty($this->data)) {
+			return;
 		}
+
+		if ($this->data['User']['password1'] != $this->data['User']['password2']) {
+			$this->Flash->set('passwords don\'t match');
+			return;
+		}
+
+		$userData = $this->data;
+		$userData['User']['password_hash'] = password_hash($this->data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['name'] = $this->data['User']['name'];
+		$userData['User']['email'] = $this->data['User']['email'];
+
+		$this->User->create();
+		if (!$this->User->save($userData, true)) {
+			$this->Flash->set('Unable to create user with this name');
+			return;
+		}
+
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $this->data['User']['name']]]);
+		if (!$user) {
+			die("New user created, but it is not possible to load it.");
+		}
+		$this->Flash->set(__('Registration successful.'));
+		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
 	}
 
 	/**

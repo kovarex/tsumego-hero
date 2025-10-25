@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Auth', 'Utility');
+
 class LoginComponentTest extends ControllerTestCase {
 	public function testLogin(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
@@ -34,7 +36,13 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex' . strval($userWithBiggestID);
-		$this->testAction('users/logout/');
-		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
+			'password1' => 'hello',
+			'password2' => 'hello',
+			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
+		$this->assertNotNull($newUser);
+		$this->assertSame($newUser['User']['name'], $newUsername);
+		$this->assertSame($newUser['User']['email'], $newUsername . "@email.com");
 	}
 }
