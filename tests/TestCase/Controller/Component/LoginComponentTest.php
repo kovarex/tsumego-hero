@@ -45,4 +45,32 @@ class LoginComponentTest extends ControllerTestCase {
 		$this->assertSame($newUser['User']['name'], $newUsername);
 		$this->assertSame($newUser['User']['email'], $newUsername . "@email.com");
 	}
+
+	public function testSignUpWithDupliciteName(): void {
+		$this->assertFalse(Auth::isLoggedIn());
+		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$newUsername = 'kovarex';
+		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
+			'password1' => 'hello',
+			'password2' => 'hello',
+			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+		$userCount = count(ClassRegistry::init('User')->find('all'));
+
+		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
+		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
+	}
+
+	public function testSignUpWithNameThatOnlyDiffersInCase(): void {
+		$this->assertFalse(Auth::isLoggedIn());
+		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
+		$newUsername = 'Kovarex';
+		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
+			'password1' => 'hello',
+			'password2' => 'hello',
+			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+		$userCount = count(ClassRegistry::init('User')->find('all'));
+
+		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
+		$this->assertSame($userCount, count(ClassRegistry::init('User')->find('all'))); // no user was added
+	}
 }
