@@ -32,7 +32,7 @@ class Auth {
 	}
 
 	public static function isAdmin(): bool {
-		return Auth::getUser() && Auth::getUser()['isAdmin'];
+		return Auth::isLoggedIn() && Auth::getUser()['isAdmin'];
 	}
 
 	public static function hasPremium(): bool {
