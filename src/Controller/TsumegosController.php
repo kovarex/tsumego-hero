@@ -107,12 +107,6 @@ class TsumegosController extends AppController {
 		$amountOfOtherCollection = 200;
 		$partition = -1;
 
-		if (isset($this->params['url']['sid'])) {
-			if (strpos($this->params['url']['sid'], '?') > 0) {
-				$id = 15352;
-			}
-		}
-
 		$hasPremium = Auth::hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 		if (!$swp) {
@@ -503,82 +497,45 @@ class TsumegosController extends AppController {
 			}
 		}
 
+		$t = $this->Tsumego->findById($id);//the tsumego
+		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
+
+		if ($t['Tsumego']['elo_rating_mode'] < 1000) {
+			$t = $this->checkEloAdjust($t);
+		}
+
+		if (isset($this->params['url']['sid'])) {
+			$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id, 'set_id' => $this->params['url']['sid']]]);
+			if ($sc) {
+				$t['Tsumego']['set_id'] = $this->params['url']['sid'];
+				$t['Tsumego']['num'] = $sc['SetConnection']['num'];
+				if (!$hasDuplicateGroup) {
+					$t['Tsumego']['duplicateLink'] = '';
+				} else {
+					$t['Tsumego']['duplicateLink'] = '?sid=' . $t['Tsumego']['set_id'];
+				}
+			}
+		}
+
 		if (Auth::isLoggedIn()) {
-			$t = $this->Tsumego->findById($id);//the tsumego
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-
-			if ($t['Tsumego']['elo_rating_mode'] < 1000) {
-				$t = $this->checkEloAdjust($t);
-			}
-
 			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
-			$eloDifference = abs(Auth::getUser()['elo_rating_mode'] - $t['Tsumego']['elo_rating_mode']);
+		}
 
-			if (Auth::getUser()['elo_rating_mode'] > $t['Tsumego']['elo_rating_mode']) {
-				$eloBigger = 'u';
-				if ($eloDifference > 1000) {
-					$avActive2 = false;
-				}
-			} else {
-				$eloBigger = 't';
-			}
-			$newUserEloW = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'w');
-			$newUserEloL = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'l');
+		if ($t['Tsumego']['elo_rating_mode']) {
+			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
+		}
 
-			if ($activityValue[1] == 0 && $avActive2) {
-				$eloScore = $newUserEloW['user'];
-				$eloScore2 = $newUserEloL['user'];
-				$avActive = true;
-			} else {
-				$eloScore = 0;
-				$eloScore2 = 0;
-				$avActive = false;
-			}
-			if (isset($this->params['url']['sid'])) {
-				$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id, 'set_id' => $this->params['url']['sid']]]);
-				if ($sc) {
-					$t['Tsumego']['set_id'] = $this->params['url']['sid'];
-					$t['Tsumego']['num'] = $sc['SetConnection']['num'];
-					if (!$hasDuplicateGroup) {
-						$t['Tsumego']['duplicateLink'] = '';
-					} else {
-						$t['Tsumego']['duplicateLink'] = '?sid=' . $t['Tsumego']['set_id'];
-					}
-				}
-			}
-			if ($t['Tsumego']['elo_rating_mode']) {
-				$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
-			}
+		$fSet = $this->Set->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
+		if (!$fSet) {
+			$fSet = $this->Set->findById(1);
+		}
+		if ($t == null) {
+			$t = $this->Tsumego->findById($this->Session->read('lastVisit'));
+		}
 
-			if ($t['Tsumego']['duplicate'] > 9) { //duplicate and not main
-				$tDuplicate = $this->Tsumego->findById($t['Tsumego']['duplicate']);
-				$t['Tsumego']['difficulty'] = $tDuplicate['Tsumego']['difficulty'];
-				$t['Tsumego']['description'] = $tDuplicate['Tsumego']['description'];
-				$t['Tsumego']['hint'] = $tDuplicate['Tsumego']['hint'];
-				$t['Tsumego']['author'] = $tDuplicate['Tsumego']['author'];
-				$t['Tsumego']['solved'] = $tDuplicate['Tsumego']['solved'];
-				$t['Tsumego']['failed'] = $tDuplicate['Tsumego']['failed'];
-				$t['Tsumego']['userWin'] = $tDuplicate['Tsumego']['userWin'];
-				$t['Tsumego']['userLoss'] = $tDuplicate['Tsumego']['userLoss'];
-				$t['Tsumego']['alternative_response'] = $tDuplicate['Tsumego']['alternative_response'];
-				$t['Tsumego']['virtual_children'] = $tDuplicate['Tsumego']['virtual_children'];
-			}
+		$this->Session->write('lastVisit', $id);
 
-			$fSet = $this->Set->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
-			if (!$fSet) {
-				$fSet = $this->Set->findById(1);
-			}
-			if ($t == null) {
-				$t = $this->Tsumego->findById($this->Session->read('lastVisit'));
-			}
-
-			if ($mode == 1 || $mode == 3) {
-				$nextMode = $t;
-			}
-			if (isset($this->params['url']['rcheat']) && $this->params['url']['rcheat'] == 1) {
-				$reviewCheat = true;
-			}
-			$this->Session->write('lastVisit', $id);
+		if (Auth::isLoggedIn()) {
 			if (!empty($this->data)) {
 				if (isset($this->data['Comment']['status']) && !isset($this->data['Study2'])) {
 					$adminActivity = [];
@@ -977,13 +934,6 @@ class TsumegosController extends AppController {
 			$co[$i]['Comment']['message'] = $array[0];
 			array_push($commentCoordinates, $array[1]);
 			$counter1++;
-			/*
-			// Does not make sense on status integer!
-			$array = $this->commentCoordinates($co[$i]['Comment']['status'], $counter1, true);
-			$co[$i]['Comment']['status'] = $array[0];
-			array_push($commentCoordinates, $array[1]);
-			$counter1++;
-			*/
 		}
 		if ($mode == 1) {
 			if (Auth::isLoggedIn() && !$this->Session->check('noLogin')) {
@@ -2950,7 +2900,9 @@ class TsumegosController extends AppController {
 			$difficulty = 4;
 		}
 
-		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+		if (Auth::isLoggedIn()) {
+			Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+		}
 		$tags = $this->getTags($id);
 		$tags = $this->checkTagDuplicates($tags);
 

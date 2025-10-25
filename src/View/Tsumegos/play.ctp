@@ -1237,7 +1237,7 @@
 	var prevButtonLink = "<?php echo $prev; ?>";
 	var nextButtonLink = "<?php echo $next; ?>";
 	var lastInFav = "<?php echo $lastInFav; ?>";
-	var nextButtonLinkSet = <?php echo $t['Tsumego']['set_id']; ?>;
+	var nextButtonLinkSet = <?php echo $set['Set']['id']; ?>;
 	var nextButtonLinkLv = <?php echo $lv; ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
@@ -1378,11 +1378,8 @@
 	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236)
 	echo 'besogoPlayerColor = "black";';
 
-	if($authorx==Auth::getUser()['name']) echo 'authorProblem = true;';
-	if(Auth::getUserID()==72){
+	if ($authorx == Auth::getWithDefault('name', ''))
 		echo 'authorProblem = true;';
-		echo 'revelationEnabled = true;';
-	}
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
@@ -3052,7 +3049,7 @@
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
 					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>*x3) + <?php echo Auth::getWithDefault('xp', 0); ?>;
-					userNextlvl = <?php echo Auth::getUser('nextlvl', 0); ?>;
+					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(mode==1 || mode==2) secondsy = seconds;
 					if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
