@@ -3829,7 +3829,7 @@ class AppController extends Controller {
 					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => Auth::getUserID()]]);
 					if ($utPreX == null) {
 						$utPreX['TsumegoStatus'] = [];
-						$utPreX['TsumegoStatus']['user_id'] = Auth::getUser()['id'];
+						$utPreX['TsumegoStatus']['user_id'] = Auth::getUserID();
 						$utPreX['TsumegoStatus']['tsumego_id'] = $_COOKIE['noPreId'];
 					}
 					if ($utPreX['TsumegoStatus']['status'] == 'W') {
