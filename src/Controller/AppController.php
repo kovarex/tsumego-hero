@@ -543,7 +543,7 @@ class AppController extends Controller {
 			}
 		}
 		Auth::getUser()['solved'] = $solvedUts2;
-		$this->User->save(Auth::getUser());
+		Auth::saveUser();
 
 		return $solvedUts2;
 	}
@@ -590,7 +590,7 @@ class AppController extends Controller {
 		$tsumegoAvtivityValue = max(round((2 / 3) * $t['Tsumego']['activity_value']), 15);
 		$kFactor1 = 1;
 		$kFactor2 = 1;
-		if (Auth::getUser()) {
+		if (Auth::isLoggedIn()) {
 			$rating = Auth::getUser()['elo_rating_mode'];
 			if ($rating >= 1500) {
 				$kFactor1 = 1.5;
@@ -2129,7 +2129,7 @@ class AppController extends Controller {
 	}
 
 	protected function checkProblemNumberAchievements() {
-		if (!Auth::getUser()) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 
@@ -2488,7 +2488,7 @@ class AppController extends Controller {
 	}
 
 	protected function checkRatingAchievements() {
-		if (!Auth::getUser()) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 
@@ -2602,7 +2602,7 @@ class AppController extends Controller {
 	}
 
 	protected function checkLevelAchievements() {
-		if (!Auth::getUser()) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 		$this->loadModel('Achievement');
@@ -3694,7 +3694,7 @@ class AppController extends Controller {
 			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
 			&& strlen($_COOKIE['z_sess']) > 5) {
 				Auth::getUser()['_sessid'] = $_COOKIE['z_sess'];
-				$this->User->save(Auth::getUser());
+				Auth::saveUser();
 			}
 			if (Auth::getUser()['lastHighscore'] == 1) {
 				$highscoreLink = 'highscore';
@@ -3708,11 +3708,11 @@ class AppController extends Controller {
 
 			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0) {
 				Auth::getUser()['lastMode'] = $_COOKIE['lastMode'];
-				$this->User->save(Auth::getUser());
+				Auth::saveUser();
 			}
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0') {
 				Auth::getUser()['sound'] = $_COOKIE['sound'];
-				$this->User->save(Auth::getUser());
+				Auth::saveUser();
 				unset($_COOKIE['sound']);
 			}
 			$this->set('ac', true);

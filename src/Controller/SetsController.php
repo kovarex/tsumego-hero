@@ -695,7 +695,7 @@ class SetsController extends AppController {
 				$aCondition['AchievementCondition']['value'] = $overallCounter;
 				$this->AchievementCondition->save($aCondition);
 			}
-			$this->User->save(Auth::getUser());
+			Auth::saveUser();
 			$achievementUpdate = $this->checkSetCompletedAchievements();
 			if (count($achievementUpdate) > 0) {
 				$this->updateXP(Auth::getUserID(), $achievementUpdate);

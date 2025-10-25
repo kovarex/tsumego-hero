@@ -182,7 +182,7 @@ class TsumegosController extends AppController {
 			for ($i = 0; $i < $tlength; $i++) {
 				$trandomString .= $tcharacters[rand(0, $tcharactersLength - 1)];
 			}
-			if (Auth::getUser()) {
+			if (Auth::isLoggedIn()) {
 				Auth::getUser()['activeRank'] = $trandomString;
 			}
 			Auth::saveUser();
@@ -201,7 +201,7 @@ class TsumegosController extends AppController {
 				$this->processSearchParameters(Auth::getUserID());
 			}
 		}
-		if (Auth::getUser()) {
+		if (Auth::isLoggedIn()) {
 			Auth::getUser()['mode'] = 1;
 			if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0') {
 				if (strlen(Auth::getUser()['activeRank']) >= 15) {
@@ -228,7 +228,7 @@ class TsumegosController extends AppController {
 			$nextMode = $this->Tsumego->findById(15352);
 			$mode = 1;
 		}
-		if (Auth::getUser()) {
+		if (Auth::isLoggedIn()) {
 			if (strlen(Auth::getUser()['activeRank']) >= 15) {
 				if (strlen(Auth::getUser()['activeRank']) == 15) {
 					$stopParameter = 10;
@@ -403,7 +403,7 @@ class TsumegosController extends AppController {
 			}
 			$mode = 3;
 		}
-		if (Auth::getUser()) {
+		if (Auth::isLoggedIn()) {
 			if (Auth::getUser()['mode'] == 0) {
 				Auth::getUser()['mode'] = 1;
 			}
@@ -503,281 +503,283 @@ class TsumegosController extends AppController {
 			}
 		}
 
-		$t = $this->Tsumego->findById($id);//the tsumego
-		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
+		if (Auth::isLoggedIn()) {
+			$t = $this->Tsumego->findById($id);//the tsumego
+			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
-		if ($t['Tsumego']['elo_rating_mode'] < 1000) {
-			$t = $this->checkEloAdjust($t);
-		}
-
-		$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
-		$eloDifference = abs(Auth::getUser()['elo_rating_mode'] - $t['Tsumego']['elo_rating_mode']);
-
-		if (Auth::getUser()['elo_rating_mode'] > $t['Tsumego']['elo_rating_mode']) {
-			$eloBigger = 'u';
-			if ($eloDifference > 1000) {
-				$avActive2 = false;
+			if ($t['Tsumego']['elo_rating_mode'] < 1000) {
+				$t = $this->checkEloAdjust($t);
 			}
-		} else {
-			$eloBigger = 't';
-		}
-		$newUserEloW = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'w');
-		$newUserEloL = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'l');
 
-		if ($activityValue[1] == 0 && $avActive2) {
-			$eloScore = $newUserEloW['user'];
-			$eloScore2 = $newUserEloL['user'];
-			$avActive = true;
-		} else {
-			$eloScore = 0;
-			$eloScore2 = 0;
-			$avActive = false;
-		}
-		if (isset($this->params['url']['sid'])) {
-			$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id, 'set_id' => $this->params['url']['sid']]]);
-			if ($sc) {
-				$t['Tsumego']['set_id'] = $this->params['url']['sid'];
-				$t['Tsumego']['num'] = $sc['SetConnection']['num'];
-				if (!$hasDuplicateGroup) {
-					$t['Tsumego']['duplicateLink'] = '';
-				} else {
-					$t['Tsumego']['duplicateLink'] = '?sid=' . $t['Tsumego']['set_id'];
+			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
+			$eloDifference = abs(Auth::getUser()['elo_rating_mode'] - $t['Tsumego']['elo_rating_mode']);
+
+			if (Auth::getUser()['elo_rating_mode'] > $t['Tsumego']['elo_rating_mode']) {
+				$eloBigger = 'u';
+				if ($eloDifference > 1000) {
+					$avActive2 = false;
 				}
+			} else {
+				$eloBigger = 't';
 			}
-		}
-		if ($t['Tsumego']['elo_rating_mode']) {
-			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
-		}
+			$newUserEloW = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'w');
+			$newUserEloL = $this->getNewElo($eloDifference, $eloBigger, $activityValue[0], $t['Tsumego']['id'], 'l');
 
-		if ($t['Tsumego']['duplicate'] > 9) { //duplicate and not main
-			$tDuplicate = $this->Tsumego->findById($t['Tsumego']['duplicate']);
-			$t['Tsumego']['difficulty'] = $tDuplicate['Tsumego']['difficulty'];
-			$t['Tsumego']['description'] = $tDuplicate['Tsumego']['description'];
-			$t['Tsumego']['hint'] = $tDuplicate['Tsumego']['hint'];
-			$t['Tsumego']['author'] = $tDuplicate['Tsumego']['author'];
-			$t['Tsumego']['solved'] = $tDuplicate['Tsumego']['solved'];
-			$t['Tsumego']['failed'] = $tDuplicate['Tsumego']['failed'];
-			$t['Tsumego']['userWin'] = $tDuplicate['Tsumego']['userWin'];
-			$t['Tsumego']['userLoss'] = $tDuplicate['Tsumego']['userLoss'];
-			$t['Tsumego']['alternative_response'] = $tDuplicate['Tsumego']['alternative_response'];
-			$t['Tsumego']['virtual_children'] = $tDuplicate['Tsumego']['virtual_children'];
-		}
-
-		$fSet = $this->Set->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
-		if (!$fSet) {
-			$fSet = $this->Set->findById(1);
-		}
-		if ($t == null) {
-			$t = $this->Tsumego->findById($this->Session->read('lastVisit'));
-		}
-
-		if ($mode == 1 || $mode == 3) {
-			$nextMode = $t;
-		}
-		if (isset($this->params['url']['rcheat']) && $this->params['url']['rcheat'] == 1) {
-			$reviewCheat = true;
-		}
-		$this->Session->write('lastVisit', $id);
-		if (!empty($this->data)) {
-			if (isset($this->data['Comment']['status']) && !isset($this->data['Study2'])) {
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-				$adminActivity['AdminActivity']['file'] = $t['Tsumego']['num'];
-				$adminActivity['AdminActivity']['answer'] = $this->data['Comment']['status'];
-				$this->AdminActivity->save($adminActivity);
-				$this->Comment->save($this->data, true);
-			} elseif (isset($this->data['Comment']['modifyDescription'])) {
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-				$adminActivity['AdminActivity']['file'] = 'description';
-				$adminActivity['AdminActivity']['answer'] = 'Description: ' . $this->data['Comment']['modifyDescription'] . ' ' . $this->data['Comment']['modifyHint'];
-				$t['Tsumego']['description'] = $this->data['Comment']['modifyDescription'];
-				$t['Tsumego']['hint'] = $this->data['Comment']['modifyHint'];
-				$t['Tsumego']['author'] = $this->data['Comment']['modifyAuthor'];
-				if ($this->data['Comment']['modifyElo'] < 2900) {
-					$t['Tsumego']['elo_rating_mode'] = $this->data['Comment']['modifyElo'];
-				}
-				if ($t['Tsumego']['elo_rating_mode'] > 100) {
-					$this->Tsumego->save($t, true);
-				}
-
-				if ($this->data['Comment']['deleteProblem'] == 'delete') {
-					$adminActivity['AdminActivity']['answer'] = 'Problem deleted. (' . $t['Tsumego']['set_id'] . '-' . $t['Tsumego']['id'] . ')';
-					$adminActivity['AdminActivity']['file'] = '/delete';
-				}
-				if ($this->data['Comment']['deleteTag'] != null) {
-					$tagsToDelete = $this->Tag->find('all', ['conditions' => ['tsumego_id' => $id]]);
-					if (!$tagsToDelete) {
-						$tagsToDelete = [];
+			if ($activityValue[1] == 0 && $avActive2) {
+				$eloScore = $newUserEloW['user'];
+				$eloScore2 = $newUserEloL['user'];
+				$avActive = true;
+			} else {
+				$eloScore = 0;
+				$eloScore2 = 0;
+				$avActive = false;
+			}
+			if (isset($this->params['url']['sid'])) {
+				$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id, 'set_id' => $this->params['url']['sid']]]);
+				if ($sc) {
+					$t['Tsumego']['set_id'] = $this->params['url']['sid'];
+					$t['Tsumego']['num'] = $sc['SetConnection']['num'];
+					if (!$hasDuplicateGroup) {
+						$t['Tsumego']['duplicateLink'] = '';
+					} else {
+						$t['Tsumego']['duplicateLink'] = '?sid=' . $t['Tsumego']['set_id'];
 					}
-					$tagsToDeleteCount = count($tagsToDelete);
-					for ($i = 0; $i < $tagsToDeleteCount; $i++) {
-						$tagNameForDelete = $this->TagName->findById($tagsToDelete[$i]['Tag']['tag_name_id']);
-						if ($tagNameForDelete['TagName']['name'] == $this->data['Comment']['deleteTag']) {
-							$this->Tag->delete($tagsToDelete[$i]['Tag']['id']);
+				}
+			}
+			if ($t['Tsumego']['elo_rating_mode']) {
+				$tRank = Rating::getReadableRankFromRating($t['Tsumego']['elo_rating_mode']);
+			}
+
+			if ($t['Tsumego']['duplicate'] > 9) { //duplicate and not main
+				$tDuplicate = $this->Tsumego->findById($t['Tsumego']['duplicate']);
+				$t['Tsumego']['difficulty'] = $tDuplicate['Tsumego']['difficulty'];
+				$t['Tsumego']['description'] = $tDuplicate['Tsumego']['description'];
+				$t['Tsumego']['hint'] = $tDuplicate['Tsumego']['hint'];
+				$t['Tsumego']['author'] = $tDuplicate['Tsumego']['author'];
+				$t['Tsumego']['solved'] = $tDuplicate['Tsumego']['solved'];
+				$t['Tsumego']['failed'] = $tDuplicate['Tsumego']['failed'];
+				$t['Tsumego']['userWin'] = $tDuplicate['Tsumego']['userWin'];
+				$t['Tsumego']['userLoss'] = $tDuplicate['Tsumego']['userLoss'];
+				$t['Tsumego']['alternative_response'] = $tDuplicate['Tsumego']['alternative_response'];
+				$t['Tsumego']['virtual_children'] = $tDuplicate['Tsumego']['virtual_children'];
+			}
+
+			$fSet = $this->Set->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
+			if (!$fSet) {
+				$fSet = $this->Set->findById(1);
+			}
+			if ($t == null) {
+				$t = $this->Tsumego->findById($this->Session->read('lastVisit'));
+			}
+
+			if ($mode == 1 || $mode == 3) {
+				$nextMode = $t;
+			}
+			if (isset($this->params['url']['rcheat']) && $this->params['url']['rcheat'] == 1) {
+				$reviewCheat = true;
+			}
+			$this->Session->write('lastVisit', $id);
+			if (!empty($this->data)) {
+				if (isset($this->data['Comment']['status']) && !isset($this->data['Study2'])) {
+					$adminActivity = [];
+					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+					$adminActivity['AdminActivity']['file'] = $t['Tsumego']['num'];
+					$adminActivity['AdminActivity']['answer'] = $this->data['Comment']['status'];
+					$this->AdminActivity->save($adminActivity);
+					$this->Comment->save($this->data, true);
+				} elseif (isset($this->data['Comment']['modifyDescription'])) {
+					$adminActivity = [];
+					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+					$adminActivity['AdminActivity']['file'] = 'description';
+					$adminActivity['AdminActivity']['answer'] = 'Description: ' . $this->data['Comment']['modifyDescription'] . ' ' . $this->data['Comment']['modifyHint'];
+					$t['Tsumego']['description'] = $this->data['Comment']['modifyDescription'];
+					$t['Tsumego']['hint'] = $this->data['Comment']['modifyHint'];
+					$t['Tsumego']['author'] = $this->data['Comment']['modifyAuthor'];
+					if ($this->data['Comment']['modifyElo'] < 2900) {
+						$t['Tsumego']['elo_rating_mode'] = $this->data['Comment']['modifyElo'];
+					}
+					if ($t['Tsumego']['elo_rating_mode'] > 100) {
+						$this->Tsumego->save($t, true);
+					}
+
+					if ($this->data['Comment']['deleteProblem'] == 'delete') {
+						$adminActivity['AdminActivity']['answer'] = 'Problem deleted. (' . $t['Tsumego']['set_id'] . '-' . $t['Tsumego']['id'] . ')';
+						$adminActivity['AdminActivity']['file'] = '/delete';
+					}
+					if ($this->data['Comment']['deleteTag'] != null) {
+						$tagsToDelete = $this->Tag->find('all', ['conditions' => ['tsumego_id' => $id]]);
+						if (!$tagsToDelete) {
+							$tagsToDelete = [];
+						}
+						$tagsToDeleteCount = count($tagsToDelete);
+						for ($i = 0; $i < $tagsToDeleteCount; $i++) {
+							$tagNameForDelete = $this->TagName->findById($tagsToDelete[$i]['Tag']['tag_name_id']);
+							if ($tagNameForDelete['TagName']['name'] == $this->data['Comment']['deleteTag']) {
+								$this->Tag->delete($tagsToDelete[$i]['Tag']['id']);
+							}
+						}
+					}
+					$this->AdminActivity->save($adminActivity);
+				} elseif (isset($this->data['Study'])) {
+					$tv['TsumegoVariant']['answer1'] = $this->data['Study']['study1'];
+					$tv['TsumegoVariant']['answer2'] = $this->data['Study']['study2'];
+					$tv['TsumegoVariant']['answer3'] = $this->data['Study']['study3'];
+					$tv['TsumegoVariant']['answer4'] = $this->data['Study']['study4'];
+					$tv['TsumegoVariant']['explanation'] = $this->data['Study']['explanation'];
+					$tv['TsumegoVariant']['numAnswer'] = $this->data['Study']['studyCorrect'];
+					$this->TsumegoVariant->save($tv);
+				} elseif (isset($this->data['Study2'])) {
+					$tv['TsumegoVariant']['winner'] = $this->data['Study2']['winner'];
+					$tv['TsumegoVariant']['answer1'] = $this->data['Study2']['answer1'];
+					$tv['TsumegoVariant']['answer2'] = $this->data['Study2']['answer2'];
+					$tv['TsumegoVariant']['answer3'] = $this->data['Study2']['answer3'];
+					$this->TsumegoVariant->save($tv);
+				} elseif (isset($this->data['Settings'])) {
+					if ($this->data['Settings']['r38'] == 'on' && $t['Tsumego']['virtual_children'] != 1) {
+						$adminActivity = [];
+						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity['AdminActivity']['file'] = 'settings';
+						$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity);
+					}
+					if ($this->data['Settings']['r38'] == 'off' && $t['Tsumego']['virtual_children'] != 0) {
+						$adminActivity = [];
+						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity['AdminActivity']['file'] = 'settings';
+						$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity);
+					}
+					if ($this->data['Settings']['r39'] == 'on' && $t['Tsumego']['alternative_response'] != 1) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Turned on alternative response mode';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+					}
+					if ($this->data['Settings']['r39'] == 'off' && $t['Tsumego']['alternative_response'] != 0) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Turned off alternative response mode';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+					}
+					if ($this->data['Settings']['r43'] == 'no' && $t['Tsumego']['pass'] != 0) {
+						$adminActivity = [];
+						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity['AdminActivity']['file'] = 'settings';
+						$adminActivity['AdminActivity']['answer'] = 'Disabled passing';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity);
+					}
+					if ($this->data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1) {
+						$adminActivity = [];
+						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity['AdminActivity']['file'] = 'settings';
+						$adminActivity['AdminActivity']['answer'] = 'Enabled passing';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity);
+					}
+					if ($this->data['Settings']['r41'] == 'yes' && $tv == null) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to multiple choice';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+						$tv1 = [];
+						$tv1['TsumegoVariant']['tsumego_id'] = $id;
+						$tv1['TsumegoVariant']['type'] = 'multiple_choice';
+						$tv1['TsumegoVariant']['answer1'] = 'Black is dead';
+						$tv1['TsumegoVariant']['answer2'] = 'White is dead';
+						$tv1['TsumegoVariant']['answer3'] = 'Ko';
+						$tv1['TsumegoVariant']['answer4'] = 'Seki';
+						$tv1['TsumegoVariant']['numAnswer'] = '1';
+						$this->TsumegoVariant->create();
+						$this->TsumegoVariant->save($tv1);
+					}
+					if ($this->data['Settings']['r41'] == 'no' && $tv != null) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Deleted multiple choice problem type';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+						$this->TsumegoVariant->delete($tv['TsumegoVariant']['id']);
+						$tv = null;
+					}
+					if ($this->data['Settings']['r42'] == 'yes' && $tv == null) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to score estimating';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+						$tv1 = [];
+						$tv1['TsumegoVariant']['tsumego_id'] = $id;
+						$tv1['TsumegoVariant']['type'] = 'score_estimating';
+						$tv1['TsumegoVariant']['numAnswer'] = '0';
+						$this->TsumegoVariant->create();
+						$this->TsumegoVariant->save($tv1);
+					}
+					if ($this->data['Settings']['r42'] == 'no' && $tv != null) {
+						$adminActivity2 = [];
+						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
+						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+						$adminActivity2['AdminActivity']['file'] = 'settings';
+						$adminActivity2['AdminActivity']['answer'] = 'Deleted score estimating problem type';
+						$this->AdminActivity->create();
+						$this->AdminActivity->save($adminActivity2);
+						$this->TsumegoVariant->delete($tv['TsumegoVariant']['id']);
+						$tv = null;
+					}
+					if ($this->data['Settings']['r38'] == 'on') {
+						$t['Tsumego']['virtual_children'] = 1;
+					} else {
+						$t['Tsumego']['virtual_children'] = 0;
+					}
+					if ($this->data['Settings']['r39'] == 'on') {
+						$t['Tsumego']['alternative_response'] = 1;
+					} else {
+						$t['Tsumego']['alternative_response'] = 0;
+					}
+					if ($this->data['Settings']['r43'] == 'yes') {
+						$t['Tsumego']['pass'] = 1;
+					} else {
+						$t['Tsumego']['pass'] = 0;
+					}
+					if ($this->data['Settings']['r40'] == 'on') {
+						$t['Tsumego']['duplicate'] = -1;
+					} else {
+						$t['Tsumego']['duplicate'] = 0;
+					}
+					if ($t['Tsumego']['elo_rating_mode'] > 100) {
+						$this->Tsumego->save($t, true);
+					}
+				} else {
+					if ($this->data['Comment']['user_id'] != 33) {
+						$this->Comment->create();
+						if ($this->checkCommentValid(Auth::getUserID())) {
+							$this->Comment->save($this->data, true);
 						}
 					}
 				}
-				$this->AdminActivity->save($adminActivity);
-			} elseif (isset($this->data['Study'])) {
-				$tv['TsumegoVariant']['answer1'] = $this->data['Study']['study1'];
-				$tv['TsumegoVariant']['answer2'] = $this->data['Study']['study2'];
-				$tv['TsumegoVariant']['answer3'] = $this->data['Study']['study3'];
-				$tv['TsumegoVariant']['answer4'] = $this->data['Study']['study4'];
-				$tv['TsumegoVariant']['explanation'] = $this->data['Study']['explanation'];
-				$tv['TsumegoVariant']['numAnswer'] = $this->data['Study']['studyCorrect'];
-				$this->TsumegoVariant->save($tv);
-			} elseif (isset($this->data['Study2'])) {
-				$tv['TsumegoVariant']['winner'] = $this->data['Study2']['winner'];
-				$tv['TsumegoVariant']['answer1'] = $this->data['Study2']['answer1'];
-				$tv['TsumegoVariant']['answer2'] = $this->data['Study2']['answer2'];
-				$tv['TsumegoVariant']['answer3'] = $this->data['Study2']['answer3'];
-				$this->TsumegoVariant->save($tv);
-			} elseif (isset($this->data['Settings'])) {
-				if ($this->data['Settings']['r38'] == 'on' && $t['Tsumego']['virtual_children'] != 1) {
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity);
-				}
-				if ($this->data['Settings']['r38'] == 'off' && $t['Tsumego']['virtual_children'] != 0) {
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity);
-				}
-				if ($this->data['Settings']['r39'] == 'on' && $t['Tsumego']['alternative_response'] != 1) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Turned on alternative response mode';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-				}
-				if ($this->data['Settings']['r39'] == 'off' && $t['Tsumego']['alternative_response'] != 0) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Turned off alternative response mode';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-				}
-				if ($this->data['Settings']['r43'] == 'no' && $t['Tsumego']['pass'] != 0) {
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Disabled passing';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity);
-				}
-				if ($this->data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1) {
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Enabled passing';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity);
-				}
-				if ($this->data['Settings']['r41'] == 'yes' && $tv == null) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to multiple choice';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-					$tv1 = [];
-					$tv1['TsumegoVariant']['tsumego_id'] = $id;
-					$tv1['TsumegoVariant']['type'] = 'multiple_choice';
-					$tv1['TsumegoVariant']['answer1'] = 'Black is dead';
-					$tv1['TsumegoVariant']['answer2'] = 'White is dead';
-					$tv1['TsumegoVariant']['answer3'] = 'Ko';
-					$tv1['TsumegoVariant']['answer4'] = 'Seki';
-					$tv1['TsumegoVariant']['numAnswer'] = '1';
-					$this->TsumegoVariant->create();
-					$this->TsumegoVariant->save($tv1);
-				}
-				if ($this->data['Settings']['r41'] == 'no' && $tv != null) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Deleted multiple choice problem type';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-					$this->TsumegoVariant->delete($tv['TsumegoVariant']['id']);
-					$tv = null;
-				}
-				if ($this->data['Settings']['r42'] == 'yes' && $tv == null) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to score estimating';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-					$tv1 = [];
-					$tv1['TsumegoVariant']['tsumego_id'] = $id;
-					$tv1['TsumegoVariant']['type'] = 'score_estimating';
-					$tv1['TsumegoVariant']['numAnswer'] = '0';
-					$this->TsumegoVariant->create();
-					$this->TsumegoVariant->save($tv1);
-				}
-				if ($this->data['Settings']['r42'] == 'no' && $tv != null) {
-					$adminActivity2 = [];
-					$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity2['AdminActivity']['file'] = 'settings';
-					$adminActivity2['AdminActivity']['answer'] = 'Deleted score estimating problem type';
-					$this->AdminActivity->create();
-					$this->AdminActivity->save($adminActivity2);
-					$this->TsumegoVariant->delete($tv['TsumegoVariant']['id']);
-					$tv = null;
-				}
-				if ($this->data['Settings']['r38'] == 'on') {
-					$t['Tsumego']['virtual_children'] = 1;
-				} else {
-					$t['Tsumego']['virtual_children'] = 0;
-				}
-				if ($this->data['Settings']['r39'] == 'on') {
-					$t['Tsumego']['alternative_response'] = 1;
-				} else {
-					$t['Tsumego']['alternative_response'] = 0;
-				}
-				if ($this->data['Settings']['r43'] == 'yes') {
-					$t['Tsumego']['pass'] = 1;
-				} else {
-					$t['Tsumego']['pass'] = 0;
-				}
-				if ($this->data['Settings']['r40'] == 'on') {
-					$t['Tsumego']['duplicate'] = -1;
-				} else {
-					$t['Tsumego']['duplicate'] = 0;
-				}
-				if ($t['Tsumego']['elo_rating_mode'] > 100) {
-					$this->Tsumego->save($t, true);
-				}
-			} else {
-				if ($this->data['Comment']['user_id'] != 33) {
-					$this->Comment->create();
-					if ($this->checkCommentValid(Auth::getUserID())) {
-						$this->Comment->save($this->data, true);
-					}
-				}
+				$this->set('formRedirect', true);
 			}
-			$this->set('formRedirect', true);
 		}
 		if (Auth::isAdmin()) {
 			$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
@@ -984,7 +986,7 @@ class TsumegosController extends AppController {
 			*/
 		}
 		if ($mode == 1) {
-			if (Auth::getUser() && !$this->Session->check('noLogin')) {
+			if (Auth::isLoggedIn() && !$this->Session->check('noLogin')) {
 				$utsMap = TsumegoStatusHelper::getMapForUser();
 				$utsMapx = array_count_values($utsMap);
 				$correctCounter = $utsMapx['C'] + $utsMapx['S'] + $utsMapx['W'];
@@ -1309,7 +1311,7 @@ class TsumegosController extends AppController {
 
 			if ($isNum && $isSet || $mode == 2) {
 				if ($mode == 1 || $mode == 3) {
-					if (Auth::getUser() && !$this->Session->check('noLogin')) {
+					if (Auth::isLoggedIn() && !$this->Session->check('noLogin')) {
 						$ub = [];
 						$ub['UserBoard']['user_id'] = Auth::getUserID();
 						$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
