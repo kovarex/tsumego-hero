@@ -1,6 +1,6 @@
 	<?php
-	if($this->Session->check('loggedInUser')){
-		if($this->Session->read('loggedInUser.User.isAdmin')<1){
+	if(Auth::isLoggedIn()){
+		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}	
 	}else{

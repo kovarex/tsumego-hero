@@ -7,11 +7,11 @@
 		<li>
 		<?php
                             // wenn eingeloggt
-                                if(isset($loggedInUser)) {
+                                if(Auth::isLoggedIn()) {
                                     // Username als Link anzeigen, damit er zum Account gelangt
-                                    echo $html->link($loggedInUser['User']['username'], array('controller'=>'users', 'action' => 'view')) . '</b>';
+                                    echo $html->link(Auth::getUser()['name'], array('controller'=>'users', 'action' => 'view')) . '</b>';
 									echo '<ul>';
-									echo '<li>'.$html->link(__('Edit', true), array('action' => 'edit', $loggedInUser['User']['id'])).'</li>';
+									echo '<li>'.$html->link(__('Edit', true), array('action' => 'edit', Auth::getUserID())).'</li>';
 									echo '<li>'.$html->link('Change password', array('controller'=>'users', 'action' => 'changePassword')).'</li>';
 									
 									echo '<li>'.$html->link('Logout', array('controller'=>'users', 'action' => 'logout')).'</li>';

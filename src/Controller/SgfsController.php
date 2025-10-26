@@ -35,7 +35,7 @@ class SgfsController extends AppController {
 
 		if (isset($this->params['url']['delete'])) {
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if ($this->loggedInUserID() == $sDel['Sgf']['user_id']) {
+			if (Auth::getUserID() == $sDel['Sgf']['user_id']) {
 				$this->Sgf->delete($sDel['Sgf']['id']);
 			}
 		}
@@ -105,7 +105,7 @@ class SgfsController extends AppController {
 			if ($s[$i]['Sgf']['user'] == 'noUser') {
 				$s[$i]['Sgf']['user'] = 'automatically generated';
 			}
-			if ($this->loggedInUserID() == $s[$i]['Sgf']['user_id']) {
+			if (Auth::getUserID() == $s[$i]['Sgf']['user_id']) {
 				$s[$i]['Sgf']['delete'] = true;
 			} else {
 				$s[$i]['Sgf']['delete'] = false;

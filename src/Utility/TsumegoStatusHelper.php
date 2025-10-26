@@ -1,12 +1,12 @@
 <?php
 
 class TsumegoStatusHelper {
-	public static function getMapForUser(int $loggedInUserID, $conditions = null): array {
+	public static function getMapForUser($conditions = null): array {
 		if (!$conditions) {
 			$conditions = [];
 		}
 
-		$conditions['user_id'] = $loggedInUserID;
+		$conditions['user_id'] = Auth::getUserID();
 		$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => $conditions]);
 		if (!$statuses) {
 			return [];

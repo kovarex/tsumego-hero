@@ -2,7 +2,7 @@
 <div align="center">
 	<p class="title">
 		<br>
-		Tags and proposals by <?php echo $this->Session->read('loggedInUser.User.name') ?>
+		Tags and proposals by <?php echo Auth::getUser()['name'] ?>
 		<br><br> 
 	</p>
 	<table class="highscoreTable" border="0">

@@ -116,7 +116,7 @@ class SitesController extends AppController {
 			$tooltipBoardSize[] = $tArr[3];
 		}
 
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			$idArray = [];
 			$idArray[] = $totd['Tsumego']['id'];
 			foreach ($scheduleTsumego as $tsumego) {
@@ -126,7 +126,7 @@ class SitesController extends AppController {
 			$uts = $this->TsumegoStatus->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $idArray,
 				],
 			]);
@@ -162,7 +162,7 @@ class SitesController extends AppController {
 				}
 			}
 		}
-		if (!$this->isLoggedIn()) {
+		if (!Auth::isLoggedIn()) {
 			if ($this->Session->check('noLogin')) {
 				$noLogin = $this->Session->read('noLogin');
 				$noLoginStatus = $this->Session->read('noLoginStatus');
@@ -242,13 +242,13 @@ class SitesController extends AppController {
 		$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
 
 		//recently visited
-		/*if ($this->isLoggedIn()) {
-			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => $this->loggedInUserID())));
+		/*if (Auth::isLoggedIn()) {
+			$currentUser = $this->User->find('first', array('conditions' =>  array('id' => Auth::getUserID())));
 			$currentUser['User']['created'] = date('Y-m-d H:i:s');
 			$this->User->save($currentUser);
 
 			$visit = $this->Visit->find('all',
-				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => $this->loggedInUserID()))
+				array('order' => 'created',	'direction' => 'DESC', 'conditions' =>  array('user_id' => Auth::getUserID()))
 			);
 
 			$setVisit1 = $this->Set->find('first', array('conditions' => array('id' => $visit[count($visit)-1]['Visit']['set_id'])));
@@ -308,7 +308,7 @@ class SitesController extends AppController {
 			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
 		}
 
-		$this->set('hasPremium', $this->hasPremium());
+		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('tsumegos', $tsumegoDates);
 		$this->set('quote', $currentQuote);
 		$this->set('d1', $d1);

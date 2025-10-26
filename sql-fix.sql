@@ -5,9 +5,11 @@ SET @@sql_mode='';
 UPDATE `users` SET reward=null where reward='0000-00-00 00:00:00';
 UPDATE `tsumego_rating_attempts` SET created='2022-01-31 01:02:04' where created='0000-00-00 00:00:00'; /* around 1200 out of 800k records with this error, around this time */
 SET @@sql_mode='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-ALTER TABLE users MODIFY premium boolean;
-UPDATE users set premium=1 WHERE premium > 1;
-ALTER TABLE users MODIFY isAdmin boolean;
+ALTER TABLE users MODIFY premium SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=no premium, 1=basic premium, 2=golden premium';
+ALTER TABLE users MODIFY isAdmin boolean NOT NULL DEFAULT 0;
+ALTER TABLE users DROP column completed;
+ALTER TABLE users MODIFY passwordreset VARCHAR(50) NULL DEFAULT NULL;
+UPDATE users set passwordreset=null where passwordreset='0';
 
 ALTER TABLE `user_boards` DROP COLUMN `id`;
 ALTER TABLE ranks ALTER COLUMN points SET DEFAULT 0;
@@ -23,6 +25,11 @@ CREATE TABLE IF NOT EXISTS `cake_sessions` (
 
 ALTER TABLE `sets` DROP COLUMN `folder`;
 
+ALTER TABLE `progress_deletions` MODIFY created DATETIME NOT NULL;
+
+/* These are now probably redundant as we already modify the script (as it can't run on the weird collations anyway
+* But I'm keeping it
+*/
 ALTER TABLE `achievements` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_conditions` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
 ALTER TABLE `achievement_statuses` convert to character set utf8mb4 collate utf8mb4_unicode_ci;
@@ -122,3 +129,5 @@ ALTER TABLE `tsumego_statuses` DROP INDEX `user_id_and_tsumego_id_index`, ADD UN
 ALTER TABLE users ALTER COLUMN potion SET DEFAULT 0;
 ALTER TABLE users ALTER COLUMN penalty SET DEFAULT 0;
 ALTER TABLE users DROP COLUMN reuse1;
+ALTER TABLE users ADD COLUMN password_hash CHAR(60) NOT NULL;
+ALTER TABLE users MODIFY pw VARCHAR(50) NULL DEFAULT NULL COMMENT 'old password - will be dropped after migration';

@@ -1,5 +1,5 @@
 <?php
-	if($this->Session->check('loggedInUser')){
+	if(Auth::isLoggedIn()){
 		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 	}
 ?>
@@ -10,10 +10,9 @@
 		 <h1>New password:</h1>
 		<form action="/users/newpassword/<?php echo $checksum; ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
-		<label for="UserPw"></label>
 		<div class="input text required">
-			<label for="UserPw"></label>
-			<input name="data[User][pw]" maxlength="50" placeholder="Password" type="text" id="UserPw" required="required"/>
+			<label for="password"></label>
+			<input name="data[User][password]" maxlength="50" placeholder="Password" type="text" id="password" required="required"/>
 		</div>
 		<?php echo $this->Form->end('Submit'); ?>
 		

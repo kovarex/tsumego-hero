@@ -84,9 +84,7 @@
 		echo '<script type="text/javascript">window.location.href = "/ranks/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
-		if(!$this->Session->check('loggedInUser.User.id')
-			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
-		)
+		if(!Auth::hasPremium())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
 	if($sandboxComment2)
@@ -97,9 +95,7 @@
 		echo '<style>#xpDisplay{font-weight:800;color:#60167d;}</style>';
 	}
 	if($t['Tsumego']['premium']==1){
-		if(!$this->Session->check('loggedInUser.User.id')
-			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
-		)
+		if(!Auth::hasPremium())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
 
@@ -176,14 +172,16 @@
 	<td align="center" width="29%">
 		<div id="health">
 			<?php
-
-			$health = $user['User']['health'] - $user['User']['damage'];
-			for($i=0; $i<$health; $i++){
-				echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
-			}
-			for($i=0; $i<$user['User']['damage']; $i++){
-				$h = $health+$i;
-				echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
+			if (Auth::isLoggedIn())
+			{
+				$health = Auth::getUser()['health'] - Auth::getUser()['damage'];
+				for($i = 0; $i < $health; $i++){
+					echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
+				}
+				for($i=0; $i < Auth::getUser()['damage']; $i++){
+					$h = $health+$i;
+					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
+				}
 			}
 			?>
 		</div>
@@ -297,7 +295,7 @@
 		<?php
 		if($mode==1)
 			echo '<div id="titleDescription" class="titleDescription1">';
-		elseif($mode==2  || $mode==3)
+		elseif($mode==2	|| $mode==3)
 			echo '<div id="titleDescription" class="titleDescription2">';
 		if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 			echo '<b>'.$t['Tsumego']['description'].'</b> ';
@@ -313,7 +311,7 @@
 				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
 			}
 		}
-		if($this->Session->read('loggedInUser.User.isAdmin')>0){
+		if(Auth::isAdmin()){
 		?>
 		<a class="modify-description" href="#">(Edit)</a>
 		<div class="modify-description-panel">
@@ -321,7 +319,7 @@
 				$placeholder = str_replace($descriptionColor, '[b]', $t['Tsumego']['description']);
 				echo $this->Form->create('Comment');
 				echo $this->Form->input('id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
+				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
 				echo $this->Form->input('modifyDescription', array('value' => $placeholder, 'label' => '', 'type' => 'text', 'placeholder' => 'Description'));
 				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
 				if(true) $modifyDescriptionType = 'text';
@@ -343,7 +341,7 @@
 	<td align="center" width="29%">
 		<?php
 			if($mode==1){
-				if($user['User']['level']>=20 && $sprintEnabled==1){
+				if(Auth::getWithDefault('level', 0) >= 20 && $sprintEnabled==1){
 					echo '
 						<a href="#"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png"
 						onmouseover="sprintHover()" onmouseout="sprintNoHover()" onclick="sprint(); return false;"></a>
@@ -354,7 +352,7 @@
 						style="cursor: context-menu;" alt="Sprint"></a>
 					';
 				}
-				if($user['User']['level']>=30 && $intuitionEnabled==1){
+				if(Auth::getWithDefault('level', 0) >= 30 && $intuitionEnabled==1){
 					echo '
 						<a href="#"><img id="intuition" title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png"
 						onmouseover="intuitionHover()" onmouseout="intuitionNoHover()" onclick="intuition(); return false;"></a>
@@ -365,7 +363,7 @@
 						style="cursor: context-menu;" alt="Intuition"></a>
 					';
 				}
-				if($user['User']['level']>=40 && $rejuvenationEnabled==1){
+				if(Auth::getWithDefault('level', 0) >=40 && $rejuvenationEnabled==1){
 					echo '
 						<a href="#"><img id="rejuvenation" title="Rejuvenation: Restores health, Intuition and locks." src="/img/hp3.png"
 						onmouseover="rejuvenationHover()" onmouseout="rejuvenationNoHover()" onclick="rejuvenation(); return false;"></a>
@@ -376,7 +374,7 @@
 						style="cursor: context-menu;" alt="Rejuvenation"></a>
 					';
 				}
-				if($user['User']['premium']>0 || $user['User']['level']>=100){
+				if(Auth::hasPremium() || Auth::getWithDefault('level', 0) >= 100){
 					if($refinementEnabled==1){
 						echo '
 							<a href="#"><img id="refinement" title="Refinement: Gives you a chance to solve a golden tsumego. If you fail, it disappears." src="/img/hp4.png"
@@ -396,11 +394,11 @@
 				}
 				if($hasRevelation){
 					echo '
-							<a href="#" class="revelation-anchor"><img id="revelation" title="Revelation ('.$user['User']['revelation'].'): Solves a problem, but you don\'t get any reward." src="/img/hp6x.png"
+							<a href="#" class="revelation-anchor"><img id="revelation" title="Revelation ('.Auth::getUser()['revelation'].'): Solves a problem, but you don\'t get any reward." src="/img/hp6x.png"
 							onmouseover="revelationHover()" onmouseout="revelationNoHover()" onclick="revelation(); return false;"></a>
 					';
 				}
-				if($user['User']['premium']>0){
+				if(Auth::hasPremium()){
 					if($potionActive){
 						echo '
 							<img id="potion" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">
@@ -452,7 +450,7 @@
 				<div id="status2" align="center" style="color:black;">
 				<font size="4">
 				<?php
-				echo  $tRank.' <font color="grey">('.$t['Tsumego']['elo_rating_mode'].')</font>';
+				echo	$tRank.' <font color="grey">('.$t['Tsumego']['elo_rating_mode'].')</font>';
 				?>
 				</font>
 				</div>
@@ -477,13 +475,13 @@
 	<?php }else{ ?>
 		<div id="board" align="center"></div>
 	<?php } ?>
-	<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || ($tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
+	<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
 		<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
-	<?php }else if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
+	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
@@ -516,7 +514,7 @@
 	<div class="tsumegoNavi1">
 		<div class="tsumegoNavi2">
 			<?php
-			for($i=0; $i<count($navi); $i++){
+			for($i = 0; $i < count($navi); $i++){
 				if($t['Tsumego']['id'] == $navi[$i]['Tsumego']['id']) $additionalId = 'id="currentElement"';
 				else $additionalId = '';
 				if(!isset($navi[$i]['Tsumego']['duplicateLink']))
@@ -546,11 +544,11 @@
 	<div align="center">
 	<?php
 
-	if($this->Session->check('loggedInUser.User.id')){
+	if(Auth::isLoggedIn()){
 		if($firstRanks==0){
 			$makeProposal = '';
 			$proposalSentColor = '';
-			if($this->Session->read('loggedInUser.User.isAdmin') > 0)
+			if(Auth::isAdmin())
 				$makeProposal = 'Open';
 			else{
 				if(!$hasSgfProposal){
@@ -592,7 +590,7 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-			if($this->Session->check('loggedInUser.User.id')){
+			if(Auth::isLoggedIn()){
 				if($t['Tsumego']['duplicate']!=0 && $t['Tsumego']['duplicate']!=-1 && $mode!=2){
 					echo '<div class="duplicateTable">Is duplicate group:<br>';
 					for($i=0; $i<count($duplicates); $i++){
@@ -609,7 +607,7 @@
 			else
 				$adHighlight = '';
 
-			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+			if(Auth::isAdmin()){
 					echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
 					echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
 					echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
@@ -662,7 +660,7 @@
 							$scoreEstYes = 'checked="checked"';
 						}
 					}
-					if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+					if(Auth::isAdmin()){
 					echo '<div id="msg4">
 							<br>
 							<form action="" method="POST" enctype="multipart/form-data">
@@ -783,11 +781,11 @@
 					}
 				}
 			}else echo '<br>';
-			//if($this->Session->read('loggedInUser.User.premium')>=1){
+			//if(Auth::hasPremium()){
 			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
 			$allowed = true;
-			if($this->Session->check('loggedInUser.User.id')){
-				if($this->Session->read('loggedInUser.User.id')!=5080){
+			if(Auth::isLoggedIn()){
+				if(Auth::getUserID()!=5080){
 					echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
 				}else{
 					$allowed = false;
@@ -799,12 +797,12 @@
 			echo $this->Form->input('tsumego_id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
 			if(isset($t['Tsumego']['duplicateLink']))
 				echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => str_replace('?sid=', '', $t['Tsumego']['duplicateLink'])));
-			echo $this->Form->input('user_id', array('type' => 'hidden', 'value' => $user['User']['id']));
+			echo $this->Form->input('user_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
 			if($allowed)
 				echo $this->Form->input('message', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 			echo $this->Form->input('position', array('label' => '', 'type' => 'hidden'));
 
-			if($this->Session->read('loggedInUser.User.isAdmin')>=1)
+			if(Auth::isAdmin())
 				echo $this->Form->input('status', array('type' => 'hidden', 'value' => 97));
 
 			echo $this->Form->end('Submit');
@@ -901,14 +899,14 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($this->Session->read('loggedInUser.User.id') == $showComment[$i]['Comment']['user_id']){
+					if(Auth::getUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($this->Session->read('loggedInUser.User.isAdmin')==1){
+					if(Auth::isAdmin()){
 						if($showComment[$i]['Comment']['status']==0){
 							//echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
 							echo '<br>';
-							if($this->Session->read('loggedInUser.User.id')!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
+							if(Auth::getUserID()!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
 								echo '<a class="deleteComment" style="text-decoration:none;" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=3">
 									<img class="thumbs-small" title="approve this comment" width="20px" src="/img/thumbs-small.png">
 								</a>';
@@ -927,7 +925,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1009,7 +1007,7 @@
 					echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
 					echo $showComment[$i]['Comment']['user'].':<br>';
 					echo $showComment[$i]['Comment']['message'].'<br>';
-					if($showComment[$i]['Comment']['status']!=0 && $showComment[$i]['Comment']['status']!=97 && $showComment[$i]['Comment']['status']!=98  && $showComment[$i]['Comment']['status']!=96){
+					if($showComment[$i]['Comment']['status']!=0 && $showComment[$i]['Comment']['status']!=97 && $showComment[$i]['Comment']['status']!=98	&& $showComment[$i]['Comment']['status']!=96){
 						echo '<div class="commentAnswer">';
 							echo '<div style="padding-top:7px;"></div>'.$showComment[$i]['Comment']['admin'].':<br>';
 							if($showComment[$i]['Comment']['status']==1) echo 'Your move(s) have been added.<br>';
@@ -1032,10 +1030,10 @@
 					}
 					echo '</td><td align="right" class="sandboxTable2time">';
 					echo $showComment[$i]['Comment']['created'];
-					if($this->Session->read('loggedInUser.User.id') == $showComment[$i]['Comment']['user_id']){
+					if(Auth::getUserID() == $showComment[$i]['Comment']['user_id']){
 						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
 					}
-					if($this->Session->read('loggedInUser.User.isAdmin')==1){
+					if(Auth::isAdmin()){
 						if($showComment[$i]['Comment']['status']==0) echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Answer</a>';
 						else echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
 					}
@@ -1047,7 +1045,7 @@
 					<td width="50%" style="vertical-align:top">';
 						echo $this->Form->create('Comment');
 						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => $this->Session->read('loggedInUser.User.id')));
+						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
 						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
 						echo $this->Form->end('Submit');
 					echo '</td>
@@ -1111,8 +1109,8 @@
 	<?php }else{ ?>
 		<?php if($potionAlert){ ?>
 		<label>
-		  <input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
-		  <div class="alertBox alertInfo" id="potionAlerts">
+			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
+			<div class="alertBox alertInfo" id="potionAlerts">
 			<div class="alertBanner" align="center">
 			Hero Power
 			<span class="alertClose">x</span>
@@ -1123,7 +1121,7 @@
 			You found a potion, your hearts have been restored.<br>'
 			?>
 			<br class="clear1"/></span>
-		  </div>
+			</div>
 		</label>
 	<?php }else{ ?>
 		<label>
@@ -1235,11 +1233,11 @@
 	var whiteMoveAfterCorrectJ = 0;
 	var reviewModeActive = false;
 	var ui = <?php echo $ui; ?>;
-	var userXP = <?php echo $user['User']['xp']; ?>;
+	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var prevButtonLink = "<?php echo $prev; ?>";
 	var nextButtonLink = "<?php echo $next; ?>";
 	var lastInFav = "<?php echo $lastInFav; ?>";
-	var nextButtonLinkSet = <?php echo $t['Tsumego']['set_id']; ?>;
+	var nextButtonLinkSet = <?php echo $set['Set']['id']; ?>;
 	var nextButtonLinkLv = <?php echo $lv; ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
@@ -1275,8 +1273,8 @@
 	let passEnabled = <?php echo $t['Tsumego']['pass']; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
-	let revelationCounter = <?php echo $user['User']['revelation']; ?>+"";
-	let hasPremium = "<?php echo $hasPremium; ?>";
+	let revelationCounter = <?php echo Auth::getWithDefault('revelation', 0); ?>+"";
+	let hasPremium = "<?php echo Auth::hasPremium(); ?>";
 	const activeTopicTiles = [];
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
@@ -1366,11 +1364,11 @@
 		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
 	}}
 
-	if($this->Session->check('loggedInUser.User.id')){
-		if($this->Session->read('loggedInUser.User.isAdmin')>0){
+	if(Auth::isLoggedIn()){
+		if(Auth::isAdmin()){
 			echo '$(".modify-description-panel").hide();';
 		}
-		echo 'var besogoUserId = '.$this->Session->read('loggedInUser.User.id').';';
+		echo 'var besogoUserId = '.Auth::getUserID().';';
 	}else{
 		echo 'besogoNoLogin = true;';
 	}
@@ -1380,11 +1378,8 @@
 	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236)
 	echo 'besogoPlayerColor = "black";';
 
-	if($authorx==$this->Session->read('loggedInUser.User.name')) echo 'authorProblem = true;';
-	if($this->Session->read('loggedInUser.User.id')==72){
+	if ($authorx == Auth::getWithDefault('name', ''))
 		echo 'authorProblem = true;';
-		echo 'revelationEnabled = true;';
-	}
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
@@ -1752,7 +1747,7 @@
 	if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2'){
 		echo 'var showCommentSpace = true;';
 	}else echo 'var showCommentSpace = false;';
-	if($this->Session->read('loggedInUser.User.isAdmin')>0){
+	if(Auth::isAdmin()){
 		echo 'var showCommentSpace = true;';
 		echo '$("#show5").css("display", "inline-block");';
 	}
@@ -1803,7 +1798,7 @@
 	}
 
 	//BOARD ORIENTATION
-	      if($corner=='tl'){echo 'jsetup.view(0, 0, 9, 9);';
+				if($corner=='tl'){echo 'jsetup.view(0, 0, 9, 9);';
 	}else if($corner=='br'){echo 'jsetup.view(10, 10, 9, 9);';
 	}else if($corner=='bl'){echo 'jsetup.view(0, 10, 9, 9);';
 	}else if($corner=='tr'){echo 'jsetup.view(10, 0, 9, 9);';
@@ -1872,8 +1867,8 @@
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 		}
-		if($this->Session->check('loggedInUser')){
-			if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+		if(Auth::isLoggedIn()){
+			if(Auth::isAdmin()){
 				if($isSandbox){
 					//$reviewEnabled = true;
 					//echo 'reviewEnabled = true;';
@@ -2110,12 +2105,12 @@
 							}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
+									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
 								';
 							}else{
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
+									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
 								';
 							}
 						}else{
@@ -2138,12 +2133,12 @@
 						}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
 							echo '
 								document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-								document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
+								document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
 							';
 						}else{
 							echo '
 								document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-								document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
+								document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
 							';
 						}
 					}else{
@@ -2237,11 +2232,6 @@
 			msg4selected = !msg4selected;
 		});
 
-		<?php
-			if($this->Session->check('loggedInUser.User.id')){
-				//if($this->Session->read('loggedInUser.User.id')==72) echo '$("#msg5").show();';
-			}
-		?>
 		$("#show5").click(function(){
 			if(!msg5selected){
 				$("#msg5").fadeIn(250);
@@ -2280,32 +2270,32 @@
 		<?php } ?>
 		<?php } ?>
 		$("#commentPosition").click(function(){
-		  let commentContent = $("#CommentMessage").val();
-		  let additionalCoords = "";
-		  let current = besogo.editor.getCurrent();
-		  let besogoOrientation = besogo.editor.getOrientation();
-		  if(besogoOrientation[1]=="full-board")
+			let commentContent = $("#CommentMessage").val();
+			let additionalCoords = "";
+			let current = besogo.editor.getCurrent();
+			let besogoOrientation = besogo.editor.getOrientation();
+			if(besogoOrientation[1]=="full-board")
 			besogoOrientation[0] = besogoOrientation[1];
-		  let isInTree = besogo.editor.isMoveInTree(current);
-		  current = isInTree[0];
+			let isInTree = besogo.editor.isMoveInTree(current);
+			current = isInTree[0];
 
-		  if(isInTree[1]['x'].length>0){
-			  for(let i=isInTree[1]['x'].length-1;i>=0;i--)
+			if(isInTree[1]['x'].length>0){
+				for(let i=isInTree[1]['x'].length-1;i>=0;i--)
 				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
-			  additionalCoords = " + " + additionalCoords;
-		  }
-		  if(commentContent.includes("[current position]")){
+				additionalCoords = " + " + additionalCoords;
+			}
+			if(commentContent.includes("[current position]")){
 			 commentContent = commentContent.replace('[current position]','');
-		  }
-		  $("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
+			}
+			$("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
 
-		  if(current===null || current.move===null){
+			if(current===null || current.move===null){
 			$("#CommentPosition").val(
 				"-1/-1/0/0/0/0/0/0/0"
 			);
-		  }else{
-		    pX = -1;
-		    pY = -1;
+			}else{
+				pX = -1;
+				pY = -1;
 			if(current.moveNumber>1){
 				pX = current.parent.move.x;
 				pY = current.parent.move.y;
@@ -2320,15 +2310,15 @@
 
 			let newP = current.parent;
 			let newPcoords = current.move.x+"/"+current.move.y+"+";
-			  while(newP!==null && newP.move!==null){
-				  newPcoords += newP.move.x+"/"+newP.move.y+"+"
-				  newP = newP.parent;
-			  }
-			  newPcoords = newPcoords.slice(0, -1);
+				while(newP!==null && newP.move!==null){
+					newPcoords += newP.move.x+"/"+newP.move.y+"+"
+					newP = newP.parent;
+				}
+				newPcoords = newPcoords.slice(0, -1);
 			$("#CommentPosition").val(
-			  current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
+				current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
 			);
-		  }
+			}
 		});
 		let solutionRequest = true;
 		<?php if(($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2') || $isSandbox){ ?>
@@ -2337,13 +2327,13 @@
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if($this->Session->check('loggedInUser.User.id')){if($this->Session->read('loggedInUser.User.isAdmin')>=1){if(!$requestSolution){ ?>
+		<?php if (Auth::isAdmin()) { if (!$requestSolution) { ?>
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
-				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo $this->Session->read('loggedInUser.User.id'); ?>;
+				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo Auth::getUserID(); ?>;
 			});
-		<?php }}} ?>
+		<?php }} ?>
 
 		<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
@@ -2372,8 +2362,8 @@
 		var mouseX;
 		var mouseY;
 		$(document).mousemove(function(e){
-		   mouseX = e.pageX;
-		   mouseY = e.pageY;
+			 mouseX = e.pageX;
+			 mouseY = e.pageY;
 		});
 
 		let tooltipSgfs = [];
@@ -2407,7 +2397,7 @@
 		$("#showx7x").css("display", "inline-block");
 		$("#showx5").css("display", "inline-block");
 		$("#showx5").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
-		<?php if($this->Session->read('loggedInUser.User.isAdmin')>0){ ?>
+		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
 		<?php }else{
@@ -2497,17 +2487,17 @@
 	}
 
 	function runXPBar(increase){
-		<?php $newXP = $user['User']['nextlvl'] ? (($user['User']['xp'] + $t['Tsumego']['difficulty']) / $user['User']['nextlvl'] * 100) : 0; ?>
+		<?php $newXP = Auth::isLoggedIn() ? (Auth::getUser()['nextlvl'] ? ((Auth::getUser()['xp'] + $t['Tsumego']['difficulty']) / Auth::getUser()['nextlvl'] * 100) : 0) : 0; ?>
 		if(mode==1 || mode==2) {
 			if(levelBar==1 && increase==true){
 				if(!doubleXP) x2 = 1;
 				else x2 = 2;
 				<?php
 				echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
-				userNextlvl = '.$user['User']['nextlvl'].';
-				newXP2 = Math.min(('.$user['User']['xp'].'+userDifficulty)/userNextlvl*100, 100);
+				userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).'+userDifficulty)/userNextlvl*100, 100);
 				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round($user['User']['elo_rating_mode']), -2).'+ '.$eloScoreRounded.', 100);
+				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 0)), -2).'+ '.$eloScoreRounded.', 100);
 				newXP = '.$newXP.';'; ?>
 				$("#xp-bar-fill").css({"width":newXP2+"%"});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
@@ -2522,10 +2512,10 @@
 					if(!doubleXP) x2 = 1;
 					else x2 = 2;
 					<?php echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
-					userNextlvl = '.$user['User']['nextlvl'].';
-					if(increase) newXP2 = Math.min('.substr(round($user['User']['elo_rating_mode']), -2).'+ '.$eloScoreRounded.', 100);
-					else newXP2 = Math.min('.substr(round($user['User']['elo_rating_mode']), -2).'+ '.$eloScore2Rounded.', 100);
-					barPercent1 = Math.min(('.$user['User']['xp'].'+userDifficulty)/userNextlvl*100, 100);
+					userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScoreRounded.', 100);
+					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScore2Rounded.', 100);
+					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+userDifficulty)/userNextlvl*100, 100);
 					barPercent2 = newXP2;'; ?>
 					$("#xp-bar-fill").css({"width":newXP2+"%"});
 					$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
@@ -2556,8 +2546,8 @@
 	function runXPNumber(id, start, end, duration, ulvl){
 	start = Math.round(start);
 	end = Math.round(end);
-	<?php if($this->Session->check('loggedInUser.User.id')){ ?>
-	let runXPNumberNextLvl = <?php echo $user['User']['nextlvl']; ?>+"";
+	<?php if(Auth::isLoggedIn()){ ?>
+	let runXPNumberNextLvl = <?php echo Auth::getUser()['nextlvl']; ?>+"";
 	if(start!==end && !ratingBarLock){
 		userXP = end;
 		userLevel = ulvl;
@@ -2649,12 +2639,12 @@
 							}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
+									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
 								';
 							}else{
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">  '.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
+									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
 								';
 							}
 							?>
@@ -2694,7 +2684,7 @@
 	function rejuvenation(){
 		if(rejuvenationEnabled){
 			<?php
-				for($i=0; $i<$user['User']['health']; $i++){
+				for($i = 0; $i < Auth::getWithDefault('health', 0); $i++){
 					echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
 				}
 				echo 'document.cookie = "rejuvenationx=1;path=/tsumegos/play;SameSite=Lax";';
@@ -2742,7 +2732,7 @@
 			<?php } ?>
 			document.getElementById("revelation").src = "/img/hp6x.png";
 			document.getElementById("revelation").style = "cursor: context-menu;";
-			$("#revelation").attr("title","Revelation (<?php echo $user['User']['revelation']-1; ?>): Solves a problem, but you don\'t get any reward.");
+			$("#revelation").attr("title","Revelation (<?php echo Auth::getWithDefault('revelation', 0) - 1; ?>): Solves a problem, but you don\'t get any reward.");
 			revelationEnabled = false;
 		}
 	}
@@ -3008,7 +2998,7 @@
 		}
 		if(result=='S'){
 			$(".tag-gives-hint").css("display", "inline");
-			elo2 = <?php echo $user['User']['elo_rating_mode']; ?>+eloScore;
+			elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore;
 			let ulvl;
 			if(mode!=2){//mode 1 and 3 correct
 				<?php echo $sandboxCheck; ?>
@@ -3058,9 +3048,9 @@
 					if(goldenTsumego)
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
-					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>*x3) + <?php echo $user['User']['xp']; ?>;
-					userNextlvl = <?php echo $user['User']['nextlvl']; ?>;
-					ulvl = <?php echo $user['User']['level']; ?>;
+					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>*x3) + <?php echo Auth::getWithDefault('xp', 0); ?>;
+					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(mode==1 || mode==2) secondsy = seconds;
 					if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
 					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
@@ -3069,14 +3059,14 @@
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
 					}
-					<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+					<?php if(Auth::isLoggedIn()){ ?>
 					if(mode==1 && levelBar==1){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
 					}
 					if(mode==1 && levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', '0'); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3089,7 +3079,7 @@
 						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						if(levelBar==2){
 							runXPBar(true);
-							runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, ulvl);
+							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
 						}
 					}
 				}
@@ -3117,9 +3107,9 @@
 					secondsy = seconds;
 					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					document.cookie = "sequence="+sequence;
-					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>) + <?php echo $user['User']['xp']; ?>;
-					userNextlvl = <?php echo $user['User']['nextlvl']; ?>;
-					ulvl = <?php echo $user['User']['level']; ?>;
+					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>) + <?php echo Auth::getWithDefault('xp', '0'); ?>;
+					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
@@ -3131,7 +3121,7 @@
 					}
 					if(levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3160,9 +3150,9 @@
 				}
 				noLastMark = true;
 				if(mode==1 && levelBar==2 && misplays==0){
-					elo2 = <?php echo $user['User']['elo_rating_mode']; ?>+eloScore2;
+					elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
 					runXPBar(false);
-					runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, <?php echo $user['User']['level']; ?>);
+					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					userElo = Math.round(elo2);
 				}
 				if(!noXP){
@@ -3177,7 +3167,7 @@
 					}
 					freePlayMode = true;
 					if(mode==1){
-						if(<?php echo $user['User']['health'] - $user['User']['damage']; ?> - misplays<0){
+						if(<?php echo Auth::getWithDefault('health', 0) - Auth::getWithDefault('damage', 0); ?> - misplays<0){
 							if(hasPremium !== "1"){
 								document.getElementById("currentElement").style.backgroundColor = "#e03c4b";
 								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>';
@@ -3196,7 +3186,7 @@
 					}
 				}
 			}else{//mode 2 incorrect
-				elo2 = <?php echo $user['User']['elo_rating_mode']; ?>+eloScore2;
+				elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
@@ -3221,7 +3211,7 @@
 					freePlayMode = true;
 					if(levelBar==2){
 						runXPBar(false);
-						runXPNumber("account-bar-xp", <?php echo $user['User']['elo_rating_mode']; ?>, elo2, 1000, <?php echo $user['User']['level']; ?>);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					}
 					userElo = Math.round(elo2);
 				}
@@ -3272,33 +3262,33 @@
 	<?php if($ui==2){ ?>
 	<script type="text/javascript">
 	(function() {
-	  var options = { },
-		  searchString = location.search.substring(1),
-		  params = searchString.split("&"),
-		  div = document.getElementById('target'),
-		  i, value;
+		var options = { },
+			searchString = location.search.substring(1),
+			params = searchString.split("&"),
+			div = document.getElementById('target'),
+			i, value;
 
-	  for (i = 0; i < params.length; i++){
+		for (i = 0; i < params.length; i++){
 			value = params[i].split("=");
 			options[value.shift()] = value.join("=");
-	  }
+		}
 
-	  options.panels = "tree+control";
-	  <?php
-	  if($this->Session->read('loggedInUser.User.isAdmin')>0) echo 'options.panels = "tree+control+tool+comment+file";';
-	  ?>
-	  options.tsumegoPlayTool = 'auto';
-	  options.realstones = true;
-	  options.nowheel = true;
-	  options.nokeys = true;
-	  options.vChildrenEnabled = true;
-	  options.multipleChoice = false;
-	  options.multipleChoiceSetup = [];
-	  if(mode!=3)
+		options.panels = "tree+control";
+		<?php
+		if(Auth::isAdmin()) echo 'options.panels = "tree+control+tool+comment+file";';
+		?>
+		options.tsumegoPlayTool = 'auto';
+		options.realstones = true;
+		options.nowheel = true;
+		options.nokeys = true;
+		options.vChildrenEnabled = true;
+		options.multipleChoice = false;
+		options.multipleChoiceSetup = [];
+		if(mode!=3)
 		options.alternativeResponse = true;
-	  else
+		else
 		options.alternativeResponse = false;
-	  <?php
+		<?php
 		if($virtual_children!=1)
 			echo 'options.vChildrenEnabled = false;';
 		if($alternative_response!=1)
@@ -3372,45 +3362,44 @@
 			customMultipleChoiceAnswer = '.$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}
-	  ?>
-	  const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-	  shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
-	  options.corner = shuffledCornerArray[0];
-	  options.playerColor = besogoPlayerColor;
-      options.rootPath = '/besogo/';
-	  <?php
+		?>
+		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
+		options.corner = shuffledCornerArray[0];
+		options.playerColor = besogoPlayerColor;
+			options.rootPath = '/besogo/';
+		<?php
 		if(!isset($choice[0][1])) $choice[0][1] = 'texture4';
-	  ?>
-	  options.theme = '<?php echo $choice[0][1]; ?>';
-	  options.themeParameters = ['<?php echo $choice[0][2]; ?>', '<?php echo $choice[0][3]; ?>'];
-	  options.coord = 'western';
-	  options.sgf = 'https://<?php echo $_SERVER['HTTP_HOST']; ?>/placeholder.sgf';
-	  options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
-	  options.light = "<?php echo $_COOKIE['lightDark']; ?>";
-	  if (options.theme) addStyleLink('https://<?php echo $_SERVER['HTTP_HOST']; ?>/besogo/css/board-'+options.theme+'.css');
-	  if (options.height && options.width && options.resize === 'fixed')
-	  {
-		  div.style.height = options.height + 'px';
-		  div.style.width = options.width + 'px';
-	  }
-    options.reviewMode = false;
-    options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
+		?>
+		options.theme = '<?php echo $choice[0][1]; ?>';
+		options.themeParameters = ['<?php echo $choice[0][2]; ?>', '<?php echo $choice[0][3]; ?>'];
+		options.coord = 'western';
+		options.sgf = 'https://<?php echo $_SERVER['HTTP_HOST']; ?>/placeholder.sgf';
+		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
+		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
+		if (options.theme) addStyleLink('https://<?php echo $_SERVER['HTTP_HOST']; ?>/besogo/css/board-'+options.theme+'.css');
+		if (options.height && options.width && options.resize === 'fixed')
+		{
+			div.style.height = options.height + 'px';
+			div.style.width = options.width + 'px';
+		}
+		options.reviewMode = false;
+		options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
-		//if($this->Session->check('loggedInUser')){ if($this->Session->read('loggedInUser.User.id')==72){ echo 'options.reviewEnabled = true;'; }}
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
 	?>
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
-    besogo.editor.setAutoPlay(true);
-    besogo.editor.registerDisplayResult(displayResult);
-    besogo.editor.registerShowComment(function(commentText)
-    {
-      $("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-      $("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
-      $("#theComment").text(commentText);
-    });
+		besogo.editor.setAutoPlay(true);
+		besogo.editor.registerDisplayResult(displayResult);
+		besogo.editor.registerShowComment(function(commentText)
+		{
+			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
+			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
+			$("#theComment").text(commentText);
+		});
 	function addStyleLink(cssURL)
 	{
 		var element = document.createElement('link');

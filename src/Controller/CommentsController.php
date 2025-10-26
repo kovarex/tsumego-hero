@@ -39,7 +39,7 @@ class CommentsController extends AppController {
 			$filter1 = $this->params['url']['filter'];
 		}
 
-		$hasPremium = $this->hasPremium();
+		$hasPremium = Auth::hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 		if (!$swp) {
 			$swp = [];
@@ -51,7 +51,7 @@ class CommentsController extends AppController {
 		if ($filter1 == 'true') {
 			$userTsumegos = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'OR' => [
 						['status' => 'S'],
 						['status' => 'C'],
@@ -65,7 +65,7 @@ class CommentsController extends AppController {
 		} else {
 			$userTsumegos = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 				],
 			]);
 			if (!$userTsumegos) {
@@ -343,7 +343,7 @@ class CommentsController extends AppController {
 				'limit' => 500,
 				'order' => 'created DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 				],
 			]);
 			if (!$yourComments) {
@@ -360,7 +360,7 @@ class CommentsController extends AppController {
 					'order' => 'created DESC',
 					'conditions' => [
 						'Comment.id <' => $this->params['url']['your-comment-id'],
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 					],
 				]);
 				if (!$yourComments) {
@@ -372,7 +372,7 @@ class CommentsController extends AppController {
 					'order' => 'created ASC',
 					'conditions' => [
 						'Comment.id >' => $this->params['url']['your-comment-id'],
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 					],
 				]);
 				if (!$yourComments) {
@@ -533,7 +533,7 @@ class CommentsController extends AppController {
 		}
 		$admins = $this->User->find('all', ['conditions' => ['isAdmin' => 1]]);
 
-		if ($this->isAdmin()) {
+		if (Auth::isAdmin()) {
 			$uc = $this->Comment->find('all', [
 				'conditions' => [
 					'user_id' => 0,
@@ -576,7 +576,7 @@ class CommentsController extends AppController {
 	 */
 	public function remove($id) {
 		$token = true;
-		if (!$this->isAdmin()) {
+		if (!Auth::isAdmin()) {
 			$token = false;
 		} elseif ($this->params['url']['token'] != md5((string) $id)) {
 			$token = false;
