@@ -958,20 +958,6 @@ class TsumegosController extends AppController {
 			array_push($allUts, $allUts1);
 			array_push($allUts, $allUts2);
 			$ut = $allUts[0];
-
-			$old_u = [];
-			$old_u['old_r'] = Auth::getUser()['elo_rating_mode'];
-			$old_u['old_rd'] = Auth::getUser()['rd'];
-			$old_t = [];
-			$old_t['old_r'] = $t['Tsumego']['elo_rating_mode'];
-			$old_t['old_rd'] = $t['Tsumego']['rd'];
-
-			$diff = $t['Tsumego']['elo_rating_mode'] - Auth::getUser()['elo_rating_mode'];
-			if ($diff <= -600) {
-				$diff = -595;
-			}
-			$newV = (($diff - $oldmin) / ($oldmax - $oldmin)) * ($newmax - $newmin);
-
 		} elseif ($mode == 3) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];

@@ -99,7 +99,7 @@
 			<?php
 			echo '<font style="font-weight:800;color:#74d14c" >'.$percentSolved.'%. completed</font><br>';
 			if (Auth::getUserID() == $user['User']['id']) {
-				if ($percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED) {
+				if ($canResetTsumegoStatuses) {
 					echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
 				} else {
 					echo '<br><br><a class="new-button-inactive" href="#" >Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';

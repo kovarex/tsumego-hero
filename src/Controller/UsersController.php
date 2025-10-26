@@ -3046,8 +3046,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
 
 		$deletedTsumegoStatusCount = 0;
+		$canResetOldTsumegoStatuses = $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 		if (isset($this->params['url']['delete-uts'])) {
-			if ($this->params['url']['delete-uts'] == 'true' && $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED) {
+			if ($this->params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses) {
 				$utsCount = count($uts);
 				for ($j = 0; $j < $utsCount; $j++) {
 					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
@@ -3128,6 +3129,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('highestRo', $highestRo);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
+		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
 	}
 
 	private function formatTimegraph($graph) {
