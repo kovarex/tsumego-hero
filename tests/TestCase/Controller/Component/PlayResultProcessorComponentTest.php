@@ -66,43 +66,43 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 	}
 
 	public function testVisitFromSolved(): void {
-		$context = new TsumegoVisitContext('S');
+		$context = (new TsumegoVisitContext())->setStatus('S');
 		$this->performVisit($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testHalfXpStatusToDoubleSolved(): void {
-		$context = new TsumegoVisitContext('W');
+		$context = (new TsumegoVisitContext())->setStatus('W');
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C');
 	}
 
 	public function testSolveFromFailed(): void {
-		$context = new TsumegoVisitContext('F');
+		$context = (new TsumegoVisitContext())->setStatus('F');
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testFailFromVisited(): void {
-		$context = new TsumegoVisitContext('V');
+		$context = (new TsumegoVisitContext())->setStatus('V');
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
 	}
 
 	public function testFailFromFailed(): void {
-		$context = new TsumegoVisitContext('F');
+		$context = (new TsumegoVisitContext())->setStatus('F');
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'X');
 	}
 
 	public function testFailFromSolved(): void {
-		$context = new TsumegoVisitContext('S');
+		$context = (new TsumegoVisitContext())->setStatus('S');
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S'); // shouldn't be affected
 	}
 
 	public function testFailFromDoubleSolved(): void {
-		$context = new TsumegoVisitContext('C');
+		$context = (new TsumegoVisitContext())->setStatus('C');
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C'); // shouldn't be affected
 	}
@@ -126,7 +126,7 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 }
 
 class TsumegoVisitContext {
-	public function __construct(?string $originalStatus = null, ?array $user = null, ?array $tsumego = null) {
+	public function __construct(?array $user = null, ?array $tsumego = null) {
 		$this->user = $user;
 		if (!$this->user) {
 			$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
@@ -136,12 +136,17 @@ class TsumegoVisitContext {
 		if (!$this->tsumego) {
 			$this->tsumego = ClassRegistry::init('Tsumego')->find('first');
 		}
+	}
 
-		$this->originalStatus = $originalStatus;
+	function setStatus(string $originalStatus): TsumegoVisitContext
+	{
+      $this->originalStatus = $originalStatus;
+	  return $this;
 	}
 
 	public $user;
 	public $tsumego;
 	public $originalStatus;
+	public $originalTsumegoAttempt;
 	public $resultTsumegoStatus;
 }
