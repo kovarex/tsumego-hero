@@ -66,7 +66,7 @@
 		<div align="center">
 			Your rank:<br>
 			<a style="cursor:pointer;" onclick="userShow1(2);">
-				<img id="profileRankImage" src="/img/<?php echo $eloRank; ?>Rank.png" width="76px">
+				<img id="profileRankImage" src="/img/<?php echo Rating::getReadableRankFromRating($user['User']['elo_rating_mode']); ?>Rank.png" width="76px">
 			</a>
 		</div>
 		</td>
@@ -97,17 +97,18 @@
 		<tr>
 		<td>
 			<?php
-			if($deletedProblems==1){
-				echo '<font style="font-weight:800;color:#74d14c" >You have completed '.$p.'%. </font>';
-				if($p>=75){
-					echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset ('.$dNum.')</a><br><br>';
-				}else{
-					echo '<br><br><a class="new-button-inactive" href="#" >Reset ('.$dNum.')</a><br><br>';
+			echo '<font style="font-weight:800;color:#74d14c" >'.$percentSolved.'%. completed</font><br>';
+			if (Auth::getUserID() == $user['User']['id']) {
+				if ($percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED) {
+					echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
+				} else {
+					echo '<br><br><a class="new-button-inactive" href="#" >Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
+					echo 'If you have completed at least 75%, you can reset progress older than 1 year.<br>';
 				}
-			}elseif($deletedProblems==2){
-				echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$dNum.' problems has been deleted.</font>';
 			}
-			echo 'If you have completed at least 75%, you can reset progress older than 1 year.<br>';
+			if ($deletedTsumegoStatusCount > 0) {
+				echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$deletedTsumegoStatusCount.' problems has been deleted.</font><br>';
+			}
 			?>
 		</td>
 		</tr>

@@ -19,4 +19,14 @@ class Util {
 		}
 		return $randomString;
 	}
+
+	public static function getPercentButAvoid100UntillComplete(int $value, int $max): int
+	{
+		assert($value <= $max);
+		$result = round($value / $max);
+		if ($result == 100 && $value < $max) {
+			return 99;
+		}
+		return $result;
+	}
 }

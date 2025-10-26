@@ -1,6 +1,8 @@
 <?php
 
 App::uses('CakeEmail', 'Network/Email');
+App::uses('Constants', 'Utility');
+
 class UsersController extends AppController {
 	public $components = ['Flash'];
 	public $name = 'Users';
@@ -2916,7 +2918,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tsumegoNum = count($tsumegoDates);
 		$solvedUts = [];
 		$lastYear = date('Y-m-d', strtotime('-1 year'));
-		$dNum = 0;
+
+		$tsumegoStatusToRestCount = 0;
 
 		$utsCount = count($uts);
 		for ($j = 0; $j < $utsCount; $j++) {
@@ -2929,7 +2932,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				}
 			}
 			if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
-				$dNum++;
+				$tsumegoStatusToRestCount++;
 			}
 		}
 		$toplvl = $user['User']['level'];
@@ -3015,7 +3018,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		$eloRank = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
 		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
 
 		if ($highestElo < $user['User']['elo_rating_mode']) {
@@ -3041,21 +3043,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		$timeGraph = $this->formatTimegraph($timeGraph);
 
-		$p = $user['User']['solved'] / $tsumegoNum * 100;
-		$p = round($p);
-		if ($p == 100 && $user['User']['solved'] < $tsumegoNum) {
-			$p = 99;
-		}
-		if ($p > 100) {
-			$p = 100;
-		}
+		$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
 
+		$deletedTsumegoStatusCount = 0;
 		if (isset($this->params['url']['delete-uts'])) {
-			if ($this->params['url']['delete-uts'] == 'true' && $p >= 75) {
+			if ($this->params['url']['delete-uts'] == 'true' && $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED) {
 				$utsCount = count($uts);
 				for ($j = 0; $j < $utsCount; $j++) {
 					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
 						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
+                        $deletedTsumegoStatusCount++;
 					}
 				}
 				$utx = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
@@ -3071,14 +3068,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$user['User']['dbstorage'] = 99;
 				$this->User->save($user);
 
-				$p = $user['User']['solved'] / $tsumegoNum * 100;
-				$p = round($p);
-				if ($p == 100 && $user['User']['solved'] < $tsumegoNum) {
-					$p = 99;
-				}
-				if ($p > 100) {
-					$p = 100;
-				}
+				$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
 			}
 		}
 
@@ -3125,8 +3115,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('timeModeRuns', count($ro));
 		$this->set('user', $user);
 		$this->set('tsumegoNum', $tsumegoNum);
-		$this->set('p', $p);
-		$this->set('dNum', $dNum);
+		$this->set('percentSolved', $percentSolved);
+		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
+		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('allUts', $uts);
 		$this->set('hideEmail', $hideEmail);
 		$this->set('as', $as);
@@ -3134,7 +3125,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('solvedUts2', $solvedUts2);
 		$this->set('highestElo', $highestElo);
 		$this->set('highestEloRank', $highestEloRank);
-		$this->set('eloRank', $eloRank);
 		$this->set('highestRo', $highestRo);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
