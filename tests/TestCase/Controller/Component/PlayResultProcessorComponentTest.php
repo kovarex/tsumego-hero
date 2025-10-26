@@ -159,6 +159,18 @@ class PlayResultProcessorComponentTest extends TsumegoControllerTestCase {
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 66);
 	}
 
+	public function testSolvingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
+		$context = (new TsumegoVisitContext())->setAttempt(['solved' => true, 'misplays' => 66]);
+
+		$this->performSolve($context);
+		$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$this->assertSame(count($tsumegoAttempts), 2); // the solved one wasn't updated
+		$this->assertSame($tsumegoAttempts[0]['TsumegoAttempt']['solved'], true);
+		$this->assertSame($tsumegoAttempts[0]['TsumegoAttempt']['misplays'], 66);
+		$this->assertSame($tsumegoAttempts[1]['TsumegoAttempt']['solved'], true);
+		$this->assertSame($tsumegoAttempts[1]['TsumegoAttempt']['misplays'], 0);
+	}
+
 	public function testFailingAddsNewTsumegoAttempt(): void {
 		$context = new TsumegoVisitContext();
 
@@ -167,6 +179,29 @@ class PlayResultProcessorComponentTest extends TsumegoControllerTestCase {
 		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], false);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 1);
+	}
+
+	public function testFailingUpdatsExistingNotSolvedTsumegoAttempt(): void {
+		$context = (new TsumegoVisitContext())->setAttempt(['solved' => false, 'misplays' => 66]);
+
+		$this->performMisplay($context);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], false);
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 67);
+	}
+
+	public function testFailingDontUpdatsExistingSolvedTsumegoAttempt(): void {
+		$context = (new TsumegoVisitContext())->setAttempt(['solved' => true, 'misplays' => 66]);
+
+		$this->performMisplay($context);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$this->assertSame(count($newTsumegoAttempt), 2); // exactly one should be created
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 66);
+
+		$this->assertSame($newTsumegoAttempt[1]['TsumegoAttempt']['solved'], false);
+		$this->assertSame($newTsumegoAttempt[1]['TsumegoAttempt']['misplays'], 1);
 	}
 }
 

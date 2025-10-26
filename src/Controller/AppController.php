@@ -3748,7 +3748,7 @@ class AppController extends Controller {
 				$levelBar = $_COOKIE['levelBar'];
 				Auth::getUser()['levelBar'] = $levelBar;
 			} elseif (Auth::getUser()['levelBar'] == 0
-				|| Auth::getUser()['levelBar'] == 'level') {
+		  || Auth::getUser()['levelBar'] == 'level') {
 				$levelBar = 1;
 			} else {
 				$levelBar = 2;

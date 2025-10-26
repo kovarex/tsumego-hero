@@ -84,7 +84,7 @@ class PlayResultProcessorComponent extends Component {
 		);
 
 		// only not solved ones are updated (misplays get accumulated)
-		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['solved']) {
+		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved']) {
 			$tsumegoAttempt = [];
 			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];

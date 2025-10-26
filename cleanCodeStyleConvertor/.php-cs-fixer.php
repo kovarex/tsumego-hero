@@ -19,6 +19,6 @@ return (new PhpCsFixer\Config())
        'functions_opening_brace' => 'next_line_unless_newline_at_signature_end'
       ]
     ])
-  ->setIndent("\t")
+  ->setIndent("  ")
   ->setFinder($finder)
   ->registerCustomFixers([new RemoveBracersAroundBlocksWithOneCommandFixer()]);
