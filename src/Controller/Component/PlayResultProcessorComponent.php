@@ -13,23 +13,29 @@ class PlayResultProcessorComponent extends Component {
 			return;
 		}
 		$result = $this->checkPreviousPlayAndGetResult($appController, $previousTsumego);
+		if (!isset($result['solved']))
+			return; // wrong cookies presented, we do nothing
+
 		$this->updateTsumegoStatus($previousTsumego, $result);
 		$this->updateTsumegoAttempt($previousTsumego, $result);
 		$this->processEloChange($appController, $previousTsumego, $result);
 	}
 
-	public function checkPreviousPlayAndGetResult($appController, &$previousTsumego): string {
-		if ($this->checkMisplay()) {
-			return 'l';
+	public function checkPreviousPlayAndGetResult($appController, &$previousTsumego): array {
+		$result = [];
+		if ($misplay = $this->checkMisplay()) {
+			$result['solved'] = false;
+			$result['misplay'] = $misplay;
 		}
-		if ($this->checkCorrectPlay($appController, $previousTsumego)) {
-			return 'w';
+		if ($score = $this->checkCorrectPlay($appController, $previousTsumego)) {
+			$result['solved'] = true;
+			$result['score'] = $score;
 		}
 
-		return '';
+		return $result;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, string $result): void {
+	private function updateTsumegoStatus(array $previousTsumego, array $result): void {
 		$tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
 		$previousTsumegoStatus = $tsumegoStatusModel->find('first', [
 			'order' => 'created DESC',
@@ -46,13 +52,13 @@ class PlayResultProcessorComponent extends Component {
 		}
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
-		if ($result == 'w') {
+		if ($result['solved']) {
 			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') { // half xp state
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
 			} else {
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
 			}
-		} elseif ($result == 'l') {
+		} else {
 			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
 			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
@@ -64,7 +70,7 @@ class PlayResultProcessorComponent extends Component {
 		$tsumegoStatusModel->save($previousTsumegoStatus);
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, string $result): void
+	private function updateTsumegoAttempt(array $previousTsumego, array $result): void
 	{
 		$tsumegoAttempt = [];
 		$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
@@ -72,17 +78,14 @@ class PlayResultProcessorComponent extends Component {
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = Util::getCookie('seconds', 0);
-		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result == 'w' ? '1' : '0';
+		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 		$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $result['misplay'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
-	private function processEloChange(AppController $appController, array $previousTsumego, string $result): void {
-		if ($result == '') {
-			return;
-		}
-
+	private function processEloChange(AppController $appController, array $previousTsumego, array $result): void {
 		$userRating = (float) Auth::getUser()['elo_rating_mode'];
 		$tsumegoRating = (float) $previousTsumego['Tsumego']['elo_rating_mode'];
 		$eloDifference = abs($userRating - $tsumegoRating);
