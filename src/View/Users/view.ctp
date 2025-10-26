@@ -103,7 +103,7 @@
 					echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
 				} else {
 					echo '<br><br><a class="new-button-inactive" href="#" >Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
-					echo 'If you have completed at least 75%, you can reset progress older than 1 year.<br>';
+					echo 'If you have completed at least '.Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED.'%, you can reset progress older than 1 year.<br>';
 				}
 			}
 			if ($deletedTsumegoStatusCount > 0) {
