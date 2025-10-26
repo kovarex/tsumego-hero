@@ -36,7 +36,6 @@ class TsumegosController extends AppController {
 		$this->loadModel('TagName');
 		$this->loadModel('UserContribution');
 
-		$onlineMode = true;
 		$noUser = null;
 		$noLogin = [];
 		$preTsumego = null;
@@ -59,16 +58,8 @@ class TsumegosController extends AppController {
 		$goldenTsumego = false;
 		$refresh = null;
 		$mode = 1;
-		$noTr = false;
-		$range = [];
 		$difficulty = 4;
-		$oldmin = -600;
-		$oldmax = 500;
-		$newmin = 0.1;
-		$newmax = 2;
 		$potion = 0;
-		$potionPercent = 0;
-		$potionPercent2 = 0;
 		$potionSuccess = false;
 		$potionActive = false;
 		$reviewCheat = false;
@@ -85,25 +76,20 @@ class TsumegosController extends AppController {
 		$mode3ScoreArray = [];
 		$trs = [];
 		$potionAlert = false;
-		$ui = 2;
 		$eloScore = 0;
 		$eloScore2 = 0;
 		$requestProblem = '';
 		$achievementUpdate = [];
 		$pdCounter = 0;
 		$duplicates = [];
-		$preSc = [];
 		$tRank = '15k';
 		$requestSolution = false;
 		$currentRank2 = null;
 		$nothingInRange = false;
-		$avActive2 = true;
 		$utsMap = [];
-		$allUts = [];
 		$setsWithPremium = [];
 		$queryTitle = '';
 		$queryTitleSets = '';
-		$amountOfOtherCollection = 200;
 		$partition = -1;
 
 		$hasPremium = Auth::hasPremium();
