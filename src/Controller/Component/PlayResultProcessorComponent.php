@@ -8,15 +8,16 @@ App::uses('SetConnection', 'Model');
 class PlayResultProcessorComponent extends Component {
 	public $components = ['Session'];
 
-	public function checkPreviousPlay(AppController $appController, array &$previousTsumego): void {
+	public function checkPreviousPlay(AppController $appController, ?array &$previousTsumego): void {
 		if (!$previousTsumego) {
 			return;
 		}
 		$result = $this->checkPreviousPlayAndGetResult($appController, $previousTsumego);
-		if (!isset($result['solved']))
-			return; // wrong cookies presented, we do nothing
-
 		$this->updateTsumegoStatus($previousTsumego, $result);
+
+		if (!isset($result['solved'])) {
+			return;
+		}
 		$this->updateTsumegoAttempt($previousTsumego, $result);
 		$this->processEloChange($appController, $previousTsumego, $result);
 	}
@@ -52,17 +53,19 @@ class PlayResultProcessorComponent extends Component {
 		}
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
-		if ($result['solved']) {
-			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') { // half xp state
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
+		if (isset($result['solved'])) {
+			if ($result['solved']) {
+				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') { // half xp state
+					$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
+				} else {
+					$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
+				}
 			} else {
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
-			}
-		} else {
-			if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
-			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
+				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
+					$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
+				} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
+					$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
+				}
 			}
 		}
 
@@ -70,18 +73,36 @@ class PlayResultProcessorComponent extends Component {
 		$tsumegoStatusModel->save($previousTsumegoStatus);
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result): void
-	{
-		$tsumegoAttempt = [];
-		$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
+	private function updateTsumegoAttempt(array $previousTsumego, array $result): void {
+		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find(
+			'first',
+			['conditions'
+				=> ['user_id' => Auth::getUserID(),
+					'tsumego_id' => $previousTsumego['Tsumego']['id'],
+					'mode' => Auth::getMode()],
+				'order' => 'id DESC'],
+		);
+
+		// only not solved ones are updated (misplays get accumulated)
+		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['solved']) {
+			$tsumegoAttempt = [];
+			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
+			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
+			$tsumegoAttempt['TsumegoAttempt']['seconds'] = Util::getCookie('seconds', 0);
+			$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
+			$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
+			$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
+			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
+		} else {
+			$tsumegoAttempt = $lastTsumegoAttempt;
+		}
+
 		$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
-		$tsumegoAttempt['TsumegoAttempt']['seconds'] = Util::getCookie('seconds', 0);
+		$tsumegoAttempt['TsumegoAttempt']['seconds'] += (int) Util::getCookie('seconds', 0);
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-		$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
-		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $result['misplay'] ?: 0;
+		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplay'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
@@ -100,7 +121,7 @@ class PlayResultProcessorComponent extends Component {
 		} else {
 			$activityValue = 1;
 		}
-		$newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result);
+		$newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result['solved'] ? 'w' : 'l');
 		$newEloRating = $userRating + $newUserElo['user'];
 		Auth::getUser()['elo_rating_mode'] = $newEloRating;
 
@@ -114,136 +135,136 @@ class PlayResultProcessorComponent extends Component {
 		}
 	}
 
-	private function checkMisplay(): bool {
+	/* @return The number of misplays */
+	private function checkMisplay(): int {
 		if (empty($_COOKIE['misplay'])) {
-			return false;
+			return 0;
 		}
-		Util::clearCookie('misplay');
-
-		return true;
+		return (int) Util::clearCookie('misplay');
 	}
 
-	private function checkCorrectPlay($appController, &$previousTsumego): bool {
-		if (empty($_COOKIE['mode'])) {
-			return false;
-		}
+	/* @return The score to add */
+	private function checkCorrectPlay($appController, &$previousTsumego): int {
 		if (empty($_COOKIE['score'])) {
-			return false;
+			return 0;
 		}
 
-		if (($_COOKIE['mode'] == '1' || $_COOKIE['mode'] == '2') && $_COOKIE['score'] != '0') {
-			$suspiciousBehavior = false;
-			$exploit = null;
-			$_COOKIE['score'] = $appController->decrypt($_COOKIE['score']);
-			$scoreArr = explode('-', $_COOKIE['score']);
-			$isNum = $previousTsumego['Tsumego']['num'] == $scoreArr[0];
-			$isSet = true;
-			$isNumSc = false;
-			$isSetSc = false;
-
-			$preSc = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => (int) $previousTsumego['Tsumego']['id']]]);
-			if (!$preSc) {
-				$preSc = [];
-			}
-			$preScCount = count($preSc);
-			for ($i = 0; $i < $preScCount; $i++) {
-				if ($preSc[$i]['SetConnection']['set_id'] == $previousTsumego['Tsumego']['set_id']) {
-					$isSetSc = true;
-				}
-				if ($preSc[$i]['SetConnection']['num'] == $previousTsumego['Tsumego']['num']) {
-					$isNumSc = true;
-				}
-			}
-			$isNum = $isNumSc;
-			$isSet = $isSetSc;
-			$_COOKIE['score'] = $scoreArr[1];
-			$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['elo_rating_mode']);
-
-			if ($isNum && $isSet) {
-				if (!$this->Session->check('noLogin')) {
-					$ub = [];
-					$ub['UserBoard']['user_id'] = Auth::getUserID();
-					$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
-					$appController->UserBoard->create();
-					$appController->UserBoard->save($ub);
-					if ($_COOKIE['score'] >= 3000) {
-						$_COOKIE['score'] = 0;
-						$suspiciousBehavior = true;
-					}
-					if (Auth::getUser()['reuse3'] > 12000) {
-						Auth::getUser()['reuse4'] = 1;
-					}
-				}
-				if (!$suspiciousBehavior) {
-					$xpOld = Auth::getUser()['xp'] + (int) ($_COOKIE['score']);
-					Auth::getUser()['reuse2']++;
-					Auth::getUser()['reuse3'] += (int) ($_COOKIE['score']);
-					if ($xpOld >= Auth::getUser()['nextlvl']) {
-						$xpOnNewLvl = -1 * (Auth::getUser()['nextlvl'] - $xpOld);
-						Auth::getUser()['xp'] = $xpOnNewLvl;
-						Auth::getUser()['level'] += 1;
-						Auth::getUser()['nextlvl'] += $appController->getXPJump(Auth::getUser()['level']);
-						Auth::getUser()['health'] = $appController->getHealth(Auth::getUser()['level']);
-					} else {
-						Auth::getUser()['xp'] = $xpOld;
-						Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
-					}
-
-					$correctSolveAttempt = true;
-
-					$appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
-					$appController->updateGems($solvedTsumegoRank);
-					if ($_COOKIE['sprint'] == 1) {
-						$appController->updateSprintCondition(true);
-					} else {
-						$appController->updateSprintCondition();
-					}
-					if ($_COOKIE['type'] == 'g') {
-						$appController->updateGoldenCondition(true);
-					}
-					$aCondition = $appController->AchievementCondition->find('first', [
-						'order' => 'value DESC',
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'category' => 'err',
-						],
-					]);
-					if ($aCondition == null) {
-						$aCondition = [];
-					}
-					$aCondition['AchievementCondition']['category'] = 'err';
-					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-					$aCondition['AchievementCondition']['value']++;
-					$appController->AchievementCondition->save($aCondition);
-					if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
-						$ranks = $appController->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['ActiveRank']]]);
-						if (!$ranks) {
-							$ranks = [];
-						}
-						$currentNum = $ranks[0]['Rank']['currentNum'];
-						$ranksCount = count($ranks);
-						for ($i = 0; $i < $ranksCount; $i++) {
-							if ($ranks[$i]['Rank']['num'] == $currentNum - 1) {
-								if ($_COOKIE['rank'] != 'solved' && $_COOKIE['rank'] != 'failed' && $_COOKIE['rank'] != 'skipped' && $_COOKIE['rank'] != 'timeout') {
-									$_COOKIE['rank'] = 'failed';
-								}
-								$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-								$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
-								$appController->Rank->save($ranks[$i]);
-							}
-						}
-					}
-				}
-			} else {
-				Auth::getUser()['penalty'] += 1;
-			}
-
+		if ($_COOKIE['score'] == '0') {
 			Util::clearCookie('score');
-			Util::clearCookie('sequence');
-			Util::clearCookie('type');
+			return 0;
 		}
 
-		return true;
+		$suspiciousBehavior = false;
+		$exploit = null;
+		$_COOKIE['score'] = Util::wierdDecrypt($_COOKIE['score']);
+		$scoreArr = explode('-', $_COOKIE['score']);
+		$isNum = $previousTsumego['Tsumego']['num'] == $scoreArr[0];
+		$isSet = true;
+		$isNumSc = false;
+		$isSetSc = false;
+
+		$preSc = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => (int) $previousTsumego['Tsumego']['id']]]);
+		if (!$preSc) {
+			$preSc = [];
+		}
+		$preScCount = count($preSc);
+		for ($i = 0; $i < $preScCount; $i++) {
+			if ($preSc[$i]['SetConnection']['set_id'] == $previousTsumego['Tsumego']['set_id']) {
+				$isSetSc = true;
+			}
+			if ($preSc[$i]['SetConnection']['num'] == $previousTsumego['Tsumego']['num']) {
+				$isNumSc = true;
+			}
+		}
+		$isNum = $isNumSc;
+		$isSet = $isSetSc;
+		$_COOKIE['score'] = $scoreArr[1];
+		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['elo_rating_mode']);
+
+		if ($isNum && $isSet) {
+			if (!$this->Session->check('noLogin')) {
+				$ub = [];
+				$ub['UserBoard']['user_id'] = Auth::getUserID();
+				$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
+				$appController->UserBoard->create();
+				$appController->UserBoard->save($ub);
+				if ($_COOKIE['score'] >= 3000) {
+					$_COOKIE['score'] = 0;
+					$suspiciousBehavior = true;
+				}
+				if (Auth::getUser()['reuse3'] > 12000) {
+					Auth::getUser()['reuse4'] = 1;
+				}
+			}
+			if (!$suspiciousBehavior) {
+				$xpOld = Auth::getUser()['xp'] + (int) ($_COOKIE['score']);
+				Auth::getUser()['reuse2']++;
+				Auth::getUser()['reuse3'] += (int) ($_COOKIE['score']);
+				if ($xpOld >= Auth::getUser()['nextlvl']) {
+					$xpOnNewLvl = -1 * (Auth::getUser()['nextlvl'] - $xpOld);
+					Auth::getUser()['xp'] = $xpOnNewLvl;
+					Auth::getUser()['level'] += 1;
+					Auth::getUser()['nextlvl'] += $appController->getXPJump(Auth::getUser()['level']);
+					Auth::getUser()['health'] = $appController->getHealth(Auth::getUser()['level']);
+				} else {
+					Auth::getUser()['xp'] = $xpOld;
+					Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
+				}
+
+				$correctSolveAttempt = true;
+
+				$appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
+				$appController->updateGems($solvedTsumegoRank);
+				if ($_COOKIE['sprint'] == 1) {
+					$appController->updateSprintCondition(true);
+				} else {
+					$appController->updateSprintCondition();
+				}
+				if ($_COOKIE['type'] == 'g') {
+					$appController->updateGoldenCondition(true);
+				}
+				$aCondition = $appController->AchievementCondition->find('first', [
+					'order' => 'value DESC',
+					'conditions' => [
+						'user_id' => Auth::getUserID(),
+						'category' => 'err',
+					],
+				]);
+				if ($aCondition == null) {
+					$aCondition = [];
+				}
+				$aCondition['AchievementCondition']['category'] = 'err';
+				$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
+				$aCondition['AchievementCondition']['value']++;
+				$appController->AchievementCondition->save($aCondition);
+				if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
+					$ranks = $appController->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['ActiveRank']]]);
+					if (!$ranks) {
+						$ranks = [];
+					}
+					$currentNum = $ranks[0]['Rank']['currentNum'];
+					$ranksCount = count($ranks);
+					for ($i = 0; $i < $ranksCount; $i++) {
+						if ($ranks[$i]['Rank']['num'] == $currentNum - 1) {
+							if ($_COOKIE['rank'] != 'solved' && $_COOKIE['rank'] != 'failed' && $_COOKIE['rank'] != 'skipped' && $_COOKIE['rank'] != 'timeout') {
+								$_COOKIE['rank'] = 'failed';
+							}
+							$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
+							$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
+							$appController->Rank->save($ranks[$i]);
+						}
+					}
+				}
+			}
+		} else {
+			Auth::getUser()['penalty'] += 1;
+		}
+
+		$result = $_COOKIE['score'];
+		Util::clearCookie('score');
+		Util::clearCookie('sequence');
+		Util::clearCookie('type');
+		return (int) $result;
 	}
 
 }

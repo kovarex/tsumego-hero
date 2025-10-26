@@ -1,6 +1,6 @@
 <?php
 
-App::uses('Auth', 'Utility');
+require_once(__DIR__ . '/../TsumegoControllerTestCase.php');
 
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer {
@@ -26,7 +26,7 @@ class TestEmailer {
 	public static $lastEmail = null;
 };
 
-class LoginComponentTest extends ControllerTestCase {
+class LoginComponentTest extends TsumegoControllerTestCase {
 	public function testLogin(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
@@ -43,7 +43,6 @@ class LoginComponentTest extends ControllerTestCase {
 	public function testLoginWithWrongPassword(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
-		CakeSession::destroy(); // so sessisions are persistent between tests, TODO: better solution than manual clear
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'testx']], 'method' => 'POST']);

@@ -60,9 +60,8 @@ class Auth {
 		return Auth::getUser()[$key];
 	}
 
-	public static function getMode(): int
-	{
-		return Auth::isLoggedIn() ? (int)Auth::getUser()['mode'] : 1;
+	public static function getMode(): int {
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : 1;
 	}
 
 	private static $user = null;
