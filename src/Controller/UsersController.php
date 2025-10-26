@@ -3052,7 +3052,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				for ($j = 0; $j < $utsCount; $j++) {
 					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
 						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
-                        $deletedTsumegoStatusCount++;
+						$deletedTsumegoStatusCount++;
 					}
 				}
 				$utx = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
