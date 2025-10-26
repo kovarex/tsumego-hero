@@ -1,0 +1,9 @@
+1. Stop the site tsumego-hero (some kind of under construction)
+2. Export the database.
+3. Copy the database by sftp to the site
+4. Import the database by calling ./migration.sql.sh
+7. Run https://tsumego.com/users/migratePasswordsToHashes/<limit> until all passwords are re-hashed (there are 25000 accounts, so it will take at least few iterations)
+8. Remove the column users.pw (ALTER TABLE users DROP COLUMN pw) (all entries should be NULL after the migration)
+8. Check that the site works properly
+9. Create a redirect on tsumego-hero.com to tsumego.com
+10. Done

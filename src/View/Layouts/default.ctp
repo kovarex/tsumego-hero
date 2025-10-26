@@ -48,16 +48,18 @@
 		$modeSelector = 2;
 		$accountBarLevelToRating = 'account-bar-user';
 		if($mode!=3){
-			if($levelBar==1){
-				if(isset($user['User']['level'])) $levelNum = 'Level '.$user['User']['level'];
-				else $levelNum = 1;
+      if($levelBar==1){
+				if(Auth::isLoggedIn())
+					$levelNum = 'Level '.Auth::getUser()['level'];
+				else
+					$levelNum = 1;
 				$xpBarFill = 'xp-bar-fill-c1';
 				$modeSelector = 2;
 				$accountBarLevelToRating = 'account-bar-user';
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
-        if ($user['User']['elo_rating_mode'])
-				  $levelNum = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
+        if (Auth::isLoggedIn())
+				  $levelNum = Rating::getReadableRankFromRating(Auth::getUser()['elo_rating_mode']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
 			}
@@ -84,10 +86,10 @@
 				if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
 				else $lv = '15352';
 
-				if($this->Session->check('loggedInUser')){
-					if($this->Session->read('loggedInUser.User.premium')>=1) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
+				if(Auth::isLoggedIn()){
+					if(Auth::hasPremium()) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
 					else $sand = '';
-					if($this->Session->read('loggedInUser.User.premium')>=1) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
+					if(Auth::hasPremium()) $leaderboard = 'onmouseover="leaderboardHover()" onmouseout="leaderboardNoHover()"';
 					else $leaderboard = '';
 				}else{
 					$sand = '';
@@ -154,14 +156,13 @@
 				}else{
 					$nextMode['Tsumego']['id'] = 15352;
 				}
-				if($this->Session->check('loggedInUser.User.id')){
-					if($this->Session->read('loggedInUser.User.isAdmin')==0) $discussFilter = '';
-					else $discussFilter = '?filter=false';
-					if($this->Session->read('loggedInUser.User.completed')==1 || $this->Session->read('loggedInUser.User.premium')>=1){
-					}else{
-						$refreshLinkToSandboxBackup = '<a id="refreshLinkToSandbox"></a>';
-					}
-					if($this->Session->read('loggedInUser.User.premium')>=1){
+				if(Auth::isLoggedIn()){
+					if(!Auth::isAdmin())
+            $discussFilter = '';
+					else
+            $discussFilter = '?filter=false';
+  				$refreshLinkToSandboxBackup = '<a id="refreshLinkToSandbox"></a>';
+					if(Auth::hasPremium()){
 					}else{
 						$refreshLinkToLeaderboardBackup = '<a id="refreshLinkToLeaderboard"></a>';
 					}
@@ -181,13 +182,13 @@
 					echo '</ul>';
 					echo '</li>';
 					echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
-					if($this->Session->check('loggedInUser.User.id')){
-						if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1 || $hasFavs){
+					if(Auth::isLoggedIn()){
+						if(Auth::hasPremium() || Auth::isAdmin() || $hasFavs){
 							echo '<ul class="newMenuLi2">';
-							if($this->Session->read('loggedInUser.User.premium')>=1 || $this->Session->read('loggedInUser.User.isAdmin')>=1)
+							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/beta">Sandbox</a></li>';
 							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/1">Favorites</a></li>';
-							if($this->Session->read('loggedInUser.User.isAdmin')>=1){
+							if(Auth::isAdmin()){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
 								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
@@ -207,7 +208,7 @@
 					echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
 					echo '<ul class="newMenuLi3">';
 						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
-						if($this->Session->check('loggedInUser.User.id')){
+						if(Auth::isLoggedIn()){
 							echo '<li><a href="/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/ranks/overview" '.$timeModeA.'>Time</a></li>';
 						}
@@ -220,14 +221,15 @@
 						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
 					echo '</ul>';
-					if($this->Session->check('loggedInUser.User.id'))
+					if(Auth::isLoggedIn())
 						echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
 					else
 						echo '<li><a style="color:#aaa;">Discuss</a></li>';
-					if($this->Session->read('loggedInUser.User.sound') == 'off')
-						$soundButtonImageValue = 'sound-icon2.png';
-					else if($this->Session->read('loggedInUser.User.sound') == 'on')
-						$soundButtonImageValue = 'sound-icon1.png';
+          if (Auth::isLoggedIn())
+  					if(Auth::getUser()['sound'] == 'off')
+							$soundButtonImageValue = 'sound-icon2.png';
+						else if(Auth::getUser()['sound'] == 'on')
+							$soundButtonImageValue = 'sound-icon1.png';
 					else
 						$soundButtonImageValue = 'sound-icon1.png';
 					echo '<li class="menuIcons1">
@@ -297,21 +299,23 @@
 		<div class="outerMenu3">
 			<?php
 				$currentPage = '';
-				if($this->Session->read('page') == 'user') $currentPage = 'style="color:#74d14c;" ';
-				if(!$this->Session->check('loggedInUser.User.id')) echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
+				if($this->Session->read('page') == 'user')
+          $currentPage = 'style="color:#74d14c;" ';
+				if(!Auth::isLoggedIn())
+          echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
 			?>
 		</div>
 
 	</div>
 	<?php
-		if($this->Session->check('loggedInUser.User.id')){
+		if(Auth::isLoggedIn()){
 			if($levelBar==1) $textBarInMenu = "Rating Bar";
 			else $textBarInMenu = "Level Bar";
 			echo '<div id="account-bar-wrapper" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					  <div id="account-bar">
 							<div id="'.$accountBarLevelToRating.'" class="account-bar-user-class">
-								<a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">
-									'.$user['User']['name'].'
+								<a href="/users/view/'.Auth::getUserID().'">
+									'.Auth::getUser()['name'].'
 								</a>
 							</div>
 							<div id="xp-bar">
@@ -332,7 +336,7 @@
 					  </div>
 				</div>
 				<div id="heroProfile" onmouseover="xpHover()" onmouseout="xpNoHover()">
-					<li><a href="/users/view/'.$this->Session->read('loggedInUser.User.id').'">Profile</a></li>
+					<li><a href="/users/view/'.Auth::getUserID().'">Profile</a></li>
 				</div>
 				<div id="heroBar" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					<li><a id="textBarInMenu" onclick="switchBarInMenu()">'.$textBarInMenu.'</a></li>
@@ -364,10 +368,7 @@
 	</div>
 	<div id="footer" class="footerLinks">
 		<div class="footer-space"></div>
-		<?php if(
-			!$this->Session->check('loggedInUser.User.id')
-			|| $this->Session->check('loggedInUser.User.id') && $this->Session->read('loggedInUser.User.premium')<1
-		){ ?>
+		<?php if(!Auth::hasPremium()){ ?>
 			<div class="footer-element">
 				<a href="/users/donate">
 					<img id="donateH2" onmouseover="upgradeHover2()" onmouseout="upgradeNoHover2()" width="180px" src="/img/upgradeButton1.png">
@@ -406,7 +407,7 @@
 	</div>
 	<?php
 	$achievementUpdate = $achievementUpdate ?? [];
-	if($this->Session->check('loggedInUser.User.id')){
+	if(Auth::isLoggedIn()){
 		$xpBonus = 0;
     	$count = count($achievementUpdate);
 		for($i=0;$i<$count;$i++){
@@ -427,7 +428,7 @@
 			';
 			$xpBonus += $achievementUpdate[$i][4];
 		}
-		if($this->Session->read('loggedInUser.User.xp')+$xpBonus>=$this->Session->read('loggedInUser.User.nextlvl')){
+		if(Auth::getUser()['xp']+$xpBonus>=Auth::getUser()['nextlvl']){
 			$increaseValue = 100;
 		}else $increaseValue = 50;
 	}
@@ -452,7 +453,7 @@
 		if(isset($removeCookie)){
 			echo 'setCookie("'.$removeCookie.'", "0");';
 		}
-		if($this->Session->check('loggedInUser.User.id')){
+		if(Auth::isLoggedIn()){
 		if($_COOKIE['PHPSESSID']!=0 && $_COOKIE['PHPSESSID']!=-1){
 	?>
 			// REMOVED: Never manually set PHPSESSID - PHP manages this automatically
@@ -463,8 +464,8 @@
 			setCookie("z_sess", PHPSESSID);
 			localStorage.setItem("z_sess", PHPSESSID);
 
-			setCookie("z_user_hash", "<?php echo md5($this->Session->read('loggedInUser.User.name')); ?>");
-			localStorage.setItem("z_user_hash", "<?php echo md5($this->Session->read('loggedInUser.User.name')); ?>");
+			setCookie("z_user_hash", "<?php echo md5(Auth::getUser()['name']); ?>");
+			localStorage.setItem("z_user_hash", "<?php echo md5(Auth::getUser()['name']); ?>");
 
 			setCookie("z_hash", "0");
 			localStorage.setItem("z_hash", "0");
@@ -485,10 +486,10 @@
 	<?php
 			}
 		}
-		if($this->Session->check('loggedInUser.User.id')){ ?>
-		var barPercent1 = <?php echo $user['User']['nextlvl'] == 0 ? "0" : $user['User']['xp']/$user['User']['nextlvl']*100; ?>;
-		var barPercent2 = <?php echo substr(round($user['User']['elo_rating_mode']), -2); ?>;
-		var barLevelNum = "<?php echo 'Level '.$user['User']['level']; ?>";
+		if(Auth::isLoggedIn()){ ?>
+		var barPercent1 = <?php echo Auth::getUser()['nextlvl'] == 0 ? "0" : Auth::getUser()['xp']/Auth::getUser()['nextlvl']*100; ?>;
+		var barPercent2 = <?php echo substr(round(Auth::getUser()['elo_rating_mode']), -2); ?>;
+		var barLevelNum = "<?php echo 'Level '.Auth::getUser()['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
 	<?php } ?>
@@ -550,7 +551,7 @@
 		document.cookie = "requestProblem=0;SameSite=Lax;expires="+lifetime+";path=/";
 
 		setCookie("lightDark", "<?php echo $lightDark; ?>");
-		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+		<?php if(Auth::isLoggedIn()){ ?>
 			setCookie("levelBar", "<?php echo $levelBar; ?>");
 		<?php } ?>
 		setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
@@ -578,16 +579,16 @@
 		var soundsEnabled = true;
 		var notMode3 = true;
 
-		<?php if($this->Session->check('loggedInUser.User.id')){ ?>
-			var userXP = <?php echo $user['User']['xp']; ?> ;
-			var userLevel = <?php echo $user['User']['level']; ?> ;
-			var userNextLvl = <?php echo $user['User']['nextlvl']; ?> ;
-			var userElo = <?php echo round($user['User']['elo_rating_mode']); ?> ;
+		<?php if(Auth::isLoggedIn()){ ?>
+			var userXP = <?php echo Auth::getUser()['xp']; ?> ;
+			var userLevel = <?php echo Auth::getUser()['level']; ?> ;
+			var userNextLvl = <?php echo Auth::getUser()['nextlvl']; ?> ;
+			var userElo = <?php echo round(Auth::getUser()['elo_rating_mode']); ?> ;
 			var soundValue = 0;
 			let modeSelector = <?php echo $modeSelector; ?>;
 			let levelBar = <?php echo $levelBar; ?>+"";
 			<?php
-			echo 'soundValue = "'.$this->Session->read('loggedInUser.User.sound').'";';
+			echo 'soundValue = "'.Auth::getUser()['sound'].'";';
 		}else{
 		?>
 			let levelBar = 1;
@@ -629,7 +630,7 @@
 					}
 				<?php
 				}
-			if(isset($loggedInUser)){
+			if(Auth::isLoggedIn()){
 				echo 'var end = new Date("'.$nextDay.' 00:00 AM");';
 				?>
 				var _second = 1000;
@@ -815,11 +816,11 @@
 		}
 
 		function loadBar(){
-			<?php if($this->Session->check('loggedInUser.User.id')){ ?>
+			<?php if(Auth::isLoggedIn()){ ?>
 
 				if(notMode3){
 				<?php
-				$barPercent2 = substr(round($user['User']['elo_rating_mode']), -2);
+				$barPercent2 = substr(round(Auth::getUser()['elo_rating_mode']), -2);
 
 				if($mode!=3){ ?>
 
@@ -848,7 +849,7 @@
 		function xpHover(){
 			if(notMode3){
 				<?php
-				if($this->Session->check('loggedInUser.User.id')){
+				if(Auth::isLoggedIn()){
 					if($mode==1 || $mode==2){
 					?>
 					if(levelBar==1)
@@ -977,7 +978,7 @@
 
 	</script>
 	<?php
-	if(!$this->Session->check('loggedInUser.User.id'))
+	if(!Auth::isLoggedIn())
 		echo '<style>.outerMenu1{left: 224px;}</style>';
 	?>
 </body>

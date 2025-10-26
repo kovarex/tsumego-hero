@@ -1,7 +1,7 @@
 
 	<div class="homeRight">
 		<?php
-			if(!$this->Session->check('loggedInUser')){
+			if(!Auth::isLoggedIn()){
 		?>
 		
 		<p class="title4">Please <a href="/users/add">Sign Up</a>!</p><br>
@@ -41,104 +41,7 @@
 		<br>
 		<?php
 			}
-			if($this->Session->check('loggedInUser')){
-			//if($this->Session->read('loggedInUser.User.completed')==1){
-			if(false){
-			//if($this->Session->read('loggedInUser.User.id')==72){
-			//echo '<pre>';print_r($ux);echo '</pre>';
-			?>
-			<div id="sandboxVolunteers2">
-				<p class="title4">Sandbox</p>
-				<br>
-				<div align="center"><font size="4px">
-				There are new problems in the sandbox.</font>
-				<table border="0" width="300px">
-				<tr>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="/sets/beta" style="color:black;"><font size="4px">Enter</font><br></a>
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-				</td>
-				</tr>
-				</table>
-				</div>
-			</div>
-			<?php 
-			}
-			
-			if(false){
-			?>
-			<div id="sandboxVolunteers">
-				<p class="title4">Sandbox Volunteers</p>
-				<br>
-				The Sandbox is an effort to increase the quality of the problems on Tsumego Hero. 
-				All problems are there for trial, before they get published. A small group 
-				of users has access. Their task is to solve them and comment if they find a mistake. 
-				<br><br>
-				<div align="center">
-				Would you like to have early access to not published problems? 
-				<table border="0" width="300px">
-				<tr>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="#" id="sandboxY" onclick="sandboxY(); return false;" style="color:black;">Yes</a>
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="#" id="sandboxN" onclick="sandboxN(); return false;" style="color:black;">No</a>
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="#" id="sandboxM" onclick="sandboxM(); return false;" style="color:black;">Maybe</a>
-				</td>
-				</tr>
-				</table>
-				</div>
-				<br>
-			</div>
-			<?php 
-			}
-			
-			if(false){
-			?>
-			<div id="sandboxVolunteers2">
-				<p class="title4">Sandbox Volunteers</p>
-				<br>
-				<div align="center"><font size="4px">
-				You have been invited.</font>
-				<table border="0" width="300px">
-				<tr>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="/sets/beta" style="color:black;"><font size="4px">Enter</font><br></a>
-				</td>
-				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-				</td>
-				</tr>
-				</table>
-				</div>
-				
-			</div>
-			<?php 
-			}
-			/*if($this->Session->check('loggedInUser')){
-			if($this->Session->read('loggedInUser.User.completed')==1){
-			?>
-			
-			<div >
-				<p class="title4">Sandbox</p>
-				<br>
-				<div align="left"><font size="4px">
-				There are new problems in the <a href="/sets/beta">Sandbox</a>, please check.
-				<br><br>
-				</font>
-				
-				</div>
-			</div>
-			
-			<?php
-			}
-			}*/
+			if(Auth::isLoggedIn()){
 			?>
 			<p class="title4">Your last Activities</p>
 			<br>
@@ -845,8 +748,8 @@
 		?>
 		<br>
 		<?php
-			if($this->Session->check('loggedInUser')){
-				if($this->Session->read('loggedInUser.User.id')==72){
+			if(Auth::isLoggedIn()){
+				if(Auth::getUserID()==72){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/stats">Page Stats</a><br>';
 					echo '<a href="/users/userstats">User Stats</a><br>';
@@ -854,12 +757,12 @@
 					//echo '<pre>';print_r($asdf);echo '</pre>';
 					echo '</div>';
 				}
-				if($this->Session->read('loggedInUser.User.id')==2781 || $this->Session->read('loggedInUser.User.id')==1206){
+				if(Auth::getUserID()==2781 || Auth::getUserID()==1206){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/adminstats">Admin Stats</a><br>';
 					echo '</div>';
 				}
-				if($this->Session->read('loggedInUser.User.id')==1543){
+				if(Auth::getUserID()==1543){
 					echo '<div style="position:absolute;top:60px;left:28px;">';
 					echo '<a href="/users/userstats">User Stats</a><br>';
 					echo '</div>';
@@ -875,7 +778,7 @@
 		
 		
 		<?php 
-			if(isset($loggedInUser)){	
+			if(Auth::isLoggedIn())){
 				echo '
 					<p class="title4xx">Restoration Countdown</p>
 					<br>
@@ -992,8 +895,8 @@
 		</tr>
 		</table>
 		<br>
-		<?php if($this->Session->check('loggedInUser')){ ?>
-		<?php if($this->Session->read('loggedInUser.User.premium')==0 && $user['User']['id']!=1165){ ?>
+		<?php if(Auth::isLoggedIn()){ ?>
+		<?php if(!Auth::hasPremium() && $user['User']['id']!=1165){ ?>
 			<p class="title4">Donations</p><br>
 			<div align="center"><a href="/users/donate"><img id="donateH" onmouseover="donateHover()" onmouseout="donateNoHover()" width="180px" src="/img/donateButton1.png"></a><br>
 			Get access to <a href="/users/donate">Tsumego Hero Premium</a>.<br><br>
@@ -1229,7 +1132,7 @@
 		-->
 		</font>
 		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-		<?php if(!isset($loggedInUser)) echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>'; ?>
+		<?php if(!Auth::isLoggedIn()) echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>'; ?>
 	</div>
 	
 		
