@@ -181,7 +181,7 @@ class PlayResultProcessorComponentTest extends TsumegoControllerTestCase {
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 1);
 	}
 
-	public function testFailingUpdatsExistingNotSolvedTsumegoAttempt(): void {
+	public function testFailingUpdatesExistingNotSolvedTsumegoAttempt(): void {
 		$context = (new TsumegoVisitContext())->setAttempt(['solved' => false, 'misplays' => 66]);
 
 		$this->performMisplay($context);
@@ -191,7 +191,7 @@ class PlayResultProcessorComponentTest extends TsumegoControllerTestCase {
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 67);
 	}
 
-	public function testFailingDontUpdatsExistingSolvedTsumegoAttempt(): void {
+	public function testFailingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
 		$context = (new TsumegoVisitContext())->setAttempt(['solved' => true, 'misplays' => 66]);
 
 		$this->performMisplay($context);
