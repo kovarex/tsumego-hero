@@ -1508,97 +1508,99 @@ class TsumegosController extends AppController {
 		}
 		unset($_COOKIE['previousTsumegoID']);
 		setcookie('previousTsumegoID', $id);
-		if (Auth::isLoggedIn() && isset($_COOKIE['doublexp']) && $_COOKIE['doublexp'] != '0') {
-			if (Auth::getUser()['usedSprint'] == 0) {
-				$doublexp = $_COOKIE['doublexp'];
-			} else {
-				unset($_COOKIE['doublexp']);
-			}
-		}
-		if (isset($_COOKIE['sprint']) && $_COOKIE['sprint'] != '0') {
-			Auth::getUser()['sprint'] = 0;
-			if ($_COOKIE['sprint'] == 1) {
-				$this->set('sprintActivated', true);
-			}
-			if ($_COOKIE['sprint'] == 2) {
-				Auth::getUser()['usedSprint'] = 1;
-			}
-			unset($_COOKIE['sprint']);
-		}
-		if (isset($_COOKIE['intuition']) && $_COOKIE['intuition'] != '0') {
-			if ($_COOKIE['intuition'] == '1') {
-				Auth::getUser()['intuition'] = 0;
-			}
-			if ($_COOKIE['intuition'] == '2') {
-				Auth::getUser()['intuition'] = 1;
-			}
-			unset($_COOKIE['intuition']);
-		}
-		if (isset($_COOKIE['rejuvenation']) && $_COOKIE['rejuvenation'] != '0') {
-			Auth::getUser()['rejuvenation'] = 0;
-			Auth::getUser()['usedRejuvenation'] = 1;
-			unset($_COOKIE['rejuvenation']);
-		}
-		if (isset($_COOKIE['extendedSprint']) && $_COOKIE['extendedSprint'] != '0') {
-			Auth::getUser()['penalty'] += 1;
-			unset($_COOKIE['extendedSprint']);
-		}
-		if (isset($_COOKIE['refinement']) && $_COOKIE['refinement'] != '0') {
-			if ($_COOKIE['refinement'] > 0) {
-				if (Auth::getUser()['usedRefinement'] == 0) {
-					$refinementUT = $this->findUt($id, $utsMap);
-					if ($refinementUT == null) {
-						$this->TsumegoStatus->create();
-						$refinementUT['TsumegoStatus']['user_id'] = Auth::getUserID();
-						$refinementUT['TsumegoStatus']['tsumego_id'] = $id;
-					}
-					$refinementUT['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-					$refinementUT['TsumegoStatus']['status'] = 'G';
-					$testUt = $this->TsumegoStatus->find('first', [
-						'conditions' => [
-							'tsumego_id' => $refinementUT['TsumegoStatus']['tsumego_id'],
-							'user_id' => $refinementUT['TsumegoStatus']['user_id'],
-						],
-					]);
-					if ($testUt != null) {
-						$refinementUT['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
-					}
-					//$this->TsumegoStatus->save($refinementUT); status should be saved elsewhere
-					//$this->Session->read('loggedInUser.uts')[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
-					//$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
-
-					if (!$ut) {
-						$ut = $refinementUT;
-					} else {
-						$ut['TsumegoStatus']['status'] = 'G';
-					}
-					$goldenTsumego = true;
-					Auth::getUser()['usedRefinement'] = 1;
-				}
-			} else {
-				$resetRefinement = $this->findUt($id, $utsMap);
-				if ($resetRefinement != null) {
-					$resetRefinement['TsumegoStatus']['status'] = 'V';
-					$testUt = $this->TsumegoStatus->find('first', [
-						'conditions' => [
-							'tsumego_id' => $resetRefinement['TsumegoStatus']['tsumego_id'],
-							'user_id' => $resetRefinement['TsumegoStatus']['user_id'],
-						],
-					]);
-					$resetRefinement['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
-					//$this->TsumegoStatus->save($resetRefinement);
-					//$this->Session->read('loggedInUser.uts')[$resetRefinement['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
-					//$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
-				}
-				if (!$ut) {
-					$ut = $resetRefinement;
+		if (Auth::isLoggedIn()) {
+			if (isset($_COOKIE['doublexp']) && $_COOKIE['doublexp'] != '0') {
+				if (Auth::getUser()['usedSprint'] == 0) {
+					$doublexp = $_COOKIE['doublexp'];
 				} else {
-					$ut['TsumegoStatus']['status'] = 'V';
+					unset($_COOKIE['doublexp']);
 				}
-				$goldenTsumego = false;
 			}
-			Auth::getUser()['refinement'] = 0;
-			unset($_COOKIE['refinement']);
+			if (isset($_COOKIE['sprint']) && $_COOKIE['sprint'] != '0') {
+				Auth::getUser()['sprint'] = 0;
+				if ($_COOKIE['sprint'] == 1) {
+					$this->set('sprintActivated', true);
+				}
+				if ($_COOKIE['sprint'] == 2) {
+					Auth::getUser()['usedSprint'] = 1;
+				}
+				unset($_COOKIE['sprint']);
+			}
+			if (isset($_COOKIE['intuition']) && $_COOKIE['intuition'] != '0') {
+				if ($_COOKIE['intuition'] == '1') {
+					Auth::getUser()['intuition'] = 0;
+				}
+				if ($_COOKIE['intuition'] == '2') {
+					Auth::getUser()['intuition'] = 1;
+				}
+				unset($_COOKIE['intuition']);
+			}
+			if (isset($_COOKIE['rejuvenation']) && $_COOKIE['rejuvenation'] != '0') {
+				Auth::getUser()['rejuvenation'] = 0;
+				Auth::getUser()['usedRejuvenation'] = 1;
+				unset($_COOKIE['rejuvenation']);
+			}
+			if (isset($_COOKIE['extendedSprint']) && $_COOKIE['extendedSprint'] != '0') {
+				Auth::getUser()['penalty'] += 1;
+				unset($_COOKIE['extendedSprint']);
+			}
+			if (isset($_COOKIE['refinement']) && $_COOKIE['refinement'] != '0') {
+				if ($_COOKIE['refinement'] > 0) {
+					if (Auth::getUser()['usedRefinement'] == 0) {
+						$refinementUT = $this->findUt($id, $utsMap);
+						if ($refinementUT == null) {
+							$this->TsumegoStatus->create();
+							$refinementUT['TsumegoStatus']['user_id'] = Auth::getUserID();
+							$refinementUT['TsumegoStatus']['tsumego_id'] = $id;
+						}
+						$refinementUT['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
+						$refinementUT['TsumegoStatus']['status'] = 'G';
+						$testUt = $this->TsumegoStatus->find('first', [
+							'conditions' => [
+								'tsumego_id' => $refinementUT['TsumegoStatus']['tsumego_id'],
+								'user_id' => $refinementUT['TsumegoStatus']['user_id'],
+							],
+						]);
+						if ($testUt != null) {
+							$refinementUT['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
+						}
+						//$this->TsumegoStatus->save($refinementUT); status should be saved elsewhere
+						//$this->Session->read('loggedInUser.uts')[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
+						//$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $refinementUT['TsumegoStatus']['status'];
+
+						if (!$ut) {
+							$ut = $refinementUT;
+						} else {
+							$ut['TsumegoStatus']['status'] = 'G';
+						}
+						$goldenTsumego = true;
+						Auth::getUser()['usedRefinement'] = 1;
+					}
+				} else {
+					$resetRefinement = $this->findUt($id, $utsMap);
+					if ($resetRefinement != null) {
+						$resetRefinement['TsumegoStatus']['status'] = 'V';
+						$testUt = $this->TsumegoStatus->find('first', [
+							'conditions' => [
+								'tsumego_id' => $resetRefinement['TsumegoStatus']['tsumego_id'],
+								'user_id' => $resetRefinement['TsumegoStatus']['user_id'],
+							],
+						]);
+						$resetRefinement['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
+						//$this->TsumegoStatus->save($resetRefinement);
+						//$this->Session->read('loggedInUser.uts')[$resetRefinement['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
+						//$utsMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
+					}
+					if (!$ut) {
+						$ut = $resetRefinement;
+					} else {
+						$ut['TsumegoStatus']['status'] = 'V';
+					}
+					$goldenTsumego = false;
+				}
+				Auth::getUser()['refinement'] = 0;
+				unset($_COOKIE['refinement']);
+			}
 		}
 
 		if ($rejuvenation) {
