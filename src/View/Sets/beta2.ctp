@@ -1,32 +1,4 @@
-
-	<?php
-	
-	
-		if($this->Session->check('loggedInUser')){
-			if($this->Session->read('loggedInUser.User.completed')!=1){
-				echo '<script type="text/javascript">window.location.href = "/";</script>';
-			}	
-		}else{
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}
-	
-	
-		$active0 = '';
-		$active1 = '';
-		$active2 = '';
-		$active3 = '';
-		$active4 = '';
-		
-		
-		if($this->Session->check('loggedInUser')){
-			if($this->Session->read('loggedInUser.User.id')==72){
-				//echo '<pre>';
-				//print_r($test1);
-				//echo '</pre>';
-			}			
-		}
-		
-	?>
+  <script type="text/javascript">window.location.href = "/";</script>
 	<div align="center" class="display1" style="padding-top:10px;">
 		
 	<div id="sandbox">

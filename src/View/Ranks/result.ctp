@@ -1,5 +1,5 @@
 	<?php
-	if($this->Session->check('loggedInUser')){	
+	if(Auth::isLoggedIn()){
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}

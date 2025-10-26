@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Auth', 'Utility');
+
 class AppController extends Controller {
 	public $viewClass = 'App';
 
@@ -9,28 +11,6 @@ class AppController extends Controller {
 		'Flash',
 		'PlayResultProcessor',
 	];
-
-	protected $sessionUser; // used when user isn't logged in, saved in session
-
-	protected $loggedInUser; // used when user is logged in, saved in database
-
-	protected $user; // user in case we want to support both logged in/not logged in functionality
-
-	protected function isLoggedIn(): bool {
-		return $this->Session->check('loggedInUserID');
-	}
-
-	public function loggedInUserID(): int {
-		return (int) $this->Session->read('loggedInUserID');
-	}
-
-	protected function hasPremium(): bool {
-		return $this->loggedInUser && $this->loggedInUser['User']['premium'];
-	}
-
-	protected function isAdmin(): bool {
-		return $this->loggedInUser && $this->loggedInUser['User']['isAdmin'];
-	}
 
 	protected function processSGF($sgf) {
 		$aw = strpos($sgf, 'AW');
@@ -562,8 +542,8 @@ class AppController extends Controller {
 				}
 			}
 		}
-		$this->loggedInUser['User']['solved'] = $solvedUts2;
-		$this->User->save($this->loggedInUser);
+		Auth::getUser()['solved'] = $solvedUts2;
+		Auth::saveUser();
 
 		return $solvedUts2;
 	}
@@ -610,8 +590,8 @@ class AppController extends Controller {
 		$tsumegoAvtivityValue = max(round((2 / 3) * $t['Tsumego']['activity_value']), 15);
 		$kFactor1 = 1;
 		$kFactor2 = 1;
-		if ($this->loggedInUser) {
-			$rating = $this->loggedInUser['User']['elo_rating_mode'];
+		if (Auth::isLoggedIn()) {
+			$rating = Auth::getUser()['elo_rating_mode'];
 			if ($rating >= 1500) {
 				$kFactor1 = 1.5;
 				$kFactor2 = 0.9;
@@ -1425,12 +1405,12 @@ class AppController extends Controller {
 
 		return $u['User']['name'];
 	}
-	protected function checkPicture($u) {
-		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null) {
-			return '<img class="google-profile-image" src="/img/google/' . $u['User']['picture'] . '">' . substr($u['User']['name'], 3);
+	protected function checkPicture($user) {
+		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null) {
+			return '<img class="google-profile-image" src="/img/google/' . $user['picture'] . '">' . substr($user['name'], 3);
 		}
 
-		return $u['User']['name'];
+		return $user['name'];
 	}
 
 	protected function getTsumegoRankx($t) {
@@ -1711,7 +1691,7 @@ class AppController extends Controller {
 			$danSolveCondition = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'category' => $danSolveCategory,
 				],
 			]);
@@ -1721,7 +1701,7 @@ class AppController extends Controller {
 				$this->AchievementCondition->create();
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
-			$danSolveCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+			$danSolveCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			$danSolveCondition['AchievementCondition']['set_id'] = $tId;
 			$danSolveCondition['AchievementCondition']['value']++;
 
@@ -1736,11 +1716,11 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	protected function updateSprintCondition(bool $trigger = false) {
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			$sprintCondition = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'category' => 'sprint',
 				],
 			]);
@@ -1750,7 +1730,7 @@ class AppController extends Controller {
 				$this->AchievementCondition->create();
 			}
 			$sprintCondition['AchievementCondition']['category'] = 'sprint';
-			$sprintCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+			$sprintCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			if ($trigger) {
 				$sprintCondition['AchievementCondition']['value']++;
 			} else {
@@ -1768,7 +1748,7 @@ class AppController extends Controller {
 		$goldenCondition = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'category' => 'golden',
 			],
 		]);
@@ -1778,7 +1758,7 @@ class AppController extends Controller {
 			$this->AchievementCondition->create();
 		}
 		$goldenCondition['AchievementCondition']['category'] = 'golden';
-		$goldenCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+		$goldenCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 		if ($trigger) {
 			$goldenCondition['AchievementCondition']['value']++;
 		} else {
@@ -1794,7 +1774,7 @@ class AppController extends Controller {
 		$potionCondition = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'category' => 'potion',
 			],
 		]);
@@ -1803,7 +1783,7 @@ class AppController extends Controller {
 			$this->AchievementCondition->create();
 		}
 		$potionCondition['AchievementCondition']['category'] = 'potion';
-		$potionCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+		$potionCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 		$potionCondition['AchievementCondition']['value'] = 1;
 		$this->AchievementCondition->save($potionCondition);
 	}
@@ -1888,14 +1868,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 						'category' => 'emerald',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'emerald';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1905,14 +1885,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 						'category' => 'sapphire',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'sapphire';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1922,14 +1902,14 @@ class AppController extends Controller {
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 						'category' => 'ruby',
 					],
 				]);
 				if ($aCondition == null) {
 					$aCondition = [];
 					$aCondition['AchievementCondition']['category'] = 'ruby';
-					$aCondition['AchievementCondition']['user_id'] = $this->loggedInUserID();
+					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 					$aCondition['AchievementCondition']['value'] = 1;
 					$this->AchievementCondition->save($aCondition);
 				} else {
@@ -1941,18 +1921,18 @@ class AppController extends Controller {
 	}
 
 	protected function checkDanSolveAchievements() {
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			$this->loadModel('Achievement');
 			$this->loadModel('AchievementStatus');
 			$this->loadModel('AchievementCondition');
-			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 			if (!$buffer) {
 				$buffer = [];
 			}
 			$ac = $this->AchievementCondition->find('all', [
 				'order' => 'category ASC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'OR' => [
 						['category' => 'danSolve1d'],
 						['category' => 'danSolve2d'],
@@ -2005,7 +1985,7 @@ class AppController extends Controller {
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			}
 			$as = [];
-			$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+			$as['AchievementStatus']['user_id'] = Auth::getUserID();
 			$updated = [];
 			$achievementId = 101;
 			if ($ac1['1d'] > 0 && !isset($existingAs[$achievementId])) {
@@ -2149,14 +2129,14 @@ class AppController extends Controller {
 	}
 
 	protected function checkProblemNumberAchievements() {
-		if (!$this->loggedInUser) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2166,11 +2146,11 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$achievementId = 1;
-		$solvedCount = $this->loggedInUser['User']['solved'];
+		$solvedCount = Auth::getUser()['solved'];
 		if ($solvedCount >= 1000 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
 			$this->AchievementStatus->create();
@@ -2243,7 +2223,7 @@ class AppController extends Controller {
 		//uotd achievement
 		$achievementId = 11;
 		if (!isset($existingAs[$achievementId])) {
-			$condition = $this->AchievementCondition->find('first', ['conditions' => ['user_id' => $this->loggedInUserID(), 'category' => 'uotd']]);
+			$condition = $this->AchievementCondition->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]);
 			if ($condition != null) {
 				$as['AchievementStatus']['achievement_id'] = $achievementId;
 				$this->AchievementStatus->create();
@@ -2269,7 +2249,7 @@ class AppController extends Controller {
 
 	protected function checkForLocked($t, $setsWithPremium) {
 		$scCheck = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-		if ($scCheck && in_array($scCheck['SetConnection']['set_id'], $setsWithPremium) && !$this->hasPremium()) {
+		if ($scCheck && in_array($scCheck['SetConnection']['set_id'], $setsWithPremium) && !Auth::hasPremium()) {
 			$t['Tsumego']['locked'] = true;
 		} else {
 			$t['Tsumego']['locked'] = false;
@@ -2278,7 +2258,7 @@ class AppController extends Controller {
 		return $t;
 	}
 	protected function checkNoErrorAchievements() {
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			$this->loadModel('Set');
 			$this->loadModel('Tsumego');
 			$this->loadModel('Achievement');
@@ -2288,12 +2268,12 @@ class AppController extends Controller {
 			$ac = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'category' => 'err',
 				],
 			]);
 
-			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+			$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 			if (!$buffer) {
 				$buffer = [];
 			}
@@ -2303,7 +2283,7 @@ class AppController extends Controller {
 				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 			}
 			$as = [];
-			$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+			$as['AchievementStatus']['user_id'] = Auth::getUserID();
 			$updated = [];
 
 			$achievementId = 53;
@@ -2369,7 +2349,7 @@ class AppController extends Controller {
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('RankOverview');
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2379,22 +2359,22 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
-		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => $this->loggedInUserID()]]);//blitz
+		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => Auth::getUserID()]]);//blitz
 		if (!$rBlitz) {
 			$rBlitz = [];
 		}
-		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => $this->loggedInUserID()]]);//fast
+		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => Auth::getUserID()]]);//fast
 		if (!$rFast) {
 			$rFast = [];
 		}
-		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => $this->loggedInUserID()]]);//slow
+		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => Auth::getUserID()]]);//slow
 		if (!$rSlow) {
 			$rSlow = [];
 		}
-		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$r) {
 			$r = [];
 		}
@@ -2508,14 +2488,14 @@ class AppController extends Controller {
 	}
 
 	protected function checkRatingAchievements() {
-		if (!$this->loggedInUser) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 
 		$this->loadModel('User');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2525,11 +2505,11 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$achievementId = 59;
-		$currentElo = $this->loggedInUser['User']['elo_rating_mode'];
+		$currentElo = Auth::getUser()['elo_rating_mode'];
 		if ($currentElo >= 1500 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
 			$this->AchievementStatus->create();
@@ -2622,12 +2602,12 @@ class AppController extends Controller {
 	}
 
 	protected function checkLevelAchievements() {
-		if (!$this->loggedInUser) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2637,11 +2617,11 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$achievementId = 36;
-		$userLevel = $this->loggedInUser['User']['level'];
+		$userLevel = Auth::getUser()['level'];
 		if ($userLevel >= 10 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
 			$this->AchievementStatus->create();
@@ -2712,7 +2692,7 @@ class AppController extends Controller {
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 100;
-		if ($this->hasPremium() && !isset($existingAs[$achievementId])) {
+		if (Auth::hasPremium() && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
 			$this->AchievementStatus->create();
 			$this->AchievementStatus->save($as);
@@ -2743,7 +2723,7 @@ class AppController extends Controller {
 		$ac = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'category' => 'set',
 			],
 		]);
@@ -2752,7 +2732,7 @@ class AppController extends Controller {
 			return [];
 		}
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2762,7 +2742,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$achievementId = 47;
@@ -2830,7 +2810,7 @@ class AppController extends Controller {
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
 
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2840,7 +2820,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$tsIds = [];
@@ -2857,7 +2837,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2889,7 +2869,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2921,7 +2901,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2952,7 +2932,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -2980,7 +2960,7 @@ class AppController extends Controller {
 			}
 			$uts = $this->TsumegoStatus->find('all', [
 				'conditions' => [
-					'user_id' => $this->loggedInUserID(),
+					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
 				],
 			]);
@@ -3066,7 +3046,7 @@ class AppController extends Controller {
 			'order' => 'value DESC',
 			'conditions' => [
 				'set_id' => $sid,
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'category' => '%',
 			],
 		]);
@@ -3077,11 +3057,11 @@ class AppController extends Controller {
 			'order' => 'value ASC',
 			'conditions' => [
 				'set_id' => $sid,
-				'user_id' => $this->loggedInUserID(),
+				'user_id' => Auth::getUserID(),
 				'category' => 's',
 			],
 		]);
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -3091,7 +3071,7 @@ class AppController extends Controller {
 			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
 		}
 		$as = [];
-		$as['AchievementStatus']['user_id'] = $this->loggedInUserID();
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
 		$achievementId = 99;
@@ -3277,7 +3257,7 @@ class AppController extends Controller {
 			}
 			$achievementId = 46;
 			if ($acA['AchievementCondition']['value'] >= 100) {
-				$ac100 = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => $this->loggedInUserID(), 'category' => '%', 'value >=' => 100]]);
+				$ac100 = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]);
 				if (!$ac100) {
 					$ac100 = [];
 				}
@@ -3288,7 +3268,7 @@ class AppController extends Controller {
 						$ac100counter++;
 					}
 				}
-				$as100 = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $this->loggedInUserID(), 'achievement_id' => $achievementId]]);
+				$as100 = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
 				if ($as100 == null) {
 					$as['AchievementStatus']['achievement_id'] = $achievementId;
 					$as['AchievementStatus']['value'] = 1;
@@ -3654,9 +3634,7 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	protected function signIn(array $user) {
-		$this->Session->write('loggedUserID', $user['User']['id']);
-		$this->loggedInUser = $user;
-		$this->user = &$this->loggedInUser;
+		Auth::init($user);
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'created DESC']);
 		if ($vs) {
 			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
@@ -3669,6 +3647,7 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	public function beforeFilter() {
+		Auth::init();
 		$this->loadModel('User');
 		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
@@ -3697,20 +3676,7 @@ class AppController extends Controller {
 		$lastProfileRight = 2;
 		$hasFavs = false;
 
-		if ($this->isLoggedIn()) {
-			$this->loggedInUser = $this->User->findById($this->loggedInUserID());
-			$this->user = &$this->loggedInUser;
-			$this->sessionUser = null;
-		} else {
-			$this->sessionUser = $this->Session->read('sessionUser');
-			if (!$this->sessionUser) {
-				$this->sessionUser = [];
-			}
-			$this->user = &$this->sessionUser;
-			$this->loggedInUser = null;
-		}
-
-		if ($this->isLoggedIn()) {
+		if (Auth::isLoggedIn()) {
 			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set') {
 				$newAddTag = explode('-', $_COOKIE['addTag']);
 				$tagId = $newAddTag[0];
@@ -3719,7 +3685,7 @@ class AppController extends Controller {
 					$saveTag = [];
 					$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
 					$saveTag['Tag']['tsumego_id'] = $tagId;
-					$saveTag['Tag']['user_id'] = $this->loggedInUserID();
+					$saveTag['Tag']['user_id'] = Auth::getUserID();
 					$saveTag['Tag']['approved'] = 0;
 					$this->Tag->save($saveTag);
 				}
@@ -3727,51 +3693,51 @@ class AppController extends Controller {
 			}
 			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
 			&& strlen($_COOKIE['z_sess']) > 5) {
-				$this->loggedInUser['User']['_sessid'] = $_COOKIE['z_sess'];
-				$this->User->save($this->loggedInUser);
+				Auth::getUser()['_sessid'] = $_COOKIE['z_sess'];
+				Auth::saveUser();
 			}
-			if ($this->loggedInUser['User']['lastHighscore'] == 1) {
+			if (Auth::getUser()['lastHighscore'] == 1) {
 				$highscoreLink = 'highscore';
-			} elseif ($this->loggedInUser['User']['lastHighscore'] == 2) {
+			} elseif (Auth::getUser()['lastHighscore'] == 2) {
 				$highscoreLink = 'rating';
-			} elseif ($this->loggedInUser['User']['lastHighscore'] == 3) {
+			} elseif (Auth::getUser()['lastHighscore'] == 3) {
 				$highscoreLink = 'leaderboard';
-			} elseif ($this->loggedInUser['User']['lastHighscore'] == 4) {
+			} elseif (Auth::getUser()['lastHighscore'] == 4) {
 				$highscoreLink = 'highscore3';
 			}
 
 			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0) {
-				$this->loggedInUser['User']['lastMode'] = $_COOKIE['lastMode'];
-				$this->User->save($this->loggedInUser);
+				Auth::getUser()['lastMode'] = $_COOKIE['lastMode'];
+				Auth::saveUser();
 			}
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0') {
-				$this->loggedInUser['User']['sound'] = $_COOKIE['sound'];
-				$this->User->save($this->loggedInUser);
+				Auth::getUser()['sound'] = $_COOKIE['sound'];
+				Auth::saveUser();
 				unset($_COOKIE['sound']);
 			}
 			$this->set('ac', true);
-			$this->set('user', $this->loggedInUser);
+			$this->set('user', Auth::getUser());
 		}
 
 		if (isset($_COOKIE['lightDark']) && $_COOKIE['lightDark'] != '0') {
 			$lightDark = $_COOKIE['lightDark'];
-			if ($this->loggedInUser) {
+			if (Auth::isLoggedIn()) {
 				// Convert string to integer for database storage
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				$this->loggedInUser['User']['lastLight'] = $lightDarkInt;
+				Auth::getUser()['lastLight'] = $lightDarkInt;
 			}
-		} elseif ($this->loggedInUser) {
-			if ($this->loggedInUser['User']['lastLight'] == 0
-			|| $this->loggedInUser['User']['lastLight'] == 1) {
+		} elseif (Auth::isLoggedIn()) {
+			if (Auth::getUser()['lastLight'] == 0
+			|| Auth::getUser()['lastLight'] == 1) {
 				$lightDark = 'light';
 			} else {
 				$lightDark = 'dark';
 			}
 		}
 
-		if ($this->loggedInUser) {
-			$this->handleSearchSettings($this->loggedInUser['User']['id']);
-			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => $this->loggedInUserID()]]);
+		if (Auth::isLoggedIn()) {
+			$this->handleSearchSettings(Auth::getUserID());
+			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 			if (!$favx) {
 				$favx = [];
 			}
@@ -3780,9 +3746,9 @@ class AppController extends Controller {
 			}
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0') {
 				$levelBar = $_COOKIE['levelBar'];
-				$this->loggedInUser['User']['levelBar'] = $levelBar;
-			} elseif ($this->loggedInUser['User']['levelBar'] == 0
-				|| $this->loggedInUser['User']['levelBar'] == 'level') {
+				Auth::getUser()['levelBar'] = $levelBar;
+			} elseif (Auth::getUser()['levelBar'] == 0
+				|| Auth::getUser()['levelBar'] == 'level') {
 				$levelBar = 1;
 			} else {
 				$levelBar = 2;
@@ -3790,18 +3756,18 @@ class AppController extends Controller {
 
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0') {
 				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
-				$this->loggedInUser['User']['lastProfileLeft'] = $lastProfileLeft;
+				Auth::getUser()['lastProfileLeft'] = $lastProfileLeft;
 			} else {
-				$lastProfileLeft = $this->loggedInUser['User']['lastProfileLeft'];
+				$lastProfileLeft = Auth::getUser()['lastProfileLeft'];
 				if ($lastProfileLeft == 0) {
 					$lastProfileLeft = 1;
 				}
 			}
 			if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0') {
 				$lastProfileRight = $_COOKIE['lastProfileRight'];
-				$this->loggedInUser['User']['lastProfileRight'] = $lastProfileRight;
+				Auth::getUser()['lastProfileRight'] = $lastProfileRight;
 			} else {
-				$lastProfileRight = $this->loggedInUser['User']['lastProfileRight'];
+				$lastProfileRight = Auth::getUser()['lastProfileRight'];
 				if ($lastProfileRight == 0) {
 					$lastProfileRight = 1;
 				}
@@ -3816,17 +3782,17 @@ class AppController extends Controller {
 			}
 		}
 
-		if ($this->loggedInUser['User']['mode'] == 2) {
+		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2) {
 			$mode = 2;
 		}
 
 		$previosTsumego = null;
 		if (isset($_COOKIE['previousTsumegoID'])) {
-			if ($this->isLoggedIn()) {
+			if (Auth::isLoggedIn()) {
 				$utsx = $this->TsumegoStatus->find('all', [
 					'order' => 'created DESC',
 					'conditions' => [
-						'user_id' => $this->loggedInUserID(),
+						'user_id' => Auth::getUserID(),
 						'tsumego_id' => (int) $_COOKIE['previousTsumegoID'],
 					],
 				]);
@@ -3847,12 +3813,12 @@ class AppController extends Controller {
 		}
 		$correctSolveAttempt = false;
 
-		if ($this->loggedInUser) {
+		if (Auth::isLoggedIn()) {
 			if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0) {
-				$this->loggedInUser['User']['revelation'] -= 1;
+				Auth::getUser()['revelation'] -= 1;
 			}
 
-			$this->PlayResultProcessor->checkPreviousPlay($this, $this->loggedInUser, $previousTsumego);
+			$this->PlayResultProcessor->checkPreviousPlay($this, $previousTsumego);
 
 			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
 				if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {
@@ -3860,10 +3826,10 @@ class AppController extends Controller {
 					//$previosTsumegoXsc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $_COOKIE['noPreId'])));
 					//$scoreArrX = explode('-', $this->decrypt($_COOKIE['noScore']));
 
-					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => $this->loggedInUserID()]]);
+					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => Auth::getUserID()]]);
 					if ($utPreX == null) {
 						$utPreX['TsumegoStatus'] = [];
-						$utPreX['TsumegoStatus']['user_id'] = $this->loggedInUser['User']['id'];
+						$utPreX['TsumegoStatus']['user_id'] = Auth::getUserID();
 						$utPreX['TsumegoStatus']['tsumego_id'] = $_COOKIE['noPreId'];
 					}
 					if ($utPreX['TsumegoStatus']['status'] == 'W') {
@@ -3996,12 +3962,12 @@ class AppController extends Controller {
 			if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0') {
 				$splitCookie = str_split($_COOKIE['texture']);
 				$textureCookies = $_COOKIE['texture'];
-				$this->loggedInUser['User']['texture'] = $this->Session->read('texture');
+				Auth::getUser()['texture'] = $this->Session->read('texture');
 				$this->Session->write('texture', $_COOKIE['texture']);
 				$this->set('textureCookies', $textureCookies);
 			} else {
-				if ($this->loggedInUser != null) {
-					$this->Session->write('texture', $this->loggedInUser['User']['texture']);
+				if (Auth::isLoggedIn()) {
+					$this->Session->write('texture', Auth::getUser()['texture']);
 				}
 				$textureCookies = $this->Session->read('texture');
 				$splitTextureCookies = str_split($textureCookies);
@@ -4023,8 +3989,8 @@ class AppController extends Controller {
 					$enabledBoards[$i + 1] = '';
 				}
 			}
-			if ($this->loggedInUser != null) {
-				$this->User->save($this->loggedInUser);
+			if (Auth::isLoggedIn()) {
+				Auth::saveUser();
 			}
 		}
 
@@ -4100,13 +4066,14 @@ class AppController extends Controller {
 		}
 
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP($this->loggedInUserID(), $achievementUpdate);
+			$this->updateXP(Auth::getUserID(), $achievementUpdate);
 		}
 
 		$nextDay = new DateTime('tomorrow');
-		$this->loggedInUser['User']['name'] = $this->checkPicture($this->loggedInUser);
-
-		$this->set('user', $this->loggedInUser);
+		if (Auth::isLoggedIn()) {
+			Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+			$this->set('user', Auth::getUser());
+		}
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
@@ -4126,17 +4093,17 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	public function afterFilter() {
-		if (!$this->loggedInUser) {
+		if (!Auth::isLoggedIn()) {
 			return;
 		}
 
-		if (($this->Session->read('page') == 'time mode' || $this->loggedInUser['User']['mode'] != 3)
-		&& ($this->Session->read('page') == 'time mode' || strlen($this->loggedInUser['User']['activeRank']) != 15)) {
+		if (($this->Session->read('page') == 'time mode' || Auth::getUser()['mode'] != 3)
+		&& ($this->Session->read('page') == 'time mode' || strlen(Auth::getUser()['activeRank']) != 15)) {
 			return;
 		}
 
 		$this->loadModel('Rank');
-		$ranks = $this->Rank->find('all', ['conditions' => ['session' => $this->loggedInUser['User']['activeRank']]]);
+		$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 		if (!$ranks) {
 			$ranks = [];
 		}
@@ -4145,8 +4112,8 @@ class AppController extends Controller {
 			$this->Rank->delete($ranks[$i]['Rank']['id']);
 		}
 
-		$this->loggedInUser['User']['activeRank'] = 0;
-		$this->loggedInUser['User']['mode'] = 1;
+		Auth::getUser()['activeRank'] = 0;
+		Auth::getUser()['mode'] = 1;
 	}
 
 }

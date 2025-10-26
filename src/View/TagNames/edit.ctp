@@ -1,4 +1,4 @@
-<?php if(!$this->Session->check('loggedInUser.User.id') || $this->Session->read('loggedInUser.User.isAdmin')==0)
+<?php if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
 <?php if(isset($saved)) echo '<script type="text/javascript">window.location.href = "/tag_names/view/'.$saved.'";</script>'; ?>
 
