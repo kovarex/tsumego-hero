@@ -43,12 +43,12 @@ class Auth {
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
-	public static function saveUser() {
+	public static function saveUser(): void {
 		assert(Auth::isLoggedIn());
 		ClassRegistry::init('User')->save(Auth::getUser());
 	}
 
-	public static function logout() {
+	public static function logout(): void {
 		CakeSession::delete('loggedInUserID');
 		Auth::$user = null;
 	}
@@ -58,6 +58,11 @@ class Auth {
 			return $default;
 		}
 		return Auth::getUser()[$key];
+	}
+
+	public static function getMode(): int
+	{
+		return Auth::isLoggedIn() ? (int)Auth::getUser()['mode'] : 1;
 	}
 
 	private static $user = null;

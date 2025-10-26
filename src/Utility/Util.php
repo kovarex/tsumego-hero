@@ -1,13 +1,14 @@
 <?php
 
 class Util {
-	/**
-	 * @param string $name
-	 * @return void
-	 */
-	public static function clearCookie($name): void {
+	public static function clearCookie(string $name): void {
 		setcookie($name, '', 1);
 		$_COOKIE[$name] = '';
+	}
+
+	public static function getCookie(string $name, $default = null)
+	{
+		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
 	public static function generateRandomString($length = 20) {

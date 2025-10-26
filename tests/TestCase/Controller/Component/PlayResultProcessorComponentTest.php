@@ -9,6 +9,9 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 			],
 		];
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
+		if (!$context->originalTsumegoAttempt) {
+			ClassRegistry::init('TsumegoAttempt')->deleteAll(['user_id' => $context->user['User']['id'],'tsumego_id' => $context->tsumego['Tsumego']['id']]);
+		}
 		if ($originalTsumegoStatus) {
 			if (!$context->originalStatus) {
 				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
@@ -123,6 +126,15 @@ class PlayResultProcessorComponentTest extends ControllerTestCase {
 		$this->assertLessThan($originalRating, $newUser['User']['elo_rating_mode']);
 	}
 
+	public function testSolvingAddsNewTsumegoAttempt(): void {
+		$context = new TsumegoVisitContext();
+
+		$this->performSolve($context);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true); // solved
+		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 0); // solved
+	}
 }
 
 class TsumegoVisitContext {
@@ -144,9 +156,15 @@ class TsumegoVisitContext {
 	  return $this;
 	}
 
+	function setAttempt($originalTsumegoAttempt): TsumegoVisitContext
+	{
+		$this->originalTsumegoAttempt;
+		return $this;
+	}
+
 	public $user;
 	public $tsumego;
-	public $originalStatus;
-	public $originalTsumegoAttempt;
+	public $originalStatus; // null=delete relevant statatus, oterwise specifies string code of status to exist
+	public $originalTsumegoAttempt; // null=remove all relevant tsumego attempts
 	public $resultTsumegoStatus;
 }
