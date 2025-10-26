@@ -2859,33 +2859,31 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
 		$this->loadModel('RankOverview');
-		$hideEmail = false;
+		$hideEmail = Auth::getUserID() != $id;
 
-		$solvedUts2 = $this->saveSolvedNumber(Auth::getUserID());
+		$solvedUts2 = $this->saveSolvedNumber($id);
 
-		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
+		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
 		$this->Session->write('title', 'Profile of ' . $user['User']['name']);
 
-		if (Auth::getUserID() != $id && Auth::getUserID() != 72) {
-			$this->Session->write('redirect', 'sets');
-			$user['User']['email'] = '';
-			$hideEmail = true;
-		}
-		if (!empty($this->data)) {
-			if (isset($this->data['User']['email'])) {
-				$changeUser = $user;
-				$changeUser['User']['email'] = $this->data['User']['email'];
-				$this->set('data', $changeUser['User']['email']);
-				$this->User->save($changeUser, true);
+		// user edit
+		// TODO: should be its own action
+		if ($id == Auth::getUserID()) {
+			if (!empty($this->data)) {
+				if (isset($this->data['User']['email'])) {
+					Auth::getUser()['email'] = $this->data['User']['email'];
+					Auth::saveUser();
+					$this->set('data', $this->data['User']['email']);
+				}
 			}
-		}
-		if (isset($this->params['url']['undo'])) {
-			if ($this->params['url']['undo'] / 1111 == $id) {
-				$user['User']['dbstorage'] = 1;
-				$this->User->save($user);
+			if (isset($this->params['url']['undo'])) {
+				if ($this->params['url']['undo'] / 1111 == $id) {
+					Auth::getUser()['dbstorage'] = 1;
+					Auth::saveUser();
+				}
 			}
 		}
 
@@ -2909,7 +2907,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
 		}
 
-		$scs = [];
 		$tsumegosCount = count($tsumegos);
 		for ($j = 0; $j < $tsumegosCount; $j++) {
 			if (isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']])) {
@@ -2935,7 +2932,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$dNum++;
 			}
 		}
-		$lvl = 1;
 		$toplvl = $user['User']['level'];
 		$startxp = 50;
 		$sumx = 0;
@@ -2974,7 +2970,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			'limit' => 400,
 			'order' => 'created DESC',
 			'conditions' => [
-				'user_id' => Auth::getUserID(),
+				'user_id' => $id,
 			],
 		]);
 
@@ -2984,7 +2980,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$ta2 = [];
 		$ta2['date'] = [];
 		$ta2['elo'] = [];
-		$testCounter = 0;
 
 		$taCount = count($ta);
 		for ($i = 0; $i < $taCount; $i++) {
@@ -3005,7 +3000,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 						} else {
 							$graph[$ta[$i]['TsumegoAttempt']['created']]['f']++;
 						}
-						$testCounter++;
 					} else {
 						$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
 						if ($ta[$i]['TsumegoAttempt']['solved'] == 1) {
@@ -3021,7 +3015,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		$eloRank = Rating::getReadableRankFromRating($this->Session->read('loggedInUser')['User']['elo_rating_mode']);
+		$eloRank = Rating::getReadableRankFromRating($user['User']['elo_rating_mode']);
 		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
 
 		if ($highestElo < $user['User']['elo_rating_mode']) {
@@ -3032,7 +3026,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$ro = $this->RankOverview->find('all', [
 			'order' => 'rank ASC',
 			'conditions' => [
-				'user_id' => Auth::getUserID(),
+				'user_id' => $id,
 			],
 		]);
 		$highestRo = '15k';
@@ -3056,7 +3050,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$p = 100;
 		}
 
-		$deletedProblems = 1;
 		if (isset($this->params['url']['delete-uts'])) {
 			if ($this->params['url']['delete-uts'] == 'true' && $p >= 75) {
 				$utsCount = count($uts);
@@ -3065,7 +3058,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
 					}
 				}
-				$deletedProblems = 2;
 				$utx = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
 				$correctCounter = 0;
 				$utxCount = count($utx);
@@ -3090,10 +3082,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		if (Auth::getUserID() != $id) {
-			$deletedProblems = 3;
-		}
-
 		$asCount = count($as);
 		for ($i = 0; $i < $asCount; $i++) {
 			$as[$i]['AchievementStatus']['a_title'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['name'];
@@ -3112,9 +3100,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		);
 
 		if (count($achievementUpdate) > 0) {
-			$this->updateXP(Auth::getUserID(), $achievementUpdate);
+			$this->updateXP($id, $achievementUpdate);
 		}
-		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
 		$aNumx = count($aNum);
 		if ($asx != null) {
@@ -3124,11 +3112,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$countGraph = 160 + count($graph) * 25;
 		$countTimeGraph = 160 + count($timeGraph) * 25;
 
-		$user['User']['name'] = $this->checkPicture($user);
-
-		if (substr(Auth::getUser()['email'], 0, 3) == 'g__' && Auth::getUser()['external_id'] != null) {
-			Auth::getUser()['email'] = substr(Auth::getUser()['email'], 3);
-		}
+		$user['User']['name'] = $this->checkPicture($user['User']);
 
 		$aCount = $this->Achievement->find('all');
 
@@ -3141,11 +3125,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('timeModeRuns', count($ro));
 		$this->set('user', $user);
 		$this->set('tsumegoNum', $tsumegoNum);
-		$this->set('solved', $user['User']['solved']);
 		$this->set('p', $p);
 		$this->set('dNum', $dNum);
 		$this->set('allUts', $uts);
-		$this->set('deletedProblems', $deletedProblems);
 		$this->set('hideEmail', $hideEmail);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);

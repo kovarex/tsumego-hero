@@ -1,18 +1,9 @@
 <?php ?>
 	<div class="homeCenter2">
-		<?php
-			if($hideEmail){
-				$user = null;
-				$solved = 0;
-				$xpSum = 0;
-				$p = 0;
-				$rank = 0;
-			}
-		?>
 	<div class="user-header-container">
 		<div class="user-header1">
 			<p class="title6">Profile</p>
-			
+
 		</div>
 		<div class="user-header2">
 			<a href="/tag_names/user/<?php echo Auth::getUserID(); ?>" class="new-button-time">contributions</a>
@@ -23,10 +14,10 @@
 		<table class="userTopTable1" border="0">
 		<tr>
 		<td>
-			<?php if(Auth::premiumLevel() == 2){ ?>
+			<?php if ($user['User']['premium'] == 2){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px"></div>
-			<?php }else if(Auth::premiumLevel() == 1){ ?>
+			<?php }else if ($user['User']['premium'] == 1){ ?>
 				<div style="float:left;width:50%;"><?php echo $user['User']['name'] ?></div>
 				<div style="float:left;width:50%;"><img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px"></div>
 			<?php }else{ ?>
@@ -54,9 +45,10 @@
 		}else{
 			$lightDarkChartColor = '#000';
 			$lightDarkChartColor2 = '#ddd';
-		}		
-			
-		if($solved > $tsumegoNum) $solved=$tsumegoNum;
+		}
+
+		if($user['User']['solved'] > $tsumegoNum)
+			$solved=$tsumegoNum;
 		$heroPowers = 0;
 		if($user['User']['level']>=20) $heroPowers++;
 		if($user['User']['level']>=30) $heroPowers++;
@@ -106,14 +98,14 @@
 		<td>
 			<?php
 			if($deletedProblems==1){
-				echo '<font style="font-weight:800;color:#74d14c" >You have completed '.$p.'%. </font>'; 
+				echo '<font style="font-weight:800;color:#74d14c" >You have completed '.$p.'%. </font>';
 				if($p>=75){
 					echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset ('.$dNum.')</a><br><br>';
 				}else{
 					echo '<br><br><a class="new-button-inactive" href="#" >Reset ('.$dNum.')</a><br><br>';
 				}
 			}elseif($deletedProblems==2){
-				echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$dNum.' problems has been deleted.</font>'; 
+				echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$dNum.' problems has been deleted.</font>';
 			}
 			echo 'If you have completed at least 75%, you can reset progress older than 1 year.<br>';
 			?>
@@ -122,8 +114,8 @@
 		</table>
 		</div>
 	</div>
-	
-	<div class="userMain2">	
+
+	<div class="userMain2">
 		<div class="userTop1">
 		<table class="userTopTable1" border="0" width="100%">
 		<tr>
@@ -148,7 +140,7 @@
 		</tr>
 		</table>
 		</div>
-		
+
 		<div class="userTop1">
 		<table class="userTopTable1" border="0" width="100%">
 		<tr>
@@ -157,7 +149,7 @@
 		</tr>
 		<tr>
 			<td>Rating:</td>
-			<td><?php echo Auth::getWithDefault('elo_rating_mode', 0); ?></td>
+			<td><?php echo $user['User']['elo_rating_mode']; ?></td>
 		</tr>
 		<tr>
 			<td>Highest rank:</td>
@@ -169,7 +161,7 @@
 		</tr>
 		</table>
 		</div>
-		
+
 		<div class="userTop1">
 		<table class="userTopTable1" border="0" width="100%">
 		<tr>
@@ -182,7 +174,7 @@
 		</tr>
 		</table>
 		</div>
-		
+
 		<div class="userTop1">
 		<table class="userTopTable1" border="0" width="100%">
 		<tr>
@@ -243,7 +235,7 @@
 							<div id="chart2"></div>
 						</div>
 						<div align="center">
-							<a href="/tsumego_rating_attempts/user/<?php echo Auth::getUserID(); ?>">Show rating mode history</a>
+							<a href="/tsumego_rating_attempts/user/<?php echo $user['User']['id']; ?>">Show rating mode history</a>
 						</div>
 					</div>
 					<div id="userShowTime1">
@@ -279,7 +271,7 @@
 								</div>
 							</div>
 							<div class="acDate2">
-								<?php 
+								<?php
 								$date = date_create($as[$i]['AchievementStatus']['created']);
 								echo date_format($date,"d.m.Y H:i");
 								?>
@@ -300,7 +292,7 @@
 							<div id="chart22"></div>
 						</div>
 						<div align="center">
-							<a href="/tsumego_rating_attempts/user/<?php echo Auth::getUserID(); ?>">Show rating mode history</a>
+							<a href="/tsumego_rating_attempts/user/<?php echo $user['User']['id']; ?>">Show rating mode history</a>
 						</div>
 					</div>
 					<div id="userShowTime2">
@@ -336,7 +328,7 @@
 								</div>
 							</div>
 							<div class="acDate2">
-								<?php 
+								<?php
 								$date = date_create($as[$i]['AchievementStatus']['created']);
 								echo date_format($date,"d.m.Y H:i");
 								?>
@@ -356,19 +348,17 @@
 					echo '<p style="color:#d63a49;">You have requested account deletion.&nbsp;';
 					echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
 				}
-				if(Auth::isLoggedIn()){
-					if(Auth::isAdmin()){
-						echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
-					}
+				if(Auth::isAdmin()){
+					echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
 				}
 			?>
 		</div>
 	</div>
-	
+
 	<script>
 	userShow1(<?php echo $lastProfileLeft; ?>);
 	userShow2(<?php echo $lastProfileRight; ?>);
-	
+
 	$("#msg2").hide();
 	$("#show").click(function(){
 		$("#msg2").show();
@@ -434,7 +424,7 @@
 			$("#userShowAchievements1").fadeIn(250);
 		}
 	}
-	
+
 	function userShow2(num){
 		document.cookie = "lastProfileRight="+num+";path=/;SameSite=Lax";
 		document.cookie = "lastProfileRight="+num+";path=/sets;SameSite=Lax";
@@ -496,7 +486,7 @@
 			$("#userShowAchievements2").fadeIn(250);
 		}
 	}
-	
+
 	function delUts(){
 		var dNum = "<?php echo $dNum; ?>";
 		var suid = "<?php echo Auth::getUserID(); ?>";
@@ -540,7 +530,7 @@
 			echo 'graph1Solves.push("'.$value['s'].'");';
 			echo 'graph1Fails.push("'.$value['f'].'");';
 		}
-		?>	
+		?>
         var options = {
           series: [
 		{
@@ -597,7 +587,7 @@
         tooltip: {
           y: {
             formatter: function (val) {
-              return val 
+              return val
             }
           }
         },
@@ -681,7 +671,7 @@
 				$value['f'] = 0;
 			echo 'graph3Fails.push("'.$value['f'].'");';
 		}
-		?>	
+		?>
         var options = {
           series: [
 		{
@@ -738,7 +728,7 @@
         tooltip: {
           y: {
             formatter: function (val) {
-              return val 
+              return val
             }
           }
         },
@@ -762,7 +752,7 @@
 			echo 'graph11Solves.push("'.$value['s'].'");';
 			echo 'graph11Fails.push("'.$value['f'].'");';
 		}
-		?>	
+		?>
         var options = {
           series: [
 		{
@@ -819,7 +809,7 @@
         tooltip: {
           y: {
             formatter: function (val) {
-              return val 
+              return val
             }
           }
         },
@@ -903,7 +893,7 @@
 				$value['f'] = 0;
 			echo 'graph33Fails.push("'.$value['f'].'");';
 		}
-		?>	
+		?>
         var options = {
           series: [
 		{
@@ -960,7 +950,7 @@
         tooltip: {
           y: {
             formatter: function (val) {
-              return val 
+              return val
             }
           }
         },
@@ -1021,16 +1011,16 @@
 		margin-top: 14px;
 	}
 	</style>
-	
-	
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
 
