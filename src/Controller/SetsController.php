@@ -376,13 +376,13 @@ class SetsController extends AppController {
 
 		if (isset($this->data['Set'])) {
 			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1) {
-				$set = str_replace('6473k339312-', '', $this->data['Set']['hash']);
+				$setID = (int)str_replace('6473k339312-', '', $this->data['Set']['hash']);
 
-				$s = $this->Set->findById($set);
+				$s = $this->Set->findById($setID);
 				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
-					$this->Set->delete($set);
+					$this->Set->delete($setID);
 				}
-				$ts = $this->findTsumegoSet($set);
+				$ts = $this->findTsumegoSet($setID);
 				if (count($ts) < 50) {
 					foreach ($ts as $item) {
 						$this->Tsumego->delete($item['Tsumego']['id']);
@@ -483,11 +483,8 @@ class SetsController extends AppController {
 				'NOT' => ['name' => 'Tsumego'],
 			],
 		]);
-		$json = json_decode(file_get_contents('json/popular_tags.json'));
-		$tn = $this->TagName->find('all');
-		if (!$tn) {
-			$tn = [];
-		}
+		$json = json_decode(file_get_contents('json/popular_tags.json')) ?: [];
+		$tn = $this->TagName->find('all') ?: [];
 		$tnKeys = [];
 		$tnKeysAmount = [];
 		$json2 = [];
@@ -598,28 +595,12 @@ class SetsController extends AppController {
 				}
 				$rankConditions['OR'] = $fromTo;
 			}
-			$setsRaw = $this->Set->find('all', ['order' => 'order ASC', 'conditions' => $setConditions]);
-			if (!$setsRaw) {
-				$setsRaw = [];
-			}
+			$setsRaw = $this->Set->find('all', ['order' => 'order ASC', 'conditions' => $setConditions]) ?: [];
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
 			for ($i = 0; $i < $setsRawCount; $i++) {
-				if (count($rankConditions) > 0) {
-					$ts = $this->Tsumego->find('all', [
-						'order' => 'num ASC',
-						'conditions' => [
-							'set_id' => $setsRaw[$i]['Set']['id'],
-							$rankConditions,
-						],
-					]);
-					if (!$ts) {
-						$ts = [];
-					}
-				} else {
-					$ts = $this->findTsumegoSet($setsRaw[$i]['Set']['id']);
-				}
+				$ts = $this->findTsumegoSet($setsRaw[$i]['Set']['id'], $rankConditions);
 				$currentIds = [];
 				$tsCount2 = count($ts);
 				for ($j = 0; $j < $tsCount2; $j++) {
@@ -2193,7 +2174,7 @@ class SetsController extends AppController {
 			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0) {
 				if ($this->params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d') {
 					$newAddTag = explode('-', $_COOKIE['addTag']);
-					$tagSetId = $newAddTag[0];
+					$tagSetId = (int) $newAddTag[0];
 					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
 					$tagSc = $this->findTsumegoSet($tagSetId);
 					$tagScCount = count($tagSc);

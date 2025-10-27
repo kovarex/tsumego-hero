@@ -1586,7 +1586,7 @@ class TsumegosController extends AppController {
 			$ut['TsumegoStatus']['tsumego_id'] = $id;
 			$ut['TsumegoStatus']['status'] = 'V';
 		}
-		$amountOfOtherCollection = count($this->findTsumegoSet($t['Tsumego']['set_id']));
+		$amountOfOtherCollection = count($this->findTsumegoSet($set['Set']['id']));
 		$search3ids = [];
 		$search3Count = count($search3);
 

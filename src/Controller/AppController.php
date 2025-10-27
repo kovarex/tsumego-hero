@@ -413,28 +413,26 @@ class AppController extends Controller {
 		}
 	}
 
-	protected function findTsumegoSet($id) {
+	protected function findTsumegoSet(int $setID, ?array $tsumegoConditions = null) {
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$scIds = [];
 		$scMap = [];
 		$tsx = [];
-		$sc = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $id]]);
-		if (!$sc) {
-			$sc = [];
-		}
+		$sc = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $setID]]) ?: [];
 		$scCount = count($sc);
 		for ($i = 0; $i < $scCount; $i++) {
 			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
 			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
 		}
-		$ts = $this->Tsumego->find('all', ['conditions' => ['id' => $scIds]]);
-		if (!$ts) {
-			$ts = [];
+		$finalCondition = ['conditions' => ['id' => $scIds]];
+		if ($tsumegoConditions) {
+			$finalCondition['conditions'] [] = $tsumegoConditions;
 		}
+		$ts = $this->Tsumego->find('all', $finalCondition) ?: [];
 		$tsCount = count($ts);
 		for ($i = 0; $i < $tsCount; $i++) {
-			$ts[$i]['Tsumego']['set_id'] = $id;
+			$ts[$i]['Tsumego']['set_id'] = $setID;
 			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
 		}
 
