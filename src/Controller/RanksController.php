@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TimeModeUtil', 'Utility');
+
 class RanksController extends AppController {
 	/**
 	 * @return void

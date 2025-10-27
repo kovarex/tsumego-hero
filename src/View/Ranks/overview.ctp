@@ -42,13 +42,13 @@
 	$text = '';
 	if($h==0){ 
 		$text = 'time-mode1';
-		$timeModeSpeed = TimeModeComponent::$TIME_MODE_SLOW;
+		$timeModeSpeed = TimeModeUtil::$SLOW_SPEED;
 	}elseif($h==1){ 
 		$text = 'time-mode2';
-    $timeModeSpeed = TimeModeComponent::$TIME_MODE_FAST;
+    $timeModeSpeed = TimeModeUtil::$FAST_SPEED;
 	}else{
 		$text = 'time-mode3';
-    $timeModeSpeed = TimeModeComponent::$TIME_MODE_BLITZ;
+    $timeModeSpeed = TimeModeUtil::$BLITZ;
 	}
 	echo '<div id="'.$text.'">';
 		for($i=0;$i<count($modes[$h]);$i++){
