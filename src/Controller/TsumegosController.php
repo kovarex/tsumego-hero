@@ -8,11 +8,11 @@ class TsumegosController extends AppController {
 	public $components = ['TimeMode'];
 
 	private function deduceRelevantSetConnection(array $setConnections): array {
-		if (!isset($this->params['url']['sid'])) {
+		if (!isset($this->params->query['sid'])) {
 			return $setConnections[0];
 		}
 		foreach ($setConnections as $setConnection) {
-			if ($setConnection['Set']['id'] == $this->params['url']['sid']) {
+			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid']) {
 				return $setConnection;
 			}
 		}

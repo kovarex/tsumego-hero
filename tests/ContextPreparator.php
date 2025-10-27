@@ -1,86 +1,67 @@
 <?php
 
 class ContextPreparator {
-	public function __construct(?array $options = null) {
-		$this->processOptions($options);
-		if (!$this->user) {
-			$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		}
+	public function __construct(?array $options = []) {
+		$this->prepareUser(Util::extract('user', $options));
+		$this->prepareTsumego(Util::extract('tsumego', $options));
+		$this->prepareTsumegoStatus(Util::extract('tsumego_status', $options));
+		$this->prepareTsumegoAttempt(Util::extract('tsumego_attempt', $options));
+		$this->prepareUserMode(Util::extract('mode', $options));
+		$this->prepareTsumegoSets(Util::extract('tsumego_sets', $options));
+		$this->checkOptionsConsumed($options);
+	}
 
+	private function checkOptionsConsumed(?array $options) {
+		if (!count($options)) {
+			return;
+		}
+		debug_print_backtrace();
+		die("Option " . implode(",", array_keys($options)) . " not recognized\n.");
+	}
+
+	private function prepareUser(?array $user): void {
+		$this->user = $user ?: ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+	}
+
+	private function prepareTsumego(?array $tsumego): void {
+		$this->tsumego = $tsumego ?: ClassRegistry::init('Tsumego')->find();
 		if (!$this->tsumego) {
+			$this->tsumego = [];
+			$this->tsumego['Tsumego']['description'] = 'test-tsumego';
+			ClassRegistry::init('Tsumego')->save($this->tsumego);
 			$this->tsumego = ClassRegistry::init('Tsumego')->find();
-			if (!$this->tsumego) {
-				$this->tsumego = [];
-				$this->tsumego['Tsumego']['description'] = 'test-tsumego';
-				ClassRegistry::init('Tsumego')->save($this->tsumego);
-				$this->tsumego = ClassRegistry::init('Tsumego')->find();
-			}
-		}
-		$this->prepare();
-	}
-
-	private function processOptions(?array $options): void {
-		if (!$options) {
-			return;
-		}
-		if ($user = Util::extract('user', $options)) {
-			$this->user = $user;
-		}
-		if ($tsumego = Util::extract('tsumego', $options)) {
-			$this->tsumego = $tsumego;
-		}
-		if ($originalStatus = Util::extract('status', $options)) {
-			$this->originalStatus = $originalStatus;
-		}
-		if ($originalTsumegoAttempt = Util::extract('tsumego_attempt', $options)) {
-			$this->originalTsumegoAttempt = $originalTsumegoAttempt;
-		}
-		if ($mode = Util::extract('mode', $options)) {
-			$this->mode = $mode;
-		}
-		if ($tsumegoSets = Util::extract('tsumego_sets', $options)) {
-			$this->tsumegoSets = $tsumegoSets;
-		}
-		if (count($options)) {
-			debug_print_backtrace();
-			die("Option " . implode(",", array_keys($options)) . " not recognized\n.");
 		}
 	}
 
-	private function prepare(): void {
-		$this->prepareTsumegoAttempt();
-		$this->prepareTsumegoStatus();
-		$this->prepareUserMode();
-		$this->prepareTsumegoSets();
-	}
-
-	private function prepareTsumegoAttempt(): void {
+	private function prepareTsumegoAttempt(?array $tsumegoAttempt): void {
 		ClassRegistry::init('TsumegoAttempt')->deleteAll(['user_id' => $this->user['User']['id'],'tsumego_id' => $this->tsumego['Tsumego']['id']]);
-		if (!$this->originalTsumegoAttempt) {
+		if (!$tsumegoAttempt) {
 			return;
 		}
 
-		$tsumegoAttempt = [];
+		$this->tsumegoAttempt = [];
 		$tsumegoAttempt['TsumegoAttempt']['user_id'] = $this->user['User']['id'];
 		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['User']['elo_rating_mode'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $this->tsumego['Tsumego']['id'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
-		$tsumegoAttempt['TsumegoAttempt']['solved'] = $this->originalTsumegoAttempt['solved'] ?: false;
+		$tsumegoAttempt['TsumegoAttempt']['solved'] = $tsumegoAttempt['solved'] ?: false;
 		$tsumegoAttempt['TsumegoAttempt']['mode'] = $this->user['User']['mode'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $this->tsumego['Tsumego']['elo_rating_mode'];
-		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $this->originalTsumegoAttempt['misplays'] ?: 0;
+		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
-	private function prepareUserMode(): void {
-		if ($this->mode && $this->user['User']['mode'] != $this->mode) {
-			$this->user['User']['mode'] = $this->mode;
-			ClassRegistry::init('User')->save($this->user);
+	private function prepareUserMode($mode): void {
+		if (!$mode || $this->user['User']['mode'] == $this->mode) {
+			return;
 		}
+
+		$this->user['User']['mode'] = $mode;
+		ClassRegistry::init('User')->save($this->user);
 	}
 
-	private function prepareTsumegoStatus(): void {
+	private function prepareTsumegoStatus($tsumegoStatus): void {
 		$statusCondition = [
 			'conditions' => [
 				'user_id' => $this->user['User']['id'],
@@ -89,13 +70,13 @@ class ContextPreparator {
 		];
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
 		if ($originalTsumegoStatus) {
-			if (!$this->originalStatus) {
+			if (!$tsumegoStatus) {
 				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
 			} else {
-				$originalTsumegoStatus['TsumegoStatus']['status'] = $this->originalStatus;
+				$originalTsumegoStatus['TsumegoStatus']['status'] = $tsumegoStatus;
 				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 			}
-		} elseif ($this->originalStatus) {
+		} elseif ($tsumegoStatus) {
 			$originalTsumegoStatus = [];
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $this->user['User']['id'];
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $this->tsumego['Tsumego']['id'];
@@ -103,10 +84,12 @@ class ContextPreparator {
 		}
 	}
 
-	private function prepareTsumegoSets(): void {
-		if ($this->tsumegoSets) {
+	private function prepareTsumegoSets($setsInput): void {
+		if ($setsInput) {
 			ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $this->tsumego['Tsumego']['id']]);
-			foreach ($this->tsumegoSets as $tsumegoSet) {
+			$this->tsumegoSetConnections = [];
+			$this->tsumegoSets = [];
+			foreach ($setsInput as $tsumegoSet) {
 				$set = $this->getOrCreateTsumegoSet($tsumegoSet['name']);
 				$setConnection = [];
 				$setConnection['SetConnection']['tsumego_id'] = $this->tsumego['Tsumego']['id'];
@@ -114,6 +97,8 @@ class ContextPreparator {
 				$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
 				ClassRegistry::init('SetConnection')->create($setConnection);
 				ClassRegistry::init('SetConnection')->save($setConnection);
+				$this->tsumegoSets[] = $set;
+				$this->tsumegoSetConnections[] = $setConnection;
 			}
 		}
 	}
@@ -147,8 +132,8 @@ class ContextPreparator {
 	public ?array $user = null;
 	public ?array $tsumego = null;
 	public ?int $mode = null;
-	public ?string $originalStatus = null; // null=delete relevant statutes, otherwise specifies string code of status to exist
-	public ?array $originalTsumegoAttempt = null; // null=remove all relevant tsumego attempts
+	public ?array $tsumegoAttempt = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
+	public ?array $tsumegoSetConnections = null;
 }

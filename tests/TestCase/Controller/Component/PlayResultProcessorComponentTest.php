@@ -44,43 +44,43 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitFromSolved(): void {
-		$context = (new ContextPreparator(['status' => 'S']));
+		$context = (new ContextPreparator(['tsumego_status' => 'S']));
 		$this->performVisit($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testHalfXpStatusToDoubleSolved(): void {
-		$context = (new ContextPreparator(['status' => 'W']));
+		$context = (new ContextPreparator(['tsumego_status' => 'W']));
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C');
 	}
 
 	public function testSolveFromFailed(): void {
-		$context = (new ContextPreparator(['status' => 'F']));
+		$context = (new ContextPreparator(['tsumego_status' => 'F']));
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testFailFromVisited(): void {
-		$context = (new ContextPreparator(['status' => 'V']));
+		$context = (new ContextPreparator(['tsumego_status' => 'V']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
 	}
 
 	public function testFailFromFailed(): void {
-		$context = (new ContextPreparator(['status' => 'F']));
+		$context = (new ContextPreparator(['tsumego_status' => 'F']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'X');
 	}
 
 	public function testFailFromSolved(): void {
-		$context = (new ContextPreparator(['status' => 'S']));
+		$context = (new ContextPreparator(['tsumego_status' => 'S']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S'); // shouldn't be affected
 	}
 
 	public function testFailFromDoubleSolved(): void {
-		$context = (new ContextPreparator(['status' => 'C']));
+		$context = (new ContextPreparator(['tsumego_status' => 'C']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C'); // shouldn't be affected
 	}
