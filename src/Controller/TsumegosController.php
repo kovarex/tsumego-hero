@@ -969,25 +969,23 @@ class TsumegosController extends AppController {
 			unset($_COOKIE['rejuvenationx']);
 		}
 		//Incorrect
-		if (isset($_COOKIE['misplay']) && $_COOKIE['misplay'] != 0) {
+		if (Auth::isLoggedIn() && isset($_COOKIE['misplay']) && $_COOKIE['misplay'] != 0) {
 			if ($mode == 1 && Auth::getUserID() != 33) {
-				if (Auth::isLoggedIn()) {
-					if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] > 0) {
-						$this->TsumegoAttempt->create();
-						$ur1 = [];
-						$ur1['TsumegoAttempt']['user_id'] = Auth::getUserID();
-						$ur1['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
-						$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
-						$ur1['TsumegoAttempt']['gain'] = 0;
-						$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
-						$ur1['TsumegoAttempt']['solved'] = '0';
-						$ur1['TsumegoAttempt']['misplays'] = $_COOKIE['misplay'];
-						$this->TsumegoAttempt->save($ur1);
-					}
+				if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] > 0) {
+					$this->TsumegoAttempt->create();
+					$ur1 = [];
+					$ur1['TsumegoAttempt']['user_id'] = Auth::getUserID();
+					$ur1['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
+					$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
+					$ur1['TsumegoAttempt']['gain'] = 0;
+					$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'];
+					$ur1['TsumegoAttempt']['solved'] = '0';
+					$ur1['TsumegoAttempt']['misplays'] = $_COOKIE['misplay'];
+					$this->TsumegoAttempt->save($ur1);
 				}
 			}
 			if ($mode == 1 || $mode == 3) {
-				if (Auth::isLoggedIn() && $mode == 1 && $_COOKIE['transition'] != 2) {
+				if ($mode == 1 && $_COOKIE['transition'] != 2) {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
@@ -1028,20 +1026,18 @@ class TsumegosController extends AppController {
 						$this->Tsumego->save($preTsumego);
 					}
 
-					if (Auth::isLoggedIn()) {
-						$this->TsumegoAttempt->create();
-						$ur1 = [];
-						$ur1['TsumegoAttempt']['user_id'] = Auth::getUserID();
-						$ur1['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
-						$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
-						$ur1['TsumegoAttempt']['gain'] = 0;
-						$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
-						$ur1['TsumegoAttempt']['solved'] = '0';
-						$ur1['TsumegoAttempt']['misplays'] = 1;
-						$ur1['TsumegoAttempt']['mode'] = 3;
-						$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['elo_rating_mode'];
-						$this->TsumegoAttempt->save($ur1);
-					}
+					$this->TsumegoAttempt->create();
+					$ur1 = [];
+					$ur1['TsumegoAttempt']['user_id'] = Auth::getUserID();
+					$ur1['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
+					$ur1['TsumegoAttempt']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
+					$ur1['TsumegoAttempt']['gain'] = 0;
+					$ur1['TsumegoAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
+					$ur1['TsumegoAttempt']['solved'] = '0';
+					$ur1['TsumegoAttempt']['misplays'] = 1;
+					$ur1['TsumegoAttempt']['mode'] = 3;
+					$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['elo_rating_mode'];
+					$this->TsumegoAttempt->save($ur1);
 				}
 				if ($_COOKIE['type'] == 'g') {
 					$this->updateGoldenCondition();
@@ -1117,25 +1113,23 @@ class TsumegosController extends AppController {
 					}
 				}
 				$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-				if (Auth::isLoggedIn()) {
-					if (!isset($utPre['TsumegoStatus']['status'])) {
-						$utPre['TsumegoStatus']['status'] = 'V';
-					}
-					if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
-						if (Auth::getUser()['potion'] != -69) {
-							$potion = Auth::getUser()['potion'];
-							$potion++;
-							$this->Session->write('loggedInUser.User.potion', $potion);
-							Auth::getUser()['potion']++;
-							$potionSuccess = false;
-							if ($potion >= 5) {
-								$potionPercent = $potion * 1.3;
-								$potionPercent2 = rand(0, 100);
-								$potionSuccess = $potionPercent > $potionPercent2;
-							}
-							if ($potionSuccess) {
-								Auth::getUser()['potion'] = -69;
-							}
+				if (!isset($utPre['TsumegoStatus']['status'])) {
+					$utPre['TsumegoStatus']['status'] = 'V';
+				}
+				if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
+					if (Auth::getUser()['potion'] != -69) {
+						$potion = Auth::getUser()['potion'];
+						$potion++;
+						$this->Session->write('loggedInUser.User.potion', $potion);
+						Auth::getUser()['potion']++;
+						$potionSuccess = false;
+						if ($potion >= 5) {
+							$potionPercent = $potion * 1.3;
+							$potionPercent2 = rand(0, 100);
+							$potionSuccess = $potionPercent > $potionPercent2;
+						}
+						if ($potionSuccess) {
+							Auth::getUser()['potion'] = -69;
 						}
 					}
 				}
