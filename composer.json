@@ -5,7 +5,7 @@
     "keywords": ["cakephp", "app"],
     "license": "proprietary",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.4",
         "pieceofcake2/cakephp": "^2.12"
     },
     "require-dev": {
