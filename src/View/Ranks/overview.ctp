@@ -42,13 +42,13 @@
 	$text = '';
 	if($h==0){ 
 		$text = 'time-mode1';
-		$modeLink = 1;
+		$timeModeSpeed = TimeModeComponent::$TIME_MODE_SLOW;
 	}elseif($h==1){ 
 		$text = 'time-mode2';
-		$modeLink = 2;
+    $timeModeSpeed = TimeModeComponent::$TIME_MODE_FAST;
 	}else{
 		$text = 'time-mode3';
-		$modeLink = 3;
+    $timeModeSpeed = TimeModeComponent::$TIME_MODE_BLITZ;
 	}
 	echo '<div id="'.$text.'">';
 		for($i=0;$i<count($modes[$h]);$i++){
@@ -59,7 +59,7 @@
 				$imageContainerText = 'imageContainerText2';
 				$imageContainerSpace = '';
 				echo '<div class="imageContainer1">
-				<a style="text-decoration:none;" href="/tsumegos/play/5127?rank='.$modes[$h][$i].'&modelink='.$modeLink.'">
+				<a style="text-decoration:none;" href="/tsumegos/play/5127?rank='.$modes[$h][$i].'&startTimeMode='.$timeModeSpeed.'">
 					<img id="i-'.$h.'-'.$modes[$h][$i].'" src="/img/rankButton'.$modes[$h][$i].'.png" onmouseover="hover_'.$h.'_'.$modes[$h][$i].'()" onmouseout="noHover_'.$h.'_'.$modes[$h][$i].'()">
 					 <div class="'.$imageContainerText.'">'.$p[1].' '.$p[0].''.$imageContainerSpace.'<img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
 				</a>

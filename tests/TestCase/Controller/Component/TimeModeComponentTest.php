@@ -15,7 +15,7 @@ class TimeModeComponentTest extends TsumegoControllerTestCase {
 		$tsumego = ClassRegistry::init('Tsumego')->find('first');
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id'] . '?rank=15k&modelink=3');
+		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id'] . '?rank=15k&startTimeMode=3');
 		$this->assertTrue(Auth::isInTimeMode());
 		$this->assertNotEmpty(Auth::getUser()['activeRank']);
 	}
