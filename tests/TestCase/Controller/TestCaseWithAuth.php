@@ -12,8 +12,7 @@ class TestCaseWithAuth extends ControllerTestCase {
 		CakeSession::write('loggedInUserID', $user['User']['id']);
 	}
 
-	public function testLogin()
-	{
+	public function testLogin() {
 		$this->assertFalse(CakeSession::check('loggedInUserID'));
 		$this->login('kovarex');
 		$this->assertTrue(CakeSession::check('loggedInUserID'));

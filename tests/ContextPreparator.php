@@ -10,8 +10,7 @@ class ContextPreparator {
 		$this->tsumego = $tsumego;
 		if (!$this->tsumego) {
 			$this->tsumego = ClassRegistry::init('Tsumego')->find('first');
-			if (!$this->tsumego)
-			{
+			if (!$this->tsumego) {
 				$this->tsumego = [];
 				$this->tsumego['Tsumego']['description'] = 'test-tsumego';
 				ClassRegistry::init('Tsumego')->save($this->tsumego);
@@ -35,10 +34,16 @@ class ContextPreparator {
 		return $this;
 	}
 
-	public function setSetConnection(int $setConnectionCount): ContextPreparator
-	{
-		$this->setConnectionCount = $setConnectionCount;
+	public function setTsumegoSets(array $tsumegoSets): ContextPreparator {
+		$this->tsumegoSets = $tsumegoSets;
 		return $this;
+	}
+
+	public function prepare(): void {
+		$this->prepareTsumegoAttempt();
+		$this->prepareTsumegoStatus();
+		$this->prepareUserMode();
+		$this->prepareTsumegoSets();
 	}
 
 	public function prepareTsumegoAttempt(): void {
@@ -90,6 +95,30 @@ class ContextPreparator {
 		}
 	}
 
+	public function prepareTsumegoSets(): void {
+		if ($this->tsumegoSets) {
+			ClassRegistry::init('SetConnection')->delete(['tsumego_id' => $this->tsumego['Tsumego']['id']]);
+			foreach ($this->tsumegoSets as $tsumegoSet) {
+				$set = $this->getTsumegoSet($tsumegoSet['name']);
+				$setConnection = [];
+				$setConnection['tsumego_id'] = $this->tsumego['Tsumego']['id'];
+				$setConnection['set_id'] = $set['Set']['id'];
+				$setConnection['num'] = $tsumegoSet['num'];
+				ClassRegistry::init('SetConnection')->save($setConnection);
+			}
+		}
+	}
+
+	public function getOrCreateSet($name) {
+		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+		if (!$set) {
+			$set = [];
+			$set['title'] = $name;
+			ClassRegistry::init('Set')->save($set);
+		}
+		return $set;
+	}
+
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {
 		$statusCondition = [
 			'conditions' => [
@@ -109,4 +138,5 @@ class ContextPreparator {
 	public $originalStatus; // null=delete relevant statatus, oterwise specifies string code of status to exist
 	public $originalTsumegoAttempt; // null=remove all relevant tsumego attempts
 	public $resultTsumegoStatus;
+	public $tsumegoSets;
 }

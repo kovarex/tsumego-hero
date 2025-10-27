@@ -6,9 +6,7 @@ require_once(__DIR__ . '/../../../ContextPreparator.php');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	private function performVisit(ContextPreparator &$context): void {
-		$context->prepareTsumegoAttempt();
-		$context->prepareTsumegoStatus();
-		$context->prepareUserMode();
+		$context->prepare();
 
 		CakeSession::write('loggedInUserID', $context->user['User']['id']);
 		$_COOKIE['previousTsumegoID'] = $context->tsumego['Tsumego']['id'];
