@@ -24,12 +24,22 @@ class ContextPreparator {
 	}
 
 	private function prepareTsumego(?array $tsumego): void {
-		$this->tsumego = $tsumego ?: ClassRegistry::init('Tsumego')->find();
-		if (!$this->tsumego) {
-			$this->tsumego = [];
-			$this->tsumego['Tsumego']['description'] = 'test-tsumego';
-			ClassRegistry::init('Tsumego')->save($this->tsumego);
+		if ($tsumego) {
+			$this->tsumego = $tsumego;
+			if (!$tsumego['Tsumego']['id']) {
+				ClassRegistry::init('Tsumego')->create($this->tsumego);
+				ClassRegistry::init('Tsumego')->save($this->tsumego);
+				$this->tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']]);
+				assert($this->tsumego['Tsumego']['id']);
+			}
+		} else {
 			$this->tsumego = ClassRegistry::init('Tsumego')->find();
+			if (!$this->tsumego) {
+				$this->tsumego = [];
+				$this->tsumego['Tsumego']['description'] = 'test-tsumego';
+				ClassRegistry::init('Tsumego')->save($this->tsumego);
+				$this->tsumego = ClassRegistry::init('Tsumego')->find();
+			}
 		}
 	}
 

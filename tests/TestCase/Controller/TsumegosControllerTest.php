@@ -57,4 +57,18 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextContains("777", $this->view);
 	}
+
+	public function testViewingTsumegoWithoutAnySGF() {
+		$context = new ContextPreparator(
+			['tsumego' => ['Tsumego' => ['title' => 'tsumego-without-sgf']],
+				'tsumego_sets' => [['name' => 'tsumego set 1', 'num' => '666']]],
+		);
+
+		$this->testAction('tsumegos/play/' . $context->tsumego['Tsumego']['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$href = $dom->querySelector('#playTitleA');
+		$this->assertTextContains('tsumego set 1', $href->textContent);
+		$this->assertTextContains('666', $href->textContent);
+	}
 }

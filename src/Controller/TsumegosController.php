@@ -1600,9 +1600,8 @@ class TsumegosController extends AppController {
 		} else {
 			$sgfdb = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $t['Tsumego']['duplicate']]]);
 		}
-		if ($sgfdb == null) {
-			$sgf['Sgf']['sgf'] = file_get_contents('placeholder2.sgf');
-			$sgf['Sgf']['user_id'] = 33;
+		if (!$sgfdb) {
+			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
 			$sgf['Sgf']['tsumego_id'] = $id;
 			$sgf['Sgf']['version'] = 1;
 			$this->Sgf->save($sgf);
