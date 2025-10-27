@@ -28,7 +28,7 @@ class Auth {
 
 	public static function &getUser() {
 		if (!Auth::$user) {
-      debug_backtrace();
+      debug_print_backtrace();
 			die("Accessing user for writing when null");
 		}
 		return Auth::$user;
