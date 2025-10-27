@@ -376,7 +376,7 @@ class SetsController extends AppController {
 
 		if (isset($this->data['Set'])) {
 			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1) {
-				$setID = (int)str_replace('6473k339312-', '', $this->data['Set']['hash']);
+				$setID = (int) str_replace('6473k339312-', '', $this->data['Set']['hash']);
 
 				$s = $this->Set->findById($setID);
 				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
