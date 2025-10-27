@@ -704,8 +704,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 			/*
 			if (!$activeToday && $ux[$i]['User']['rd']<250) {
-				$ux[$i]['User']['rd'] += 60;
-				$this->User->save($ux[$i]);
+		  $ux[$i]['User']['rd'] += 60;
+		  $this->User->save($ux[$i]);
 			}
 			*/
 		}
@@ -1184,9 +1184,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$solvedUts2 = array();
 			$utsCount = count($uts);
 			for ($j=0; $j<$utsCount; $j++) {
-				if ($uts[$j]['OldTsumegoStatus']['status']=='S' || $uts[$j]['OldTsumegoStatus']['status']=='W' || $uts[$j]['OldTsumegoStatus']['status']=='C') {
-					array_push($solvedUts2, $uts[$j]);
-				}
+		  if ($uts[$j]['OldTsumegoStatus']['status']=='S' || $uts[$j]['OldTsumegoStatus']['status']=='W' || $uts[$j]['OldTsumegoStatus']['status']=='C') {
+		array_push($solvedUts2, $uts[$j]);
+		  }
 			}*/
 			$ux['User']['solved'] = count($solvedUts);
 			$this->User->save($ux);
@@ -4083,7 +4083,7 @@ Joschka Zimdars';
 
 			$utsCount = count($uts);
 			for ($i=0; $i<$utsCount; $i++) {
-				array_push($idMap, $uts[$i]['TsumegoStatus']['tsumego_id']);
+		  array_push($idMap, $uts[$i]['TsumegoStatus']['tsumego_id']);
 			}
 			$result = array_unique(array_diff_assoc($idMap, array_unique($idMap)));
 			if (count($result)==0) $all[$i]['User']['x'] = 'clean';
@@ -4616,10 +4616,10 @@ Joschka Zimdars';
 
 			// Exchange the short-lived token for a long-lived one (optional)
 			$url = 'https://graph.facebook.com/oauth/access_token?'
-					. 'grant_type=fb_exchange_token&'
-					. "client_id={$app_id}&"
-					. "client_secret={$app_secret}&"
-					. "fb_exchange_token={$accessToken}";
+		. 'grant_type=fb_exchange_token&'
+		. "client_id={$app_id}&"
+		. "client_secret={$app_secret}&"
+		. "fb_exchange_token={$accessToken}";
 
 			$response = file_get_contents($url);
 			$responseData = json_decode($response, true);

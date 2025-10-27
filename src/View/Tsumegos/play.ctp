@@ -74,9 +74,7 @@
 		echo '<style>#xpDisplay{font-weight:800;color:#b5910b;}</style>';
 	}
 	if(isset($formRedirect)){
-		$duplicateLink = '';
-		if(isset($t['Tsumego']['duplicateLink']))
-			$duplicateLink = $t['Tsumego']['duplicateLink'];
+		$duplicateLink = count($setConnections) > 1 ? '?sid=' . $set['Set']['id'] : '';
 		echo '<script type="text/javascript">window.location.href = "/tsumegos/play/'.$t['Tsumego']['id'].$t['Tsumego']['duplicateLink'].'";</script>';
 	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
@@ -192,9 +190,9 @@
 		<td align="center">
 			<div id="playTitle">
 				<?php
-					$di = ' ';
+					$di = $setConnection['SetConnection']['num'];
 					$di2 = '/';
-					if($mode==2)
+					if ($mode==2)
 						$inFavorite='';
 					$hasPartition = '';
 					if($partition>0)
@@ -207,9 +205,9 @@
 							</a>
 						</font>';
 					}else if($query=='topics' && !$favorite){
-						if($inFavorite==''){
-							if($mode==1){
-								if($t['Tsumego']['set_id']==38){
+						if ($inFavorite=='') {
+							if (Auth::isInLevelMode()) {
+								if($set['Set']['id'] == 38){
 									$altTitle = 'How to win the capturing race';
 									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$di2.$anz.'</a>';
 								}else{
@@ -560,7 +558,7 @@
 				}
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
-			$getTitle .= ' '.$t['Tsumego']['num'];
+			$getTitle .= ' '.$set['SetConnection']['num'];
 		?>
 		<div class="tag-container" align="center">
 			<div class="tag-list"></div>
@@ -590,18 +588,12 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-			if(Auth::isLoggedIn()){
-				if($t['Tsumego']['duplicate']!=0 && $t['Tsumego']['duplicate']!=-1 && $mode!=2){
-					echo '<div class="duplicateTable">Is duplicate group:<br>';
-					for($i=0; $i<count($duplicates); $i++){
-						echo '<a href="/tsumegos/play/'.$duplicates[$i]['SetConnection']['tsumego_id'].'?sid='.$duplicates[$i]['SetConnection']['set_id'].'">'
-						.$duplicates[$i]['SetConnection']['title'].'</a>';
-						if($i!=count($duplicates)-1)
-							echo ', ';
-					}
-					echo '</div><br>';
-				}
-			}
+      if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
+        echo '<div class="duplicateTable">Is duplicate group:<br>';
+        echo implode(', ', array_map(function($setConnection) { return '<a href="/tsumegos/play/'.$setConection['SetConnection']['tsumego_id'].'?sid='.$setConnection['SetConnection']['set_id'].'">'
+          .$setConnection['SetConnection']['title'].'</a>'; }));
+        echo '</div><br>';
+      }
 			if($sgf['Sgf']['user_id']!=33)
 				$adHighlight = 'historyLink';
 			else
@@ -1242,7 +1234,7 @@
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = "<?php echo $file; ?>";
-	var clearFile = "<?php echo $set['Set']['title'].' - '.$t['Tsumego']['num']; ?>";
+	var clearFile = "<?php echo $set['Set']['title'].' - '.$setConnection['SetConnection']['num']; ?>";
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
 	var idForSignature = "<?php echo $idForSignature; ?>";
@@ -2350,7 +2342,7 @@
 			jsCreateDownloadFile("<?php echo $getTitle; ?>");
 		});
 		$("#showx4").click(function(){
-			jsCreateDownloadFile("<?php echo $t['Tsumego']['num']; ?>");
+			jsCreateDownloadFile("<?php echo $setConnection['SetConnection']['num']; ?>");
 		});
 		$("#showx7x").click(function(){
 			$('.loader-container').css({"display":"flex"});
@@ -2406,11 +2398,10 @@
 				$duplicateMain = $t['Tsumego']['id'];
 			else
 				array_push($duplicateOther, $t['Tsumego']['id']);
-			for($i=0; $i<count($duplicates); $i++){
-				if($duplicates[$i]['Tsumego']['duplicate']<=9)
-					$duplicateMain = $duplicates[$i]['Tsumego']['id'];
-				else
-					array_push($duplicateOther, $duplicates[$i]['Tsumego']['id']);
+      foreach ($setConnections as $setConnectionX)
+			for($i=0; $i<count($setConnections); $i++){
+				if($setConnectionX['id'] != $setConnection['id'])
+					array_push($duplicateOther, $setConnections['SetConnection']['tsumego_id']);
 			}
 			$duplicateParamsUrl = '?duplicates=';
 			for($i=0; $i<count($duplicateOther); $i++){

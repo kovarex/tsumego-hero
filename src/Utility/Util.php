@@ -1,13 +1,16 @@
 <?php
 
 class Util {
-	/**
-	 * @param string $name
-	 * @return void
-	 */
-	public static function clearCookie($name): void {
+	/* @return The value of the cleared cookie */
+	public static function clearCookie(string $name): ?string {
+		$result = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : null;
 		setcookie($name, '', 1);
 		$_COOKIE[$name] = '';
+		return $result;
+	}
+
+	public static function getCookie(string $name, $default = null) {
+		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
 
 	public static function generateRandomString($length = 20) {
@@ -27,5 +30,23 @@ class Util {
 			return 99;
 		}
 		return $result;
+	}
+
+	public static function wierdEncrypt(string $str): string {
+		$secret_key = 'my_simple_secret_keyx';
+		$secret_iv = 'my_simple_secret_ivx';
+		$encrypt_method = 'AES-256-CBC';
+		$key = hash('sha256', $secret_key);
+		$iv = substr(hash('sha256', $secret_iv), 0, 16);
+		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
+	}
+
+	public static function wierdDecrypt(string $str): string {
+		$secret_key = 'my_simple_secret_keyx';
+		$secret_iv = 'my_simple_secret_ivx';
+		$encrypt_method = 'AES-256-CBC';
+		$key = hash('sha256', $secret_key);
+		$iv = substr(hash('sha256', $secret_iv), 0, 16);
+		return openssl_decrypt(base64_decode($str), $encrypt_method, $key, 0, $iv);
 	}
 }

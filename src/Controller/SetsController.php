@@ -1,6 +1,6 @@
 <?php
 
-App::uses('TsumegoStatusHelper', 'Utility');
+App::uses('TsumegoUtil', 'Utility');
 
 class SetsController extends AppController {
 	public $helpers = ['Html', 'Form'];
@@ -546,7 +546,7 @@ class SetsController extends AppController {
 			}
 		}
 		if (Auth::isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser();
+			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 		} else {
 			$noLoginUts = [];
 			$noLoginCount = count($this->Session->read('noLogin') ?? []);
@@ -1177,7 +1177,7 @@ class SetsController extends AppController {
 		}
 		if (Auth::isLoggedIn()) {
 
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser();
+			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 
 			if (Auth::isAdmin()) {
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
@@ -2458,7 +2458,7 @@ class SetsController extends AppController {
 		}
 		*/
 		if (Auth::isLoggedIn()) {
-			$tsumegoStatusMap = TsumegoStatusHelper::getMapForUser();
+			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 		}
 
 		$setsCount = count($sets);
