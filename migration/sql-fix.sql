@@ -169,3 +169,5 @@ ALTER TABLE tsumego_variants RENAME tsumego_variant;
 ALTER TABLE users RENAME `user`;
 ALTER TABLE user_contributions RENAME user_contribution;
 ALTER TABLE user_boards RENAME user_board;
+
+ALTER TABLE `sgf` CHANGE `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT;
