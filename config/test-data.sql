@@ -1,6 +1,6 @@
 -- Minimal test data for CI tests
 -- Insert a test user named 'kovarex'
-INSERT INTO `users` (
+INSERT INTO `user` (
     `id`,
     `name`,
     `email`,
@@ -17,7 +17,7 @@ INSERT INTO `users` (
 );
 
 -- Insert a test tsumego
-INSERT INTO `tsumegos` (
+INSERT INTO `tsumego` (
     `id`,
     `num`,
     `created`
