@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . '/../TsumegoControllerTestCase.php');
+require_once(__DIR__ . '/../TestCaseWithAuth.php');
 
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer {
@@ -26,7 +26,7 @@ class TestEmailer {
 	public static $lastEmail = null;
 };
 
-class LoginComponentTest extends TsumegoControllerTestCase {
+class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	public function testLogin(): void {
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);

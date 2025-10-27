@@ -1,10 +1,10 @@
 <?php
 
-require_once(__DIR__ . '/../TsumegoControllerTestCase.php');
+require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 
-class TimeModeComponentTest extends TsumegoControllerTestCase {
+class TimeModeComponentTestWithAuth extends TestCaseWithAuth {
 	public function testStartTimeMode() {
 		$this->login('kovarex');
 		Auth::init();

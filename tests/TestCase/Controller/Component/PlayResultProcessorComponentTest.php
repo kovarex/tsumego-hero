@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . '/../TsumegoControllerTestCase.php');
+require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Constants', 'Utility');
 
 class TsumegoVisitContext {
@@ -13,6 +13,13 @@ class TsumegoVisitContext {
 		$this->tsumego = $tsumego;
 		if (!$this->tsumego) {
 			$this->tsumego = ClassRegistry::init('Tsumego')->find('first');
+			if (!$this->tsumego)
+			{
+				$this->tsumego = [];
+				$this->tsumego['Tsumego']['description'] = 'test-tsumego';
+				ClassRegistry::init('Tsumego')->save($this->tsumego);
+				$this->tsumego = ClassRegistry::init('Tsumego')->find('first');
+			}
 		}
 	}
 
@@ -28,6 +35,12 @@ class TsumegoVisitContext {
 
 	public function setMode($mode): TsumegoVisitContext {
 		$this->mode = $mode;
+		return $this;
+	}
+
+	public function setSetConnection(int $setConnectionCount): TsumegoVisitContext
+	{
+		$this->setConnectionCount = $setConnectionCount;
 		return $this;
 	}
 
@@ -101,7 +114,7 @@ class TsumegoVisitContext {
 	public $resultTsumegoStatus;
 }
 
-class PlayResultProcessorComponentTest extends TsumegoControllerTestCase {
+class PlayResultProcessorComponentTestWithAuth extends TestCaseWithAuth {
 	private function performVisit(TsumegoVisitContext &$context): void {
 		$context->prepareTsumegoAttempt();
 		$context->prepareTsumegoStatus();
