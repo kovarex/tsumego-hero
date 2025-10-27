@@ -210,7 +210,7 @@
 						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
 						if(Auth::isLoggedIn()){
 							echo '<li><a href="/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2" '.$ratingModeA.'>Rating</a></li>';
-							echo '<li><a href="/ranks/overview" '.$timeModeA.'>Time</a></li>';
+							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
 						}
 					echo '</ul>';
 					echo '<li><a '.$refreshLinkToHighscore.' '.$highscoreA.' href="/users/'.$highscoreLink.'">Highscore</a>';

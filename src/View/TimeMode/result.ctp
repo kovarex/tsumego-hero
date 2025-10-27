@@ -8,7 +8,7 @@
 	<h2>Time Mode Results</h2>
 	<br>
 	<div align="center">
-		<a class="new-button" href="/ranks/overview">Select</a>
+		<a class="new-button" href="/timeMode/overview">Select</a>
 		<a class="new-button-inactive" href="#">Results</a>
 	</div>
 	<br><br>
@@ -27,20 +27,20 @@
 			for($h=count($modes)-1;$h>=0;$h--){
 				if($modesOrder==0 && $h==$openCard1 || $modesOrder==1 && $h!=$openCard1){
 					for($i=count($modes[$h])-1;$i>=0;$i--){
-						if(isset($modes[$h][$i]['RankOverview'])){
+						if(isset($modes[$h][$i]['TimeModeOverview'])){
 							
-							if($modes[$h][$i]['RankOverview']['status'] == 'passed') $boxHighlight = 'tScoreTitle1';
+							if($modes[$h][$i]['TimeModeOverview']['status'] == 'passed') $boxHighlight = 'tScoreTitle1';
 							else $boxHighlight = 'tScoreTitle2';
 							echo '<tr>';
 							echo '<td>';
 							echo '<div class="tScoreTitle '.$boxHighlight.'" id="title'.$h.'_'.$i.'">';
 							echo '<table class="timeModeTable2" width="100%" border="0">';
 							echo '<tr>';
-							echo '<td width="9%">'.$modes[$h][$i]['RankOverview']['mode'].'</td>';
-							echo '<td width="46%">'.$modes[$h][$i]['RankOverview']['rank'].'</td>';
-							echo '<td width="15%"><b>'.$modes[$h][$i]['RankOverview']['status'].'<b></td>';
-							echo '<td width="13%">'.$modes[$h][$i]['RankOverview']['points'].' points</td>';
-							echo '<td class="timeModeTable2td">'.$modes[$h][$i]['RankOverview']['created'].'</td>';
+							echo '<td width="9%">'.$modes[$h][$i]['TimeModeOverview']['mode'].'</td>';
+							echo '<td width="46%">'.$modes[$h][$i]['TimeModeOverview']['rank'].'</td>';
+							echo '<td width="15%"><b>'.$modes[$h][$i]['TimeModeOverview']['status'].'<b></td>';
+							echo '<td width="13%">'.$modes[$h][$i]['TimeModeOverview']['points'].' points</td>';
+							echo '<td class="timeModeTable2td">'.$modes[$h][$i]['TimeModeOverview']['created'].'</td>';
 							if(!empty($allR[$h][$i])){
 								echo '<td width="3%" class="timeModeTable2td"><img id="arrow'.$h.'_'.$i.'" src="/img/greyArrow1.png"></td>';
 							}
@@ -134,32 +134,32 @@
 	</table>
 	<br>
 	</div>
-	<?php if(isset($ro['RankOverview']['status']) && $ro['RankOverview']['status']=='s' && $newUnlock){
+	<?php if(isset($ro['TimeModeOverview']['status']) && $ro['TimeModeOverview']['status']=='s' && $newUnlock){
 	$alertCategory = '';
 	$alertRank = '';
-	if($ro['RankOverview']['mode']==0) $alertCategory = 'blitz';
-	elseif($ro['RankOverview']['mode']==1) $alertCategory = 'fast';
-	elseif($ro['RankOverview']['mode']==2) $alertCategory = 'slow';
+	if($ro['TimeModeOverview']['mode']==0) $alertCategory = 'blitz';
+	elseif($ro['TimeModeOverview']['mode']==1) $alertCategory = 'fast';
+	elseif($ro['TimeModeOverview']['mode']==2) $alertCategory = 'slow';
 	
-	if($ro['RankOverview']['rank']=='15k') $alertRank = '14k';
-	elseif($ro['RankOverview']['rank']=='14k') $alertRank = '13k';
-	elseif($ro['RankOverview']['rank']=='13k') $alertRank = '12k';
-	elseif($ro['RankOverview']['rank']=='12k') $alertRank = '11k';
-	elseif($ro['RankOverview']['rank']=='11k') $alertRank = '10k';
-	elseif($ro['RankOverview']['rank']=='10k') $alertRank = '9k';
-	elseif($ro['RankOverview']['rank']=='9k') $alertRank = '8k';
-	elseif($ro['RankOverview']['rank']=='8k') $alertRank = '7k';
-	elseif($ro['RankOverview']['rank']=='7k') $alertRank = '6k';
-	elseif($ro['RankOverview']['rank']=='6k') $alertRank = '5k';
-	elseif($ro['RankOverview']['rank']=='5k') $alertRank = '4k';
-	elseif($ro['RankOverview']['rank']=='4k') $alertRank = '3k';
-	elseif($ro['RankOverview']['rank']=='3k') $alertRank = '2k';
-	elseif($ro['RankOverview']['rank']=='2k') $alertRank = '1k';
-	elseif($ro['RankOverview']['rank']=='1k') $alertRank = '1d';
-	elseif($ro['RankOverview']['rank']=='1d') $alertRank = '2d';
-	elseif($ro['RankOverview']['rank']=='2d') $alertRank = '3d';
-	elseif($ro['RankOverview']['rank']=='3d') $alertRank = '4d';
-	elseif($ro['RankOverview']['rank']=='4d') $alertRank = '5d';
+	if($ro['TimeModeOverview']['rank']=='15k') $alertRank = '14k';
+	elseif($ro['TimeModeOverview']['rank']=='14k') $alertRank = '13k';
+	elseif($ro['TimeModeOverview']['rank']=='13k') $alertRank = '12k';
+	elseif($ro['TimeModeOverview']['rank']=='12k') $alertRank = '11k';
+	elseif($ro['TimeModeOverview']['rank']=='11k') $alertRank = '10k';
+	elseif($ro['TimeModeOverview']['rank']=='10k') $alertRank = '9k';
+	elseif($ro['TimeModeOverview']['rank']=='9k') $alertRank = '8k';
+	elseif($ro['TimeModeOverview']['rank']=='8k') $alertRank = '7k';
+	elseif($ro['TimeModeOverview']['rank']=='7k') $alertRank = '6k';
+	elseif($ro['TimeModeOverview']['rank']=='6k') $alertRank = '5k';
+	elseif($ro['TimeModeOverview']['rank']=='5k') $alertRank = '4k';
+	elseif($ro['TimeModeOverview']['rank']=='4k') $alertRank = '3k';
+	elseif($ro['TimeModeOverview']['rank']=='3k') $alertRank = '2k';
+	elseif($ro['TimeModeOverview']['rank']=='2k') $alertRank = '1k';
+	elseif($ro['TimeModeOverview']['rank']=='1k') $alertRank = '1d';
+	elseif($ro['TimeModeOverview']['rank']=='1d') $alertRank = '2d';
+	elseif($ro['TimeModeOverview']['rank']=='2d') $alertRank = '3d';
+	elseif($ro['TimeModeOverview']['rank']=='3d') $alertRank = '4d';
+	elseif($ro['TimeModeOverview']['rank']=='4d') $alertRank = '5d';
 	?>
 		<label>
 		  <input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
@@ -170,7 +170,7 @@
 			</div>
 			<span class="alertText">
 			<?php
-			echo '<a style="color:black;text-decoration:none;" href="/ranks/overview"><img id="hpIcon1" src="/img/rankButton'.$alertRank.'.png">
+			echo '<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton'.$alertRank.'.png">
 			You unlocked the '.$alertRank.' '.$alertCategory.' rank.</a><br>'
 			?>
 			<br class="clear1"/></span>
@@ -223,7 +223,7 @@
 			$("#account-bar-xp").html(bartext);
 			$("#xp-bar-fill").css("width", barPercent);
 			
-			<?php if(isset($ro['RankOverview']['status']) && $ro['RankOverview']['status']=='s' && $newUnlock){ ?>
+			<?php if(isset($ro['TimeModeOverview']['status']) && $ro['TimeModeOverview']['status']=='s' && $newUnlock){ ?>
 			$(".alertBox").fadeIn(500);
 			<?php } ?>
 		});

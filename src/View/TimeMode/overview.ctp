@@ -8,7 +8,7 @@
 		<a class="new-button-inactive" href="#">Select</a>
 		<?php
 		if(count($ro)==0) echo '<a class="new-button-inactive" href="#">Results</a>';
-		else echo '<a class="new-button" href="/ranks/result">Results</a>';
+		else echo '<a class="new-button" href="/timeMode/result">Results</a>';
 		?>
 	</div>
 	<br><br>

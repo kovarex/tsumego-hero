@@ -36,8 +36,8 @@ class TsumegosController extends AppController {
 		$this->loadModel('Activate');
 		$this->loadModel('Joseki');
 		$this->loadModel('Reputation');
-		$this->loadModel('Rank');
-		$this->loadModel('RankSetting');
+		$this->loadModel('TimeModeAttempt');
+		$this->loadModel('TimeModeSetting');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
@@ -146,13 +146,13 @@ class TsumegosController extends AppController {
 			if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0') {
 				if (strlen(Auth::getUser()['activeRank']) >= 15) {
 					if ($_COOKIE['mode'] != 3) { //switch 3=>2, 3=>1
-						$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
+						$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 						if (!$ranks) {
 							$ranks = [];
 						}
 						if (count($ranks) != 10) {
 							foreach ($ranks as $item) {
-								$this->Rank->delete($item['Rank']['id']);
+								$this->TimeModeAttempt->delete($item['TimeModeAttempt']['id']);
 							}
 						}
 						Auth::getUser()['activeRank'] = 0;
@@ -182,12 +182,12 @@ class TsumegosController extends AppController {
 				}
 				$mode = 3;
 				Auth::getUser()['mode'] = 3;
-				$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
+				$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 				if (!$ranks) {
 					$ranks = [];
 				}
 				if (count($ranks) == 0) {
-					$r = $this->params['url']['rank'];
+					$r = $this->params['url']['TimeModeAttempt'];
 					if ($r == '5d') {
 						$r1 = 2500;
 						$r2 = 10000;
@@ -253,14 +253,14 @@ class TsumegosController extends AppController {
 						$r2 = 700;
 					}
 
-					$rs = $this->RankSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+					$rs = $this->TimeModeSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 					if (!$rs) {
 						$rs = [];
 					}
 					$rankTs = [];
 					$rsCount = count($rs);
 					for ($i = 0; $i < $rsCount; $i++) {
-						$timeSc = $this->findTsumegoSet($rs[$i]['RankSetting']['set_id']);
+						$timeSc = $this->findTsumegoSet($rs[$i]['TimeModeSetting']['set_id']);
 						$timeScCount = count($timeSc);
 						for ($g = 0; $g < $timeScCount; $g++) {
 							if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
@@ -273,37 +273,37 @@ class TsumegosController extends AppController {
 					shuffle($rankTs);
 					for ($i = 0; $i < $stopParameter; $i++) {
 						$rm = [];
-						$rm['Rank']['session'] = Auth::getUser()['activeRank'];
-						$rm['Rank']['user_id'] = Auth::getUserID();
-						$rm['Rank']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
-						if ($rm['Rank']['tsumego_id'] == null) {
-							$rm['Rank']['tsumego_id'] = 5127;
+						$rm['TimeModeAttempt']['session'] = Auth::getUser()['activeRank'];
+						$rm['TimeModeAttempt']['user_id'] = Auth::getUserID();
+						$rm['TimeModeAttempt']['tsumego_id'] = $rankTs[$i]['Tsumego']['id'];
+						if ($rm['TimeModeAttempt']['tsumego_id'] == null) {
+							$rm['TimeModeAttempt']['tsumego_id'] = 5127;
 						}
-						$rm['Rank']['rank'] = $r;
-						$rm['Rank']['num'] = $i + 1;
-						$rm['Rank']['currentNum'] = 1;
-						$this->Rank->create();
-						$this->Rank->save($rm);
+						$rm['TimeModeAttempt']['TimeModeAttempt'] = $r;
+						$rm['TimeModeAttempt']['num'] = $i + 1;
+						$rm['TimeModeAttempt']['currentNum'] = 1;
+						$this->TimeModeAttempt->create();
+						$this->TimeModeAttempt->save($rm);
 					}
 					$currentRankNum = 1;
 					$firstRanks = 1;
 				} else {
 					$ranksCount = count($ranks);
 					for ($i = 0; $i < $ranksCount; $i++) {
-						$ranks[$i]['Rank']['currentNum']++;
-						$this->Rank->save($ranks[$i]);
+						$ranks[$i]['TimeModeAttempt']['currentNum']++;
+						$this->TimeModeAttempt->save($ranks[$i]);
 					}
-					$currentNum = $ranks[0]['Rank']['currentNum'];
+					$currentNum = $ranks[0]['TimeModeAttempt']['currentNum'];
 					$tsid = null;
 					$tsid2 = null;
 					$ranksCount = count($ranks);
 					for ($i = 0; $i < $ranksCount; $i++) {
-						if ($ranks[$i]['Rank']['num'] == $currentNum) {
-							$tsid = $ranks[$i]['Rank']['tsumego_id'];
+						if ($ranks[$i]['TimeModeAttempt']['num'] == $currentNum) {
+							$tsid = $ranks[$i]['TimeModeAttempt']['tsumego_id'];
 							if ($currentNum < 10) {
-								$tsid2 = $ranks[$i + 1]['Rank']['tsumego_id'];
+								$tsid2 = $ranks[$i + 1]['TimeModeAttempt']['tsumego_id'];
 							} else {
-								$tsid2 = $ranks[$i]['Rank']['tsumego_id'];
+								$tsid2 = $ranks[$i]['TimeModeAttempt']['tsumego_id'];
 							}
 						}
 					}
@@ -945,10 +945,10 @@ class TsumegosController extends AppController {
 				unset($_COOKIE['favorite']);
 			}
 		}
-		if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
-			$drCookie = $this->decrypt($_COOKIE['rank']);
+		if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+			$drCookie = $this->decrypt($_COOKIE['TimeModeAttempt']);
 			$drCookie2 = explode('-', $drCookie);
-			$_COOKIE['rank'] = $drCookie2[1];
+			$_COOKIE['TimeModeAttempt'] = $drCookie2[1];
 		}
 
 		if (Auth::isLoggedIn() && Auth::getUser()['potion'] >= 15) {
@@ -990,23 +990,23 @@ class TsumegosController extends AppController {
 				if (Auth::isLoggedIn() && $mode == 1 && $_COOKIE['transition'] != 2) {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
-				if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
-					$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
+				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+					$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 					if (!$ranks) {
 						$ranks = [];
 					}
-					$currentNum = $ranks[0]['Rank']['currentNum'];
+					$currentNum = $ranks[0]['TimeModeAttempt']['currentNum'];
 					$ranksCount = count($ranks);
 
 					for ($i = 0; $i < $ranksCount; $i++) {
-						if ($ranks[$i]['Rank']['num'] == $currentNum - 1) {
-							$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
+						if ($ranks[$i]['TimeModeAttempt']['num'] == $currentNum - 1) {
+							$ranks[$i]['TimeModeAttempt']['result'] = $_COOKIE['TimeModeAttempt'];
 							if (isset($_COOKIE['previousTsumegoID'])) {
-								$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
+								$ranks[$i]['TimeModeAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
 							} else {
-								$ranks[$i]['Rank']['seconds'] = 0;
+								$ranks[$i]['TimeModeAttempt']['seconds'] = 0;
 							}
-							$this->Rank->save($ranks[$i]);
+							$this->TimeModeAttempt->save($ranks[$i]);
 						}
 					}
 
@@ -1223,24 +1223,24 @@ class TsumegosController extends AppController {
 								}
 							}
 						}
-						if (isset($_COOKIE['rank']) && $_COOKIE['rank'] != '0') {
+						if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
 							$this->saveDanSolveCondition($solvedTsumegoRank, $preTsumego['Tsumego']['id']);
 							$this->updateGems($solvedTsumegoRank);
-							$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
+							$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 							if (!$ranks) {
 								$ranks = [];
 							}
-							$currentNum = $ranks[0]['Rank']['currentNum'];
+							$currentNum = $ranks[0]['TimeModeAttempt']['currentNum'];
 							$ranksCount = count($ranks);
 
 							for ($i = 0; $i < $ranksCount; $i++) {
-								if ($ranks[$i]['Rank']['num'] == $currentNum - 1) {
-									if ($_COOKIE['rank'] != 'solved' && $_COOKIE['rank'] != 'failed' && $_COOKIE['rank'] != 'skipped' && $_COOKIE['rank'] != 'timeout') {
-										$_COOKIE['rank'] = 'failed';
+								if ($ranks[$i]['TimeModeAttempt']['num'] == $currentNum - 1) {
+									if ($_COOKIE['TimeModeAttempt'] != 'solved' && $_COOKIE['TimeModeAttempt'] != 'failed' && $_COOKIE['TimeModeAttempt'] != 'skipped' && $_COOKIE['TimeModeAttempt'] != 'timeout') {
+										$_COOKIE['TimeModeAttempt'] = 'failed';
 									}
-									$ranks[$i]['Rank']['result'] = $_COOKIE['rank'];
-									$ranks[$i]['Rank']['seconds'] = $_COOKIE['seconds'] / 10;
-									$this->Rank->save($ranks[$i]);
+									$ranks[$i]['TimeModeAttempt']['result'] = $_COOKIE['TimeModeAttempt'];
+									$ranks[$i]['TimeModeAttempt']['seconds'] = $_COOKIE['seconds'] / 10;
+									$this->TimeModeAttempt->save($ranks[$i]);
 								}
 							}
 
@@ -2686,18 +2686,18 @@ class TsumegosController extends AppController {
 			$ranksCount = count($ranks);
 
 			for ($i = 0; $i < $ranksCount; $i++) {
-				if ($ranks[$i]['Rank']['result'] == 'solved') {
+				if ($ranks[$i]['TimeModeAttempt']['result'] == 'solved') {
 					$crs++;
 				}
 			}
 		}
-		if (isset($this->params['url']['rank'])) {
-			$raName = $this->params['url']['rank'];
+		if (isset($this->params['url']['TimeModeAttempt'])) {
+			$raName = $this->params['url']['TimeModeAttempt'];
 		} else {
-			if (!isset($ranks[0]['Rank']['rank'])) {
-				$ranks[0]['Rank']['rank'] = '';
+			if (!isset($ranks[0]['TimeModeAttempt']['TimeModeAttempt'])) {
+				$ranks[0]['TimeModeAttempt']['TimeModeAttempt'] = '';
 			}
-			$raName = $ranks[0]['Rank']['rank'];
+			$raName = $ranks[0]['TimeModeAttempt']['TimeModeAttempt'];
 		}
 
 		if ($mode == 1) {

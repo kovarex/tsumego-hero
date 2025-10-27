@@ -79,7 +79,7 @@
 	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if($r10==1)
-		echo '<script type="text/javascript">window.location.href = "/ranks/result";</script>';
+		echo '<script type="text/javascript">window.location.href = "/timeMode/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
 		if(!Auth::hasPremium())
@@ -2861,7 +2861,7 @@
 		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
 	}
 	function goMode3x(){
-		<?php echo 'window.location.href = "/ranks/overview";'; ?>
+		<?php echo 'window.location.href = "/timeMode/overview";'; ?>
 	}
 
 	function review(){

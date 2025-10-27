@@ -394,10 +394,10 @@
 		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
 			<div class="modeBox22" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/ranks/overview">
+		<a href="/timeMode/overview">
 			<div class="modeBox3" onmouseover="mode3hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/ranks/overview">
+		<a href="/timeMode/overview">
 			<div class="modeBox33" onmouseover="mode3hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<a href="/achievements">
@@ -737,7 +737,7 @@
 		if(Auth::isLoggedIn()){
 			$link1 = '/tsumegos/play/'.$this->Session->read('lastVisit').'?mode=1';
 			$link2 = '/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2';
-			$link3 = '/ranks/overview';
+			$link3 = '/timeMode/overview';
 		}
 		?>
 		• <a href="<?php echo $link1; ?>" style="color:#74d14c">Level mode</a> problems affect level and user rating.<br>

@@ -2347,7 +2347,7 @@ class AppController extends Controller {
 	protected function checkTimeModeAchievements() {
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$this->loadModel('RankOverview');
+		$this->loadModel('TimeModeOverview');
 
 		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
@@ -2362,19 +2362,19 @@ class AppController extends Controller {
 		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
-		$rBlitz = $this->RankOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => Auth::getUserID()]]);//blitz
+		$rBlitz = $this->TimeModeOverview->find('all', ['conditions' => ['mode' => 0, 'user_id' => Auth::getUserID()]]);//blitz
 		if (!$rBlitz) {
 			$rBlitz = [];
 		}
-		$rFast = $this->RankOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => Auth::getUserID()]]);//fast
+		$rFast = $this->TimeModeOverview->find('all', ['conditions' => ['mode' => 1, 'user_id' => Auth::getUserID()]]);//fast
 		if (!$rFast) {
 			$rFast = [];
 		}
-		$rSlow = $this->RankOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => Auth::getUserID()]]);//slow
+		$rSlow = $this->TimeModeOverview->find('all', ['conditions' => ['mode' => 2, 'user_id' => Auth::getUserID()]]);//slow
 		if (!$rSlow) {
 			$rSlow = [];
 		}
-		$r = $this->RankOverview->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		$r = $this->TimeModeOverview->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$r) {
 			$r = [];
 		}
@@ -2385,81 +2385,81 @@ class AppController extends Controller {
 		}
 		$rCount = count($r);
 		for ($i = 0; $i < $rCount; $i++) {
-			if ($r[$i]['RankOverview']['status'] == 's') {
-				if ($r[$i]['RankOverview']['rank'] == '5k') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+			if ($r[$i]['TimeModeOverview']['status'] == 's') {
+				if ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5k') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[70] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[76] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[82] = true;
 					}
-				} elseif ($r[$i]['RankOverview']['rank'] == '4k') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+				} elseif ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4k') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[71] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[77] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[83] = true;
 					}
-				} elseif ($r[$i]['RankOverview']['rank'] == '3k') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+				} elseif ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3k') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[72] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[78] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[84] = true;
 					}
-				} elseif ($r[$i]['RankOverview']['rank'] == '2k') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+				} elseif ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2k') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[73] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[79] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[85] = true;
 					}
-				} elseif ($r[$i]['RankOverview']['rank'] == '1k') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+				} elseif ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1k') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[74] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[80] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[86] = true;
 					}
-				} elseif ($r[$i]['RankOverview']['rank'] == '1d') {
-					if ($r[$i]['RankOverview']['mode'] == 2) {
+				} elseif ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1d') {
+					if ($r[$i]['TimeModeOverview']['mode'] == 2) {
 						$timeModeAchievements[75] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 1) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 1) {
 						$timeModeAchievements[81] = true;
-					} elseif ($r[$i]['RankOverview']['mode'] == 0) {
+					} elseif ($r[$i]['TimeModeOverview']['mode'] == 0) {
 						$timeModeAchievements[87] = true;
 					}
 				}
 			}
-			if ($r[$i]['RankOverview']['points'] >= 850
-			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
-			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
-			|| $r[$i]['RankOverview']['rank'] == '5d')) {
+			if ($r[$i]['TimeModeOverview']['points'] >= 850
+			&& ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4d'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5d')) {
 				$timeModeAchievements[91] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 875
-			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
-			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
-			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k')) {
+			if ($r[$i]['TimeModeOverview']['points'] >= 875
+			&& ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4d'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '6k')) {
 				$timeModeAchievements[90] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 900
-			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
-			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
-			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k' || $r[$i]['RankOverview']['rank'] == '7k'
-			|| $r[$i]['RankOverview']['rank'] == '8k')) {
+			if ($r[$i]['TimeModeOverview']['points'] >= 900
+			&& ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4d'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '6k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '7k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '8k')) {
 				$timeModeAchievements[89] = true;
 			}
-			if ($r[$i]['RankOverview']['points'] >= 950
-			&& ($r[$i]['RankOverview']['rank'] == '4k' || $r[$i]['RankOverview']['rank'] == '3k' || $r[$i]['RankOverview']['rank'] == '2k' || $r[$i]['RankOverview']['rank'] == '1k'
-			|| $r[$i]['RankOverview']['rank'] == '1d' || $r[$i]['RankOverview']['rank'] == '2d' || $r[$i]['RankOverview']['rank'] == '3d' || $r[$i]['RankOverview']['rank'] == '4d'
-			|| $r[$i]['RankOverview']['rank'] == '5d' || $r[$i]['RankOverview']['rank'] == '5k' || $r[$i]['RankOverview']['rank'] == '6k' || $r[$i]['RankOverview']['rank'] == '7k'
-			|| $r[$i]['RankOverview']['rank'] == '8k' || $r[$i]['RankOverview']['rank'] == '9k' || $r[$i]['RankOverview']['rank'] == '10k')) {
+			if ($r[$i]['TimeModeOverview']['points'] >= 950
+			&& ($r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '4d'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '6k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '7k'
+			|| $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '8k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '9k' || $r[$i]['TimeModeOverview']['TimeModeAttempt'] == '10k')) {
 				$timeModeAchievements[88] = true;
 			}
 		}
@@ -3653,13 +3653,13 @@ class AppController extends Controller {
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('Set');
-		$this->loadModel('Rank');
+		$this->loadModel('TimeModeAttempt');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Comment');
 		$this->loadModel('UserBoard');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('AdminActivity');
-		$this->loadModel('RankSetting');
+		$this->loadModel('TimeModeSetting');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
@@ -4102,14 +4102,14 @@ class AppController extends Controller {
 			return;
 		}
 
-		$this->loadModel('Rank');
-		$ranks = $this->Rank->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
+		$this->loadModel('TimeModeAttempt');
+		$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
 		if (!$ranks) {
 			$ranks = [];
 		}
 		$ranksCount = count($ranks);
 		for ($i = 0; $i < $ranksCount; $i++) {
-			$this->Rank->delete($ranks[$i]['Rank']['id']);
+			$this->TimeModeAttempt->delete($ranks[$i]['TimeModeAttempt']['id']);
 		}
 
 		Auth::getUser()['activeRank'] = 0;
