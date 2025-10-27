@@ -19,7 +19,7 @@ class TimeModeComponent extends Component {
 			return 16;
 		}
 		if ($timeMode == self::$TIME_MODE_BLITZ) {
-			return 16;
+			return 17;
 		}
 		die("Unknown time mode ");
 	}
