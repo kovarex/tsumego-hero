@@ -21,6 +21,9 @@ class ContextPreparator {
 
 	private function prepareUser(?array $user): void {
 		$this->user = $user ?: ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['User']['id']]);
+		$existing = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $this->user['User']['id']]]);
+		assert(!$existing);
 	}
 
 	private function prepareTsumego(?array $tsumego): void {
