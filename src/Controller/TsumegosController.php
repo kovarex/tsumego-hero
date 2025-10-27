@@ -116,7 +116,7 @@ class TsumegosController extends AppController {
 			die("Problem without any set connection");
 		} // some redirect/nicer message ?
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		$set = $this->Set->findById($setConnection['SetConnection']['id']);
+		$set = $this->Set->findById($setConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = $this->TsumegoVariant->find('first', ['conditions' => ['tsumego_id' => $id]]);
 
