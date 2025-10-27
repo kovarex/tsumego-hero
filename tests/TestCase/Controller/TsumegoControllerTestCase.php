@@ -5,4 +5,10 @@ class TsumegoControllerTestCase extends ControllerTestCase {
 		parent::setUp();
 		CakeSession::destroy();
 	}
+
+	public function login($username) {
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$this->assertNotNull($user);
+		CakeSession::write('loggedInUserID', $user['User']['id']);
+	}
 }

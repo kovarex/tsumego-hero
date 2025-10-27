@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Constants', 'Utility');
+
 class Auth {
 	public static function init($user = null): void {
 		if ($user) {
@@ -61,7 +63,15 @@ class Auth {
 	}
 
 	public static function getMode(): int {
-		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : 1;
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
+	}
+
+	public static function isInLevelMode(): bool {
+		return Auth::getMode() == Constants::$LEVEL_MODE;
+	}
+
+	public static function isInTimeMode(): bool {
+		return Auth::getMode() == Constants::$TIME_MODE;
 	}
 
 	private static $user = null;

@@ -1185,7 +1185,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$utsCount = count($uts);
 			for ($j=0; $j<$utsCount; $j++) {
 		  if ($uts[$j]['OldTsumegoStatus']['status']=='S' || $uts[$j]['OldTsumegoStatus']['status']=='W' || $uts[$j]['OldTsumegoStatus']['status']=='C') {
-			  array_push($solvedUts2, $uts[$j]);
+		array_push($solvedUts2, $uts[$j]);
 		  }
 			}*/
 			$ux['User']['solved'] = count($solvedUts);
@@ -4616,10 +4616,10 @@ Joschka Zimdars';
 
 			// Exchange the short-lived token for a long-lived one (optional)
 			$url = 'https://graph.facebook.com/oauth/access_token?'
-			  . 'grant_type=fb_exchange_token&'
-			  . "client_id={$app_id}&"
-			  . "client_secret={$app_secret}&"
-			  . "fb_exchange_token={$accessToken}";
+		. 'grant_type=fb_exchange_token&'
+		. "client_id={$app_id}&"
+		. "client_secret={$app_secret}&"
+		. "fb_exchange_token={$accessToken}";
 
 			$response = file_get_contents($url);
 			$responseData = json_decode($response, true);
