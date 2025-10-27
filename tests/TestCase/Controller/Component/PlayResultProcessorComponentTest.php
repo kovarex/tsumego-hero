@@ -6,11 +6,8 @@ require_once(__DIR__ . '/../../../ContextPreparator.php');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	private function performVisit(ContextPreparator &$context): void {
-		$context->prepare();
-
 		CakeSession::write('loggedInUserID', $context->user['User']['id']);
 		$_COOKIE['previousTsumegoID'] = $context->tsumego['Tsumego']['id'];
-
 		$this->testAction('sets/view/');
 		$context->checkNewTsumegoStatusCoreValues($this);
 	}
@@ -47,49 +44,49 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitFromSolved(): void {
-		$context = (new ContextPreparator())->setStatus('S');
+		$context = (new ContextPreparator(['status' => 'S']));
 		$this->performVisit($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testHalfXpStatusToDoubleSolved(): void {
-		$context = (new ContextPreparator())->setStatus('W');
+		$context = (new ContextPreparator(['status' => 'W']));
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C');
 	}
 
 	public function testSolveFromFailed(): void {
-		$context = (new ContextPreparator())->setStatus('F');
+		$context = (new ContextPreparator(['status' => 'F']));
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
 	}
 
 	public function testFailFromVisited(): void {
-		$context = (new ContextPreparator())->setStatus('V');
+		$context = (new ContextPreparator(['status' => 'V']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
 	}
 
 	public function testFailFromFailed(): void {
-		$context = (new ContextPreparator())->setStatus('F');
+		$context = (new ContextPreparator(['status' => 'F']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'X');
 	}
 
 	public function testFailFromSolved(): void {
-		$context = (new ContextPreparator())->setStatus('S');
+		$context = (new ContextPreparator(['status' => 'S']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S'); // shouldn't be affected
 	}
 
 	public function testFailFromDoubleSolved(): void {
-		$context = (new ContextPreparator())->setStatus('C');
+		$context = (new ContextPreparator(['status' => 'C']));
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C'); // shouldn't be affected
 	}
 
 	public function testSolvingAddsRating(): void {
-		$context = (new ContextPreparator())->setMode(Constants::$RATING_MODE);
+		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
 		$originalRating = $context->user['User']['elo_rating_mode'];
 		$this->performSolve($context);
 		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
@@ -97,7 +94,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingDropsRating(): void {
-		$context = (new ContextPreparator())->setMode(Constants::$RATING_MODE);
+		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
 		$originalRating = $context->user['User']['elo_rating_mode'];
 		$this->performMisplay($context);
 		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
@@ -115,7 +112,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolvingUpdatesExistingNotSolvedTsumegoAttempt(): void {
-		$context = (new ContextPreparator())->setAttempt(['solved' => false, 'misplays' => 66]);
+		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => false, 'misplays' => 66]]);
 
 		$this->performSolve($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
@@ -125,7 +122,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolvingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
-		$context = (new ContextPreparator())->setAttempt(['solved' => true, 'misplays' => 66]);
+		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => true, 'misplays' => 66]]);
 
 		$this->performSolve($context);
 		$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
@@ -147,7 +144,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingUpdatesExistingNotSolvedTsumegoAttempt(): void {
-		$context = (new ContextPreparator())->setAttempt(['solved' => false, 'misplays' => 66]);
+		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => false, 'misplays' => 66]]);
 
 		$this->performMisplay($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
@@ -157,7 +154,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
-		$context = new ContextPreparator()->setAttempt(['solved' => true, 'misplays' => 66]);
+		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => true, 'misplays' => 66]]);
 
 		$this->performMisplay($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);

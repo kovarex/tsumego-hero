@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../../ContextPreparator.php');
 
 class TsumegosControllerTest extends TestCaseWithAuth {
 	public function testSetNameAndNumIsVisible() {
-		$context = (new ContextPreparator())->setTsumegoSets([['name' => 'tsumego set 1', 'num' => '666']])->prepare();
+		$context = new ContextPreparator(['tsumego_sets' => [['name' => 'tsumego set 1', 'num' => '666']]]);
 		$this->testAction('tsumegos/play/' . $context->tsumego['Tsumego']['id'], ['return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 
@@ -16,11 +16,11 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testViewingTsumegoInMoreSets() {
-		$context = (new ContextPreparator())->setTsumegoSets(
-			[
+		$context = new ContextPreparator(
+			['tsumego_sets' => [
 				['name' => 'tsumego set 1', 'num' => '666'],
-				['name' => 'tsumego set 2', 'num' => '777']],
-		)->prepare();
+				['name' => 'tsumego set 2', 'num' => '777']]],
+		);
 		$this->testAction('tsumegos/play/' . $context->tsumego['Tsumego']['id'], ['return' => 'view']);
 
 		// The first one was selected into the title

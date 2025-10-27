@@ -49,4 +49,10 @@ class Util {
 		$iv = substr(hash('sha256', $secret_iv), 0, 16);
 		return openssl_decrypt(base64_decode($str), $encrypt_method, $key, 0, $iv);
 	}
+
+	public static function extract(string $name, array &$inputArray) {
+		$result = $inputArray[$name];
+		unset($inputArray[$name]);
+		return $result;
+	}
 }
