@@ -11,6 +11,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->testAction('sets', ['return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
+		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 
 	public function testIndexLoggedOff(): void {
@@ -20,5 +21,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->testAction('sets', ['return' => 'view']);
 		$this->assertTextContains("tsumego set 1", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
+		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 }

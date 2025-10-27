@@ -121,6 +121,7 @@ class ContextPreparator {
 		if (!$set) {
 			$set = [];
 			$set['Set']['title'] = $name;
+			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			ClassRegistry::init('SetConnection')->create($set);
