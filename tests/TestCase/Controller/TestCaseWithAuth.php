@@ -1,5 +1,7 @@
 <?php
 
+use DOM\HTMLDocument as DOMDocument;
+
 class TestCaseWithAuth extends ControllerTestCase {
 	public function setUp(): void {
 		parent::setUp();
@@ -16,5 +18,10 @@ class TestCaseWithAuth extends ControllerTestCase {
 		$this->assertFalse(CakeSession::check('loggedInUserID'));
 		$this->login('kovarex');
 		$this->assertTrue(CakeSession::check('loggedInUserID'));
+	}
+
+	public function getStringDom() {
+		$dom = DOMDocument::createFromString($this->view, LIBXML_HTML_NOIMPLIED);
+		return $dom;
 	}
 }

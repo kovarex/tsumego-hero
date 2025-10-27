@@ -157,7 +157,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
-		$context = (new ContextPreparator())->setAttempt(['solved' => true, 'misplays' => 66]);
+		$context = new ContextPreparator()->setAttempt(['solved' => true, 'misplays' => 66]);
 
 		$this->performMisplay($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);

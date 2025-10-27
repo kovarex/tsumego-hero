@@ -542,7 +542,6 @@
 	<div align="center">
 	<?php
 
-	if(Auth::isLoggedIn()){
 		if($firstRanks==0){
 			$makeProposal = '';
 			$proposalSentColor = '';
@@ -588,12 +587,15 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-      if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
+		}
+		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
         echo '<div class="duplicateTable">Is duplicate group:<br>';
         echo implode(', ', array_map(function($setConnection) { return '<a href="/tsumegos/play/'.$setConection['SetConnection']['tsumego_id'].'?sid='.$setConnection['SetConnection']['set_id'].'">'
           .$setConnection['SetConnection']['title'].'</a>'; }, $setConnections));
         echo '</div><br>';
       }
+	if (Auth::isLoggedIn()) {
+		if ($firstRanks==0) {
 			if($sgf['Sgf']['user_id']!=33)
 				$adHighlight = 'historyLink';
 			else

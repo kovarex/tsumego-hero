@@ -39,11 +39,12 @@ class ContextPreparator {
 		return $this;
 	}
 
-	public function prepare(): void {
+	public function prepare(): ContextPreparator {
 		$this->prepareTsumegoAttempt();
 		$this->prepareTsumegoStatus();
 		$this->prepareUserMode();
 		$this->prepareTsumegoSets();
+		return $this;
 	}
 
 	public function prepareTsumegoAttempt(): void {
@@ -97,24 +98,28 @@ class ContextPreparator {
 
 	public function prepareTsumegoSets(): void {
 		if ($this->tsumegoSets) {
-			ClassRegistry::init('SetConnection')->delete(['tsumego_id' => $this->tsumego['Tsumego']['id']]);
+			ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $this->tsumego['Tsumego']['id']]);
 			foreach ($this->tsumegoSets as $tsumegoSet) {
-				$set = $this->getTsumegoSet($tsumegoSet['name']);
+				$set = $this->getOrCreateTsumegoSet($tsumegoSet['name']);
 				$setConnection = [];
-				$setConnection['tsumego_id'] = $this->tsumego['Tsumego']['id'];
-				$setConnection['set_id'] = $set['Set']['id'];
-				$setConnection['num'] = $tsumegoSet['num'];
+				$setConnection['SetConnection']['tsumego_id'] = $this->tsumego['Tsumego']['id'];
+				$setConnection['SetConnection']['set_id'] = $set['Set']['id'];
+				$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
+				ClassRegistry::init('SetConnection')->create($setConnection);
 				ClassRegistry::init('SetConnection')->save($setConnection);
 			}
 		}
 	}
 
-	public function getOrCreateSet($name) {
+	public function getOrCreateTsumegoSet($name) {
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		if (!$set) {
 			$set = [];
-			$set['title'] = $name;
+			$set['Set']['title'] = $name;
 			ClassRegistry::init('Set')->save($set);
+			// reloading so the generated id is retrived
+			ClassRegistry::init('SetConnection')->create($set);
+			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		}
 		return $set;
 	}
