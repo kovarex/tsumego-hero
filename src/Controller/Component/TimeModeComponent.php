@@ -1,5 +1,6 @@
 <?php
 
+App::uses('TimeModeUtil', 'Utility');
 class TimeModeComponent extends Component {
 	public function startTimeMode(int $timeMode): void {
 		if (!Auth::isLoggedIn()) {
@@ -12,19 +13,15 @@ class TimeModeComponent extends Component {
 	}
 
 	private static function sessionCodeLength(int $timeMode): int {
-		if ($timeMode == self::$TIME_MODE_SLOW) {
+		if ($timeMode == TimeModeUtil::$SLOW_SPEED) {
 			return 15;
 		}
-		if ($timeMode == self::$TIME_MODE_FAST) {
+		if ($timeMode == TimeModeUtil::$FAST_SPEED) {
 			return 16;
 		}
-		if ($timeMode == self::$TIME_MODE_BLITZ) {
+		if ($timeMode == TimeModeUtil::$BLITZ) {
 			return 17;
 		}
 		die("Unknown time mode ");
 	}
-
-	public static $TIME_MODE_SLOW = 1;
-	public static $TIME_MODE_FAST = 2;
-	public static $TIME_MODE_BLITZ = 3;
-};
+}
