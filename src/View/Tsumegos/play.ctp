@@ -591,7 +591,7 @@
       if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
         echo '<div class="duplicateTable">Is duplicate group:<br>';
         echo implode(', ', array_map(function($setConnection) { return '<a href="/tsumegos/play/'.$setConection['SetConnection']['tsumego_id'].'?sid='.$setConnection['SetConnection']['set_id'].'">'
-          .$setConnection['SetConnection']['title'].'</a>'; }));
+          .$setConnection['SetConnection']['title'].'</a>'; }, $setConnections));
         echo '</div><br>';
       }
 			if($sgf['Sgf']['user_id']!=33)
