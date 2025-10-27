@@ -2456,7 +2456,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$userData['User']['email'] = $this->data['User']['email'];
 
 		$this->User->create();
-		if (!$this->User->save($userData, true)) {
+		try {
+			if (!$this->User->save($userData, true)) {
+				$this->Flash->set('Unable to create user with this name');
+				return;
+			}
+		} catch (Exception $e) {
 			$this->Flash->set('Unable to create user with this name');
 			return;
 		}

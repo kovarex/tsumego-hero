@@ -1,3 +1,7 @@
 <?php
 
-class Set extends AppModel {}
+class Set extends AppModel {
+	public function __construct() {
+		parent::__construct(false, 'set');
+	}
+}

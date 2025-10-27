@@ -1,6 +1,7 @@
 <?php
 
 class TsumegoStatus extends AppModel {
-	public $name = 'TsumegoStatus';
-
+	public function __construct() {
+		parent::__construct(false, 'tsumego_status');
+	}
 }
