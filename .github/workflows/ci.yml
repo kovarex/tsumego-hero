@@ -19,7 +19,7 @@ jobs:
 
     services:
       mysql:
-        image: MariaDB:11.7
+        image: mariadb:11.7
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test
