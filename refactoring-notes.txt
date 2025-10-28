@@ -1,0 +1,19 @@
+Stuff to do soon
+
+1) The goal is to use SetConnection id links as much as possible
+  a) There is a lot of code now to check whether the extra sid parameter is needed when more sets are connected to one tsumego.
+  b) Nicer links of tsumego.com/<number>
+  c) Less bugs, as it is more straightforward, we need to know the setconnection id  anyway
+
+  Currently, it is done just for next/back button as an experiment, and some of the js code changes probably broke/confused some of the other buttons which were not converted so far.
+
+2) Time mode
+  a) Fully teset cover/refactor and fix the Time Mode.
+  b) Consider getting rid of the weird activeRank (which is something like time mode session uid), and just create new overview for the current time mode run.
+
+3) Check and cleanup rest of the codepaths that create tsumego attempts, they are either redundant, or just add some slight change which can be reflected in PlayResultProcessorComponent
+
+4) Consider checking out this:  https://www.selenium.dev/, apparently it can be used to test the frontent javascript. Since there is a lot of happening in javascript, it can get (and would) get broken
+     under the radar all the time.
+     Having set of tests which would test the javascript errors and result (like the buttons generated being proper, the go board being loaded etc).
+
