@@ -19,8 +19,7 @@ class TsumegosController extends AppController {
 		die("Problem doesn't exist in the specified set");
 	}
 
-	static private function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): int|null
-	{
+	private static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int {
 		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]])) {
 			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
 				return $setConnection['SetConnection']['set_id'] == $currentSetID;
@@ -31,13 +30,27 @@ class TsumegosController extends AppController {
 		return null;
 	}
 
-	static private function tsumegoOrSetLink(int|null $setConnectionID, int|null $tsumegoID, int $setID): string
-	{
-		if ($setConnectionID)
-			return '/'.$setConnectionID;
-		if ($tsumegoID)
-			return '/tsumegos/play/'.$tsumegoID; // temporary, until we retrieve setConnectionID for everything
-		return '/sets/view/'.$setID; // edge of the set (last or first), so we return to the set
+	private static function tsumegoOrSetLink(?int $setConnectionID, ?int $tsumegoID, int $setID): string {
+		if ($setConnectionID) {
+			return '/' . $setConnectionID;
+		}
+		if ($tsumegoID) {
+			return '/tsumegos/play/' . $tsumegoID;
+		} // temporary, until we retrieve setConnectionID for everything
+		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
+	}
+
+	private static function checkModeChange(): void {
+		if (!Auth::isLoggedIn()) {
+			return;
+		}
+		if ($modeChange = Util::clearCookie('mode')) {
+			if ($modeChange != Constants::$TIME_MODE) {
+				TimeModeComponent::cancelTimeMode();
+			}
+			Auth::getUser()['mode'] = $modeChange;
+			Auth::saveUser();
+		}
 	}
 
 	public function play($id = null, $setConnectionID = null) {
@@ -111,9 +124,7 @@ class TsumegosController extends AppController {
 		$requestProblem = '';
 		$achievementUpdate = [];
 		$pdCounter = 0;
-		$duplicates = [];
 		$tRank = '15k';
-		$requestSolution = false;
 		$currentRank2 = null;
 		$nothingInRange = false;
 		$utsMap = [];
@@ -168,52 +179,20 @@ class TsumegosController extends AppController {
 				$this->processSearchParameters(Auth::getUserID());
 			}
 		}
-		if (Auth::isLoggedIn()) {
-			Auth::getUser()['mode'] = 1;
-			if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0') {
-				if (strlen(Auth::getUser()['activeRank']) >= 15) {
-					if ($_COOKIE['mode'] != 3) { //switch 3=>2, 3=>1
-						$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-						if (!$ranks) {
-							$ranks = [];
-						}
-						if (count($ranks) != 10) {
-							foreach ($ranks as $item) {
-								$this->TimeModeAttempt->delete($item['TimeModeAttempt']['id']);
-							}
-						}
-						Auth::getUser()['activeRank'] = 0;
-						Auth::saveUser();
-					}
-				} elseif ($_COOKIE['mode'] == 3) {
-					$_COOKIE['mode'] = 1;
-				}
-				$mode = $_COOKIE['mode'];
-			}
-			unset($_COOKIE['mode']);
-		} else {
-			$nextMode = $this->Tsumego->findById(15352);
-			$mode = 1;
-		}
+
+		self::checkModeChange();
 		if (Auth::isLoggedIn()) {
 			if (strlen(Auth::getUser()['activeRank']) >= 15) {
+				$stopParameter = 10;
 				if (strlen(Auth::getUser()['activeRank']) == 15) {
-					$stopParameter = 10;
 					$stopParameter2 = 0;
 				} elseif (strlen(Auth::getUser()['activeRank']) == 16) {
-					$stopParameter = 10;
 					$stopParameter2 = 1;
 				} elseif (strlen(Auth::getUser()['activeRank']) == 17) {
-					$stopParameter = 10;
 					$stopParameter2 = 2;
 				}
-				$mode = 3;
-				Auth::getUser()['mode'] = 3;
-				$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-				if (!$ranks) {
-					$ranks = [];
-				}
-				if (count($ranks) == 0) {
+				$timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
+				if (count($timeModeAttempts) == 0) {
 					$r = $this->params['url']['TimeModeAttempt'];
 					if ($r == '5d') {
 						$r1 = 2500;
@@ -280,10 +259,7 @@ class TsumegosController extends AppController {
 						$r2 = 700;
 					}
 
-					$rs = $this->TimeModeSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-					if (!$rs) {
-						$rs = [];
-					}
+					$rs = $this->TimeModeSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 					$rankTs = [];
 					$rsCount = count($rs);
 					for ($i = 0; $i < $rsCount; $i++) {
@@ -315,22 +291,22 @@ class TsumegosController extends AppController {
 					$currentRankNum = 1;
 					$firstRanks = 1;
 				} else {
-					$ranksCount = count($ranks);
+					$ranksCount = count($timeModeAttempts);
 					for ($i = 0; $i < $ranksCount; $i++) {
-						$ranks[$i]['TimeModeAttempt']['currentNum']++;
+						$timeModeAttempts[$i]['TimeModeAttempt']['currentNum']++;
 						$this->TimeModeAttempt->save($ranks[$i]);
 					}
-					$currentNum = $ranks[0]['TimeModeAttempt']['currentNum'];
+					$currentNum = $timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 					$tsid = null;
 					$tsid2 = null;
-					$ranksCount = count($ranks);
+					$ranksCount = count($timeModeAttempts);
 					for ($i = 0; $i < $ranksCount; $i++) {
-						if ($ranks[$i]['TimeModeAttempt']['num'] == $currentNum) {
-							$tsid = $ranks[$i]['TimeModeAttempt']['tsumego_id'];
+						if ($timeModeAttempts[$i]['TimeModeAttempt']['num'] == $currentNum) {
+							$tsid = $timeModeAttempts[$i]['TimeModeAttempt']['tsumego_id'];
 							if ($currentNum < 10) {
-								$tsid2 = $ranks[$i + 1]['TimeModeAttempt']['tsumego_id'];
+								$tsid2 = $timeModeAttempts[$i + 1]['TimeModeAttempt']['tsumego_id'];
 							} else {
-								$tsid2 = $ranks[$i]['TimeModeAttempt']['tsumego_id'];
+								$tsid2 = $timeModeAttempts[$i]['TimeModeAttempt']['tsumego_id'];
 							}
 						}
 					}
@@ -1016,10 +992,7 @@ class TsumegosController extends AppController {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
-					$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-					if (!$ranks) {
-						$ranks = [];
-					}
+					$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 					$currentNum = $ranks[0]['TimeModeAttempt']['currentNum'];
 					$ranksCount = count($ranks);
 
@@ -1636,12 +1609,8 @@ class TsumegosController extends AppController {
 			$sgf = $sgfdb;
 		}
 		if ($t['Tsumego']['set_id'] == 208 || $t['Tsumego']['set_id'] == 210) {
-			$aw = strpos($sgf['Sgf']['sgf'], 'AW');
-			$ab = strpos($sgf['Sgf']['sgf'], 'AB');
 			$tr = strpos($sgf['Sgf']['sgf'], 'TR');
 			$sq = strpos($sgf['Sgf']['sgf'], 'SQ');
-			$seq1 = strpos($sgf['Sgf']['sgf'], ';B');
-			$seq2 = strpos($sgf['Sgf']['sgf'], ';W');
 			$sequencesSign = strpos($sgf['Sgf']['sgf'], ';B');
 			$p4 = substr($sgf['Sgf']['sgf'], $tr, $sq - $tr);
 			$trX = str_split(substr($p4, 2), 4);
@@ -2023,7 +1992,6 @@ class TsumegosController extends AppController {
 				}
 			}
 		}
-		$anzahl = count($ts);
 
 		if ($query == 'topics') {
 			$this->Session->write('title', $set['Set']['title'] . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2 . ' on Tsumego Hero');
@@ -2488,9 +2456,6 @@ class TsumegosController extends AppController {
 			$tsLast = null;
 		}
 		if (Auth::isLoggedIn()) {
-			if (!isset($ut['TsumegoStatus']['status'])) {
-				$t['Tsumego']['status'] = 'V';
-			}
 			$t['Tsumego']['status'] = 'set' . $ut['TsumegoStatus']['status'] . '2';
 			$half = '';
 			if ($ut['TsumegoStatus']['status'] == 'W' || $ut['TsumegoStatus']['status'] == 'X') {
@@ -2740,9 +2705,9 @@ class TsumegosController extends AppController {
 			if (!isset($nextSetConnectionID) && isset($nextTsumegoID)) {
 				$nextSetConnectionID = self::getMatchingSetConnectionOfOtherTsumego($nextTsumegoID, $set['Set']['id']);
 			}
-		}
-		else
+		} else {
 			$nextTsumegoID = $currentRank2['Tsumego']['id'] ?? 0;
+		}
 		$this->startPageUpdate();
 		$startingPlayer = $this->getStartingPlayer($sgf2);
 

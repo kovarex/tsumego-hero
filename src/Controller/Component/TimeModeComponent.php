@@ -24,4 +24,20 @@ class TimeModeComponent extends Component {
 		}
 		die("Unknown time mode ");
 	}
+
+	public static function cancelTimeMode(): void {
+		if (strlen(Auth::getUser()['activeRank']) < 15) {
+			return;
+		}
+		$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
+		if (count($timeModeAttempts) == TimeModeUtil::$PROBLEM_COUNT) {
+			return;
+		}
+		foreach ($timeModeAttempts as $timeModeAttempt) {
+			ClassRegistry::init('TimeModeAttempt')->delete($timeModeAttempt['TimeModeAttempt']['id']);
+		}
+
+		Auth::getUser()['activeRank'] = 0;
+		Auth::saveUser();
+	}
 }

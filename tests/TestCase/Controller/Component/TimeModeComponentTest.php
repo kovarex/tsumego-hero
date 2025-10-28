@@ -4,14 +4,13 @@ require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 
-class TimeModeComponentTestWithAuth extends TestCaseWithAuth {
+class TimeModeComponentTest extends TestCaseWithAuth {
 	public function testStartTimeMode() {
 		$this->login('kovarex');
 		Auth::init();
 		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
 		Auth::getUser()['activeRank'] = '';
 		Auth::saveUser();
-
 
 		$tsumego = ClassRegistry::init('Tsumego')->find('first');
 
