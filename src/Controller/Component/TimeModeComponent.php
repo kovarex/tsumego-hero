@@ -42,8 +42,7 @@ class TimeModeComponent extends Component {
 	}
 
 	// @return if not null, new tsumego id to show (don't ask me why)
-	public function update($setsWithPremium, $params): int|null
-	{
+	public function update($setsWithPremium, $params): ?int {
 		if (!Auth::isLoggedIn()) {
 			return null;
 		}

@@ -174,8 +174,9 @@ class TsumegosController extends AppController {
 		}
 
 		self::checkModeChange();
-		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params))
+		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
 			$id = $newID;
+		}
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];
 		}
