@@ -148,12 +148,12 @@ class TsumegosController extends AppController {
 		}
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
-		if (!$setConnection) {
-			$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		}
 		if (!$setConnections) {
 			die("Problem without any set connection");
 		} // some redirect/nicer message ?
+		if (!isset($setConnection)) {
+			$setConnection = $this->deduceRelevantSetConnection($setConnections);
+		}
 		$set = $this->Set->findById($setConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = $this->TsumegoVariant->find('first', ['conditions' => ['tsumego_id' => $id]]);
@@ -193,77 +193,22 @@ class TsumegosController extends AppController {
 				}
 				$timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 				if (count($timeModeAttempts) == 0) {
-					$r = $this->params['url']['TimeModeAttempt'];
-					if ($r == '5d') {
-						$r1 = 2500;
+					$readableRank = $this->params['url']['TimeModeAttempt'];
+
+					$rank = Rating::getRankFromReadableRank($readableRank ?: "15k");
+					$r1 = Rating::getRankMinimalRating($rank);
+					$r2 = Rating::getRankMinimalRating($rank + 1);
+					if ($rank >= Rating::getRankFromReadableRank('5d')) {
 						$r2 = 10000;
-					} elseif ($r == '4d') {
-						$r1 = 2400;
-						$r2 = 2500;
-					} elseif ($r == '3d') {
-						$r1 = 2300;
-						$r2 = 2400;
-					} elseif ($r == '2d') {
-						$r1 = 2200;
-						$r2 = 2300;
-					} elseif ($r == '1d') {
-						$r1 = 2100;
-						$r2 = 2200;
-					} elseif ($r == '1k') {
-						$r1 = 2000;
-						$r2 = 2100;
-					} elseif ($r == '2k') {
-						$r1 = 1900;
-						$r2 = 2000;
-					} elseif ($r == '3k') {
-						$r1 = 1800;
-						$r2 = 1900;
-					} elseif ($r == '4k') {
-						$r1 = 1700;
-						$r2 = 1800;
-					} elseif ($r == '5k') {
-						$r1 = 1600;
-						$r2 = 1700;
-					} elseif ($r == '6k') {
-						$r1 = 1500;
-						$r2 = 1600;
-					} elseif ($r == '7k') {
-						$r1 = 1400;
-						$r2 = 1500;
-					} elseif ($r == '8k') {
-						$r1 = 1300;
-						$r2 = 1400;
-					} elseif ($r == '9k') {
-						$r1 = 1200;
-						$r2 = 1300;
-					} elseif ($r == '10k') {
-						$r1 = 1100;
-						$r2 = 1200;
-					} elseif ($r == '11k') {
-						$r1 = 1000;
-						$r2 = 1100;
-					} elseif ($r == '12k') {
-						$r1 = 900;
-						$r2 = 1000;
-					} elseif ($r == '13k') {
-						$r1 = 800;
-						$r2 = 900;
-					} elseif ($r == '14k') {
-						$r1 = 700;
-						$r2 = 800;
-					} elseif ($r == '15k') {
+					}
+					if ($rank <= Rating::getRankFromReadableRank('15k')) {
 						$r1 = 0;
-						$r2 = 700;
-					} else {
-						$r1 = 0;
-						$r2 = 700;
 					}
 
-					$rs = $this->TimeModeSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+					$timeModeSettings = $this->TimeModeSetting->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 					$rankTs = [];
-					$rsCount = count($rs);
-					for ($i = 0; $i < $rsCount; $i++) {
-						$timeSc = $this->findTsumegoSet($rs[$i]['TimeModeSetting']['set_id']);
+					foreach ($timeModeSettings as $timeModeSetting) {
+						$timeSc = $this->findTsumegoSet($timeModeSetting['TimeModeSetting']['set_id']);
 						$timeScCount = count($timeSc);
 						for ($g = 0; $g < $timeScCount; $g++) {
 							if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
@@ -282,7 +227,7 @@ class TsumegosController extends AppController {
 						if ($rm['TimeModeAttempt']['tsumego_id'] == null) {
 							$rm['TimeModeAttempt']['tsumego_id'] = 5127;
 						}
-						$rm['TimeModeAttempt']['TimeModeAttempt'] = $r;
+						$rm['TimeModeAttempt']['TimeModeAttempt'] = $readableRank;
 						$rm['TimeModeAttempt']['num'] = $i + 1;
 						$rm['TimeModeAttempt']['currentNum'] = 1;
 						$this->TimeModeAttempt->create();
@@ -294,7 +239,7 @@ class TsumegosController extends AppController {
 					$ranksCount = count($timeModeAttempts);
 					for ($i = 0; $i < $ranksCount; $i++) {
 						$timeModeAttempts[$i]['TimeModeAttempt']['currentNum']++;
-						$this->TimeModeAttempt->save($ranks[$i]);
+						$this->TimeModeAttempt->save($timeModeAttempts[$i]);
 					}
 					$currentNum = $timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 					$tsid = null;
@@ -324,9 +269,6 @@ class TsumegosController extends AppController {
 			$refresh = $this->params['url']['refresh'];
 		}
 
-		if (!is_numeric($id)) {
-			$id = 15352;
-		}
 		if ($rankTs) {
 			$id = $rankTs[0]['Tsumego']['id'];
 			$mode = 3;
@@ -2824,8 +2766,8 @@ class TsumegosController extends AppController {
 
 		$isTSUMEGOinFAVORITE = $this->Favorite->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
-		$previousLink = self::tsumegoOrSetLink($previousSetConnectionID, $previousTsumegoID, $set['Set']['id']);
-		$nextLink = self::tsumegoOrSetLink($nextSetConnectionID, $nextTsumegoID, $set['Set']['id']);
+		$previousLink = self::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, isset($previousTsumegoID) ? $previousTsumegoID : null, $set['Set']['id']);
+		$nextLink = self::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, isset($nextTsumegoID) ? $nextTsumegoID : null, $set['Set']['id']);
 
 		$this->set('isAllowedToContribute', $isAllowedToContribute);
 		$this->set('isAllowedToContribute2', $isAllowedToContribute2);

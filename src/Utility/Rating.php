@@ -9,6 +9,21 @@ class Rating {
 		return (string) ($rank - 30) . 'd';
 	}
 
+	public static function getRankFromReadableRank(string $readableRank): int {
+		$suffix = substr($readableRank, -1);
+		$number = substr($readableRank, 0, -1);
+		if (!is_numeric($number)) {
+			throw new Exception($readableRank . " can't be parsed as go rank.");
+		}
+		if ($suffix == 'k') {
+			return 31 - $number;
+		} elseif ($suffix == 'd') {
+			return 30 + $number;
+		} else {
+			throw new Exception($readableRank . " can't be parsed as go rank.");
+		}
+	}
+
 	public static function getRankFromRating(float $rating): int {
 		// Internal number for rank representation better than the textual "18k" etc, so it is just going to be integer like this
 		// 30k   = rating [-950, -850) = rank  1
@@ -31,6 +46,17 @@ class Rating {
 
 	public static function getReadableRankFromRating(float $rating): string {
 		return static::getReadableRank(static::getRankFromRating($rating));
+	}
+
+	public static function getRankMinimalRating(int $rank): float {
+		if ($rank <= 38) {
+			return 100 * $rank - 1050.0;
+		}
+		return ($rank - 38) * 30 + 2750.0;
+	}
+
+	public static function getRankMinimalRatingFromReadableRating(string $readableRank): float {
+		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 
 }
