@@ -19,6 +19,27 @@ class TsumegosController extends AppController {
 		die("Problem doesn't exist in the specified set");
 	}
 
+	static private function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): int|null
+	{
+		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]])) {
+			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
+				return $setConnection['SetConnection']['set_id'] == $currentSetID;
+			})) {
+				return $result['SetConnection']['id'];
+			}
+		}
+		return null;
+	}
+
+	static private function tsumegoOrSetLink(int|null $setConnectionID, int|null $tsumegoID, int $setID): string
+	{
+		if ($setConnectionID)
+			return '/'.$setConnectionID;
+		if ($tsumegoID)
+			return '/tsumegos/play/'.$tsumegoID; // temporary, until we retrieve setConnectionID for everything
+		return '/sets/view/'.$setID; // edge of the set (last or first), so we return to the set
+	}
+
 	public function play($id = null, $setConnectionID = null) {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
@@ -1860,10 +1881,7 @@ class TsumegosController extends AppController {
 					'public' => 1,
 					$rankConditions,
 				],
-			]);
-			if (!$ts) {
-				$ts = [];
-			}
+			]) ?: [];
 			$tsCount = count($ts);
 
 			for ($i = 0; $i < $tsCount; $i++) {
@@ -2012,8 +2030,6 @@ class TsumegosController extends AppController {
 		} else {
 			$this->Session->write('title', $this->Session->read('lastSet') . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2 . ' on Tsumego Hero');
 		}
-		$prev = 0;
-		$next = 0;
 		$tsBack = [];
 		$tsNext = [];
 		if (!$inFavorite) {
@@ -2028,7 +2044,7 @@ class TsumegosController extends AppController {
 								$tsBackA = $ts[$i - $a];
 								array_push($tsBack, $tsBackA);
 								if ($a == 1) {
-									$prev = $ts[$i - $a]['Tsumego']['id'];
+									$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2048,7 +2064,7 @@ class TsumegosController extends AppController {
 								$tsNextA = $ts[$i + $b];
 								array_push($tsNext, $tsNextA);
 								if ($b == 1) {
-									$next = $ts[$i + $b]['Tsumego']['id'];
+									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2067,7 +2083,7 @@ class TsumegosController extends AppController {
 									$tsBackA = $ts[$i - $a];
 									array_push($tsBack, $tsBackA);
 									if ($a == 1) {
-										$prev = $ts[$i - $a]['Tsumego']['id'];
+										$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 									}
 									$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 									if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2087,7 +2103,7 @@ class TsumegosController extends AppController {
 									$tsNextA = $ts[$i + $b];
 									array_push($tsNext, $tsNextA);
 									if ($b == 1) {
-										$next = $ts[$i + $b]['Tsumego']['id'];
+										$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 									}
 									$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 									if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2122,7 +2138,7 @@ class TsumegosController extends AppController {
 								$tsBackA['Tsumego']['num'] = $ts[$i - $a]['SetConnection']['num'];
 								array_push($tsBack, $tsBackA);
 								if ($a == 1) {
-									$prev = $ts[$i - $a]['SetConnection']['tsumego_id'];
+									$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
 								}
 								$newUT = $this->findUt($ts[$i - $a]['SetConnection']['tsumego_id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2152,7 +2168,7 @@ class TsumegosController extends AppController {
 								$tsNextA['Tsumego']['num'] = $ts[$i + $b]['SetConnection']['num'];
 								array_push($tsNext, $tsNextA);
 								if ($b == 1) {
-									$next = $ts[$i + $b]['SetConnection']['tsumego_id'];
+									$nextSetConnectionID = $ts[$i + $b]['SetConnection']['id'];
 								}
 								$newUT = $this->findUt($ts[$i + $b]['SetConnection']['tsumego_id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2181,7 +2197,7 @@ class TsumegosController extends AppController {
 									$tsBackA['Tsumego']['num'] = $ts[$i - $a]['SetConnection']['num'];
 									array_push($tsBack, $tsBackA);
 									if ($a == 1) {
-										$prev = $ts[$i - $a]['SetConnection']['tsumego_id'];
+										$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
 									}
 									$newUT = $this->findUt($ts[$i - $a]['SetConnection']['tsumego_id'], $utsMap);
 									if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2211,7 +2227,7 @@ class TsumegosController extends AppController {
 									$tsNextA['Tsumego']['num'] = $ts[$i + $b]['SetConnection']['num'];
 									array_push($tsNext, $tsNextA);
 									if ($b == 1) {
-										$next = $ts[$i + $b]['SetConnection']['tsumego_id'];
+										$nextTsumegoID = $ts[$i + $b]['SetConnection']['tsumego_id'];
 									}
 									$newUT = $this->findUt($ts[$i + $b]['SetConnection']['tsumego_id'], $utsMap);
 									if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2248,7 +2264,7 @@ class TsumegosController extends AppController {
 						if ($i - $a >= 0) {
 							array_push($tsBack, $ts[$i - $a]);
 							if ($a == 1) {
-								$prev = $ts[$i - $a]['Tsumego']['id'];
+								$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 							}
 							$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 							if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2267,7 +2283,7 @@ class TsumegosController extends AppController {
 						if ($i + $b < count($ts)) {
 							array_push($tsNext, $ts[$i + $b]);
 							if ($b == 1) {
-								$next = $ts[$i + $b]['Tsumego']['id'];
+								$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 							}
 							$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 							if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2285,7 +2301,7 @@ class TsumegosController extends AppController {
 							if ($i - $a >= 0) {
 								array_push($tsBack, $ts[$i - $a]);
 								if ($a == 1) {
-									$prev = $ts[$i - $a]['Tsumego']['id'];
+									$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2304,7 +2320,7 @@ class TsumegosController extends AppController {
 							if ($i + $b < count($ts)) {
 								array_push($tsNext, $ts[$i + $b]);
 								if ($b == 1) {
-									$next = $ts[$i + $b]['Tsumego']['id'];
+									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 								}
 								$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $utsMap);
 								if (!isset($newUT['TsumegoStatus']['status'])) {
@@ -2717,34 +2733,16 @@ class TsumegosController extends AppController {
 		$ui = 2;
 		$file = 'placeholder2.sgf';
 
-		if ($mode == 1) {
-			$scPrev = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $prev]]);
-			if (!$scPrev) {
-				$scPrev = [];
+		if (!Auth::isInTimeMode()) {
+			if (!isset($previousSetConnectionID) && isset($previousTsumegoID)) {
+				$previousSetConnectionID = self::getMatchingSetConnectionOfOtherTsumego($previousTsumegoID, $set['Set']['id']);
 			}
-			$scPrevCount = count($scPrev);
-
-			for ($i = 0; $i < $scPrevCount; $i++) {
-				if (count($scPrev) > 1 && $scPrev[$i]['SetConnection']['set_id'] == $t['Tsumego']['set_id']) {
-					$prev .= '?sid=' . $t['Tsumego']['set_id'];
-				}
+			if (!isset($nextSetConnectionID) && isset($nextTsumegoID)) {
+				$nextSetConnectionID = self::getMatchingSetConnectionOfOtherTsumego($nextTsumegoID, $set['Set']['id']);
 			}
-			$scNext = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $next]]);
-			if (!$scNext) {
-				$scNext = [];
-			}
-			$scNextCount = count($scNext);
-
-			for ($i = 0; $i < $scNextCount; $i++) {
-				if (count($scNext) > 1 && $scNext[$i]['SetConnection']['set_id'] == $t['Tsumego']['set_id']) {
-					$next .= '?sid=' . $t['Tsumego']['set_id'];
-				}
-			}
-		} elseif ($mode == 2) {
-			$next = $nextMode['Tsumego']['id'] ?? 0;
-		} elseif ($mode == 3) {
-			$next = $currentRank2['Tsumego']['id'] ?? 0;
 		}
+		else
+			$nextTsumegoID = $currentRank2['Tsumego']['id'] ?? 0;
 		$this->startPageUpdate();
 		$startingPlayer = $this->getStartingPlayer($sgf2);
 
@@ -2861,6 +2859,9 @@ class TsumegosController extends AppController {
 
 		$isTSUMEGOinFAVORITE = $this->Favorite->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
+		$previousLink = self::tsumegoOrSetLink($previousSetConnectionID, $previousTsumegoID, $set['Set']['id']);
+		$nextLink = self::tsumegoOrSetLink($nextSetConnectionID, $nextTsumegoID, $set['Set']['id']);
+
 		$this->set('isAllowedToContribute', $isAllowedToContribute);
 		$this->set('isAllowedToContribute2', $isAllowedToContribute2);
 		$this->set('hasSgfProposal', $sgfProposal != null);
@@ -2916,8 +2917,8 @@ class TsumegosController extends AppController {
 		$this->set('score1', $score1);
 		$this->set('score2', $score2);
 		$this->set('navi', $navi);
-		$this->set('prev', $prev);
-		$this->set('next', $next);
+		$this->set('previousLink', $previousLink);
+		$this->set('nextLink', $nextLink);
 		$this->set('hash', $hash);
 		$this->set('nextMode', $nextMode);
 		$this->set('mode', $mode);

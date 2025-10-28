@@ -1228,8 +1228,8 @@
 	var reviewModeActive = false;
 	var ui = <?php echo $ui; ?>;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
-	var prevButtonLink = "<?php echo $prev; ?>";
-	var nextButtonLink = "<?php echo $next; ?>";
+	var previousButtonLink = "<?php echo $previousLink; ?>";
+	var nextButtonLink = "<?php echo $nextLink; ?>";
 	var lastInFav = "<?php echo $lastInFav; ?>";
 	var nextButtonLinkSet = <?php echo $set['Set']['id']; ?>;
 	var nextButtonLinkLv = <?php echo $lv; ?>;
@@ -1289,7 +1289,7 @@
 		echo 'nextButtonLinkSet="'.$nextButtonLinkSet.'";';
 		?>
 		if(inFavorite!==''){
-			prevButtonLink += inFavorite;
+			previousButtonLink += inFavorite;
 			nextButtonLink += inFavorite;
 		}
 		<?php
@@ -1299,7 +1299,7 @@
 				nextButtonLinkSet = 1;
 			}
 			if(lastInFav==="-1"){
-				prevButtonLink = 0;
+				previousButtonLink = 0;
 				nextButtonLinkSet = 1;
 			}';
 		}
@@ -2351,8 +2351,6 @@
 			window.location.href="/tsumegos/duplicatesearch/<?php echo $t['Tsumego']['id']; ?>";
 		});
 
-		//if(cvn) setTimeout(function () {window.location.href = "/tsumegos/play/"+nextButtonLink}, 50);
-
 		var mouseX;
 		var mouseY;
 		$(document).mousemove(function(e){
@@ -2826,28 +2824,15 @@
 		var keycode = (event.keyCode ? event.keyCode : event.which);
 		if(mode!=2){
 			if(!msg2selected && !adminCommentOpened && !besogo.editor.getReviewMode()){
-				if(keycode == '37'){
-					if(prevButtonLink!=0)
-						window.location.href = prevButtonLink;
-					else
-						window.location.href = '/sets/view/'+nextButtonLinkSet;
+				if(keycode == '37') {
+					window.location.href = previousButtonLink;
 				}else if(keycode == '39'){
-					if(nextButtonLink!=0)
-						window.location.href = '/tsumegos/play/'+nextButtonLink;
-					else
-						window.location.href = '/sets/view/'+nextButtonLinkSet;
+					window.location.href =  nextButtonLink;
 				}
 			}
 		}
 	});
-	/*
-	$(document).keydown(function(event){
-		var keycode = (event.keyCode ? event.keyCode : event.which);
-		if(keycode == '82'){
-			reset();
-		}
-	});
-	*/
+
 	function m1hover(){
 		$("#modeSwitcher1 label").css("background-color", "#5dcb89");
 	}

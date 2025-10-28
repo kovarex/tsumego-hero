@@ -440,16 +440,8 @@ besogo.makeToolPanel = function (container, editor) {
       if (mode == 1) {
         let prevButtonId;
         prevButtonId = "besogo-back-button";
-        if (prevButtonLink != 0)
-          prevButtonLink = "/tsumegos/play/" + prevButtonLink;
-        else prevButtonLink = "/sets/view/" + nextButtonLinkSet;
 
-        makeHyperlinkText(
-          "Back",
-          "previous problem",
-          prevButtonLink,
-          prevButtonId
-        );
+        makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
         makeButtonText(
           "Reset",
@@ -499,19 +491,8 @@ besogo.makeToolPanel = function (container, editor) {
         );
 
         let nextButtonId;
-        let nextButtonLink2 = 0;
         nextButtonId = "besogo-next-button";
-        if (nextButtonLink != 0)
-          nextButtonLink2 = "/tsumegos/play/" + nextButtonLink;
-        else
-          nextButtonLink2 = "/tsumegos/play/" + nextButtonLinkLv + "?refresh=3";
-
-        makeHyperlinkText(
-          "Next",
-          "next problem",
-          nextButtonLink2,
-          nextButtonId
-        );
+        makeHyperlinkText("Next","next problem", nextButtonLink, nextButtonId);
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -524,7 +505,7 @@ besogo.makeToolPanel = function (container, editor) {
           "next problem",
           function () {
             if (besogoMode2Solved)
-              window.location.href = "/tsumegos/play/" + nextButtonLink;
+              window.location.href = nextButtonLink;
           },
           "besogo-next-button-inactive"
         );
@@ -712,16 +693,8 @@ besogo.makeToolPanel = function (container, editor) {
       toggleBoardLock(true, true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
-      if (prevButtonLink != 0)
-        prevButtonLink = "/tsumegos/play/" + prevButtonLink;
-      else prevButtonLink = "/sets/view/" + nextButtonLinkSet;
 
-      makeHyperlinkText(
-        "Back",
-        "previous problem",
-        prevButtonLink,
-        prevButtonId
-      );
+      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
         besogo.multipleChoiceCustomSetup[0],
@@ -763,23 +736,16 @@ besogo.makeToolPanel = function (container, editor) {
       let nextButtonId;
       let nextButtonLink2 = 0;
       nextButtonId = "besogo-next-button";
-      if (nextButtonLink != 0)
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLink;
-      else
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLinkLv + "?refresh=3";
+      nextButtonLink2 = nextButtonLink;
       makeHyperlinkText("Next", "next problem", nextButtonLink2, nextButtonId);
     } else if (besogo.multipleChoiceCustom === "score_estimating") {
       toggleBoardLock(true, true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
-      if (prevButtonLink != 0)
-        prevButtonLink = "/tsumegos/play/" + prevButtonLink;
-      else prevButtonLink = "/sets/view/" + nextButtonLinkSet;
-
       makeHyperlinkText(
         "Back",
         "previous problem",
-        prevButtonLink,
+        previousButtonLink,
         prevButtonId
       );
       if (nextButtonLinkSet != 262) {
@@ -822,25 +788,14 @@ besogo.makeToolPanel = function (container, editor) {
       let nextButtonId;
       let nextButtonLink2 = 0;
       nextButtonId = "besogo-next-button";
-      if (nextButtonLink != 0)
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLink;
-      else
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLinkLv + "?refresh=3";
+      nextButtonLink2 = nextButtonLink;
       makeHyperlinkText("Next", "next problem", nextButtonLink2, nextButtonId);
     } else {
       toggleBoardLock(true, true);
       let prevButtonId;
       prevButtonId = "besogo-back-button";
-      if (prevButtonLink != 0)
-        prevButtonLink = "/tsumegos/play/" + prevButtonLink;
-      else prevButtonLink = "/sets/view/" + nextButtonLinkSet;
 
-      makeHyperlinkText(
-        "Back",
-        "previous problem",
-        prevButtonLink,
-        prevButtonId
-      );
+      makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
 
       makeButtonText(
         "Black is dead",
@@ -878,14 +833,7 @@ besogo.makeToolPanel = function (container, editor) {
         "besogo-multipleChoice4"
       );
 
-      let nextButtonId;
-      let nextButtonLink2 = 0;
-      nextButtonId = "besogo-next-button";
-      if (nextButtonLink != 0)
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLink;
-      else
-        nextButtonLink2 = "/tsumegos/play/" + nextButtonLinkLv + "?refresh=3";
-      makeHyperlinkText("Next", "next problem", nextButtonLink2, nextButtonId);
+      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     }
 
     makeImageButton(
