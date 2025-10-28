@@ -6,8 +6,8 @@ require_once(__DIR__ . '/../../../ContextPreparator.php');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	private function performVisit(ContextPreparator &$context): void {
-		CakeSession::write('loggedInUserID', $context->user['User']['id']);
-		$_COOKIE['previousTsumegoID'] = $context->tsumego['Tsumego']['id'];
+		CakeSession::write('loggedInUserID', $context->user['id']);
+		$_COOKIE['previousTsumegoID'] = $context->tsumego['id'];
 		$this->testAction('sets/view/');
 		$context->checkNewTsumegoStatusCoreValues($this);
 	}
@@ -28,104 +28,104 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	public function testVisitFromEmpty(): void {
 		$context = new ContextPreparator();
 		$this->performVisit($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'V');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'V');
 	}
 
 	public function testSolveFromEmpty(): void {
 		$context = new ContextPreparator();
 		$this->performSolve($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'S');
 	}
 
 	public function testFailFromEmpty(): void {
 		$context = new ContextPreparator();
 		$this->performMisplay($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 	}
 
 	public function testVisitFromSolved(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'S']));
+		$context = new ContextPreparator(['tsumego' => ['status' => 'S']]);
 		$this->performVisit($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'S');
 	}
 
 	public function testHalfXpStatusToDoubleSolved(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'W']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'W']]));
 		$this->performSolve($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'C');
 	}
 
 	public function testSolveFromFailed(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'F']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'F']]));
 		$this->performSolve($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'S');
 	}
 
 	public function testFailFromVisited(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'V']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'V']]));
 		$this->performMisplay($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'F');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 	}
 
 	public function testFailFromFailed(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'F']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'F']]));
 		$this->performMisplay($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'X');
+		$this->assertSame($context->resultTsumegoStatus['status'], 'X');
 	}
 
 	public function testFailFromSolved(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'S']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'S']]));
 		$this->performMisplay($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'S'); // shouldn't be affected
+		$this->assertSame($context->resultTsumegoStatus['status'], 'S'); // shouldn't be affected
 	}
 
 	public function testFailFromDoubleSolved(): void {
-		$context = (new ContextPreparator(['tsumego_status' => 'C']));
+		$context = (new ContextPreparator(['tsumego' => ['status' => 'C']]));
 		$this->performMisplay($context);
-		$this->assertSame($context->resultTsumegoStatus['TsumegoStatus']['status'], 'C'); // shouldn't be affected
+		$this->assertSame($context->resultTsumegoStatus['status'], 'C'); // shouldn't be affected
 	}
 
 	public function testSolvingAddsRating(): void {
 		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
-		$originalRating = $context->user['User']['elo_rating_mode'];
+		$originalRating = $context->user['elo_rating_mode'];
 		$this->performSolve($context);
-		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
-		$this->assertLessThan($newUser['User']['elo_rating_mode'], $originalRating);
+		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
+		$this->assertLessThan($newUser['elo_rating_mode'], $originalRating);
 	}
 
 	public function testFailingDropsRating(): void {
 		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
-		$originalRating = $context->user['User']['elo_rating_mode'];
+		$originalRating = $context->user['elo_rating_mode'];
 		$this->performMisplay($context);
-		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id']);
-		$this->assertLessThan($originalRating, $newUser['User']['elo_rating_mode']);
+		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id'])['User'];
+		$this->assertLessThan($originalRating, $newUser['elo_rating_mode']);
 	}
 
 	public function testSolvingAddsNewTsumegoAttempt(): void {
 		$context = new ContextPreparator();
 
 		$this->performSolve($context);
-		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 0);
 	}
 
 	public function testSolvingUpdatesExistingNotSolvedTsumegoAttempt(): void {
-		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => false, 'misplays' => 66]]);
+		$context = new ContextPreparator(['tsumego' => ['attempt' => ['solved' => false, 'misplays' => 66]]]);
 
 		$this->performSolve($context);
-		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($newTsumegoAttempt), 1); // the existing one should be updated
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 66);
 	}
 
 	public function testSolvingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
-		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => true, 'misplays' => 66]]);
+		$context = new ContextPreparator(['tsumego' => ['attempt' => ['solved' => true, 'misplays' => 66]]]);
 
 		$this->performSolve($context);
-		$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($tsumegoAttempts), 2); // the solved one wasn't updated
 		$this->assertSame($tsumegoAttempts[0]['TsumegoAttempt']['solved'], true);
 		$this->assertSame($tsumegoAttempts[0]['TsumegoAttempt']['misplays'], 66);
@@ -137,27 +137,27 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 		$context = new ContextPreparator();
 
 		$this->performMisplay($context);
-		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], false);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 1);
 	}
 
 	public function testFailingUpdatesExistingNotSolvedTsumegoAttempt(): void {
-		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => false, 'misplays' => 66]]);
+		$context = new ContextPreparator(['tsumego' => ['attempt' => ['solved' => false, 'misplays' => 66]]]);
 
 		$this->performMisplay($context);
-		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], false);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 67);
 	}
 
 	public function testFailingDoesntUpdateExistingSolvedTsumegoAttempt(): void {
-		$context = new ContextPreparator(['tsumego_attempt' => ['solved' => true, 'misplays' => 66]]);
+		$context = new ContextPreparator(['tsumego' => ['attempt' => ['solved' => true, 'misplays' => 66]]]);
 
 		$this->performMisplay($context);
-		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['Tsumego']['id'], 'user_id' => $context->user['User']['id']]]);
+		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 		$this->assertSame(count($newTsumegoAttempt), 2); // exactly one should be created
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
 		$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 66);
