@@ -5,14 +5,21 @@ require_once(__DIR__ . '/../../ContextPreparator.php');
 
 class TsumegosControllerTest extends TestCaseWithAuth {
 	public function testSetNameAndNumIsVisible() {
-		$context = new ContextPreparator(['tsumego_sets' => [['name' => 'tsumego set 1', 'num' => '666']]]);
-		$this->testAction('tsumegos/play/' . $context->tsumego['Tsumego']['id'], ['return' => 'view']);
-		$this->assertTextContains("tsumego set 1", $this->view);
+		foreach ([false, true] as $openBySetConnectionID) {
+			$context = new ContextPreparator(['tsumego_sets' => [['name' => 'tsumego set 1', 'num' => '666']]]);
+			$this->testAction(
+				$openBySetConnectionID
+				? ('/' . $context->tsumegoSetConnections[0]['SetConnection']['id'])
+				: ('tsumegos/play/' . $context->tsumego['Tsumego']['id']),
+				['return' => 'view'],
+			);
+			$this->assertTextContains("tsumego set 1", $this->view);
 
-		$dom = $this->getStringDom();
-		$href = $dom->querySelector('#playTitleA');
-		$this->assertTextContains('tsumego set 1', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+			$dom = $this->getStringDom();
+			$href = $dom->querySelector('#playTitleA');
+			$this->assertTextContains('tsumego set 1', $href->textContent);
+			$this->assertTextContains('666', $href->textContent);
+		}
 	}
 
 	public function testViewingTsumegoInMoreSets() {
@@ -33,10 +40,10 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$duplicateTable = $dom->querySelector('.duplicateTable');
 		$links = $duplicateTable->getElementsByTagName('a');
 		$this->assertSame(count($links), 2);
-		$this->assertTextContains('/tsumegos/play/'.$tsumegoID.'?sid='.$context->tsumegoSets[0]['Set']['id'], $links[0]->getAttribute('href'));
+		$this->assertTextContains('/' . $context->tsumegoSetConnections[0]['SetConnection']['id'], $links[0]->getAttribute('href'));
 		$this->assertTextContains('tsumego set 1', $links[0]->textContent);
 		$this->assertTextContains('666', $links[0]->textContent);
-		$this->assertTextContains('/tsumegos/play/'.$tsumegoID.'?sid='.$context->tsumegoSets[1]['Set']['id'], $links[1]->getAttribute('href'));
+		$this->assertTextContains('/' . $context->tsumegoSetConnections[1]['SetConnection']['id'], $links[1]->getAttribute('href'));
 		$this->assertTextContains('tsumego set 2', $links[1]->textContent);
 		$this->assertTextContains('777', $links[1]->textContent);
 	}

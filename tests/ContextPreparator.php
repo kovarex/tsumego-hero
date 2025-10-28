@@ -110,6 +110,7 @@ class ContextPreparator {
 				$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
 				ClassRegistry::init('SetConnection')->create($setConnection);
 				ClassRegistry::init('SetConnection')->save($setConnection);
+				$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']]);
 				$this->tsumegoSets[] = $set;
 				$this->tsumegoSetConnections[] = $setConnection;
 			}

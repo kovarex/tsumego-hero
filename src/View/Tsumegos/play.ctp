@@ -590,7 +590,7 @@
 		}
 		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
         echo '<div class="duplicateTable">Is duplicate group:<br>';
-        echo implode(', ', array_map(function($setConnection) { return '<a href="/tsumegos/play/'.$setConnection['SetConnection']['tsumego_id'].'?sid='.$setConnection['SetConnection']['set_id'].'">'
+        echo implode(', ', array_map(function($setConnection) { return '<a href="/'.$setConnection['SetConnection']['id'].'">'
           .$setConnection['SetConnection']['title'].'</a>'; }, $setConnections));
         echo '</div><br>';
       }

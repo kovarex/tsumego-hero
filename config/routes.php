@@ -21,16 +21,20 @@
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
+
+require_once(__DIR__."/../src/UrlRoute.php");
 /**
  * Here, we are connecting '/' (base path) to controller called 'Pages',
  * its action called 'display', and we pass a param to select the view file
  * to use (in this case, /app/View/Pages/home.ctp)...
  */
-Router::connect('/', ['controller' => 'sites', 'action' => 'index']);
+Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClass' => 'UrlRoute']);
 /**
  * ...and connect the rest of 'Pages' controller's URLs.
  */
 Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
+
+//Router::connect('/*', ['routeClass' => 'UrlRoute']);
 
 /**
  * Load all plugin routes. See the CakePlugin documentation on

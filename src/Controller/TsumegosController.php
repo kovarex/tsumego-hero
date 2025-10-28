@@ -19,11 +19,7 @@ class TsumegosController extends AppController {
 		die("Problem doesn't exist in the specified set");
 	}
 
-	/**
-	 * @param string|int|null $id Tsumego ID
-	 * @return void
-	 */
-	public function play($id = null) {
+	public function play($id = null, $setConnectionID = null) {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
 		$this->loadModel('Set');
@@ -105,6 +101,14 @@ class TsumegosController extends AppController {
 		$queryTitleSets = '';
 		$partition = -1;
 
+		if ($setConnectionID) {
+			$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+			if (!$setConnection) {
+				die("Set connection " . $setConnectionID . " wasn't found in the database.");
+			}
+			$id = $setConnection['SetConnection']['tsumego_id'];
+		}
+
 		$hasPremium = Auth::hasPremium();
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
 		foreach ($swp as $item) {
@@ -112,10 +116,12 @@ class TsumegosController extends AppController {
 		}
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
+		if (!$setConnection) {
+			$setConnection = $this->deduceRelevantSetConnection($setConnections);
+		}
 		if (!$setConnections) {
 			die("Problem without any set connection");
 		} // some redirect/nicer message ?
-		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 		$set = $this->Set->findById($setConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = $this->TsumegoVariant->find('first', ['conditions' => ['tsumego_id' => $id]]);
