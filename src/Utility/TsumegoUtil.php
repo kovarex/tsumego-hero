@@ -28,4 +28,28 @@ class TsumegoUtil {
 		}
 		return $setConnections;
 	}
+
+	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null) {
+		$scIds = [];
+		$scMap = [];
+		$tsx = [];
+		$sc = ClassRegistry::init('SetConnection')->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $setID]]) ?: [];
+		$scCount = count($sc);
+		for ($i = 0; $i < $scCount; $i++) {
+			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
+			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
+		}
+		$finalCondition = ['conditions' => ['id' => $scIds]];
+		if ($tsumegoConditions) {
+			$finalCondition['conditions'] [] = $tsumegoConditions;
+		}
+		$ts = ClassRegistry::init('Tsumego')->find('all', $finalCondition) ?: [];
+		$tsCount = count($ts);
+		for ($i = 0; $i < $tsCount; $i++) {
+			$ts[$i]['Tsumego']['set_id'] = $setID;
+			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
+		}
+
+		return $tsx;
+	}
 }

@@ -33,7 +33,7 @@ class SetsController extends AppController {
 			}
 		}
 
-		$ts = $this->findTsumegoSet($id);
+		$ts = TsumegoUtil::collectTsumegosFromSet($id);
 		$set = $this->Set->findById($ts[0]['Tsumego']['set_id']);
 		foreach ($ts as $item) {
 			$tIds[] = $item['Tsumego']['id'];
@@ -149,7 +149,7 @@ class SetsController extends AppController {
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++) {
 			//$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => $s[$i]['Set']['id'])));
-			$ts = $this->findTsumegoSet($s[$i]['Set']['id']);
+			$ts = TsumegoUtil::collectTsumegosFromSet($s[$i]['Set']['id']);
 			$tsIds = [];
 			foreach ($ts as $item) {
 				$tsIds[] = $item['Tsumego']['id'];
@@ -216,7 +216,7 @@ class SetsController extends AppController {
 
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
-			$ts = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 			$elo = 0;
@@ -382,7 +382,7 @@ class SetsController extends AppController {
 				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
 					$this->Set->delete($setID);
 				}
-				$ts = $this->findTsumegoSet($setID);
+				$ts = TsumegoUtil::collectTsumegosFromSet($setID);
 				if (count($ts) < 50) {
 					foreach ($ts as $item) {
 						$this->Tsumego->delete($item['Tsumego']['id']);
@@ -410,7 +410,7 @@ class SetsController extends AppController {
 			$t['Tsumego']['description'] = $this->data['Tsumego']['description'];
 			$this->Tsumego->save($t);
 		}
-		$ts = $this->findTsumegoSet($tid);
+		$ts = TsumegoUtil::collectTsumegosFromSet($tid);
 		$this->set('t', $ts[0]);
 	}
 
@@ -600,7 +600,7 @@ class SetsController extends AppController {
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
 			for ($i = 0; $i < $setsRawCount; $i++) {
-				$ts = $this->findTsumegoSet($setsRaw[$i]['Set']['id'], $rankConditions);
+				$ts = TsumegoUtil::collectTsumegosFromSet($setsRaw[$i]['Set']['id'], $rankConditions);
 				$currentIds = [];
 				$tsCount2 = count($ts);
 				for ($j = 0; $j < $tsCount2; $j++) {
@@ -797,7 +797,7 @@ class SetsController extends AppController {
 				for ($i = 0; $i < $search1Count; $i++) {
 					$search1id = $this->Set->find('first', ['conditions' => ['title' => $search1[$i]]]);
 					if ($search1id) {
-						$search1idx = $this->findTsumegoSet($search1id['Set']['id']);
+						$search1idx = TsumegoUtil::collectTsumegosFromSet($search1id['Set']['id']);
 						$search1idxCount2 = count($search1idx);
 						for ($j = 0; $j < $search1idxCount2; $j++) {
 							array_push($search1idxx, $search1idx[$j]['Tsumego']['id']);
@@ -1345,7 +1345,7 @@ class SetsController extends AppController {
 					for ($i = 0; $i < $search1Count; $i++) {
 						$search1id = $this->Set->find('first', ['conditions' => ['title' => $search1[$i]]]);
 						if ($search1id) {
-							$search1idx = $this->findTsumegoSet($search1id['Set']['id']);
+							$search1idx = TsumegoUtil::collectTsumegosFromSet($search1id['Set']['id']);
 							$search1idxCount2 = count($search1idx);
 							for ($j = 0; $j < $search1idxCount2; $j++) {
 								array_push($search1idxx, $search1idx[$j]['Tsumego']['id']);
@@ -1666,7 +1666,7 @@ class SetsController extends AppController {
 				}
 				if (isset($this->data['Set']['setDifficulty'])) {
 					if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900) {
-						$setDifficultyTsumegoSet = $this->findTsumegoSet($set['Set']['id']);
+						$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
 						$setDifficulty = $this->data['Set']['setDifficulty'];
 						$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
 						for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
@@ -1836,7 +1836,7 @@ class SetsController extends AppController {
 							}
 						}
 						$tsIds = [];
-						$ts = $this->findTsumegoSet($id);
+						$ts = TsumegoUtil::collectTsumegosFromSet($id);
 						for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
 							if (isset($tsumegoStatusMap[$ts[$i]['Tsumego']['id']])) {
 								$ts[$i]['Tsumego']['status'] = $tsumegoStatusMap[$ts[$i]['Tsumego']['id']];
@@ -1989,7 +1989,7 @@ class SetsController extends AppController {
 
 		$tfs = [];
 		if ($viewType == 'topics') {
-			$tfs = $this->findTsumegoSet($id);
+			$tfs = TsumegoUtil::collectTsumegosFromSet($id);
 		}
 		$scoring = true;
 		if (Auth::isLoggedIn() && $viewType == 'topics') {
@@ -2176,7 +2176,7 @@ class SetsController extends AppController {
 					$newAddTag = explode('-', $_COOKIE['addTag']);
 					$tagSetId = (int) $newAddTag[0];
 					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
-					$tagSc = $this->findTsumegoSet($tagSetId);
+					$tagSc = TsumegoUtil::collectTsumegosFromSet($tagSetId);
 					$tagScCount = count($tagSc);
 					for ($i = 0; $i < $tagScCount; $i++) {
 						$tagAlreadyThere = $this->Tag->find('first', [
@@ -2444,7 +2444,7 @@ class SetsController extends AppController {
 
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
-			$ts = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 

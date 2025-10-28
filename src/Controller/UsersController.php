@@ -973,7 +973,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tsumegos = [];
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
-			$tx = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$tx = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$txCount = count($tx);
 			for ($j = 0; $j < $txCount; $j++) {
 				array_push($tsumegos, $tx[$j]);
@@ -1081,7 +1081,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
-			$ts = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$tsCount = count($ts);
 			for ($j = 0; $j < $tsCount; $j++) {
 				$save = false;
@@ -1441,7 +1441,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 
-		$ts = $this->findTsumegoSet($sid);
+		$ts = TsumegoUtil::collectTsumegosFromSet($sid);
 		$ids = [];
 		$tsCount = count($ts);
 		for ($i = 0; $i < $tsCount; $i++) {
@@ -3228,7 +3228,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$sandboxSets = $this->Set->find('all', ['conditions' => ['public' => 0]]);
 		$sandboxSetsCount = count($sandboxSets);
 		for ($i = 0; $i < $sandboxSetsCount; $i++) {
-			$ts = $this->findTsumegoSet($sandboxSets[$i]['Set']['id']);
+			$ts = TsumegoUtil::collectTsumegosFromSet($sandboxSets[$i]['Set']['id']);
 			$overallCounter += count($ts);
 		}
 
@@ -3238,7 +3238,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$swpCount = count($swp);
 		for ($i = 0; $i < $swpCount; $i++) {
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
-			$twp = $this->findTsumegoSet($swp[$i]['Set']['id']);
+			$twp = TsumegoUtil::collectTsumegosFromSet($swp[$i]['Set']['id']);
 			$twpCount = count($twp);
 			for ($j = 0; $j < $twpCount; $j++) {
 				array_push($tsumegosWithPremium, $twp[$j]);
@@ -3462,7 +3462,7 @@ Joschka Zimdars';
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++) {
 			$xxx[$i] = [];
-			$tsx = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$tsx = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 
 			$tsxCount = count($tsx);
 			for ($j = 0; $j < $tsxCount; $j++) {
@@ -4876,7 +4876,7 @@ Joschka Zimdars';
 		for ($i = 0; $i < $setsCount; $i++) {
 			$xxx[$i] = [];
 			//$tsx = $this->Tsumego->find('all', array('conditions' =>  array('set_id' => $sets[$i]['Set']['id'])));
-			$tsx = $this->findTsumegoSet($sets[$i]['Set']['id']);
+			$tsx = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$tsxCount = count($tsx);
 			for ($j = 0; $j < $tsxCount; $j++) {
 				$tsx[$j]['Tsumego']['set'] = $sets[$i]['Set']['title'];
