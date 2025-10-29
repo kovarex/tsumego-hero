@@ -1938,7 +1938,8 @@ class TsumegosController extends AppController {
 						}
 						if (count($this->TsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['SetConnection']['tsumego_id']) {
 							$a = 6 - count($this->TsumegoNavigationButtons->next);
-							while ($a < 12) {
+							$offsetLast = $setConnection['SetConnection']['id'] == $ts[count($ts) - 1]['SetConnection']['id'] ? 1 : 0;
+							while ($a < 11 + $offsetLast) {
 								if ($i - $a > 0) {
 									array_unshift($this->TsumegoNavigationButtons->previous, TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap));
 								}
@@ -2060,7 +2061,7 @@ class TsumegosController extends AppController {
 				$this->TsumegoNavigationButtons->first = null;
 			}
 
-			if (count($ts) > 1) {
+			if (count($ts) > 1 && $ts[count($ts) - 1]['SetConnection']['id'] != $setConnection['SetConnection']['id']) {
 				$this->TsumegoNavigationButtons->last = TsumegoButton::constructFromSetConnection($ts[count($ts) - 1], $tsumegoStatusMap);
 			}
 			$isInArray = -1;
@@ -2148,7 +2149,7 @@ class TsumegosController extends AppController {
 			}
 		}
 
-		if ($t['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
+		if ($setConnection['SetConnection']['id'] == $this->TsumegoNavigationButtons->last['SetConnection']['id']) {
 			$this->TsumegoNavigationButtons->last = null;
 		}
 		if (Auth::isLoggedIn()) {

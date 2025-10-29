@@ -48,8 +48,20 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 		$this->buttonsTestGeneric(1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
 	}
 
+	public function testNavigationButtonsWithNotEnoughOnLeftCausingMoreOnTheRightStartingNextToTheEdge() {
+		// the lack of buttons on the left adds buttons to the right, but still the amount is limited
+		$this->buttonsTestGeneric(2, [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
+	}
+
 	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingOnTheEdge() {
 		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
 		$this->buttonsTestGeneric(60, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
+
 	}
+
+	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingNextToTheEdge() {
+		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
+		$this->buttonsTestGeneric(16, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 60], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
+	}
+
 }
