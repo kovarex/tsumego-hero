@@ -1,7 +1,9 @@
 <?php
 
 require_once(__DIR__ . '/TestCaseWithAuth.php');
+require_once(__DIR__ . '/../../Browser.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
+use Facebook\WebDriver\WebDriverBy;
 
 class TsumegosControllerTest extends TestCaseWithAuth {
 	public function testSetNameAndNumIsVisible() {
@@ -89,7 +91,9 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains('666', $href->textContent);
 	}
 
-	public function testViewingTsumegoNextBackButtons() {
+	// testing the same things as testViewingTsumegoInMoreSets, but using the web driver to do so
+	// if this test fails, it probably means something is wrong with the web driver configuration
+	public function testViewingTsumegoInMoreSetsUsingWebDriver() {
 		$context = new ContextPreparator(
 			['tsumego' => [
 				'sets' => [
@@ -99,11 +103,41 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 			]],
 		);
 
-		$this->testAction('/' . $context->tsumego['set-connections'][0]['id'], ['return' => 'view']);
+		$browser = new Browser();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
+		$this->assertTextContains('set 1', $href->getText());
+		$this->assertTextContains('666', $href->getText());
+	}
 
+	public function testTheNextButtonPointingToTheNextTsumego() {
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
+				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]],
+		]);
+
+		$this->testAction($context->tsumego['set-connections'][0]['id'], ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
-		$this->assertTextContains('set 1', $href->textContent);
-		$this->assertTextContains('666', $href->textContent);
+		$this->assertTextContains('tsumego set 1', $href->textContent);
+	}
+
+	public function testTheNextButtonPointingToTheNextTsumegoUsingWebDriver() {
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
+				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]],
+		]);
+
+		$browser = new Browser();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
+		$this->assertSame($backButton->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+
+		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
 }

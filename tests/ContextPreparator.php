@@ -4,7 +4,7 @@ class ContextPreparator {
 	public function __construct(?array $options = []) {
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
-		$this->prepareOtherTsumegos(Util::extract('other_tsumegos', $options));
+		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareUserMode(Util::extract('mode', $options));
 		$this->checkOptionsConsumed($options);
 	}
@@ -27,8 +27,8 @@ class ContextPreparator {
 	private function prepareTsumego(?array $tsumegoInput): array {
 		if ($tsumegoInput) {
 			if (!$tsumegoInput['id']) {
-				ClassRegistry::init('Tsumego')->create($this->tsumego);
-				ClassRegistry::init('Tsumego')->save($this->tsumego);
+				ClassRegistry::init('Tsumego')->create($tsumegoInput);
+				ClassRegistry::init('Tsumego')->save($tsumegoInput);
 				$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
 				assert($tsumego['id']);
 			}
@@ -138,7 +138,16 @@ class ContextPreparator {
 			ClassRegistry::init('SetConnection')->create($set);
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		}
+		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
+	}
+
+	private function checkSetClear(int $setID): void {
+		if ($this->setsCleared[$setID]) {
+			return;
+		}
+		ClassRegistry::init('SetConnection')->deleteAll(['set_id' => $setID]);
+		$this->setsCleared[$setID] = true;
 	}
 
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {
@@ -159,4 +168,6 @@ class ContextPreparator {
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
+
+	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 }
