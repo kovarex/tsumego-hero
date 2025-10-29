@@ -142,8 +142,7 @@ class ContextPreparator {
 		return $set['Set'];
 	}
 
-	private function checkSetClear(int $setID): void
-	{
+	private function checkSetClear(int $setID): void {
 		if ($this->setsCleared[$setID]) {
 			return;
 		}
