@@ -18,10 +18,16 @@ class ContextPreparator {
 	}
 
 	private function prepareUser(?array $user): void {
-		$this->user = ($user ?: ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]))['User'];
+		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		if ($user) {
+			if ($user['elo_rating_mode']) {
+				$this->user['elo_rating_mode'] = $user['elo_rating_mode'];
+			}
+			$userForSaving['User'] = $this->user;
+			ClassRegistry::init('User')->save($userForSaving);
+		}
+
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
-		$existing = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $this->user['id']]]);
-		assert(!$existing);
 	}
 
 	private function prepareTsumego(?array $tsumegoInput): array {

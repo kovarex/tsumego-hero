@@ -86,19 +86,21 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolvingAddsRating(): void {
-		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
+		$context = new ContextPreparator(['user' => ['elo_rating_mode' => 1000], 'tsumego' => ['elo_rating_mode' => 1000], 'mode' => Constants::$RATING_MODE]);
 		$originalRating = $context->user['elo_rating_mode'];
 		$this->performSolve($context);
 		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
 		$this->assertLessThan($newUser['elo_rating_mode'], $originalRating);
+		$this->assertWithinMargin($originalRating, $newUser['elo_rating_mode'], 100); // shouldn't move more than 100 points
 	}
 
 	public function testFailingDropsRating(): void {
-		$context = new ContextPreparator(['mode' => Constants::$RATING_MODE]);
+		$context = new ContextPreparator(['user' => ['elo_rating_mode' => 1000], 'tsumego' => ['elo_rating_mode' => 1000], 'mode' => Constants::$RATING_MODE]);
 		$originalRating = $context->user['elo_rating_mode'];
 		$this->performMisplay($context);
-		$newUser = ClassRegistry::init('User')->findById($context->user['User']['id'])['User'];
+		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
 		$this->assertLessThan($originalRating, $newUser['elo_rating_mode']);
+		$this->assertWithinMargin($originalRating, $newUser['elo_rating_mode'], 100); // shouldn't move more than 100 points
 	}
 
 	public function testSolvingAddsNewTsumegoAttempt(): void {
