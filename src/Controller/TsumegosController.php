@@ -1937,13 +1937,12 @@ class TsumegosController extends AppController {
 							$b++;
 						}
 						if (count($this->TsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['SetConnection']['tsumego_id']) {
-							$a = 5 + (5 - count($this->TsumegoNavigationButtons->next));
-							$a++;
-							while ($a > 5) {
+							$a = 6 - count($this->TsumegoNavigationButtons->next);
+							while ($a < 12) {
 								if ($i - $a > 0) {
-									$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
+									array_unshift($this->TsumegoNavigationButtons->previous, TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap));
 								}
-								$a--;
+								$a++;
 							}
 						}
 						if ((count($this->TsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['SetConnection']['tsumego_id']) && $ts[0]['SetConnection']['tsumego_id'] != $t['Tsumego']['id']) {
