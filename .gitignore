@@ -24,8 +24,8 @@ config/email.php
 .php-cs-fixer.cache
 ./.php-cs-fixer.php
 
-./selenium/geckodriver
-./selenium/geckodriver*.gz
+/selenium/geckodriver
+/selenium/geckodriver*.gz
 
 /img/set_*
 /img/google/*.png
