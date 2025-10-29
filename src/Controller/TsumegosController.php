@@ -530,10 +530,8 @@ class TsumegosController extends AppController {
 		}
 		if (isset($_FILES['game'])) {
 			$errors = [];
-			$file_name = $_FILES['game']['name'];
 			$file_size = $_FILES['game']['size'];
 			$file_tmp = $_FILES['game']['tmp_name'];
-			$file_type = $_FILES['game']['type'];
 			$array2 = explode('.', $_FILES['game']['name']);
 			$file_ext = strtolower(end($array2));
 			$extensions = ['sgf'];
@@ -567,8 +565,6 @@ class TsumegosController extends AppController {
 			$errors = [];
 			$file_name = $_FILES['adminUpload']['name'];
 			$file_size = $_FILES['adminUpload']['size'];
-			$file_tmp = $_FILES['adminUpload']['tmp_name'];
-			$file_type = $_FILES['adminUpload']['type'];
 			$array1 = explode('.', $_FILES['adminUpload']['name']);
 			$file_ext = strtolower(end($array1));
 			$extensions = ['sgf'];
