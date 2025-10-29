@@ -5,9 +5,10 @@
     "keywords": ["cakephp", "app"],
     "license": "proprietary",
     "require": {
-        "php": ">=8.4",
-        "pieceofcake2/cakephp": "^2.12"
-    },
+		"php": ">=8.4",
+		"php-webdriver/webdriver": "^1.15",
+		"pieceofcake2/cakephp": "^2.12"
+	},
     "require-dev": {
 		"fig-r/psr2r-sniffer": "dev-master as 2.4.0",
 		"friendsofphp/php-cs-fixer": "^3.89",
