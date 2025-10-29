@@ -515,7 +515,7 @@
 			for($i = 0; $i < count($navi); $i++){
 				if($t['Tsumego']['id'] == $navi[$i]['Tsumego']['id']) $additionalId = 'id="currentElement"';
 				else $additionalId = '';
-				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="'.$navi[$i]['Tsumego']['status'].'">
+				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
 					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
 					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
