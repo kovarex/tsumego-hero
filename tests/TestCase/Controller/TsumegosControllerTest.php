@@ -141,6 +141,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumegoNavi2'));
 		$links = $div->findElements(WebDriverBy::tagName('a'));
 
+		// there should be exactly 3 links pointing to the first, current and last tsumego
+		$this->assertSame(count($links), 3);
 		$this->assertSame($links[0]->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($links[1]->getAttribute('href'), '/' . $context->tsumego['set-connections'][0]['id']);
 		$this->assertSame($links[2]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);

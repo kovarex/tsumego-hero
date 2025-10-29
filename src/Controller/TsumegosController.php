@@ -82,13 +82,10 @@ class TsumegosController extends AppController {
 		$this->loadModel('UserContribution');
 
 		$noUser = null;
-		$noLogin = [];
 		$preTsumego = null;
 		$ut = null;
 		$ts = [];
 		$anzahl2 = 0;
-		$tsTsumegosMap = [];
-		$firstTsumegoInSet = null;
 		$nextMode = null;
 		$rejuvenation = false;
 		$doublexp = null;
@@ -1853,40 +1850,33 @@ class TsumegosController extends AppController {
 					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
 						for ($a = 5; $a > 0; $a--) {
 							if ($i - $a >= 0) {
-								$this->TsumegoNavigationButtons->previousButtons [] = TsumegoButton::construct($ts[$i - $a], $tsumegoStatusMap);
+								$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 								if ($a == 1) {
 									$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
 								}
 							}
 						}
-						$bMax = 10 - count($this->TsumegoNavigationButtons->previousButtons);
+						$bMax = 10 - count($this->TsumegoNavigationButtons->previous);
 						$b = 1;
 						if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
 							$bMax++;
 						}
 						while ($b <= $bMax) {
 							if ($i + $b < count($ts)) {
-								$tsNextA = $ts[$i + $b];
-								array_push($this->TsumegoNavigationButtons->nextButtons, $tsNextA);
+								$this->TsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 								if ($b == 1) {
 									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 								}
-								$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $tsumegoStatusMap);
-								if (!isset($newUT['TsumegoStatus']['status'])) {
-									$newUT['TsumegoStatus']['status'] = 'N';
-								}
-								$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 							}
 							$b++;
 						}
-						if (count($this->TsumegoNavigationButtons->nextButtons) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
-							$this->TsumegoNavigationButtons->previousButtons = [];
-							$a = 5 + (5 - count($this->TsumegoNavigationButtons->nextButtons));
+						if (count($this->TsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
+							$this->TsumegoNavigationButtons->previous = [];
+							$a = 5 + (5 - count($this->TsumegoNavigationButtons->next));
 							$a++;
 							while ($a > 0) {
 								if ($i - $a >= 0) {
-									$tsBackA = $ts[$i - $a];
-									array_push($this->TsumegoNavigationButtons->previousButtons, $tsBackA);
+									$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 									if ($a == 1) {
 										$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 									}
@@ -1894,27 +1884,20 @@ class TsumegosController extends AppController {
 									if (!isset($newUT['TsumegoStatus']['status'])) {
 										$newUT['TsumegoStatus']['status'] = 'N';
 									}
-									$this->TsumegoNavigationButtons->previousButtons[count($this->TsumegoNavigationButtons->previousButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 								}
 								$a--;
 							}
 						}
-						if ((count($this->TsumegoNavigationButtons->previousButtons) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
-							$tsNextAdjust = count($this->TsumegoNavigationButtons->nextButtons) + 1;
-							$this->TsumegoNavigationButtons->nextButtons = [];
+						if ((count($this->TsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
+							$tsNextAdjust = count($this->TsumegoNavigationButtons->next) + 1;
+							$this->TsumegoNavigationButtons->next = [];
 							$b = 1;
 							while ($b <= $tsNextAdjust) {
 								if ($i + $b < count($ts)) {
-									$tsNextA = $ts[$i + $b];
-									array_push($this->TsumegoNavigationButtons->nextButtons, $tsNextA);
+									$this->TsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 									if ($b == 1) {
 										$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 									}
-									$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $tsumegoStatusMap);
-									if (!isset($newUT['TsumegoStatus']['status'])) {
-										$newUT['TsumegoStatus']['status'] = 'N';
-									}
-									$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 								}
 								$b++;
 							}
@@ -1929,19 +1912,8 @@ class TsumegosController extends AppController {
 					if ($ts[$i]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
 						$a = 5;
 						while ($a > 0) {
-							if ($i - $a >= 0) {
-								$tsBackA = $tsTsumegosMap[$ts[$i - $a]['SetConnection']['tsumego_id']];
-								$scTsBack = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i - $a]['SetConnection']['tsumego_id']]]);
-								if (!$scTsBack) {
-									$scTsBack = [];
-								}
-								if (count($scTsBack) <= 1) {
-									$tsBackA['Tsumego']['duplicateLink'] = '';
-								} else {
-									$tsBackA['Tsumego']['duplicateLink'] = '?sid=' . $ts[$i - $a]['SetConnection']['set_id'];
-								}
-								$tsBackA['Tsumego']['num'] = $ts[$i - $a]['SetConnection']['num'];
-								array_push($this->TsumegoNavigationButtons->previousButtons, $tsBackA);
+							if ($i - $a > 0) {
+								$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 								if ($a == 1) {
 									$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
 								}
@@ -1949,96 +1921,46 @@ class TsumegosController extends AppController {
 								if (!isset($newUT['TsumegoStatus']['status'])) {
 									$newUT['TsumegoStatus']['status'] = 'N';
 								}
-								$this->TsumegoNavigationButtons->previousButtons[count($this->TsumegoNavigationButtons->previousButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 							}
 							$a--;
 						}
-						$bMax = 10 - count($this->TsumegoNavigationButtons->previousButtons);
+						$bMax = 10 - count($this->TsumegoNavigationButtons->previous);
 						$b = 1;
 						if ($ts[0]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
 							$bMax++;
 						}
 						while ($b <= $bMax) {
-							if ($i + $b < count($ts)) {
-								$tsNextA = $tsTsumegosMap[$ts[$i + $b]['SetConnection']['tsumego_id']];
-								$scTsNext = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i + $b]['SetConnection']['tsumego_id']]]);
-								if (!$scTsNext) {
-									$scTsNext = [];
-								}
-								if (count($scTsNext) <= 1) {
-									$tsNextA['Tsumego']['duplicateLink'] = '';
-								} else {
-									$tsNextA['Tsumego']['duplicateLink'] = '?sid=' . $ts[$i + $b]['SetConnection']['set_id'];
-								}
-								$tsNextA['Tsumego']['num'] = $ts[$i + $b]['SetConnection']['num'];
-								array_push($this->TsumegoNavigationButtons->nextButtons, $tsNextA);
+							if ($i + $b + 1 < count($ts)) {
+								$this->TsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 								if ($b == 1) {
 									$nextSetConnectionID = $ts[$i + $b]['SetConnection']['id'];
 								}
-								$newUT = $this->findUt($ts[$i + $b]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
-								if (!isset($newUT['TsumegoStatus']['status'])) {
-									$newUT['TsumegoStatus']['status'] = 'N';
-								}
-								$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 							}
 							$b++;
 						}
-						if (count($this->TsumegoNavigationButtons->nextButtons) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['SetConnection']['tsumego_id']) {
-							$this->TsumegoNavigationButtons->previousButtons = [];
-							$a = 5 + (5 - count($this->TsumegoNavigationButtons->nextButtons));
+						if (count($this->TsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['SetConnection']['tsumego_id']) {
+							$a = 5 + (5 - count($this->TsumegoNavigationButtons->next));
 							$a++;
 							while ($a > 0) {
-								if ($i - $a >= 0) {
-									$tsBackA = $tsTsumegosMap[$ts[$i - $a]['SetConnection']['tsumego_id']];
-									$scTsBack = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i - $a]['SetConnection']['tsumego_id']]]);
-									if (!$scTsBack) {
-										$scTsBack = [];
-									}
-									if (count($scTsBack) <= 1) {
-										$tsBackA['Tsumego']['duplicateLink'] = '';
-									} else {
-										$tsBackA['Tsumego']['duplicateLink'] = '?sid=' . $ts[$i - $a]['SetConnection']['set_id'];
-									}
-									$tsBackA['Tsumego']['num'] = $ts[$i - $a]['SetConnection']['num'];
-									array_push($this->TsumegoNavigationButtons->previousButtons, $tsBackA);
+								if ($i - $a > 0) {
+									$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 									if ($a == 1) {
 										$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
 									}
-									$newUT = $this->findUt($ts[$i - $a]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
-									if (!isset($newUT['TsumegoStatus']['status'])) {
-										$newUT['TsumegoStatus']['status'] = 'N';
-									}
-									$this->TsumegoNavigationButtons->previousButtons[count($this->TsumegoNavigationButtons->previousButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 								}
 								$a--;
 							}
 						}
-						if ((count($this->TsumegoNavigationButtons->previousButtons) < 5 || $t['Tsumego']['id'] == $ts[5]['SetConnection']['tsumego_id']) && $ts[0]['SetConnection']['tsumego_id'] != $t['Tsumego']['id']) {
-							$tsNextAdjust = count($this->TsumegoNavigationButtons->nextButtons) + 1;
-							$this->TsumegoNavigationButtons->nextButtons = [];
+						if ((count($this->TsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['SetConnection']['tsumego_id']) && $ts[0]['SetConnection']['tsumego_id'] != $t['Tsumego']['id']) {
+							$tsNextAdjust = count($this->TsumegoNavigationButtons->next) + 1;
+							$this->TsumegoNavigationButtons->next = [];
 							$b = 1;
 							while ($b <= $tsNextAdjust) {
-								if ($i + $b < count($ts)) {
-									$tsNextA = $tsTsumegosMap[$ts[$i + $b]['SetConnection']['tsumego_id']];
-									$scTsNext = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[$i + $b]['SetConnection']['tsumego_id']]]);
-									if (!$scTsNext) {
-										$scTsNext = [];
-									}
-									if (count($scTsNext) <= 1) {
-										$tsNextA['Tsumego']['duplicateLink'] = '';
-									} else {
-										$tsNextA['Tsumego']['duplicateLink'] = '?sid=' . $ts[$i + $b]['SetConnection']['set_id'];
-									}
-									$tsNextA['Tsumego']['num'] = $ts[$i + $b]['SetConnection']['num'];
-									array_push($this->TsumegoNavigationButtons->nextButtons, $tsNextA);
+								if ($i + $b + 1 < count($ts)) {
+									$this->TsumegoNavigationButtons->next[] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 									if ($b == 1) {
 										$nextTsumegoID = $ts[$i + $b]['SetConnection']['tsumego_id'];
 									}
-									$newUT = $this->findUt($ts[$i + $b]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
-									if (!isset($newUT['TsumegoStatus']['status'])) {
-										$newUT['TsumegoStatus']['status'] = 'N';
-									}
-									$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 								}
 								$b++;
 							}
@@ -2067,71 +1989,51 @@ class TsumegosController extends AppController {
 					$a = 5;
 					while ($a > 0) {
 						if ($i - $a >= 0) {
-							array_push($this->TsumegoNavigationButtons->previousButtons, $ts[$i - $a]);
+							$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 							if ($a == 1) {
 								$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 							}
-							$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $tsumegoStatusMap);
-							if (!isset($newUT['TsumegoStatus']['status'])) {
-								$newUT['TsumegoStatus']['status'] = 'N';
-							}
-							$this->TsumegoNavigationButtons->previousButtons[count($this->TsumegoNavigationButtons->previousButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 						}
 						$a--;
 					}
-					$bMax = 10 - count($this->TsumegoNavigationButtons->previousButtons);
+					$bMax = 10 - count($this->TsumegoNavigationButtons->previous);
 					$b = 1;
 					if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
 						$bMax++;
 					}
 					while ($b <= $bMax) {
 						if ($i + $b < count($ts)) {
-							array_push($this->TsumegoNavigationButtons->nextButtons, $ts[$i + $b]);
+							$this->TsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 							if ($b == 1) {
 								$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 							}
-							$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $tsumegoStatusMap);
-							if (!isset($newUT['TsumegoStatus']['status'])) {
-								$newUT['TsumegoStatus']['status'] = 'N';
-							}
-							$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 						}
 						$b++;
 					}
-					if (count($this->TsumegoNavigationButtons->nextButtons) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
-						$this->TsumegoNavigationButtons->previousButtons = [];
-						$a = 5 + (5 - count($this->TsumegoNavigationButtons->nextButtons));
+					if (count($this->TsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
+						$this->TsumegoNavigationButtons->previous = [];
+						$a = 5 + (5 - count($this->TsumegoNavigationButtons->next));
 						$a++;
 						while ($a > 0) {
 							if ($i - $a >= 0) {
-								array_push($this->TsumegoNavigationButtons->previousButtons, $ts[$i - $a]);
+								$this->TsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
 								if ($a == 1) {
 									$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
 								}
-								$newUT = $this->findUt($ts[$i - $a]['Tsumego']['id'], $tsumegoStatusMap);
-								if (!isset($newUT['TsumegoStatus']['status'])) {
-									$newUT['TsumegoStatus']['status'] = 'N';
-								}
-								$this->TsumegoNavigationButtons->previousButtons[count($this->TsumegoNavigationButtons->previousButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 							}
 							$a--;
 						}
 					}
-					if ((count($this->TsumegoNavigationButtons->previousButtons) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
-						$tsNextAdjust = count($this->TsumegoNavigationButtons->nextButtons) + 1;
-						$this->TsumegoNavigationButtons->nextButtons = [];
+					if ((count($this->TsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
+						$tsNextAdjust = count($this->TsumegoNavigationButtons->next) + 1;
+						$this->TsumegoNavigationButtons->next = [];
 						$b = 1;
 						while ($b <= $tsNextAdjust) {
 							if ($i + $b < count($ts)) {
-								array_push($this->TsumegoNavigationButtons->nextButtons, $ts[$i + $b]);
+								$this->TsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
 								if ($b == 1) {
 									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
 								}
-								$newUT = $this->findUt($ts[$i + $b]['Tsumego']['id'], $tsumegoStatusMap);
-								if (!isset($newUT['TsumegoStatus']['status'])) {
-									$newUT['TsumegoStatus']['status'] = 'N';
-								}
-								$this->TsumegoNavigationButtons->nextButtons[count($this->TsumegoNavigationButtons->nextButtons) - 1]['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
 							}
 							$b++;
 						}
@@ -2142,145 +2044,115 @@ class TsumegosController extends AppController {
 		}
 		if ($query == 'difficulty' || $query == 'tags') {
 			//tsFirst
-			$firstTsumegoInSet = $ts[0];
+			$this->TsumegoNavigationButtons->first = TsumegoButton::constructFromTsumego($ts[0], $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsBackCount = count($this->TsumegoNavigationButtons->previousButtons);
+			$tsBackCount = count($this->TsumegoNavigationButtons->previous);
 
 			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->TsumegoNavigationButtons->previousButtons[$i]['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->first['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->previousButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->previousButtons = array_values($this->TsumegoNavigationButtons->previousButtons);
+				unset($this->TsumegoNavigationButtons->previous[$isInArray]);
+				$this->TsumegoNavigationButtons->previous = array_values($this->TsumegoNavigationButtons->previous);
 			}
 			$newUT = $this->findUt($ts[0]['Tsumego']['id'], $tsumegoStatusMap);
 			if (!isset($newUT['TsumegoStatus']['status'])) {
 				$newUT['TsumegoStatus']['status'] = 'N';
 			}
-			$firstTsumegoInSet['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
-			if ($t['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
-				$firstTsumegoInSet = null;
+			if ($t['Tsumego']['id'] == $this->TsumegoNavigationButtons->first['Tsumego']['id']) {
+				$this->TsumegoNavigationButtons->first = null;
 			}
 			//tsLast
-			$tsLast = $ts[count($ts) - 1];
+			$this->TsumegoNavigationButtons->last = TsumegoButton::constructFromSetConnection($ts[count($ts) - 1], $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsNextCount = count($this->TsumegoNavigationButtons->nextButtons);
+			$tsNextCount = count($this->TsumegoNavigationButtons->next);
 
 			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->TsumegoNavigationButtons->nextButtons[$i]['Tsumego']['id'] == $tsLast['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->nextButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->nextButtons = array_values($this->TsumegoNavigationButtons->nextButtons);
+				unset($this->TsumegoNavigationButtons->next[$isInArray]);
+				$this->TsumegoNavigationButtons->next = array_values($this->TsumegoNavigationButtons->next);
 			}
 			$newUT = $this->findUt($ts[count($ts) - 1]['Tsumego']['id'], $tsumegoStatusMap);
 		} elseif ($query == 'topics' && !$inFavorite) {
-			//tsFirst
-			$this->TsumegoNavigationButtons->firstButton = TsumegoButton::construct($ts[0], $tsumegoStatusMap);
+			$this->TsumegoNavigationButtons->first = TsumegoButton::constructFromSetConnection($ts[0], $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsBackCount = count($this->TsumegoNavigationButtons->previousButtons);
+			$tsBackCount = count($this->TsumegoNavigationButtons->previous);
 
 			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->TsumegoNavigationButtons->previousButtons[$i]['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->first['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->previousButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->previousButtons = array_values($this->TsumegoNavigationButtons->previousButtons);
+				unset($this->TsumegoNavigationButtons->previous[$isInArray]);
+				$this->TsumegoNavigationButtons->previous = array_values($this->TsumegoNavigationButtons->previous);
 			}
 			$newUT = $this->findUt($ts[0]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
 			if (!isset($newUT['TsumegoStatus']['status'])) {
 				$newUT['TsumegoStatus']['status'] = 'N';
 			}
-			$firstTsumegoInSet['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
-			if ($setConnection['SetConnection']['id'] == $firstTsumegoInSet['SetConnection']['id']) {
-				$firstTsumegoInSet = null;
+			if ($setConnection['SetConnection']['id'] == $this->TsumegoNavigationButtons->first['SetConnection']['id']) {
+				$this->TsumegoNavigationButtons->first = null;
 			}
 			//tsLast
-			$tsLast = $this->Tsumego->findById($ts[count($ts) - 1]['SetConnection']['tsumego_id']);
-			$scTsLast = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $ts[count($ts) - 1]['SetConnection']['tsumego_id']]]);
-			if (!$scTsLast) {
-				$scTsLast = [];
-			}
-			if (count($scTsLast) <= 1) {
-				$tsLast['Tsumego']['duplicateLink'] = '';
-			} else {
-				$tsLast['Tsumego']['duplicateLink'] = '?sid=' . $ts[count($ts) - 1]['SetConnection']['set_id'];
-			}
-			$tsLast['Tsumego']['num'] = $ts[count($ts) - 1]['SetConnection']['num'];
+			$this->TsumegoNavigationButtons->last = TsumegoButton::constructFromSetConnection($ts[count($ts) - 1], $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsNextCount = count($this->TsumegoNavigationButtons->nextButtons);
+			$tsNextCount = count($this->TsumegoNavigationButtons->next);
 
 			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->TsumegoNavigationButtons->nextButtons[$i]['Tsumego']['id'] == $tsLast['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->nextButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->nextButtons = array_values($this->TsumegoNavigationButtons->nextButtons);
+				unset($this->TsumegoNavigationButtons->next[$isInArray]);
+				$this->TsumegoNavigationButtons->next = array_values($this->TsumegoNavigationButtons->next);
 			}
-			$newUT = $this->findUt($ts[count($ts) - 1]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
 		} elseif ($inFavorite) {
 			//tsFirst
-			$firstTsumegoInSet = $this->Tsumego->findById($fav[0]['Favorite']['tsumego_id']);
-			$firstTsumegoInSet['Tsumego']['duplicateLink'] = '';
+			$this->TsumegoNavigationButtons->first = TsumegoButton::constructFromTsumego($this->Tsumego->findById($fav[0]['Favorite']['tsumego_id']), $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsBackCount = count($this->TsumegoNavigationButtons->previousButtons);
+			$tsBackCount = count($this->TsumegoNavigationButtons->previous);
 
 			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->TsumegoNavigationButtons->previousButtons[$i]['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->first['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->previousButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->previousButtons = array_values($this->TsumegoNavigationButtons->previousButtons);
+				unset($this->TsumegoNavigationButtons->previous[$isInArray]);
+				$this->TsumegoNavigationButtons->previous = array_values($this->TsumegoNavigationButtons->previous);
 			}
-			if ($t['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
+			if ($t['Tsumego']['id'] == $this->TsumegoNavigationButtons->first['Tsumego']['id']) {
 				$lastInFav = -1;
 			}
-			$newUT = $this->findUt($fav[0]['Favorite']['tsumego_id'], $tsumegoStatusMap);
-			if (!isset($newUT['TsumegoStatus']['status'])) {
-				$newUT['TsumegoStatus']['status'] = 'N';
-			}
-			$firstTsumegoInSet['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
-			if ($t['Tsumego']['id'] == $firstTsumegoInSet['Tsumego']['id']) {
-				$firstTsumegoInSet = null;
-			}
 
-			//tsLast
-			$tsLast = $this->Tsumego->findById($fav[count($fav) - 1]['Favorite']['tsumego_id']);
-			$tsLast['Tsumego']['duplicateLink'] = '';
+			$this->TsumegoNavigationButtons->last = TsumegoButton::constructFromTsumego($this->Tsumego->findById($fav[count($fav) - 1]['Favorite']['tsumego_id']), $tsumegoStatusMap);
 			$isInArray = -1;
-			$tsNextCount = count($this->TsumegoNavigationButtons->nextButtons);
+			$tsNextCount = count($this->TsumegoNavigationButtons->next);
 
 			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->TsumegoNavigationButtons->nextButtons[$i]['Tsumego']['id'] == $tsLast['Tsumego']['id']) {
+				if ($this->TsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
 					$isInArray = $i;
 				}
 			}
 			if ($isInArray != -1) {
-				unset($this->TsumegoNavigationButtons->nextButtons[$isInArray]);
-				$this->TsumegoNavigationButtons->nextButtons = array_values($this->TsumegoNavigationButtons->nextButtons);
+				unset($this->TsumegoNavigationButtons->next[$isInArray]);
+				$this->TsumegoNavigationButtons->next = array_values($this->TsumegoNavigationButtons->next);
 			}
-			if ($t['Tsumego']['id'] == $tsLast['Tsumego']['id']) {
+			if ($t['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
 				$lastInFav = 1;
 			}
-			$newUT = $this->findUt($fav[count($fav) - 1]['Favorite']['tsumego_id'], $tsumegoStatusMap);
 		}
 
-		if (!isset($newUT['TsumegoStatus']['status'])) {
-			$newUT['TsumegoStatus']['status'] = 'N';
-		}
-		$tsLast['Tsumego']['status'] = 'set' . $newUT['TsumegoStatus']['status'] . '1';
-		if ($t['Tsumego']['id'] == $tsLast['Tsumego']['id']) {
-			$tsLast = null;
+		if ($t['Tsumego']['id'] == $this->TsumegoNavigationButtons->last['Tsumego']['id']) {
+			$this->TsumegoNavigationButtons->last = null;
 		}
 		if (Auth::isLoggedIn()) {
 			$t['Tsumego']['status'] = 'set' . $ut['TsumegoStatus']['status'] . '2';
@@ -2316,20 +2188,8 @@ class TsumegosController extends AppController {
 			}
 		}
 
-		$navi = [];
-		array_push($navi, $firstTsumegoInSet);
-		$tsBackCount = count($this->TsumegoNavigationButtons->previousButtons);
-
-		for ($i = 0; $i < $tsBackCount; $i++) {
-			array_push($navi, $this->TsumegoNavigationButtons->previousButtons[$i]);
-		}
-		array_push($navi, $t);
-		$tsNextCount = count($this->TsumegoNavigationButtons->nextButtons);
-
-		for ($i = 0; $i < $tsNextCount; $i++) {
-			array_push($navi, $this->TsumegoNavigationButtons->nextButtons[$i]);
-		}
-		array_push($navi, $tsLast);
+		$this->TsumegoNavigationButtons->current =  TsumegoButton::constructFromSetConnection($setConnection, $tsumegoStatusMap);
+		$navi = $this->TsumegoNavigationButtons->combine();
 
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
