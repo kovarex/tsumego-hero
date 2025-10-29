@@ -12,7 +12,7 @@ class TsumegoButton {
 
 	public static function constructFromTsumego(array $tsumego, array $tsumegoStatusMap) {
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['id'], 'user_id' => $tsumego['Tsumego']['user_id']]]);
-		assert((bool)$setConnection); // TODO: can theoretically happen
+		assert((bool) $setConnection); // TODO: can theoretically happen
 		$result = [];
 		$result['SetConnection'] = $setConnection['SetConnection'];
 		$result['Tsumego'] = ClassRegistry::init('Tsumego')->findById($setConnection['SetConnection']['tsumego_id'])['Tsumego'];
