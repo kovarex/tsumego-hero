@@ -98,7 +98,6 @@ class TsumegosController extends AppController {
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$refresh = null;
-		$mode = 1;
 		$difficulty = 4;
 		$potion = 0;
 		$potionSuccess = false;
@@ -180,12 +179,8 @@ class TsumegosController extends AppController {
 		}
 
 		if (Auth::isLoggedIn()) {
-			if (Auth::getUser()['mode'] == 0) {
-				Auth::getUser()['mode'] = 1;
-			}
 			if (isset($this->params['url']['mode'])) {
 				Auth::getUser()['mode'] = $this->params['url']['mode'];
-				$mode = $this->params['url']['mode'];
 			}
 			$difficulty = Auth::getUser()['t_glicko'];
 			if (isset($_COOKIE['difficulty']) && $_COOKIE['difficulty'] != '0') {
@@ -193,7 +188,7 @@ class TsumegosController extends AppController {
 				Auth::getUser()['t_glicko'] = $_COOKIE['difficulty'];
 				unset($_COOKIE['difficulty']);
 			}
-			if ($mode == 2) {
+			if (Auth::isInRatingMode()) {
 				if ($difficulty == 1) {
 					$adjustDifficulty = -450;
 				} elseif ($difficulty == 2) {
@@ -698,7 +693,7 @@ class TsumegosController extends AppController {
 			array_push($commentCoordinates, $array[1]);
 			$counter1++;
 		}
-		if ($mode == 1) {
+		if (Auth::isInLevelMode()) {
 			if (Auth::isLoggedIn() && !$this->Session->check('noLogin')) {
 				$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 				$utsMapx = array_count_values($tsumegoStatusMap);
@@ -706,12 +701,10 @@ class TsumegosController extends AppController {
 				Auth::getUser()['solved'] = $correctCounter;
 				$ut = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
 			} else {
-				$allUts = null;
 				$ut = null;
 			}
-		} elseif ($mode == 2) {
+		} elseif (Auth::isInRatingMode()) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
-			Auth::getUser()['mode'] = 2;
 			$allUts = [];
 			$allUts2 = [];
 			$allUts2['TsumegoStatus']['id'] = 59;
@@ -722,7 +715,7 @@ class TsumegosController extends AppController {
 			array_push($allUts, $allUts1);
 			array_push($allUts, $allUts2);
 			$ut = $allUts[0];
-		} elseif ($mode == 3) {
+		} elseif (Auth::isInTimeMode()) {
 			$allUts1 = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $t['Tsumego']['id']]]);
 			$allUts = [];
 			$allUts2 = [];
@@ -747,7 +740,7 @@ class TsumegosController extends AppController {
 			$utPre = $this->findUt((int) $_COOKIE['previousTsumegoID'], $tsumegoStatusMap);
 		}
 
-		if ($mode == 1 || $mode == 3) {
+		if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
 			if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] == $t['Tsumego']['id']) {
 				if ($_COOKIE['score'] != 0) {
 					$_COOKIE['score'] = $this->decrypt($_COOKIE['score']);
@@ -760,7 +753,7 @@ class TsumegosController extends AppController {
 				}
 			}
 		}
-		if ($mode == 3) {
+		if (Auth::isInTimeMode()) {
 			$mode3Score1 = $this->encrypt($t['Tsumego']['num'] . '-solved-' . $t['Tsumego']['set_id']);
 			$mode3Score2 = $this->encrypt($t['Tsumego']['num'] . '-failed-' . $t['Tsumego']['set_id']);
 			$mode3Score3 = $this->encrypt($t['Tsumego']['num'] . '-timeout-' . $t['Tsumego']['set_id']);
@@ -771,7 +764,6 @@ class TsumegosController extends AppController {
 			array_push($mode3ScoreArray, $mode3Score4);
 		}
 
-		$favorite = $this->Favorite->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 		if (isset($_COOKIE['favorite']) && $_COOKIE['favorite'] != '0') {
 			if (Auth::isLoggedIn()) {
 				if ($_COOKIE['favorite'] > 0) {
@@ -817,7 +809,7 @@ class TsumegosController extends AppController {
 		}
 		//Incorrect
 		if (Auth::isLoggedIn() && isset($_COOKIE['misplay']) && $_COOKIE['misplay'] != 0) {
-			if ($mode == 1 && Auth::getUserID() != 33) {
+			if (Auth::isInLevelMode()) {
 				if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] > 0) {
 					$this->TsumegoAttempt->create();
 					$ur1 = [];
@@ -831,8 +823,8 @@ class TsumegosController extends AppController {
 					$this->TsumegoAttempt->save($ur1);
 				}
 			}
-			if ($mode == 1 || $mode == 3) {
-				if ($mode == 1 && $_COOKIE['transition'] != 2) {
+			if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
+				if (Auth::isInLevelMode() == 1 && $_COOKIE['transition'] != 2) {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
@@ -886,7 +878,7 @@ class TsumegosController extends AppController {
 				if ($_COOKIE['type'] == 'g') {
 					$this->updateGoldenCondition();
 				}
-			} elseif ($mode == 2) {
+			} elseif (Auth::isInRatingMode()) {
 				if (isset($_COOKIE['previousTsumegoID'])) {
 					$eloDifference = abs(Auth::getUser()['elo_rating_mode'] - $preTsumego['Tsumego']['elo_rating_mode']);
 					if (Auth::getUser()['elo_rating_mode'] > $preTsumego['Tsumego']['elo_rating_mode']) {
@@ -977,7 +969,7 @@ class TsumegosController extends AppController {
 						}
 					}
 				}
-				if ($mode == 1) {
+				if (Auth::isInLevelMode()) {
 					Auth::getUser()['damage'] = Auth::getUser()['health'];
 				}
 			}
@@ -999,8 +991,8 @@ class TsumegosController extends AppController {
 
 			$solvedTsumegoRank = Rating::getReadableRankFromRating($preTsumego['Tsumego']['elo_rating_mode']);
 
-			if ($isNum && $isSet || $mode == 2) {
-				if ($mode == 1 || $mode == 3) {
+			if ($isNum && $isSet || Auth::isInRatingMode()) {
+				if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
 					if (!$this->Session->check('noLogin')) {
 						$ub = [];
 						$ub['UserBoard']['user_id'] = Auth::getUserID();
@@ -1016,12 +1008,12 @@ class TsumegosController extends AppController {
 							Auth::getUser()['reuse4'] = 1;
 						}
 					}
-					if ($mode == 3) {
+					if (Auth::isInTimeMode()) {
 						$exploit = null;
 						$suspiciousBehavior = false;
 					}
 					if ($exploit == null && $suspiciousBehavior == false) {
-						if ($mode == 1) {
+						if (Auth::isInLevelMode()) {
 							$xpOld = Auth::getUser()['xp'] + ((int) ($_COOKIE['score']));
 							Auth::getUser()['reuse2']++;
 							Auth::getUser()['reuse3'] += (int) ($_COOKIE['score']);
@@ -1036,7 +1028,7 @@ class TsumegosController extends AppController {
 								Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
 							}
 						}
-						if ($mode == 1 && Auth::getUserID() != 33) {
+						if (Auth::isInLevelMode()) {
 							if (isset($_COOKIE['previousTsumegoID'])) {
 								$this->TsumegoAttempt->create();
 								$ur = [];
@@ -1152,7 +1144,7 @@ class TsumegosController extends AppController {
 					if (!isset($utPre['TsumegoStatus']['status'])) {
 						$utPre['TsumegoStatus']['status'] = 'V';
 					}
-				} elseif ($mode == 2 && $_COOKIE['transition'] != 1) {
+				} elseif (Auth::isInRatingMode() && $_COOKIE['transition'] != 1) {
 					$userEloBefore = Auth::getUser()['elo_rating_mode'];
 					$tsumegoEloBefore = $preTsumego['Tsumego']['elo_rating_mode'];
 					$diff = $preTsumego['Tsumego']['elo_rating_mode'] - Auth::getUser()['elo_rating_mode'];
@@ -1411,20 +1403,15 @@ class TsumegosController extends AppController {
 				$this->deleteUnusedStatuses(Auth::getUserID());
 			}
 		}
-		if ($mode == 1 || $mode == 3) {
+		if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
 			if ($ut == null && Auth::isLoggedIn()) {
 				$this->TsumegoStatus->create();
 				$ut['TsumegoStatus'] = [];
 				$ut['TsumegoStatus']['user_id'] = Auth::getUserID();
 				$ut['TsumegoStatus']['tsumego_id'] = $id;
 				$ut['TsumegoStatus']['status'] = 'V';
-				if ($mode != 3) {
-					//$this->TsumegoStatus->save($ut);
-					//$this->Session->read('loggedInUser.uts')[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
-					$tsumegoStatusMap[$ut['TsumegoStatus']['tsumego_id']] = $ut['TsumegoStatus']['status'];
-				}
 			}
-		} elseif ($mode == 2) {
+		} elseif (Auth::isInRatingMode()) {
 			$ut['TsumegoStatus'] = [];
 			$ut['TsumegoStatus']['user_id'] = Auth::getUserID();
 			$ut['TsumegoStatus']['tsumego_id'] = $id;
@@ -1432,7 +1419,6 @@ class TsumegosController extends AppController {
 		}
 		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
 		$search3ids = [];
-		$search3Count = count($search3);
 
 		foreach ($search3 as $item) {
 			$search3ids[] = $this->TagName->findByName($item)['TagName']['id'];
@@ -2091,10 +2077,6 @@ class TsumegosController extends AppController {
 				unset($this->TsumegoNavigationButtons->previous[$isInArray]);
 				$this->TsumegoNavigationButtons->previous = array_values($this->TsumegoNavigationButtons->previous);
 			}
-			$newUT = $this->findUt($ts[0]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
-			if (!isset($newUT['TsumegoStatus']['status'])) {
-				$newUT['TsumegoStatus']['status'] = 'N';
-			}
 			if ($setConnection['SetConnection']['id'] == $this->TsumegoNavigationButtons->first['SetConnection']['id']) {
 				$this->TsumegoNavigationButtons->first = null;
 			}
@@ -2217,7 +2199,6 @@ class TsumegosController extends AppController {
 					$navi[$i]['Tsumego']['type'] = $j['Joseki']['type'];
 					$navi[$i]['Tsumego']['thumbnail'] = $j['Joseki']['thumbnail'];
 				}
-
 			}
 		}
 
@@ -2325,7 +2306,7 @@ class TsumegosController extends AppController {
 		}
 
 		$admins = $this->User->find('all', ['conditions' => ['isAdmin' => 1]]);
-		if ($mode == 2 || $mode == 3) {
+		if (Auth::isInRatingMode() || Auth::isInTimeMode()) {
 			$this->Session->write('title', 'Tsumego Hero');
 		}
 		if ($isSandbox) {
@@ -2333,7 +2314,7 @@ class TsumegosController extends AppController {
 		}
 
 		$crs = 0;
-		if ($mode == 3) {
+		if (Auth::isInTimeMode()) {
 			$t['Tsumego']['status'] = 'setV2';
 			$ranksCount = count($this->TimeMode->timeModeAttempts);
 
@@ -2352,11 +2333,11 @@ class TsumegosController extends AppController {
 			$raName = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'];
 		}
 
-		if ($mode == 1) {
+		if (Auth::isInLevelMode()) {
 			$this->Session->write('page', 'level mode');
-		} elseif ($mode == 2) {
+		} elseif (Auth::isInRatingMode()) {
 			$this->Session->write('page', 'rating mode');
-		} elseif ($mode == 3) {
+		} elseif (Auth::isInTimeMode()) {
 			$this->Session->write('page', 'time mode');
 		}
 
@@ -2572,7 +2553,6 @@ class TsumegosController extends AppController {
 		$this->set('nextLink', $nextLink);
 		$this->set('hash', $hash);
 		$this->set('nextMode', $nextMode);
-		$this->set('mode', $mode);
 		$this->set('rating', Auth::getWithDefault('elo_rating_mode', 0));
 		$this->set('eloScore', $eloScore);
 		$this->set('eloScore2', $eloScore2);

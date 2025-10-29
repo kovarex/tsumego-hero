@@ -71,6 +71,10 @@ class Auth {
 		return Auth::getMode() == Constants::$LEVEL_MODE;
 	}
 
+	public static function isInRatingMode(): bool {
+		return Auth::getMode() == Constants::$RATING_MODE;
+	}
+
 	public static function isInTimeMode(): bool {
 		return Auth::getMode() == Constants::$TIME_MODE;
 	}
