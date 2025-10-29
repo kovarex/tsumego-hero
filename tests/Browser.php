@@ -25,7 +25,7 @@ class Browser {
 	}
 
 	public function get(string $url): void {
-		$this->driver->get('https://tsumego.ddev.site:33003/' . $url);
+		$this->driver->get('https://test.tsumego.ddev.site:33003/' . $url);
 	}
 
 	public $driver;

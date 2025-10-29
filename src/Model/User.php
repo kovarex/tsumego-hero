@@ -1,8 +1,9 @@
 <?php
 
 class User extends AppModel {
-	public function __construct() {
-		parent::__construct(false, 'user');
+	public function __construct($id = false, $table = null, $ds = null) {
+		$id['table'] =  'user';
+		parent::__construct($id, $table, $ds);
 	}
 
 	public $validate = [
