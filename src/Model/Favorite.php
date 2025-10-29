@@ -1,7 +1,8 @@
 <?php
 
 class Favorite extends AppModel {
-	public function __construct() {
-		parent::__construct(false, 'favorite');
+	public function __construct($id = false, $table = null, $ds = null) {
+		$id['table'] =  'favorite';
+		parent::__construct($id, $table, $ds);
 	}
 }
