@@ -55,11 +55,14 @@ class ContextPreparator {
 
 	private function prepareThisTsumego(?array $tsumego): void {
 		$this->tsumego = $this->prepareTsumego($tsumego);
+		$this->allTsumegos [] = $this->tsumego;
 	}
 
 	private function prepareOtherTsumegos(?array $tsumegos): void {
 		foreach ($tsumegos as $tsumego) {
-			$this->otherTsumegos [] = $this->prepareTsumego($tsumego);
+			$tsumego = $this->prepareTsumego($tsumego);
+			$this->otherTsumegos [] = $tsumego;
+			$this->allTsumegos [] = $tsumego;
 		}
 	}
 
@@ -171,6 +174,7 @@ class ContextPreparator {
 	public ?array $user = null;
 	public ?array $tsumego = null;
 	public ?array $otherTsumegos = [];
+	public ?array $allTsumegos = [];
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;

@@ -515,18 +515,12 @@
 			for($i = 0; $i < count($navi); $i++){
 				if($t['Tsumego']['id'] == $navi[$i]['Tsumego']['id']) $additionalId = 'id="currentElement"';
 				else $additionalId = '';
-				if(!isset($navi[$i]['Tsumego']['duplicateLink']))
-					$duplicateLink = '';
-				else
-					$duplicateLink = $navi[$i]['Tsumego']['duplicateLink'];
-				if($inFavorite=='?favorite=1')
-					$duplicateLink = '';
-
-				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="'.$navi[$i]['Tsumego']['status'].'">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$navi[$i]['Tsumego']['id'].$duplicateLink.$inFavorite.'">
+				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
+					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
 					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
-				if($i==0 || $i==count($navi)-2) echo '<li class="setBlank"><a></a></li>';
+				if($i==0 || $i == count($navi) - 2)
+          echo '<li class="setBlank"></li>';
 			}
 			?>
 		</div>

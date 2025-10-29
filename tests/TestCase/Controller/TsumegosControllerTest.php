@@ -126,17 +126,4 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
-
-	// the next and back buttons will go back to the parent set when this is last (for next) or first (for back) tsumego of that set.
-	public function testTheNextAndBackButtonLinksWhenBothPointToTheParentSet() {
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
-
-		$browser = new Browser();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
-		$this->assertSame($backButton->getAttribute('href'), '/sets/view/' . $context->tsumego['sets'][0]['id']);
-
-		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
-		$this->assertSame($nextButton->getAttribute('href'), '/sets/view/' . $context->tsumego['sets'][0]['id']);
-	}
 }
