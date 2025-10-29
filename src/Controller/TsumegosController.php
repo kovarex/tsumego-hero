@@ -1947,7 +1947,7 @@ class TsumegosController extends AppController {
 							}
 						}
 						if ((count($this->TsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['SetConnection']['tsumego_id']) && $ts[0]['SetConnection']['tsumego_id'] != $t['Tsumego']['id']) {
-							$tsNextAdjust = count($this->TsumegoNavigationButtons->next) + 1;
+							$tsNextAdjust = count($this->TsumegoNavigationButtons->next);
 							$this->TsumegoNavigationButtons->next = [];
 							$b = 1;
 							while ($b <= $tsNextAdjust) {

@@ -32,9 +32,24 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 	}
 
 	// the next and back buttons will go back to the parent set when this is last (for next) or first (for back) tsumego of that set.
-	public function testNavigationButtons() {
+	public function testNavigationButtonsLimitedFromBothSides() {
 		$this->buttonsTestGeneric(2, [1, 3], [1, 2, 3]); // current is middle
 		$this->buttonsTestGeneric(1, [2, 3], [1, 2, 3]); // current is starting
 		$this->buttonsTestGeneric(3, [1, 2], [1, 2, 3]); // current is last
+	}
+
+	public function testNavigationButtonsWithExcessOnBothSides() {
+		// we show at most 5 previous buttons and 5 next buttons utnil we start skipping
+		$this->buttonsTestGeneric(8, [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15], [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15]);
+	}
+
+	public function testNavigationButtonsWithNotEnoughOnLeftCausingMoreOnTheRightStartingOnTheEdge() {
+		// the lack of buttons on the left adds buttons to the right, but still the amount is limited
+		$this->buttonsTestGeneric(1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
+	}
+
+	public function testNavigationButtonsWithNotEnoughOnLeftCausingMoreOnTheRightStartingNextToTheEdge() {
+		// the lack of buttons on the left adds buttons to the right, but still the amount is limited
+		$this->buttonsTestGeneric(2, [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
 	}
 }
