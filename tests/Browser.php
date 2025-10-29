@@ -19,6 +19,12 @@ class Browser {
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
 		$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
+		// appranetly we need to visit "some" page to be able to set cookies
+		$this->driver->get('https://test.tsumego.ddev.site:33003/empty.php');
+
+		// setting xdebug cookies, so I can debug the code invoked by requests of this driver
+		$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => "debug"]);
+		$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
 	}
 	public function __destruct() {
 		$this->driver->quit();
