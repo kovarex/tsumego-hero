@@ -1,18 +1,20 @@
 const GOAL_NONE = 0;
-GOAL_KILL = 1;
+const GOAL_KILL = 1;
 const GOAL_LIVE = 2;
 
 const STATUS_NONE = 0;
 const STATUS_DEAD_NONE = 1;
 const STATUS_DEAD = 2;
 const STATUS_BENT_FOUR_IN_THE_CORNER = 3;
-const STATUS_DEAD_IN_DOUBLE_KO = 4;
-const STATUS_TEN_THOUSAND_YEARS_KO = 5;
-const STATUS_KO = 6;
-const STATUS_SEKI = 7;
-const STATUS_ALIVE_IN_DOUBLE_KO = 8;
-const STATUS_ALIVE = 9;
-const STATUS_ALIVE_NONE = 10;
+const STATUS_DEAD_IN_SUPER_KO = 4;
+const STATUS_DEAD_IN_DOUBLE_KO = 5;
+const STATUS_TEN_THOUSAND_YEARS_KO = 6;
+const STATUS_KO = 7;
+const STATUS_SEKI = 8;
+const STATUS_ALIVE_IN_DOUBLE_KO = 9;
+const STATUS_ALIVE_IN_SUPER_KO = 10;
+const STATUS_ALIVE = 11;
+const STATUS_ALIVE_NONE = 12;
 
 besogo.makeStatusInternal = function(type)
 {
@@ -32,10 +34,14 @@ besogo.makeStatusInternal = function(type)
       return "DEAD";
     if (this.type == STATUS_BENT_FOUR_IN_THE_CORNER)
       return "BENT4";
+    if (this.type == STATUS_DEAD_IN_SUPER_KO)
+      return "ASKO";
     if (this.type == STATUS_DEAD_IN_DOUBLE_KO)
       return "DDKO";
     if (this.type == STATUS_ALIVE_IN_DOUBLE_KO)
       return "ADKO";
+    if (this.type == STATUS_ALIVE_IN_SUPER_KO)
+      return "ASKO";
     if (this.type == STATUS_TEN_THOUSAND_YEARS_KO)
       return "10kKO";
     if (this.type == STATUS_KO)
@@ -59,12 +65,16 @@ besogo.makeStatusInternal = function(type)
       return "Ten thousand years ko";
     if (this.type == STATUS_BENT_FOUR_IN_THE_CORNER)
       return "Bent four in the corner";
+    if (this.type == STATUS_DEAD_IN_SUPER_KO)
+      return "Dead in super ko";
     if (this.type == STATUS_DEAD_IN_DOUBLE_KO)
       return "Dead in double ko";
+    if (this.type == STATUS_ALIVE_IN_SUPER_KO)
+      return "Alive in super ko";
     if (this.type == STATUS_ALIVE_IN_DOUBLE_KO)
       return "Alive in double ko";
     if (this.type == STATUS_KO)
-      return result = this.str() + ' (' + this.getKoApproachStrLong() + this.getKoStrLong() + ')';
+      return this.str() + ' (' + this.getKoApproachStrLong() + this.getKoStrLong() + ')';
     if (this.type == STATUS_SEKI)
       return this.str() + ' (' + (this.sente ? "in sente" : "in gote") + ')';
     return this.str();
@@ -229,8 +239,14 @@ besogo.loadStatusInternalFromString = function(str)
   if (str == "DDKO")
     return besogo.makeStatusInternal(STATUS_DEAD_IN_DOUBLE_KO);
 
+  if (str == "DSKO")
+    return besogo.makeStatusInternal(STATUS_DEAD_IN_SUPER_KO);
+
   if (str == "ADKO")
     return besogo.makeStatusInternal(STATUS_ALIVE_IN_DOUBLE_KO);
+
+  if (str == "ASKO")
+    return besogo.makeStatusInternal(STATUS_ALIVE_IN_SUPER_KO);
 
   var approaches = 0;
   if (str[0] == "A" && (str[1] == "+" || str[1] == "-"))
