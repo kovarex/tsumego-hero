@@ -547,7 +547,7 @@ class AppController extends Controller {
 
 		$uCount = count($u);
 		for ($i = 0; $i < $uCount; $i++) {
-			$u[$i]['User']['elo_rating_mode'] = 900;
+			$u[$i]['User']['rating'] = 900;
 			$u[$i]['User']['solved2'] = 0;
 			$this->User->save($u[$i]);
 		}
@@ -563,7 +563,7 @@ class AppController extends Controller {
 		$kFactor1 = 1;
 		$kFactor2 = 1;
 		if (Auth::isLoggedIn()) {
-			$rating = Auth::getUser()['elo_rating_mode'];
+			$rating = Auth::getUser()['rating'];
 			if ($rating >= 1500) {
 				$kFactor1 = 1.5;
 				$kFactor2 = 0.9;
@@ -2481,7 +2481,7 @@ class AppController extends Controller {
 		$updated = [];
 
 		$achievementId = 59;
-		$currentElo = Auth::getUser()['elo_rating_mode'];
+		$currentElo = Auth::getUser()['rating'];
 		if ($currentElo >= 1500 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
 			$this->AchievementStatus->create();

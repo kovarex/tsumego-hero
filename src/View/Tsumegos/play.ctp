@@ -322,7 +322,7 @@
 				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
 				if(true) $modifyDescriptionType = 'text';
 				else $modifyDescriptionType = 'hidden';
-				echo $this->Form->input('modifyElo', array('value' => $t['Tsumego']['elo_rating_mode'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Rating'));
+				echo $this->Form->input('modifyElo', array('value' => $t['Tsumego']['rating'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Rating'));
 				echo $this->Form->input('modifyAuthor', array('value' => $t['Tsumego']['author'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Author'));
 				echo $this->Form->input('deleteTag', array('label' => '', 'type' => 'text', 'placeholder' => 'Delete Tag'));
 				if($isSandbox)
@@ -448,7 +448,7 @@
 				<div id="status2" align="center" style="color:black;">
 				<font size="4">
 				<?php
-				echo	$tRank.' <font color="grey">('.$t['Tsumego']['elo_rating_mode'].')</font>';
+				echo	$tRank.' <font color="grey">('.$t['Tsumego']['rating'].')</font>';
 				?>
 				</font>
 				</div>
@@ -2470,7 +2470,7 @@
 				userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
 				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).'+userDifficulty)/userNextlvl*100, 100);
 				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 0)), -2).'+ '.$eloScoreRounded.', 100);
+				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);
 				newXP = '.$newXP.';'; ?>
 				$("#xp-bar-fill").css({"width":newXP2+"%"});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
@@ -2486,8 +2486,8 @@
 					else x2 = 2;
 					<?php echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
 					userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
-					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScoreRounded.', 100);
-					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScore2Rounded.', 100);
+					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
+					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
 					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+userDifficulty)/userNextlvl*100, 100);
 					barPercent2 = newXP2;'; ?>
 					$("#xp-bar-fill").css({"width":newXP2+"%"});
@@ -2958,7 +2958,7 @@
 		}
 		if(result=='S'){
 			$(".tag-gives-hint").css("display", "inline");
-			elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore;
+			elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore;
 			let ulvl;
 			if(mode!=2){//mode 1 and 3 correct
 				<?php echo $sandboxCheck; ?>
@@ -3026,7 +3026,7 @@
 					}
 					if(mode==1 && levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', '0'); ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', '0'); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3039,7 +3039,7 @@
 						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						if(levelBar==2){
 							runXPBar(true);
-							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
+							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
 						}
 					}
 				}
@@ -3081,7 +3081,7 @@
 					}
 					if(levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3110,9 +3110,9 @@
 				}
 				noLastMark = true;
 				if(mode==1 && levelBar==2 && misplays==0){
-					elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
+					elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 					runXPBar(false);
-					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
+					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					userElo = Math.round(elo2);
 				}
 				if(!noXP){
@@ -3146,7 +3146,7 @@
 					}
 				}
 			}else{//mode 2 incorrect
-				elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
+				elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
@@ -3171,7 +3171,7 @@
 					freePlayMode = true;
 					if(levelBar==2){
 						runXPBar(false);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					}
 					userElo = Math.round(elo2);
 				}

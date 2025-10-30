@@ -78,7 +78,7 @@ class TimeModeComponent extends Component {
 				$timeSc = TsumegoUtil::collectTsumegosFromSet($timeModeSetting['TimeModeSetting']['set_id']);
 				$timeScCount = count($timeSc);
 				for ($g = 0; $g < $timeScCount; $g++) {
-					if ($timeSc[$g]['Tsumego']['elo_rating_mode'] >= $r1 && $timeSc[$g]['Tsumego']['elo_rating_mode'] < $r2) {
+					if ($timeSc[$g]['Tsumego']['rating'] >= $r1 && $timeSc[$g]['Tsumego']['rating'] < $r2) {
 						if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || Auth::hasPremium()) {
 							array_push($this->rankTs, $timeSc[$g]);
 						}

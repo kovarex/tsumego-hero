@@ -59,7 +59,7 @@
 			}else{
 				$xpBarFill = 'xp-bar-fill-c2';
         if (Auth::isLoggedIn())
-				  $levelNum = Rating::getReadableRankFromRating(Auth::getUser()['elo_rating_mode']);
+				  $levelNum = Rating::getReadableRankFromRating(Auth::getUser()['rating']);
 				$modeSelector = 1;
 				$accountBarLevelToRating = 'account-bar-user2';
 			}
@@ -488,7 +488,7 @@
 		}
 		if(Auth::isLoggedIn()){ ?>
 		var barPercent1 = <?php echo Auth::getUser()['nextlvl'] == 0 ? "0" : Auth::getUser()['xp']/Auth::getUser()['nextlvl']*100; ?>;
-		var barPercent2 = <?php echo substr(round(Auth::getUser()['elo_rating_mode']), -2); ?>;
+		var barPercent2 = <?php echo substr(round(Auth::getUser()['rating']), -2); ?>;
 		var barLevelNum = "<?php echo 'Level '.Auth::getUser()['level']; ?>";
 		var barRatingNum = "<?php echo $td; ?>";
 		var levelToRatingHover = <?php echo $levelBar; ?>;
@@ -583,7 +583,7 @@
 			var userXP = <?php echo Auth::getUser()['xp']; ?> ;
 			var userLevel = <?php echo Auth::getUser()['level']; ?> ;
 			var userNextLvl = <?php echo Auth::getUser()['nextlvl']; ?> ;
-			var userElo = <?php echo round(Auth::getUser()['elo_rating_mode']); ?> ;
+			var userElo = <?php echo round(Auth::getUser()['rating']); ?> ;
 			var soundValue = 0;
 			let modeSelector = <?php echo $modeSelector; ?>;
 			let levelBar = <?php echo $levelBar; ?>+"";
@@ -820,7 +820,7 @@
 
 				if(notMode3){
 				<?php
-				$barPercent2 = substr(round(Auth::getUser()['elo_rating_mode']), -2);
+				$barPercent2 = substr(round(Auth::getUser()['rating']), -2);
 
 				if($mode!=3){ ?>
 

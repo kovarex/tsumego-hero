@@ -20,8 +20,8 @@ class ContextPreparator {
 	private function prepareUser(?array $user): void {
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		if ($user) {
-			if ($user['elo_rating_mode']) {
-				$this->user['elo_rating_mode'] = $user['elo_rating_mode'];
+			if ($user['rating']) {
+				$this->user['rating'] = $user['rating'];
 			}
 			$userForSaving['User'] = $this->user;
 			ClassRegistry::init('User')->save($userForSaving);
@@ -73,13 +73,13 @@ class ContextPreparator {
 		}
 
 		$tsumegoAttempt['TsumegoAttempt']['user_id'] = $this->user['id'];
-		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $tsumego['id'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $tsumegoAttempt['solved'] ?: false;
 		$tsumegoAttempt['TsumegoAttempt']['mode'] = $this->user['mode'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}

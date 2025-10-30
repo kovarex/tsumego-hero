@@ -66,7 +66,7 @@
 		<div align="center">
 			Your rank:<br>
 			<a style="cursor:pointer;" onclick="userShow1(2);">
-				<img id="profileRankImage" src="/img/<?php echo Rating::getReadableRankFromRating($user['User']['elo_rating_mode']); ?>Rank.png" width="76px">
+				<img id="profileRankImage" src="/img/<?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?>Rank.png" width="76px">
 			</a>
 		</div>
 		</td>
@@ -150,7 +150,7 @@
 		</tr>
 		<tr>
 			<td>Rating:</td>
-			<td><?php echo $user['User']['elo_rating_mode']; ?></td>
+			<td><?php echo $user['User']['rating']; ?></td>
 		</tr>
 		<tr>
 			<td>Highest rank:</td>
