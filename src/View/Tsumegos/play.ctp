@@ -602,13 +602,6 @@
 					echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
 					echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-					if($virtual_children==1){
-						$vcOn = 'checked="checked"';
-						$vcOff = '';
-					}else{
-						$vcOn = '';
-						$vcOff = 'checked="checked"';
-					}
 					if($alternative_response==1){
 						$arOn = 'checked="checked"';
 						$arOff = '';
@@ -660,11 +653,6 @@
 							<br>
 							<form action="" method="POST" enctype="multipart/form-data">
 								<table>
-									<tr>
-										<td>Merge recurring positions</td>
-										<td><input type="radio" id="r38" name="data[Settings][r38]" value="on" '.$vcOn.'><label for="r38">on</label></td>
-										<td><input type="radio" id="r38" name="data[Settings][r38]" value="off" '.$vcOff.'><label for="r38">off</label></td>
-									</tr>
 									<tr>
 										<td>Alternative Response Mode</td>
 										<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" '.$arOn.'><label for="r39">on</label></td>
@@ -3253,7 +3241,6 @@
 		options.realstones = true;
 		options.nowheel = true;
 		options.nokeys = true;
-		options.vChildrenEnabled = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
 		if(mode!=3)
@@ -3261,8 +3248,6 @@
 		else
 		options.alternativeResponse = false;
 		<?php
-		if($virtual_children!=1)
-			echo 'options.vChildrenEnabled = false;';
 		if($alternative_response!=1)
 			echo 'options.alternativeResponse = false;';
 		if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210){

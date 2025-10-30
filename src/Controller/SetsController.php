@@ -1537,20 +1537,12 @@ class SetsController extends AppController {
 						array_push($ts, $tsBuffer[$i]);
 					}
 				}
-				$allVcActive = true;
-				$allVcInactive = true;
 				$allArActive = true;
 				$allArInactive = true;
 				$allPassActive = true;
 				$allPassInactive = true;
 				$tsCount = count($ts);
 				for ($i = 0; $i < $tsCount; $i++) {
-					if ($ts[$i]['Tsumego']['virtual_children'] == 0) {
-						$allVcActive = false;
-					}
-					if ($ts[$i]['Tsumego']['virtual_children'] == 1) {
-						$allVcInactive = false;
-					}
 					if ($ts[$i]['Tsumego']['alternative_response'] == 0) {
 						$allArActive = false;
 					}
@@ -1715,35 +1707,6 @@ class SetsController extends AppController {
 					$this->AdminActivity->save($adminActivity);
 				}
 				if (isset($this->data['Settings'])) {
-					if ($this->data['Settings']['r38'] == 'on') {
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							$ts[$i]['Tsumego']['virtual_children'] = 1;
-							$this->Tsumego->save($ts[$i]);
-						}
-						$allVcActive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-
-					}
-					if ($this->data['Settings']['r38'] == 'off') {
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							$ts[$i]['Tsumego']['virtual_children'] = 0;
-							$this->Tsumego->save($ts[$i]);
-						}
-						$allVcInactive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-					}
 					if ($this->data['Settings']['r39'] == 'on') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {

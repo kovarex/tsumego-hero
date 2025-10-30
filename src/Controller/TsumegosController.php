@@ -351,24 +351,6 @@ class TsumegosController extends AppController {
 					$tsumegoVariant['TsumegoVariant']['answer3'] = $this->data['Study2']['answer3'];
 					$this->TsumegoVariant->save($tsumegoVariant);
 				} elseif (isset($this->data['Settings'])) {
-					if ($this->data['Settings']['r38'] == 'on' && $t['Tsumego']['virtual_children'] != 1) {
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions';
-						$this->AdminActivity->create();
-						$this->AdminActivity->save($adminActivity);
-					}
-					if ($this->data['Settings']['r38'] == 'off' && $t['Tsumego']['virtual_children'] != 0) {
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions';
-						$this->AdminActivity->create();
-						$this->AdminActivity->save($adminActivity);
-					}
 					if ($this->data['Settings']['r39'] == 'on' && $t['Tsumego']['alternative_response'] != 1) {
 						$adminActivity2 = [];
 						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
@@ -460,11 +442,6 @@ class TsumegosController extends AppController {
 						$this->AdminActivity->save($adminActivity2);
 						$this->TsumegoVariant->delete($tsumegoVariant['TsumegoVariant']['id']);
 						$tsumegoVariant = null;
-					}
-					if ($this->data['Settings']['r38'] == 'on') {
-						$t['Tsumego']['virtual_children'] = 1;
-					} else {
-						$t['Tsumego']['virtual_children'] = 0;
 					}
 					if ($this->data['Settings']['r39'] == 'on') {
 						$t['Tsumego']['alternative_response'] = 1;
@@ -2574,7 +2551,6 @@ class TsumegosController extends AppController {
 		$this->set('requestProblem', $requestProblem);
 		$this->set('alternative_response', $t['Tsumego']['alternative_response']);
 		$this->set('passEnabled', $t['Tsumego']['pass']);
-		$this->set('virtual_children', $t['Tsumego']['virtual_children']);
 		$this->set('set_duplicate', $t['Tsumego']['duplicate']);
 		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('setConnection', $setConnection);
