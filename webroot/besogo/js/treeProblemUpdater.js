@@ -116,13 +116,17 @@ besogo.updateCorrectValues = function(root)
   root.unvisit();
 }
 
-besogo.updateStatusResult = function(solversMove, child, status, goal)
+besogo.updateStatusResult = function(solversMove, child, status, goal, superkoMeansDead)
 {
-  if (child.status.isNone())
+  let childStatusToUse = child.status;
+  if (childStatusToUse.blackFirst.type == STATUS_ALIVE_IN_SUPER_KO && superkoMeansDead)
+    childStatusToUse.blackFirst.type = STATUS_DEAD_IN_SUPER_KO;
+
+  if (childStatusToUse.isNone())
     return status;
 
-  if (child.status.better(status, goal) == solversMove)
-    return child.status;
+  if (childStatusToUse.better(status, goal) == solversMove)
+    return childStatusToUse;
   else
     return status;
 }
@@ -167,9 +171,9 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
     node.status = besogo.makeStatusSimple(STATUS_DEAD_NONE);
 
   for (let i = 0; i < node.children.length; ++i)
-    node.status = besogo.updateStatusResult(solversMove, node.children[i], node.status, goal);
+    node.status = besogo.updateStatusResult(solversMove, node.children[i], node.status, goal, node.superkoMeansDead);
   for (let i = 0; i < node.virtualChildren.length; ++i)
-    node.status = besogo.updateStatusResult(solversMove, node.virtualChildren[i].target, node.status, goal);
+    node.status = besogo.updateStatusResult(solversMove, node.virtualChildren[i].target, node.status, goal, node.superkoMeansDead);
 
   if (node.status.blackFirst.type == STATUS_ALIVE_NONE || node.status.blackFirst.type == STATUS_DEAD_NONE)
     node.status = besogo.makeStatusSimple(STATUS_NONE);

@@ -126,6 +126,8 @@ besogo.loadSgf = function(sgf, editor, mode = NORMAL_LOAD)
       case 'S':
         node.statusSource = besogo.loadStatusFromString(prop.values.join().trim());
         break;
+      case 'SKD':
+        node.superkoMeansDead = true;
       case 'G':
         node.goal = besogo.loadGoalFromString(prop.values.join().trim());
         break;

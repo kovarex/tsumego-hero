@@ -31,6 +31,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.hash = 0;
     node.correctSource = false;
     node.correct = CORRECT_EMPTY;
+    node.superkoMeansDead = false;
     node.cameFrom = null;
     node.statusSource = null;
     node.status = null;

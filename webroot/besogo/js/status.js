@@ -35,7 +35,7 @@ besogo.makeStatusInternal = function(type)
     if (this.type == STATUS_BENT_FOUR_IN_THE_CORNER)
       return "BENT4";
     if (this.type == STATUS_DEAD_IN_SUPER_KO)
-      return "ASKO";
+      return "DSKO";
     if (this.type == STATUS_DEAD_IN_DOUBLE_KO)
       return "DDKO";
     if (this.type == STATUS_ALIVE_IN_DOUBLE_KO)
@@ -349,6 +349,11 @@ besogo.makeStatus = function(blackFirst = null, whiteFirst = null)
   status.isNone = function()
   {
     return this.blackFirst.type == STATUS_NONE;
+  }
+
+  status.isSuperKo = function()
+  {
+    return this.blackFirst.type == STATUS_DEAD_IN_SUPER_KO || this.blackFirst.type == STATUS_ALIVE_IN_SUPER_KO;
   }
 
   return status;
