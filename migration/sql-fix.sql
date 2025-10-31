@@ -178,9 +178,6 @@ ALTER TABLE tsumego DROP COLUMN virtual_children;
 ALTER TABLE tsumego RENAME COLUMN elo_rating_mode to `rating`;
 ALTER TABLE user RENAME COLUMN elo_rating_mode to `rating`;
 
-ALTER TABLE tsumego ALTER RENAME COLUMN elo_rating_mode to rating;
-ALTER TABLE user ALTER RENAME COLUMN elo_rating_mode to rating;
-
 ALTER TABLE time_mode_attempt  ADD time_mode_overview_id INT UNSIGNED NULL;
 ALTER TABLE time_mode_overview MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;
 
