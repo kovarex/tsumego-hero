@@ -72,7 +72,8 @@ class TimeModeComponent extends Component {
 			'rating <' => $ratingBounds['max'],
 			'Set.included_in_time_mode =' => true,
 			],
-		'contain' => ['Set.id', 'Set.included_in_time_mode']];
+		'contain' => ['Set'],
+		'fields' => ['Tsumego.id', 'Set.id', 'Set.included_in_time_mode']];
 		if (!Auth::hasPremium()) {
 			$tsumegoOptions['conditions'] [] = ['Set.premium' => false];
 			$tsumegoOptions['contain'] []= 'Set.premium';

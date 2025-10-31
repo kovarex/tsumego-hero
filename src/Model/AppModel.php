@@ -36,6 +36,24 @@ class AppModel extends Model {
 		'EmptyInteger',
 	];
 
+	/**
+	 * @param string $associated
+	 * @param array $options
+	 * @return void
+	 */
+	public function belongsToMany($associated, array $options = []) {
+		$this->_setAssoc('hasAndBelongsToMany', $associated, $options);
+	}
+
+	/**
+	 * @param string $associated
+	 * @param array $options
+	 * @return void
+	 */
+	public function belongsTo($associated, array $options = []) {
+		$this->_setAssoc('belongsTo', $associated, $options);
+	}
+
 	public $recursive = -1;
 
 }

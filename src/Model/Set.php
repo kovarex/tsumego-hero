@@ -6,5 +6,10 @@ class Set extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
+	public function initialize(array $config) {
+		parent::initialize($config);
+		$this->belongsToMany('SetConnection');
+	}
+
 	public $hasMany = ['ContainedSetConnections' => ['className' => 'SetConnection']];
 }
