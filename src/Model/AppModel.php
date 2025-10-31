@@ -39,7 +39,25 @@ class AppModel extends Model {
 	public function __construct($id = false,$table = null,$ds = null)
 	{
 		parent::__construct($id,$table,$ds);
-		$this->initialize();
+
+		// $config does not contain all the keys here that it contains in Cake 3.x.
+		$config = [
+			'table' => $this->table,
+			'alias' => $this->alias,
+			'schema' => $this->schemaName,
+		];
+		if (
+			empty($this->actsAs) ||
+			(
+				is_array($this->actsAs) &&
+				!in_array('Containable', $this->actsAs) &&
+				!array_key_exists('Containable', $this->actsAs)
+			)
+		) {
+			$this->addBehavior('Containable');
+		}
+
+		$this->initialize($config);
 	}
 
 	/**
