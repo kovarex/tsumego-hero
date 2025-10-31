@@ -76,7 +76,6 @@ class TimeModeComponent extends Component {
 		'fields' => ['Tsumego.id', 'Set.id', 'Set.included_in_time_mode']];
 		if (!Auth::hasPremium()) {
 			$tsumegoOptions['conditions'] [] = ['Set.premium' => false];
-			$tsumegoOptions['contain'] []= 'Set.premium';
 		}
 
 		return ClassRegistry::init('Tsumego')->find('all', $tsumegoOptions) ?: [];
