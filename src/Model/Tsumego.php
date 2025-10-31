@@ -8,7 +8,7 @@ class Tsumego extends AppModel {
 
 	public function initialize(array $config) {
 		parent::initialize($config);
-		$this->belongsToMany('SetConnection');
+		$this->hasMany('SetConnection');
 	}
 
 	public $hasMany = ['ContainedInSetConnections' => ['className' => 'SetConnection']];

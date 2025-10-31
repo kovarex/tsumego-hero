@@ -8,8 +8,8 @@ class SetConnection extends AppModel {
 
 	public function initialize(array $config) {
 		parent::initialize($config);
-		$this->belongsTo('Set');
-		$this->belongsTo('Tsumego');
+		$this->hasOne('Set');
+		$this->hasOne('Tsumego');
 	}
 
 	public $hasOne = [

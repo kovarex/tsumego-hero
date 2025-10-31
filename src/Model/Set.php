@@ -8,7 +8,7 @@ class Set extends AppModel {
 
 	public function initialize(array $config) {
 		parent::initialize($config);
-		$this->belongsToMany('SetConnection');
+		$this->hasMany('SetConnection');
 	}
 
 	public $hasMany = ['ContainedSetConnections' => ['className' => 'SetConnection']];

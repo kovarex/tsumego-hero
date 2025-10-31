@@ -36,6 +36,12 @@ class AppModel extends Model {
 		'EmptyInteger',
 	];
 
+	public function __construct($id = false,$table = null,$ds = null)
+	{
+		parent::__construct($id,$table,$ds);
+		$this->initialize();
+	}
+
 	/**
 	 * @param string $associated
 	 * @param array $options
@@ -52,6 +58,24 @@ class AppModel extends Model {
 	 */
 	public function belongsTo($associated, array $options = []) {
 		$this->_setAssoc('belongsTo', $associated, $options);
+	}
+
+	/**
+	 * @param string $associated
+	 * @param array $options
+	 * @return void
+	 */
+	public function hasOne($associated, array $options = []) {
+		$this->_setAssoc('hasOne', $associated, $options);
+	}
+
+	/**
+	 * @param string $associated
+	 * @param array $options
+	 * @return void
+	 */
+	public function hasMany($associated, array $options = []) {
+		$this->_setAssoc('hasMany', $associated, $options);
 	}
 
 	public $recursive = -1;
