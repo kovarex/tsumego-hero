@@ -225,8 +225,8 @@ CREATE TABLE `time_mode_attempt_result` (
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO time_mode_attempt_result(`name`) VALUES ('solved'),('failed'), ('timeout'), ('skipped');
-ALTER TABLE time_mode_attempt ADD COLUMN time_mode_attempt_result_id INT UNSIGNED NOT NULL;
+INSERT INTO time_mode_attempt_result(`name`) VALUES (('solved'), ('failed'), ('timeout'), ('skipped');
+ALTER TABLE time_mode_attempt ADD COLUMN time_mode_attempt_result_id INT UNSIGNED NULL DEFAULT NULL;
 
 UPDATE time_mode_attempt JOIN time_mode_attempt_result ON time_mode_attempt.result = time_mode_attempt_result.name SET time_mode_attempt_result_id = time_mode_attempt_result.id;
 ALTER TABLE time_mode_attempt ADD CONSTRAINT `time_mode_attempt_time_mode_attempt_result_id` FOREIGN KEY (`time_mode_attempt_result_id`) REFERENCES `time_mode_attempt_result`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
@@ -303,3 +303,5 @@ ALTER TABLE time_mode_session ADD CONSTRAINT `time_mode_session_time_mode_rank_i
 ALTER TABLE time_mode_session DROP COLUMN `rank`;
 
 ALTER TABLE user DROP COLUMN activeRank;
+ALTER TABLE `set` ADD COLUMN included_in_time_mode BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE `tsumego` DROP COLUMN num;

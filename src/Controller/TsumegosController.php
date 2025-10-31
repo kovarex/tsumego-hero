@@ -54,7 +54,7 @@ class TsumegosController extends AppController {
 		}
 	}
 
-	public function play($id = null, $setConnectionID = null) {
+	public function play($id = null, $setConnectionID = null): array|null {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
 		$this->loadModel('Set');
@@ -104,8 +104,6 @@ class TsumegosController extends AppController {
 		$reviewCheat = false;
 		$commentCoordinates = [];
 		$josekiLevel = 1;
-		$stopParameter = 0;
-		$stopParameter2 = 0;
 		$mode3ScoreArray = [];
 		$trs = [];
 		$potionAlert = false;
@@ -151,7 +149,7 @@ class TsumegosController extends AppController {
 			$potionAlert = true;
 		}
 		if (isset($this->params['url']['startTimeMode'])) {
-			$this->TimeMode->startTimeMode((int) $this->params['url']['startTimeMode']);
+			$this->TimeMode->startTimeMode((int) $this->params['url']['categoryID'], (int)$this->params['url']['rankID']);
 		}
 
 		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
@@ -173,6 +171,9 @@ class TsumegosController extends AppController {
 		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
 			$id = $newID;
 		}
+		if ($this->TimeMode->toBeFinished())
+			return $this->redirect(['action' => '/timeMode/result');
+
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];
 		}
@@ -2290,14 +2291,6 @@ class TsumegosController extends AppController {
 				}
 			}
 		}
-		if (isset($this->params['url']['TimeModeAttempt'])) {
-			$raName = $this->params['url']['TimeModeAttempt'];
-		} else {
-			if (!isset($this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'])) {
-				$this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'] = '';
-			}
-			$raName = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'];
-		}
 
 		if (Auth::isInLevelMode()) {
 			$this->Session->write('page', 'level mode');
@@ -2480,7 +2473,6 @@ class TsumegosController extends AppController {
 		$this->set('sgf', $sgf);
 		$this->set('sgf2', $sgf2);
 		$this->set('sandboxComment2', $sandboxComment2);
-		$this->set('raName', $raName);
 		$this->set('crs', $crs);
 		$this->set('admins', $admins);
 		$this->set('refresh', $refresh);
@@ -2536,14 +2528,7 @@ class TsumegosController extends AppController {
 		$this->set('part', $t['Tsumego']['part']);
 		$this->set('josekiLevel', $josekiLevel);
 		$this->set('checkBSize', $checkBSize);
-		$this->set('rankTs', $this->TimeMode->rankTs);
-		$this->set('ranks', $this->TimeMode->timeModeAttempts); // TODO: rename on view as well
-		$this->set('currentRank', $this->TimeMode->currentRank);
-		$this->set('currentRankNum', $this->TimeMode->currentRankNum);
-		$this->set('firstRanks', $this->TimeMode->firstRanks);
-		$this->set('r10', $this->TimeMode->r10);
-		$this->set('stopParameter', $this->TimeMode->$stopParameter);
-		$this->set('stopParameter2', $this->TimeMode->$stopParameter2);
+		$this->set('timeMode', Auth::isInTimeMode() ? (array) $this->TimeMode : null);
 		$this->set('mode3ScoreArray', $mode3ScoreArray);
 		$this->set('potionAlert', $potionAlert);
 		$this->set('file', $file);
@@ -2573,6 +2558,7 @@ class TsumegosController extends AppController {
 		$this->set('partition', $partition);
 		$this->set('checkNotInSearch', $checkNotInSearch);
 		$this->set('hasPremium', $hasPremium);
+		return null;
 	}
 
 	private function getPopularTags($tags) {
