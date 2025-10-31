@@ -5,7 +5,7 @@ INSERT INTO `user` (
     `name`,
     `email`,
     `password_hash`,
-    `elo_rating_mode`,
+    `rating`,
     `created`
 ) VALUES (
     1,
@@ -13,16 +13,5 @@ INSERT INTO `user` (
     'test@example.com',
     '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG',
     1500,
-    NOW()
-);
-
--- Insert a test tsumego
-INSERT INTO `tsumego` (
-    `id`,
-    `num`,
-    `created`
-) VALUES (
-    1,
-    1,
     NOW()
 );
