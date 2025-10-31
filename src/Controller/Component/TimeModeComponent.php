@@ -41,44 +41,64 @@ class TimeModeComponent extends Component {
 		Auth::saveUser();
 	}
 
+	public function getRatingBounds($currentTimeSession)
+	{
+		$result = [];
+
+		// I'm assuming, that the entries in the time_mode_rank tables have primary id ordered in the same order as the ranks, so the next entry
+		// is the higher rank, and the previous is the lower (checked in testTimeModeRankContentsIntegrity)
+		// This allows me to figure out what range should I cover by the current rank, which is
+		// <max_of_smaller_rank or 0 if it doesn't exit, max_of_current_rank if next rank exists or infinity]
+		// this should put every tsumego in some of the rank intervals regardless of the ranks configuration
+		if ($smallerRankRow = ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id'] - 1]])) {
+			$result['min'] = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRankRow['TimeModeAttempt']['name']) + 1);
+		}
+		else
+			$result['min'] = 0;
+
+		if (ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id'] + 1]])) {
+			$currentRankRow = ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id']]]);
+			$result['max'] = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRankRow['TimeModeAttempt']['name']));
+		}
+		else
+			$result['min'] = 100000;
+
+		return $result;
+	}
+
 	// @return if not null, new tsumego id to show (don't ask me why)
 	public function update($setsWithPremium, $params): ?int {
 		if (!Auth::isLoggedIn()) {
 			return null;
 		}
 
-		if (strlen(Auth::getUser()['activeRank']) < 15) {
+		$currentTimeSession = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+		if (!$currentTimeSession) {
 			return null;
 		}
+		$currentTimeSession = $currentTimeSession['TimeModeSession'];
+		$currentTimeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => ['time_mode_session_id' => $currentTimeSession['id']]]) ?: [];
+		$ratingBounds = $this->getRatingBounds($currentTimeSession);
 
-		$this->stopParameter = 10;
-		if (strlen(Auth::getUser()['activeRank']) == 15) {
-			$this->stopParameter2 = 0;
-		} elseif (strlen(Auth::getUser()['activeRank']) == 16) {
-			$this->stopParameter2 = 1;
-		} elseif (strlen(Auth::getUser()['activeRank']) == 17) {
-			$this->stopParameter2 = 2;
-		}
-		$this->timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
-		if (count($this->timeModeAttempts) == 0) {
+		$this->rankTs = ClassRegistry::init('TsumegoRank')->find('all', [
+			'conditions' => [
+				'rating >=' => $ratingBounds['min'],
+				'rating <' => $ratingBounds['max'],
+				]]);
+
+		if (count($currentTimeAttempts) == 0) {
 			$readableRank = $params['url']['TimeModeAttempt'];
-
-			$rank = Rating::getRankFromReadableRank($readableRank ?: "15k");
-			$r1 = Rating::getRankMinimalRating($rank);
-			$r2 = Rating::getRankMinimalRating($rank + 1);
-			if ($rank >= Rating::getRankFromReadableRank('5d')) {
-				$r2 = 10000;
-			}
-			if ($rank <= Rating::getRankFromReadableRank('15k')) {
-				$r1 = 0;
-			}
 
 			$timeModeSettings = ClassRegistry::init('TimeModeSetting')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			foreach ($timeModeSettings as $timeModeSetting) {
+				if (!Auth::hasPremium() && !in_array($timeModeSetting['set_id'], $setsWithPremium)) {
+					continue;
+				}
+
 				$timeSc = TsumegoUtil::collectTsumegosFromSet($timeModeSetting['TimeModeSetting']['set_id']);
 				$timeScCount = count($timeSc);
 				for ($g = 0; $g < $timeScCount; $g++) {
-					if ($timeSc[$g]['Tsumego']['rating'] >= $r1 && $timeSc[$g]['Tsumego']['rating'] < $r2) {
+					if ($timeSc[$g]['Tsumego']['rating'] >= $tsumegoMinimalRating && $timeSc[$g]['Tsumego']['rating'] < $tsumegoMaximalRating) {
 						if (!in_array($timeSc[$g]['Tsumego']['set_id'], $setsWithPremium) || Auth::hasPremium()) {
 							array_push($this->rankTs, $timeSc[$g]);
 						}
@@ -141,10 +161,9 @@ class TimeModeComponent extends Component {
 	public $timeModeAttempts = [];
 	public $rankTs = [];
 	public $stopParameter = 0;
-	public $stopParameter2 = 0;
 	public $currentRank;
 	public $currentRank2 = null;
 	public $currentRankNum;
 	public $firstRanks;
-	public $r10;
+	public $tsumegoMinimalRating0;
 }

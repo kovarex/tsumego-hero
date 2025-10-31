@@ -301,3 +301,5 @@ DELETE FROM time_mode_session WHERE time_mode_rank_id = 0;
 
 ALTER TABLE time_mode_session ADD CONSTRAINT `time_mode_session_time_mode_rank_id` FOREIGN KEY (`time_mode_rank_id`) REFERENCES `time_mode_rank`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE time_mode_session DROP COLUMN `rank`;
+
+ALTER TABLE user DROP COLUMN activeRank;
