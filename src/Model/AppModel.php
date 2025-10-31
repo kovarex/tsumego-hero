@@ -36,66 +36,6 @@ class AppModel extends Model {
 		'EmptyInteger',
 	];
 
-	public function __construct($id = false,$table = null,$ds = null)
-	{
-		parent::__construct($id,$table,$ds);
-
-		// $config does not contain all the keys here that it contains in Cake 3.x.
-		$config = [
-			'table' => $this->table,
-			'alias' => $this->alias,
-			'schema' => $this->schemaName,
-		];
-		if (
-			empty($this->actsAs) ||
-			(
-				is_array($this->actsAs) &&
-				!in_array('Containable', $this->actsAs) &&
-				!array_key_exists('Containable', $this->actsAs)
-			)
-		) {
-			$this->addBehavior('Containable');
-		}
-
-		$this->initialize($config);
-	}
-
-	/**
-	 * @param string $associated
-	 * @param array $options
-	 * @return void
-	 */
-	public function belongsToMany($associated, array $options = []) {
-		$this->_setAssoc('hasAndBelongsToMany', $associated, $options);
-	}
-
-	/**
-	 * @param string $associated
-	 * @param array $options
-	 * @return void
-	 */
-	public function belongsTo($associated, array $options = []) {
-		$this->_setAssoc('belongsTo', $associated, $options);
-	}
-
-	/**
-	 * @param string $associated
-	 * @param array $options
-	 * @return void
-	 */
-	public function hasOne($associated, array $options = []) {
-		$this->_setAssoc('hasOne', $associated, $options);
-	}
-
-	/**
-	 * @param string $associated
-	 * @param array $options
-	 * @return void
-	 */
-	public function hasMany($associated, array $options = []) {
-		$this->_setAssoc('hasMany', $associated, $options);
-	}
-
 	public $recursive = -1;
 
 }

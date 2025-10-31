@@ -6,12 +6,6 @@ class SetConnection extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
-	public function initialize(array $config) {
-		parent::initialize($config);
-		$this->hasOne('Set');
-		$this->hasOne('Tsumego');
-	}
-
 	public $hasOne = [
 		'tsumego' => ['className' => 'Tsumego'],
         'set' => ['className' => 'Set']];

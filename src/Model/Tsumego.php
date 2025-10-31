@@ -6,11 +6,6 @@ class Tsumego extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
-	public function initialize(array $config) {
-		parent::initialize($config);
-		$this->hasMany('SetConnection');
-	}
-
 	public $hasMany = ['ContainedInSetConnections' => ['className' => 'SetConnection']];
 
 	public $validate = [
