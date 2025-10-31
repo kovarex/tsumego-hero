@@ -9,7 +9,7 @@ class TimeModeComponent extends Component {
 
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 		if ($currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
- 			$this->createSessionAttempts($currentTimeSession);
+			$this->createSessionAttempts($currentTimeSession);
 		}
 	}
 
@@ -17,7 +17,7 @@ class TimeModeComponent extends Component {
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 	}
 
-	private function createNewSession(int $categoryID, int $rankID): array|null {
+	private function createNewSession(int $categoryID, int $rankID): ?array {
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($categoryID);
 		if (!$timeModeCategory) {
 			return null;
@@ -39,8 +39,7 @@ class TimeModeComponent extends Component {
 		return $currentTimeSession;
 	}
 
-	private function getRatingBounds($currentTimeSession)
-	{
+	private function getRatingBounds($currentTimeSession) {
 		$result = [];
 
 		// I'm assuming, that the entries in the time_mode_rank tables have primary id ordered in the same order as the ranks, so the next entry
@@ -48,18 +47,18 @@ class TimeModeComponent extends Component {
 		// This allows me to figure out what range should I cover by the current rank, which is
 		// <max_of_smaller_rank or 0 if it doesn't exit, max_of_current_rank if next rank exists or infinity]
 		// this should put every tsumego in some of the rank intervals regardless of the ranks configuration
-		if ($smallerRankRow = ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id'] - 1]])) {
+		if ($smallerRankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $currentTimeSession['time_mode_rank_id'] - 1]])) {
 			$result['min'] = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRankRow['TimeModeRank']['name']) + 1);
-		}
-		else
+		} else {
 			$result['min'] = 0;
-
-		if (ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id'] + 1]])) {
-			$currentRankRow = ClassRegistry::init('TimeModeRank')->find('first',['conditions' =>['id' => $currentTimeSession['time_mode_rank_id']]]);
-			$result['max'] = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRankRow['TimeModeRank']['name']));
 		}
-		else
+
+		if (ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $currentTimeSession['time_mode_rank_id'] + 1]])) {
+			$currentRankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $currentTimeSession['time_mode_rank_id']]]);
+			$result['max'] = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRankRow['TimeModeRank']['name']));
+		} else {
 			$result['min'] = 100000;
+		}
 
 		return $result;
 	}
@@ -71,9 +70,9 @@ class TimeModeComponent extends Component {
 			'rating >=' => $ratingBounds['min'],
 			'rating <' => $ratingBounds['max'],
 			'Set.included_in_time_mode =' => true,
-			],
-		'contain' => ['Set', 'SetConnection'],
-		'fields' => ['Tsumego.id', 'Set.id', 'Set.included_in_time_mode']];
+		],
+			'contain' => ['Set', 'SetConnection'],
+			'fields' => ['Tsumego.id', 'Set.id', 'Set.included_in_time_mode']];
 		if (!Auth::hasPremium()) {
 			$tsumegoOptions['conditions'] [] = ['Set.premium' => false];
 		}
@@ -103,19 +102,19 @@ class TimeModeComponent extends Component {
 		}
 
 		if ($currentSession = ClassRegistry::init('TimeModeSession')->find('first', [
-			'conditions' =>[
+			'conditions' => [
 				'user_id' => Auth::getUserID(),
 				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]])) {
 
 			$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
-			'conditions' => [
-				'time_mode_session_id' => $currentSession['TimeModeSession']['id'],
-				'time_mode_status_id is not' => 'null']]) + 1;
+				'conditions' => [
+					'time_mode_session_id' => $currentSession['TimeModeSession']['id'],
+					'time_mode_status_id is not' => 'null']]) + 1;
 
 			// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
 			$this->overallCount = ClassRegistry::init('TimeModeAttempt')->find('count', [
-			'conditions' => [
-				'time_mode_session_id' => $currentSession['TimeModeSession']['id']]]);
+				'conditions' => [
+					'time_mode_session_id' => $currentSession['TimeModeSession']['id']]]);
 
 			$this->secondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
 				'conditions' => ['id' => $currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];

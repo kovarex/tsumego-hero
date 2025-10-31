@@ -6,7 +6,8 @@ class Tsumego extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
-	public $hasMany = ['ContainedInSetConnections' => ['className' => 'SetConnection']];
+	public $belongsTo = ['Set'];
+	public $hasMany = ['SetConnection'];
 
 	public $validate = [
 		'title' => [

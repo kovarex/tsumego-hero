@@ -6,7 +6,8 @@ class SetConnection extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
-	public $hasOne = [
-		'tsumego' => ['className' => 'Tsumego'],
-        'set' => ['className' => 'Set']];
+	public $belongsTo = [
+		'Tsumego',
+		'Set',
+	];
 }

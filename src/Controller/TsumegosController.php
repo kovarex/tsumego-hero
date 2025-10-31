@@ -54,7 +54,7 @@ class TsumegosController extends AppController {
 		}
 	}
 
-	public function play($id = null, $setConnectionID = null): array|null {
+	public function play($id = null, $setConnectionID = null): ?array {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
 		$this->loadModel('Set');
@@ -148,10 +148,10 @@ class TsumegosController extends AppController {
 		if (isset($this->params['url']['potionAlert'])) {
 			$potionAlert = true;
 		}
-		if (isset($this->params['url']['startTimeMode']) &&
-        	isset($this->params['url']['categoryID']) &&
-        	isset($this->params['url']['rankID'])) {
-			$this->TimeMode->startTimeMode((int) $this->params['url']['categoryID'], (int)$this->params['url']['rankID']);
+		if (isset($this->params['url']['startTimeMode'])
+			&& isset($this->params['url']['categoryID'])
+			&& isset($this->params['url']['rankID'])) {
+			$this->TimeMode->startTimeMode((int) $this->params['url']['categoryID'], (int) $this->params['url']['rankID']);
 		}
 
 		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
@@ -173,8 +173,9 @@ class TsumegosController extends AppController {
 		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
 			$id = $newID;
 		}
-		if ($this->TimeMode->toBeFinished())
+		if ($this->TimeMode->toBeFinished()) {
 			return $this->redirect(['action' => '/timeMode/result']);
+		}
 
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];

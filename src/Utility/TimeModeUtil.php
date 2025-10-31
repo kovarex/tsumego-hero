@@ -8,7 +8,7 @@ class TimeModeUtil {
 	public static int $CATEGORY_SLOW_SPEED = 3;
 
 	public static int $SESSION_STATUS_IN_PROGRESS = 1;
-    public static int $SESSION_STATUS_FAILED = 2;
+	public static int $SESSION_STATUS_FAILED = 2;
 	public static int $SESSION_STATUS_SOLVED = 3;
 
 	public static int $ATTEMPT_RESULT_QUEUED = 1;

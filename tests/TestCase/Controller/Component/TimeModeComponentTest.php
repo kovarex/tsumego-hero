@@ -34,9 +34,9 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '5k']])['TimeModeRank'];
-		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id'] .
-			'?startTimeMode&categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED .
-			'&rankID=' . $timeModeRank['id']);
+		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id']
+			. '?startTimeMode&categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $timeModeRank['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$this->assertNotEmpty(Auth::getUser()['activeRank']);
 	}

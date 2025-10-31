@@ -6,5 +6,5 @@ class Set extends AppModel {
 		parent::__construct($id, $table, $ds);
 	}
 
-	public $hasMany = ['ContainedSetConnections' => ['className' => 'SetConnection']];
+	public $hasMany = ['SetConnection'];
 }
