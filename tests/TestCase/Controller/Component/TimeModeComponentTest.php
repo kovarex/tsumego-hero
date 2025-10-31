@@ -14,9 +14,9 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$previousRank = null;
 		foreach ($allTimeModeRanks as $timeModeRank) {
 			if ($previousRank) {
-				$previousRank = Rating::GetRankFromReadableRank($previousRank['name']);
-				$currentRank = Rating::GetRankFromReadableRank($timeModeRank['name']);
-				$this->assertLessThan($previousRank, $currentRank);
+				$previousRank = Rating::getRankMinimalRatingFromReadableRating($previousRank['TimeModeRank']['name']);
+				$currentRank = Rating::getRankMinimalRatingFromReadableRating($timeModeRank['TimeModeRank']['name']);
+				$this->assertTrue($previousRank < $currentRank);
 			}
 			$previousRank = $timeModeRank;
 		}
@@ -33,7 +33,10 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$tsumego = ClassRegistry::init('Tsumego')->find('first');
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id'] . '?rank=15k&startTimeMode=' . TimeModeUtil::$SLOW_SPEED);
+		$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '5k']])['TimeModeRank'];
+		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id'] .
+			'?startTimeMode&categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED .
+			'&rankID=' . $timeModeRank['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$this->assertNotEmpty(Auth::getUser()['activeRank']);
 	}

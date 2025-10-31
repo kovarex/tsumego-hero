@@ -148,7 +148,9 @@ class TsumegosController extends AppController {
 		if (isset($this->params['url']['potionAlert'])) {
 			$potionAlert = true;
 		}
-		if (isset($this->params['url']['startTimeMode'])) {
+		if (isset($this->params['url']['startTimeMode']) &&
+        	isset($this->params['url']['categoryID']) &&
+        	isset($this->params['url']['rankID'])) {
 			$this->TimeMode->startTimeMode((int) $this->params['url']['categoryID'], (int)$this->params['url']['rankID']);
 		}
 
@@ -172,7 +174,7 @@ class TsumegosController extends AppController {
 			$id = $newID;
 		}
 		if ($this->TimeMode->toBeFinished())
-			return $this->redirect(['action' => '/timeMode/result');
+			return $this->redirect(['action' => '/timeMode/result']);
 
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];

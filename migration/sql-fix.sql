@@ -219,19 +219,19 @@ ALTER TABLE time_mode_attempt DROP COLUMN `rank`;
 ALTER TABLE `time_mode_attempt` CHANGE `num` `order` SMALLINT UNSIGNED NOT NULL;
 ALTER TABLE time_mode_attempt DROP COLUMN currentNum;
 
-CREATE TABLE `time_mode_attempt_result` (
+CREATE TABLE `time_mode_attempt_status` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(10) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO time_mode_attempt_result(`name`) VALUES (('solved'), ('failed'), ('timeout'), ('skipped');
-ALTER TABLE time_mode_attempt ADD COLUMN time_mode_attempt_result_id INT UNSIGNED NULL DEFAULT NULL;
+INSERT INTO time_mode_attempt_status(`name`) VALUES (('queued'), ('solved'), ('failed'), ('timeout'), ('skipped');
+ALTER TABLE time_mode_attempt ADD COLUMN time_mode_attempt_status_id INT UNSIGNED NOT NULL;
 
-UPDATE time_mode_attempt JOIN time_mode_attempt_result ON time_mode_attempt.result = time_mode_attempt_result.name SET time_mode_attempt_result_id = time_mode_attempt_result.id;
-ALTER TABLE time_mode_attempt ADD CONSTRAINT `time_mode_attempt_time_mode_attempt_result_id` FOREIGN KEY (`time_mode_attempt_result_id`) REFERENCES `time_mode_attempt_result`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+UPDATE time_mode_attempt JOIN time_mode_attempt_status ON time_mode_attempt.result = time_mode_attempt_status.name SET time_mode_attempt_status_id = time_mode_attempt_status.id;
+ALTER TABLE time_mode_attempt ADD CONSTRAINT `time_mode_attempt_time_mode_attempt_status_id` FOREIGN KEY (`time_mode_attempt_status_id`) REFERENCES `time_mode_attempt_status`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE time_mode_attempt DROP COLUMN `result`;
-ALTER TABLE `time_mode_attempt` CHANGE `time_mode_attempt_result_id` `time_mode_attempt_result_id` INT UNSIGNED NOT NULL;
+ALTER TABLE `time_mode_attempt` CHANGE `time_mode_attempt_status_id` `time_mode_attempt_status_id` INT UNSIGNED NOT NULL;
 UPDATE `time_mode_attempt` SET seconds = 0 WHERE seconds < 0;
 UPDATE `time_mode_attempt` SET seconds = 240 WHERE seconds > 240;
 ALTER TABLE `time_mode_attempt` CHANGE `seconds` `seconds` DECIMAL(5,2) UNSIGNED NOT NULL;
@@ -255,7 +255,7 @@ CREATE TABLE `time_mode_session_status` (
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT INTO time_mode_session_status(`name`) VALUES ('in progress'),('failed'), ('solved');
 
-ALTER TABLE `time_mode_attempt_result` ADD UNIQUE `name` (`name`);
+ALTER TABLE `time_mode_attempt_status` ADD UNIQUE `name` (`name`);
 ALTER TABLE `time_mode_session_status` ADD UNIQUE `name` (`name`);
 
 ALTER TABLE time_mode_session ADD COLUMN time_mode_session_status_id INT UNSIGNED NOT NULL;
@@ -293,7 +293,7 @@ CREATE TABLE `time_mode_rank` (
 INSERT INTO time_mode_rank(`name`) VALUES ('15k'),('14k'), ('13k'), ('12k'), ('11k'), ('10k'), ('9k'), ('8k'), ('7k'), ('6k'), ('5k'), ('4k'), ('3k'), ('2k'), ('1k'), ('1d'), ('2d'), ('3d'), ('4d'), ('5d');
 
 
-ALTER TABLE time_mode_session ADD COLUMN time_mode_rank_id INT UNSIGNED NOT NULL;
+ALTER TABLE time_mode_session ADD COLUMN time_mode_rank_id INT UNSIGNED NULL;
 
 UPDATE time_mode_session JOIN time_mode_rank ON time_mode_session.rank = time_mode_rank.name SET time_mode_rank_id = time_mode_rank.id;
 
@@ -303,5 +303,7 @@ ALTER TABLE time_mode_session ADD CONSTRAINT `time_mode_session_time_mode_rank_i
 ALTER TABLE time_mode_session DROP COLUMN `rank`;
 
 ALTER TABLE user DROP COLUMN activeRank;
-ALTER TABLE `set` ADD COLUMN included_in_time_mode BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE `tsumego` DROP COLUMN num;
+
+ALTER TABLE `set` ADD COLUMN included_in_time_mode BOOLEAN NOT NULL DEFAULT TRUE;
+UPDATE `set` SET included_in_time_mode = FALSE WHERE id in (42, 109, 114, 143, 172, 29156, 33007, 74761);

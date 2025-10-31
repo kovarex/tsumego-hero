@@ -7,14 +7,14 @@ class TimeModeComponent extends Component {
 			return;
 		}
 
-		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
-		if ($currentTimeSession = $this->createNewSession()) {
+		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
+		if ($currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
  			$this->createSessionAttempts($currentTimeSession);
 		}
 	}
 
 	public static function cancelTimeMode(): void {
-		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
+		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 	}
 
 	private function createNewSession(int $categoryID, int $rankID): array|null {
@@ -34,7 +34,7 @@ class TimeModeComponent extends Component {
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
 		$currentTimeSession['time_mode_category_id'] = $timeModeCategory['TimeModeCategory']['id'];
 		$currentTimeSession['time_mode_rank_id'] = $timeModeCategory['TimeModeCategory']['id'];
-		$currentTimeSession = ClassRegistry::init('TimeModeSession')->create();
+		ClassRegistry::init('TimeModeSession')->create($currentTimeSession);
 		ClassRegistry::init('TimeModeSession')->save($currentTimeSession);
 		return $currentTimeSession;
 	}
@@ -70,12 +70,12 @@ class TimeModeComponent extends Component {
 		$tsumegoOptions = ['conditions' => [
 			'rating >=' => $ratingBounds['min'],
 			'rating <' => $ratingBounds['max'],
-			'set.included_in_time_mode' => true,
+			'Set.included_in_time_mode =' => true,
 			],
-		'contain' => ['set.id']];
+		'contain' => ['Set.id', 'Set.included_in_time_mode']];
 		if (!Auth::hasPremium()) {
-			$tsumegoOptions['conditions'] [] = ['set.premium' => false];
-			$tsumegoOptions['contain'] []= 'set.premium';
+			$tsumegoOptions['conditions'] [] = ['Set.premium' => false];
+			$tsumegoOptions['contain'] []= 'Set.premium';
 		}
 
 		return ClassRegistry::init('Tsumego')->find('all', $tsumegoOptions) ?: [];
@@ -90,6 +90,7 @@ class TimeModeComponent extends Component {
 			$newTimeAttempt['time_mode_session_id'] = $currentTimeSession['id'];
 			$newTimeAttempt['order'] = $i + 1;
 			$newTimeAttempt['tsumego_id'] = $relevantTsumegos[$i];
+			$newTimeAttempt['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_QUEUED;
 			ClassRegistry::init('TimeModeSession')->create($newTimeAttempt);
 			ClassRegistry::init('TimeModeSession')->save($newTimeAttempt);
 		}
@@ -104,7 +105,7 @@ class TimeModeComponent extends Component {
 		if ($currentSession = ClassRegistry::init('TimeModeSession')->find('first', [
 			'conditions' =>[
 				'user_id' => Auth::getUserID(),
-				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS])) {
+				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]])) {
 
 			$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
 			'conditions' => [
