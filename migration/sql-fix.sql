@@ -174,5 +174,5 @@ ALTER TABLE `sgf` CHANGE `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 /* was needed because of besogo superko bug, which is fixed now, so it is used everywhere. */
 ALTER TABLE tsumego DROP COLUMN virtual_children;
 
-ALTER TABLE tsumego ALTER RENAME COLUMN elo_rating_mode to rating;
-ALTER TABLE user ALTER RENAME COLUMN elo_rating_mode to rating;
+ALTER TABLE tsumego ALTER RENAME COLUMN elo_rating_mode to `rating`;
+ALTER TABLE user ALTER RENAME COLUMN elo_rating_mode to `rating`;
