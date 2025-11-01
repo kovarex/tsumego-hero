@@ -5,7 +5,6 @@ class ContextPreparator {
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
-		$this->prepareUserMode(Util::extract('mode', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->checkOptionsConsumed($options);
 	}
@@ -29,6 +28,7 @@ class ContextPreparator {
 			}
 			ClassRegistry::init('User')->save($this->user);
 			CakeSession::write('loggedInUserID', $this->user['id']);
+			Auth::init();
 		} else {
 			CakeSession::destroy();
 		}
@@ -88,15 +88,6 @@ class ContextPreparator {
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
-	}
-
-	private function prepareUserMode($mode): void {
-		if (!$mode || $this->user['User']['mode'] == $this->mode) {
-			return;
-		}
-
-		$this->user['mode'] = $mode;
-		ClassRegistry::init('User')->save($this->user);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void {

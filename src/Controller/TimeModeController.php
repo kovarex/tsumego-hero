@@ -4,7 +4,6 @@ App::uses('TimeModeUtil', 'Utility');
 App::uses('AppException', 'Utility');
 
 class TimeModeController extends AppController {
-
 	public $components = ['TimeMode'];
 
 	public function start(): mixed {
@@ -14,10 +13,11 @@ class TimeModeController extends AppController {
 		}
 		$rankID = (int) $this->params['url']['rankID'];
 		if (!$rankID) {
-			return $this->end(Result::fail('Time mode rank not specified'));
+			throw new AppException('Time mode rank not specified');
 		}
 
-		return $this->end($this->TimeMode->startTimeMode($categoryID, $rankID));
+		$this->TimeMode->startTimeMode($categoryID, $rankID);
+		return $this->redirect("/tsumegos/play");
 	}
 
 	public function overview(): mixed {

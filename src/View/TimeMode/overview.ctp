@@ -48,7 +48,7 @@
 				$imageContainerText = 'imageContainerText2';
 				$imageContainerSpace = '';
 				echo '<div class="imageContainer1">
-				<a style="text-decoration:none;" href="/tsumegos/play/5127?startTimeMode&categoryID='.$categoryID.'&rankID='.$rankID.'">
+				<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">
 					<img src="/img/rankButton'.$rank.'.png" onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this)">
 					 <div class="'.$imageContainerText.'">'.' '.$imageContainerSpace.'<img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
 				</a>

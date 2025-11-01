@@ -73,8 +73,8 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			'time-mode-ranks' => ['5k']]);
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->testAction('tsumegos/play/' . $context->tsumego['id']
-			. '?startTimeMode&categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+		$this->testAction('/timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
@@ -84,5 +84,11 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
+
+		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_id' => $sessions[0]['TimeModeSession']['id']]) ?: [];
+		$this->assertTrue(count($attempts) > 0);
+		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 	}
 }

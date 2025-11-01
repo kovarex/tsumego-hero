@@ -3,6 +3,7 @@
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
+App::uses('AppException', 'Utility');
 
 class TsumegosController extends AppController {
 	public $helpers = ['Html', 'Form'];
@@ -45,7 +46,7 @@ class TsumegosController extends AppController {
 		if (!Auth::isLoggedIn()) {
 			return;
 		}
-		if ($modeChange = Util::clearCookie('mode')) {
+		if ($modeChange = Util::clearCookie('change-mode')) {
 			if ($modeChange != Constants::$TIME_MODE) {
 				TimeModeComponent::cancelTimeMode();
 			}
@@ -123,7 +124,7 @@ class TsumegosController extends AppController {
 		if ($setConnectionID) {
 			$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 			if (!$setConnection) {
-				die("Set connection " . $setConnectionID . " wasn't found in the database.");
+				throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
 			}
 			$id = $setConnection['SetConnection']['tsumego_id'];
 		}
@@ -134,9 +135,17 @@ class TsumegosController extends AppController {
 			$setsWithPremium[] = $item['Set']['id'];
 		}
 
+		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
+			$id = $newID;
+		}
+
+		if (!$id) {
+			throw new AppException("Tsumego id nor set connection was provided");
+		}
+
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections) {
-			die("Problem without any set connection");
+			throw new AppException("Problem without any set connection");
 		} // some redirect/nicer message ?
 		if (!isset($setConnection)) {
 			$setConnection = $this->deduceRelevantSetConnection($setConnections);
@@ -165,9 +174,6 @@ class TsumegosController extends AppController {
 		}
 
 		self::checkModeChange();
-		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
-			$id = $newID;
-		}
 		if ($this->TimeMode->checkFinishSession()) {
 			return $this->redirect(['action' => '/timeMode/result']);
 		}
@@ -2233,6 +2239,7 @@ class TsumegosController extends AppController {
 		$refinementPublic = false;
 		$refinementPublicCounter = 0;
 
+		/* TODO: I don't understand what is this piece of code trying to do, but it is getting stuck in an infinite loop
 		while (!$refinementPublic) {
 			$scRefinement = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $refinementT[$refinementPublicCounter]['Tsumego']['id']]]);
 			$setScRefinement = $this->Set->findById($scRefinement['SetConnection']['set_id']);
@@ -2241,7 +2248,7 @@ class TsumegosController extends AppController {
 			} else {
 				$refinementPublicCounter++;
 			}
-		}
+		}*/
 		$activate = true;
 		if (Auth::isLoggedIn()) {
 			if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {

@@ -4,41 +4,38 @@ App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
 
 class TimeModeComponent extends Component {
-	public function startTimeMode(int $categoryID, int $rankID): mixed {
+	public function startTimeMode(int $categoryID, int $rankID): void {
 		if (!Auth::isLoggedIn()) {
-			return Result::fail('Not logged in');
+			throw new AppException('Not logged in.');
 		}
 
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);
 		if (empty($relevantTsumegos)) {
-			return Result::fail('No relevant tsumegos.');
+			throw new AppException('No relevant tsumegos.');
 		}
-		if ($currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
-			$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
-		}
-		else
-			return Result::fail('Couldn\'t create time mode session');
-		return Result::success();
+		$currentTimeSession = $this->createNewSession($categoryID, $rankID);
+		$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
 	}
 
 	public static function cancelTimeMode(): void {
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 	}
 
-	private function createNewSession(int $categoryID, int $rankID): ?array {
+	private function createNewSession(int $categoryID, int $rankID): array {
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($categoryID);
 		if (!$timeModeCategory) {
-			return null;
+			throw new AppException("Time mode session category with id=" . $categoryID . " not found");
 		}
 
 		$timeModeRank = ClassRegistry::init('TimeModeRank')->findById($rankID);
 		if (!$timeModeRank) {
-			return null;
+			throw new AppException("Time mode rank category with id=" . $rankID . " not found");
 		}
 
 		Auth::getUser()['mode'] = Constants::$TIME_MODE;
+		Auth::saveUser();
 		$currentTimeSession = [];
 		$currentTimeSession['user_id'] = Auth::getUserID();
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
@@ -140,9 +137,9 @@ class TimeModeComponent extends Component {
 			// first one which doesn't have a status yet
 			return ClassRegistry::init('TimeModeAttempt')->find('first', [
 				'conditions' => [
-					'time_mode_session_id' => $currentSession['id'],
+					'time_mode_session_id' => $currentSession['TimeModeSession']['id'],
 					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-				'order' => 'time_mode_attempt_status_id'])['id'];
+				'order' => 'time_mode_attempt_status_id'])['TimeModeAttempt']['tsumego_id'];
 		}
 		return null;
 	}

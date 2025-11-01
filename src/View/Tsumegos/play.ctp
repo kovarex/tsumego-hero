@@ -2973,7 +2973,6 @@
 					timeModeEnabled = false;
 					setCookie("score", "<?php echo $score1; ?>");
 					setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
-					setCookie("mode", mode);
 					$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
@@ -2996,7 +2995,6 @@
 						x3 = 1;
 					}
 					setCookie("score", x2);
-					setCookie("mode", mode);
 					if(goldenTsumego)
 						setCookie("type", "g");
 					$("#skipButton").text("Next");

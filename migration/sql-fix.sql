@@ -280,7 +280,7 @@ ALTER TABLE time_mode_session ADD CONSTRAINT `time_mode_session_time_mode_catego
 ALTER TABLE time_mode_session DROP COLUMN mode;
 
 UPDATE `time_mode_session` SET points = 0 WHERE points < 0;
-ALTER TABLE `time_mode_session` CHANGE `points` `points` DECIMAL(6,2) UNSIGNED NOT NULL;
+ALTER TABLE `time_mode_session` CHANGE `points` `points` DECIMAL(6,2) UNSIGNED NULL;
 
 CREATE TABLE `time_mode_rank` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,

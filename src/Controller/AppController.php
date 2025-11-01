@@ -3,8 +3,7 @@
 App::uses('Auth', 'Utility');
 App::uses('Result', 'Utility');
 
-class AppController extends Controller
-{
+class AppController extends Controller {
 	public $viewClass = 'App';
 
 	public $components = [
@@ -14,12 +13,15 @@ class AppController extends Controller
 	];
 
 	protected function end(Result $result): mixed {
-		if ($result->message)
-		  $this->Flash->set($result->message);
-		if ($result->redirect)
-		  return $this->redirect($result->redirect);
-		if (isset($result->isSuccess) && !$result->isSuccess)
+		if ($result->message) {
+			$this->Flash->set($result->message);
+		}
+		if ($result->redirect) {
+			return $this->redirect($result->redirect);
+		}
+		if (isset($result->isSuccess) && !$result->isSuccess) {
 			return $this->redirect('/');
+		}
 		return null;
 	}
 

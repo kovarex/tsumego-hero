@@ -1,8 +1,7 @@
 <?php
 
 class Result {
-
-	static function success($message = null, $redirect = null) {
+	public static function success($message = null, $redirect = null) {
 		$result = new Result();
 		$result->isSuccess = true;
 		$result->$message = $message;
@@ -10,7 +9,7 @@ class Result {
 		return $result;
 	}
 
-	static function fail($message = null, $redirect = null) {
+	public static function fail($message = null, $redirect = null) {
 		$result = new Result();
 		$result->isSuccess = false;
 		$result->$message = $message;
@@ -23,7 +22,7 @@ class Result {
 	public string $message;
 	public string $redirect;
 
-	static int $RESULT_UNDEFINED = 0;
-	static int $RESULT_SUCCESS = 1;
-	static int $RESULT_FAIL = 2;
+	public static int $RESULT_UNDEFINED = 0;
+	public static int $RESULT_SUCCESS = 1;
+	public static int $RESULT_FAIL = 2;
 }
