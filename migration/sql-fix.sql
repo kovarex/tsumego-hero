@@ -241,9 +241,6 @@ ALTER TABLE `time_mode_attempt` CHANGE `points` `points` DECIMAL(5,2) UNSIGNED N
 
 ALTER TABLE `time_mode_attempt` CHANGE `id` `id` INT UNSIGNED NOT NULL AUTO_INCREMENT;
 
-ALTER TABLE time_mode_attempt DROP FOREIGN KEY FK_tsumego_timed_attempts_to_users;
-ALTER TABLE `time_mode_attempt` DROP COLUMN user_id;
-
 ALTER TABLE time_mode_overview RENAME time_mode_session;
 ALTER TABLE time_mode_attempt  CHANGE `time_mode_overview_id` `time_mode_session_id` INT UNSIGNED NOT NULL;
 ALTER TABLE time_mode_attempt RENAME INDEX time_mode_overview_id TO time_mode_session_id;
