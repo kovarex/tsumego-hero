@@ -85,6 +85,14 @@ Configure::write('Error', [
  *
  * @see ErrorHandler for more information on exception handling and configuration.
  */
+
+Configure::write('AppException', array(
+    'handler' => 'AppErrorHandler::handleException',
+    'renderer' => 'AppErrorHandler',
+    'log' => false
+));
+
+
 Configure::write('Exception', [
 	'handler' => 'ErrorHandler::handleException',
 	'renderer' => 'ExceptionRenderer',

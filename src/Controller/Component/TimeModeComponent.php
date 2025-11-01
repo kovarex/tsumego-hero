@@ -15,11 +15,12 @@ class TimeModeComponent extends Component {
 		if (empty($relevantTsumegos)) {
 			return Result::fail('No relevant tsumegos.');
 		}
-		$currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
+		if ($currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
 			$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
 		}
 		else
-			return Result::fail('Couldn't create time mode session'')
+			return Result::fail('Couldn\'t create time mode session');
+		return Result::success();
 	}
 
 	public static function cancelTimeMode(): void {

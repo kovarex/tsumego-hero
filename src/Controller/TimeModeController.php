@@ -1,6 +1,7 @@
 <?php
 
 App::uses('TimeModeUtil', 'Utility');
+App::uses('AppException', 'Utility');
 
 class TimeModeController extends AppController {
 
@@ -9,7 +10,7 @@ class TimeModeController extends AppController {
 	public function start(): mixed {
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID) {
-			return $this->end(Result::fail('Time mode category not specified'));
+			throw new AppException('Time mode category not specified');
 		}
 		$rankID = (int) $this->params['url']['rankID'];
 		if (!$rankID) {

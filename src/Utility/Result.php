@@ -2,7 +2,7 @@
 
 class Result {
 
-	static function success($message, $redirect = null) {
+	static function success($message = null, $redirect = null) {
 		$result = new Result();
 		$result->isSuccess = true;
 		$result->$message = $message;
@@ -10,7 +10,7 @@ class Result {
 		return $result;
 	}
 
-	static function fail($message, $redirect = null) {
+	static function fail($message = null, $redirect = null) {
 		$result = new Result();
 		$result->isSuccess = false;
 		$result->$message = $message;
