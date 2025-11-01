@@ -225,7 +225,7 @@ CREATE TABLE `time_mode_attempt_status` (
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO time_mode_attempt_status(`name`) VALUES (('queued'), ('solved'), ('failed'), ('timeout'), ('skipped');
+INSERT INTO time_mode_attempt_status (`name`) VALUES ('queued'), ('solved'), ('failed'), ('timeout'), ('skipped');
 ALTER TABLE time_mode_attempt ADD COLUMN time_mode_attempt_status_id INT UNSIGNED NOT NULL;
 
 UPDATE time_mode_attempt JOIN time_mode_attempt_status ON time_mode_attempt.result = time_mode_attempt_status.name SET time_mode_attempt_status_id = time_mode_attempt_status.id;
