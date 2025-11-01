@@ -55,7 +55,7 @@ class Rating {
 		return ($rank - 38) * 30 + 2750.0;
 	}
 
-	public static function getRankMinimalRatingFromReadableRating(string $readableRank): float {
+	public static function getRankMinimalRatingFromReadableRank(string $readableRank): float {
 		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 

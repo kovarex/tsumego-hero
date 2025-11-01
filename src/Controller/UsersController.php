@@ -23,7 +23,7 @@ class UsersController extends AppController {
 		$this->loadModel('Set');
 		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('TimeModeAttempt');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$this->loadModel('Comment');
 		$this->loadModel('Schedule');
 		$this->loadModel('Sgf');
@@ -2665,7 +2665,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$currentRank = '';
 		$params1 = '';
 		$params2 = '';
@@ -2677,7 +2677,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		if (isset($this->params['url']['category'])) {
-			$ro = $this->TimeModeOverview->find('all', [
+			$ro = $this->TimeModeSession->find('all', [
 				'order' => 'points DESC',
 				'conditions' => [
 					'mode' => $this->params['url']['category'],
@@ -2697,7 +2697,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$params1 = $lastModex;
 			$params2 = '15k';
 			$currentRank = $params2;
-			$ro = $this->TimeModeOverview->find('all', [
+			$ro = $this->TimeModeSession->find('all', [
 				'order' => 'points DESC',
 				'conditions' => [
 					'mode' => $params1,
@@ -2713,7 +2713,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$roCount = count($ro);
 		for ($i = 0; $i < $roCount; $i++) {
-			$us = $this->User->findById($ro[$i]['TimeModeOverview']['user_id']);
+			$us = $this->User->findById($ro[$i]['TimeModeSession']['user_id']);
 			$alreadyIn = false;
 			$roAllCount = count($roAll['user']);
 			for ($j = 0; $j < $roAllCount; $j++) {
@@ -2724,8 +2724,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (!$alreadyIn) {
 				array_push($roAll['user'], $us['User']['name']);
 				array_push($roAll['picture'], $us['User']['picture']);
-				array_push($roAll['points'], $ro[$i]['TimeModeOverview']['points']);
-				array_push($roAll['result'], $ro[$i]['TimeModeOverview']['status']);
+				array_push($roAll['points'], $ro[$i]['TimeModeSession']['points']);
+				array_push($roAll['result'], $ro[$i]['TimeModeSession']['status']);
 			}
 		}
 
@@ -2776,7 +2776,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $modesCount; $i++) {
 			$modesCount = count($modes[$i]);
 			for ($j = 0; $j < $modesCount; $j++) {
-				$mx = $this->TimeModeOverview->find('first', [
+				$mx = $this->TimeModeSession->find('first', [
 					'conditions' => [
 						'TimeModeAttempt' => $modes[$i][$j],
 						'mode' => $i,
@@ -2865,7 +2865,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$hideEmail = Auth::getUserID() != $id;
 
 		$solvedUts2 = $this->saveSolvedNumber($id);
@@ -3030,7 +3030,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$timeGraph = [];
-		$ro = $this->TimeModeOverview->find('all', [
+		$ro = $this->TimeModeSession->find('all', [
 			'order' => 'rank ASC',
 			'conditions' => [
 				'user_id' => $id,
@@ -3039,11 +3039,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$highestRo = '15k';
 		$roCount = count($ro);
 		for ($i = 0; $i < $roCount; $i++) {
-			$highestRo = $this->getHighestRo($ro[$i]['TimeModeOverview']['TimeModeAttempt'], $highestRo);
-			if (isset($timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']])) {
-				$timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']]++;
+			$highestRo = $this->getHighestRo($ro[$i]['TimeModeSession']['TimeModeAttempt'], $highestRo);
+			if (isset($timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']])) {
+				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']]++;
 			} else {
-				$timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']] = 1;
+				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']] = 1;
 			}
 		}
 		$timeGraph = $this->formatTimegraph($timeGraph);

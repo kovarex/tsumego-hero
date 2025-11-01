@@ -2016,7 +2016,7 @@
 		if (distance >= 0 && sprintLockedInSecretArea){
 				window.location.href = "/sets";
 		}
-		tcount = <?php echo $timeMode['secondsToSolve'] ?>;
+		tcount = <?php echo @$timeMode['secondsToSolve'] ?: 0 ?>;
 
 		var tcounter = 250;
 		if(mode==3) {

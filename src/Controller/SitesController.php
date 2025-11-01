@@ -17,7 +17,6 @@ class SitesController extends AppController {
 		$this->loadModel('DayRecord');
 		$this->loadModel('UserBoard');
 		$this->loadModel('Schedule');
-		$this->loadModel('TimeModeOverview');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('PublishDate');

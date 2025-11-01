@@ -9,6 +9,7 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 	public function buttonsTestGeneric($currentNum, $otherNums, $expectedNums) {
 		$contextParameters = [];
 		$index = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => $currentNum]]];
 		$index[$currentNum] = 0;
 		$contextParameters['other-tsumegos'] = [];

@@ -14,6 +14,6 @@ class TimeModeUtil {
 	public static int $ATTEMPT_RESULT_QUEUED = 1;
 	public static int $ATTEMPT_RESULT_SOLVED = 2;
 	public static int $ATTEMPT_RESULT_FAILED = 3;
-	public static int $SESSION_STATUS_TIMEOUT = 4;
-	public static int $SESSION_STATUS_SKIPPED = 5;
+	public static int $ATTEMPT_STATUS_TIMEOUT = 4;
+	public static int $ATTEMPT_STATUS_SKIPPED = 5;
 }

@@ -6,6 +6,7 @@ class ContextPreparator {
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareUserMode(Util::extract('mode', $options));
+		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -23,8 +24,13 @@ class ContextPreparator {
 			if ($user['rating']) {
 				$this->user['rating'] = $user['rating'];
 			}
-			$userForSaving['User'] = $this->user;
-			ClassRegistry::init('User')->save($userForSaving);
+			if ($user['mode']) {
+				$this->user['mode'] = $user['mode'];
+			}
+			ClassRegistry::init('User')->save($this->user);
+			CakeSession::write('loggedInUserID', $this->user['id']);
+		} else {
+			CakeSession::destroy();
 		}
 
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
@@ -159,6 +165,21 @@ class ContextPreparator {
 		$this->setsCleared[$setID] = true;
 	}
 
+	private function prepareTimeModeRanks($timeModeRanks): void {
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+		assert(ClassRegistry::init('TimeModeSession')->find('count') == 0);
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
+		assert(ClassRegistry::init('TimeModeRank')->find('count') == 0);
+		foreach ($timeModeRanks as $timeModeRankInput) {
+			$timeModeRank = [];
+			$timeModeRank['name'] = $timeModeRankInput;
+			ClassRegistry::init('TimeModeRank')->create($timeModeRank);
+			ClassRegistry::init('TimeModeRank')->save($timeModeRank);
+			$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['order' => 'id DESC'])['TimeModeRank'];
+			$this->timeModeRanks [] = $timeModeRank;
+		}
+	}
+
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {
 		$statusCondition = [
 			'conditions' => [
@@ -178,6 +199,7 @@ class ContextPreparator {
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
+	public ?array $timeModeRanks = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 }

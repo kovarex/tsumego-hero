@@ -234,10 +234,10 @@ ALTER TABLE time_mode_attempt DROP COLUMN `result`;
 ALTER TABLE `time_mode_attempt` CHANGE `time_mode_attempt_status_id` `time_mode_attempt_status_id` INT UNSIGNED NOT NULL;
 UPDATE `time_mode_attempt` SET seconds = 0 WHERE seconds < 0;
 UPDATE `time_mode_attempt` SET seconds = 240 WHERE seconds > 240;
-ALTER TABLE `time_mode_attempt` CHANGE `seconds` `seconds` DECIMAL(5,2) UNSIGNED NOT NULL;
+ALTER TABLE `time_mode_attempt` CHANGE `seconds` `seconds` DECIMAL(5,2) UNSIGNED NULL;
 
 UPDATE `time_mode_attempt` SET points = 0 WHERE points < 0;
-ALTER TABLE `time_mode_attempt` CHANGE `points` `points` DECIMAL(5,2) UNSIGNED NOT NULL;
+ALTER TABLE `time_mode_attempt` CHANGE `points` `points` DECIMAL(5,2) UNSIGNED NULL;
 
 ALTER TABLE `time_mode_attempt` CHANGE `id` `id` INT UNSIGNED NOT NULL AUTO_INCREMENT;
 

@@ -9,7 +9,7 @@ class TimeModeController extends AppController {
 	public function overview() {
 		$this->loadModel('Tsumego');
 		$this->loadModel('User');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$this->loadModel('TimeModeSetting');
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
@@ -22,7 +22,7 @@ class TimeModeController extends AppController {
 		$settings['title'] = [];
 		$settings['id'] = [];
 		$settings['checked'] = [];
-		$ro = $this->TimeModeOverview->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		$ro = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$ro) {
 			$ro = [];
 		}
@@ -190,7 +190,7 @@ class TimeModeController extends AppController {
 			for ($i = 0; $i < $modesHCount; $i++) {
 				$roCount = count($ro);
 				for ($j = 0; $j < $roCount; $j++) {
-					if ($modes[$h][$i] == $ro[$j]['TimeModeOverview']['rank'] && $ro[$j]['TimeModeOverview']['mode'] == $h && $ro[$j]['TimeModeOverview']['status'] == 's') {
+					if ($modes[$h][$i] == $ro[$j]['TimeModeSession']['rank'] && $ro[$j]['TimeModeSession']['mode'] == $h && $ro[$j]['TimeModeSession']['status'] == 's') {
 						$locks[$h][$i] = 'x';
 						$locks[$h][$i + 1] = 'x';
 					}
@@ -236,7 +236,7 @@ class TimeModeController extends AppController {
 	public function result($hash = null) {
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$this->loadModel('SetConnection');
 		$this->Session->write('title', 'Time Mode - Result');
 		$this->Session->write('page', 'time mode');
@@ -374,7 +374,7 @@ class TimeModeController extends AppController {
 				$sum += $points[$i];
 			}
 
-			$roxBefore = $this->TimeModeOverview->find('all', [
+			$roxBefore = $this->TimeModeSession->find('all', [
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
 					'rank' => $ranks[0]['Rank']['rank'],
@@ -387,18 +387,18 @@ class TimeModeController extends AppController {
 			}
 
 			$ro = [];
-			$ro['TimeModeOverview']['user_id'] = Auth::getUserID();
-			$ro['TimeModeOverview']['session'] = $sess;
-			$ro['TimeModeOverview']['rank'] = $ranks[0]['Rank']['rank'];
+			$ro['TimeModeSession']['user_id'] = Auth::getUserID();
+			$ro['TimeModeSession']['session'] = $sess;
+			$ro['TimeModeSession']['rank'] = $ranks[0]['Rank']['rank'];
 			if ($solved >= $stopParameterPass) {
-				$ro['TimeModeOverview']['status'] = 's';
+				$ro['TimeModeSession']['status'] = 's';
 			} else {
-				$ro['TimeModeOverview']['status'] = 'f';
+				$ro['TimeModeSession']['status'] = 'f';
 			}
-			$ro['TimeModeOverview']['mode'] = $stopParameter;
-			$ro['TimeModeOverview']['points'] = $sum;
-			$this->TimeModeOverview->create();
-			$this->TimeModeOverview->save($ro);
+			$ro['TimeModeSession']['mode'] = $stopParameter;
+			$ro['TimeModeSession']['points'] = $sum;
+			$this->TimeModeSession->create();
+			$this->TimeModeSession->save($ro);
 		}
 
 		$sessArray = [];
@@ -431,7 +431,7 @@ class TimeModeController extends AppController {
 		for ($i = 0; $i < 3; $i++) {
 			$modesCount = count($modes[$i]);
 			for ($j = 0; $j < $modesCount; $j++) {
-				$rox = $this->TimeModeOverview->find('all', [
+				$rox = $this->TimeModeSession->find('all', [
 					'conditions' => [
 						'user_id' => Auth::getUserID(),
 						'rank' => $modes[$i][$j],
@@ -445,24 +445,24 @@ class TimeModeController extends AppController {
 				$highestId = 0;
 				$roxCount = count($rox);
 				for ($k = 0; $k < $roxCount; $k++) {
-					if ($rox[$k]['TimeModeOverview']['points'] > $highest) {
-						$sessArray[$i][$j] = $rox[$k]['TimeModeOverview']['session'];
-						$highest = $rox[$k]['TimeModeOverview']['points'];
-						$highestId = $rox[$k]['TimeModeOverview']['id'];
+					if ($rox[$k]['TimeModeSession']['points'] > $highest) {
+						$sessArray[$i][$j] = $rox[$k]['TimeModeSession']['session'];
+						$highest = $rox[$k]['TimeModeSession']['points'];
+						$highestId = $rox[$k]['TimeModeSession']['id'];
 						$modes[$i][$j] = $rox[$k];
-						if ($modes[$i][$j]['TimeModeOverview']['status'] == 's') {
-							$modes[$i][$j]['TimeModeOverview']['status'] = 'passed';
-						} elseif ($modes[$i][$j]['TimeModeOverview']['status'] == 'f') {
-							$modes[$i][$j]['TimeModeOverview']['status'] = 'failed';
+						if ($modes[$i][$j]['TimeModeSession']['status'] == 's') {
+							$modes[$i][$j]['TimeModeSession']['status'] = 'passed';
+						} elseif ($modes[$i][$j]['TimeModeSession']['status'] == 'f') {
+							$modes[$i][$j]['TimeModeSession']['status'] = 'failed';
 						}
-						if ($modes[$i][$j]['TimeModeOverview']['mode'] == 2) {
-							$modes[$i][$j]['TimeModeOverview']['mode'] = 'Slow';
-						} elseif ($modes[$i][$j]['TimeModeOverview']['mode'] == 1) {
-							$modes[$i][$j]['TimeModeOverview']['mode'] = 'Fast';
-						} elseif ($modes[$i][$j]['TimeModeOverview']['mode'] == 0) {
-							$modes[$i][$j]['TimeModeOverview']['mode'] = 'Blitz';
+						if ($modes[$i][$j]['TimeModeSession']['mode'] == 2) {
+							$modes[$i][$j]['TimeModeSession']['mode'] = 'Slow';
+						} elseif ($modes[$i][$j]['TimeModeSession']['mode'] == 1) {
+							$modes[$i][$j]['TimeModeSession']['mode'] = 'Fast';
+						} elseif ($modes[$i][$j]['TimeModeSession']['mode'] == 0) {
+							$modes[$i][$j]['TimeModeSession']['mode'] = 'Blitz';
 						}
-						$date = new DateTime($modes[$i][$j]['TimeModeOverview']['created']);
+						$date = new DateTime($modes[$i][$j]['TimeModeSession']['created']);
 						$month = $date->format('m.');
 						$tday = $date->format('d.');
 						$tyear = $date->format('Y');
@@ -470,14 +470,14 @@ class TimeModeController extends AppController {
 						if ($tday[0] == 0) {
 							$tday = substr($tday, -3);
 						}
-						$modes[$i][$j]['TimeModeOverview']['created'] = $tClock . ' ' . $tday . $month . $tyear;
+						$modes[$i][$j]['TimeModeSession']['created'] = $tClock . ' ' . $tday . $month . $tyear;
 					}
 				}
 				$roxCount = count($rox);
 				for ($k = 0; $k < $roxCount; $k++) {
-					if ($rox[$k]['TimeModeOverview']['id'] != $highestId && $sess != $rox[$k]['TimeModeOverview']['session']) {
-						$this->TimeModeOverview->delete($rox[$k]['TimeModeOverview']['id']);
-						$rDel = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => $rox[$k]['TimeModeOverview']['session']]]);
+					if ($rox[$k]['TimeModeSession']['id'] != $highestId && $sess != $rox[$k]['TimeModeSession']['session']) {
+						$this->TimeModeSession->delete($rox[$k]['TimeModeSession']['id']);
+						$rDel = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => $rox[$k]['TimeModeSession']['session']]]);
 						if (!$rDel) {
 							$rDel = [];
 						}
@@ -497,7 +497,7 @@ class TimeModeController extends AppController {
 			$modesHCount = count($modes[$h]);
 			for ($i = 0; $i < $modesHCount; $i++) {
 				if ($h == $openCard1 && $i == $openCard2) {
-					$allR[$h][$i] = $this->TimeModeAttempt->find('all', ['order' => 'num ASC', 'conditions' => ['session' => $modes[$h][$i]['TimeModeOverview']['session']]]);
+					$allR[$h][$i] = $this->TimeModeAttempt->find('all', ['order' => 'num ASC', 'conditions' => ['session' => $modes[$h][$i]['TimeModeSession']['session']]]);
 					if (!$allR[$h][$i]) {
 						$allR[$h][$i] = [];
 					}
@@ -564,8 +564,8 @@ class TimeModeController extends AppController {
 		$lastModeV = null;
 		$modesCount = count($modes[$lastModeIndex]);
 		for ($h = 0; $h < $modesCount; $h++) {
-			if (isset($modes[$lastModeIndex][$h]['TimeModeOverview'])) {
-				$lastModeV = $modes[$lastModeIndex][$h]['TimeModeOverview']['rank'];
+			if (isset($modes[$lastModeIndex][$h]['TimeModeSession'])) {
+				$lastModeV = $modes[$lastModeIndex][$h]['TimeModeSession']['rank'];
 			}
 		}
 

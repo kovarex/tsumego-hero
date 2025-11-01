@@ -3,9 +3,11 @@
 require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
+App::uses('RatingBounds', 'Utility');
 
 class TimeModeComponentTest extends TestCaseWithAuth {
 	public function testTimeModeRankContentsIntegrity() {
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
 		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
 		// This fact is used to conveniently deduce the rating range of the current rank
 		$allTimeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']) ?: [];
@@ -14,30 +16,73 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$previousRank = null;
 		foreach ($allTimeModeRanks as $timeModeRank) {
 			if ($previousRank) {
-				$previousRank = Rating::getRankMinimalRatingFromReadableRating($previousRank['TimeModeRank']['name']);
-				$currentRank = Rating::getRankMinimalRatingFromReadableRating($timeModeRank['TimeModeRank']['name']);
+				$previousRank = Rating::getRankMinimalRatingFromReadableRank($previousRank['TimeModeRank']['name']);
+				$currentRank = Rating::getRankMinimalRatingFromReadableRank($timeModeRank['TimeModeRank']['name']);
 				$this->assertTrue($previousRank < $currentRank);
 			}
 			$previousRank = $timeModeRank;
 		}
 	}
 
+	public function testRatingBoundsOneRank() {
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k']]);
+		$ratingBounds = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds->min));
+		$this->assertTrue(is_null($ratingBounds->max));
+	}
+
+	public function testRatingBoundsTwoRanks() {
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d']]);
+
+		$ratingBounds1k = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds1k->min));
+		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
+
+		$ratingBounds1d = TimeModeComponent::getRatingBounds($context->timeModeRanks[1]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
+		$this->assertNull($ratingBounds1d->max);
+	}
+
+	public function testRatingBoundsThreeRanks() {
+		$context = new ContextPreparator(['time-mode-ranks' => ['10k', '1k', '1d']]);
+
+		$ratingBounds10k = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds10k->min));
+		$this->assertSame($ratingBounds10k->max, Rating::getRankMinimalRatingFromReadableRank('9k'));
+
+		$ratingBounds1k = TimeModeComponent::getRatingBounds($context->timeModeRanks[1]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertSame($ratingBounds1k->min, $ratingBounds10k->max);
+		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
+
+		$ratingBounds1d = TimeModeComponent::getRatingBounds($context->timeModeRanks[2]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
+		$this->assertNull($ratingBounds1d->max);
+	}
 
 	public function testStartTimeMode() {
-		$this->login('kovarex');
-		Auth::init();
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::getUser()['activeRank'] = '';
-		Auth::saveUser();
-
-		$tsumego = ClassRegistry::init('Tsumego')->find('first');
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
+			'time-mode-ranks' => ['5k']]);
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '5k']])['TimeModeRank'];
-		$this->testAction('tsumegos/play/' . $tsumego['Tsumego']['id']
+		$this->testAction('tsumegos/play/' . $context->tsumego['id']
 			. '?startTimeMode&categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . $timeModeRank['id']);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertTrue(Auth::isInTimeMode());
-		$this->assertNotEmpty(Auth::getUser()['activeRank']);
+		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]) ?: [];
+		$this->assertSame(count($sessions), 1);
+		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
+		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
 	}
 }

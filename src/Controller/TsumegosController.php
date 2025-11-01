@@ -54,7 +54,7 @@ class TsumegosController extends AppController {
 		}
 	}
 
-	public function play($id = null, $setConnectionID = null): ?array {
+	public function play($id = null, $setConnectionID = null): mixed {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
 		$this->loadModel('Set');
@@ -173,7 +173,7 @@ class TsumegosController extends AppController {
 		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
 			$id = $newID;
 		}
-		if ($this->TimeMode->toBeFinished()) {
+		if ($this->TimeMode->checkFinishSession()) {
 			return $this->redirect(['action' => '/timeMode/result']);
 		}
 
@@ -802,6 +802,7 @@ class TsumegosController extends AppController {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+					/* TODO: time mode details to fix and move once I want the next step working
 					$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 					$currentNum = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 					$ranksCount = count($this->TimeMode->timeModeAttempts);
@@ -847,7 +848,7 @@ class TsumegosController extends AppController {
 					$ur1['TsumegoAttempt']['misplays'] = 1;
 					$ur1['TsumegoAttempt']['mode'] = 3;
 					$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['rating'];
-					$this->TsumegoAttempt->save($ur1);
+					$this->TsumegoAttempt->save($ur1);*/
 				}
 				if ($_COOKIE['type'] == 'g') {
 					$this->updateGoldenCondition();
@@ -1025,12 +1026,10 @@ class TsumegosController extends AppController {
 							}
 						}
 						if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+							/* TODO: time mode stuff to rewrite soon
 							$this->saveDanSolveCondition($solvedTsumegoRank, $preTsumego['Tsumego']['id']);
 							$this->updateGems($solvedTsumegoRank);
-							$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-							if (!$this->TimeMode->timeModeAttempts) {
-								$this->TimeMode->timeModeAttempts = [];
-							}
+							$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 							$currentNum = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 							$ranksCount = count($this->TimeMode->timeModeAttempts);
 
@@ -1096,7 +1095,7 @@ class TsumegosController extends AppController {
 							$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['rating'];
 							if ($ur1['TsumegoAttempt']['user_id'] > 0) {
 								$this->TsumegoAttempt->save($ur1);
-							}
+							} */
 						}
 					}
 					if (empty($utPre)) {
@@ -1719,7 +1718,6 @@ class TsumegosController extends AppController {
 			}
 
 			$tsTsumegos = $this->Tsumego->find('all', [
-				'order' => 'num ASC',
 				'conditions' => [
 					'id' => $setConnectionIds,
 					$rankConditions,
@@ -2284,16 +2282,6 @@ class TsumegosController extends AppController {
 		}
 
 		$crs = 0;
-		if (Auth::isInTimeMode()) {
-			$t['Tsumego']['status'] = 'setV2';
-			$ranksCount = count($this->TimeMode->timeModeAttempts);
-
-			for ($i = 0; $i < $ranksCount; $i++) {
-				if ($this->TimeMode->timeModeAttempts[$i]['TimeModeAttempt']['result'] == 'solved') {
-					$crs++;
-				}
-			}
-		}
 
 		if (Auth::isInLevelMode()) {
 			$this->Session->write('page', 'level mode');
