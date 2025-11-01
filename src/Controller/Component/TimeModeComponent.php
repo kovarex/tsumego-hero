@@ -128,7 +128,7 @@ class TimeModeComponent extends Component {
 			$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
 				'conditions' => [
 					'time_mode_session_id' => $currentSession['TimeModeSession']['id'],
-					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;
+					'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;
 
 			$this->secondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
 				'conditions' => ['id' => $currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
@@ -149,12 +149,12 @@ class TimeModeComponent extends Component {
 			return false;
 		}
 
-		if ($this->currentOrder - 1 < $this->overallCount) {
-			return false;
+		if ($this->currentOrder > $this->overallCount) {
+			return true;
 		}
 
 		/* Do some logic */
-		return true;
+		return false;
 	}
 
 	public $rank;

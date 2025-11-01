@@ -1359,7 +1359,7 @@
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
 	if(Auth::isInTimeMode()){
 		echo 'seconds = 0.0;';
-		echo 'var besogoMode3Next = '.$next.';';
+		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
 	}else if(Auth::isInRatingMode())
 		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
 	echo '
@@ -1789,9 +1789,9 @@
 			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
 			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
-			if(Auth::isInLevelMode()) echo 'document.cookie = "mode=1;path=/tsumegos/play;SameSite=Lax";';
-			if(Auth::isInRatingMode()) echo 'document.cookie = "mode=2;path=/tsumegos/play;SameSite=Lax";';
-			if(Auth::isInTimeMode()) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInLevelMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInRatingMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInTimeMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
 
 			if(Auth::isInTimeMode()){
 				echo 'notMode3 = false;';
@@ -1799,7 +1799,7 @@
 				?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
-				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode['currentOrder'] - 1, $timeMode['$overallCount']).'%");'; ?>
+				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode['currentOrder'] - 1, $timeMode['overallCount']).'%");'; ?>
 				$("#xp-increase-fx").fadeOut(0);
 				$("#xp-bar-fill").css({"-webkit-transition":"all 0.0s ease","box-shadow":""});
 				<?php
