@@ -148,11 +148,6 @@ class TsumegosController extends AppController {
 		if (isset($this->params['url']['potionAlert'])) {
 			$potionAlert = true;
 		}
-		if (isset($this->params['url']['startTimeMode'])
-			&& isset($this->params['url']['categoryID'])
-			&& isset($this->params['url']['rankID'])) {
-			$this->TimeMode->startTimeMode((int) $this->params['url']['categoryID'], (int) $this->params['url']['rankID']);
-		}
 
 		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
 		$query = $searchPatameters[0];

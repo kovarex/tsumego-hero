@@ -4,20 +4,22 @@ App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
 
 class TimeModeComponent extends Component {
-	public function startTimeMode(int $categoryID, int $rankID): void {
+	public function startTimeMode(int $categoryID, int $rankID): mixed {
 		if (!Auth::isLoggedIn()) {
-			return;
+			return Result::fail('Not logged in');
 		}
 
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);
 		if (empty($relevantTsumegos)) {
-			return;
+			return Result::fail('No relevant tsumegos.');
 		}
-		if ($currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
+		$currentTimeSession = $this->createNewSession($categoryID, $rankID)) {
 			$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
 		}
+		else
+			return Result::fail('Couldn't create time mode session'')
 	}
 
 	public static function cancelTimeMode(): void {

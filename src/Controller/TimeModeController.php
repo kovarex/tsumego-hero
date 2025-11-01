@@ -3,6 +3,22 @@
 App::uses('TimeModeUtil', 'Utility');
 
 class TimeModeController extends AppController {
+
+	public $components = ['TimeMode'];
+
+	public function start(): mixed {
+		$categoryID = (int) $this->params['url']['categoryID'];
+		if (!$categoryID) {
+			return $this->end(Result::fail('Time mode category not specified'));
+		}
+		$rankID = (int) $this->params['url']['rankID'];
+		if (!$rankID) {
+			return $this->end(Result::fail('Time mode rank not specified'));
+		}
+
+		return $this->end($this->TimeMode->startTimeMode($categoryID, $rankID));
+	}
+
 	public function overview(): mixed {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect("/");
@@ -22,7 +38,7 @@ class TimeModeController extends AppController {
 			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC']);
 		}
 		if (!$lastTimeModeCategoryID) {
-			return $this->redirect("/");
+			return $this->end(Result::fail("No time category present!"));
 		}
 
 		$settings = [];
