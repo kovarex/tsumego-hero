@@ -132,6 +132,11 @@ class TimeModeController extends AppController {
 			}
 		}
 
+		$achievementUpdate = $this->checkTimeModeAchievements();
+		if (count($achievementUpdate) > 0) {
+			$this->updateXP(Auth::getUserID(), $achievementUpdate);
+		}
+
 		$this->set('lastTimeModeCategoryID', $lastTimeModeCategoryID);
 		$this->set('timeModeCategories', ClassRegistry::init('TimeModeCategory')->find('all', ['order' => 'id']));
 		$this->set('timeModeRanks', ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']));
@@ -139,7 +144,7 @@ class TimeModeController extends AppController {
 		$this->set('rxxCount', json_decode(file_get_contents('json/time_mode_overview.json'), true));
 		$this->set('settings', $settings);
 		$this->set('ro', $timeModeSessions);
-		$this->set('achievementUpdate', $this->checkTimeModeAchievements());
+		$this->set('achievementUpdate', $achievementUpdate);
 		return null;
 	}
 
