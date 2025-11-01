@@ -1,6 +1,8 @@
 <?php
 
 App::uses('TimeModeUtil', 'Utility');
+App::uses('RatingBounds', 'Utility');
+
 class TimeModeComponent extends Component {
 	public function startTimeMode(int $categoryID, int $rankID): void {
 		if (!Auth::isLoggedIn()) {

@@ -307,3 +307,6 @@ ALTER TABLE `tsumego` DROP COLUMN num;
 
 ALTER TABLE `set` ADD COLUMN included_in_time_mode BOOLEAN NOT NULL DEFAULT TRUE;
 UPDATE `set` SET included_in_time_mode = FALSE WHERE id in (42, 109, 114, 143, 172, 29156, 33007, 74761);
+
+ALTER TABLE `user` CHANGE `lastMode` `last_time_mode_category_id` INT UNSIGNED NULL;
+ALTER TABLE `user` ADD CONSTRAINT `user_last_time_mode_category_id` FOREIGN KEY (`last_time_mode_category_id`) REFERENCES `time_mode_category`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

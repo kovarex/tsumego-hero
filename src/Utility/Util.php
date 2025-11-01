@@ -66,4 +66,12 @@ class Util {
 	public static function getPercent(float|int $amount, float|int $max): float {
 		return self::getRatio($amount, $max) * 100;
 	}
+
+	public static function indexByID($array, $prefix1, $prefix2) {
+		$result = [];
+		foreach ($array as $value) {
+			$result[$value[$prefix1]['id']] = $value[$prefix1][$prefix2];
+		}
+		return $result;
+	}
 }
