@@ -515,7 +515,7 @@
 				else $additionalId = '';
 				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
 					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
-					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
+					'.$navi[$i]['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
 				if($i==0 || $i == count($navi) - 2)
           echo '<li class="setBlank"></li>';

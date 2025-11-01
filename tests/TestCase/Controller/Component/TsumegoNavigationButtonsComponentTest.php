@@ -29,6 +29,7 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 		$this->assertSame(count($links), count($expectedNums));
 		for ($i = 0; $i < count($links); $i++) {
 			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
+			$this->assertSame($links[$i]->getText(), strval($context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
 		}
 	}
 
