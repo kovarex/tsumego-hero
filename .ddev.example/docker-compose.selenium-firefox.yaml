@@ -30,7 +30,3 @@ services:
       com.ddev.approot: $DDEV_APPROOT
     volumes:
       - ".:/mnt/ddev_config"
-
-  web:
-    links:
-      - selenium-firefox
