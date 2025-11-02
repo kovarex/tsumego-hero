@@ -43,7 +43,7 @@ class Browser {
 		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
 			return $url;
 		}
-		return "https://tsumego.ddev.site";
+		return "https://tsumego.ddev.site:33003";
 	}
 
 	public static function getTestAddress() {
