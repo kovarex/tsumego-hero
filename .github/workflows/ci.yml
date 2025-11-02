@@ -29,7 +29,6 @@ jobs:
 
       selenium-firefox:
         image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
-        expose: 4444
         volumes:
           - ".:/mnt/ddev_config"
 
