@@ -108,7 +108,6 @@ jobs:
           
       - name: Start built-in PHP server
         run: |
-          export TEST_ENVIRONMENT=github-ci
           nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
