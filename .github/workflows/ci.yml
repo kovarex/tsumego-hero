@@ -29,18 +29,6 @@ jobs:
 
       selenium-firefox:
         image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
-        container_name: ddev-${DDEV_SITENAME}-selenium-firefox
-        expose:
-          #      The internal noVNC port, which operates over HTTP so it can be exposed
-          #      through the router.
-          - 4444
-        environment:
-          - VIRTUAL_HOST=$DDEV_HOSTNAME
-        external_links:
-          - ddev-router:${DDEV_SITENAME}.${DDEV_TLD}
-        labels:
-          com.ddev.site-name: ${DDEV_SITENAME}
-          com.ddev.approot: $DDEV_APPROOT
         volumes:
           - ".:/mnt/ddev_config"
 
