@@ -161,9 +161,9 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 		$this->assertTrue(Auth::isInRatingMode());
 		$browser = new Browser();
 		$browser->get('sets');
+		$this->assertSame($browser->driver->getPageSource(), "just show it to me");
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.account-bar-user-class'));
 		$links = $div->findElements(WebDriverBy::tagName('a')) ?: [];
-		$this->assertSame($browser->driver->getPageSource(), "just show it to me");
 		$this->assertSame(count($links), 1);
 		$this->assertTextContains($context->user['name'], $links[0]->getText());
 	}
