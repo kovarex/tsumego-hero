@@ -6,7 +6,7 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class Browser {
 	public function __construct() {
-		$serverUrl = 'http://0.0.0.0:4444';
+		$serverUrl = 'http://0.0.0.0:32768';
 		$desiredCapabilities = DesiredCapabilities::firefox();
 
 		// Disable accepting SSL certificates
