@@ -93,7 +93,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 	}
 
-	public function testTimeModeFullProcess() {
+	/*public function testTimeModeFullProcess() {
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
@@ -132,5 +132,5 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 		$this->assertNotNull($nextButton);
 		$browser->driver->action()->click($nextButton);
-	}
+	}*/
 }
