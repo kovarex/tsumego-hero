@@ -109,6 +109,17 @@ jobs:
       - name: Start PHP web server
         run: php -S 0.0.0.0:8080 -t public &
 
+      - name: Debug connectivity
+        run: |
+          echo "Host IPs:"
+          ip -4 addr show
+          echo
+          echo "Docker network:"
+          docker network inspect bridge
+          echo
+          echo "Testing from inside Selenium:"
+          docker exec $(docker ps -qf "ancestor=seleniarm/standalone-firefox:109.0-geckodriver-0.32") \
+            curl -v http://172.17.0.1:8080 || true
 
       - name: Run tests
         env:
