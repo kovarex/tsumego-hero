@@ -107,7 +107,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue(Auth::isInLevelMode());
 		$browser = new Browser();
 
-		$browser->get('/timeMode/start'
+		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
