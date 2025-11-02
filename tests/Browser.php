@@ -53,7 +53,7 @@ class Browser {
 			return $url;
 		}*/
 		if (self::isInGithubCI())
-		  return getenv('TEST_APP_URL');
+		  return 'http://web:8080';
 		return "https://tsumego.ddev.site:33003";
 	}
 
