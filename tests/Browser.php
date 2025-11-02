@@ -4,6 +4,8 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 
+App::uses('Util', 'Utility');
+
 class Browser {
 	public function __construct() {
 
@@ -51,7 +53,7 @@ class Browser {
 		/*if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
 			return $url;
 		}*/
-		if (self::isInGithubCI()) {
+		if (Util::isInGithubCI()) {
 			return 'http://host.docker.internal:8080';
 		}
 		return "https://tsumego.ddev.site:33003";
@@ -59,10 +61,6 @@ class Browser {
 
 	public static function getTestAddress() {
 		return str_replace('tsumego', 'test.tsumego', self::getAddress());
-	}
-
-	public static function isInGithubCI() {
-		return !@$_SERVER['DDEV_PRIMARY_URL'];
 	}
 
 	public $driver;

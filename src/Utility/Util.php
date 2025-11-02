@@ -75,9 +75,14 @@ class Util {
 		return $result;
 	}
 
-	public static function isInTestEnvironment() {
+	public static function isInGithubCI() {
+		return @$_SERVER['TEST_ENVIRONMENT'] == 'github-ci';
+	}
+
+	public static function isInTestEnvironment(): bool {
 		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site")) {
 			return true;
 		}
+		return Util::isInGithubCI();
 	}
 }
