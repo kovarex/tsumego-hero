@@ -18,7 +18,7 @@ class TsumegosController extends AppController {
 				return $setConnection;
 			}
 		}
-		die("Problem doesn't exist in the specified set");
+		throw new AppException("Problem doesn't exist in the specified set");
 	}
 
 	private static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int {
@@ -2236,19 +2236,8 @@ class TsumegosController extends AppController {
 
 		shuffle($refinementT);
 
-		$refinementPublic = false;
 		$refinementPublicCounter = 0;
 
-		/* TODO: I don't understand what is this piece of code trying to do, but it is getting stuck in an infinite loop
-		while (!$refinementPublic) {
-			$scRefinement = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $refinementT[$refinementPublicCounter]['Tsumego']['id']]]);
-			$setScRefinement = $this->Set->findById($scRefinement['SetConnection']['set_id']);
-			if ($setScRefinement['Set']['public'] == 1 && $setScRefinement['Set']['premium'] != 1) {
-				$refinementPublic = true;
-			} else {
-				$refinementPublicCounter++;
-			}
-		}*/
 		$activate = true;
 		if (Auth::isLoggedIn()) {
 			if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
