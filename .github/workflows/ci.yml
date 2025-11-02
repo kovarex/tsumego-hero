@@ -114,7 +114,8 @@ jobs:
       - name: Run tests
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: http://127.0.0.1:8080
+          TEST_APP_URL: http://host.docker.internal:8080
+          TEST_ENVIRONMENT: github-ci
         run: composer test
 
       - name: Run PHPStan

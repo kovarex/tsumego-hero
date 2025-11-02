@@ -4,6 +4,11 @@ App::uses('Constants', 'Utility');
 
 class Auth {
 	public static function init($user = null): void {
+		// a hack to inject login in test environment
+		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"])) {
+			CakeSession::write("loggedInUserID", $_COOKIE["hackedLoggedInUserID"]);
+		}
+
 		if ($user) {
 			Auth::$user = $user['User'];
 			CakeSession::write('loggedInUserID', Auth::$user['id']);

@@ -4,10 +4,12 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 
+App::uses('Util', 'Utility');
+
 class Browser {
 	public function __construct() {
 
-		$serverUrl = self::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
 		$desiredCapabilities = DesiredCapabilities::firefox();
 
 		// Disable accepting SSL certificates
@@ -21,7 +23,7 @@ class Browser {
 
 		try {
 			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
-			// appranetly we need to visit "some" page to be able to set cookies
+			// we apparently need to visit "some" page to be able to set cookies
 			$this->get('empty.php');
 
 			// setting xdebug cookies, so I can debug the code invoked by requests of this driver
@@ -44,25 +46,17 @@ class Browser {
 		}
 		// This is what I would expect to be the proper way, but it hangs session start on the client
 		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);
-		$this->driver->get(self::getTestAddress() . '/' . $url);
+		$this->driver->get(self::getAddress() . '/' . $url);
 	}
 
 	public static function getAddress() {
-		/*if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
-			return $url;
-		}*/
-		if (self::isInGithubCI()) {
-			return 'http://host.docker.internal:8080';
+		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
+			return str_replace('https://', 'https://test.', $url);
 		}
-		return "https://tsumego.ddev.site:33003";
-	}
-
-	public static function getTestAddress() {
-		return str_replace('tsumego', 'test.tsumego', self::getAddress());
-	}
-
-	public static function isInGithubCI() {
-		return !@$_SERVER['DDEV_PRIMARY_URL'];
+		if (Util::isInGithubCI()) {
+			return $_SERVER['TEST_APP_URL'];
+		}
+		return "https://test.tsumego.ddev.site:33003";
 	}
 
 	public $driver;

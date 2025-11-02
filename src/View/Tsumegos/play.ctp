@@ -78,8 +78,6 @@
 		echo '<script type="text/javascript">window.location.href = "/tsumegos/play/'.$t['Tsumego']['id'].$t['Tsumego']['duplicateLink'].'";</script>';
 	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
-	if($r10==1)
-		echo '<script type="text/javascript">window.location.href = "/timeMode/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
 		if(!Auth::hasPremium())
@@ -517,7 +515,7 @@
 				else $additionalId = '';
 				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
 					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
-					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
+					'.$navi[$i]['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
 				if($i==0 || $i == count($navi) - 2)
           echo '<li class="setBlank"></li>';
@@ -1361,7 +1359,7 @@
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
 	if(Auth::isInTimeMode()){
 		echo 'seconds = 0.0;';
-		echo 'var besogoMode3Next = '.$next.';';
+		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
 	}else if(Auth::isInRatingMode())
 		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
 	echo '
@@ -1791,18 +1789,17 @@
 			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
 			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
-			if(Auth::isInLevelMode()) echo 'document.cookie = "mode=1;path=/tsumegos/play;SameSite=Lax";';
-			if(Auth::isInRatingMode()) echo 'document.cookie = "mode=2;path=/tsumegos/play;SameSite=Lax";';
-			if(Auth::isInTimeMode()) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInLevelMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInRatingMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInTimeMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
 
 			if(Auth::isInTimeMode()){
 				echo 'notMode3 = false;';
-				echo '$("#account-bar-xp").text("'.$raName.'");';
+				echo '$("#account-bar-xp").text("'.$timeMode['rank'].'");';
 				?>
-				<?php $barPercent = $stopParameter > 0 ? ($crs/$stopParameter)*100 : 0; ?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
-				<?php echo '$("#xp-bar-fill").css("width","'.$barPercent.'%");'; ?>
+				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode['currentOrder'] - 1, $timeMode['overallCount']).'%");'; ?>
 				$("#xp-increase-fx").fadeOut(0);
 				$("#xp-bar-fill").css({"-webkit-transition":"all 0.0s ease","box-shadow":""});
 				<?php
@@ -2019,15 +2016,10 @@
 		if (distance >= 0 && sprintLockedInSecretArea){
 				window.location.href = "/sets";
 		}
-		<?php
-		if($stopParameter2==0) echo 'tcount = 30.0;';
-		elseif($stopParameter2==1) echo 'tcount = 60.0;';
-		elseif($stopParameter2==2) echo 'tcount = 240.0;';
-		else echo 'tcount = 0.0;';
-		?>
+		tcount = <?php echo @$timeMode['secondsToSolve'] ?: 0 ?>;
 
 		var tcounter = 250;
-		if(mode==3){
+		if(mode==3) {
 			tcounter = 100;
 			moveTimeout = 50;
 		}
@@ -2981,7 +2973,6 @@
 					timeModeEnabled = false;
 					setCookie("score", "<?php echo $score1; ?>");
 					setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
-					setCookie("mode", mode);
 					$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
@@ -3004,7 +2995,6 @@
 						x3 = 1;
 					}
 					setCookie("score", x2);
-					setCookie("mode", mode);
 					if(goldenTsumego)
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
