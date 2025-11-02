@@ -29,7 +29,8 @@ class Browser {
 			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
 		}
 		catch (Exception $e) {
-			$this->driver->quit();
+			if ($this->driver)
+			  $this->driver->quit();
 			throw $e;
 		}
 	}
