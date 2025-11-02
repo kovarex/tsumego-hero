@@ -19,7 +19,8 @@ services:
       - HTTPS_EXPOSE=7901:7900
       - HTTP_EXPOSE=7911:7900
     external_links:
-      - ddev-router:${DDEV_SITENAME}.${DDEV_TLD}
+      - ddev-router:tsumego.ddev.site
+      - ddev-router:test.tsumego.ddev.site
     # To enable VNC access for traditional VNC clients like macOS "Screen Sharing",
     # uncomment the following two lines.
     #ports:
