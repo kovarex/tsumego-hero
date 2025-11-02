@@ -17,7 +17,7 @@ class TsumegosController extends AppController {
 				return $setConnection;
 			}
 		}
-		die("Problem doesn't exist in the specified set");
+		throw new AppException("Problem doesn't exist in the specified set");
 	}
 
 	private static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int {
@@ -125,7 +125,7 @@ class TsumegosController extends AppController {
 		if ($setConnectionID) {
 			$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 			if (!$setConnection) {
-				die("Set connection " . $setConnectionID . " wasn't found in the database.");
+				throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
 			}
 			$id = $setConnection['SetConnection']['tsumego_id'];
 		}
@@ -138,7 +138,7 @@ class TsumegosController extends AppController {
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections) {
-			die("Problem without any set connection");
+			throw new AppException("Problem without any set connection");
 		} // some redirect/nicer message ?
 		if (!isset($setConnection)) {
 			$setConnection = $this->deduceRelevantSetConnection($setConnections);
