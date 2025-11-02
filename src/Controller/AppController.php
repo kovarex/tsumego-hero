@@ -1,13 +1,13 @@
 <?php
 
 App::uses('Auth', 'Utility');
-App::uses('Result', 'Utility');
 
 class AppController extends Controller {
 	public $viewClass = 'App';
 
 	public $components = [
 		'Session',
+		//'DebugKit.Toolbar',
 		'Flash',
 		'PlayResultProcessor',
 	];
