@@ -1715,7 +1715,6 @@ class TsumegosController extends AppController {
 			}
 
 			$tsTsumegos = $this->Tsumego->find('all', [
-				'order' => 'num ASC',
 				'conditions' => [
 					'id' => $setConnectionIds,
 					$rankConditions,
