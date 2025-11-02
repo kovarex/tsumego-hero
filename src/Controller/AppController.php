@@ -12,19 +12,6 @@ class AppController extends Controller {
 		'PlayResultProcessor',
 	];
 
-	protected function end(Result $result): mixed {
-		if ($result->message) {
-			$this->Flash->set($result->message);
-		}
-		if ($result->redirect) {
-			return $this->redirect($result->redirect);
-		}
-		if (isset($result->isSuccess) && !$result->isSuccess) {
-			return $this->redirect('/');
-		}
-		return null;
-	}
-
 	protected function processSGF($sgf) {
 		$aw = strpos($sgf, 'AW');
 		$ab = strpos($sgf, 'AB');

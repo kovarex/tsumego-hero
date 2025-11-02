@@ -39,7 +39,7 @@ class TimeModeController extends AppController {
 			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC']);
 		}
 		if (!$lastTimeModeCategoryID) {
-			return $this->end(Result::fail("No time category present!"));
+			throw new AppException('No time category present!');
 		}
 
 		$settings = [];
