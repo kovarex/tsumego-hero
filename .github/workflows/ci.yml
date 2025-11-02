@@ -35,15 +35,6 @@ jobs:
           - ".:/mnt/ddev_config"
         options: >-
           --add-host=host.docker.internal:172.17.0.1
-      web:
-        image: php:8.4-cli
-        ports:
-          - 8080
-        volumes:
-          - .:/app
-        options: >-
-          --workdir /app
-        command: ["php", "-S", "0.0.0.0:8080", "-t", "public"]
 
     steps:
       - uses: actions/checkout@v5
