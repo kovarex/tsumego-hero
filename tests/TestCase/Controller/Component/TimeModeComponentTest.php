@@ -111,9 +111,6 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
-		Auth::init();
-		$this->assertTrue(Auth::isInTimeMode());
-
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]) ?: [];
@@ -121,6 +118,9 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
+
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
 
 		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['time_mode_session_id' => $sessions[0]['TimeModeSession']['id']]) ?: [];
 		$this->assertSame(count($attempts), TimeModeUtil::$PROBLEM_COUNT);
