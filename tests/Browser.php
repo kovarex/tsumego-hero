@@ -20,7 +20,7 @@ class Browser {
 
 		$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 		// appranetly we need to visit "some" page to be able to set cookies
-		$this->driver->get('https://test.tsumego.ddev.site:33003/empty.php');
+		$this->get('empty.php');
 
 		// setting xdebug cookies, so I can debug the code invoked by requests of this driver
 		$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => "debug"]);
@@ -31,7 +31,23 @@ class Browser {
 	}
 
 	public function get(string $url): void {
-		$this->driver->get('https://test.tsumego.ddev.site:33003/' . $url);
+		if ($url != 'empty.php' && CakeSession::check("loggedInUserID")) {
+			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => strval(CakeSession::read("loggedInUserID"))]);
+		}
+		// This is what I would expect to be the proper way, but it hangs session start on the client
+		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);
+		$this->driver->get(self::getTestAddress() . '/' . $url);
+	}
+
+	public static function getAddress() {
+		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
+			return $url;
+		}
+		return "https://tsumego.ddev.site:33003";
+	}
+
+	public static function getTestAddress() {
+		return str_replace('tsumego', 'test.tsumego', self::getAddress());
 	}
 
 	public $driver;
