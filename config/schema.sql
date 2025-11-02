@@ -870,7 +870,6 @@ CREATE TABLE `users` (
   UNIQUE KEY `name_index` (`name`) USING BTREE,
   KEY `email_index` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=25644 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT;
-
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
