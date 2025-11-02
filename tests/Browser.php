@@ -6,7 +6,8 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class Browser {
 	public function __construct() {
-		$serverUrl = 'http://localhost:32768';
+
+		$serverUrl = self::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
 		$desiredCapabilities = DesiredCapabilities::firefox();
 
 		// Disable accepting SSL certificates
@@ -56,6 +57,10 @@ class Browser {
 
 	public static function getTestAddress() {
 		return str_replace('tsumego', 'test.tsumego', self::getAddress());
+	}
+
+	public static function isInGithubCI(){
+		return !@$_SERVER['DDEV_PRIMARY_URL'];
 	}
 
 	public $driver;
