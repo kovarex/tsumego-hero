@@ -40,9 +40,9 @@ class Browser {
 	}
 
 	public static function getAddress() {
-		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
+		/*if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
 			return $url;
-		}
+		}*/
 		return "https://tsumego.ddev.site:33003";
 	}
 
