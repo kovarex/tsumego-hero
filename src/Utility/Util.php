@@ -76,6 +76,9 @@ class Util {
 	}
 
 	public static function isInGithubCI() {
+		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT']) {
+			return $testEnvironment == 'github-ci';
+		}
 		if ($host = @$_SERVER['HTTP_HOST']) {
 			return str_contains($host, 'host.docker.internal');
 		}
