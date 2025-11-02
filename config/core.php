@@ -92,13 +92,6 @@ Configure::write('Exception', array(
     'log' => false
 ));
 
-/*
-Configure::write('Exception', [
-	'handler' => 'ErrorHandler::handleException',
-	'renderer' => 'ExceptionRenderer',
-	'log' => true,
-]);*/
-
 /**
  * Application wide charset encoding
  */
