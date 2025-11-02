@@ -105,11 +105,16 @@ jobs:
           mysql -h 127.0.0.1 -uroot -proot test < config/schema.sql
           mysql -h 127.0.0.1 -uroot -proot test < migration/sql-fix.sql
           mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
+          
+      - name: Start built-in PHP server
+        run: |
+          nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
+          sleep 3
 
       - name: Run tests
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: http://host.docker.internal:8080
+          TEST_APP_URL: http://127.0.0.1:8080
         run: composer test
 
       - name: Run PHPStan
