@@ -31,7 +31,6 @@ jobs:
         image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
         ports:
           - 4444
-        hostname: firefox
         volumes:
           - ".:/mnt/ddev_config"
 
