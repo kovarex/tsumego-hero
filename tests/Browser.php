@@ -6,7 +6,7 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class Browser {
 	public function __construct() {
-		$serverUrl = 'http://0.0.0.0:32768';
+		$serverUrl = 'http://selenium-firefox:4444';
 		$desiredCapabilities = DesiredCapabilities::firefox();
 
 		// Disable accepting SSL certificates
@@ -40,10 +40,10 @@ class Browser {
 	}
 
 	public static function getAddress() {
-		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
+		/*if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
 			return $url;
-		}
-		return "https://tsumego.ddev.site:33003";
+		}*/
+		return "https://tsumego.ddev.site:7901";
 	}
 
 	public static function getTestAddress() {
