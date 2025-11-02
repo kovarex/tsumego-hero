@@ -74,4 +74,10 @@ class Util {
 		}
 		return $result;
 	}
+
+	public static function isInTestEnvironment() {
+		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site")) {
+			return true;
+		}
+	}
 }

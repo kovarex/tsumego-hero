@@ -28,6 +28,7 @@ class ContextPreparator {
 			}
 			ClassRegistry::init('User')->save($this->user);
 			CakeSession::write('loggedInUserID', $this->user['id']);
+			assert(CakeSession::check('loggedInUserID'));
 			Auth::init();
 		} else {
 			CakeSession::destroy();

@@ -4,6 +4,7 @@ require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
+use Facebook\WebDriver\WebDriverBy;
 
 class TimeModeComponentTest extends TestCaseWithAuth {
 	public function testTimeModeRankContentsIntegrity() {
@@ -93,19 +94,24 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testTimeModeFullProcess() {
-		$contextParameters = ['time-mode-ranks' => ['5k']];
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
-			$contextParameters['other-tsumegos'] []= ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
 		}
 
 		$context = new ContextPreparator($contextParameters);
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$browser = new Browser();
+
 		$browser->get('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
@@ -126,7 +132,5 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 		$this->assertNotNull($nextButton);
 		$browser->driver->action()->click($nextButton);
-
-
 	}
 }
