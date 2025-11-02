@@ -33,6 +33,13 @@ jobs:
           - 4444
         volumes:
           - ".:/mnt/ddev_config"
+      web:
+        image: myorg/my-php-app:latest
+        ports:
+          - 8080:80
+        # optional: if your app needs environment vars
+        env:
+          APP_ENV: testing
 
     steps:
       - uses: actions/checkout@v5

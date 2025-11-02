@@ -52,6 +52,8 @@ class Browser {
 		/*if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
 			return $url;
 		}*/
+		if (self::isInGithubCI())
+		  return getenv('TEST_APP_URL');
 		return "https://tsumego.ddev.site:33003";
 	}
 
