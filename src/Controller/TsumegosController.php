@@ -2233,18 +2233,8 @@ class TsumegosController extends AppController {
 
 		shuffle($refinementT);
 
-		$refinementPublic = false;
 		$refinementPublicCounter = 0;
 
-		while (!$refinementPublic) {
-			$scRefinement = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $refinementT[$refinementPublicCounter]['Tsumego']['id']]]);
-			$setScRefinement = $this->Set->findById($scRefinement['SetConnection']['set_id']);
-			if ($setScRefinement['Set']['public'] == 1 && $setScRefinement['Set']['premium'] != 1) {
-				$refinementPublic = true;
-			} else {
-				$refinementPublicCounter++;
-			}
-		}
 		$activate = true;
 		if (Auth::isLoggedIn()) {
 			if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
