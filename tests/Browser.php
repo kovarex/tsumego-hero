@@ -20,7 +20,7 @@ class Browser {
 
 		$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 		// appranetly we need to visit "some" page to be able to set cookies
-		$this->driver->get('https://test.tsumego.ddev.site:33003/empty.php');
+		$this->driver->get('https://test.tsumego.ddev.site/empty.php');
 
 		// setting xdebug cookies, so I can debug the code invoked by requests of this driver
 		$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => "debug"]);
@@ -31,7 +31,7 @@ class Browser {
 	}
 
 	public function get(string $url): void {
-		$this->driver->get('https://test.tsumego.ddev.site:33003/' . $url);
+		$this->driver->get('https://test.tsumego.ddev.site/' . $url);
 	}
 
 	public $driver;

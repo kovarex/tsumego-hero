@@ -91,4 +91,42 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue(count($attempts) > 0);
 		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 	}
+
+	public function testTimeModeFullProcess() {
+		$contextParameters = ['time-mode-ranks' => ['5k']];
+		$contextParameters['other-tsumegos'] = [];
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+			$contextParameters['other-tsumegos'] []= ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+		}
+
+		$context = new ContextPreparator($contextParameters);
+
+		$this->assertTrue(Auth::isInLevelMode());
+		$browser = new Browser();
+		$browser->get('/timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+		$this->assertTrue(Auth::isInTimeMode());
+
+		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]) ?: [];
+		$this->assertSame(count($sessions), 1);
+		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
+		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
+
+		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['time_mode_session_id' => $sessions[0]['TimeModeSession']['id']]) ?: [];
+		$this->assertSame(count($attempts), TimeModeUtil::$PROBLEM_COUNT);
+		foreach ($attempts as $attempt) {
+			$this->assertSame($attempt['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
+		}
+
+		$_COOKIE['score'] = Util::wierdEncrypt('1');
+		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+		$this->assertNotNull($nextButton);
+		$browser->driver->action()->click($nextButton);
+
+
+	}
 }
