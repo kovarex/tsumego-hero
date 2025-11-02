@@ -4064,25 +4064,5 @@ class AppController extends Controller {
 	/**
 	 * @return void
 	 */
-	public function afterFilter() {
-		if (!Auth::isLoggedIn()) {
-			return;
-		}
-
-		if (($this->Session->read('page') == 'time mode' || Auth::getUser()['mode'] != 3)
-		&& ($this->Session->read('page') == 'time mode' || strlen(Auth::getUser()['activeRank']) != 15)) {
-			return;
-		}
-
-		$this->loadModel('TimeModeAttempt');
-		$ranks = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-		if (!$ranks) {
-			$ranks = [];
-		}
-		$ranksCount = count($ranks);
-		for ($i = 0; $i < $ranksCount; $i++) {
-			$this->TimeModeAttempt->delete($ranks[$i]['TimeModeAttempt']['id']);
-		}
-	}
-
+	public function afterFilter() {}
 }
