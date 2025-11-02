@@ -38,7 +38,9 @@
 Configure::write('debug', 0);
 Configure::write('Cache.disable', true);
 
-if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site')) {
+if (!empty($_SERVER['SERVER_NAME']) &&
+    (str_contains($_SERVER['SERVER_NAME'], '.ddev.site') ||
+     str_contains($_SERVER['SERVER_NAME'], 'host.docker.internal'))) {
 	Configure::write('debug', 2);
 }
 
