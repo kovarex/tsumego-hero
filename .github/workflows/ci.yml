@@ -42,8 +42,10 @@ jobs:
           - 8080:8080
         volumes:
           - .:/app
-        working_dir: /app
-        command: php -S 0.0.0.0:8080 -t public
+        options: >-
+          --workdir /app
+          --entrypoint "php"
+        command: -S 0.0.0.0:8080 -t public
 
     steps:
       - uses: actions/checkout@v5
