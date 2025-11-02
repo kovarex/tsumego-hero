@@ -37,37 +37,26 @@
 	?>
 	</div>
 	<br>
-	<?php 
-	for($h=0;$h<count($modes);$h++){
-	$text = '';
-	if($h==0){ 
-		$text = 'time-mode1';
-		$timeModeSpeed = TimeModeUtil::$SLOW_SPEED;
-	}elseif($h==1){ 
-		$text = 'time-mode2';
-    $timeModeSpeed = TimeModeUtil::$FAST_SPEED;
-	}else{
-		$text = 'time-mode3';
-    $timeModeSpeed = TimeModeUtil::$BLITZ;
-	}
-	echo '<div id="'.$text.'">';
-		for($i=0;$i<count($modes[$h]);$i++){
-			if($locks[$h][$i]=='x'){
-				$p = array();
-				$p[1] = '';
-				$p[0] = '';
+	<?php
+  foreach ($timeModeCategories as $timeModeCategory) {
+	echo '<div id="time-mode'.$timeModeCategory['TimeModeCategory']['id'].'">';
+    foreach ($timeModeRanks as $timeModeRank) {
+		  $rank = $timeModeRank['TimeModeRank']['name'];
+  		$rankID = $timeModeRank['TimeModeRank']['id'];
+      $categoryID = $timeModeCategory['TimeModeCategory']['id'];
+			if(@$solvedMap[$categoryID][$rankID]) {
 				$imageContainerText = 'imageContainerText2';
 				$imageContainerSpace = '';
 				echo '<div class="imageContainer1">
-				<a style="text-decoration:none;" href="/tsumegos/play/5127?rank='.$modes[$h][$i].'&startTimeMode='.$timeModeSpeed.'">
-					<img id="i-'.$h.'-'.$modes[$h][$i].'" src="/img/rankButton'.$modes[$h][$i].'.png" onmouseover="hover_'.$h.'_'.$modes[$h][$i].'()" onmouseout="noHover_'.$h.'_'.$modes[$h][$i].'()">
-					 <div class="'.$imageContainerText.'">'.$p[1].' '.$p[0].''.$imageContainerSpace.'<img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
+				<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">
+					<img src="/img/rankButton'.$rank.'.png" onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this)">
+					 <div class="'.$imageContainerText.'">'.' '.$imageContainerSpace.'<img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
 				</a>
 				</div>';
 			}else{
 				echo '<div class="imageContainer1">
 					<a>
-					<img src="/img/rankButton'.$modes[$h][$i].'inactive.png" >
+					<img src="/img/rankButton'.$rank.'inactive.png" >
 					 <div class="imageContainerText2"><img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
 					</a>
 				</div>';
@@ -156,6 +145,7 @@
 		$("#time-mode3").hide();
 		mode = 1;
 		document.cookie = "lastMode=1";
+    updateRankBar();
 	}
 	function timeMode2(){
 		document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
@@ -166,6 +156,7 @@
 		$("#time-mode3").hide();
 		mode = 2;
 		document.cookie = "lastMode=2";
+    updateRankBar();
 	}
 	function timeMode3(){
 		document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
@@ -176,6 +167,7 @@
 		$("#time-mode3").fadeIn(250);
 		mode = 3;
 		document.cookie = "lastMode=3";
+    updateRankBar();
 	}
 	function hoverTimeMode1(){
 		document.getElementById("timeMode1").src = "/img/timeMode1hover2.png";
@@ -198,30 +190,35 @@
 		if(mode==3) document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
 		else document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
 	}
-	<?php 
-	for($h=0;$h<count($modes);$h++){
-		for($i=0;$i<count($modes[$h]);$i++){ 
-			echo 'function hover_'.$h.'_'.$modes[$h][$i].'(){
-				document.getElementById("i-'.$h.'-'.$modes[$h][$i].'").src = "/img/rankButton'.$modes[$h][$i].'hover.png";
-			}
-			function noHover_'.$h.'_'.$modes[$h][$i].'(){
-				document.getElementById("i-'.$h.'-'.$modes[$h][$i].'").src = "/img/rankButton'.$modes[$h][$i].'.png";
-			}';
+	<?php
+    foreach ($timeModeRanks as $timeModeRank) {
+      $rankID = $timeModeRank['TimeModeRank']['id'];
+      $rankName = $timeModeRank['TimeModeRank']['name'];
+			echo 'function hover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'hover.png"; }';
+			echo 'function noHover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'.png"; }';
 		} 
-	}	
 	?>
 	$("#account-bar-user2 a").css("color", "rgb(202, 102, 88)");
 	$("#xp-bar-fill").attr("class", "xp-bar-fill-c3");
 	$("#xp-bar-fill").removeClass("xp-bar-fill-c2");
 	$("#xp-bar-fill").removeClass("xp-bar-fill-c1");
 	$("#account-bar-user a").attr("class", "xp-text-fill-c3x");
-	
-	bartext = "";
-	if(mode==1) bartext = "<?php echo $lowestMode[0]; ?>";
-	else if(mode==2) bartext = "<?php echo $lowestMode[1]; ?>";
-	else if(mode==3) bartext = "<?php echo $lowestMode[2]; ?>";
-	
-	$("#account-bar-xp").text(bartext);
+
+
+  function getRankForMode(mode) {
+  <?php
+    foreach ($timeModeCategories as $timeModeCategory) {
+      $timeModeCategoryID = $timeModeCategory['TimeModeCategory']['id'];
+      if ($bestUnlockedRankID = @$solvedMap[$timeModeCategoryID]['best-unlocked-rank'])
+        $bestUnlockedRank = $solvedMap[$timeModeCategoryID][$bestUnlockedRankID];
+      if (!$bestUnlockedRank) {
+        $bestUnlockedRank = $timeModeRanks[0]['TimeModeRank']['name'];
+      }
+      echo "if (mode == ".$timeModeCategoryID.") return '".$bestUnlockedRank."';";
+    }
+  ?>
+  }
+  function updateRankBar() { $("#account-bar-xp").text(getRankForMode(mode)); }
 	$("#xp-bar-fill").css("width","100%");
 	</script>
 	

@@ -5,4 +5,6 @@ class Set extends AppModel {
 		$id['table'] =  'set';
 		parent::__construct($id, $table, $ds);
 	}
+
+	public $hasMany = ['SetConnection'];
 }

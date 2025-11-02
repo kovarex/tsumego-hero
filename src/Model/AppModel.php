@@ -36,4 +36,6 @@ class AppModel extends Model {
 		'EmptyInteger',
 	];
 
+	public $recursive = -1;
+
 }

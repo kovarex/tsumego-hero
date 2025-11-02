@@ -55,4 +55,23 @@ class Util {
 		unset($inputArray[$name]);
 		return $result;
 	}
+
+	public static function getRatio(float|int $amount, float|int $max): float {
+		if ($max == 0) {
+			return 0;
+		}
+		return $amount / $max;
+	}
+
+	public static function getPercent(float|int $amount, float|int $max): float {
+		return self::getRatio($amount, $max) * 100;
+	}
+
+	public static function indexByID($array, $prefix1, $prefix2) {
+		$result = [];
+		foreach ($array as $value) {
+			$result[$value[$prefix1]['id']] = $value[$prefix1][$prefix2];
+		}
+		return $result;
+	}
 }

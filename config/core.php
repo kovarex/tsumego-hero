@@ -85,11 +85,19 @@ Configure::write('Error', [
  *
  * @see ErrorHandler for more information on exception handling and configuration.
  */
+
+Configure::write('Exception', array(
+    'handler' => 'ErrorHandler::handleException',
+    'renderer' => 'AppErrorHandler',
+    'log' => false
+));
+
+/*
 Configure::write('Exception', [
 	'handler' => 'ErrorHandler::handleException',
 	'renderer' => 'ExceptionRenderer',
 	'log' => true,
-]);
+]);*/
 
 /**
  * Application wide charset encoding

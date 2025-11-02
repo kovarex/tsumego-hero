@@ -5,6 +5,10 @@ class Tsumego extends AppModel {
 		$id['table'] = 'tsumego';
 		parent::__construct($id, $table, $ds);
 	}
+
+	public $belongsTo = ['Set'];
+	public $hasMany = ['SetConnection'];
+
 	public $validate = [
 		'title' => [
 			'rule' => 'notBlank',

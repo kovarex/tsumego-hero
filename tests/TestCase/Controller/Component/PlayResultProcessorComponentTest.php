@@ -86,7 +86,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolvingAddsRating(): void {
-		$context = new ContextPreparator(['user' => ['rating' => 1000], 'tsumego' => ['rating' => 1000], 'mode' => Constants::$RATING_MODE]);
+		$context = new ContextPreparator([
+			'user' => [
+				'rating' => 1000,
+				'mode' => Constants::$RATING_MODE],
+			'tsumego' => ['rating' => 1000]]);
 		$originalRating = $context->user['rating'];
 		$this->performSolve($context);
 		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
@@ -95,7 +99,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingDropsRating(): void {
-		$context = new ContextPreparator(['user' => ['rating' => 1000], 'tsumego' => ['rating' => 1000], 'mode' => Constants::$RATING_MODE]);
+		$context = new ContextPreparator([
+			'user' => [
+				'rating' => 1000,
+				'mode' => Constants::$RATING_MODE],
+			'tsumego' => ['rating' => 1000]]);
 		$originalRating = $context->user['rating'];
 		$this->performMisplay($context);
 		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];

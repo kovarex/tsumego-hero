@@ -1,8 +1,8 @@
 <?php
 
-class TimeModeOverview extends AppModel {
+class TimeModeSession extends AppModel {
 	public function __construct($id = false, $table = null, $ds = null) {
-		$id['table'] =  'time_mode_overview';
+		$id['table'] =  'time_mode_session';
 		parent::__construct($id, $table, $ds);
 	}
 }

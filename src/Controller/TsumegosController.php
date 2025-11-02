@@ -3,6 +3,7 @@
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
+App::uses('AppException', 'Utility');
 
 class TsumegosController extends AppController {
 	public $helpers = ['Html', 'Form'];
@@ -45,7 +46,7 @@ class TsumegosController extends AppController {
 		if (!Auth::isLoggedIn()) {
 			return;
 		}
-		if ($modeChange = Util::clearCookie('mode')) {
+		if ($modeChange = Util::clearCookie('change-mode')) {
 			if ($modeChange != Constants::$TIME_MODE) {
 				TimeModeComponent::cancelTimeMode();
 			}
@@ -54,7 +55,7 @@ class TsumegosController extends AppController {
 		}
 	}
 
-	public function play($id = null, $setConnectionID = null) {
+	public function play($id = null, $setConnectionID = null): mixed {
 		$this->Session->write('page', 'play');
 		$this->loadModel('User');
 		$this->loadModel('Set');
@@ -104,8 +105,6 @@ class TsumegosController extends AppController {
 		$reviewCheat = false;
 		$commentCoordinates = [];
 		$josekiLevel = 1;
-		$stopParameter = 0;
-		$stopParameter2 = 0;
 		$mode3ScoreArray = [];
 		$trs = [];
 		$potionAlert = false;
@@ -125,7 +124,7 @@ class TsumegosController extends AppController {
 		if ($setConnectionID) {
 			$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 			if (!$setConnection) {
-				die("Set connection " . $setConnectionID . " wasn't found in the database.");
+				throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
 			}
 			$id = $setConnection['SetConnection']['tsumego_id'];
 		}
@@ -136,9 +135,17 @@ class TsumegosController extends AppController {
 			$setsWithPremium[] = $item['Set']['id'];
 		}
 
+		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
+			$id = $newID;
+		}
+
+		if (!$id) {
+			throw new AppException("Tsumego id nor set connection was provided");
+		}
+
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections) {
-			die("Problem without any set connection");
+			throw new AppException("Problem without any set connection");
 		} // some redirect/nicer message ?
 		if (!isset($setConnection)) {
 			$setConnection = $this->deduceRelevantSetConnection($setConnections);
@@ -149,9 +156,6 @@ class TsumegosController extends AppController {
 
 		if (isset($this->params['url']['potionAlert'])) {
 			$potionAlert = true;
-		}
-		if (isset($this->params['url']['startTimeMode'])) {
-			$this->TimeMode->startTimeMode((int) $this->params['url']['startTimeMode']);
 		}
 
 		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
@@ -170,9 +174,10 @@ class TsumegosController extends AppController {
 		}
 
 		self::checkModeChange();
-		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
-			$id = $newID;
+		if ($this->TimeMode->checkFinishSession()) {
+			return $this->redirect(['action' => '/timeMode/result']);
 		}
+
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];
 		}
@@ -798,6 +803,7 @@ class TsumegosController extends AppController {
 					Auth::getUser()['damage'] += $_COOKIE['misplay'];
 				}
 				if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+					/* TODO: time mode details to fix and move once I want the next step working
 					$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 					$currentNum = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 					$ranksCount = count($this->TimeMode->timeModeAttempts);
@@ -843,7 +849,7 @@ class TsumegosController extends AppController {
 					$ur1['TsumegoAttempt']['misplays'] = 1;
 					$ur1['TsumegoAttempt']['mode'] = 3;
 					$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['rating'];
-					$this->TsumegoAttempt->save($ur1);
+					$this->TsumegoAttempt->save($ur1);*/
 				}
 				if ($_COOKIE['type'] == 'g') {
 					$this->updateGoldenCondition();
@@ -1021,12 +1027,10 @@ class TsumegosController extends AppController {
 							}
 						}
 						if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
+							/* TODO: time mode stuff to rewrite soon
 							$this->saveDanSolveCondition($solvedTsumegoRank, $preTsumego['Tsumego']['id']);
 							$this->updateGems($solvedTsumegoRank);
-							$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]);
-							if (!$this->TimeMode->timeModeAttempts) {
-								$this->TimeMode->timeModeAttempts = [];
-							}
+							$this->TimeMode->timeModeAttempts = $this->TimeModeAttempt->find('all', ['conditions' => ['session' => Auth::getUser()['activeRank']]]) ?: [];
 							$currentNum = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['currentNum'];
 							$ranksCount = count($this->TimeMode->timeModeAttempts);
 
@@ -1092,7 +1096,7 @@ class TsumegosController extends AppController {
 							$ur1['TsumegoAttempt']['tsumego_elo'] = $preTsumego['Tsumego']['rating'];
 							if ($ur1['TsumegoAttempt']['user_id'] > 0) {
 								$this->TsumegoAttempt->save($ur1);
-							}
+							} */
 						}
 					}
 					if (empty($utPre)) {
@@ -1715,7 +1719,6 @@ class TsumegosController extends AppController {
 			}
 
 			$tsTsumegos = $this->Tsumego->find('all', [
-				'order' => 'num ASC',
 				'conditions' => [
 					'id' => $setConnectionIds,
 					$rankConditions,
@@ -2236,6 +2239,7 @@ class TsumegosController extends AppController {
 		$refinementPublic = false;
 		$refinementPublicCounter = 0;
 
+		/* TODO: I don't understand what is this piece of code trying to do, but it is getting stuck in an infinite loop
 		while (!$refinementPublic) {
 			$scRefinement = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $refinementT[$refinementPublicCounter]['Tsumego']['id']]]);
 			$setScRefinement = $this->Set->findById($scRefinement['SetConnection']['set_id']);
@@ -2244,7 +2248,7 @@ class TsumegosController extends AppController {
 			} else {
 				$refinementPublicCounter++;
 			}
-		}
+		}*/
 		$activate = true;
 		if (Auth::isLoggedIn()) {
 			if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
@@ -2280,24 +2284,6 @@ class TsumegosController extends AppController {
 		}
 
 		$crs = 0;
-		if (Auth::isInTimeMode()) {
-			$t['Tsumego']['status'] = 'setV2';
-			$ranksCount = count($this->TimeMode->timeModeAttempts);
-
-			for ($i = 0; $i < $ranksCount; $i++) {
-				if ($this->TimeMode->timeModeAttempts[$i]['TimeModeAttempt']['result'] == 'solved') {
-					$crs++;
-				}
-			}
-		}
-		if (isset($this->params['url']['TimeModeAttempt'])) {
-			$raName = $this->params['url']['TimeModeAttempt'];
-		} else {
-			if (!isset($this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'])) {
-				$this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'] = '';
-			}
-			$raName = $this->TimeMode->timeModeAttempts[0]['TimeModeAttempt']['TimeModeAttempt'];
-		}
 
 		if (Auth::isInLevelMode()) {
 			$this->Session->write('page', 'level mode');
@@ -2480,7 +2466,6 @@ class TsumegosController extends AppController {
 		$this->set('sgf', $sgf);
 		$this->set('sgf2', $sgf2);
 		$this->set('sandboxComment2', $sandboxComment2);
-		$this->set('raName', $raName);
 		$this->set('crs', $crs);
 		$this->set('admins', $admins);
 		$this->set('refresh', $refresh);
@@ -2536,14 +2521,7 @@ class TsumegosController extends AppController {
 		$this->set('part', $t['Tsumego']['part']);
 		$this->set('josekiLevel', $josekiLevel);
 		$this->set('checkBSize', $checkBSize);
-		$this->set('rankTs', $this->TimeMode->rankTs);
-		$this->set('ranks', $this->TimeMode->timeModeAttempts); // TODO: rename on view as well
-		$this->set('currentRank', $this->TimeMode->currentRank);
-		$this->set('currentRankNum', $this->TimeMode->currentRankNum);
-		$this->set('firstRanks', $this->TimeMode->firstRanks);
-		$this->set('r10', $this->TimeMode->r10);
-		$this->set('stopParameter', $this->TimeMode->$stopParameter);
-		$this->set('stopParameter2', $this->TimeMode->$stopParameter2);
+		$this->set('timeMode', Auth::isInTimeMode() ? (array) $this->TimeMode : null);
 		$this->set('mode3ScoreArray', $mode3ScoreArray);
 		$this->set('potionAlert', $potionAlert);
 		$this->set('file', $file);
@@ -2573,6 +2551,7 @@ class TsumegosController extends AppController {
 		$this->set('partition', $partition);
 		$this->set('checkNotInSearch', $checkNotInSearch);
 		$this->set('hasPremium', $hasPremium);
+		return null;
 	}
 
 	private function getPopularTags($tags) {

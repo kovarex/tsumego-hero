@@ -22,14 +22,14 @@ class RatingTest extends CakeTestCase {
 	}
 
 	public function testRankMinimalRating(): void {
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("30k"), -950.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("20k"), 50.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("1k"), 1950.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("1d"), 2050.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("2d"), 2150.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("7d"), 2650.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("8d"), 2750.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("9d"), 2780.0);
-		$this->assertSame(Rating::getRankMinimalRatingFromReadableRating("10d"), 2810.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("30k"), -950.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("20k"), 50.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("1k"), 1950.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("1d"), 2050.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("2d"), 2150.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("7d"), 2650.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("8d"), 2750.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("9d"), 2780.0);
+		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("10d"), 2810.0);
 	}
 }
