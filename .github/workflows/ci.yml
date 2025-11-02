@@ -43,7 +43,7 @@ jobs:
           - .:/app
         options: >-
           --workdir /app
-          --entrypoint php -S 0.0.0.0:8080 -t public
+          --entrypoint sh -c "php -S 0.0.0.0:8080 -t public"
 
     steps:
       - uses: actions/checkout@v5
