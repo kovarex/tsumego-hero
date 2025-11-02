@@ -35,6 +35,15 @@ jobs:
           - ".:/mnt/ddev_config"
         options: >-
           --add-host=host.docker.internal:172.17.0.1
+      web:
+        image: php:8.4-cli
+        ports:
+          - 8080
+        volumes:
+          - .:/app
+        options: >-
+          --workdir /app
+          --entrypoint php -S 0.0.0.0:8080 -t public
 
     steps:
       - uses: actions/checkout@v5
@@ -105,12 +114,6 @@ jobs:
           mysql -h 127.0.0.1 -uroot -proot test < config/schema.sql
           mysql -h 127.0.0.1 -uroot -proot test < migration/sql-fix.sql
           mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
-          
-          
-      - name: Start web container
-        run: |
-          docker run -d --name web -p 8080:8080 -v $PWD:/app -w /app php:8.4-cli \
-          php -S 0.0.0.0:8080 -t public
 
       - name: Run tests
         env:
