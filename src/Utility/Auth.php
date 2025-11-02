@@ -6,7 +6,7 @@ class Auth {
 	public static function init($user = null): void {
 		// a hack until better solution is done @see Browser::get
 		if (!Util::isInTestEnvironment())
-          throw new AppException('$_SERVER[\'SERVER_NAME\']="'.$_SERVER['SERVER_NAME']);
+          throw new AppException(strval($_SERVER));
 		if (Configure::read('debug') > 0 && !empty($_COOKIE["hackedLoggedInUserID"])) {
 			CakeSession::write("loggedInUserID", $_COOKIE["hackedLoggedInUserID"]);
 		}
