@@ -53,7 +53,7 @@ class Browser {
 			return $url;
 		}*/
 		if (self::isInGithubCI())
-		  return 'http://127.0.0.1:8080';
+		  return 'http://host.docker.internal:8080';
 		return "https://tsumego.ddev.site:33003";
 	}
 
