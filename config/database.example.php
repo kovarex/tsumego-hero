@@ -80,6 +80,11 @@ class DATABASE_CONFIG {
 	public function __construct() {
 		if (Configure::read('debug') > 0) {
 			$this->default['log'] = true;
+
+			// When we use test subdomain, we switch to using the test database.
+			// I don't know how to switch to using the test config, so I just rewrite the default by the test one
+			if (str_starts_with(@$_SERVER['SERVER_NAME'], 'test.'))
+				$this->default = $this->test;
 		}
 	}
 

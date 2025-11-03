@@ -55,4 +55,40 @@ class Util {
 		unset($inputArray[$name]);
 		return $result;
 	}
+
+	public static function getRatio(float|int $amount, float|int $max): float {
+		if ($max == 0) {
+			return 0;
+		}
+		return $amount / $max;
+	}
+
+	public static function getPercent(float|int $amount, float|int $max): float {
+		return self::getRatio($amount, $max) * 100;
+	}
+
+	public static function indexByID($array, $prefix1, $prefix2) {
+		$result = [];
+		foreach ($array as $value) {
+			$result[$value[$prefix1]['id']] = $value[$prefix1][$prefix2];
+		}
+		return $result;
+	}
+
+	public static function isInGithubCI() {
+		if ($testEnvironment = @$_SERVER['TEST_ENVIRONMENT']) {
+			return $testEnvironment == 'github-ci';
+		}
+		if ($host = @$_SERVER['HTTP_HOST']) {
+			return str_contains($host, 'host.docker.internal');
+		}
+		return false;
+	}
+
+	public static function isInTestEnvironment(): bool {
+		if (@$_SERVER['DDEV_PRIMARY_URL'] && str_contains($_SERVER['DDEV_PRIMARY_URL'], "tsumego.ddev.site")) {
+			return true;
+		}
+		return Util::isInGithubCI();
+	}
 }

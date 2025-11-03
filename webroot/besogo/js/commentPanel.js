@@ -4,6 +4,7 @@ besogo.makeCommentPanel = function(container, editor)
   var infoTexts = {}, // Holds text nodes for game info properties
       statusLabel = null,
       statusTable = null,
+      superKoDiv = null,
       gameInfoTable = document.createElement('table'),
       gameInfoEdit = document.createElement('table'),
       commentBox = document.createElement('div'),
@@ -24,10 +25,13 @@ besogo.makeCommentPanel = function(container, editor)
       tenThousandYearsKoSelection = null,
       bent4InTheCornerSelection = null,
       deadInDoubleKoSelection = null,
+      deadInSuperKoSelection = null,
       aliveInDoubleKoSelection = null,
+      aliveInSuperKoSelection = null,
       sekiSelection = null,
       sekiSente = null,
       aliveSelection = null,
+      superKoMeansDeadCheckbox = null,
       jumpToBranchWithoutStatusButton = createJumpToBranchWithoutStatusButton(),
       goalKillSelection = null,
       goalLiveSelection = null,
@@ -64,6 +68,15 @@ besogo.makeCommentPanel = function(container, editor)
 
   statusLabel = createStatusLabel();
   statusTable = createStatusTable();
+
+  superKoDiv = document.createElement('div');
+  superKoMeansDeadCheckbox = createCheckBox(superKoDiv, 'Super ko means dead', function(event)
+  {
+    editor.getCurrent().superkoMeansDead = event.target.checked;
+    besogo.updateCorrectValues(editor.getCurrent().getRoot());
+    editor.notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+  });
+
   let parentDiv = document.createElement('div');
   container.appendChild(parentDiv);
 
@@ -77,6 +90,7 @@ besogo.makeCommentPanel = function(container, editor)
     besogo.updateCorrectValues(editor.getCurrent().getRoot());
     editor.notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
   });
+
   statusBasedCheckbox.type = 'checkbox';
   correctButtonSpan.appendChild(correctButton);
   if (!besogo.isEmbedded)
@@ -87,6 +101,7 @@ besogo.makeCommentPanel = function(container, editor)
   {
 	  parentDiv.appendChild(statusLabel);
 	  parentDiv.appendChild(statusTable);
+    parentDiv.appendChild(superKoDiv);
 	  parentDiv.appendChild(jumpToBranchWithoutStatusButton);
 	  container.appendChild(makeCommentButton());
   }
@@ -205,6 +220,7 @@ besogo.makeCommentPanel = function(container, editor)
     noneSelection = createRadioButtonRow(table, 'none', STATUS_NONE);
     deadSelection = createRadioButtonRow(table, 'dead', STATUS_DEAD);
     bent4InTheCornerSelection = createRadioButtonRow(table, 'Bent 4 in the corner', STATUS_BENT_FOUR_IN_THE_CORNER);
+    deadInSuperKoSelection = createRadioButtonRow(table, 'Dead in super ko', STATUS_DEAD_IN_SUPER_KO);
     deadInDoubleKoSelection = createRadioButtonRow(table, 'Dead in double ko', STATUS_DEAD_IN_DOUBLE_KO);
 
     let koSettingsSpan = document.createElement('span');
@@ -287,8 +303,8 @@ besogo.makeCommentPanel = function(container, editor)
 
     sekiSelection = createRadioButtonRow(table, 'seki', STATUS_SEKI, sekiSenteSpan);
     aliveInDoubleKoSelection = createRadioButtonRow(table, 'Alive in double ko', STATUS_ALIVE_IN_DOUBLE_KO);
+    aliveInSuperKoSelection = createRadioButtonRow(table, 'Alive in super ko', STATUS_ALIVE_IN_SUPER_KO);
     aliveSelection = createRadioButtonRow(table, 'alive', STATUS_ALIVE);
-
     return table;
   }
 
@@ -298,6 +314,7 @@ besogo.makeCommentPanel = function(container, editor)
     setEnabledCarefuly(noneSelection, editable);
     setEnabledCarefuly(deadSelection, editable);
     setEnabledCarefuly(bent4InTheCornerSelection, editable);
+    setEnabledCarefuly(deadInSuperKoSelection, editable);
     setEnabledCarefuly(deadInDoubleKoSelection, editable);
     setEnabledCarefuly(koSelection, editable);
     setEnabledCarefuly(koExtraThreatsMinusButton,
@@ -323,7 +340,9 @@ besogo.makeCommentPanel = function(container, editor)
                        editor.getCurrent().statusSource &&
                        editor.getCurrent().statusSource.blackFirst.type == STATUS_SEKI);
     setEnabledCarefuly(aliveInDoubleKoSelection, editable);
+    setEnabledCarefuly(aliveInSuperKoSelection, editable);
     setEnabledCarefuly(aliveSelection, editable);
+    setEnabledCarefuly(superKoMeansDeadCheckbox, editor.getCurrent().status.isSuperKo());
   }
 
   function getStatusText()
@@ -359,6 +378,12 @@ besogo.makeCommentPanel = function(container, editor)
       return;
     }
 
+    if (editor.getCurrent().status.blackFirst.type == STATUS_DEAD_IN_SUPER_KO)
+    {
+      deadInSuperKoSelection.checked = true;
+      return;
+    }
+
     if (editor.getCurrent().status.blackFirst.type == STATUS_DEAD_IN_DOUBLE_KO)
     {
       deadInDoubleKoSelection.checked = true;
@@ -389,6 +414,12 @@ besogo.makeCommentPanel = function(container, editor)
     if (editor.getCurrent().status.blackFirst.type == STATUS_ALIVE_IN_DOUBLE_KO)
     {
       aliveInDoubleKoSelection.checked = true;
+      return;
+    }
+
+    if (editor.getCurrent().status.blackFirst.type == STATUS_ALIVE_IN_SUPER_KO)
+    {
+      aliveInSuperKoSelection.checked = true;
       return;
     }
 
@@ -437,6 +468,7 @@ besogo.makeCommentPanel = function(container, editor)
     updateCorrectButton();
     updateJumpToBranchWithoutStatusButton();
     statusBasedCheckbox.checked = (editor.getCurrent().getRoot().goal != GOAL_NONE);
+    superKoMeansDeadCheckbox.checked = editor.getCurrent().superkoMeansDead;
   }
 
   function updateGameInfoTable(gameInfo)

@@ -31,6 +31,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.hash = 0;
     node.correctSource = false;
     node.correct = CORRECT_EMPTY;
+    node.superkoMeansDead = false;
     node.cameFrom = null;
     node.statusSource = null;
     node.status = null;
@@ -580,13 +581,13 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
 
   root.registerInVirtualMoves = function()
   {
-	if (typeof this.move === "object")
-	{
+    if (typeof this.move === "object")
+    {
       let myRoot = this.getRoot();
       let index = this.fromXY(this.move.x, this.move.y);
       myRoot.relevantMoves[index] = true;
       besogo.addVirtualChildren(myRoot, this);
-	}
+    }
   }
 
   root.setCorrectSource = function(value, editor)

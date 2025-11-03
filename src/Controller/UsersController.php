@@ -23,7 +23,7 @@ class UsersController extends AppController {
 		$this->loadModel('Set');
 		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('TimeModeAttempt');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$this->loadModel('Comment');
 		$this->loadModel('Schedule');
 		$this->loadModel('Sgf');
@@ -85,8 +85,8 @@ class UsersController extends AppController {
 		}
 		$newElo = $this->getTsumegoElo($rank, $p);
 		$adjustElo = $this->adjustElo($newElo);
-		$t['Tsumego']['elo_rating_mode'] = $adjustElo;
-		$t['Tsumego']['difficulty'] = $this->convertEloToXp($t['Tsumego']['elo_rating_mode']);
+		$t['Tsumego']['rating'] = $adjustElo;
+		$t['Tsumego']['difficulty'] = $this->convertEloToXp($t['Tsumego']['rating']);
 		$this->Tsumego->save($t);
 	}
 
@@ -142,14 +142,14 @@ class UsersController extends AppController {
 	 */
 	public function adjusttsumego() {
 		$this->loadModel('Tsumego');
-		$ts = $this->Tsumego->find('all', ['order' => 'elo_rating_mode ASC']);
+		$ts = $this->Tsumego->find('all', ['order' => 'rating ASC']);
 		echo '<pre>';
 		print_r(count($ts));
 		echo '</pre>';
 		echo '<table>';
 		foreach ($ts as $item) {
 			echo '<tr><td>' . $item['Tsumego']['id'] . '</td><td>' . $item['Tsumego']['difficulty']
-			. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['elo_rating_mode'] . '</td></tr>';
+			. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
 		}
 		echo '</table>';
 	}
@@ -181,7 +181,7 @@ class UsersController extends AppController {
 				],
 			],
 		]);
-		$this->set('rating', $t['Tsumego']['elo_rating_mode']);
+		$this->set('rating', $t['Tsumego']['rating']);
 		$this->set('name', $name);
 		$this->set('ta', $ta);
 		$this->set('id', $id);
@@ -252,7 +252,7 @@ class UsersController extends AppController {
 				],
 			]);
 			$t[$i]['Tsumego']['rd'] = 0;
-			$t[$i]['Tsumego']['elo_rating_mode'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
+			$t[$i]['Tsumego']['rating'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
 			$this->Tsumego->save($t[$i]);
 			echo '<pre>';
 			print_r('saved ' . $t[$i]['Tsumego']['id']);
@@ -290,7 +290,7 @@ class UsersController extends AppController {
 				)
 			)));
 			$t[$i]['Tsumego']['rd'] = 0;
-			$t[$i]['Tsumego']['elo_rating_mode'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
+			$t[$i]['Tsumego']['rating'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
 			$this->Tsumego->save($t[$i]);
 		}
 		*/
@@ -312,7 +312,7 @@ class UsersController extends AppController {
 		$this->loadModel('SetConnection');
 		$this->loadModel('Set');
 
-		$ts = $this->Tsumego->find('all', ['order' => 'elo_rating_mode ASC']);
+		$ts = $this->Tsumego->find('all', ['order' => 'rating ASC']);
 
 		$x1min = 2200;
 		$x1max = 2673;
@@ -330,7 +330,7 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 		}
@@ -347,10 +347,10 @@ class UsersController extends AppController {
 		$this->loadModel('Set');
 
 		$ts = $this->Tsumego->find('all', [
-			'order' => 'elo_rating_mode ASC',
+			'order' => 'rating ASC',
 			'conditions' => [
-				'elo_rating_mode >' => 500,
-				'elo_rating_mode <' => 1200,
+				'rating >' => 500,
+				'rating <' => 1200,
 			],
 		]);
 
@@ -370,11 +370,11 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 			if ($ts[$i]['Tsumego']['public'] == 1) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = $ts[$i]['Tsumego']['shift'];
+				$ts[$i]['Tsumego']['rating'] = $ts[$i]['Tsumego']['shift'];
 				//$this->Tsumego->save($ts[$i]);
 			}
 		}
@@ -391,9 +391,9 @@ class UsersController extends AppController {
 		$this->loadModel('Set');
 
 		$ts = $this->Tsumego->find('all', [
-			'order' => 'elo_rating_mode ASC',
+			'order' => 'rating ASC',
 			'conditions' => [
-				'elo_rating_mode >=' => 2200,
+				'rating >=' => 2200,
 			],
 		]);
 
@@ -413,11 +413,11 @@ class UsersController extends AppController {
 				continue;
 			}
 			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
-			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['elo_rating_mode']);
+			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
 			if ($ts[$i]['Tsumego']['public'] == 1) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = $ts[$i]['Tsumego']['shift'];
+				$ts[$i]['Tsumego']['rating'] = $ts[$i]['Tsumego']['shift'];
 				//$this->Tsumego->save($ts[$i]);
 			}
 		}
@@ -1007,43 +1007,43 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		$tsumegosCount = count($tsumegos);
 		for ($i = 0; $i < $tsumegosCount; $i++) {
-			if ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2500) {
+			if ($tsumegos[$i]['Tsumego']['rating'] >= 2500) {
 				array_push($rxx['5d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2400) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 2400) {
 				array_push($rxx['4d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2300) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 2300) {
 				array_push($rxx['3d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2200) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 2200) {
 				array_push($rxx['2d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2100) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 2100) {
 				array_push($rxx['1d'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 2000) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 2000) {
 				array_push($rxx['1k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1900) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1900) {
 				array_push($rxx['2k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1800) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1800) {
 				array_push($rxx['3k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1700) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1700) {
 				array_push($rxx['4k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1600) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1600) {
 				array_push($rxx['5k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1500) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1500) {
 				array_push($rxx['6k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1400) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1400) {
 				array_push($rxx['7k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1300) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1300) {
 				array_push($rxx['8k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1200) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1200) {
 				array_push($rxx['9k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1100) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1100) {
 				array_push($rxx['10k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 1000) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 1000) {
 				array_push($rxx['11k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 900) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 900) {
 				array_push($rxx['12k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 800) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 800) {
 				array_push($rxx['13k'], $tsumegos[$i]);
-			} elseif ($tsumegos[$i]['Tsumego']['elo_rating_mode'] >= 700) {
+			} elseif ($tsumegos[$i]['Tsumego']['rating'] >= 700) {
 				array_push($rxx['14k'], $tsumegos[$i]);
 			} else {
 				array_push($rxx['15k'], $tsumegos[$i]);
@@ -2527,7 +2527,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$users = $this->User->find('all', [
 			'limit' => 1000,
-			'order' => 'elo_rating_mode DESC',
+			'order' => 'rating DESC',
 			'conditions' => [
 				'NOT' => ['id' => [33, 34, 35]],
 			],
@@ -2586,7 +2586,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
-					Auth::getUser()['elo_rating_mode'] += 100;
+					Auth::getUser()['rating'] += 100;
 					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
@@ -2665,7 +2665,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$currentRank = '';
 		$params1 = '';
 		$params2 = '';
@@ -2677,7 +2677,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		if (isset($this->params['url']['category'])) {
-			$ro = $this->TimeModeOverview->find('all', [
+			$ro = $this->TimeModeSession->find('all', [
 				'order' => 'points DESC',
 				'conditions' => [
 					'mode' => $this->params['url']['category'],
@@ -2697,7 +2697,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$params1 = $lastModex;
 			$params2 = '15k';
 			$currentRank = $params2;
-			$ro = $this->TimeModeOverview->find('all', [
+			$ro = $this->TimeModeSession->find('all', [
 				'order' => 'points DESC',
 				'conditions' => [
 					'mode' => $params1,
@@ -2713,7 +2713,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$roCount = count($ro);
 		for ($i = 0; $i < $roCount; $i++) {
-			$us = $this->User->findById($ro[$i]['TimeModeOverview']['user_id']);
+			$us = $this->User->findById($ro[$i]['TimeModeSession']['user_id']);
 			$alreadyIn = false;
 			$roAllCount = count($roAll['user']);
 			for ($j = 0; $j < $roAllCount; $j++) {
@@ -2724,8 +2724,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (!$alreadyIn) {
 				array_push($roAll['user'], $us['User']['name']);
 				array_push($roAll['picture'], $us['User']['picture']);
-				array_push($roAll['points'], $ro[$i]['TimeModeOverview']['points']);
-				array_push($roAll['result'], $ro[$i]['TimeModeOverview']['status']);
+				array_push($roAll['points'], $ro[$i]['TimeModeSession']['points']);
+				array_push($roAll['result'], $ro[$i]['TimeModeSession']['status']);
 			}
 		}
 
@@ -2776,7 +2776,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $modesCount; $i++) {
 			$modesCount = count($modes[$i]);
 			for ($j = 0; $j < $modesCount; $j++) {
-				$mx = $this->TimeModeOverview->find('first', [
+				$mx = $this->TimeModeSession->find('first', [
 					'conditions' => [
 						'TimeModeAttempt' => $modes[$i][$j],
 						'mode' => $i,
@@ -2865,7 +2865,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
-		$this->loadModel('TimeModeOverview');
+		$this->loadModel('TimeModeSession');
 		$hideEmail = Auth::getUserID() != $id;
 
 		$solvedUts2 = $this->saveSolvedNumber($id);
@@ -3025,12 +3025,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
 
-		if ($highestElo < $user['User']['elo_rating_mode']) {
-			$highestElo = $user['User']['elo_rating_mode'];
+		if ($highestElo < $user['User']['rating']) {
+			$highestElo = $user['User']['rating'];
 		}
 
 		$timeGraph = [];
-		$ro = $this->TimeModeOverview->find('all', [
+		$ro = $this->TimeModeSession->find('all', [
 			'order' => 'rank ASC',
 			'conditions' => [
 				'user_id' => $id,
@@ -3039,11 +3039,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$highestRo = '15k';
 		$roCount = count($ro);
 		for ($i = 0; $i < $roCount; $i++) {
-			$highestRo = $this->getHighestRo($ro[$i]['TimeModeOverview']['TimeModeAttempt'], $highestRo);
-			if (isset($timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']])) {
-				$timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']]++;
+			$highestRo = $this->getHighestRo($ro[$i]['TimeModeSession']['TimeModeAttempt'], $highestRo);
+			if (isset($timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']])) {
+				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']]++;
 			} else {
-				$timeGraph[$ro[$i]['TimeModeOverview']['TimeModeAttempt']][$ro[$i]['TimeModeOverview']['status']] = 1;
+				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']] = 1;
 			}
 		}
 		$timeGraph = $this->formatTimegraph($timeGraph);
@@ -3499,7 +3499,7 @@ Joschka Zimdars';
 			for ($k = 0; $k < $xxxCount; $k++) {
 				$distance = [];
 
-				$sp += $xxx[$i][$k]['Tsumego']['elo_rating_mode'];
+				$sp += $xxx[$i][$k]['Tsumego']['rating'];
 				$sc++;
 
 				for ($l = 0; $l < 9; $l++) {
@@ -3841,39 +3841,39 @@ Joschka Zimdars';
 			$ts[$i]['Tsumego']['difficulty'] = $newXp;
 
 			if ($percent >= 1 && $percent <= 23) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2500;
+				$ts[$i]['Tsumego']['rating'] = 2500;
 			} elseif ($percent <= 26) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2400;
+				$ts[$i]['Tsumego']['rating'] = 2400;
 			} elseif ($percent <= 29) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2300;
+				$ts[$i]['Tsumego']['rating'] = 2300;
 			} elseif ($percent <= 32) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2200;
+				$ts[$i]['Tsumego']['rating'] = 2200;
 			} elseif ($percent <= 35) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2100;
+				$ts[$i]['Tsumego']['rating'] = 2100;
 			} elseif ($percent <= 38) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 2000;
+				$ts[$i]['Tsumego']['rating'] = 2000;
 			} elseif ($percent <= 42) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1900;
+				$ts[$i]['Tsumego']['rating'] = 1900;
 			} elseif ($percent <= 46) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1800;
+				$ts[$i]['Tsumego']['rating'] = 1800;
 			} elseif ($percent <= 50) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1700;
+				$ts[$i]['Tsumego']['rating'] = 1700;
 			} elseif ($percent <= 55) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1600;
+				$ts[$i]['Tsumego']['rating'] = 1600;
 			} elseif ($percent <= 60) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1500;
+				$ts[$i]['Tsumego']['rating'] = 1500;
 			} elseif ($percent <= 65) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1400;
+				$ts[$i]['Tsumego']['rating'] = 1400;
 			} elseif ($percent <= 70) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1300;
+				$ts[$i]['Tsumego']['rating'] = 1300;
 			} elseif ($percent <= 75) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1200;
+				$ts[$i]['Tsumego']['rating'] = 1200;
 			} elseif ($percent <= 80) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1100;
+				$ts[$i]['Tsumego']['rating'] = 1100;
 			} elseif ($percent <= 85) {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 1000;
+				$ts[$i]['Tsumego']['rating'] = 1000;
 			} else {
-				$ts[$i]['Tsumego']['elo_rating_mode'] = 900;
+				$ts[$i]['Tsumego']['rating'] = 900;
 			}
 
 			$this->Tsumego->save($ts[$i]);
@@ -4243,7 +4243,7 @@ Joschka Zimdars';
 		}
 		$sum = $correctCounter1;
 		$u['User']['solved'] = $sum;
-		//$u['User']['elo_rating_mode'] = 100;
+		//$u['User']['rating'] = 100;
 		$u['User']['readingTrial'] = 30;
 		//$u['User']['mode'] = 1;
 		$u['User']['health'] = $this->getHealth($u['User']['level']);

@@ -34,6 +34,7 @@ webroot/userLogger.html
 .ddev/
 config/core.local.php
 .idea/
+mainPageAjax.txt
 
 # IDE and editor specific files #
 #################################

@@ -1,7 +1,8 @@
 <?php
 
 class UserContribution extends AppModel {
-	public function __construct() {
-		parent::__construct(false, 'user_contribution');
+	public function __construct($id = false, $table = null, $ds = null) {
+		$id['table'] =  'user_contribution';
+		parent::__construct($id, $table, $ds);
 	}
 }

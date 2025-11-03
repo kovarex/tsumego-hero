@@ -110,21 +110,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains('666', $href->getText());
 	}
 
-	public function testTheNextButtonPointingToTheNextTsumego() {
-		$context = new ContextPreparator([
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
-			'other-tsumegos' => [
-				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
-				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]],
-		]);
-
-		$this->testAction($context->tsumego['set-connections'][0]['id'], ['return' => 'view']);
-		$dom = $this->getStringDom();
-		$href = $dom->querySelector('#playTitleA');
-		$this->assertTextContains('tsumego set 1', $href->textContent);
-	}
-
-	public function testTheNextButtonPointingToTheNextTsumegoUsingWebDriver() {
+	public function testTheNextAndBackButtonLinsWhenBothPointToOtherTsumegos() {
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
 			'other-tsumegos' => [

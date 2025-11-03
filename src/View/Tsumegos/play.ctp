@@ -78,8 +78,6 @@
 		echo '<script type="text/javascript">window.location.href = "/tsumegos/play/'.$t['Tsumego']['id'].$t['Tsumego']['duplicateLink'].'";</script>';
 	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
-	if($r10==1)
-		echo '<script type="text/javascript">window.location.href = "/timeMode/result";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
 		if(!Auth::hasPremium())
@@ -192,7 +190,7 @@
 				<?php
 					$di = $setConnection['SetConnection']['num'];
 					$di2 = '/';
-					if ($mode==2)
+					if (Auth::isInRatingMode())
 						$inFavorite='';
 					$hasPartition = '';
 					if($partition>0)
@@ -213,13 +211,13 @@
 								}else{
 									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$hasPartition.'">'.$set['Set']['title'].' '.$queryTitleSets.' '.$di.$di2.$anz.'</a>';
 								}
-							}elseif($mode==2){
+							}elseif(Auth::isInRatingMode()){
 								echo '<div class="slidecontainer">
 									<input type="range" min="1" max="7" value="'.$difficulty.'" class="slider" id="rangeInput" name="rangeInput">
 									<div id="sliderText">regular</div>
 								</div>';
 								echo '<a id="playTitleA" href=""></a>';
-							}elseif($mode==3){
+							}elseif(Auth::isInTimeMode()) {
 								echo '<font size="5px">'.$currentRankNum.' of '.$stopParameter.'</font>';
 							}
 						}
@@ -291,9 +289,9 @@
 	<tr>
 		<td align="center">
 		<?php
-		if($mode==1)
+		if (Auth::isInLevelMode())
 			echo '<div id="titleDescription" class="titleDescription1">';
-		elseif($mode==2	|| $mode==3)
+		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
 		if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 			echo '<b>'.$t['Tsumego']['description'].'</b> ';
@@ -322,7 +320,7 @@
 				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
 				if(true) $modifyDescriptionType = 'text';
 				else $modifyDescriptionType = 'hidden';
-				echo $this->Form->input('modifyElo', array('value' => $t['Tsumego']['elo_rating_mode'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Rating'));
+				echo $this->Form->input('modifyElo', array('value' => $t['Tsumego']['rating'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Rating'));
 				echo $this->Form->input('modifyAuthor', array('value' => $t['Tsumego']['author'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Author'));
 				echo $this->Form->input('deleteTag', array('label' => '', 'type' => 'text', 'placeholder' => 'Delete Tag'));
 				if($isSandbox)
@@ -338,7 +336,7 @@
 	</td>
 	<td align="center" width="29%">
 		<?php
-			if($mode==1){
+			if (Auth::isInLevelMode()) {
 				if(Auth::getWithDefault('level', 0) >= 20 && $sprintEnabled==1){
 					echo '
 						<a href="#"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png"
@@ -429,7 +427,7 @@
 		<table class="xpDisplayTable" border="0" width="70%">
 			<tr>
 			<td width="33%">
-				<?php if($mode!=3){ ?>
+				<?php if (!Auth::isInTimeMode()) { ?>
 				<div id="xpDisplay" align="center">
 					<font size="4" color="<?php echo $xpDisplayColor; ?>"></font>
 				</div>
@@ -448,7 +446,7 @@
 				<div id="status2" align="center" style="color:black;">
 				<font size="4">
 				<?php
-				echo	$tRank.' <font color="grey">('.$t['Tsumego']['elo_rating_mode'].')</font>';
+				echo	$tRank.' <font color="grey">('.$t['Tsumego']['rating'].')</font>';
 				?>
 				</font>
 				</div>
@@ -500,9 +498,9 @@
 		<div id="errorMessage"></div>
 	</div>
 	<?php
-	if($mode==1 || $mode==3){
+	if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
 		$naviAdjust1 = 38;
-	}elseif($mode==2){
+	} elseif (Auth::isInRatingMode()) {
 		$naviAdjust1 = 25;
 	}
 	?>
@@ -515,18 +513,12 @@
 			for($i = 0; $i < count($navi); $i++){
 				if($t['Tsumego']['id'] == $navi[$i]['Tsumego']['id']) $additionalId = 'id="currentElement"';
 				else $additionalId = '';
-				if(!isset($navi[$i]['Tsumego']['duplicateLink']))
-					$duplicateLink = '';
-				else
-					$duplicateLink = $navi[$i]['Tsumego']['duplicateLink'];
-				if($inFavorite=='?favorite=1')
-					$duplicateLink = '';
-
-				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="'.$navi[$i]['Tsumego']['status'].'">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$navi[$i]['Tsumego']['id'].$duplicateLink.$inFavorite.'">
-					'.$navi[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
+				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
+					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
+					'.$navi[$i]['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
-				if($i==0 || $i==count($navi)-2) echo '<li class="setBlank"><a></a></li>';
+				if($i==0 || $i == count($navi) - 2)
+          echo '<li class="setBlank"></li>';
 			}
 			?>
 		</div>
@@ -608,13 +600,6 @@
 					echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
 					echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-					if($virtual_children==1){
-						$vcOn = 'checked="checked"';
-						$vcOff = '';
-					}else{
-						$vcOn = '';
-						$vcOff = 'checked="checked"';
-					}
 					if($alternative_response==1){
 						$arOn = 'checked="checked"';
 						$arOff = '';
@@ -666,11 +651,6 @@
 							<br>
 							<form action="" method="POST" enctype="multipart/form-data">
 								<table>
-									<tr>
-										<td>Merge recurring positions</td>
-										<td><input type="radio" id="r38" name="data[Settings][r38]" value="on" '.$vcOn.'><label for="r38">on</label></td>
-										<td><input type="radio" id="r38" name="data[Settings][r38]" value="off" '.$vcOff.'><label for="r38">off</label></td>
-									</tr>
 									<tr>
 										<td>Alternative Response Mode</td>
 										<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" '.$arOn.'><label for="r39">on</label></td>
@@ -1377,10 +1357,10 @@
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
-	if($mode==3){
+	if(Auth::isInTimeMode()){
 		echo 'seconds = 0.0;';
-		echo 'var besogoMode3Next = '.$next.';';
-	}else if($mode==2)
+		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
+	}else if(Auth::isInRatingMode())
 		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
 	echo '
 	';
@@ -1400,7 +1380,7 @@
 		}
 	?>
 
-	<?php if($mode!=3){ ?>
+	<?php if(!Auth::isInTimeMode()){ ?>
 		function incrementSeconds(){
 			seconds += 1;
 		}
@@ -1424,7 +1404,7 @@
 		echo 'document.getElementById("multipleChoice4").innerHTML ="'.$partArray[3].'";';
 	} ?>
 
-	<?php if($mode==2){ ?>
+	<?php if(Auth::isInRatingMode()){ ?>
 	var rangeInput = document.getElementById("rangeInput");
 	const Slider = document.querySelector('input[name=rangeInput]');
 
@@ -1704,11 +1684,11 @@
 		echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'?potionAlert=1";';
 	}
 
-	if($mode==1) echo 'mode = 1;';
-	if($mode==2) echo 'mode = 2;';
-	if($mode==3) echo 'mode = 3;';
-	if($mode==1){
-	}elseif($mode==2){
+	if(Auth::isInLevelMode()) echo 'mode = 1;';
+	if(Auth::isInRatingMode()) echo 'mode = 2;';
+	if(Auth::isInTimeMode()) echo 'mode = 3;';
+	if(Auth::isInLevelMode()){
+	}elseif(Auth::isInRatingMode()){
 		echo '
 			$(".tsumegoNavi1").hide();
 			$(".tsumegoNavi-middle").hide();
@@ -1720,7 +1700,7 @@
 			$("#reviewButton").hide();
 			$("#reviewButton2").hide();
 		';
-	}elseif($mode==3){
+	}elseif(Auth::isInTimeMode()){
 		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
 	}
 
@@ -1809,18 +1789,17 @@
 			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
 			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
-			if($mode==1) echo 'document.cookie = "mode=1;path=/tsumegos/play;SameSite=Lax";';
-			if($mode==2) echo 'document.cookie = "mode=2;path=/tsumegos/play;SameSite=Lax";';
-			if($mode==3) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInLevelMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInRatingMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
+			if(Auth::isInTimeMode()) echo 'document.cookie = "path=/tsumegos/play;SameSite=Lax";';
 
-			if($mode==3){
+			if(Auth::isInTimeMode()){
 				echo 'notMode3 = false;';
-				echo '$("#account-bar-xp").text("'.$raName.'");';
+				echo '$("#account-bar-xp").text("'.$timeMode['rank'].'");';
 				?>
-				<?php $barPercent = $stopParameter > 0 ? ($crs/$stopParameter)*100 : 0; ?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
-				<?php echo '$("#xp-bar-fill").css("width","'.$barPercent.'%");'; ?>
+				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode['currentOrder'] - 1, $timeMode['overallCount']).'%");'; ?>
 				$("#xp-increase-fx").fadeOut(0);
 				$("#xp-bar-fill").css({"-webkit-transition":"all 0.0s ease","box-shadow":""});
 				<?php
@@ -2037,15 +2016,10 @@
 		if (distance >= 0 && sprintLockedInSecretArea){
 				window.location.href = "/sets";
 		}
-		<?php
-		if($stopParameter2==0) echo 'tcount = 30.0;';
-		elseif($stopParameter2==1) echo 'tcount = 60.0;';
-		elseif($stopParameter2==2) echo 'tcount = 240.0;';
-		else echo 'tcount = 0.0;';
-		?>
+		tcount = <?php echo @$timeMode['secondsToSolve'] ?: 0 ?>;
 
 		var tcounter = 250;
-		if(mode==3){
+		if(mode==3) {
 			tcounter = 100;
 			moveTimeout = 50;
 		}
@@ -2175,8 +2149,8 @@
 		$('#target').click(function(e){
 			if(locked==true){
 				<?php
-				if($mode==1 || $mode==3) if($next!='0' && !$isSemeai) echo 'window.location = "/tsumegos/play/'.$next.'";';
-				if($mode==2) echo 'window.location = "/tsumegos/play/'.$nextMode['Tsumego']['id'].'";';
+				if(Auth::isInLevelMode() || Auth::isInTimeMode()) if($next!='0' && !$isSemeai) echo 'window.location = "/tsumegos/play/'.$next.'";';
+				if(Auth::isInRatingMode()) echo 'window.location = "/tsumegos/play/'.$nextMode['Tsumego']['id'].'";';
 				?>
 			}
 		});
@@ -2361,7 +2335,7 @@
 		let tooltipSgfs = [];
 
 		<?php
-		if($mode!=3){
+		if(!Auth::isInTimeMode()){
 			for($a=0; $a<count($tooltipSgfs); $a++){
 				echo 'tooltipSgfs['.$a.'] = [];';
 				for($y=0; $y<count($tooltipSgfs[$a]); $y++){
@@ -2488,7 +2462,7 @@
 				userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
 				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).'+userDifficulty)/userNextlvl*100, 100);
 				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 0)), -2).'+ '.$eloScoreRounded.', 100);
+				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);
 				newXP = '.$newXP.';'; ?>
 				$("#xp-bar-fill").css({"width":newXP2+"%"});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
@@ -2504,8 +2478,8 @@
 					else x2 = 2;
 					<?php echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
 					userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
-					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScoreRounded.', 100);
-					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('elo_rating_mode', 1)), -2).'+ '.$eloScore2Rounded.', 100);
+					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
+					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
 					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+userDifficulty)/userNextlvl*100, 100);
 					barPercent2 = newXP2;'; ?>
 					$("#xp-bar-fill").css({"width":newXP2+"%"});
@@ -2591,7 +2565,7 @@
 			document.getElementById("sprint").style = "cursor: context-menu;";
 
 			var x = setInterval(function(){
-				if(mode==1 || $mode==3){
+				if(mode==1 || mode==3){
 					if(doubleXP){
 						var now = new Date().getTime();
 						var distance = countDownDate - now;
@@ -2976,7 +2950,7 @@
 		}
 		if(result=='S'){
 			$(".tag-gives-hint").css("display", "inline");
-			elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore;
+			elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore;
 			let ulvl;
 			if(mode!=2){//mode 1 and 3 correct
 				<?php echo $sandboxCheck; ?>
@@ -2992,14 +2966,13 @@
 					document.getElementById("theComment").innerHTML = "xxx";
 				}
 				$("#commentSpace").show();
-				if(mode==3){
+				if(mode == <?php echo Constants::$TIME_MODE; ?>) {
 					document.cookie = "rank=<?php echo $mode3ScoreArray[0]; ?>";
 					secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
 					document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 					timeModeEnabled = false;
 					setCookie("score", "<?php echo $score1; ?>");
 					setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
-					setCookie("mode", mode);
 					$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
@@ -3022,7 +2995,6 @@
 						x3 = 1;
 					}
 					setCookie("score", x2);
-					setCookie("mode", mode);
 					if(goldenTsumego)
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
@@ -3044,7 +3016,7 @@
 					}
 					if(mode==1 && levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', '0'); ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', '0'); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3057,7 +3029,7 @@
 						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						if(levelBar==2){
 							runXPBar(true);
-							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
+							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
 						}
 					}
 				}
@@ -3099,7 +3071,7 @@
 					}
 					if(levelBar==2){
 						runXPBar(true);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, ulvl);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
 					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
@@ -3128,9 +3100,9 @@
 				}
 				noLastMark = true;
 				if(mode==1 && levelBar==2 && misplays==0){
-					elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
+					elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 					runXPBar(false);
-					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
+					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					userElo = Math.round(elo2);
 				}
 				if(!noXP){
@@ -3164,7 +3136,7 @@
 					}
 				}
 			}else{//mode 2 incorrect
-				elo2 = <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>+eloScore2;
+				elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
@@ -3189,7 +3161,7 @@
 					freePlayMode = true;
 					if(levelBar==2){
 						runXPBar(false);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('elo_rating_mode', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
+						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					}
 					userElo = Math.round(elo2);
 				}
@@ -3259,7 +3231,6 @@
 		options.realstones = true;
 		options.nowheel = true;
 		options.nokeys = true;
-		options.vChildrenEnabled = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
 		if(mode!=3)
@@ -3267,8 +3238,6 @@
 		else
 		options.alternativeResponse = false;
 		<?php
-		if($virtual_children!=1)
-			echo 'options.vChildrenEnabled = false;';
 		if($alternative_response!=1)
 			echo 'options.alternativeResponse = false;';
 		if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210){

@@ -16,21 +16,10 @@ Also:
 to install it in the linux (outside docker), you can do:
 ./setup/php-install.sh
 
-##Selenium
-The tool to run actual firefox to test the javascript and other things related to the generated pages
-you need to install firefox in the docker, this solution from https://askubuntu.com/questions/1502031/how-to-install-firefox-directly-from-mozilla-with-apt worked for me:
-./setup/firefox-install
-
-And then I need to manually start the firefox client (there needs to be a better way)
-
-./selenium/geckodriver
-
 ## Debug with phpstorm
 https://www.jetbrains.com/help/phpstorm/debugging-with-phpstorm-ultimate-guide.html#setup-from-zero
 
 For command line, this needs to be specified locally
-set XDEBUG_MODE=debug& set XDEBUG_SESSION=1
-or
 export XDEBUG_MODE=debug& export XDEBUG_SESSION=1
 
 
@@ -38,7 +27,7 @@ export XDEBUG_MODE=debug& export XDEBUG_SESSION=1
 
 To locally develop and setup, use ddev from inside app/ folder:
 - Copy .ddev.example/ folder to .ddev/
-- Modify the config.yaml file to your needs.
+- Modify the config.yaml file to your needs (shouldn't be needed)
 
 By default, it uses `tsumego` as name.
 
@@ -70,7 +59,7 @@ And import any data you need.
 
 Open
 
-    https://tsumego3.ddev.site/
+    https://tsumego.ddev.site:33003/
 
 to browse your project now.
 

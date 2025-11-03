@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
+
 require_once(__DIR__ . '/../TestCaseWithAuth.php');
 
 // this is hack until nicer solution in newer cake is possible to be used
@@ -152,5 +154,16 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 		// changing the password to test again to not break other tests
 		$newUser['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
 		ClassRegistry::init('User')->save($newUser);
+	}
+
+	public function testInjectingLogin(): void {
+		$context = new ContextPreparator(['user' => ['mode' => Constants::$RATING_MODE]]);
+		$this->assertTrue(Auth::isInRatingMode());
+		$browser = new Browser();
+		$browser->get('sets');
+		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.account-bar-user-class'));
+		$links = $div->findElements(WebDriverBy::tagName('a')) ?: [];
+		$this->assertSame(count($links), 1);
+		$this->assertTextContains($context->user['name'], $links[0]->getText());
 	}
 }

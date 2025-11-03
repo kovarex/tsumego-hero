@@ -1,7 +1,13 @@
 <?php
 
 class SetConnection extends AppModel {
-	public function __construct() {
-		parent::__construct(false, 'set_connection');
+	public function __construct($id = false, $table = null, $ds = null) {
+		$id['table'] =  'set_connection';
+		parent::__construct($id, $table, $ds);
 	}
+
+	public $belongsTo = [
+		'Tsumego',
+		'Set',
+	];
 }
