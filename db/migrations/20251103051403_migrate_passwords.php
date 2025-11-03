@@ -34,7 +34,6 @@ final class MigratePasswords extends AbstractMigration
 		echo "Rehashing passwords for ".count($users)." users\n";
 		$count = 0;
 
-		$this->getAdapter()->getConnection()->beginTransaction();
 		foreach ($users as $user) {
 			$password = $this->tinkerDecode($user['pw'], 1);
 			$passwordHash = password_hash($password, PASSWORD_DEFAULT);
@@ -48,7 +47,6 @@ final class MigratePasswords extends AbstractMigration
 				$this->getAdapter()->getConnection()->beginTransaction();
 			}
 		}
-		$this->getAdapter()->getConnection()->commit();
 		echo "\n finished";
 		$this->execute("ALTER TABLE `user` DROP COLUMN pw");
     }
