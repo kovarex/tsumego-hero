@@ -20,8 +20,9 @@ export host_parameter="--host=$2"
 if [ "localhost" = $2 ]; then
   export host_parameter=
 fi
-echo creating database
-echo CREATE DATABASE $4 > mysql $host_parameter -u $3 -p < db-dump.sql
-echo importing database
+echo creating database $4
+echo CREATE DATABASE $4 | mysql $host_parameter -u $3 -p
+echo importing database into database $4
 mysql $host_parameter -u $3 -p $4 < db-dump.sql
+cd ..
 /usr/local/bin/php8.4 /usr/local/bin/composer migrate
