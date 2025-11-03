@@ -15,7 +15,7 @@ final class FirstMigrationBatch extends AbstractMigration
                     return;
 		}*/
 
-		$this->query("
+		$this->execute("
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
                       SET @@sql_mode='';
                       UPDATE `users` SET reward=null where reward='0000-00-00 00:00:00';

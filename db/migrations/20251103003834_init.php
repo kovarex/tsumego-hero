@@ -14,7 +14,7 @@ final class Init extends AbstractMigration
             return;
         }
 
-		$this->query("CREATE TABLE `achievement_conditions` (
+		$this->execute("CREATE TABLE `achievement_conditions` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `value` double DEFAULT NULL,
                         `user_id` int DEFAULT NULL,
