@@ -6,8 +6,6 @@ use Phinx\Migration\AbstractMigration;
 
 final class MigratePasswords extends AbstractMigration
 {
-	public $executeInTransaction = false;
-
 	private function tinkerDecode($string, $key) {
 		if (!is_string($string)) {
 			return '';
