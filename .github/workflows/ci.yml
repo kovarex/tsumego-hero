@@ -102,7 +102,7 @@ jobs:
 
       - name: Import database schema
         run: |
-          phinx migrate
+          ./vendor/bin/phinx migrate
           mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
           
       - name: Start built-in PHP server
