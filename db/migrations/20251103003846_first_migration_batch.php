@@ -10,12 +10,12 @@ final class FirstMigrationBatch extends AbstractMigration
     public function up(): void
     {
 		// skip this if the database already applied it.
-		if ($this->hasTable('cake_sessions')) {
+		// just for debug
+		/*if ($this->hasTable('user')) {
                     return;
-		}
+		}*/
 
-		$this->query("-- set of fixes to do on the tsumego hero database once it is moved to our servers
-                      
+		$this->execute("
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
                       SET @@sql_mode='';
                       UPDATE `users` SET reward=null where reward='0000-00-00 00:00:00';
@@ -30,8 +30,6 @@ final class FirstMigrationBatch extends AbstractMigration
                       ALTER TABLE `user_boards` DROP COLUMN `id`;
                       ALTER TABLE ranks ALTER COLUMN points SET DEFAULT 0;
                       
-                      -- Create sessions table for database-based session storage
-                      -- This helps with race conditions and session persistence issues
                       CREATE TABLE IF NOT EXISTS `cake_sessions` (
                         `id` VARCHAR(255) NOT NULL PRIMARY KEY,
                         `data` TEXT,
@@ -123,9 +121,8 @@ final class FirstMigrationBatch extends AbstractMigration
                       DELETE day_records.* FROM day_records LEFT JOIN users on day_records.user_id=users.id WHERE users.id is null; /* 9 deleted out of many */
                       ALTER TABLE `day_records` ADD CONSTRAINT `day_records_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* If user would be deleted, we delete his day record I guess */
                       
-                      DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
-                      DELIMITER //
-                      CREATE PROCEDURE remove_duplicate_tsumego_statuses()
+                      DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;");
+        $this->execute("CREATE PROCEDURE remove_duplicate_tsumego_statuses()
                       BEGIN
                         DECLARE count_to_delete int unsigned;
                         (SELECT MAX(tmp.count) FROM (SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1) as tmp) INTO count_to_delete;
@@ -133,8 +130,8 @@ final class FirstMigrationBatch extends AbstractMigration
                           DELETE to_remove FROM `tsumego_statuses` as to_remove JOIN(SELECT MIN(id) as id, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1) as tmp ON tmp.id=to_remove.id;
                           SET count_to_delete = count_to_delete - 1;
                         END WHILE;
-                      END //
-                      DELIMITER ;
+                      END;");
+		$this->execute("
                       CALL remove_duplicate_tsumego_statuses();
                       SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1 ORDER BY 1 DESC;
                       DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
