@@ -13,5 +13,5 @@ if [ "localhost" = $1 ]; then
   export host_parameter=
 fi
 echo importing database
-mysql $host_parameter -u $2 -p $3 < tsumego-hero-db-dump.sql
+mysql $host_parameter -u $2 -p $3 < db-dump.sql
 composer migrate
