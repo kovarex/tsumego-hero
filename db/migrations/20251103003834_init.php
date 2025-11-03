@@ -23,14 +23,11 @@ final class Init extends AbstractMigration
                         `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=63628 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `achievement_statuses`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `achievement_statuses` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int DEFAULT NULL,
@@ -39,14 +36,11 @@ final class Init extends AbstractMigration
                         `created` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=113281 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `achievements`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `achievements` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `name` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -59,14 +53,11 @@ final class Init extends AbstractMigration
                         `created` datetime DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=116 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `activates`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `activates` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -74,14 +65,11 @@ final class Init extends AbstractMigration
                         `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `admin_activities`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `admin_activities` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -91,14 +79,11 @@ final class Init extends AbstractMigration
                         `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=41357 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `answers`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `answers` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -108,14 +93,11 @@ final class Init extends AbstractMigration
                         `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=8389 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `cake_sessions`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `cake_sessions` (
                         `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
                         `data` text COLLATE utf8mb4_unicode_ci,
@@ -123,14 +105,11 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `expires_idx` (`expires`)
                       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `comments`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `comments` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL DEFAULT '0',
@@ -144,14 +123,11 @@ final class Init extends AbstractMigration
                         `created2` varchar(100) DEFAULT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=20918 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `day_records`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `day_records` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -169,14 +145,11 @@ final class Init extends AbstractMigration
                         `gemCounter3` int NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=2498 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `duplicates`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `duplicates` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `tsumego_id` int NOT NULL,
@@ -184,14 +157,11 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `tsumego_id` (`tsumego_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=2074 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `favorites`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `favorites` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `user_id` int unsigned NOT NULL,
@@ -204,14 +174,11 @@ final class Init extends AbstractMigration
                         CONSTRAINT `FK_favorites_to_tsumegos` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                         CONSTRAINT `FK_favorites_to_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
                       ) ENGINE=InnoDB AUTO_INCREMENT=101495 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `josekis`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `josekis` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `tsumego_id` int NOT NULL,
@@ -221,14 +188,11 @@ final class Init extends AbstractMigration
                         `hints` varchar(100) NOT NULL DEFAULT '1',
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `progress_deletions`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `progress_deletions` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -236,28 +200,22 @@ final class Init extends AbstractMigration
                         `created` datetime NOT NULL ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=5239 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `publish_dates`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `publish_dates` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `tsumego_id` int DEFAULT NULL,
                         `date` datetime DEFAULT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=26605 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `purge_lists`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `purge_lists` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `start` varchar(100) NOT NULL,
@@ -269,14 +227,11 @@ final class Init extends AbstractMigration
                         `set_scores` varchar(100) NOT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `purges`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `purges` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -286,14 +241,11 @@ final class Init extends AbstractMigration
                         `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=2480950 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `rank_overviews`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `rank_overviews` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -305,14 +257,11 @@ final class Init extends AbstractMigration
                         `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=52724 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `rank_settings`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `rank_settings` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int NOT NULL,
@@ -320,14 +269,11 @@ final class Init extends AbstractMigration
                         `status` int NOT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=144600 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `ranks`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `ranks` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `session` varchar(100) DEFAULT NULL,
@@ -347,14 +293,11 @@ final class Init extends AbstractMigration
                         CONSTRAINT `FK_tsumego_timed_attempts_to_tsumegos` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                         CONSTRAINT `FK_tsumego_timed_attempts_to_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
                       ) ENGINE=InnoDB AUTO_INCREMENT=1004682 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `rejects`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `rejects` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `type` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -365,14 +308,11 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `tsumego_id` (`tsumego_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=946 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `reputations`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `reputations` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int DEFAULT NULL,
@@ -382,14 +322,11 @@ final class Init extends AbstractMigration
                         `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=7392 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `schedules`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `schedules` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `date` date NOT NULL,
@@ -398,14 +335,11 @@ final class Init extends AbstractMigration
                         `published` int NOT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=6980 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `set_connections`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `set_connections` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `set_id` int NOT NULL,
@@ -416,14 +350,11 @@ final class Init extends AbstractMigration
                         KEY `set_id` (`set_id`),
                         KEY `tsumego_id` (`tsumego_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=17082 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `sets`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `sets` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `title` varchar(400) DEFAULT NULL,
@@ -441,14 +372,11 @@ final class Init extends AbstractMigration
                         `created` datetime DEFAULT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=88172 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `sgfs`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `sgfs` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `sgf` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -460,14 +388,11 @@ final class Init extends AbstractMigration
                         KEY `user_id` (`user_id`),
                         KEY `tsumego_id` (`tsumego_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=27020 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `signatures`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `signatures` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `tsumego_id` int NOT NULL,
@@ -476,28 +401,22 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `tsumego_id` (`tsumego_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=3862455 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `sites`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `sites` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `title` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
                         `body` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tag_names`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tag_names` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -511,14 +430,11 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `user_id` (`user_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tags`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tags` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `tag_name_id` int DEFAULT NULL,
@@ -531,14 +447,11 @@ final class Init extends AbstractMigration
                         KEY `user_id` (`user_id`),
                         KEY `tag_name_id` (`tag_name_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=17769 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tsumego_attempts`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tsumego_attempts` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
                         `user_id` int unsigned NOT NULL COMMENT 'The user it belongs to.',
@@ -558,14 +471,11 @@ final class Init extends AbstractMigration
                         CONSTRAINT `FK_user_records_to_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                         CONSTRAINT `FK_user_records_to_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
                       ) ENGINE=InnoDB AUTO_INCREMENT=24958683 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tsumego_rating_attempts`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tsumego_rating_attempts` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `user_id` int unsigned NOT NULL,
@@ -586,14 +496,11 @@ final class Init extends AbstractMigration
                         CONSTRAINT `FK_tsumego_records_to_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                         CONSTRAINT `FK_tsumego_recors_to_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
                       ) ENGINE=InnoDB AUTO_INCREMENT=1235742 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tsumego_statuses`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tsumego_statuses` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `user_id` int unsigned NOT NULL COMMENT 'The user it belongs to.',
@@ -607,14 +514,11 @@ final class Init extends AbstractMigration
                         CONSTRAINT `FK_user_tsumegos_to_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumegos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                         CONSTRAINT `FK_user_tsumegos_to_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
                       ) ENGINE=InnoDB AUTO_INCREMENT=61333026 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tsumego_variants`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tsumego_variants` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `tsumego_id` int NOT NULL DEFAULT '0',
@@ -629,14 +533,11 @@ final class Init extends AbstractMigration
                         `created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `tsumegos`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `tsumegos` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `part` varchar(50) DEFAULT NULL COMMENT 'Experimental field. Currently one use for Study Group in the sandbox.',
@@ -672,14 +573,11 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `elo_index` (`elo_rating_mode`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=38962 DEFAULT CHARSET=utf8mb4;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `user_boards`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `user_boards` (
                         `id` int NOT NULL,
                         `user_id` int NOT NULL,
@@ -738,14 +636,11 @@ final class Init extends AbstractMigration
                         `b53` int NOT NULL DEFAULT '0',
                         `b54` int NOT NULL DEFAULT '0'
                       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `user_contributions`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `user_contributions` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `user_id` int DEFAULT NULL,
@@ -766,42 +661,33 @@ final class Init extends AbstractMigration
                         PRIMARY KEY (`id`),
                         KEY `user_id` (`user_id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=8613 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `user_sa_maps`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `user_sa_maps` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `uid` int NOT NULL,
                         `sid` int NOT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `user_texture_maps`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `user_texture_maps` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `uid` int NOT NULL,
                         `tid` int NOT NULL,
                         PRIMARY KEY (`id`)
                       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
-                      /*!40101 SET character_set_client = @saved_cs_client */;
                       
                       --
                       -- Table structure for table `users`
                       --
                       
-                      /*!40101 SET @saved_cs_client     = @@character_set_client */;
-                      /*!50503 SET character_set_client = utf8mb4 */;
                       CREATE TABLE `users` (
                         `id` int unsigned NOT NULL AUTO_INCREMENT,
                         `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'name',
