@@ -6,6 +6,8 @@ use Phinx\Migration\AbstractMigration;
 
 final class MigratePasswords extends AbstractMigration
 {
+	public $executeInTransaction = false;
+
 	private function tinkerDecode($string, $key) {
 		if (!is_string($string)) {
 			return '';
@@ -43,8 +45,6 @@ final class MigratePasswords extends AbstractMigration
 				echo ".";
 				if ($count % 1000 == 0)
 					echo " ".(($count / count($users)) * 100)."%\n";
-				$this->getAdapter()->getConnection()->commit();
-				$this->getAdapter()->getConnection()->beginTransaction();
 			}
 		}
 		echo "\n finished";
