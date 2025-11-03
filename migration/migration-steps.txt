@@ -1,7 +1,6 @@
 1. Stop the site tsumego-hero (some kind of under construction)
-2. Export the database.
-3. Copy the database by sftp to the migration folder
-4. Import the database by calling ./db.sh tsumego.db kovarex db
+2. Export the database on tsumego hero (expected to be in tsumego-hero.com/files/<name>)
+3. Run ./migration/run.sh <filename> tsumego.db kovarex db
 7. Run https://tsumego.com/users/migratePasswordsToHashes/<limit> until all passwords are re-hashed (there are 25000 accounts, so it will take at least few iterations)
 8. Remove the column users.pw (ALTER TABLE users DROP COLUMN pw) (all entries should be NULL after the migration)
 8. Check that the site works properly
