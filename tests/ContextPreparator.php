@@ -5,7 +5,7 @@ class ContextPreparator {
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
-		$this->prepareUserMode(Util::extract('mode', $options));
+		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -20,11 +20,18 @@ class ContextPreparator {
 	private function prepareUser(?array $user): void {
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		if ($user) {
-			if ($user['elo_rating_mode']) {
-				$this->user['elo_rating_mode'] = $user['elo_rating_mode'];
+			if ($user['rating']) {
+				$this->user['rating'] = $user['rating'];
 			}
-			$userForSaving['User'] = $this->user;
-			ClassRegistry::init('User')->save($userForSaving);
+			if ($user['mode']) {
+				$this->user['mode'] = $user['mode'];
+			}
+			ClassRegistry::init('User')->save($this->user);
+			CakeSession::write('loggedInUserID', $this->user['id']);
+			assert(CakeSession::check('loggedInUserID'));
+			Auth::init();
+		} else {
+			CakeSession::destroy();
 		}
 
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
@@ -73,24 +80,15 @@ class ContextPreparator {
 		}
 
 		$tsumegoAttempt['TsumegoAttempt']['user_id'] = $this->user['id'];
-		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $tsumego['id'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $tsumegoAttempt['solved'] ?: false;
 		$tsumegoAttempt['TsumegoAttempt']['mode'] = $this->user['mode'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
-	}
-
-	private function prepareUserMode($mode): void {
-		if (!$mode || $this->user['User']['mode'] == $this->mode) {
-			return;
-		}
-
-		$this->user['mode'] = $mode;
-		ClassRegistry::init('User')->save($this->user);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void {
@@ -159,6 +157,21 @@ class ContextPreparator {
 		$this->setsCleared[$setID] = true;
 	}
 
+	private function prepareTimeModeRanks($timeModeRanks): void {
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+		assert(ClassRegistry::init('TimeModeSession')->find('count') == 0);
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
+		assert(ClassRegistry::init('TimeModeRank')->find('count') == 0);
+		foreach ($timeModeRanks as $timeModeRankInput) {
+			$timeModeRank = [];
+			$timeModeRank['name'] = $timeModeRankInput;
+			ClassRegistry::init('TimeModeRank')->create($timeModeRank);
+			ClassRegistry::init('TimeModeRank')->save($timeModeRank);
+			$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['order' => 'id DESC'])['TimeModeRank'];
+			$this->timeModeRanks [] = $timeModeRank;
+		}
+	}
+
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {
 		$statusCondition = [
 			'conditions' => [
@@ -178,6 +191,7 @@ class ContextPreparator {
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
+	public ?array $timeModeRanks = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 }

@@ -223,7 +223,7 @@ class SetsController extends AppController {
 			$tsCount3 = count($ts);
 			for ($k = 0; $k < $tsCount3; $k++) {
 
-				$elo += $ts[$k]['Tsumego']['elo_rating_mode'];
+				$elo += $ts[$k]['Tsumego']['rating'];
 				if (Auth::isLoggedIn()) {
 					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])) {
 						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C') {
@@ -586,10 +586,10 @@ class SetsController extends AppController {
 				$search2Count = count($search2);
 				for ($i = 0; $i < $search2Count; $i++) {
 					$ft = [];
-					$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$i]);
-					$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
+					$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+					$ft['rating <'] = $ft['rating >='] + 100;
 					if ($search2[$i] == '15k') {
-						$ft['elo_rating_mode >='] = 50;
+						$ft['rating >='] = 50;
 					}
 					array_push($fromTo, $ft);
 				}
@@ -718,10 +718,10 @@ class SetsController extends AppController {
 			for ($i = 0; $i < $ranksArrayCount; $i++) {
 				$ftFrom = [];
 				$ftTo = [];
-				$ftFrom['elo_rating_mode >='] = $this->getTsumegoElo($ranksArray[$i]['rank']);
-				$ftTo['elo_rating_mode <'] = $ftFrom['elo_rating_mode >='] + 100;
+				$ftFrom['rating >='] = $this->getTsumegoElo($ranksArray[$i]['rank']);
+				$ftTo['rating <'] = $ftFrom['rating >='] + 100;
 				if ($ranksArray[$i]['rank'] == '15k') {
-					$ftFrom['elo_rating_mode >='] = 50;
+					$ftFrom['rating >='] = 50;
 				}
 				$notPremiumArray = [];
 				if (!Auth::hasPremium()) {
@@ -854,10 +854,10 @@ class SetsController extends AppController {
 							$search2Count2 = count($search2);
 							for ($j = 0; $j < $search2Count2; $j++) {
 								$ft = [];
-								$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$j]);
-								$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
+								$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+								$ft['rating <'] = $ft['rating >='] + 100;
 								if ($search2[$j] == '15k') {
-									$ft['elo_rating_mode >='] = 50;
+									$ft['rating >='] = 50;
 								}
 								array_push($fromTo, $ft);
 							}
@@ -1002,7 +1002,7 @@ class SetsController extends AppController {
 		$statusCounter = 0;
 		$tagTsumegoDifficultyCount2 = count($tagTsumegoDifficulty);
 		for ($j = 0; $j < $tagTsumegoDifficultyCount2; $j++) {
-			$tagDifficultyResult += $tagTsumegoDifficulty[$j]['Tsumego']['elo_rating_mode'];
+			$tagDifficultyResult += $tagTsumegoDifficulty[$j]['Tsumego']['rating'];
 			if (isset($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']])) {
 				if ($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'C') {
 					$statusCounter++;
@@ -1256,13 +1256,13 @@ class SetsController extends AppController {
 				$elo = $this->getTsumegoElo($id);
 				$ftFrom = [];
 				$ftTo = [];
-				$ftFrom['elo_rating_mode >='] = $elo;
-				$ftTo['elo_rating_mode <'] = $elo + 100;
+				$ftFrom['rating >='] = $elo;
+				$ftTo['rating <'] = $elo + 100;
 				if ($id == '15k') {
-					$ftFrom['elo_rating_mode >='] = 50;
-					$set['Set']['description'] = $id . ' are problems that have a rating from 600 to ' . ($ftTo['elo_rating_mode <'] - 1) . '. This collection also contains problems with weaker rating.';
+					$ftFrom['rating >='] = 50;
+					$set['Set']['description'] = $id . ' are problems that have a rating from 600 to ' . ($ftTo['rating <'] - 1) . '. This collection also contains problems with weaker rating.';
 				} else {
-					$set['Set']['description'] = $id . ' are problems that have a rating from ' . $ftFrom['elo_rating_mode >='] . ' to ' . ($ftTo['elo_rating_mode <'] - 1) . '.';
+					$set['Set']['description'] = $id . ' are problems that have a rating from ' . $ftFrom['rating >='] . ' to ' . ($ftTo['rating <'] - 1) . '.';
 				}
 
 				$set['Set']['difficulty'] = $elo;
@@ -1391,10 +1391,10 @@ class SetsController extends AppController {
 					$search2Count2 = count($search2);
 					for ($j = 0; $j < $search2Count2; $j++) {
 						$ft = [];
-						$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$j]);
-						$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
+						$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$j] == '15k') {
-							$ft['elo_rating_mode >='] = 50;
+							$ft['rating >='] = 50;
 						}
 						array_push($fromTo, $ft);
 					}
@@ -1446,10 +1446,10 @@ class SetsController extends AppController {
 					$search2Count = count($search2);
 					for ($i = 0; $i < $search2Count; $i++) {
 						$ft = [];
-						$ft['elo_rating_mode >='] = $this->getTsumegoElo($search2[$i]);
-						$ft['elo_rating_mode <'] = $ft['elo_rating_mode >='] + 100;
+						$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$i] == '15k') {
-							$ft['elo_rating_mode >='] = 50;
+							$ft['rating >='] = 50;
 						}
 						array_push($fromTo, $ft);
 					}
@@ -1537,20 +1537,12 @@ class SetsController extends AppController {
 						array_push($ts, $tsBuffer[$i]);
 					}
 				}
-				$allVcActive = true;
-				$allVcInactive = true;
 				$allArActive = true;
 				$allArInactive = true;
 				$allPassActive = true;
 				$allPassInactive = true;
 				$tsCount = count($ts);
 				for ($i = 0; $i < $tsCount; $i++) {
-					if ($ts[$i]['Tsumego']['virtual_children'] == 0) {
-						$allVcActive = false;
-					}
-					if ($ts[$i]['Tsumego']['virtual_children'] == 1) {
-						$allVcInactive = false;
-					}
 					if ($ts[$i]['Tsumego']['alternative_response'] == 0) {
 						$allArActive = false;
 					}
@@ -1670,7 +1662,7 @@ class SetsController extends AppController {
 						$setDifficulty = $this->data['Set']['setDifficulty'];
 						$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
 						for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
-							$setDifficultyTsumegoSet[$i]['Tsumego']['elo_rating_mode'] = $this->data['Set']['setDifficulty'];
+							$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
 							$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 						}
 						$adminActivity = [];
@@ -1715,35 +1707,6 @@ class SetsController extends AppController {
 					$this->AdminActivity->save($adminActivity);
 				}
 				if (isset($this->data['Settings'])) {
-					if ($this->data['Settings']['r38'] == 'on') {
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							$ts[$i]['Tsumego']['virtual_children'] = 1;
-							$this->Tsumego->save($ts[$i]);
-						}
-						$allVcActive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned on merge recurring positions for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-
-					}
-					if ($this->data['Settings']['r38'] == 'off') {
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							$ts[$i]['Tsumego']['virtual_children'] = 0;
-							$this->Tsumego->save($ts[$i]);
-						}
-						$allVcInactive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned off merge recurring positions for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-					}
 					if ($this->data['Settings']['r39'] == 'on') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
@@ -1811,7 +1774,7 @@ class SetsController extends AppController {
 							$scFormChange['SetConnection']['set_id'] = $id;
 							$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
 							$tFormChange = [];
-							$tFormChange['Tsumego']['elo_rating_mode'] = 1000;
+							$tFormChange['Tsumego']['rating'] = 1000;
 						}
 						$tf = [];
 						$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
@@ -1821,7 +1784,7 @@ class SetsController extends AppController {
 						$tf['Tsumego']['description'] = $this->data['Tsumego']['description'];
 						$tf['Tsumego']['hint'] = $this->data['Tsumego']['hint'];
 						$tf['Tsumego']['author'] = $this->data['Tsumego']['author'];
-						$tf['Tsumego']['elo_rating_mode'] = $tFormChange['Tsumego']['elo_rating_mode'];
+						$tf['Tsumego']['rating'] = $tFormChange['Tsumego']['rating'];
 						if (is_numeric($this->data['Tsumego']['num'])) {
 							if ($this->data['Tsumego']['num'] >= 0) {
 								$this->Tsumego->create();
@@ -2693,7 +2656,7 @@ class SetsController extends AppController {
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
 		$nine = $this->Tsumego->find('first', [
 			'conditions' => [
-				'elo_rating_mode >=' => $this->getTsumegoElo('9d'),
+				'rating >=' => $this->getTsumegoElo('9d'),
 			],
 		]);
 		if ($nine != null) {

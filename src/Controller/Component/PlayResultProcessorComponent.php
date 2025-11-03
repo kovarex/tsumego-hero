@@ -91,24 +91,24 @@ class PlayResultProcessorComponent extends Component {
 			$tsumegoAttempt['TsumegoAttempt']['seconds'] = Util::getCookie('seconds', 0);
 			$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 			$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
-			$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
+			$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
 		} else {
 			$tsumegoAttempt = $lastTsumegoAttempt;
 		}
 
-		$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] += (int) Util::getCookie('seconds', 0);
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['elo_rating_mode'];
+		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplay'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
 	private function processEloChange(AppController $appController, array $previousTsumego, array $result): void {
-		$userRating = (float) Auth::getUser()['elo_rating_mode'];
-		$tsumegoRating = (float) $previousTsumego['Tsumego']['elo_rating_mode'];
+		$userRating = (float) Auth::getUser()['rating'];
+		$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
 		$eloDifference = abs($userRating - $tsumegoRating);
 		if ($userRating > $tsumegoRating) {
 			$eloBigger = 'u';
@@ -123,14 +123,14 @@ class PlayResultProcessorComponent extends Component {
 		}
 		$newUserElo = $appController->getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result['solved'] ? 'w' : 'l');
 		$newEloRating = $userRating + $newUserElo['user'];
-		Auth::getUser()['elo_rating_mode'] = $newEloRating;
+		Auth::getUser()['rating'] = $newEloRating;
 
 		Auth::saveUser();
 
-		$previousTsumego['Tsumego']['elo_rating_mode'] += $newUserElo['tsumego'];
+		$previousTsumego['Tsumego']['rating'] += $newUserElo['tsumego'];
 		$previousTsumego['Tsumego']['activity_value']++;
-		$previousTsumego['Tsumego']['difficulty'] = $appController->convertEloToXp($previousTsumego['Tsumego']['elo_rating_mode']);
-		if ($previousTsumego['Tsumego']['elo_rating_mode'] > 100) {
+		$previousTsumego['Tsumego']['difficulty'] = $appController->convertEloToXp($previousTsumego['Tsumego']['rating']);
+		if ($previousTsumego['Tsumego']['rating'] > 100) {
 			ClassRegistry::init('Tsumego')->save($previousTsumego);
 		}
 	}
@@ -179,7 +179,7 @@ class PlayResultProcessorComponent extends Component {
 		$isNum = $isNumSc;
 		$isSet = $isSetSc;
 		$_COOKIE['score'] = $scoreArr[1];
-		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['elo_rating_mode']);
+		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 
 		if ($isNum && $isSet) {
 			if (!$this->Session->check('noLogin')) {

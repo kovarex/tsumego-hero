@@ -9,6 +9,7 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 	public function buttonsTestGeneric($currentNum, $otherNums, $expectedNums) {
 		$contextParameters = [];
 		$index = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => $currentNum]]];
 		$index[$currentNum] = 0;
 		$contextParameters['other-tsumegos'] = [];
@@ -28,6 +29,7 @@ class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
 		$this->assertSame(count($links), count($expectedNums));
 		for ($i = 0; $i < count($links); $i++) {
 			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
+			$this->assertSame($links[$i]->getText(), strval($context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
 		}
 	}
 

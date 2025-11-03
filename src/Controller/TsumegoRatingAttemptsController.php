@@ -284,7 +284,7 @@ class TsumegoRatingAttemptsController extends AppController {
 				$trs[$i]['TsumegoAttempt']['status'] = '<b style="color:#e03c4b;">Failed</b>';
 			}
 			$t = $this->Tsumego->findById($trs[$i]['TsumegoAttempt']['tsumego_id']);
-			$trs[$i]['TsumegoAttempt']['tsumego_elo'] = $t['Tsumego']['elo_rating_mode'];
+			$trs[$i]['TsumegoAttempt']['tsumego_elo'] = $t['Tsumego']['rating'];
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			if (!$scT) {
 				continue;

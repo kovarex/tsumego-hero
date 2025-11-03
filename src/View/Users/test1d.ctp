@@ -6,7 +6,7 @@
 				echo '<tr>';
 				echo '<td>'.($counter).'</td>';
 				echo '<td><a target="_blank" href="/users/tsumego_rating/'.$ts[$i]['Tsumego']['id'].'" > '.$ts[$i]['Tsumego']['id'].'</a></td>';
-				echo '<td>'.$ts[$i]['Tsumego']['elo_rating_mode'].'</td>';
+				echo '<td>'.$ts[$i]['Tsumego']['rating'].'</td>';
 				echo '<td>'.$ts[$i]['Tsumego']['public'].'</td>';
 				echo '<td>'.$ts[$i]['Tsumego']['rank'].'</td>';
 				//echo '<td>'.$ts[$i]['Tsumego']['shift'].'</td>';

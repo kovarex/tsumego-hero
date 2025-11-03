@@ -45,7 +45,7 @@
 			$excluded = '';
 			if($users[$i]['User']['name']=='Fupfv' || $users[$i]['User']['name']=='PepinoNegro' 
 			|| $users[$i]['User']['name']=='StephaneLamy' || $users[$i]['User']['name']=='Farkas' || $users[$i]['User']['name']=='yaya') $excluded = '*';
-			if($users[$i]['User']['name']!='SaberRider' && $users[$i]['User']['name']!='test11' && $users[$i]['User']['elo_rating_mode']!=1000){
+			if($users[$i]['User']['name']!='SaberRider' && $users[$i]['User']['name']!='test11' && $users[$i]['User']['rating']!=1000){
 			if(strlen($users[$i]['User']['name'])>20) $users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
 			$bgColor = '#dddddd';
 			$tableRowColor = 'color13';
@@ -54,35 +54,35 @@
 			else if($users[$i]['User']['premium']==2) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
 			
 			
-			if($users[$i]['User']['elo_rating_mode']>=2900) $td = '9d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2800) $td = '8d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2700) $td = '7d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2600) $td = '6d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2500) $td = '5d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2400) $td = '4d'; 
-			elseif($users[$i]['User']['elo_rating_mode']>=2300) $td = '3d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2200) $td = '2d'; 
-			elseif($users[$i]['User']['elo_rating_mode']>=2100) $td = '1d';
-			elseif($users[$i]['User']['elo_rating_mode']>=2000) $td = '1k'; 
-			elseif($users[$i]['User']['elo_rating_mode']>=1900) $td = '2k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1800) $td = '3k'; 
-			elseif($users[$i]['User']['elo_rating_mode']>=1700) $td = '4k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1600) $td = '5k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1500) $td = '6k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1400) $td = '7k'; 
-			elseif($users[$i]['User']['elo_rating_mode']>=1300) $td = '8k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1200) $td = '9k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1100) $td = '10k';
-			elseif($users[$i]['User']['elo_rating_mode']>=1000) $td = '11k';
-			elseif($users[$i]['User']['elo_rating_mode']>=900) $td = '12k';
-			elseif($users[$i]['User']['elo_rating_mode']>=800) $td = '13k';
-			elseif($users[$i]['User']['elo_rating_mode']>=700) $td = '14k';
-			elseif($users[$i]['User']['elo_rating_mode']>=600) $td = '15k';
-			elseif($users[$i]['User']['elo_rating_mode']>=500) $td = '16k';
-			elseif($users[$i]['User']['elo_rating_mode']>=400) $td = '17k';
-			elseif($users[$i]['User']['elo_rating_mode']>=300) $td = '18k';
-			elseif($users[$i]['User']['elo_rating_mode']>=200) $td = '19k';
-			elseif($users[$i]['User']['elo_rating_mode']>=100) $td = '20k';
+			if($users[$i]['User']['rating']>=2900) $td = '9d';
+			elseif($users[$i]['User']['rating']>=2800) $td = '8d';
+			elseif($users[$i]['User']['rating']>=2700) $td = '7d';
+			elseif($users[$i]['User']['rating']>=2600) $td = '6d';
+			elseif($users[$i]['User']['rating']>=2500) $td = '5d';
+			elseif($users[$i]['User']['rating']>=2400) $td = '4d'; 
+			elseif($users[$i]['User']['rating']>=2300) $td = '3d';
+			elseif($users[$i]['User']['rating']>=2200) $td = '2d'; 
+			elseif($users[$i]['User']['rating']>=2100) $td = '1d';
+			elseif($users[$i]['User']['rating']>=2000) $td = '1k'; 
+			elseif($users[$i]['User']['rating']>=1900) $td = '2k';
+			elseif($users[$i]['User']['rating']>=1800) $td = '3k'; 
+			elseif($users[$i]['User']['rating']>=1700) $td = '4k';
+			elseif($users[$i]['User']['rating']>=1600) $td = '5k';
+			elseif($users[$i]['User']['rating']>=1500) $td = '6k';
+			elseif($users[$i]['User']['rating']>=1400) $td = '7k'; 
+			elseif($users[$i]['User']['rating']>=1300) $td = '8k';
+			elseif($users[$i]['User']['rating']>=1200) $td = '9k';
+			elseif($users[$i]['User']['rating']>=1100) $td = '10k';
+			elseif($users[$i]['User']['rating']>=1000) $td = '11k';
+			elseif($users[$i]['User']['rating']>=900) $td = '12k';
+			elseif($users[$i]['User']['rating']>=800) $td = '13k';
+			elseif($users[$i]['User']['rating']>=700) $td = '14k';
+			elseif($users[$i]['User']['rating']>=600) $td = '15k';
+			elseif($users[$i]['User']['rating']>=500) $td = '16k';
+			elseif($users[$i]['User']['rating']>=400) $td = '17k';
+			elseif($users[$i]['User']['rating']>=300) $td = '18k';
+			elseif($users[$i]['User']['rating']>=200) $td = '19k';
+			elseif($users[$i]['User']['rating']>=100) $td = '20k';
 			else $td = '21k';
 			
 			if($td=='9d') $tableRowColor = 'color9d';
@@ -136,7 +136,7 @@
 						'.$td.'
 					</td>
 					<td align="center">
-						'.$users[$i]['User']['elo_rating_mode'].'
+						'.$users[$i]['User']['rating'].'
 					</td>
 					<td align="center">
 						'.$users[$i]['User']['solved2'].'

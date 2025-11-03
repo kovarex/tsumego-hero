@@ -5,4 +5,9 @@ class SetConnection extends AppModel {
 		$id['table'] =  'set_connection';
 		parent::__construct($id, $table, $ds);
 	}
+
+	public $belongsTo = [
+		'Tsumego',
+		'Set',
+	];
 }
