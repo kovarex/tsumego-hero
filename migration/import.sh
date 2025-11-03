@@ -14,4 +14,6 @@ if [ "localhost" = $1 ]; then
 fi
 echo importing database
 mysql $host_parameter -u $2 -p $3 < tsumego-hero-db-dump.sql
+#Timeout of 2 hours
+composer config --global process-timeout 7200
 composer migrate

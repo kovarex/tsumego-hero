@@ -25,4 +25,5 @@ echo CREATE DATABASE $4 | mysql $host_parameter -u $3 -p
 echo importing database into database $4
 mysql $host_parameter -u $3 -p $4 < db-dump.sql
 cd ..
-/usr/local/bin/php8.4 /usr/local/bin/composer migrate
+composer config --global process-timeout 7200
+composer migrate

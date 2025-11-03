@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 sudo add-apt-repository ppa:ondrej/php
 sudo apt update
 sudo apt install php8.4 -y
