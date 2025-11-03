@@ -103,8 +103,7 @@ jobs:
       - name: Import database schema
         run: |
           ./vendor/bin/phinx migrate -e test
-          mysql -h 127.0.0.1 -uroot -proot test < config/test-data.sql
-          
+
       - name: Start built-in PHP server
         run: |
           nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
