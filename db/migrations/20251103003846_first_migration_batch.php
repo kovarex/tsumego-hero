@@ -121,7 +121,8 @@ final class FirstMigrationBatch extends AbstractMigration
                       DELETE day_records.* FROM day_records LEFT JOIN users on day_records.user_id=users.id WHERE users.id is null; /* 9 deleted out of many */
                       ALTER TABLE `day_records` ADD CONSTRAINT `day_records_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; /* If user would be deleted, we delete his day record I guess */
                       
-                      DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
+                      DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;");
+		$this->execute("
                       DELIMITER //
                       CREATE PROCEDURE remove_duplicate_tsumego_statuses()
                       BEGIN
@@ -132,7 +133,8 @@ final class FirstMigrationBatch extends AbstractMigration
                           SET count_to_delete = count_to_delete - 1;
                         END WHILE;
                       END //
-                      DELIMITER ;
+                      DELIMITER ;");
+		$this->execute("
                       CALL remove_duplicate_tsumego_statuses();
                       SELECT COUNT(*) as count, user_id, tsumego_id FROM `tsumego_statuses` GROUP BY user_id, tsumego_id HAVING COUNT(*) > 1 ORDER BY 1 DESC;
                       DROP PROCEDURE IF EXISTS remove_duplicate_tsumego_statuses;
