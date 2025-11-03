@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-export PATH="/home/public/bin:$PATH"
+export PATH="/home/private/bin:$PATH"
