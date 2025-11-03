@@ -10,9 +10,10 @@ final class FirstMigrationBatch extends AbstractMigration
     public function up(): void
     {
 		// skip this if the database already applied it.
-		if ($this->hasTable('user')) {
+		// just for debug
+		/*if ($this->hasTable('user')) {
                     return;
-		}
+		}*/
 
 		$this->query("-- set of fixes to do on the tsumego hero database once it is moved to our servers
                       
