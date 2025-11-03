@@ -21,12 +21,12 @@ class ContextPreparator {
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		if (!$this->user) {
 			$this->user = [];
-			$user['name'] = 'kovarex';
-			$user['email'] = 'test@example.com';
-			$user['rating'] = 1500;
-			$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
-			ClassRegistry::init('User')->create($user);
-			ClassRegistry::init('User')->save($user);
+			$this->user['name'] = 'kovarex';
+			$this->user['email'] = 'test@example.com';
+			$this->user['rating'] = 1500;
+			$this->user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
+			ClassRegistry::init('User')->create($this->user);
+			ClassRegistry::init('User')->save($this->user);
 			$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		}
 
