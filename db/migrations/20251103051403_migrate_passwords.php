@@ -33,14 +33,22 @@ final class MigratePasswords extends AbstractMigration
 		$users = $this->query("SELECT id, pw from `user` WHERE password_hash = ''")->fetchAll(PDO::FETCH_ASSOC);
 		echo "Rehashing passwords for ".count($users)." users\n";
 		$count = 0;
+
+		$this->getAdapter()->getConnection()->beginTransaction();
 		foreach ($users as $user) {
 			$password = $this->tinkerDecode($user['pw'], 1);
 			$passwordHash = password_hash($password, PASSWORD_DEFAULT);
 			$this->execute("UPDATE `user` SET password_hash = '".$passwordHash."', pw = null WHERE id = ".$user['id']);
 			$count++;
-			if ($count % 100 == 0)
+			if ($count % 100 == 0) {
 				echo ".";
+				if ($count % 1000 == 0)
+					echo " ".(($count / count($users)) * 100)."%\n";
+				$this->getAdapter()->getConnection()->commit();
+				$this->getAdapter()->getConnection()->beginTransaction();
+			}
 		}
+		$this->getAdapter()->getConnection()->commit();
 		echo "\n finished";
 		$this->execute("ALTER TABLE `user` DROP COLUMN pw");
     }
