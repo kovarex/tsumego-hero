@@ -16,7 +16,8 @@
 		"phpunit/phpunit": "^9.6",
 		"pieceofcake2/bake": "^1.0",
 		"pieceofcake2/debug_kit": "^2.2",
-		"pieceofcake2/phpstan-cakephp2": "^0.2.1"
+		"pieceofcake2/phpstan-cakephp2": "^0.2.1",
+		"robmorgan/phinx": "^0.16.10"
 	},
     "autoload": {
         "classmap": ["src/"]
@@ -30,7 +31,11 @@
 		"cs-check": "./vendor/bin/php-cs-fixer check",
 		"cs-fix": "./vendor/bin/php-cs-fixer fix",
 		"cs-fix-clean": "./cleanCodeStyleConvertor/apply.sh",
-		"stan": "phpstan analyse"
+		"stan": "phpstan analyse",
+		"migrate": "vendor/bin/phinx migrate",
+		"migrate-test": "vendor/bin/phinx migrate -e test",
+		"migrate-status": "vendor/bin/phinx status",
+		"migrate-rollback": "vendor/bin/phinx rollback"
 	},
     "config": {
         "sort-packages": true,
