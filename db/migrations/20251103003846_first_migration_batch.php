@@ -10,10 +10,9 @@ final class FirstMigrationBatch extends AbstractMigration
     public function up(): void
     {
 		// skip this if the database already applied it.
-		// just for debug
-		/*if ($this->hasTable('user')) {
+		if ($this->hasTable('user')) {
                     return;
-		}*/
+		}
 
 		$this->execute("
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
