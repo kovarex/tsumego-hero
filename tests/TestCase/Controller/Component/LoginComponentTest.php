@@ -30,6 +30,7 @@ class TestEmailer {
 
 class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	public function testLogin(): void {
+		new ContextPreparator();
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
@@ -43,6 +44,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testLoginWithWrongPassword(): void {
+		new ContextPreparator();
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
@@ -52,6 +54,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testLogout(): void {
+		new ContextPreparator();
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 		CakeSession::write('loggedInUserID', $user['User']['id']);
@@ -62,6 +65,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testSignUp(): void {
+		new ContextPreparator();
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex' . strval($userWithBiggestID);
@@ -76,6 +80,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testSignUpWithDupliciteName(): void {
+		new ContextPreparator();
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex';
@@ -90,6 +95,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testSignUpWithNameThatOnlyDiffersInCase(): void {
+		new ContextPreparator();
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'Kovarex';
@@ -104,6 +110,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function registerTestEmailer() {
+		new ContextPreparator();
 		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
 		$emailer = new TestEmailer();
 		$controller
@@ -113,6 +120,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testResetPassword(): void {
+		new ContextPreparator();
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 		$user['User']['passwordreset'] = null;
@@ -131,6 +139,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testNewPassword(): void {
+		new ContextPreparator();
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
