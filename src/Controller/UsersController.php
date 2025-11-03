@@ -4997,41 +4997,4 @@ Joschka Zimdars';
 		$this->set('sets', $sets);
 		$this->set('params', $this->params['url']['t']);
 	}
-
-	// The following 2 methods (tinkerDecode and migratePasswordsToHashes can be removed once the migration
-	// is applied on the live database
-	private function tinkerDecode($string, $key) {
-		if (!is_string($string)) {
-			return '';
-		}
-		$j = 1.0;
-		$hash = '';
-		$key = sha1((string) $key);
-		$strLen = strlen($string);
-		$keyLen = strlen($key);
-		for ($i = 0; $i < $strLen; $i += 2) {
-			$ordStr = hexdec(base_convert(strrev(substr($string, $i, 2)), 36, 16));
-			if ($j == $keyLen) {
-				$j = 0;
-			}
-			$ordKey = ord(substr($key, $j, 1));
-			$j++;
-			$hash .= chr($ordStr - $ordKey);
-		}
-
-		return $hash;
-	}
-
-	public function migratePasswordsToHashes($limit = 1000) {
-		$users = ClassRegistry::init('User')->find('all', ['conditions' => ['password_hash' => ''], 'limit' => $limit]);
-		$userModel = ClassRegistry::init('User');
-		foreach ($users as $user) {
-			$password = $this->tinkerDecode($user['User']['pw'], 1);
-			$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-			$user['User']['pw'] = null;
-			$userModel->save($user);
-		}
-		$this->Flash->set(count($users) . " passwords properly hashed");
-		return $this->redirect(['controller' => 'users', 'action' => 'login']);
-	}
 }

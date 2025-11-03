@@ -10,7 +10,7 @@ final class MigratePasswords extends AbstractMigration
 		if (!is_string($string)) {
 			return '';
 		}
-		$j = 1.0;
+		$j = 1;
 		$hash = '';
 		$key = sha1((string) $key);
 		$strLen = strlen($string);
@@ -30,17 +30,15 @@ final class MigratePasswords extends AbstractMigration
 
     public function up(): void
     {
-		$users = ClassRegistry::init('User')->find('all', ['conditions' => ['password_hash' => '']]) ?: [];
-		$userModel = ClassRegistry::init('User');
+		$users = $this->query("SELECT id, pw from `user` WHERE password_hash = ''")->fetchAll(PDO::FETCH_ASSOC);
 		echo "Rehashing passwords for ".count($users)." users\n";
 		$count = 0;
 		foreach ($users as $user) {
-			$password = $this->tinkerDecode($user['User']['pw'], 1);
-			$user['User']['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-			$user['User']['pw'] = null;
-			$userModel->save($user);
-			++$count;
-			if ($count % 500 == 0)
+			$password = $this->tinkerDecode($user['pw'], 1);
+			$passwordHash = password_hash($password, PASSWORD_DEFAULT);
+			$this->execute("UPDATE `user` SET password_hash = '".$passwordHash."', pw = null WHERE id = ".$user['id']);
+			$count++;
+			if ($count % 100 == 0)
 				echo ".";
 		}
 		echo "\n finished";
