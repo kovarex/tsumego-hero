@@ -10,7 +10,7 @@ final class FirstMigrationBatch extends AbstractMigration
     public function up(): void
     {
 		// skip this if the database already applied it.
-		if ($this->hasTable('cake_sessions')) {
+		if ($this->hasTable('user')) {
                     return;
 		}
 
