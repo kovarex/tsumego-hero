@@ -9,6 +9,11 @@ final class Init extends AbstractMigration
 {
     public function up(): void
     {
+		// the schema already exists lets skip this step (the skip is needed once we want to migrate the real db)
+		if ($this->hasTable('users') || $this->hasTable('user')) {
+            return;
+        }
+
 		$this->query("CREATE TABLE `achievement_conditions` (
                         `id` int NOT NULL AUTO_INCREMENT,
                         `value` double DEFAULT NULL,

@@ -9,6 +9,11 @@ final class FirstMigrationBatch extends AbstractMigration
 {
     public function up(): void
     {
+		// skip this if the database already applied it.
+		if ($this->hasTable('cake_sessions')) {
+                    return;
+		}
+
 		$this->query("-- set of fixes to do on the tsumego hero database once it is moved to our servers
                       
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
