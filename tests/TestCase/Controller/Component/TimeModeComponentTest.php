@@ -111,9 +111,9 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
-		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
+		$sessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => [
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]) ?: [];
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]) ?: [];
 		$this->assertSame(count($sessions), 1);
 		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
@@ -128,9 +128,23 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			$this->assertSame($attempt['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 		}
 
-		$_COOKIE['score'] = Util::wierdEncrypt('1');
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 		$this->assertNotNull($nextButton);
-		$browser->driver->action()->click($nextButton);
+		$this->assertTrue($nextButton->isDisplayed());
+		$this->assertTrue($nextButton->isEnabled());
+		$nextButton->click();
+
+		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+			'conditions' => [
+				'time_mode_session_id' => $sessions[0]['TimeModeSession']['id'],
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) ?: [];
+		$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+			'conditions' => [
+				'time_mode_session_id' => $sessions[0]['TimeModeSession']['id'],
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]) ?: [];
+		$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - 1);
+		$this->assertSame(count($solvedAttempts), 1);
 	}
 }

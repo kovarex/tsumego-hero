@@ -10,6 +10,7 @@ class AppController extends Controller {
 		//'DebugKit.Toolbar',
 		'Flash',
 		'PlayResultProcessor',
+		'TimeMode',
 	];
 
 	protected function processSGF($sgf) {
@@ -1656,7 +1657,7 @@ class AppController extends Controller {
 	 *
 	 * @return void
 	 */
-	protected function saveDanSolveCondition($solvedTsumegoRank, $tId) {
+	public function saveDanSolveCondition($solvedTsumegoRank, $tId) {
 		$this->loadModel('AchievementCondition');
 		if ($solvedTsumegoRank == '1d' || $solvedTsumegoRank == '2d' || $solvedTsumegoRank == '3d' || $solvedTsumegoRank == '4d' || $solvedTsumegoRank == '5d') {
 			$danSolveCategory = 'danSolve' . $solvedTsumegoRank;
@@ -1687,7 +1688,7 @@ class AppController extends Controller {
 	 *
 	 * @return void
 	 */
-	protected function updateSprintCondition(bool $trigger = false) {
+	public function updateSprintCondition(bool $trigger = false) {
 		if (Auth::isLoggedIn()) {
 			$sprintCondition = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
@@ -1716,7 +1717,7 @@ class AppController extends Controller {
 	 * @param bool $trigger Trigger value
 	 * @return void
 	 */
-	protected function updateGoldenCondition(bool $trigger = false) {
+	public function updateGoldenCondition(bool $trigger = false) {
 		$goldenCondition = $this->AchievementCondition->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -1764,7 +1765,7 @@ class AppController extends Controller {
 	 * @param string $rank Rank
 	 * @return void
 	 */
-	protected function updateGems(string $rank) {
+	public function updateGems(string $rank) {
 		$this->loadModel('DayRecord');
 		$this->loadModel('AchievementCondition');
 		$datex = new DateTime('today');
@@ -3269,7 +3270,7 @@ class AppController extends Controller {
 		return $updated;
 	}
 
-	protected function getXPJump($lvl = null) {
+	public function getXPJump($lvl = null) {
 		if ($lvl >= 102) {
 			return 0;
 		}
@@ -3295,7 +3296,7 @@ class AppController extends Controller {
 		return 10;
 	}
 
-	protected function getHealth($lvl = null) {
+	public function getHealth($lvl = null) {
 		if ($lvl >= 100) {
 			return 30;
 		}
@@ -3619,7 +3620,6 @@ class AppController extends Controller {
 	 * @return void
 	 */
 	public function beforeFilter() {
-		Auth::init();
 		$this->loadModel('User');
 		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
@@ -3639,6 +3639,9 @@ class AppController extends Controller {
 		$this->loadModel('Tag');
 		$this->loadModel('TagName');
 		$this->loadModel('Favorite');
+
+		Auth::init();
+		$this->TimeMode->init();
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
@@ -3790,7 +3793,7 @@ class AppController extends Controller {
 				Auth::getUser()['revelation'] -= 1;
 			}
 
-			$this->PlayResultProcessor->checkPreviousPlay($this, $previousTsumego);
+			$this->PlayResultProcessor->checkPreviousPlay($this, $previousTsumego, $this->TimeMode);
 
 			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
 				if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {

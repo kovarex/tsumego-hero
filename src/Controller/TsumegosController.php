@@ -7,7 +7,7 @@ App::uses('AppException', 'Utility');
 
 class TsumegosController extends AppController {
 	public $helpers = ['Html', 'Form'];
-	public $components = ['TimeMode', 'TsumegoNavigationButtons'];
+	public $components = ['TsumegoNavigationButtons'];
 
 	private function deduceRelevantSetConnection(array $setConnections): array {
 		if (!isset($this->params->query['sid'])) {
@@ -135,7 +135,7 @@ class TsumegosController extends AppController {
 			$setsWithPremium[] = $item['Set']['id'];
 		}
 
-		if ($newID = $this->TimeMode->update($setsWithPremium, $this->params)) {
+		if ($newID = $this->TimeMode->prepareNextToSolve($setsWithPremium, $this->params)) {
 			$id = $newID;
 		}
 
@@ -2225,15 +2225,6 @@ class TsumegosController extends AppController {
 			$sandboxComment2 = false;
 		}
 
-		$score1 = $t['Tsumego']['num'] . '-' . $t['Tsumego']['difficulty'] . '-' . $t['Tsumego']['set_id'];
-		$score1 = $this->encrypt($score1);
-		$t2 = $t['Tsumego']['difficulty'] * 2;
-		$score2 = $t['Tsumego']['num'] . '-' . $t2 . '-' . $t['Tsumego']['set_id'];
-		$score2 = $this->encrypt($score2);
-
-		$score3 = $t['Tsumego']['num'] . '-' . $eloScore . '-' . $t['Tsumego']['set_id'];
-		$score3 = $this->encrypt($score3);
-
 		shuffle($refinementT);
 
 		$refinementPublicCounter = 0;
@@ -2445,7 +2436,6 @@ class TsumegosController extends AppController {
 		$this->set('requestSignature', $requestSignature);
 		$this->set('idForSignature', $idForSignature);
 		$this->set('idForSignature2', $idForSignature2);
-		$this->set('score3', $score3);
 		if (isset($activityValue)) {
 			$this->set('activityValue', $activityValue);
 		}
@@ -2486,8 +2476,7 @@ class TsumegosController extends AppController {
 			$this->set('barPercent', 0);
 		}
 		$this->set('t', $t);
-		$this->set('score1', $score1);
-		$this->set('score2', $score2);
+		$this->set('scoreCheck', $this->encrypt($t['Tsumego']['id'] . '-' . time()));
 		$this->set('navi', $navi);
 		$this->set('previousLink', $previousLink);
 		$this->set('nextLink', $nextLink);
