@@ -42,6 +42,6 @@ final class MigratePasswords extends AbstractMigration
 				echo ".";
 		}
 		echo "\n finished";
-		$this->execute("ALTER TABLE USERS DROP COLUMN pw");
+		$this->execute("ALTER TABLE `user` DROP COLUMN pw");
     }
 }
