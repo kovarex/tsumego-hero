@@ -17,7 +17,7 @@ final class FirstBatch extends AbstractMigration
      * Remember to call "create()" or "update()" and NOT "save()" when working
      * with the Table class.
      */
-    public function change(): void
+    public function up(): void
     {
       $this->execute("
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
