@@ -15,8 +15,7 @@ final class FirstMigrationBatch extends AbstractMigration
                     return;
 		}*/
 
-		$this->query("-- set of fixes to do on the tsumego hero database once it is moved to our servers
-                      
+		$this->query("
                       /* fixing wrong zero dates in users.rewards and tsumego_rating_attempts.created first */
                       SET @@sql_mode='';
                       UPDATE `users` SET reward=null where reward='0000-00-00 00:00:00';
@@ -31,8 +30,6 @@ final class FirstMigrationBatch extends AbstractMigration
                       ALTER TABLE `user_boards` DROP COLUMN `id`;
                       ALTER TABLE ranks ALTER COLUMN points SET DEFAULT 0;
                       
-                      -- Create sessions table for database-based session storage
-                      -- This helps with race conditions and session persistence issues
                       CREATE TABLE IF NOT EXISTS `cake_sessions` (
                         `id` VARCHAR(255) NOT NULL PRIMARY KEY,
                         `data` TEXT,
