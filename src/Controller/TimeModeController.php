@@ -24,12 +24,6 @@ class TimeModeController extends AppController {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect("/");
 		}
-
-		$this->loadModel('Tsumego');
-		$this->loadModel('User');
-		$this->loadModel('TimeModeSession');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
 		$this->Session->write('title', 'Time Mode - Select');
 		$this->Session->write('page', 'time mode');
 
