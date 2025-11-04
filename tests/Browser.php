@@ -43,6 +43,9 @@ class Browser {
 	public function get(string $url): void {
 		if ($url != 'empty.php' && CakeSession::check("loggedInUserID")) {
 			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => strval(CakeSession::read("loggedInUserID"))]);
+			if ($_COOKIE['disable-achievements']) {
+				$this->driver->manage()->addCookie(['name' => "disable-achievements", 'value' => "true"]);
+			}
 		}
 		// This is what I would expect to be the proper way, but it hangs session start on the client
 		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);

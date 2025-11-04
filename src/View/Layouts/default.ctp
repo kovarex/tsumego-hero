@@ -407,7 +407,7 @@
 	</div>
 	<?php
 	$achievementUpdate = $achievementUpdate ?? [];
-	if(Auth::isLoggedIn()){
+	if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		$xpBonus = 0;
     	$count = count($achievementUpdate);
 		for($i=0;$i<$count;$i++){
