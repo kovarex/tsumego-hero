@@ -182,7 +182,6 @@ class TimeModeController extends AppController {
 				$solvedCount++;
 			}
 			$attempt = [];
-			$tsumego = ClassRegistry::init('Tsumego')->findById($attempt['tsumego_id']);
 			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $timeModeAttempt['TimeModeAttempt']['tsumego_id']]]);
 			$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
 			$attempt['tsumego_id'] = $timeModeAttempt['TimeModeAttempt']['tsumego_id'];
@@ -214,14 +213,14 @@ class TimeModeController extends AppController {
 			if (!$finishedSession) {
 				throw new AppException('Time Mode Session not found');
 			}
-			$timeModeAttempts = $this->TimeModeAttempt->find('all', [
-				'conditions' => [
-					'time_mode_session_id' => $finishedSession['TimeModeSession']['id']]]) ?: [];
 		}
+		else
+			$finishedSession = null;
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
 
+		$sessionsToShow = [];
 		foreach ($timeModeCategories as $timeModeCategory) {
 			foreach ($timeModeRanks as $timeModeRank) {
 				$session = ClassRegistry::init('TimeModeSession')->find('first', [
@@ -242,7 +241,6 @@ class TimeModeController extends AppController {
 			}
 		}
 
-		$this->set('ranks', $timeModeAttempts);
 		$this->set('sessionsToShow', $sessionsToShow);
 		$this->set('finishedSession', $finishedSession);
 	}

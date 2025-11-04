@@ -156,16 +156,9 @@
 			$("#account-bar-user a").attr("class", "xp-text-fill-c3x");
 			$("#modeSelector").hide();
 			notMode3 = false;
-			<?php
-				$bt = '15k';
-				if($finish) $bt = $ranks[0]['Rank']['rank'];
-				else $bt = $lastModeV;
-				if($c!=0) $bp = ($c/$stopParameterNum)*100;
-				else $bp = 100;
-			?>
-			
-			bartext = "<?php echo $bt; ?>";
-			barPercent = "<?php echo $bp; ?>%";
+
+			bartext = "<?php echo 'some rank to show'; ?>"; // TODO:
+			barPercent = "<?php echo '100'; ?>%"; // TODO:
 			
 			$("#account-bar-xp").text(bartext);
 			$("#account-bar-xp").html(bartext);
