@@ -236,9 +236,9 @@ class TimeModeComponent extends Component {
 		return $this->currentSession['TimeModeSession']['id'];
 	}
 
-	public static function calculatePoints(float $timeUsed, float $max) {
+	public static function calculatePoints(float $timeUsed, float $max): float {
 		$timeRatio = 1 - ($timeUsed / $max);
-		return min(100 * (TimeModeUtil::$POINTS_RATIO_FOR_FINISHING + (1 - TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) * $timeRatio), 100);
+		return min(100 * (TimeModeUtil::$POINTS_RATIO_FOR_FINISHING + (1 - TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) * $timeRatio), 100.0);
 	}
 
 	public $currentSession;
