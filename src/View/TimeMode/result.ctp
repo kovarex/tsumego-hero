@@ -73,50 +73,19 @@
 	</table>
 	<br>
 	</div>
-	<?php if(@$finishedSession['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED &&
-			$newUnlock){
-	$alertCategory = '';
-	$alertRank = '';
-	if($ro['TimeModeOverview']['mode']==0) $alertCategory = 'blitz';
-	elseif($ro['TimeModeOverview']['mode']==1) $alertCategory = 'fast';
-	elseif($ro['TimeModeOverview']['mode']==2) $alertCategory = 'slow';
-
-	if($ro['TimeModeOverview']['rank']=='15k') $alertRank = '14k';
-	elseif($ro['TimeModeOverview']['rank']=='14k') $alertRank = '13k';
-	elseif($ro['TimeModeOverview']['rank']=='13k') $alertRank = '12k';
-	elseif($ro['TimeModeOverview']['rank']=='12k') $alertRank = '11k';
-	elseif($ro['TimeModeOverview']['rank']=='11k') $alertRank = '10k';
-	elseif($ro['TimeModeOverview']['rank']=='10k') $alertRank = '9k';
-	elseif($ro['TimeModeOverview']['rank']=='9k') $alertRank = '8k';
-	elseif($ro['TimeModeOverview']['rank']=='8k') $alertRank = '7k';
-	elseif($ro['TimeModeOverview']['rank']=='7k') $alertRank = '6k';
-	elseif($ro['TimeModeOverview']['rank']=='6k') $alertRank = '5k';
-	elseif($ro['TimeModeOverview']['rank']=='5k') $alertRank = '4k';
-	elseif($ro['TimeModeOverview']['rank']=='4k') $alertRank = '3k';
-	elseif($ro['TimeModeOverview']['rank']=='3k') $alertRank = '2k';
-	elseif($ro['TimeModeOverview']['rank']=='2k') $alertRank = '1k';
-	elseif($ro['TimeModeOverview']['rank']=='1k') $alertRank = '1d';
-	elseif($ro['TimeModeOverview']['rank']=='1d') $alertRank = '2d';
-	elseif($ro['TimeModeOverview']['rank']=='2d') $alertRank = '3d';
-	elseif($ro['TimeModeOverview']['rank']=='3d') $alertRank = '4d';
-	elseif($ro['TimeModeOverview']['rank']=='4d') $alertRank = '5d';
-	?>
+	<?php if($unlock) { ?>
 		<label>
-			<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
+			<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off">
 			<div class="alertBox alertInfo" id="alertInfo">
-			<div class="alertBanner" align="center">
-			Unlocked
-			<span class="alertClose">x</span>
-			</div>
+			<div class="alertBanner" align="center">Unlocked<span class="alertClose">x</span></div>
 			<span class="alertText">
-			<?php
-			echo '<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton'.$alertRank.'.png">
-			You unlocked the '.$alertRank.' '.$alertCategory.' rank.</a><br>'
-			?>
+			<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton'.<?php echo $unlock['rank']; ?>.png">
+			  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
+			</a><br>'
 			<br class="clear1"/></span>
 			</div>
-		</label>
-	<?php } ?>
+		</label><?php
+	} ?>
 	<script>
 		function toggleRelatedContent(div) {
 			let parentOfDiv = div.parentElement;

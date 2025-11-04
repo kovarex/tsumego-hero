@@ -104,6 +104,40 @@ class TimeModeController extends AppController {
 		return $result;
 	}
 
+	public static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array {
+		if (!$finishedSession) {
+			return null;
+		}
+
+		// the current session wasn't a success, so it logically can't unlock shit
+		if (!$finishedSession['time_mode_session_status_id'] != TimeModeUtil::$SESSION_STATUS_SOLVED) {
+			return null;
+		}
+
+		// only one successful solve exists for this combination of rank and category, so it must be the one we just did
+		if (ClassRegistry::init('TimeModeSession')->find('count', [
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'time_mode_category_id' => $finishedSession['TimeModeSession']['time_mode_category_id'],
+				'time_mode_rank_id' => $finishedSession['TimeModeSession']['time_mode_rank_id'],
+				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED]]) != 1) {
+			return null;
+		}
+
+		$rankIndex = array_find_key($timeModeRanks, function ($timeModeRank) use ($finishedSession) { return $timeModeRank['TimeModeRank']['id'] == $finishedSession['TimeModeSession']['time_mode_rank_id']; });
+
+		if ($rankIndex == 0) {
+			return null; // there is no higher rank to unlock
+		}
+
+		$unlock = [];
+		$unlock['rank'] = $timeModeRanks[$rankIndex - 1]['TimeModeRank']['name'];
+
+		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) { return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id']; });
+		$unlock['category'] = $timeModeCategories[$categoryIndex]['TimeModeCategory']['name'];
+		return $unlock;
+	}
+
 	public function result($timeModeSessionID = null): mixed {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect("users/login");
@@ -117,7 +151,7 @@ class TimeModeController extends AppController {
 		$this->Session->write('page', 'time mode');
 
 		if ($timeModeSessionID) {
-			$finishedSession = $this->Session->read('TimeModeSession')->find('first', ['conditions' => ['id' => $timeModeSessionID]]);
+			$finishedSession = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $timeModeSessionID]]);
 			if (!$finishedSession) {
 				throw new AppException('Time Mode Session not found');
 			}
@@ -142,7 +176,7 @@ class TimeModeController extends AppController {
 					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $timeModeRanks['id']) {
 					$sessionsToShow[$timeModeCategory['TimeModeCategory']['id']][$timeModeRank['TimeModeRank']['id']]['current'] = $this->exportSessionToShow($finishedSession, $timeModeCategory, $timeModeRank);
 				}
-				if (!$session) {
+				if (!$session || isset($finishedSession) && $session['TimeModeSession']['id'] == $finishedSession['TimeModeSession']['id']) {
 					continue;
 				}
 				$sessionsToShow[$timeModeCategory['TimeModeCategory']['id']][$timeModeRank['TimeModeRank']['id']]['best'] = $this->exportSessionToShow($session, $timeModeCategory, $timeModeRank);
@@ -153,6 +187,7 @@ class TimeModeController extends AppController {
 		$this->set('finishedSession', $finishedSession);
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
+		$this->set('unlock', self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
 		return null;
 	}
 }
