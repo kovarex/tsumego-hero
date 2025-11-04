@@ -7,6 +7,11 @@ App::uses('RatingBounds', 'Utility');
 use Facebook\WebDriver\WebDriverBy;
 
 class TimeModeComponentTest extends TestCaseWithAuth {
+	public function testPointsCalculation() {
+		$this->assertSame(TimeModeComponent::calculatePoints(30, 30), 100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING);
+		$this->assertSame(TimeModeComponent::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
+		$this->assertSame(TimeModeComponent::calculatePoints(0, 30), 100.0);
+	}
 	public function testTimeModeRankContentsIntegrity() {
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
 		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
@@ -98,11 +103,16 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
+
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
 		}
 
 		$context = new ContextPreparator($contextParameters);
+
+		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$browser = new Browser();
@@ -111,40 +121,53 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
-		$sessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => [
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),
-			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]) ?: [];
-		$this->assertSame(count($sessions), 1);
-		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
-		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
-		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['time_mode_session_id' => $sessions[0]['TimeModeSession']['id']]) ?: [];
-		$this->assertSame(count($attempts), TimeModeUtil::$PROBLEM_COUNT);
-		foreach ($attempts as $attempt) {
-			$this->assertSame($attempt['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++) {
+
+			$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+				'conditions' => [
+					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]) ?: [];
+			$failedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+				'conditions' => [
+					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_FAILED]]) ?: [];
+			$this->assertSame(count($failedAttempts), 0);
+			$this->assertSame(count($solvedAttempts), $i);
+
+			$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
+				'conditions' => [
+					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) ?: [];
+			$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - $i);
+			foreach ($solvedAttempts as $solvedAttempt) {
+				$this->assertTrue($solvedAttempt['TimeModeAttempt']['points'] > 20);
+			}
+			if ($i == TimeModeUtil::$PROBLEM_COUNT) {
+				break;
+			}
+			usleep(1000 * 100);
+			$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
+			$this->assertTrue($nextButton->isEnabled());
+			$this->assertTrue($nextButton->isDisplayed());
+			$this->assertSame($nextButton->getTagName(), "input");
+			$this->assertSame($nextButton->getAttribute('value'), 'Next');
+			$nextButton->click();
 		}
 
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-
-		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
-		$this->assertNotNull($nextButton);
-		$this->assertTrue($nextButton->isDisplayed());
-		$this->assertTrue($nextButton->isEnabled());
-		$nextButton->click();
-
-		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-			'conditions' => [
-				'time_mode_session_id' => $sessions[0]['TimeModeSession']['id'],
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) ?: [];
-		$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
-			'conditions' => [
-				'time_mode_session_id' => $sessions[0]['TimeModeSession']['id'],
-				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]) ?: [];
-		$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - 1);
-		$this->assertSame(count($solvedAttempts), 1);
+		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
+		Auth::init();
+		$this->assertFalse(Auth::isInTimeMode());
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $session['TimeModeSession']['id']]]);
+		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 }

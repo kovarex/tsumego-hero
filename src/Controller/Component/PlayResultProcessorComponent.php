@@ -217,8 +217,7 @@ class PlayResultProcessorComponent extends Component {
 			return false;
 		}
 		if ($this->isSuspicious($scoreCheck, $previousTsumego['Tsumego']['id'])) {
-			Auth::getUser()['penalty'] += 1;
-			Auth::saveUser();
+			Auth::addSuspicion();
 			return false;
 		}
 		return true;

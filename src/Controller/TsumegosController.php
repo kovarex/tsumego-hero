@@ -105,7 +105,6 @@ class TsumegosController extends AppController {
 		$reviewCheat = false;
 		$commentCoordinates = [];
 		$josekiLevel = 1;
-		$mode3ScoreArray = [];
 		$trs = [];
 		$potionAlert = false;
 		$eloScore = 0;
@@ -120,6 +119,10 @@ class TsumegosController extends AppController {
 		$queryTitle = '';
 		$queryTitleSets = '';
 		$partition = -1;
+
+		if ($timeModeSessionID = $this->TimeMode->checkFinishSession()) {
+			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
+		}
 
 		if ($setConnectionID) {
 			$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
@@ -174,10 +177,6 @@ class TsumegosController extends AppController {
 		}
 
 		self::checkModeChange();
-		if ($this->TimeMode->checkFinishSession()) {
-			return $this->redirect(['action' => '/timeMode/result']);
-		}
-
 		if (isset($this->params['url']['refresh'])) {
 			$refresh = $this->params['url']['refresh'];
 		}
@@ -727,16 +726,6 @@ class TsumegosController extends AppController {
 					}
 				}
 			}
-		}
-		if (Auth::isInTimeMode()) {
-			$mode3Score1 = $this->encrypt($t['Tsumego']['num'] . '-solved-' . $t['Tsumego']['set_id']);
-			$mode3Score2 = $this->encrypt($t['Tsumego']['num'] . '-failed-' . $t['Tsumego']['set_id']);
-			$mode3Score3 = $this->encrypt($t['Tsumego']['num'] . '-timeout-' . $t['Tsumego']['set_id']);
-			$mode3Score4 = $this->encrypt($t['Tsumego']['num'] . '-skipped-' . $t['Tsumego']['set_id']);
-			array_push($mode3ScoreArray, $mode3Score1);
-			array_push($mode3ScoreArray, $mode3Score2);
-			array_push($mode3ScoreArray, $mode3Score3);
-			array_push($mode3ScoreArray, $mode3Score4);
 		}
 
 		if (isset($_COOKIE['favorite']) && $_COOKIE['favorite'] != '0') {
@@ -2500,7 +2489,6 @@ class TsumegosController extends AppController {
 		$this->set('josekiLevel', $josekiLevel);
 		$this->set('checkBSize', $checkBSize);
 		$this->set('timeMode', Auth::isInTimeMode() ? (array) $this->TimeMode : null);
-		$this->set('mode3ScoreArray', $mode3ScoreArray);
 		$this->set('potionAlert', $potionAlert);
 		$this->set('file', $file);
 		$this->set('ui', $ui);

@@ -4,15 +4,34 @@ App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
 
 class TimeModeComponent extends Component {
-	public function init() {
+	public function init(): void {
 		if (!Auth::isInTimeMode()) {
-			return null;
+			return;
 		}
 
 		$this->currentSession = ClassRegistry::init('TimeModeSession')->find('first', [
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
 				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+
+		if (!$this->currentSession) {
+			return;
+		}
+
+		// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
+		$this->overallCount = ClassRegistry::init('TimeModeAttempt')->find('count', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id']]]);
+
+		if ($this->overallCount == 0) {
+			$this->cancelTimeMode();
+			return;
+		}
+
+		$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;
 	}
 
 	public function startTimeMode(int $categoryID, int $rankID): void {
@@ -116,10 +135,34 @@ class TimeModeComponent extends Component {
 		}
 	}
 
-	public function processPlayResult($previousTsumego, $result): void {
-		if (!Auth::isInTimeMode()) {
-			return;
+	private static function decodeSecondsCheck($previousTsumego): ?int {
+		$secondsCheck = Util::clearCookie('secondsCheck');
+		if (!$secondsCheck) {
+			Auth::addSuspicion();
+			return null;
 		}
+
+		if (!is_numeric($secondsCheck)) {
+			Auth::addSuspicion();
+			return null;
+		}
+
+		$secondsCheck = intval($secondsCheck);
+
+		if ($secondsCheck % 79 != 0) {
+			Auth::addSuspicion();
+			return null;
+		}
+		$secondsCheck /= 79;
+		if ($secondsCheck % $previousTsumego['Tsumego']['id'] != 0) {
+			Auth::addSuspicion();
+			return null;
+		}
+
+		return ($secondsCheck / $previousTsumego['Tsumego']['id']) / 10;
+	}
+
+	public function processPlayResult($previousTsumego, $result): void {
 		if (!$this->currentSession) {
 			return;
 		}
@@ -132,32 +175,22 @@ class TimeModeComponent extends Component {
 			return;
 		}
 		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = $result['solved'] ? TimeModeUtil::$ATTEMPT_RESULT_SOLVED : TimeModeUtil::$ATTEMPT_RESULT_FAILED;
+		$seconds = self::decodeSecondsCheck($previousTsumego);
+		if (is_null($seconds)) {
+			return;
+		}
+		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($this->currentSession['TimeModeSession']['time_mode_category_id']);
+
+		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
+		$currentAttempt['TimeModeAttempt']['points'] = self::calculatePoints($seconds, $timeModeCategory['TimeModeCategory']['seconds']);
 		ClassRegistry::init('TimeModeAttempt')->save($currentAttempt);
 	}
 
 	// @return if not null, new tsumego id to show in the time mode
 	public function prepareNextToSolve($setsWithPremium, $params): ?int {
-		if (!Auth::isInTimeMode()) {
-			return null;
-		}
-
 		if (!$this->currentSession) {
 			return null;
 		}
-
-		// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
-		$this->overallCount = ClassRegistry::init('TimeModeAttempt')->find('count', [
-			'conditions' => [
-				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id']]]);
-		if ($this->overallCount == 0) {
-			$this->cancelTimeMode();
-			return null;
-		}
-
-		$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
-			'conditions' => [
-				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
-				'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;
 
 		$this->secondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
 			'conditions' => ['id' => $this->currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
@@ -171,17 +204,41 @@ class TimeModeComponent extends Component {
 			'order' => 'time_mode_attempt_status_id'])['TimeModeAttempt']['tsumego_id'];
 	}
 
-	public function checkFinishSession() {
-		if (!Auth::isInTimeMode()) {
-			return false;
+	public function checkFinishSession(): ?int {
+		if (!$this->currentSession) {
+			return null;
 		}
 
-		if ($this->currentOrder > $this->overallCount) {
-			return true;
+		if ($this->currentOrder < $this->overallCount) {
+			return null;
 		}
 
-		/* Do some logic */
-		return false;
+		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions'
+		=> ['time_mode_session_id' => $this->currentSession['TimeModeSession']['id']]]) ?: [];
+		assert(count($attempts) == $this->overallCount);
+
+		$overallPoints = 0.0;
+		$correctCount = 0;
+		foreach ($attempts as $attempt) {
+			$overallPoints += $attempt['TimeModeAttempt']['points'];
+			if ($attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED) {
+				$correctCount++;
+			}
+		}
+
+		$sessionSuccessful = $correctCount >= TimeModeUtil::$SOLVES_TO_SOCCEED_SESSION;
+		$this->currentSession['TimeModeSession']['time_mode_session_status_id'] = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
+		$this->currentSession['TimeModeSession']['points'] = $overallPoints;
+		ClassRegistry::init('TimeModeSession')->save($this->currentSession);
+		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
+		Auth::saveUser();
+
+		return $this->currentSession['TimeModeSession']['id'];
+	}
+
+	public static function calculatePoints(float $timeUsed, float $max) {
+		$timeRatio = 1 - ($timeUsed / $max);
+		return min(100 * (TimeModeUtil::$POINTS_RATIO_FOR_FINISHING + (1 - TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) * $timeRatio), 100);
 	}
 
 	public $currentSession;
