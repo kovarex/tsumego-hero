@@ -69,7 +69,6 @@ class TsumegosController extends AppController {
 		$this->loadModel('Joseki');
 		$this->loadModel('Reputation');
 		$this->loadModel('TimeModeAttempt');
-		$this->loadModel('TimeModeSetting');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');

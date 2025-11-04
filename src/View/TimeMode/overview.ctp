@@ -20,22 +20,7 @@
 		
 	</div>
 	<br>
-	<div id="settingsToggle">
-		<a id="settingsText" onclick="settings();" onmouseover="settingsIn()" onmouseout="settingsOut()"><img id="cog" src="/img/cog.png" width="16px"><b>&nbsp;Settings</b></a>
-	</div>
-	
-	<div id="timeModeSettings">
-	 <?php
-		echo '<br>';
-		echo $this->Form->create('Settings');
-		for($h=0;$h<count($settings['id']);$h++){
-			echo '<input name="data[Settings][i'.$settings['id'][$h].']" type="checkbox" value="'.$settings['id'][$h].'" id="i'.$settings['id'][$h].'" '.$settings['checked'][$h].' onchange="countChecks();">';
-			echo '<label for="i'.$settings['id'][$h].'">'.$settings['title'][$h].'</label><br>';
-		}
-		echo '<br>';
-		echo $this->Form->end('Submit');
-	?>
-	</div>
+
 	<br>
 	<?php
   foreach ($timeModeCategories as $timeModeCategory) {
@@ -62,9 +47,7 @@
 				</div>';
 			}
 		}
-	
-	
-	?> 
+	?>
 	
 	</div>
 	<?php
@@ -82,7 +65,6 @@
 		elseif($lastMode==3) echo 'mode = 3;';
 	?>
 	
-	$("#timeModeSettings").hide();
 	if(mode!=1) $("#time-mode1").hide();
 	if(mode!=2) $("#time-mode2").hide();
 	if(mode!=3) $("#time-mode3").hide();
@@ -100,42 +82,6 @@
 		$("#modeSelector").hide();
 	});
 	
-	function settings(){
-		if(s==0){
-			$("#timeModeSettings").fadeIn(250);
-			s = 1;
-		}else{
-			$("#timeModeSettings").fadeOut(250);
-			s = 0;
-		}
-	}
-	function settingsIn(){
-		$("#settingsText").css({'color':'#2651d9'});
-	}
-	function settingsOut(){
-		$("#settingsText").css({'color':'#373b43'});
-	}
-	function countChecks(){
-		checkCounter = 0;
-		<?php for($h=0;$h<count($settings['id']);$h++){
-			echo 'if($("#i'.$settings['id'][$h].'").is(":checked")) checkCounter++;';
-		} ?>
-		if(checkCounter<=42){
-			<?php for($h=0;$h<count($settings['id']);$h++){
-				echo 'if($("#i'.$settings['id'][$h].'").is(":checked")){
-						$("#i'.$settings['id'][$h].'").attr("disabled", true);
-					}else{
-						$("#i'.$settings['id'][$h].'").attr("disabled", false);
-					}';
-			} ?>
-			$('input[type="submit"]').attr('disabled','disabled');
-		}else{
-			<?php for($h=0;$h<count($settings['id']);$h++){
-				echo '$("#i'.$settings['id'][$h].'").removeAttr("disabled");';
-			} ?>
-			$('input[type="submit"]').removeAttr('disabled');
-		}
-	}
 	function timeMode1(){
 		document.getElementById("timeMode1").src = "/img/timeMode12.png";
 		document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
