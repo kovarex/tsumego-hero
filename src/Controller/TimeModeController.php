@@ -213,9 +213,9 @@ class TimeModeController extends AppController {
 			if (!$finishedSession) {
 				throw new AppException('Time Mode Session not found');
 			}
-		}
-		else
+		} else {
 			$finishedSession = null;
+		}
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
