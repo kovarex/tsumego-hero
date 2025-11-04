@@ -24,12 +24,6 @@ class TimeModeController extends AppController {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect("/");
 		}
-
-		$this->loadModel('Tsumego');
-		$this->loadModel('User');
-		$this->loadModel('TimeModeSession');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
 		$this->Session->write('title', 'Time Mode - Select');
 		$this->Session->write('page', 'time mode');
 
@@ -110,7 +104,11 @@ class TimeModeController extends AppController {
 		return $result;
 	}
 
-	public function result($timeModeSessionID = null): void {
+	public function result($timeModeSessionID = null): mixed {
+		if (!Auth::isLoggedIn()) {
+			return $this->redirect("users/login");
+		}
+
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeSession');
@@ -153,5 +151,8 @@ class TimeModeController extends AppController {
 
 		$this->set('sessionsToShow', $sessionsToShow);
 		$this->set('finishedSession', $finishedSession);
+		$this->set('rankArrowClosed', '/img/greyArrow1.png');
+		$this->set('rankArrowOpened', '/img/greyArrow2.png');
+		return null;
 	}
 }
