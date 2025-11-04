@@ -2,7 +2,7 @@
 
 class TimeModeUtil {
 	public static int $PROBLEM_COUNT = 10;
-	public static int $SOLVES_TO_SOCCEED_SESSION = 8;
+	public static float $RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
 
 	public static int $CATEGORY_BLITZ = 1;
 	public static int $CATEGORY_FAST_SPEED = 2;

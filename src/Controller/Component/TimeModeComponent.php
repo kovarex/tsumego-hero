@@ -184,6 +184,7 @@ class TimeModeComponent extends Component {
 		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
 		$currentAttempt['TimeModeAttempt']['points'] = self::calculatePoints($seconds, $timeModeCategory['TimeModeCategory']['seconds']);
 		ClassRegistry::init('TimeModeAttempt')->save($currentAttempt);
+		$this->currentOrder++;
 	}
 
 	// @return if not null, new tsumego id to show in the time mode
@@ -209,7 +210,7 @@ class TimeModeComponent extends Component {
 			return null;
 		}
 
-		if ($this->currentOrder < $this->overallCount) {
+		if ($this->currentOrder - 1 < $this->overallCount) {
 			return null;
 		}
 
@@ -226,7 +227,7 @@ class TimeModeComponent extends Component {
 			}
 		}
 
-		$sessionSuccessful = $correctCount >= TimeModeUtil::$SOLVES_TO_SOCCEED_SESSION;
+		$sessionSuccessful = Util::getRatio($correctCount, count($attempts)) >= TimeModeUtil::$RATIO_OF_SOLVED_TO_SUCCEED;
 		$this->currentSession['TimeModeSession']['time_mode_session_status_id'] = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
 		$this->currentSession['TimeModeSession']['points'] = $overallPoints;
 		ClassRegistry::init('TimeModeSession')->save($this->currentSession);
