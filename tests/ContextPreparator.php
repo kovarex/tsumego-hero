@@ -46,6 +46,10 @@ class ContextPreparator {
 		}
 
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
+
+		// Achievements popups can get into the way when testing, once we want to test achievements
+		// we can make this command conditional
+		$_COOKIE['disable-achievements'] = true;
 	}
 
 	private function prepareTsumego(?array $tsumegoInput): array {

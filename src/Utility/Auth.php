@@ -33,8 +33,7 @@ class Auth {
 
 	public static function &getUser() {
 		if (!Auth::$user) {
-			debug_print_backtrace();
-			die("Accessing user for writing when null");
+			throw new Exception("Accessing user for writing when null");
 		}
 		return Auth::$user;
 	}
@@ -82,6 +81,11 @@ class Auth {
 
 	public static function isInTimeMode(): bool {
 		return Auth::getMode() == Constants::$TIME_MODE;
+	}
+
+	public static function addSuspicion(): void {
+		Auth::getUser()['penalty'] += 1;
+		Auth::saveUser();
 	}
 
 	private static $user = null;

@@ -14,7 +14,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 
 	private function performSolve(ContextPreparator &$context): void {
 		$_COOKIE['mode'] = '1';
-		$_COOKIE['score'] = Util::wierdEncrypt('-1');
+		$_COOKIE['scoreCheck'] = Util::wierdEncrypt($context->tsumego['id'] . '-' . time());
 		$this->performVisit($context);
 		$this->assertEmpty($_COOKIE['score']); // should be processed and cleared
 	}
