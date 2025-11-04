@@ -3936,9 +3936,6 @@ pre {
   position: relative;
   top: 3px;
 }
-#timeModeSettings {
-  margin: 0 22px;
-}
 .alertBox {
   position: fixed;
   width: 1000px;

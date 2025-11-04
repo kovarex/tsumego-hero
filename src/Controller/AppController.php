@@ -3631,7 +3631,6 @@ class AppController extends Controller {
 		$this->loadModel('UserBoard');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('AdminActivity');
-		$this->loadModel('TimeModeSetting');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
