@@ -171,11 +171,12 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 
-	public function testTimeModeUnlock() {
+	public function testTimeModeUnlockMessage() {
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$contextParameters['other-tsumegos'] = [];
+		$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS];
 
 		foreach (['6k', '2d'] as $rank) {
 			for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
@@ -187,17 +188,8 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 
 		$context = new ContextPreparator($contextParameters);
 
-		$sessionToBeFinished = [];
-		$sessionToBeFinished['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
-		$sessionToBeFinished['user_id'] = Auth::getUserID();
-		$sessionToBeFinished['time_mode_category_id'] = TimeModeUtil::$CATEGORY_BLITZ;
-		$sessionToBeFinished['time_mode_rank_id'] = $context->timeModeRanks[0]['id'];
-		ClassRegistry::init('TimeModeSession')->create($sessionToBeFinished);
-		ClassRegistry::init('TimeModeSession')->save($sessionToBeFinished);
-		$sessionToBeFinished = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'id DESC']);
-
 		$lastAttemptForTheSession = [];
-		$lastAttemptForTheSession['time_mode_session_id'] = $sessionToBeFinished['TimeModeSession']['id'];
+		$lastAttemptForTheSession['time_mode_session_id'] = $context->timeModeSessions[0]['id'];
 		$lastAttemptForTheSession['tsumego_id'] = $context->otherTsumegos[0]['id'];
 		$lastAttemptForTheSession['order'] = 1;
 		$lastAttemptForTheSession['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_QUEUED;
@@ -224,7 +216,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
 		Auth::init();
 		$this->assertFalse(Auth::isInTimeMode());
-		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $sessionToBeFinished['TimeModeSession']['id']]]);
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $context->timeModeSessions[0]['id']]]);
 		$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'], TimeModeUtil::$SESSION_STATUS_SOLVED);
 		$this->assertTextContains('You unlocked the 1d Blitz rank.', $browser->driver->getPageSource());
 	}
