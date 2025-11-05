@@ -171,15 +171,17 @@ class TimeModeController extends AppController {
 						'time_mode_category_id' => $timeModeCategory['TimeModeCategory']['id'],
 						'time_mode_rank_id' => $timeModeRank['TimeModeRank']['id']],
 					'order' => 'points DESC']);
+				$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+				$rankID = $timeModeRank['TimeModeRank']['id'];
 				if (isset($finishedSession)
-					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $timeModeCategory['TimeModeCategory']['id']
-					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $timeModeRanks['id']) {
-					$sessionsToShow[$timeModeCategory['TimeModeCategory']['id']][$timeModeRank['TimeModeRank']['id']]['current'] = $this->exportSessionToShow($finishedSession, $timeModeCategory, $timeModeRank);
+					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $categoryID
+					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $rankID) {
+					$sessionsToShow[$categoryID][$rankID]['current'] = $this->exportSessionToShow($finishedSession, $timeModeCategory, $timeModeRank);
 				}
 				if (!$session || isset($finishedSession) && $session['TimeModeSession']['id'] == $finishedSession['TimeModeSession']['id']) {
 					continue;
 				}
-				$sessionsToShow[$timeModeCategory['TimeModeCategory']['id']][$timeModeRank['TimeModeRank']['id']]['best'] = $this->exportSessionToShow($session, $timeModeCategory, $timeModeRank);
+				$sessionsToShow[$categoryID][$rankID]['best'] = $this->exportSessionToShow($session, $timeModeCategory, $timeModeRank);
 			}
 		}
 

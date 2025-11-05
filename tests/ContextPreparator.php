@@ -6,6 +6,7 @@ class ContextPreparator {
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
+		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -187,6 +188,21 @@ class ContextPreparator {
 		}
 	}
 
+	private function prepareTimeModeSessions($timeModeSessions): void {
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+		foreach ($timeModeSessions as $timeModeSessionInput) {
+			$timeModeSession = [];
+			$timeModeSession['user_id'] = Auth::getUserID();
+			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
+			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
+			$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
+			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
+			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
+			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
+			$this->timeModeSessions [] = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'id DESC'])['TimeModeSession'];
+		}
+	}
+
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {
 		$statusCondition = [
 			'conditions' => [
@@ -201,12 +217,13 @@ class ContextPreparator {
 
 	public ?array $user = null;
 	public ?array $tsumego = null;
-	public ?array $otherTsumegos = [];
-	public ?array $allTsumegos = [];
+	public array $otherTsumegos = [];
+	public array $allTsumegos = [];
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;
-	public ?array $timeModeRanks = [];
+	public array $timeModeRanks = [];
+	public array $timeModeSessions = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 }

@@ -177,13 +177,11 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$contextParameters['other-tsumegos'] = [];
 
-		foreach ([
-			Rating::getRankMinimalRatingFromReadableRank('6k'),
-			Rating::getRankMinimalRatingFromReadableRank('2d')] as $rating) {
+		foreach (['6k', '2d'] as $rank) {
 			for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
 				$contextParameters['other-tsumegos'] [] = [
 					'sets' => [['name' => 'tsumego set 1', 'num' => $i]],
-					'rating' => $rating];
+					'rating' => Rating::getRankMinimalRatingFromReadableRank($rank)];
 			}
 		}
 
@@ -229,5 +227,24 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $sessionToBeFinished['TimeModeSession']['id']]]);
 		$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'], TimeModeUtil::$SESSION_STATUS_SOLVED);
 		$this->assertTextContains('You unlocked the 1d Blitz rank.', $browser->driver->getPageSource());
+	}
+
+	public function testTimeModeResultShowsSpecifiedResult(): void {
+		$browser = new Browser();
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
+		foreach ($contextParameters['time-mode-ranks'] as $rank) {
+			$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => $rank, 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+		}
+		$context = new ContextPreparator($contextParameters);
+
+		foreach ([0, 1] as $indexToShow) {
+			$browser->get('timeMode/result/' . $context->timeModeSessions[$indexToShow]['id']);
+			foreach ($contextParameters['time-mode-ranks'] as $rank) {
+				$relatedDiv = $browser->driver->findElement(WebDriverBy::cssSelector('#results_Blitz_' . $rank));
+				$this->assertSame($relatedDiv->isDisplayed(), $rank == $context->timeModeRanks[$indexToShow]['name']);
+			}
+		}
 	}
 }

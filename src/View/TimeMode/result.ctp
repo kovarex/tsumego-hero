@@ -12,7 +12,7 @@
 			echo '<tr>';
 			echo '<td colspan="5">';
 			$color = $session['status'] == 'passed' ? 'green' : '#e03c4b';
-			echo '<h4 style="color:'.$color.';">Result: '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
+			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
 			if ($isCurrent) {
 				echo '- '.$session['points'].' points';
 			}
@@ -32,32 +32,36 @@
 		}
 
 		function showRank($session, $dataForView) {
-			if($session['best']['status'] == 'passed') {
+			$containsCurrent = isset($session['current']);
+			$headerSession = isset($session['best']) ? $session['best'] : $session['current'];
+
+			if($headerSession['status'] == 'passed') {
 				$boxHighlight = 'tScoreTitle1';
 			}
 			else
 				$boxHighlight = 'tScoreTitle2';
-			$containsCurrent = isset($session['current']);
 
 			echo '<tr>';
 			echo '<td>';
-			echo '<div class="tScoreTitle '.$boxHighlight.'" id="title'.$session['best']['id'].'" onclick="toggleRelatedContent(this);">';
+			echo '<div class="tScoreTitle '.$boxHighlight.'" id="title'.$headerSession['id'].'" onclick="toggleRelatedContent(this);">';
 			echo '<table class="timeModeTable2" width="100%" border="0">';
 			echo '<tr>';
-			echo '<td width="9%">'.$session['best']['category'].'</td>';
-			echo '<td width="46%">'.$session['best']['rank'].'</td>';
-			echo '<td width="15%"><b>'.$session['best']['status'].'</b></td>';
-			echo '<td width="13%">'.$session['best']['points'].' points</td>';
-			echo '<td class="timeModeTable2td">'.$session['best']['created'].'</td>';
+			echo '<td width="9%">'.$headerSession['category'].'</td>';
+			echo '<td width="46%">'.$headerSession['rank'].'</td>';
+			echo '<td width="15%"><b>'.$headerSession['status'].'</b></td>';
+			echo '<td width="13%">'.$headerSession['points'].' points</td>';
+			echo '<td class="timeModeTable2td">'.$headerSession['created'].'</td>';
 			echo '<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="'.($containsCurrent ? $dataForView['rankArrowOpened'] : $dataForView['rankArrowClosed']).'"></td>';
 			echo '</tr>';
 			echo '</table>';
 			echo '</div>';
-			echo '<div class="timeModeTable3" width="100%" style="display: '.($containsCurrent ? '' : 'none').';">';
+			echo '<div class="timeModeTable3" width="100%" style="display: '.($containsCurrent ? '' : 'none').';"'.
+				' id="results_'.$headerSession['category'].'_'.$headerSession['rank'].'">';
 			echo '<table width="100%" class="scoreTable" border="0">';
-			$bestIsCurrent = $containsCurrent && $session['current']['id'] == $session['best']['id'];
-			showSession($session['best'], $bestIsCurrent);
-			if (!$bestIsCurrent && isset($session['current'])) {
+			if (isset($session['best'])) {
+				showSession($session['best'], false);
+			}
+			if (isset($session['current'])) {
 				showSession($session['current'], true);
 			}
 			echo '</table>';
