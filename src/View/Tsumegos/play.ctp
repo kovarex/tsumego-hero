@@ -73,10 +73,6 @@
 		$xpDisplayColor = '#b5910b';
 		echo '<style>#xpDisplay{font-weight:800;color:#b5910b;}</style>';
 	}
-	if(isset($formRedirect)){
-		$duplicateLink = count($setConnections) > 1 ? '?sid=' . $set['Set']['id'] : '';
-		echo '<script type="text/javascript">window.location.href = "/tsumegos/play/'.$t['Tsumego']['id'].$t['Tsumego']['duplicateLink'].'";</script>';
-	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
@@ -2146,11 +2142,8 @@
 		}, tcounter);
 
 		$('#target').click(function(e){
-			if(locked==true){
-				<?php
-				if(Auth::isInLevelMode() || Auth::isInTimeMode()) if($next!='0' && !$isSemeai) echo 'window.location = "/tsumegos/play/'.$next.'";';
-				if(Auth::isInRatingMode()) echo 'window.location = "/tsumegos/play/'.$nextMode['Tsumego']['id'].'";';
-				?>
+			if(locked) {
+				<?php echo 'window.location = nextTsumegoLink;'; ?>
 			}
 		});
 
@@ -2447,7 +2440,7 @@
 			document.cookie = "skip=1";
 			document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
 		}
-		<?php echo 'window.location.href = "/tsumegos/play/'.$nextMode['Tsumego']['id'].'";'; ?>
+		<?php echo 'window.location.href = nextTsumegoLink'; ?>
 	}
 
 	function runXPBar(increase){
@@ -2660,7 +2653,7 @@
 			<?php if(isset($intuitionEnabled) &&!$intuitionEnabled) echo 'setCookie(intuition, 2);'; ?>
 			intuitionEnabled = true;
 			rejuvenationEnabled = false;
-			<?php echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";'; ?>
+			<?php echo 'window.location = nextTsumegoLink'; ?>
 		}
 	}
 
@@ -2669,7 +2662,7 @@
 			setCookie("refinement", 1);
 			document.getElementById("refinement").src = "/img/hp4x.png";
 			document.getElementById("refinement").style = "cursor: context-menu;";
-			<?php echo 'window.location.href = "/tsumegos/play/'.$g['Tsumego']['id'].'";'; ?>
+			<?php echo 'window.location.href = nextTsumegoLink;'; ?>
 		}
 		refinementEnabled = false;
 	}
@@ -2819,9 +2812,6 @@
 	function m2noHover(){
 		if(ui==2) $("#modeSwitcher2 label").css("background-color", "#ca6658");
 		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
-	}
-	function goMode3x(){
-		<?php echo 'window.location.href = "/timeMode/overview";'; ?>
 	}
 
 	function review(){

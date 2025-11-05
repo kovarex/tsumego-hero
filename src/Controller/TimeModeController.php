@@ -2,11 +2,13 @@
 
 App::uses('TimeModeUtil', 'Utility');
 App::uses('AppException', 'Utility');
+App::uses('Play', 'Controller/Component');
 
 class TimeModeController extends AppController {
 	public $components = ['TimeMode'];
 
 	public function start(): mixed {
+		$this->TimeMode->init();
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID) {
 			throw new AppException('Time mode category not specified');
@@ -17,7 +19,44 @@ class TimeModeController extends AppController {
 		}
 
 		$this->TimeMode->startTimeMode($categoryID, $rankID);
-		return $this->redirect("/tsumegos/play");
+		return $this->redirect("/timeMode/play");
+	}
+
+	public function play(): mixed {
+		if (!Auth::isLoggedIn()) {
+			return $this->redirect('user/login');
+		}
+
+		$this->TimeMode->init();
+
+		if (!$this->TimeMode->currentSession) {
+			return $this->redirect('/timeMode/overview');
+		}
+
+		if ($timeModeSessionID = $this->TimeMode->checkFinishSession()) {
+			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
+		}
+
+		$tsumegoID = $this->TimeMode->prepareNextToSolve();
+		if (!$tsumegoID) {
+			throw new Exception('Time mode session is not finished, yet it doesn\'t contain viable tsumego to continue.');
+		}
+
+		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		if (!$setConnection) {
+			throw new Exception('Time mode session contains tsumego without a set connection.');
+		}
+
+		if (!Auth::isInTimeMode()) {
+			Auth::getUser()['model'] = Constants::$TIME_MODE;
+			Auth::saveUser();
+		}
+		$this->set('timeMode', (array) $this->TimeMode);
+		$this->set('nextLink', $this->TimeMode->currentWillBeLast() ? '/timeMode/result/' . $this->TimeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
+		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
+		$play->play($setConnection['SetConnection']['id']);
+		$this->render('/Tsumegos/play');
+		return null;
 	}
 
 	public function overview(): mixed {
@@ -138,10 +177,23 @@ class TimeModeController extends AppController {
 		return $unlock;
 	}
 
+	private function deduceFinishedSession($passedSessionID): ?array {
+		if ($finishedSessionID = $this->TimeMode->checkFinishSession()) {
+			return ClassRegistry::init('TimeModeSession')->findById($finishedSessionID);
+		}
+
+		if ($passedSessionID) {
+			return ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]]);
+		}
+		throw new AppException('Time Mode Session not found');
+	}
+
 	public function result($timeModeSessionID = null): mixed {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect("users/login");
 		}
+
+		$finishedSession = $this->deduceFinishedSession($timeModeSessionID);
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -150,13 +202,14 @@ class TimeModeController extends AppController {
 		$this->Session->write('title', 'Time Mode - Result');
 		$this->Session->write('page', 'time mode');
 
+		if ($finishedSessionID = $this->TimeMode->checkFinishSession()) {
+			$timeModeSessionID = $finishedSessionID;
+		}
 		if ($timeModeSessionID) {
 			$finishedSession = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $timeModeSessionID]]);
 			if (!$finishedSession) {
 				throw new AppException('Time Mode Session not found');
 			}
-		} else {
-			$finishedSession = null;
 		}
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);

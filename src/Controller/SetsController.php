@@ -439,7 +439,7 @@ class SetsController extends AppController {
 		$overallCounter = 0;
 		$searchCounter = 0;
 		$achievementUpdate = [];
-		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
+		$searchPatameters = SearchParameters::process();
 		$query = $searchPatameters[0];
 		$collectionSize = $searchPatameters[1];
 		$search1 = $searchPatameters[2] ?? [];
@@ -586,7 +586,7 @@ class SetsController extends AppController {
 				$search2Count = count($search2);
 				for ($i = 0; $i < $search2Count; $i++) {
 					$ft = [];
-					$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+					$ft['rating >='] = AppController::getTsumegoElo($search2[$i]);
 					$ft['rating <'] = $ft['rating >='] + 100;
 					if ($search2[$i] == '15k') {
 						$ft['rating >='] = 50;
@@ -718,7 +718,7 @@ class SetsController extends AppController {
 			for ($i = 0; $i < $ranksArrayCount; $i++) {
 				$ftFrom = [];
 				$ftTo = [];
-				$ftFrom['rating >='] = $this->getTsumegoElo($ranksArray[$i]['rank']);
+				$ftFrom['rating >='] = AppController::getTsumegoElo($ranksArray[$i]['rank']);
 				$ftTo['rating <'] = $ftFrom['rating >='] + 100;
 				if ($ranksArray[$i]['rank'] == '15k') {
 					$ftFrom['rating >='] = 50;
@@ -854,7 +854,7 @@ class SetsController extends AppController {
 							$search2Count2 = count($search2);
 							for ($j = 0; $j < $search2Count2; $j++) {
 								$ft = [];
-								$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+								$ft['rating >='] = AppController::getTsumegoElo($search2[$j]);
 								$ft['rating <'] = $ft['rating >='] + 100;
 								if ($search2[$j] == '15k') {
 									$ft['rating >='] = 50;
@@ -1141,7 +1141,7 @@ class SetsController extends AppController {
 			$partition = 0;
 		}
 
-		$searchParameters = $this->processSearchParameters(Auth::getUserID());
+		$searchParameters = SearchParameters::process();
 		$query = $searchParameters[0];
 		$collectionSize = $searchParameters[1];
 		$search1 = $searchParameters[2];
@@ -1227,7 +1227,7 @@ class SetsController extends AppController {
 			}
 			$query = $viewType;
 			$_COOKIE['query'] = $query;
-			$searchParameters = $this->processSearchParameters(Auth::getUserID());
+			$searchParameters = SearchParameters::process();
 
 			$this->Session->write('lastSet', $id);
 			if ($viewType == 'difficulty') {
@@ -1253,7 +1253,7 @@ class SetsController extends AppController {
 				$set['Set']['image'] = $id . 'Rank.png';
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
-				$elo = $this->getTsumegoElo($id);
+				$elo = AppController::getTsumegoElo($id);
 				$ftFrom = [];
 				$ftTo = [];
 				$ftFrom['rating >='] = $elo;
@@ -1391,7 +1391,7 @@ class SetsController extends AppController {
 					$search2Count2 = count($search2);
 					for ($j = 0; $j < $search2Count2; $j++) {
 						$ft = [];
-						$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+						$ft['rating >='] = AppController::getTsumegoElo($search2[$j]);
 						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$j] == '15k') {
 							$ft['rating >='] = 50;
@@ -1446,7 +1446,7 @@ class SetsController extends AppController {
 					$search2Count = count($search2);
 					for ($i = 0; $i < $search2Count; $i++) {
 						$ft = [];
-						$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+						$ft['rating >='] = AppController::getTsumegoElo($search2[$i]);
 						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$i] == '15k') {
 							$ft['rating >='] = 50;
@@ -2656,7 +2656,7 @@ class SetsController extends AppController {
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
 		$nine = $this->Tsumego->find('first', [
 			'conditions' => [
-				'rating >=' => $this->getTsumegoElo('9d'),
+				'rating >=' => AppController::getTsumegoElo('9d'),
 			],
 		]);
 		if ($nine != null) {

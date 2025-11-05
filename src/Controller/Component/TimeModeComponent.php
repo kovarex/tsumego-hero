@@ -188,7 +188,7 @@ class TimeModeComponent extends Component {
 	}
 
 	// @return if not null, new tsumego id to show in the time mode
-	public function prepareNextToSolve($setsWithPremium, $params): ?int {
+	public function prepareNextToSolve(): ?int {
 		if (!$this->currentSession) {
 			return null;
 		}
@@ -203,6 +203,10 @@ class TimeModeComponent extends Component {
 				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
 			'order' => 'time_mode_attempt_status_id'])['TimeModeAttempt']['tsumego_id'];
+	}
+
+	public function currentWillBeLast(): bool {
+		return $this->currentOrder + 1 > $this->overallCount;
 	}
 
 	public function checkFinishSession(): ?int {

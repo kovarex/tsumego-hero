@@ -75,7 +75,7 @@ class UsersController extends AppController {
 	private function set_elo($tid) {
 		$this->loadModel('Tsumego');
 		$t = $this->Tsumego->findById($tid);
-		$rank = $this->getTsumegoRankx($t['Tsumego']['userWin']);
+		$rank = AppController::getTsumegoRankx($t['Tsumego']['userWin']);
 		$tMax = $this->getTsumegoRankMax($t['Tsumego']['userWin']);
 		$tVal = $this->getTsumegoRankVal($t['Tsumego']['userWin']);
 		if ($tMax != 0) {
@@ -83,7 +83,7 @@ class UsersController extends AppController {
 		} else {
 			$p = 0;
 		}
-		$newElo = $this->getTsumegoElo($rank, $p);
+		$newElo = AppController::getTsumegoElo($rank, $p);
 		$adjustElo = $this->adjustElo($newElo);
 		$t['Tsumego']['rating'] = $adjustElo;
 		$t['Tsumego']['difficulty'] = $this->convertEloToXp($t['Tsumego']['rating']);
@@ -105,7 +105,7 @@ class UsersController extends AppController {
 		$counter = 0;
 		while ($counter <= 100) {
 			array_push($a['c'], $counter);
-			$rank = $this->getTsumegoRankx($counter);
+			$rank = AppController::getTsumegoRankx($counter);
 			array_push($a['TimeModeAttempt'], $rank);
 
 			$tMax = $this->getTsumegoRankMax($counter);
@@ -119,7 +119,7 @@ class UsersController extends AppController {
 			}
 			array_push($a['rank3'], $p);
 
-			$newElo = $this->getTsumegoElo($rank, $p);
+			$newElo = AppController::getTsumegoElo($rank, $p);
 			array_push($a['elo'], $newElo);
 
 			$adjustElo = $this->adjustElo($newElo);
@@ -2131,11 +2131,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $tagsToApproveCount; $i++) {
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if ($tagToApprove != null && $tagToApprove['Tag']['approved'] != 1) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagsToApprove[$i], 0, 1) == 'a') {
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
-								$this->handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
+								AppController::handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
 							} else {
 								$reject = [];
 								$reject['Reject']['tsumego_id'] = $tagToApprove['Tag']['tsumego_id'];
@@ -2155,11 +2155,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++) {
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if ($tagNameToApprove != null && $tagNameToApprove['TagName']['approved'] != 1) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagNamesToApprove[$i], 0, 1) == 'a') {
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
-								$this->handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
+								AppController::handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
 							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $tagNameToApprove['TagName']['user_id'];
@@ -2177,12 +2177,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $proposalsToApproveCount; $i++) {
 						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
 								$recentSgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
+								$proposalToApprove['Sgf']['version'] = Util::nextVersionNumber($recentSgf['Sgf']['version']);
 								$this->Sgf->save($proposalToApprove);
-								$this->handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
+								AppController::handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
 							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $proposalToApprove['Sgf']['user_id'];

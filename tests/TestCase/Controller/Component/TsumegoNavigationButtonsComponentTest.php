@@ -5,7 +5,7 @@ require_once(__DIR__ . '/../../../Browser.php');
 require_once(__DIR__ . '/../../../ContextPreparator.php');
 use Facebook\WebDriver\WebDriverBy;
 
-class TsumegoNavigationButtonsComponentTest extends TestCaseWithAuth {
+class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 	public function buttonsTestGeneric($currentNum, $otherNums, $expectedNums) {
 		$contextParameters = [];
 		$index = [];

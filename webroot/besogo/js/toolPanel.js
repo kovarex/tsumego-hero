@@ -513,9 +513,7 @@ besogo.makeToolPanel = function (container, editor) {
         makeButtonText(
           "Next",
           "next problem",
-          function () {
-            window.location.href = "/tsumegos/play/" + besogoMode3Next;
-          },
+          function () { window.location.href = nextButtonLink; },
           "besogo-next-button"
         );
       }
