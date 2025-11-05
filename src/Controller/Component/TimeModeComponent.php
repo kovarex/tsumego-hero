@@ -205,6 +205,10 @@ class TimeModeComponent extends Component {
 			'order' => 'time_mode_attempt_status_id'])['TimeModeAttempt']['tsumego_id'];
 	}
 
+	public function currentWillBeLast(): bool {
+		return $this->currentOrder + 1 > $this->overallCount;
+	}
+
 	public function checkFinishSession(): ?int {
 		if (!$this->currentSession) {
 			return null;

@@ -6,18 +6,18 @@ class TagNamesController extends AppController {
 	 */
 	public function add() {
 		$alreadyExists = false;
-		if (isset(CakeRequest::$data['TagName'])) {
-			$exists = $this->TagName->find('first', ['conditions' => ['name' => CakeRequest::$data['TagName']['name']]]);
+		if (isset($this->data['TagName'])) {
+			$exists = $this->TagName->find('first', ['conditions' => ['name' => $this->data['TagName']['name']]]);
 			if ($exists == null) {
 				$tn = [];
-				$tn['TagName']['name'] = CakeRequest::$data['TagName']['name'];
-				$tn['TagName']['description'] = CakeRequest::$data['TagName']['description'];
-				$tn['TagName']['hint'] = CakeRequest::$data['TagName']['hint'];
-				$tn['TagName']['link'] = CakeRequest::$data['TagName']['link'];
+				$tn['TagName']['name'] = $this->data['TagName']['name'];
+				$tn['TagName']['description'] = $this->data['TagName']['description'];
+				$tn['TagName']['hint'] = $this->data['TagName']['hint'];
+				$tn['TagName']['link'] = $this->data['TagName']['link'];
 				$tn['TagName']['user_id'] = Auth::getUserID();
 				$tn['TagName']['approved'] = 0;
 				$this->TagName->save($tn);
-				$saved = $this->TagName->find('first', ['conditions' => ['name' => CakeRequest::$data['TagName']['name']]]);
+				$saved = $this->TagName->find('first', ['conditions' => ['name' => $this->data['TagName']['name']]]);
 				if ($saved) {
 					$this->set('saved', $saved['TagName']['id']);
 				}
@@ -257,10 +257,10 @@ class TagNamesController extends AppController {
 	 */
 	public function edit($id = null) {
 		$tn = $this->TagName->findById($id);
-		if (isset(CakeRequest::$data['TagName'])) {
-			$tn['TagName']['description'] = CakeRequest::$data['TagName']['description'];
-			$tn['TagName']['hint'] = CakeRequest::$data['TagName']['hint'];
-			$tn['TagName']['link'] = CakeRequest::$data['TagName']['link'];
+		if (isset($this->data['TagName'])) {
+			$tn['TagName']['description'] = $this->data['TagName']['description'];
+			$tn['TagName']['hint'] = $this->data['TagName']['hint'];
+			$tn['TagName']['link'] = $this->data['TagName']['link'];
 			$this->TagName->save($tn);
 			$this->set('saved', $tn['TagName']['id']);
 		}
@@ -288,8 +288,8 @@ class TagNamesController extends AppController {
 		$this->loadModel('Tag');
 		$tn = $this->TagName->findById($id);
 
-		if (isset(CakeRequest::$data['TagName'])) {
-			if (CakeRequest::$data['TagName']['delete'] == $id) {
+		if (isset($this->data['TagName'])) {
+			if ($this->data['TagName']['delete'] == $id) {
 				$tags = $this->Tag->find('all', ['conditions' => ['tag_name_id' => $id]]);
 				if (!$tags) {
 					$tags = [];

@@ -1,7 +1,7 @@
 <?php
 
 class SearchParameters {
-	static public function process() {
+	public static function process() {
 		$query = 'topics';
 		$collectionSize = 200;
 		$search1 = [];
@@ -97,7 +97,7 @@ class SearchParameters {
 		return $r;
 	}
 
-	static function removeEmptyFields(array $arr): array {
+	public static function removeEmptyFields(array $arr): array {
 		$arr2 = [];
 		$arrCount = count($arr);
 		for ($i = 0; $i < $arrCount; $i++) {

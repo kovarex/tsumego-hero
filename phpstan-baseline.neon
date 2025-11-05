@@ -19,12 +19,6 @@ parameters:
 			path: src/Controller/TsumegosController.php
 
 		-
-			message: '#^Loose comparison using \=\= between null and null will always evaluate to true\.$#'
-			identifier: equal.alwaysTrue
-			count: 1
-			path: src/Controller/TsumegosController.php
-
-		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 1

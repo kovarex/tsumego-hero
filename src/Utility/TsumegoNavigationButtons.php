@@ -1,8 +1,7 @@
 <?php
 
 class TsumegoNavigationButtons {
-	public function combine()
-	{
+	public function combine() {
 		$result = [];
 		if ($this->first) {
 			array_push($result, $this->first);

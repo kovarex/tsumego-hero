@@ -153,6 +153,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 				break;
 			}
 			usleep(1000 * 100);
+			$bla = $browser->driver->getPageSource();
 			$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
 			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 			$this->assertTrue($nextButton->isEnabled());
@@ -197,7 +198,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 				$context = new ContextPreparator($contextParameters);
 				$this->assertTrue(Auth::isInTimeMode());
 
-				$browser->get('tsumegos/play');
+				$browser->get('timeMode/play');
 
 				usleep(1000 * 100);
 				$browser->driver->executeScript("displayResult('S')"); // mark the problem solved

@@ -4,24 +4,24 @@ App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('AppException', 'Utility');
+require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController {
 	public $helpers = ['Html', 'Form'];
-	public $components = ['Play'];
 
 	private function deduceRelevantSetConnection(array $setConnections): array {
-		if (!isset(CakeRequest::$params->query['sid'])) {
+		if (!isset($this->params->query['sid'])) {
 			return $setConnections[0];
 		}
 		foreach ($setConnections as $setConnection) {
-			if ($setConnection['SetConnection']['set_id'] == CakeRequest::$params->query['sid']) {
+			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid']) {
 				return $setConnection;
 			}
 		}
 		throw new AppException("Problem doesn't exist in the specified set");
 	}
 
-	private static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int {
+	public static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int {
 		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]])) {
 			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
 				return $setConnection['SetConnection']['set_id'] == $currentSetID;
@@ -32,7 +32,7 @@ class TsumegosController extends AppController {
 		return null;
 	}
 
-	private static function tsumegoOrSetLink(?int $setConnectionID, ?int $tsumegoID, int $setID): string {
+	public static function tsumegoOrSetLink(?int $setConnectionID, ?int $tsumegoID, int $setID): string {
 		if ($setConnectionID) {
 			return '/' . $setConnectionID;
 		}
@@ -42,14 +42,14 @@ class TsumegosController extends AppController {
 		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
 	}
 
-	public function play($id = null, $setConnectionID = null)	{
+	public function play($id = null, $setConnectionID = null) {
 		if (Auth::isLoggedIn() && !Auth::isInLevelMode()) {
 			Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
 			Auth::saveUser();
 		}
 
 		if ($setConnectionID) {
-			return $this->Play->play($setConnectionID);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID);
 		}
 
 		if (!$id) {
@@ -61,14 +61,14 @@ class TsumegosController extends AppController {
 			throw new AppException("Problem without any set connection");
 		} // some redirect/nicer message ?
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return $this->Play->play($setConnection['SetConnection']['id']);
+		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id']);
 	}
 
-	private function getPopularTags($tags) {
+	public static function getPopularTags($tags) {
 		// for some reason, this returns null in the test environment
 		$json = json_decode(file_get_contents('json/popular_tags.json')) ?: [];
 		$a = [];
-		$tn = $this->TagName->find('all');
+		$tn = ClassRegistry::init('TagName')->find('all');
 		if (!$tn) {
 			$tn = [];
 		}
@@ -105,15 +105,15 @@ class TsumegosController extends AppController {
 		return $aNew;
 	}
 
-	private function getTags($tsumego_id) {
-		$tags = $this->Tag->find('all', ['conditions' => ['tsumego_id' => $tsumego_id]]);
+	public static function getTags($tsumego_id) {
+		$tags = ClassRegistry::init('Tag')->find('all', ['conditions' => ['tsumego_id' => $tsumego_id]]);
 		if (!$tags) {
 			$tags = [];
 		}
 		$tagsCount = count($tags);
 
 		for ($i = 0; $i < $tagsCount; $i++) {
-			$tn = $this->TagName->findById($tags[$i]['Tag']['tag_name_id']);
+			$tn = ClassRegistry::init('TagName')->findById($tags[$i]['Tag']['tag_name_id']);
 			$tags[$i]['Tag']['name'] = $tn['TagName']['name'];
 			$tags[$i]['Tag']['hint'] = $tn['TagName']['hint'];
 		}
@@ -121,14 +121,12 @@ class TsumegosController extends AppController {
 		return $tags;
 	}
 
-	private function checkTagDuplicates($array) {
-		$tagIds = [];
-		$foundDuplicate = 0;
+	public static function checkTagDuplicates($array) {
 		$newArray = [];
 		$arrayCount = count($array);
 
 		for ($i = 0; $i < $arrayCount; $i++) {
-			if (!$this->inArrayX($array[$i], $newArray)) {
+			if (!TsumegosController::inArrayX($array[$i], $newArray)) {
 				array_push($newArray, $array[$i]);
 			}
 		}
@@ -136,7 +134,7 @@ class TsumegosController extends AppController {
 		return $newArray;
 	}
 
-	private function inArrayX($x, $newArray) {
+	public static function inArrayX($x, $newArray) {
 		$newArrayCount = count($newArray);
 
 		for ($i = 0; $i < $newArrayCount; $i++) {
@@ -191,10 +189,10 @@ class TsumegosController extends AppController {
 		$includeColorSwitch = 'false';
 		$hideSandbox = false;
 
-		if (isset(CakeRequest::$params['url']['diff'])) {
-			$maxDifference = CakeRequest::$params['url']['diff'];
-			$includeSandbox = CakeRequest::$params['url']['sandbox'];
-			$includeColorSwitch = CakeRequest::$params['url']['colorSwitch'];
+		if (isset($this->params['url']['diff'])) {
+			$maxDifference = $this->params['url']['diff'];
+			$includeSandbox = $this->params['url']['sandbox'];
+			$includeColorSwitch = $this->params['url']['colorSwitch'];
 			$loop = false;
 		} else {
 			$loop = true;
@@ -480,21 +478,13 @@ class TsumegosController extends AppController {
 		$this->set('t', $t);
 	}
 
-	private function getTheIdForTheThing($num) {
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
+	public static function getTheIdForTheThing($num) {
 		$t = [];
-		$s = $this->Set->find('all', ['order' => 'id ASC', 'conditions' => ['public' => 1]]);
-		if (!$s) {
-			$s = [];
-		}
+		$s = ClassRegistry::init('Set')->find('all', ['order' => 'id ASC', 'conditions' => ['public' => 1]]) ?: [];
 		$sCount = count($s);
 
 		for ($i = 0; $i < $sCount; $i++) {
-			$sc = $this->SetConnection->find('all', ['order' => 'tsumego_id ASC', 'conditions' => ['set_id' => $s[$i]['Set']['id']]]);
-			if (!$sc) {
-				$sc = [];
-			}
+			$sc = ClassRegistry::init('SetConnection')->find('all', ['order' => 'tsumego_id ASC', 'conditions' => ['set_id' => $s[$i]['Set']['id']]]) ?: [];
 			$scCount = count($sc);
 
 			for ($j = 0; $j < $scCount; $j++) {
@@ -508,7 +498,7 @@ class TsumegosController extends AppController {
 		return $t[$num];
 	}
 
-	private function getStartingPlayer($sgf) {
+	public static function getStartingPlayer($sgf) {
 		$bStart = strpos($sgf, ';B');
 		$wStart = strpos($sgf, ';W');
 		if ($wStart == 0) {
@@ -717,7 +707,7 @@ class TsumegosController extends AppController {
 		return $a1;
 	}
 
-	static function findUt($id = null, $utsMap = null) {
+	public static function findUt($id = null, $utsMap = null) {
 		if (!isset($utsMap[$id])) {
 			return null;
 		}
@@ -730,7 +720,7 @@ class TsumegosController extends AppController {
 		return $ut;
 	}
 
-	private function commentCoordinates($c = null, $counter = null, $noSyntax = null) {
+	public static function commentCoordinates($c = null, $counter = null, $noSyntax = null) {
 		if (!is_string($c)) {
 			return [$c, ''];
 		}
@@ -813,10 +803,10 @@ class TsumegosController extends AppController {
 						array_push($xxxx, $xxx[$j]);
 					}
 					if (preg_match('/[a-tA-T]/', $xxx[$j])) {
-						$coord1 = $this->convertCoord($xxx[$j]);
+						$coord1 = TsumegosController::convertCoord($xxx[$j]);
 					}
 				}
-				$coord2 = $this->convertCoord2(implode('', $xxxx));
+				$coord2 = TsumegosController::convertCoord2(implode('', $xxxx));
 				if ($coord1 != -1 && $coord2 != -1) {
 					$finalCoord .= $coord1 . '-' . $coord2 . '-' . $coordForBesogo[$i] . ' ';
 				}
@@ -833,7 +823,7 @@ class TsumegosController extends AppController {
 		return $array;
 	}
 
-	private function convertCoord($l = null) {
+	public static function convertCoord($l = null) {
 		switch (strtolower($l)) {
 			case 'a':
 				return 0;
@@ -877,7 +867,7 @@ class TsumegosController extends AppController {
 
 		return 0;
 	}
-	private function convertCoord2($n = null) {
+	public static function convertCoord2($n = null) {
 		switch ($n) {
 			case '0':
 				return 19;

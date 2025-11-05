@@ -15,9 +15,8 @@
 		}else{
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
-	}
-	if(isset($formRedirect)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$set['Set']['id'].'";</script>';
-?>
+	} ?>
+</script>;
 	<div class="homeRight">
 		<p class="title4">Problems</p>
 		<div class="showFilters">
