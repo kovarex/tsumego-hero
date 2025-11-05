@@ -26,19 +26,19 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitFromEmpty(): void {
-		$context = new ContextPreparator();
+		$context = new ContextPreparator(['tsumego' => []]);
 		$this->performVisit($context);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'V');
 	}
 
 	public function testSolveFromEmpty(): void {
-		$context = new ContextPreparator();
+		$context = new ContextPreparator(['tsumego' => []]);
 		$this->performSolve($context);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'S');
 	}
 
 	public function testFailFromEmpty(): void {
-		$context = new ContextPreparator();
+		$context = new ContextPreparator(['tsumego' => []]);
 		$this->performMisplay($context);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 	}
@@ -112,7 +112,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolvingAddsNewTsumegoAttempt(): void {
-		$context = new ContextPreparator();
+		$context = new ContextPreparator(['tsumego' => []]);
 
 		$this->performSolve($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
@@ -144,7 +144,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailingAddsNewTsumegoAttempt(): void {
-		$context = new ContextPreparator();
+		$context = new ContextPreparator(['tsumego' => []]);
 
 		$this->performMisplay($context);
 		$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);

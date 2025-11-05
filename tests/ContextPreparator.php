@@ -77,6 +77,9 @@ class ContextPreparator {
 	}
 
 	private function prepareThisTsumego(?array $tsumego): void {
+		if (is_null($tsumego)) {
+			return;
+		}
 		$this->tsumego = $this->prepareTsumego($tsumego);
 		$this->allTsumegos [] = $this->tsumego;
 	}
@@ -199,8 +202,22 @@ class ContextPreparator {
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
 			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
 			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
-			$this->timeModeSessions [] = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'id DESC'])['TimeModeSession'];
+			$newSession = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'id DESC'])['TimeModeSession'];
+			$this->timeModeSessions [] = $newSession;
+			foreach ($timeModeSessionInput['attempts'] as $attemptInput) {
+				$this->prepareTimeModeAttempts($attemptInput, $newSession['id']);
+			}
 		}
+	}
+
+	private function prepareTimeModeAttempts(array $attemptsInput, int $timeModeSessionID): void {
+		$attempt = [];
+		$attempt['time_mode_session_id'] = $timeModeSessionID;
+		$attempt['tsumego_id'] = $this->allTsumegos[0]['id'];
+		$attempt['order'] = $attemptsInput['order'];
+		$attempt['time_mode_attempt_status_id'] = $attemptsInput['status'];
+		ClassRegistry::init('TimeModeAttempt')->create($attempt);
+		ClassRegistry::init('TimeModeAttempt')->save($attempt);
 	}
 
 	public function checkNewTsumegoStatusCoreValues(CakeTestCase $testCase): void {

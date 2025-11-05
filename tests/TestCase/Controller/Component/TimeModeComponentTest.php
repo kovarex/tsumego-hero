@@ -176,7 +176,11 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$contextParameters['other-tsumegos'] = [];
-		$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS];
+		$contextParameters['time-mode-sessions'] [] = [
+			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'rank' => '5k',
+			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
 
 		foreach (['6k', '2d'] as $rank) {
 			for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
@@ -187,16 +191,6 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParameters);
-
-		$lastAttemptForTheSession = [];
-		$lastAttemptForTheSession['time_mode_session_id'] = $context->timeModeSessions[0]['id'];
-		$lastAttemptForTheSession['tsumego_id'] = $context->otherTsumegos[0]['id'];
-		$lastAttemptForTheSession['order'] = 1;
-		$lastAttemptForTheSession['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_QUEUED;
-		ClassRegistry::init('TimeModeAttempt')->create($lastAttemptForTheSession);
-		ClassRegistry::init('TimeModeAttempt')->save($lastAttemptForTheSession);
-		$lastAttemptForTheSession = ClassRegistry::init('TimeModeAttempt')->find('first', ['order' => 'id DESC']);
-
 		$this->assertTrue(Auth::isInTimeMode());
 		$browser = new Browser();
 
