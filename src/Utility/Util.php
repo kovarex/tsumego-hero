@@ -91,4 +91,8 @@ class Util {
 		}
 		return Util::isInGithubCI();
 	}
+
+	public static function nextVersionNumber(string $input): string {
+		return number_format(min(round(intval($input) + 0.1, 1), 1), 1);
+	}
 }

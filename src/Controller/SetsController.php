@@ -23,8 +23,8 @@ class SetsController extends AppController {
 		$tIds = [];
 		$d2 = [];
 
-		if (isset($this->params['url']['unmark'])) {
-			$unmark = $this->Duplicate->find('all', ['conditions' => ['dGroup' => $this->params['url']['unmark']]]);
+		if (isset(CakeRequest::$params['url']['unmark'])) {
+			$unmark = $this->Duplicate->find('all', ['conditions' => ['dGroup' => CakeRequest::$params['url']['unmark']]]);
 			if (!$unmark) {
 				$unmark = [];
 			}
@@ -184,8 +184,8 @@ class SetsController extends AppController {
 		$this->Session->write('title', 'Tsumego Hero - Collections');
 		$setsNew = [];
 
-		if (isset($this->params['url']['restore'])) {
-			$restore = $this->Set->findById($this->params['url']['restore']);
+		if (isset(CakeRequest::$params['url']['restore'])) {
+			$restore = $this->Set->findById(CakeRequest::$params['url']['restore']);
 			if ($restore['Set']['public'] == -1) {
 				$restore['Set']['public'] = 0;
 				$this->Set->save($restore);
@@ -303,7 +303,7 @@ class SetsController extends AppController {
 		$this->loadModel('SetConnection');
 		$redirect = false;
 		$t = [];
-		if (isset($this->data['Set'])) {
+		if (isset(CakeRequest::$data['Set'])) {
 			$s = $this->Set->find('all', ['order' => 'id DESC']);
 			if (!$s) {
 				$s = [];
@@ -322,12 +322,12 @@ class SetsController extends AppController {
 			foreach (array_rand($seed, 6) as $k) {
 				$rand .= $seed[$k];
 			}
-			$hashName = '6473k339312/_' . $rand . '_' . $this->data['Set']['title'];
-			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
+			$hashName = '6473k339312/_' . $rand . '_' . CakeRequest::$data['Set']['title'];
+			$hashName2 = '_' . $rand . '_' . CakeRequest::$data['Set']['title'];
 
 			$set = [];
 			$set['Set']['id'] = $ss[0]['Set']['id'] + 1;
-			$set['Set']['title'] = $this->data['Set']['title'];
+			$set['Set']['title'] = CakeRequest::$data['Set']['title'];
 			$set['Set']['public'] = 0;
 			$set['Set']['image'] = 'b1.png';
 			$set['Set']['difficulty'] = 4;
@@ -374,9 +374,9 @@ class SetsController extends AppController {
 		$this->loadModel('Tsumego');
 		$redirect = false;
 
-		if (isset($this->data['Set'])) {
-			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1) {
-				$setID = (int) str_replace('6473k339312-', '', $this->data['Set']['hash']);
+		if (isset(CakeRequest::$data['Set'])) {
+			if (strpos(';' . CakeRequest::$data['Set']['hash'], '6473k339312-') == 1) {
+				$setID = (int) str_replace('6473k339312-', '', CakeRequest::$data['Set']['hash']);
 
 				$s = $this->Set->findById($setID);
 				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
@@ -402,12 +402,12 @@ class SetsController extends AppController {
 	public function add($tid) {
 		$this->loadModel('Tsumego');
 
-		if (isset($this->data['Tsumego'])) {
+		if (isset(CakeRequest::$data['Tsumego'])) {
 			$t = [];
-			$t['Tsumego']['num'] = $this->data['Tsumego']['num'];
-			$t['Tsumego']['difficulty'] = $this->data['Tsumego']['difficulty'];
-			$t['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
-			$t['Tsumego']['description'] = $this->data['Tsumego']['description'];
+			$t['Tsumego']['num'] = CakeRequest::$data['Tsumego']['num'];
+			$t['Tsumego']['difficulty'] = CakeRequest::$data['Tsumego']['difficulty'];
+			$t['Tsumego']['variance'] = CakeRequest::$data['Tsumego']['variance'];
+			$t['Tsumego']['description'] = CakeRequest::$data['Tsumego']['description'];
 			$this->Tsumego->save($t);
 		}
 		$ts = TsumegoUtil::collectTsumegosFromSet($tid);
@@ -439,7 +439,7 @@ class SetsController extends AppController {
 		$overallCounter = 0;
 		$searchCounter = 0;
 		$achievementUpdate = [];
-		$searchPatameters = $this->processSearchParameters(Auth::getUserID());
+		$searchPatameters = SearchParameters::process();
 		$query = $searchPatameters[0];
 		$collectionSize = $searchPatameters[1];
 		$search1 = $searchPatameters[2] ?? [];
@@ -586,7 +586,7 @@ class SetsController extends AppController {
 				$search2Count = count($search2);
 				for ($i = 0; $i < $search2Count; $i++) {
 					$ft = [];
-					$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+					$ft['rating >='] = AppController::getTsumegoElo($search2[$i]);
 					$ft['rating <'] = $ft['rating >='] + 100;
 					if ($search2[$i] == '15k') {
 						$ft['rating >='] = 50;
@@ -718,7 +718,7 @@ class SetsController extends AppController {
 			for ($i = 0; $i < $ranksArrayCount; $i++) {
 				$ftFrom = [];
 				$ftTo = [];
-				$ftFrom['rating >='] = $this->getTsumegoElo($ranksArray[$i]['rank']);
+				$ftFrom['rating >='] = AppController::getTsumegoElo($ranksArray[$i]['rank']);
 				$ftTo['rating <'] = $ftFrom['rating >='] + 100;
 				if ($ranksArray[$i]['rank'] == '15k') {
 					$ftFrom['rating >='] = 50;
@@ -854,7 +854,7 @@ class SetsController extends AppController {
 							$search2Count2 = count($search2);
 							for ($j = 0; $j < $search2Count2; $j++) {
 								$ft = [];
-								$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+								$ft['rating >='] = AppController::getTsumegoElo($search2[$j]);
 								$ft['rating <'] = $ft['rating >='] + 100;
 								if ($search2[$j] == '15k') {
 									$ft['rating >='] = 50;
@@ -1133,15 +1133,15 @@ class SetsController extends AppController {
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
 		}
 
-		if (isset($this->params['url']['partition'])) {
-			$partition = $this->params['url']['partition'];
+		if (isset(CakeRequest::$params['url']['partition'])) {
+			$partition = CakeRequest::$params['url']['partition'];
 			$hasPartition = true;
 		}
 		if ($partition == -1) {
 			$partition = 0;
 		}
 
-		$searchParameters = $this->processSearchParameters(Auth::getUserID());
+		$searchParameters = SearchParameters::process();
 		$query = $searchParameters[0];
 		$collectionSize = $searchParameters[1];
 		$search1 = $searchParameters[2];
@@ -1171,7 +1171,7 @@ class SetsController extends AppController {
 				}
 			}
 		}
-		if (isset($this->params['url']['add'])) {
+		if (isset(CakeRequest::$params['url']['add'])) {
 			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
 			$scTcount = $this->SetConnection->find('first', ['conditions' => ['set_id' => $id, 'num' => 1]]);
 			$setCount = $this->Tsumego->findById($scTcount['SetConnection']['tsumego_id']);
@@ -1199,11 +1199,11 @@ class SetsController extends AppController {
 			$this->AdminActivity->save($adminActivity);
 		}
 
-		if (isset($this->params['url']['show'])) {
-			if ($this->params['url']['show'] == 'order') {
+		if (isset(CakeRequest::$params['url']['show'])) {
+			if (CakeRequest::$params['url']['show'] == 'order') {
 				$josekiOrder = 1;
 			}
-			if ($this->params['url']['show'] == 'num') {
+			if (CakeRequest::$params['url']['show'] == 'num') {
 				$josekiOrder = 0;
 			}
 		}
@@ -1227,7 +1227,7 @@ class SetsController extends AppController {
 			}
 			$query = $viewType;
 			$_COOKIE['query'] = $query;
-			$searchParameters = $this->processSearchParameters(Auth::getUserID());
+			$searchParameters = SearchParameters::process();
 
 			$this->Session->write('lastSet', $id);
 			if ($viewType == 'difficulty') {
@@ -1253,7 +1253,7 @@ class SetsController extends AppController {
 				$set['Set']['image'] = $id . 'Rank.png';
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
-				$elo = $this->getTsumegoElo($id);
+				$elo = AppController::getTsumegoElo($id);
 				$ftFrom = [];
 				$ftTo = [];
 				$ftFrom['rating >='] = $elo;
@@ -1391,7 +1391,7 @@ class SetsController extends AppController {
 					$search2Count2 = count($search2);
 					for ($j = 0; $j < $search2Count2; $j++) {
 						$ft = [];
-						$ft['rating >='] = $this->getTsumegoElo($search2[$j]);
+						$ft['rating >='] = AppController::getTsumegoElo($search2[$j]);
 						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$j] == '15k') {
 							$ft['rating >='] = 50;
@@ -1446,7 +1446,7 @@ class SetsController extends AppController {
 					$search2Count = count($search2);
 					for ($i = 0; $i < $search2Count; $i++) {
 						$ft = [];
-						$ft['rating >='] = $this->getTsumegoElo($search2[$i]);
+						$ft['rating >='] = AppController::getTsumegoElo($search2[$i]);
 						$ft['rating <'] = $ft['rating >='] + 100;
 						if ($search2[$i] == '15k') {
 							$ft['rating >='] = 50;
@@ -1564,8 +1564,8 @@ class SetsController extends AppController {
 					$this->Session->write('page', 'sandbox');
 				}
 				$this->set('isFav', false);
-				if (isset($this->params['url']['sort'])) {
-					if ($this->params['url']['sort'] == 1) {
+				if (isset(CakeRequest::$params['url']['sort'])) {
+					if (CakeRequest::$params['url']['sort'] == 1) {
 						$tsId = [];
 						$tsNum = [];
 						$tsOrder = [];
@@ -1598,8 +1598,8 @@ class SetsController extends AppController {
 						}
 					}
 				}
-				if (isset($this->params['url']['rename'])) {
-					if ($this->params['url']['rename'] == 1) {
+				if (isset(CakeRequest::$params['url']['rename'])) {
+					if (CakeRequest::$params['url']['rename'] == 1) {
 						$tsId = [];
 						$tsNum = [];
 						$tsOrder = [];
@@ -1620,17 +1620,17 @@ class SetsController extends AppController {
 						}
 					}
 				}
-				if (isset($this->data['Set']['title'])) {
-					if ($set['Set']['title'] != $this->data['Set']['title']) {
+				if (isset(CakeRequest::$data['Set']['title'])) {
+					if ($set['Set']['title'] != CakeRequest::$data['Set']['title']) {
 						$formChange = true;
 					}
-					if ($set['Set']['title2'] != $this->data['Set']['title2']) {
+					if ($set['Set']['title2'] != CakeRequest::$data['Set']['title2']) {
 						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
-					$changeSet['Set']['title'] = $this->data['Set']['title'];
-					$changeSet['Set']['title2'] = $this->data['Set']['title2'];
+					$changeSet['Set']['title'] = CakeRequest::$data['Set']['title'];
+					$changeSet['Set']['title2'] = CakeRequest::$data['Set']['title2'];
 					$this->set('data', $changeSet['Set']['title']);
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
@@ -1640,13 +1640,13 @@ class SetsController extends AppController {
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				}
-				if (isset($this->data['Set']['description'])) {
-					if ($set['Set']['description'] != $this->data['Set']['description']) {
+				if (isset(CakeRequest::$data['Set']['description'])) {
+					if ($set['Set']['description'] != CakeRequest::$data['Set']['description']) {
 						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
-					$changeSet['Set']['description'] = $this->data['Set']['description'];
+					$changeSet['Set']['description'] = CakeRequest::$data['Set']['description'];
 					$this->set('data', $changeSet['Set']['description']);
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
@@ -1656,13 +1656,13 @@ class SetsController extends AppController {
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				}
-				if (isset($this->data['Set']['setDifficulty'])) {
-					if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900) {
+				if (isset(CakeRequest::$data['Set']['setDifficulty'])) {
+					if (CakeRequest::$data['Set']['setDifficulty'] != 1200 && CakeRequest::$data['Set']['setDifficulty'] >= 900 && CakeRequest::$data['Set']['setDifficulty'] <= 2900) {
 						$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
-						$setDifficulty = $this->data['Set']['setDifficulty'];
+						$setDifficulty = CakeRequest::$data['Set']['setDifficulty'];
 						$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
 						for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
-							$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
+							$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = CakeRequest::$data['Set']['setDifficulty'];
 							$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 						}
 						$adminActivity = [];
@@ -1672,13 +1672,13 @@ class SetsController extends AppController {
 						$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
 					}
 				}
-				if (isset($this->data['Set']['color'])) {
-					if ($set['Set']['color'] != $this->data['Set']['color']) {
+				if (isset(CakeRequest::$data['Set']['color'])) {
+					if ($set['Set']['color'] != CakeRequest::$data['Set']['color']) {
 						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
-					$changeSet['Set']['color'] = $this->data['Set']['color'];
+					$changeSet['Set']['color'] = CakeRequest::$data['Set']['color'];
 					$this->set('data', $changeSet['Set']['color']);
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
@@ -1689,13 +1689,13 @@ class SetsController extends AppController {
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if (isset($this->data['Set']['order'])) {
-					if ($set['Set']['order'] != $this->data['Set']['order']) {
+				if (isset(CakeRequest::$data['Set']['order'])) {
+					if ($set['Set']['order'] != CakeRequest::$data['Set']['order']) {
 						$formChange = true;
 					}
 					$this->Set->create();
 					$changeSet = $set;
-					$changeSet['Set']['order'] = $this->data['Set']['order'];
+					$changeSet['Set']['order'] = CakeRequest::$data['Set']['order'];
 					$this->set('data', $changeSet['Set']['order']);
 					$this->Set->save($changeSet, true);
 					$set = $this->Set->findById($id);
@@ -1706,8 +1706,8 @@ class SetsController extends AppController {
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if (isset($this->data['Settings'])) {
-					if ($this->data['Settings']['r39'] == 'on') {
+				if (isset(CakeRequest::$data['Settings'])) {
+					if (CakeRequest::$data['Settings']['r39'] == 'on') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
 							$ts[$i]['Tsumego']['alternative_response'] = 1;
@@ -1721,7 +1721,7 @@ class SetsController extends AppController {
 						$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
 						$this->AdminActivity->save($adminActivity);
 					}
-					if ($this->data['Settings']['r39'] == 'off') {
+					if (CakeRequest::$data['Settings']['r39'] == 'off') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
 							$ts[$i]['Tsumego']['alternative_response'] = 0;
@@ -1735,7 +1735,7 @@ class SetsController extends AppController {
 						$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
 						$this->AdminActivity->save($adminActivity);
 					}
-					if ($this->data['Settings']['r43'] == 'yes') {
+					if (CakeRequest::$data['Settings']['r43'] == 'yes') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
 							$ts[$i]['Tsumego']['pass'] = 1;
@@ -1749,7 +1749,7 @@ class SetsController extends AppController {
 						$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
 						$this->AdminActivity->save($adminActivity);
 					}
-					if ($this->data['Settings']['r43'] == 'no') {
+					if (CakeRequest::$data['Settings']['r43'] == 'no') {
 						$tsCount = count($ts);
 						for ($i = 0; $i < $tsCount; $i++) {
 							$ts[$i]['Tsumego']['pass'] = 0;
@@ -1765,35 +1765,35 @@ class SetsController extends AppController {
 					}
 					$this->set('formRedirect', true);
 				}
-				if (isset($this->data['Tsumego'])) {
+				if (isset(CakeRequest::$data['Tsumego'])) {
 					if (!$formChange) {
 						$scFormChange = $this->SetConnection->find('first', ['order' => 'num DESC', 'conditions' => ['set_id' => $id]]);
 						$tFormChange = $this->Tsumego->findById($scFormChange['SetConnection']['tsumego_id']);
 						if ($scFormChange == null) {
 							$scFormChange = [];
 							$scFormChange['SetConnection']['set_id'] = $id;
-							$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
+							$scFormChange['SetConnection']['num'] = CakeRequest::$data['Tsumego']['num'];
 							$tFormChange = [];
 							$tFormChange['Tsumego']['rating'] = 1000;
 						}
 						$tf = [];
-						$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
+						$tf['Tsumego']['num'] = CakeRequest::$data['Tsumego']['num'];
 						$tf['Tsumego']['difficulty'] = 40;
 						$tf['Tsumego']['set_id'] = $id;
-						$tf['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
-						$tf['Tsumego']['description'] = $this->data['Tsumego']['description'];
-						$tf['Tsumego']['hint'] = $this->data['Tsumego']['hint'];
-						$tf['Tsumego']['author'] = $this->data['Tsumego']['author'];
+						$tf['Tsumego']['variance'] = CakeRequest::$data['Tsumego']['variance'];
+						$tf['Tsumego']['description'] = CakeRequest::$data['Tsumego']['description'];
+						$tf['Tsumego']['hint'] = CakeRequest::$data['Tsumego']['hint'];
+						$tf['Tsumego']['author'] = CakeRequest::$data['Tsumego']['author'];
 						$tf['Tsumego']['rating'] = $tFormChange['Tsumego']['rating'];
-						if (is_numeric($this->data['Tsumego']['num'])) {
-							if ($this->data['Tsumego']['num'] >= 0) {
+						if (is_numeric(CakeRequest::$data['Tsumego']['num'])) {
+							if (CakeRequest::$data['Tsumego']['num'] >= 0) {
 								$this->Tsumego->create();
 								$this->Tsumego->save($tf);
 								$tfSetHighestId = $this->Tsumego->find('first', ['order' => 'id DESC']);
 								$tfSetConnection = [];
 								$tfSetConnection['SetConnection']['set_id'] = $id;
 								$tfSetConnection['SetConnection']['tsumego_id'] = $tfSetHighestId['Tsumego']['id'];
-								$tfSetConnection['SetConnection']['num'] = $this->data['Tsumego']['num'];
+								$tfSetConnection['SetConnection']['num'] = CakeRequest::$data['Tsumego']['num'];
 								$this->SetConnection->create();
 								$this->SetConnection->save($tfSetConnection);
 							}
@@ -1956,8 +1956,8 @@ class SetsController extends AppController {
 		}
 		$scoring = true;
 		if (Auth::isLoggedIn() && $viewType == 'topics') {
-			if (isset($this->data['Comment']['reset'])) {
-				if ($this->data['Comment']['reset'] == 'reset') {
+			if (isset(CakeRequest::$data['Comment']['reset'])) {
+				if (CakeRequest::$data['Comment']['reset'] == 'reset') {
 					$uts = $this->TsumegoStatus->find('all', [
 						'conditions' => [
 							'user_id' => Auth::getUserID(),
@@ -2135,7 +2135,7 @@ class SetsController extends AppController {
 
 		if (Auth::isAdmin()) {
 			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0) {
-				if ($this->params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d') {
+				if (CakeRequest::$params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d') {
 					$newAddTag = explode('-', $_COOKIE['addTag']);
 					$tagSetId = (int) $newAddTag[0];
 					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
@@ -2371,8 +2371,8 @@ class SetsController extends AppController {
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Deleted Collections');
 
-		if (isset($this->params['url']['remove'])) {
-			$remove = $this->Set->findById($this->params['url']['remove']);
+		if (isset(CakeRequest::$params['url']['remove'])) {
+			$remove = $this->Set->findById(CakeRequest::$params['url']['remove']);
 			if ($remove['Set']['public'] == 0) {
 				$remove['Set']['public'] = -1;
 				$this->Set->save($remove);
@@ -2656,7 +2656,7 @@ class SetsController extends AppController {
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
 		$nine = $this->Tsumego->find('first', [
 			'conditions' => [
-				'rating >=' => $this->getTsumegoElo('9d'),
+				'rating >=' => AppController::getTsumegoElo('9d'),
 			],
 		]);
 		if ($nine != null) {

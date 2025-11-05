@@ -7,10 +7,11 @@ class AppErrorHandler {
 		$this->exception = $exception;
 	}
 
-	public static function handleException(AppException $exception) {}
+	public static function handleException(Exception $exception) {}
 
 	public function render() {
-		echo $this->exception->getMessage();
+		echo $this->exception->getMessage()."<br>\n";
+		echo "#-1 ".$this->exception->getFile()."(".$this->exception->getLine().")<br>\n";
 		if ($this->exception instanceof AppException) {
 			return;
 		}

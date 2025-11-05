@@ -75,7 +75,7 @@ class UsersController extends AppController {
 	private function set_elo($tid) {
 		$this->loadModel('Tsumego');
 		$t = $this->Tsumego->findById($tid);
-		$rank = $this->getTsumegoRankx($t['Tsumego']['userWin']);
+		$rank = AppController::getTsumegoRankx($t['Tsumego']['userWin']);
 		$tMax = $this->getTsumegoRankMax($t['Tsumego']['userWin']);
 		$tVal = $this->getTsumegoRankVal($t['Tsumego']['userWin']);
 		if ($tMax != 0) {
@@ -83,7 +83,7 @@ class UsersController extends AppController {
 		} else {
 			$p = 0;
 		}
-		$newElo = $this->getTsumegoElo($rank, $p);
+		$newElo = AppController::getTsumegoElo($rank, $p);
 		$adjustElo = $this->adjustElo($newElo);
 		$t['Tsumego']['rating'] = $adjustElo;
 		$t['Tsumego']['difficulty'] = $this->convertEloToXp($t['Tsumego']['rating']);
@@ -105,7 +105,7 @@ class UsersController extends AppController {
 		$counter = 0;
 		while ($counter <= 100) {
 			array_push($a['c'], $counter);
-			$rank = $this->getTsumegoRankx($counter);
+			$rank = AppController::getTsumegoRankx($counter);
 			array_push($a['TimeModeAttempt'], $rank);
 
 			$tMax = $this->getTsumegoRankMax($counter);
@@ -119,7 +119,7 @@ class UsersController extends AppController {
 			}
 			array_push($a['rank3'], $p);
 
-			$newElo = $this->getTsumegoElo($rank, $p);
+			$newElo = AppController::getTsumegoElo($rank, $p);
 			array_push($a['elo'], $newElo);
 
 			$adjustElo = $this->adjustElo($newElo);
@@ -576,12 +576,12 @@ class UsersController extends AppController {
 	public function resetpassword() {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
-		$this->set('sent', !empty($this->data));
-		if (empty($this->data)) {
+		$this->set('sent', !empty(CakeRequest::$data));
+		if (empty(CakeRequest::$data)) {
 			return;
 		}
 
-		$user = $this->User->findByEmail($this->data['User']['email']);
+		$user = $this->User->findByEmail(CakeRequest::$data['User']['email']);
 		if (!$user) {
 			return;
 		}
@@ -591,7 +591,7 @@ class UsersController extends AppController {
 
 		$email = $this->_getEmailer();
 		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->data['User']['email']);
+		$email->to(CakeRequest::$data['User']['email']);
 		$email->subject('Password reset for your Tsumego Hero account');
 		$email->send('Click the following button to reset your password. If you have not requested the password reset,
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
@@ -616,7 +616,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
 		if ($user) {
 			$user['User']['passwordreset'] = null;
-			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
+			$user['User']['password_hash'] = password_hash(CakeRequest::$data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
 			$done = true;
 		}
@@ -1279,7 +1279,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($uid != null) {
 			$noIndex = true;
 		}
-		if (isset($this->params['url']['c'])) {
+		if (isset(CakeRequest::$params['url']['c'])) {
 			$this->set('count', 1);
 		} else {
 			$this->set('count', 0);
@@ -1471,7 +1471,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($sid != null) {
 			$noIndex = true;
 		}
-		if (isset($this->params['url']['c'])) {
+		if (isset(CakeRequest::$params['url']['c'])) {
 			$this->set('count', 1);
 		} else {
 			$this->set('count', 0);
@@ -1499,9 +1499,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$today = date('Y-m-d', strtotime('today'));
 
-		if (isset($this->params['url']['c'])) {
-			$cx = $this->Comment->findById($this->params['url']['c']);
-			$cx['Comment']['status'] = $this->params['url']['s'];
+		if (isset(CakeRequest::$params['url']['c'])) {
+			$cx = $this->Comment->findById(CakeRequest::$params['url']['c']);
+			$cx['Comment']['status'] = CakeRequest::$params['url']['s'];
 			$this->Comment->save($cx);
 		}
 
@@ -1817,15 +1817,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		//$sc2['SetConnection']['tsumego_id'] = 25984;
 		//$this->SetConnection->save($sc2);
 
-		if (isset($this->params['url']['remove'])) {
-			$remove = $this->Tsumego->findById($this->params['url']['remove']);
+		if (isset(CakeRequest::$params['url']['remove'])) {
+			$remove = $this->Tsumego->findById(CakeRequest::$params['url']['remove']);
 			if ($remove) {
 				$remove['Tsumego']['duplicate'] = 0;
 				$this->Tsumego->save($remove);
 			}
 		}
-		if (isset($this->params['url']['removeDuplicate'])) {
-			$remove = $this->Tsumego->findById($this->params['url']['removeDuplicate']);
+		if (isset(CakeRequest::$params['url']['removeDuplicate'])) {
+			$remove = $this->Tsumego->findById(CakeRequest::$params['url']['removeDuplicate']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $remove['Tsumego']['id']]]);
 			$remove['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			if (!empty($remove) && $remove['Tsumego']['duplicate'] > 9) {
@@ -1846,7 +1846,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$title = $sx['Set']['title'] . ' - ' . $remove['Tsumego']['num'];
 				$adminActivity = [];
 				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['removeDuplicate'];
+				$adminActivity['AdminActivity']['tsumego_id'] = CakeRequest::$params['url']['removeDuplicate'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: ' . $title;
 				$this->AdminActivity->save($adminActivity);
@@ -1854,11 +1854,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$aMessage = 'You can\'t remove the main duplicate.';
 			}
 		}
-		if (isset($this->params['url']['main']) && isset($this->params['url']['duplicates'])) {
-			$newDuplicates = explode('-', $this->params['url']['duplicates']);
+		if (isset(CakeRequest::$params['url']['main']) && isset(CakeRequest::$params['url']['duplicates'])) {
+			$newDuplicates = explode('-', CakeRequest::$params['url']['duplicates']);
 			$newD = [];
 			$newDmain = [];
-			$checkSc = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $this->params['url']['main']]]);
+			$checkSc = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => CakeRequest::$params['url']['main']]]);
 			$errSet = '';
 			$errNotNull = '';
 			if (count($checkSc) <= 1) {
@@ -1889,9 +1889,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$newD = $this->Tsumego->findById($newDuplicates[$i]);
 					$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
 					$newD['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-					if ($newD['Tsumego']['id'] == $this->params['url']['main']) {
+					if ($newD['Tsumego']['id'] == CakeRequest::$params['url']['main']) {
 						$newDmain = $newD;
-						$newD['Tsumego']['duplicate'] = $this->params['url']['main'];
+						$newD['Tsumego']['duplicate'] = CakeRequest::$params['url']['main'];
 						$this->Tsumego->save($newD);
 					} else {
 						$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
@@ -1903,7 +1903,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					}
 					$this->SetConnection->delete($scT['SetConnection']['id']);
 					$setC = [];
-					$setC['SetConnection']['tsumego_id'] = $this->params['url']['main'];
+					$setC['SetConnection']['tsumego_id'] = CakeRequest::$params['url']['main'];
 					$setC['SetConnection']['set_id'] = $newD['Tsumego']['set_id'];
 					$setC['SetConnection']['num'] = $newD['Tsumego']['num'];
 					$this->SetConnection->create();
@@ -1918,26 +1918,26 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$title = $sx['Set']['title'] . ' - ' . $newDmain['Tsumego']['num'];
 				$adminActivity = [];
 				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['main'];
+				$adminActivity['AdminActivity']['tsumego_id'] = CakeRequest::$params['url']['main'];
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Created duplicate group: ' . $title;
 				$this->AdminActivity->save($adminActivity);
 			}
 		}
-		if (!empty($this->data['Mark'])) {
-			$mark = $this->Tsumego->findById($this->data['Mark']['tsumego_id']);
+		if (!empty(CakeRequest::$data['Mark'])) {
+			$mark = $this->Tsumego->findById(CakeRequest::$data['Mark']['tsumego_id']);
 			if (!empty($mark) && $mark['Tsumego']['duplicate'] == 0) {
 				$mark['Tsumego']['duplicate'] = -1;
 				$this->Tsumego->save($mark);
 			}
 		}
-		if (!empty($this->data['Mark2'])) {
-			$mark = $this->Tsumego->findById($this->data['Mark2']['tsumego_id']);
-			$group = $this->Tsumego->findById($this->data['Mark2']['group_id']);
+		if (!empty(CakeRequest::$data['Mark2'])) {
+			$mark = $this->Tsumego->findById(CakeRequest::$data['Mark2']['tsumego_id']);
+			$group = $this->Tsumego->findById(CakeRequest::$data['Mark2']['group_id']);
 
 			if ($mark != null && $mark['Tsumego']['duplicate'] == 0 && $group != null) {
 				$scTx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
-				$scTx['SetConnection']['tsumego_id'] = $this->data['Mark2']['group_id'];
+				$scTx['SetConnection']['tsumego_id'] = CakeRequest::$data['Mark2']['group_id'];
 				$this->SetConnection->save($scTx);
 				$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
 				$commentsCount = count($comments);
@@ -1991,7 +1991,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$showAll = false;
 
-		if (isset($this->params['url']['load'])) {
+		if (isset(CakeRequest::$params['url']['load'])) {
 			$showAll = true;
 			$counter = 0;
 			$scCount2Count = count($scCount2);
@@ -2123,19 +2123,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Reject');
 
 		if (Auth::isAdmin()) {
-			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id'])) {
-				if (md5((string) Auth::getUserID()) == $this->params['url']['hash']) {
+			if (isset(CakeRequest::$params['url']['accept']) && isset(CakeRequest::$params['url']['tag_id'])) {
+				if (md5((string) Auth::getUserID()) == CakeRequest::$params['url']['hash']) {
 
 					$tagsToApprove = explode('-', $_COOKIE['tagList']);
 					$tagsToApproveCount = count($tagsToApprove);
 					for ($i = 1; $i < $tagsToApproveCount; $i++) {
 						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
 						if ($tagToApprove != null && $tagToApprove['Tag']['approved'] != 1) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagsToApprove[$i], 0, 1) == 'a') {
 								$tagToApprove['Tag']['approved'] = '1';
 								$this->Tag->save($tagToApprove);
-								$this->handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
+								AppController::handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
 							} else {
 								$reject = [];
 								$reject['Reject']['tsumego_id'] = $tagToApprove['Tag']['tsumego_id'];
@@ -2155,11 +2155,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++) {
 						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
 						if ($tagNameToApprove != null && $tagNameToApprove['TagName']['approved'] != 1) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagNamesToApprove[$i], 0, 1) == 'a') {
 								$tagNameToApprove['TagName']['approved'] = '1';
 								$this->TagName->save($tagNameToApprove);
-								$this->handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
+								AppController::handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
 							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $tagNameToApprove['TagName']['user_id'];
@@ -2177,12 +2177,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $proposalsToApproveCount; $i++) {
 						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
 						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0) {
-							$this->handleContribution(Auth::getUserID(), 'reviewed');
+							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
 								$recentSgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-								$proposalToApprove['Sgf']['version'] = $this->createNewVersionNumber($recentSgf, 0);
+								$proposalToApprove['Sgf']['version'] = Util::nextVersionNumber($recentSgf['Sgf']['version']);
 								$this->Sgf->save($proposalToApprove);
-								$this->handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
+								AppController::handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
 							} else {
 								$reject = [];
 								$reject['Reject']['user_id'] = $proposalToApprove['Sgf']['user_id'];
@@ -2197,12 +2197,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				}
 			}
 
-			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash'])) {
-				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
+			if (isset(CakeRequest::$params['url']['delete']) && isset(CakeRequest::$params['url']['hash'])) {
+				$toDelete = $this->User->findById(CakeRequest::$params['url']['delete'] / 1111);
 				$del1 = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				$del2 = $this->TsumegoAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				$del3 = $this->TsumegoRatingAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
-				if (md5($toDelete['User']['name']) == $this->params['url']['hash']) {
+				if (md5($toDelete['User']['name']) == CakeRequest::$params['url']['hash']) {
 					foreach ($del1 as $item) {
 						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
 					}
@@ -2409,17 +2409,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	private function getUserFromNameOrEmail() {
-		if (!empty($this->data['User']['name'])) {
-			return $this->User->findByName($this->data['User']['name']);
+		if (!empty(CakeRequest::$data['User']['name'])) {
+			return $this->User->findByName(CakeRequest::$data['User']['name']);
 		}
-		if (!empty($this->data['User']['email'])) {
-			return $this->User->findByEmail($this->data['User']['email']);
+		if (!empty(CakeRequest::$data['User']['email'])) {
+			return $this->User->findByEmail(CakeRequest::$data['User']['email']);
 		}
 		return null;
 	}
 
 	public function login() {
-		if (!$this->data['User']) {
+		if (!CakeRequest::$data['User']) {
 			return;
 		}
 		$user = $this->getUserFromNameOrEmail();
@@ -2428,7 +2428,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
-		if (!$this->validateLogin($this->data, $user)) {
+		if (!$this->validateLogin(CakeRequest::$data, $user)) {
 			$this->Flash->set('Incorrect password');
 			return;
 		}
@@ -2441,19 +2441,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	public function add() {
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign Up');
-		if (empty($this->data)) {
+		if (empty(CakeRequest::$data)) {
 			return;
 		}
 
-		if ($this->data['User']['password1'] != $this->data['User']['password2']) {
+		if (CakeRequest::$data['User']['password1'] != CakeRequest::$data['User']['password2']) {
 			$this->Flash->set('passwords don\'t match');
 			return;
 		}
 
-		$userData = $this->data;
-		$userData['User']['password_hash'] = password_hash($this->data['User']['password1'], PASSWORD_DEFAULT);
-		$userData['User']['name'] = $this->data['User']['name'];
-		$userData['User']['email'] = $this->data['User']['email'];
+		$userData = CakeRequest::$data;
+		$userData['User']['password_hash'] = password_hash(CakeRequest::$data['User']['password1'], PASSWORD_DEFAULT);
+		$userData['User']['name'] = CakeRequest::$data['User']['name'];
+		$userData['User']['email'] = CakeRequest::$data['User']['email'];
 
 		$this->User->create();
 		try {
@@ -2466,7 +2466,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $this->data['User']['name']]]);
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => CakeRequest::$data['User']['name']]]);
 		if (!$user) {
 			die("New user created, but it is not possible to load it.");
 		}
@@ -2571,9 +2571,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('UserContribution');
 		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
-		if (isset($this->params['url']['action']) && isset($this->params['url']['token'])) {
-			if (md5('level') == $this->params['url']['action']) {
-				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
+		if (isset(CakeRequest::$params['url']['action']) && isset(CakeRequest::$params['url']['token'])) {
+			if (md5('level') == CakeRequest::$params['url']['action']) {
+				if (md5($uc['UserContribution']['score']) == CakeRequest::$params['url']['token']) {
 					$uc['UserContribution']['reward1'] = 1;
 					$this->UserContribution->save($uc);
 					Auth::getUser()['level'] += 1;
@@ -2582,21 +2582,21 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
-			} elseif (md5('TimeModeAttempt') == $this->params['url']['action']) {
-				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
+			} elseif (md5('TimeModeAttempt') == CakeRequest::$params['url']['action']) {
+				if (md5($uc['UserContribution']['score']) == CakeRequest::$params['url']['token']) {
 					$uc['UserContribution']['reward2'] = 1;
 					$this->UserContribution->save($uc);
 					Auth::getUser()['rating'] += 100;
 					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
-			} elseif (md5('heropower') == $this->params['url']['action']) {
-				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
+			} elseif (md5('heropower') == CakeRequest::$params['url']['action']) {
+				if (md5($uc['UserContribution']['score']) == CakeRequest::$params['url']['token']) {
 					$uc['UserContribution']['reward3'] = 1;
 					$this->UserContribution->save($uc);
 				}
-			} elseif (md5('premium') == $this->params['url']['action']) {
-				if (md5($uc['UserContribution']['score']) == $this->params['url']['token']) {
+			} elseif (md5('premium') == CakeRequest::$params['url']['action']) {
+				if (md5($uc['UserContribution']['score']) == CakeRequest::$params['url']['token']) {
 					if (!Auth::hasPremium()) {
 						Auth::getUser()['premium'] = 1;
 						Auth::saveUser();
@@ -2676,17 +2676,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$this->User->save($ux);
 		}
 
-		if (isset($this->params['url']['category'])) {
+		if (isset(CakeRequest::$params['url']['category'])) {
 			$ro = $this->TimeModeSession->find('all', [
 				'order' => 'points DESC',
 				'conditions' => [
-					'mode' => $this->params['url']['category'],
-					'TimeModeAttempt' => $this->params['url']['TimeModeAttempt'],
+					'mode' => CakeRequest::$params['url']['category'],
+					'TimeModeAttempt' => CakeRequest::$params['url']['TimeModeAttempt'],
 				],
 			]);
-			$currentRank = $this->params['url']['TimeModeAttempt'];
-			$params1 = $this->params['url']['category'];
-			$params2 = $this->params['url']['TimeModeAttempt'];
+			$currentRank = CakeRequest::$params['url']['TimeModeAttempt'];
+			$params1 = CakeRequest::$params['url']['category'];
+			$params2 = CakeRequest::$params['url']['TimeModeAttempt'];
 		} else {
 			if (Auth::isLoggedIn()) {
 				$lastModex = Auth::getUser()['lastMode'] - 1;
@@ -2879,15 +2879,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		// user edit
 		// TODO: should be its own action
 		if ($id == Auth::getUserID()) {
-			if (!empty($this->data)) {
-				if (isset($this->data['User']['email'])) {
-					Auth::getUser()['email'] = $this->data['User']['email'];
+			if (!empty(CakeRequest::$data)) {
+				if (isset(CakeRequest::$data['User']['email'])) {
+					Auth::getUser()['email'] = CakeRequest::$data['User']['email'];
 					Auth::saveUser();
-					$this->set('data', $this->data['User']['email']);
+					$this->set('data', CakeRequest::$data['User']['email']);
 				}
 			}
-			if (isset($this->params['url']['undo'])) {
-				if ($this->params['url']['undo'] / 1111 == $id) {
+			if (isset(CakeRequest::$params['url']['undo'])) {
+				if (CakeRequest::$params['url']['undo'] / 1111 == $id) {
 					Auth::getUser()['dbstorage'] = 1;
 					Auth::saveUser();
 				}
@@ -3052,8 +3052,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$deletedTsumegoStatusCount = 0;
 		$canResetOldTsumegoStatuses = $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
-		if (isset($this->params['url']['delete-uts'])) {
-			if ($this->params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses) {
+		if (isset(CakeRequest::$params['url']['delete-uts'])) {
+			if (CakeRequest::$params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses) {
 				$utsCount = count($uts);
 				for ($j = 0; $j < $utsCount; $j++) {
 					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear) {
@@ -3588,7 +3588,7 @@ Joschka Zimdars';
 		$this->set('from', $from);
 		$this->set('to', $to);
 		$this->set('sets', $sets);
-		$this->set('params', $this->params['url']['t']);
+		$this->set('params', CakeRequest::$params['url']['t']);
 	}
 
 	//percentages 0-100
@@ -3625,8 +3625,8 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Tsumego');
 
-		$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'limit' => 1000, 'conditions' => ['tsumego_id' => $this->params['url']['t']]]);
-		$t = $this->Tsumego->findById($this->params['url']['t']);
+		$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'limit' => 1000, 'conditions' => ['tsumego_id' => CakeRequest::$params['url']['t']]]);
+		$t = $this->Tsumego->findById(CakeRequest::$params['url']['t']);
 
 		$ratio = [];
 		$ratio['s'] = 0;
@@ -3799,8 +3799,8 @@ Joschka Zimdars';
 		$this->PurgeList->save($pl);
 
 		$ur = [];
-		$from = $this->params['url']['t'];
-		$to = $this->params['url']['t'] + 10;
+		$from = CakeRequest::$params['url']['t'];
+		$to = CakeRequest::$params['url']['t'] + 10;
 
 		$hightestT = $this->Tsumego->find('first', ['order' => 'id DESC']);
 		$hightestT++;
@@ -3884,7 +3884,7 @@ Joschka Zimdars';
 		$this->set('from', $from);
 		$this->set('to', $to);
 		$this->set('hightestT', $hightestT);
-		$this->set('params', $this->params['url']['t']);
+		$this->set('params', CakeRequest::$params['url']['t']);
 	}
 	//set solved, failed
 	//users/set_tsumego_scores?t=0
@@ -3895,8 +3895,8 @@ Joschka Zimdars';
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Tsumego');
 
-		$from = $this->params['url']['t'];
-		$to = $this->params['url']['t'] + 10;
+		$from = CakeRequest::$params['url']['t'];
+		$to = CakeRequest::$params['url']['t'] + 10;
 
 		$ts = $this->Tsumego->find('all', [
 			'order' => 'id ASC',
@@ -3931,7 +3931,7 @@ Joschka Zimdars';
 		$this->set('ur', $ur);
 		$this->set('from', $from);
 		$this->set('to', $to);
-		$this->set('params', $this->params['url']['t']);
+		$this->set('params', CakeRequest::$params['url']['t']);
 	}
 
 	//set userWin(%), userLoss(count)
@@ -4739,21 +4739,21 @@ Joschka Zimdars';
 		$p = 0;
 		$pl = $this->PurgeList->find('all', ['order' => 'id DESC', 'limit' => 3]);
 
-		if (isset($this->data['Schedule'])) {
+		if (isset(CakeRequest::$data['Schedule'])) {
 			$schedule = [];
-			$st = $this->Tsumego->find('first', ['conditions' => ['set_id' => $this->data['Schedule']['set_id_from'], 'num' => $this->data['Schedule']['num']]]);
+			$st = $this->Tsumego->find('first', ['conditions' => ['set_id' => CakeRequest::$data['Schedule']['set_id_from'], 'num' => CakeRequest::$data['Schedule']['num']]]);
 			$schedule['Schedule']['tsumego_id'] = $st['Tsumego']['id'];
-			$schedule['Schedule']['set_id'] = $this->data['Schedule']['set_id_to'];
-			$schedule['Schedule']['date'] = $this->data['Schedule']['date'];
-			if (is_numeric($this->data['Schedule']['num'])) {
-				if ($this->data['Schedule']['num'] > 0) {
+			$schedule['Schedule']['set_id'] = CakeRequest::$data['Schedule']['set_id_to'];
+			$schedule['Schedule']['date'] = CakeRequest::$data['Schedule']['date'];
+			if (is_numeric(CakeRequest::$data['Schedule']['num'])) {
+				if (CakeRequest::$data['Schedule']['num'] > 0) {
 					$this->Schedule->save($schedule);
 				}
 			}
 		}
 
-		if (isset($this->params['url']['p'])) {
-			if ($this->params['url']['p'] == 1) {
+		if (isset(CakeRequest::$params['url']['p'])) {
+			if (CakeRequest::$params['url']['p'] == 1) {
 				$p = $this->Purge->find('all');
 				$pCount = count($p);
 				for ($i = 0; $i < $pCount; $i++) {
@@ -4814,9 +4814,9 @@ Joschka Zimdars';
 		$redirect = false;
 		$status = '';
 
-		if (!empty($this->data)) {
-			if (isset($this->data['User']['delete'])) {
-				if (password_verify($this->data['User']['delete'], Auth::getUser()['password_hash'])) {
+		if (!empty(CakeRequest::$data)) {
+			if (isset(CakeRequest::$data['User']['delete'])) {
+				if (password_verify(CakeRequest::$data['User']['delete'], Auth::getUser()['password_hash'])) {
 					Auth::getUser()['dbstorage'] = 1111;
 					Auth::saveUser();
 					$redirect = true;
@@ -4842,9 +4842,9 @@ Joschka Zimdars';
 			return;
 		}
 
-		if (!empty($this->data)) {
-			if (isset($this->data['User']['demote'])) {
-				if (password_verify($this->data['User']['demote'], Auth::getUser()['password_hash'])) {
+		if (!empty(CakeRequest::$data)) {
+			if (isset(CakeRequest::$data['User']['demote'])) {
+				if (password_verify(CakeRequest::$data['User']['demote'], Auth::getUser()['password_hash'])) {
 					Auth::getUser()['isAdmin'] = 0;
 					Auth::saveUser();
 					$redirect = true;
@@ -4995,6 +4995,6 @@ Joschka Zimdars';
 		//$this->set('from', $from);
 		//$this->set('to', $to);
 		$this->set('sets', $sets);
-		$this->set('params', $this->params['url']['t']);
+		$this->set('params', CakeRequest::$params['url']['t']);
 	}
 }

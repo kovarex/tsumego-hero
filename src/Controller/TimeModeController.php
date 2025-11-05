@@ -2,22 +2,50 @@
 
 App::uses('TimeModeUtil', 'Utility');
 App::uses('AppException', 'Utility');
+App::uses('Play', 'Controller/Component');
 
 class TimeModeController extends AppController {
 	public $components = ['TimeMode'];
 
 	public function start(): mixed {
-		$categoryID = (int) $this->params['url']['categoryID'];
+		$categoryID = (int) CakeRequest::$params['url']['categoryID'];
 		if (!$categoryID) {
 			throw new AppException('Time mode category not specified');
 		}
-		$rankID = (int) $this->params['url']['rankID'];
+		$rankID = (int) CakeRequest::$params['url']['rankID'];
 		if (!$rankID) {
 			throw new AppException('Time mode rank not specified');
 		}
 
 		$this->TimeMode->startTimeMode($categoryID, $rankID);
-		return $this->redirect("/tsumegos/play");
+		return $this->redirect("/timeMode/play");
+	}
+
+	public function play(): mixed {
+		if (!Auth::isLoggedIn()) {
+			return $this->redirect('user/login');
+		}
+
+		if ($timeModeSessionID = $this->TimeMode->checkFinishSession()) {
+			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
+		}
+
+		$tsumegoID = $this->TimeMode->prepareNextToSolve();
+		if (!$tsumegoID) {
+			throw new Exception('Time mode session is not finished, yet it doesn\'t contain viable tsumego to continue.');
+		}
+
+		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		if (!$setConnection) {
+			throw new Exception('Time mode session contains tsumego without a set connection.');
+		}
+
+		if (!Auth::isInTimeMode()) {
+			Auth::getUser()['model'] = Constants::$TIME_MODE;
+			Auth::saveUser();
+		}
+		$play = new Play(function($name, $value) { $this->set($name, $value); });
+		return $play->play($setConnection['SetConnection']['id']);
 	}
 
 	public function overview(): mixed {

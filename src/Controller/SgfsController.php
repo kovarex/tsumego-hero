@@ -33,15 +33,15 @@ class SgfsController extends AppController {
 		$dId = [];
 		$dTitle = [];
 
-		if (isset($this->params['url']['delete'])) {
-			$sDel = $this->Sgf->findById($this->params['url']['delete']);
+		if (isset(CakeRequest::$params['url']['delete'])) {
+			$sDel = $this->Sgf->findById(CakeRequest::$params['url']['delete']);
 			if (Auth::getUserID() == $sDel['Sgf']['user_id']) {
 				$this->Sgf->delete($sDel['Sgf']['id']);
 			}
 		}
 
-		if (isset($this->params['url']['duplicates'])) {
-			$newDuplicates = explode('-', $this->params['url']['duplicates']);
+		if (isset(CakeRequest::$params['url']['duplicates'])) {
+			$newDuplicates = explode('-', CakeRequest::$params['url']['duplicates']);
 			foreach ($newDuplicates as $duplicateId) {
 				$dupl = $this->Tsumego->findById($duplicateId);
 				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $dupl['Tsumego']['id']]]);
@@ -59,12 +59,12 @@ class SgfsController extends AppController {
 		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $t['Tsumego']['num'];
 		$this->Session->write('title', 'Upload History of ' . $name);
 
-		if (isset($this->params['url']['user'])) {
+		if (isset(CakeRequest::$params['url']['user'])) {
 			$s = $this->Sgf->find('all', [
 				'order' => 'version DESC',
 				'limit' => 100,
 				'conditions' => [
-					'user_id' => $this->params['url']['user'],
+					'user_id' => CakeRequest::$params['url']['user'],
 					'NOT' => ['version' => 0],
 				],
 			]);

@@ -90,8 +90,8 @@ class ActivatesController extends AppController {
 		$key = 0;
 		$a = [];
 		$s = '';
-		if (!empty($this->data)) {
-			$ac = $this->Activate->find('first', ['conditions' => ['string' => $this->data['Activate']['Key']]]);
+		if (!empty(CakeRequest::$data)) {
+			$ac = $this->Activate->find('first', ['conditions' => ['string' => CakeRequest::$data['Activate']['Key']]]);
 			if ($ac) {
 				$ac['Activate']['user_id'] = Auth::getUserID();
 				$this->Activate->save($ac);

@@ -27,16 +27,16 @@ class CommentsController extends AppController {
 		$paramyourdirection = 0;
 		$paramyourindex = 0;
 		$unresolvedSet = 'true';
-		if (!isset($this->params['url']['unresolved'])) {
+		if (!isset(CakeRequest::$params['url']['unresolved'])) {
 			$unresolved = 'false';
 			$unresolvedSet = 'false';
 		} else {
-			$unresolved = $this->params['url']['unresolved'];
+			$unresolved = CakeRequest::$params['url']['unresolved'];
 		}
-		if (!isset($this->params['url']['filter'])) {
+		if (!isset(CakeRequest::$params['url']['filter'])) {
 			$filter1 = 'true';
 		} else {
-			$filter1 = $this->params['url']['filter'];
+			$filter1 = CakeRequest::$params['url']['filter'];
 		}
 
 		$hasPremium = Auth::hasPremium();
@@ -82,7 +82,7 @@ class CommentsController extends AppController {
 		}
 
 		$comments = [];
-		if (!isset($this->params['url']['comment-id'])) {
+		if (!isset(CakeRequest::$params['url']['comment-id'])) {
 			if ($unresolved == 'false') {
 				$comments = $this->Comment->find('all', [
 					'limit' => 500,
@@ -112,28 +112,28 @@ class CommentsController extends AppController {
 			}
 			$firstPage = true;
 		} else {
-			$paramcommentid = $this->params['url']['comment-id'];
-			$paramdirection = $this->params['url']['direction'];
-			$paramindex = $this->params['url']['index'];
+			$paramcommentid = CakeRequest::$params['url']['comment-id'];
+			$paramdirection = CakeRequest::$params['url']['direction'];
+			$paramindex = CakeRequest::$params['url']['index'];
 			if ($unresolved == 'false') {
-				if ($this->params['url']['direction'] == 'next') {
+				if (CakeRequest::$params['url']['direction'] == 'next') {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created DESC',
 						'conditions' => [
-							'Comment.id <' => $this->params['url']['comment-id'],
+							'Comment.id <' => CakeRequest::$params['url']['comment-id'],
 							'NOT' => ['status' => 99],
 						],
 					]);
 					if (!$comments) {
 						$comments = [];
 					}
-				} elseif (($this->params['url']['direction'] == 'prev')) {
+				} elseif ((CakeRequest::$params['url']['direction'] == 'prev')) {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created ASC',
 						'conditions' => [
-							'Comment.id >' => $this->params['url']['comment-id'],
+							'Comment.id >' => CakeRequest::$params['url']['comment-id'],
 							'NOT' => ['status' => 99],
 						],
 					]);
@@ -143,24 +143,24 @@ class CommentsController extends AppController {
 					$reverseOrder = true;
 				}
 			} elseif ($unresolved == 'true') {
-				if ($this->params['url']['direction'] == 'next') {
+				if (CakeRequest::$params['url']['direction'] == 'next') {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created DESC',
 						'conditions' => [
-							'Comment.id <' => $this->params['url']['comment-id'],
+							'Comment.id <' => CakeRequest::$params['url']['comment-id'],
 							'Comment.status ' => 0,
 						],
 					]);
 					if (!$comments) {
 						$comments = [];
 					}
-				} elseif (($this->params['url']['direction'] == 'prev')) {
+				} elseif ((CakeRequest::$params['url']['direction'] == 'prev')) {
 					$comments = $this->Comment->find('all', [
 						'limit' => 500,
 						'order' => 'created ASC',
 						'conditions' => [
-							'Comment.id >' => $this->params['url']['comment-id'],
+							'Comment.id >' => CakeRequest::$params['url']['comment-id'],
 							'Comment.status ' => 0,
 						],
 					]);
@@ -170,7 +170,7 @@ class CommentsController extends AppController {
 					$reverseOrder = true;
 				}
 			}
-			$index = $this->params['url']['index'];
+			$index = CakeRequest::$params['url']['index'];
 		}
 		if ($filter1 == 'true') {
 			$commentsBuffer = [];
@@ -338,7 +338,7 @@ class CommentsController extends AppController {
 		$yourlastEntry = true;
 		$yourfirstPage = false;
 		$yourComments = [];
-		if (!isset($this->params['url']['your-comment-id'])) {
+		if (!isset(CakeRequest::$params['url']['your-comment-id'])) {
 			$yourComments = $this->Comment->find('all', [
 				'limit' => 500,
 				'order' => 'created DESC',
@@ -351,27 +351,27 @@ class CommentsController extends AppController {
 			}
 			$yourfirstPage = true;
 		} else {
-			$paramyourcommentid = $this->params['url']['your-comment-id'];
-			$paramyourdirection = $this->params['url']['your-direction'];
-			$paramyourindex = $this->params['url']['your-index'];
-			if ($this->params['url']['your-direction'] == 'next') {
+			$paramyourcommentid = CakeRequest::$params['url']['your-comment-id'];
+			$paramyourdirection = CakeRequest::$params['url']['your-direction'];
+			$paramyourindex = CakeRequest::$params['url']['your-index'];
+			if (CakeRequest::$params['url']['your-direction'] == 'next') {
 				$yourComments = $this->Comment->find('all', [
 					'limit' => 500,
 					'order' => 'created DESC',
 					'conditions' => [
-						'Comment.id <' => $this->params['url']['your-comment-id'],
+						'Comment.id <' => CakeRequest::$params['url']['your-comment-id'],
 						'user_id' => Auth::getUserID(),
 					],
 				]);
 				if (!$yourComments) {
 					$yourComments = [];
 				}
-			} elseif (($this->params['url']['your-direction'] == 'prev')) {
+			} elseif ((CakeRequest::$params['url']['your-direction'] == 'prev')) {
 				$yourComments = $this->Comment->find('all', [
 					'limit' => 500,
 					'order' => 'created ASC',
 					'conditions' => [
-						'Comment.id >' => $this->params['url']['your-comment-id'],
+						'Comment.id >' => CakeRequest::$params['url']['your-comment-id'],
 						'user_id' => Auth::getUserID(),
 					],
 				]);
@@ -380,7 +380,7 @@ class CommentsController extends AppController {
 				}
 				$yourreverseOrder = true;
 			}
-			$yourindex = $this->params['url']['your-index'];
+			$yourindex = CakeRequest::$params['url']['your-index'];
 		}
 
 		$yourCommentsCount = count($yourComments);
@@ -475,7 +475,7 @@ class CommentsController extends AppController {
 			}
 		}
 
-		if (isset($this->params['url']['filter'])) {
+		if (isset(CakeRequest::$params['url']['filter'])) {
 			$this->set('filter1', $filter1);
 		}
 		if ($filter1 == 'falsex') {
@@ -578,7 +578,7 @@ class CommentsController extends AppController {
 		$token = true;
 		if (!Auth::isAdmin()) {
 			$token = false;
-		} elseif ($this->params['url']['token'] != md5((string) $id)) {
+		} elseif (CakeRequest::$params['url']['token'] != md5((string) $id)) {
 			$token = false;
 		}
 		if ($token) {

@@ -188,7 +188,7 @@ class TimeModeComponent extends Component {
 	}
 
 	// @return if not null, new tsumego id to show in the time mode
-	public function prepareNextToSolve($setsWithPremium, $params): ?int {
+	public function prepareNextToSolve(): ?int {
 		if (!$this->currentSession) {
 			return null;
 		}

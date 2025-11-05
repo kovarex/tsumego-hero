@@ -1,6 +1,7 @@
 <?php
 
 App::uses('Auth', 'Utility');
+App::uses('SearchParameters', 'Utility');
 
 class AppController extends Controller {
 	public $viewClass = 'App';
@@ -13,7 +14,7 @@ class AppController extends Controller {
 		'TimeMode',
 	];
 
-	protected function processSGF($sgf) {
+	static public function processSGF($sgf) {
 		$aw = strpos($sgf, 'AW');
 		$ab = strpos($sgf, 'AB');
 		$boardSizePos = strpos($sgf, 'SZ');
@@ -26,8 +27,8 @@ class AppController extends Controller {
 			$boardSize = substr($boardSize, 0, 1);
 		}
 
-		$black = $this->getInitialPosition($ab, $sgfArr, 'x');
-		$white = $this->getInitialPosition($aw, $sgfArr, 'o');
+		$black = AppController::getInitialPosition($ab, $sgfArr, 'x');
+		$white = AppController::getInitialPosition($aw, $sgfArr, 'o');
 		$stones = array_merge($black, $white);
 
 		$board = [];
@@ -57,10 +58,10 @@ class AppController extends Controller {
 			}
 		}
 		if (18 - $lowestX < $lowestX) {
-			$stones = $this->xFlip($stones);
+			$stones = AppController::xFlip($stones);
 		}
 		if (18 - $lowestY < $lowestY) {
-			$stones = $this->yFlip($stones);
+			$stones = AppController::yFlip($stones);
 		}
 		$highestX = 0;
 		$highestY = 0;
@@ -86,7 +87,7 @@ class AppController extends Controller {
 		return $arr;
 	}
 
-	protected function xFlip($stones) {
+	static public function xFlip($stones) {
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++) {
 			$stones[$i][0] = 18 - $stones[$i][0];
@@ -95,7 +96,7 @@ class AppController extends Controller {
 		return $stones;
 	}
 
-	protected function yFlip($stones) {
+	static public function yFlip($stones) {
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++) {
 			$stones[$i][1] = 18 - $stones[$i][1];
@@ -104,7 +105,7 @@ class AppController extends Controller {
 		return $stones;
 	}
 
-	protected function getInitialPositionEnd($pos, $sgfArr) {
+	static public function getInitialPositionEnd($pos, $sgfArr) {
 		$endCondition = 0;
 		$currentPos1 = $pos + 2;
 		$currentPos2 = $pos + 5;
@@ -117,9 +118,9 @@ class AppController extends Controller {
 		return $endCondition;
 	}
 
-	protected function getInitialPosition($pos, $sgfArr, $color) {
+	static public function getInitialPosition($pos, $sgfArr, $color) {
 		$arr = [];
-		$end = $this->getInitialPositionEnd($pos, $sgfArr);
+		$end = AppController::getInitialPositionEnd($pos, $sgfArr);
 		for ($i = $pos + 2; $i < $end; $i++) {
 			if ($sgfArr[$i] != '[' && $sgfArr[$i] != ']') {
 				array_push($arr, strtolower($sgfArr[$i]));
@@ -662,106 +663,15 @@ class AppController extends Controller {
 		return $return;
 	}
 
-	protected function getActivityValue($uid, $tid) {
-		$return = [];
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-		$tsumegoNum = 90;
-		$ra = $this->TsumegoAttempt->find('all', ['limit' => $tsumegoNum, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$ra) {
-			$ra = [];
-		}
-		if (count($ra) < $tsumegoNum) {
-			$missing = $tsumegoNum - count($ra);
-			$raSize = count($ra);
-			$datex = new DateTime('-1 month');
-			while ($missing != 0) {
-				$ra[$raSize]['TsumegoAttempt']['created'] = $datex->format('Y-m-d H:i:s');
-				$ra[$raSize]['TsumegoAttempt']['tsumego_id'] = 1;
-				$raSize++;
-				$missing--;
-			}
-		}
-		$date = date('Y-m-d H:i:s');
-		$x = [];
-		$avg = 0;
-		$foundTsumego = 0;
-		$raCount = count($ra);
-		for ($i = 0; $i < $raCount; $i++) {
-			if ($ra[$i]['TsumegoAttempt']['tsumego_id'] == $tid) {
-				$foundTsumego = 1;
-			}
-			$d = $this->getActivityValueSingle($ra[$i]['TsumegoAttempt']['created']);
-			$avg += $d;
-			array_push($x, $d);
-		}
-		$avg /= count($x);
-		$return[0] = round($avg);
-		$return[1] = $foundTsumego;
-
-		return $return;
-	}
-
-	private function getActivityValueSingle($date2) {
-		$date1 = new DateTime('now');
-		$date2 = new DateTime($date2);
-		$interval = $date1->diff($date2);
-		$m = $interval->m;
-		$d = $interval->d;
-		$h = $interval->h;
-		$i = $interval->i;
-		$months = 0;
-		while ($m > 0) {
-			$months += 672;
-			$m--;
-		}
-		$hours = $h;
-		while ($d > 0) {
-			$hours += 24;
-			$d--;
-		}
-		$hours += $months;
-
-		return $hours;
-	}
-
-	protected function createNewVersionNumber($lastV, $lastU) {
-		if ($lastV['Sgf']['version'] == 1) {
-			$version = 1.1;
-		} else {
-			if ($lastV['Sgf']['user_id'] != $lastU) {
-				$nextV = $lastV['Sgf']['version'] * 10;
-				if (floor($nextV) == $nextV) {
-					$nextV += .01;
-				}
-				$nextV = ceil($nextV);
-				$version = $nextV / 10;
-			} else {
-				if (strtotime($lastV['Sgf']['created']) < strtotime('-2 days')) {
-					$nextV = $lastV['Sgf']['version'] * 10;
-					if (floor($nextV) == $nextV) {
-						$nextV += .01;
-					}
-					$nextV = ceil($nextV);
-					$version = $nextV / 10;
-				} else {
-					$version = $lastV['Sgf']['version'] + .01;
-				}
-			}
-		}
-
-		return $version;
-	}
-
 	/**
 	 * @param int $uid User ID
 	 * @param string $action Action type
 	 *
 	 * @return void
 	 */
-	protected function handleContribution($uid, $action) {
+	static public function handleContribution($uid, $action) {
 		$this->loadModel('UserContribution');
-		$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
+		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $uid]]);
 		if ($uc == null) {
 			$uc = [];
 			$uc['UserContribution']['user_id'] = $uid;
@@ -778,7 +688,7 @@ class AppController extends Controller {
 		+ $uc['UserContribution']['created_tag'] * 3
 		+ $uc['UserContribution']['made_proposal'] * 5
 		+ $uc['UserContribution']['reviewed'] * 2;
-		$this->UserContribution->save($uc);
+		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
 	protected function getAllTags($not) {
@@ -1349,7 +1259,7 @@ class AppController extends Controller {
 		return $elo;
 	}
 
-	protected function encrypt($str = null) {
+	static public function encrypt($str = null) {
 		$secret_key = 'my_simple_secret_keyx';
 		$secret_iv = 'my_simple_secret_ivx';
 		$encrypt_method = 'AES-256-CBC';
@@ -1386,7 +1296,7 @@ class AppController extends Controller {
 		return $user['name'];
 	}
 
-	protected function getTsumegoRankx($t) {
+	public static function getTsumegoRankx($t) {
 		if ($t <= 0) {
 			return '15k';
 		}
@@ -1463,7 +1373,7 @@ class AppController extends Controller {
 		return $v + $add;
 	}
 
-	protected function getTsumegoElo($rank, $p = null) {
+	public static function getTsumegoElo($rank, $p = null) {
 		if ($p != null) {
 			$p *= 100;
 		} else {
@@ -2580,7 +2490,7 @@ class AppController extends Controller {
 		}
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
-		$buffer = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		if (!$buffer) {
 			$buffer = [];
 		}
@@ -2597,78 +2507,78 @@ class AppController extends Controller {
 		$userLevel = Auth::getUser()['level'];
 		if ($userLevel >= 10 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 37;
 		if ($userLevel >= 20 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 38;
 		if ($userLevel >= 30 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 39;
 		if ($userLevel >= 40 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 40;
 		if ($userLevel >= 50 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 41;
 		if ($userLevel >= 60 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 42;
 		if ($userLevel >= 70 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 43;
 		if ($userLevel >= 80 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 44;
 		if ($userLevel >= 90 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 45;
 		if ($userLevel >= 100 && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$achievementId = 100;
 		if (Auth::hasPremium() && !isset($existingAs[$achievementId])) {
 			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			$this->AchievementStatus->create();
-			$this->AchievementStatus->save($as);
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
 			array_push($updated, $achievementId);
 		}
 		$updatedCount = count($updated);
@@ -3440,19 +3350,7 @@ class AppController extends Controller {
 		$this->User->save($u);
 	}
 
-	protected function removeEmptyFields($arr) {
-		$arr2 = [];
-		$arrCount = count($arr);
-		for ($i = 0; $i < $arrCount; $i++) {
-			if (strlen($arr[$i]) > 0) {
-				array_push($arr2, $arr[$i]);
-			}
-		}
-
-		return $arr2;
-	}
-
-	protected function getPartitionRange($amountRemaining, $collectionSize, $partition) {
+	static public function getPartitionRange($amountRemaining, $collectionSize, $partition) {
 		if ($collectionSize > 0) {
 			$amountPartitions = floor($amountRemaining / $collectionSize) + 1;
 		} else {
@@ -3502,103 +3400,7 @@ class AppController extends Controller {
 			$this->UserContribution->create();
 			$this->UserContribution->save($uc);
 		}
-		$this->processSearchParameters($uid);
-	}
-
-	protected function processSearchParameters($uid = null) {
-		$query = 'topics';
-		$collectionSize = 200;
-		$search1 = [];
-		$search2 = [];
-		$search3 = [];
-		if ($uid != null) {
-			//db
-			$uc = $this->UserContribution->find('first', ['conditions' => ['user_id' => $uid]]);
-			if (strlen($uc['UserContribution']['query']) > 0) {
-				$query = $uc['UserContribution']['query'];
-			}
-			if (strlen($uc['UserContribution']['collectionSize']) > 0) {
-				$collectionSize = $uc['UserContribution']['collectionSize'];
-			}
-			if (strlen($uc['UserContribution']['search1']) > 0) {
-				$search1 = $this->removeEmptyFields(explode('@', $uc['UserContribution']['search1']));
-			}
-			if (strlen($uc['UserContribution']['search2']) > 0) {
-				$search2 = $this->removeEmptyFields(explode('@', $uc['UserContribution']['search2']));
-			}
-			if (strlen($uc['UserContribution']['search3']) > 0) {
-				$search3 = $this->removeEmptyFields(explode('@', $uc['UserContribution']['search3']));
-			}
-			//cookies
-			if (strlen($_COOKIE['query']) > 0) {
-				$uc['UserContribution']['query'] = $_COOKIE['query'];
-				$query = $_COOKIE['query'];
-			}
-			if (strlen($_COOKIE['collectionSize']) > 0) {
-				$uc['UserContribution']['collectionSize'] = $_COOKIE['collectionSize'];
-				$collectionSize = $_COOKIE['collectionSize'];
-			}
-			if (strlen($_COOKIE['search1']) > 0) {
-				$uc['UserContribution']['search1'] = $_COOKIE['search1'];
-				$search1 = $this->removeEmptyFields(explode('@', $_COOKIE['search1']));
-			}
-			if (strlen($_COOKIE['search2']) > 0) {
-				$uc['UserContribution']['search2'] = $_COOKIE['search2'];
-				$search2 = $this->removeEmptyFields(explode('@', $_COOKIE['search2']));
-			}
-			if (strlen($_COOKIE['search3']) > 0) {
-				$uc['UserContribution']['search3'] = $_COOKIE['search3'];
-				$search3 = $this->removeEmptyFields(explode('@', $_COOKIE['search3']));
-			}
-			$this->UserContribution->save($uc);
-		} else {
-			//session
-			if ($this->Session->check('noQuery')) {
-				$query = $this->Session->read('noQuery');
-			}
-			if ($this->Session->check('noCollectionSize')) {
-				$collectionSize = $this->Session->read('noCollectionSize');
-			}
-			if ($this->Session->check('noSearch1')) {
-				$search1 = $this->removeEmptyFields(explode('@', $this->Session->read('noSearch1')));
-			}
-			if ($this->Session->check('noSearch2')) {
-				$search2 = $this->removeEmptyFields(explode('@', $this->Session->read('noSearch2')));
-			}
-			if ($this->Session->check('noSearch3')) {
-				$search3 = $this->removeEmptyFields(explode('@', $this->Session->read('noSearch3')));
-			}
-			//cookies
-			if (strlen($_COOKIE['query']) > 0) {
-				$this->Session->write('noQuery', $_COOKIE['query']);
-				$query = $_COOKIE['query'];
-			}
-			if (strlen($_COOKIE['collectionSize']) > 0) {
-				$this->Session->write('noCollectionSize', $_COOKIE['collectionSize']);
-				$collectionSize = $_COOKIE['collectionSize'];
-			}
-			if (strlen($_COOKIE['search1']) > 0) {
-				$this->Session->write('noSearch1', $_COOKIE['search1']);
-				$search1 = $this->removeEmptyFields(explode('@', $_COOKIE['search1']));
-			}
-			if (strlen($_COOKIE['search2']) > 0) {
-				$this->Session->write('noSearch2', $_COOKIE['search2']);
-				$search2 = $this->removeEmptyFields(explode('@', $_COOKIE['search2']));
-			}
-			if (strlen($_COOKIE['search3']) > 0) {
-				$this->Session->write('noSearch3', $_COOKIE['search3']);
-				$search3 = $this->removeEmptyFields(explode('@', $_COOKIE['search3']));
-			}
-		}
-
-		$r = [];
-		array_push($r, $query);
-		array_push($r, $collectionSize);
-		array_push($r, $search1);
-		array_push($r, $search2);
-		array_push($r, $search3);
-
-		return $r;
+		SearchParameters::process();
 	}
 
 	// @param array $u User data

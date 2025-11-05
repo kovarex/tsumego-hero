@@ -1,7 +1,8 @@
 <?php
 
-class TsumegoNavigationButtonsComponent extends Component {
-	public function combine() {
+class TsumegoNavigationButtons {
+	public function combine()
+	{
 		$result = [];
 		if ($this->first) {
 			array_push($result, $this->first);
