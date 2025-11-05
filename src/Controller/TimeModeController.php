@@ -49,8 +49,8 @@ class TimeModeController extends AppController {
 			$timeModeRankID = $timeModeStatus['TimeModeSession']['time_mode_rank_id'];
 			$category = &$solvedMap[$timeModeCategoryID];
 			$category[$timeModeRankID] = $timeModeRankMap[$timeModeStatus['TimeModeSession']['time_mode_rank_id']];
-			if (!isset($category['best-unlocked-rank']) || $category['best-unlocked-rank'] < $timeModeRankID) {
-				$category['best-unlocked-rank'] = $timeModeRankID;
+			if (!isset($category['best-solved-rank']) || $category['best-solved-rank'] < $timeModeRankID) {
+				$category['best-solved-rank'] = $timeModeRankID;
 			}
 		}
 

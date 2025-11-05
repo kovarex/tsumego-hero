@@ -1,5 +1,5 @@
 	<?php	if(!Auth::isLoggedIn()) echo '<script type="text/javascript">window.location.href = "/";</script>';	?>
-	
+
 	<div align="center">
 		<h2>Time Mode Select</h2>
 	</div>
@@ -13,75 +13,66 @@
 	</div>
 	<br><br>
 	<div align="center">
-	
+
 		<img id="timeMode3" src="/img/timeMode32.png?v=1.2" width="200" onclick="timeMode3();" onmouseover="hoverTimeMode3()" onmouseout="noHoverTimeMode3()">
 		<img id="timeMode2" src="/img/timeMode22.png" width="200" onclick="timeMode2();" onmouseover="hoverTimeMode2()" onmouseout="noHoverTimeMode2()">
 		<img id="timeMode1" src="/img/timeMode12.png" width="200" onclick="timeMode1();" onmouseover="hoverTimeMode1()" onmouseout="noHoverTimeMode1()">
-		
+
 	</div>
 	<br>
 
 	<br>
 	<?php
-  foreach ($timeModeCategories as $timeModeCategory) {
-	echo '<div id="time-mode'.$timeModeCategory['TimeModeCategory']['id'].'">';
-    foreach ($timeModeRanks as $timeModeRank) {
-		  $rank = $timeModeRank['TimeModeRank']['name'];
-  		$rankID = $timeModeRank['TimeModeRank']['id'];
-      $categoryID = $timeModeCategory['TimeModeCategory']['id'];
-			if(@$solvedMap[$categoryID][$rankID]) {
-				$imageContainerText = 'imageContainerText2';
-				$imageContainerSpace = '';
-				echo '<div class="imageContainer1">
-				<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">
-					<img src="/img/rankButton'.$rank.'.png" onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this)">
-					 <div class="'.$imageContainerText.'">'.' '.$imageContainerSpace.'<img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
-				</a>
-				</div>';
-			}else{
-				echo '<div class="imageContainer1">
-					<a>
-					<img src="/img/rankButton'.$rank.'inactive.png" >
-					 <div class="imageContainerText2"><img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>
-					</a>
-				</div>';
+	foreach ($timeModeCategories as $timeModeCategory) {
+		$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+		echo '<div id="time-mode'.$categoryID.'">';
+		$unlocked = true; // first is always unlocked
+		foreach ($timeModeRanks as $timeModeRank) {
+			$rank = $timeModeRank['TimeModeRank']['name'];
+			$rankID = $timeModeRank['TimeModeRank']['id'];
+
+			echo '<div class="imageContainer1" id="rank-selector-'.$categoryID.'-'.$rankID.'">';
+			if ($unlocked) {
+				echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">';
 			}
+			echo '<img src="/img/rankButton'.$rank.($unlocked ? '' : 'inactive').'.png" '.($unlocked ? 'onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this);"' : '').'>';
+			echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>';
+			if ($unlocked) {
+				echo '</a>';
+			}
+			echo '</div>';
+			$unlocked = @$solvedMap[$categoryID][$rankID]; // the one after solved is unlocked
 		}
-	?>
-	
-	</div>
-	<?php
-	}
-	?>
-	
+	echo '</div>';
+	}?>
 	<script>
 	var mode = 1;
 	var s = 0;
-	
-	
-	<?php 
+
+
+	<?php
 		if($lastMode==1) echo 'mode = 1;';
 		elseif($lastMode==2) echo 'mode = 2;';
 		elseif($lastMode==3) echo 'mode = 3;';
 	?>
-	
+
 	if(mode!=1) $("#time-mode1").hide();
 	if(mode!=2) $("#time-mode2").hide();
 	if(mode!=3) $("#time-mode3").hide();
-	
+
 	if(mode!=1) document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
 	if(mode!=2) document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
 	if(mode!=3) document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
-	
+
 	document.getElementById("timeMode1").style = "cursor: pointer;";
 	document.getElementById("timeMode2").style = "cursor: pointer;";
 	document.getElementById("timeMode3").style = "cursor: pointer;";
-	
+
 	$(document).ready(function(){
 		notMode3 = false;
 		$("#modeSelector").hide();
 	});
-	
+
 	function timeMode1(){
 		document.getElementById("timeMode1").src = "/img/timeMode12.png";
 		document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
@@ -142,7 +133,7 @@
       $rankName = $timeModeRank['TimeModeRank']['name'];
 			echo 'function hover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'hover.png"; }';
 			echo 'function noHover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'.png"; }';
-		} 
+		}
 	?>
 	$("#account-bar-user2 a").css("color", "rgb(202, 102, 88)");
 	$("#xp-bar-fill").attr("class", "xp-bar-fill-c3");
@@ -155,18 +146,16 @@
   <?php
     foreach ($timeModeCategories as $timeModeCategory) {
       $timeModeCategoryID = $timeModeCategory['TimeModeCategory']['id'];
-      if ($bestUnlockedRankID = @$solvedMap[$timeModeCategoryID]['best-unlocked-rank'])
-        $bestUnlockedRank = $solvedMap[$timeModeCategoryID][$bestUnlockedRankID];
-      if (!$bestUnlockedRank) {
-        $bestUnlockedRank = $timeModeRanks[0]['TimeModeRank']['name'];
+      if ($bestSolvedRankID = @$solvedMap[$timeModeCategoryID]['best-solved-rank']) {
+        $bestSolvedRank = $solvedMap[$timeModeCategoryID][$bestSolvedRankID];
+	  }
+	  else {
+        $bestSolvedRank = 'no rank';
       }
-      echo "if (mode == ".$timeModeCategoryID.") return '".$bestUnlockedRank."';";
+      echo "if (mode == ".$timeModeCategoryID.") return '".$bestSolvedRank."';";
     }
   ?>
   }
   function updateRankBar() { $("#account-bar-xp").text(getRankForMode(mode)); }
 	$("#xp-bar-fill").css("width","100%");
 	</script>
-	
-	
-	

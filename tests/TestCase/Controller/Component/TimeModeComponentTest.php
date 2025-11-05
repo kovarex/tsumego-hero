@@ -247,4 +247,34 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			}
 		}
 	}
+
+	public function testTimeModeOverviewShowsUnlockedStatusesCorrectly(): void {
+		$browser = new Browser();
+
+		foreach (['solve-nothing', 'solve-5k', 'solve-all'] as $testCase) {
+			$contextParameters = [];
+			$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+			$contextParameters['time-mode-ranks'] = ['5k', '1d'];
+			if ($testCase === 'solve-all' || $testCase === 'solve-5k') {
+				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+			}
+			if ($testCase === 'solve-all') {
+				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '1d', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
+			}
+			$context = new ContextPreparator($contextParameters);
+			$browser->get('timeMode/overview');
+
+			$page = $browser->driver->getPageSource();
+			$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+			$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
+
+			$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+			$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
+
+			// lowest rank is always unlocked
+			$this->assertTrue(count($links5k) == 1);
+			// 1d rank is unlocked when the previous rank (5k in this case) is solved
+			$this->assertSame(count($links1d) == 1, $testCase === 'solve-all' || $testCase === 'solve-5k');
+		}
+	}
 }
