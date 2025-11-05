@@ -6,6 +6,19 @@
 		<a class="new-button-inactive" href="#">Results</a>
 	</div>
 	<br><br>
+	<?php if($unlock) { ?>
+		<label>
+		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off">
+		<div class="alertBox alertInfo" id="time-rank-unlock-alert">
+			<div class="alertBanner" align="center">Unlocked<span class="alertClose">x</span></div>
+			<span class="alertText">
+		<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
+		  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
+		</a><br>
+		<br class="clear1"/></span>
+		</div>
+		</label><?php
+	} ?>
 	<table class="timeModeTable" border="0">
 	<?php
 		function showSession($session, $isCurrent) {
@@ -77,19 +90,6 @@
 	</table>
 	<br>
 	</div>
-	<?php if($unlock) { ?>
-		<label>
-			<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off">
-			<div class="alertBox alertInfo" id="alertInfo">
-			<div class="alertBanner" align="center">Unlocked<span class="alertClose">x</span></div>
-			<span class="alertText">
-			<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton'.<?php echo $unlock['rank']; ?>.png">
-			  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
-			</a><br>'
-			<br class="clear1"/></span>
-			</div>
-		</label><?php
-	} ?>
 	<script>
 		function toggleRelatedContent(div) {
 			let parentOfDiv = div.parentElement;
@@ -120,13 +120,13 @@
 			$("#account-bar-xp").html(bartext);
 			$("#xp-bar-fill").css("width", barPercent);
 
-			<?php if(isset($ro['TimeModeOverview']['status']) && $ro['TimeModeOverview']['status']=='s' && $newUnlock){ ?>
+			<?php if($unlock){ ?>
 			$(".alertBox").fadeIn(500);
 			<?php } ?>
 		});
 
-
-		$("#alertCheckbox").change(function(){
-			$("#alertInfo").fadeOut(500);
+		$("#alertCheckbox").change(function() {
+			$(".alertBox").fadeOut(500);
 		});
+
 	</script>
