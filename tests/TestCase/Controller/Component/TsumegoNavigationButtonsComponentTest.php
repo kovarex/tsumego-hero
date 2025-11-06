@@ -28,8 +28,8 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 		// there should be exactly 3 links pointing to the first, current and last tsumego
 		$this->assertSame(count($links), count($expectedNums));
 		for ($i = 0; $i < count($links); $i++) {
-			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
 			$this->assertSame($links[$i]->getText(), strval($context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
+			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
 		}
 	}
 
@@ -58,12 +58,10 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingOnTheEdge() {
 		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
 		$this->buttonsTestGeneric(60, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
-
 	}
 
 	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingNextToTheEdge() {
 		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
 		$this->buttonsTestGeneric(16, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 60], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
 	}
-
 }

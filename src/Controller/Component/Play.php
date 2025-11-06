@@ -1,6 +1,6 @@
 <?php
 
-App::uses('TsumegoNavigationButtons', 'Utility');
+App::uses('SetNavigationButtonsInput', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -10,19 +10,16 @@ class Play {
 	public function play(int $setConnectionID): mixed {
 		CakeSession::write('page', 'play');
 
-		$this->tsumegoNavigationButtons = new TsumegoNavigationButtons();
 		$preTsumego = null;
 		$ut = null;
-		$ts = [];
 		$anzahl2 = 0;
 		$nextMode = null;
 		$rejuvenation = false;
 		$doublexp = null;
-		$exploit = null;
 		$dailyMaximum = false;
 		$suspiciousBehavior = false;
 		$half = '';
-		$inFavorite = false;
+		$inFavorite = isset($this->params['url']['favorite']);
 		$lastInFav = 0;
 		$isSandbox = false;
 		$goldenTsumego = false;
@@ -33,7 +30,6 @@ class Play {
 		$potionActive = false;
 		$reviewCheat = false;
 		$commentCoordinates = [];
-		$josekiLevel = 1;
 		$trs = [];
 		$potionAlert = false;
 		$eloScore = 0;
@@ -49,11 +45,11 @@ class Play {
 		$queryTitleSets = '';
 		$partition = -1;
 
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-		if (!$setConnection) {
+		$currentSetConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+		if (!$currentSetConnection) {
 			throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		}
-		$id = $setConnection['SetConnection']['tsumego_id'];
+		$id = $currentSetConnection['SetConnection']['tsumego_id'];
 
 		$hasPremium = Auth::hasPremium();
 		$swp = ClassRegistry::init('Set')->find('all', ['conditions' => ['premium' => 1]]) ?: [];
@@ -62,7 +58,7 @@ class Play {
 		}
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
-		$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
+		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $id]]);
 
@@ -383,9 +379,7 @@ class Play {
 				($this->setFunction)('deleteProblem2', true);
 			}
 		}
-		if (isset($this->params['url']['favorite'])) {
-			$inFavorite = true;
-		}
+
 		if (isset($this->params['url']['deleteComment'])) {
 			$deleteComment = ClassRegistry::init('Comment')->findById($this->params['url']['deleteComment']);
 			if (isset($this->params['url']['changeComment'])) {
@@ -1233,6 +1227,8 @@ class Play {
 			}
 		}
 
+		$this->setConnectionsOfCurrentSet = $this->selectSetConnectionsOfCurrentSet($set, $query, $inFavorite);
+
 		if ($query == 'difficulty') {
 			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
 			$setConditions = [];
@@ -1460,7 +1456,6 @@ class Play {
 			$setConnectionIds = [];
 			$tsTsumegosMap = [];
 			$rankConditions = [];
-			$ts = ClassRegistry::init('SetConnection')->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $set['Set']['id']]]) ?: [];
 
 			if (count($search2) > 0) {
 				$fromTo = [];
@@ -1477,10 +1472,9 @@ class Play {
 				}
 				$rankConditions['OR'] = $fromTo;
 			}
-			$tsCount = count($ts);
 
-			for ($i = 0; $i < $tsCount; $i++) {
-				array_push($setConnectionIds, $ts[$i]['SetConnection']['tsumego_id']);
+			foreach ($this->setConnectionsOfCurrentSet as $setConnection) {
+				array_push($setConnectionIds, $setConnection['SetConnection']['tsumego_id']);
 			}
 
 			$tsTsumegos = ClassRegistry::init('Tsumego')->find('all', [
@@ -1488,30 +1482,21 @@ class Play {
 					'id' => $setConnectionIds,
 					$rankConditions,
 				],
-			]);
-			if (!$tsTsumegos) {
-				$tsTsumegos = [];
-			}
-			$tsTsumegosCount = count($tsTsumegos);
+			]) ?: [];
 
-			for ($i = 0; $i < $tsTsumegosCount; $i++) {
-				$tsTsumegosMap[$tsTsumegos[$i]['Tsumego']['id']] = $tsTsumegos[$i];
+			foreach ($tsTsumegos as $setTsumego) {
+				$tsTsumegosMap[$setTsumego['Tsumego']['id']] = $setTsumego;
 			}
 
 			$tsBuffer = [];
-			$tsCount = count($ts);
 
-			for ($i = 0; $i < $tsCount; $i++) {
-				if (isset($tsTsumegosMap[$ts[$i]['SetConnection']['tsumego_id']])) {
-					$tagValid = true;
-				} else {
-					$tagValid = false;
-				}
+			foreach ($this->setConnectionsOfCurrentSet as $setConnection) {
+				$tagValid = isset($tsTsumegosMap[$setConnection['SetConnection']['tsumego_id']]);
 				if ($tagValid == true) {
 					if (count($search3) > 0) {
 						$tagForTsumego = ClassRegistry::init('Tag')->find('first', [
 							'conditions' => [
-								'tsumego_id' => $ts[$i]['SetConnection']['tsumego_id'],
+								'tsumego_id' => $setConnection['SetConnection']['tsumego_id'],
 								'tag_name_id' => $search3ids,
 							],
 						]);
@@ -1523,35 +1508,34 @@ class Play {
 					}
 				}
 				if ($tagValid) {
-					array_push($tsBuffer, $ts[$i]);
+					$tsBuffer [] = $setConnection;
 				}
 			}
-			$ts = $tsBuffer;
-			if (count($ts) > $collectionSize) {
-				$tsCount = count($ts);
+			$this->setConnectionsOfCurrentSet = $tsBuffer;
+			if (count($this->setConnectionsOfCurrentSet) > $collectionSize) {
+				$tsCount = count($this->setConnectionsOfCurrentSet);
 
 				for ($i = 0; $i < $tsCount; $i++) {
 					if ($i % $collectionSize == 0) {
 						$partition++;
 					}
-					if ($ts[$i]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
+					if ($this->setConnectionsOfCurrentSet[$i]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
 						break;
 					}
 				}
-				$fromTo = AppController::getPartitionRange(count($ts), $collectionSize, $partition);
+				$fromTo = AppController::getPartitionRange(count($this->setConnectionsOfCurrentSet), $collectionSize, $partition);
 				$ts1 = [];
 				for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-					array_push($ts1, $ts[$i]);
+					array_push($ts1, $this->setConnectionsOfCurrentSet[$i]);
 				}
 				$ts = $ts1;
 				$queryTitleSets = '#' . ($partition + 1);
 			}
 			$anzahl2 = 1;
-			$tsCount = count($ts);
 
-			for ($i = 0; $i < $tsCount; $i++) {
-				if ($ts[$i]['SetConnection']['num'] > $anzahl2) {
-					$anzahl2 = $ts[$i]['SetConnection']['num'];
+			foreach ($this->setConnectionsOfCurrentSet as $setConnection) {
+				if ($setConnection['SetConnection']['num'] > $anzahl2) {
+					$anzahl2 = $setConnection['SetConnection']['num'];
 				}
 			}
 		}
@@ -1561,314 +1545,26 @@ class Play {
 		} else {
 			CakeSession::write('title', CakeSession::read('lastSet') . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2 . ' on Tsumego Hero');
 		}
-		if (!$inFavorite) {
-			if ($query == 'difficulty' || $query == 'tags') {
-				$tsCount = count($ts);
 
-				for ($i = 0; $i < $tsCount; $i++) {
-					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
-						for ($a = 5; $a > 0; $a--) {
-							if ($i - $a >= 0) {
-								$this->tsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
-								if ($a == 1) {
-									$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
-								}
-							}
-						}
-						$bMax = 10 - count($this->tsumegoNavigationButtons->previous);
-						$b = 1;
-						if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
-							$bMax++;
-						}
-						while ($b <= $bMax) {
-							if ($i + $b < count($ts)) {
-								$this->tsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-								if ($b == 1) {
-									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
-								}
-							}
-							$b++;
-						}
-						if (count($this->tsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
-							$this->tsumegoNavigationButtons->previous = [];
-							$a = 5 + (5 - count($this->tsumegoNavigationButtons->next));
-							$a++;
-							while ($a > 0) {
-								if ($i - $a >= 0) {
-									$this->tsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
-									if ($a == 1) {
-										$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
-									}
-									$newUT = TsumegosController::findUt($ts[$i - $a]['Tsumego']['id'], $tsumegoStatusMap);
-									if (!isset($newUT['TsumegoStatus']['status'])) {
-										$newUT['TsumegoStatus']['status'] = 'N';
-									}
-								}
-								$a--;
-							}
-						}
-						if ((count($this->tsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
-							$tsNextAdjust = count($this->tsumegoNavigationButtons->next) + 1;
-							$this->tsumegoNavigationButtons->next = [];
-							$b = 1;
-							while ($b <= $tsNextAdjust) {
-								if ($i + $b < count($ts)) {
-									$this->tsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-									if ($b == 1) {
-										$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
-									}
-								}
-								$b++;
-							}
-						}
-					}
-				}
-			} elseif ($query == 'topics') {
-				//topics
-				$tsCount = count($ts);
-
-				for ($i = 0; $i < $tsCount; $i++) {
-					if ($ts[$i]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
-						$a = 5;
-						while ($a > 0) {
-							if ($i - $a > 0) {
-								$this->tsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
-								if ($a == 1) {
-									$previousSetConnectionID = $ts[$i - $a]['SetConnection']['id'];
-								}
-								$newUT = TsumegosController::findUt($ts[$i - $a]['SetConnection']['tsumego_id'], $tsumegoStatusMap);
-								if (!isset($newUT['TsumegoStatus']['status'])) {
-									$newUT['TsumegoStatus']['status'] = 'N';
-								}
-							}
-							$a--;
-						}
-						$bMax = 10 - count($this->tsumegoNavigationButtons->previous);
-						$b = 1;
-						if ($ts[0]['SetConnection']['tsumego_id'] == $t['Tsumego']['id']) {
-							$bMax++;
-						}
-						while ($b <= $bMax) {
-							if ($i + $b + 1 < count($ts)) {
-								$this->tsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-								if ($b == 1) {
-									$nextSetConnectionID = $ts[$i + $b]['SetConnection']['id'];
-								}
-							}
-							$b++;
-						}
-						if (count($this->tsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['SetConnection']['tsumego_id']) {
-							$a = 6 - count($this->tsumegoNavigationButtons->next);
-							$offsetLast = $setConnection['SetConnection']['id'] == $ts[count($ts) - 1]['SetConnection']['id'] ? 1 : 0;
-							while ($a < 11 + $offsetLast) {
-								if ($i - $a > 0) {
-									array_unshift($this->tsumegoNavigationButtons->previous, TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap));
-								}
-								$a++;
-							}
-						}
-						if ((count($this->tsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['SetConnection']['tsumego_id']) && $ts[0]['SetConnection']['tsumego_id'] != $t['Tsumego']['id']) {
-							$tsNextAdjust = count($this->tsumegoNavigationButtons->next);
-							$this->tsumegoNavigationButtons->next = [];
-							$b = 1;
-							while ($b <= $tsNextAdjust) {
-								if ($i + $b + 1 < count($ts)) {
-									$this->tsumegoNavigationButtons->next[] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-									if ($b == 1) {
-										$nextTsumegoID = $ts[$i + $b]['SetConnection']['tsumego_id'];
-									}
-								}
-								$b++;
-							}
-						}
-					}
-				}
-			}
-			$inFavorite = '';
-		} else {
-			//fav
-			$fav = ClassRegistry::init('Favorite')->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$fav) {
-				$fav = [];
-			}
-			$ts = [];
-			$favCount = count($fav);
-
-			for ($i = 0; $i < $favCount; $i++) {
-				$tx = ClassRegistry::init('Tsumego')->findById($fav[$i]['Favorite']['tsumego_id']);
-				array_push($ts, $tx);
-			}
-			$tsCount = count($ts);
-
-			for ($i = 0; $i < $tsCount; $i++) {
-				if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
-					$a = 5;
-					while ($a > 0) {
-						if ($i - $a >= 0) {
-							$this->tsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
-							if ($a == 1) {
-								$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
-							}
-						}
-						$a--;
-					}
-					$bMax = 10 - count($this->tsumegoNavigationButtons->previous);
-					$b = 1;
-					if ($ts[0]['Tsumego']['id'] == $t['Tsumego']['id']) {
-						$bMax++;
-					}
-					while ($b <= $bMax) {
-						if ($i + $b < count($ts)) {
-							$this->tsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-							if ($b == 1) {
-								$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
-							}
-						}
-						$b++;
-					}
-					if (count($this->tsumegoNavigationButtons->next) < 5 || $t['Tsumego']['id'] == $ts[count($ts) - 6]['Tsumego']['id']) {
-						$this->tsumegoNavigationButtons->previous = [];
-						$a = 5 + (5 - count($this->tsumegoNavigationButtons->next));
-						$a++;
-						while ($a > 0) {
-							if ($i - $a >= 0) {
-								$this->tsumegoNavigationButtons->previous [] = TsumegoButton::constructFromSetConnection($ts[$i - $a], $tsumegoStatusMap);
-								if ($a == 1) {
-									$previousTsumegoID = $ts[$i - $a]['Tsumego']['id'];
-								}
-							}
-							$a--;
-						}
-					}
-					if ((count($this->tsumegoNavigationButtons->previous) < 5 || $t['Tsumego']['id'] == $ts[5]['Tsumego']['id']) && $ts[0]['Tsumego']['id'] != $t['Tsumego']['id']) {
-						$tsNextAdjust = count($this->tsumegoNavigationButtons->next) + 1;
-						$this->tsumegoNavigationButtons->next = [];
-						$b = 1;
-						while ($b <= $tsNextAdjust) {
-							if ($i + $b < count($ts)) {
-								$this->tsumegoNavigationButtons->next [] = TsumegoButton::constructFromSetConnection($ts[$i + $b], $tsumegoStatusMap);
-								if ($b == 1) {
-									$nextTsumegoID = $ts[$i + $b]['Tsumego']['id'];
-								}
-							}
-							$b++;
-						}
-					}
-				}
-			}
+		if ($inFavorite) {
 			$inFavorite = '?favorite=1';
 		}
+
 		if ($query == 'difficulty' || $query == 'tags') {
-			if ($ts[0]) {
-				$this->tsumegoNavigationButtons->first = TsumegoButton::constructFromTsumego($ts[0], $tsumegoStatusMap);
-			}
-			$isInArray = -1;
-			$tsBackCount = count($this->tsumegoNavigationButtons->previous);
-
-			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->tsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->first['Tsumego']['id']) {
-					$isInArray = $i;
+			// TODO: this is very unoptimal transition from tsuemgos into set connections until the difficulty and tags parts gets rewritten
+			if (isset($ts)) {
+				foreach ($ts as $tsumego) {
+					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]])) {
+						$this->setConnectionsOfCurrentSet[] = $setConnection;
+					}
 				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->previous[$isInArray]);
-				$this->tsumegoNavigationButtons->previous = array_values($this->tsumegoNavigationButtons->previous);
-			}
-			$newUT = TsumegosController::findUt($ts[0]['Tsumego']['id'], $tsumegoStatusMap);
-			if (!isset($newUT['TsumegoStatus']['status'])) {
-				$newUT['TsumegoStatus']['status'] = 'N';
-			}
-			if ($t['Tsumego']['id'] == $this->tsumegoNavigationButtons->first['Tsumego']['id']) {
-				$this->tsumegoNavigationButtons->first = null;
-			}
-
-			if (count($ts) > 1 && $ts[count($ts) - 1]['SetConnection']['id'] != $setConnection['SetConnection']['id']) {
-				$this->tsumegoNavigationButtons->last = TsumegoButton::constructFromSetConnection($ts[count($ts) - 1], $tsumegoStatusMap);
-			}
-			$isInArray = -1;
-			$tsNextCount = count($this->tsumegoNavigationButtons->next);
-
-			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->tsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->last['Tsumego']['id']) {
-					$isInArray = $i;
-				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->next[$isInArray]);
-				$this->tsumegoNavigationButtons->next = array_values($this->tsumegoNavigationButtons->next);
-			}
-			$newUT = TsumegosController::findUt($ts[count($ts) - 1]['Tsumego']['id'], $tsumegoStatusMap);
-		} elseif ($query == 'topics' && !$inFavorite) {
-			$this->tsumegoNavigationButtons->first = TsumegoButton::constructFromSetConnection($ts[0], $tsumegoStatusMap);
-			$isInArray = -1;
-			$tsBackCount = count($this->tsumegoNavigationButtons->previous);
-
-			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->tsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->first['Tsumego']['id']) {
-					$isInArray = $i;
-				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->previous[$isInArray]);
-				$this->tsumegoNavigationButtons->previous = array_values($this->tsumegoNavigationButtons->previous);
-			}
-			if ($setConnection['SetConnection']['id'] == $this->tsumegoNavigationButtons->first['SetConnection']['id']) {
-				$this->tsumegoNavigationButtons->first = null;
-			}
-			//tsLast
-			$this->tsumegoNavigationButtons->last = TsumegoButton::constructFromSetConnection($ts[count($ts) - 1], $tsumegoStatusMap);
-			$isInArray = -1;
-			$tsNextCount = count($this->tsumegoNavigationButtons->next);
-
-			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->tsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->last['Tsumego']['id']) {
-					$isInArray = $i;
-				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->next[$isInArray]);
-				$this->tsumegoNavigationButtons->next = array_values($this->tsumegoNavigationButtons->next);
-			}
-		} elseif ($inFavorite) {
-			//tsFirst
-			$this->tsumegoNavigationButtons->first = TsumegoButton::constructFromTsumego(ClassRegistry::init('Tsumego')->findById($fav[0]['Favorite']['tsumego_id']), $tsumegoStatusMap);
-			$isInArray = -1;
-			$tsBackCount = count($this->tsumegoNavigationButtons->previous);
-
-			for ($i = 0; $i < $tsBackCount; $i++) {
-				if ($this->tsumegoNavigationButtons->previous[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->first['Tsumego']['id']) {
-					$isInArray = $i;
-				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->previous[$isInArray]);
-				$this->tsumegoNavigationButtons->previous = array_values($this->tsumegoNavigationButtons->previous);
-			}
-			if ($t['Tsumego']['id'] == $this->tsumegoNavigationButtons->first['Tsumego']['id']) {
-				$lastInFav = -1;
-			}
-
-			$this->tsumegoNavigationButtons->last = TsumegoButton::constructFromTsumego(ClassRegistry::init('Tsumego')->findById($fav[count($fav) - 1]['Favorite']['tsumego_id']), $tsumegoStatusMap);
-			$isInArray = -1;
-			$tsNextCount = count($this->tsumegoNavigationButtons->next);
-
-			for ($i = 0; $i < $tsNextCount; $i++) {
-				if ($this->tsumegoNavigationButtons->next[$i]['Tsumego']['id'] == $this->tsumegoNavigationButtons->last['Tsumego']['id']) {
-					$isInArray = $i;
-				}
-			}
-			if ($isInArray != -1) {
-				unset($this->tsumegoNavigationButtons->next[$isInArray]);
-				$this->tsumegoNavigationButtons->next = array_values($this->tsumegoNavigationButtons->next);
-			}
-			if ($t['Tsumego']['id'] == $this->tsumegoNavigationButtons->last['Tsumego']['id']) {
-				$lastInFav = 1;
 			}
 		}
 
-		if ($setConnection['SetConnection']['id'] == $this->tsumegoNavigationButtons->last['SetConnection']['id']) {
-			$this->tsumegoNavigationButtons->last = null;
+		if (!Auth::isInTimeMode()) {
+			new SetNavigationButtonsInput($this->setFunction)->execute($this->setConnectionsOfCurrentSet, $currentSetConnection, $tsumegoStatusMap);
 		}
+
 		if (Auth::isLoggedIn()) {
 			$t['Tsumego']['status'] = 'set' . $ut['TsumegoStatus']['status'] . '2';
 			$half = '';
@@ -1900,40 +1596,6 @@ class Play {
 		for ($i = 2; $i <= 19; $i++) {
 			if (strpos(';' . $set['Set']['title'], $i . 'x' . $i)) {
 				$checkBSize = $i;
-			}
-		}
-
-		$this->tsumegoNavigationButtons->current = TsumegoButton::constructFromSetConnection($setConnection, $tsumegoStatusMap);
-		$navi = $this->tsumegoNavigationButtons->combine();
-
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
-		$naviCount = count($navi);
-
-		for ($i = 0; $i < $naviCount; $i++) {
-			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $navi[$i]['Tsumego']['id']]]);
-			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs, $tArr[0]);
-			array_push($tooltipInfo, $tArr[2]);
-			array_push($tooltipBoardSize, $tArr[3]);
-		}
-
-		if ($t['Tsumego']['set_id'] == 161) {
-			$joseki = ClassRegistry::init('Joseki')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-			if ($joseki) {
-				$josekiLevel = $joseki['Joseki']['hints'];
-			} else {
-				$josekiLevel = 0;
-			}
-			$naviCount = count($navi);
-
-			for ($i = 0; $i < $naviCount; $i++) {
-				$j = ClassRegistry::init('Joseki')->find('first', ['conditions' => ['tsumego_id' => $navi[$i]['Tsumego']['id']]]);
-				if ($j) {
-					$navi[$i]['Tsumego']['type'] = $j['Joseki']['type'];
-					$navi[$i]['Tsumego']['thumbnail'] = $j['Joseki']['thumbnail'];
-				}
 			}
 		}
 
@@ -2048,16 +1710,6 @@ class Play {
 		$ui = 2;
 		$file = 'placeholder2.sgf';
 
-		if (!Auth::isInTimeMode()) {
-			if (!isset($previousSetConnectionID) && isset($previousTsumegoID)) {
-				$previousSetConnectionID = TsumegosController::getMatchingSetConnectionOfOtherTsumego($previousTsumegoID, $set['Set']['id']);
-			}
-			if (!isset($nextSetConnectionID) && isset($nextTsumegoID)) {
-				$nextSetConnectionID = TsumegosController::getMatchingSetConnectionOfOtherTsumego($nextTsumegoID, $set['Set']['id']);
-			}
-		} else {
-			$nextTsumegoID = 0;
-		}
 		AppController::startPageUpdate();
 		$startingPlayer = TsumegosController::getStartingPlayer($sgf2);
 
@@ -2166,31 +1818,22 @@ class Play {
 			$query = 'topics';
 		}
 
-		if (count($navi) == 3 && !isset($navi[0]['Tsumego']['id']) && !isset($navi[count($navi) - 1]['Tsumego']['id'])) {
-			$checkNotInSearch = true;
-		} else {
-			$checkNotInSearch = false;
-		}
+		$checkNotInSearch = false;
 
 		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			if ($ts[$i]['SetConnection']['id'] == $setConnectionID) {
-				$indexOfCurrentTsumegoInts = $i;
-				break;
-			}
-		}
+		$indexOfCurrent = array_find_key($this->setConnectionsOfCurrentSet, function ($setConnection) use ($setConnectionID) { return $setConnection['SetConnection']['id'] == $setConnectionID; });
 
-		if (!isset($previousSetConnectionID) && isset($indexOfCurrentTsumegoInts) && $indexOfCurrentTsumegoInts > 0) {
-			$previousSetConnectionID = $ts[$indexOfCurrentTsumegoInts - 1]['SetConnection']['id'];
+		if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
+			$previousSetConnectionID = $this->setConnectionsOfCurrentSet[$indexOfCurrent - 1]['SetConnection']['id'];
 		}
-		$previousLink = TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, isset($previousTsumegoID) ? $previousTsumegoID : null, $set['Set']['id']);
-		if (!isset($nextSetConnectionID) && isset($indexOfCurrentTsumegoInts) && $tsCount > $indexOfCurrentTsumegoInts + 1) {
-			$nextSetConnectionID = $ts[$indexOfCurrentTsumegoInts + 1]['SetConnection']['id'];
+		$previousLink = TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, $set['Set']['id']);
+
+		if (isset($indexOfCurrent) && count($this->setConnectionsOfCurrentSet) > $indexOfCurrent + 1) {
+			$nextSetConnectionID = $this->setConnectionsOfCurrentSet[$indexOfCurrent + 1]['SetConnection']['id'];
 		}
 		if (!Auth::isInTimeMode()) {
-			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, isset($nextTsumegoID) ? $nextTsumegoID : null, $set['Set']['id']));
+			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, $set['Set']['id']));
 		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
@@ -2244,7 +1887,6 @@ class Play {
 		}
 		($this->setFunction)('t', $t);
 		($this->setFunction)('scoreCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
-		($this->setFunction)('navi', $navi);
 		($this->setFunction)('previousLink', $previousLink);
 		($this->setFunction)('hash', $hash);
 		($this->setFunction)('nextMode', $nextMode);
@@ -2263,7 +1905,6 @@ class Play {
 		($this->setFunction)('reviewCheat', $reviewCheat);
 		($this->setFunction)('commentCoordinates', $commentCoordinates);
 		($this->setFunction)('part', $t['Tsumego']['part']);
-		($this->setFunction)('josekiLevel', $josekiLevel);
 		($this->setFunction)('checkBSize', $checkBSize);
 		($this->setFunction)('potionAlert', $potionAlert);
 		($this->setFunction)('file', $file);
@@ -2273,11 +1914,8 @@ class Play {
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
 		($this->setFunction)('set_duplicate', $t['Tsumego']['duplicate']);
 		($this->setFunction)('achievementUpdate', $achievementUpdate);
-		($this->setFunction)('setConnection', $setConnection);
+		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		($this->setFunction)('tooltipSgfs', $tooltipSgfs);
-		($this->setFunction)('tooltipInfo', $tooltipInfo);
-		($this->setFunction)('tooltipBoardSize', $tooltipBoardSize);
 		if (isset($this->params['url']['requestSolution'])) {
 			($this->setFunction)('requestSolution', AdminActivityUtil::requestSolution($id));
 		}
@@ -2379,6 +2017,39 @@ class Play {
 		return true;
 	}
 
-	private TsumegoNavigationButtons $tsumegoNavigationButtons;
+	private function selectSetConnectionsOfCurrentSet($set, $query, $inFavorite): array {
+		if ($inFavorite) {
+			return [];
+		}
+
+		if ($query == 'topics') {
+			return $this->selectSetConnectionsOfCurrentSetBasedOnTopics($set);
+		}
+		if ($query == 'difficulty' || $query == 'tags') {
+			return $this->selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set);
+		}
+		return [];
+	}
+
+	public function selectSetConnectionsOfCurrentSetBasedOnTopics($set): array {
+		return ClassRegistry::init('SetConnection')->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $set['Set']['id']]]) ?: [];
+	}
+
+	public function selectSetConnectionsOfCurrentSetBasedOnFavorites($set): array {
+		$favorites = ClassRegistry::init('Favorite')->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		$result = [];
+		foreach ($favorites as $favorite) {
+			$tsumego = ClassRegistry::init('Tsumego')->findById($favorite['Favorite']['tsumego_id']);
+			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['tsumego_id']]]);
+			$result [] = $setConnection;
+		}
+		return $result;
+	}
+
+	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set): array {
+		return [];
+	}
+
 	private $setFunction;
+	private $setConnectionsOfCurrentSet = [];
 }

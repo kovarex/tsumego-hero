@@ -501,32 +501,25 @@
 	}
 	?>
 
-	<?php if(!$checkNotInSearch){ ?>
-	<?php if($firstRanks==0){ ?>
+<?php if (isset($setNavigationButtonsInput)) { ?>
 	<div class="tsumegoNavi1">
 		<div class="tsumegoNavi2">
 			<?php
-			for($i = 0; $i < count($navi); $i++){
-				if($t['Tsumego']['id'] == $navi[$i]['Tsumego']['id']) $additionalId = 'id="currentElement"';
-				else $additionalId = '';
-				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$navi[$i]['Tsumego']['status'].'1">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$navi[$i]['SetConnection']['id'].$inFavorite.'">
-					'.$navi[$i]['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
+			$i = 0;
+			foreach ($setNavigationButtonsInput as $buttonInput) {
+				$additionalId = $t['Tsumego']['id'] == $buttonInput['Tsumego']['id'] ? 'id="currentNavigationButton"' : '';
+				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$buttonInput['Tsumego']['status'].'1">
+					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$buttonInput['SetConnection']['id'].$inFavorite.'">
+					'.$buttonInput['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 					</li>';
-				if($i==0 || $i == count($navi) - 2)
-          echo '<li class="setBlank"></li>';
+				if($i == 0 || $i == count($setNavigationButtonsInput) - 2)
+					echo '<li class="setBlank"></li>';
+				$i++;
 			}
 			?>
 		</div>
 	</div>
-	<?php
-		}else{
-			echo '<div id="currentElement"></div>';
-		}
-	}else{
-		echo '<div id="currentElement"></div>';
-	}
-?>
+	<?php } ?>
 	<div align="center">
 	<?php
 
@@ -552,7 +545,7 @@
 			<?php if($isAllowedToContribute2){ ?>
 			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
 			<?php if($isAllowedToContribute){ ?>
-			<?php if($firstRanks==0 && $t['Tsumego']['set_id']!=181 && $t['Tsumego']['set_id']!=191){ ?>
+			<?php if($t['Tsumego']['set_id']!=181 && $t['Tsumego']['set_id']!=191){ ?>
 				Add tag
 			<?php } ?>
 			<?php } ?>
@@ -1248,6 +1241,15 @@
 	const activeTopicTiles = [];
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
+
+	function updateCurrentNavigationButton(color) {
+		current = document.getElementById("currentNavigationButton");
+		// The navigation buttons don't exist in all of the modes
+		if (!current)
+			return;
+		current.style.backgroundColor = "' + color + '";
+	}
+
 	<?php
 		if($hasRevelation)
 			echo 'let hasRevelation = true;';
@@ -1364,7 +1366,8 @@
 		echo 'set159 = true;';
 	if($t['Tsumego']['set_id']==161)
 		echo 'josekiHero = true;';
-	echo 'josekiLevel = '.$josekiLevel.';';
+	if ($josekiLevel)
+	  echo 'josekiLevel = '.$josekiLevel.';';
 	?>
 
 	var eloScore = <?php echo $eloScore; ?>;
@@ -1725,7 +1728,7 @@
 	if($goldenTsumego) echo 'var goldenTsumego = true;';
 	else echo 'var goldenTsumego = false;';
 
-	$sandboxCheck = 'document.getElementById("currentElement").style.backgroundColor = "'.$playGreenColor.'";';
+	$sandboxCheck = "updateCurrentNavigationButton('".$playGreenColor."');";
 
 	echo 'var sprintLockedInSecretArea = false;';
 
@@ -2337,7 +2340,7 @@
 					}
 				}
 			}
-			for($i=0; $i<count($navi); $i++)
+			for($i=0; $i<count($setNavigationButtonsInput); $i++)
 				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
 		}
 		?>
@@ -2681,7 +2684,7 @@
 				toggleBoardLock(true);
 				$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 				$("#commentSpace").show();
-				document.getElementById("currentElement").style.backgroundColor = "<?php echo $playGreenColor ?>";
+			    updateCurrentNavigationButton('<?php echo $playGreenColor ?>');
 				displaySettings();
 				setCookie("noScore", "<?php echo $scoreCheck; ?>");
 				setCookie("noPreId", "<?php echo $t['Tsumego']['id']; ?>");
@@ -3103,13 +3106,13 @@
 					freePlayMode = true;
 					if(mode==1){
 						if(<?php echo Auth::getWithDefault('health', 0) - Auth::getWithDefault('damage', 0); ?> - misplays<0){
-							if(hasPremium !== "1"){
-								document.getElementById("currentElement").style.backgroundColor = "#e03c4b";
+							if(hasPremium !== "1") {
+								updateCurrentNavigationButton("#e03c4b");
 								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>';
 								tryAgainTomorrow = true;
 								toggleBoardLock(true);
-							}else{
-								document.getElementById("currentElement").style.backgroundColor = "#e03c4b";
+							} else {
+								updateCurrentNavigationButton("#e03c4b");
 								document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 							}
 						}
