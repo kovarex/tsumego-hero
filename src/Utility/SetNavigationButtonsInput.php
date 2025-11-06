@@ -23,7 +23,7 @@ class SetNavigationButtonsInput {
 
 	private function collectFromSetConnections(array $setConnections, array $currentSetConnection, array $tsumegoStatusMap) {
 		$currentIndex = array_find_key($setConnections, function ($setConnection) use ($currentSetConnection) { return $setConnection['SetConnection']['id'] === $currentSetConnection['SetConnection']['id']; });
-		if (count($setConnections) <= 13) {
+		if (count($setConnections) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE*2 + 3) {
 			foreach ($setConnections as $setConnection) {
 				$this->result [] = self::constructFromSetConnection($setConnection, $tsumegoStatusMap);
 			}
