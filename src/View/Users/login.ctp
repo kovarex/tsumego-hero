@@ -56,7 +56,7 @@
 		var cacheLifetime = new Date();
 		cacheLifetime.setTime(cacheLifetime.getTime()+1*1*1*5*1000);
 		cacheLifetime = cacheLifetime.toUTCString()+"";
-		
+
 		let cache = getCookie("cache_settings");
 		if (cache == 0)
 			document.cookie = "cache_settings=1;SameSite=none;expires="+cacheLifetime+";Secure=false";
@@ -85,10 +85,5 @@
 				}
 			}
 			return "";
-		}
-		function setCookie(cookie, value=""){
-			let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view"];
-			for(let i=0;i<paths.length;i++)
-				document.cookie = cookie+"="+value+";SameSite=Lax;expires="+cacheLifetime+";path="+paths[i];
 		}
 	</script>

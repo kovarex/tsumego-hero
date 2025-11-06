@@ -2131,7 +2131,7 @@
 						timeUp = true;
 						locked = true;
 						tryAgainTomorrow = true;
-						document.cookie = "misplay=1;path=/tsumegos/play;SameSite=Lax";
+						setCookie("misplays", 1);
 						$("#time-mode-countdown").css("color","#e03c4b");
 						document.getElementById("status").style.color = "#e03c4b";
 						document.getElementById("status").innerHTML = "<h2>Time up</h2>";
@@ -2429,7 +2429,7 @@
 		freePlayMode2done = false;
 		if(heartLoss){
 			misplays++;
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
+			document.cookie = "misplays="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			updateHealth();
 		}
 		move = 0;
@@ -2552,10 +2552,9 @@
 			doubleXP = true;
 			countDownDate = new Date();
 			countDownDate.setMinutes(countDownDate.getMinutes() + 2);
-			//setCookie("doublexp", countDownDate.getTime());
-			document.cookie = "doublexp="+countDownDate.getTime()+";path=/tsumegos/play;SameSite=Lax";
-			document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
+			setCookie(doublexp, countDownDate.getTime());
+			setCookie("sprint", 1);
+			setCookie("misplays", misplays);
 			document.getElementById("sprint").src = "/img/hp1x.png";
 			document.getElementById("sprint").style = "cursor: context-menu;";
 
@@ -3087,7 +3086,7 @@
 					toggleBoardLock(true);
 				}
 				noLastMark = true;
-				if(mode==1 && levelBar==2 && misplays==0){
+				if (mode==1 && levelBar==2 && misplays==0) {
 					elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 					runXPBar(false);
 					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
@@ -3096,9 +3095,9 @@
 				if(!noXP){
 					if(!freePlayMode){
 						misplays++;
-						document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
-						if(mode==1 || mode==2) secondsy = seconds;
-						if(mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
+						setCookie("misplays", misplays);
+						if (mode==1 || mode==2) secondsy = seconds;
+						if (mode==3) secondsy = seconds*10*<?php echo $t['Tsumego']['id']; ?>;
 						document.cookie = "seconds="+secondsy+";path=/tsumegos/play;SameSite=Lax";
 						hoverLocked = false;
 						if(mode==1) updateHealth();
@@ -3130,7 +3129,6 @@
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				noLastMark = true;
 				besogoMode2Solved = true;
-				//$("#besogo-next-button-inactive").attr("id","besogo-next-button");
 				setCookie("mode", mode);
 				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
@@ -3141,7 +3139,6 @@
 					document.cookie = "sequence="+sequence;
 					playedWrong = true;
 					$("#skipButton").text("Next");
-					document.cookie = "misplay="+eloScore+";path=/tsumegos/play;SameSite=Lax";
 					document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
 					document.cookie = "transition=2;path=/tsumegos/play;SameSite=Lax";
 					hoverLocked = false;
@@ -3189,9 +3186,9 @@
 		if(mode==2) heartLoss = false;
 
 		freePlayMode = false;
-		if(heartLoss){
+		if (heartLoss) {
 			misplays++;
-			document.cookie = "misplay="+misplays+";path=/tsumegos/play;SameSite=Lax";
+			setCookie("misplays", misplays);
 			setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 			updateHealth();
 		}

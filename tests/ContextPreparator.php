@@ -25,20 +25,18 @@ class ContextPreparator {
 			$this->user['name'] = 'kovarex';
 			$this->user['email'] = 'test@example.com';
 			$this->user['rating'] = 1500;
+			$this->user['damage'] = 0;
 			$this->user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
 			ClassRegistry::init('User')->create($this->user);
-			ClassRegistry::init('User')->save($this->user);
-			$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		}
 
+		$this->user['rating'] = $user['rating'] ?: 1500;
+		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
+		$this->user['damage'] = 0;
+		ClassRegistry::init('User')->save($this->user);
+		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+
 		if ($user) {
-			if ($user['rating']) {
-				$this->user['rating'] = $user['rating'];
-			}
-			if ($user['mode']) {
-				$this->user['mode'] = $user['mode'];
-			}
-			ClassRegistry::init('User')->save($this->user);
 			CakeSession::write('loggedInUserID', $this->user['id']);
 			assert(CakeSession::check('loggedInUserID'));
 			Auth::init();

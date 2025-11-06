@@ -254,7 +254,6 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			$context = new ContextPreparator($contextParameters);
 			$browser->get('timeMode/overview');
 
-			$page = $browser->driver->getPageSource();
 			$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
 			$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 

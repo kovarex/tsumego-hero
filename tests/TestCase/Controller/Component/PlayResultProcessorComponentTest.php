@@ -32,9 +32,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	private function performMisplay(ContextPreparator &$context, $page): void {
-		$_COOKIE['misplay'] = '1';
+		$_COOKIE['misplays'] = '1';
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['misplay']); // should be processed and cleared
+		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
 	public function testVisitFromEmpty(): void {
@@ -232,6 +232,24 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 			$this->performMisplay($context, $page);
 			Auth::init();
 			$this->assertSame($originalDamage + 1, Auth::getUser()['damage']);
+		}
+	}
+
+	public function testFailAddsDamageUsingWebDriver(): void {
+		$browser = new Browser();
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
+				'user' => ['mode' => Constants::$LEVEL_MODE]]);
+			$originalDamage = intval($context->user['damage']);
+
+			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+			usleep(1000 * 100);
+			$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+			$browser->get(self::getUrlFromPage($page, $context));
+
+			$user = ClassRegistry::init('User')->findById($context->user['id'])['User'];
+			$this->assertSame($originalDamage + 1, $user['damage']);
 		}
 	}
 }

@@ -162,7 +162,7 @@ class Play {
 				if (!empty($_COOKIE['score'])) {
 					$ratingCookieScore = true;
 				}
-				if (!empty($_COOKIE['misplay'])) {
+				if (!empty($_COOKIE['misplays'])) {
 					$ratingCookieMisplay = true;
 				}
 				if (!empty($_COOKIE['ratingModePreId']) && !$ratingCookieScore && !$ratingCookieMisplay) {
@@ -663,11 +663,11 @@ class Play {
 				Auth::getUser()['damage'] = 0;
 			}
 			Auth::saveUser();
-			$_COOKIE['misplay'] = 0;
+			$_COOKIE['misplays'] = 0;
 			unset($_COOKIE['rejuvenationx']);
 		}
 		//Incorrect
-		if (Auth::isLoggedIn() && !empty($_COOKIE['misplay']) && $_COOKIE['misplay'] != 0) {
+		if (Auth::isLoggedIn() && !empty($_COOKIE['misplays']) && $_COOKIE['misplays'] != 0) {
 			if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
 				if ($_COOKIE['type'] == 'g') {
 					AppController::updateGoldenCondition();
@@ -729,7 +729,7 @@ class Play {
 					Auth::getUser()['damage'] = Auth::getUser()['health'];
 				}
 			}
-			unset($_COOKIE['misplay']);
+			unset($_COOKIE['misplays']);
 			unset($_COOKIE['sequence']);
 			unset($_COOKIE['type']);
 			unset($_COOKIE['transition']);

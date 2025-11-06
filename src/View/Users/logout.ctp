@@ -10,11 +10,6 @@
   localStorage.removeItem("z_user_hash");
 
 	window.location.href = "/";
-	function setCookie(cookie, value=""){
-		let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view", "/users/add"];
-		for(let i=0;i<paths.length;i++)
-			document.cookie = cookie+"="+value+";SameSite=Lax;expires="+cacheLifetime+";path="+paths[i];
-	}
 	function delCookie(cookie, value=""){
 		let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view", "/users/add"];
 		for(let i=0;i<paths.length;i++)

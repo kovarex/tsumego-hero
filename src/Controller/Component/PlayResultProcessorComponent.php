@@ -28,9 +28,9 @@ class PlayResultProcessorComponent extends Component {
 
 	public function checkPreviousPlayAndGetResult($appController, &$previousTsumego): array {
 		$result = [];
-		if ($misplay = $this->checkMisplay()) {
+		if ($misplays = $this->checkMisplay()) {
 			$result['solved'] = false;
-			$result['misplay'] = $misplay;
+			$result['misplays'] = $misplays;
 		}
 		if ($this->checkCorrectPlay($appController, $previousTsumego)) {
 			$result['solved'] = true;
@@ -108,7 +108,7 @@ class PlayResultProcessorComponent extends Component {
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] += (int) Util::getCookie('seconds', 0);
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
-		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplay'] ?: 0;
+		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
@@ -145,13 +145,13 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	private function processDamage(array $result): void {
-		if (!$result['misplay']) {
+		if (!$result['misplays']) {
 			return;
 		}
 		if (!Auth::isInLevelMode()) {
 			return;
 		}
-		Auth::getUser()['damage'] += $result['misplay'];
+		Auth::getUser()['damage'] += $result['misplays'];
 		Auth::saveUser();
 	}
 
@@ -203,12 +203,9 @@ class PlayResultProcessorComponent extends Component {
 		Util::clearCookie('type');
 	}
 
-	/* @return The number of misplays */
+	/* @return The number of misplays and consumes the misplays cookie in the process */
 	private function checkMisplay(): int {
-		if (empty($_COOKIE['misplay'])) {
-			return 0;
-		}
-		return (int) Util::clearCookie('misplay');
+		return (int) Util::clearCookie('misplays');
 	}
 
 	private function isSuspicious($scoreCheck, $previousTsumegoID): bool {

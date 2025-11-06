@@ -43,6 +43,7 @@
 	?>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
+	<script type="text/javascript" src="/js/util.js"></script>
 	<script src="/js/dark.js"></script>
 	<?php
 		$modeSelector = 2;
@@ -528,7 +529,7 @@
 		soundsEnabled = value;
     }
 		document.cookie = "score=0;SameSite=Lax;expires="+lifetime+";path=/";
-		document.cookie = "misplay=0;SameSite=Lax;expires="+lifetime+";path=/";
+		document.cookie = "misplays=0;SameSite=Lax;expires="+lifetime+";path=/";
 		document.cookie = "preId=0;SameSite=Lax;expires="+lifetime+";path=/";
 		document.cookie = "sprint=0;SameSite=Lax;expires="+lifetime+";path=/";
 		document.cookie = "intuition=0;SameSite=Lax;expires="+lifetime+";path=/";
@@ -688,14 +689,6 @@
 			document.cookie = c1+c2;
 		}
 
-		function setCookie(cookie, value=""){
-			let paths = ["/", "/sets", "/sets/view", "/tsumegos/play", "/users", "/users/view"];
-			for(let i=0;i<paths.length;i++)
-				document.cookie = cookie+"="+value+";SameSite=Lax;expires="+lifetime+";path="+paths[i];
-		}
-		function setCookie2(cookie, value=""){
-			document.cookie = cookie+"="+value+";SameSite=Lax;expires="+lifetime+";path=/"
-		}
 		function logoHover(img){
 			img.src = '/img/<?php echo $logoH ?>.png';
 		}
