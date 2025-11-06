@@ -20,6 +20,7 @@ class PlayResultProcessorComponent extends Component {
 		}
 		$this->updateTsumegoAttempt($previousTsumego, $result);
 		$this->processEloChange($appController, $previousTsumego, $result);
+		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($appController, $previousTsumego, $result);
 		$this->processUnsortedStuff($appController, $previousTsumego, $result);
@@ -143,6 +144,17 @@ class PlayResultProcessorComponent extends Component {
 		}
 	}
 
+	private function processDamage(array $result): void {
+		if (!$result['misplay']) {
+			return;
+		}
+		if (!Auth::isInLevelMode()) {
+			return;
+		}
+		Auth::getUser()['damage'] += $result['misplay'];
+		Auth::saveUser();
+	}
+
 	private function processXpChange(AppController $appController, array $previousTsumego, array $result): void {
 		if (!$result['solved']) {
 			return;
@@ -162,15 +174,15 @@ class PlayResultProcessorComponent extends Component {
 		}
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
-		$appController->saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
-		$appController->updateGems($solvedTsumegoRank);
+		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
+		AppController::updateGems($solvedTsumegoRank);
 		if ($_COOKIE['sprint'] == 1) {
-			$appController->updateSprintCondition(true);
+			AppController::updateSprintCondition(true);
 		} else {
-			$appController->updateSprintCondition();
+			AppController::updateSprintCondition();
 		}
 		if ($_COOKIE['type'] == 'g') {
-			$appController->updateGoldenCondition(true);
+			AppController::updateGoldenCondition(true);
 		}
 		$aCondition = $appController->AchievementCondition->find('first', [
 			'order' => 'value DESC',
