@@ -25,7 +25,7 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumegoNavi2'));
 		$links = $div->findElements(WebDriverBy::tagName('a'));
 
-		// there should be exactly 3 links pointing to the first, current and last tsumego
+		// checking that the generated navigation buttons numbers and their links match the expected values
 		$this->assertSame(count($links), count($expectedNums));
 		for ($i = 0; $i < count($links); $i++) {
 			$this->assertSame($links[$i]->getText(), strval($context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
@@ -33,7 +33,6 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 		}
 	}
 
-	// the next and back buttons will go back to the parent set when this is last (for next) or first (for back) tsumego of that set.
 	public function testNavigationButtonsLimitedFromBothSides() {
 		$this->buttonsTestGeneric(2, [1, 3], [1, 2, 3]); // current is middle
 		$this->buttonsTestGeneric(1, [2, 3], [1, 2, 3]); // current is starting
@@ -46,22 +45,22 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 	}
 
 	public function testNavigationButtonsWithNotEnoughOnLeftCausingMoreOnTheRightStartingOnTheEdge() {
-		// the lack of buttons on the left adds buttons to the right, but still the amount is limited
+		// the lack of buttons on the left adds buttons to the right, starting at the edge
 		$this->buttonsTestGeneric(1, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
 	}
 
 	public function testNavigationButtonsWithNotEnoughOnLeftCausingMoreOnTheRightStartingNextToTheEdge() {
-		// the lack of buttons on the left adds buttons to the right, but still the amount is limited
+		// the lack of buttons on the left adds buttons to the right, starting next to the edge
 		$this->buttonsTestGeneric(2, [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 60]);
 	}
 
 	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingOnTheEdge() {
-		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
+		// the lack of buttons on the right adds buttons to the left, starting from edge
 		$this->buttonsTestGeneric(60, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
 	}
 
 	public function testNavigationButtonsWithNotEnoughOnRightCausingMoreOnTheLeftStartingNextToTheEdge() {
-		// the lack of buttons on the right adds buttons to the right, but still the amount is limited
+		// the lack of buttons on the right adds buttons to the left, starting next to the edge
 		$this->buttonsTestGeneric(16, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 60], [1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 60]);
 	}
 }
