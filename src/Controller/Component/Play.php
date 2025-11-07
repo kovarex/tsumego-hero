@@ -10,7 +10,6 @@ class Play {
 	public function play(int $setConnectionID): mixed {
 		CakeSession::write('page', 'play');
 
-		$preTsumego = null;
 		$ut = null;
 		$anzahl2 = 0;
 		$nextMode = null;
@@ -602,27 +601,6 @@ class Play {
 			$goldenTsumego = true;
 		}
 
-		if (isset($_COOKIE['previousTsumegoID'])) {
-			$preTsumego = ClassRegistry::init('Tsumego')->findById((int) $_COOKIE['previousTsumegoID']);
-			$preSc = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $preTsumego['Tsumego']['id']]]);
-			$preTsumego['Tsumego']['set_id'] = $preSc['SetConnection']['set_id'];
-			$utPre = TsumegosController::findUt((int) $_COOKIE['previousTsumegoID'], $tsumegoStatusMap);
-		}
-
-		if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
-			if (isset($_COOKIE['previousTsumegoID']) && (int) $_COOKIE['previousTsumegoID'] == $t['Tsumego']['id']) {
-				if ($_COOKIE['score'] != 0) {
-					$_COOKIE['score'] = AppController::decrypt($_COOKIE['score']);
-					$scoreArr = explode('-', $_COOKIE['score']);
-					$isNum = $preTsumego['Tsumego']['num'] == $scoreArr[0];
-					$isSet = $preTsumego['Tsumego']['set_id'] == $scoreArr[2];
-					if ($isNum && $isSet) {
-						$ut['TsumegoStatus']['status'] = 'S';
-					}
-				}
-			}
-		}
-
 		if (isset($_COOKIE['favorite']) && $_COOKIE['favorite'] != '0') {
 			if (Auth::isLoggedIn()) {
 				if ($_COOKIE['favorite'] > 0) {
@@ -665,164 +643,6 @@ class Play {
 			Auth::saveUser();
 			$_COOKIE['misplays'] = 0;
 			unset($_COOKIE['rejuvenationx']);
-		}
-		//Incorrect
-		if (Auth::isLoggedIn() && !empty($_COOKIE['misplays']) && $_COOKIE['misplays'] != 0) {
-			if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
-				if ($_COOKIE['type'] == 'g') {
-					AppController::updateGoldenCondition();
-				}
-			}
-			$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'err',
-				],
-			]);
-			if ($aCondition == null) {
-				$aCondition = [];
-			}
-			$aCondition['AchievementCondition']['category'] = 'err';
-			$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$aCondition['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->save($aCondition);
-			if (Auth::getUser()['damage'] > Auth::getUser()['health']) {
-				if (empty($utPre)) {
-					$utPre['TsumegoStatus'] = [];
-					$utPre['TsumegoStatus']['user_id'] = Auth::getUserID();
-					$utPre['TsumegoStatus']['tsumego_id'] = (int) $_COOKIE['previousTsumegoID'];
-				}
-				if (!$hasPremium) {
-					if ($utPre['TsumegoStatus']['status'] == 'W') {
-						$utPre['TsumegoStatus']['status'] = 'X';//W => X
-					} elseif ($utPre['TsumegoStatus']['status'] == 'V') {
-						$utPre['TsumegoStatus']['status'] = 'F';// V => F
-					} elseif ($utPre['TsumegoStatus']['status'] == 'G') {
-						$utPre['TsumegoStatus']['status'] = 'F';// G => F
-					} elseif ($utPre['TsumegoStatus']['status'] == 'S') {
-						$utPre['TsumegoStatus']['status'] = 'S';//S => S
-					}
-				}
-				$utPre['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-				if (!isset($utPre['TsumegoStatus']['status'])) {
-					$utPre['TsumegoStatus']['status'] = 'V';
-				}
-				if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
-					if (Auth::getUser()['potion'] != -69) {
-						$potion = Auth::getUser()['potion'];
-						$potion++;
-						CakeSession::write('loggedInUser.User.potion', $potion);
-						Auth::getUser()['potion']++;
-						$potionSuccess = false;
-						if ($potion >= 5) {
-							$potionPercent = $potion * 1.3;
-							$potionPercent2 = rand(0, 100);
-							$potionSuccess = $potionPercent > $potionPercent2;
-						}
-						if ($potionSuccess) {
-							Auth::getUser()['potion'] = -69;
-						}
-					}
-				}
-				if (Auth::isInLevelMode()) {
-					Auth::getUser()['damage'] = Auth::getUser()['health'];
-				}
-			}
-			unset($_COOKIE['misplays']);
-			unset($_COOKIE['sequence']);
-			unset($_COOKIE['type']);
-			unset($_COOKIE['transition']);
-		}
-		$correctSolveAttempt = false;
-
-		//Correct!
-		if (Auth::isLoggedIn() && isset($_COOKIE['previousTsumegoID']) && isset($_COOKIE['score']) && $_COOKIE['score'] != '0') {
-			$_COOKIE['score'] = AppController::decrypt($_COOKIE['score']);
-			$scoreArr = explode('-', $_COOKIE['score']);
-			$isNum = $preTsumego['Tsumego']['num'] == $scoreArr[0];
-			$isSet = $preTsumego['Tsumego']['set_id'] == $scoreArr[2];
-			$_COOKIE['score'] = $scoreArr[1];
-
-			$solvedTsumegoRank = Rating::getReadableRankFromRating($preTsumego['Tsumego']['rating']);
-
-			if ($isNum && $isSet || Auth::isInRatingMode()) {
-				if (Auth::isInLevelMode() || Auth::isInTimeMode()) {
-					$ub = [];
-					$ub['UserBoard']['user_id'] = Auth::getUserID();
-					$ub['UserBoard']['b1'] = (int) $_COOKIE['previousTsumegoID'];
-					ClassRegistry::init('UserBoard')->create();
-					ClassRegistry::init('UserBoard')->save($ub);
-
-					if ($_COOKIE['score'] >= 3000) {
-						$_COOKIE['score'] = 0;
-						$suspiciousBehavior = true;
-					}
-					if (Auth::getUser()['reuse3'] > 12000) {
-						Auth::getUser()['reuse4'] = 1;
-					}
-					if ($suspiciousBehavior == false) {
-						if (Auth::isInLevelMode()) {
-							$xpOld = Auth::getUser()['xp'] + ((int) ($_COOKIE['score']));
-							Auth::getUser()['reuse2']++;
-							Auth::getUser()['reuse3'] += (int) ($_COOKIE['score']);
-							if ($xpOld >= Auth::getUser()['nextlvl']) {
-								$xpOnNewLvl = -1 * (Auth::getUser()['nextlvl'] - $xpOld);
-								Auth::getUser()['xp'] = $xpOnNewLvl;
-								Auth::getUser()['level'] += 1;
-								Auth::getUser()['nextlvl'] += AppController::getXPJump(Auth::getUser()['level']);
-								Auth::getUser()['health'] = AppController::getHealth(Auth::getUser()['level']);
-							} else {
-								Auth::getUser()['xp'] = $xpOld;
-								Auth::getUser()['ip'] = $_SERVER['REMOTE_ADDR'];
-							}
-						}
-					}
-				} elseif (Auth::isInRatingMode() && $_COOKIE['transition'] != 1) {
-					$ratingModeUt['TsumegoStatus']['status'] = $_COOKIE['preTsumegoBuffer'];
-
-					if ($ratingModeUt['TsumegoStatus']['status'] == 'W') {
-						$ratingModeXp = $preTsumego['Tsumego']['difficulty'] / 2;
-					} elseif ($ratingModeUt['TsumegoStatus']['status'] == 'S' || $ratingModeUt['TsumegoStatus']['status'] == 'C') {
-						$ratingModeXp = 0;
-					} else {
-						$ratingModeXp = $preTsumego['Tsumego']['difficulty'];
-					}
-					$xpOld = Auth::getUser()['xp'] + $ratingModeXp;
-					if ($xpOld >= Auth::getUser()['nextlvl']) {
-						$xpOnNewLvl = -1 * (Auth::getUser()['nextlvl'] - $xpOld);
-						Auth::getUser()['xp'] = $xpOnNewLvl;
-						Auth::getUser()['level'] += 1;
-						Auth::getUser()['nextlvl'] += AppController::getXPJump(Auth::getUser()['level']);
-						Auth::getUser()['health'] = AppController::getHealth(Auth::getUser()['level']);
-					} else {
-						Auth::getUser()['xp'] = $xpOld;
-					}
-					Auth::saveUser();
-					Auth::getUser()['solved2']++;
-				}
-				$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-					'order' => 'value DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'category' => 'err',
-					],
-				]);
-				if ($aCondition == null) {
-					$aCondition = [];
-				}
-				$aCondition['AchievementCondition']['category'] = 'err';
-				$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-				$aCondition['AchievementCondition']['value']++;
-				ClassRegistry::init('AchievementCondition')->save($aCondition);
-			} else {
-				Auth::getUser()['penalty'] += 1;
-			}
-			unset($_COOKIE['preTsumegoBuffer']);
-			unset($_COOKIE['score']);
-			unset($_COOKIE['transition']);
-			unset($_COOKIE['sequence']);
-			unset($_COOKIE['type']);
 		}
 
 		Util::setCookie('previousTsumegoID', $id);

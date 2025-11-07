@@ -31,6 +31,7 @@ class PlayResultProcessorComponent extends Component {
 		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result);
+		$this->processErrorAchievement($result);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
 
@@ -176,6 +177,28 @@ class PlayResultProcessorComponent extends Component {
 		}
 	}
 
+	private function processErrorAchievement(array $result): void {
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'order' => 'value DESC',
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err',
+			],
+		]);
+		if (!$achievementCondition) {
+			$achievementCondition = [];
+			ClassRegistry::init('AchievementCondition')->create();
+		}
+		$achievementCondition['AchievementCondition']['category'] = 'err';
+		$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
+		if ($result['solved']) {
+			$achievementCondition['AchievementCondition']['value']++;
+		} else {
+			$achievementCondition['AchievementCondition']['value'] = 0;
+		}
+		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+	}
+
 	private function processUnsortedStuff(array $previousTsumego, array $result): void {
 		if (!$result['solved']) {
 			return;
@@ -192,20 +215,6 @@ class PlayResultProcessorComponent extends Component {
 		if ($_COOKIE['type'] == 'g') {
 			AppController::updateGoldenCondition(true);
 		}
-		$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'category' => 'err',
-			],
-		]);
-		if ($aCondition == null) {
-			$aCondition = [];
-		}
-		$aCondition['AchievementCondition']['category'] = 'err';
-		$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		$aCondition['AchievementCondition']['value']++;
-		ClassRegistry::init('AchievementCondition')->save($aCondition);
 
 		Util::clearCookie('sequence');
 		Util::clearCookie('type');
