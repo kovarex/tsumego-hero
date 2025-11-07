@@ -2,13 +2,13 @@
 
 class Util {
 	public static function setCookie($name, $value) {
-		setcookie($name, $value, time() + 365 * 24 * 60 * 60, "/", "", true, false);
+		setcookie($name, $value, time() + 365 * 24 * 60 * 60, "/", "", false, false);
 	}
 
 	/* @return The value of the cleared cookie */
 	public static function clearCookie(string $name): ?string {
 		$result = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : null;
-		setcookie($name, '', 1, "/", "", true, false);
+		setcookie($name, '', 1, "/", "", false, false);
 		$_COOKIE[$name] = '';
 		return $result;
 	}
