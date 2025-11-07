@@ -135,33 +135,6 @@ class TimeModeComponent extends Component {
 		}
 	}
 
-	private static function decodeSecondsCheck($previousTsumego): ?int {
-		$secondsCheck = Util::clearCookie('secondsCheck');
-		if (!$secondsCheck) {
-			Auth::addSuspicion();
-			return null;
-		}
-
-		if (!is_numeric($secondsCheck)) {
-			Auth::addSuspicion();
-			return null;
-		}
-
-		$secondsCheck = intval($secondsCheck);
-
-		if ($secondsCheck % 79 != 0) {
-			Auth::addSuspicion();
-			return null;
-		}
-		$secondsCheck /= 79;
-		if ($secondsCheck % $previousTsumego['Tsumego']['id'] != 0) {
-			Auth::addSuspicion();
-			return null;
-		}
-
-		return ($secondsCheck / $previousTsumego['Tsumego']['id']) / 10;
-	}
-
 	public function processPlayResult($previousTsumego, $result): void {
 		if (!$this->currentSession) {
 			return;
@@ -172,12 +145,12 @@ class TimeModeComponent extends Component {
 				'tsumego_id' => $previousTsumego['Tsumego']['id'],
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
 		if (!$currentAttempt) {
-			return;
+			throw new Exception("The tsumego is not in the current time mode session.");
 		}
 		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = $result['solved'] ? TimeModeUtil::$ATTEMPT_RESULT_SOLVED : TimeModeUtil::$ATTEMPT_RESULT_FAILED;
-		$seconds = self::decodeSecondsCheck($previousTsumego);
+		$seconds = Decoder::decodeSeconds($previousTsumego);
 		if (is_null($seconds)) {
-			return;
+			throw new Exception("Seconds not provided.");
 		}
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($this->currentSession['TimeModeSession']['time_mode_category_id']);
 

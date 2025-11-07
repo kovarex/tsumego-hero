@@ -1,11 +1,36 @@
 <?php
 
 class Util {
+	public static function setCookie($name, $value) {
+		setcookie($name, $value, time() + 365 * 24 * 60 * 60, "/", "", true, true);
+	}
+
 	/* @return The value of the cleared cookie */
 	public static function clearCookie(string $name): ?string {
 		$result = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : null;
-		setcookie($name, '', 1);
+		setcookie($name, '', 1, "/", "", true, true);
 		$_COOKIE[$name] = '';
+		return $result;
+	}
+
+	/* @return Int value of the cleared cookie, returns null if the cookeie isn't present. throws if it isn't numeric */
+	public static function clearNumericCookie(string $name): ?int {
+		$result = Util::clearCookie($name);
+		if (!$result) {
+			return null;
+		}
+		if (!is_numeric($result)) {
+			throw new Exception("Cookie " . $name . " should be numeric but has value '" . strval($result) . "'.");
+		}
+		return intval($result);
+	}
+
+	/* @return Int value of the cleared cookie, throws excpetion when the cookie isn't present or isn't numeric */
+	public static function clearRequiredNumericCookie(string $name): int {
+		$result = Util::clearNumericCookie($name);
+		if (is_null($result)) {
+			throw new Exception("Cookie " . $name . " is expected to be defined, but it isn't");
+		}
 		return $result;
 	}
 

@@ -825,8 +825,7 @@ class Play {
 			unset($_COOKIE['type']);
 		}
 
-		unset($_COOKIE['previousTsumegoID']);
-		setcookie('previousTsumegoID', $id);
+		Util::setCookie('previousTsumegoID', $id);
 		if (Auth::isLoggedIn()) {
 			if (isset($_COOKIE['doublexp']) && $_COOKIE['doublexp'] != '0') {
 				if (Auth::getUser()['usedSprint'] == 0) {
@@ -1728,7 +1727,7 @@ class Play {
 			($this->setFunction)('barPercent', 0);
 		}
 		($this->setFunction)('t', $t);
-		($this->setFunction)('scoreCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
+		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
 		($this->setFunction)('previousLink', $previousLink);
 		($this->setFunction)('hash', $hash);
 		($this->setFunction)('nextMode', $nextMode);

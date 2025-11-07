@@ -26,13 +26,15 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 
 	private function performSolve(ContextPreparator &$context, $page): void {
 		$_COOKIE['mode'] = '1';
-		$_COOKIE['scoreCheck'] = Util::wierdEncrypt($context->tsumego['id'] . '-' . time());
+		$_COOKIE['solvedCheck'] = Util::wierdEncrypt($context->tsumego['id'] . '-' . time());
+		$_COOKIE['secondsCheck'] = $context->tsumego['id'] * 7900 * 0.01;
 		$this->performVisit($context, $page);
 		$this->assertEmpty($_COOKIE['score']); // should be processed and cleared
 	}
 
 	private function performMisplay(ContextPreparator &$context, $page): void {
 		$_COOKIE['misplays'] = '1';
+		$_COOKIE['secondsCheck'] = $context->tsumego['id'] * 7900 * 0.01;
 		$this->performVisit($context, $page);
 		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
@@ -50,6 +52,22 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'S');
+		}
+	}
+
+	public function testSolveFromEmptyByWebDriver(): void {
+		$browser = new Browser();
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => ['mode' => Constants::$LEVEL_MODE],
+				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
+			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+			usleep(1000 * 100);
+			$browser->driver->executeScript("displayResult('S')"); // Fail the problem
+			$browser->get(self::getUrlFromPage($page, $context));
+			$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumego['id']]]);
+			$this->assertSame(count($statuses), 1);
+			$this->assertSame($statuses[0]['TsumegoStatus']['status'], 'S');
 		}
 	}
 

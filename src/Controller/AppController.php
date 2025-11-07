@@ -511,7 +511,7 @@ class AppController extends Controller {
 		return $solvedUts2;
 	}
 
-	public function convertEloToXp($elo) {
+	public static function convertEloToXp($elo) {
 		$xp = round(pow($elo / 100, 1.55) - 6);
 		if ($xp < 10) {
 			$xp = 10;
@@ -3498,28 +3498,6 @@ class AppController extends Controller {
 			$mode = 2;
 		}
 
-		$previosTsumego = null;
-		if (isset($_COOKIE['previousTsumegoID'])) {
-			if (Auth::isLoggedIn()) {
-				$utsx = $this->TsumegoStatus->find('all', [
-					'order' => 'created DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'tsumego_id' => (int) $_COOKIE['previousTsumegoID'],
-					],
-				]);
-				if (!$utsx) {
-					$utsx = [];
-				}
-				if (count($utsx) > 1) {
-					$utsxCount = count($utsx);
-					for ($i = 1; $i < $utsxCount; $i++) {
-						$this->TsumegoStatus->delete($utsx[$i]['TsumegoStatus']['id']);
-					}
-				}
-			}
-			$previousTsumego = $this->Tsumego->findById((int) $_COOKIE['previousTsumegoID']);
-		}
 		if ($_COOKIE['sprint'] != 1) {
 			$this->updateSprintCondition();
 		}
@@ -3530,7 +3508,7 @@ class AppController extends Controller {
 				Auth::getUser()['revelation'] -= 1;
 			}
 
-			$this->PlayResultProcessor->checkPreviousPlay($this, $previousTsumego, $this->TimeMode);
+			$this->PlayResultProcessor->checkPreviousPlay($this->TimeMode);
 
 			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
 				if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {
