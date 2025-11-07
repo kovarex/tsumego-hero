@@ -109,13 +109,24 @@ jobs:
           nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
+      # 🧱 Install Caddy for HTTPS reverse proxying
+      - name: Install Caddy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y caddy
+
+      # 🔐 Start HTTPS proxy that forwards to the PHP server
       - name: Start HTTPS proxy with Caddy
         run: |
-          echo ":8443 {
+          cat > Caddyfile <<'EOF'
+          :8443 {
+              tls internal
               reverse_proxy host.docker.internal:8080
-          }" > Caddyfile
+          }
+          EOF
           nohup caddy run --config Caddyfile > caddy.log 2>&1 &
           sleep 3
+          echo "Caddy HTTPS proxy started on https://host.docker.internal:8443"
 
       - name: Run tests
         env:
