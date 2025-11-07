@@ -109,10 +109,18 @@ jobs:
           nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
+      - name: Start HTTPS proxy with Caddy
+        run: |
+          echo ":8443 {
+              reverse_proxy host.docker.internal:8080
+          }" > Caddyfile
+          nohup caddy run --config Caddyfile > caddy.log 2>&1 &
+          sleep 3
+
       - name: Run tests
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: http://host.docker.internal:8080
+          TEST_APP_URL: https://host.docker.internal:8080
           TEST_ENVIRONMENT: github-ci
         run: composer test
 
