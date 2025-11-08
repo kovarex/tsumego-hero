@@ -20,7 +20,7 @@ class Play {
 		return 'V';
 	}
 
-	public function play(int $setConnectionID, array $params): mixed {
+	public function play(int $setConnectionID, $params): mixed {
 		CakeSession::write('page', 'play');
 
 		$anzahl2 = 0;
