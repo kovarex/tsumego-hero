@@ -3273,10 +3273,10 @@
 		options.theme = '<?php echo $choice[0][1]; ?>';
 		options.themeParameters = ['<?php echo $choice[0][2]; ?>', '<?php echo $choice[0][3]; ?>'];
 		options.coord = 'western';
-		options.sgf = 'https://<?php echo $_SERVER['HTTP_HOST']; ?>/placeholder.sgf';
+		options.sgf = '<?php echo Util::getMyAddress(); ?>/placeholder.sgf';
 		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
 		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
-		if (options.theme) addStyleLink('https://<?php echo $_SERVER['HTTP_HOST']; ?>/besogo/css/board-'+options.theme+'.css');
+		if (options.theme) addStyleLink('<?php echo Util::getMyAddress(); ?>/besogo/css/board-'+options.theme+'.css');
 		if (options.height && options.width && options.resize === 'fixed')
 		{
 			div.style.height = options.height + 'px';
