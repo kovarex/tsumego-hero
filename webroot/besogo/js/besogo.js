@@ -273,9 +273,9 @@
     if (typeof options.onSite === "string") {
       besogo.onSite = options.onSite;
       besogo.onSite = besogo.onSite.split("$");
-      options.sgf = "https://" + besogo.onSite[0] + "/placeholder.sgf";
+      options.sgf = besogo.onSite[0] + "/placeholder.sgf";
     } else {
-      options.sgf = "https://" + window.location.host + "/placeholder.sgf";
+      options.sgf = window.location.host + "/placeholder.sgf";
     }
 
     let sgfLoaded = {

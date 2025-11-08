@@ -122,11 +122,11 @@ class Util {
 	}
 
 	public static function getMyAddress() {
-		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST']) {
-			return $_SERVER['HTTP_X_FORWARDED_HOST'];
-		}
 		if (Util::isInGithubCI()) {
 			return $_SERVER['TEST_APP_URL'];
+		}
+		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST']) {
+			return 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
 		}
 		return "https://test.tsumego.ddev.site:33003";
 	}
