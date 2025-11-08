@@ -49,17 +49,7 @@ class Browser {
 		}
 		// This is what I would expect to be the proper way, but it hangs session start on the client
 		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);
-		$this->driver->get(self::getAddress() . '/' . $url);
-	}
-
-	public static function getAddress() {
-		if ($url = @$_SERVER['DDEV_PRIMARY_URL']) {
-			return str_replace('https://', 'https://test.', $url);
-		}
-		if (Util::isInGithubCI()) {
-			return $_SERVER['TEST_APP_URL'];
-		}
-		return "https://test.tsumego.ddev.site:33003";
+		$this->driver->get(Util::getMyAddress() . '/' . $url);
 	}
 
 	public $driver;

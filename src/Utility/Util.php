@@ -120,4 +120,14 @@ class Util {
 	public static function nextVersionNumber(?string $input = null): string {
 		return number_format(min(round(intval($input ?: 0) + 0.1, 1), 1), 1);
 	}
+
+	public static function getMyAddress() {
+		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST']) {
+			return $_SERVER['HTTP_X_FORWARDED_HOST'];
+		}
+		if (Util::isInGithubCI()) {
+			return $_SERVER['TEST_APP_URL'];
+		}
+		return "https://test.tsumego.ddev.site:33003";
+	}
 }

@@ -9,5 +9,5 @@
 		<?php if($s2!=null){ ?>
 			localStorage.setItem("diffForBesogo", "<?php echo $s2['Sgf']['sgf']?>");
 		<?php } ?>
-		window.location.href = "<?php echo '/editor/?onSite='.$_SERVER['HTTP_HOST'].'$'.($t['Tsumego']['id']*1337).$diff; ?>";
+		window.location.href = "<?php echo '/editor/?onSite='.str_replace("https://", "", Util::getMyAddress()).'$'.($t['Tsumego']['id']*1337).$diff; ?>";
 	</script>
