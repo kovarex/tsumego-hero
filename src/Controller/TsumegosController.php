@@ -46,7 +46,7 @@ class TsumegosController extends AppController {
 		}
 
 		if ($setConnectionID) {
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params);
 		}
 
 		if (!$id) {
@@ -58,7 +58,7 @@ class TsumegosController extends AppController {
 			throw new AppException("Problem without any set connection");
 		} // some redirect/nicer message ?
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id']);
+		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params);
 	}
 
 	public static function getPopularTags($tags) {

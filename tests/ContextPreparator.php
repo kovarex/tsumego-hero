@@ -30,6 +30,7 @@ class ContextPreparator {
 			ClassRegistry::init('User')->create($this->user);
 		}
 
+		$this->user['isAdmin'] = $user['admin'] ?? false;
 		$this->user['rating'] = $user['rating'] ?: 1500;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
 		$this->user['damage'] = 0;

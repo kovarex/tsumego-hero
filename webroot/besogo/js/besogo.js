@@ -274,12 +274,6 @@
       besogo.onSite = options.onSite;
       besogo.onSite = besogo.onSite.split("$");
       options.sgf = "https://" + besogo.onSite[0] + "/placeholder.sgf";
-      let cookieSgf = localStorage.getItem("sgfForBesogo");
-      localStorage.removeItem("sgfForBesogo");
-      cookieSgf = cookieSgf.replaceAll("€", "\n");
-      cookieSgf = cookieSgf.replaceAll("@", ";");
-      cookieSgf = cookieSgf.replaceAll("%2B", "+");
-      options.sgf2 = cookieSgf;
     } else {
       options.sgf = "https://" + window.location.host + "/placeholder.sgf";
     }

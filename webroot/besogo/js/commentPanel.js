@@ -66,6 +66,8 @@ besogo.makeCommentPanel = function(container, editor)
           CP: 'Copyright'
       };
 
+  commentEdit.id = "commentEditField";
+
   statusLabel = createStatusLabel();
   statusTable = createStatusTable();
 
@@ -591,6 +593,7 @@ besogo.makeCommentPanel = function(container, editor)
     button.type = 'button';
     button.value = 'Comment';
     button.title = 'Edit comment';
+	button.id = 'sgfCommentButton';
 
     button.onclick = function()
     {

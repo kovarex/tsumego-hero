@@ -52,4 +52,20 @@ class TsumegoUtil {
 
 		return $tsx;
 	}
+
+	public static function hasStateAllowingInspection($tsumego) {
+		return TsumegoUtil::isStatusAllowingInspection($status = $tsumego['Tsumego']['status']);
+	}
+
+	public static function isStatusAllowingInspection($status) {
+		return $status == 'S' || $status == 'C';
+	}
+
+	public static function getJavascriptMethodisStatusAllowingInspection() {
+		$result = '\tfunction isStatusAllowingInspection(status)\n';
+		$result .= '\t{\n';
+		$result .= '\t\treturn status == \'S\' || status == \'C\';\n';
+		$result .= '\t}\n';
+		return $result;
+	}
 }

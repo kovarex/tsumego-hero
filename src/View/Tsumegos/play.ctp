@@ -523,16 +523,16 @@
 	<div align="center">
 	<?php
 
-		if($firstRanks==0){
+		if($firstRanks==0) {
 			$makeProposal = '';
 			$proposalSentColor = '';
 			if(Auth::isAdmin())
 				$makeProposal = 'Open';
-			else{
-				if(!$hasSgfProposal){
+			else {
+				if(!$hasSgfProposal) {
 					if($isAllowedToContribute)
 						$makeProposal = 'Make Proposal';
-				}else{
+				} else {
 					$makeProposal = 'Proposal sent';
 					$proposalSentColor = 'color:#717171;';
 				}
@@ -558,7 +558,7 @@
 		</div>
 		<br>
 		<?php
-			echo '<a id="showx5" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
 			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -1850,6 +1850,7 @@
 			echo 'reviewEnabled = true;';
 		}
 		?>
+<?php TsumegoUtil::getJavascriptMethodisStatusAllowingInspection(); ?>
 	let tags = [];
 	let unapprovedTags = [];
 	let tagsGivesHint = [];
@@ -2282,7 +2283,7 @@
 			}
 		});
 		let solutionRequest = true;
-		<?php if(($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2') || $isSandbox){ ?>
+		<?php if(TsumegoUtil::hasStateAllowingInspection($t) || $isSandbox) { ?>
 			displaySettings();
 			solutionRequest = false;
 		<?php } ?>
@@ -2354,8 +2355,8 @@
 		enableDownloads = true;
 		$("#showx3").css("display", "inline-block");
 		$("#showx7x").css("display", "inline-block");
-		$("#showx5").css("display", "inline-block");
-		$("#showx5").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
+		$("#openSgfLink").css("display", "inline-block");
+		$("#openSgfLink").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
 		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
@@ -2416,8 +2417,7 @@
 		<?php if($checkBSize!=19) echo 'boardSize = '.$checkBSize.';'; ?>
 		var i, j;
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		if(tStatus=="setS2"||tStatus=="setC2") heartLoss = false;
-		else heartLoss = true;
+		heartLoss = !isStatusAllowingInspection(tStatus);
 
 		if(move==0) heartLoss = false;
 		if(noXP==true||freePlayMode==true||locked==true||authorProblem==true) heartLoss = false;
@@ -2425,7 +2425,7 @@
 		freePlayMode = false;
 		freePlayMode2 = false;
 		freePlayMode2done = false;
-		if(heartLoss){
+		if(heartLoss) {
 			misplays++;
 			document.cookie = "misplays="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			updateHealth();
@@ -2587,8 +2587,8 @@
 							clearInterval(x);
 							<?php
 							if(isset($sprintActivated))
-								echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=Lax";';
-							if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
+								echo 'setCookie("sprint", 2)';
+							if (TsumegoUtil::hasStateAllowingInspection($t)) {
 								echo '
 									document.getElementById("xpDisplay").style.color = "'.$playGreenColor.'";
 									document.getElementById("xpDisplay").innerHTML = \'<font size="4"><b>Solved</b> ('.$t['Tsumego']['difficulty'].' XP) '.$sandboxComment.'</font>\';
@@ -3291,9 +3291,9 @@
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
-		besogo.editor.setAutoPlay(true);
-		besogo.editor.registerDisplayResult(displayResult);
-		besogo.editor.registerShowComment(function(commentText)
+	besogo.editor.setAutoPlay(true);
+	besogo.editor.registerDisplayResult(displayResult);
+	besogo.editor.registerShowComment(function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
 			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");

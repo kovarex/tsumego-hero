@@ -89,6 +89,7 @@ besogo.makeFilePanel = function (container, editor) {
     element = document.createElement("input");
     element.type = "button";
     element.value = "Save";
+	element.id = "saveSGFButton";
     element.title = "Go back to Tsumego Hero and save the problem";
     element.onclick = function () {
       if (!checkCompatibility()) return;
