@@ -61,12 +61,9 @@ class SgfsController extends AppController {
 
 		if (isset($this->params['url']['user'])) {
 			$s = $this->Sgf->find('all', [
-				'order' => 'version DESC',
+				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => [
-					'user_id' => $this->params['url']['user'],
-					'NOT' => ['version' => 0],
-				],
+				'conditions' => ['user_id' => $this->params['url']['user']],
 			]);
 			if (!$s) {
 				$s = [];
@@ -74,13 +71,9 @@ class SgfsController extends AppController {
 			$type = 'user';
 		} else {
 			$s = $this->Sgf->find('all', [
-				'order' => 'version DESC',
+				'order' => 'id DESC',
 				'limit' => 100,
-				'conditions' => [
-					'tsumego_id' => $id,
-					'NOT' => ['version' => 0],
-				],
-			]);
+				'conditions' => ['tsumego_id' => $id]]);
 			if (!$s) {
 				$s = [];
 			}
@@ -111,7 +104,7 @@ class SgfsController extends AppController {
 				$s[$i]['Sgf']['delete'] = false;
 			}
 			if ($type == 'user') {
-				$sDiff = $this->Sgf->find('all', ['order' => 'version DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
+				$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
 				if (!$sDiff) {
 					$sDiff = [];
 				}

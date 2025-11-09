@@ -209,7 +209,7 @@ class TsumegosController extends AppController {
 		}
 		$s = $this->Set->findById($sc['SetConnection']['set_id']);
 		$title = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
-		$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf) {
 			throw new NotFoundException('SGF not found');
 		}
@@ -260,7 +260,7 @@ class TsumegosController extends AppController {
 
 			for ($i = 0; $i < $tsCount; $i++) {
 				if ($ts[$i]['Tsumego']['id'] != $id) {
-					$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
+					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 					$sgfArr = $this->processSGF($sgf['Sgf']['sgf']);
 					$numStones = count($sgfArr[1]);
 					$stoneNumberDiff = abs($numStones - $tNumStones);
@@ -346,7 +346,7 @@ class TsumegosController extends AppController {
 		}
 		$s = $this->Set->findById($sc['SetConnection']['set_id']);
 		$title = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
-		$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf) {
 			throw new NotFoundException('SGF not found');
 		}
@@ -379,7 +379,7 @@ class TsumegosController extends AppController {
 
 		for ($i = 0; $i < $tsCount; $i++) {
 			if ($ts[$i]['Tsumego']['id'] != $id) {
-				$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
+				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 				if (!$sgf) {
 					continue;
 				}

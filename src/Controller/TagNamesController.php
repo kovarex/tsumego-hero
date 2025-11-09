@@ -73,10 +73,7 @@ class TagNamesController extends AppController {
 		$proposals = $this->Sgf->find('all', [
 			'limit' => 50,
 			'order' => 'created DESC',
-			'conditions' => [
-				'user_id' => $id,
-				'NOT' => ['version' => 0],
-			],
+			'conditions' => ['user_id' => $id],
 		]);
 		if (!$proposals) {
 			$proposals = [];

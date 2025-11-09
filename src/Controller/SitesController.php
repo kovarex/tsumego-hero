@@ -81,7 +81,7 @@ class SitesController extends AppController {
 		$popularTooltip = [];
 		$popularTooltipInfo = [];
 		$popularTooltipBoardSize = [];
-		$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
+		$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
 		if (!$ptts) {
 			$ptts = [];
 		}
@@ -105,7 +105,7 @@ class SitesController extends AppController {
 		$tooltipInfo = [];
 		$tooltipBoardSize = [];
 		foreach ($scheduleTsumego as $tsumego) {
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]);
 			if (!$tts) {
 				$tts = [];
 			}

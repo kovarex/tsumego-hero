@@ -447,56 +447,6 @@ class Play {
 				move_uploaded_file($file_tmp, $uploadfile);
 			}
 		}
-		if (isset($_FILES['adminUpload'])) {
-			$errors = [];
-			$file_name = $_FILES['adminUpload']['name'];
-			$file_size = $_FILES['adminUpload']['size'];
-			$array1 = explode('.', $_FILES['adminUpload']['name']);
-			$file_ext = strtolower(end($array1));
-			$extensions = ['sgf'];
-			if (in_array($file_ext, $extensions) === false) {
-				$errors[] = 'Only SGF files are allowed.';
-			}
-			if ($file_size > 2097152) {
-				$errors[] = 'The file is too large.';
-			}
-			$fSet = ClassRegistry::init('Set')->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
-			ClassRegistry::init('AdminActivity')->create();
-			$adminActivity = [];
-			$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-			$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-			$adminActivity['AdminActivity']['file'] = $t['Tsumego']['num'];
-			$adminActivity['AdminActivity']['answer'] = $file_name;
-			ClassRegistry::init('AdminActivity')->save($adminActivity);
-			$t['Tsumego']['variance'] = 0;
-			if ($t['Tsumego']['rating'] > 100) {
-				ClassRegistry::init('Tsumego')->save($t, true);
-			}
-
-			if (empty($errors) == true) {
-				if ($t['Tsumego']['duplicate'] <= 9) {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $id]]);
-				} else {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $t['Tsumego']['duplicate']]]);
-				}
-				if (!$lastV) {
-					$lastV = ['Sgf' => ['version' => 0]];
-				}
-				$sgf = [];
-				$sgf['Sgf']['sgf'] = file_get_contents($_FILES['adminUpload']['tmp_name']);
-				$sgf['Sgf']['user_id'] = Auth::getUserID();
-
-				if ($t['Tsumego']['duplicate'] <= 9) {
-					$sgf['Sgf']['tsumego_id'] = $id;
-				} else {
-					$sgf['Sgf']['tsumego_id'] = $t['Tsumego']['duplicate'];
-				}
-
-				$sgf['Sgf']['version'] = Util::nextVersionNumber($lastV['Sgf']['version']);
-				AppController::handleContribution(Auth::getUserID(), 'made_proposal');
-				ClassRegistry::init('Sgf')->save($sgf);
-			}
-		}
 		$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * $fSet['Set']['multiplier']);
 
 		if (Auth::isLoggedIn()) {
@@ -759,11 +709,10 @@ class Play {
 		}
 
 		$sgf = [];
-		$sgfdb = ClassRegistry::init('Sgf')->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgfdb = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgfdb) {
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
 			$sgf['Sgf']['tsumego_id'] = $id;
-			$sgf['Sgf']['version'] = 1;
 		} else {
 			$sgf = $sgfdb;
 		}
@@ -795,20 +744,15 @@ class Play {
 				$requestProblem = str_replace('€', "\n", $requestProblem);
 				$requestProblem = str_replace('%2B', '+', $requestProblem);
 				if ($t['Tsumego']['duplicate'] <= 9) {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $id]]);
+					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 				} else {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $t['Tsumego']['duplicate']]]);
+					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $t['Tsumego']['duplicate']]]);
 				}
 				if ($requestProblem !== $lastV['Sgf']['sgf']) {
 					$sgf = [];
 					$sgf['Sgf']['sgf'] = $requestProblem;
 					$sgf['Sgf']['user_id'] = Auth::getUserID();
 					$sgf['Sgf']['tsumego_id'] = $id;
-					if (Auth::isAdmin()) {
-						$sgf['Sgf']['version'] = Util::nextVersionNumber();
-					} else {
-						$sgf['Sgf']['version'] = 0;
-					}
 					ClassRegistry::init('Sgf')->save($sgf);
 					$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 					$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
@@ -1372,7 +1316,7 @@ class Play {
 			$hasRevelation = true;
 		}
 
-		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'version' => 0, 'user_id' => Auth::getUserID()]]);
+		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
 		$isAllowedToContribute2 = false;
 		if (Auth::isLoggedIn()) {

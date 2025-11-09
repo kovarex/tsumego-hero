@@ -2,11 +2,11 @@
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}	
+		}
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
-	
+
 	?>
 	<script src ="/FileSaver.min.js"></script>
 
@@ -18,7 +18,7 @@
 		<?php }else{ ?>
 			Upload History of <?php echo $ux; ?>
 		<?php } ?>
-		<br><br> 
+		<br><br>
 	</p>
 	<?php if(!empty($dId)){ ?>
 		<div>
@@ -64,14 +64,14 @@
 				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.$s[$i]['Sgf']['title'].'</a> ';
 			if(floor($s[$i]['Sgf']['version'])==$s[$i]['Sgf']['version']) $isDecimal='.0';
 			else $isDecimal='';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v'.$s[$i]['Sgf']['version'].$isDecimal.'</a>';
+			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1).'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">
 			<a id="open-'.$s[$i]['Sgf']['id'].'">open</a>&nbsp;&nbsp;&nbsp;';
 			if($i!=count($s)-1)
 				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'">diff</a>&nbsp;&nbsp;&nbsp;';
 			echo '<a href="#" id="dl2-'.$s[$i]['Sgf']['id'].'">download</a>';
-			if($s[$i]['Sgf']['delete']) 
+			if($s[$i]['Sgf']['delete'])
 				echo '&nbsp;&nbsp;&nbsp;<a onclick="delV('.$s[$i]['Sgf']['id'].');" href="#">delete</a>';
 			echo '</td>
 			</tr>';
@@ -86,11 +86,11 @@
 		var confirmed = confirm("Are you sure?");
 		if(confirmed) window.location.href = "/sgfs/view/<?php echo $id2; ?>?delete="+sgfid;
 	}
-	
+
 	<?php for($i=0; $i<count($s); $i++){ ?>
 		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id']; ?>");
 		<?php
-		if($i!=count($s)-1) 
+		if($i!=count($s)-1)
 			echo '$("#compare-'.$s[$i]['Sgf']['id'].'").attr("href", "/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id'].'/'.$s[$i]['Sgf']['diff'].'");';
 		?>
 		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
@@ -108,7 +108,7 @@
 		$("#<?php echo $s[$i]['Sgf']['id']; ?>").hover(
 		  function () {
 			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
-		  }, 
+		  },
 		  function () {
 			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
 		  }
@@ -118,7 +118,7 @@
 			  function () {
 				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
 				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
-			  }, 
+			  },
 			  function () {
 				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
 				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","");

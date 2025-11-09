@@ -54,7 +54,7 @@ class TsumegoUtil {
 	}
 
 	public static function hasStateAllowingInspection($tsumego) {
-		return TsumegoUtil::isStatusAllowingInspection($status = $tsumego['Tsumego']['status']);
+		return TsumegoUtil::isStatusAllowingInspection($tsumego['Tsumego']['status']);
 	}
 
 	public static function isStatusAllowingInspection($status) {

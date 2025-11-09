@@ -558,7 +558,7 @@
 		</div>
 		<br>
 		<?php
-			echo '<a id="openSgfLink" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
+			echo '<a id="openSgfLink" href="/editor?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
 			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
@@ -2356,7 +2356,6 @@
 		$("#showx3").css("display", "inline-block");
 		$("#showx7x").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
-		$("#openSgfLink").attr("href", "<?php echo '/tsumegos/open/'.$t['Tsumego']['id'].'/'.$sgf['Sgf']['id']; ?>");
 		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
