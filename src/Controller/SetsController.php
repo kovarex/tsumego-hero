@@ -694,34 +694,20 @@ class SetsController extends AppController {
 				}
 				$ranksArray = $ranksArray2;
 			}
-			$ranksArrayCount = count($ranksArray);
-			for ($i = 0; $i < $ranksArrayCount; $i++) {
-				$ftFrom = [];
-				$ftTo = [];
-				$ftFrom['rating >='] = AppController::getTsumegoElo($ranksArray[$i]['rank']);
-				$ftTo['rating <'] = $ftFrom['rating >='] + 100;
-				if ($ranksArray[$i]['rank'] == '15k') {
-					$ftFrom['rating >='] = 50;
-				}
-				$notPremiumArray = [];
+			foreach ($ranksArray as $rank) {
+				$condition = "";
+				RatingBounds::coverRank($rank['rank'], '15k')->addSqlConditions($condition);
 				if (!Auth::hasPremium()) {
-					$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
+					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				$ts1 = $this->Tsumego->find('all', [
-					'order' => 'id ASC',
-					'conditions' => [
-						'public' => 1,
-						$notPremiumArray,
-						$ftFrom,
-						$ftTo,
-						$setConditions,
-					],
-				]) ?: [];
-				$setAmount = count($ts1);
+				$query = "SELECT tsumego.id as id ".
+						 "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id".
+					     " JOIN `set` ON `set`.id=set_connection.set_id".$condition;
+				$tsumegoIDs = ClassRegistry::init('Tsumego')->query($query);
+				$setAmount = count($tsumegoIDs);
 				$currentIds = [];
-				$ts1Count2 = count($ts1);
-				for ($j = 0; $j < $ts1Count2; $j++) {
-					array_push($currentIds, $ts1[$j]['Tsumego']['id']);
+				foreach ($tsumegoIDs as $tsumegoID) {
+					$currentIds []= $tsumegoID['id'];
 				}
 
 				if (count($search3) > 0) {
