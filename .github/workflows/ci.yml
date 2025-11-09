@@ -126,11 +126,13 @@ jobs:
           mkdir -p coverage
           ./vendor/bin/phpunit --coverage-html coverage
 
-      - name: Upload coverage report as artifact
-        uses: actions/upload-artifact@v4
+      - name: Deploy coverage to GitHub Pages
+        if: github.ref == 'refs/heads/master'   # only on master/main
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: coverage-html
-          path: coverage/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./coverage
+          destination_dir: coverage
 
       - name: Run PHPStan
         run: composer stan -- --error-format=github
