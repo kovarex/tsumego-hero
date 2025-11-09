@@ -105,7 +105,7 @@ class SetsController extends AppController {
 			array_push($d2[$counter], $td);
 			$currentGroup = $d[$i]['Duplicate']['dGroup'];
 
-			$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
+			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
 			if (!$sgf) {
 				continue;
 			}
@@ -2106,7 +2106,7 @@ class SetsController extends AppController {
 		$tooltipBoardSize = [];
 		$tsCount = count($ts);
 		for ($i = 0; $i < $tsCount; $i++) {
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs, $tArr[0]);
 			array_push($tooltipInfo, $tArr[2]);
@@ -2293,7 +2293,7 @@ class SetsController extends AppController {
 			$tCount = count($t);
 			for ($i = 0; $i < $tCount; $i++) {
 				$t[$i]['Tsumego']['title'] = $s['Set']['title'] . ' ' . $t[$i]['Tsumego']['num'];
-				$sgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $t[$i]['Tsumego']['id']]]);
+				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $t[$i]['Tsumego']['id']]]);
 				$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 				//$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 				$t[$i]['Tsumego']['sgf'] = $sgf['Sgf']['sgf'];

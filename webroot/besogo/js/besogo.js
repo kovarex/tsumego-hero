@@ -23,7 +23,6 @@
   besogo.multipleChoiceSetup = []; //multiple choice random stone placement
   besogo.multipleChoiceCustom = false;
   besogo.multipleChoiceCustomSetup = null;
-  besogo.onSite = null;
   let corner;
 
   function getMakers() {
@@ -269,20 +268,8 @@
       boardDisplay,
       boardDiv, // Board display container
       insideText = container.textContent || container.innerText || "";
-    if (typeof options.tsumegoPlayTool === "string") besogo.isEmbedded = true;
-    if (typeof options.onSite === "string") {
-      besogo.onSite = options.onSite;
-      besogo.onSite = besogo.onSite.split("$");
-      options.sgf = "https://" + besogo.onSite[0] + "/placeholder.sgf";
-      let cookieSgf = localStorage.getItem("sgfForBesogo");
-      localStorage.removeItem("sgfForBesogo");
-      cookieSgf = cookieSgf.replaceAll("€", "\n");
-      cookieSgf = cookieSgf.replaceAll("@", ";");
-      cookieSgf = cookieSgf.replaceAll("%2B", "+");
-      options.sgf2 = cookieSgf;
-    } else {
-      options.sgf = "https://" + window.location.host + "/placeholder.sgf";
-    }
+    if (typeof options.tsumegoPlayTool === "string")
+		besogo.isEmbedded = true;
 
     let sgfLoaded = {
       aInternal: 10,
@@ -298,6 +285,14 @@
         this.aListener = listener;
       },
     };
+
+	if (typeof options.editingOnlineTsumego === "boolean")
+		besogo.editingOnlineTsumego = options.editingOnlineTsumego;
+	else
+		besogo.editingOnlineTsumego = false;
+
+	  if (typeof options.setConnectionID === "string")
+		  besogo.setConnectionID = options.setConnectionID;
 
     besogo.theme = options.theme;
     besogo.light = options.light;
@@ -364,20 +359,14 @@
       // Remove all children of container
       container.removeChild(container.firstChild);
 
-    if (options.sgf && !options.sgf2) {
-      // Load SGF file from URL or SGF string
-      let validURL = false;
+    if (options.sgfID) {
       try {
-        new URL(options.sgf);
-        validURL = true;
-      } catch (e) {}
-      try {
-        if (validURL)
-          fetchParseLoad(options.sgf, besogo.editor, options.path, sgfLoaded);
-      } catch (e) {
-        console.error(e);
-        // Silently fail on network error
-      }
+        let url = new URL( window.location.origin + '/sgf/fetch/' + options.sgfID);
+		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded);
+	  } catch (e) {
+		  window.alert('Error fetching sgf ' + e.message);
+		  return;
+	  }
     } else if (insideText.match(/\s*\(\s*;/)) {
       // Text content looks like an SGF file
       parseAndLoad(insideText, besogo.editor);
@@ -578,11 +567,7 @@
   // Parses SGF string and loads into editor
   function parseAndLoad(text, editor) {
     var sgf;
-    if (
-      !text.includes("+") &&
-      !besogo.multipleChoice &&
-      besogo.multipleChoiceCustom === false
-    )
+    if (!text.includes("+") && !besogo.multipleChoice && besogo.multipleChoiceCustom === false)
       if (!text.includes("G[") && !text.includes("S["))
         if (besogo.isEmbedded)
           //no solution
@@ -610,17 +595,12 @@
         besogo.scaleParameters.highest.y = 19;
       else besogo.scaleParameters.highest.y += 3;
 
-      if (
-        besogo.scaleParameters.highest.x === 19 &&
-        besogo.scaleParameters.highest.y !== 19
-      )
+      if (besogo.scaleParameters.highest.x === 19 && besogo.scaleParameters.highest.y !== 19)
         besogo.scaleParameters.boardCanvasSize = "horizontal half board";
-      else if (
-        besogo.scaleParameters.highest.x !== 19 &&
-        besogo.scaleParameters.highest.y === 19
-      )
+      else if (besogo.scaleParameters.highest.x !== 19 && besogo.scaleParameters.highest.y === 19)
         besogo.scaleParameters.boardCanvasSize = "vertical half board";
-      else besogo.scaleParameters.boardCanvasSize = "regular board";
+      else
+		besogo.scaleParameters.boardCanvasSize = "regular board";
 
       //half boards only have 2 orientations, not 4
       if (besogo.scaleParameters.boardCanvasSize === "horizontal half board") {
@@ -690,15 +670,12 @@
       transformation.invertColors = true;
       besogo.editor.applyTransformation(transformation);
     }
-    if (besogo.onSite !== null && besogo.onSite[2] === "diff") {
-      let cookieDiff = localStorage.getItem("diffForBesogo");
-      localStorage.removeItem("diffForBesogo");
-      cookieDiff = cookieDiff.replaceAll("€", "\n");
-      cookieDiff = cookieDiff.replaceAll("@", ";");
-      cookieDiff = cookieDiff.replaceAll("%2B", "+");
-      if (cookieDiff != "") {
-        cookieDiff = besogo.parseSgf(cookieDiff);
-        besogo.loadSgf(cookieDiff, editor, OPEN_FOR_DIFF);
+    if (besogo.editingOnlineTsumego && besogo.diffID) {
+		// TODO: fetch the diff through the sgf api similarly to how we fetch primary sgf
+		let diffSgf = "";
+      if (diffSgf != "") {
+		  diffSgf = besogo.parseSgf(diffSgf);
+        besogo.loadSgf(diffSgf, editor, OPEN_FOR_DIFF);
       }
     }
     return besogo.scaleParameters;
@@ -709,14 +686,19 @@
     var http = new XMLHttpRequest();
 
     http.onreadystatechange = function () {
-      if (http.readyState === 4 && http.status === 200) {
-        // Successful fetch
-        sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
-        navigatePath(editor, path);
+      if (http.readyState === XMLHttpRequest.DONE) {
+		  if (http.status === 200) {
+			  // Successful fetch
+			  sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
+			  navigatePath(editor, path);
+		  }
+		  else {
+			  window.alert("Error when loading sgf: " + http.statusText);
+		  }
       }
     };
     http.overrideMimeType("text/plain"); // Prevents XML parsing and warnings
-    http.open("GET", url, true); // Asynchronous load
+    http.open("GET", url.toString(), true); // Asynchronous load
     http.send();
   }
 

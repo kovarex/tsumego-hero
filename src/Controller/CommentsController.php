@@ -510,7 +510,7 @@ class CommentsController extends AppController {
 			$c[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $c[$i]['Comment']['message']);
 
 			$tBuffer = $this->Tsumego->findById($c[$i]['Comment']['tsumego_id']);
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts) > 0) {
 				$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 				array_push($tooltipSgfs, $tArr[0]);
@@ -523,7 +523,7 @@ class CommentsController extends AppController {
 			$yourc[$i]['Comment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $yourc[$i]['Comment']['message']);
 
 			$tBuffer = $this->Tsumego->findById($yourc[$i]['Comment']['tsumego_id']);
-			$tts2 = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
+			$tts2 = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts2) > 0) {
 				$tArr2 = $this->processSGF($tts2[0]['Sgf']['sgf']);
 				$tooltipSgfs2[$i] = $tArr2[0];

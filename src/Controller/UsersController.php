@@ -1965,7 +1965,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$s = $this->Set->findById($marks[$i]['Tsumego']['set_id']);
 			$marks[$i]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $marks[$i]['Tsumego']['num'];
 			$marks[$i]['Tsumego']['status'] = $uts2[$counter2]['TsumegoStatus']['status'];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			$markTooltipSgfs[$i] = $tArr[0];
 			$markTooltipInfo[$i] = $tArr[2];
@@ -2033,7 +2033,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
 							}
 						}
-						$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id']]]);
+						$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id']]]);
 						$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 						$tooltipSgfs[$i][$j] = $tArr[0];
 						$tooltipInfo[$i][$j] = $tArr[2];
@@ -2073,9 +2073,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$s = $this->Sgf->find('all', [
 			'limit' => 250,
 			'order' => 'created DESC',
-			'conditions' => [
-				'NOT' => ['user_id' => 33, 'version' => 0],
-			],
 		]);
 
 		$sCount = count($s);
@@ -2093,7 +2090,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
 
 			$s[$i]['Sgf']['delete'] = false;
-			$sDiff = $this->Sgf->find('all', ['order' => 'version DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
+			$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
 			$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
 		}
 		$this->set('s', $s);
@@ -2179,8 +2176,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0) {
 							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
-								$recentSgf = $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-								$proposalToApprove['Sgf']['version'] = Util::nextVersionNumber($recentSgf['Sgf']['version']);
+								$recentSgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
 								$this->Sgf->save($proposalToApprove);
 								AppController::handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
 							} else {
@@ -2255,7 +2251,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$approveSgfsCount = count($approveSgfs);
 		for ($i = 0; $i < $approveSgfsCount; $i++) {
 			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $approveSgfs[$i]['Sgf']['tsumego_id']]]);
-			array_push($latestVersionTsumegos, $this->Sgf->find('first', ['order' => 'version DESC', 'conditions' => ['tsumego_id' => $at['Tsumego']['id']]]));
+			array_push($latestVersionTsumegos, $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $at['Tsumego']['id']]]));
 			array_push($sgfTsumegos, $at);
 			array_push($tsIds, $at['Tsumego']['id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
@@ -2283,7 +2279,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tagTsumegosCount = count($tagTsumegos);
 		for ($i = 0; $i < $tagTsumegosCount; $i++) {
 			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $tagTsumegos[$i]['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tagTsumegos[$i]['Tsumego']['id']]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs, $tArr[0]);
 			array_push($tooltipInfo, $tArr[2]);
@@ -2295,7 +2291,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$sgfTsumegosCount = count($sgfTsumegos);
 		for ($i = 0; $i < $sgfTsumegosCount; $i++) {
 			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id']]]);
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id']]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs2, $tArr[0]);
 			array_push($tooltipInfo2, $tArr[2]);

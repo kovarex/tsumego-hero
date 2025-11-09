@@ -2,7 +2,7 @@
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}	
+		}
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -13,7 +13,7 @@
 	<p class="title">
 		<br>
 		Uploads
-		<br><br> 
+		<br><br>
 		</p>
 	<table class="highscoreTable" border="0">
 	<tbody>
@@ -30,13 +30,11 @@
 			</td>
 			<td class="timeTableMiddle versionColor" align="left">';
 			echo '<a href="/sgfs/view/'.$id2.'?user='.$s[$i]['Sgf']['user_id'].'">'.$s[$i]['Sgf']['user'].'</a>';
-			
+
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			echo '<a href="/tsumegos/play/'.$s[$i]['Sgf']['tsumego_id'].'"> '.$s[$i]['Sgf']['title'].'</a> ';
-			if(floor($s[$i]['Sgf']['version'])==$s[$i]['Sgf']['version']) $isDecimal='.0';
-			else $isDecimal='';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v'.$s[$i]['Sgf']['version'].$isDecimal.'</a>';
+			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1)'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">';
 			echo '<a id="open-'.$s[$i]['Sgf']['id'].'">open</a>&nbsp;&nbsp;&nbsp;';
@@ -55,14 +53,14 @@
 	<?php for($i=0; $i<count($s); $i++){ ?>
 		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id']; ?>");
 		<?php
-		if($i!=count($s)-1) 
+		if($i!=count($s)-1)
 			echo '$("#compare-'.$s[$i]['Sgf']['id'].'").attr("href", "/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id'].'/'.$s[$i]['Sgf']['diff'].'");';
 		?>
 		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
 			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
 				type: "sgf",
 			});
-			saveAs(blob<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['title'].' v'.$s[$i]['Sgf']['version']; ?>.sgf");
+			saveAs(blob<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['title']; ?>.sgf");
 		});
 		$("#dl2-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
 			var blob2<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
@@ -73,7 +71,7 @@
 		$("#<?php echo $s[$i]['Sgf']['id']; ?>").hover(
 		  function () {
 			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
-		  }, 
+		  },
 		  function () {
 			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
 		  }
@@ -83,7 +81,7 @@
 			  function () {
 				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
 				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
-			  }, 
+			  },
 			  function () {
 				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
 				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","");

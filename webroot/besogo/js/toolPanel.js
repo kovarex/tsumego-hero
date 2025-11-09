@@ -1225,12 +1225,8 @@ besogo.makeToolPanel = function (container, editor) {
     formNode.id = "sgfForm";
     formNode.method = "post";
     formNode.style.display = "none";
-    if (besogo.onSite !== null) {
-      formNode.action =
-        "/tsumegos/play/" +
-        besogo.onSite[1] / 1337 +
-        "?requestProblem=" +
-        besogo.onSite[1];
+    if (besogo.editingOnlineTsumego) {
+      formNode.action = window.origin + "/sgf/upload/" + besogo.setConnectionID;
     }
     const inputNode = document.createElement("input");
     inputNode.id = "sgfInput";

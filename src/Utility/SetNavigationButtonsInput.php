@@ -45,7 +45,7 @@ class SetNavigationButtonsInput {
 		$tooltipBoardSize = [];
 
 		foreach ($this->result as $item) {
-			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'version DESC', 'conditions' => ['tsumego_id' => $item['Tsumego']['id']]]);
+			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $item['Tsumego']['id']]]);
 			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
 			$tooltipSgfs [] = $tArr[0];
 			$tooltipInfo [] = $tArr[2];

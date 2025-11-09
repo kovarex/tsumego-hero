@@ -84,6 +84,9 @@
           value = params[i].split("="); // Splits on all "=" symbols
           options[value.shift()] = value.join("="); // First "=" separates value from name, rest are part of value
         }
+		if (options.setConnectionID !== undefined) {
+			options.editingOnlineTsumego = true;
+		}
         options.rootPath = "../besogo/";
         options.theme = "texture13";
         options.themeParameters = ["black34.png", "white34.png"];

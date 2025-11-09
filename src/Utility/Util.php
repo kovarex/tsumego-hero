@@ -117,7 +117,13 @@ class Util {
 		return Util::isInGithubCI();
 	}
 
-	public static function nextVersionNumber(?string $input = null): string {
-		return number_format(min(round(intval($input ?: 0) + 0.1, 1), 1), 1);
+	public static function getMyAddress() {
+		if (Util::isInGithubCI()) {
+			return $_SERVER['TEST_APP_URL'];
+		}
+		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST']) {
+			return 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
+		}
+		return "https://test.tsumego.ddev.site:33003";
 	}
 }

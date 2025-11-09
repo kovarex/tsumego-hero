@@ -6,7 +6,7 @@ besogo.makeFilePanel = function (container, editor) {
     WARNING = "Everything not saved will be lost",
     compareButton = null;
 
-  if (!besogo.isEmbedded && besogo.onSite == null) {
+  if (!besogo.isEmbedded && besogo.isEditingProblem == null) {
     makeNewBoardButton(9); // New 9x9 board button
     makeNewBoardButton(13); // New 13x13 board button
     makeNewBoardButton(19); // New 19x19 board button
@@ -20,7 +20,7 @@ besogo.makeFilePanel = function (container, editor) {
   diffFileChooser = makeDiffFileChooser();
   container.appendChild(diffFileChooser);
 
-  if (!besogo.isEmbedded && besogo.onSite == null) {
+  if (!besogo.isEmbedded && !besogo.editingOnlineTsumego) {
     // Load file button
     element = document.createElement("input");
     element.type = "button";
@@ -35,7 +35,7 @@ besogo.makeFilePanel = function (container, editor) {
     container.appendChild(element);
   }
 
-  if (!besogo.isEmbedded && besogo.onSite == null) {
+  if (!besogo.isEmbedded && !besogo.editingOnlineTsumego) {
     // Load file button
     compareButton = document.createElement("input");
     compareButton.type = "button";
@@ -67,7 +67,7 @@ besogo.makeFilePanel = function (container, editor) {
     container.appendChild(element);
   }
 
-  if (!besogo.isEmbedded && besogo.onSite == null) {
+  if (!besogo.isEmbedded && !besogo.editingOnlineTsumego) {
     // Save file button
     element = document.createElement("input");
     element.type = "button";
@@ -85,14 +85,15 @@ besogo.makeFilePanel = function (container, editor) {
     container.appendChild(element);
   }
 
-  if (!besogo.isEmbedded && besogo.onSite !== null) {
+  if (!besogo.isEmbedded && besogo.editingOnlineTsumego) {
     element = document.createElement("input");
     element.type = "button";
     element.value = "Save";
+	element.id = "saveSGFButton";
     element.title = "Go back to Tsumego Hero and save the problem";
     element.onclick = function () {
       if (!checkCompatibility()) return;
-      saveFile("export", besogo.composeSgf(editor), 2);
+      saveFile("export.sgf", besogo.composeSgf(editor), 2);
       editor.resetEdited();
     };
     container.appendChild(element);
@@ -227,11 +228,6 @@ besogo.makeFilePanel = function (container, editor) {
       link.click(); // Click on link to initiate download
       container.removeChild(link); // Immediately remove the link
     } else {
-      text = text.replaceAll(";", "@");
-      text = text.replaceAll("\n", "€");
-      text = text.replaceAll("+", "%2B");
-      text = text.replaceAll("ß", "ss");
-
       document.getElementById("sgfInput").value = text;
       document.getElementById("sgfForm").submit();
     }
