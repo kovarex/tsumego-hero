@@ -1,7 +1,7 @@
 <?php
 
 class SgfController extends AppController {
-	public function fetch(int $sgfID)	{
+	public function fetch(int $sgfID) {
 		if (!Auth::isLoggedIn()) {
 			$this->response->statusCode(403);
 			$this->response->body('User not logged in.');
@@ -18,36 +18,9 @@ class SgfController extends AppController {
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
 		if (!TsumegoUtil::isStatusAllowingInspection($status['TsumegoStatus']['status'])) {
 			$this->response->statusCode(403);
-			$this->response->body('Related tsumego is not in a solved state for the user '. Auth::getUser()['name']);
+			$this->response->body('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
 			return $this->response;
 		}
-
-		$this->response->statusCode(200);
-		$this->response->body($sgf['Sgf']['sgf']);
-		return $this->response;
-	}
-
-	public function save($setConnectionID) {
-		if (!Auth::isLoggedIn()) {
-			$this->response->statusCode(403);
-			$this->response->body('User not logged in.');
-			return $this->response;
-		}
-
-		if (!Auth::isAdmin()) {
-			$this->response->statusCode(403);
-			$this->response->body('Only admins can upload sgfs.');
-			return $this->response;
-		}
-
-		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
-		if (!$setConnection) {
-			$this->response->statusCode(404);
-			$this->response->body('Specified set connection does not exist.');
-			return $this->response;
-		}
-
-
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);
@@ -87,6 +60,6 @@ class SgfController extends AppController {
 		$sgf['Sgf']['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
 		ClassRegistry::init('Sgf')->save($sgf);
-		return $this->redirect('/'.$setConnectionID);
+		return $this->redirect('/' . $setConnectionID);
 	}
 }

@@ -2177,7 +2177,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a') {
 								$recentSgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-								$proposalToApprove['Sgf']['version'] = Util::nextVersionNumber($recentSgf['Sgf']['version']);
 								$this->Sgf->save($proposalToApprove);
 								AppController::handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
 							} else {
