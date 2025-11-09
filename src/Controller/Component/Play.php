@@ -737,38 +737,6 @@ class Play {
 		$sgf2 = str_replace("\n", ' ', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
-		if (isset($params['url']['requestProblem'])) {
-			if (($params['url']['requestProblem'] / 1337) == $id) {
-				$requestProblem = $_POST['sgfForBesogo'];
-				$requestProblem = str_replace('@', ';', $requestProblem);
-				$requestProblem = str_replace('€', "\n", $requestProblem);
-				$requestProblem = str_replace('%2B', '+', $requestProblem);
-				if ($t['Tsumego']['duplicate'] <= 9) {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
-				} else {
-					$lastV = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $t['Tsumego']['duplicate']]]);
-				}
-				if ($requestProblem !== $lastV['Sgf']['sgf']) {
-					$sgf = [];
-					$sgf['Sgf']['sgf'] = $requestProblem;
-					$sgf['Sgf']['user_id'] = Auth::getUserID();
-					$sgf['Sgf']['tsumego_id'] = $id;
-					ClassRegistry::init('Sgf')->save($sgf);
-					$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
-					$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
-					if (Auth::isAdmin()) {
-						ClassRegistry::init('AdminActivity')->create();
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = $t['Tsumego']['num'];
-						$adminActivity['AdminActivity']['answer'] = $t['Tsumego']['num'] . '.sgf' . ' <font color="grey">(direct save)</font>';
-						ClassRegistry::init('AdminActivity')->save($adminActivity);
-						AppController::handleContribution(Auth::getUserID(), 'made_proposal');
-					}
-				}
-			}
-		}
 
 		$this->setConnectionsOfCurrentSet = $this->selectSetConnectionsOfCurrentSet($set, $query, $inFavorite);
 

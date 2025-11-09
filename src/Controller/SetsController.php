@@ -414,10 +414,7 @@ class SetsController extends AppController {
 		$this->set('t', $ts[0]);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function index() {
+	public function index(): void {
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Favorite');
@@ -506,18 +503,9 @@ class SetsController extends AppController {
 			}
 		}
 		$json2Count = count($json2);
-		//for ($i = 0; $i < $json2Count; $i++)
-		//if ($json2amount[$i]>=100)
 		if ($json2Count) {
 			array_push($group100, $json2[$i]);
 		}
-		/*
-		else if ($json2amount[$i] >= 10) {
-		array_push($group10, $json2[$i]);
-		} else {
-		array_push($group1, $json2[$i]);
-		}
-		*/
 
 		array_multisort($group100);
 		array_multisort($group10);
@@ -526,14 +514,6 @@ class SetsController extends AppController {
 		for ($i = 0; $i < $group100Count; $i++) {
 			array_push($hybrid, $group100[$i]);
 		}
-		/*
-		$group10Count = count($group10);
-		for ($i=0; $i<$group10Count; $i++)
-		array_push($hybrid, $group10[$i]);
-		$group1Count = count($group1);
-		for ($i=0; $i<$group1Count; $i++)
-		array_push($hybrid, $group1[$i]);
-		*/
 		$json2 = $hybrid;
 		$json2Count = count($json2);
 		for ($i = 0; $i < $json2Count; $i++) {
@@ -736,10 +716,7 @@ class SetsController extends AppController {
 						$ftTo,
 						$setConditions,
 					],
-				]);
-				if (!$ts1) {
-					$ts1 = [];
-				}
+				]) ?: [];
 				$setAmount = count($ts1);
 				$currentIds = [];
 				$ts1Count2 = count($ts1);
