@@ -8,8 +8,8 @@ on:
     branches:
       - '*'
 
-  permissions:
-    contents: write
+permissions:
+  contents: write
 
 jobs:
   validation:
