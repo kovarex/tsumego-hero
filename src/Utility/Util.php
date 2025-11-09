@@ -129,9 +129,9 @@ class Util {
 
 	public static function addSqlCondition(&$existingCondition, $condition): void {
 		if (empty($existingCondition)) {
-			$existingCondition = " WHERE ".$condition;
+			$existingCondition = " WHERE " . $condition;
 			return;
 		}
-		$existingCondition .= " AND ".$condition;
+		$existingCondition .= " AND " . $condition;
 	}
 }

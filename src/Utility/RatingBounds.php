@@ -1,6 +1,11 @@
 <?php
 
 class RatingBounds {
+	public function __construct(?float $min = null, ?float $max = null) {
+		$this->min = $min;
+		$this->max = $max;
+	}
+
 	public function getConditions(): array {
 		$result = [];
 		if ($this->min) {
@@ -14,15 +19,15 @@ class RatingBounds {
 
 	public function addSqlConditions(string &$condition): string {
 		if ($this->min) {
-			Util::addSqlCondition($condition, "tsumego.rating >= ".$this->min);
+			Util::addSqlCondition($condition, "tsumego.rating >= " . $this->min);
 		}
 		if ($this->max) {
-			Util::addSqlCondition($condition, "tsumego.rating >= ". $this->max);
+			Util::addSqlCondition($condition, "tsumego.rating < " . $this->max);
 		}
 		return $condition;
 	}
 
-	static public function coverRank(string $rank, string $minimalRank): RatingBounds {
+	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds {
 		$result = new RatingBounds();
 		if ($rank != $minimalRank) {
 			$result->min = Rating::getRankMinimalRatingFromReadableRank($rank);

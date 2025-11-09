@@ -28,11 +28,11 @@ class SetsControllerTest extends TestCaseWithAuth {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
-		$contextParams['other-tsumegos'] []= [
+		$contextParams['other-tsumegos'] [] = [
 			'title' => '15k problem',
 			'rating' => Rating::getRankMinimalRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
-		$contextParams['other-tsumegos'] []= [
+		$contextParams['other-tsumegos'] [] = [
 			'title' => '10k problem',
 			'rating' => Rating::getRankMinimalRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];

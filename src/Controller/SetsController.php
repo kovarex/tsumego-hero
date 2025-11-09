@@ -455,14 +455,10 @@ class SetsController extends AppController {
 		$setsRaw = $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 1],
-		]);
-		if (!$setsRaw) {
-			$setsRaw = [];
-		}
-		$setsRawCount = count($setsRaw);
-		for ($i = 0; $i < $setsRawCount; $i++) {
-			if (Auth::hasPremium() || $setsRaw[$i]['Set']['premium'] != 1) {
-				array_push($setTiles, $setsRaw[$i]['Set']['title']);
+		]) ?: [];
+		foreach ($setsRaw as $set) {
+			if (Auth::hasPremium() || !$set['Set']['premium']) {
+				$setTiles [] = $set['Set']['title'];
 			}
 		}
 
@@ -700,14 +696,15 @@ class SetsController extends AppController {
 				if (!Auth::hasPremium()) {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				$query = "SELECT tsumego.id as id ".
-						 "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id".
-					     " JOIN `set` ON `set`.id=set_connection.set_id".$condition;
-				$tsumegoIDs = ClassRegistry::init('Tsumego')->query($query);
+				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
+					"SELECT tsumego.id as id "
+					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
+					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition,
+				);
 				$setAmount = count($tsumegoIDs);
 				$currentIds = [];
 				foreach ($tsumegoIDs as $tsumegoID) {
-					$currentIds []= $tsumegoID['id'];
+					$currentIds [] = $tsumegoID['id'];
 				}
 
 				if (count($search3) > 0) {
