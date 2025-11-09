@@ -1,143 +1,132 @@
-# tsumego-hero-app
+# tsumego: restart from tsumego-hero
 
-## Status & Requirements
+## The goal
+To improve the source code of tsumego hero so:
+- The page can be moved to a modern server with php 8.4 functionality
+- The code is better structured, readable and easily modifiable.
+- The functionality of the site is fully covered by automated tests, so it doesn't just "randomly break"
+- Current test coverage status can be checked here: https://kovarex.github.io/tsumego-hero/coverage/
 
-- composer
-- CakePHP 2.x latest
-- PHP 8.4
-- MySQL 8.0
-
-Also:
-- For best PHP dev I recommend [PHPStorm IDE](https://www.jetbrains.com/phpstorm/).
-- For local env best to use [ddev](https://ddev.com/get-started/).
-
-##PHP 8.4 install
-
-to install it in the linux (outside docker), you can do:
-./setup/php-install.sh
-
-## Debug with phpstorm
-https://www.jetbrains.com/help/phpstorm/debugging-with-phpstorm-ultimate-guide.html#setup-from-zero
-
-For command line, this needs to be specified locally
-export XDEBUG_MODE=debug& export XDEBUG_SESSION=1
-
+## The plan
+### Things get broken for a while
+There were some breaking changes done
+- Clearing obsolete table columns (tsumego.set_id, tsumego.num and similar)
+- Changing the table data structure around time mode
+- (and more)
+These changes just had to be done, so the data structure we are working on is clean.
+### Database changes
+- There are a lot of database structure changes, mainly related to data normalisation, foreign key usage on all relevant places, and proper index selections.
+### Code refactoring
+- The rest of the code refactoring should ideally not break stuff, but when the state of the code is taken into consideration, it is really hard to be sure.
+- We try to mainly cover the parts to refactor by tests and check the behaviour on tsumego-hero to understand what are we doing.
+- It is inevitable part of the plan to refactor the whole code, but not necessary before day D
+### Day D
+`Day D` is the day where we migrate the tsumego-hero site database into tsumego.com and make it the official new home of the site.
+`Day D` can become once the core functionality of the site is covered by tests, and we do some public testing on test.tsumego.com
 
 ## Setup
 
-To locally develop and setup, use ddev from inside app/ folder:
+- Instal ddev [ddev](https://ddev.com/get-started/).
+
+### PHP 8.4 install
+8.4 is too new to be installed in an easy way, we have a script you can call to install it on the machine
+
+	setup/php-install.sh
+
+
+### ddev install
 - Copy .ddev.example/ folder to .ddev/
-- Modify the config.yaml file to your needs (shouldn't be needed)
 
-By default, it uses `tsumego` as name.
 
-Then from ROOT of the project run:
+	cp ./ddev.example/* ./ddev/
 
-    ddev config (ONLY if you didnt copy the existing config.yaml!)
+- Modify the php.ini in ./ddev/php/my-php.ini, add your local ipaddress there, which is needed for debugging
+- Then from ROOT of the project run: (project name should be tsumego)
+
+
+	ddev config
     ddev start
 
-To jump to your app in browser:
+- To jump to your app in browser:
+
 
     ddev launch
 
-dbs (PHPMyAdmin):
+- Phpmyadmin access:
+
 
     ddev phpmyadmin
 
-ssh login:
+- ssh login into the docker
+
 
     ddev ssh
 
-Run
+- Run locally to install all latest dependencies.
 
     composer update
 
-locally to install all latest dependencies.
+- Make your own database file, you can use the default one, but you can modify it if you want to use different database or credentials
 
-Make sure to create your own database.php file in config/ with your DB credentials.
-And import any data you need.
 
-Open
+	cp config/database.example config/database
+
+- Open to browse your project now.
 
     https://tsumego.ddev.site:33003/
 
-to browse your project now.
+- You can also open the webpage from command line by:
+
+
+	ddev launch
+
+### Debug with phpstorm
+
+https://www.jetbrains.com/help/phpstorm/debugging-with-phpstorm-ultimate-guide.html#setup-from-zero
+TLDR; The local configuration should have xdebug already setup, all you should need to do is to setup the debug directories in phpstorm
+
+	ALT + SHIFT + S (options) -> PHP -> servers
+
+	For manual testing:
+
+	Name: tsumego.ddev.site
+	Host: test.tsumego.ddev.site
+	Port: 80
+	Debugger: xdebug
+
+	For automated tests, add another entry:
+
+	Name: test.tsumego.ddev.site
+	Host: test.test.tsumego.ddev.site
+	Port: 80
+	Debugger: xdebug
+
+After this, it should just work.
 
 ## Database Migrations
 
 This project uses [Phinx](https://phinx.org/) for database migrations.
 Phinx is a database migration tool that allows you to version control your database schema changes.
-
-### Configuration
-
 Phinx is configured via `phinx.php` which automatically loads database credentials from CakePHP's `config/database.php`. Migrations are stored in `db/migrations/` and seeds in `db/seeds/`.
 
-### Common Migration Commands
+- Migrate the current database to the newest version:
 
-```bash
-# Create a new migration
-vendor/bin/phinx create MyNewMigration
 
-# Run all pending migrations
-composer migrate
-# or: vendor/bin/phinx migrate
+	vendor/bin/phinx migrate
 
-# Rollback the last migration
-composer migrate-rollback
-# or: vendor/bin/phinx rollback
+- Migrate test database to the newest version
 
-# Check migration status
-composer migrate-status
-# or: vendor/bin/phinx status
 
-# Run migrations for test environment
-composer migrate-test
-# or: vendor/bin/phinx migrate -e test
+	vendor/bin/phinx migrate -e test
 
-# Seed the database
-vendor/bin/phinx seed:run
-```
+- Create a new migration
 
-### Creating Migrations
 
-When you create a new migration, it will generate a timestamped file in `db/migrations/`:
+	vendor/bin/phinx create <migration name>
 
-```bash
-vendor/bin/phinx create AddUserEmailColumn
-```
-
+It will generate a timestamped file in `db/migrations/`:
 This creates a file like `20250130123456_add_user_email_column.php`. Edit the migration to define your schema changes:
-
-```php
-<?php
-use Phinx\Migration\AbstractMigration;
-
-class AddUserEmailColumn extends AbstractMigration
-{
-    public function change()
-    {
-        $table = $this->table('users');
-        $table->addColumn('email', 'string', ['limit' => 255, 'null' => false])
-              ->addIndex(['email'], ['unique' => true])
-              ->update();
-    }
-}
-```
-
-### Best Practices
-
-- Always use `change()` method when possible (Phinx can automatically reverse it)
-- Use `up()` and `down()` methods for complex migrations that can't be auto-reversed
-- Follow CakePHP's table naming conventions (plural, snake_case)
-- Foreign keys should follow pattern: `{singular_table}_id`
-- Always test migrations in development before running in production
-- Run migrations as part of deployment process
-
-### Documentation
-
-- [Phinx Documentation](https://book.cakephp.org/phinx/0/en/index.html)
-- [Writing Migrations](https://book.cakephp.org/phinx/0/en/migrations.html)
-- [Seeding Data](https://book.cakephp.org/phinx/0/en/seeding.html)
+I just implement the method up, as reverse migrations are not realistic or useful now.
 
 ## Code Quality & Testing
 ```bash
