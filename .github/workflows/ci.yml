@@ -43,8 +43,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl
-          coverage: none
+          extensions: mbstring, intl, xdebug
+          coverage: xdebug
+
+      - name: Configure Xdebug for coverage
+        run: |
+            echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
+            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
+            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
+            php -v
+            php -m | grep xdebug || (echo "Xdebug not found!" && exit 1)
 
       - name: Get composer cache directory
         id: composer-cache
@@ -109,12 +117,22 @@ jobs:
           nohup php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
           TEST_APP_URL: http://host.docker.internal:8080
           TEST_ENVIRONMENT: github-ci
-        run: composer test
+        run: |
+          mkdir -p coverage
+          ./vendor/bin/phpunit --coverage-html coverage
+
+      - name: Deploy coverage to GitHub Pages
+        if: github.ref == 'refs/heads/master'   # only on master/main
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./coverage
+          destination_dir: coverage
 
       - name: Run PHPStan
         run: composer stan -- --error-format=github
