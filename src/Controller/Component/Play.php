@@ -1209,20 +1209,12 @@ class Play {
 			CakeSession::write('page', 'time mode');
 		}
 
-		if ($requestProblem != '') {
-			$requestProblem = '?v=' . strlen($requestProblem);
-		} else {
-			$sgfx = file_get_contents($file);
-			$requestProblem = '?v=' . strlen($sgfx);
-		}
-
 		$ui = 2;
 		$file = 'placeholder2.sgf';
 
 		AppController::startPageUpdate();
 		$startingPlayer = TsumegosController::getStartingPlayer($sgf2);
 
-		$avActiveText = '';
 		$avActiveText = '<font style="color:gray;"> (out of range)</font>';
 
 		$eloScoreRounded = round($eloScore);
