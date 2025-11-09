@@ -122,7 +122,7 @@ jobs:
           SELENIUM_URL: http://localhost:4444
           TEST_APP_URL: http://host.docker.internal:8080
           TEST_ENVIRONMENT: github-ci
-        run:
+        run: |
           mkdir -p coverage
           ./vendor/bin/phpunit --coverage-html coverage
 
