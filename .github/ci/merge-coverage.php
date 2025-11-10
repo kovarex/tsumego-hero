@@ -18,6 +18,7 @@ function isExcluded($fileName): bool
 }
 
 $filter = new Filter();
+$filter->includeDirectory('/home/runner/work/tsumego-hero/tsumego-hero/src');
 $driver = new Xdebug3Driver($filter);
 $mergedRaw = [];
 $mergedCount = 0;
@@ -95,6 +96,7 @@ foreach ($raw as $fileName => $lines) {
 
 // Replace with the filtered dataset once
 $finalCoverage = new CodeCoverage($driver, $filter);
+$finalCoverage->includeUncoveredFiles();
 $finalCoverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),'final');
 
 $reportDir = __DIR__ . '/../../coverage';
