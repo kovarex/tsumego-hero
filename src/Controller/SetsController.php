@@ -455,14 +455,10 @@ class SetsController extends AppController {
 		$setsRaw = $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 1],
-		]);
-		if (!$setsRaw) {
-			$setsRaw = [];
-		}
-		$setsRawCount = count($setsRaw);
-		for ($i = 0; $i < $setsRawCount; $i++) {
-			if (Auth::hasPremium() || $setsRaw[$i]['Set']['premium'] != 1) {
-				array_push($setTiles, $setsRaw[$i]['Set']['title']);
+		]) ?: [];
+		foreach ($setsRaw as $set) {
+			if (Auth::hasPremium() || !$set['Set']['premium']) {
+				$setTiles [] = $set['Set']['title'];
 			}
 		}
 
@@ -694,34 +690,21 @@ class SetsController extends AppController {
 				}
 				$ranksArray = $ranksArray2;
 			}
-			$ranksArrayCount = count($ranksArray);
-			for ($i = 0; $i < $ranksArrayCount; $i++) {
-				$ftFrom = [];
-				$ftTo = [];
-				$ftFrom['rating >='] = AppController::getTsumegoElo($ranksArray[$i]['rank']);
-				$ftTo['rating <'] = $ftFrom['rating >='] + 100;
-				if ($ranksArray[$i]['rank'] == '15k') {
-					$ftFrom['rating >='] = 50;
-				}
-				$notPremiumArray = [];
+			foreach ($ranksArray as $rank) {
+				$condition = "";
+				RatingBounds::coverRank($rank['rank'], '15k')->addSqlConditions($condition);
 				if (!Auth::hasPremium()) {
-					$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
+					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				$ts1 = $this->Tsumego->find('all', [
-					'order' => 'id ASC',
-					'conditions' => [
-						'public' => 1,
-						$notPremiumArray,
-						$ftFrom,
-						$ftTo,
-						$setConditions,
-					],
-				]) ?: [];
-				$setAmount = count($ts1);
+				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
+					"SELECT tsumego.id as id "
+					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
+					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition,
+				);
+				$setAmount = count($tsumegoIDs);
 				$currentIds = [];
-				$ts1Count2 = count($ts1);
-				for ($j = 0; $j < $ts1Count2; $j++) {
-					array_push($currentIds, $ts1[$j]['Tsumego']['id']);
+				foreach ($tsumegoIDs as $tsumegoID) {
+					$currentIds [] = $tsumegoID['id'];
 				}
 
 				if (count($search3) > 0) {
@@ -746,11 +729,11 @@ class SetsController extends AppController {
 				$searchCounter += $setAmount;
 
 				$rTemp = [];
-				$rTemp['id'] = $ranksArray[$i]['rank'];
-				$rTemp['name'] = $ranksArray[$i]['rank'];
+				$rTemp['id'] = $rank['rank'];
+				$rTemp['name'] = $rank['rank'];
 				$rTemp['amount'] = $setAmount;
 				$rTemp['currentIds'] = $currentIds;
-				$rTemp['color'] = $ranksArray[$i]['color'];
+				$rTemp['color'] = $rank['color'];
 				if (count($currentIds) > 0) {
 					array_push($newRanksArray, $rTemp);
 				}
@@ -758,10 +741,9 @@ class SetsController extends AppController {
 			$ranksArray = $this->partitionCollections($newRanksArray, $collectionSize, $tsumegoStatusMap);
 		} else {
 			$ranksArray = $this->getExistingRanksArray();
-			$ranksArrayCount = count($ranksArray);
-			for ($i = 0; $i < $ranksArrayCount; $i++) {
-				$ranksArray[$i]['id'] = $ranksArray[$i]['rank'];
-				$ranksArray[$i]['name'] = $ranksArray[$i]['rank'];
+			foreach ($ranksArray as &$rank) {
+				$rank['id'] = $rank['rank'];
+				$rank['name'] = $rank['rank'];
 			}
 		}
 		//tags
