@@ -10,7 +10,6 @@ use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 use SebastianBergmann\CodeCoverage\Report\Html\Facade as HtmlReport;
 
 $filter = new Filter();
-$filter->excludeFile("/tmp/xdebug-prepend.php");
 $filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/config");
 $filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/vendor");
 $filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/webroot");
