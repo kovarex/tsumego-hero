@@ -183,7 +183,7 @@ class TimeModeController extends AppController {
 			if ($result = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]])) {
 				return $result;
 			} else {
-				throw new AppException('Time Mode Session not found');
+				throw new AppException('Time Mode Session not found.');
 			}
 		}
 		return null;
@@ -191,7 +191,7 @@ class TimeModeController extends AppController {
 
 	public function result($timeModeSessionID = null): mixed {
 		if (!Auth::isLoggedIn()) {
-			return $this->redirect("users/login");
+			return $this->redirect("/users/login");
 		}
 
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID);

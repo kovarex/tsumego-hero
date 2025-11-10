@@ -22,9 +22,11 @@ class TimeModeControllerTest extends ControllerTestCase {
 	}
 
 	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin() {
-		new ContextPreparator();
-		$this->testAction('/timeMode/play');
-		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
+		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page) {
+			new ContextPreparator();
+			$this->testAction($page);
+			$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
+		}
 	}
 
 	public function testTimeModePlayWithoutSessionBeingInProgress() {
@@ -83,12 +85,6 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/play');
 	}
 
-	public function testTimeModeOverviewLoggedOfRedirectsToLogin() {
-		new ContextPreparator();
-		$this->testAction('/timeMode/overview');
-		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
-	}
-
 	public function testOpeningTimeModeResultWihoutSpcificSessionUnlocked() {
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -97,5 +93,14 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/result');
 		// no redirect
 		$this->assertSame(null, $this->headers['Location']);
+	}
+	public function testOpeningTimeModeResultWithInvalidTimeSessionID() {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		new ContextPreparator($contextParameters);
+
+		$this->expectException(AppException::class);
+		$this->expectExceptionMessage('Time Mode Session not found.');
+		$this->testAction('/timeMode/result/56465487');
 	}
 }
