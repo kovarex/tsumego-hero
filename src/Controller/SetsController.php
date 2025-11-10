@@ -729,11 +729,11 @@ class SetsController extends AppController {
 				$searchCounter += $setAmount;
 
 				$rTemp = [];
-				$rTemp['id'] = $ranksArray[$i]['rank'];
-				$rTemp['name'] = $ranksArray[$i]['rank'];
+				$rTemp['id'] = $rank['rank'];
+				$rTemp['name'] = $rank['rank'];
 				$rTemp['amount'] = $setAmount;
 				$rTemp['currentIds'] = $currentIds;
-				$rTemp['color'] = $ranksArray[$i]['color'];
+				$rTemp['color'] = $rank['color'];
 				if (count($currentIds) > 0) {
 					array_push($newRanksArray, $rTemp);
 				}
@@ -741,10 +741,9 @@ class SetsController extends AppController {
 			$ranksArray = $this->partitionCollections($newRanksArray, $collectionSize, $tsumegoStatusMap);
 		} else {
 			$ranksArray = $this->getExistingRanksArray();
-			$ranksArrayCount = count($ranksArray);
-			for ($i = 0; $i < $ranksArrayCount; $i++) {
-				$ranksArray[$i]['id'] = $ranksArray[$i]['rank'];
-				$ranksArray[$i]['name'] = $ranksArray[$i]['rank'];
+			foreach ($ranksArray as &$rank) {
+				$rank['id'] = $rank['rank'];
+				$rank['name'] = $rank['rank'];
 			}
 		}
 		//tags

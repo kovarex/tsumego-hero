@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/TestCaseWithAuth.php');
+require_once(__DIR__ . '/../../ContextPreparator.php');
 
 class SetsControllerTest extends TestCaseWithAuth {
 	public function testIndexLoggedIn(): void {
@@ -37,12 +38,20 @@ class SetsControllerTest extends TestCaseWithAuth {
 			'rating' => Rating::getRankMinimalRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
-		$this->assertTextContains('15k', $this->view);
-		$this->assertTextNotContains('10k', $this->view);
 
+		$_COOKIE['query'] = 'difficulty';
+		$_COOKIE['search2'] = '15k';
 		$this->testAction('sets', ['return' => 'view']);
-		$this->assertTextNotContains('15k', $this->view);
-		$this->assertTextContains('10k', $this->view);
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
+
+		$_COOKIE['search2'] = '10k';
+		$this->testAction('sets', ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
 }
