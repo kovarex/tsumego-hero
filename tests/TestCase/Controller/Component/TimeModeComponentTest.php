@@ -12,6 +12,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertSame(TimeModeComponent::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
 		$this->assertSame(TimeModeComponent::calculatePoints(0, 30), 100.0);
 	}
+
 	public function testTimeModeRankContentsIntegrity() {
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
 		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
@@ -96,6 +97,24 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			'time_mode_session_id' => $sessions[0]['TimeModeSession']['id']]) ?: [];
 		$this->assertTrue(count($attempts) > 0);
 		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
+	}
+
+	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
+			'time-mode-ranks' => ['5k']]);
+		$this->assertTrue(Auth::isInLevelMode());
+		$this->expectException(AppException::class);
+		$this->expectExceptionMessage('Time mode category not specified.');
+		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
+	}
+
+	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException() {
+		$this->assertTrue(Auth::isInLevelMode());
+		$this->expectException(AppException::class);
+		$this->expectExceptionMessage('Time mode rank not specified.');
+		$this->testAction('/timeMode/start?categoryID='.TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
 	public function testTimeModeFullProcess() {

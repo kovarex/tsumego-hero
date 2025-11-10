@@ -11,11 +11,11 @@ class TimeModeController extends AppController {
 		$this->TimeMode->init();
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID) {
-			throw new AppException('Time mode category not specified');
+			throw new AppException('Time mode category not specified.');
 		}
 		$rankID = (int) $this->params['url']['rankID'];
 		if (!$rankID) {
-			throw new AppException('Time mode rank not specified');
+			throw new AppException('Time mode rank not specified.');
 		}
 
 		$this->TimeMode->startTimeMode($categoryID, $rankID);
