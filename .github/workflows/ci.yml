@@ -118,7 +118,7 @@ jobs:
       - name: Start built-in PHP server
         run: |
           mkdir -p /tmp/coverage
-          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
+          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
       - name: Run tests with coverage
