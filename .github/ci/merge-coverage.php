@@ -75,25 +75,27 @@ if (file_exists($phpunitCov)) {
 		// Merge first to preserve raw hit data
 		$coverage->merge($decoded);
 		echo "[merge] Merged PHPUnit CodeCoverage successfully\n";
-
-		// Now prune unwanted files from final merged dataset
-		$raw = $coverage->getData(true)->lineCoverage();
-		$filtered = [];
-		foreach ($raw as $fileName => $lines) {
-			if (!isExcluded($fileName)) {
-				$filtered[$fileName] = $lines;
-			}
-		}
-
-		// Replace with the filtered dataset
-		$coverage = new CodeCoverage($driver, $filter);
-		$coverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),'merged');
 	} else {
 		echo "[merge] The main file phpunit.cov did not return a CodeCoverage instance (" . gettype($decoded) . ")\n";
 	}
 } else {
 	echo "[merge] The main file phpunit.cov couldn't be found.\n";
 }
+
+// Now prune unwanted files from final merged dataset
+$raw = $coverage->getData(true)->lineCoverage();
+$filtered = [];
+foreach ($raw as $fileName => $lines) {
+	if (!isExcluded($fileName)) {
+		$filtered[$fileName] = $lines;
+	}
+	else
+		echo "Excluded file {$fileName}\n";
+}
+
+// Replace with the filtered dataset once
+$finalCoverage = new CodeCoverage($driver, $filter);
+$finalCoverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),'final');
 
 $reportDir = __DIR__ . '/../../coverage';
 @mkdir($reportDir, 0777, true);
