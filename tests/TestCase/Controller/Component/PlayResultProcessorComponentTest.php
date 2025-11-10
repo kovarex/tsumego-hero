@@ -9,7 +9,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 
 	private static function getUrlFromPage(string $page, $context): string {
 		if ($page === 'sets') {
-			return '/sets/view';
+			return '/sets/index';
 		}
 		if ($page === 'tsumego') {
 			return '/' . $context->tsumego['set-connections'][0]['id'];

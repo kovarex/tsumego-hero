@@ -37,17 +37,12 @@
 		}else $beta2 = true;
 		if(Auth::getUserID()==72) $beta2 = false;
 
-		if(!$beta2){
-			for($i=0; $i<count($ts); $i++){
-				if(!isset($ts[$i]['Tsumego']['status'])) $ts[$i]['Tsumego']['status'] = 'N';
-
-				if(!isset($ts[$i]['Tsumego']['duplicateLink']))
-					$duplicateLink = '';
-				else{
-					$duplicateLink = $ts[$i]['Tsumego']['duplicateLink'];
-				}
-				$num = $ts[$i]['Tsumego']['num'];
+		if(!$beta2) {
+			$i = 0;
+			foreach ($ts as $setConnection) {
+				$num = $setConnection['num'];
 				$num = '<div class="setViewButtons1">'.$num.'</div>';
+				/*
 				$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
 				$persormanceF = substr_count($ts[$i]['Tsumego']['performance'], 'F');
 				if($persormanceS==0 && $persormanceF==0) $num2 = '-';
@@ -55,12 +50,12 @@
 				$num2 = '<div class="setViewButtons2">'.$num2.'</div>';
 				if($ts[$i]['Tsumego']['seconds']=='') $num3 = '-';
 				else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
-				$num3 = '<div class="setViewButtons3">'.$num3.'</div>';
+				$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-				echo '<li class="set'.$ts[$i]['Tsumego']['status'].'1">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$ts[$i]['Tsumego']['id'].$duplicateLink.$fav.'">
-					'.$num.$num2.$num3.'<span><div id="tooltipSvg'.$i.'"></div></span></a>
+				echo '<li class="set'.$setConnection['status'].'1">
+					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$setConnection['id'].$fav.'">'.$num.'<span><div id="tooltipSvg'.$i.'"></div></span></a>
 				</li>';
+				$i++;
 			}
 		}
 

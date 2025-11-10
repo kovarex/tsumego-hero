@@ -696,15 +696,14 @@ class SetsController extends AppController {
 				if (!Auth::hasPremium()) {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
-					"SELECT tsumego.id as id "
+				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
+					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
 					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition,
 				);
-				$setAmount = count($tsumegoIDs);
 				$currentIds = [];
-				foreach ($tsumegoIDs as $tsumegoID) {
-					$currentIds [] = $tsumegoID['id'];
+				foreach ($setConnectionIDs as $setConnectionID) {
+					$currentIds [] = $setConnectionID['set_connection']['id'];
 				}
 
 				if (count($search3) > 0) {
@@ -1055,6 +1054,10 @@ class SetsController extends AppController {
 		$this->loadModel('User');
 		$this->loadModel('UserContribution');
 
+		if (is_null($id)) {
+			throw AppException("Set to view not specified");
+		}
+
 		if ($id != '1') {
 			$this->Session->write('page', 'set');
 		} else {
@@ -1169,13 +1172,11 @@ class SetsController extends AppController {
 		if ($id != '1') {
 			if (is_numeric($id)) {
 				$viewType = 'topics';
-			}
-			else {
+			} else {
 				try {
 					Rating::getRankFromReadableRank($id);
 					$viewType = 'difficulty';
-				}
-				catch (Exception $e) {
+				} catch (Exception $e) {
 					$viewType = 'tags';
 				}
 			}
@@ -1191,8 +1192,8 @@ class SetsController extends AppController {
 				if (!Auth::hasPremium()) {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
-					"SELECT tsumego.id as id "
+				$setConnections = ClassRegistry::init('Tsumego')->query(
+					"SELECT set_connection.id, set_connection.tsumego_id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
 					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition,
 				);
@@ -1208,17 +1209,18 @@ class SetsController extends AppController {
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
 				$elo = AppController::getTsumegoElo($id);
-				$set['Set']['description'] = $id . ' are problems that have a rating '.$ratingBounds->textualDescription().'.';
+				$set['Set']['description'] = $id . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 				$set['Set']['difficulty'] = $elo;
 
 				$ts1 = [];
 				$i2 = 1;
-				foreach ($tsumegoIDs as $tsumegoID) {
+				foreach ($setConnections as $setConnection) {
+					$setConnection = $setConnection['set_connection'];
 					$tagValid = false;
 					if (count($search3) > 0) {
 						$tagForTsumego = $this->Tag->find('first', [
 							'conditions' => [
-								'tsumego_id' => $tsumegoID['id'],
+								'tsumego_id' => $setConnection['tsumego_id'],
 								'tag_name_id' => $search3ids,
 							],
 						]);
@@ -1229,8 +1231,8 @@ class SetsController extends AppController {
 						$tagValid = true;
 					}
 					if ($tagValid) {
-						$tsumegoID['num'] = $i2;
-						$ts1 []=  $tsumegoID;
+						$setConnection['num'] = $i2;
+						$ts1 [] =  $setConnection;
 						$i2++;
 					}
 				}
@@ -1239,9 +1241,9 @@ class SetsController extends AppController {
 				$currentIds = [];
 				$ts1 = [];
 				for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-					$ts[$i]['Tsumego']['status'] = $tsumegoStatusMap[$ts[$i]['Tsumego']['id']];
-					array_push($currentIds, $ts[$i]['Tsumego']['id']);
-					array_push($ts1, $ts[$i]);
+					$ts[$i]['status'] = $tsumegoStatusMap[$ts[$i]['id']] ?: 'N';
+					$currentIds [] = $ts[$i]['id'];
+					$ts1 [] = $ts[$i];
 				}
 				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 				$ts = $ts1;
@@ -1865,17 +1867,6 @@ class SetsController extends AppController {
 				$ts[$i]['Tsumego']['performance'] = $urSum;
 			}
 		}
-		$scTt = $this->SetConnection->find('first', ['conditions' => ['set_id' => $set['Set']['id'], 'num' => 1]]);
-		if ($scTt != null) {
-			$t = $this->Tsumego->findById($scTt['SetConnection']['tsumego_id']);
-		} else {
-			$t = null;
-		}
-		if ($t == null) {
-			$t = $ts[0];
-		}
-		$set['Set']['t'] = $t['Tsumego']['id'];
-
 		$tfs = [];
 		if ($viewType == 'topics') {
 			$tfs = TsumegoUtil::collectTsumegosFromSet($id);
@@ -2030,9 +2021,8 @@ class SetsController extends AppController {
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
 		$tooltipBoardSize = [];
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
+		foreach ($ts as $setConnection) {
+			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $setConnection['tsumego_id']]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs, $tArr[0]);
 			array_push($tooltipInfo, $tArr[2]);

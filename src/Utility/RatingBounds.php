@@ -30,10 +30,10 @@ class RatingBounds {
 	public function textualDescription(): string {
 		$result = '';
 		if ($this->min) {
-			$result .= ' from '.$this->min;
+			$result .= ' from ' . $this->min;
 		}
 		if ($this->max) {
-			$result .= ' to '.$this->max;
+			$result .= ' to ' . $this->max;
 		}
 		return $result;
 	}

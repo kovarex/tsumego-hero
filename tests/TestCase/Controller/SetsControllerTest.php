@@ -75,10 +75,26 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, '15k');
 
+		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->textContent, '1');
+
+		$problemLinks = $dom->querySelectorAll('.tooltip');
+		$this->assertCount(1, $problemLinks);
+		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+
 		$this->testAction('sets/view/10k', ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$titleDivs = $dom->querySelectorAll('.title4');
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, '10k');
+
+		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->textContent, '1');
+
+		$problemLinks = $dom->querySelectorAll('.tooltip');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
 }
