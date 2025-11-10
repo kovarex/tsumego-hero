@@ -72,22 +72,22 @@ $phpunitCov = '/tmp/coverage/phpunit.cov';
 if (file_exists($phpunitCov)) {
 	$decoded = require($phpunitCov);
 	if ($decoded instanceof CodeCoverage) {
-		$rawData = $decoded->getData(true)->lineCoverage();
+		// Merge first to preserve raw hit data
+		$coverage->merge($decoded);
+		echo "[merge] Merged PHPUnit CodeCoverage successfully\n";
+
+		// Now prune unwanted files from final merged dataset
+		$raw = $coverage->getData(true)->lineCoverage();
 		$filtered = [];
-		foreach ($rawData as $fileName => $lines) {
+		foreach ($raw as $fileName => $lines) {
 			if (!isExcluded($fileName)) {
 				$filtered[$fileName] = $lines;
 			}
 		}
 
-		$decodedFiltered = new CodeCoverage($driver, $filter);
-		$decodedFiltered->append(
-			RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),
-			'phpunit'
-		);
-
-		$coverage->merge($decodedFiltered);
-		echo "[merge] Merged PHPUnit CodeCoverage successfully\n";
+		// Replace with the filtered dataset
+		$coverage = new CodeCoverage($driver, $filter);
+		$coverage->append(RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),'merged');
 	} else {
 		echo "[merge] The main file phpunit.cov did not return a CodeCoverage instance (" . gettype($decoded) . ")\n";
 	}
