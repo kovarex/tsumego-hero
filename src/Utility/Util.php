@@ -127,6 +127,10 @@ class Util {
 		return "https://test.tsumego.ddev.site:33003";
 	}
 
+	public static function getInternalAddress() {
+		return 'http://localhost/var/www/html/vendor/bin';
+	}
+
 	public static function addSqlCondition(&$existingCondition, $condition): void {
 		if (empty($existingCondition)) {
 			$existingCondition = " WHERE " . $condition;

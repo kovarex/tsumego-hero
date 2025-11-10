@@ -117,6 +117,11 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->testAction('/timeMode/start?categoryID='.TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
+	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin() {
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress().'/users/login', $this->headers['Location']);
+	}
+
 	public function testTimeModeFullProcess() {
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];

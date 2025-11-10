@@ -24,7 +24,7 @@ class TimeModeController extends AppController {
 
 	public function play(): mixed {
 		if (!Auth::isLoggedIn()) {
-			return $this->redirect('user/login');
+			return $this->redirect('/users/login');
 		}
 
 		$this->TimeMode->init();
