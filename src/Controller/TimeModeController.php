@@ -27,6 +27,11 @@ class TimeModeController extends AppController {
 			return $this->redirect('/users/login');
 		}
 
+		if (!Auth::isInTimeMode()) {
+			Auth::getUser()['mode'] = Constants::$TIME_MODE;
+			Auth::saveUser();
+		}
+
 		$this->TimeMode->init();
 
 		if (!$this->TimeMode->currentSession) {
@@ -45,10 +50,6 @@ class TimeModeController extends AppController {
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 		}
 
-		if (!Auth::isInTimeMode()) {
-			Auth::getUser()['model'] = Constants::$TIME_MODE;
-			Auth::saveUser();
-		}
 		$this->set('timeMode', (array) $this->TimeMode);
 		$this->set('nextLink', $this->TimeMode->currentWillBeLast() ? '/timeMode/result/' . $this->TimeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
 		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
