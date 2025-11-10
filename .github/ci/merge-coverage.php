@@ -75,7 +75,7 @@ if (file_exists($phpunitCov)) {
 		$rawData = $decoded->getData(true)->lineCoverage();
 		$filtered = [];
 		foreach ($rawData as $fileName => $lines) {
-			if (!isExluded($fileName)) {
+			if (!isExcluded($fileName)) {
 				$filtered[$fileName] = $lines;
 			}
 		}
