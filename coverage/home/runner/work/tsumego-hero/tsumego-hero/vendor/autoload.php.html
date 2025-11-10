@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Code Coverage for /home/runner/work/tsumego-hero/tsumego-hero/vendor/autoload.php</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../../../../../../_css/bootstrap.min.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../../../../../_css/octicons.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../../../../../_css/style.css?v=9.2.32" rel="stylesheet" type="text/css">
+  <link href="../../../../../../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../../../../../../index.html"></a></li>
+         <li class="breadcrumb-item"><a href="../../../../../index.html">home</a></li>
+         <li class="breadcrumb-item"><a href="../../../../index.html">runner</a></li>
+         <li class="breadcrumb-item"><a href="../../../index.html">work</a></li>
+         <li class="breadcrumb-item"><a href="../../index.html">tsumego-hero</a></li>
+         <li class="breadcrumb-item"><a href="../index.html">tsumego-hero</a></li>
+         <li class="breadcrumb-item"><a href="index.html">vendor</a></li>
+         <li class="breadcrumb-item active">autoload.php</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="table-responsive">
+    <table class="table table-bordered">
+     <thead>
+      <tr>
+       <td>&nbsp;</td>
+       <td colspan="10"><div align="center"><strong>Code Coverage</strong></div></td>
+      </tr>
+      <tr>
+       <td>&nbsp;</td>
+       <td colspan="3"><div align="center"><strong>Lines</strong></div></td>
+       <td colspan="4"><div align="center"><strong>Functions and Methods</strong></div></td>
+       <td colspan="3"><div align="center"><strong>Classes and Traits</strong></div></td>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td class="success">Total</td>
+       <td class="success big">       <div class="progress">
+         <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
+           <span class="sr-only">100.00% covered (success)</span>
+         </div>
+       </div>
+</td>
+       <td class="success small"><div align="right">100.00%</div></td>
+       <td class="success small"><div align="right">3&nbsp;/&nbsp;3</div></td>
+       <td class=" big"></td>
+       <td class=" small"><div align="right">n/a</div></td>
+       <td class=" small"><div align="right">0&nbsp;/&nbsp;0</div></td>
+       <td class=" small"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></td>
+       <td class=" big"></td>
+       <td class=" small"><div align="right">n/a</div></td>
+       <td class=" small"><div align="right">0&nbsp;/&nbsp;0</div></td>
+      </tr>
+
+
+     </tbody>
+    </table>
+   </div>
+<table id="code" class="table table-borderless table-condensed">
+<tbody>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="1" href="#1">1</a></td><td class="col-11 codeLine"><span class="default">&lt;?php</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="2" href="#2">2</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="3" href="#3">3</a></td><td class="col-11 codeLine"><span class="comment">//&nbsp;autoload.php&nbsp;@generated&nbsp;by&nbsp;Composer</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="4" href="#4">4</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="1 test covers line 5" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="5" href="#5">5</a></td><td class="col-11 codeLine"><span class="keyword">if</span><span class="default">&nbsp;</span><span class="keyword">(</span><span class="default">PHP_VERSION_ID</span><span class="default">&nbsp;</span><span class="keyword">&lt;</span><span class="default">&nbsp;</span><span class="default">50600</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="6" href="#6">6</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">if</span><span class="default">&nbsp;</span><span class="keyword">(</span><span class="keyword">!</span><span class="default">headers_sent</span><span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="7" href="#7">7</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="default">header</span><span class="keyword">(</span><span class="default">'HTTP/1.1&nbsp;500&nbsp;Internal&nbsp;Server&nbsp;Error'</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="8" href="#8">8</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="9" href="#9">9</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="default">$err</span><span class="default">&nbsp;</span><span class="keyword">=</span><span class="default">&nbsp;</span><span class="default">'Composer&nbsp;2.3.0&nbsp;dropped&nbsp;support&nbsp;for&nbsp;autoloading&nbsp;on&nbsp;PHP&nbsp;&lt;5.6&nbsp;and&nbsp;you&nbsp;are&nbsp;running&nbsp;'</span><span class="keyword">.</span><span class="default">PHP_VERSION</span><span class="keyword">.</span><span class="default">',&nbsp;please&nbsp;upgrade&nbsp;PHP&nbsp;or&nbsp;use&nbsp;Composer&nbsp;2.2&nbsp;LTS&nbsp;via&nbsp;&quot;composer&nbsp;self-update&nbsp;--2.2&quot;.&nbsp;Aborting.'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="10" href="#10">10</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">if</span><span class="default">&nbsp;</span><span class="keyword">(</span><span class="keyword">!</span><span class="default">ini_get</span><span class="keyword">(</span><span class="default">'display_errors'</span><span class="keyword">)</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="11" href="#11">11</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">if</span><span class="default">&nbsp;</span><span class="keyword">(</span><span class="default">PHP_SAPI</span><span class="default">&nbsp;</span><span class="default">===</span><span class="default">&nbsp;</span><span class="default">'cli'</span><span class="default">&nbsp;</span><span class="default">||</span><span class="default">&nbsp;</span><span class="default">PHP_SAPI</span><span class="default">&nbsp;</span><span class="default">===</span><span class="default">&nbsp;</span><span class="default">'phpdbg'</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="12" href="#12">12</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">STDERR</span><span class="keyword">,</span><span class="default">&nbsp;</span><span class="default">$err</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="13" href="#13">13</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span><span class="default">&nbsp;</span><span class="keyword">elseif</span><span class="default">&nbsp;</span><span class="keyword">(</span><span class="keyword">!</span><span class="default">headers_sent</span><span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="14" href="#14">14</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">echo</span><span class="default">&nbsp;</span><span class="default">$err</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="15" href="#15">15</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="16" href="#16">16</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="17" href="#17">17</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">throw</span><span class="default">&nbsp;</span><span class="keyword">new</span><span class="default">&nbsp;</span><span class="default">RuntimeException</span><span class="keyword">(</span><span class="default">$err</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="18" href="#18">18</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="19" href="#19">19</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="1 test covers line 20" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="20" href="#20">20</a></td><td class="col-11 codeLine"><span class="keyword">require_once</span><span class="default">&nbsp;</span><span class="default">__DIR__</span><span class="default">&nbsp;</span><span class="keyword">.</span><span class="default">&nbsp;</span><span class="default">'/composer/autoload_real.php'</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="21" href="#21">21</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="1 test covers line 22" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="22" href="#22">22</a></td><td class="col-11 codeLine"><span class="keyword">return</span><span class="default">&nbsp;</span><span class="default">ComposerAutoloaderInit9ec31796ada06be63a9cf643e46cfbe3</span><span class="default">::</span><span class="default">getLoader</span><span class="keyword">(</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+
+</tbody>
+</table>
+
+
+   <footer>
+    <hr/>
+    <h4>Legend</h4>
+    <p><span class="legend covered-by-small-tests">Covered by small (and larger) tests</span><span class="legend covered-by-medium-tests">Covered by medium (and large) tests</span><span class="legend covered-by-large-tests">Covered by large tests (and tests of unknown size)</span><span class="legend not-covered">Not covered</span><span class="legend not-coverable">Not coverable</span></p>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 9.2.32</a> using <a href="https://secure.php.net/" target="_top">PHP 8.4.14</a> at Mon Nov 10 5:25:46 UTC 2025.</small>
+    </p>
+    <a title="Back to the top" id="toplink" href="#">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16"><path fill-rule="evenodd" d="M12 11L6 5l-6 6h12z"/></svg>
+    </a>
+   </footer>
+  </div>
+  <script src="../../../../../../_js/jquery.min.js?v=9.2.32" type="text/javascript"></script>
+  <script src="../../../../../../_js/popper.min.js?v=9.2.32" type="text/javascript"></script>
+  <script src="../../../../../../_js/bootstrap.min.js?v=9.2.32" type="text/javascript"></script>
+  <script src="../../../../../../_js/file.js?v=9.2.32" type="text/javascript"></script>
+ </body>
+</html>
