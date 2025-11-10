@@ -1,6 +1,7 @@
 <?php
 
 App::uses('TsumegoUtil', 'Utility');
+App::uses('AppException', 'Utility');
 
 class SetsController extends AppController {
 	public $helpers = ['Html', 'Form'];
@@ -696,6 +697,7 @@ class SetsController extends AppController {
 				if (!Auth::hasPremium()) {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
+				Util::addSqlCondition($condition, 'tsumego.public = true');
 				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
@@ -705,6 +707,7 @@ class SetsController extends AppController {
 				foreach ($setConnectionIDs as $setConnectionID) {
 					$currentIds [] = $setConnectionID['set_connection']['id'];
 				}
+				$setAmount = count($setConnectionIDs);
 
 				if (count($search3) > 0) {
 					$idsTemp = [];
@@ -1055,7 +1058,7 @@ class SetsController extends AppController {
 		$this->loadModel('UserContribution');
 
 		if (is_null($id)) {
-			throw AppException("Set to view not specified");
+			throw new AppException("Set to view not specified");
 		}
 
 		if ($id != '1') {
