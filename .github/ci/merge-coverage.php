@@ -9,10 +9,15 @@ use SebastianBergmann\CodeCoverage\Filter;
 use SebastianBergmann\CodeCoverage\RawCodeCoverageData;
 use SebastianBergmann\CodeCoverage\Report\Html\Facade as HtmlReport;
 
+static $includePrefix = '/home/runner/work/tsumego-hero/tsumego-hero/src/';
+
+function isExcluded($fileName): bool
+{
+	global $includePrefix;
+	return !str_starts_with($fileName, $includePrefix);
+}
+
 $filter = new Filter();
-$filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/config");
-$filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/vendor");
-$filter->excludeDirectory("/home/runner/work/tsumego-hero/tsumego-hero/webroot");
 $driver = new Xdebug3Driver($filter);
 $mergedRaw = [];
 $mergedCount = 0;
@@ -37,6 +42,9 @@ foreach (glob('/tmp/coverage/webservercoverage*.cov') as $file) {
 
 	// Merge arrays efficiently
 	foreach ($array as $fileName => $lines) {
+		if (isExcluded($fileName)) {
+			continue;
+		}
 		if (!isset($mergedRaw[$fileName])) {
 			$mergedRaw[$fileName] = $lines;
 		} else {
@@ -64,7 +72,21 @@ $phpunitCov = '/tmp/coverage/phpunit.cov';
 if (file_exists($phpunitCov)) {
 	$decoded = require($phpunitCov);
 	if ($decoded instanceof CodeCoverage) {
-		$coverage->merge($decoded);
+		$rawData = $decoded->getData(true)->asArray();
+		$filtered = [];
+		foreach ($rawData as $fileName => $lines) {
+			if (!isExluded($fileName)) {
+				$filtered[$fileName] = $lines;
+			}
+		}
+
+		$decodedFiltered = new CodeCoverage($driver, $filter);
+		$decodedFiltered->append(
+			RawCodeCoverageData::fromXdebugWithoutPathCoverage($filtered),
+			'phpunit'
+		);
+
+		$coverage->merge($decodedFiltered);
 		echo "[merge] Merged PHPUnit CodeCoverage successfully\n";
 	} else {
 		echo "[merge] The main file phpunit.cov did not return a CodeCoverage instance (" . gettype($decoded) . ")\n";
