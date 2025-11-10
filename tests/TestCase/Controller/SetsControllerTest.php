@@ -54,4 +54,31 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
+
+	public function testSetViewRankBased(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['other-tsumegos'] = [];
+		$contextParams['other-tsumegos'] [] = [
+			'title' => '15k problem',
+			'rating' => Rating::getRankMinimalRatingFromReadableRank('15k'),
+			'sets' => [['name' => 'set 1', 'num' => '1']]];
+		$contextParams['other-tsumegos'] [] = [
+			'title' => '10k problem',
+			'rating' => Rating::getRankMinimalRatingFromReadableRank('10k'),
+			'sets' => [['name' => 'set 2', 'num' => '1']]];
+		$context = new ContextPreparator($contextParams);
+
+		$this->testAction('sets/view/15k', ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$titleDivs = $dom->querySelectorAll('.title4');
+		$this->assertCount(2, $titleDivs);
+		$this->assertSame($titleDivs[1]->textContent, '15k');
+
+		$this->testAction('sets/view/10k', ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$titleDivs = $dom->querySelectorAll('.title4');
+		$this->assertCount(2, $titleDivs);
+		$this->assertSame($titleDivs[1]->textContent, '10k');
+	}
 }

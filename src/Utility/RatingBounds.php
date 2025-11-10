@@ -27,6 +27,17 @@ class RatingBounds {
 		return $condition;
 	}
 
+	public function textualDescription(): string {
+		$result = '';
+		if ($this->min) {
+			$result .= ' from '.$this->min;
+		}
+		if ($this->max) {
+			$result .= ' to '.$this->max;
+		}
+		return $result;
+	}
+
 	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds {
 		$result = new RatingBounds();
 		if ($rank != $minimalRank) {

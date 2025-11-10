@@ -1169,18 +1169,13 @@ class SetsController extends AppController {
 		if ($id != '1') {
 			if (is_numeric($id)) {
 				$viewType = 'topics';
-			} else {
-				$foundLetter = false;
-				$idSplit = str_split($id);
-				$idSplitCount = count($idSplit);
-				for ($i = 0; $i < $idSplitCount - 1; $i++) {
-					if (!is_numeric($idSplit[$i])) {
-						$foundLetter = true;
-					}
-				}
-				if ($foundLetter == false && ($idSplit[$idSplitCount - 1] == 'k' || $idSplit[$idSplitCount - 1] == 'd')) {
+			}
+			else {
+				try {
+					Rating::getRankFromReadableRank($id);
 					$viewType = 'difficulty';
-				} else {
+				}
+				catch (Exception $e) {
 					$viewType = 'tags';
 				}
 			}
@@ -1190,19 +1185,19 @@ class SetsController extends AppController {
 
 			$this->Session->write('lastSet', $id);
 			if ($viewType == 'difficulty') {
-				$set = [];
-				$setConditions = [];
-				if (count($search1) > 0) {
-					$search1ids = [];
-					$search1Count = count($search1);
-					for ($i = 0; $i < $search1Count; $i++) {
-						$search1id = $this->Set->find('first', ['conditions' => ['title' => $search1[$i]]]);
-						if ($search1id) {
-							$search1ids[$i] = $search1id['Set']['id'];
-						}
-					}
-					$setConditions['set_id'] = $search1ids;
+				$condition = "";
+				$ratingBounds = RatingBounds::coverRank($id, '15k');
+				$ratingBounds->addSqlConditions($condition);
+				if (!Auth::hasPremium()) {
+					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
+				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
+					"SELECT tsumego.id as id "
+					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
+					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition,
+				);
+
+				$set = [];
 				$set['Set']['id'] = $id;
 				if (!$hasPartition) {
 					$set['Set']['title'] = $id;
@@ -1213,45 +1208,17 @@ class SetsController extends AppController {
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
 				$elo = AppController::getTsumegoElo($id);
-				$ftFrom = [];
-				$ftTo = [];
-				$ftFrom['rating >='] = $elo;
-				$ftTo['rating <'] = $elo + 100;
-				if ($id == '15k') {
-					$ftFrom['rating >='] = 50;
-					$set['Set']['description'] = $id . ' are problems that have a rating from 600 to ' . ($ftTo['rating <'] - 1) . '. This collection also contains problems with weaker rating.';
-				} else {
-					$set['Set']['description'] = $id . ' are problems that have a rating from ' . $ftFrom['rating >='] . ' to ' . ($ftTo['rating <'] - 1) . '.';
-				}
-
+				$set['Set']['description'] = $id . ' are problems that have a rating '.$ratingBounds->textualDescription().'.';
 				$set['Set']['difficulty'] = $elo;
-				$notPremiumArray = [];
-				if (!Auth::hasPremium()) {
-					$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
-				}
-				$ts = $this->Tsumego->find('all', [
-					'order' => 'id ASC',
-					'conditions' => [
-						'public' => 1,
-						$notPremiumArray,
-						$ftFrom,
-						$ftTo,
-						$setConditions,
-					],
-				]);
-				if (!$ts) {
-					$ts = [];
-				}
 
 				$ts1 = [];
 				$i2 = 1;
-				$tsCount = count($ts);
-				for ($i = 0; $i < $tsCount; $i++) {
+				foreach ($tsumegoIDs as $tsumegoID) {
 					$tagValid = false;
 					if (count($search3) > 0) {
 						$tagForTsumego = $this->Tag->find('first', [
 							'conditions' => [
-								'tsumego_id' => $ts[$i]['Tsumego']['id'],
+								'tsumego_id' => $tsumegoID['id'],
 								'tag_name_id' => $search3ids,
 							],
 						]);
@@ -1262,8 +1229,8 @@ class SetsController extends AppController {
 						$tagValid = true;
 					}
 					if ($tagValid) {
-						$ts[$i]['Tsumego']['num'] = $i2;
-						array_push($ts1, $ts[$i]);
+						$tsumegoID['num'] = $i2;
+						$ts1 []=  $tsumegoID;
 						$i2++;
 					}
 				}
