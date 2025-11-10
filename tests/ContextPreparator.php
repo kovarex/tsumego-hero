@@ -212,6 +212,9 @@ class ContextPreparator {
 	private function prepareTimeModeAttempts(array $attemptsInput, int $timeModeSessionID): void {
 		$attempt = [];
 		$attempt['time_mode_session_id'] = $timeModeSessionID;
+		if (empty($this->allTsumegos)) {
+			throw Exception("No tsumego assign to the time mode attempt");
+		}
 		$attempt['tsumego_id'] = $this->allTsumegos[0]['id'];
 		$attempt['order'] = $attemptsInput['order'];
 		$attempt['time_mode_attempt_status_id'] = $attemptsInput['status'];

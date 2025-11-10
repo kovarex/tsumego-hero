@@ -1,8 +1,50 @@
 <?php
 
 class TimeModeControllerTest extends ControllerTestCase {
-	public function testSmokeOverview(): void {
-		$this->testAction('timeMode/overview');
-		$this->assertTrue(true);
+	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
+			'time-mode-ranks' => ['5k']]);
+		$this->assertTrue(Auth::isInLevelMode());
+		$this->expectException(AppException::class);
+		$this->expectExceptionMessage('Time mode category not specified.');
+		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
+	}
+
+	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException() {
+		$this->assertTrue(Auth::isInLevelMode());
+		$this->expectException(AppException::class);
+		$this->expectExceptionMessage('Time mode rank not specified.');
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
+	}
+
+	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin() {
+		new ContextPreparator();
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
+	}
+
+	public function testTimeModePlayWithoutSessionBeingInProgress() {
+		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/overview', $this->headers['Location']);
+	}
+
+	public function testTimeModePlayWithSessionToBeFinished() {
+		$contextParameters = [];
+		$contextParameters['tsumego'] = [];
+		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['time-mode-sessions'] [] = [
+			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'rank' => '5k',
+			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
+		$context = new ContextPreparator($contextParameters);
+		// session in progress with just one attempt which is solved
+
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
 }
