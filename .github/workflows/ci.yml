@@ -115,29 +115,10 @@ jobs:
         run: |
           ./vendor/bin/phinx migrate -e test
 
-      - name: Create Xdebug coverage collector
-        run: |
-          cat > /tmp/xdebug-prepend.php <<'PHP'
-          <?php
-          if (!function_exists('xdebug_start_code_coverage')) return;
-          try {
-              @xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
-              register_shutdown_function(static function (): void {
-                  $data = @xdebug_get_code_coverage();
-                  if (empty($data)) return;
-                  $dir = '/tmp/coverage';
-                  if (!is_dir($dir)) @mkdir($dir, 0777, true);
-                  $file = sprintf('%s/webservercoverage-%s-%s.cov', $dir, getmypid(), uniqid('', true));
-                  @file_put_contents($file, serialize($data));
-                  @xdebug_stop_code_coverage();
-              });
-          } catch (Throwable $e) {}
-          PHP
-
       - name: Start built-in PHP server
         run: |
           mkdir -p /tmp/coverage
-          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/tmp/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
+          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
       - name: Run tests with coverage
