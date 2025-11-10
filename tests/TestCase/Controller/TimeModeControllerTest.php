@@ -63,4 +63,20 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/play');
 		$this->assertTrue(Auth::isInTimeMode());
 	}
+
+	public function testTimeModeOverviewLoggedOfRedirectsToLogin() {
+		new ContextPreparator();
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
+	}
+
+	public function testOpeningTimeModeResultWihoutSpcificSessionUnlocked() {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		new ContextPreparator($contextParameters);
+
+		$this->testAction('/timeMode/play');
+		// no redirect
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/login', $this->headers['Location']);
+	}
 }

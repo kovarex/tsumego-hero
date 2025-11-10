@@ -60,7 +60,7 @@ class TimeModeController extends AppController {
 
 	public function overview(): mixed {
 		if (!Auth::isLoggedIn()) {
-			return $this->redirect("/");
+			return $this->redirect('/users/login');
 		}
 		$this->Session->write('title', 'Time Mode - Select');
 		$this->Session->write('page', 'time mode');
@@ -69,9 +69,7 @@ class TimeModeController extends AppController {
 		if (!$lastTimeModeCategoryID) {
 			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC']);
 		}
-		if (!$lastTimeModeCategoryID) {
-			throw new AppException('No time category present!');
-		}
+		assert($lastTimeModeCategoryID);
 
 		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 		$timeModeRankMap = Util::indexByID(ClassRegistry::init('TimeModeRank')->find('all', []) ?: [], 'TimeModeRank', 'name');
