@@ -128,6 +128,9 @@ class Util {
 	}
 
 	public static function getInternalAddress() {
+		if (Util::isInGithubCI()) {
+			return 'http://localhost./vendor/bin';
+		}
 		return 'http://localhost/var/www/html/vendor/bin';
 	}
 
