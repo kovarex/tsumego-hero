@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__ . '/../../ContextPreparator.php');
+
 class TimeModeControllerTest extends ControllerTestCase {
 	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException() {
 		$context = new ContextPreparator([
@@ -75,8 +77,8 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		new ContextPreparator($contextParameters);
 
-		$this->testAction('/timeMode/play');
+		$this->testAction('/timeMode/result');
 		// no redirect
-		$this->assertSame(Util::getInternalAddress() . '/timeMode/login', $this->headers['Location']);
+		$this->assertSame(null, $this->headers['Location']);
 	}
 }

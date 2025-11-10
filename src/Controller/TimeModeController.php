@@ -180,9 +180,13 @@ class TimeModeController extends AppController {
 		}
 
 		if ($passedSessionID) {
-			return ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]]);
+			if ($result = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]])) {
+				return $result;
+			} else {
+				throw new AppException('Time Mode Session not found');
+			}
 		}
-		throw new AppException('Time Mode Session not found');
+		return null;
 	}
 
 	public function result($timeModeSessionID = null): mixed {
@@ -198,16 +202,6 @@ class TimeModeController extends AppController {
 		$this->loadModel('SetConnection');
 		$this->Session->write('title', 'Time Mode - Result');
 		$this->Session->write('page', 'time mode');
-
-		if ($finishedSessionID = $this->TimeMode->checkFinishSession()) {
-			$timeModeSessionID = $finishedSessionID;
-		}
-		if ($timeModeSessionID) {
-			$finishedSession = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $timeModeSessionID]]);
-			if (!$finishedSession) {
-				throw new AppException('Time Mode Session not found');
-			}
-		}
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
