@@ -43,7 +43,7 @@ class TimeModeController extends AppController {
 		}
 
 		$tsumegoID = $this->TimeMode->prepareNextToSolve();
-		assert($tsumegoID);
+		assert($tsumegoID != null);
 
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 		if (!$setConnection) {
