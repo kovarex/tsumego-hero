@@ -47,4 +47,21 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/play');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
+
+	public function testTimeModePlayWithTsumegoWithoutTestConnectionThrowsException() {
+		$contextParameters = [];
+		$contextParameters['tsumego'] = ['title' => 'hello'];
+		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['time-mode-sessions'] [] = [
+			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'rank' => '5k',
+			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
+		$context = new ContextPreparator($contextParameters);
+
+		$this->expectException(Exception::class);
+		$this->expectExceptionMessage('Time mode session contains tsumego without a set connection.');
+		$this->testAction('/timeMode/play');
+	}
 }

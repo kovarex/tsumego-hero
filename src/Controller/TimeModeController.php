@@ -38,9 +38,7 @@ class TimeModeController extends AppController {
 		}
 
 		$tsumegoID = $this->TimeMode->prepareNextToSolve();
-		if (!$tsumegoID) {
-			throw new Exception('Time mode session is not finished, yet it doesn\'t contain viable tsumego to continue.');
-		}
+		assert($tsumegoID);
 
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 		if (!$setConnection) {
