@@ -50,7 +50,7 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
 
-	public function testTimeModePlaySwitchesToLevelMode() {
+	public function testTimeModePlaySwitchesToTimeMode() {
 		$contextParameters = [];
 		$contextParameters['tsumego'] = ['title' => 'hello', 'sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -66,9 +66,26 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->assertTrue(Auth::isInTimeMode());
 	}
 
+	public function testTimeModePlayOfTsumegoWithoutSetConnection() {
+		$contextParameters = [];
+		$contextParameters['tsumego'] = ['title' => 'hello'];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['time-mode-sessions'] [] = [
+			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'rank' => '5k',
+			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
+		$context = new ContextPreparator($contextParameters);
+
+		$this->expectException(Exception::class);
+		$this->expectExceptionMessage('Time mode session contains tsumego without a set connection.');
+		$this->testAction('/timeMode/play');
+	}
+
 	public function testTimeModeOverviewLoggedOfRedirectsToLogin() {
 		new ContextPreparator();
-		$this->testAction('/timeMode/play');
+		$this->testAction('/timeMode/overview');
 		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 	}
 
