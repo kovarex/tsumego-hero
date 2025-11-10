@@ -27,7 +27,7 @@ class Browser {
 			$this->get('empty.php');
 
 			// setting xdebug cookies, so I can debug the code invoked by requests of this driver
-			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => "debug"]);
+			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug']);
 			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
 		} catch (Exception $e) {
 			if ($this->driver) {

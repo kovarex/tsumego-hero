@@ -13,6 +13,8 @@
 		"fig-r/psr2r-sniffer": "dev-master as 2.4.0",
 		"friendsofphp/php-cs-fixer": "^3.89",
 		"phpstan/phpstan": "^2.1",
+		"phpunit/php-code-coverage": "^9.2",
+		"phpunit/phpcov": "^8.2",
 		"phpunit/phpunit": "^9.6",
 		"pieceofcake2/bake": "^1.0",
 		"pieceofcake2/debug_kit": "^2.2",
