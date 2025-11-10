@@ -114,13 +114,20 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(AppException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
-		$this->testAction('/timeMode/start?categoryID='.TimeModeUtil::$CATEGORY_SLOW_SPEED);
+		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
 	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin() {
 		$this->testAction('/timeMode/play');
-		$this->assertSame(Util::getInternalAddress().'/users/login', $this->headers['Location']);
+		$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 	}
+
+	public function testTimeModePlayWithoutSessionBeingInProgress() {
+		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		$this->testAction('/timeMode/play');
+		$this->assertSame(Util::getInternalAddress() . '/timeMode/overview', $this->headers['Location']);
+	}
+
 
 	public function testTimeModeFullProcess() {
 		$contextParameters = [];
