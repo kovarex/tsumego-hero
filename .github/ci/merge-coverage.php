@@ -72,7 +72,7 @@ $phpunitCov = '/tmp/coverage/phpunit.cov';
 if (file_exists($phpunitCov)) {
 	$decoded = require($phpunitCov);
 	if ($decoded instanceof CodeCoverage) {
-		$rawData = $decoded->getData(true)->asArray();
+		$rawData = $decoded->getData(true)->lineCoverage();
 		$filtered = [];
 		foreach ($rawData as $fileName => $lines) {
 			if (!isExluded($fileName)) {
