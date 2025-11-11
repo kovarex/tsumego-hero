@@ -36,12 +36,14 @@ class AppView extends View {
 				'%s in [%s, line %d]',
 				$e->getMessage(),
 				$e->getFile(),
-				$e->getLine());
+				$e->getLine()
+			);
 
 			throw new RuntimeException(
 				$errorMessage,
 				$e->getCode(),
-				$e);
+				$e
+			);
 		}
 
 		unset($__viewFile);

@@ -703,7 +703,8 @@ class SetsController extends AppController {
 				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
-					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition);
+					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition
+				);
 				$currentIds = [];
 				foreach ($setConnectionIDs as $setConnectionID) {
 					$currentIds [] = $setConnectionID['set_connection']['id'];
@@ -1300,8 +1301,9 @@ class SetsController extends AppController {
 							$setConnection['SetConnection']['id'],
 							$key,
 							$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
-							$t['pass'],
-							$t['alternative_response']);
+							$t['Tsumego']['pass'],
+							$t['Tsumego']['alternative_response']
+						);
 					}
 				}
 
@@ -1320,16 +1322,9 @@ class SetsController extends AppController {
 				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
 
 				$condition = '';
-				$rankConditions = '';
-				foreach ($search2 as $rankFilter) {
-					$rankCondition = '';
-					RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
-					Util::addSqlOrCondition($rankConditions, $rankCondition);
-				}
-				Util::addSqlCondition($condition, $rankConditions);
 				Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
 				$tsumegoButtons = new TsumegoButtons();
-				$tsumegoButtons->fill($condition);
+				$tsumegoButtons->fill($condition, $search2);
 				$tsumegoButtons->filterByTags($search3ids);
 				if ($set['Set']['public'] != 1) {
 					$collectionSize = 2000;
