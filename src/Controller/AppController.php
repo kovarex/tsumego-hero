@@ -1,7 +1,7 @@
 <?php
 
 App::uses('Auth', 'Utility');
-App::uses('SearchParameters', 'Utility');
+App::uses('TsumegoFilters', 'Utility');
 
 class AppController extends Controller {
 	public $viewClass = 'App';
@@ -3336,15 +3336,10 @@ class AppController extends Controller {
 			$this->UserContribution->create();
 			$this->UserContribution->save($uc);
 		}
-		SearchParameters::process();
+		new TsumegoFilters();
 	}
 
-	// @param array $u User data
-	/**
-	 * @param array $user User data
-	 * @return void
-	 */
-	protected function signIn(array $user) {
+	protected function signIn(array $user): void {
 		Auth::init($user);
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'created DESC']);
 		if ($vs) {
@@ -3354,10 +3349,7 @@ class AppController extends Controller {
 		$this->Session->write('check1', $user['User']['id']);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function beforeFilter() {
+	public function beforeFilter(): void {
 		$this->loadModel('User');
 		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');

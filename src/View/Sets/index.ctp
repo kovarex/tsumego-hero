@@ -19,7 +19,7 @@
 					?>
 					<div class="tiles-submit">
 						<div class="dropdown-tile tiles-submit-inner-select" id="tile-topics-select-all">Select all</div>
-						<?php if($query){ ?>
+						<?php if($tsumegoFilters->query){ ?>
 							<a class="dropdown-tile tiles-submit-inner" id="tile-topics-submit" href="">Search</a>
 						<?php } ?>
 					</div>
@@ -43,7 +43,7 @@
 					?>
 					<div class="tiles-submit">
 						<div class="dropdown-tile tiles-submit-inner-select" id="tile-difficulty-select-all">Select all</div>
-						<?php if($query){ ?>
+						<?php if($tsumegoFilters->query){ ?>
 							<a class="dropdown-tile tiles-submit-inner" id="tile-difficulty-submit" href="">Search</a>
 						<?php } ?>
 					</div>
@@ -67,7 +67,7 @@
 					?>
 					<div class="tiles-submit">
 						<div class="dropdown-tile tiles-submit-inner-select" id="tile-tags-select-all">Select all</div>
-						<?php if($query){ ?>
+						<?php if($tsumegoFilters->query){ ?>
 							<a class="dropdown-tile tiles-submit-inner" id="tile-tags-submit" href="">Search</a>
 						<?php } ?>
 					</div>
@@ -79,7 +79,7 @@
 		</div>
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
-				<input id="set-size-input" type="number" value="<?php echo $collectionSize; ?>" step="10">
+				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10">
 			</div>
 			<div class="set-buttons">
 				<button disabled="true" id="submit-size-button" onclick="submitSize()" class="btn btn-link collapsed set-search">
@@ -95,7 +95,7 @@
 		$lightDarkBoxes = '4';
 	else
 		$lightDarkBoxes = '3';
-	if($query == 'topics'){
+	if($tsumegoFilters->query == 'topics'){
 		for($i=0; $i<count($sets); $i++){
 			if($sets[$i]['amount'] == 1){
 				$problems = 'problem';
@@ -186,7 +186,7 @@
 		?>
 		<br><br>
 		<?php
-	}else if($query == 'difficulty'){
+	}else if($tsumegoFilters->query == 'difficulty'){
 		for($i=0; $i<count($ranksArray); $i++){
 			if($ranksArray[$i]['amount'] == 1){
 				$problems = 'problem';
@@ -234,7 +234,7 @@
 				</div>
 			</a>';
 		}
-	}else if($query == 'tags'){
+	}else if($tsumegoFilters->query == 'tags'){
 		for($i=0; $i<count($tagList); $i++){
 			if($tagList[$i]['amount'] == 1){
 				$problems = 'problem';
@@ -289,21 +289,21 @@
 	?>
 	</div>
 	<style>
-		<?php if($query=='topics'){ ?>
+		<?php if ($tsumegoFilters->query == 'topics') { ?>
 		#topics-button .set-button-text{
 			color:#77c14a;
 		}
 		#set-button-icon-topics i.animate-icon{
 			color:#77c14a;
 		}
-		<?php }else if($query=='difficulty'){ ?>
+		<?php } else if ($tsumegoFilters->query == 'difficulty') { ?>
 		#difficulty-button .set-button-text{
 			color:#be6cdd;
 		}
 		#set-button-icon-difficulty i.animate-icon{
 			color:#be6cdd;
 		}
-		<?php }else if($query=='tags'){ ?>
+		<?php } else if ($tsumegoFilters->query == 'tags') { ?>
 		#tags-button .set-button-text{
 			color:#d5795a;
 		}
@@ -311,8 +311,8 @@
 			color:#d5795a;
 		}
 		<?php } ?>
-		<?php if($lightDark=='light'){ ?>
-			<?php if($query=='topics'){ ?>
+		<?php if($lightDark=='light') { ?>
+			<?php if ($tsumegoFilters->query=='topics') { ?>
 			.box1default:hover {
 				background-image: linear-gradient(
 					rgba(200, 200, 200, 0.3),
@@ -371,15 +371,15 @@
 		}
 	</style>
 	<script>
-		<?php if($query == 'topics'){ ?>
+		<?php if($tsumegoFilters->query == 'topics'){ ?>
 			$("#topics-button").css("border", "1px solid #558a35");
-		<?php }else if($query == 'difficulty'){ ?>
+		<?php }else if($tsumegoFilters->query == 'difficulty'){ ?>
 			$("#difficulty-button").css("border", "1px solid #ac4bd0");
-		<?php }else if($query == 'tags'){ ?>
+		<?php }else if($tsumegoFilters->query == 'tags'){ ?>
 			$("#tags-button").css("border", "1px solid #aa5538");
 		<?php } ?>
 		<?php
-		if($query == 'topics'){
+		if($tsumegoFilters->query == 'topics'){
 			for($i=0; $i<count($sets); $i++){
 				echo 'animateNumber'.$i.'(0, '.$sets[$i]['solved'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
@@ -424,7 +424,7 @@
 					},600);
 				}';
 			}
-		}else if($query == 'difficulty'){
+		}else if($tsumegoFilters->query == 'difficulty'){
 			for($i=0; $i<count($ranksArray); $i++){
 				echo 'animateNumber'.$i.'(0, '.$ranksArray[$i]['solved'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
@@ -469,7 +469,7 @@
 					},600);
 				}';
 			}
-		}else if($query == 'tags'){
+		}else if($tsumegoFilters->query == 'tags'){
 			for($i=0; $i<count($tagList); $i++){
 				echo 'animateNumber'.$i.'(0, '.$tagList[$i]['solved'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
@@ -516,12 +516,12 @@
 			}
 		}
 		?>
-		let query = "<?php echo $query; ?>";
+		let query = "<?php echo $tsumegoFilters->query; ?>";
 		let queryRefresh = "<?php echo $queryRefresh; ?>";
-		let collectionSize = <?php echo $collectionSize; ?>-0;
-		let search1 = [];
-		let search2 = [];
-		let search3 = [];
+		let collectionSize = <?php echo $tsumegoFilters->collectionSize; ?>-0;
+		let filteredSets = [];
+		let filteredRanks = [];
+		let filteredTags = [];
 		let searchText1 = "";
 		let searchText2 = "";
 		let searchText3 = "";
@@ -664,23 +664,20 @@
 					drawActiveTiles();
 				});';
 			}
-			for($i=0; $i<count($search1); $i++){
-				echo 'search1.push("'.$search1[$i].'");';
-				echo 'searchText1 = searchText1 + "'.$search1[$i].'" + "@";';
-				echo 'activeTopicTiles.push("'.$search1[$i].'");';
-				echo 'handleTiles("'.$search1[$i].'", "topics", true);';
+			foreach ($tsumegoFilters->sets as $set) {
+				echo 'filteredSets.push("'.$set.'");';
+				echo 'activeTopicTiles.push("'.$set.'");';
+				echo 'handleTiles("'.$set.'", "topics", true);';
 			}
-			for($i=0; $i<count($search2); $i++){
-				echo 'search2.push("'.$search2[$i].'");';
-				echo 'searchText2 = searchText2 + "'.$search2[$i].'" + "@";';
-				echo 'activeDifficultyTiles.push("'.$search2[$i].'");';
-				echo 'handleTiles("'.$search2[$i].'", "difficulty", true);';
+			foreach ($tsumegoFilters->ranks as $rank) {
+				echo 'filteredRanks.push("'.$rank.'");';
+				echo 'activeDifficultyTiles.push("'.$rank.'");';
+				echo 'handleTiles("'.$rank.'", "difficulty", true);';
 			}
-			for($i=0; $i<count($search3); $i++){
-				echo 'search3.push("'.$search3[$i].'");';
-				echo 'searchText3 = searchText3 + "'.$search3[$i].'" + "@";';
-				echo 'activeTagTiles.push("'.$search3[$i].'");';
-				echo 'handleTiles("'.$search3[$i].'", "tags", true);';
+		foreach ($tsumegoFilters->tags as $tag) {
+				echo 'filteredTags.push("'.$tag.'");';
+				echo 'activeTagTiles.push("'.$tag.'");';
+				echo 'handleTiles("'.$tag.'", "tags", true);';
 			}
 		?>
 		$(document).ready(function(){
@@ -721,7 +718,7 @@
 			}
 		}
 		function drawActiveCollections(){
-			<?php if($query == 'topics'){ ?>
+			<?php if($tsumegoFilters->query == 'topics'){ ?>
 				if(activeTopicIds.length<1){
 					for(let i=0;i<allTopicIds.length;i++)
 						$(".topic-box"+allTopicIds[i]).css("display", "grid");
@@ -750,7 +747,7 @@
 					for(let i=0;i<activeTopicIds.length;i++)
 						$(".topic-box"+activeTopicIds[i]).fadeIn(250);
 				}
-			<?php }else if($query == 'difficulty'){ ?>
+			<?php }else if ($tsumegoFilters->query == 'difficulty') { ?>
 				if(activeDifficultyIds.length<1){
 					for(let i=0;i<allDifficultyIds.length;i++)
 						$(".difficulty-box"+allDifficultyIds[i]).css("display", "grid");
@@ -779,7 +776,7 @@
 					for(let i=0;i<activeDifficultyIds.length;i++)
 						$(".difficulty-box"+activeDifficultyIds[i]).fadeIn(250);
 				}
-			<?php }else if($query == 'tags'){ ?>
+			<?php }else if ( $tsumegoFilters->query == 'tags'){ ?>
 				if(activeTagIds.length<1){
 					for(let i=0;i<allTagIds.length;i++)
 						$(".tag-box"+allTagIds[i]).css("display", "grid");
@@ -812,10 +809,6 @@
 		}
 		function drawActiveTiles(initialDraw = false){
 			$(".active-tiles-container").html("");
-			let search1 = "";
-			let search3 = "";
-			setCookie("search1", "");
-			setCookie("search3", "");
 			let initialDrawCounter = 0;
 
 			if(initialDraw){
@@ -839,7 +832,6 @@
 						initialTile = true;
 				if(query == "topics" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
-				search1 = search1 + activeTopicTiles[i] + "@";
 			}
 			for(let i=0;i<activeDifficultyTiles.length;i++){
 				let initialTile = false;
@@ -856,14 +848,13 @@
 						initialTile = true;
 				if(query == "tags" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
-				search3 = search3 + activeTagTiles[i] + "@";
 			}
-			setCookie("search1", search1);
-			setCookie("search2", activeDifficultyTiles.join("@"));
-			setCookie("search3", search3);
-			if(query=="topics" && activeTopicTiles.length>0
-			|| query=="difficulty" && activeDifficultyTiles.length>0
-			|| query=="tags" && activeTagTiles.length>0
+			setCookie("filtered_sets", activeTopicTiles.join('@'));
+			setCookie("filtered_ranks", activeDifficultyTiles.join("@"));
+			setCookie("filtered_tags", activeTagTiles.join('@'));
+			if(query=="topics" && activeTopicTiles.length > 0
+			|| query=="difficulty" && activeDifficultyTiles.length > 0
+			|| query=="tags" && activeTagTiles.length > 0
 			|| initialDraw && initialDrawCounter>0)
 				$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" href="" id="unselect-active-tiles">clear</a>');
 		}
@@ -871,9 +862,9 @@
 		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
 			e.preventDefault();
 			$(".active-tiles-container").html("");
-			setCookie("search1", "@");
-			setCookie("search2", "");
-			setCookie("search3", "@");
+			setCookie("filtered_sets", "");
+			setCookie("filtered_ranks", "");
+			setCookie("filtered_tags", "");
 			window.location.href = "/sets";
 		});
 

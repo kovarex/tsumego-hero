@@ -191,14 +191,14 @@
 					$hasPartition = '';
 					if($partition>0)
 						$hasPartition = '?partition='.$partition;
-					if($query=='difficulty' || $query=='tags'){
+					if($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags'){
 						echo '<a id="playTitleA" href="/sets/view/'.$this->Session->read('lastSet').$hasPartition.'">'.$queryTitle.'</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
 								('.$set['Set']['title'].$di.$t['Tsumego']['actualNum'].$di2.$amountOfOtherCollection.')
 							</a>
 						</font>';
-					}else if($query=='topics' && !$favorite){
+					}else if ($tsumegoFilters->query == 'topics' && !$favorite) {
 						if ($inFavorite=='') {
 							if (Auth::isInLevelMode()) {
 								if($set['Set']['id'] == 38){
@@ -1254,9 +1254,9 @@
 		$hasPartition = '';
 		if($partition>0)
 			$hasPartition = '?partition='.$partition;
-		if($query=='difficulty' || $query=='tags'){
+		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags') {
 			$nextButtonLinkSet = $this->Session->read('lastSet').$hasPartition;
-		}else if($query=='topics'){
+		} else if ($tsumegoFilters->query == 'topics') {
 			$nextButtonLinkSet = $set['Set']['id'].$hasPartition;
 		}
 		echo 'nextButtonLinkSet="'.$nextButtonLinkSet.'";';
@@ -1292,15 +1292,15 @@
 	$("#msgFilters").css("display", "none");
 
 	<?php
-		if($query!='topics')
-			for($i=0; $i<count($search1); $i++)
-				echo 'activeTopicTiles.push("'.$search1[$i].'");';
-		if($query!='difficulty')
-			for($i=0; $i<count($search2); $i++)
-				echo 'activeDifficultyTiles.push("'.$search2[$i].'");';
-		if($query!='tags')
-			for($i=0; $i<count($search3); $i++)
-				echo 'activeTagTiles.push("'.$search3[$i].'");';
+		if($tsumegoFilters->query != 'topics')
+			foreach ($tsumegoFilters->sets as $set)
+				echo 'activeTopicTiles.push("'.$set.'");';
+		if($tsumegoFilters->query != 'difficulty')
+			foreach ($tsumegoFilters->ranks as $rank)
+				echo 'activeDifficultyTiles.push("'.$rank.'");';
+		if($tsumegoFilters->query != 'tags')
+			foreach ($tsumegoFilters->tags as $tag)
+				echo 'activeTagTiles.push("'.$tag.'");';
 	?>
 	drawActiveTiles();
 
@@ -1319,9 +1319,9 @@
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
 		$(".active-tiles-container").html("");
-		setCookie("search1", "@");
-		setCookie("search2", "@");
-		setCookie("search3", "@");
+		setCookie("filtered_sets", "");
+		setCookie("filtered_ranks", "");
+		setCookie("filtered_tags", "");
 		window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
 	});
 
@@ -3323,15 +3323,15 @@
 			margin:0 4px 8px
 		}
 		#showFilters, .showFilters{
-			<?php
+				<?php
 			$displayNone = false;
-			if($set['Set']['id']==1 || (count($search1)==0 && count($search2)==0 && count($search3)==0))
+			if($set['Set']['id']==1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
 				$displayNone = true;
-			else if($query=='topics' && count($search2)==0 && count($search3)==0)
+			else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
 				$displayNone = true;
-			else if($query=='difficulty' && count($search1)==0 && count($search3)==0)
+			else if($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
 				$displayNone = true;
-			else if($query=='tags' && count($search1)==0 && count($search2)==0)
+			else if($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
 				$displayNone = true;
 			if($displayNone)
 				echo 'display:none;';

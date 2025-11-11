@@ -42,14 +42,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$context = new ContextPreparator($contextParams);
 
 		$_COOKIE['query'] = 'difficulty';
-		$_COOKIE['search2'] = '15k';
+		$_COOKIE['filtered_ranks'] = '15k';
 		$this->testAction('sets', ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
 
-		$_COOKIE['search2'] = '10k';
+		$_COOKIE['filtered_ranks'] = '10k';
 		$this->testAction('sets', ['return' => 'view']);
 		$dom = $this->getStringDom();
 		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
@@ -187,7 +187,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// difficulty selected
 		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'difficulty');
-		$this->assertSame($browser->driver->manage()->getCookieNamed('search2')->getValue(), '15k');
+		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue(), '15k');
 
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
@@ -205,9 +205,16 @@ class SetsControllerTest extends TestCaseWithAuth {
 			$link = $button->findElement(WebDriverBy::tagName('a'));
 			$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[$key]['set-connections'][0]['id']);
 		}
+
+		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
 		$this->assertCount(6, $navigationButtons); // 4 testing ones and two 'empty' borders
+
+		// checking that the title is correctly mentioning 15k
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('15k', $collectionTopDivs[0]->getText());
 	}
 }

@@ -566,10 +566,10 @@
 			setCookie("z_hash", "0");
 
 		setCookie("query", "");
-		setCookie("collectionSize", "");
-		setCookie("search1", "");
-		setCookie("search2", "");
-		setCookie("search3", "");
+		setCookie("collection_size", "");
+		setCookie("filtered_sets", "");
+		setCookie("filtered_ranks", "");
+		setCookie("filtered_tags", "");
 		setCookie("revelation", "");
 		setCookie("texture", "0");
 		<?php

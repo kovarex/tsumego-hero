@@ -519,15 +519,15 @@
 	const activeTagTiles = [];
 
 	<?php
-		if($query!='topics')
-			for($i=0; $i<count($search1); $i++)
-				echo 'activeTopicTiles.push("'.$search1[$i].'");';
-		if($query!='difficulty')
-			for($i=0; $i<count($search2); $i++)
-				echo 'activeDifficultyTiles.push("'.$search2[$i].'");';
-		if($query!='tags')
-			for($i=0; $i<count($search3); $i++)
-				echo 'activeTagTiles.push("'.$search3[$i].'");';
+		if ($tsumegoFilters->query != 'topics')
+			foreach ($tsumegoFilters->sets as $set)
+				echo 'activeTopicTiles.push("'.$set.'");';
+		if ($tsumegoFilters->query != 'difficulty')
+			foreach ($tsumegoFilters->ranks as $rank)
+				echo 'activeDifficultyTiles.push("'.$rank.'");';
+		if($tsumegoFilters->query != 'tags')
+			foreach ($tsumegoFilters->tags as $tag)
+				echo 'activeTagTiles.push("'.$tag.'");';
 	?>
 
 	drawActiveTiles();
@@ -547,9 +547,9 @@
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
 		$(".active-tiles-container").html("");
-		setCookie("search1", "@");
-		setCookie("search2", "@");
-		setCookie("search3", "@");
+		setCookie("filteredSets", "");
+		setCookie("filteredRanks", "");
+		setCookie("filteredTags", "");
 		window.location.href = "/sets/view/<?php echo $set['Set']['id']; ?>";
 	});
 
@@ -765,13 +765,13 @@
 	#showFilters, .showFilters{
 		<?php
 		$displayNone = false;
-		if($set['Set']['id']==1 || (count($search1)==0 && count($search2)==0 && count($search3)==0))
+		if($set['Set']['id']==1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
 			$displayNone = true;
-		else if($query=='topics' && count($search2)==0 && count($search3)==0)
+		else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
 			$displayNone = true;
-		else if($query=='difficulty' && count($search1)==0 && count($search3)==0)
+		else if($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
 			$displayNone = true;
-		else if($query=='tags' && count($search1)==0 && count($search2)==0)
+		else if($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
 			$displayNone = true;
 		if($displayNone)
 			echo 'display:none;';
