@@ -115,9 +115,7 @@ class ContextPreparator {
 		$statusCondition = [
 			'conditions' => [
 				'user_id' => $this->user['id'],
-				['tsumego_id' => $tsumego['id']],
-			],
-		];
+				['tsumego_id' => $tsumego['id']]]];
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
 		if ($originalTsumegoStatus) {
 			if (!$tsumegoStatus) {
@@ -228,8 +226,7 @@ class ContextPreparator {
 		$statusCondition = [
 			'conditions' => [
 				'user_id' => $this->user['id'],
-				'tsumego_id' => $this->tsumego['id']],
-		];
+				'tsumego_id' => $this->tsumego['id']]];
 		$this->resultTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition)['TsumegoStatus'];
 		$testCase->assertNotEmpty($this->resultTsumegoStatus);
 		$testCase->assertSame($this->resultTsumegoStatus['user_id'], $this->user['id']);

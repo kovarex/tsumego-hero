@@ -13,8 +13,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 				$openBySetConnectionID
 				? ('/' . $context->tsumego['set-connections'][0]['id'])
 				: ('tsumegos/play/' . $context->tsumego['id']),
-				['return' => 'view']
-			);
+				['return' => 'view']);
 			$this->assertTextContains("tsumego set 1", $this->view);
 
 			$dom = $this->getStringDom();
@@ -29,10 +28,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 			['tsumego' => [
 				'sets' => [
 					['name' => 'tsumego set 1', 'num' => '666'],
-					['name' => 'tsumego set 2', 'num' => '777'],
-				],
-			]]
-		);
+					['name' => 'tsumego set 2', 'num' => '777']]]]);
 		$tsumegoID = $context->tsumego['id'];
 		$this->testAction('tsumegos/play/' . $tsumegoID, ['return' => 'view']);
 
@@ -58,8 +54,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 			['tsumego' => [
 				'sets' => [
 					['name' => 'tsumego set 1', 'num' => '666'],
-					['name' => 'tsumego set 2', 'num' => '777']]]]
-		);
+					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
 		$this->testAction('tsumegos/play/' . $context->tsumego['id'] . '?sid=' . $context->tsumego['sets'][1]['id'], ['return' => 'view']);
 
@@ -80,8 +75,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$context = new ContextPreparator(
 			['tsumego' => [
 				'title' => 'tsumego-without-sgf',
-				'sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]
-		);
+				'sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 
 		$this->testAction('tsumegos/play/' . $context->tsumego['id'], ['return' => 'view']);
 
@@ -98,10 +92,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 			['tsumego' => [
 				'sets' => [
 					['name' => 'tsumego set 1', 'num' => '666'],
-					['name' => 'tsumego set 2', 'num' => '777'],
-				],
-			]]
-		);
+					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
 		$browser = new Browser();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
@@ -115,8 +106,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
 			'other-tsumegos' => [
 				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
-				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]],
-		]);
+				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]]]);
 
 		$browser = new Browser();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
