@@ -97,4 +97,47 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
+
+	public function testSetViewSetBased(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['other-tsumegos'] = [];
+		$contextParams['other-tsumegos'] [] = [
+			'title' => '15k problem',
+			'rating' => Rating::getRankMinimalRatingFromReadableRank('15k'),
+			'sets' => [['name' => 'set 1', 'num' => '1']]];
+		$contextParams['other-tsumegos'] [] = [
+			'title' => '10k problem',
+			'rating' => Rating::getRankMinimalRatingFromReadableRank('10k'),
+			'sets' => [['name' => 'set 2', 'num' => '1']]];
+		$context = new ContextPreparator($contextParams);
+
+		$this->testAction('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'], ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$titleDivs = $dom->querySelectorAll('.title4');
+		$this->assertCount(2, $titleDivs);
+		$this->assertSame($titleDivs[1]->textContent, 'set 1');
+
+		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->textContent, '1');
+
+		$problemLinks = $dom->querySelectorAll('.tooltip');
+		$this->assertCount(1, $problemLinks);
+		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+
+		$this->testAction('sets/view/' . $context->otherTsumegos[1]['sets'][0]['id'], ['return' => 'view']);
+		$dom = $this->getStringDom();
+		$titleDivs = $dom->querySelectorAll('.title4');
+		$this->assertCount(2, $titleDivs);
+		$this->assertSame($titleDivs[1]->textContent, 'set 2');
+
+		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->textContent, '1');
+
+		$problemLinks = $dom->querySelectorAll('.tooltip');
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
+	}
 }

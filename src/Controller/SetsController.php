@@ -1035,11 +1035,7 @@ class SetsController extends AppController {
 		$this->set('redirect', $redirect);
 	}
 
-	/**
-	 * @param string|int|null $id
-	 * @return void
-	 */
-	public function view($id = null) {
+	public function view(string|int|null $id = null): void {
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Favorite');
@@ -1077,7 +1073,6 @@ class SetsController extends AppController {
 		$partition = -1;
 		$hasPartition = false;
 		$tsumegoStatusMap = [];
-		$setsWithPremium = [];
 		$setDifficulty = 1200;
 		$currentIds = [];
 		$allVcActive = false;
@@ -1089,13 +1084,10 @@ class SetsController extends AppController {
 		$pdCounter = 0;
 		$acS = null;
 		$acA = null;
-		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
-		if (!$swp) {
-			$swp = [];
-		}
-		$swpCount = count($swp);
-		for ($i = 0; $i < $swpCount; $i++) {
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+
+		$setsWithPremium = [];
+		foreach ($this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [] as $setWithPremium) {
+			$setsWithPremium [] = $setWithPremium['Set']['id'];
 		}
 
 		if (isset($this->params['url']['partition'])) {
@@ -1366,39 +1358,38 @@ class SetsController extends AppController {
 				$set['Set']['anz'] = count($ts);
 			} else {
 				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
+
+				$condition = "";
+				$rankConditions = '';
+				foreach ($search2 as $rankFilter) {
+					$rankCondition = '';
+					RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+					Util::addSqlOrCondition($rankConditions, $rankCondition);
+				}
+				Util::addSqlCondition($condition, $rankConditions);
+				if (!Auth::hasPremium()) {
+					Util::addSqlCondition($condition, '`set`.premium = false');
+				}
+				Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
+				$query = "SELECT set_connection.id, set_connection.tsumego_id, set_connection.num, tsumego.alternative_response, tsumego.pass";
+				if (Auth::isLoggedIn()) {
+					$query .= ', tsumego_status.status';
+				}
+				$query .= " FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
+					. " JOIN `set` ON `set`.id=set_connection.set_id";
+				if (Auth::isLoggedIn()) {
+					$query .= ' LEFT JOIN tsumego_status on tsumego_status.user_id=' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
+				}
+				$query .=  $condition;
+				$setConnections = ClassRegistry::init('Tsumego')->query($query);
+
 				$ts = [];
-				$scTs = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $set['Set']['id']]]);
-				if (!$scTs) {
-					$scTs = [];
-				}
-				$rankConditions = [];
-				if (count($search2) > 0) {
-					$fromTo = [];
-					$search2Count = count($search2);
-					for ($i = 0; $i < $search2Count; $i++) {
-						$ft = [];
-						$ft['rating >='] = AppController::getTsumegoElo($search2[$i]);
-						$ft['rating <'] = $ft['rating >='] + 100;
-						if ($search2[$i] == '15k') {
-							$ft['rating >='] = 50;
-						}
-						array_push($fromTo, $ft);
-					}
-					$rankConditions['OR'] = $fromTo;
-				}
-				$scTsCount = count($scTs);
-				for ($i = 0; $i < $scTsCount; $i++) {
-					$scT = $this->Tsumego->find('first', [
-						'conditions' => [
-							'id' => $scTs[$i]['SetConnection']['tsumego_id'],
-							$rankConditions,
-						],
-					]);
+				foreach ($setConnections as $setConnection) {
 					$tagValid = false;
 					if (count($search3) > 0) {
 						$tagForTsumego = $this->Tag->find('first', [
 							'conditions' => [
-								'tsumego_id' => $scTs[$i]['SetConnection']['tsumego_id'],
+								'tsumego_id' => $setConnection['SetConnection']['tsumego_id'],
 								'tag_name_id' => $search3ids,
 							],
 						]);
@@ -1408,21 +1399,15 @@ class SetsController extends AppController {
 					} else {
 						$tagValid = true;
 					}
-					if ($scT != null && $tagValid) {
-						$scT['Tsumego']['set_id'] = $scTs[$i]['SetConnection']['set_id'];
-						$scT['Tsumego']['num'] = $scTs[$i]['SetConnection']['num'];
-						$scT['Tsumego']['duplicateLink'] = '';
-						$scTs2 = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['tsumego_id' => $scT['Tsumego']['id']]]);
-						if (!$scTs2) {
-							$scTs2 = [];
-						}
-						$scTs2Count2 = count($scTs2);
-						for ($j = 0; $j < $scTs2Count2; $j++) {
-							if (count($scTs2) > 1 && $scTs2[$j]['SetConnection']['set_id'] == $set['Set']['id']) {
-								$scT['Tsumego']['duplicateLink'] = '?sid=' . $scT['Tsumego']['set_id'];
-							}
-						}
-						array_push($ts, $scT);
+					if ($tagValid) {
+						$result = [];
+						$result['id'] = $setConnection['set_connection']['id'];
+						$result['tsumego_id'] = $setConnection['set_connection']['tsumego_id'];
+						$result['num'] = $setConnection['set_connection']['num'];
+						$result['status'] = Auth::isLoggedIn() ? $setConnection['tsumego_status']['status'] : 'N';
+						$result['alternative_response'] = $setConnection['tsumego']['alternative_response'];
+						$result['pass'] = $setConnection['tsumego']['pass'];
+						$ts [] = $result;
 					}
 				}
 				if ($set['Set']['public'] != 1) {
@@ -1430,18 +1415,10 @@ class SetsController extends AppController {
 				}
 				$fromTo = $this->getPartitionRange(count($ts), $collectionSize, $partition);
 				$currentIds = [];
-				$ts1 = [];
 				for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-					if (isset($tsumegoStatusMap[$ts[$i]['Tsumego']['id']])) {
-						$ts[$i]['Tsumego']['status'] = $tsumegoStatusMap[$ts[$i]['Tsumego']['id']];
-					} else {
-						$ts[$i]['Tsumego']['status'] = 'N';
-					}
-					array_push($currentIds, $ts[$i]['Tsumego']['id']);
-					array_push($ts1, $ts[$i]);
+					$currentIds [] =  $ts[$i]['tsumego_id'];
 				}
 				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-				$ts = $ts1;
 
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
@@ -1449,47 +1426,16 @@ class SetsController extends AppController {
 				if ($hasPartition) {
 					$set['Set']['title'] = $set['Set']['title'] . ' #' . ($partition + 1);
 				}
-				$tsBuffer = [];
-				$tsBufferLowest = 10000;
-				$tsBufferHighest = 0;
-				$tsCount = count($ts);
-				for ($i = 0; $i < $tsCount; $i++) {
-					$tsBuffer[$ts[$i]['Tsumego']['num']] = $ts[$i];
-					if ($ts[$i]['Tsumego']['num'] < $tsBufferLowest) {
-						$tsBufferLowest = $ts[$i]['Tsumego']['num'];
-					}
-					if ($ts[$i]['Tsumego']['num'] > $tsBufferHighest) {
-						$tsBufferHighest = $ts[$i]['Tsumego']['num'];
-					}
-				}
-				$ts = [];
-				for ($i = $tsBufferLowest; $i <= $tsBufferHighest; $i++) {
-					if (isset($tsBuffer[$i])) {
-						array_push($ts, $tsBuffer[$i]);
-					}
-				}
 				$allArActive = true;
 				$allArInactive = true;
 				$allPassActive = true;
 				$allPassInactive = true;
-				$tsCount = count($ts);
-				for ($i = 0; $i < $tsCount; $i++) {
-					if ($ts[$i]['Tsumego']['alternative_response'] == 0) {
-						$allArActive = false;
-					}
-					if ($ts[$i]['Tsumego']['alternative_response'] == 1) {
-						$allArInactive = false;
-					}
-					if ($ts[$i]['Tsumego']['pass'] == 0) {
-						$allPassActive = false;
-					}
-					if ($ts[$i]['Tsumego']['pass'] == 1) {
-						$allPassInactive = false;
-					}
+				foreach ($ts as $item) {
+					$allArActive = $item['alternative_response'];
+					$allPassActive = $item['pass'];
 				}
-				$tsCount = count($ts);
-				for ($i = 0; $i < $tsCount; $i++) {
-					array_push($tsIds, $ts[$i]['Tsumego']['id']);
+				foreach ($ts as $item) {
+					$tsIds [] = $item['tsumego_id'];
 				}
 				if ($set['Set']['public'] == 0) {
 					$this->Session->write('page', 'sandbox');
@@ -1499,14 +1445,10 @@ class SetsController extends AppController {
 					if ($this->params['url']['sort'] == 1) {
 						$tsId = [];
 						$tsNum = [];
-						$tsOrder = [];
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							array_push($tsId, $ts[$i]['Tsumego']['id']);
-							array_push($tsNum, $ts[$i]['Tsumego']['num']);
-							array_push($tsOrder, $ts[$i]['Tsumego']['order']);
+						foreach ($ts as $item) {
+							$tsId [] = $item['tsumego_id'];
+							$tsNum [] = $item['num'];
 						}
-						array_multisort($tsOrder, $tsId, $tsNum);
 						$nr = 1;
 						$tsIdCount = count($tsId);
 						for ($i = 0; $i < $tsIdCount; $i++) {
@@ -1532,19 +1474,12 @@ class SetsController extends AppController {
 				if (isset($this->params['url']['rename'])) {
 					if ($this->params['url']['rename'] == 1) {
 						$tsId = [];
-						$tsNum = [];
-						$tsOrder = [];
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							array_push($tsId, $ts[$i]['Tsumego']['id']);
-							array_push($tsNum, $ts[$i]['Tsumego']['num']);
-							array_push($tsOrder, $ts[$i]['Tsumego']['order']);
+						foreach ($ts as $item) {
+							$tsId [] = $item['tsumego_id'];
 						}
-						array_multisort($tsOrder, $tsId, $tsNum);
 						$nr = 1;
-						$tsIdCount = count($tsId);
-						for ($i = 0; $i < $tsIdCount; $i++) {
-							$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $tsId[$i]]]);
+						foreach ($tsId as $id) {
+							$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $id]]);
 							$j['Joseki']['order'] = $nr;
 							$this->Joseki->save($j);
 							$nr++;
@@ -1567,7 +1502,7 @@ class SetsController extends AppController {
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
+					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['tsumego_id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				}
@@ -1583,7 +1518,7 @@ class SetsController extends AppController {
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
+					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['tsumego_id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				}
@@ -1598,7 +1533,7 @@ class SetsController extends AppController {
 						}
 						$adminActivity = [];
 						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
+						$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['tsumego_id'];
 						$adminActivity['AdminActivity']['file'] = 'settings';
 						$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
 					}
@@ -1615,7 +1550,7 @@ class SetsController extends AppController {
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
+					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['tsumego_id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
@@ -1632,7 +1567,7 @@ class SetsController extends AppController {
 					$set = $this->Set->findById($id);
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['Tsumego']['id'];
+					$adminActivity['AdminActivity']['tsumego_id'] = $ts[0]['tsumego_id'];
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);

@@ -135,10 +135,26 @@ class Util {
 	}
 
 	public static function addSqlCondition(&$existingCondition, $condition): void {
+		if (empty($condition)) {
+			return;
+		}
 		if (empty($existingCondition)) {
 			$existingCondition = " WHERE " . $condition;
 			return;
 		}
-		$existingCondition .= " AND " . $condition;
+		$existingCondition .= " AND " ;
+		if (str_contains(" OR ", $condition)) {
+			$existingCondition .= '(' + $condition + ')';
+		} else {
+			$existingCondition .= $condition;
+		}
+	}
+
+	public static function addSqlOrCondition(&$existingCondition, $condition): void {
+		if (empty($existingCondition)) {
+			$existingCondition = $condition;
+			return;
+		}
+		$existingCondition .= " OR " . $condition;
 	}
 }
