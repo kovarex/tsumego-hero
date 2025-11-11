@@ -5,47 +5,40 @@ class SetNavigationButtonsInput {
 		$this->setFunction = $setFunction;
 	}
 
-	public function execute(array $setConnections, array $currentSetConnection, array $tsumegoStatusMap): void {
-		$this->collectFromSetConnections($setConnections, $currentSetConnection, $tsumegoStatusMap);
-		$this->exportTooltips();
-		$this->processJosekiLevel($currentSetConnection);
-		($this->setFunction)('setNavigationButtonsInput', $this->result);
+	public function execute(TsumegoButtons $tsumegoButtons, array $currentSetConnection): void {
+		$navigationButtons = $this->collectFromSetConnections($tsumegoButtons, $currentSetConnection);
+		$this->exportTooltips($navigationButtons);
+		//$this->processJosekiLevel($currentSetConnection);
+		($this->setFunction)('tsumegoButtons', $navigationButtons);
 	}
 
-	private static function constructFromSetConnection(array $setConnection, array $tsumegoStatusMap) {
-		$result = [];
-		$result['SetConnection'] = $setConnection['SetConnection'];
-		$result['Tsumego'] = ClassRegistry::init('Tsumego')->findById($setConnection['SetConnection']['tsumego_id'])['Tsumego'];
-		$status =  $tsumegoStatusMap[$setConnection['SetConnection']['tsumego_id']];
-		$result['Tsumego']['status'] = $status ?: 'N';
+	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, array $currentSetConnection): TsumegoButtons {
+		$result = new TsumegoButtons();
+		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) { return $tsumegoButton->setConnectionID === $currentSetConnection['SetConnection']['id']; });
+		if (count($tsumegoButtons) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2 + 3) {
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				$result [] = $tsumegoButton;
+			}
+			return $result;
+		}
+		$startIndex = max(1, $currentIndex - self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE);
+		$endIndex = min($startIndex + self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2, count($tsumegoButtons) - 2);
+		$startIndex = max(1, $endIndex - self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2);
+		$result [] = $tsumegoButtons[0];
+		for ($i = $startIndex; $i <= $endIndex; $i++) {
+			$result [] = $tsumegoButtons[$i];
+		}
+		$result [] = $tsumegoButtons[count($tsumegoButtons) - 1];
 		return $result;
 	}
 
-	private function collectFromSetConnections(array $setConnections, array $currentSetConnection, array $tsumegoStatusMap) {
-		$currentIndex = array_find_key($setConnections, function ($setConnection) use ($currentSetConnection) { return $setConnection['SetConnection']['id'] === $currentSetConnection['SetConnection']['id']; });
-		if (count($setConnections) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2 + 3) {
-			foreach ($setConnections as $setConnection) {
-				$this->result [] = self::constructFromSetConnection($setConnection, $tsumegoStatusMap);
-			}
-			return;
-		}
-		$startIndex = max(1, $currentIndex - self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE);
-		$endIndex = min($startIndex + self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2, count($setConnections) - 2);
-		$startIndex = max(1, $endIndex - self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2);
-		$this->result [] = self::constructFromSetConnection($setConnections[0], $tsumegoStatusMap);
-		for ($i = $startIndex; $i <= $endIndex; $i++) {
-			$this->result [] = self::constructFromSetConnection($setConnections[$i], $tsumegoStatusMap);
-		}
-		$this->result [] = self::constructFromSetConnection($setConnections[count($setConnections) - 1], $tsumegoStatusMap);
-	}
-
-	private function exportTooltips() {
+	private function exportTooltips($navigationButtons): void {
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
 		$tooltipBoardSize = [];
 
-		foreach ($this->result as $item) {
-			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $item['Tsumego']['id']]]);
+		foreach ($navigationButtons as $navigationButton) {
+			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
 			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
 			$tooltipSgfs [] = $tArr[0];
 			$tooltipInfo [] = $tArr[2];
@@ -57,6 +50,7 @@ class SetNavigationButtonsInput {
 		($this->setFunction)('tooltipBoardSize', $tooltipBoardSize);
 	}
 
+	/* I'm not sure about the meaning of this, should be processd once the joseki stuff is tested
 	private function processJosekiLevel($setConnection) {
 		$josekiLevel = 1;
 		if ($setConnection['SetConnection']['set_id'] == 161) {
@@ -76,9 +70,8 @@ class SetNavigationButtonsInput {
 			}
 		}
 		($this->setFunction)('josekiLevel', $josekiLevel);
-	}
+	}*/
 
 	private static $NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE = 5;
-	private $result = [];
 	private $setFunction;
 }

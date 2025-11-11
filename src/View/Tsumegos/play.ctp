@@ -501,18 +501,13 @@
 	}
 	?>
 
-<?php if (isset($setNavigationButtonsInput)) { ?>
+<?php if (isset($tsumegoButtons)) { ?>
 	<div class="tsumegoNavi1">
 		<div class="tsumegoNavi2">
 			<?php
-			$i = 0;
-			foreach ($setNavigationButtonsInput as $buttonInput) {
-				$additionalId = $t['Tsumego']['id'] == $buttonInput['Tsumego']['id'] ? 'id="currentNavigationButton"' : '';
-				echo '<li '.$additionalId.' id="naviElement'.$i.'" class="set'.$buttonInput['Tsumego']['status'].'1">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$buttonInput['SetConnection']['id'].$inFavorite.'">
-					'.$buttonInput['SetConnection']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
-					</li>';
-				if($i == 0 || $i == count($setNavigationButtonsInput) - 2)
+			foreach ($tsumegoButtons as $index => $tsumegoButton) {
+				$tsumegoButton->render($index, $fav);
+				if($index == 0 || $index == count($tsumegoButtons) - 2)
 					echo '<li class="setBlank"></li>';
 				$i++;
 			}
@@ -2339,7 +2334,7 @@
 					}
 				}
 			}
-			for($i=0; $i<count($setNavigationButtonsInput); $i++)
+			for($i=0; $i<count($tsumegoButtons); $i++)
 				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
 		}
 		?>

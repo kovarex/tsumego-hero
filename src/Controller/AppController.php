@@ -3750,7 +3750,8 @@ class AppController extends Controller {
 				$achievementUpdate2 ?: [],
 				$achievementUpdate3 ?: [],
 				$achievementUpdate4 ?: [],
-				$achievementUpdate5 ?: []);
+				$achievementUpdate5 ?: []
+			);
 			$this->Session->delete('initialLoading');
 		}
 

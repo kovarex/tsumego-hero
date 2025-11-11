@@ -1,10 +1,18 @@
 <?php
 
 class TsumegoButtons extends ArrayObject {
-	public function fill(string $condition) {
+	public function fill(string $condition, ?array $rankFilters = null) {
 		if (!Auth::hasPremium()) {
 			Util::addSqlCondition($condition, '`set`.premium = false');
 		}
+
+		$rankConditions = '';
+		foreach ($rankFilters as $rankFilter) {
+			$rankCondition = '';
+			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			Util::addSqlOrCondition($rankConditions, $rankCondition);
+		}
+		Util::addSqlCondition($condition, $rankConditions);
 
 		$query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {
@@ -16,6 +24,7 @@ class TsumegoButtons extends ArrayObject {
 			$query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
 		}
 		$query .= $condition;
+		$query .= " ORDER BY set_connection.num";
 		$result = ClassRegistry::init('Tsumego')->query($query);
 
 		foreach ($result as $index => $row) {
@@ -25,7 +34,8 @@ class TsumegoButtons extends ArrayObject {
 				$row['set_connection']['num'],
 				Auth::isLoggedIn() ? ($row['tsumego_status']['status'] ?: 'N') : 'N',
 				$row['tsumego']['alternative_response'],
-				$row['tsumego']['pass']);
+				$row['tsumego']['pass']
+			);
 		}
 	}
 
@@ -53,6 +63,7 @@ class TsumegoButtons extends ArrayObject {
 			function ($tsumegoButton, $index) use ($from, $to): bool {
 				return $index >= $from && $index <= $to;
 			},
-			ARRAY_FILTER_USE_BOTH)));
+			ARRAY_FILTER_USE_BOTH
+		)));
 	}
 }

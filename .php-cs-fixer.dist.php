@@ -14,7 +14,8 @@ return (new PhpCsFixer\Config())->setRules(
 			'classes_opening_brace' => 'same_line',
 			'functions_opening_brace' => 'same_line'
 		],
-		'trailing_comma_in_multiline' => false
+		'trailing_comma_in_multiline' => false,
+		'method_argument_space' => ['on_multiline' => 'ignore']
 	])
 		->setIndent("\t")
 		->setFinder($finder);
