@@ -61,8 +61,7 @@ class EmptyIntegerBehavior extends ModelBehavior {
 					'Non-numeric string "%s" provided for integer field %s.%s, converting to 0',
 					$value,
 					$model->alias,
-					$field,
-				));
+					$field));
 
 				// Convert to 0 or null based on null constraint
 				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {

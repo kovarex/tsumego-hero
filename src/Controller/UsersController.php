@@ -3088,8 +3088,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$achievementUpdate2 = $this->checkProblemNumberAchievements();
 		$achievementUpdate = array_merge(
 			$achievementUpdate1 ?: [],
-			$achievementUpdate2 ?: [],
-		);
+			$achievementUpdate2 ?: []);
 
 		if (count($achievementUpdate) > 0) {
 			$this->updateXP($id, $achievementUpdate);
@@ -3397,12 +3396,10 @@ Joschka Zimdars';
 
 		if ($this->Comment->delete($id)) {
 			$this->Flash->success(
-				__('The post with id: %s has been deleted.', h($id)),
-			);
+				__('The post with id: %s has been deleted.', h($id)));
 		} else {
 			$this->Flash->error(
-				__('The post with id: %s could not be deleted.', h($id)),
-			);
+				__('The post with id: %s could not be deleted.', h($id)));
 		}
 
 		return $this->redirect(['action' => '/stats']);

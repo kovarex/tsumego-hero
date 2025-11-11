@@ -25,8 +25,7 @@ class TsumegoButtons extends ArrayObject {
 				$row['set_connection']['num'],
 				Auth::isLoggedIn() ? ($row['tsumego_status']['status'] ?: 'N') : 'N',
 				$row['tsumego']['alternative_response'],
-				$row['tsumego']['pass'],
-			);
+				$row['tsumego']['pass']);
 		}
 	}
 
@@ -54,7 +53,6 @@ class TsumegoButtons extends ArrayObject {
 			function ($tsumegoButton, $index) use ($from, $to): bool {
 				return $index >= $from && $index <= $to;
 			},
-			ARRAY_FILTER_USE_BOTH,
-		)));
+			ARRAY_FILTER_USE_BOTH)));
 	}
 }

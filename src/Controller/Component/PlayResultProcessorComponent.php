@@ -95,8 +95,7 @@ class PlayResultProcessorComponent extends Component {
 				=> ['user_id' => Auth::getUserID(),
 					'tsumego_id' => $previousTsumego['Tsumego']['id'],
 					'mode' => Auth::getMode()],
-				'order' => 'id DESC'],
-		);
+				'order' => 'id DESC']);
 
 		// only not solved ones are updated (misplays get accumulated)
 		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved']) {

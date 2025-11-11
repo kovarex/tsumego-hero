@@ -1184,8 +1184,7 @@ class Play {
 				$achievementUpdate2 ?: [],
 				$achievementUpdate3 ?: [],
 				$achievementUpdate4 ?: [],
-				$achievementUpdate5 ?: [],
-			);
+				$achievementUpdate5 ?: []);
 			if (count($achievementUpdate) > 0) {
 				AppController::updateXP(Auth::getUserID(), $achievementUpdate);
 			}
