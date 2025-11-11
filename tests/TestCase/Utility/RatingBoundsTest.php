@@ -38,19 +38,19 @@ class RatingBoundsTest extends CakeTestCase {
 	public function testCreateConditionWithOnlyMin() {
 		$condition = '';
 		new RatingBounds(10)->addSqlConditions($condition);
-		$this->assertSame($condition, ' WHERE tsumego.rating >= 10');
+		$this->assertSame($condition, 'tsumego.rating >= 10');
 	}
 
 	public function testCreateConditionWithOnlyMax() {
 		$condition = '';
 		new RatingBounds(null, 20)->addSqlConditions($condition);
-		$this->assertSame($condition, ' WHERE tsumego.rating < 20');
+		$this->assertSame($condition, 'tsumego.rating < 20');
 	}
 
 	public function testCreateConditionWithBothMinAndMax() {
 		$condition = '';
 		new RatingBounds(10, 20)->addSqlConditions($condition);
-		$this->assertSame($condition, ' WHERE tsumego.rating >= 10 AND tsumego.rating < 20');
+		$this->assertSame($condition, 'tsumego.rating >= 10 AND tsumego.rating < 20');
 	}
 
 	public function testCreateStructuredConditionFromEmpty() {

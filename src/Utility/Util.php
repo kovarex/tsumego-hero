@@ -139,7 +139,7 @@ class Util {
 			return;
 		}
 		if (empty($existingCondition)) {
-			$existingCondition = " WHERE " . $condition;
+			$existingCondition = $condition;
 			return;
 		}
 		$existingCondition .= " AND " ;

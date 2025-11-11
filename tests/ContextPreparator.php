@@ -129,6 +129,7 @@ class ContextPreparator {
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $tsumegoStatus;
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $this->user['id'];
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
+			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
 			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 		}
 	}

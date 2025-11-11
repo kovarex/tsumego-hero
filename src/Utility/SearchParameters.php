@@ -1,7 +1,7 @@
 <?php
 
 class SearchParameters {
-	public static function processItem(string $name, mixed $default, $userContribution, $processToResult = null) {
+	public static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null) {
 		$stringResult = null;
 		if ($userContribution) {
 			if ($value = $userContribution['UserContribution'][$name]) {

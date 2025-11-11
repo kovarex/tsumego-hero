@@ -703,7 +703,7 @@ class SetsController extends AppController {
 				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
-					. " JOIN `set` ON `set`.id=set_connection.set_id" . $condition
+					. " JOIN `set` ON `set`.id=set_connection.set_id WHERE " . $condition
 				);
 				$currentIds = [];
 				foreach ($setConnectionIDs as $setConnectionID) {

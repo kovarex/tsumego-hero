@@ -29,7 +29,6 @@ class UploadSgfTest extends TestCaseWithAuth {
 		$commentEditButton->click();
 		$saveButton = $browser->driver->findElement(WebDriverBy::cssSelector('#saveSGFButton'));
 		$saveButton->click();
-		$bla = $browser->driver->getCurrentURL();
 
 		$sgf = ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]]);
 		$this->assertEquals(count($sgf), 1);

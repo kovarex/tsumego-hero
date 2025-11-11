@@ -58,6 +58,11 @@ class Play {
 		$queryTitleSets = '';
 		$partition = -1;
 
+		// probably nonsense, adding to shut up stan, partitions will be properly handled later
+		if (isset($this->params['url']['partition'])) {
+			$partition = $this->params['url']['partition'];
+		}
+
 		$currentSetConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$currentSetConnection) {
 			throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
@@ -743,105 +748,16 @@ class Play {
 		$tsumegoButtons = $this->selectTsumegoButtonsOfThisSet($set, $query, $inFavorite, $search2, $search3ids, $collectionSize, $partition);
 
 		if ($query == 'difficulty') {
-			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
-			$setConditions = [];
-			if (count($search1) > 0) {
-				$search1ids = [];
-				$search1Count = count($search1);
-
-				for ($i = 0; $i < $search1Count; $i++) {
-					$search1id = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $search1[$i]]]);
-					if ($search1id) {
-						$search1ids[$i] = $search1id['Set']['id'];
-					}
-				}
-				$setConditions['set_id'] = $search1ids;
-			}
-			$lastSet = AppController::getTsumegoElo(CakeSession::read('lastSet'));
-			$ftFrom = [];
-			$ftTo = [];
-			$notPremiumArray = [];
-			$ftFrom['rating >='] = $lastSet;
-			$ftTo['rating <'] = $lastSet + 100;
-			if (CakeSession::read('lastSet') == '15k') {
-				$ftFrom['rating >='] = 50;
-			}
-			if (!$hasPremium) {
-				$notPremiumArray['NOT'] = ['set_id' => $setsWithPremium];
-			}
-			$ts = ClassRegistry::init('Tsumego')->find('all', [
-				'order' => 'id ASC',
-				'conditions' => [
-					'public' => 1,
-					$notPremiumArray,
-					$ftFrom,
-					$ftTo,
-					$setConditions,
-				],
-			]) ?: [];
-			$ts1 = [];
-			$i2 = 1;
-
-			$tsCount = count($ts);
-
-			for ($i = 0; $i < $tsCount; $i++) {
-				$tagValid = false;
-				if (count($search3) > 0) {
-					$tagForTsumego = ClassRegistry::init('Tag')->find('first', [
-						'conditions' => [
-							'tsumego_id' => $ts[$i]['Tsumego']['id'],
-							'tag_name_id' => $search3ids,
-						],
-					]);
-					if ($tagForTsumego != null) {
-						$tagValid = true;
-					}
-				} else {
-					$tagValid = true;
-				}
-				if ($tagValid) {
-					$ts[$i]['Tsumego']['num'] = $i2;
-					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
-						$t['Tsumego']['num'] = $ts[$i]['Tsumego']['num'];
-					}
-					array_push($ts1, $ts[$i]);
-					$i2++;
-				}
-			}
-			$ts = $ts1;
-
-			if (count($ts) > $collectionSize) {
-				$tsCount = count($ts);
-
-				for ($i = 0; $i < $tsCount; $i++) {
-					if ($i % $collectionSize == 0) {
-						$partition++;
-					}
-					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
-						break;
-					}
-				}
-				$fromTo = AppController::getPartitionRange(count($ts), $collectionSize, $partition);
-				$ts1 = [];
-				for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-					array_push($ts1, $ts[$i]);
-				}
-				$ts = $ts1;
-			}
 			if ($partition == -1) {
 				$partitionText = '';
 			} else {
 				$partitionText = '#' . ($partition + 1);
 			}
 			$anzahl2 = 1;
-			$tsCount = count($ts);
-
-			for ($i = 0; $i < $tsCount; $i++) {
-				if ($ts[$i]['Tsumego']['num'] > $anzahl2) {
-					$anzahl2 = $ts[$i]['Tsumego']['num'];
-				}
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				$anzahl2 = max($anzahl2, $tsumegoButton->order);
 			}
-			$queryTitle = CakeSession::read('lastSet') . ' ' . $partitionText . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2;
+			$queryTitle = CakeSession::read('lastSet') . ' ' . $partitionText . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $anzahl2;
 		} elseif ($query == 'tags') {
 			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
 			$setConditions = [];
@@ -988,26 +904,6 @@ class Play {
 
 		if ($inFavorite) {
 			$inFavorite = '?favorite=1';
-		}
-
-		if ($query == 'difficulty' || $query == 'tags') {
-			$tsumegoButtons = new TsumegoButtons();
-			// TODO: this is very unoptimal and temporary transition from tsuemgos into tsumego buttons
-			if (isset($ts)) {
-				foreach ($ts as $tsumego) {
-					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]])) {
-						$tsumegoStatus = Auth::isLoggedIn() ? ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id'], 'user_id' => Auth::getUserID()]]) : null;
-						$tsumegoButtons [] = new TsumegoButton(
-							$ts['Tsumego']['id'],
-							$setConnection['SetConnection']['id'],
-							$setConnection['SetConnection']['num'],
-							$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
-							$t['Tsumego']['pass'],
-							$t['Tsumego']['alternative_response']
-						);
-					}
-				}
-			}
 		}
 
 		if (!Auth::isInTimeMode()) {
@@ -1465,7 +1361,7 @@ class Play {
 			return $this->selectSetConnectionsOfCurrentSetBasedOnTopics($set, $search2, $search3ids, $collectionSize, $partition);
 		}
 		if ($query == 'difficulty' || $query == 'tags') {
-			return $this->selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set);
+			return $this->selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $search2, $search3ids, $collectionSize, $partition);
 		}
 		return null;
 	}
@@ -1502,8 +1398,15 @@ class Play {
 		return $result;
 	}
 
-	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set): ?TsumegoButtons {
-		return null;
+	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $search2, $search3ids, $collectionSize, $partition): ?TsumegoButtons {
+		$tsumegoButtons = new TsumegoButtons();
+		$condition = "";
+		$tsumegoButtons->fill($condition, $search2);
+		$tsumegoButtons->filterByTags($search3ids);
+		$fromTo = AppController::getPartitionRange(count($tsumegoButtons), $collectionSize, $partition);
+		$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
+		$tsumegoButtons->resetOrders();
+		return $tsumegoButtons;
 	}
 
 	private $setFunction;

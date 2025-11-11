@@ -13,6 +13,7 @@ class TsumegoButtons extends ArrayObject {
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		Util::addSqlCondition($condition, $rankConditions);
+		Util::addSqlCondition($condition, 'tsumego.public = true');
 
 		$query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {
@@ -23,7 +24,7 @@ class TsumegoButtons extends ArrayObject {
 		if (Auth::isLoggedIn()) {
 			$query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
 		}
-		$query .= $condition;
+		$query .= ' WHERE ' . $condition;
 		$query .= " ORDER BY set_connection.num";
 		$result = ClassRegistry::init('Tsumego')->query($query);
 

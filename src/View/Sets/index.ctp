@@ -76,7 +76,7 @@
 		</div>
 		<div class="set-buttons">
 			Problems found: <?php echo $searchCounter; ?>
-		</div>	
+		</div>
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
 				<input id="set-size-input" type="number" value="<?php echo $collectionSize; ?>" step="10">
@@ -90,7 +90,7 @@
 	</div>
 	<div class="active-tiles-container"></div>
 	<div align="center" class="set-index display1">
-	<?php 
+	<?php
 	if($lightDark=='light')
 		$lightDarkBoxes = '4';
 	else
@@ -134,10 +134,10 @@
 					$box1unlocked = '';
 					$makeLink = false;
 				}
-			}	
+			}
 			if($makeLink){
 				echo '<a href="/sets/view/'.$sets[$i]['id'].$partitionLink.'" class="box1link">
-					<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'" 
+					<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
 						style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
 					if($sets[$i]['solved']>=100)
 						echo '<div class="collection-completed">completed</div>';
@@ -166,7 +166,7 @@
 				</a>';
 			}else{
 				echo '<a href="/users/donate" class="box1link">';
-				echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'" 
+				echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
 					style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
 				if($sets[$i]['solved']>=100)
 					echo '<div class="collection-completed">completed</div>';
@@ -207,7 +207,7 @@
 			if($lightDark=='light' && $ranksArray[$i]['partition']>=4)
 				$lightDarkBoxes = '6';
 			echo '<a href="/sets/view/'.$ranksArray[$i]['name'].$partitionLink.'" class="box1link">
-				<div class="box1 box1default box1difficulty difficulty-box'.$ranksArray[$i]['id'].'" 
+				<div class="box1 box1default box1difficulty difficulty-box'.$ranksArray[$i]['id'].'"
 					style="background-color:'.$ranksArray[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
 				if($ranksArray[$i]['solved']>=100)
 					echo '<div class="collection-completed">completed</div>';
@@ -257,7 +257,7 @@
 			if($lightDark=='light' && $tagList[$i]['partition']>=4)
 				$lightDarkBoxes = '6';
 			echo '<a href="/sets/view/'.$tagList[$i]['name'].$partitionLink.'" class="box1link">
-				<div class="box1 box1default box1tag tag-box'.$tagList[$i]['id'].'" 
+				<div class="box1 box1default box1tag tag-box'.$tagList[$i]['id'].'"
 					style="background-color:'.$tagList[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
 				if($tagList[$i]['solved']>=100)
 					echo '<div class="collection-completed">completed</div>';
@@ -326,7 +326,7 @@
 					rgba(33, 33, 33, 0.65)
 				) !important;
 			}
-			<?php } ?>	
+			<?php } ?>
 		<?php }else{ ?>
 			.box1default:hover {
 				background-image: linear-gradient(
@@ -385,7 +385,7 @@
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
-					const increment = range / (duration * 60); 
+					const increment = range / (duration * 60);
 					const decimalIndex = end.toString().indexOf(".");
   				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
 					let currentNumber = start;
@@ -401,7 +401,7 @@
 								element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
 								requestAnimationFrame(step);
 						} else {
-								element.textContent = end + "%"; 
+								element.textContent = end + "%";
 						}
 					};
 					requestAnimationFrame(step);
@@ -413,7 +413,7 @@
 					$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
 					$("#xp-increase-fx2'.$i.'").hide();
 					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					
+
 					$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
 					$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
 					$("#xp-increase-fx2'.$i.'").fadeIn(0);
@@ -423,14 +423,14 @@
 						$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 					},600);
 				}';
-			}	
+			}
 		}else if($query == 'difficulty'){
 			for($i=0; $i<count($ranksArray); $i++){
 				echo 'animateNumber'.$i.'(0, '.$ranksArray[$i]['solved'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
-					const increment = range / (duration * 60); 
+					const increment = range / (duration * 60);
 					const decimalIndex = end.toString().indexOf(".");
   				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
 					let currentNumber = start;
@@ -446,7 +446,7 @@
 								element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
 								requestAnimationFrame(step);
 						} else {
-								element.textContent = end + "%"; 
+								element.textContent = end + "%";
 						}
 					};
 					requestAnimationFrame(step);
@@ -458,7 +458,7 @@
 					$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
 					$("#xp-increase-fx2'.$i.'").hide();
 					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					
+
 					$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
 					$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
 					$("#xp-increase-fx2'.$i.'").fadeIn(0);
@@ -475,7 +475,7 @@
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
-					const increment = range / (duration * 60); 
+					const increment = range / (duration * 60);
 					const decimalIndex = end.toString().indexOf(".");
   				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
 					let currentNumber = start;
@@ -491,7 +491,7 @@
 								element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
 								requestAnimationFrame(step);
 						} else {
-								element.textContent = end + "%"; 
+								element.textContent = end + "%";
 						}
 					};
 					requestAnimationFrame(step);
@@ -503,7 +503,7 @@
 					$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
 					$("#xp-increase-fx2'.$i.'").hide();
 					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					
+
 					$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
 					$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
 					$("#xp-increase-fx2'.$i.'").fadeIn(0);
@@ -549,7 +549,7 @@
 		let activeTagIds = [];
 		let allTagIds = [];
 		let allTagNames = [];
-		<?php 
+		<?php
 			for($i=0; $i<count($sets); $i++){
 				echo 'allTopicIds.push("'.$sets[$i]['id'].'");';
 				echo 'allTopicNames.push("'.$sets[$i]['name'].'");';
@@ -642,7 +642,7 @@
 							for(let i=0;i<allTagNames.length;i++)
 								if(allTagNames[i] === "'.$tagTiles[$i].'")
 									activeTagIds.push(allTagIds[i]);
-						}	
+						}
 					}else{
 						handleTiles("'.$tagTiles[$i].'", "tags", false);
 						let newActiveTagTiles = [];
@@ -658,7 +658,7 @@
 									break;
 								}
 							}
-						}	
+						}
 					}
 					drawActiveCollections();
 					drawActiveTiles();
@@ -697,7 +697,7 @@
 					color = "#ac4bd0";
 				}else if(query === "tags"){
 					color = "#aa5538";
-				}	
+				}
 			}
 			let position = -1;
 			if(query === "topics"){
@@ -729,8 +729,8 @@
 					for(let i=0;i<allTopicIds.length;i++)
 						if(!activeTopicIds.includes(allTopicIds[i]))
 							$(".topic-box"+allTopicIds[i]).css("display", "none");
-					let pos = [];	
-					let posX = [];	
+					let pos = [];
+					let posX = [];
 					for(let i=0;i<activeTopicIds.length;i++){
 						for(let j=0;j<allTopicIds.length;j++){
 							if(activeTopicIds[i] === allTopicIds[j] && !posX.includes(allTopicIds[j])){
@@ -758,8 +758,8 @@
 					for(let i=0;i<allDifficultyIds.length;i++)
 						if(!activeDifficultyIds.includes(allDifficultyIds[i]))
 							$(".difficulty-box"+allDifficultyIds[i]).css("display", "none");
-					let pos = [];	
-					let posX = [];	
+					let pos = [];
+					let posX = [];
 					for(let i=0;i<activeDifficultyIds.length;i++){
 						for(let j=0;j<allDifficultyIds.length;j++){
 							if(activeDifficultyIds[i] === allDifficultyIds[j] && !posX.includes(allDifficultyIds[j])){
@@ -787,8 +787,8 @@
 					for(let i=0;i<allTagIds.length;i++)
 						if(!activeTagIds.includes(allTagIds[i]))
 							$(".tag-box"+allTagIds[i]).css("display", "none");
-					let pos = [];	
-					let posX = [];	
+					let pos = [];
+					let posX = [];
 					for(let i=0;i<activeTagIds.length;i++){
 						for(let j=0;j<allTagIds.length;j++){
 							if(activeTagIds[i] === allTagIds[j] && !posX.includes(allTagIds[j])){
@@ -812,12 +812,10 @@
 		}
 		function drawActiveTiles(initialDraw = false){
 			$(".active-tiles-container").html("");
-			let search1 = "@";
-			let search2 = "@";
-			let search3 = "@";
-			setCookie("search1", "@");
-			setCookie("search2", "@");
-			setCookie("search3", "@");
+			let search1 = "";
+			let search3 = "";
+			setCookie("search1", "");
+			setCookie("search3", "");
 			let initialDrawCounter = 0;
 
 			if(initialDraw){
@@ -839,7 +837,7 @@
 				for(let j=0;j<initialTopicTiles.length;j++)
 					if(activeTopicTiles[i] === initialTopicTiles[j])
 						initialTile = true;
-				if(query == "topics" || initialTile) 
+				if(query == "topics" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color1" id="active-tiles-element'+i+'" onclick="removeActiveTopic('+i+')">'+activeTopicTiles[i]+'</div>');
 				search1 = search1 + activeTopicTiles[i] + "@";
 			}
@@ -848,38 +846,37 @@
 				for(let j=0;j<initialDifficultyTiles.length;j++)
 					if(activeDifficultyTiles[i] === initialDifficultyTiles[j])
 						initialTile = true;
-				if(query == "difficulty" || initialTile) 
+				if(query == "difficulty" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color2" id="active-tiles-element'+i+'" onclick="removeActiveDifficulty('+i+')">'+activeDifficultyTiles[i]+'</div>');
-				search2 = search2 + activeDifficultyTiles[i] + "@";
 			}
 			for(let i=0;i<activeTagTiles.length;i++){
 				let initialTile = false;
 				for(let j=0;j<initialTagTiles.length;j++)
 					if(activeTagTiles[i] === initialTagTiles[j])
 						initialTile = true;
-				if(query == "tags" || initialTile) 
+				if(query == "tags" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 				search3 = search3 + activeTagTiles[i] + "@";
 			}
 			setCookie("search1", search1);
-			setCookie("search2", search2);
+			setCookie("search2", activeDifficultyTiles.join("@"));
 			setCookie("search3", search3);
-			if(query=="topics" && activeTopicTiles.length>0 
-			|| query=="difficulty" && activeDifficultyTiles.length>0 
+			if(query=="topics" && activeTopicTiles.length>0
+			|| query=="difficulty" && activeDifficultyTiles.length>0
 			|| query=="tags" && activeTagTiles.length>0
 			|| initialDraw && initialDrawCounter>0)
 				$(".active-tiles-container").append('<a class="dropdown-tile tile-color4" href="" id="unselect-active-tiles">clear</a>');
 		}
 
-		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
+		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
 			e.preventDefault();
 			$(".active-tiles-container").html("");
 			setCookie("search1", "@");
-			setCookie("search2", "@");
+			setCookie("search2", "");
 			setCookie("search3", "@");
 			window.location.href = "/sets";
 		});
-		
+
 		function removeActiveTopic(index){
 			let removeMap = 0;
 			for(let i=0;i<allTopicTiles.length;i++){
@@ -931,13 +928,13 @@
 					newTiles.push(activeDifficultyTiles[i]);
 			}
 			activeDifficultyTiles = newTiles;
-			
+
 			drawActiveCollections();
 			drawActiveTiles();
 			if(query !== "difficulty" || queryRefresh)
 				window.location.href = "/sets";
 		}
-		
+
 		function removeActiveTag(index){
 			let removeMap = 0;
 			for(let i=0;i<allTagTiles.length;i++){
@@ -991,7 +988,7 @@
 				if(activeTagIds[i] != id){
 					newActiveIds.push(activeTagIds[i]);
 				}
-			}	
+			}
 			activeTagIds = newActiveIds;
 		}
 
