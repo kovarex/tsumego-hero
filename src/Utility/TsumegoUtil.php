@@ -61,6 +61,10 @@ class TsumegoUtil {
 		return $status == 'S' || $status == 'C';
 	}
 
+	public static function isSolvedStatus($status) {
+		return $status == 'S' || $status == 'C' || $status == 'W';
+	}
+
 	public static function getJavascriptMethodisStatusAllowingInspection() {
 		$result = '\tfunction isStatusAllowingInspection(status)\n';
 		$result .= '\t{\n';
