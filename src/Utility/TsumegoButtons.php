@@ -19,13 +19,14 @@ class TsumegoButtons extends ArrayObject {
 		$result = ClassRegistry::init('Tsumego')->query($query);
 
 		foreach ($result as $index => $row) {
-			$this []= new TsumegoButton(
+			$this [] = new TsumegoButton(
 				$row['tsumego']['id'],
 				$row['set_connection']['id'],
 				$row['set_connection']['num'],
-				Auth::isLoggedIn() ? ($row['tsumego_status']['status']?: 'N') : 'N',
+				Auth::isLoggedIn() ? ($row['tsumego_status']['status'] ?: 'N') : 'N',
 				$row['tsumego']['alternative_response'],
-				$row['tsumego']['pass']);
+				$row['tsumego']['pass'],
+			);
 		}
 	}
 
@@ -38,19 +39,22 @@ class TsumegoButtons extends ArrayObject {
 		if (empty($tagIDs)) {
 			return;
 		}
-		$this->exchangeArray(array_values(array_filter((array)$this, function ($tsumegoButton) use($tagIDs): bool {
+		$this->exchangeArray(array_values(array_filter((array) $this, function ($tsumegoButton) use ($tagIDs): bool {
 			return ClassRegistry::init('Tag')->find('first', [
-					'conditions' => [
-						'tsumego_id' => $tsumegoButton->tsumegoID,
-						'tag_name_id' => $tagIDs,
-					]]) != null;
+				'conditions' => [
+					'tsumego_id' => $tsumegoButton->tsumegoID,
+					'tag_name_id' => $tagIDs,
+				]]) != null;
 		})));
 	}
 
 	public function filterByIndexRange(int $from, int $to): void {
-		$this->exchangeArray(array_values(array_filter((array)$this, function ($tsumegoButton, $index) use($from, $to): bool{
-			return $index >= $from && $index <= $to;
-		},
-			ARRAY_FILTER_USE_BOTH)));
+		$this->exchangeArray(array_values(array_filter(
+			(array) $this,
+			function ($tsumegoButton, $index) use ($from, $to): bool {
+				return $index >= $from && $index <= $to;
+			},
+			ARRAY_FILTER_USE_BOTH,
+		)));
 	}
 }

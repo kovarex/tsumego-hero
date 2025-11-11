@@ -11,7 +11,7 @@ class TsumegoButton {
 	}
 
 	public function render(int $index, $favoritesParameter) {
-		$num = '<div class="setViewButtons1">'.$this->order.'</div>';
+		$num = '<div class="setViewButtons1">' . $this->order . '</div>';
 		/*
 		$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
 		$persormanceF = substr_count($ts[$i]['Tsumego']['performance'], 'F');
@@ -22,8 +22,8 @@ class TsumegoButton {
 		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-		echo '<li class="set'.$this->status.'1">';
-		echo '<a id="tooltip-hover'.$index.'" class="tooltip" href="/'.$this->setConnectionID.$favoritesParameter.'">'.$num.'<span><div id="tooltipSvg'.$index.'"></div></span></a>';
+		echo '<li class="set' . $this->status . '1">';
+		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . $favoritesParameter . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
 		echo '</li>';
 	}
 

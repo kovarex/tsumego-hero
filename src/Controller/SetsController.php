@@ -1296,13 +1296,14 @@ class SetsController extends AppController {
 				foreach ($ts as $key => $t) {
 					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditins' => ['tsumego_id' => $t['Tsumego']['id']]])) {
 						$tsumegoStatus = Auth::isLoggedIn() ? ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id'], 'user_id' => Auth::getUserID()]]) : null;
-						$tsumegoButtons []= new TsumegoButton(
+						$tsumegoButtons [] = new TsumegoButton(
 							$t['Tsumego']['id'],
 							$setConnection['SetConnection']['id'],
 							$key,
 							$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
 							$t['pass'],
-							$t['alternative_response']);
+							$t['alternative_response'],
+						);
 					}
 				}
 
@@ -1328,7 +1329,7 @@ class SetsController extends AppController {
 					Util::addSqlOrCondition($rankConditions, $rankCondition);
 				}
 				Util::addSqlCondition($condition, $rankConditions);
-				Util::addSqlCondition($condition, '`set`.id='.$set['Set']['id']);
+				Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
 				$tsumegoButtons = new TsumegoButtons();
 				$tsumegoButtons->fill($condition);
 				$tsumegoButtons->filterByTags($search3ids);
@@ -1886,9 +1887,9 @@ class SetsController extends AppController {
 		foreach ($tsumegoButtons as $tsumegoButton) {
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoButton->tsumegoID]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
-			$tooltipSgfs []= $tArr[0];
-			$tooltipInfo []= $tArr[2];
-			$tooltipBoardSize []= $tArr[3];
+			$tooltipSgfs [] = $tArr[0];
+			$tooltipInfo [] = $tArr[2];
+			$tooltipBoardSize [] = $tArr[3];
 		}
 
 		$allTags = $this->TagName->find('all') ?: [];
