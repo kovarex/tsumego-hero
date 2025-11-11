@@ -56,7 +56,7 @@ class Play {
 		$setsWithPremium = [];
 		$queryTitle = '';
 		$queryTitleSets = '';
-		$partition = -1;
+		$partition = 0;
 
 		// probably nonsense, adding to shut up stan, partitions will be properly handled later
 		if (isset($this->params['url']['partition'])) {

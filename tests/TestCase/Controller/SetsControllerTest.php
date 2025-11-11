@@ -208,13 +208,38 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
 		$this->assertCount(6, $navigationButtons); // 4 testing ones and two 'empty' borders
 
-		// checking that the title is correctly mentioning 15k
+		// checking that the title is correctly mentioning 15k and is 1/4
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertTextContains('15k', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('1/4', $collectionTopDivs[0]->getText());
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+
+		// clicking on next problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+
+		// proper title 15k and 2/4
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('15k', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('2/4', $collectionTopDivs[0]->getText());
+
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(6, $navigationButtons); // 4 testing ones and two 'empty' borders
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
+		// $navigationButton[1] is the black dividing edge and inner buttons
+		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setS1'); // the current one already marked as solved
 	}
 }

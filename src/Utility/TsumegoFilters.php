@@ -37,10 +37,10 @@ class TsumegoFilters {
 
 		if (!empty($_COOKIE[$name])) {
 			$stringResult = $_COOKIE[$name];
-		}
-
-		if (!$stringResult) {
-			return $default;
+			if ($stringResult == 'clear') {
+				Util::clearCookie($name);
+				$stringResult = '';
+			}
 		}
 
 		if ($userContribution) {
@@ -48,6 +48,11 @@ class TsumegoFilters {
 		} else {
 			CakeSession::write('loggedOff_' . $name, $stringResult);
 		}
+
+		if (!$stringResult) {
+			return $default;
+		}
+
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 

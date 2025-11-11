@@ -10,8 +10,8 @@ class TsumegoButton {
 		$this->alternativeResponse = $alternativeResponse;
 	}
 
-	public function render(int $index, $favoritesParameter) {
-		$num = '<div class="setViewButtons1">' . $this->order . '</div>';
+	public function render(int $index, ?string $favoritesParameter) {
+		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 		/*
 		$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
 		$persormanceF = substr_count($ts[$i]['Tsumego']['performance'], 'F');
@@ -35,4 +35,5 @@ class TsumegoButton {
 	public bool $alternativeResponse ; // used for set view statistics
 	public float $seconds = 0;
 	public string $performance;
+	public bool $isCurrentlyOpened = false;
 }

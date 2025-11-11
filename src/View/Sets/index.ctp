@@ -849,9 +849,9 @@
 				if(query == "tags" || initialTile)
 					$(".active-tiles-container").append('<div class="dropdown-tile tile-color3" id="active-tiles-element'+i+'" onclick="removeActiveTag('+i+')">'+activeTagTiles[i]+'</div>');
 			}
-			setCookie("filtered_sets", activeTopicTiles.join('@'));
-			setCookie("filtered_ranks", activeDifficultyTiles.join("@"));
-			setCookie("filtered_tags", activeTagTiles.join('@'));
+			setCookie("filtered_sets", activeTopicTiles.length == 0 ? 'clear' : activeTopicTiles.join('@'));
+			setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? 'clear' : activeDifficultyTiles.join("@"));
+			setCookie("filtered_tags", activeTagTiles.length == 0 ? 'clear' : activeTagTiles.join('@'));
 			if(query=="topics" && activeTopicTiles.length > 0
 			|| query=="difficulty" && activeDifficultyTiles.length > 0
 			|| query=="tags" && activeTagTiles.length > 0
@@ -862,9 +862,9 @@
 		$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e) {
 			e.preventDefault();
 			$(".active-tiles-container").html("");
-			setCookie("filtered_sets", "");
-			setCookie("filtered_ranks", "");
-			setCookie("filtered_tags", "");
+			setCookie("filtered_sets", "clear");
+			setCookie("filtered_ranks", "clear");
+			setCookie("filtered_tags", "clear");
 			window.location.href = "/sets";
 		});
 

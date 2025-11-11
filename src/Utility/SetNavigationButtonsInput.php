@@ -15,6 +15,7 @@ class SetNavigationButtonsInput {
 	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, array $currentSetConnection): TsumegoButtons {
 		$result = new TsumegoButtons();
 		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) { return $tsumegoButton->setConnectionID === $currentSetConnection['SetConnection']['id']; });
+		$tsumegoButtons[$currentIndex]->isCurrentlyOpened = true;
 		if (count($tsumegoButtons) <= self::$NEIGHBOUR_COUNT_TO_SHOW_ON_EACH_SIDE * 2 + 3) {
 			foreach ($tsumegoButtons as $tsumegoButton) {
 				$result [] = $tsumegoButton;

@@ -1237,12 +1237,12 @@
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
 
-	function updateCurrentNavigationButton(color) {
+	function updateCurrentNavigationButton(status) {
 		current = document.getElementById("currentNavigationButton");
 		// The navigation buttons don't exist in all of the modes
 		if (!current)
 			return;
-		current.style.backgroundColor = "' + color + '";
+		current.parentElement.parentElement.className = 'set' + status + '1';
 	}
 
 	<?php
@@ -2675,7 +2675,7 @@
 				toggleBoardLock(true);
 				$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 				$("#commentSpace").show();
-			    updateCurrentNavigationButton('<?php echo $playGreenColor ?>');
+			    updateCurrentNavigationButton('S');
 				displaySettings();
 				setCookie("noScore", "<?php echo $solvedCheck; ?>");
 				setCookie("noPreId", "<?php echo $t['Tsumego']['id']; ?>");
@@ -2935,7 +2935,7 @@
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if(result=='S') {
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
-			updateCurrentNavigationButton('<?php echo $playGreenColor; ?>');
+			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			document.getElementById("xpDisplay").style.color = "white";
 			if(light)
@@ -3069,12 +3069,12 @@
 					if(mode==1) {
 						if(<?php echo Auth::getWithDefault('health', 0) - Auth::getWithDefault('damage', 0); ?> - misplays<0){
 							if(hasPremium !== "1") {
-								updateCurrentNavigationButton("#e03c4b");
+								updateCurrentNavigationButton('C');
 								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>';
 								tryAgainTomorrow = true;
 								toggleBoardLock(true);
 							} else {
-								updateCurrentNavigationButton("#e03c4b");
+								updateCurrentNavigationButton('X');
 								document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 							}
 						}
