@@ -38,24 +38,8 @@
 		if(Auth::getUserID()==72) $beta2 = false;
 
 		if(!$beta2) {
-			$i = 0;
-			foreach ($ts as $setConnection) {
-				$num = $setConnection['num'];
-				$num = '<div class="setViewButtons1">'.$num.'</div>';
-				/*
-				$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
-				$persormanceF = substr_count($ts[$i]['Tsumego']['performance'], 'F');
-				if($persormanceS==0 && $persormanceF==0) $num2 = '-';
-				else $num2 = $persormanceS.'/'.$persormanceF;
-				$num2 = '<div class="setViewButtons2">'.$num2.'</div>';
-				if($ts[$i]['Tsumego']['seconds']=='') $num3 = '-';
-				else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
-				$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
-
-				echo '<li class="set'.$setConnection['status'].'1">
-					<a id="tooltip-hover'.$i.'" class="tooltip" href="/'.$setConnection['id'].$fav.'">'.$num.'<span><div id="tooltipSvg'.$i.'"></div></span></a>
-				</li>';
-				$i++;
+			foreach ($tsumegoButtons as $index => $tsumegoButton) {
+				$tsumegoButton->render($index, $fav);
 			}
 		}
 
@@ -767,7 +751,7 @@
 					}
 				}
 			}
-			for($i=0; $i<count($ts); $i++)
+			for($i=0; $i<count($tsumegoButtons); $i++)
 				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
 		?>
 	</script>
