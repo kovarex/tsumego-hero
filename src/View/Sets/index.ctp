@@ -95,128 +95,55 @@
 		$lightDarkBoxes = '4';
 	else
 		$lightDarkBoxes = '3';
-	if ($tsumegoFilters->query == 'topics' || $tsumegoFilters->query == 'difficulty') {
-		foreach ($sets as $i => $set) {
-			if($set['amount'] == 1) {
-				$problems = 'problem';
-				$tilde = '';
-			} else {
-				$problems = 'problems';
-				$tilde = '~';
-			}
-			if ($set['partition'] == -1) {
-				$partition = '';
-				$partitionLink = '';
-			} else {
-				$partition = ' #'.($set['partition']+1);
-				$partitionLink = '/'.($set['partition'] + 1);
-			}
-			if($set['solved_percent'] != 0)
-				$isZero = '';
-			else
-				$isZero = 'display:none;';
+	foreach ($sets as $i => $set) {
+		if($set['amount'] == 1) {
+			$problems = 'problem';
+			$tilde = '';
+		} else {
+			$problems = 'problems';
+			$tilde = '~';
+		}
+		if ($set['partition'] == -1) {
+			$partition = '';
+			$partitionLink = '';
+		} else {
+			$partition = ' #'.($set['partition']+1);
+			$partitionLink = '/'.($set['partition'] + 1);
+		}
+		if($set['solved_percent'] != 0)
+			$isZero = '';
+		else
+			$isZero = 'display:none;';
 
-			if($lightDark=='light'){
-				$lightDarkBoxes = '3';
-				if($sets[$i]['partition']>=4)
-					$lightDarkBoxes = '6';
-			}
-			$makeLink = true;
-			if ($set['premium'] !=1 ) {
-				$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
-				$box1unlocked = 'box1default';
-			}else{
-				if($hasPremium) {
-					$backgroundImage = 'url(/img/setButtonUnlocked.png);';
-					$box1unlocked = 'box1unlocked';
-				} else {
-					$backgroundImage = 'url(/img/setButtonLocked.png);';
-					$box1unlocked = '';
-					$makeLink = false;
-				}
-			}
-			if ($makeLink) {
-				echo '<a href="/sets/view/'.$set['id'].$partitionLink.'" class="box1link">
-					<div class="box1 box1topic '.$box1unlocked.' topic-box'.$set['id'].'"
-						style="background-color:'.$set['color'].';background-image: '.$backgroundImage.'">';
-					if ($set['solved_percent'] >= 100)
-						echo '<div class="collection-completed">completed</div>';
-					echo '<div class="collection-top">'.$set['name'].$partition.'</div>';
-					echo '<div class="collection-middle-left">'.$set['amount'].' '.$problems.'</div>';
-					if ($set['difficulty'])
-						echo '<div class="collection-middle-right">'.$tilde.$set['difficulty'].'</div>';
-					echo '<div class="collection-bottom">
-						<div class="number" id="number'.$i.'">0</div>
-							<div align="left" class="reward-bar-container">
-								<div id="account-bar-wrapper2">
-									<div id="account-bar2">
-										<div id="xp-bar2">
-											<div class="xp-bar-empty"></div>
-											<div id="xp-bar-fill2'.$i.'" class="xp-bar-fill-c4" style="width: 5%; transition: 0.6s;'.$isZero.'">
-												<div id="xp-increase-fx2'.$i.'">
-													<div id="xp-increase-fx-flicker2'.$i.'">
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</a>';
-			}else{
-				echo '<a href="/users/donate" class="box1link">';
-				echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
-					style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
-				if($sets[$i]['solved_percent']>=100)
-					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top top-inactive">'.$sets[$i]['name'].$partition.'</div>';
-				echo '<div class="collection-middle-left"></div>';
-				echo '<div class="collection-middle-right"></div>';
-				echo '<div class="collection-bottom">
-						<div align="left" class="reward-bar-container">
-							<div id="account-bar-wrapper2">
-							</div>
-						</div>
-					</div>
-				</div>
-			</a>';
+		if($lightDark=='light'){
+			$lightDarkBoxes = '3';
+			if($sets[$i]['partition']>=4)
+				$lightDarkBoxes = '6';
+		}
+		$makeLink = true;
+		if ($set['premium'] !=1 ) {
+			$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
+			$box1unlocked = 'box1default';
+		}else{
+			if($hasPremium) {
+				$backgroundImage = 'url(/img/setButtonUnlocked.png);';
+				$box1unlocked = 'box1unlocked';
+			} else {
+				$backgroundImage = 'url(/img/setButtonLocked.png);';
+				$box1unlocked = '';
+				$makeLink = false;
 			}
 		}
-		?>
-		<br><br>
-		<?php
-	} else if($tsumegoFilters->query == 'tags'){
-		for ($i=0; $i < count($tagList); $i++){
-			if ($tagList[$i]['amount'] == 1){
-				$problems = 'problem';
-				$tilde = '';
-			} else {
-				$problems = 'problems';
-				$tilde = '~';
-			}
-			if ($tagList[$i]['partition'] == -1) {
-				$partition = '';
-				$partitionLink = '';
-			} else {
-				$partition = ' #'.($tagList[$i]['partition']+1);
-				$partitionLink = '/'.($tagList[$i]['partition'] + 1);
-			}
-			if ($tagList[$i]['solved_percent'] != 0)
-				$isZero = '';
-			else
-				$isZero = 'display:none;';
-			if($lightDark=='light' && $tagList[$i]['partition']>=4)
-				$lightDarkBoxes = '6';
-			echo '<a href="/sets/view/'.$tagList[$i]['name'].$partitionLink.'" class="box1link">
-				<div class="box1 box1default box1tag tag-box'.$tagList[$i]['id'].'"
-					style="background-color:'.$tagList[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
-				if($tagList[$i]['solved_percent'] >= 100)
+		if ($makeLink) {
+			echo '<a href="/sets/view/'.$set['id'].$partitionLink.'" class="box1link">
+				<div class="box1 box1topic '.$box1unlocked.' topic-box'.$set['id'].'"
+					style="background-color:'.$set['color'].';background-image: '.$backgroundImage.'">';
+				if ($set['solved_percent'] >= 100)
 					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top">'.$tagList[$i]['name'].$partition.'</div>';
-				echo '<div class="collection-middle-left">'.$tagList[$i]['amount'].' '.$problems.'</div>';
-				echo '<div class="collection-middle-right">'.$tilde.'</div>';
+				echo '<div class="collection-top">'.$set['name'].$partition.'</div>';
+				echo '<div class="collection-middle-left">'.$set['amount'].' '.$problems.'</div>';
+				if ($set['difficulty'])
+					echo '<div class="collection-middle-right">'.$tilde.$set['difficulty'].'</div>';
 				echo '<div class="collection-bottom">
 					<div class="number" id="number'.$i.'">0</div>
 						<div align="left" class="reward-bar-container">
@@ -237,9 +164,25 @@
 					</div>
 				</div>
 			</a>';
+		} else {
+			echo '<a href="/users/donate" class="box1link">';
+			echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
+				style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
+			if($sets[$i]['solved_percent']>=100)
+				echo '<div class="collection-completed">completed</div>';
+			echo '<div class="collection-top top-inactive">'.$sets[$i]['name'].$partition.'</div>';
+			echo '<div class="collection-middle-left"></div>';
+			echo '<div class="collection-middle-right"></div>';
+			echo '<div class="collection-bottom">
+					<div align="left" class="reward-bar-container">
+						<div id="account-bar-wrapper2">
+						</div>
+					</div>
+				</div>
+			</div>
+		</a>';
 		}
-	}
-	?>
+	} ?>
 	</div>
 	<style>
 		<?php if ($tsumegoFilters->query == 'topics') { ?>
@@ -332,96 +275,49 @@
 			$("#tags-button").css("border", "1px solid #aa5538");
 		<?php } ?>
 		<?php
-		if ($tsumegoFilters->query == 'topics' || $tsumegoFilters->query == 'difficulty') {
-			foreach ($sets as $i => $set) {
-				echo 'animateNumber'.$i.'(0, '.$set['solved_percent'].', .6);';
-				echo 'function animateNumber'.$i.'(start, end, duration) {
-					const element = document.getElementById("number'.$i.'");
-					const range = end - start;
-					const increment = range / (duration * 60);
-					const decimalIndex = end.toString().indexOf(".");
-  				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
-					let currentNumber = start;
-					const step = () => {
-						let randomDecimal = "";
-						if(dx===1){
-							randomDecimal = "."+Math.floor(Math.random() * 9);
-						}else if(dx===2){
-							randomDecimal = "."+(Math.floor(Math.random() * 90) + 10);
-						}
-						currentNumber += increment;
-						if (currentNumber < end) {
-								element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
-								requestAnimationFrame(step);
-						} else {
-								element.textContent = end + "%";
-						}
-					};
-					requestAnimationFrame(step);
-				}';
-				echo 'animateBar'.$i.'('.$set['solved_percent'].');';
-				echo 'function animateBar'.$i.'(percent){
-					$("#xp-increase-fx2'.$i.'").css("display","inline-block");
-					$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
-					$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
-					$("#xp-increase-fx2'.$i.'").hide();
-					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
+		foreach ($sets as $i => $set) {
+			echo 'animateNumber'.$i.'(0, '.$set['solved_percent'].', .6);';
+			echo 'function animateNumber'.$i.'(start, end, duration) {
+				const element = document.getElementById("number'.$i.'");
+				const range = end - start;
+				const increment = range / (duration * 60);
+				const decimalIndex = end.toString().indexOf(".");
+			const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
+				let currentNumber = start;
+				const step = () => {
+					let randomDecimal = "";
+					if(dx===1){
+						randomDecimal = "."+Math.floor(Math.random() * 9);
+					}else if(dx===2){
+						randomDecimal = "."+(Math.floor(Math.random() * 90) + 10);
+					}
+					currentNumber += increment;
+					if (currentNumber < end) {
+							element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
+							requestAnimationFrame(step);
+					} else {
+							element.textContent = end + "%";
+					}
+				};
+				requestAnimationFrame(step);
+			}';
+			echo 'animateBar'.$i.'('.$set['solved_percent'].');';
+			echo 'function animateBar'.$i.'(percent){
+				$("#xp-increase-fx2'.$i.'").css("display","inline-block");
+				$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
+				$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
+				$("#xp-increase-fx2'.$i.'").hide();
+				$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 
-					$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
-					$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
-					$("#xp-increase-fx2'.$i.'").fadeIn(0);
+				$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
+				$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
+				$("#xp-increase-fx2'.$i.'").fadeIn(0);
+				$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
+				setTimeout(function(){
+					$("#xp-increase-fx-flicker2'.$i.'").fadeOut(600);
 					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					setTimeout(function(){
-						$("#xp-increase-fx-flicker2'.$i.'").fadeOut(600);
-						$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					},600);
-				}';
-			}
-		}else if($tsumegoFilters->query == 'tags'){
-			for($i=0; $i<count($tagList); $i++){
-				echo 'animateNumber'.$i.'(0, '.$tagList[$i]['solved_percent'].', .6);';
-				echo 'function animateNumber'.$i.'(start, end, duration) {
-					const element = document.getElementById("number'.$i.'");
-					const range = end - start;
-					const increment = range / (duration * 60);
-					const decimalIndex = end.toString().indexOf(".");
-  				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
-					let currentNumber = start;
-					const step = () => {
-						let randomDecimal = "";
-						if(dx===1){
-							randomDecimal = "."+Math.floor(Math.random() * 9);
-						}else if(dx===2){
-							randomDecimal = "."+(Math.floor(Math.random() * 90) + 10);
-						}
-						currentNumber += increment;
-						if (currentNumber < end) {
-								element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
-								requestAnimationFrame(step);
-						} else {
-								element.textContent = end + "%";
-						}
-					};
-					requestAnimationFrame(step);
-				}';
-				echo 'animateBar'.$i.'('.$tagList[$i]['solved_percent'].');';
-				echo 'function animateBar'.$i.'(percent){
-					$("#xp-increase-fx2'.$i.'").css("display","inline-block");
-					$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
-					$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
-					$("#xp-increase-fx2'.$i.'").hide();
-					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-
-					$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
-					$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
-					$("#xp-increase-fx2'.$i.'").fadeIn(0);
-					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					setTimeout(function(){
-						$("#xp-increase-fx-flicker2'.$i.'").fadeOut(600);
-						$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-					},600);
-				}';
-			}
+				},600);
+			}';
 		}
 		?>
 		let query = "<?php echo $tsumegoFilters->query; ?>";

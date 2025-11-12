@@ -198,10 +198,7 @@ class SetsController extends AppController {
 		$sets = $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 0],
-		]);
-		if (!$sets) {
-			$sets = [];
-		}
+		]) ?: [];
 		$u = $this->User->findById(Auth::getUserID());
 
 		if (Auth::isLoggedIn()) {
@@ -555,14 +552,6 @@ class SetsController extends AppController {
 					}
 				}
 			}
-		} else {
-			$setsRawCount = count($setsRaw);
-			for ($i = 0; $i < $setsRawCount; $i++) {
-				$s = [];
-				$s['id'] = $setsRaw[$i]['Set']['id'];
-				$s['name'] = $setsRaw[$i]['Set']['title'];
-				array_push($sets, $s);
-			}
 		}
 		if (Auth::isLoggedIn()) {
 			if ($overallCounter >= 10) {
@@ -720,7 +709,7 @@ ORDER BY total_count DESC, partition_number";
 			foreach ($tagsRaw as $key => $tagRaw) {
 				$tagRaw = $tagRaw['partitioned'];
 				$tag = [];
-				$tag['id'] = $key;
+				$tag['id'] = $tagRaw['name'];
 				$tag['amount'] = $tagRaw['usage_count'];
 				$tag['name'] = $tagRaw['name'];
 				$partition = $tagRaw['partition_number'];
@@ -728,7 +717,7 @@ ORDER BY total_count DESC, partition_number";
 				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['color']));
 				$tag['solved_percent'] = round(Util::getPercent($tagRaw['solved_count'], $tagRaw['usage_count']));
 				$tag['partition'] = $partition;
-				$tagList [] = $tag;
+				$sets [] = $tag;
 			}
 		}
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets)) {
