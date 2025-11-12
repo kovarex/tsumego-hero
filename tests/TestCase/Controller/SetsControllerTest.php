@@ -568,4 +568,40 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 	}
+
+	public function testSelectingTagFilters(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
+		$contextParams['other-tsumegos'] = [];
+
+		// three problems in the 15k range in the same set (will be included)
+		foreach (['snapback', 'atari', 'empty triangle'] as $tag) {
+			for ($i = 0; $i < 3; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => '15k problem',
+					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+					'tags' => [['name' => $tag]]];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+
+		// first we select the difficulty of 15k
+		$browser = new Browser();
+		$browser->get("sets");
+		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
+		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
+        $this->assertCount( 3, $tagSelectors);
+		$this->assertSame($tagSelectors[0]->getText(), 'snapback');
+		$this->assertSame($tagSelectors[1]->getText(), 'atari');
+		$this->assertSame($tagSelectors[2]->getText(), 'empty triangle');
+		$tagSelectors[0]->click();
+		$browser->driver->findElement(WebDriverBy::id('tile-tags-submit'))->click();
+
+		// difficulty selected
+		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'tags');
+		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_tags')->getValue(), 'snapback');
+	}
 }

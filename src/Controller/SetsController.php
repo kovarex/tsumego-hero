@@ -464,55 +464,18 @@ class SetsController extends AppController {
 		}
 
 		//tagTiles
-		$tags = $this->Tag->find('all', ['conditions' => ['approved' => 1]]);
-		$tagNames = $this->TagName->find('all', [
+		$tags = $this->TagName->find('all', [
 			'conditions' => [
 				'approved' => 1,
 				'NOT' => ['name' => 'Tsumego'],
 			],
 		]);
-		$json = json_decode(file_get_contents('json/popular_tags.json')) ?: [];
-		$tn = $this->TagName->find('all') ?: [];
-		$tnKeys = [];
-		$tnKeysAmount = [];
-		$json2 = [];
-		$json2amount = [];
-		$hybrid = [];
-		$group100 = [];
-		$group10 = [];
-		$group1 = [];
-		$tnCount = count($tn);
-		for ($i = 0; $i < $tnCount; $i++) {
-			$tnKeys[$tn[$i]['TagName']['id']] = $tn[$i]['TagName']['name'];
-			$tnKeysAmount[$tn[$i]['TagName']['id']] = $tn[$i]['TagName']['name'];
-		}
-		$jsonCount = count($json);
-		for ($i = 0; $i < $jsonCount; $i++) {
-			if ($tnKeys[$json[$i]->id] != 'Tsumego') {
-				array_push($json2, $tnKeys[$json[$i]->id]);
-				array_push($json2amount, $json[$i]->num);
-			}
-		}
-		$json2Count = count($json2);
-		if ($json2Count) {
-			array_push($group100, $json2[$i]);
+
+		$tagTiles = [];
+		foreach ($tags as $tag) {
+			$tagTiles[] = $tag['TagName']['name'];
 		}
 
-		array_multisort($group100);
-		array_multisort($group10);
-		array_multisort($group1);
-		$group100Count = count($group100);
-		for ($i = 0; $i < $group100Count; $i++) {
-			array_push($hybrid, $group100[$i]);
-		}
-		$json2 = $hybrid;
-		$json2Count = count($json2);
-		for ($i = 0; $i < $json2Count; $i++) {
-			$json3 = $this->TagName->findByName($json2[$i]);
-			if ($json3 && isset($json3['TagName']['name'])) {
-				array_push($tagTiles, $json3['TagName']['name']);
-			}
-		}
 		if (Auth::isLoggedIn()) {
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 		} else {
@@ -721,102 +684,11 @@ class SetsController extends AppController {
 			if (!empty($tsumegoFilters->tags)) {
 				$tagSearchSet = true;
 			}
-			$json2Count = count($json2);
-			for ($i = 0; $i < $json2Count; $i++) {
-				if (in_array($json2[$i], $tsumegoFilters->tags) || !$tagSearchSet) {
-					$json3 = $this->TagName->findByName($json2[$i]);
-					if ($json3 && isset($json3['TagName']['id'])) {
-						$tagsx = $this->Tag->find('all', [
-							'order' => 'id ASC',
-							'conditions' => [
-								'tag_name_id' => $json3['TagName']['id'],
-								'approved' => 1,
-								$setConditions,
-							],
-						]) ?: [];
-						$currentIds = [];
-						$tagsxCount2 = count($tagsx);
-						for ($j = 0; $j < $tagsxCount2; $j++) {
-							array_push($currentIds, $tagsx[$j]['Tag']['tsumego_id']);
-						}
-
-						if (!Auth::hasPremium()) {
-							$currentIdsNew = [];
-							$pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $currentIds]]);
-							if (!$pTest) {
-								$pTest = [];
-							}
-							$pTestCount2 = count($pTest);
-							for ($j = 0; $j < $pTestCount2; $j++) {
-								if (!in_array($pTest[$j]['Tsumego']['set_id'], $setsWithPremium)) {
-									array_push($currentIdsNew, $pTest[$j]['Tsumego']['id']);
-								}
-							}
-							$currentIds = $currentIdsNew;
-						}
-						$amountTags = count($currentIds);
-
-						if (!empty($tsumegoFilters->ranks) > 0) {
-							$rankConditions = [];
-							$fromTo = [];
-							$idsTemp = [];
-							foreach ($tsumegoFilters->ranks as $rank) {
-								$ft = [];
-								$ft['rating >='] = AppController::getTsumegoElo($rank);
-								$ft['rating <'] = $ft['rating >='] + 100;
-								if ($rank == '15k') {
-									$ft['rating >='] = 50;
-								}
-								array_push($fromTo, $ft);
-							}
-
-							$rankConditions['OR'] = $fromTo;
-
-							$ts = $this->Tsumego->find('all', [
-								'order' => 'id ASC',
-								'conditions' => [
-									'id' => $currentIds,
-									'public' => 1,
-									$rankConditions,
-								],
-							]) ?: [];
-							$tsCount2 = count($ts);
-							for ($j = 0; $j < $tsCount2; $j++) {
-								array_push($idsTemp, $ts[$j]['Tsumego']['id']);
-							}
-							$currentIds = array_unique($idsTemp);
-							$amountTags = count($currentIds);
-						}
-						$searchCounter += $amountTags;
-
-						$tl = [];
-						$tl['id'] = $json3['TagName']['id'];
-						$tl['name'] = $json3['TagName']['name'];
-						$tl['amount'] = $amountTags;
-						$tl['currentIds'] = $currentIds;
-						$tl['color'] = $json3['TagName']['color'];
-						if ($amountTags > 0) {
-							array_push($tagList, $tl);
-						}
-					}
-				}
-			}
 			$tagListCount = count($tagList);
 			for ($i = 0; $i < $tagListCount; $i++) {
 				$tagList[$i]['color'] = $this->getTagColor($tagList[$i]['color']);
 			}
 			$tagList = $this->partitionCollections($tagList, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
-		} else {
-			$json2Count = count($json2);
-			for ($i = 0; $i < $json2Count; $i++) {
-				$json3 = $this->TagName->findByName($json2[$i]);
-				if ($json3 && isset($json3['TagName']['id']) && isset($json3['TagName']['name'])) {
-					$tl = [];
-					$tl['id'] = $json3['TagName']['id'];
-					$tl['name'] = $json3['TagName']['name'];
-					array_push($tagList, $tl);
-				}
-			}
 		}
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets)) {
 			$queryRefresh = false;

@@ -87,6 +87,7 @@ class ContextPreparator {
 			}
 		}
 		$this->prepareTsumegoSets($tsumegoInput['sets'], $tsumego);
+		$this->prepareTsumegoTags($tsumegoInput['tags'], $tsumego);
 		$this->prepareTsumegoStatus($tsumegoInput['status'], $tsumego);
 		$this->prepareTsumegoAttempt($tsumegoInput['attempt'], $tsumego);
 		return $tsumego;
@@ -168,6 +169,23 @@ class ContextPreparator {
 		}
 	}
 
+	private function prepareTsumegoTags($tagsInput, &$tsumego): void {
+		if ($tagsInput) {
+			ClassRegistry::init('Tag')->deleteAll(['tsumego_id' => $tsumego['id']]);
+			foreach ($tagsInput as $tagInput) {
+				$tag = $this->getOrCreateTag($tagInput['name']);
+				$tagConnection = [];
+				$tagConnection['Tag']['tsumego_id'] = $tsumego['id'];
+				$tagConnection['Tag']['user_id'] = $this->user['id'];
+				ClassRegistry::init('Tag')->create($tagConnection);
+				ClassRegistry::init('Tag')->save($tagConnection);
+				$tagConnection = ClassRegistry::init('Tag')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+				$tsumego['tags'] [] = $tag;
+				$tsumego['tag-connections'] [] = $tagConnection;
+			}
+		}
+	}
+
 	private function getOrCreateTsumegoSet($name): array {
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		if (!$set) {
@@ -176,11 +194,23 @@ class ContextPreparator {
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
-			ClassRegistry::init('SetConnection')->create($set);
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
+	}
+
+	private function getOrCreateTag($name): array {
+		$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+		if (!$tag) {
+			$tag = [];
+			$tag['name'] = $name;
+			ClassRegistry::init('TagName')->create($tag);
+			ClassRegistry::init('TagName')->save($tag);
+			// reloading so the generated id is retrieved
+			$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+		}
+		return $tag['TagName'];
 	}
 
 	private function checkSetClear(int $setID): void {
@@ -258,6 +288,7 @@ class ContextPreparator {
 	public ?array $tsumegoSets = null;
 	public array $timeModeRanks = [];
 	public array $timeModeSessions = [];
+	public array $tags = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 }
