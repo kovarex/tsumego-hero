@@ -52,11 +52,11 @@ class Browser {
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 	}
 
-	public static function instance()
-	{
+	public static function instance() {
 		static $browser = null;
-		if ($browser == null)
+		if ($browser == null) {
 			$browser = new Browser();
+		}
 		$browser->driver->manage()->deleteAllCookies();
 		return $browser;
 	}
