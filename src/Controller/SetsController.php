@@ -679,7 +679,7 @@ WITH tag_counts AS (
     COUNT(tsumego.id) AS total_count
   FROM tsumego
   JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id
+  JOIN tag_name ON tag_name.id = tag.tag_name_id".(empty($tsumegoFilters->tagIDs) ? '' : ' AND tag_name.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')')."
   GROUP BY tag_name.id
 ),
 numbered AS (

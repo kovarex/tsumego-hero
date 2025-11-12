@@ -630,4 +630,34 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'empty triangle');
 	}
+
+	public function testVisitingTagBasedSetsRespectsTagFilters(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'tags',
+			'filtered_tags' => ['atari', 'empty triangle']]];
+		$contextParams['other-tsumegos'] = [];
+
+		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
+		// we sort by count so, this will ensure they are shown in this order as well
+		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
+			for ($i = 0; $i < 3 - $key; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $tag . ' problem',
+					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+					'tags' => [['name' => $tag]]];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+		$browser = new Browser();
+		$browser->get("sets");
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
+	}
 }
