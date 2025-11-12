@@ -550,7 +550,7 @@ class SetsController extends AppController {
 			if ($tsumegoFilters->collectionSize >= 200) {
 				$setsCount = count($sets);
 				for ($i = 0; $i < $setsCount; $i++) {
-					if ($sets[$i]['solved'] >= 100) {
+					if ($sets[$i]['solved_percent'] >= 100) {
 						$overallCounter++;
 					}
 				}
@@ -801,7 +801,7 @@ ORDER BY total_count DESC, partition_number";
 		}
 		$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 		$tl['difficulty'] = $difficultyAndSolved['difficulty'];
-		$tl['solved'] = $difficultyAndSolved['solved'];
+		$tl['solved_percent'] = $difficultyAndSolved['solved'];
 		array_push($newList, $tl);
 
 		return $newList;

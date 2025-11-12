@@ -668,6 +668,46 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains('width: '.$percent, $barStyle);
 	}
 
+	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'topics']];
+		$contextParams['other-tsumegos'] = [];
+
+		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
+		// we sort by count so, this will ensure they are shown in this order as well
+		// each have one unsolved
+		foreach (['set 1', 'set 2', 'set 3', 'set 4', 'set 5'] as $key => $set) {
+			for ($i = 0; $i < 4; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $set . ' problem',
+					'sets' => [['name' => $set, 'num' => $i + 1]],
+					'status' => ($i >= $key  ? 'N' : 'S')];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+		$browser = new Browser();
+		$browser->get("sets");
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
+		$wait->until(function () use ($browser) {
+			$bla = $browser->driver->getPageSource();
+			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
+		});
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(5, $collectionTopDivs);
+		$this->checkSetFinishedPercent($browser, 0, 'set 1', '0%');
+		$this->checkSetFinishedPercent($browser, 1, 'set 2', '25%');
+		$this->checkSetFinishedPercent($browser, 2, 'set 3', '50%');
+		$this->checkSetFinishedPercent($browser, 3, 'set 4', '75%');
+		$this->checkSetFinishedPercent($browser, 4, 'set 5', '100%');
+	}
+
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
@@ -694,7 +734,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser = new Browser();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 15, 500); // (driver, timeout, polling interval)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
