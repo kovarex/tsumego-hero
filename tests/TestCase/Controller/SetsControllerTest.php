@@ -659,6 +659,15 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
+
+		// going into the 'atari' set
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
+
+		// now we are viewing the 'atari' insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+
 	}
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void {

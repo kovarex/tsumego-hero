@@ -1076,7 +1076,7 @@ ORDER BY total_count DESC, partition_number";
 					'order' => 'id ASC',
 					'conditions' => [
 						'id' => $tagIds,
-						'public' => 1,
+						'deleted' => null,
 						$rankConditions,
 					],
 				]) ?: [];
@@ -1085,12 +1085,12 @@ ORDER BY total_count DESC, partition_number";
 				// it will be cleaned when there is time to change the code above
 				$tsumegoButtons = new TsumegoButtons();
 				foreach ($ts as $key => $t) {
-					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditins' => ['tsumego_id' => $t['Tsumego']['id']]])) {
+					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]])) {
 						$tsumegoStatus = Auth::isLoggedIn() ? ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id'], 'user_id' => Auth::getUserID()]]) : null;
 						$tsumegoButtons [] = new TsumegoButton(
 							$t['Tsumego']['id'],
 							$setConnection['SetConnection']['id'],
-							$key,
+							$key + 1,
 							$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
 							$t['Tsumego']['pass'],
 							$t['Tsumego']['alternative_response']
