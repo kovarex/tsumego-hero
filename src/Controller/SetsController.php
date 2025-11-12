@@ -1099,16 +1099,9 @@ class SetsController extends AppController {
 			$tsumegoFilters->query = $viewType;
 
 			$this->Session->write('lastSet', $id);
-			if ($viewType == 'difficulty') {
-				$condition = "";
-				$ratingBounds = RatingBounds::coverRank($id, '15k');
-				$ratingBounds->addSqlConditions($condition);
-				$tsumegoButtons = new TsumegoButtons();
-				$tsumegoButtons->fill($condition);
-				$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
-				$tsumegoButtons->resetOrders();
-				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
+			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 
+			if ($viewType == 'difficulty') {
 				$set = [];
 				$set['Set']['id'] = $id;
 				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
@@ -1116,7 +1109,6 @@ class SetsController extends AppController {
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
 				$elo = AppController::getTsumegoElo($id);
-				$set['Set']['description'] = $id . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 				$set['Set']['difficulty'] = $elo;
 
 				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
@@ -1219,23 +1211,12 @@ class SetsController extends AppController {
 				$set['Set']['anz'] = count($tsumegoButtons);
 				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 			} else {
-				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
-
-				$condition = '';
-				Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
-				$tsumegoButtons = new TsumegoButtons();
-				$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
-				$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
-				if ($set['Set']['public'] != 1) {
-					$tsumegoFilters->collectionSize = 2000;
-				}
-				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 				$currentIds = [];
 				foreach ($tsumegoButtons as $tsumegoButton) {
 					$currentIds [] =  $tsumegoButton->tsumegoID;
 				}
 				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-
+				$set = ClassRegistry::init('Set')->findById($id);
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($tsumegoButtons);
@@ -1568,6 +1549,10 @@ class SetsController extends AppController {
 		// temporary stan fix until all of the ways buttons are filled are unified
 		if (!isset($tsumegoButtons)) {
 			$tsumegoButtons = new TsumegoButtons();
+		}
+
+		if ($tsumegoButtons->description) {
+			$set['Set']['description'] = $tsumegoButtons->description;
 		}
 
 		$this->Session->write('title', $set['Set']['title'] . ' on Tsumego Hero');

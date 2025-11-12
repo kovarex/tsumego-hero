@@ -1,6 +1,35 @@
 <?php
 
 class TsumegoButtons extends ArrayObject {
+	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null) {
+		if (!$tsumegoFilters) {
+			return; // Temporary until also the favorites are covered
+		}
+		$condition = "";
+		if ($tsumegoFilters->query == 'difficulty') {
+			$currentRank = CakeSession::read('lastSet');
+			$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
+			$ratingBounds->addSqlConditions($condition);
+			$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+			$this->fill($condition);
+		} elseif ($tsumegoFilters->query == 'topics') {
+			Util::addSqlCondition($condition, '`set`.id=' . $id);
+			$this->fill($condition, $tsumegoFilters->ranks);
+		}
+		$this->filterByTags($tsumegoFilters->tags);
+
+		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
+		// 'virtual set' and we just order it from 1 to max
+		if ($tsumegoFilters->query != 'topics') {
+			$this->resetOrders();
+		}
+		if (!is_null($currentSetConnectionID)) {
+			$this->partitionByCurrentOne($currentSetConnectionID, $tsumegoFilters->collectionSize);
+		} else {
+			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
+		}
+	}
+
 	public static function deriveFrom(TsumegoButtons $other) {
 		$result = new TsumegoButtons();
 		$result->highestTsumegoOrder = $other->highestTsumegoOrder;
@@ -133,4 +162,5 @@ class TsumegoButtons extends ArrayObject {
 	public bool $isPartitioned = false;
 	public int $highestTsumegoOrder = -1;
 	public ?int $currentOrder = -1;
+	public ?string $description = null;
 }
