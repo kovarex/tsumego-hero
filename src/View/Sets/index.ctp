@@ -111,7 +111,7 @@
 				$partition = ' #'.($sets[$i]['partition']+1);
 				$partitionLink = '/'.($sets[$i]['partition'] + 1);
 			}
-			if($sets[$i]['solved'] != 0)
+			if($sets[$i]['solved_percent'] != 0)
 				$isZero = '';
 			else
 				$isZero = 'display:none;';
@@ -139,7 +139,7 @@
 				echo '<a href="/sets/view/'.$sets[$i]['id'].$partitionLink.'" class="box1link">
 					<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
 						style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
-					if($sets[$i]['solved']>=100)
+					if($sets[$i]['solved_percent']>=100)
 						echo '<div class="collection-completed">completed</div>';
 					echo '<div class="collection-top">'.$sets[$i]['name'].$partition.'</div>';
 					echo '<div class="collection-middle-left">'.$sets[$i]['amount'].' '.$problems.'</div>';
@@ -168,7 +168,7 @@
 				echo '<a href="/users/donate" class="box1link">';
 				echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
 					style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
-				if($sets[$i]['solved']>=100)
+				if($sets[$i]['solved_percent']>=100)
 					echo '<div class="collection-completed">completed</div>';
 				echo '<div class="collection-top top-inactive">'.$sets[$i]['name'].$partition.'</div>';
 				echo '<div class="collection-middle-left"></div>';
@@ -200,7 +200,7 @@
 				$partition = ' #'.($ranksArray[$i]['partition'] + 1);
 				$partitionLink = '/'.($ranksArray[$i]['partition'] + 1);
 			}
-			if($ranksArray[$i]['solved'] != 0)
+			if($ranksArray[$i]['solved_percent'] != 0)
 				$isZero = '';
 			else
 				$isZero = 'display:none;';
@@ -209,7 +209,7 @@
 			echo '<a href="/sets/view/'.$ranksArray[$i]['name'].$partitionLink.'" class="box1link">
 				<div class="box1 box1default box1difficulty difficulty-box'.$ranksArray[$i]['id'].'"
 					style="background-color:'.$ranksArray[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
-				if($ranksArray[$i]['solved']>=100)
+				if($ranksArray[$i]['solved_percent']>=100)
 					echo '<div class="collection-completed">completed</div>';
 				echo '<div class="collection-top">'.$ranksArray[$i]['name'].$partition.'</div>';
 				echo '<div class="collection-middle-left">'.$ranksArray[$i]['amount'].' '.$problems.'</div>';
@@ -250,7 +250,7 @@
 				$partition = ' #'.($tagList[$i]['partition']+1);
 				$partitionLink = '/'.($tagList[$i]['partition'] + 1);
 			}
-			if ($tagList[$i]['solved'] != 0)
+			if ($tagList[$i]['solved_percent'] != 0)
 				$isZero = '';
 			else
 				$isZero = 'display:none;';
@@ -259,7 +259,7 @@
 			echo '<a href="/sets/view/'.$tagList[$i]['name'].$partitionLink.'" class="box1link">
 				<div class="box1 box1default box1tag tag-box'.$tagList[$i]['id'].'"
 					style="background-color:'.$tagList[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
-				if($tagList[$i]['solved'] == $tagList[$i]['amount'])
+				if($tagList[$i]['solved_percent'] >= 100)
 					echo '<div class="collection-completed">completed</div>';
 				echo '<div class="collection-top">'.$tagList[$i]['name'].$partition.'</div>';
 				echo '<div class="collection-middle-left">'.$tagList[$i]['amount'].' '.$problems.'</div>';
@@ -381,7 +381,7 @@
 		<?php
 		if($tsumegoFilters->query == 'topics'){
 			for($i=0; $i<count($sets); $i++){
-				echo 'animateNumber'.$i.'(0, '.$sets[$i]['solved'].', .6);';
+				echo 'animateNumber'.$i.'(0, '.$sets[$i]['solved_percent'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
@@ -406,7 +406,7 @@
 					};
 					requestAnimationFrame(step);
 				}';
-				echo 'animateBar'.$i.'('.$sets[$i]['solved'].');';
+				echo 'animateBar'.$i.'('.$sets[$i]['solved_percent'].');';
 				echo 'function animateBar'.$i.'(percent){
 					$("#xp-increase-fx2'.$i.'").css("display","inline-block");
 					$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
@@ -426,7 +426,7 @@
 			}
 		}else if($tsumegoFilters->query == 'difficulty'){
 			for($i=0; $i<count($ranksArray); $i++){
-				echo 'animateNumber'.$i.'(0, '.$ranksArray[$i]['solved'].', .6);';
+				echo 'animateNumber'.$i.'(0, '.$ranksArray[$i]['solved_percent'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
@@ -451,7 +451,7 @@
 					};
 					requestAnimationFrame(step);
 				}';
-				echo 'animateBar'.$i.'('.$ranksArray[$i]['solved'].');';
+				echo 'animateBar'.$i.'('.$ranksArray[$i]['solved_percent'].');';
 				echo 'function animateBar'.$i.'(percent){
 					$("#xp-increase-fx2'.$i.'").css("display","inline-block");
 					$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
@@ -471,7 +471,7 @@
 			}
 		}else if($tsumegoFilters->query == 'tags'){
 			for($i=0; $i<count($tagList); $i++){
-				echo 'animateNumber'.$i.'(0, '.$tagList[$i]['solved'].', .6);';
+				echo 'animateNumber'.$i.'(0, '.$tagList[$i]['solved_percent'].', .6);';
 				echo 'function animateNumber'.$i.'(start, end, duration) {
 					const element = document.getElementById("number'.$i.'");
 					const range = end - start;
@@ -496,7 +496,7 @@
 					};
 					requestAnimationFrame(step);
 				}';
-				echo 'animateBar'.$i.'('.$tagList[$i]['solved'].');';
+				echo 'animateBar'.$i.'('.$tagList[$i]['solved_percent'].');';
 				echo 'function animateBar'.$i.'(percent){
 					$("#xp-increase-fx2'.$i.'").css("display","inline-block");
 					$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");

@@ -726,7 +726,7 @@ ORDER BY total_count DESC, partition_number";
 				$partition = $tagRaw['partition_number'];
 				$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
 				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['color']));
-				$tag['solved'] = $tagRaw['solved_count'];
+				$tag['solved_percent'] = round(Util::getPercent($tagRaw['solved_count'], $tagRaw['usage_count']));
 				$tag['partition'] = $partition;
 				$tagList [] = $tag;
 			}

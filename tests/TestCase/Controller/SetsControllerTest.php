@@ -660,4 +660,51 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
 	}
+
+	private function checkSetFinishedPercent($browser, $index, $title, $percent): void {
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'))[$index]->getText(), $title);
+		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#number'.$index))->getText(), $percent);
+		$barStyle = $browser->driver->findElement(WebDriverBy::cssSelector('#xp-bar-fill2'.$index))->getAttribute('style');
+		$this->assertTextContains('width: '.$percent, $barStyle);
+	}
+
+	public function testTagBasedSetViewShowsSolvedPercentProperly(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'tags']];
+		$contextParams['other-tsumegos'] = [];
+
+		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
+		// we sort by count so, this will ensure they are shown in this order as well
+		// each have one unsolved
+		foreach (['atari', 'bambule', 'empty triangle', 'snapback', 'zen'] as $key => $tag) {
+			for ($i = 0; $i < 4; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $tag . ' problem',
+					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+					'tags' => [['name' => $tag]],
+					'status' => ($i >= $key  ? 'N' : 'S')];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+		$browser = new Browser();
+		$browser->get("sets");
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 15, 500); // (driver, timeout, polling interval)
+		$wait->until(function () use ($browser) {
+			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
+		});
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(5, $collectionTopDivs);
+		$this->checkSetFinishedPercent($browser, 0, 'atari', '0%');
+		$this->checkSetFinishedPercent($browser, 1, 'bambule', '25%');
+		$this->checkSetFinishedPercent($browser, 2, 'empty triangle', '50%');
+		$this->checkSetFinishedPercent($browser, 3, 'snapback', '75%');
+		$this->checkSetFinishedPercent($browser, 4, 'zen', '100%');
+	}
 }
