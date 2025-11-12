@@ -660,13 +660,13 @@ class SetsController extends AppController {
 					$newRanksArray [] = $rTemp;
 				}
 			}
-			$ranksArray = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
-		} else {
-			$ranksArray = $this->getExistingRanksArray();
-			foreach ($ranksArray as &$rank) {
-				$rank['id'] = $rank['rank'];
-				$rank['name'] = $rank['rank'];
-			}
+			$sets = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
+		}
+
+		$ranksArray = $this->getExistingRanksArray();
+		foreach ($ranksArray as &$rank) {
+			$rank['id'] = $rank['rank'];
+			$rank['name'] = $rank['rank'];
 		}
 		//tags
 		if ($tsumegoFilters->query == 'tags') {
