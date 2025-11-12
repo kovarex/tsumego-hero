@@ -1065,13 +1065,13 @@ class Play {
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
 			$previousSetConnectionID = $tsumegoButtons[$indexOfCurrent - 1]->setConnectionID;
 		}
-		$previousLink = TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, $set['Set']['id']);
+		$previousLink = TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
 
 		if (isset($indexOfCurrent) && count($tsumegoButtons) > $indexOfCurrent + 1) {
 			$nextSetConnectionID = $tsumegoButtons[$indexOfCurrent + 1]->setConnectionID;
 		}
 		if (!Auth::isInTimeMode()) {
-			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, $set['Set']['id']));
+			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
 		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);

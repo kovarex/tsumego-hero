@@ -441,10 +441,7 @@ class SetsController extends AppController {
 		$achievementUpdate = [];
 		$tsumegoFilters = new TsumegoFilters();
 
-		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
-		if (!$swp) {
-			$swp = [];
-		}
+		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
 		foreach ($swp as $item) {
 			$setsWithPremium[] = $item['Set']['id'];
 		}
@@ -657,6 +654,9 @@ class SetsController extends AppController {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
 				Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
+				if (!empty($tsumegoFilters->setIDs)) {
+					Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
+				}
 				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"

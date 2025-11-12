@@ -10,6 +10,9 @@ class TsumegoButtons extends ArrayObject {
 			$currentRank = CakeSession::read('lastSet');
 			$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
 			$ratingBounds->addSqlConditions($condition);
+			if (!empty($tsumegoFilters->setIDs)) {
+				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
+			}
 			$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 			$this->fill($condition);
 		} elseif ($tsumegoFilters->query == 'topics') {

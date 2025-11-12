@@ -1287,8 +1287,8 @@
 
 	<?php
 		if($tsumegoFilters->query != 'topics')
-			foreach ($tsumegoFilters->sets as $set)
-				echo 'activeTopicTiles.push("'.$set.'");';
+			foreach ($tsumegoFilters->sets as $setName)
+				echo 'activeTopicTiles.push("'.$setName.'");';
 		if($tsumegoFilters->query != 'difficulty')
 			foreach ($tsumegoFilters->ranks as $rank)
 				echo 'activeDifficultyTiles.push("'.$rank.'");';
@@ -1713,7 +1713,7 @@
 		echo 'var showCommentSpace = true;';
 		echo '$("#show5").css("display", "inline-block");';
 	}
-	if($set['Set']['public']==0) echo 'var showCommentSpace = true;';
+	if ($set['Set']['public']) echo 'var showCommentSpace = true;';
 	if($goldenTsumego) echo 'var goldenTsumego = true;';
 	else echo 'var goldenTsumego = false;';
 

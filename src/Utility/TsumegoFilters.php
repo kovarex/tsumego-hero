@@ -9,7 +9,7 @@ class TsumegoFilters {
 
 		$this->setIDs = [];
 		foreach ($this->sets as $set) {
-			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set]]);
+			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set]])['Set']['id'];
 		}
 
 		$this->ranks = self::processItem('filtered_ranks', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
@@ -61,6 +61,19 @@ class TsumegoFilters {
 			return $set['Set']['title'];
 		}
 		if ($this->query == 'difficulty') {
+			return CakeSession::read('lastSet');
+		}
+		return "Unsupported yet";
+	}
+
+	public function getSetID($set): string {
+		if ($this->query == 'topics') {
+			return $set['Set']['id'];
+		}
+		if ($this->query == 'difficulty') {
+			return CakeSession::read('lastSet');
+		}
+		if ($this->query == 'tags') {
 			return CakeSession::read('lastSet');
 		}
 		return "Unsupported yet";

@@ -32,7 +32,7 @@ class TsumegosController extends AppController {
 		return null;
 	}
 
-	public static function tsumegoOrSetLink(?int $setConnectionID, int $setID): string {
+	public static function tsumegoOrSetLink(?int $setConnectionID, string $setID): string {
 		if ($setConnectionID) {
 			return '/' . $setConnectionID;
 		}

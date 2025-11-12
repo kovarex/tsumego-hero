@@ -520,8 +520,8 @@
 
 	<?php
 		if ($tsumegoFilters->query != 'topics')
-			foreach ($tsumegoFilters->sets as $set)
-				echo 'activeTopicTiles.push("'.$set.'");';
+			foreach ($tsumegoFilters->sets as $setName)
+				echo 'activeTopicTiles.push("'.$setName.'");';
 		if ($tsumegoFilters->query != 'difficulty')
 			foreach ($tsumegoFilters->ranks as $rank)
 				echo 'activeDifficultyTiles.push("'.$rank.'");';

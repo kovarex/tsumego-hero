@@ -496,4 +496,76 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 	}
+
+	public function testQueringSetsByRanksButLimitedByTopics(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+
+		// filter by topics, but limit by ranks
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'difficulty',
+			'filtered_sets' => ['set 2', 'set 3']]];
+
+		$contextParams['other-tsumegos'] = [];
+
+		// three ranks, and three sets, each rank is in each set once.
+		// note that 5d is first, to check that the navigation button numbers will keep its order
+		// of 2 and 3 when 1 is filtered one.
+		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
+			for ($i = 0; $i < 3; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $rank . ' problem',
+					'rating' => Rating::getRankMinimalRatingFromReadableRank($rank),
+					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+
+		$browser = new Browser();
+
+		// we open sets, we filtered set 2 and set 3, but query by ranks, so we should see:
+
+		// all 3 ranks with
+		$browser->get("sets");
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(3, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
+		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
+		$this->assertSame($collectionTopDivs[2]->getText(), '5d');
+
+		// with 2 problems each as the set 1 problems should already be filtered out
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$this->assertCount(3, $collectionMiddleLeftDivs);
+		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[2]->getText(), '2 problems');
+
+		// first visit the 'set 15k'
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+
+		// now we are viewing the 'set 2' insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; });
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, '15k 1/2');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 0, 'V');
+
+		// clicking on next problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[5]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, '15k 2/2');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 1, 'V');
+
+		// clicking on next problem should get us back to the set
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+	}
 }
