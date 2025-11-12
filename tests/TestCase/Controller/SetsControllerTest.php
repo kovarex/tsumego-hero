@@ -487,4 +487,106 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
 		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
 	}
+
+	public function testQueringSetsByTopicButLimitedByRanks(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+
+		// filter by topics, but limit by ranks
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'topics',
+			'filtered_ranks' => ['15k', '1d']]];
+
+		$contextParams['other-tsumegos'] = [];
+
+		// three ranks, and three sets, each rank is in each set once.
+		// note that 5d is first, to check that the navigation button numbers will keep its order
+		// of 2 and 3 when 1 is filtered one.
+		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
+			for ($i = 0; $i < 3; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $rank.' problem',
+					'rating' => Rating::getRankMinimalRatingFromReadableRank($rank),
+					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+
+		$browser = new Browser();
+
+		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
+
+		// all 3 sets with
+		$browser->get("sets");
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(3, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
+		$this->assertSame($collectionTopDivs[2]->getText(), 'set 3');
+
+		// with 2 problems each as the 5d problems should be already filtered out
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$this->assertCount(3, $collectionMiddleLeftDivs);
+		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
+		$this->assertSame($collectionMiddleLeftDivs[2]->getText(), '2 problems');
+
+		// first visit the 'set 1'
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+
+		// now we are viewing the 'set 1' insides and checking the buttons
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
+		$this->assertCount(2, $buttons);
+		foreach ($buttons as $key => $button) {
+			$this->assertSame($button->getText(), strval($key + 2)); // it should be 2 and 3, as first was 5d and is filtered out
+			$link = $button->findElement(WebDriverBy::tagName('a'));
+			$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[($key + 1) * 3]['set-connections'][0]['id']);
+		}
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(3, $navigationButtons); // 2 testing ones and one merged border
+
+		// checking that the title is correctly mentioning 'set 1'
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('set 1', $collectionTopDivs[0]->getText());
+		// the problem max is still the original collection max, to fit the order numbers
+		$this->assertTextContains('2/3', $collectionTopDivs[0]->getText());
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+
+		// clicking on next problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[6]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+
+		// proper title 'set 1' and 3/3
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('set 1', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('3/3', $collectionTopDivs[0]->getText());
+
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(3, $navigationButtons); // 2 testing one shared border
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
+		// $navigationButton[1] is the black dividing edge and inner buttons
+		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setV1'); // the current one already marked as solved
+
+
+		// clicking on next problem should get us back to the set
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+	}
 }

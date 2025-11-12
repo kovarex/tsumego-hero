@@ -533,13 +533,7 @@ class SetsController extends AppController {
 			if (!empty($tsumegoFilters->ranks)) {
 				$fromTo = [];
 				foreach ($tsumegoFilters->ranks as $rank) {
-					$ft = [];
-					$ft['rating >='] = AppController::getTsumegoElo($rank);
-					$ft['rating <'] = $ft['rating >='] + 100;
-					if ($rank == '15k') {
-						$ft['rating >='] = 50;
-					}
-					array_push($fromTo, $ft);
+					$fromTo []= RatingBounds::coverRank($rank, '15k')->getConditions();
 				}
 				$rankConditions['OR'] = $fromTo;
 			}

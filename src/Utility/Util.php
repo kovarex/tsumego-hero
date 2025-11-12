@@ -143,8 +143,8 @@ class Util {
 			return;
 		}
 		$existingCondition .= " AND " ;
-		if (str_contains(" OR ", $condition)) {
-			$existingCondition .= '(' + $condition + ')';
+		if (str_contains($condition, " OR ")) {
+			$existingCondition .= '(' . $condition . ')';
 		} else {
 			$existingCondition .= $condition;
 		}
