@@ -4,7 +4,7 @@ class TsumegoFilters {
 	public function __construct() {
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution);
-		$this->collectionSize = self::processItem('collectionSize', '200', $userContribution);
+		$this->collectionSize = self::processItem('collection_size', '200', $userContribution);
 		$this->sets = self::processItem('filtered_sets', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		$this->setIDs = [];
@@ -26,7 +26,7 @@ class TsumegoFilters {
 	}
 
 	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null) {
-		$stringResult = null;
+		$stringResult = '';
 		if ($userContribution) {
 			if ($value = $userContribution['UserContribution'][$name]) {
 				$stringResult = $value;
@@ -54,6 +54,16 @@ class TsumegoFilters {
 		}
 
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
+	}
+
+	public function getSetTitle($set): string {
+		if ($this->query == 'topics') {
+			return $set['Set']['title'];
+		}
+		if ($this->query == 'difficulty') {
+			return CakeSession::read('lastSet');
+		}
+		return "Unsupported yet";
 	}
 
 	public string $query;

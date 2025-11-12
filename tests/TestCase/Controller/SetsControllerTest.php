@@ -242,4 +242,112 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// $navigationButton[1] is the black dividing edge and inner buttons
 		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setS1'); // the current one already marked as solved
 	}
+
+	public function testFullProcessOfPartitionedSetBasedSelection(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'collection_size' => 2]];
+		$contextParams['other-tsumegos'] = [];
+		$statuses = ['N', 'N', 'V', 'V'];
+
+		// 4 problems in our set
+		for ($i = 0; $i < 4; $i++) {
+			$contextParams['other-tsumegos'] [] = [
+				'title' => 'a problem',
+				'sets' => [['name' => 'set hello world', 'num' => $i + 1]],
+				'status' => $statuses[$i]];
+		}
+
+		$context = new ContextPreparator($contextParams);
+
+		// first we select the difficulty of 15k
+		$browser = new Browser();
+		$browser->get("sets");
+
+		// we check the set card and clicking
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$this->assertSame($collectionTopDivs[0]->getText(), 'set hello world #1');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'set hello world #2');
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1', $browser->driver->getCurrentURL());
+
+		// now we are viewing the 'set hello world' and checking the buttons
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
+
+		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
+		$this->assertCount(2, $buttons);
+		foreach ($buttons as $key => $button) {
+			$this->assertSame($button->getText(), strval($key + 1));
+			$this->assertSame($button->getAttribute('class'), 'set' . $statuses[$key] . '1');
+			$link = $button->findElement(WebDriverBy::tagName('a'));
+			$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[$key]['set-connections'][0]['id']);
+		}
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(3, $navigationButtons); // 2 testing ones and one 'empty' border
+
+		// checking that the title is correctly mentioning set hello world, and also the set partition
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('set hello world', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('1/4', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('#1', $collectionTopDivs[0]->getText());
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // marked as visited
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // Not visited
+
+		// clicking on next problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+
+		// proper title
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('set hello world #1', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('2/4', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('#1', $collectionTopDivs[0]->getText());
+
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(3, $navigationButtons); // 2 testing ones and one merged border
+
+		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
+		// $navigationButton[1] is the black dividing edge and inner buttons
+		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setV1'); // the current one is marked as visited
+
+		// now we go back to the sets selection and we visit the second partition of the set
+		$browser->get('sets');
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$collectionTopDivs[1]->click();
+
+		// now we are in the second partition of the set
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
+
+		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
+		$this->assertCount(2, $buttons);
+		foreach ($buttons as $key => $button) {
+			$this->assertSame($button->getText(), strval($key + 3));
+			$this->assertSame($button->getAttribute('class'), 'set' . $statuses[$key + 2] . '1');
+			$link = $button->findElement(WebDriverBy::tagName('a'));
+			$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[$key + 2]['set-connections'][0]['id']);
+		}
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertTextContains('set hello world #2', $collectionTopDivs[0]->getText());
+		$this->assertTextContains('3/4', $collectionTopDivs[0]->getText());
+	}
 }

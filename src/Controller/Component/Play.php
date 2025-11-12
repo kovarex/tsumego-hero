@@ -25,7 +25,7 @@ class Play {
 	public function play(int $setConnectionID, $params): mixed {
 		CakeSession::write('page', 'play');
 
-		$anzahl2 = 0;
+		$highestTsumegoOrder = 0;
 		$nextMode = null;
 		$rejuvenation = false;
 		$doublexp = null;
@@ -55,13 +55,6 @@ class Play {
 		$tsumegoStatusMap = [];
 		$setsWithPremium = [];
 		$queryTitle = '';
-		$queryTitleSets = '';
-		$partition = 0;
-
-		// probably nonsense, adding to shut up stan, partitions will be properly handled later
-		if (isset($this->params['url']['partition'])) {
-			$partition = $this->params['url']['partition'];
-		}
 
 		$currentSetConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$currentSetConnection) {
@@ -474,13 +467,9 @@ class Play {
 			Auth::getUser()['readingTrial']--;
 			unset($_COOKIE['skip']);
 		}
-		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]);
-		if (!$sandboxSets) {
-			$sandboxSets = [];
-		}
-		$sandboxSetsCount = count($sandboxSets);
-		for ($i = 0; $i < $sandboxSetsCount; $i++) {
-			if ($t['Tsumego']['set_id'] == $sandboxSets[$i]['Set']['id']) {
+		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]) ?: [];
+		foreach ($sandboxSets as $sandboxSet) {
+			if ($t['Tsumego']['set_id'] == $sandboxSet['Set']['id']) {
 				$isSandbox = true;
 			}
 		}
@@ -488,10 +477,7 @@ class Play {
 			$isSandbox = false;
 		}
 
-		$co = ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]);
-		if (!$co) {
-			$co = [];
-		}
+		$co = ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: [];
 		$counter1 = 1;
 		$coCount = count($co);
 		for ($i = 0; $i < $coCount; $i++) {
@@ -734,20 +720,11 @@ class Play {
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 
-		$tsumegoButtons = $this->selectTsumegoButtonsOfThisSet($set, $tsumegoFilters, $inFavorite, $partition);
+		$tsumegoButtons = $this->selectTsumegoButtonsOfThisSet($set, $tsumegoFilters, $inFavorite, $currentSetConnection['SetConnection']['id']);
 
-		if ($tsumegoFilters->query == 'difficulty') {
-			if ($partition == -1) {
-				$partitionText = '';
-			} else {
-				$partitionText = '#' . ($partition + 1);
-			}
-			$anzahl2 = 1;
-			foreach ($tsumegoButtons as $tsumegoButton) {
-				$anzahl2 = max($anzahl2, $tsumegoButton->order);
-			}
-			$queryTitle = CakeSession::read('lastSet') . ' ' . $partitionText . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $anzahl2;
-		} elseif ($tsumegoFilters->query == 'tags') {
+		$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
+
+		if ($tsumegoFilters->query == 'tags') {
 			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
 			$setConditions = [];
 			$rankConditions = [];
@@ -820,57 +797,13 @@ class Play {
 				}
 			}
 
-			if (count($ts) > $tsumegoFilters->collectionSize) {
-				$tsCount = count($ts);
-
-				for ($i = 0; $i < $tsCount; $i++) {
-					if ($i % $tsumegoFilters->collectionSize == 0) {
-						$partition++;
-					}
-					if ($ts[$i]['Tsumego']['id'] == $t['Tsumego']['id']) {
-						break;
-					}
-				}
-				$fromTo = AppController::getPartitionRange(count($ts), $tsumegoFilters->collectionSize, $partition);
-				$ts1 = [];
-				for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-					array_push($ts1, $ts[$i]);
-				}
-				$ts = $ts1;
-			}
-			if ($partition == -1) {
-				$partitionText = '';
-			} else {
-				$partitionText = '#' . ($partition + 1);
-			}
-			$anzahl2 = 1;
-			$tsCount = count($ts);
-
-			for ($i = 0; $i < $tsCount; $i++) {
-				if ($ts[$i]['Tsumego']['num'] > $anzahl2) {
-					$anzahl2 = $ts[$i]['Tsumego']['num'];
-				}
-			}
-			$queryTitle = CakeSession::read('lastSet') . ' ' . $partitionText . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2;
-		} elseif ($tsumegoFilters->query == 'topics') {
-			$condition = '';
-			Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
-			$tsumegoButtons = new TsumegoButtons();
-			$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
-			$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
-			$fromTo = AppController::getPartitionRange(count($tsumegoButtons), $tsumegoFilters->collectionSize, $partition);
-			$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
-
-			$anzahl2 = 1;
-			foreach ($tsumegoButtons as $tsumegoButton) {
-				$anzahl2 = max($anzahl2, $tsumegoButton->num);
-			}
+			$highestTsumegoOrder = 1;
 		}
 
 		if ($tsumegoFilters->query == 'topics') {
-			CakeSession::write('title', $set['Set']['title'] . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2 . ' on Tsumego Hero');
+			CakeSession::write('title', $set['Set']['title'] . ' ' . $t['Tsumego']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		} else {
-			CakeSession::write('title', CakeSession::read('lastSet') . ' ' . $t['Tsumego']['num'] . '/' . $anzahl2 . ' on Tsumego Hero');
+			CakeSession::write('title', CakeSession::read('lastSet') . ' ' . $t['Tsumego']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		if ($inFavorite) {
@@ -1164,7 +1097,6 @@ class Play {
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);
-		($this->setFunction)('anz', $anzahl2);
 		($this->setFunction)('showComment', $co);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
@@ -1230,7 +1162,6 @@ class Play {
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
-		($this->setFunction)('partition', $partition);
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
 		return null;
@@ -1319,28 +1250,27 @@ class Play {
 		return true;
 	}
 
-	private function selectTsumegoButtonsOfThisSet($set, TsumegoFilters $tsumegoFilters, $inFavorite, $partition): ?TsumegoButtons {
+	private function selectTsumegoButtonsOfThisSet($set, TsumegoFilters $tsumegoFilters, $inFavorite, $currentSetConnectionID): ?TsumegoButtons {
 		if ($inFavorite) {
 			return $this->selectSetConnectionsOfCurrentSetBasedOnFavorites();
 		}
 
 		if ($tsumegoFilters->query == 'topics') {
-			return $this->selectSetConnectionsOfCurrentSetBasedOnTopics($set, $tsumegoFilters, $partition);
+			return $this->selectSetConnectionsOfCurrentSetBasedOnTopics($set, $tsumegoFilters, $currentSetConnectionID);
 		}
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags') {
-			return $this->selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $tsumegoFilters, $partition);
+			return $this->selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $tsumegoFilters, $currentSetConnectionID);
 		}
 		return null;
 	}
 
-	public function selectSetConnectionsOfCurrentSetBasedOnTopics($set, $tsumegoFilters, $partition): TsumegoButtons {
+	public function selectSetConnectionsOfCurrentSetBasedOnTopics($set, $tsumegoFilters, $currentSetConnectionID): TsumegoButtons {
 		$condition = '';
 		Util::addSqlCondition($condition, '`set`.id=' . $set['Set']['id']);
 		$tsumegoButtons = new TsumegoButtons();
 		$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
 		$tsumegoButtons->filterByTags($tsumegoFilters->tags);
-		$fromTo = AppController::getPartitionRange(count($tsumegoButtons), $tsumegoFilters->collectionSize, $partition);
-		$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
+		$tsumegoButtons->partitionByCurrentOne($currentSetConnectionID, $tsumegoFilters->collectionSize);
 		return $tsumegoButtons;
 	}
 
@@ -1365,13 +1295,12 @@ class Play {
 		return $result;
 	}
 
-	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $tsumegoFilters, $partition): ?TsumegoButtons {
+	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $tsumegoFilters, $currentSetConnectionID): ?TsumegoButtons {
 		$tsumegoButtons = new TsumegoButtons();
 		$condition = "";
 		$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
 		$tsumegoButtons->filterByTags($tsumegoFilters->tags);
-		$fromTo = AppController::getPartitionRange(count($tsumegoButtons), $tsumegoFilters->collectionSize, $partition);
-		$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
+		$tsumegoButtons->partitionByCurrentOne($currentSetConnectionID, $tsumegoFilters->collectionSize);
 		$tsumegoButtons->resetOrders();
 		return $tsumegoButtons;
 	}

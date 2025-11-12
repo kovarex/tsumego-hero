@@ -3288,12 +3288,12 @@ class AppController extends Controller {
 
 	public static function getPartitionRange($amountRemaining, $collectionSize, $partition) {
 		if ($collectionSize > 0) {
-			$amountPartitions = floor($amountRemaining / $collectionSize) + 1;
+			$amountPartitions = ceil($amountRemaining / $collectionSize);
 		} else {
-			$amountPartitions = 1;
+			return ['0', $collectionSize - 1];
 		}
 		if ($collectionSize > 0 && $amountRemaining % $collectionSize == 0) {
-			$amountPartitions--;
+			return [ $partition * $collectionSize,  $partition * $collectionSize + $collectionSize - 1];
 		}
 		$amountCounter = 0;
 		$amountFrom = 0;

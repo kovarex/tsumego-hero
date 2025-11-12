@@ -37,15 +37,31 @@ class ContextPreparator {
 		ClassRegistry::init('User')->save($this->user);
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 
+		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
+
 		if ($user) {
 			CakeSession::write('loggedInUserID', $this->user['id']);
 			assert(CakeSession::check('loggedInUserID'));
 			Auth::init();
+
+			if (isset($user['query'])
+				|| isset($user['filtered_sets'])
+				|| isset($user['filtered_topics'])
+				|| isset($user['filtered_tags'])
+				|| isset($user['collection_size'])) {
+				$userContribution = [];
+				$userContribution['user_id'] = $this->user['id'];
+				$userContribution['query'] = $user['query'] ?: '';
+				$userContribution['filtered_sets'] = $user['filtered_sets'];
+				$userContribution['filtered_ranks'] = $user['filtered_ranks'];
+				$userContribution['filtered_tags'] = $user['filtered_tags'];
+				$userContribution['collection_size'] = $user['collection_size'];
+				ClassRegistry::init('UserContribution')->create($userContribution);
+				ClassRegistry::init('UserContribution')->save($userContribution);
+			}
 		} else {
 			CakeSession::destroy();
 		}
-
-		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
 
 		// Achievements popups can get into the way when testing, once we want to test achievements
 		// we can make this command conditional

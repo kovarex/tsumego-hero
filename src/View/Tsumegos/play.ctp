@@ -188,11 +188,8 @@
 					$di2 = '/';
 					if (Auth::isInRatingMode())
 						$inFavorite='';
-					$hasPartition = '';
-					if($partition>0)
-						$hasPartition = '?partition='.$partition;
 					if($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags'){
-						echo '<a id="playTitleA" href="/sets/view/'.$this->Session->read('lastSet').$hasPartition.'">'.$queryTitle.'</a><br>';
+						echo '<a id="playTitleA" href="/sets/view/'.$this->Session->read('lastSet').$tsumegoButtons->getPartitionLinkSuffix().'">'.$queryTitle.'</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
 								('.$set['Set']['title'].$di.$t['Tsumego']['actualNum'].$di2.$amountOfOtherCollection.')
@@ -203,9 +200,9 @@
 							if (Auth::isInLevelMode()) {
 								if($set['Set']['id'] == 38){
 									$altTitle = 'How to win the capturing race';
-									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$di2.$anz.'</a>';
+									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$di2.$tsumegoButtons->highestTsumegoOrder.'</a>';
 								}else{
-									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$hasPartition.'">'.$set['Set']['title'].' '.$queryTitleSets.' '.$di.$di2.$anz.'</a>';
+									echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$tsumegoButtons->getPartitionLinkSuffix().'">'.$set['Set']['title'].' '.$tsumegoButtons->getPartitionTitleSuffix().' '.$di.$di2.$tsumegoButtons->highestTsumegoOrder.'</a>';
 								}
 							}elseif(Auth::isInRatingMode()){
 								echo '<div class="slidecontainer">
@@ -221,7 +218,7 @@
 						echo '<a id="playTitleA" href="/sets/view/1">Favorites</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
-								('.$set['Set']['title'].$di.$di2.$anz.')
+								('.$set['Set']['title'].$di.$di2.$tsumegoButtons->highestTsumegoOrder.')
 							</a>
 						</font>';
 					}
@@ -1251,13 +1248,10 @@
 		else
 			echo 'let hasRevelation = false;';
 
-		$hasPartition = '';
-		if($partition>0)
-			$hasPartition = '?partition='.$partition;
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags') {
-			$nextButtonLinkSet = $this->Session->read('lastSet').$hasPartition;
+			$nextButtonLinkSet = $this->Session->read('lastSet').$tsumegoButtons->getPartitionLinkSuffix();
 		} else if ($tsumegoFilters->query == 'topics') {
-			$nextButtonLinkSet = $set['Set']['id'].$hasPartition;
+			$nextButtonLinkSet = $set['Set']['id'].($tsumegoButtons ? $tsumegoButtons->getPartitionLinkSuffix() : '');
 		}
 		echo 'nextButtonLinkSet="'.$nextButtonLinkSet.'";';
 		?>

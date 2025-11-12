@@ -1,6 +1,15 @@
 <?php
 
 class TsumegoButtons extends ArrayObject {
+	public static function deriveFrom(TsumegoButtons $other) {
+		$result = new TsumegoButtons();
+		$result->highestTsumegoOrder = $other->highestTsumegoOrder;
+		$result->partition = $other->partition;
+		$result->isPartitioned = $other->isPartitioned;
+		$result->currentOrder = $other->currentOrder;
+		return $result;
+	}
+
 	public function fill(string $condition, ?array $rankFilters = null) {
 		if (!Auth::hasPremium()) {
 			Util::addSqlCondition($condition, '`set`.premium = false');
@@ -38,12 +47,18 @@ class TsumegoButtons extends ArrayObject {
 				$row['tsumego']['pass']
 			);
 		}
+		$this->updateHighestTsumegoOrder();
 	}
 
 	public function resetOrders(): void {
+		$this->currentOrder = -1;
 		foreach ($this as $key => $tsumegoButton) {
 			$tsumegoButton->order = $key + 1;
+			if ($tsumegoButton->isCurrentlyOpened) {
+				$this->currentOrder = $tsumegoButton->order;
+			}
 		}
+		$this->updateHighestTsumegoOrder();
 	}
 	public function filterByTags(array $tagIDs): void {
 		if (empty($tagIDs)) {
@@ -56,9 +71,13 @@ class TsumegoButtons extends ArrayObject {
 					'tag_name_id' => $tagIDs,
 				]]) != null;
 		})));
+		$this->updateHighestTsumegoOrder();
 	}
 
-	public function filterByIndexRange(int $from, int $to): void {
+	private function filterByPartition($collectionSize): void {
+		$from = $this->partition * $collectionSize;
+		$to = ($this->partition + 1) * $collectionSize - 1;
+		$this->isPartitioned = $from > 0 || $to + 1 < count($this);
 		$this->exchangeArray(array_values(array_filter(
 			(array) $this,
 			function ($tsumegoButton, $index) use ($from, $to): bool {
@@ -67,4 +86,51 @@ class TsumegoButtons extends ArrayObject {
 			ARRAY_FILTER_USE_BOTH
 		)));
 	}
+
+	public function partitionByParameter($partition, $collectionSize): void {
+		$this->partition = $partition;
+		$this->filterByPartition($collectionSize);
+	}
+
+	public function partitionByCurrentOne($currentSetConnectionID, $collectionSize): void {
+		$currentIndex = array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) { return $tsumegoButton->setConnectionID === $currentSetConnectionID; });
+		// mark the problem we are going to visit as the currently opened one
+		$this[$currentIndex]->isCurrentlyOpened = true;
+		$this->currentOrder = $this[$currentIndex]->order;
+		$this->partition = (int) floor($currentIndex / $collectionSize);
+
+		if ($collectionSize < count($this)) {
+			$this->filterByPartition($collectionSize);
+		}
+	}
+
+	private function updateHighestTsumegoOrder() {
+		$this->highestTsumegoOrder = -1;
+		$this->currentOrder = -1;
+		foreach ($this as $tsumegoButton) {
+			if ($tsumegoButton->isCurrentlyOpened) {
+				$this->currentOrder = $tsumegoButton->order;
+			}
+			$this->highestTsumegoOrder = max($this->highestTsumegoOrder, $tsumegoButton->order);
+		}
+	}
+
+	public function getPartitionLinkSuffix(): string {
+		if (!$this->isPartitioned) {
+			return '';
+		}
+		return '/' . ($this->partition + 1);
+	}
+
+	public function getPartitionTitleSuffix(): string {
+		if (!$this->isPartitioned) {
+			return '';
+		}
+		return ' #' . ($this->partition + 1);
+	}
+
+	public int $partition = 0;
+	public bool $isPartitioned = false;
+	public int $highestTsumegoOrder = -1;
+	public ?int $currentOrder = -1;
 }

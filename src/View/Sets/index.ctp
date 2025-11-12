@@ -109,7 +109,7 @@
 				$partitionLink = '';
 			}else{
 				$partition = ' #'.($sets[$i]['partition']+1);
-				$partitionLink = '?partition='.$sets[$i]['partition'];
+				$partitionLink = '/'.($sets[$i]['partition'] + 1);
 			}
 			if($sets[$i]['solved'] != 0)
 				$isZero = '';
@@ -197,8 +197,8 @@
 				$partition = '';
 				$partitionLink = '';
 			}else{
-				$partition = ' #'.($ranksArray[$i]['partition']+1);
-				$partitionLink = '?partition='.$ranksArray[$i]['partition'];
+				$partition = ' #'.($ranksArray[$i]['partition'] + 1);
+				$partitionLink = '/'.($ranksArray[$i]['partition'] + 1);
 			}
 			if($ranksArray[$i]['solved'] != 0)
 				$isZero = '';
@@ -248,7 +248,7 @@
 				$partitionLink = '';
 			}else{
 				$partition = ' #'.($tagList[$i]['partition']+1);
-				$partitionLink = '?partition='.$tagList[$i]['partition'];
+				$partitionLink = '/'.($tagList[$i]['partition'] + 1);
 			}
 			if($tagList[$i]['solved'] != 0)
 				$isZero = '';

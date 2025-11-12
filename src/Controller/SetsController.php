@@ -978,7 +978,9 @@ class SetsController extends AppController {
 		$this->set('redirect', $redirect);
 	}
 
-	public function view(string|int|null $id = null): void {
+	public function view(string|int|null $id = null, int $partition = 1): void {
+		// transferring from 1 indexed for humans to 0 indexed for us programmers.
+		$partition = $partition - 1;
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Favorite');
@@ -1013,8 +1015,6 @@ class SetsController extends AppController {
 		$formChange = false;
 		$achievementUpdate = [];
 		$viewType = 'topics';
-		$partition = -1;
-		$hasPartition = false;
 		$tsumegoStatusMap = [];
 		$setDifficulty = 1200;
 		$currentIds = [];
@@ -1031,14 +1031,6 @@ class SetsController extends AppController {
 		$setsWithPremium = [];
 		foreach ($this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [] as $setWithPremium) {
 			$setsWithPremium [] = $setWithPremium['Set']['id'];
-		}
-
-		if (isset($this->params['url']['partition'])) {
-			$partition = $this->params['url']['partition'];
-			$hasPartition = true;
-		}
-		if ($partition == -1) {
-			$partition = 0;
 		}
 
 		$tsumegoFilters = new TsumegoFilters();
@@ -1113,14 +1105,13 @@ class SetsController extends AppController {
 				$ratingBounds->addSqlConditions($condition);
 				$tsumegoButtons = new TsumegoButtons();
 				$tsumegoButtons->fill($condition);
+				$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
+				$tsumegoButtons->resetOrders();
+				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 
 				$set = [];
 				$set['Set']['id'] = $id;
-				if (!$hasPartition) {
-					$set['Set']['title'] = $id;
-				} else {
-					$set['Set']['title'] = $id . ' #' . ($partition + 1);
-				}
+				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 				$set['Set']['image'] = $id . 'Rank.png';
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
@@ -1128,21 +1119,12 @@ class SetsController extends AppController {
 				$set['Set']['description'] = $id . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 				$set['Set']['difficulty'] = $elo;
 
-				$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
-				$tsumegoButtons->resetOrders();
-				$fromTo = $this->getPartitionRange(count($tsumegoButtons), $tsumegoFilters->collectionSize, $partition);
-				$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
 				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($tsumegoButtons);
 			} elseif ($viewType == 'tags') {
 				$set['Set']['id'] = $id;
-				if (!$hasPartition) {
-					$set['Set']['title'] = $id;
-				} else {
-					$set['Set']['title'] = $id . ' #' . ($partition + 1);
-				}
 				$set['Set']['image'] = '';
 				$set['Set']['multiplier'] = 1;
 				$set['Set']['public'] = 1;
@@ -1226,8 +1208,7 @@ class SetsController extends AppController {
 				}
 
 
-				$fromTo = $this->getPartitionRange(count($ts), $tsumegoFilters->collectionSize, $partition);
-				$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
+				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 				$currentIds = [];
 				foreach ($tsumegoButtons as $tsumegoButton) {
 					$currentIds[] = $tsumegoButton->tsumegoID;
@@ -1236,6 +1217,7 @@ class SetsController extends AppController {
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($tsumegoButtons);
+				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 			} else {
 				$set = $this->Set->find('first', ['conditions' => ['id' => $id]]);
 
@@ -1245,10 +1227,9 @@ class SetsController extends AppController {
 				$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
 				$tsumegoButtons->filterByTags($tsumegoFilters->tagIDs);
 				if ($set['Set']['public'] != 1) {
-					$collectionSize = 2000;
+					$tsumegoFilters->collectionSize = 2000;
 				}
-				$fromTo = $this->getPartitionRange(count($tsumegoButtons), $tsumegoFilters->collectionSize, $partition);
-				$tsumegoButtons->filterByIndexRange($fromTo[0], $fromTo[1]);
+				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 				$currentIds = [];
 				foreach ($tsumegoButtons as $tsumegoButton) {
 					$currentIds [] =  $tsumegoButton->tsumegoID;
@@ -1258,9 +1239,7 @@ class SetsController extends AppController {
 				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 				$set['Set']['solved'] = $difficultyAndSolved['solved'];
 				$set['Set']['anz'] = count($tsumegoButtons);
-				if ($hasPartition) {
-					$set['Set']['title'] = $set['Set']['title'] . ' #' . ($partition + 1);
-				}
+				$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 				$allArActive = true;
 				$allArInactive = true;
 				$allPassActive = true;
@@ -1500,20 +1479,6 @@ class SetsController extends AppController {
 								$this->SetConnection->create();
 								$this->SetConnection->save($tfSetConnection);
 							}
-						}
-						$tsIds = [];
-						$ts = TsumegoUtil::collectTsumegosFromSet($id);
-						for ($i = $fromTo[0]; $i <= $fromTo[1]; $i++) {
-							if (isset($tsumegoStatusMap[$ts[$i]['Tsumego']['id']])) {
-								$ts[$i]['Tsumego']['status'] = $tsumegoStatusMap[$ts[$i]['Tsumego']['id']];
-							} else {
-								$ts[$i]['Tsumego']['status'] = 'N';
-							}
-
-						}
-						$tsCount = count($ts);
-						for ($i = 0; $i < $tsCount; $i++) {
-							array_push($tsIds, $ts[$i]['Tsumego']['id']);
 						}
 					}
 				}
