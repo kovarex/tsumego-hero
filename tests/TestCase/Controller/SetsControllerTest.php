@@ -152,10 +152,41 @@ class SetsControllerTest extends TestCaseWithAuth {
 		return $buttons;
 	}
 
-	private function checkNavigationButton($button, $context, int $index, int $order) {
+	private function checkPlayNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void {
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+
+		// removing the hole after first problem (the dividng empty li)
+		if (count($navigationButtons) > 1) {
+			array_splice($navigationButtons, 1, 1);
+		}
+
+		// removing the hole before last
+		if (count($navigationButtons) > 2) {
+			array_splice($navigationButtons, count($navigationButtons) - 2, 1);
+		}
+
+		$this->assertCount($count, $navigationButtons); // 4 testing ones and two 'empty' borders
+		foreach ($navigationButtons as $key => $button) {
+			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key), $indexFunction($currentIndex), $currentStatus);
+		}
+	}
+
+	private function checkNavigationButtonsBeforeAndAfterSolving($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void {
+		$this->checkPlayNavigationButtons($browser, $count, $context, $indexFunction, $orderFunction, $currentIndex, $currentStatus);
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$this->checkPlayNavigationButtons($browser, $count, $context, $indexFunction, $orderFunction, $currentIndex, 'S');
+	}
+
+	private function checkNavigationButton($button, $context, int $index, int $order, ?int $currentIndex = null, ?string $currentStatus = null): void {
 		$this->assertSame($button->getText(), strval($order));
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[$index]['id']]]);
-		$statusValue = $status ? $status['TsumegoStatus']['status'] : 'N';
+		if (is_null($currentIndex) || $index != $currentIndex) {
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[$index]['id']]]);
+			$statusValue = $status ? $status['TsumegoStatus']['status'] : 'N';
+		} else {
+			$statusValue = $currentStatus;
+		}
+
 		$this->assertSame($button->getAttribute('class'), 'set' . $statusValue . '1');
 		$link = $button->findElement(WebDriverBy::tagName('a'));
 		$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[$index]['set-connections'][0]['id']);
@@ -228,26 +259,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(6, $navigationButtons); // 4 testing ones and two 'empty' borders
 		$this->checkPlayTitle($browser, '15k 1/4');
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/4');
-
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(6, $navigationButtons); // 4 testing ones and two 'empty' borders
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
-		// $navigationButton[1] is the black dividing edge and inner buttons
-		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setS1'); // the current one already marked as solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'S');
 	}
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void {
@@ -290,26 +309,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(3, $navigationButtons); // 2 testing ones and one 'empty' border
-		$this->checkPlayTitle($browser, 'set hello world #1 1/4');
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // marked as visited
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // Not visited
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set hello world #1 2/4');
-
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(3, $navigationButtons); // 2 testing ones and one merged border
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
-		// $navigationButton[1] is the black dividing edge and inner buttons
-		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setV1'); // the current one is marked as visited
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
 
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
@@ -386,26 +392,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(5, $navigationButtons); // 3 testing ones and two 'empty' borders
 		$this->checkPlayTitle($browser, '15k 1/3');
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/3');
-
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(5, $navigationButtons); // 3 testing ones and two 'empty' borders
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
-		// $navigationButton[1] is the black dividing edge and inner buttons
-		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setV1'); // the current one already marked as solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
@@ -420,21 +414,15 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons( $browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(5, $navigationButtons); // 3 testing ones and two 'empty' borders
 		$this->checkPlayTitle($browser, '1d 1/3');
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
 	}
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void {
@@ -494,28 +482,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(3, $navigationButtons); // 2 testing ones and one merged border
-
-		// checking that the title is correctly mentioning 'set 1'
 		$this->checkPlayTitle($browser, 'set 1 2/3');
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setV1'); // only visited
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[6]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
-
-		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
-		$this->assertCount(3, $navigationButtons); // 2 testing one shared border
-
-		$this->assertSame($navigationButtons[0]->getAttribute('class'), 'setS1'); // the previous was solved
-		// $navigationButton[1] is the black dividing edge and inner buttons
-		$this->assertSame($navigationButtons[2]->getAttribute('class'), 'setV1'); // the current one already marked as solved
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 1, 'V');
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
