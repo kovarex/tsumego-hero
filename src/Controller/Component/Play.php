@@ -1298,7 +1298,13 @@ class Play {
 	public function selectSetConnectionsOfCurrentSetBasedOnDifficultyOrTags($set, $tsumegoFilters, $currentSetConnectionID): ?TsumegoButtons {
 		$tsumegoButtons = new TsumegoButtons();
 		$condition = "";
-		$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
+		if ($tsumegoFilters->query == 'difficulty') {
+			$currentRank = CakeSession::read('lastSet');
+			RatingBounds::coverRank($currentRank, '15k')->addSqlConditions($condition);
+			$tsumegoButtons->fill($condition);
+		} else {
+			$tsumegoButtons->fill($condition, $tsumegoFilters->ranks);
+		}
 		$tsumegoButtons->filterByTags($tsumegoFilters->tags);
 		$tsumegoButtons->partitionByCurrentOne($currentSetConnectionID, $tsumegoFilters->collectionSize);
 		$tsumegoButtons->resetOrders();

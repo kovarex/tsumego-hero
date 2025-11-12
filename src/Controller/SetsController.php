@@ -696,8 +696,8 @@ class SetsController extends AppController {
 				$rTemp['amount'] = $setAmount;
 				$rTemp['currentIds'] = $currentIds;
 				$rTemp['color'] = $rank['color'];
-				if (count($currentIds) > 0) {
-					array_push($newRanksArray, $rTemp);
+				if (!empty($currentIds)) {
+					$newRanksArray [] = $rTemp;
 				}
 			}
 			$ranksArray = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);

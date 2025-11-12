@@ -52,10 +52,10 @@ class ContextPreparator {
 				$userContribution = [];
 				$userContribution['user_id'] = $this->user['id'];
 				$userContribution['query'] = $user['query'] ?: '';
-				$userContribution['filtered_sets'] = $user['filtered_sets'];
-				$userContribution['filtered_ranks'] = $user['filtered_ranks'];
-				$userContribution['filtered_tags'] = $user['filtered_tags'];
-				$userContribution['collection_size'] = $user['collection_size'];
+				$userContribution['filtered_sets'] = $user['filtered_sets'] ? implode('@', $user['filtered_sets']) : '';
+				$userContribution['filtered_ranks'] = implode('@', $user['filtered_ranks']);
+				$userContribution['filtered_tags'] = $user['filtered_tags'] ? implode('@', $user['filtered_tags']) : '';
+				$userContribution['collection_size'] = $user['collection_size'] ?: 200;
 				ClassRegistry::init('UserContribution')->create($userContribution);
 				ClassRegistry::init('UserContribution')->save($userContribution);
 			}
