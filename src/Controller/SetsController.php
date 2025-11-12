@@ -694,7 +694,7 @@ numbered AS (
   JOIN tag ON tag.tsumego_id = tsumego.id
   JOIN tag_name ON tag_name.id = tag.tag_name_id
   LEFT JOIN tsumego_status
-      ON tsumego_status.user_id = ".Auth::getUserID()."
+      ON tsumego_status.user_id = " . Auth::getUserID() . "
       AND tsumego_status.tsumego_id = tsumego.id
 ),
 partitioned AS (
@@ -703,8 +703,8 @@ partitioned AS (
     n.tag_color AS color,
     t.total_count,
     CASE
-      WHEN t.total_count <= ".$tsumegoFilters->collectionSize." THEN -1
-      ELSE FLOOR(n.rn / ".$tsumegoFilters->collectionSize.")
+      WHEN t.total_count <= " . $tsumegoFilters->collectionSize . " THEN -1
+      ELSE FLOOR(n.rn / " . $tsumegoFilters->collectionSize . ")
     END AS partition_number,
     COUNT(*) AS usage_count,
     COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
