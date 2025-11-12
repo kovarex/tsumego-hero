@@ -620,16 +620,16 @@ class SetsController extends AppController {
 				if (!empty($tsumegoFilters->setIDs)) {
 					Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
 				}
-				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
-					"SELECT set_connection.id "
+				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
+					"SELECT tsumego.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
 					. " JOIN `set` ON `set`.id=set_connection.set_id WHERE " . $condition
-				);
+				) ?: [];
 				$currentIds = [];
-				foreach ($setConnectionIDs as $setConnectionID) {
-					$currentIds [] = $setConnectionID['set_connection']['id'];
+				foreach ($tsumegoIDs as $tsumegoID) {
+					$currentIds [] = $tsumegoID['tsumego']['id'];
 				}
-				$setAmount = count($setConnectionIDs);
+				$setAmount = count($tsumegoIDs);
 
 				if (count($tsumegoFilters->tags) > 0) {
 					$idsTemp = [];
@@ -679,7 +679,7 @@ WITH tag_counts AS (
     COUNT(tsumego.id) AS total_count
   FROM tsumego
   JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id".(empty($tsumegoFilters->tagIDs) ? '' : ' AND tag_name.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')')."
+  JOIN tag_name ON tag_name.id = tag.tag_name_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag_name.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
   GROUP BY tag_name.id
 ),
 numbered AS (
