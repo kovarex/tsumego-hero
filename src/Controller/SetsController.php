@@ -543,7 +543,10 @@ class SetsController extends AppController {
 				}
 				$rankConditions['OR'] = $fromTo;
 			}
-			$setsRaw = $this->Set->find('all', ['order' => 'order ASC', 'conditions' => $tsumegoFilters->setIDs]) ?: [];
+			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
+				'conditions' => [
+					empty($tsumegoFilters->setIDs) ? null : ['id' => $tsumegoFilters->setIDs],
+					'public' => true]]) ?: [];
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
@@ -659,7 +662,7 @@ class SetsController extends AppController {
 				if (!Auth::hasPremium()) {
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				}
-				Util::addSqlCondition($condition, 'tsumego.public = true');
+				Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
 				$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT set_connection.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"

@@ -51,7 +51,7 @@ class TsumegoButtons extends ArrayObject {
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
 		}
 		Util::addSqlCondition($condition, $rankConditions);
-		Util::addSqlCondition($condition, 'tsumego.public = true');
+		Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
 
 		$query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {

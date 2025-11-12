@@ -329,7 +329,6 @@ class UsersController extends AppController {
 			if (!$s) {
 				continue;
 			}
-			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
@@ -369,13 +368,11 @@ class UsersController extends AppController {
 			if (!$s) {
 				continue;
 			}
-			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
-			if ($ts[$i]['Tsumego']['public'] == 1) {
+			if (!$ts[$i]['Tsumego']['deleted']) {
 				$ts[$i]['Tsumego']['rating'] = $ts[$i]['Tsumego']['shift'];
-				//$this->Tsumego->save($ts[$i]);
 			}
 		}
 		$this->set('ts', $ts);
@@ -412,13 +409,11 @@ class UsersController extends AppController {
 			if (!$s) {
 				continue;
 			}
-			$ts[$i]['Tsumego']['public'] = $s['Set']['public'];
 			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
 			$ts[$i]['Tsumego']['shift'] = $x2min;
 			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
-			if ($ts[$i]['Tsumego']['public'] == 1) {
+			if (!$ts[$i]['Tsumego']['deleted']) {
 				$ts[$i]['Tsumego']['rating'] = $ts[$i]['Tsumego']['shift'];
-				//$this->Tsumego->save($ts[$i]);
 			}
 		}
 		$this->set('ts', $ts);
@@ -1072,32 +1067,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		array_push($rxxCount, count($rxx['5d']));
 
 		file_put_contents('json/time_mode_overview.json', json_encode($rxxCount));
-	}
-
-	/**
-	 * @return void
-	 */
-	public function routine25() { //tsumego public and set_id
-		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
-		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++) {
-			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
-			$tsCount = count($ts);
-			for ($j = 0; $j < $tsCount; $j++) {
-				$save = false;
-				if ($ts[$j]['Tsumego']['public'] != 1) {
-					$ts[$j]['Tsumego']['public'] = 1;
-					$save = true;
-				}
-				if ($ts[$j]['Tsumego']['set_id'] == null) {
-					$ts[$j]['Tsumego']['set_id'] = $sets[$i]['Set']['id'];
-					$save = true;
-				}
-				if ($save) {
-					$this->Tsumego->save($ts[$j]);
-				}
-			}
-		}
 	}
 
 	/**

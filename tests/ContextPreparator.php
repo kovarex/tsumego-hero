@@ -71,7 +71,7 @@ class ContextPreparator {
 	private function prepareTsumego(?array $tsumegoInput): array {
 		if ($tsumegoInput) {
 			if (!$tsumegoInput['id']) {
-				$tsumegoInput['public'] = $tsumegoInput['public'] ?: true;
+				$tsumegoInput['deleted'] = $tsumegoInput['deleted'] ?: null;
 				ClassRegistry::init('Tsumego')->create($tsumegoInput);
 				ClassRegistry::init('Tsumego')->save($tsumegoInput);
 				$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -81,7 +81,6 @@ class ContextPreparator {
 			$tsumego = ClassRegistry::init('Tsumego')->find()['Tsumego'];
 			if (!$tsumego) {
 				$tsumego = [];
-				$tsumego['public'] = true;
 				$tsumego['Tsumego']['description'] = 'test-tsumego';
 				ClassRegistry::init('Tsumego')->save($tsumego);
 				$tsumego  = ClassRegistry::init('Tsumego')->find()['Tsumego'];
