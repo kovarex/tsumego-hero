@@ -694,33 +694,39 @@ numbered AS (
   JOIN tag ON tag.tsumego_id = tsumego.id
   JOIN tag_name ON tag_name.id = tag.tag_name_id
   LEFT JOIN tsumego_status
-      ON tsumego_status.user_id = " . Auth::getUserID() . "
+      ON tsumego_status.user_id = ".Auth::getUserID()."
       AND tsumego_status.tsumego_id = tsumego.id
+),
+partitioned AS (
+  SELECT
+    n.tag_name AS name,
+    n.tag_color AS color,
+    t.total_count,
+    CASE
+      WHEN t.total_count <= ".$tsumegoFilters->collectionSize." THEN -1
+      ELSE FLOOR(n.rn / ".$tsumegoFilters->collectionSize.")
+    END AS partition_number,
+    COUNT(*) AS usage_count,
+    COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
+  FROM numbered n
+  JOIN tag_counts t ON t.tag_id = n.tag_id
+  GROUP BY n.tag_name, n.tag_color, t.total_count, partition_number
 )
-SELECT
-  n.tag_name as name,
-  n.tag_color as color,
-  CASE
-    WHEN t.total_count <= " . $tsumegoFilters->collectionSize . " THEN -1
-    ELSE CEIL(n.rn / " . $tsumegoFilters->collectionSize . ")
-  END AS partition_number,
-  COUNT(*) AS usage_count,
-  COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
-FROM numbered n
-JOIN tag_counts t ON t.tag_id = n.tag_id
-GROUP BY n.tag_name, n.tag_color, partition_number
-ORDER BY usage_count DESC, partition_number;";
+SELECT *
+FROM partitioned
+ORDER BY total_count DESC, partition_number";
 
 			$tagsRaw = ClassRegistry::init('Tsumego')->query($query);
 			foreach ($tagsRaw as $key => $tagRaw) {
+				$tagRaw = $tagRaw['partitioned'];
 				$tag = [];
 				$tag['id'] = $key;
-				$tag['amount'] = $tagRaw[0]['usage_count'];
-				$tag['name'] = $tagRaw['n']['name'];
-				$partition = $tagRaw[0]['partition_number'];
+				$tag['amount'] = $tagRaw['usage_count'];
+				$tag['name'] = $tagRaw['name'];
+				$partition = $tagRaw['partition_number'];
 				$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
-				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['n']['color']));
-				$tag['solved'] = $tagRaw[0]['solved_count'];
+				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['color']));
+				$tag['solved'] = $tagRaw['solved_count'];
 				$tag['partition'] = $partition;
 				$tagList [] = $tag;
 			}
