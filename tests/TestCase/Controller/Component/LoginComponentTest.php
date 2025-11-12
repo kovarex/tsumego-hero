@@ -168,7 +168,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	public function testInjectingLogin(): void {
 		$context = new ContextPreparator(['user' => ['mode' => Constants::$RATING_MODE]]);
 		$this->assertTrue(Auth::isInRatingMode());
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get('sets');
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.account-bar-user-class'));
 		$links = $div->findElements(WebDriverBy::tagName('a')) ?: [];

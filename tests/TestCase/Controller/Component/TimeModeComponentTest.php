@@ -116,7 +116,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
 
 		$this->assertTrue(Auth::isInLevelMode());
-		$browser = new Browser();
+		$browser = Browser::instance();
 
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
@@ -173,7 +173,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testTimeModeUnlockMessage() {
-		$browser = new Browser();
+		$browser = Browser::instance();
 		foreach ([false, true] as $higherRankPresent) {
 			foreach ($higherRankPresent ? [false, true] : [false] as $failedSessionOnRankToBeUnlocked) {
 				$contextParameters = [];
@@ -221,7 +221,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testTimeModeResultShowsSpecifiedResult(): void {
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
@@ -240,7 +240,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testTimeModeOverviewShowsUnlockedStatusesCorrectly(): void {
-		$browser = new Browser();
+		$browser = Browser::instance();
 
 		foreach (['solve-nothing', 'solve-5k', 'solve-all'] as $testCase) {
 			$contextParameters = [];

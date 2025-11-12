@@ -13,7 +13,7 @@ class UploadSgfTest extends TestCaseWithAuth {
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 0);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 0);
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));

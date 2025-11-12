@@ -232,7 +232,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('difficulty-button'))->click();
 		$difficulty15kSelector = $browser->driver->findElement(WebDriverBy::id('tile-difficulty0'));
@@ -288,7 +288,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 
 		// we check the set card and clicking
@@ -370,7 +370,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		$context = new ContextPreparator($contextParams);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 
 		// we open sets, and since we filtered 15k and 1d, this is the sets we should see
 		$browser->get("sets");
@@ -450,7 +450,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		$context = new ContextPreparator($contextParams);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
 
@@ -522,7 +522,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		$context = new ContextPreparator($contextParams);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 
 		// we open sets, we filtered set 2 and set 3, but query by ranks, so we should see:
 
@@ -585,7 +585,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
 		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
@@ -622,7 +622,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(3, $collectionTopDivs);
@@ -653,7 +653,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs);
@@ -690,7 +690,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
@@ -731,7 +731,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
@@ -771,7 +771,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get("sets");
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)

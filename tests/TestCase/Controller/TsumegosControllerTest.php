@@ -94,7 +94,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 					['name' => 'tsumego set 1', 'num' => '666'],
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
 		$this->assertTextContains('set 1', $href->getText());
@@ -108,7 +108,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
 				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]]]);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
 		$this->assertSame($backButton->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);

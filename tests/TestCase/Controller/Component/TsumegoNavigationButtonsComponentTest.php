@@ -20,7 +20,7 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth {
 		}
 		$context = new ContextPreparator($contextParameters);
 
-		$browser = new Browser();
+		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumegoNavi2'));
 		$links = $div->findElements(WebDriverBy::tagName('a'));

@@ -56,7 +56,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testSolveFromEmptyByWebDriver(): void {
-		$browser = new Browser();
+		$browser = Browser::instance();
 		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => ['mode' => Constants::$LEVEL_MODE],
@@ -254,7 +254,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 	}
 
 	public function testFailAddsDamageUsingWebDriver(): void {
-		$browser = new Browser();
+		$browser = Browser::instance();
 		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],

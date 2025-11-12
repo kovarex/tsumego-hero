@@ -18,7 +18,7 @@ class Browser {
 
 		// Add arguments via FirefoxOptions to start headless firefox
 		$firefoxOptions = new FirefoxOptions();
-		$firefoxOptions->addArguments(['-headless']);
+		$firefoxOptions->addArguments(['--headless']);
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
 		try {
@@ -50,6 +50,15 @@ class Browser {
 		// This is what I would expect to be the proper way, but it hangs session start on the client
 		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
+	}
+
+	public static function instance()
+	{
+		static $browser = null;
+		if ($browser == null)
+			$browser = new Browser();
+		$browser->driver->manage()->deleteAllCookies();
+		return $browser;
 	}
 
 	public $driver;
