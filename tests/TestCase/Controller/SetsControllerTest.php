@@ -576,14 +576,10 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
-		// three problems in the 15k range in the same set (will be included)
+		// each problem to introduce one tag type
 		foreach (['snapback', 'atari', 'empty triangle'] as $tag) {
-			for ($i = 0; $i < 3; $i++) {
-				$contextParams['other-tsumegos'] [] = [
-					'title' => '15k problem',
-					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
-					'tags' => [['name' => $tag]]];
-			}
+			$contextParams['other-tsumegos'] [] = [
+				'tags' => [['name' => $tag]]];
 		}
 
 		$context = new ContextPreparator($contextParams);
@@ -593,7 +589,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
 		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
-        $this->assertCount( 3, $tagSelectors);
+		$this->assertCount(3, $tagSelectors);
 		$this->assertSame($tagSelectors[0]->getText(), 'snapback');
 		$this->assertSame($tagSelectors[1]->getText(), 'atari');
 		$this->assertSame($tagSelectors[2]->getText(), 'empty triangle');
@@ -603,5 +599,35 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// difficulty selected
 		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'tags');
 		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_tags')->getValue(), 'snapback');
+	}
+
+	public function testVisitingTagBasedSets(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'tags']];
+		$contextParams['other-tsumegos'] = [];
+
+		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
+		// we sort by count so, this will ensure they are shown in this order as well
+		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
+			for ($i = 0; $i < 3 - $key; $i++) {
+				$contextParams['other-tsumegos'] [] = [
+					'title' => $tag . ' problem',
+					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+					'tags' => [['name' => $tag]]];
+			}
+		}
+
+		$context = new ContextPreparator($contextParams);
+		$browser = new Browser();
+		$browser->get("sets");
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(3, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
+		$this->assertSame($collectionTopDivs[2]->getText(), 'empty triangle');
 	}
 }

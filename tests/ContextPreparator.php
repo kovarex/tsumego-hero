@@ -177,6 +177,7 @@ class ContextPreparator {
 				$tagConnection = [];
 				$tagConnection['Tag']['tsumego_id'] = $tsumego['id'];
 				$tagConnection['Tag']['user_id'] = $this->user['id'];
+				$tagConnection['Tag']['tag_name_id'] = $tag['id'];
 				ClassRegistry::init('Tag')->create($tagConnection);
 				ClassRegistry::init('Tag')->save($tagConnection);
 				$tagConnection = ClassRegistry::init('Tag')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];

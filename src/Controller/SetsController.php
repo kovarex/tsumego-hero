@@ -670,25 +670,60 @@ class SetsController extends AppController {
 		}
 		//tags
 		if ($tsumegoFilters->query == 'tags') {
-			$setConditions = [];
-			$tagSearchSet = false;
-			if (!empty($tsumegoFilters->sets)) {
-				$tsumegoIDs = [];
-				foreach ($tsumegoFilters->setIDs as $setID) {
-					foreach (TsumegoUtil::collectTsumegosFromSet($setID) as $tsumego) {
-						$tsumegoIDs [] = $tsumego['Tsumego']['id'];
-					}
-				}
-				$setConditions['tsumego_id'] = $tsumegoIDs;
+			$query = "
+WITH tag_counts AS (
+  SELECT
+    tag_name.id AS tag_id,
+    tag_name.name AS tag_name,
+    tag_name.color AS tag_color,
+    COUNT(tsumego.id) AS total_count
+  FROM tsumego
+  JOIN tag ON tag.tsumego_id = tsumego.id
+  JOIN tag_name ON tag_name.id = tag.tag_name_id
+  GROUP BY tag_name.id
+),
+numbered AS (
+  SELECT
+    tag_name.id AS tag_id,
+    tag_name.name AS tag_name,
+    tag_name.color AS tag_color,
+    tsumego.id AS tsumego_id,
+    ROW_NUMBER() OVER (PARTITION BY tag_name.id ORDER BY tsumego.id) AS rn,
+    tsumego_status.status
+  FROM tsumego
+  JOIN tag ON tag.tsumego_id = tsumego.id
+  JOIN tag_name ON tag_name.id = tag.tag_name_id
+  LEFT JOIN tsumego_status
+      ON tsumego_status.user_id = " . Auth::getUserID() . "
+      AND tsumego_status.tsumego_id = tsumego.id
+)
+SELECT
+  n.tag_name as name,
+  n.tag_color as color,
+  CASE
+    WHEN t.total_count <= " . $tsumegoFilters->collectionSize . " THEN -1
+    ELSE CEIL(n.rn / " . $tsumegoFilters->collectionSize . ")
+  END AS partition_number,
+  COUNT(*) AS usage_count,
+  COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
+FROM numbered n
+JOIN tag_counts t ON t.tag_id = n.tag_id
+GROUP BY n.tag_name, n.tag_color, partition_number
+ORDER BY usage_count DESC, partition_number;";
+
+			$tagsRaw = ClassRegistry::init('Tsumego')->query($query);
+			foreach ($tagsRaw as $key => $tagRaw) {
+				$tag = [];
+				$tag['id'] = $key;
+				$tag['amount'] = $tagRaw[0]['usage_count'];
+				$tag['name'] = $tagRaw['n']['name'];
+				$partition = $tagRaw[0]['partition_number'];
+				$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
+				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['n']['color']));
+				$tag['solved'] = $tagRaw[0]['solved_count'];
+				$tag['partition'] = $partition;
+				$tagList [] = $tag;
 			}
-			if (!empty($tsumegoFilters->tags)) {
-				$tagSearchSet = true;
-			}
-			$tagListCount = count($tagList);
-			for ($i = 0; $i < $tagListCount; $i++) {
-				$tagList[$i]['color'] = $this->getTagColor($tagList[$i]['color']);
-			}
-			$tagList = $this->partitionCollections($tagList, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
 		}
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets)) {
 			$queryRefresh = false;

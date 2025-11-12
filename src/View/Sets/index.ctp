@@ -234,23 +234,23 @@
 				</div>
 			</a>';
 		}
-	}else if($tsumegoFilters->query == 'tags'){
-		for($i=0; $i<count($tagList); $i++){
-			if($tagList[$i]['amount'] == 1){
+	} else if($tsumegoFilters->query == 'tags'){
+		for ($i=0; $i < count($tagList); $i++){
+			if ($tagList[$i]['amount'] == 1){
 				$problems = 'problem';
 				$tilde = '';
-			}else{
+			} else {
 				$problems = 'problems';
 				$tilde = '~';
 			}
-			if($tagList[$i]['partition'] == -1){
+			if ($tagList[$i]['partition'] == -1) {
 				$partition = '';
 				$partitionLink = '';
-			}else{
+			} else {
 				$partition = ' #'.($tagList[$i]['partition']+1);
 				$partitionLink = '/'.($tagList[$i]['partition'] + 1);
 			}
-			if($tagList[$i]['solved'] != 0)
+			if ($tagList[$i]['solved'] != 0)
 				$isZero = '';
 			else
 				$isZero = 'display:none;';
@@ -259,11 +259,11 @@
 			echo '<a href="/sets/view/'.$tagList[$i]['name'].$partitionLink.'" class="box1link">
 				<div class="box1 box1default box1tag tag-box'.$tagList[$i]['id'].'"
 					style="background-color:'.$tagList[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));">';
-				if($tagList[$i]['solved']>=100)
+				if($tagList[$i]['solved'] == $tagList[$i]['amount'])
 					echo '<div class="collection-completed">completed</div>';
 				echo '<div class="collection-top">'.$tagList[$i]['name'].$partition.'</div>';
 				echo '<div class="collection-middle-left">'.$tagList[$i]['amount'].' '.$problems.'</div>';
-				echo '<div class="collection-middle-right">'.$tilde.$tagList[$i]['difficulty'].'</div>';
+				echo '<div class="collection-middle-right">'.$tilde.'</div>';
 				echo '<div class="collection-bottom">
 					<div class="number" id="number'.$i.'">0</div>
 						<div align="left" class="reward-bar-container">
