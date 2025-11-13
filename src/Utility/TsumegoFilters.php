@@ -94,13 +94,6 @@ class TsumegoFilters {
 		return "Unsupported yet";
 	}
 
-	public function getTsumegoLinkSuffix() : string {
-		if ($this->query != 'favorites') {
-			return '';
-		}
-		return '?favorite=1';
-	}
-
 	public function setQuery($query) {
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution, null, $query);
