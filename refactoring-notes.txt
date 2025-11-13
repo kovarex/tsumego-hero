@@ -1,18 +1,12 @@
-1) Time mode
-  - Don't show review button and other things which shouldn't be visible in time mode
+1) Cover favorites
+2) Time mode
   - Cover also failing
   - Cover skipping
   - Cover timout
-  - Show proper rank instead of "some rank to show", this needs to be unified between views, as it is done in select, but not results
-  - I had the impression the last tsumeg had to be solved twice with manual testing, which is weird because there is a test of it
   - Integrate the number of tsumegos per rank, we can probably just get it with one select, if it is too slow, we can do precalculation, but in db, not the json one that was done previously
   - solve that it shows array in the rank when solving time problems
-  - make solving of time problem ats own address, instead of generic tsumegos/play, like timeMode/play
-    - The address wouldn't have any parameters, and would just force the time mode.
-  - consider option to automatically move to a next problem in time mode.
-2) Mode switching fixes - as with time mode, there should probably be rating/play for rating and
+3) Mode switching fixes - as with time mode, there should probably be rating/play for rating and
   level mode should be the tsumegos/play.
-3) Cover favorites
 4) Rest of TimeModeAttempt cases and move all of the logic into the one place in PlayResultProcessorComponent
 5) Solve the mess with selected user boards
   - Currently there is a table AND field in player
@@ -21,4 +15,6 @@
 6) Figure out what cronjobs run and when, mainly for reset of powers and gold tsumego.
 
 Low priority
-  Time mode: Way to see all sessions of the current rank when asked for
+  Time mode:
+  - Way to see all sessions of the current rank when asked for
+  - consider option to automatically move to a next problem in time mode.
