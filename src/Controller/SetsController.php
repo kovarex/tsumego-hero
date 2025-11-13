@@ -497,7 +497,7 @@ class SetsController extends AppController {
 			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
 				'conditions' => [
 					empty($tsumegoFilters->setIDs) ? null : ['id' => $tsumegoFilters->setIDs],
-					'public' => true]]) ?: [];
+					'public' => 1]]) ?: [];
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);

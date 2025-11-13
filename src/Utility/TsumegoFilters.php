@@ -9,7 +9,7 @@ class TsumegoFilters {
 
 		$this->setIDs = [];
 		foreach ($this->sets as $set) {
-			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set]])['Set']['id'];
+			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]])['Set']['id'];
 		}
 
 		$this->ranks = self::processItem('filtered_ranks', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
