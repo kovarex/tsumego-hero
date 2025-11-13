@@ -62,7 +62,7 @@ class TsumegoButtonsQueryBuilder {
 			return;
 		}
 
-		Util::addSqlCondition($this->condition, '`tag`.id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')');
+		Util::addSqlCondition($this->condition, '`tag`.tag_name_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')');
 		$this->query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
 	}
 
