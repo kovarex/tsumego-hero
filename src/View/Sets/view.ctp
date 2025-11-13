@@ -161,7 +161,7 @@
 									$solvedColor = '#3ecf78';
 								}
 							}
-							echo '<b>'.$set['Set']['anz'].' Problems<br>';
+							echo '<b>'.count($tsumegoButtons).' Problems<br>';
 						?>
 						</div>
 						</td>

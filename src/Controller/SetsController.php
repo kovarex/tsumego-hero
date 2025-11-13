@@ -1007,7 +1007,6 @@ ORDER BY total_count DESC, partition_number";
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
-			$set['Set']['anz'] = count($tsumegoButtons);
 		} elseif ($tsumegoFilters->query == 'tags') {
 			$set['Set']['id'] = $id;
 			$set['Set']['image'] = '';
@@ -1025,7 +1024,6 @@ ORDER BY total_count DESC, partition_number";
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
-			$set['Set']['anz'] = count($tsumegoButtons);
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 		} elseif ($tsumegoFilters->query == 'topics') {
 			$currentIds = [];
@@ -1036,7 +1034,6 @@ ORDER BY total_count DESC, partition_number";
 			$set = ClassRegistry::init('Set')->findById($id);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
-			$set['Set']['anz'] = count($tsumegoButtons);
 			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 			$allArActive = true;
 			$allArInactive = true;
@@ -1345,7 +1342,6 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['public'] = 1;
 			$set['Set']['created'] = 20180322;
 			$set['Set']['t'] = '222';
-			$set['Set']['anz'] = (int) 50;
 			$set['Set']['createdDisplay'] = '22. March 2018';
 			$set['Set']['solvedNum'] = $sizeCount;
 			$set['Set']['solved'] = round($percent, 1);
@@ -1362,7 +1358,6 @@ ORDER BY total_count DESC, partition_number";
 		}
 
 		$this->Session->write('title', $set['Set']['title'] . ' on Tsumego Hero');
-		$set['Set']['anz'] = count($tsumegoButtons);
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
 			$ur = $this->TsumegoAttempt->find('all', [
