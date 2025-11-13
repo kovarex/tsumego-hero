@@ -877,6 +877,18 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('redirect', $redirect);
 	}
 
+	private function decodeQueryType($input) {
+		if (is_numeric($input)) {
+			return 'topics';
+		}
+		try {
+			Rating::getRankFromReadableRank($input);
+			return 'difficulty';
+		} catch (Exception $e) {
+			return 'tags';
+		}
+	}
+
 	public function view(string|int|null $id = null, int $partition = 1): void {
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
@@ -913,7 +925,6 @@ ORDER BY total_count DESC, partition_number";
 		$accuracy = 0;
 		$formChange = false;
 		$achievementUpdate = [];
-		$viewType = 'topics';
 		$tsumegoStatusMap = [];
 		$setDifficulty = 1200;
 		$currentIds = [];
@@ -932,7 +943,7 @@ ORDER BY total_count DESC, partition_number";
 			$setsWithPremium [] = $setWithPremium['Set']['id'];
 		}
 
-		$tsumegoFilters = new TsumegoFilters();
+		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
 		if (Auth::isLoggedIn()) {
 
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
@@ -984,392 +995,298 @@ ORDER BY total_count DESC, partition_number";
 				$josekiOrder = 0;
 			}
 		}
-		if ($id != '1') {
-			if (is_numeric($id)) {
-				$viewType = 'topics';
-			} else {
-				try {
-					Rating::getRankFromReadableRank($id);
-					$viewType = 'difficulty';
-				} catch (Exception $e) {
-					$viewType = 'tags';
+
+		$this->Session->write('lastSet', $id);
+		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
+
+		if ($tsumegoFilters->query == 'difficulty') {
+			$set = [];
+			$set['Set']['id'] = $id;
+			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
+			$set['Set']['image'] = $id . 'Rank.png';
+			$set['Set']['multiplier'] = 1;
+			$set['Set']['public'] = 1;
+			$elo = AppController::getTsumegoElo($id);
+			$set['Set']['difficulty'] = $elo;
+
+			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
+			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
+			$set['Set']['solved'] = $difficultyAndSolved['solved'];
+			$set['Set']['anz'] = count($tsumegoButtons);
+		} elseif ($tsumegoFilters->query == 'tags') {
+			$set['Set']['id'] = $id;
+			$set['Set']['image'] = '';
+			$set['Set']['multiplier'] = 1;
+			$set['Set']['public'] = 1;
+			$tagName = $this->TagName->findByName($id);
+			if ($tagName && isset($tagName['TagName']['description'])) {
+				$set['Set']['description'] = $tagName['TagName']['description'];
+			}
+
+			$currentIds = [];
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				$currentIds[] = $tsumegoButton->tsumegoID;
+			}
+			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
+			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
+			$set['Set']['solved'] = $difficultyAndSolved['solved'];
+			$set['Set']['anz'] = count($tsumegoButtons);
+			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
+		} elseif ($tsumegoFilters->query == 'topics') {
+			$currentIds = [];
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				$currentIds [] =  $tsumegoButton->tsumegoID;
+			}
+			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
+			$set = ClassRegistry::init('Set')->findById($id);
+			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
+			$set['Set']['solved'] = $difficultyAndSolved['solved'];
+			$set['Set']['anz'] = count($tsumegoButtons);
+			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
+			$allArActive = true;
+			$allArInactive = true;
+			$allPassActive = true;
+			$allPassInactive = true;
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				if (!$tsumegoButton->alternativeResponse) {
+					$allArActive = false;
+				}
+				if (!$tsumegoButton->passEnabled) {
+					$allPassActive = false;
 				}
 			}
-			$tsumegoFilters->query = $viewType;
-
-			$this->Session->write('lastSet', $id);
-			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
-
-			if ($viewType == 'difficulty') {
-				$set = [];
-				$set['Set']['id'] = $id;
-				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
-				$set['Set']['image'] = $id . 'Rank.png';
-				$set['Set']['multiplier'] = 1;
-				$set['Set']['public'] = 1;
-				$elo = AppController::getTsumegoElo($id);
-				$set['Set']['difficulty'] = $elo;
-
-				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-				$set['Set']['solved'] = $difficultyAndSolved['solved'];
-				$set['Set']['anz'] = count($tsumegoButtons);
-			} elseif ($viewType == 'tags') {
-				$set['Set']['id'] = $id;
-				$set['Set']['image'] = '';
-				$set['Set']['multiplier'] = 1;
-				$set['Set']['public'] = 1;
-				$setConditions = [];
-				$rankConditions = [];
-				$tagIds = [];
-				$tagName = $this->TagName->findByName($id);
-				if ($tagName && isset($tagName['TagName']['description'])) {
-					$set['Set']['description'] = $tagName['TagName']['description'];
-				}
-				if (!empty($tsumegoFilters->setIDs)) {
-					$tsumegoIDs = [];
-					foreach ($tsumegoFilters->setIDs as $setID) {
-						foreach (TsumegoUtil::collectTsumegosFromSet($setID) as $tsumego) {
-							$tsumegoIDs [] = $tsumego['Tsumego']['id'];
+			foreach ($tsumegoButtons as $tsumegoButton) {
+				$tsIds [] = $tsumegoButton->tsumegoID;
+			}
+			if ($set['Set']['public'] == 0) {
+				$this->Session->write('page', 'sandbox');
+			}
+			$this->set('isFav', false);
+			if (isset($this->params['url']['sort'])) {
+				if ($this->params['url']['sort'] == 1) {
+					$tsId = [];
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsId [] = $tsumegoButton->tsumegoID;
+					}
+					$nr = 1;
+					$tsIdCount = count($tsId);
+					for ($i = 0; $i < $tsIdCount; $i++) {
+						$tsu = $this->Tsumego->findById($tsId[$i]);
+						if ($tsu['Tsumego']['num'] != $nr) {
+							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
 						}
+						$nr++;
 					}
-					$setConditions['tsumego_id'] = $tsumegoIDs;
-				}
-				$tagsx = $this->Tag->find('all', [
-					'order' => 'id ASC',
-					'conditions' => [
-						'tag_name_id' => $tagName['TagName']['id'],
-						'approved' => 1,
-						$setConditions,
-					],
-				]) ?: [];
-				foreach ($tagsx as $tag) {
-					$tagIds [] = $tag['Tag']['tsumego_id'];
-				}
-
-				if (!Auth::hasPremium()) {
-					$currentIdsNew = [];
-					$pTest = $this->Tsumego->find('all', ['conditions' => ['id' => $tagIds]]) ?: [];
-					$pTestCount2 = count($pTest);
-					for ($j = 0; $j < $pTestCount2; $j++) {
-						if (!in_array($pTest[$j]['Tsumego']['set_id'], $setsWithPremium)) {
-							array_push($currentIdsNew, $pTest[$j]['Tsumego']['id']);
+					$nr = 1;
+					$tsIdCount = count($tsId);
+					for ($i = 0; $i < $tsIdCount; $i++) {
+						$tsu = $this->Tsumego->findById($tsId[$i]);
+						if ($tsu['Tsumego']['num'] != $nr) {
+							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf', '6473k339312/joseki/' . $nr . '.sgf');
+							$tsu['Tsumego']['num'] = $nr;
+							$this->Tsumego->save($tsu);
 						}
-					}
-					$tagIds = $currentIdsNew;
-				}
-
-				if (!empty($tsumegoFilters->ranks)) {
-					$fromTo = [];
-					foreach ($tsumegoFilters->ranks as $rank) {
-						$ft = [];
-						$ft['rating >='] = AppController::getTsumegoElo($rank);
-						$ft['rating <'] = $ft['rating >='] + 100;
-						if ($rank == '15k') {
-							$ft['rating >='] = 50;
-						}
-						$fromTo [] = $ft;
-					}
-					$rankConditions['OR'] = $fromTo;
-				}
-				$ts = $this->Tsumego->find('all', [
-					'order' => 'id ASC',
-					'conditions' => [
-						'id' => $tagIds,
-						'deleted' => null,
-						$rankConditions,
-					],
-				]) ?: [];
-
-				// TODO: this is very temporary and very unoptimal way to fill the tsumego buttons from tsumego array
-				// it will be cleaned when there is time to change the code above
-				$tsumegoButtons = new TsumegoButtons();
-				foreach ($ts as $key => $t) {
-					if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]])) {
-						$tsumegoStatus = Auth::isLoggedIn() ? ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id'], 'user_id' => Auth::getUserID()]]) : null;
-						$tsumegoButtons [] = new TsumegoButton(
-							$t['Tsumego']['id'],
-							$setConnection['SetConnection']['id'],
-							$key + 1,
-							$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
-							$t['Tsumego']['pass'],
-							$t['Tsumego']['alternative_response']
-						);
+						$nr++;
 					}
 				}
-
-
-				$tsumegoButtons->partitionByParameter($partition, $tsumegoFilters->collectionSize);
-				$currentIds = [];
-				foreach ($tsumegoButtons as $tsumegoButton) {
-					$currentIds[] = $tsumegoButton->tsumegoID;
-				}
-				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-				$set['Set']['solved'] = $difficultyAndSolved['solved'];
-				$set['Set']['anz'] = count($tsumegoButtons);
-				$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
-			} else {
-				$currentIds = [];
-				foreach ($tsumegoButtons as $tsumegoButton) {
-					$currentIds [] =  $tsumegoButton->tsumegoID;
-				}
-				$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-				$set = ClassRegistry::init('Set')->findById($id);
-				$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-				$set['Set']['solved'] = $difficultyAndSolved['solved'];
-				$set['Set']['anz'] = count($tsumegoButtons);
-				$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
-				$allArActive = true;
-				$allArInactive = true;
-				$allPassActive = true;
-				$allPassInactive = true;
-				foreach ($tsumegoButtons as $tsumegoButton) {
-					if (!$tsumegoButton->alternativeResponse) {
-						$allArActive = false;
+			}
+			if (isset($this->params['url']['rename'])) {
+				if ($this->params['url']['rename'] == 1) {
+					$tsId = [];
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsId [] = $tsumegoButton->tsumegoID;
 					}
-					if (!$tsumegoButton->passEnabled) {
-						$allPassActive = false;
+					$nr = 1;
+					foreach ($tsId as $id) {
+						$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $id]]);
+						$j['Joseki']['order'] = $nr;
+						$this->Joseki->save($j);
+						$nr++;
 					}
 				}
-				foreach ($tsumegoButtons as $tsumegoButton) {
-					$tsIds [] = $tsumegoButton->tsumegoID;
+			}
+			if (isset($this->data['Set']['title'])) {
+				if ($set['Set']['title'] != $this->data['Set']['title']) {
+					$formChange = true;
 				}
-				if ($set['Set']['public'] == 0) {
-					$this->Session->write('page', 'sandbox');
+				if ($set['Set']['title2'] != $this->data['Set']['title2']) {
+					$formChange = true;
 				}
-				$this->set('isFav', false);
-				if (isset($this->params['url']['sort'])) {
-					if ($this->params['url']['sort'] == 1) {
-						$tsId = [];
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsId [] = $tsumegoButton->tsumegoID;
-						}
-						$nr = 1;
-						$tsIdCount = count($tsId);
-						for ($i = 0; $i < $tsIdCount; $i++) {
-							$tsu = $this->Tsumego->findById($tsId[$i]);
-							if ($tsu['Tsumego']['num'] != $nr) {
-								rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
-							}
-							$nr++;
-						}
-						$nr = 1;
-						$tsIdCount = count($tsId);
-						for ($i = 0; $i < $tsIdCount; $i++) {
-							$tsu = $this->Tsumego->findById($tsId[$i]);
-							if ($tsu['Tsumego']['num'] != $nr) {
-								rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf', '6473k339312/joseki/' . $nr . '.sgf');
-								$tsu['Tsumego']['num'] = $nr;
-								$this->Tsumego->save($tsu);
-							}
-							$nr++;
-						}
-					}
+				$this->Set->create();
+				$changeSet = $set;
+				$changeSet['Set']['title'] = $this->data['Set']['title'];
+				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
+				$this->set('data', $changeSet['Set']['title']);
+				$this->Set->save($changeSet, true);
+				$set = $this->Set->findById($id);
+				$adminActivity = [];
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+				$adminActivity['AdminActivity']['file'] = 'settings';
+				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+			}
+			if (isset($this->data['Set']['description'])) {
+				if ($set['Set']['description'] != $this->data['Set']['description']) {
+					$formChange = true;
 				}
-				if (isset($this->params['url']['rename'])) {
-					if ($this->params['url']['rename'] == 1) {
-						$tsId = [];
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsId [] = $tsumegoButton->tsumegoID;
-						}
-						$nr = 1;
-						foreach ($tsId as $id) {
-							$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $id]]);
-							$j['Joseki']['order'] = $nr;
-							$this->Joseki->save($j);
-							$nr++;
-						}
+				$this->Set->create();
+				$changeSet = $set;
+				$changeSet['Set']['description'] = $this->data['Set']['description'];
+				$this->set('data', $changeSet['Set']['description']);
+				$this->Set->save($changeSet, true);
+				$set = $this->Set->findById($id);
+				$adminActivity = [];
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+				$adminActivity['AdminActivity']['file'] = 'settings';
+				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+			}
+			if (isset($this->data['Set']['setDifficulty'])) {
+				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900) {
+					$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
+					$setDifficulty = $this->data['Set']['setDifficulty'];
+					$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
+					for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
+						$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
+						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 					}
-				}
-				if (isset($this->data['Set']['title'])) {
-					if ($set['Set']['title'] != $this->data['Set']['title']) {
-						$formChange = true;
-					}
-					if ($set['Set']['title2'] != $this->data['Set']['title2']) {
-						$formChange = true;
-					}
-					$this->Set->create();
-					$changeSet = $set;
-					$changeSet['Set']['title'] = $this->data['Set']['title'];
-					$changeSet['Set']['title2'] = $this->data['Set']['title2'];
-					$this->set('data', $changeSet['Set']['title']);
-					$this->Set->save($changeSet, true);
-					$set = $this->Set->findById($id);
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
 					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+					$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
 				}
-				if (isset($this->data['Set']['description'])) {
-					if ($set['Set']['description'] != $this->data['Set']['description']) {
-						$formChange = true;
+			}
+			if (isset($this->data['Set']['color'])) {
+				if ($set['Set']['color'] != $this->data['Set']['color']) {
+					$formChange = true;
+				}
+				$this->Set->create();
+				$changeSet = $set;
+				$changeSet['Set']['color'] = $this->data['Set']['color'];
+				$this->set('data', $changeSet['Set']['color']);
+				$this->Set->save($changeSet, true);
+				$set = $this->Set->findById($id);
+				$adminActivity = [];
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+				$adminActivity['AdminActivity']['file'] = 'settings';
+				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+				$this->AdminActivity->save($adminActivity);
+			}
+			if (isset($this->data['Set']['order'])) {
+				if ($set['Set']['order'] != $this->data['Set']['order']) {
+					$formChange = true;
+				}
+				$this->Set->create();
+				$changeSet = $set;
+				$changeSet['Set']['order'] = $this->data['Set']['order'];
+				$this->set('data', $changeSet['Set']['order']);
+				$this->Set->save($changeSet, true);
+				$set = $this->Set->findById($id);
+				$adminActivity = [];
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+				$adminActivity['AdminActivity']['file'] = 'settings';
+				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+				$this->AdminActivity->save($adminActivity);
+			}
+			if (isset($this->data['Settings'])) {
+				if ($this->data['Settings']['r39'] == 'on') {
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
+						$tsumego['alternative_response'] = true;
+						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
-					$this->Set->create();
-					$changeSet = $set;
-					$changeSet['Set']['description'] = $this->data['Set']['description'];
-					$this->set('data', $changeSet['Set']['description']);
-					$this->Set->save($changeSet, true);
-					$set = $this->Set->findById($id);
+					$allArActive = true;
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
 					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
-				}
-				if (isset($this->data['Set']['setDifficulty'])) {
-					if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900) {
-						$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
-						$setDifficulty = $this->data['Set']['setDifficulty'];
-						$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
-						for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
-							$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
-							$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
-						}
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
-					}
-				}
-				if (isset($this->data['Set']['color'])) {
-					if ($set['Set']['color'] != $this->data['Set']['color']) {
-						$formChange = true;
-					}
-					$this->Set->create();
-					$changeSet = $set;
-					$changeSet['Set']['color'] = $this->data['Set']['color'];
-					$this->set('data', $changeSet['Set']['color']);
-					$this->Set->save($changeSet, true);
-					$set = $this->Set->findById($id);
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+					$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if (isset($this->data['Set']['order'])) {
-					if ($set['Set']['order'] != $this->data['Set']['order']) {
-						$formChange = true;
+				if ($this->data['Settings']['r39'] == 'off') {
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
+						$tsumego['alternative_response'] = false;
+						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
-					$this->Set->create();
-					$changeSet = $set;
-					$changeSet['Set']['order'] = $this->data['Set']['order'];
-					$this->set('data', $changeSet['Set']['order']);
-					$this->Set->save($changeSet, true);
-					$set = $this->Set->findById($id);
+					$allArInactive = true;
 					$adminActivity = [];
 					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
 					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+					$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if (isset($this->data['Settings'])) {
-					if ($this->data['Settings']['r39'] == 'on') {
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-							$tsumego['alternative_response'] = true;
-							ClassRegistry::init('Tsumego')->save($tsumego);
-						}
-						$allArActive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
+				if ($this->data['Settings']['r43'] == 'yes') {
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
+						$tsumego['pass'] = true;
+						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
-					if ($this->data['Settings']['r39'] == 'off') {
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-							$tsumego['alternative_response'] = false;
-							ClassRegistry::init('Tsumego')->save($tsumego);
-						}
-						$allArInactive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-					}
-					if ($this->data['Settings']['r43'] == 'yes') {
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-							$tsumego['pass'] = true;
-							ClassRegistry::init('Tsumego')->save($tsumego);
-						}
-						$allPassActive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-					}
-					if ($this->data['Settings']['r43'] == 'no') {
-						foreach ($tsumegoButtons as $tsumegoButton) {
-							$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-							$tsumego['pass'] = false;
-							ClassRegistry::init('Tsumego')->save($tsumego);
-						}
-						$allPassInactive = true;
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Disabled passing for set ' . $set['Set']['title'];
-						$this->AdminActivity->save($adminActivity);
-					}
-					$this->set('formRedirect', true);
+					$allPassActive = true;
+					$adminActivity = [];
+					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+					$adminActivity['AdminActivity']['file'] = 'settings';
+					$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
+					$this->AdminActivity->save($adminActivity);
 				}
-				if (isset($this->data['Tsumego'])) {
-					if (!$formChange) {
-						$scFormChange = $this->SetConnection->find('first', ['order' => 'num DESC', 'conditions' => ['set_id' => $id]]);
-						$tFormChange = $this->Tsumego->findById($scFormChange['SetConnection']['tsumego_id']);
-						if ($scFormChange == null) {
-							$scFormChange = [];
-							$scFormChange['SetConnection']['set_id'] = $id;
-							$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
-							$tFormChange = [];
-							$tFormChange['Tsumego']['rating'] = 1000;
-						}
-						$tf = [];
-						$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
-						$tf['Tsumego']['difficulty'] = 40;
-						$tf['Tsumego']['set_id'] = $id;
-						$tf['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
-						$tf['Tsumego']['description'] = $this->data['Tsumego']['description'];
-						$tf['Tsumego']['hint'] = $this->data['Tsumego']['hint'];
-						$tf['Tsumego']['author'] = $this->data['Tsumego']['author'];
-						$tf['Tsumego']['rating'] = $tFormChange['Tsumego']['rating'];
-						if (is_numeric($this->data['Tsumego']['num'])) {
-							if ($this->data['Tsumego']['num'] >= 0) {
-								$this->Tsumego->create();
-								$this->Tsumego->save($tf);
-								$tfSetHighestId = $this->Tsumego->find('first', ['order' => 'id DESC']);
-								$tfSetConnection = [];
-								$tfSetConnection['SetConnection']['set_id'] = $id;
-								$tfSetConnection['SetConnection']['tsumego_id'] = $tfSetHighestId['Tsumego']['id'];
-								$tfSetConnection['SetConnection']['num'] = $this->data['Tsumego']['num'];
-								$this->SetConnection->create();
-								$this->SetConnection->save($tfSetConnection);
-							}
+				if ($this->data['Settings']['r43'] == 'no') {
+					foreach ($tsumegoButtons as $tsumegoButton) {
+						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
+						$tsumego['pass'] = false;
+						ClassRegistry::init('Tsumego')->save($tsumego);
+					}
+					$allPassInactive = true;
+					$adminActivity = [];
+					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
+					$adminActivity['AdminActivity']['file'] = 'settings';
+					$adminActivity['AdminActivity']['answer'] = 'Disabled passing for set ' . $set['Set']['title'];
+					$this->AdminActivity->save($adminActivity);
+				}
+				$this->set('formRedirect', true);
+			}
+			if (isset($this->data['Tsumego'])) {
+				if (!$formChange) {
+					$scFormChange = $this->SetConnection->find('first', ['order' => 'num DESC', 'conditions' => ['set_id' => $id]]);
+					$tFormChange = $this->Tsumego->findById($scFormChange['SetConnection']['tsumego_id']);
+					if ($scFormChange == null) {
+						$scFormChange = [];
+						$scFormChange['SetConnection']['set_id'] = $id;
+						$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
+						$tFormChange = [];
+						$tFormChange['Tsumego']['rating'] = 1000;
+					}
+					$tf = [];
+					$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
+					$tf['Tsumego']['difficulty'] = 40;
+					$tf['Tsumego']['set_id'] = $id;
+					$tf['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
+					$tf['Tsumego']['description'] = $this->data['Tsumego']['description'];
+					$tf['Tsumego']['hint'] = $this->data['Tsumego']['hint'];
+					$tf['Tsumego']['author'] = $this->data['Tsumego']['author'];
+					$tf['Tsumego']['rating'] = $tFormChange['Tsumego']['rating'];
+					if (is_numeric($this->data['Tsumego']['num'])) {
+						if ($this->data['Tsumego']['num'] >= 0) {
+							$this->Tsumego->create();
+							$this->Tsumego->save($tf);
+							$tfSetHighestId = $this->Tsumego->find('first', ['order' => 'id DESC']);
+							$tfSetConnection = [];
+							$tfSetConnection['SetConnection']['set_id'] = $id;
+							$tfSetConnection['SetConnection']['tsumego_id'] = $tfSetHighestId['Tsumego']['id'];
+							$tfSetConnection['SetConnection']['num'] = $this->data['Tsumego']['num'];
+							$this->SetConnection->create();
+							$this->SetConnection->save($tfSetConnection);
 						}
 					}
 				}
 			}
-
-			//favs
-		} else {
-			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$allUts) {
-				$allUts = [];
-			}
+		} elseif ($tsumegoFilters->query = 'favorites') { // TODO: implement
+			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
 			$statusMap = [];
 			$allUtsCount = count($allUts);
@@ -1445,11 +1362,6 @@ ORDER BY total_count DESC, partition_number";
 			$this->set('isFav', true);
 		}
 
-		// temporary stan fix until all of the ways buttons are filled are unified
-		if (!isset($tsumegoButtons)) {
-			$tsumegoButtons = new TsumegoButtons();
-		}
-
 		if ($tsumegoButtons->description) {
 			$set['Set']['description'] = $tsumegoButtons->description;
 		}
@@ -1457,7 +1369,7 @@ ORDER BY total_count DESC, partition_number";
 		$this->Session->write('title', $set['Set']['title'] . ' on Tsumego Hero');
 		$set['Set']['anz'] = count($tsumegoButtons);
 
-		if (Auth::isLoggedIn() && $viewType == 'topics') {
+		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
 			$ur = $this->TsumegoAttempt->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
@@ -1494,11 +1406,11 @@ ORDER BY total_count DESC, partition_number";
 			}
 		}
 		$tfs = [];
-		if ($viewType == 'topics') {
+		if ($tsumegoFilters->query == 'topics') {
 			$tfs = TsumegoUtil::collectTsumegosFromSet($id);
 		}
 		$scoring = true;
-		if (Auth::isLoggedIn() && $viewType == 'topics') {
+		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
 			if (isset($this->data['Comment']['reset'])) {
 				if ($this->data['Comment']['reset'] == 'reset') {
 					$uts = $this->TsumegoStatus->find('all', [
@@ -1699,7 +1611,7 @@ ORDER BY total_count DESC, partition_number";
 			}
 		}
 
-		if ($viewType == 'topics') {
+		if ($tsumegoFilters->query == 'topics') {
 			$this->set('tfs', $tfs[count($tfs) - 1]);
 			$this->set('allVcActive', $allVcActive);
 			$this->set('allVcInactive', $allVcInactive);
@@ -1713,7 +1625,6 @@ ORDER BY total_count DESC, partition_number";
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('viewType', $viewType);
 		$this->set('allTags', $allTags);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);

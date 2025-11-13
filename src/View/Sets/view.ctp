@@ -111,7 +111,7 @@
 				else
 					$fav = '&fav=1';
 				if(!$noImage){
-					if($viewType == 'topics'){
+					if($tsumegoFilters->query == 'topics'){
 						if($set['Set']['image'][2]!='-'){
 							echo '<td width="195px" style="vertical-align:top;"><div align="center">
 								<a href="/tsumegos/play/'.$set['Set']['t'].'">
@@ -125,7 +125,7 @@
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'" width="210">
 								</a></div></td>';
 						}
-					}else if($viewType == 'difficulty'){
+					}else if($tsumegoFilters->query == 'difficulty'){
 						if($lightDark == 'light'){
 							$lightDarkImageBackground = 'style="background-color:gray;"';
 							$lightDarkBorder = '';
@@ -171,7 +171,7 @@
 							Difficulty:
 							<?php
 							echo '<b>'.$set['Set']['difficultyRank'].'</b>';
-							if($viewType != 'topics'){
+							if($tsumegoFilters->query != 'topics'){
 								?>
 								<br><br>
 								Solved:
@@ -193,7 +193,7 @@
 			</td>
 		</tr>
 		<tr>
-		<?php if($viewType == 'topics'){ ?>
+		<?php if($tsumegoFilters->query == 'topics'){ ?>
 			<td>
 			<br>
 			<div align="center">
@@ -504,7 +504,7 @@
 		}
 		msg6selected = !msg6selected;
 	});
-	<?php if($viewType == 'topics'){ ?>
+	<?php if($tsumegoFilters->query == 'topics'){ ?>
 		function restore(){
 			var confirmed = confirm("Are you sure?");
 			if(confirmed) window.location.href = "/sets/beta?restore="+<?php echo $set['Set']['id']; ?>;

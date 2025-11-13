@@ -1,9 +1,9 @@
 <?php
 
 class TsumegoFilters {
-	public function __construct() {
+	public function __construct(?string $newQuery = null) {
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
-		$this->query = self::processItem('query', 'topics', $userContribution);
+		$this->query = self::processItem('query', 'topics', $userContribution, null, $newQuery);
 		$this->collectionSize = self::processItem('collection_size', '200', $userContribution);
 		$this->sets = self::processItem('filtered_sets', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
 
@@ -25,7 +25,7 @@ class TsumegoFilters {
 		}
 	}
 
-	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null) {
+	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null, ?string $newValue = null) {
 		$stringResult = '';
 		if ($userContribution) {
 			if ($value = $userContribution['UserContribution'][$name]) {
@@ -41,6 +41,10 @@ class TsumegoFilters {
 				Util::clearCookie($name);
 				$stringResult = '';
 			}
+		}
+
+		if ($newValue) {
+			$stringResult = $newValue;
 		}
 
 		if ($userContribution) {
