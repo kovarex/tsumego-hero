@@ -783,7 +783,7 @@ class Play {
 				'order' => 'id ASC',
 				'conditions' => [
 					'id' => $tagIds,
-					'public' => 1,
+					'deleted' => null,
 					$rankConditions,
 				],
 			]) ?: [];

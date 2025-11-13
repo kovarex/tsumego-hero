@@ -6,20 +6,8 @@ class TsumegoButtons extends ArrayObject {
 			return; // Temporary until also the favorites are covered
 		}
 		$condition = "";
-		if ($tsumegoFilters->query == 'difficulty') {
-			$currentRank = CakeSession::read('lastSet');
-			$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
-			$ratingBounds->addSqlConditions($condition);
-			if (!empty($tsumegoFilters->setIDs)) {
-				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
-			}
-			$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
-			$this->fill($condition);
-		} elseif ($tsumegoFilters->query == 'topics') {
-			Util::addSqlCondition($condition, '`set`.id=' . $id);
-			$this->fill($condition, $tsumegoFilters->ranks);
-		}
-		$this->filterByTags($tsumegoFilters->tags);
+		$this->fill($condition, $tsumegoFilters, $id);
+		$this->filterByTags($tsumegoFilters->tagIDs);
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
@@ -42,19 +30,37 @@ class TsumegoButtons extends ArrayObject {
 		return $result;
 	}
 
-	public function fill(string $condition, ?array $rankFilters = null) {
+	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id) {
 		if (!Auth::hasPremium()) {
 			Util::addSqlCondition($condition, '`set`.premium = false');
 		}
 
 		$rankConditions = '';
-		foreach ($rankFilters as $rankFilter) {
-			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
-			Util::addSqlOrCondition($rankConditions, $rankCondition);
+
+		// we filter by ranks unless we are directly selected specific rank
+		if ($tsumegoFilters->query != 'difficulty') {
+			foreach ($tsumegoFilters->ranks as $rankFilter) {
+				$rankCondition = '';
+				RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+				Util::addSqlOrCondition($rankConditions, $rankCondition);
+			}
 		}
+
+		if ($tsumegoFilters->query == 'difficulty') {
+			$currentRank = CakeSession::read('lastSet');
+			$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
+			$ratingBounds->addSqlConditions($condition);
+			if (!empty($tsumegoFilters->setIDs)) {
+				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
+			}
+			$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		}
+
 		Util::addSqlCondition($condition, $rankConditions);
 		Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
+		if ($tsumegoFilters->query == 'topics') {
+			Util::addSqlCondition($condition, '`set`.id=' . $id);
+		}
 
 		$query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {
@@ -64,6 +70,15 @@ class TsumegoButtons extends ArrayObject {
 		$query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn()) {
 			$query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
+		}
+		if ($tsumegoFilters->query == 'tags') {
+			$currentTag = CakeSession::read('lastSet');
+			$tag = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $currentTag]]);
+			if (!$tag) {
+				throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
+			}
+			$query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
+			Util::addSqlCondition($condition, '`tag`.tag_name_id=' . $tag['TagName']['id']);
 		}
 		$query .= ' WHERE ' . $condition;
 		$query .= " ORDER BY set_connection.num";

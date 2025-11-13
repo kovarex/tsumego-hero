@@ -63,7 +63,10 @@ class TsumegoFilters {
 		if ($this->query == 'difficulty') {
 			return CakeSession::read('lastSet');
 		}
-		return "Unsupported yet";
+		if ($this->query == 'tags') {
+			return CakeSession::read('lastSet');
+		}
+		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
 	public function getSetID($set): string {

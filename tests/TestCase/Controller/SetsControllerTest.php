@@ -668,6 +668,22 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// now we are viewing the 'atari' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
 
+		// entering the tsumego in the set
+		$buttons[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, 'atari 1/2');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
+
+		// clicking next to get to the second one
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, 'atari 2/2');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 1, 'V');
+
+		// clicking on next problem should get us back to the set
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
 	}
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void {
