@@ -9,7 +9,6 @@ class TsumegoButtons extends ArrayObject {
 		}
 		$condition = "";
 		$this->fill($condition, $tsumegoFilters, $id);
-		$this->filterByTags($tsumegoFilters->tagIDs);
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
@@ -58,19 +57,6 @@ class TsumegoButtons extends ArrayObject {
 				$this->currentOrder = $tsumegoButton->order;
 			}
 		}
-		$this->updateHighestTsumegoOrder();
-	}
-	public function filterByTags(array $tagIDs): void {
-		if (empty($tagIDs)) {
-			return;
-		}
-		$this->exchangeArray(array_values(array_filter((array) $this, function ($tsumegoButton) use ($tagIDs): bool {
-			return ClassRegistry::init('Tag')->find('first', [
-				'conditions' => [
-					'tsumego_id' => $tsumegoButton->tsumegoID,
-					'tag_name_id' => $tagIDs,
-				]]) != null;
-		})));
 		$this->updateHighestTsumegoOrder();
 	}
 
