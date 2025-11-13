@@ -938,11 +938,6 @@ ORDER BY total_count DESC, partition_number";
 		$acS = null;
 		$acA = null;
 
-		$setsWithPremium = [];
-		foreach ($this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [] as $setWithPremium) {
-			$setsWithPremium [] = $setWithPremium['Set']['id'];
-		}
-
 		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
 		if (Auth::isLoggedIn()) {
 
