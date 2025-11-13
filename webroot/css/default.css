@@ -5873,38 +5873,6 @@ ul ul {
 }
 /* Remove dotted outline from range input element focused in Firefox */
 
-.favCheckbox {
-}
-.favCheckbox input[type="checkbox"] {
-  display: none;
-}
-.favCheckbox input[type="checkbox"] + label::before {
-  width: 25px;
-  height: 25px;
-  background-color: #56595e;
-  display: block;
-  content: "";
-  float: right;
-  margin-top: 5px;
-  margin-left: 5px;
-  margin-right: 5px;
-  -moz-border-radius-bottomleft: 14px;
-  -moz-border-radius-bottomright: 14px;
-  border-radius-bottomleft: 14px;
-  border-radius-bottomright: 14px;
-  -moz-border-radius-bottomright: 14px;
-  -moz-border-radius-bottomleft: 14px;
-  border-bottom-right-radius: 14px;
-  border-bottom-left-radius: 14px;
-  -moz-border-radius-topright: 14px;
-  -moz-border-radius-topleft: 14px;
-  border-top-right-radius: 14px;
-  border-top-left-radius: 14px;
-}
-.favCheckbox input[type="checkbox"]:checked + label::before {
-  background-color: #54b97c;
-}
-
 #theComment {
   display: none;
   justify-content: center;

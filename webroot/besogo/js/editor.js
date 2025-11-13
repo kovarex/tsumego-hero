@@ -422,12 +422,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       }
     } else if (boardLockValue == 1) {
       if (!multipleChoiceEnabled) {
-        if (nextButtonLink != 0)
-          window.location.href =
-            "/tsumegos/play/" + nextButtonLink + inFavorite;
-        else if (mode == 1) {
-          window.location.href = "/sets/view/" + nextButtonLinkSet;
-        }
+          window.location.href = nextButtonLink;
       }
     }
   }

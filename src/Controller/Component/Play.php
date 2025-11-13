@@ -32,8 +32,6 @@ class Play {
 		$dailyMaximum = false;
 		$suspiciousBehavior = false;
 		$half = '';
-		$inFavorite = isset($params['url']['favorite']);
-		$lastInFav = 0;
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$refresh = null;
@@ -784,10 +782,6 @@ class Play {
 			CakeSession::write('title', CakeSession::read('lastSet') . ' ' . $t['Tsumego']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
-		if ($inFavorite) {
-			$inFavorite = '?favorite=1';
-		}
-
 		if (!Auth::isInTimeMode()) {
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
 		}
@@ -858,7 +852,6 @@ class Play {
 			],
 		]);
 
-		$hasAnyFavorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
 
 		if ($pdCounter == 1) {
@@ -1030,11 +1023,6 @@ class Play {
 			$t['Tsumego']['premium'] = 0;
 		}
 
-		$checkFav = $inFavorite;
-		if ($inFavorite) {
-			$query = 'topics';
-		}
-
 		$checkNotInSearch = false;
 
 		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
@@ -1079,11 +1067,7 @@ class Play {
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('g', $refinementT[$refinementPublicCounter]);
-		($this->setFunction)('favorite', $checkFav);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
-		($this->setFunction)('hasAnyFavorite', $hasAnyFavorite != null);
-		($this->setFunction)('inFavorite', $inFavorite);
-		($this->setFunction)('lastInFav', $lastInFav);
 		($this->setFunction)('dailyMaximum', $dailyMaximum);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);

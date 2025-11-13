@@ -186,9 +186,7 @@
 				<?php
 					$di = $setConnection['SetConnection']['num'];
 					$di2 = '/';
-					if (Auth::isInRatingMode())
-						$inFavorite='';
-					if($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites') {
+					if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites') {
 						echo '<a id="playTitleA" href="/sets/view/'.$tsumegoFilters->getSetID($set['Set']['id']).$tsumegoButtons->getPartitionLinkSuffix().'">'.$queryTitle.'</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
@@ -1182,9 +1180,7 @@
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
-	var lastInFav = "<?php echo $lastInFav; ?>";
-	var nextButtonLinkSet = <?php echo $set['Set']['id']; ?>;
-	var nextButtonLinkLv = <?php echo $lv; ?>;
+	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = "<?php echo $file; ?>";
@@ -1194,7 +1190,6 @@
 	var idForSignature = "<?php echo $idForSignature; ?>";
 	var idForSignature2 = "<?php echo $idForSignature2; ?>";
 	var author = "<?php echo $t['Tsumego']['author']; ?>";
-	var inFavorite = "<?php echo $inFavorite; ?>";
 	var besogoPlayerColor = "black";
 	var favorite = "<?php echo $isTSUMEGOinFAVORITE; ?>";
 	var besogoMode2Solved = false;
@@ -1238,27 +1233,7 @@
 			echo 'let hasRevelation = true;';
 		else
 			echo 'let hasRevelation = false;';
-
-		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags') {
-			$nextButtonLinkSet = $this->Session->read('lastSet').$tsumegoButtons->getPartitionLinkSuffix();
-		} else if ($tsumegoFilters->query == 'topics') {
-			$nextButtonLinkSet = $set['Set']['id'].($tsumegoButtons ? $tsumegoButtons->getPartitionLinkSuffix() : '');
-		}
-		echo 'nextButtonLinkSet="'.$nextButtonLinkSet.'";';
 		?>
-		<?php
-		if($favorite){
-			echo 'if(lastInFav==="1"){
-				nextButtonLink = 0;
-				nextButtonLinkSet = 1;
-			}
-			if(lastInFav==="-1"){
-				previousButtonLink = 0;
-				nextButtonLinkSet = 1;
-			}';
-		}
-	?>
-
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
 			$("#msgFilters").fadeIn(250);
@@ -2667,51 +2642,6 @@
 			$("#revelation").attr("title","Revelation (<?php echo Auth::getWithDefault('revelation', 0) - 1; ?>): Solves a problem, but you don\'t get any reward.");
 			revelationEnabled = false;
 		}
-	}
-
-	if(document.querySelector("input[name=favCheckbox]")){
-		var checkbox = document.querySelector("input[name=favCheckbox]");
-		checkbox.addEventListener('change', function(){
-			if(this.checked){
-				<?php if(!$favorite){ ?>
-					setCookie("add_favorite", <?php echo $t['Tsumego']['id']; ?>);
-					document.getElementById("refreshLinkToStart").href = "/tsumegos/play/<?php echo $lv ?>?refresh=1";
-					document.getElementById("refreshLinkToSets").href = "/tsumegos/play/<?php echo $lv ?>?refresh=2";
-					document.getElementById("playTitleA").href = "/tsumegos/play/<?php echo $lv ?>?refresh=3";
-					document.getElementById("refreshLinkToHighscore").href = "/tsumegos/play/<?php echo $lv ?>?refresh=4";
-					document.getElementById("refreshLinkToDiscuss").href = "/tsumegos/play/'.$lv.'?refresh=5";
-					document.getElementById("refreshLinkToSandbox").href = "/tsumegos/play/'.$lv.'?refresh=6";
-				<?php }else{ ?>
-					setCookie("add_favorite", "");
-					document.getElementById("refreshLinkToStart").href = "/";
-					document.getElementById("refreshLinkToSets").href = "/sets";
-					document.getElementById("playTitleA").href = "/sets/view/<?php echo $t['Tsumego']['set_id']; ?>";
-					document.getElementById("refreshLinkToHighscore").href = "/users/highscore";
-					document.getElementById("refreshLinkToDiscuss").href = "/comments";
-					document.getElementById("refreshLinkToSandbox").href = "/sets/beta";
-				<?php } ?>
-				document.getElementById("favCheckbox2").setAttribute("title", "Marked as favorite");
-			}else{
-				<?php if(!$favorite){ ?>
-					setCookie("remove_favorite", 0);
-					document.getElementById("refreshLinkToStart").href = "/";
-					document.getElementById("refreshLinkToSets").href = "/sets";
-					document.getElementById("playTitleA").href = "/sets/view/<?php echo $t['Tsumego']['set_id']; ?>";
-					document.getElementById("refreshLinkToHighscore").href = "/users/highscore";
-					document.getElementById("refreshLinkToDiscuss").href = "/comments";
-					document.getElementById("refreshLinkToSandbox").href = "/sets/beta";
-				<?php }else{ ?>
-					setCookie("remove favorite", <?php echo $t['Tsumego']['id']; ?>);
-					document.getElementById("refreshLinkToStart").href = "/tsumegos/play/<?php echo $lv ?>?refresh=1";
-					document.getElementById("refreshLinkToSets").href = "/tsumegos/play/<?php echo $lv ?>?refresh=2";
-					document.getElementById("playTitleA").href = "/tsumegos/play/<?php echo $lv ?>?refresh=3";
-					document.getElementById("refreshLinkToHighscore").href = "/tsumegos/play/<?php echo $lv ?>?refresh=4";
-					document.getElementById("refreshLinkToDiscuss").href = "/tsumegos/play/'.$lv.'?refresh=5";
-					document.getElementById("refreshLinkToSandbox").href = "/tsumegos/play/'.$lv.'?refresh=6";
-				<?php } ?>
-				document.getElementById("favCheckbox2").setAttribute("title", "Mark as favorite");
-			}
-		});
 	}
 
 	function sprintHover(){

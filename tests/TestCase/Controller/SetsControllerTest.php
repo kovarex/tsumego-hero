@@ -946,4 +946,35 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$tsumegoFilters = new TsumegoFilters();
 		$this->assertTrue($tsumegoFilters->query != 'favorites');
 	}
+
+	public function testBrowsingFavoritesByNextButton(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
+		for ($i = 0; $i < 5; $i++) {
+			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParams);
+
+		// only 3 out of 5 are favorites
+		for ($i = 0; $i < 3; $i++) {
+			$context->addFavorite($context->otherTsumegos[$i]);
+		}
+
+		$browser = Browser::instance();
+		$browser->get('sets/view/favorites');
+		// now we are viewing the 'favorites' insides and checking the buttons
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons[0]->click();
+
+		// first favorite
+		for ($i = 0; $i < 3; $i++) {
+			$this->assertSame(Util::getMyAddress() . '/'.$context->otherTsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, $i, 'V');
+			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		}
+		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
+	}
 }

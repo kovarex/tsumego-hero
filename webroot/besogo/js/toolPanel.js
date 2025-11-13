@@ -732,10 +732,8 @@ besogo.makeToolPanel = function (container, editor) {
         );
       }
       let nextButtonId;
-      let nextButtonLink2 = 0;
       nextButtonId = "besogo-next-button";
-      nextButtonLink2 = nextButtonLink;
-      makeHyperlinkText("Next", "next problem", nextButtonLink2, nextButtonId);
+      makeHyperlinkText("Next", "next problem", nextButtonLink, nextButtonId);
     } else if (besogo.multipleChoiceCustom === "score_estimating") {
       toggleBoardLock(true, true);
       let prevButtonId;
@@ -746,7 +744,7 @@ besogo.makeToolPanel = function (container, editor) {
         previousButtonLink,
         prevButtonId
       );
-      if (nextButtonLinkSet != 262) {
+      if (setID != 262) {
         makeButtonText(
           "Black wins",
           "",
@@ -784,10 +782,8 @@ besogo.makeToolPanel = function (container, editor) {
         makeResultText("", "se-result-text");
       }
       let nextButtonId;
-      let nextButtonLink2 = 0;
       nextButtonId = "besogo-next-button";
-      nextButtonLink2 = nextButtonLink;
-      makeHyperlinkText("Next", "next problem", nextButtonLink2, nextButtonId);
+      makeHyperlinkText("Next", "next problem", nextButtonLink, nextButtonId);
     } else {
       toggleBoardLock(true, true);
       let prevButtonId;
@@ -852,9 +848,7 @@ besogo.makeToolPanel = function (container, editor) {
     );
 
     if (!besogoNoLogin) {
-      let favImage = "";
-      if (!favorite) favImage = "/img/favButton.png";
-      else favImage = "/img/favButtonActive.png";
+      let favImage = favorite ? "/img/favButtonActive.png" : "/img/favButton.png";
       makeImageButton(favImage, "mark as favorite", "favButton", function () {
         if (favImage == "/img/favButton.png") {
           favImage = "/img/favButtonActive.png";

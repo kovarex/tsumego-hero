@@ -10,7 +10,7 @@ class TsumegoButton {
 		$this->alternativeResponse = $alternativeResponse;
 	}
 
-	public function render(int $index, ?string $favoritesParameter) {
+	public function render(int $index) {
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 		/*
 		$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
@@ -23,7 +23,7 @@ class TsumegoButton {
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
 		echo '<li class="set' . $this->status . '1">';
-		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . $favoritesParameter . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
+		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
 		echo '</li>';
 	}
 
