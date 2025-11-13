@@ -423,6 +423,37 @@
 					drawActiveTiles();
 				};';
 
+		echo 'function toggleTag(index, name, e) {
+					e.stopPropagation();
+					if(!tileTagsBool[index]){
+						handleTiles(name, "tags", true);
+						activeTagTiles.push(name);
+						if(query === "tags"){
+							for(let i=0;i<allTagNames.length;i++)
+								if(allTagNames[i] === name)
+									activeTagIds.push(allTagIds[i]);
+						}
+					}else{
+						handleTiles(name, "tags", false);
+						let newActiveTagTiles = [];
+						for(let i=0;i<activeTagTiles.length;i++){
+							if(activeTagTiles[i] !== name)
+								newActiveTagTiles.push(activeTagTiles[i]);
+						}
+						activeTagTiles = newActiveTagTiles;
+						if(query === "tags"){
+							for(let i=0;i<allTagNames.length;i++){
+								if(allTagNames[i] === name){
+									unselectTag(allTagIds[i]);
+									break;
+								}
+							}
+						}
+					}
+					drawActiveCollections();
+					drawActiveTiles();
+				};';
+
 			foreach ($setTiles as $index => $setName) {
 				echo 'allTopicTiles.push("'.$setName.'");';
 				echo 'tileTopicsBool.push(false);';
@@ -440,44 +471,17 @@
 				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', "'.$rankName.'", e); });';
 			}
 
-			for($i=0; $i<count($tagList); $i++){
-				echo 'allTagIds.push("'.$tagList[$i]['id'].'");';
-				echo 'allTagNames.push("'.$tagList[$i]['name'].'");';
+			foreach ($tagList as $tag) {
+				echo 'allTagIds.push("'.$tag['id'].'");';
+				echo 'allTagNames.push("'.$tag['name'].'");';
 			}
-			for($i=0; $i<count($tagTiles); $i++){
-				echo 'allTagTiles.push("'.$tagTiles[$i].'");';
+
+			foreach ($tagTiles as $index => $tagName) {
+				echo 'allTagTiles.push("'.$tagName.'");';
 				echo 'tileTagsBool.push(false);';
-				echo '$("#tile-tags'.$i.'").click(function(e){
-					e.stopPropagation();
-					if(!tileTagsBool['.$i.']){
-						handleTiles("'.$tagTiles[$i].'", "tags", true);
-						activeTagTiles.push("'.$tagTiles[$i].'");
-						if(query === "tags"){
-							for(let i=0;i<allTagNames.length;i++)
-								if(allTagNames[i] === "'.$tagTiles[$i].'")
-									activeTagIds.push(allTagIds[i]);
-						}
-					}else{
-						handleTiles("'.$tagTiles[$i].'", "tags", false);
-						let newActiveTagTiles = [];
-						for(let i=0;i<activeTagTiles.length;i++){
-							if(activeTagTiles[i] !== "'.$tagTiles[$i].'")
-								newActiveTagTiles.push(activeTagTiles[i]);
-						}
-						activeTagTiles = newActiveTagTiles;
-						if(query === "tags"){
-							for(let i=0;i<allTagNames.length;i++){
-								if(allTagNames[i] === "'.$tagTiles[$i].'"){
-									unselectTag(allTagIds[i]);
-									break;
-								}
-							}
-						}
-					}
-					drawActiveCollections();
-					drawActiveTiles();
-				});';
+				echo '$("#tile-tags'.$index.'").click(function(e){ toggleTag('.$index.', "'.$tagName.'", e); });';
 			}
+
 			foreach ($tsumegoFilters->sets as $set) {
 				echo 'filteredSets.push("'.$set.'");';
 				echo 'activeTopicTiles.push("'.$set.'");';
@@ -488,7 +492,7 @@
 				echo 'activeDifficultyTiles.push("'.$rank.'");';
 				echo 'handleTiles("'.$rank.'", "difficulty", true);';
 			}
-		foreach ($tsumegoFilters->tags as $tag) {
+			foreach ($tsumegoFilters->tags as $tag) {
 				echo 'filteredTags.push("'.$tag.'");';
 				echo 'activeTagTiles.push("'.$tag.'");';
 				echo 'handleTiles("'.$tag.'", "tags", true);';
