@@ -7,4 +7,4 @@ else
   filter_parameter=""
 fi
 
-phpunit --stop-on-failure $filter_parameter 2>&1 | sed "1{/^PHPUnit /d}" | sed "1{/^$/d}"
+phpunit --stop-on-failure --colors=always $filter_parameter 2>&1 | sed "1{/^PHPUnit /d}" | sed "1{/^$/d}"
