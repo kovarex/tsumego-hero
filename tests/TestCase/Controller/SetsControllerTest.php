@@ -892,7 +892,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// now we are viewing the 'favorites' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
-
 		$buttons[0]->click();
 
 		// opening the favorites problem
@@ -902,6 +901,32 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
+	}
+
+	public function testRemovingFavorites(): void {
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
+		for ($i = 0; $i < 3; $i++) {
+			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParams);
+		$context->addFavorite($context->otherTsumegos[0]);
+
+		$browser = Browser::instance();
+		$browser->get('sets/view/favorites');
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
+
+		// now we are viewing the 'favorites' insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons[0]->click(); // opening the favorites problem
+
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
+
+		// going back to favorites, which should be empty now
+		$browser->get('sets/view/favorites');
+		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
 	}
 
 	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void {

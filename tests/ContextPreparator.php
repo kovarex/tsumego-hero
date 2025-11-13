@@ -280,6 +280,14 @@ class ContextPreparator {
 		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumego['id']);
 	}
 
+	public function addFavorite($tsumego) {
+		$favorite = [];
+		$favorite['tsumego_id'] = $tsumego['id'];
+		$favorite['user_id'] = $this->user['id'];
+		ClassRegistry::init('Favorite')->create($favorite);
+		ClassRegistry::init('Favorite')->save($favorite);
+	}
+
 	public ?array $user = null;
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
