@@ -392,40 +392,27 @@
 					drawActiveTiles();
 				};';
 
-			foreach ($setTiles as $index => $setName) {
-				echo 'allTopicTiles.push("'.$setName.'");';
-				echo 'tileTopicsBool.push(false);';
-				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', "'.$setName.'", e); });';
-			}
-
-			for($i=0; $i<count($ranksArray); $i++){
-				echo 'allDifficultyIds.push("'.$ranksArray[$i]['id'].'");';
-				echo 'allDifficultyNames.push("'.$ranksArray[$i]['name'].'");';
-			}
-			for($i=0; $i<count($difficultyTiles); $i++){
-				echo 'allDifficultyTiles.push("'.$difficultyTiles[$i].'");';
-				echo 'tileDifficultyBool.push(false);';
-				echo '$("#tile-difficulty'.$i.'").click(function(e){
-					e.stopPropagation();
-					if(!tileDifficultyBool['.$i.']){
-						handleTiles("'.$difficultyTiles[$i].'", "difficulty", true);
-						activeDifficultyTiles.push("'.$difficultyTiles[$i].'");
+		echo 'function toggleRank(index, name, e) {
+			e.stopPropagation();
+					if(!tileDifficultyBool[index]){
+						handleTiles(name, "difficulty", true);
+						activeDifficultyTiles.push(name);
 						if(query === "difficulty"){
 							for(let i=0;i<allDifficultyNames.length;i++)
-								if(allDifficultyNames[i] === "'.$difficultyTiles[$i].'")
+								if(allDifficultyNames[i] === name)
 									activeDifficultyIds.push(allDifficultyIds[i]);
 						}
 					}else{
-						handleTiles("'.$difficultyTiles[$i].'", "difficulty", false);
+						handleTiles(name, "difficulty", false);
 						let newActiveDifficultyTiles = [];
 						for(let i=0;i<activeDifficultyTiles.length;i++){
-							if(activeDifficultyTiles[i] !== "'.$difficultyTiles[$i].'")
+							if(activeDifficultyTiles[i] !== name)
 								newActiveDifficultyTiles.push(activeDifficultyTiles[i]);
 						}
 						activeDifficultyTiles = newActiveDifficultyTiles;
 						if(query === "difficulty"){
 							for(let i=0;i<allDifficultyNames.length;i++){
-								if(allDifficultyNames[i] === "'.$difficultyTiles[$i].'"){
+								if(allDifficultyNames[i] === name){
 									unselectDifficulty(allDifficultyIds[i]);
 									break;
 								}
@@ -434,8 +421,25 @@
 					}
 					drawActiveCollections();
 					drawActiveTiles();
-				});';
+				};';
+
+			foreach ($setTiles as $index => $setName) {
+				echo 'allTopicTiles.push("'.$setName.'");';
+				echo 'tileTopicsBool.push(false);';
+				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', "'.$setName.'", e); });';
 			}
+
+			foreach ($ranksArray as $rank) {
+				echo 'allDifficultyIds.push("'.$rank['id'].'");';
+				echo 'allDifficultyNames.push("'.$rank['name'].'");';
+			}
+
+			foreach ($difficultyTiles as $index => $rankName) {
+				echo 'allDifficultyTiles.push("'.$rankName.'");';
+				echo 'tileDifficultyBool.push(false);';
+				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', "'.$rankName.'", e); });';
+			}
+
 			for($i=0; $i<count($tagList); $i++){
 				echo 'allTagIds.push("'.$tagList[$i]['id'].'");';
 				echo 'allTagNames.push("'.$tagList[$i]['name'].'");';
