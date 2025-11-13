@@ -7,4 +7,4 @@ else
   filter_parameter=""
 fi
 
-phpunit --stop-on-failure $filter_parameter
+phpunit --stop-on-failure $filter_parameter 2>&1 | sed "1{/^PHPUnit /d}" | sed "1{/^$/d}"
