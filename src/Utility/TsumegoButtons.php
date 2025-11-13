@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoButtonsQueryBuilder', 'Utility');
+
 class TsumegoButtons extends ArrayObject {
 	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null) {
 		if (!$tsumegoFilters) {
@@ -31,58 +33,9 @@ class TsumegoButtons extends ArrayObject {
 	}
 
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id) {
-		if (!Auth::hasPremium()) {
-			Util::addSqlCondition($condition, '`set`.premium = false');
-		}
-
-		$rankConditions = '';
-
-		// we filter by ranks unless we are directly selected specific rank
-		if ($tsumegoFilters->query != 'difficulty') {
-			foreach ($tsumegoFilters->ranks as $rankFilter) {
-				$rankCondition = '';
-				RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
-				Util::addSqlOrCondition($rankConditions, $rankCondition);
-			}
-		}
-
-		if ($tsumegoFilters->query == 'difficulty') {
-			$currentRank = CakeSession::read('lastSet');
-			$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
-			$ratingBounds->addSqlConditions($condition);
-			if (!empty($tsumegoFilters->setIDs)) {
-				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
-			}
-			$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
-		}
-
-		Util::addSqlCondition($condition, $rankConditions);
-		Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
-		if ($tsumegoFilters->query == 'topics') {
-			Util::addSqlCondition($condition, '`set`.id=' . $id);
-		}
-
-		$query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
-		if (Auth::isLoggedIn()) {
-			$query .= ', tsumego_status.status';
-		}
-		$query .= " FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
-		$query .= " JOIN `set` ON `set`.id=set_connection.set_id";
-		if (Auth::isLoggedIn()) {
-			$query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
-		}
-		if ($tsumegoFilters->query == 'tags') {
-			$currentTag = CakeSession::read('lastSet');
-			$tag = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $currentTag]]);
-			if (!$tag) {
-				throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
-			}
-			$query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
-			Util::addSqlCondition($condition, '`tag`.tag_name_id=' . $tag['TagName']['id']);
-		}
-		$query .= ' WHERE ' . $condition;
-		$query .= " ORDER BY set_connection.num";
-		$result = ClassRegistry::init('Tsumego')->query($query);
+		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
+		$result = ClassRegistry::init('Tsumego')->query($queryBuilder->query);
+		$this->description = $queryBuilder->description;
 
 		foreach ($result as $index => $row) {
 			$this [] = new TsumegoButton(
