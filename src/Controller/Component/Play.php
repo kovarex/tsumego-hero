@@ -524,27 +524,6 @@ class Play {
 		if ($tsumegoStatus == 'G') {
 			$goldenTsumego = true;
 		}
-
-		if (isset($_COOKIE['favorite']) && $_COOKIE['favorite'] != '0') {
-			if (Auth::isLoggedIn()) {
-				if ($_COOKIE['favorite'] > 0) {
-					$fav = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $_COOKIE['favorite']]]);
-					if ($fav == null) {
-						$fav = [];
-						$fav['Favorite']['user_id'] = Auth::getUserID();
-						$fav['Favorite']['tsumego_id'] = $_COOKIE['favorite'];
-						$fav['Favorite']['created'] = date('Y-m-d H:i:s');
-						ClassRegistry::init('Favorite')->create();
-						ClassRegistry::init('Favorite')->save($fav);
-					}
-				} else {
-					$favId = $_COOKIE['favorite'] * -1;
-					$favDel = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $favId]]);
-					ClassRegistry::init('Favorite')->delete($favDel['Favorite']['id']);
-				}
-				unset($_COOKIE['favorite']);
-			}
-		}
 		if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
 			$drCookie = AppController::decrypt($_COOKIE['TimeModeAttempt']);
 			$drCookie2 = explode('-', $drCookie);
@@ -720,7 +699,7 @@ class Play {
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 
-		$tsumegoButtons = $this->selectTsumegoButtonsOfThisSet($tsumegoFilters, $currentSetConnection['SetConnection']['id'], $set['Set']['id'], $inFavorite);
+		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 		$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
 
 		if ($tsumegoFilters->query == 'tags') {
@@ -1065,13 +1044,13 @@ class Play {
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
 			$previousSetConnectionID = $tsumegoButtons[$indexOfCurrent - 1]->setConnectionID;
 		}
-		$previousLink = TsumegosController::tsumegoOrSetLink(isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
+		$previousLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters,isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
 
 		if (isset($indexOfCurrent) && count($tsumegoButtons) > $indexOfCurrent + 1) {
 			$nextSetConnectionID = $tsumegoButtons[$indexOfCurrent + 1]->setConnectionID;
 		}
 		if (!Auth::isInTimeMode()) {
-			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink(isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
 		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
@@ -1247,34 +1226,6 @@ class Play {
 		}
 
 		return true;
-	}
-
-	private function selectTsumegoButtonsOfThisSet(TsumegoFilters $tsumegoFilters, $currentSetConnectionID, $setID, $inFavorite): TsumegoButtons {
-		if ($inFavorite) {
-			return $this->selectSetConnectionsOfCurrentSetBasedOnFavorites();
-		}
-		return new TsumegoButtons($tsumegoFilters, $currentSetConnectionID, null, $setID);
-	}
-
-	public function selectSetConnectionsOfCurrentSetBasedOnFavorites(): TsumegoButtons {
-		// TODO: do by one join
-		$favorites = ClassRegistry::init('Favorite')->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-		$result = new TsumegoButtons(null);
-		foreach ($favorites as $favorite) {
-			$tsumego = ClassRegistry::init('Tsumego')->findById($favorite['Favorite']['tsumego_id']);
-			if ($setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['tsumego_id']]])) {
-				$tsumegoStatus = Auth::isLoggedIn() ? ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $tsumego['Tsumego']['id'], 'user_id' => Auth::getUserID()]]) : null;
-				$result [] = new TsumegoButton(
-					$tsumego['Tsumego']['id'],
-					$setConnection['SetConnection']['id'],
-					$setConnection['SetConnection']['num'],
-					$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N',
-					$tsumego['Tsumego']['pass'],
-					$tsumego['Tsumego']['alternative_response']
-				);
-			}
-		}
-		return $result;
 	}
 
 	private $setFunction;

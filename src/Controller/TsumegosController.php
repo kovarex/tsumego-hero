@@ -32,9 +32,9 @@ class TsumegosController extends AppController {
 		return null;
 	}
 
-	public static function tsumegoOrSetLink(?int $setConnectionID, string $setID): string {
+	public static function tsumegoOrSetLink($tsumegoFilters, ?int $setConnectionID, string $setID): string {
 		if ($setConnectionID) {
-			return '/' . $setConnectionID;
+			return '/' . $setConnectionID.$tsumegoFilters->getTsumegoLinkSuffix();
 		}
 		return '/sets/view/' . $setID; // edge of the set (last or first), so we return to the set
 	}

@@ -858,10 +858,10 @@ besogo.makeToolPanel = function (container, editor) {
       makeImageButton(favImage, "mark as favorite", "favButton", function () {
         if (favImage == "/img/favButton.png") {
           favImage = "/img/favButtonActive.png";
-          document.cookie = "favorite=" + tsumegoFileLink;
+          setCookie("add_favorite", tsumegoFileLink);
         } else {
           favImage = "/img/favButton.png";
-          document.cookie = "favorite=-" + tsumegoFileLink;
+          setCookie("remove_favorite", tsumegoFileLink);
         }
         $("#favButton").attr("src", favImage);
       });

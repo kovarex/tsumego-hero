@@ -2,6 +2,7 @@
 
 class TsumegoButtonsQueryBuilder {
 	public function __construct($tsumegoFilters, $id) {
+		$this->orderBy = 'set_connection.num';
 		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {
@@ -24,9 +25,10 @@ class TsumegoButtonsQueryBuilder {
 		$this->queryRank();
 		$this->queryTag();
 		$this->querySet($id);
+		$this->queryFavorites();
 
 		$this->query .= ' WHERE ' . $this->condition;
-		$this->query .= " ORDER BY set_connection.num";
+		$this->query .= " ORDER BY ".$this->orderBy;
 	}
 
 	private function filterRanks() {
@@ -97,8 +99,17 @@ class TsumegoButtonsQueryBuilder {
 		Util::addSqlCondition($this->condition, '`set`.id=' . $id);
 	}
 
+	private function queryFavorites() {
+		if ($this->tsumegoFilters->query != 'favorites') {
+			return;
+		}
+		$this->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
+		$this->orderBy = 'favorite.created ASC';
+	}
+
 	private TsumegoFilters $tsumegoFilters;
 	private string $condition = "";
 	public string $query = "";
 	public string $description = "";
+	public string $orderBy = "";
 }

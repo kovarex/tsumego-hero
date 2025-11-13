@@ -881,6 +881,9 @@ ORDER BY total_count DESC, partition_number";
 		if (is_numeric($input)) {
 			return 'topics';
 		}
+		if ($input == 'favorites') {
+			return 'favorites';
+		}
 		try {
 			Rating::getRankFromReadableRank($input);
 			return 'difficulty';
@@ -1317,7 +1320,7 @@ ORDER BY total_count DESC, partition_number";
 					}
 				}
 			}
-			$difficultyCount /= $sizeCount;
+			$difficultyCount = Util::getRatio($difficultyCount, count($tsumegoButtons));
 			if ($difficultyCount <= 2) {
 				$difficultyCount = 1;
 			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) {
@@ -1329,7 +1332,7 @@ ORDER BY total_count DESC, partition_number";
 			} elseif ($difficultyCount > 6) {
 				$difficultyCount = 5;
 			}
-			$percent = $solvedCount / $sizeCount * 100;
+			$percent = Util::getPercent($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
 			$set['Set']['title'] = 'Favorites';

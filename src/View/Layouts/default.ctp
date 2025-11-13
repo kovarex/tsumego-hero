@@ -188,7 +188,7 @@
 							echo '<ul class="newMenuLi2">';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/beta">Sandbox</a></li>';
-							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/1">Favorites</a></li>';
+							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
 							if(Auth::isAdmin()){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';

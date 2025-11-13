@@ -189,7 +189,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		$this->assertSame($button->getAttribute('class'), 'set' . $statusValue . '1');
 		$link = $button->findElement(WebDriverBy::tagName('a'));
-		$this->assertSame($link->getAttribute('href'), '/' . $context->otherTsumegos[$index]['set-connections'][0]['id']);
+		$this->assertTextStartsWith('/' . $context->otherTsumegos[$index]['set-connections'][0]['id'], $link->getAttribute('href'));
 	}
 
 	private function checkPlayTitle($browser, string $title) {
@@ -871,5 +871,34 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkSetFinishedPercent($browser, 2, '5k', '50%');
 		$this->checkSetFinishedPercent($browser, 3, '1d', '75%');
 		$this->checkSetFinishedPercent($browser, 4, '5d', '100%');
+	}
+
+	public function testAddingToFavoritesAndViewingIt(): void {
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
+		for ($i = 0; $i < 3; $i++) {
+			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('/'.$context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
+		$browser->get('/sets/view/favorites');
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
+
+		// now we are viewing the 'favorites' insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+
+		$buttons[0]->click();
+
+		// opening the favorites problem
+		$buttons = $this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+
+		// next will get us back to favorites
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 	}
 }

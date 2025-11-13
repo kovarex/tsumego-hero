@@ -70,6 +70,10 @@ class TsumegoFilters {
 		if ($this->query == 'tags') {
 			return CakeSession::read('lastSet');
 		}
+
+		if ($this->query == 'favorites') {
+			return 'Favorites';
+		}
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
@@ -83,7 +87,26 @@ class TsumegoFilters {
 		if ($this->query == 'tags') {
 			return CakeSession::read('lastSet');
 		}
+
+		if ($this->query == 'favorites') {
+			return 'favorites';
+		}
 		return "Unsupported yet";
+	}
+
+	public function getTsumegoLinkSuffix() : string {
+		if ($this->query != 'favorites') {
+			return '';
+		}
+		return '?favorite=1';
+	}
+
+	public function setQuery($query) {
+		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
+		$this->query = self::processItem('query', 'topics', $userContribution, null, $query);
+		if ($userContribution) {
+			ClassRegistry::init('UserContribution')->save($userContribution);
+		}
 	}
 
 	public string $query;

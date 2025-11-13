@@ -3441,13 +3441,6 @@ class AppController extends Controller {
 
 		if (Auth::isLoggedIn()) {
 			$this->handleSearchSettings(Auth::getUserID());
-			$favx = $this->Favorite->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$favx) {
-				$favx = [];
-			}
-			if (count($favx) > 0) {
-				$hasFavs = true;
-			}
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0') {
 				$levelBar = $_COOKIE['levelBar'];
 				Auth::getUser()['levelBar'] = $levelBar;

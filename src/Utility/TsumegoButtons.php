@@ -15,8 +15,21 @@ class TsumegoButtons extends ArrayObject {
 		if ($tsumegoFilters->query != 'topics') {
 			$this->resetOrders();
 		}
+
 		if (!is_null($currentSetConnectionID)) {
-			$this->partitionByCurrentOne($currentSetConnectionID, $tsumegoFilters->collectionSize);
+			$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
+			if (is_null($currentIndex)) {
+				if ($tsumegoFilters->query == 'favorites') {
+					$tsumegoFilters->setQuery('topics');
+					$this->fill($condition, $tsumegoFilters, $id);
+					$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
+				}
+			}
+
+			// mark the problem we are going to visit as the currently opened one
+			$this[$currentIndex]->isCurrentlyOpened = true;
+			$this->currentOrder = $this[$currentIndex]->order;
+			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
 		} else {
 			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 		}
@@ -78,16 +91,16 @@ class TsumegoButtons extends ArrayObject {
 		$this->filterByPartition($collectionSize);
 	}
 
-	public function partitionByCurrentOne($currentSetConnectionID, $collectionSize): void {
-		$currentIndex = array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) { return $tsumegoButton->setConnectionID === $currentSetConnectionID; });
-		// mark the problem we are going to visit as the currently opened one
-		$this[$currentIndex]->isCurrentlyOpened = true;
-		$this->currentOrder = $this[$currentIndex]->order;
+	public function partitionByCurrentOne($currentIndex, $collectionSize): void {
 		$this->partition = (int) floor($currentIndex / $collectionSize);
 
 		if ($collectionSize < count($this)) {
 			$this->filterByPartition($collectionSize);
 		}
+	}
+
+	private function deduceCurrentIndex($currentSetConnectionID): ?int {
+		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) { return $tsumegoButton->setConnectionID === $currentSetConnectionID; });
 	}
 
 	private function updateHighestTsumegoOrder() {

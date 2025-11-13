@@ -188,8 +188,8 @@
 					$di2 = '/';
 					if (Auth::isInRatingMode())
 						$inFavorite='';
-					if($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags'){
-						echo '<a id="playTitleA" href="/sets/view/'.$this->Session->read('lastSet').$tsumegoButtons->getPartitionLinkSuffix().'">'.$queryTitle.'</a><br>';
+					if($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites') {
+						echo '<a id="playTitleA" href="/sets/view/'.$tsumegoFilters->getSetID($set['Set']['id']).$tsumegoButtons->getPartitionLinkSuffix().'">'.$queryTitle.'</a><br>';
 						echo '<font style="font-weight:400;" color="grey">
 							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
 								('.$set['Set']['title'].$di.$t['Tsumego']['actualNum'].$di2.$amountOfOtherCollection.')
@@ -214,13 +214,6 @@
 								echo '<font size="5px">'.$timeMode['currentOrder'].' of '.$timeMode['overallCount'].'</font>';
 							}
 						}
-					}else{
-						echo '<a id="playTitleA" href="/sets/view/1">Favorites</a><br>';
-						echo '<font style="font-weight:400;" color="grey">
-							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
-								('.$set['Set']['title'].$di.$di2.$tsumegoButtons->highestTsumegoOrder.')
-							</a>
-						</font>';
 					}
 				?>
 				<br>
@@ -1255,10 +1248,6 @@
 		}
 		echo 'nextButtonLinkSet="'.$nextButtonLinkSet.'";';
 		?>
-		if(inFavorite!==''){
-			previousButtonLink += inFavorite;
-			nextButtonLink += inFavorite;
-		}
 		<?php
 		if($favorite){
 			echo 'if(lastInFav==="1"){
@@ -2687,7 +2676,7 @@
 		checkbox.addEventListener('change', function(){
 			if(this.checked){
 				<?php if(!$favorite){ ?>
-					setCookie("favorite", <?php echo $t['Tsumego']['id']; ?>);
+					setCookie("add_favorite", <?php echo $t['Tsumego']['id']; ?>);
 					document.getElementById("refreshLinkToStart").href = "/tsumegos/play/<?php echo $lv ?>?refresh=1";
 					document.getElementById("refreshLinkToSets").href = "/tsumegos/play/<?php echo $lv ?>?refresh=2";
 					document.getElementById("playTitleA").href = "/tsumegos/play/<?php echo $lv ?>?refresh=3";
@@ -2695,7 +2684,7 @@
 					document.getElementById("refreshLinkToDiscuss").href = "/tsumegos/play/'.$lv.'?refresh=5";
 					document.getElementById("refreshLinkToSandbox").href = "/tsumegos/play/'.$lv.'?refresh=6";
 				<?php }else{ ?>
-					setCookie("favorite", 0);
+					setCookie("add_favorite", "");
 					document.getElementById("refreshLinkToStart").href = "/";
 					document.getElementById("refreshLinkToSets").href = "/sets";
 					document.getElementById("playTitleA").href = "/sets/view/<?php echo $t['Tsumego']['set_id']; ?>";
@@ -2706,7 +2695,7 @@
 				document.getElementById("favCheckbox2").setAttribute("title", "Marked as favorite");
 			}else{
 				<?php if(!$favorite){ ?>
-					setCookie("favorite", 0);
+					setCookie("remove_favorite", 0);
 					document.getElementById("refreshLinkToStart").href = "/";
 					document.getElementById("refreshLinkToSets").href = "/sets";
 					document.getElementById("playTitleA").href = "/sets/view/<?php echo $t['Tsumego']['set_id']; ?>";
@@ -2714,7 +2703,7 @@
 					document.getElementById("refreshLinkToDiscuss").href = "/comments";
 					document.getElementById("refreshLinkToSandbox").href = "/sets/beta";
 				<?php }else{ ?>
-					setCookie("favorite", -<?php echo $t['Tsumego']['id']; ?>);
+					setCookie("remove favorite", <?php echo $t['Tsumego']['id']; ?>);
 					document.getElementById("refreshLinkToStart").href = "/tsumegos/play/<?php echo $lv ?>?refresh=1";
 					document.getElementById("refreshLinkToSets").href = "/tsumegos/play/<?php echo $lv ?>?refresh=2";
 					document.getElementById("playTitleA").href = "/tsumegos/play/<?php echo $lv ?>?refresh=3";
