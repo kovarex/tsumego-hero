@@ -702,7 +702,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 			for ($i = 0; $i < 3 - $key; $i++) {
 				$contextParams['other-tsumegos'] [] = [
 					'title' => $tag . ' problem',
-					'sets' => [['name' => 'set '.($i + 1), 'num' => $key + 1]],
+					'sets' => [['name' => 'set ' . ($i + 1), 'num' => $key + 1]],
 					'tags' => [['name' => $tag]]];
 			}
 		}
@@ -722,7 +722,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// going into the 'set 1'
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
@@ -742,7 +742,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[3]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 	}
 
