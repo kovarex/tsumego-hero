@@ -275,10 +275,8 @@
 			$("#tags-button").css("border", "1px solid #aa5538");
 		<?php } ?>
 		<?php
-		foreach ($sets as $i => $set) {
-			echo 'animateNumber'.$i.'(0, '.$set['solved_percent'].', .6);';
-			echo 'function animateNumber'.$i.'(start, end, duration) {
-				const element = document.getElementById("number'.$i.'");
+		echo 'function animateNumber(index, start, end, duration) {
+				const element = document.getElementById("number" + index);
 				const range = end - start;
 				const increment = range / (duration * 60);
 				const decimalIndex = end.toString().indexOf(".");
@@ -301,23 +299,27 @@
 				};
 				requestAnimationFrame(step);
 			}';
-			echo 'animateBar'.$i.'('.$set['solved_percent'].');';
-			echo 'function animateBar'.$i.'(percent){
-				$("#xp-increase-fx2'.$i.'").css("display","inline-block");
-				$("#xp-bar-fill2'.$i.'").css("box-shadow", "-5px 0px 10px #fff inset");
-				$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
-				$("#xp-increase-fx2'.$i.'").hide();
-				$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 
-				$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
-				$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
-				$("#xp-increase-fx2'.$i.'").fadeIn(0);
-				$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
+		echo 'function animateBar(index, percent){
+				$("#xp-increase-fx2" + index).css("display","inline-block");
+				$("#xp-bar-fill2" + index).css("box-shadow", "-5px 0px 10px #fff inset");
+				$("#xp-bar-fill2" + index).css("width", 0+"%");
+				$("#xp-increase-fx2" + index).hide();
+				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
+
+				$("#xp-bar-fill2" + index).css({"width":percent+"%"});
+				$("#xp-bar-fill2" + index).css("-webkit-transition","all 0.6s ease");
+				$("#xp-increase-fx2" + index).fadeIn(0);
+				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 				setTimeout(function(){
-					$("#xp-increase-fx-flicker2'.$i.'").fadeOut(600);
-					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
+					$("#xp-increase-fx-flicker2" + index).fadeOut(600);
+					$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 				},600);
 			}';
+
+		foreach ($sets as $i => $set) {
+			echo 'animateNumber('.$i.', 0, '.$set['solved_percent'].', .6);';
+			echo 'animateBar('.$i.', '.$set['solved_percent'].');';
 		}
 		?>
 		let query = "<?php echo $tsumegoFilters->query; ?>";
