@@ -360,30 +360,28 @@
 				echo 'allTopicIds.push("'.$sets[$i]['id'].'");';
 				echo 'allTopicNames.push("'.$sets[$i]['name'].'");';
 			}
-			for($i=0; $i<count($setTiles); $i++){
-				echo 'allTopicTiles.push("'.$setTiles[$i].'");';
-				echo 'tileTopicsBool.push(false);';
-				echo '$("#tile-topics'.$i.'").click(function(e){
-					e.stopPropagation();
-					if(!tileTopicsBool['.$i.']){
-						handleTiles("'.$setTiles[$i].'", "topics", true);
-						activeTopicTiles.push("'.$setTiles[$i].'");
-						if(query === "topics"){
-							for(let i=0;i<allTopicNames.length;i++)
-								if(allTopicNames[i] === "'.$setTiles[$i].'")
-									activeTopicIds.push(allTopicIds[i]);
+
+		echo 'function toggleTopic(index, name, e) {
+			e.stopPropagation();
+			if(!tileTopicsBool[index]){
+				handleTiles(name, "topics", true);
+				activeTopicTiles.push(name);
+				if(query === "topics") {
+					for(let i=0;i<allTopicNames.length;i++)
+						if(allTopicNames[i] === name)
+							activeTopicIds.push(allTopicIds[i]);
 						}
 					}else{
-						handleTiles("'.$setTiles[$i].'", "topics", false);
+						handleTiles(name, "topics", false);
 						let newActiveTopicTiles = [];
 						for(let i=0;i<activeTopicTiles.length;i++){
-							if(activeTopicTiles[i] !== "'.$setTiles[$i].'")
+							if(activeTopicTiles[i] !== name)
 								newActiveTopicTiles.push(activeTopicTiles[i]);
 						}
 						activeTopicTiles = newActiveTopicTiles;
 						if(query === "topics"){
 							for(let i=0;i<allTopicNames.length;i++){
-								if(allTopicNames[i] === "'.$setTiles[$i].'"){
+								if(allTopicNames[i] === name){
 									unselectTopic(allTopicIds[i]);
 									break;
 								}
@@ -392,8 +390,14 @@
 					}
 					drawActiveCollections();
 					drawActiveTiles();
-				});';
+				};';
+
+			foreach ($setTiles as $index => $setName) {
+				echo 'allTopicTiles.push("'.$setName.'");';
+				echo 'tileTopicsBool.push(false);';
+				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', "'.$setName.'", e); });';
 			}
+
 			for($i=0; $i<count($ranksArray); $i++){
 				echo 'allDifficultyIds.push("'.$ranksArray[$i]['id'].'");';
 				echo 'allDifficultyNames.push("'.$ranksArray[$i]['name'].'");';
