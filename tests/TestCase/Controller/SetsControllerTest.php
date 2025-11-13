@@ -4,6 +4,8 @@ use Facebook\WebDriver\WebDriverBy;
 
 require_once(__DIR__ . '/TestCaseWithAuth.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
+require_once(__DIR__ . '/../../ContextPreparator.php');
+App::uses('TsumegoFilters', 'Utility');
 
 class SetsControllerTest extends TestCaseWithAuth {
 	public function testIndexLoggedIn(): void {
@@ -900,5 +902,23 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
+	}
+
+	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void {
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
+		$contextParams = [];
+		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
+		for ($i = 0; $i < 3; $i++) {
+			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParams);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(3, $collectionTopDivs); // the 3 sets are visible even when not in favorites, as top index ignores favorites
+		$tsumegoFilters = new TsumegoFilters();
+		$this->assertTrue($tsumegoFilters->query != 'favorites');
 	}
 }
