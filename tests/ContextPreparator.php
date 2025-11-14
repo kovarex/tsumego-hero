@@ -33,6 +33,7 @@ class ContextPreparator {
 		$this->user['isAdmin'] = $user['admin'] ?? false;
 		$this->user['rating'] = $user['rating'] ?: 1500;
 		$this->user['premium'] = $user['premium'] ?: 0;
+		$this->user['xp'] = 0;
 		$this->user['used_refinement'] = 0;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
 		$this->user['damage'] = 0;
