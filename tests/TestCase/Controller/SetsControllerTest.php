@@ -880,12 +880,12 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
 		for ($i = 0; $i < 3; $i++) {
-			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		}
 		$context = new ContextPreparator($contextParams);
 
 		$browser = Browser::instance();
-		$browser->get('/'.$context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
 		$browser->get('/sets/view/favorites');
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
@@ -908,7 +908,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
 		for ($i = 0; $i < 3; $i++) {
-			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		}
 		$context = new ContextPreparator($contextParams);
 		$context->addFavorite($context->otherTsumegos[0]);
@@ -935,7 +935,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
 		for ($i = 0; $i < 3; $i++) {
-			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		}
 		$context = new ContextPreparator($contextParams);
 
@@ -953,7 +953,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
 		for ($i = 0; $i < 5; $i++) {
-			$contextParams ['other-tsumegos'] []= ['sets' => [['name' => 'set '.$i, 'num' => $i]]];
+			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		}
 		$context = new ContextPreparator($contextParams);
 
@@ -971,7 +971,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// first favorite
 		for ($i = 0; $i < 3; $i++) {
-			$this->assertSame(Util::getMyAddress() . '/'.$context->otherTsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+			$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, $i, 'V');
 			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		}

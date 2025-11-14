@@ -28,7 +28,7 @@ class TsumegoButtonsQueryBuilder {
 		$this->queryFavorites();
 
 		$this->query .= ' WHERE ' . $this->condition;
-		$this->query .= " ORDER BY ".$this->orderBy;
+		$this->query .= " ORDER BY " . $this->orderBy;
 	}
 
 	private function filterRanks() {

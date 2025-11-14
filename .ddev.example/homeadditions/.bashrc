@@ -1,1 +1,1 @@
-alias t=/home/www/html/scripts/test.sh $1
+alias t=/var/www/html/scripts/test.sh $1

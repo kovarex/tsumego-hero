@@ -1,0 +1,62 @@
+<?php
+
+class HeroController extends AppController {
+	public function refinement() {
+		if (!Auth::isLoggedIn()) {
+			return $this->redirect('/users/login');
+		}
+		if (Auth::getUser()['used_refinement']) {
+			throw new AppException("Refinment is already used up.");
+		}
+
+		$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
+			"SELECT "
+					. "set_connection.id, tsumego.id "
+				. " FROM tsumego"
+				. " JOIN set_connection ON set_connection.tsumego_id=tsumego.id"
+				. " JOIN `set` ON `set`.id=set_connection.set_id"
+				. " WHERE tsumego.deleted is null AND set.public = 1");
+		if (empty($setConnectionIDs)) {
+			throw new Exception("No valid tsumego to choose from.");
+		}
+		$setConnection = $setConnectionIDs[rand(0, count($setConnectionIDs) - 1)];
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
+			'tsumego_id' => $setConnection['tsumego']['id'],
+			'user_id' => Auth::getUserID()]]);
+		if (!$tsumegoStatus) {
+			ClassRegistry::init('TsumegoStatus')->create();
+			$tsumegoStatus = [];
+			$tsumegoStatus['user_id'] = Auth::getUserID();
+			$tsumegoStatus['tsumego_id'] = $setConnection['tsumego']['id'];
+		} else {
+			$tsumegoStatus = $tsumegoStatus['TsumegoStatus'];
+		}
+		$tsumegoStatus['created'] = date('Y-m-d H:i:s');
+		$tsumegoStatus['status'] = 'G';
+		ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
+		Auth::getUser()['used_refinement'] = 1;
+		Auth::saveUser();
+		return $this->redirect('/' . $setConnection['set_connection']['id']);
+		/*
+			} else {
+				$resetRefinement = TsumegosController::findUt($id, $tsumegoStatusMap);
+				if ($resetRefinement != null) {
+					$resetRefinement['TsumegoStatus']['status'] = 'V';
+					$testUt = ClassRegistry::init('TsumegoStatus')->find('first', [
+						'conditions' => [
+							'tsumego_id' => $resetRefinement['TsumegoStatus']['tsumego_id'],
+							'user_id' => $resetRefinement['TsumegoStatus']['user_id'],
+						],
+					]);
+					$resetRefinement['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
+				}
+				if (!$tsumegoStatus) {
+					$tsumegoStatus = $resetRefinement;
+				}
+				$goldenTsumego = false;
+			}
+			Auth::getUser()['refinement'] = 0;
+			unset($_COOKIE['refinement']);
+		}*/
+	}
+}

@@ -3,6 +3,7 @@
 App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
+App::uses('HeroPowers', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -38,7 +39,6 @@ class Play {
 		$difficulty = 4;
 		$potion = 0;
 		$potionSuccess = false;
-		$potionActive = false;
 		$reviewCheat = false;
 		$commentCoordinates = [];
 		$trs = [];
@@ -583,46 +583,6 @@ class Play {
 				Auth::getUser()['penalty'] += 1;
 				unset($_COOKIE['extendedSprint']);
 			}
-			if (isset($_COOKIE['refinement']) && $_COOKIE['refinement'] != '0') {
-				if ($_COOKIE['refinement'] > 0) {
-					if (Auth::getUser()['usedRefinement'] == 0) {
-						$refinementUT = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-						if ($tsumegoStatus == null) {
-							ClassRegistry::init('TsumegoStatus')->create();
-							$refinementUT['TsumegoStatus']['user_id'] = Auth::getUserID();
-							$refinementUT['TsumegoStatus']['tsumego_id'] = $id;
-						}
-						$refinementUT['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-						$refinementUT['TsumegoStatus']['status'] = 'G';
-						ClassRegistry::init('TsumegoStatus')->save($refinementUT);
-						$tsumegoStatusMap[$id] = 'G';
-						$tsumegoStatus = 'G';
-						$goldenTsumego = true;
-						Auth::getUser()['usedRefinement'] = 1;
-					}
-				} else {
-					$resetRefinement = TsumegosController::findUt($id, $tsumegoStatusMap);
-					if ($resetRefinement != null) {
-						$resetRefinement['TsumegoStatus']['status'] = 'V';
-						$testUt = ClassRegistry::init('TsumegoStatus')->find('first', [
-							'conditions' => [
-								'tsumego_id' => $resetRefinement['TsumegoStatus']['tsumego_id'],
-								'user_id' => $resetRefinement['TsumegoStatus']['user_id'],
-							],
-						]);
-						$resetRefinement['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
-						//ClassRegistry::init('TsumegoStatus')->save($resetRefinement);
-						//CakeSession::read('loggedInUser.uts')[$resetRefinement['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
-						//$tsumegoStatusMap[$refinementUT['TsumegoStatus']['tsumego_id']] = $resetRefinement['TsumegoStatus']['status'];
-					}
-					if (!$tsumegoStatus) {
-						$tsumegoStatus = $resetRefinement;
-					}
-					$goldenTsumego = false;
-				}
-				Auth::getUser()['refinement'] = 0;
-				unset($_COOKIE['refinement']);
-			}
 		}
 
 		if ($rejuvenation) {
@@ -826,10 +786,7 @@ class Play {
 			$emptyHeart = 'heart2';
 		}
 		if (Auth::isLoggedIn()) {
-			($this->setFunction)('sprintEnabled', Auth::getUser()['sprint']);
-			($this->setFunction)('intuitionEnabled', Auth::getUser()['intuition']);
 			($this->setFunction)('rejuvenationEnabled', Auth::getUser()['rejuvenation']);
-			($this->setFunction)('refinementEnabled', Auth::getUser()['refinement']);
 			if (Auth::getUser()['reuse4'] == 1) {
 				$dailyMaximum = true;
 			}
@@ -845,12 +802,6 @@ class Play {
 		if ($goldenTsumego) {
 			$t['Tsumego']['difficulty'] *= 8;
 		}
-		$refinementT = ClassRegistry::init('Tsumego')->find('all', [
-			'limit' => 5000,
-			'conditions' => [
-				'difficulty >' => 35,
-			],
-		]);
 
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
 
@@ -870,19 +821,8 @@ class Play {
 			$sandboxComment2 = false;
 		}
 
-		shuffle($refinementT);
-
-		$refinementPublicCounter = 0;
-
 		$activate = true;
 		if (Auth::isLoggedIn()) {
-			if (Auth::hasPremium() || Auth::getUser()['level'] >= 50) {
-				if (Auth::getUser()['potion'] != -69) {
-					if (Auth::getUser()['health'] - Auth::getUser()['damage'] <= 0) {
-						$potionActive = true;
-					}
-				}
-			}
 			$achievementUpdate1 = AppController::checkLevelAchievements();
 			$achievementUpdate2 = AppController::checkProblemNumberAchievements();
 			$achievementUpdate3 = AppController::checkNoErrorAchievements();
@@ -977,13 +917,6 @@ class Play {
 		$allTags = AppController::getAllTags($tags);
 		$popularTags = TsumegosController::getPopularTags($tags);
 		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		$hasRevelation = false;
-		if ($uc) {
-			$hasRevelation = $uc['UserContribution']['reward3'];
-		}
-		if (Auth::hasPremium() && Auth::getUser()['level'] >= 100) {
-			$hasRevelation = true;
-		}
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
@@ -1032,7 +965,7 @@ class Play {
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
 			$previousSetConnectionID = $tsumegoButtons[$indexOfCurrent - 1]->setConnectionID;
 		}
-		$previousLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters,isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
+		$previousLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
 
 		if (isset($indexOfCurrent) && count($tsumegoButtons) > $indexOfCurrent + 1) {
 			$nextSetConnectionID = $tsumegoButtons[$indexOfCurrent + 1]->setConnectionID;
@@ -1044,7 +977,6 @@ class Play {
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('isAllowedToContribute2', $isAllowedToContribute2);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
-		($this->setFunction)('hasRevelation', $hasRevelation);
 		($this->setFunction)('allTags', $allTags);
 		($this->setFunction)('tags', $tags);
 		($this->setFunction)('popularTags', $popularTags);
@@ -1066,7 +998,6 @@ class Play {
 		($this->setFunction)('showComment', $co);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
-		($this->setFunction)('g', $refinementT[$refinementPublicCounter]);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
 		($this->setFunction)('dailyMaximum', $dailyMaximum);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
@@ -1101,7 +1032,6 @@ class Play {
 		($this->setFunction)('difficulty', $difficulty);
 		($this->setFunction)('potion', $potion);
 		($this->setFunction)('potionSuccess', $potionSuccess);
-		($this->setFunction)('potionActive', $potionActive);
 		($this->setFunction)('reviewCheat', $reviewCheat);
 		($this->setFunction)('commentCoordinates', $commentCoordinates);
 		($this->setFunction)('part', $t['Tsumego']['part']);

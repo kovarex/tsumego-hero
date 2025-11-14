@@ -438,8 +438,9 @@ class SetsController extends AppController {
 		$achievementUpdate = [];
 
 		$tsumegoFilters = new TsumegoFilters();
-		if ($tsumegoFilters->query == 'favorites')
+		if ($tsumegoFilters->query == 'favorites') {
 			$tsumegoFilters->setQuery('topics');
+		}
 
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
 		foreach ($swp as $item) {

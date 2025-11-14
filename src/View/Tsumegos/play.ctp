@@ -44,11 +44,6 @@
 	if($authorx=='Joschka Zimdars') $authorx = 'd4rkm4tter';
 	else if($authorx=='Jérôme Hubert') $authorx = 'jhubert';
 	else if($authorx=='Stepan Trubitsin') $authorx = 'Stepan';
-	$heroPower1 = 'hp1x';
-	$heroPower2 = 'hp2x';
-	$heroPower3 = 'hp3x';
-	$heroPower4 = 'hp4x';
-	$heroPower5 = 'hp5x';
 
 	if($eloScore2==0)
 		$eloScore2d = '-0';
@@ -317,91 +312,7 @@
 	</table>
 	</td>
 	<td align="center" width="29%">
-		<?php
-			if (Auth::isInLevelMode()) {
-				if(Auth::getWithDefault('level', 0) >= 20 && $sprintEnabled==1){
-					echo '
-						<a href="#"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png"
-						onmouseover="sprintHover()" onmouseout="sprintNoHover()" onclick="sprint(); return false;"></a>
-					';
-				}else{
-					echo '
-						<a href="#"><img id="sprint" title="Sprint (Level 20): Double XP for 2 minutes." src="/img/'.$heroPower1.'.png"
-						style="cursor: context-menu;" alt="Sprint"></a>
-					';
-				}
-				if(Auth::getWithDefault('level', 0) >= 30 && $intuitionEnabled==1){
-					echo '
-						<a href="#"><img id="intuition" title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png"
-						onmouseover="intuitionHover()" onmouseout="intuitionNoHover()" onclick="intuition(); return false;"></a>
-					';
-				}else{
-					echo '
-						<a href="#"><img id="intuition" title="Intuition (Level 30): Shows the first correct move." src="/img/'.$heroPower2.'.png"
-						style="cursor: context-menu;" alt="Intuition"></a>
-					';
-				}
-				if(Auth::getWithDefault('level', 0) >=40 && $rejuvenationEnabled==1){
-					echo '
-						<a href="#"><img id="rejuvenation" title="Rejuvenation: Restores health, Intuition and locks." src="/img/hp3.png"
-						onmouseover="rejuvenationHover()" onmouseout="rejuvenationNoHover()" onclick="rejuvenation(); return false;"></a>
-					';
-				}else{
-					echo '
-						<a href="#"><img id="rejuvenation" title="Rejuvenation (Level 40): Restores health, Intuition and locks." src="/img/'.$heroPower3.'.png"
-						style="cursor: context-menu;" alt="Rejuvenation"></a>
-					';
-				}
-				if(Auth::hasPremium() || Auth::getWithDefault('level', 0) >= 100){
-					if($refinementEnabled==1){
-						echo '
-							<a href="#"><img id="refinement" title="Refinement: Gives you a chance to solve a golden tsumego. If you fail, it disappears." src="/img/hp4.png"
-							onmouseover="refinementHover()" onmouseout="refinementNoHover()" onclick="refinement(); return false;"></a>
-						';
-					}else{
-						echo '
-							<a href="#"><img id="refinement" title="Refinement (Level 100 or Premium): Gives you a chance to solve a golden tsumego. If you fail, it disappears." src="/img/'.$heroPower4.'.png"
-							style="cursor: context-menu;" alt="Refinement"></a>
-						';
-					}
-				}else{
-					echo '
-						<a href="#"><img id="refinement" title="Refinement (Level 100 or Premium): Gives you a chance to solve a golden tsumego. If you fail, it disappears." src="/img/'.$heroPower4.'.png"
-						style="cursor: context-menu;" alt="Refinement"></a>
-					';
-				}
-				if($hasRevelation){
-					echo '
-							<a href="#" class="revelation-anchor"><img id="revelation" title="Revelation ('.Auth::getUser()['revelation'].'): Solves a problem, but you don\'t get any reward." src="/img/hp6x.png"
-							onmouseover="revelationHover()" onmouseout="revelationNoHover()" onclick="revelation(); return false;"></a>
-					';
-				}
-				if(Auth::hasPremium()){
-					if($potionActive){
-						echo '
-							<img id="potion" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">
-						';
-					}
-				}
-			}else{
-				echo '
-					<a href="#"><img id="sprint" title="Sprint (Level 20): Double XP for 2 minutes." src="/img/hp1x.png"
-					style="cursor: context-menu;" alt="Sprint"></a>
-				';
-				echo '
-					<a href="#"><img id="intuition" title="Intuition (Level 30): Shows the first correct move." src="/img/hp2x.png"
-					style="cursor: context-menu;" alt="Intuition"></a>
-				';
-				echo '
-					<a href="#"><img id="rejuvenation" title="Rejuvenation (Level 40): Restores health, Intuition and locks." src="/img/hp3x.png"
-					style="cursor: context-menu;" alt="Rejuvenation"></a>
-				';
-				echo '
-					<a href="#"><img id="refinement" title="Refinement (Level 100 or Premium): Gives you a chance to solve a golden tsumego. If you fail, it disappears." src="/img/hp4x.png"
-					style="cursor: context-menu;" alt="Refinement"></a>
-				';
-			}
-		?>
+		<?php HeroPowers::render(); ?>
 	</td>
 	</tr>
 	</table>
@@ -2607,16 +2518,6 @@
 		}
 	}
 
-	function refinement(){
-		if(refinementEnabled){
-			setCookie("refinement", 1);
-			document.getElementById("refinement").src = "/img/hp4x.png";
-			document.getElementById("refinement").style = "cursor: context-menu;";
-			<?php echo 'window.location.href = nextTsumegoLink;'; ?>
-		}
-		refinementEnabled = false;
-	}
-
 	function revelation(){
 		if(revelationEnabled){
 			<?php if($t['Tsumego']['status']!='setS2' && $t['Tsumego']['status']!='setC2'){ ?>
@@ -2644,36 +2545,6 @@
 		}
 	}
 
-	function sprintHover(){
-		if(sprintEnabled) document.getElementById("sprint").src = '/img/hp1h.png';
-	}
-	function sprintNoHover(){
-		if(sprintEnabled) document.getElementById("sprint").src = "/img/hp1.png";
-	}
-	function intuitionHover(){
-		if(intuitionEnabled) document.getElementById("intuition").src = '/img/hp2h.png';
-	}
-	function intuitionNoHover(){
-		if(intuitionEnabled) document.getElementById("intuition").src = "/img/hp2.png";
-	}
-	function rejuvenationHover(){
-		if(rejuvenationEnabled) document.getElementById("rejuvenation").src = '/img/hp3h.png';
-	}
-	function rejuvenationNoHover(){
-		if(rejuvenationEnabled) document.getElementById("rejuvenation").src = "/img/hp3.png";
-	}
-	function refinementHover(){
-		if(refinementEnabled) document.getElementById("refinement").src = '/img/hp4h.png';
-	}
-	function refinementNoHover(){
-		if(refinementEnabled) document.getElementById("refinement").src = "/img/hp4.png";
-	}
-	function revelationHover(){
-		if(revelationEnabled) document.getElementById("revelation").src = '/img/hp6h.png';
-	}
-	function revelationNoHover(){
-		if(revelationEnabled) document.getElementById("revelation").src = "/img/hp6.png";
-	}
 	function thumbsUpHover(){
 		if(!thumbsUpSelected && !thumbsUpSelected2) document.getElementById("thumbs-up").src = '/img/thumbs-up.png';
 	}
