@@ -7,4 +7,6 @@ class Constants {
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
+
+	public static int $GOLDEN_TSUMEGO_XP_MULTIPLIER = 8;
 }

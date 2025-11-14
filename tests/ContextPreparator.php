@@ -71,23 +71,15 @@ class ContextPreparator {
 	}
 
 	private function prepareTsumego(?array $tsumegoInput): array {
-		if ($tsumegoInput) {
-			if (!$tsumegoInput['id']) {
-				$tsumegoInput['deleted'] = $tsumegoInput['deleted'] ?: null;
-				ClassRegistry::init('Tsumego')->create($tsumegoInput);
-				ClassRegistry::init('Tsumego')->save($tsumegoInput);
-				$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
-				assert($tsumego['id']);
-			}
-		} else {
-			$tsumego = ClassRegistry::init('Tsumego')->find()['Tsumego'];
-			if (!$tsumego) {
-				$tsumego = [];
-				$tsumego['Tsumego']['description'] = 'test-tsumego';
-				ClassRegistry::init('Tsumego')->save($tsumego);
-				$tsumego  = ClassRegistry::init('Tsumego')->find()['Tsumego'];
-			}
-		}
+		$tsumego = [];
+		$tsumego['description'] = 'test-tsumego';
+		$tsumego['rating'] = $tsumegoInput['rating'] ?: 1000;
+		$tsumego['difficulty'] = 1;
+		ClassRegistry::init('Tsumego')->create($tsumego);
+		ClassRegistry::init('Tsumego')->save($tsumego);
+		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
+		assert($tsumego['id']);
+
 		$this->prepareTsumegoSets($tsumegoInput['sets'], $tsumego);
 		$this->prepareTsumegoTags($tsumegoInput['tags'], $tsumego);
 		$this->prepareTsumegoStatus($tsumegoInput['status'], $tsumego);

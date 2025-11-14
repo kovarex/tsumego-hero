@@ -316,41 +316,9 @@
 	</td>
 	</tr>
 	</table>
-	<div align="center" id="xpDisplayDiv">
-		<table class="xpDisplayTable" border="0" width="70%">
-			<tr>
-			<td width="33%">
-				<?php if (!Auth::isInTimeMode()) { ?>
-				<div id="xpDisplay" align="center">
-					<font size="4" color="<?php echo $xpDisplayColor; ?>"></font>
-				</div>
-				<?php }else{ ?>
-				<div id="xpDisplay" align="center"></div>
-				<div id="time-mode-countdown">
-					10.0
-				</div>
-				<div id="plus2">+2</div>
-				<?php } ?>
-			</td>
-			<td width="33%">
-				<div id="status" align="center" style="color:black;"></div>
-			</td>
-			<td width="33%">
-				<div id="status2" align="center" style="color:black;">
-				<font size="4">
-				<?php
-				echo	$tRank.' <font color="grey">('.$t['Tsumego']['rating'].')</font>';
-				?>
-				</font>
-				</div>
-			</td>
-			</tr>
-		</table>
-	</div>
+	<?php $tsumegoXpAndRating->render(); ?>
 	<div align="center">
-		<div id="theComment">
-
-		</div>
+		<div id="theComment"></div>
 	</div>
 	<?php if($dailyMaximum) echo '<style>.upgradeLink{display:block;}</style>'; ?>
 	<div class="upgradeLink" align="center">
@@ -1579,7 +1547,7 @@
 		';
 	}
 
-	if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $t['Tsumego']['status']=='setW2'){
+	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || $t['Tsumego']['status']=='W'){
 		echo 'var showCommentSpace = true;';
 	}else echo 'var showCommentSpace = false;';
 	if(Auth::isAdmin()){
@@ -1613,7 +1581,7 @@
 			toggleBoardLock(true);';
 	}
 
-	if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2' || $maxNoUserLevel){
+	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || $maxNoUserLevel){
 		echo 'var noXP=true;';
 	}else{
 		echo 'var noXP=false;';
@@ -1674,7 +1642,7 @@
 			if($refresh=='8') echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";';
 		?>
 		<?php
-		if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){
+		if($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X'){
 			echo '
 				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>\';
 				tryAgainTomorrow = true;
@@ -1695,7 +1663,7 @@
 			echo 'doubleXP = true; countDownDate = '.$doublexp.';';
 		}
 
-		if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
+		if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C'){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
 		}
@@ -1791,7 +1759,7 @@
 		}
 		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
 		<?php
-			if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2')
+			if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C')
 				echo '$(".tag-gives-hint").css("display", "inline");';
 		?>
 	}
@@ -1903,78 +1871,20 @@
 							document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
 							document.getElementById("xpDisplay").style.color = "<?php echo $playBlueColor; ?>";
 							document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
-							<?php
-							if($levelBar==1){
-								if(!$goldenTsumego)
-									echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].'×2 XP</font>\';';
-								else
-									echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].' XP</font>\';';
-							}else{
-								echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4"><div class="eloTooltip">+'.$eloScoreRounded.'<span class="eloTooltiptext">+'.$eloScore.'</span></div>/<div class="eloTooltip">'.$eloScore2dRounded.' <span class="eloTooltiptext">'.$eloScore2d.'</span></div> '.$avActiveText.'</font>\';';
-							}
-							?>
-							document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
+							setCookie("sprint", 1);
 						}else{
 							window.location.href = "/sets";
 						}
 					}else{
 						clearInterval(x);
 						<?php
-						if(isset($sprintActivated)){
-							echo 'document.cookie = "sprint=2;path=/tsumegos/play;SameSite=Lax";';
-							echo 'document.cookie = "doublexp=0;path=/tsumegos/play;SameSite=Lax";';
-						}
-						if($levelBar==1){
-							if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
-								 echo '
-									document.getElementById("xpDisplay").style.color = "'.$playGreenColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4"><b>Solved</b> ('.$t['Tsumego']['difficulty'].' XP) '.$sandboxComment.'</font>\';
-								';
-							}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
-								echo '
-									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
-								';
-							}else{
-								echo '
-									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
-								';
-							}
-						}else{
-							echo '
-									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4"><div class="eloTooltip">+'.$eloScoreRounded.'<span class="eloTooltiptext">+'.$eloScore.'</span></div>/<div class="eloTooltip">'.$eloScore2dRounded.' <span class="eloTooltiptext">'.$eloScore2d.'</span></div> '.$avActiveText.'</font>\';
-								';
+						if (isset($sprintActivated)) {
+							echo 'setCookie("sprint", 2)';
+							echo 'setCookie("doublexp", 0);';
 						}
 						?>
 						doubleXP = false;
 					}
-				}else{
-					<?php
-					if($levelBar==1){
-						if($t['Tsumego']['status']=='setS2' || $t['Tsumego']['status']=='setC2'){
-							 echo '
-								document.getElementById("xpDisplay").style.color = "'.$playGreenColor.'";
-								document.getElementById("xpDisplay").innerHTML = \'<font size="4"><b>Solved</b> ('.$t['Tsumego']['difficulty'].' XP) '.$sandboxComment.'</font>\';
-							';
-						}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
-							echo '
-								document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-								document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
-							';
-						}else{
-							echo '
-								document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-								document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
-							';
-						}
-					}else{
-						echo '
-							document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-							document.getElementById("xpDisplay").innerHTML = \'<font size="4"><div class="eloTooltip">+'.$eloScoreRounded.'<span class="eloTooltiptext">+'.$eloScore.'</span></div>/<div class="eloTooltip">'.$eloScore2dRounded.' <span class="eloTooltiptext">'.$eloScore2d.'</span></div> '.$sandboxComment.''.$avActiveText.'</font>\';';
-					}
-					?>
 				}
 			}else{
 				if(timeModeEnabled){
@@ -2435,11 +2345,6 @@
 									timeOutput = minutes + ":" + seconds;
 								document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
 								document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
-								//document.getElementById("xpDisplay").style.color = "<?php echo $playBlueColor; ?>";
-								<?php
-								//if(!$goldenTsumego) echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].'×2 XP</font>\';';
-								//else echo 'document.getElementById("xpDisplay").innerHTML = \'<font size="4">'.$t['Tsumego']['difficulty'].' XP</font>\';';
-								?>
 								document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
 							}else{
 								window.location.href = "/sets";
@@ -2449,22 +2354,6 @@
 							<?php
 							if(isset($sprintActivated))
 								echo 'setCookie("sprint", 2)';
-							if (TsumegoUtil::hasStateAllowingInspection($t)) {
-								echo '
-									document.getElementById("xpDisplay").style.color = "'.$playGreenColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4"><b>Solved</b> ('.$t['Tsumego']['difficulty'].' XP) '.$sandboxComment.'</font>\';
-								';
-							}else if($t['Tsumego']['status']=='setW2' || $t['Tsumego']['status']=='setX2'){
-								echo '
-									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP (1/2) '.$sandboxComment.'</font>\';
-								';
-							}else{
-								echo '
-									document.getElementById("xpDisplay").style.color = "'.$xpDisplayColor.'";
-									document.getElementById("xpDisplay").innerHTML = \'<font size="4">	'.$t['Tsumego']['difficulty'].' XP '.$sandboxComment.'</font>\';
-								';
-							}
 							?>
 							doubleXP = false;
 						}
@@ -2520,7 +2409,7 @@
 
 	function revelation(){
 		if(revelationEnabled){
-			<?php if($t['Tsumego']['status']!='setS2' && $t['Tsumego']['status']!='setC2'){ ?>
+			<?php if ($t['Tsumego']['status'] != 'S' && $t['Tsumego']['status'] != 'C') { ?>
 				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 				if(light==true)
@@ -2922,7 +2811,7 @@
 
 	function resetParameters(isAtStart){
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		if(tStatus=="setS2"||tStatus=="setC2") heartLoss = false;
+		if(tStatus=="S"||tStatus=="C") heartLoss = false;
 		else heartLoss = true;
 		if(isAtStart) heartLoss = false;
 		if(noXP==true||freePlayMode==true||locked==true||authorProblem==true) heartLoss = false;

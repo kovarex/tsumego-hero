@@ -51,7 +51,7 @@ class PlayResultProcessorComponent extends Component {
 		return $result;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array $result): void {
+	private function updateTsumegoStatus(array $previousTsumego, array &$result): void {
 		$tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
 		$previousTsumegoStatus = $tsumegoStatusModel->find('first', [
 			'order' => 'created DESC',
@@ -73,6 +73,9 @@ class PlayResultProcessorComponent extends Component {
 				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') { // half xp state
 					$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
 				} else {
+					if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G') {
+						$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
+					}
 					$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
 				}
 			} else {
@@ -210,7 +213,7 @@ class PlayResultProcessorComponent extends Component {
 		if (!$result['solved']) {
 			return;
 		}
-		Auth::getUser()['xp'] += $previousTsumego['difficulty'];
+		Auth::getUser()['xp'] += TsumegoUtil::getXpValue($previousTsumego['Tsumego']) * ($result['xp-modifier'] ?: 1);
 		if (Auth::getUser()['xp'] >= Auth::getUser()['nextlvl']) {
 			Auth::getUser()['xp'] -= Auth::getUser()['nextlvl'];
 			Auth::getUser()['level'] += 1;

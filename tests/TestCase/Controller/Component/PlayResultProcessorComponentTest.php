@@ -165,6 +165,20 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 		}
 	}
 
+	public function testSolvingAddsXP(): void {
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+			$originalXP = $context->user['xp'];
+			$this->performSolve($context, $page);
+			$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
+			$this->assertSame($newUser['xp'] - $originalXP, TsumegoUtil::getXpValue($context->tsumego));
+		}
+	}
+
 	public function testSolvingAddsNewTsumegoAttempt(): void {
 		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);

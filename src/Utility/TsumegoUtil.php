@@ -72,4 +72,9 @@ class TsumegoUtil {
 		$result .= '\t}\n';
 		return $result;
 	}
+
+	public static function getXpValue(array $tsumego): int {
+		// TODO: we should later merge difficulty and rating and derive difficulty from rating
+		return intval($tsumego['difficulty']);
+	}
 }

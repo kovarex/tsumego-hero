@@ -4,6 +4,7 @@ App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
+App::uses('TsumegoXpAndRating', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -186,10 +187,6 @@ class Play {
 			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
 		}
 
-		$fSet = ClassRegistry::init('Set')->find('first', ['conditions' => ['id' => $t['Tsumego']['set_id']]]);
-		if (!$fSet) {
-			$fSet = ClassRegistry::init('Set')->findById(1);
-		}
 		if ($t == null) {
 			$t = ClassRegistry::init('Tsumego')->findById(CakeSession::read('lastVisit'));
 		}
@@ -420,12 +417,12 @@ class Play {
 				$errors[] = 'The file is too large.';
 			}
 			$cox = count(ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
-			if (empty($fSet['Set']['title2'])) {
+			if (empty($set['Set']['title2'])) {
 				$title2 = '';
 			} else {
 				$title2 = '-';
 			}
-			$file_name = $fSet['Set']['title'] . $title2 . $fSet['Set']['title2'] . '-' . $t['Tsumego']['num'] . '-' . $cox . '.sgf';
+			$file_name = $set['Set']['title'] . $title2 . $set['Set']['title2'] . '-' . $t['Tsumego']['num'] . '-' . $cox . '.sgf';
 			$sgfComment = [];
 			ClassRegistry::init('Comment')->create();
 			$sgfComment['user_id'] = Auth::getUserID();
@@ -439,7 +436,7 @@ class Play {
 				move_uploaded_file($file_tmp, $uploadfile);
 			}
 		}
-		$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * $fSet['Set']['multiplier']);
+		$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * $set['Set']['multiplier']);
 
 		if (Auth::isLoggedIn()) {
 			$pd = ClassRegistry::init('ProgressDeletion')->find('all', [
@@ -800,7 +797,7 @@ class Play {
 			$t['Tsumego']['difficulty'] = 10;
 		}
 		if ($goldenTsumego) {
-			$t['Tsumego']['difficulty'] *= 8;
+			$t['Tsumego']['difficulty'] *= Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
 		}
 
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
@@ -863,8 +860,6 @@ class Play {
 
 		AppController::startPageUpdate();
 		$startingPlayer = TsumegosController::getStartingPlayer($sgf2);
-
-		$avActiveText = '<font style="color:gray;"> (out of range)</font>';
 
 		$eloScoreRounded = round($eloScore);
 		$eloScore2Rounded = round($eloScore2);
@@ -986,7 +981,6 @@ class Play {
 		if (isset($activityValue)) {
 			($this->setFunction)('activityValue', $activityValue);
 		}
-		($this->setFunction)('avActiveText', $avActiveText);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
@@ -1056,6 +1050,7 @@ class Play {
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
+		($this->setFunction)('tsumegoXpAndRating', new TsumegoXpAndRating($t['Tsumego'], $tsumegoStatus));
 		return null;
 	}
 
