@@ -4,7 +4,7 @@ function setCookie(cookie, value){
 
 function formatMultiplier(value) {
 	if (value >= 1)
-		return `&times; ${value}`;
+		return `&times;${value}`;
 
 	const rounded = Math.round(1 / value);
 	const tolerance = 0.02; // 2% tolerance
@@ -17,11 +17,12 @@ function formatMultiplier(value) {
 
 class XPStatus
 {
-	constructor({ baseXP, solved, sprintRemainingSeconds, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier})
+	constructor({ baseXP, solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier})
 	{
 		this.baseXP = baseXP;
 		this.solved = solved;
 		this.sprintRemainingSeconds = sprintRemainingSeconds;
+		this.sprintMultiplier = sprintMultiplier;
 		this.goldenTsumego = goldenTsumego;
 		this.goldenTsumegoMultiplier = goldenTsumegoMultiplier;
 		this.resolving = resolving;
@@ -29,6 +30,8 @@ class XPStatus
 
 		// cache the element
 		this.xpDisplay = document.querySelector("#xpDisplay");
+		if (this.isSprintActive())
+			startSprint(this.sprintRemainingSeconds, true);
 	}
 
 	update()
@@ -38,6 +41,8 @@ class XPStatus
 			multiplier *= this.goldenTsumegoMultiplier;
 		else if (this.resolving)
 			multiplier *= this.resolvingMultiplier;
+		if (this.isSprintActive())
+			multiplier *= this.sprintMultiplier;
 
 		let xpPart = String(Math.ceil(this.baseXP * multiplier)) + ' XP';
 		if (multiplier != 1)
@@ -45,21 +50,23 @@ class XPStatus
 
 		if (this.goldenTsumego)
 		{
-			xpPart = 'Golden (' + xpPart + ')';
-			this.xpDisplay.style.color = '#0cbb0c';
+			xpPart = 'Golden: ' + xpPart;
+			this.xpDisplay.className = 'xpDisplay goldenTsumegoXpDisplay';
 		}
 		else if (this.solved)
 		{
-			xpPart = 'Solved (' + xpPart + ')';
-			this.xpDisplay.style.color = 'green';
+			xpPart = 'Solved: ' + xpPart;
+			this.xpDisplay.className = 'xpDisplay solvedXpDisplay';
 		}
-		else if (this.sprintRemainingSeconds > 0)
+		else if (this.isSprintActive())
 		{
-			xpPart = 'Sprint (' + xpPart + ')';
-			this.xpDisplay.style.color = 'blue';
+			xpPart = 'Sprint: ' + xpPart;
+			this.xpDisplay.className = 'xpDisplay sprintXpDisplay';
 		}
+		else
+			this.xpDisplay.className = 'xpDisplay';
 
-		this.xpDisplay.textContent = xpPart;
+		this.xpDisplay.innerHTML = xpPart;
 	}
 
 	isSprintActive()
@@ -79,48 +86,47 @@ class XPStatus
 	}
 }
 
-function startSprint(seconds)
+function updateSprintStatus(seconds)
+{
+	document.getElementById("status2").innerHTML = Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2,'0');
+	document.getElementById("status2").style.color = 'blue';
+}
+
+function startSprint(seconds, updatingFromStatus = false)
 {
 	if (!sprintEnabled)
 		return;
 	countDownDate = new Date();
-	countDownDate.setMinutes(countDownDate.getSeconds() + seconds);
+	countDownDate.setSeconds(countDownDate.getSeconds() + seconds);
 	document.getElementById("sprint").src = "/img/hp1x.png";
 	document.getElementById("sprint").style = "cursor: context-menu;";
+	if (!updatingFromStatus)
+	{
+		$.ajax(
+			{
+				url: '/hero/sprint',
+				type: 'POST',
+				data: {},
+				dataType: 'json',
+				success: function(response) {}
+			});
+		xpStatus.set('sprintRemainingSeconds', seconds);
+	}
 
-	$.ajax(
-		{
-			url: '/hero/sprint',
-			type: 'POST',
-			data: {},
-			dataType: 'json',
-			success: function(response) {}
-		});
-	xpStatus.set('sprintRemainingSeconds', seconds);
+	updateSprintStatus(seconds);
 
 	var x = setInterval(function()
 	{
 		if (!xpStatus.isSprintActive())
 			return;
-		var now = new Date().getTime();
-		var distance = countDownDate - now;
-		var seconds = Math.floor(distance / 1000);
+		var seconds = Math.floor((countDownDate - new Date()) / 1000);
 		xpStatus.set('sprintRemainingSeconds', seconds);
-		if (!xpStatus.isSprintActive()) {
+		updateSprintStatus(seconds);
+		if (!xpStatus.isSprintActive())
+		{
 			clearInterval(x);
 			return;
 		}
-		var minutes = Math.floor(seconds / 60);
-		seconds -= minutes * 60;
-		var timeOutput;
-
-		if(seconds<10)
-			timeOutput = minutes + ":0" + seconds;
-		else
-			timeOutput = minutes + ":" + seconds;
-		document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
-		document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
-		document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
 	}, 250);
 	sprintEnabled = false;
 }

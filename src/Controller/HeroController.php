@@ -37,26 +37,14 @@ class HeroController extends AppController {
 		Auth::getUser()['used_refinement'] = 1;
 		Auth::saveUser();
 		return $this->redirect('/' . $setConnection['set_connection']['id']);
-		/*
-			} else {
-				$resetRefinement = TsumegosController::findUt($id, $tsumegoStatusMap);
-				if ($resetRefinement != null) {
-					$resetRefinement['TsumegoStatus']['status'] = 'V';
-					$testUt = ClassRegistry::init('TsumegoStatus')->find('first', [
-						'conditions' => [
-							'tsumego_id' => $resetRefinement['TsumegoStatus']['tsumego_id'],
-							'user_id' => $resetRefinement['TsumegoStatus']['user_id'],
-						],
-					]);
-					$resetRefinement['TsumegoStatus']['id'] = $testUt['TsumegoStatus']['id'];
-				}
-				if (!$tsumegoStatus) {
-					$tsumegoStatus = $resetRefinement;
-				}
-				$goldenTsumego = false;
-			}
-			Auth::getUser()['refinement'] = 0;
-			unset($_COOKIE['refinement']);
-		}*/
+	}
+
+	public function sprint() {
+		if (!HeroPowers::canUseSprint()) {
+			return;
+		}
+		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
+		Auth::getUser()['used_sprint'] = 1;
+		Auth::saveUser();
 	}
 }

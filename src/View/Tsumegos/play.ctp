@@ -57,17 +57,11 @@
 	if($lightDark=='dark'){
 		$playGreenColor = '#0cbb0c';
 		$playBlueColor = '#72a7f2';
-		$xpDisplayColor = '#f0f0f0';
 	}else{
 		$playGreenColor = 'green';
 		$playBlueColor = 'blue';
-		$xpDisplayColor = 'black';
 	}
 
-	if($goldenTsumego){
-		$xpDisplayColor = '#b5910b';
-		echo '<style>#xpDisplay{font-weight:800;color:#b5910b;}</style>';
-	}
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
@@ -1839,88 +1833,45 @@
 		$(".add-tag-list").show();
 		$(".add-tag-list-popular").hide();
 	});
-		var now = new Date().getTime();
-		var distance = countDownDate - now;
-		var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-		var seconds2 = Math.floor((distance % (1000 * 60)) / 1000);
-		if (distance >= 0 && sprintLockedInSecretArea){
-				window.location.href = "/sets";
-		}
-		tcount = <?php echo @$timeMode['secondsToSolve'] ?: 0 ?>;
 
-		var tcounter = 250;
-		if(mode==3) {
-			tcounter = 100;
-			moveTimeout = 50;
-		}
-
-		var x = setInterval(function(){
-			if(mode!=3){
-				if(doubleXP){
-					var now = new Date().getTime();
-					var distance = countDownDate - now;
-					var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-					var seconds2 = Math.floor((distance % (1000 * 60)) / 1000);
-					var timeOutput;
-					if(minutes>2)
-						document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=Lax";
-					if(distance >= 0){
-						if(!sprintLockedInSecretArea){
-							if(seconds2<10)
-								timeOutput = minutes + ":0" + seconds2;
-							else
-								timeOutput = minutes + ":" + seconds2;
-							document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
-							document.getElementById("xpDisplay").style.color = "<?php echo $playBlueColor; ?>";
-							document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
-							setCookie("sprint", 1);
-						}else{
-							window.location.href = "/sets";
-						}
-					}else{
-						clearInterval(x);
-						<?php
-						if (isset($sprintActivated)) {
-							echo 'setCookie("sprint", 2)';
-							echo 'setCookie("doublexp", 0);';
-						}
-						?>
-						doubleXP = false;
-					}
-				}
-			}else{
-				if(timeModeEnabled){
-					tcount-=0.1;
-					tcount = tcount.toFixed(1);
-					tcountMin = Math.floor(tcount/60);
-					tcountSec = tcount%60;
-					tcountSec = tcountSec.toFixed(1);
-					if(tcountSec<10) tplace = "0";
-					else tplace = "";
-
-					$("#time-mode-countdown").html(tcountMin+":"+tplace+tcountSec);
-
-					if(tcount == 0){
-						timeUp = true;
-						locked = true;
-						tryAgainTomorrow = true;
-						setCookie("misplays", 1);
-						$("#time-mode-countdown").css("color","#e03c4b");
-						document.getElementById("status").style.color = "#e03c4b";
-						document.getElementById("status").innerHTML = "<h2>Time up</h2>";
-						clearInterval(x);
-						toggleBoardLock(true);
-					}
-				}else{
+		if(mode == 3)
+			var x = setInterval(function()
+			{
+				if(!timeModeEnabled)
+				{
 					clearInterval(x);
+					return;
 				}
-			}
-		}, tcounter);
+
+				tcount -= 0.1;
+				tcount = tcount.toFixed(1);
+				tcountMin = Math.floor(tcount/60);
+				tcountSec = tcount % 60;
+				tcountSec = tcountSec.toFixed(1);
+				if(tcountSec < 10)
+					tplace = "0";
+				else
+					tplace = "";
+
+				$("#time-mode-countdown").html(tcountMin + ":" + tplace + tcountSec);
+
+				if(tcount == 0)
+				{
+					timeUp = true;
+					locked = true;
+					tryAgainTomorrow = true;
+					setCookie("misplays", 1);
+					$("#time-mode-countdown").css("color","#e03c4b");
+					document.getElementById("status").style.color = "#e03c4b";
+					document.getElementById("status").innerHTML = "<h2>Time up</h2>";
+					clearInterval(x);
+					toggleBoardLock(true);
+				}
+			}, tcounter);
 
 		$('#target').click(function(e){
-			if(locked) {
-				<?php echo 'window.location = nextTsumegoLink;'; ?>
-			}
+			if(locked)
+				window.location = nextTsumegoLink;
 		});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
@@ -2549,20 +2500,23 @@
 	$fn1++;
 	?>
 
-	function displayResult(result){
+	function displayResult(result)
+	{
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2)*<?php echo $t['Tsumego']['id'] * 7900; ?>));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
-		if(hasRevelation && revelationCounter > 0) {
+		if(hasRevelation && revelationCounter > 0)
+		{
 			revelationEnabled = true;
 			$(".revelation-anchor").css("cursor", "pointer");
 			$("#revelation").attr("src", "/img/hp6.png");
 		}
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
-		if(result=='S') {
+		if(result=='S')
+		{
+			xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-			document.getElementById("xpDisplay").style.color = "white";
 			if(light)
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
 			else
@@ -2913,7 +2867,6 @@
 	besogo.editor.registerShowComment(function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
 			$("#theComment").text(commentText);
 		});
 	function addStyleLink(cssURL)

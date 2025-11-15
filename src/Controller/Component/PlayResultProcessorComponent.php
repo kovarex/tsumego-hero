@@ -29,6 +29,10 @@ class PlayResultProcessorComponent extends Component {
 		if (!isset($result['solved'])) {
 			return;
 		}
+		if (HeroPowers::getSprintRemainingSeconds() > 0) {
+			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
+		}
+
 		$this->updateTsumegoAttempt($previousTsumego, $result);
 		$this->processEloChange($previousTsumego, $result);
 		$this->processDamage($result);

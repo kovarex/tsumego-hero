@@ -79,9 +79,24 @@ class HeroPowers {
 		return !Auth::getUser()['used_sprint'];
 	}
 
+	public static function getSprintRemainingSeconds() {
+		if (!Auth::isLoggedIn()) {
+			return 0;
+		}
+		$value = Auth::getUser()['sprint_start'];
+		if (!$value) {
+			return 0;
+		}
+
+		$start = new DateTime($value);
+		$now   = new DateTime('now');
+		$x =		Constants::$SPRINT_SECONDS - ($now->getTimestamp() - $start->getTimestamp());
+		return max(0, Constants::$SPRINT_SECONDS - ($now->getTimestamp() - $start->getTimestamp()));
+	}
+
 	public static function renderSprint() {
 		if (self::canUseSprint()) {
-			echo '<a href="#" id="sprintLink"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png" onmouseover="this.src = \'/img/hp1h.png\';" onmouseout="this.src = \'/img/hp1.png\';" onclick="sprint(); return false;"></a>';
+			echo '<a href="#" id="sprintLink"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png" onmouseover="this.src = \'/img/hp1h.png\';" onmouseout="this.src = \'/img/hp1.png\';" onclick="startSprint(' . Constants::$SPRINT_SECONDS . '); return false;"></a>';
 		} else {
 			echo '<img id="sprint" title="Sprint (Level 20): Double XP for 2 minutes." src="/img/hp1x.png" style="cursor: context-menu;" alt="Sprint">';
 		}

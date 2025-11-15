@@ -3326,8 +3326,11 @@ input.newCheck {
   z-index: 6;
   cursor: pointer;
 }
-#xpDisplay {
-}
+.xpDisplay { align:center; color: black; }
+.solvedXpDisplay { color: green; }
+.goldenTsumegoXpDisplay { color: #b5910b; font-weight:800; }
+.sprintXpDisplay { color: blue; }
+
 #status h2,
 #status h3,
 #status2 h3 {

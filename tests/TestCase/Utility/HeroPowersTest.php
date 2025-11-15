@@ -2,6 +2,7 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
+
 App::uses('HeroPowers', 'Utility');
 
 class HeroPowersTest extends TestCaseWithAuth {
@@ -53,7 +54,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'V');
 	}
 
-	public function testSprint(){
+	public function testSprint() {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -65,8 +66,11 @@ class HeroPowersTest extends TestCaseWithAuth {
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
+		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 		$oldXP = $context->user['xp'];
 		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
-		Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+		$this->assertSame($context->user['used_sprint'], 1);
 	}
 }

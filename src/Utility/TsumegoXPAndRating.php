@@ -3,12 +3,13 @@
 class TsumegoXPAndRating {
 	public function __construct(array $tsumego, string $status) {
 		$this->baseXP = TsumegoUtil::getXpValue($tsumego);
-		if ($status == 'G')
+		if ($status == 'G') {
 			$this->goldenTsumego = true;
-		else if ($status == 'S')
+		} elseif ($status == 'S') {
 			$this->solved = true;
-		else if ($status == 'W')
+		} elseif ($status == 'W') {
 			$this->resolving = true;
+		}
 		$this->tsumegoRating = $tsumego['rating'];
 	}
 
@@ -17,7 +18,7 @@ class TsumegoXPAndRating {
 		<table class="xpDisplayTable" border="0" width="70%">
 			<tr>
 			<td style="width:33%;">';
-			echo '<div id="xpDisplay" align="center"></div>';
+		echo '<div id="xpDisplay"></div>';
 		if (Auth::isInTimeMode()) {
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		}
@@ -41,19 +42,20 @@ class TsumegoXPAndRating {
 		echo '
 	let xpStatus = new XPStatus(
 	{
-		baseXP: '.$this->baseXP.',
-		solved: '.Util::boolString($this->solved).',
-		sprintRemainingSeconds: 0,
-		sprintMultiplier: '.Constants::$SPRINT_MULTIPLIER.',
-		goldenTsumego: '.Util::boolString($this->goldenTsumego).',
-		goldenTsumegoMultiplier: '.Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER.',
-		resolving: '.Util::boolString($this->resolving).',
-		resolvingMultiplier: '.Constants::$RESOLVING_MULTIPLIER.'
+		baseXP: ' . $this->baseXP . ',
+		solved: ' . Util::boolString($this->solved) . ',
+		sprintRemainingSeconds: ' . HeroPowers::getSprintRemainingSeconds() . ',
+		sprintMultiplier: ' . Constants::$SPRINT_MULTIPLIER . ',
+		goldenTsumego: ' . Util::boolString($this->goldenTsumego) . ',
+		goldenTsumegoMultiplier: ' . Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER . ',
+		resolving: ' . Util::boolString($this->resolving) . ',
+		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . '
 	});
 	xpStatus.update();
 ';
 	}
 
+	/* will be also javascript based
 	private function getRatingPart(): string {
 		if (is_null($this->ratingChangeWhenSolved)) {
 			return '';
@@ -62,7 +64,7 @@ class TsumegoXPAndRating {
 			 . '<div class="eloTooltip">+' . round($this->ratingChangeWhenSolved) . '<span class="eloTooltiptext">+' . round($this->ratingChangeWhenSolved, 2) . '</span></div>'
 			. '/'
 			. '<div class="eloTooltip">' . round($this->ratingChangeWhenFailed) . ' <span class="eloTooltiptext">' . round($this->ratingChangeWhenFailed, 2) . '</span></div></font>';
-	}
+	}*/
 
 	public int $baseXP;
 	public bool $solved = false;
