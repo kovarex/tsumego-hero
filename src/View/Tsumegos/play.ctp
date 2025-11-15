@@ -2318,52 +2318,6 @@
 		?>
 	}
 
-	function sprint(){
-		if(sprintEnabled) {
-			countDownDate = new Date();
-			countDownDate.setMinutes(countDownDate.getMinutes() + 2);
-			document.getElementById("sprint").src = "/img/hp1x.png";
-			document.getElementById("sprint").style = "cursor: context-menu;";
-			setCookie("sprint_started", new Date().toISOString());
-			xpStatus.set('sprintRemainingSeconds', <?php echo Constants::$SPRINT_SECONDS; ?>);
-
-			var x = setInterval(function(){
-				if(mode == 1 || mode == 3) {
-					if(doubleXP) {
-						var now = new Date().getTime();
-						var distance = countDownDate - now;
-						var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-						var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-						var timeOutput;
-						if(minutes>2)
-							document.cookie = "extendedSprint="+minutes+";path=/tsumegos/play;SameSite=Lax";
-						if(distance>=0){
-							if(!sprintLockedInSecretArea){
-								if(seconds<10)
-									timeOutput = minutes + ":0" + seconds;
-								else
-									timeOutput = minutes + ":" + seconds;
-								document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
-								document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
-								document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
-							}else{
-								window.location.href = "/sets";
-							}
-						}else{
-							clearInterval(x);
-							<?php
-							if(isset($sprintActivated))
-								echo 'setCookie("sprint", 2)';
-							?>
-							doubleXP = false;
-						}
-					}
-				}
-			}, 250);
-			sprintEnabled = false;
-		}
-	}
-
 	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
 		positionParams = [];
 		positionParams[0] = x;

@@ -62,6 +62,11 @@ class XPStatus
 		this.xpDisplay.textContent = xpPart;
 	}
 
+	isSprintActive()
+	{
+		return this.sprintRemainingSeconds > 0;
+	}
+
 	set(field, value)
 	{
 		if (!(field in this)) {
@@ -72,4 +77,50 @@ class XPStatus
 		this[field] = value;
 		this.update();
 	}
+}
+
+function startSprint(seconds)
+{
+	if (!sprintEnabled)
+		return;
+	countDownDate = new Date();
+	countDownDate.setMinutes(countDownDate.getSeconds() + seconds);
+	document.getElementById("sprint").src = "/img/hp1x.png";
+	document.getElementById("sprint").style = "cursor: context-menu;";
+
+	$.ajax(
+		{
+			url: '/hero/sprint',
+			type: 'POST',
+			data: {},
+			dataType: 'json',
+			success: function(response) {}
+		});
+	xpStatus.set('sprintRemainingSeconds', seconds);
+
+	var x = setInterval(function()
+	{
+		if (!xpStatus.isSprintActive())
+			return;
+		var now = new Date().getTime();
+		var distance = countDownDate - now;
+		var seconds = Math.floor(distance / 1000);
+		xpStatus.set('sprintRemainingSeconds', seconds);
+		if (!xpStatus.isSprintActive()) {
+			clearInterval(x);
+			return;
+		}
+		var minutes = Math.floor(seconds / 60);
+		seconds -= minutes * 60;
+		var timeOutput;
+
+		if(seconds<10)
+			timeOutput = minutes + ":0" + seconds;
+		else
+			timeOutput = minutes + ":" + seconds;
+		document.getElementById("status2").innerHTML = "<h3>Double XP "+timeOutput+"</h3>";
+		document.getElementById("status2").style.color = "<?php echo $playBlueColor; ?>";
+		document.cookie = "sprint=1;path=/tsumegos/play;SameSite=Lax";
+	}, 250);
+	sprintEnabled = false;
 }
