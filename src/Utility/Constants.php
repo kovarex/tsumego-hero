@@ -9,4 +9,7 @@ class Constants {
 	public static int $TIME_MODE = 3;
 
 	public static int $GOLDEN_TSUMEGO_XP_MULTIPLIER = 8;
+	public static int $SPRINT_MULTIPLIER = 2;
+	public static int $SPRINT_SECONDS = 120;
+	public static float $RESOLVING_MULTIPLIER = 0.5;
 }

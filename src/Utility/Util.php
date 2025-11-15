@@ -157,4 +157,8 @@ class Util {
 		}
 		$existingCondition .= " OR " . $condition;
 	}
+
+	public static function boolString($bool) {
+		return $bool ? 'true' : 'false';
+	}
 }

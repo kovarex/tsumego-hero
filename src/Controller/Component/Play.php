@@ -4,7 +4,7 @@ App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
-App::uses('TsumegoXpAndRating', 'Utility');
+App::uses('TsumegoXPAndRating', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -744,13 +744,6 @@ class Play {
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
-		if (Auth::isLoggedIn()) {
-			$half = '';
-			if ($tsumegoStatus == 'W' || $tsumegoStatus == 'X') {
-				$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] / 2);
-				$half = '(1/2)';
-			}
-		}
 
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '') {
 			$t['Tsumego']['file'] = $t['Tsumego']['num'];
@@ -796,10 +789,6 @@ class Play {
 			$t['Tsumego']['difficulty2'] = $t['Tsumego']['difficulty'];
 			$t['Tsumego']['difficulty'] = 10;
 		}
-		if ($goldenTsumego) {
-			$t['Tsumego']['difficulty'] *= Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
-		}
-
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
 
 		if ($pdCounter == 1) {
@@ -1050,7 +1039,7 @@ class Play {
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
-		($this->setFunction)('tsumegoXpAndRating', new TsumegoXpAndRating($t['Tsumego'], $tsumegoStatus));
+		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 		return null;
 	}
 

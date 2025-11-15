@@ -36,6 +36,8 @@ class ContextPreparator {
 		$this->user['premium'] = $user['premium'] ?: 0;
 		$this->user['xp'] = 0;
 		$this->user['used_refinement'] = 0;
+		$this->user['used_sprint'] = 0;
+		$this->user['sprint_start'] = null;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
 		$this->user['damage'] = 0;
 		ClassRegistry::init('User')->save($this->user);
@@ -76,7 +78,7 @@ class ContextPreparator {
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
 		$tsumego['rating'] = $tsumegoInput['rating'] ?: 1000;
-		$tsumego['difficulty'] = 1;
+		$tsumego['difficulty'] = $tsumegoInput['difficulty'] ?: 1;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];

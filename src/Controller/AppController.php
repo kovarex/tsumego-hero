@@ -3493,7 +3493,9 @@ class AppController extends Controller {
 				Auth::getUser()['revelation'] -= 1;
 			}
 
-			$this->PlayResultProcessor->checkPreviousPlay($this->TimeMode);
+			if (!$this->request->is('ajax')) {
+				$this->PlayResultProcessor->checkPreviousPlay($this->TimeMode);
+			}
 
 			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
 				if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {
