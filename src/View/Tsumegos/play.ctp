@@ -2751,9 +2751,7 @@
 						}
 					}
 					if(goldenTsumego) {
-						document.cookie = "refinement=-1";
-						setCookie("type", "g");
-						window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
+						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
 					}
 				}
 			}else{//mode 2 incorrect

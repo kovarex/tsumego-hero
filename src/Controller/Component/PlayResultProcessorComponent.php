@@ -83,6 +83,8 @@ class PlayResultProcessorComponent extends Component {
 					$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
 				} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
 					$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
+				} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G') {
+					$previousTsumegoStatus['TsumegoStatus']['status'] = 'V'; // failed golden tsumego
 				}
 			}
 		}
