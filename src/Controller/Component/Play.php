@@ -4,7 +4,7 @@ App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
-App::uses('TsumegoXpAndRating', 'Utility');
+App::uses('TsumegoXPAndRating', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -1050,7 +1050,7 @@ class Play {
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
-		($this->setFunction)('tsumegoXpAndRating', new TsumegoXpAndRating($t['Tsumego'], $tsumegoStatus));
+		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 		return null;
 	}
 

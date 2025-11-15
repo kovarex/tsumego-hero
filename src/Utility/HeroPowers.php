@@ -1,6 +1,8 @@
 <?php
 
 class HeroPowers {
+	public static $SPRINT_MINIMUM_LEVEL = 20;
+
 	public static function render(): void {
 		if (!Auth::isLoggedIn()) {
 			return;
@@ -61,8 +63,14 @@ class HeroPowers {
 		}
 	}
 
+	public static function changeUserSoSprintCanBeUsed() {
+		Auth::getUser()['level'] = self::$SPRINT_MINIMUM_LEVEL;
+		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
+		Auth::saveUser();
+	}
+
 	public static function canUseSprint() {
-		if (Auth::getWithDefault('level', 0) < 20) {
+		if (Auth::getWithDefault('level', 0) < self::$SPRINT_MINIMUM_LEVEL) {
 			return false;
 		}
 		if (!Auth::isInLevelMode()) {
@@ -73,7 +81,7 @@ class HeroPowers {
 
 	public static function renderSprint() {
 		if (self::canUseSprint()) {
-			echo '<a href="#"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png" onmouseover="this.src = \'/img/hp1h.png\';" onmouseout="this.src = \'/img/hp1.png\';" onclick="sprint(); return false;"></a>';
+			echo '<a href="#" id="sprintLink"><img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint" src="/img/hp1.png" onmouseover="this.src = \'/img/hp1h.png\';" onmouseout="this.src = \'/img/hp1.png\';" onclick="sprint(); return false;"></a>';
 		} else {
 			echo '<img id="sprint" title="Sprint (Level 20): Double XP for 2 minutes." src="/img/hp1x.png" style="cursor: context-menu;" alt="Sprint">';
 		}

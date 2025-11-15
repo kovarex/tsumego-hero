@@ -316,7 +316,7 @@
 	</td>
 	</tr>
 	</table>
-	<?php $tsumegoXpAndRating->render(); ?>
+	<?php $tsumegoXPAndRating->render(); ?>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
@@ -1004,7 +1004,7 @@
 	var tryAgainTomorrow = false;
 	var doubleXP = false;
 	var countDownDate = new Date();
-	var sprintEnabled = true;
+	var sprintEnabled = <?php echo Util::boolString(HeroPowers::canUseSprint()); ?>;
 	var intuitionEnabled = true;
 	var rejuvenationEnabled = true;
 	var refinementEnabled = true;
@@ -1020,6 +1020,7 @@
 	var msgSEselected = false;
 	var playedWrong = false;
 	var seconds = 0;
+	var xpInfo = [];
 	var difficulty = <?php echo $difficulty; ?>;
 	var sequence = "|";
 	var freePlayMode = false;
@@ -1112,7 +1113,8 @@
 			echo 'let hasRevelation = true;';
 		else
 			echo 'let hasRevelation = false;';
-		?>
+		$tsumegoXPAndRating->renderJavascript();
+	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
 			$("#msgFilters").fadeIn(250);
@@ -2317,19 +2319,17 @@
 	}
 
 	function sprint(){
-		if(sprintEnabled){
-			doubleXP = true;
+		if(sprintEnabled) {
 			countDownDate = new Date();
 			countDownDate.setMinutes(countDownDate.getMinutes() + 2);
-			setCookie(doublexp, countDownDate.getTime());
-			setCookie("sprint", 1);
-			setCookie("misplays", misplays);
 			document.getElementById("sprint").src = "/img/hp1x.png";
 			document.getElementById("sprint").style = "cursor: context-menu;";
+			setCookie("sprint_started", new Date().toISOString());
+			xpStatus.set('sprintRemainingSeconds', <?php echo Constants::$SPRINT_SECONDS; ?>);
 
 			var x = setInterval(function(){
-				if(mode==1 || mode==3){
-					if(doubleXP){
+				if(mode == 1 || mode == 3) {
+					if(doubleXP) {
 						var now = new Date().getTime();
 						var distance = countDownDate - now;
 						var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
