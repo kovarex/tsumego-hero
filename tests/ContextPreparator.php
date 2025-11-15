@@ -35,11 +35,19 @@ class ContextPreparator {
 		$this->user['rating'] = $user['rating'] ?: 1500;
 		$this->user['premium'] = $user['premium'] ?: 0;
 		$this->user['xp'] = 0;
-		$this->user['used_refinement'] = 0;
-		$this->user['used_sprint'] = 0;
+		foreach ([
+			'used_refinement',
+			'used_sprint',
+			'used_rejuvenation',
+			'used_potion',
+			'used_intuition',
+			'used_revelation'] as $name) {
+			$this->user[$name] = $user[$name] ?: 0;
+		}
+		$this->user['damage'] = $user['damage'] ?? 0;
+		$this->user['used_sprint'] = $user['used_sprint'] ?: 0;
 		$this->user['sprint_start'] = null;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
-		$this->user['damage'] = 0;
 		ClassRegistry::init('User')->save($this->user);
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 

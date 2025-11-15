@@ -10,3 +10,4 @@ Configure::write('debug', 2);
 
 // Disable cache for development
 Configure::write('Cache.disable', true);
+define ('CRON_SECRET', 'example');
