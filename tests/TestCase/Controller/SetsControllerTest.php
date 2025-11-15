@@ -29,7 +29,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testIndexRankBased(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -59,7 +58,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testSetViewRankBased(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -102,7 +100,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testSetViewSetBased(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -160,7 +157,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
@@ -231,7 +227,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'collection_size' => 2]];
@@ -297,7 +292,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 
 	public function testOfVisiting2RankBasedSetsBothInTheFilters(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'difficulty',
@@ -387,7 +381,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
@@ -459,7 +452,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
@@ -531,7 +523,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testSelectingTagFilters(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
@@ -563,7 +554,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitingTagBasedSets(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -593,7 +583,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitingTagBasedSetsRespectsTagFilters(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -648,7 +637,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -715,7 +703,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -755,7 +742,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -795,7 +781,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testRankBasedSetViewShowsSolvedPercentProperly(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -889,7 +874,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
@@ -907,7 +891,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testBrowsingFavoritesByNextButton(): void {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];

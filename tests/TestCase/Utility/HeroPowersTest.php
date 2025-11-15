@@ -5,7 +5,6 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 
 class HeroPowersTest extends TestCaseWithAuth {
 	public function testRefinementGoldenTsumego() {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -20,6 +19,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 			'tsumego_id' => $context->otherTsumegos[0]['id'],
 			'user_id' => Auth::getUserID()]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'G');
+		$this->assertSame(ClassRegistry::init('User')->findById(Auth::getUserID())['User']['used_refinement'], 1); // the power is used up
 
 		// the reported xp is normal golden
 		$this->assertTextContains((TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
@@ -35,7 +35,6 @@ class HeroPowersTest extends TestCaseWithAuth {
 	}
 
 	public function testGoldenTsumegoFail() {
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
