@@ -19,7 +19,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 			'tsumego_id' => $context->otherTsumegos[0]['id'],
 			'user_id' => Auth::getUserID()]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'G');
-		$this->assertSame(ClassRegistry::init('User')->findById(Auth::getUserID())['User']['used_refinement'], 1); // the power is used up
+		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 
 		// the reported xp is normal golden
 		$this->assertTextContains((TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
@@ -29,8 +29,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 
-		$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
-		$this->assertSame($newUser['xp'] - $context->user['xp'],
+		$oldXP = $context->user['xp'];
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
 			Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
 	}
 

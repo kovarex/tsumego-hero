@@ -284,6 +284,11 @@ class ContextPreparator {
 		ClassRegistry::init('Favorite')->save($favorite);
 	}
 
+	public function reloadUser(): array {
+		$this->user = ClassRegistry::init('User')->findById($this->user['id'])['User'];
+		return $this->user;
+	}
+
 	public ?array $user = null;
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];

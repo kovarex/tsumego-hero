@@ -144,9 +144,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performSolve($context, $page);
-			$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
-			$this->assertLessThan($newUser['rating'], $originalRating);
-			$this->assertWithinMargin($originalRating, $newUser['rating'], 100); // shouldn't move more than 100 points
+			$this->assertLessThan($context->reloadUser()['rating'], $originalRating);
+			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
 		}
 	}
 
@@ -159,9 +158,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performMisplay($context, $page);
-			$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
-			$this->assertLessThan($originalRating, $newUser['rating']);
-			$this->assertWithinMargin($originalRating, $newUser['rating'], 100); // shouldn't move more than 100 points
+			$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
+			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
 		}
 	}
 
@@ -174,8 +172,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalXP = $context->user['xp'];
 			$this->performSolve($context, $page);
-			$newUser = ClassRegistry::init('User')->findById($context->user['id'])['User'];
-			$this->assertSame($newUser['xp'] - $originalXP, TsumegoUtil::getXpValue($context->tsumego));
+			$this->assertSame($context->reloadUser()['xp'] - $originalXP, TsumegoUtil::getXpValue($context->tsumego));
 		}
 	}
 
@@ -279,9 +276,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 			usleep(1000 * 100);
 			$browser->driver->executeScript("displayResult('F')"); // Fail the problem
 			$browser->get(self::getUrlFromPage($page, $context));
-
-			$user = ClassRegistry::init('User')->findById($context->user['id'])['User'];
-			$this->assertSame($originalDamage + 1, $user['damage']);
+			$this->assertSame($originalDamage + 1, $context->reloadUser()['damage']);
 		}
 	}
 }
