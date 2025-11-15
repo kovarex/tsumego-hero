@@ -41,10 +41,13 @@ class HeroController extends AppController {
 
 	public function sprint() {
 		if (!HeroPowers::canUseSprint()) {
-			return;
+			$this->response->statusCode(403);
+			return $this->response;
 		}
 		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
 		Auth::getUser()['used_sprint'] = 1;
 		Auth::saveUser();
+		$this->response->statusCode(200);
+		return $this->respons;
 	}
 }

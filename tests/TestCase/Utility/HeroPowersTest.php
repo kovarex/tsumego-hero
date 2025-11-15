@@ -73,4 +73,45 @@ class HeroPowersTest extends TestCaseWithAuth {
 			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
 		$this->assertSame($context->user['used_sprint'], 1);
 	}
+
+	public function testSprintPersistsToNextTsumego() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'set 1', 'num' => 1]]],
+				['sets' => [['name' => 'set 1', 'num' => 2]]]]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoSprintCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		// the reported xp is normal
+		$browser->driver->findElement(WebDriverBy::cssSelector('#sprintLink'))->click();
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+
+		// clicking next after solving, sprint is still visible:
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$bla = $browser->driver->getPageSource();
+		$oldXP = $context->user['xp'];
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
+			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+
+		// clicking next after solving again, sprint is applied on xp still
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$oldXP = $context->user['xp'];
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
+			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']));
+	}
+
+	public function testSprintLinkNotPresentWhenSprintIsUsedUp() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_sprint' => 1],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoSprintCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::cssSelector('#sprintLink')));
+	}
 }
