@@ -105,7 +105,7 @@ jobs:
               ];
           }
           EOF
-          cp core.local.example.php core.local.php
+          cp config/core.local.example.php config/core.local.php
 
       - name: Setup tmp directories
         run: |
