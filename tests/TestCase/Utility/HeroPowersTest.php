@@ -52,7 +52,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($oldBodyElement));
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 
-		$this->checkPlayNavigationButtons($browser, 1, $context, function($index) { return $index; }, function($index){ return $index + 1; }, 0, 'V');
+		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'V');
 	}
