@@ -1554,8 +1554,6 @@
 	if($goldenTsumego) echo 'var goldenTsumego = true;';
 	else echo 'var goldenTsumego = false;';
 
-	echo 'var sprintLockedInSecretArea = false;';
-
 	if($firstPlayer=='w') echo 'player = JGO.'.$playerColor[1].';';
 
 	if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){

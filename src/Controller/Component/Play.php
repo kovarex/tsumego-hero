@@ -545,23 +545,6 @@ class Play {
 
 		Util::setCookie('previousTsumegoID', $id);
 		if (Auth::isLoggedIn()) {
-			if (isset($_COOKIE['doublexp']) && $_COOKIE['doublexp'] != '0') {
-				if (Auth::getUser()['usedSprint'] == 0) {
-					$doublexp = $_COOKIE['doublexp'];
-				} else {
-					unset($_COOKIE['doublexp']);
-				}
-			}
-			if (isset($_COOKIE['sprint']) && $_COOKIE['sprint'] != '0') {
-				Auth::getUser()['sprint'] = 0;
-				if ($_COOKIE['sprint'] == 1) {
-					($this->setFunction)('sprintActivated', true);
-				}
-				if ($_COOKIE['sprint'] == 2) {
-					Auth::getUser()['usedSprint'] = 1;
-				}
-				unset($_COOKIE['sprint']);
-			}
 			if (isset($_COOKIE['intuition']) && $_COOKIE['intuition'] != '0') {
 				if ($_COOKIE['intuition'] == '1') {
 					Auth::getUser()['intuition'] = 0;
@@ -575,10 +558,6 @@ class Play {
 				Auth::getUser()['rejuvenation'] = 0;
 				Auth::getUser()['usedRejuvenation'] = 1;
 				unset($_COOKIE['rejuvenation']);
-			}
-			if (isset($_COOKIE['extendedSprint']) && $_COOKIE['extendedSprint'] != '0') {
-				Auth::getUser()['penalty'] += 1;
-				unset($_COOKIE['extendedSprint']);
 			}
 		}
 
