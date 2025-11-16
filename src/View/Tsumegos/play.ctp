@@ -1067,6 +1067,7 @@
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
+	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
 	let multipleChoiceVariance = <?php echo $t['Tsumego']['variance']; ?>+"";

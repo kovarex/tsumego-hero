@@ -59,4 +59,20 @@ class Rating {
 		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 
+	public static function getRankMiddleRatingFromReadableRank(string $readableRank): float {
+		$rank = Rating::getRankFromReadableRank($readableRank);
+		return (Rating::getRankMinimalRating($rank) + Rating::getRankMinimalRating($rank + 1)) / 2;
+	}
+
+	private static function beta($rating) {
+		return -7 * log(3300 - $rating);
+	}
+
+	public static function calculateRatingChange($rating, $opponentRating, $result, $modifier) {
+		$Se = 1.0 / (1.0 + exp(self::beta($opponentRating) - self::beta($rating)));
+		$con = pow(((3300 - $rating) / 200), 1.6);
+		$bonus = log(1 + exp((2300 - $rating) / 80)) / 5;
+		return $modifier * ($con * ($result - $Se) + $bonus);
+	}
+
 }

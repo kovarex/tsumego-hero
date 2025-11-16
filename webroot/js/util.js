@@ -15,9 +15,17 @@ function formatMultiplier(value) {
 	return `&times; ${value}`;
 }
 
+function showRatingShort(rating) {
+	return String(Math.round(rating));
+}
+
+function showRatingLong(rating) {
+	return String(Math.round((rating * 10)) / 10);
+}
+
 class XPStatus
 {
-	constructor({ baseXP, solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier})
+	constructor({ baseXP, solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier, userRating, tsumegoRating})
 	{
 		this.baseXP = baseXP;
 		this.solved = solved;
@@ -27,14 +35,22 @@ class XPStatus
 		this.goldenTsumegoMultiplier = goldenTsumegoMultiplier;
 		this.resolving = resolving;
 		this.resolvingMultiplier = resolvingMultiplier;
+		this.tsumegoRating = tsumegoRating;
+		this.userRating = userRating;
 
 		// cache the element
-		this.xpDisplay = document.querySelector("#xpDisplay");
+		this.xpDisplayText = document.querySelector("#xpDisplayText");
+		this.ratingHeader = document.querySelector("#ratingHeader");
+		this.ratingGainShort = document.querySelector("#ratingGainShort");
+		this.ratingGainLong = document.querySelector("#ratingGainLong");
+		this.ratingSeparator = document.querySelector('#ratingSeparator');
+		this.ratingLossShort = document.querySelector("#ratingLossShort");
+		this.ratingLossLong = document.querySelector("#ratingLossLong");
 		if (this.isSprintActive())
 			updateSprint(this.sprintRemainingSeconds, true);
 	}
 
-	update()
+	updateXPPart()
 	{
 		let multiplier = 1;
 		if (this.goldenTsumego)
@@ -51,22 +67,51 @@ class XPStatus
 		if (this.goldenTsumego)
 		{
 			xpPart = 'Golden: ' + xpPart;
-			this.xpDisplay.className = 'xpDisplay goldenTsumegoXpDisplay';
+			this.xpDisplayText.className = 'xpDisplay goldenTsumegoXpDisplay';
 		}
 		else if (this.solved)
 		{
 			xpPart = 'Solved: ' + xpPart;
-			this.xpDisplay.className = 'xpDisplay solvedXpDisplay';
+			this.xpDisplayText.className = 'xpDisplay solvedXpDisplay';
 		}
 		else if (this.isSprintActive())
 		{
 			xpPart = 'Sprint: ' + xpPart;
-			this.xpDisplay.className = 'xpDisplay sprintXpDisplay';
+			this.xpDisplayText.className = 'xpDisplay sprintXpDisplay';
 		}
 		else
-			this.xpDisplay.className = 'xpDisplay';
+			this.xpDisplayText.className = 'xpDisplay';
+		this.xpDisplayText.innerHTML = xpPart;
+	}
 
-		this.xpDisplay.innerHTML = xpPart;
+	updateRatingPart()
+	{
+		let ratingGain = calculateRatingChange(this.userRating, this.tsumegoRating, 1, playerRatingCalculationModifier);
+		this.ratingGainShort.textContent = '+' + showRatingShort(ratingGain);
+		this.ratingGainLong.textContent = '+' + showRatingLong(ratingGain);
+		this.ratingHeader.textContent = 'Rating: ';
+
+		if (this.solved)
+		{
+			this.ratingGainShort.className = 'xpDisplay solvedXpDisplay';
+			this.ratingHeader.className = 'xpDisplay solvedXpDisplay';
+			this.ratingSeparator.textContent = '';
+			this.ratingLossShort.textContent = '';
+			this.ratingLossLong.textContent = '';
+		}
+		else
+		{
+			let ratingLoss = calculateRatingChange(this.userRating, this.tsumegoRating, 0, playerRatingCalculationModifier);
+			this.ratingSeparator.textContent = '/';
+			this.ratingLossShort.textContent = showRatingShort(ratingLoss);
+			this.ratingLossLong.textContent = showRatingLong(ratingLoss);
+		}
+	}
+
+	update()
+	{
+		this.updateXPPart();
+		this.updateRatingPart();
 	}
 
 	isSprintActive()
@@ -223,4 +268,18 @@ function disableRefinement()
 	refinementElement.onmouseout = null;
 	refinementElement.onclick = null;
 	refinementElement.style.cursor = 'auto';
+}
+
+function beta(rating)
+{
+	return -7 * Math.log(3300 - rating)
+}
+
+// result 1 is win, and 0 is loss
+function calculateRatingChange(rating, opponentRating, result, modifier)
+{
+	let Se = 1.0 / (1.0 + Math.exp(beta(opponentRating) - beta(rating)));
+	let con = Math.pow(((3300 - rating) / 200), 1.6);
+	let bonus = Math.log(1 + Math.exp((2300 - rating) / 80)) / 5;
+	return modifier * (con * (result - Se) + bonus);
 }

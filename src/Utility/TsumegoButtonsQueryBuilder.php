@@ -2,7 +2,7 @@
 
 class TsumegoButtonsQueryBuilder {
 	public function __construct($tsumegoFilters, $id) {
-		$this->orderBy = 'set_connection.num';
+		$this->orderBy = 'set_connection.num, set_connection.id';
 		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
 		if (Auth::isLoggedIn()) {

@@ -18,7 +18,13 @@ class TsumegoXPAndRating {
 		<table class="xpDisplayTable" border="0" width="70%">
 			<tr>
 			<td style="width:33%;">';
-		echo '<div id="xpDisplay"></div>';
+		echo '
+	<div id="xpDisplay">
+		<span id="xpDisplayText"></span>
+		<span id="ratingHeader"></span>
+		<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
+		<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
+	</div>';
 		if (Auth::isInTimeMode()) {
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		}
@@ -39,6 +45,9 @@ class TsumegoXPAndRating {
 	}
 
 	public function renderJavascript() {
+		if (!Auth::isLoggedIn()) {
+			return;
+		}
 		echo '
 	let xpStatus = new XPStatus(
 	{
@@ -49,7 +58,9 @@ class TsumegoXPAndRating {
 		goldenTsumego: ' . Util::boolString($this->goldenTsumego) . ',
 		goldenTsumegoMultiplier: ' . Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER . ',
 		resolving: ' . Util::boolString($this->resolving) . ',
-		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . '
+		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . ',
+		userRating: ' . Auth::getUser()['rating'] . ',
+		tsumegoRating: ' . $this->tsumegoRating . '
 	});
 	xpStatus.update();
 ';

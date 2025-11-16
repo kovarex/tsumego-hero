@@ -12,4 +12,7 @@ class Constants {
 	public static int $SPRINT_MULTIPLIER = 2;
 	public static int $SPRINT_SECONDS = 120;
 	public static float $RESOLVING_MULTIPLIER = 0.5;
+
+	public static float $PLAYER_RATING_CALCULATION_MODIFIER = 0.5;
+	public static float $TSUMEGO_RATING_CALCULATION_MODIFIER = 0.5;
 }

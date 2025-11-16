@@ -35,7 +35,7 @@ class PlayResultProcessorComponent extends Component {
 		}
 
 		$this->updateTsumegoAttempt($previousTsumego, $result);
-		$this->processEloChange($previousTsumego, $result);
+		$this->processRatingChange($previousTsumego, $result);
 		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result);
@@ -173,36 +173,21 @@ class PlayResultProcessorComponent extends Component {
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
-	private function processEloChange(array $previousTsumego, array $result): void {
-		if (!Auth::isInRatingMode()) {
+	private function processRatingChange(array $previousTsumego, array $result): void {
+		if (!Auth::isInRatingMode() && !Auth::isInLevelMode()) {
 			return;
 		}
 		$userRating = (float) Auth::getUser()['rating'];
 		$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
-		$eloDifference = abs($userRating - $tsumegoRating);
-		if ($userRating > $tsumegoRating) {
-			$eloBigger = 'u';
-		} else {
-			$eloBigger = 't';
-		}
-		if (!empty($_COOKIE['av'])) {
-			$activityValue = $_COOKIE['av'];
-			Util::clearCookie('av');
-		} else {
-			$activityValue = 1;
-		}
-		$newUserElo = AppController::getNewElo($eloDifference, $eloBigger, $activityValue, $previousTsumego['Tsumego']['id'], $result['solved'] ? 'w' : 'l');
-		$newEloRating = $userRating + $newUserElo['user'];
-		Auth::getUser()['rating'] = $newEloRating;
-
+		$newUserRating = $userRating + Rating::calculateRatingChange($userRating, $tsumegoRating, $result['solved'] ? 1 : 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+		$newTsumegoRating = $tsumegoRating + Rating::calculateRatingChange($tsumegoRating, $userRating, $result['solved'] ? 0 : 1, Constants::$TSUMEGO_RATING_CALCULATION_MODIFIER);
+		Auth::getUser()['rating'] = $newUserRating;
 		Auth::saveUser();
 
-		$previousTsumego['Tsumego']['rating'] += $newUserElo['tsumego'];
+		$previousTsumego['Tsumego']['rating'] = $newTsumegoRating;
 		$previousTsumego['Tsumego']['activity_value']++;
 		$previousTsumego['Tsumego']['difficulty'] = AppController::convertEloToXp($previousTsumego['Tsumego']['rating']);
-		if ($previousTsumego['Tsumego']['rating'] > 100) {
-			ClassRegistry::init('Tsumego')->save($previousTsumego);
-		}
+		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
 
 	private function processDamage(array $result): void {
