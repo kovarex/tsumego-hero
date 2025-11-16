@@ -1,18 +1,20 @@
-1) Cover favorites
-2) Time mode
+0) Show rating and xp in the status
+1) Time mode
   - Cover also failing
   - Cover skipping
   - Cover timout
   - Integrate the number of tsumegos per rank, we can probably just get it with one select, if it is too slow, we can do precalculation, but in db, not the json one that was done previously
   - solve that it shows array in the rank when solving time problems
-3) Mode switching fixes - as with time mode, there should probably be rating/play for rating and
+2) Look at/fix diffs viewing.
+3) cover user viewing (has error)
+4) Mode switching fixes - as with time mode, there should probably be rating/play for rating and
   level mode should be the tsumegos/play.
-4) Rest of TimeModeAttempt cases and move all of the logic into the one place in PlayResultProcessorComponent
-5) Solve the mess with selected user boards
+5) Rest of TimeModeAttempt cases and move all of the logic into the one place in PlayResultProcessorComponent
+6) Solve the mess with selected user boards
   - Currently there is a table AND field in player
   - Get rid of the table, and use only the field
   - convert the field to a bitfield, so it is just an integer
-6) Figure out what cronjobs run and when, mainly for reset of powers and gold tsumego.
+7) Fix pictures in 'Functions and modes' and go rules (probably just copy the images from the original site)
 
 Low priority
   Time mode:
