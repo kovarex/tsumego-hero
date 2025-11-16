@@ -995,40 +995,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $filter Filter type
-	 * @return void
-	 */
-	public function refresh_dates($filter = null) { //0:17 refresh rest (routine999)
-		if ($filter == 1) {
-			$u = $this->User->find('all', [
-				'conditions' => [
-					'NOT' => ['lastRefresh' => date('Y-m-d')],
-				],
-			]);
-		} elseif ($filter == 2) {
-			$u = $this->User->find('all', [
-				'conditions' => [
-					'NOT' => ['lastRefresh' => date('Y-m-d')],
-				],
-			]);
-			$uCount = count($u);
-			for ($i = 0; $i < $uCount; $i++) {
-				$this->User->create();
-				$u[$i]['User']['reuse2'] = 0;//#
-				$u[$i]['User']['reuse3'] = 0;//xp
-				$u[$i]['User']['reuse4'] = 0;//daily maximum
-				$u[$i]['User']['readingTrial'] = 30;
-				$u[$i]['User']['promoted'] += 1;
-				$u[$i]['User']['lastRefresh'] = date('Y-m-d');
-				$this->User->save($u[$i]);
-			}
-		} else {
-			$u = $this->User->find('all', ['limit' => 50, 'order' => 'lastRefresh ASC']);
-		}
-		$this->set('u', $u);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function routine4x() { //0:20 remove inactive players 2
