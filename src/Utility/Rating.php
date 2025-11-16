@@ -75,4 +75,20 @@ class Rating {
 		return $modifier * ($con * ($result - $Se) + $bonus);
 	}
 
+
+	public static function ratingToXP($rating) {
+		// until 1200 rating, the old formula is used for reasonable
+		// lower rating progress.
+		if ($rating < 1200) {
+			return max(5, pow($rating / 50, 1.55) / 2);
+		}
+
+		// with higher ratings, it is important to have more aggressive exponential growth,
+		// These are the example values compared to the old formula
+		// Rating 1500 (5k) 60 => 90
+		// Rating 1800 (3k) 81 => 159
+		// rating 2100 (1d) 106 => 246
+		// rating 2500 (5d) 150 => 431
+		return pow(($rating - 500)/ 100, 2) - 10;
+	}
 }
