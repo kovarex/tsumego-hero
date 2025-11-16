@@ -104,7 +104,7 @@ class TsumegoButtonsQueryBuilder {
 			return;
 		}
 		$this->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
-		$this->orderBy = 'favorite.created ASC';
+		$this->orderBy = 'favorite.id ASC';
 	}
 
 	private TsumegoFilters $tsumegoFilters;
