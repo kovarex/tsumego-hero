@@ -3,11 +3,13 @@
 class ContextPreparator {
 	public function __construct(?array $options = []) {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
+		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -86,7 +88,6 @@ class ContextPreparator {
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
 		$tsumego['rating'] = $tsumegoInput['rating'] ?: 1000;
-		$tsumego['difficulty'] = $tsumegoInput['difficulty'] ?: 1;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -284,6 +285,17 @@ class ContextPreparator {
 		$testCase->assertNotEmpty($this->resultTsumegoStatus);
 		$testCase->assertSame($this->resultTsumegoStatus['user_id'], $this->user['id']);
 		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumego['id']);
+	}
+
+	public function prepareProgressDeletion($progressDeletions) {
+		foreach ($progressDeletions as $progressDeletionInput) {
+			ClassRegistry::init('ProgressDeletion')->create();
+			$progressDeletion = [];
+			$progressDeletion['user_id'] = Auth::getUserID();
+			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
+			$progressDeletion['created'] = $progressDeletionInput['created'];
+			ClassRegistry::init('ProgressDeletion')->save($progressDeletion);
+		}
 	}
 
 	public function addFavorite($tsumego) {

@@ -104,15 +104,15 @@
 				?>
 			</td>
 				<?php
-				if(!$noImage){
+				if (!$noImage && $set['Set']['image']) {
 					if($tsumegoFilters->query == 'topics'){
-						if($set['Set']['image'][2]!='-'){
+						if ($set['Set']['image'][2]!='-') {
 							echo '<td width="195px" style="vertical-align:top;"><div align="center">
 								<a href="/tsumegos/play/'.$set['Set']['t'].'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 								</a></div></td>';
-						}else{
+						}else {
 							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center">
 								<a href="/tsumegos/play/'.$set['Set']['t'].'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"

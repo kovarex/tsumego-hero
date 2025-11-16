@@ -25,9 +25,8 @@ function showRatingLong(rating) {
 
 class XPStatus
 {
-	constructor({ baseXP, solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier, userRating, tsumegoRating})
+	constructor({ solved, sprintRemainingSeconds, sprintMultiplier, goldenTsumego, goldenTsumegoMultiplier, resolving, resolvingMultiplier, userRating, tsumegoRating, progressDeletionCount})
 	{
-		this.baseXP = baseXP;
 		this.solved = solved;
 		this.sprintRemainingSeconds = sprintRemainingSeconds;
 		this.sprintMultiplier = sprintMultiplier;
@@ -37,6 +36,7 @@ class XPStatus
 		this.resolvingMultiplier = resolvingMultiplier;
 		this.tsumegoRating = tsumegoRating;
 		this.userRating = userRating;
+	    this.progressDeletionCount = progressDeletionCount;
 
 		// cache the element
 		this.xpDisplayText = document.querySelector("#xpDisplayText");
@@ -50,17 +50,34 @@ class XPStatus
 			updateSprint(this.sprintRemainingSeconds, true);
 	}
 
-	updateXPPart()
+	getProgressDeletionMultiplier() {
+		if (this.progressDeletionCount == 0)
+			return 1;
+		if (this.progressDeletionCount == 1)
+			return 0.5;
+		if (this.progressDeletionCount == 2)
+			return 0.2;
+		if (this.progressDeletionCount == 3)
+			return 0.1;
+		return 0.01;
+	}
+
+	getMultiplier()
 	{
-		let multiplier = 1;
+		let multiplier = this.getProgressDeletionMultiplier();
 		if (this.goldenTsumego)
 			multiplier *= this.goldenTsumegoMultiplier;
 		else if (this.resolving)
 			multiplier *= this.resolvingMultiplier;
 		if (this.isSprintActive())
 			multiplier *= this.sprintMultiplier;
+		return multiplier;
+	}
 
-		let xpPart = String(Math.ceil(this.baseXP * multiplier)) + ' XP';
+	updateXPPart()
+	{
+		let multiplier  = this.getMultiplier();
+		let xpPart = String(Math.ceil(this.getXPInternal(multiplier))) + ' XP';
 		if (multiplier != 1)
 			xpPart += ' (' + formatMultiplier(multiplier) + ')';
 
@@ -128,6 +145,16 @@ class XPStatus
 
 		this[field] = value;
 		this.update();
+	}
+
+	getXP()
+	{
+		return this.getXPInternal(this.getMultiplier());
+	}
+
+	getXPInternal(multiplier)
+	{
+		return ratingToXP(this.tsumegoRating) * multiplier;
 	}
 }
 
@@ -282,4 +309,15 @@ function calculateRatingChange(rating, opponentRating, result, modifier)
 	let con = Math.pow(((3300 - rating) / 200), 1.6);
 	let bonus = Math.log(1 + Math.exp((2300 - rating) / 80)) / 5;
 	return modifier * (con * (result - Se) + bonus);
+}
+
+function ratingToXP(rating)
+{
+	// until 1200 rating, the old formula but with half of the values
+	if (rating < 1200) {
+		return Math.max(10, Math.pow(rating / 100, 1.55) - 6) / 2;
+	}
+
+	// with higher ratings, it is important to have more aggressive exponential growth,
+	return (Math.pow((rating - 500)/ 100, 2) - 10) / 2;
 }

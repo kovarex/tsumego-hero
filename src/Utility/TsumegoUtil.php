@@ -73,8 +73,19 @@ class TsumegoUtil {
 		return $result;
 	}
 
-	public static function getXpValue(array $tsumego): int {
-		// TODO: we should later merge difficulty and rating and derive difficulty from rating
-		return intval($tsumego['difficulty']);
+	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int {
+		return ceil(Rating::ratingToXP($tsumego['rating']) * $multiplier);
+	}
+
+	public static function getProgressDeletionCount(array $tsumego): int {
+		$result = ClassRegistry::init('ProgressDeletion')->query('
+SELECT COUNT(*) AS deletions_count
+FROM (
+    SELECT DISTINCT progress_deletion.id
+    FROM progress_deletion
+    JOIN set_connection ON set_connection.set_id = progress_deletion.set_id
+    WHERE set_connection.tsumego_id = '.$tsumego['id'].' AND progress_deletion.created >= NOW() - INTERVAL 1 MONTH
+) AS unique_deletions');
+		return $result[0][0]['deletions_count'];
 	}
 }

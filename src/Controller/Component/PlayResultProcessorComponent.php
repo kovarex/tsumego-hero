@@ -1,11 +1,12 @@
 <?php
 
-App::uses('Rating', 'Utility');
-App::uses('Util', 'Utility');
 App::uses('TsumegoStatus', 'Model');
 App::uses('SetConnection', 'Model');
+App::uses('Rating', 'Utility');
+App::uses('Util', 'Utility');
 App::uses('Decoder', 'Utility');
 App::uses('HeroPowers', 'Utility');
+App::uses('TsumegoXPAndRating', 'Utility');
 
 class PlayResultProcessorComponent extends Component {
 	public $components = ['Session', 'TimeMode'];
@@ -186,7 +187,6 @@ class PlayResultProcessorComponent extends Component {
 
 		$previousTsumego['Tsumego']['rating'] = $newTsumegoRating;
 		$previousTsumego['Tsumego']['activity_value']++;
-		$previousTsumego['Tsumego']['difficulty'] = AppController::convertEloToXp($previousTsumego['Tsumego']['rating']);
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
 
@@ -205,7 +205,11 @@ class PlayResultProcessorComponent extends Component {
 		if (!$result['solved']) {
 			return;
 		}
-		Auth::getUser()['xp'] += TsumegoUtil::getXpValue($previousTsumego['Tsumego']) * ($result['xp-modifier'] ?: 1);
+
+		$multiplier = ($result['xp-modifier'] ?: 1);
+		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
+
+		Auth::getUser()['xp'] += TsumegoUtil::getXpValue($previousTsumego['Tsumego'], $multiplier);
 		if (Auth::getUser()['xp'] >= Auth::getUser()['nextlvl']) {
 			Auth::getUser()['xp'] -= Auth::getUser()['nextlvl'];
 			Auth::getUser()['level'] += 1;

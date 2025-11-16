@@ -2,7 +2,6 @@
 
 class TsumegoXPAndRating {
 	public function __construct(array $tsumego, string $status) {
-		$this->baseXP = TsumegoUtil::getXpValue($tsumego);
 		if ($status == 'G') {
 			$this->goldenTsumego = true;
 		} elseif ($status == 'S') {
@@ -11,6 +10,7 @@ class TsumegoXPAndRating {
 			$this->resolving = true;
 		}
 		$this->tsumegoRating = $tsumego['rating'];
+		$this->progressDeletionCount = TsumegoUtil::getProgressDeletionCount($tsumego);
 	}
 
 	public function render() {
@@ -51,7 +51,6 @@ class TsumegoXPAndRating {
 		echo '
 	let xpStatus = new XPStatus(
 	{
-		baseXP: ' . $this->baseXP . ',
 		solved: ' . Util::boolString($this->solved) . ',
 		sprintRemainingSeconds: ' . HeroPowers::getSprintRemainingSeconds() . ',
 		sprintMultiplier: ' . Constants::$SPRINT_MULTIPLIER . ',
@@ -60,29 +59,34 @@ class TsumegoXPAndRating {
 		resolving: ' . Util::boolString($this->resolving) . ',
 		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . ',
 		userRating: ' . Auth::getUser()['rating'] . ',
-		tsumegoRating: ' . $this->tsumegoRating . '
+		tsumegoRating: ' . $this->tsumegoRating . ',
+		progressDeletionCount: ' . $this->progressDeletionCount .'
 	});
 	xpStatus.update();
 ';
 	}
 
-	/* will be also javascript based
-	private function getRatingPart(): string {
-		if (is_null($this->ratingChangeWhenSolved)) {
-			return '';
+	// changes here must be reflected in the same method in util.js
+	public static function getProgressDeletionMultiplier($progressDeletionCount): float {
+		if ($progressDeletionCount == 0) {
+			return 1;
 		}
-		return '<font size="4">'
-			 . '<div class="eloTooltip">+' . round($this->ratingChangeWhenSolved) . '<span class="eloTooltiptext">+' . round($this->ratingChangeWhenSolved, 2) . '</span></div>'
-			. '/'
-			. '<div class="eloTooltip">' . round($this->ratingChangeWhenFailed) . ' <span class="eloTooltiptext">' . round($this->ratingChangeWhenFailed, 2) . '</span></div></font>';
-	}*/
+		if ($progressDeletionCount == 1) {
+			return 0.5;
+		}
+		if ($progressDeletionCount == 2) {
+			return 0.2;
+		}
+		if ($progressDeletionCount == 3) {
+			return 0.1;
+		}
+		return 0.01;
+	}
 
-	public int $baseXP;
 	public bool $solved = false;
 	public bool $goldenTsumego = false;
 	public bool $resolving = false;
 
 	public float $tsumegoRating;
-	public ?float $ratingChangeWhenSolved = null;
-	public ?float $ratingChangeWhenFailed = null;
+	public float $progressDeletionCount;
 }

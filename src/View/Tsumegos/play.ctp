@@ -1840,9 +1840,9 @@
 					return;
 				}
 
-				tcount -= 0.1;
+				tcount -= 0.01;
 				tcount = tcount.toFixed(1);
-				tcountMin = Math.floor(tcount/60);
+				tcountMin = Math.floor(tcount / 60);
 				tcountSec = tcount % 60;
 				tcountSec = tcountSec.toFixed(1);
 				if(tcountSec < 10)
@@ -1864,7 +1864,7 @@
 					clearInterval(x);
 					toggleBoardLock(true);
 				}
-			}, tcounter);
+			}, 10);
 
 		$('#target').click(function(e){
 			if(locked)
@@ -2172,9 +2172,8 @@
 				if(!doubleXP) x2 = 1;
 				else x2 = 2;
 				<?php
-				echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
-				userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
-				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).'+userDifficulty)/userNextlvl*100, 100);
+				echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).' + xpStatus.getXP())/userNextlvl*100, 100);
 				barPercent1 = newXP2;
 				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);
 				newXP = '.$newXP.';'; ?>
@@ -2190,11 +2189,10 @@
 				if(!ratingBarLock){
 					if(!doubleXP) x2 = 1;
 					else x2 = 2;
-					<?php echo 'userDifficulty = '.$t['Tsumego']['difficulty'].'*x2;
-					userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+					<?php echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
 					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
 					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
-					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+userDifficulty)/userNextlvl*100, 100);
+					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+xpStatus.getXP())/userNextlvl*100, 100);
 					barPercent2 = newXP2;'; ?>
 					$("#xp-bar-fill").css({"width":newXP2+"%"});
 					$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
@@ -2545,7 +2543,7 @@
 					if(goldenTsumego)
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
-					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>*x3) + <?php echo Auth::getWithDefault('xp', 0); ?>;
+					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
 					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 
@@ -2583,7 +2581,7 @@
 					if(goldenTsumego)
 						setCookie("type", "g");
 					document.cookie = "sequence="+sequence;
-					xpReward = (<?php echo $t['Tsumego']['difficulty']; ?>) + <?php echo Auth::getWithDefault('xp', '0'); ?>;
+					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
 					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(xpReward>userNextlvl){

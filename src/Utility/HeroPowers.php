@@ -19,6 +19,9 @@ class HeroPowers {
 	}
 
 	public static function renderJavascript(): void {
+		if (!Auth::isLoggedIn()) {
+			return;
+		}
 		echo self::canUseIntuition() ? "enableIntuition();" : "disableIntuition();";
 		echo self::canUseRejuvanation() ? "enableRejuvenation();" : "disableRejuvenation();";
 		echo self::canUseSprint() ? "enableSprint();" : "disableSprint();";

@@ -11,7 +11,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 
-		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -30,7 +30,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 
 		$oldXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $oldXP, Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER * $originalTsumegoXPValue);
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP, $originalTsumegoXPValue);
 	}
 
 	public function testGoldenTsumegoFail() {

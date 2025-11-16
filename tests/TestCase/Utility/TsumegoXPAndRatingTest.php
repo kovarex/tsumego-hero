@@ -1,5 +1,6 @@
 <?php
 
+App::uses('TsumegoXPAndRating', 'Utility');
 use Facebook\WebDriver\WebDriverBy;
 
 class TsumegoXPAndRatingTest extends TestCaseWithAuth {
@@ -20,7 +21,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is golden
-		$this->assertTextContains((TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->assertTextContains('Golden', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
@@ -56,7 +57,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$browser->clickId('sprint');
 		$browser->driver->wait(10, 500)->until(function () use ($browser, $context) {
 			$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
-			$xpText = strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP';
+			$xpText = strval(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
 			return str_contains($xpDisplayText, $xpText);
 		});
 		$this->checkSprintInXpAndTimeInStatus2($browser);
@@ -72,7 +73,27 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the sprint is active from the start
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->checkSprintInXpAndTimeInStatus2($browser);
+	}
+
+	public function testProgressDeletionsAffectXPShownAndGained(): void {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
+			'progress-deletions' => [
+				['set' => 'set 1', 'created' => date('Y-m-d H:i:s')],
+				['set' => 'set 1', 'created' => date('Y-m-d H:i:s', strtotime('-2 months'))]]]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->otherTsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
+		usleep(1000 * 100);
+		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+
+		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$originalXP = $context->user['xp'];
+		$this->assertSame($context->reloadUser()['xp'] - $originalXP, $originalTsumegoXpValue);
 	}
 }
