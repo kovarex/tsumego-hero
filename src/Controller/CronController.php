@@ -16,6 +16,12 @@ class CronController extends AppController {
 		$query .= ',used_intuition=0';
 		$query .= ',used_revelation=0';
 		$query .= ',damage=0';
+		$query .= ',readingTrial=30';
+		$query .= ',reuse2=0';
+		$query .= ',reuse3=0';
+		$query .= ',reuse4=0';
 		ClassRegistry::init('User')->query($query);
+		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
+		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
 	}
 }

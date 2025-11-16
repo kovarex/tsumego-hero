@@ -27,4 +27,17 @@ class CronControllerTest extends TestCaseWithAuth {
 		$this->testAction('/cron/daily/' . CRON_SECRET);
 		$this->assertSame($context->reloadUser()['damage'], 0);
 	}
+
+	public function testCronResetsFailedTsumegos() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'F'],
+				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'X']]]);
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
+		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
+		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[1]['id']]]);
+		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
+	}
 }
