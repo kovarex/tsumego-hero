@@ -71,6 +71,10 @@ class HeroController extends AppController {
 		Auth::getUser()['used_intuition'] = 0;
 		Auth::getUser()['damage'] = 0;
 		Auth::saveUser();
+
+		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' WHERE status='F' AND user_id=" . Auth::getUserID());
+		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' WHERE status='X' AND user_id=" . Auth::getUserID());
+
 		$this->response->statusCode(200);
 		return $this->response;
 	}

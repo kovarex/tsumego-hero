@@ -153,10 +153,12 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->checkPowerIsInactive($browser, 'intuition');
 	}
 
-	public function testRejuvenationRestoresHealth() {
+	public function testRejuvenationRestoresHealthIntuitionAndFailedTsumegos() {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'other-tsumegos' => [
+				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'F'],
+				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'X']]]);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoRejuvenationCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -169,5 +171,9 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->user['used_intuition'], 0);
 		$this->checkPowerIsInactive($browser, 'rejuvenation');
 		$this->checkPowerIsActive($browser, 'intuition');
+		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
+		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
+		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[1]['id']]]);
+		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
 	}
 }

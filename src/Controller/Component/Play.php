@@ -29,7 +29,6 @@ class Play {
 
 		$highestTsumegoOrder = 0;
 		$nextMode = null;
-		$rejuvenation = false;
 		$doublexp = null;
 		$dailyMaximum = false;
 		$suspiciousBehavior = false;
@@ -529,44 +528,7 @@ class Play {
 			AppController::setPotionCondition();
 		}
 
-		if (Auth::isLoggedIn() && isset($_COOKIE['rejuvenationx']) && $_COOKIE['rejuvenationx'] != 0) {
-			if (Auth::getUser()['usedRejuvenation'] == 0 && $_COOKIE['rejuvenationx'] == 1) {
-				Auth::getUser()['damage'] = 0;
-				Auth::getUser()['intuition'] = 1;
-				Auth::getUser()['damage'] = 0;
-				$rejuvenation = true;
-			} elseif ($_COOKIE['rejuvenationx'] == 2) {
-				Auth::getUser()['damage'] = 0;
-			}
-			Auth::saveUser();
-			$_COOKIE['misplays'] = 0;
-			unset($_COOKIE['rejuvenationx']);
-		}
-
 		Util::setCookie('previousTsumegoID', $id);
-		if (Auth::isLoggedIn()) {
-			if (isset($_COOKIE['rejuvenation']) && $_COOKIE['rejuvenation'] != '0') {
-				Auth::getUser()['rejuvenation'] = 0;
-				Auth::getUser()['usedRejuvenation'] = 1;
-				unset($_COOKIE['rejuvenation']);
-			}
-		}
-
-		if ($rejuvenation) {
-			$utr = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['status' => 'F', 'user_id' => Auth::getUserID()]]) ?: [];
-			foreach ($utr as $failedStatus) {
-				$failedStatus['TsumegoStatus']['status'] = 'V';
-				ClassRegistry::init('TsumegoStatus')->save($failedStatus);
-				$tsumegoStatusMap[$failedStatus['TsumegoStatus']['tsumego_id']] = 'V';
-			}
-
-			$utrx = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['status' => 'X', 'user_id' => Auth::getUserID()]]) ?: [];
-			foreach ($utrx as $failedStatus) {
-				$failedStatus['TsumegoStatus']['status'] = 'W';
-				ClassRegistry::init('TsumegoStatus')->save($failedStatus);
-				$tsumegoStatusMap[$failedStatus['TsumegoStatus']['tsumego_id']] = 'W';
-			}
-		}
 
 		if (isset($_COOKIE['reputation']) && $_COOKIE['reputation'] != '0') {
 			$reputation = [];
@@ -746,10 +708,6 @@ class Play {
 			$emptyHeart = 'heart2';
 		}
 		if (Auth::isLoggedIn()) {
-			($this->setFunction)('rejuvenationEnabled', Auth::getUser()['rejuvenation']);
-			if (Auth::getUser()['reuse4'] == 1) {
-				$dailyMaximum = true;
-			}
 			if (Auth::getUser()['reuse5'] == 1) {
 				$suspiciousBehavior = true;
 			}
