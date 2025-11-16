@@ -116,21 +116,24 @@ function updateSprint(seconds)
 	}, 250);
 }
 
-function startSprint(seconds)
+function enableIntuition()
 {
-	if (!sprintEnabled)
-		return;
-	$.ajax(
-		{
-			url: '/hero/sprint',
-			type: 'POST',
-			data: {},
-			dataType: 'json',
-			success: function(response) {}
-		});
-	xpStatus.set('sprintRemainingSeconds', seconds);
-	updateSprint(seconds);
-	sprintEnabled = false;
+	let intuitionElement = document.getElementById('intuition');
+	intuitionElement.src = '/img/hp2.png';
+	intuitionElement.onmouseover = function() { this.src = '/img/hp2h.png'; };
+	intuitionElement.onmouseout = function() { this.src = '/img/hp2.png'; };
+	intuitionElement.onclick = function() { intuition(); };
+	intuitionElement.style.cursor = 'pointer';
+}
+
+function disableIntuition()
+{
+	let intuitionElement = document.getElementById('intuition');
+	intuitionElement.src = '/img/hp2x.png';
+	intuitionElement.onmouseover = null;
+	intuitionElement.onmouseout = null;
+	intuitionElement.onclick = null;
+	intuitionElement.style.cursor = 'auto';
 }
 
 function intuition()
@@ -141,9 +144,83 @@ function intuition()
 			type: 'POST',
 			success: function(response)
 			{
-				document.getElementById("intuition").src = "/img/hp2x.png";
-				document.getElementById("intuition").style = "cursor: context-menu;";
+				disableIntuition();
 				besogo.editor.intuitionHeroPower();
 			}
 		});
+}
+
+function enableRejuvenation()
+{
+	let rejuvenationElement = document.getElementById('rejuvenation');
+	rejuvenationElement.src = '/img/hp3.png';
+	rejuvenationElement.onmouseover = function() { this.src = '/img/hp3h.png'; };
+	rejuvenationElement.onmouseout = function() { this.src = '/img/hp3.png'; };
+	rejuvenationElement.onclick = () => rejuvenation();
+	rejuvenationElement.style.cursor = 'pointer';
+}
+
+function disableRejuvenation()
+{
+	let rejuvenationElement = document.getElementById('rejuvenation');
+	rejuvenationElement.src = '/img/hp3x.png';
+	rejuvenationElement.onmouseover = null;
+	rejuvenationElement.onmouseout = null;
+	rejuvenationElement.onclick = null;
+	rejuvenationElement.style.cursor = 'auto';
+}
+
+function enableSprint()
+{
+	let sprintElement = document.getElementById('sprint');
+	sprintElement.src = '/img/hp1.png';
+	sprintElement.onmouseover = function() { this.src = '/img/hp1h.png'; };
+	sprintElement.onmouseout = function() { this.src = '/img/hp1.png'; };
+	sprintElement.onclick = () => startSprint();
+	sprintElement.style.cursor = 'pointer';
+}
+
+function disableSprint()
+{
+	let sprintElement = document.getElementById('sprint');
+	sprintElement.src = '/img/hp1x.png';
+	sprintElement.onmouseover = null;
+	sprintElement.onmouseout = null;
+	sprintElement.onclick = null;
+	sprintElement.style.cursor = 'auto';
+}
+
+function startSprint()
+{
+	$.ajax(
+		{
+			url: '/hero/sprint',
+			type: 'POST',
+			success: function(response)
+			{
+				xpStatus.set('sprintRemainingSeconds', sprintSeconds);
+				updateSprint(sprintSeconds);
+				disableSprint();
+			}
+		});
+}
+
+function enableRefinement()
+{
+	let refinementElement = document.getElementById('refinement');
+	refinementElement.src = '/img/hp4.png';
+	refinementElement.onmouseover = function() { this.src = '/img/hp4h.png'; };
+	refinementElement.onmouseout = function() { this.src = '/img/hp4.png'; };
+	refinementElement.onclick = function() { window.location.href = 'hero/refinement'; };
+	refinementElement.style.cursor = 'pointer';
+}
+
+function disableRefinement()
+{
+	let refinementElement = document.getElementById('refinement');
+	refinementElement.src = '/img/hp4x.png';
+	refinementElement.onmouseover = null;
+	refinementElement.onmouseout = null;
+	refinementElement.onclick = null;
+	refinementElement.style.cursor = 'auto';
 }

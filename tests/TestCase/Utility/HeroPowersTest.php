@@ -13,8 +13,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-
-		$browser->clickId('refinementLink');
+		$browser->clickId('refinement');
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
 			'tsumego_id' => $context->otherTsumegos[0]['id'],
@@ -61,7 +60,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$browser->clickId('sprintLink');
+		$browser->clickId('sprint');
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
@@ -82,7 +81,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$browser->clickId('sprintLink');
+		$browser->clickId('sprint');
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
@@ -103,6 +102,22 @@ class HeroPowersTest extends TestCaseWithAuth {
 			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']));
 	}
 
+	private function checkPowerIsInactive($browser, $name) {
+		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
+		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
+		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
+		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onmouseout;"));
+		$this->assertSame($element->getCssValue('cursor'), 'auto');
+	}
+
+	private function checkPowerIsActive($browser, $name) {
+		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
+		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
+		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
+		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onmouseout;"));
+		$this->assertSame($element->getCssValue('cursor'), 'pointer');
+	}
+
 	public function testSprintLinkNotPresentWhenSprintIsUsedUp() {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_sprint' => 1],
@@ -110,7 +125,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::cssSelector('#sprintLink')));
+		$this->checkPowerIsInactive($browser, 'sprint');
 	}
 
 	public function testUseIntuition() {
@@ -121,18 +136,38 @@ class HeroPowersTest extends TestCaseWithAuth {
 		HeroPowers::changeUserSoIntuitionCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertFalse($browser->driver->executeScript("return window.besogo.intuitionActive;"));
-		$browser->clickId('intuitionLink');
+		$this->checkPowerIsActive($browser, 'intuition');
+		$browser->clickId('intuition');
 		$browser->driver->wait(10, 500)->until(function () use ($browser) { return $browser->driver->executeScript("return window.besogo.intuitionActive;"); });
+		$this->checkPowerIsInactive($browser, 'intuition');
 		$this->assertSame($context->reloadUser()['used_intuition'], 1);
 	}
 
-	public function testIntuitionLinkNotPresentWhenIntuitionIsUsedUp() {
+	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp() {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoIntuitionCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::cssSelector('#intuitionLink')));
+		$this->checkPowerIsInactive($browser, 'intuition');
+	}
+
+	public function testRejuvenationRestoresHealth() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoRejuvenationCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame($context->user['damage'], 7);
+		$this->checkPowerIsActive($browser, 'rejuvenation');
+		$this->checkPowerIsInactive($browser, 'intuition');
+		$browser->clickId('rejuvenation');
+		$browser->driver->wait(10, 500)->until(function () use ($context) { return $context->reloadUser()['damage'] == 0; });
+		$this->assertSame($context->user['used_rejuvenation'], 1);
+		$this->assertSame($context->user['used_intuition'], 0);
+		$this->checkPowerIsInactive($browser, 'rejuvenation');
+		$this->checkPowerIsActive($browser, 'intuition');
 	}
 }

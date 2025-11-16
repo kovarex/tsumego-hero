@@ -998,9 +998,6 @@
 	var tryAgainTomorrow = false;
 	var doubleXP = false;
 	var countDownDate = new Date();
-	var sprintEnabled = <?php echo Util::boolString(HeroPowers::canUseSprint()); ?>;
-	var rejuvenationEnabled = true;
-	var refinementEnabled = true;
 	var revelationEnabled = false;
 	var multipleChoiceSelected = false;
 	var safetyLock = false;
@@ -1069,6 +1066,7 @@
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
+	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
 	let multipleChoiceVariance = <?php echo $t['Tsumego']['variance']; ?>+"";
@@ -1107,6 +1105,7 @@
 		else
 			echo 'let hasRevelation = false;';
 		$tsumegoXPAndRating->renderJavascript();
+		HeroPowers::renderJavascript();
 	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
@@ -2283,22 +2282,22 @@
 	}
 
 	function rejuvenation(){
-		if(rejuvenationEnabled){
-			<?php
-				for($i = 0; $i < Auth::getWithDefault('health', 0); $i++){
-					echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
+		$.ajax(
+			{
+				url: '/hero/rejuvenation',
+				type: 'POST',
+				success: function(response)
+				{
+					<?php
+					for($i = 0; $i < Auth::getWithDefault('health', 0); $i++) {
+						echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
+					}
+					?>
+					misplays = 0;
+					disableRejuvenation();
+					enableIntuition();
 				}
-				echo 'document.cookie = "rejuvenationx=1;path=/tsumegos/play;SameSite=Lax";';
-			?>
-			misplays = 0;
-			document.cookie = "rejuvenation=1;path=/tsumegos/play;SameSite=Lax";
-			document.getElementById("rejuvenation").src = "/img/hp3x.png";
-			document.getElementById("rejuvenation").style = "cursor: context-menu;";
-			<?php if(isset($intuitionEnabled) &&!$intuitionEnabled) echo 'setCookie(intuition, 2);'; ?>
-			intuitionEnabled = true;
-			rejuvenationEnabled = false;
-			<?php echo 'window.location = nextTsumegoLink'; ?>
-		}
+			});
 	}
 
 	function revelation(){

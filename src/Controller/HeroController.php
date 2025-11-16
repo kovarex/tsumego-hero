@@ -61,4 +61,17 @@ class HeroController extends AppController {
 		$this->response->statusCode(200);
 		return $this->response;
 	}
+
+	public function rejuvenation() {
+		if (!HeroPowers::canUseRejuvanation()) {
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+		Auth::getUser()['used_rejuvenation'] = 1;
+		Auth::getUser()['used_intuition'] = 0;
+		Auth::getUser()['damage'] = 0;
+		Auth::saveUser();
+		$this->response->statusCode(200);
+		return $this->response;
+	}
 }

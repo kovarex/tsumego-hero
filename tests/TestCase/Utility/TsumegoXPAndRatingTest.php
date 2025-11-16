@@ -53,8 +53,12 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText(), strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#sprintLink'))->click();
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$browser->clickId('sprint');
+		$browser->driver->wait(10, 500)->until(function () use ($browser, $context) {
+			$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
+			$xpText = strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP';
+			return str_contains($xpDisplayText, $xpText);
+		});
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
