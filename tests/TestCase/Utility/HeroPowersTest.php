@@ -14,7 +14,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
 
-		$browser->driver->findElement(WebDriverBy::cssSelector('#refinementLink'))->click();
+		$browser->clickId('refinementLink');
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
 			'tsumego_id' => $context->otherTsumegos[0]['id'],
@@ -61,8 +61,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		// the reported xp is normal
-		$browser->driver->findElement(WebDriverBy::cssSelector('#sprintLink'))->click();
+		$browser->clickId('sprintLink');
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
@@ -83,13 +82,12 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		// the reported xp is normal
-		$browser->driver->findElement(WebDriverBy::cssSelector('#sprintLink'))->click();
+		$browser->clickId('sprintLink');
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
 		// clicking next after solving, sprint is still visible:
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$bla = $browser->driver->getPageSource();
 		$oldXP = $context->user['xp'];
 		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
@@ -99,7 +97,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
 		// clicking next after solving again, sprint is applied on xp still
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$oldXP = $context->user['xp'];
 		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
 			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']));
@@ -113,5 +111,28 @@ class HeroPowersTest extends TestCaseWithAuth {
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::cssSelector('#sprintLink')));
+	}
+
+	public function testUseIntuition() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoIntuitionCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertFalse($browser->driver->executeScript("return window.besogo.intuitionActive;"));
+		$browser->clickId('intuitionLink');
+		$browser->driver->wait(10, 500)->until(function () use ($browser) { return $browser->driver->executeScript("return window.besogo.intuitionActive;"); });
+		$this->assertSame($context->reloadUser()['used_intuition'], 1);
+	}
+
+	public function testIntuitionLinkNotPresentWhenIntuitionIsUsedUp() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoIntuitionCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertCount(0, $browser->driver->findElements(WebDriverBy::cssSelector('#intuitionLink')));
 	}
 }

@@ -132,3 +132,18 @@ function startSprint(seconds)
 	updateSprint(seconds);
 	sprintEnabled = false;
 }
+
+function intuition()
+{
+	$.ajax(
+		{
+			url: '/hero/intuition',
+			type: 'POST',
+			success: function(response)
+			{
+				document.getElementById("intuition").src = "/img/hp2x.png";
+				document.getElementById("intuition").style = "cursor: context-menu;";
+				besogo.editor.intuitionHeroPower();
+			}
+		});
+}

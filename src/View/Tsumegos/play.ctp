@@ -999,7 +999,6 @@
 	var doubleXP = false;
 	var countDownDate = new Date();
 	var sprintEnabled = <?php echo Util::boolString(HeroPowers::canUseSprint()); ?>;
-	var intuitionEnabled = true;
 	var rejuvenationEnabled = true;
 	var refinementEnabled = true;
 	var revelationEnabled = false;
@@ -2281,14 +2280,6 @@
 		if(newX!=false)
 			positionParams[9] = newX;
 		besogo.editor.commentPosition(positionParams);
-	}
-
-	function intuition(){
-		setCookie("intuition", 1);
-		document.getElementById("intuition").src = "/img/hp2x.png";
-		document.getElementById("intuition").style = "cursor: context-menu;";
-		intuitionEnabled = false;
-		besogo.editor.intuitionHeroPower();
 	}
 
 	function rejuvenation(){

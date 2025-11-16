@@ -545,15 +545,6 @@ class Play {
 
 		Util::setCookie('previousTsumegoID', $id);
 		if (Auth::isLoggedIn()) {
-			if (isset($_COOKIE['intuition']) && $_COOKIE['intuition'] != '0') {
-				if ($_COOKIE['intuition'] == '1') {
-					Auth::getUser()['intuition'] = 0;
-				}
-				if ($_COOKIE['intuition'] == '2') {
-					Auth::getUser()['intuition'] = 1;
-				}
-				unset($_COOKIE['intuition']);
-			}
 			if (isset($_COOKIE['rejuvenation']) && $_COOKIE['rejuvenation'] != '0') {
 				Auth::getUser()['rejuvenation'] = 0;
 				Auth::getUser()['usedRejuvenation'] = 1;

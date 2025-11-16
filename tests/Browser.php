@@ -3,6 +3,7 @@
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\WebDriverBy;
 
 App::uses('Util', 'Utility');
 
@@ -50,6 +51,10 @@ class Browser {
 		// This is what I would expect to be the proper way, but it hangs session start on the client
 		// $browser->driver->manage()->addCookie(['name' => "myApp", 'value' => session_id()]);
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
+	}
+
+	public function clickId($name) {
+		$this->driver->findElement(WebDriverBy::id($name))->click();
 	}
 
 	public static function instance() {

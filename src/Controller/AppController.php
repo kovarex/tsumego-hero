@@ -865,16 +865,7 @@ class AppController extends Controller {
 			$u[$i]['User']['reuse3'] = 0;//xp
 			$u[$i]['User']['reuse4'] = 0;//daily maximum
 			$u[$i]['User']['damage'] = 0;
-			$u[$i]['User']['sprint'] = 1;
-			$u[$i]['User']['intuition'] = 1;
-			$u[$i]['User']['rejuvenation'] = 1;
-			$u[$i]['User']['refinement'] = 1;
-			$u[$i]['User']['revelation'] = 5;
-			$u[$i]['User']['usedSprint'] = 0;
-			$u[$i]['User']['usedRejuvenation'] = 0;
-			$u[$i]['User']['usedRefinement'] = 0;
 			$u[$i]['User']['readingTrial'] = 30;
-			$u[$i]['User']['potion'] = 0;
 			$u[$i]['User']['promoted'] += 1;
 			$u[$i]['User']['lastRefresh'] = date('Y-m-d');
 			if ($u[$i]['User']['isAdmin'] > 0) {

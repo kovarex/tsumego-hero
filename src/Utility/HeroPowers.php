@@ -2,6 +2,7 @@
 
 class HeroPowers {
 	public static $SPRINT_MINIMUM_LEVEL = 20;
+	public static $INTUITION_MINIMUM_LEVEL = 30;
 
 	public static function render(): void {
 		if (!Auth::isLoggedIn()) {
@@ -30,8 +31,13 @@ class HeroPowers {
 		}
 	}
 
+	public static function changeUserSoIntuitionCanBeUsed() {
+		Auth::getUser()['level'] = self::$INTUITION_MINIMUM_LEVEL;
+		Auth::saveUser();
+	}
+
 	public static function canUseIntuition() {
-		if (Auth::getWithDefault('level', 0) < 30) {
+		if (Auth::getWithDefault('level', 0) < self::$INTUITION_MINIMUM_LEVEL) {
 			return false;
 		}
 		return !Auth::getUser()['used_intuition'];
@@ -39,7 +45,7 @@ class HeroPowers {
 
 	public static function renderIntuition() {
 		if (self::canUseIntuition()) {
-			echo '<a href="#"><img id="intuition" title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png" onmouseover="this.src = \'/img/hp2h.png\'" onmouseout="this.src = \'/img/hp2.png\';" onclick="intuition(); return false;"></a>';
+			echo '<a href="#" id="intuitionLink"><img id="intuition" title="Intuition: Shows the first correct move." alt="Intuition" src="/img/hp2.png" onmouseover="this.src = \'/img/hp2h.png\'" onmouseout="this.src = \'/img/hp2.png\';" onclick="intuition(); return false;"></a>';
 		} else {
 			echo '<img id="intuition" title="Intuition (Level 30): Shows the first correct move." src="/img/hp2x.png" style="cursor: context-menu;" alt="Intuition">';
 		}

@@ -50,4 +50,15 @@ class HeroController extends AppController {
 		$this->response->statusCode(200);
 		return $this->response;
 	}
+
+	public function intuition() {
+		if (!HeroPowers::canUseIntuition()) {
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+		Auth::getUser()['used_intuition'] = 1;
+		Auth::saveUser();
+		$this->response->statusCode(200);
+		return $this->response;
+	}
 }
