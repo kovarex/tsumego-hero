@@ -997,24 +997,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine4x() { //0:20 remove inactive players 2
-		$this->loadModel('TsumegoStatus');
-		$ux = $this->User->find('all', ['limit' => 1000, 'order' => 'created DESC']);
-		$u = [];
-		$d1 = date('Y-m-d', strtotime('-7 days'));
-		$uxCount = count($ux);
-		for ($i = 0; $i < $uxCount; $i++) {
-			$date = new DateTime($ux[$i]['User']['created']);
-			$date = $date->format('Y-m-d');
-			if ($date == $d1) {
-			}
-		}
-		$this->set('u', $d1);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine5() { //0:25 update user solved field
 		$this->loadModel('TsumegoStatus');
 
@@ -1031,14 +1013,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					array_push($solvedUts, $uts[$j]);
 				}
 			}
-			/*$uts = $this->OldTsumegoStatus->find('all', array('conditions' =>  array('user_id' => $uid)));
-			$solvedUts2 = array();
-			$utsCount = count($uts);
-			for ($j=0; $j<$utsCount; $j++) {
-		  if ($uts[$j]['OldTsumegoStatus']['status']=='S' || $uts[$j]['OldTsumegoStatus']['status']=='W' || $uts[$j]['OldTsumegoStatus']['status']=='C') {
-		array_push($solvedUts2, $uts[$j]);
-		  }
-			}*/
 			$ux['User']['solved'] = count($solvedUts);
 			$this->User->save($ux);
 		}
