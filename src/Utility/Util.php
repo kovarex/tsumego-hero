@@ -163,6 +163,6 @@ class Util {
 	}
 
 	public static function getHealthBasedOnLevel(int $level): int {
-		return floor($level / 5) + 10;
+		return intdiv($level, 5) + 10;
 	}
 }
