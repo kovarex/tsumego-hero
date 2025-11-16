@@ -161,4 +161,8 @@ class Util {
 	public static function boolString($bool) {
 		return $bool ? 'true' : 'false';
 	}
+
+	public static function getHealthBasedOnLevel(int $level): int {
+		return floor($level / 5) + 10;
+	}
 }

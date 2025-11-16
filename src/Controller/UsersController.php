@@ -2534,7 +2534,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$this->UserContribution->save($uc);
 					Auth::getUser()['level'] += 1;
 					Auth::getUser()['nextlvl'] += $this->getXPJump(Auth::getUser()['level']);
-					Auth::getUser()['health'] = $this->getHealth(Auth::getUser()['level']);
 					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}
@@ -4199,10 +4198,7 @@ Joschka Zimdars';
 		}
 		$sum = $correctCounter1;
 		$u['User']['solved'] = $sum;
-		//$u['User']['rating'] = 100;
 		$u['User']['readingTrial'] = 30;
-		//$u['User']['mode'] = 1;
-		$u['User']['health'] = $this->getHealth($u['User']['level']);
 		$this->Purge->create();
 		$p = [];
 		$p['Purge']['user_id'] = $id;

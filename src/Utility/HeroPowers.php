@@ -117,7 +117,7 @@ class HeroPowers {
 		if (!Auth::getUser()['used_potion']) {
 			return false;
 		}
-		return Auth::getUser()['health'] - Auth::getUser()['damage'] <= 0;
+		return Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 	}
 
 	public static function canUseRefinement() {

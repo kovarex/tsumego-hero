@@ -155,7 +155,7 @@
 			<?php
 			if (Auth::isLoggedIn())
 			{
-				$health = Auth::getUser()['health'] - Auth::getUser()['damage'];
+				$health = Util::getHealthBasedOnLevel(Auth::getUser()['level']) - Auth::getUser()['damage'];
 				for($i = 0; $i < $health; $i++){
 					echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
 				}
@@ -2289,7 +2289,8 @@
 				success: function(response)
 				{
 					<?php
-					for($i = 0; $i < Auth::getWithDefault('health', 0); $i++) {
+					$health = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
+					for($i = 0; $i < $health; $i++) {
 						echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
 					}
 					?>
@@ -2634,7 +2635,7 @@
 					}
 					freePlayMode = true;
 					if(mode==1) {
-						if(<?php echo Auth::getWithDefault('health', 0) - Auth::getWithDefault('damage', 0); ?> - misplays<0){
+						if(<?php echo Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) - Auth::getWithDefault('damage', 0); ?> - misplays < 0) {
 							if(hasPremium !== "1") {
 								updateCurrentNavigationButton('C');
 								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>';

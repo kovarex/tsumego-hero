@@ -700,7 +700,7 @@ class Play {
 			}
 		}
 
-		if (Auth::getWithDefault('health', 0) >= 8) {
+		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8) {
 			$fullHeart = 'heart1small';
 			$emptyHeart = 'heart2small';
 		} else {

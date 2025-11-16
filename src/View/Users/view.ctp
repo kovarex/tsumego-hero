@@ -133,7 +133,7 @@
 		</tr>
 		<tr>
 			<td>Health:</td>
-			<td><?php echo $user['User']['health'].' HP'; ?></td>
+			<td><?php echo Util::getHealthBasedOnLevel($user['User']['level']).' HP'; ?></td>
 		</tr>
 		<tr>
 			<td>Hero powers:</td>

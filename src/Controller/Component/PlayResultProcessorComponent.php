@@ -224,7 +224,6 @@ class PlayResultProcessorComponent extends Component {
 			Auth::getUser()['xp'] -= Auth::getUser()['nextlvl'];
 			Auth::getUser()['level'] += 1;
 			Auth::getUser()['nextlvl'] += AppController::getXPJump(Auth::getUser()['level']);
-			Auth::getUser()['health'] = AppController::getHealth(Auth::getUser()['level']);
 		}
 	}
 
