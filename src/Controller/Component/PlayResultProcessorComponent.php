@@ -174,7 +174,7 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	private function processEloChange(array $previousTsumego, array $result): void {
-		if (!Auth::isInRatingMode()) {
+		if (!Auth::isInRatingMode() && !Auth::isInLevelMode()) {
 			return;
 		}
 		$userRating = (float) Auth::getUser()['rating'];
