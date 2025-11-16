@@ -38,6 +38,13 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
+	public function checkSprintInXpAndTimeInStatus2($browser) {
+		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$status = $browser->driver->findElement(WebDriverBy::cssSelector('#status2'))->getText();
+		$this->assertSame(preg_match('/(\d+):([0-5]\d)/', $status, $m), 1, 'The status should contain time in format m:s, but it wasn\'t found in the string: "' . $status . "'");
+		$this->assertTrue($m > 1);
+	}
+
 	public function testShowingSprintAfterSprintIsClicked(): void {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
@@ -48,6 +55,20 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText(), strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP');
 		$browser->driver->findElement(WebDriverBy::cssSelector('#sprintLink'))->click();
 		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->checkSprintInXpAndTimeInStatus2($browser);
+	}
+
+	public function testShowingSprintWhenOpeningProblemWhileSprintIsActive(): void {
+		$context = new ContextPreparator([
+			'user' => [
+				'mode' => Constants::$LEVEL_MODE,
+				'premium' => 1,
+				'sprint_start' => date('Y-m-d H:i:s')],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		// the sprint is active from the start
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0]) * Constants::$SPRINT_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 }

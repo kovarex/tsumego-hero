@@ -48,6 +48,6 @@ class HeroController extends AppController {
 		Auth::getUser()['used_sprint'] = 1;
 		Auth::saveUser();
 		$this->response->statusCode(200);
-		return $this->respons;
+		return $this->response;
 	}
 }

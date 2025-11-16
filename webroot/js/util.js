@@ -31,7 +31,7 @@ class XPStatus
 		// cache the element
 		this.xpDisplay = document.querySelector("#xpDisplay");
 		if (this.isSprintActive())
-			startSprint(this.sprintRemainingSeconds, true);
+			updateSprint(this.sprintRemainingSeconds, true);
 	}
 
 	update()
@@ -92,26 +92,12 @@ function updateSprintStatus(seconds)
 	document.getElementById("status2").style.color = 'blue';
 }
 
-function startSprint(seconds, updatingFromStatus = false)
+function updateSprint(seconds)
 {
-	if (!sprintEnabled)
-		return;
 	countDownDate = new Date();
 	countDownDate.setSeconds(countDownDate.getSeconds() + seconds);
 	document.getElementById("sprint").src = "/img/hp1x.png";
 	document.getElementById("sprint").style = "cursor: context-menu;";
-	if (!updatingFromStatus)
-	{
-		$.ajax(
-			{
-				url: '/hero/sprint',
-				type: 'POST',
-				data: {},
-				dataType: 'json',
-				success: function(response) {}
-			});
-		xpStatus.set('sprintRemainingSeconds', seconds);
-	}
 
 	updateSprintStatus(seconds);
 
@@ -128,5 +114,21 @@ function startSprint(seconds, updatingFromStatus = false)
 			return;
 		}
 	}, 250);
+}
+
+function startSprint(seconds)
+{
+	if (!sprintEnabled)
+		return;
+	$.ajax(
+		{
+			url: '/hero/sprint',
+			type: 'POST',
+			data: {},
+			dataType: 'json',
+			success: function(response) {}
+		});
+	xpStatus.set('sprintRemainingSeconds', seconds);
+	updateSprint(seconds);
 	sprintEnabled = false;
 }
