@@ -259,8 +259,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalDamage = intval($context->user['damage']);
 			$this->performMisplay($context, $page);
-			Auth::init();
-			$this->assertSame($originalDamage + 1, Auth::getUser()['damage']);
+			$this->assertSame($originalDamage + 1, $context->reloadUser()['damage']);
 		}
 	}
 

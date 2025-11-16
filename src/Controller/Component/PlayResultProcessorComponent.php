@@ -5,6 +5,7 @@ App::uses('Util', 'Utility');
 App::uses('TsumegoStatus', 'Model');
 App::uses('SetConnection', 'Model');
 App::uses('Decoder', 'Utility');
+App::uses('HeroPowers', 'Utility');
 
 class PlayResultProcessorComponent extends Component {
 	public $components = ['Session', 'TimeMode'];
