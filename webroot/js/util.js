@@ -86,10 +86,10 @@ class XPStatus
 
 	updateRatingPart()
 	{
-		let modifier = 1;
-		let ratingGain = calculateRatingChange(this.userRating, this.tsumegoRating, 1, modifier);
+		let ratingGain = calculateRatingChange(this.userRating, this.tsumegoRating, 1, playerRatingCalculationModifier);
 		this.ratingGainShort.textContent = '+' + showRatingShort(ratingGain);
 		this.ratingGainLong.textContent = '+' + showRatingLong(ratingGain);
+		this.ratingHeader.textContent = 'Rating: ';
 
 		if (this.solved)
 		{
@@ -101,7 +101,7 @@ class XPStatus
 		}
 		else
 		{
-			let ratingLoss = calculateRatingChange(this.userRating, this.tsumegoRating, 0, modifier);
+			let ratingLoss = calculateRatingChange(this.userRating, this.tsumegoRating, 0, playerRatingCalculationModifier);
 			this.ratingSeparator.textContent = '/';
 			this.ratingLossShort.textContent = showRatingShort(ratingLoss);
 			this.ratingLossLong.textContent = showRatingLong(ratingLoss);

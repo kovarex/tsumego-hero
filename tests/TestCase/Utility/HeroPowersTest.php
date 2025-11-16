@@ -10,6 +10,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -28,8 +30,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 
 		$oldXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
-			Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP, Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER * $originalTsumegoXPValue);
 	}
 
 	public function testGoldenTsumegoFail() {
@@ -57,6 +58,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -67,8 +69,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 		$oldXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
-			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP, Constants::$SPRINT_MULTIPLIER * $originalTsumegoXPValue);
 		$this->assertSame($context->user['used_sprint'], 1);
 	}
 
@@ -78,6 +79,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 			'other-tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]]],
 				['sets' => [['name' => 'set 1', 'num' => 2]]]]]);
+		$originalTsumego0XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
+		$originalTsumego1XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -87,10 +90,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 
 		// clicking next after solving, sprint is still visible:
 		$browser->clickId('besogo-next-button');
-		$bla = $browser->driver->getPageSource();
 		$oldXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
-			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']));
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP, Constants::$SPRINT_MULTIPLIER * $originalTsumego0XPValue);
 		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
@@ -98,8 +99,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		// clicking next after solving again, sprint is applied on xp still
 		$browser->clickId('besogo-next-button');
 		$oldXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $oldXP,
-			Constants::$SPRINT_MULTIPLIER * TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']));
+		$this->assertSame($context->reloadUser()['xp'] - $oldXP, Constants::$SPRINT_MULTIPLIER * $originalTsumego1XPValue);
 	}
 
 	private function checkPowerIsInactive($browser, $name) {

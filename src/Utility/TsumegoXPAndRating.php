@@ -21,7 +21,7 @@ class TsumegoXPAndRating {
 		echo '
 	<div id="xpDisplay">
 		<span id="xpDisplayText"></span>
-		<span id="ratingHeader">Rating:</span>
+		<span id="ratingHeader"></span>
 		<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
 		<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
 	</div>';
@@ -45,6 +45,9 @@ class TsumegoXPAndRating {
 	}
 
 	public function renderJavascript() {
+		if (!Auth::isLoggedIn()) {
+			return;
+		}
 		echo '
 	let xpStatus = new XPStatus(
 	{
