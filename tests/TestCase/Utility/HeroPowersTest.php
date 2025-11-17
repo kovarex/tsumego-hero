@@ -22,7 +22,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 			'user_id' => Auth::getUserID()]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'G');
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
-
+		echo "\n Rating to xp: ".Rating::ratingToXP($context->otherTsumegos[0]['rating'])."\n";
 		echo "\n pd multiplier: ".TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($context->otherTsumegos[0]))."\n";
 
 		// the reported xp is normal golden
