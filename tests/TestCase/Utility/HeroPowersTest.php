@@ -28,6 +28,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		// the reported xp is normal golden
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'G');
 		$browser->get('sets');
+		echo $browser->driver->getPageSource();
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 
