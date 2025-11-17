@@ -74,7 +74,7 @@ class TsumegoUtil {
 	}
 
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int {
-		return ceil(Rating::ratingToXP($tsumego['rating']) * $multiplier);
+		return intval(ceil(Rating::ratingToXP($tsumego['rating']) * $multiplier));
 	}
 
 	public static function getProgressDeletionCount(array $tsumego): int {

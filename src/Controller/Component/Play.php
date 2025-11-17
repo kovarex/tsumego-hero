@@ -859,7 +859,6 @@ class Play {
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('sgf2', $sgf2);
-		($this->setFunction)('sandboxComment2', $sandboxComment2);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);

@@ -68,8 +68,6 @@
 		if(!Auth::hasPremium())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
-	if($sandboxComment2)
-		$sandboxComment = '(reduced)';
 
 	if($t['Tsumego']['set_id']==6473 ||$t['Tsumego']['set_id']==11969 || $t['Tsumego']['set_id']==29156 || $t['Tsumego']['set_id']==31813 || $t['Tsumego']['set_id']==33007
 	|| $t['Tsumego']['set_id']==71790 || $t['Tsumego']['set_id']==74761 || $t['Tsumego']['set_id']==81578 || $t['Tsumego']['set_id']==88156){
