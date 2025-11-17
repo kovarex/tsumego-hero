@@ -50,6 +50,8 @@ class ContextPreparator {
 		$this->user['used_sprint'] = $user['used_sprint'] ?: 0;
 		$this->user['sprint_start'] = $user['sprint_start'] ?: null;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
+		$this->user['level'] = $user['level'] ?: 1;
+		$this->user['nextlvl'] = $user['nextlvl'] ?: 1000;
 		ClassRegistry::init('User')->save($this->user);
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 

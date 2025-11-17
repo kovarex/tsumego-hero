@@ -50,6 +50,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
