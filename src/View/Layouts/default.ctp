@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php if (Configure::read('debug')) { ?>
+<?php
+App::uses('Level', 'Utility');
+if (Configure::read('debug')) { ?>
 <script>
 	(function () {
 		// global arrays
@@ -488,9 +490,10 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			';
 		$xpBonus += $achievementUpdate[$i][4];
 	}
-	if(Auth::getUser()['xp']+$xpBonus>=Auth::getUser()['nextlvl']){
+	if (Auth::getUser()['xp']+ $xpBonus >= Level::getXPForNext(Auth::getUser()['level'])) {
 		$increaseValue = 100;
-	}else $increaseValue = 50;
+	} else
+		$increaseValue = 50;
 }
 ?>
 <script type="text/javascript">
@@ -547,7 +550,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	}
 	}
 	if(Auth::isLoggedIn()){ ?>
-	var barPercent1 = <?php echo Auth::getUser()['nextlvl'] == 0 ? "0" : Auth::getUser()['xp']/Auth::getUser()['nextlvl']*100; ?>;
+	var barPercent1 = <?php echo Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])); ?>;
 	var barPercent2 = <?php echo substr(round(Auth::getUser()['rating']), -2); ?>;
 	var barLevelNum = "<?php echo 'Level '.Auth::getUser()['level']; ?>";
 	var barRatingNum = "<?php echo $td; ?>";
@@ -642,7 +645,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	<?php if(Auth::isLoggedIn()){ ?>
 	var userXP = <?php echo Auth::getUser()['xp']; ?> ;
 	var userLevel = <?php echo Auth::getUser()['level']; ?> ;
-	var userNextLvl = <?php echo Auth::getUser()['nextlvl']; ?> ;
+	var userNextLvl = <?php echo Level::getXPForNext(Auth::getUser()['level']); ?> ;
 	var userElo = <?php echo round(Auth::getUser()['rating']); ?> ;
 	var soundValue = 0;
 	let modeSelector = <?php echo $modeSelector; ?>;
@@ -1001,8 +1004,8 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		var nextlvl = 0;
 		var timer = setInterval(function(){
 			current += increment;
-			obj.innerHTML = current+nextlvl;
-			if(current == end){
+			obj.innerHTML = current + nextlvl;
+			if(current == end) {
 				clearInterval(timer);
 			}
 		}, stepTime);

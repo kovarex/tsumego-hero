@@ -195,7 +195,7 @@
 							</div>';
 							echo '<a id="playTitleA" href=""></a>';
 						}elseif(Auth::isInTimeMode()) {
-							echo '<font size="5px">'.$timeMode['currentOrder'].' of '.$timeMode['overallCount'].'</font>';
+							echo '<font size="5px">'.$timeMode->currentOrder.' of '.$timeMode->overallCount.'</font>';
 						}
 					}
 				?>
@@ -1038,7 +1038,7 @@
 	var timeUp = false;
 	var moveTimeout = 360;
 	var authorProblem = false;
-	var tcount = 0.0;
+	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;
 	var whiteMoveAfterCorrectI = 0;
@@ -1613,11 +1613,11 @@
 
 			if(Auth::isInTimeMode()){
 				echo 'notMode3 = false;';
-				echo '$("#account-bar-xp").text("'.$timeMode['rank'].'");';
+				echo '$("#account-bar-xp").text("'.$timeMode->rank.'");';
 				?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
-				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode['currentOrder'] - 1, $timeMode['overallCount']).'%");'; ?>
+				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode->currentOrder - 1, $timeMode->overallCount).'%");'; ?>
 				$("#xp-increase-fx").fadeOut(0);
 				$("#xp-bar-fill").css({"-webkit-transition":"all 0.0s ease","box-shadow":""});
 				<?php
@@ -1633,7 +1633,7 @@
 			if($refresh=='8') echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";';
 		?>
 		<?php
-		if($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X'){
+		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 			echo '
 				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>\';
 				tryAgainTomorrow = true;
@@ -1832,14 +1832,13 @@
 		if(mode == 3)
 			var x = setInterval(function()
 			{
-				if(!timeModeEnabled)
+				if (!timeModeEnabled)
 				{
 					clearInterval(x);
 					return;
 				}
 
-				tcount -= 0.01;
-				tcount = tcount.toFixed(1);
+				tcount -= 0.1;
 				tcountMin = Math.floor(tcount / 60);
 				tcountSec = tcount % 60;
 				tcountSec = tcountSec.toFixed(1);
@@ -1862,7 +1861,7 @@
 					clearInterval(x);
 					toggleBoardLock(true);
 				}
-			}, 10);
+			}, 100);
 
 		$('#target').click(function(e){
 			if(locked)
@@ -2164,17 +2163,15 @@
 	}
 
 	function runXPBar(increase){
-		<?php $newXP = Auth::isLoggedIn() ? (Auth::getUser()['nextlvl'] ? ((Auth::getUser()['xp'] + $t['Tsumego']['difficulty']) / Auth::getUser()['nextlvl'] * 100) : 0) : 0; ?>
-		if(mode==1 || mode==2) {
+		if (mode==1 || mode==2) {
 			if(levelBar==1 && increase==true){
 				if(!doubleXP) x2 = 1;
 				else x2 = 2;
 				<?php
-				echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+				echo 'userNextlvl = '. Level::getXPForNext(Auth::getWithDefault('level', 1)).';
 				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).' + xpStatus.getXP())/userNextlvl*100, 100);
 				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);
-				newXP = '.$newXP.';'; ?>
+				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);'; ?>
 				$("#xp-bar-fill").css({"width":newXP2+"%"});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 				$("#xp-increase-fx").fadeIn(0);
@@ -2187,7 +2184,7 @@
 				if(!ratingBarLock){
 					if(!doubleXP) x2 = 1;
 					else x2 = 2;
-					<?php echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+					<?php echo 'userNextlvl = '.Level::getXPForNext(Auth::getWithDefault('level', 1)).';
 					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
 					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
 					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+xpStatus.getXP())/userNextlvl*100, 100);
@@ -2222,7 +2219,7 @@
 	start = Math.round(start);
 	end = Math.round(end);
 	<?php if(Auth::isLoggedIn()){ ?>
-	let runXPNumberNextLvl = <?php echo Auth::getUser()['nextlvl']; ?>+"";
+	let runXPNumberNextLvl = <?php echo Level::getXPForNext(Auth::getUser()['level']); ?>+"";
 	if(start!==end && !ratingBarLock){
 		userXP = end;
 		userLevel = ulvl;
@@ -2542,7 +2539,7 @@
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
-					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 
 					if(xpReward > userNextlvl) {
@@ -2580,7 +2577,7 @@
 						setCookie("type", "g");
 					document.cookie = "sequence="+sequence;
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
-					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;

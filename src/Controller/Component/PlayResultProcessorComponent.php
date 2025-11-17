@@ -7,6 +7,7 @@ App::uses('Util', 'Utility');
 App::uses('Decoder', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
+App::uses('Level', 'Utility');
 
 class PlayResultProcessorComponent extends Component {
 	public $components = ['Session', 'TimeMode'];
@@ -210,11 +211,7 @@ class PlayResultProcessorComponent extends Component {
 		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
 
 		Auth::getUser()['xp'] += TsumegoUtil::getXpValue($previousTsumego['Tsumego'], $multiplier);
-		if (Auth::getUser()['xp'] >= Auth::getUser()['nextlvl']) {
-			Auth::getUser()['xp'] -= Auth::getUser()['nextlvl'];
-			Auth::getUser()['level'] += 1;
-			Auth::getUser()['nextlvl'] += AppController::getXPJump(Auth::getUser()['level']);
-		}
+		Level::checkLevelUp(Auth::getUser());
 	}
 
 	private function processErrorAchievement(array $result): void {

@@ -125,11 +125,11 @@
 		</tr>
 		<tr>
 			<td>Level up:</td>
-			<td><?php echo $user['User']['xp'].'/'.$user['User']['nextlvl']; ?></td>
+			<td><?php echo $user['User']['xp'].'/'.Level::getXPForNext($user['User']['level']); ?></td>
 		</tr>
 		<tr>
 			<td>XP earned:</td>
-			<td><?php echo $xpSum.' XP'; ?></td>
+			<td><?php echo Level::getXpSumToGetLevel($user['User']['level']).' XP'; ?></td>
 		</tr>
 		<tr>
 			<td>Health:</td>

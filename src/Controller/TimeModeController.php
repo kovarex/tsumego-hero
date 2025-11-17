@@ -50,7 +50,7 @@ class TimeModeController extends AppController {
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 		}
 
-		$this->set('timeMode', (array) $this->TimeMode);
+		$this->set('timeMode', $this->TimeMode);
 		$this->set('nextLink', $this->TimeMode->currentWillBeLast() ? '/timeMode/result/' . $this->TimeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
 		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
 		$play->play($setConnection['SetConnection']['id'], $this->params);
