@@ -75,4 +75,14 @@ class Rating {
 		return $modifier * ($con * ($result - $Se) + $bonus);
 	}
 
+	// changes should be reflected in util.js
+	public static function ratingToXP($rating): float {
+		// until 1200 rating, the old formula but with half of the values
+		if ($rating < 1200) {
+			return max(10, pow($rating / 100, 1.55) - 6) / 2;
+		}
+
+		// with higher ratings, it is important to have more aggressive exponential growth,
+		return (pow(($rating - 500) / 100, 2) - 10) / 2;
+	}
 }

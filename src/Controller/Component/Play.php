@@ -47,7 +47,6 @@ class Play {
 		$eloScore2 = 0;
 		$requestProblem = '';
 		$achievementUpdate = [];
-		$pdCounter = 0;
 		$tRank = '15k';
 		$nothingInRange = false;
 		$tsumegoStatusMap = [];
@@ -435,27 +434,6 @@ class Play {
 				move_uploaded_file($file_tmp, $uploadfile);
 			}
 		}
-		$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * $set['Set']['multiplier']);
-
-		if (Auth::isLoggedIn()) {
-			$pd = ClassRegistry::init('ProgressDeletion')->find('all', [
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'set_id' => $t['Tsumego']['set_id'],
-				],
-			]);
-			if (!$pd) {
-				$pd = [];
-			}
-			$pdCount = count($pd);
-			for ($i = 0; $i < $pdCount; $i++) {
-				$date = date_create($pd[$i]['ProgressDeletion']['created']);
-				$pd[$i]['ProgressDeletion']['d'] = $date->format('Y') . '-' . $date->format('m');
-				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d']) {
-					$pdCounter++;
-				}
-			}
-		}
 
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser()) {
 			Auth::getUser()['readingTrial']--;
@@ -712,28 +690,7 @@ class Play {
 				$suspiciousBehavior = true;
 			}
 		}
-		if ($isSandbox || $t['Tsumego']['set_id'] == 51) {
-			($this->setFunction)('sandboxXP', $t['Tsumego']['difficulty']);
-			$t['Tsumego']['difficulty2'] = $t['Tsumego']['difficulty'];
-			$t['Tsumego']['difficulty'] = 10;
-		}
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
-
-		if ($pdCounter == 1) {
-			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .5);
-		} elseif ($pdCounter == 2) {
-			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .2);
-		} elseif ($pdCounter == 3) {
-			$t['Tsumego']['difficulty'] = ceil($t['Tsumego']['difficulty'] * .1);
-		} elseif ($pdCounter > 3) {
-			$t['Tsumego']['difficulty'] = 1;
-		}
-
-		if ($pdCounter > 0) {
-			$sandboxComment2 = true;
-		} else {
-			$sandboxComment2 = false;
-		}
 
 		$activate = true;
 		if (Auth::isLoggedIn()) {
@@ -902,7 +859,6 @@ class Play {
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('sgf2', $sgf2);
-		($this->setFunction)('sandboxComment2', $sandboxComment2);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);

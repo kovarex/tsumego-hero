@@ -86,7 +86,6 @@ class UsersController extends AppController {
 		$newElo = AppController::getTsumegoElo($rank, $p);
 		$adjustElo = $this->adjustElo($newElo);
 		$t['Tsumego']['rating'] = $adjustElo;
-		$t['Tsumego']['difficulty'] = $this->convertEloToXp($t['Tsumego']['rating']);
 		$this->Tsumego->save($t);
 	}
 

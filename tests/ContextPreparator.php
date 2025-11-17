@@ -3,11 +3,14 @@
 class ContextPreparator {
 	public function __construct(?array $options = []) {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
+		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
+		ClassRegistry::init('User')->deleteAll(['1 = 1']);
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
+		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -48,6 +51,7 @@ class ContextPreparator {
 		$this->user['used_sprint'] = $user['used_sprint'] ?: 0;
 		$this->user['sprint_start'] = $user['sprint_start'] ?: null;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
+		$this->user['level'] = $user['level'] ?: 1;
 		ClassRegistry::init('User')->save($this->user);
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 
@@ -86,7 +90,6 @@ class ContextPreparator {
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
 		$tsumego['rating'] = $tsumegoInput['rating'] ?: 1000;
-		$tsumego['difficulty'] = $tsumegoInput['difficulty'] ?: 1;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -286,6 +289,17 @@ class ContextPreparator {
 		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumego['id']);
 	}
 
+	public function prepareProgressDeletion($progressDeletions) {
+		foreach ($progressDeletions as $progressDeletionInput) {
+			ClassRegistry::init('ProgressDeletion')->create();
+			$progressDeletion = [];
+			$progressDeletion['user_id'] = Auth::getUserID();
+			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
+			$progressDeletion['created'] = $progressDeletionInput['created'];
+			ClassRegistry::init('ProgressDeletion')->save($progressDeletion);
+		}
+	}
+
 	public function addFavorite($tsumego) {
 		$favorite = [];
 		$favorite['tsumego_id'] = $tsumego['id'];
@@ -297,6 +311,18 @@ class ContextPreparator {
 	public function reloadUser(): array {
 		$this->user = ClassRegistry::init('User')->findById($this->user['id'])['User'];
 		return $this->user;
+	}
+
+	public function XPGained(): int {
+		$this->reloadUser();
+		$result = $this->user['xp'];
+		if ($this->user['level'] == 2) {
+			$result += 50;
+		}
+		$toBeLastXP = $result;
+		$result -= $this->lastXp;
+		$this->lastXp = $toBeLastXP;
+		return $result;
 	}
 
 	public ?array $user = null;
@@ -311,4 +337,5 @@ class ContextPreparator {
 	public array $tags = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
+	private int $lastXp = 0;
 }

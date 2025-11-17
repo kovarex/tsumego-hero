@@ -511,15 +511,6 @@ class AppController extends Controller {
 		return $solvedUts2;
 	}
 
-	public static function convertEloToXp($elo) {
-		$xp = round(pow($elo / 100, 1.55) - 6);
-		if ($xp < 10) {
-			$xp = 10;
-		}
-
-		return $xp;
-	}
-
 	/**
 	 * @return void
 	 */
