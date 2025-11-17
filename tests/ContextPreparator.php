@@ -4,6 +4,7 @@ class ContextPreparator {
 	public function __construct(?array $options = []) {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
+		ClassRegistry::init('User')->deleteAll(['1 = 1']);
 		$this->prepareUser(Util::extract('user', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
