@@ -321,3 +321,21 @@ function ratingToXP(rating)
 	// with higher ratings, it is important to have more aggressive exponential growth,
 	return (Math.pow((rating - 500)/ 100, 2) - 10) / 2;
 }
+
+function timeModeUpdate() {
+	tcount = Math.max(0, tcount - 0.1);
+	$("#time-mode-countdown").html(`${Math.floor(tcount/60)}:${(tcount%60).toFixed(1).padStart(4,"0")}`);
+
+	if(tcount == 0)
+	{
+		timeUp = true;
+		locked = true;
+		tryAgainTomorrow = true;
+		setCookie("misplays", 1);
+		$("#time-mode-countdown").css("color","#e03c4b");
+		document.getElementById("status").style.color = "#e03c4b";
+		document.getElementById("status").innerHTML = "<h2>Time up</h2>";
+		clearInterval(timeModeTimer);
+		toggleBoardLock(true);
+	}
+}

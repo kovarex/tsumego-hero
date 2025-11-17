@@ -99,6 +99,13 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 	}
 
+	public function getTimeModeReportedTime($browser): array {
+		$countdown = $browser->driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+		$x = [];
+		$this->assertSame(preg_match('/(\d+):([0-5]\d)\.(\d)/', $countdown, $x), 1, 'The status should contain time in format m:s.d, but it wasn\'t found in the string: "' . $countdown . "'");
+		return ['minutes' => intval($x[1]), 'seconds' => intval($x[2]), 'decimals' => intval($x[3])];
+	}
+
 	public function testTimeModeFullProcess() {
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -130,7 +137,11 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue(Auth::isInTimeMode());
 
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++) {
-
+			if ($i < TimeModeUtil::$PROBLEM_COUNT) {
+				$result = $this->getTimeModeReportedTime($browser);
+				$this->assertSame($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
+				$this->assertWithinMargin($result['seconds'], 2, 60);
+			}
 			$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 				'conditions' => [
 					'time_mode_session_id' => $session['TimeModeSession']['id'],

@@ -1829,39 +1829,12 @@
 		$(".add-tag-list-popular").hide();
 	});
 
-		if(mode == 3)
-			var x = setInterval(function()
-			{
-				if (!timeModeEnabled)
-				{
-					clearInterval(x);
-					return;
-				}
 
-				tcount -= 0.1;
-				tcountMin = Math.floor(tcount / 60);
-				tcountSec = tcount % 60;
-				tcountSec = tcountSec.toFixed(1);
-				if(tcountSec < 10)
-					tplace = "0";
-				else
-					tplace = "";
-
-				$("#time-mode-countdown").html(tcountMin + ":" + tplace + tcountSec);
-
-				if(tcount == 0)
-				{
-					timeUp = true;
-					locked = true;
-					tryAgainTomorrow = true;
-					setCookie("misplays", 1);
-					$("#time-mode-countdown").css("color","#e03c4b");
-					document.getElementById("status").style.color = "#e03c4b";
-					document.getElementById("status").innerHTML = "<h2>Time up</h2>";
-					clearInterval(x);
-					toggleBoardLock(true);
-				}
-			}, 100);
+	if(mode == 3)
+	{
+		timeModeUpdate(); // first initial update on page load
+		var timeModeTimer = setInterval(function() { timeModeUpdate(); }, 100);
+	}
 
 		$('#target').click(function(e){
 			if(locked)
