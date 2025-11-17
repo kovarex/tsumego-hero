@@ -91,11 +91,11 @@ class Level {
 	}
 
 	public static function checkLevelUp($user) {
-		while (true)
-		{
+		while (true) {
 			$nextLevel = Level::getXPForNext($user['level']);
-			if ($user['xp'] < $nextLevel)
+			if ($user['xp'] < $nextLevel) {
 				return;
+			}
 			$user['xp'] -= $nextLevel;
 			$user['level']++;
 		}

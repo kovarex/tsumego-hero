@@ -565,12 +565,6 @@ class Play {
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 
-		if (!Auth::isInTimeMode())
-		{
-			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
-			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
-		}
-
 		if ($tsumegoFilters->query == 'tags') {
 			$t['Tsumego']['actualNum'] = $t['Tsumego']['num'];
 			$setConditions = [];
@@ -654,7 +648,9 @@ class Play {
 		}
 
 		if (!Auth::isInTimeMode()) {
+			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
+			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
@@ -833,19 +829,8 @@ class Play {
 
 		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
-		if (!Auth::isInTimeMode())
-		{
-			$indexOfCurrent = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($setConnectionID) { return $tsumegoButton->setConnectionID == $setConnectionID; });
-
-			if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
-				$previousSetConnectionID = $tsumegoButtons[$indexOfCurrent - 1]->setConnectionID;
-			}
-			$previousLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set));
-
-			if (isset($indexOfCurrent) && count($tsumegoButtons) > $indexOfCurrent + 1) {
-				$nextSetConnectionID = $tsumegoButtons[$indexOfCurrent + 1]->setConnectionID;
-			}
-			($this->setFunction)('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+		if (!Auth::isInTimeMode()) {
+			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		}
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
@@ -890,7 +875,6 @@ class Play {
 		}
 		($this->setFunction)('t', $t);
 		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
-		($this->setFunction)('previousLink', $previousLink);
 		($this->setFunction)('hash', $hash);
 		($this->setFunction)('nextMode', $nextMode);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));

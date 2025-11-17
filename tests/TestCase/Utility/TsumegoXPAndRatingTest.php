@@ -120,7 +120,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testXPForNextLevelComparedToPreviousSumCode() {
 		$current = 0;
 		for ($level = 1; $level < 110; $level++) {
-			$this->assertSame($current, Level::oldXPSumCode($level), "Level: ".$level);
+			$this->assertSame($current, Level::oldXPSumCode($level), "Level: " . $level);
 			$current += Level::getXPForNext($level);
 		}
 	}
@@ -128,7 +128,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testXpForNextLevelComparedToNewSumCode() {
 		$current = 0;
 		for ($level = 1; $level < 110; $level++) {
-			$this->assertSame($current, Level::getXpSumToGetLevel($level), "Level: ".$level);
+			$this->assertSame($current, Level::getXpSumToGetLevel($level), "Level: " . $level);
 			$current += Level::getXPForNext($level);
 		}
 	}

@@ -128,6 +128,20 @@ class TsumegoButtons extends ArrayObject {
 		return ' #' . ($this->partition + 1);
 	}
 
+	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set) {
+		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) { return $tsumegoButton->setConnectionID == $setConnectionID; });
+
+		if (isset($indexOfCurrent) && $indexOfCurrent > 0) {
+			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
+		}
+		$setFunction('previousLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+
+		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1) {
+			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
+		}
+		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+	}
+
 	public int $partition = 0;
 	public bool $isPartitioned = false;
 	public int $highestTsumegoOrder = -1;
