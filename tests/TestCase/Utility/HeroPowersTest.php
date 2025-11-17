@@ -23,6 +23,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'G');
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 
+		echo "\n pd multiplier: ".TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($context->otherTsumegos[0]))."\n";
+
 		// the reported xp is normal golden
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'G');
 		$browser->get('sets');
