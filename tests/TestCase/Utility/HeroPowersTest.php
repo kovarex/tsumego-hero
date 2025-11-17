@@ -30,6 +30,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 
 		$oldXP = $context->user['xp'];
+		echo "\nOld XP: ".$oldXP."\n";
+		echo "new XP: ".$context->reloadUser()['xp']."\n";
 		$this->assertSame($context->reloadUser()['xp'] - $oldXP, $originalTsumegoXPValue);
 	}
 
