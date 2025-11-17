@@ -38,11 +38,10 @@ class TimeModeController extends AppController {
 			return $this->redirect('/timeMode/overview');
 		}
 
+		$tsumegoID = $this->TimeMode->prepareNextToSolve();
 		if ($timeModeSessionID = $this->TimeMode->checkFinishSession()) {
 			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
 		}
-
-		$tsumegoID = $this->TimeMode->prepareNextToSolve();
 		assert($tsumegoID != null);
 
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);

@@ -183,6 +183,36 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 
+	public function testTimeModeRefreshDoesntRefreshTime() {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['other-tsumegos'] = [];
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
+
+		usleep(500 * 1000); // waiting for 1 second
+		$result = $this->getTimeModeReportedTime($browser);
+		$this->assertSame($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
+		$this->assertWithinMargin($result['seconds'], 3, 60);
+
+		// refresh
+		$browser->get('timeMode/play');
+		$newResult = $this->getTimeModeReportedTime($browser);
+		$this->assertSame($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
+		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1);
+	}
+
 	public function testTimeModeUnlockMessage() {
 		$browser = Browser::instance();
 		foreach ([false, true] as $higherRankPresent) {

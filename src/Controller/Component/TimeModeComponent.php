@@ -99,18 +99,6 @@ class TimeModeComponent extends Component {
 
 	private function getRelevantTsumegos(int $timeModeRankID): array {
 		$ratingBounds = $this->getRatingBounds($timeModeRankID);
-
-		/* use this once the framework join is figured out
-		$tsumegoOptions = ['conditions' => ['Set.included_in_time_mode =' => true],
-			'contain' => ['Set', 'SetConnection'],
-			'fields' => ['Tsumego.id', 'Set.id', 'Set.included_in_time_mode']];
-		$tsumegosOptions['conditions'] []= $ratingBounds.getConditions();
-		if (!Auth::hasPremium()) {
-			$tsumegoOptions['conditions'] [] = ['Set.premium' => false];
-		}
-		return ClassRegistry::init('Tsumego')->find('all', $tsumegoOptions) ?: [];*/
-
-		/* temporary custom join until the framework join is figured out */
 		$query = "SELECT tsumego.id as id FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id JOIN `set` ON set.id = set_connection.set_id WHERE `set`.included_in_time_mode = TRUE";
 		if ($ratingBounds->min) {
 			$query .= " AND rating >= " . $ratingBounds->min;
@@ -166,16 +154,34 @@ class TimeModeComponent extends Component {
 			return null;
 		}
 
+		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
 		$this->secondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
 			'conditions' => ['id' => $this->currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
-		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
 
 		// first one which doesn't have a status yet
-		return ClassRegistry::init('TimeModeAttempt')->find('first', [
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
 			'conditions' => [
 				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-			'order' => 'time_mode_attempt_status_id'])['TimeModeAttempt']['tsumego_id'];
+			'order' => 'time_mode_attempt_status_id']);
+		if (!$attempt) {
+			return null;
+		}
+		$attempt = $attempt['TimeModeAttempt'];
+
+		if (!$attempt['started']) {
+			$attempt['started'] = date('Y-m-d H:i:s');
+			ClassRegistry::init('TimeModeAttempt')->save($attempt);
+		} else {
+			$secondsSinceStarted = time() - strtotime($attempt['started']);
+			$this->secondsToSolve = max(0, $this->secondsToSolve - $secondsSinceStarted);
+			if ($this->secondsToSolve == 0) {
+				$attempt['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
+				ClassRegistry::init('TimeModeAttempt')->save($attempt);
+				return $this->prepareNextToSolve();
+			}
+		}
+		return $attempt['tsumego_id'];
 	}
 
 	public function currentWillBeLast(): bool {
