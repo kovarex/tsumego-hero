@@ -1,7 +1,0 @@
-- Moving to tsumego.com
-- Removed half-working features for non logged players (hearts, tsumego status, levels)
-- Unified the logging mechanism, should be stable now.
-- Optimisation of set index, set view and play.
-- Always showing XP and rating when relevant: "what you see is what you get".
-- Changed XP formula to be always based on rating, different graphs (less for easier ones, more for harder ones)
-- Changed rating formula to be the same as the official tournament rating formula, current modifier is 0.5

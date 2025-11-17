@@ -1,0 +1,19 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1
+Date: ????
+Big changes:
+  - Moving to tsumego.com
+  - Refactored big part of the code, with usage of automated tests
+  - Removed half-working features for non logged players (hearts, tsumego status, levels)
+Changes:
+  - Always showing tsumego XP and rating when relevant: "what you see is what you get".
+  - Changed rating formula to be the same as the official tournament rating formula, current modifier is 0.5
+Optimisations:
+  - Optimisation of set index, set view and play.
+  - Decreased the size of html output of some of the pages.
+Bugfixes:
+  - Unified the sign-in mechanism, should be stable now.
+  - Changed XP formula to be always based on rating
+  - Changed the rating->XP distribution, lower Xp for easier problems, and more for harder ones.
+  - Fixed viewing current filters in se view
+  - Fixed expanding time mode results for different than the latest result
