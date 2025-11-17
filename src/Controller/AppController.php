@@ -2855,69 +2855,13 @@ class AppController extends Controller {
 		for ($i = 0; $i < $aCount; $i++) {
 			$xpBonus += $achievementData[$i][4];
 		}
-		$u = ClassRegistry::init('User')->findById($userID);
-		$jumps = [];
-		$xStart = 40;
-
-		for ($i = 1; $i < 102; $i++) {
-			if ($i == 101) {
-				$j = 1150;
-			} elseif ($i == 100) {
-				$j = 50000;
-			} elseif ($i >= 70) {
-				$j = 150;
-			} elseif ($i >= 40) {
-				$j = 100;
-			} elseif ($i >= 20) {
-				$j = 50;
-			} elseif ($i >= 12) {
-				$j = 25;
-			} else {
-				$j = 10;
-			}
-			$xStart += $j;
-			$jumps[$i] = $xStart;
+		if ($xpBonus == 0) {
+			return;
 		}
-		$next = 0;
-		$uLevel = $u['User']['level'];
-		$uXp = $u['User']['xp'];
-
-		if ($uLevel < 101) {
-			$currentJump = $jumps[$uLevel];
-		} else {
-			$currentJump = 60000;
-		}
-
-		$firstJump = $currentJump;
-
-		if ($uXp + $xpBonus >= $currentJump) {
-			$next = $uXp + $xpBonus - $currentJump;
-			$uLevel++;
-			if ($uLevel < 101) {
-				$currentJump = $jumps[$uLevel];
-			} else {
-				$currentJump = 60000;
-			}
-		}
-		while ($next >= $currentJump) {
-			$next = $next - $currentJump;
-			$uLevel++;
-			if ($uLevel < 101) {
-				$currentJump = $jumps[$uLevel];
-			} else {
-				$currentJump = 60000;
-			}
-		}
-
-		$u['User']['level'] = $uLevel;
-		if ($uXp + $xpBonus < $firstJump) {
-			$u['User']['xp'] += $xpBonus;
-		} else {
-			$u['User']['xp'] = $next;
-		}
-		$u['User']['nextlvl'] = $currentJump;
-
-		ClassRegistry::init('User')->save($u);
+		$user = ClassRegistry::init('User')->findById($userID);
+		$user['User']['xp'] = $xpBonus;
+		Level::checkLevelUp($user['User']);
+		ClassRegistry::init('User')->save($user);
 	}
 
 	public static function getPartitionRange($amountRemaining, $collectionSize, $partition) {

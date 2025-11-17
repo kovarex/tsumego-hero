@@ -5,6 +5,7 @@ App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
+App::uses('Level', 'Utility');
 
 class Play {
 	public function __construct($setFunction) {
@@ -878,8 +879,8 @@ class Play {
 		($this->setFunction)('doublexp', $doublexp);
 		($this->setFunction)('half', $half);
 		($this->setFunction)('set', $set);
-		if (Auth::isLoggedIn() && Auth::getUser()['nextlvl'] > 0) {
-			($this->setFunction)('barPercent', Auth::getUser()['xp'] / Auth::getUser()['nextlvl'] * 100);
+		if (Auth::isLoggedIn()) {
+			($this->setFunction)('barPercent', Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])));
 		} else {
 			($this->setFunction)('barPercent', 0);
 		}

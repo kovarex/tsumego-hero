@@ -2164,17 +2164,15 @@
 	}
 
 	function runXPBar(increase){
-		<?php $newXP = Auth::isLoggedIn() ? (Auth::getUser()['nextlvl'] ? ((Auth::getUser()['xp'] + $t['Tsumego']['difficulty']) / Auth::getUser()['nextlvl'] * 100) : 0) : 0; ?>
-		if(mode==1 || mode==2) {
+		if (mode==1 || mode==2) {
 			if(levelBar==1 && increase==true){
 				if(!doubleXP) x2 = 1;
 				else x2 = 2;
 				<?php
-				echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+				echo 'userNextlvl = '. Level::getXPForNext(Auth::getWithDefault('level', 1)).';
 				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).' + xpStatus.getXP())/userNextlvl*100, 100);
 				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);
-				newXP = '.$newXP.';'; ?>
+				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);'; ?>
 				$("#xp-bar-fill").css({"width":newXP2+"%"});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 				$("#xp-increase-fx").fadeIn(0);
@@ -2187,7 +2185,7 @@
 				if(!ratingBarLock){
 					if(!doubleXP) x2 = 1;
 					else x2 = 2;
-					<?php echo 'userNextlvl = '.Auth::getWithDefault('nextlvl', 0).';
+					<?php echo 'userNextlvl = '.Level::getXPForNext(Auth::getWithDefault('level', 1)).';
 					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
 					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
 					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+xpStatus.getXP())/userNextlvl*100, 100);
@@ -2222,7 +2220,7 @@
 	start = Math.round(start);
 	end = Math.round(end);
 	<?php if(Auth::isLoggedIn()){ ?>
-	let runXPNumberNextLvl = <?php echo Auth::getUser()['nextlvl']; ?>+"";
+	let runXPNumberNextLvl = <?php echo Level::getXPForNext(Auth::getUser()['level']); ?>+"";
 	if(start!==end && !ratingBarLock){
 		userXP = end;
 		userLevel = ulvl;
@@ -2542,7 +2540,7 @@
 						setCookie("type", "g");
 					$("#skipButton").text("Next");
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
-					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 
 					if(xpReward > userNextlvl) {
@@ -2580,7 +2578,7 @@
 						setCookie("type", "g");
 					document.cookie = "sequence="+sequence;
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
-					userNextlvl = <?php echo Auth::getWithDefault('nextlvl', 0); ?>;
+					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;

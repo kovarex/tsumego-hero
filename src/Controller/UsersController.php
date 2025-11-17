@@ -739,7 +739,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function routine21() { //level highscore
 		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC']);
-		$userP = [];
 		$stop = 1;
 		$usersCount = count($users);
 		for ($i = 0; $i < $usersCount; $i++) {
@@ -2397,7 +2396,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$uc['UserContribution']['reward1'] = 1;
 					$this->UserContribution->save($uc);
 					Auth::getUser()['level'] += 1;
-					Auth::getUser()['nextlvl'] += $this->getXPJump(Auth::getUser()['level']);
 					Auth::saveUser();
 					$this->set('refresh', 'refresh');
 				}

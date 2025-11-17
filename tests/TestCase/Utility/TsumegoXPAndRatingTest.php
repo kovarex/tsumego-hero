@@ -1,6 +1,7 @@
 <?php
 
 App::uses('TsumegoXPAndRating', 'Utility');
+App::uses('Level', 'Utility');
 use Facebook\WebDriver\WebDriverBy;
 
 class TsumegoXPAndRatingTest extends TestCaseWithAuth {
@@ -95,5 +96,40 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame($context->XPGained(), $originalTsumegoXpValue);
+	}
+
+	public function testXPForNextLevel() {
+		$this->assertSame(Level::getXPForNext(1), 50);
+		$this->assertSame(Level::getXPForNext(2), 60);
+		$this->assertSame(Level::getXPForNext(3), 70);
+		$this->assertSame(Level::getXPForNext(4), 80);
+		$this->assertSame(Level::getXPForNext(5), 90);
+		$this->assertSame(Level::getXPForNext(6), 100);
+		$this->assertSame(Level::getXPForNext(7), 110);
+		$this->assertSame(Level::getXPForNext(8), 120);
+		$this->assertSame(Level::getXPForNext(9), 130);
+		$this->assertSame(Level::getXPForNext(10), 140);
+		$this->assertSame(Level::getXPForNext(11), 150);
+		$this->assertSame(Level::getXPForNext(12), 175);
+		$this->assertSame(Level::getXPForNext(13), 200);
+		$this->assertSame(Level::getXPForNext(100), 58850);
+		$this->assertSame(Level::getXPForNext(101), 60000);
+		$this->assertSame(Level::getXPForNext(102), 60000);
+	}
+
+	public function testXPForNextLevelComparedToPreviousSumCode() {
+		$current = 0;
+		for ($level = 1; $level < 110; $level++) {
+			$this->assertSame($current, Level::oldXPSumCode($level), "Level: ".$level);
+			$current += Level::getXPForNext($level);
+		}
+	}
+
+	public function testXpForNextLevelComparedToNewSumCode() {
+		$current = 0;
+		for ($level = 1; $level < 110; $level++) {
+			$this->assertSame($current, Level::getXpSumToGetLevel($level), "Level: ".$level);
+			$current += Level::getXPForNext($level);
+		}
 	}
 }
