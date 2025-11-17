@@ -60,7 +60,7 @@ class TsumegoXPAndRating {
 		resolvingMultiplier: ' . Constants::$RESOLVING_MULTIPLIER . ',
 		userRating: ' . Auth::getUser()['rating'] . ',
 		tsumegoRating: ' . $this->tsumegoRating . ',
-		progressDeletionCount: ' . $this->progressDeletionCount .'
+		progressDeletionCount: ' . $this->progressDeletionCount . '
 	});
 	xpStatus.update();
 ';

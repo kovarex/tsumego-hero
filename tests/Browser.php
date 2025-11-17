@@ -8,7 +8,6 @@ use Facebook\WebDriver\WebDriverBy;
 App::uses('Util', 'Utility');
 
 class Browser {
-
 	public function __construct() {
 
 		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
@@ -43,8 +42,7 @@ class Browser {
 	}
 
 	// ADDED: Read errors and throw if any exist
-	private function assertNoJsErrors(): void
-	{
+	private function assertNoJsErrors(): void {
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 
@@ -75,7 +73,7 @@ class Browser {
 		if ($url != 'empty.php' && CakeSession::check("loggedInUserID")) {
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
-				'value' => (string)CakeSession::read("loggedInUserID")
+				'value' => (string) CakeSession::read("loggedInUserID")
 			]);
 			if (!empty($_COOKIE['disable-achievements'])) {
 				$this->driver->manage()->addCookie([

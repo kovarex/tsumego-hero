@@ -316,8 +316,9 @@ class ContextPreparator {
 	public function XPGained(): int {
 		$this->reloadUser();
 		$result = $this->user['xp'];
-		if ($this->user['level'] == 2)
+		if ($this->user['level'] == 2) {
 			$result += 50;
+		}
 		$toBeLastXP = $result;
 		$result -= $this->lastXp;
 		$this->lastXp = $toBeLastXP;

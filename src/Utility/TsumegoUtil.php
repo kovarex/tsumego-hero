@@ -84,7 +84,7 @@ FROM (
     SELECT DISTINCT progress_deletion.id
     FROM progress_deletion
     JOIN set_connection ON set_connection.set_id = progress_deletion.set_id
-    WHERE set_connection.tsumego_id = '.$tsumego['id'].' AND progress_deletion.created >= NOW() - INTERVAL 1 MONTH
+    WHERE set_connection.tsumego_id = ' . $tsumego['id'] . ' AND progress_deletion.created >= NOW() - INTERVAL 1 MONTH
 ) AS unique_deletions');
 		return $result[0][0]['deletions_count'];
 	}

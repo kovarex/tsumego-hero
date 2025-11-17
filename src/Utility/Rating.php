@@ -83,6 +83,6 @@ class Rating {
 		}
 
 		// with higher ratings, it is important to have more aggressive exponential growth,
-		return (pow(($rating - 500)/ 100, 2) - 10) / 2;
+		return (pow(($rating - 500) / 100, 2) - 10) / 2;
 	}
 }
