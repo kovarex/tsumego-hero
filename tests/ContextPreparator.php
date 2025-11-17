@@ -52,7 +52,6 @@ class ContextPreparator {
 		$this->user['sprint_start'] = $user['sprint_start'] ?: null;
 		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
 		$this->user['level'] = $user['level'] ?: 1;
-		$this->user['nextlvl'] = $user['nextlvl'] ?: 1000;
 		ClassRegistry::init('User')->save($this->user);
 		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 
@@ -314,6 +313,17 @@ class ContextPreparator {
 		return $this->user;
 	}
 
+	public function XPGained(): int {
+		$this->reloadUser();
+		$result = $this->user['xp'];
+		if ($this->user['level'] == 2)
+			$result += 50;
+		$toBeLastXP = $result;
+		$result -= $this->lastXp;
+		$this->lastXp = $toBeLastXP;
+		return $result;
+	}
+
 	public ?array $user = null;
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
@@ -326,4 +336,5 @@ class ContextPreparator {
 	public array $tags = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
+	private int $lastXp = 0;
 }

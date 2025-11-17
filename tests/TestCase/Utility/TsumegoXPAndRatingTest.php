@@ -94,7 +94,6 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$originalXP = $context->user['xp'];
-		$this->assertSame($context->reloadUser()['xp'] - $originalXP, $originalTsumegoXpValue);
+		$this->assertSame($context->XPGained(), $originalTsumegoXpValue);
 	}
 }

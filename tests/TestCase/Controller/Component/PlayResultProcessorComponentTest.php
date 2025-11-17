@@ -172,7 +172,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalXP = $context->user['xp'];
 			$this->performSolve($context, $page);
-			$this->assertSame($context->reloadUser()['xp'] - $originalXP, TsumegoUtil::getXpValue($context->tsumego));
+			$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumego));
 		}
 	}
 
