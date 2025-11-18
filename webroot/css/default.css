@@ -2103,7 +2103,7 @@ li a.menuLi {
   width: 345px;
   height: 450px;
   background-color: black;
-  background-image: url("/img/loginBg3.PNG");
+  background-image: url("/img/loginBg3.png");
   background-size: cover;
   background-position: center;
   border-radius: 0 2px 2px 0;
@@ -2137,7 +2137,7 @@ li a.menuLi {
   width: 450px;
   height: 670px;
   background-color: white;
-  background-image: url("/img/loginBg4.PNG");
+  background-image: url("/img/loginBg4.png");
   background-size: cover;
   background-position: center;
   border-radius: 0 2px 2px 0;
@@ -2161,7 +2161,7 @@ li a.menuLi {
   width: 450px;
   height: 1970px;
   background-color: white;
-  background-image: url("/img/loginBg4.PNG");
+  background-image: url("/img/loginBg4.png");
   background-size: contain;
   background-position: center;
   background-repeat: yes;
@@ -2182,7 +2182,7 @@ li a.menuLi {
   width: 900px;
   height: 670px;
   background-color: white;
-  background-image: url("/img/loginBg4.PNG");
+  background-image: url("/img/loginBg4.png");
   background-size: cover;
   background-position: center;
   border-radius: 0 2px 2px 0;

@@ -18,8 +18,8 @@
 		<h1>X-axis: Rating difference to the problem; Example: User rating is 600 (15k), Tsumego rating is 1600 (5k), the difference is -1000 (+11/-1)</h1>
 		<table>
 			<tr>
-				<td>Formula for user wins, user has lower rating:</td><td><img src="/img/uWins-tBigger.PNG"></td>
-				<td>Formula for user wins, user has higher rating:</td><td><img src="/img/uWins-uBigger.PNG"></td>
+				<td>Formula for user wins, user has lower rating:</td><td><img src="/img/uWins-tBigger.png"></td>
+				<td>Formula for user wins, user has higher rating:</td><td><img src="/img/uWins-uBigger.png"></td>
 			</tr>
 		</table>
 		<div id="chartA"></div>
@@ -28,8 +28,8 @@
 		<h1>You can see here a small bias that is implemented in favor of the user. A 50/50 solved/fail ratio is still rewarded with a small gain.</h1>
 		<table>
 			<tr>
-				<td>Formula for user loses, user has lower rating:</td><td><img src="/img/asdfasdf.PNG"></td>
-				<td>Formula for user loses, user has higher rating:</td><td><img src="/img/uloss-uBigger.PNG"></td>
+				<td>Formula for user loses, user has lower rating:</td><td><img src="/img/asdfasdf.png"></td>
+				<td>Formula for user loses, user has higher rating:</td><td><img src="/img/uloss-uBigger.png"></td>
 			</tr>
 		</table>
 		<div id="chartB"></div>
@@ -39,7 +39,7 @@
 		<h1>Only unexpected outcomes are interesting and have a value above zero. (Tsumego has higer rating but loses, Tsumego has lower rating but wins)</h1>
 		<table>
 			<tr>
-				<td>Formula for Tsumego wins, Tsumego has lower rating:</td><td><img src="/img/tWinLoss.PNG"></td>
+				<td>Formula for Tsumego wins, Tsumego has lower rating:</td><td><img src="/img/tWinLoss.png"></td>
 			</tr>
 		</table>
 		<div id="chartT2"></div>
@@ -47,7 +47,7 @@
 	<div align="left">
 		<table>
 			<tr>
-				<td>Formula for Tsumego loses, Tsumego has higher rating:</td><td><img src="/img/tWinLoss.PNG"></td>
+				<td>Formula for Tsumego loses, Tsumego has higher rating:</td><td><img src="/img/tWinLoss.png"></td>
 			</tr>
 		</table>
 		<div id="chartT1"></div>
@@ -85,8 +85,8 @@
 		</table>
 		<table>
 			<tr>
-				<td>Formula for user wins, user has lower rating:</td><td><img src="/img/uWins-tBigger2.PNG"></td>
-				<td>Formula for user wins, user has higher rating:</td><td><img src="/img/uWins-uBigger2.PNG"></td>
+				<td>Formula for user wins, user has lower rating:</td><td><img src="/img/uWins-tBigger2.png"></td>
+				<td>Formula for user wins, user has higher rating:</td><td><img src="/img/uWins-uBigger2.png"></td>
 			</tr>
 		</table>
 		<h1>The x-axis is again the rating difference from user to tsumego.</h1>
@@ -95,8 +95,8 @@
 	<div align="left">
 		<table>
 			<tr>
-				<td>Formula for user loses, user has lower rating:</td><td><img src="/img/uloss-tBigger2.PNG"></td>
-				<td>Formula for user loses, user has higher rating:</td><td><img src="/img/uloss-uBigger2.PNG"></td>
+				<td>Formula for user loses, user has lower rating:</td><td><img src="/img/uloss-tBigger2.png"></td>
+				<td>Formula for user loses, user has higher rating:</td><td><img src="/img/uloss-uBigger2.png"></td>
 			</tr>
 		</table>
 		<div id="chartB2"></div>
@@ -117,16 +117,16 @@
 		<h2>Improved conversion of rating to expierience points (xp)</h2>
 		<h1>
 			When looking at the xp that a user can generate while
-			solving easy problems in comparision to solving difficult problems, it was more rewarding to solve easy problems. However, it makes more sense 
-			to reward solving difficult problems. The solution is to use an exponential function instead of a linear function, which means, higher values 
+			solving easy problems in comparision to solving difficult problems, it was more rewarding to solve easy problems. However, it makes more sense
+			to reward solving difficult problems. The solution is to use an exponential function instead of a linear function, which means, higher values
 			have a higher increment.</h1>
 		<table>
 			<tr>
-				<td>The old xp to rating calculation was approximately rating/29 = xp.</td><td><img src="/img/ratingToXp1.PNG"></td>
-				<td>New formula for rating to xp calculation:</td><td><img src="/img/ratingToXp2.PNG"></td>
+				<td>The old xp to rating calculation was approximately rating/29 = xp.</td><td><img src="/img/ratingToXp1.png"></td>
+				<td>New formula for rating to xp calculation:</td><td><img src="/img/ratingToXp2.png"></td>
 			</tr>
 		</table>
-		<img src="/img/ratingToXpGraph.PNG" width="100%">
+		<img src="/img/ratingToXpGraph.png" width="100%">
 		<h1>Example 1: A problem with a rating of 2100 (1d) gives 106 xp while it was giving 72 xp before.</h1>
 		<h1>Example 2: A problem with a rating of 800 (13k) gives 19 xp while it was giving 27 xp before.</h1>
 	</div>
@@ -164,7 +164,7 @@
 			echo 'elo.push('.$k.');';
 			echo 'variance.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -220,7 +220,7 @@
 			echo 'elo2.push('.$k.');';
 			echo 'variance2.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -269,7 +269,7 @@
         var chart = new ApexCharts(document.querySelector("#chartB"), options);
         chart.render();
     </script>
-	
+
 	<script>
 		document.cookie = "lightDark=light;SameSite=Lax";
 		let elo4 = [];
@@ -279,7 +279,7 @@
 			echo 'elo4.push('.$k.');';
 			echo 'variance4.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -336,7 +336,7 @@
 			echo 'elo3.push('.$k.');';
 			echo 'variance3.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -394,7 +394,7 @@
 			echo 'eloA2.push('.$k.');';
 			echo 'varianceA2.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -450,7 +450,7 @@
 			echo 'eloB2.push('.$k.');';
 			echo 'varianceB2.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -507,7 +507,7 @@
 			echo 'eloA3.push('.$k.');';
 			echo 'varianceA3.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -563,7 +563,7 @@
 			echo 'eloB3.push('.$k.');';
 			echo 'varianceB3.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -620,7 +620,7 @@
 			echo 'eloA4.push('.$k.');';
 			echo 'varianceA4.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{
@@ -676,7 +676,7 @@
 			echo 'eloB4.push('.$k.');';
 			echo 'varianceB4.push('.$v.');';
 		}
-		
+
 		?>
         var options = {
           series: [{

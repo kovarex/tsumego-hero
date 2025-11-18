@@ -3,10 +3,10 @@
 		<?php
 			if(!Auth::isLoggedIn()){
 		?>
-		
+
 		<p class="title4">Please <a href="/users/add">Sign Up</a>!</p><br>
-		This website is designed for a great user expierience by 
-		keeping track of your progress, providing 
+		This website is designed for a great user expierience by
+		keeping track of your progress, providing
 		rewards and making go problems fun.
 		To access all the features, please consider creating an account.
 
@@ -16,7 +16,7 @@
 			<tr>
 				<td class="pleaseRegisterTable" align="center" height="110px">
 					<img src="/img/ss5.png" alt="Level System" title="Level System" width="110px"><br>Level System
-				</td>			
+				</td>
 				<td class="pleaseRegisterTable" align="center" height="110px">
 					<img src="/img/ss4.png" alt="More Hearts" title="More Hearts" width="110px"><br>More Hearts
 				</td>
@@ -30,11 +30,11 @@
 				</td>
 				<td class="pleaseRegisterTable" align="center" height="110px">
 					<img src="/img/ss1.png" alt="Solved Progress" title="Solved Progress" width="110px"><br>Solved Progress
-				</td>			
+				</td>
 				<td class="pleaseRegisterTable" align="center" height="110px">
 					<img src="/img/ss6.png" alt="Highscore" title="Highscore" width="110px"><br>Highscore
 				</td>
-				
+
 			</tr>
 		</table>
 		</div>
@@ -45,30 +45,30 @@
 			?>
 			<p class="title4">Your last Activities</p>
 			<br>
-			<?php 
+			<?php
 				echo '<a style="color:#000;" href="/sets/view/'.$visit1['Set']['id'].'">
 					<b>'.$visit1['Set']['title'];
 					if($visit1['Set']['title2']!=null) echo ', '.$visit1['Set']['title2'];
-				echo '</b></a><br>'; 
+				echo '</b></a><br>';
 				if(isset($visit2)){
 					echo '<a style="color:#000;" href="/sets/view/'.$visit2['Set']['id'].'">
 						<b>'.$visit2['Set']['title'];
 						if($visit2['Set']['title2']!=null) echo ', '.$visit2['Set']['title2'];
-					echo '</b></a><br>'; 
+					echo '</b></a><br>';
 					if(isset($visit3)){
 						echo '<a style="color:#000;" href="/sets/view/'.$visit3['Set']['id'].'">
 							<b>'.$visit3['Set']['title'];
 							if($visit3['Set']['title2']!=null) echo ', '.$visit3['Set']['title2'];
-						echo '</b></a><br>'; 
+						echo '</b></a><br>';
 					}
 				}
 			?>
 			<br>
-			<?php		
-		}	
-			
+			<?php
+		}
+
 		?>
-		
+
 		<p class="title4">Recently added</p>
 		<br>
 		<?php
@@ -81,19 +81,19 @@
 				$ts[$i]['Tsumego']['set_id'] == $currentSet ||
 				$ts[$i]['Tsumego']['set_id'] == 52 ||
 				$ts[$i]['Tsumego']['set_id'] == 53 ||
-				$ts[$i]['Tsumego']['set_id'] == 54 
+				$ts[$i]['Tsumego']['set_id'] == 54
 				){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 24. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -117,17 +117,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 24. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -151,17 +151,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 24. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -185,17 +185,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 17. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -219,17 +219,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 17. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -245,7 +245,7 @@
 				}
 			}
 			echo '<br><br><br><br><br>';
-			
+
 			$currentSet = 124;
 			$newTs = array();
 			$newTsMap = array();
@@ -254,17 +254,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 10. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -288,17 +288,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 3. May 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -322,17 +322,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 26. April 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -348,7 +348,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 122;
 			$newTs = array();
 			$newTsMap = array();
@@ -357,17 +357,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 19. April 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -383,7 +383,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 115;
 			$newTs = array();
 			$newTsMap = array();
@@ -392,17 +392,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 5. April 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -418,7 +418,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 114;
 			$newTs = array();
 			$newTsMap = array();
@@ -427,17 +427,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 29. March 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -453,7 +453,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br>';
-		
+
 			$currentSet = 124;
 			$newTs = array();
 			$newTsMap = array();
@@ -462,17 +462,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 22. March 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -488,7 +488,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 114;
 			$newTs = array();
 			$newTsMap = array();
@@ -497,17 +497,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 15. March 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -523,7 +523,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 122;
 			$newTs = array();
 			$newTsMap = array();
@@ -532,17 +532,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 8. March 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -558,7 +558,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 114;
 			$newTs = array();
 			$newTsMap = array();
@@ -567,17 +567,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 1. March 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -593,7 +593,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 122;
 			$newTs = array();
 			$newTsMap = array();
@@ -602,17 +602,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 23. February 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -628,7 +628,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 66;
 			$newTs = array();
 			$newTsMap = array();
@@ -637,17 +637,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 16. February 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			''.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -663,7 +663,7 @@
 				}
 			}
 			echo '<br><br><br><br><br><br><br><br>';
-		
+
 			$currentSet = 115;
 			$newTs = array();
 			$newTsMap = array();
@@ -672,17 +672,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 9. February 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			' '.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -706,17 +706,17 @@
 				if($ts[$i]['Tsumego']['set_id'] == $currentSet){
 					array_push($newTs, $ts[$i]);
 					array_push($newTsMap, $ts[$i]['Tsumego']['num']);
-				}	
+				}
 				}
 			}
 			asort($newTsMap);
 			$newTsMap = array_values($newTsMap);
-			
+
 			echo '<font color="grey">Added on Sunday, 2. February 2020:</font><br>';
 			echo '<a style="color:#000;" href="/sets/view/'.$setNames[$currentSet]['Set']['id'].'"><b>'.$setNames[$currentSet]['Set']['title'].
 			''.$setNames[$currentSet]['Set']['title2'].
 			'</b></a> - '.count($newTs).' Problems<br><br>';
-			
+
 			for($i=count($newTs)-1; $i>=0; $i--){
 				if(!isset($newTs[$i]['Tsumego']['status'])) $newTs[$i]['Tsumego']['status'] = 'N';
 			}
@@ -733,7 +733,7 @@
 			}
 		?>
 	</div>
-	
+
 	<div class="homeLeft">
 		<p class="title4 title4x">Proverb of the Day</p>
 		<p class="title4date">
@@ -742,9 +742,9 @@
 		?>
 		</p>
 		<br>
-		
+
 		<?php
-			echo '<img src="/img/'.$quote.'.PNG" width="100%" alt="Tsumego Hero Proverb of the Day" title="Tsumego Hero Proverb of the Day">';
+			echo '<img src="/img/'.$quote.'.png" width="100%" alt="Tsumego Hero Proverb of the Day" title="Tsumego Hero Proverb of the Day">';
 		?>
 		<br>
 		<?php
@@ -770,14 +770,14 @@
 			}
 		?><br>
 		<p class="title4" style="margin-bottom:7px;">User of the Day </p>
-		
+
 		<div class="uotd mid uotd<?php echo $uotdbg; ?> mid<?php echo $uotdbg; ?> ">
 		  <h2 <?php if(strlen($userOfTheDay)>=10) echo 'class="midLongName1"'; ?>><?php echo $userOfTheDay; ?></h2>
 		</div>
 		<p class="uotdmargin">&nbsp;</p><br>
-		
-		
-		<?php 
+
+
+		<?php
 			if(Auth::isLoggedIn())){
 				echo '
 					<p class="title4xx">Restoration Countdown</p>
@@ -787,13 +787,13 @@
 					<br>
 					</font>
 				';
-				
+
 				$asdf = '';
 			}else{
 				$asdf = 'xx';
 			}
 		?>
-		
+
 		<p class="title4<?php echo $asdf; ?>">Hero Powers</p>
 		<br>
 		<table class="sitesTable">
@@ -835,13 +835,13 @@
 		</tr>
 		</table>
 		<br>
-		
+
 		<p class="title4">Problem Colors</p>
 		<br>
 		<table class="sitesTable">
 		<tr>
 			<td>
-				<img title="Not visited" alt="Not visited" src="/img/xN.PNG">
+				<img title="Not visited" alt="Not visited" src="/img/xN.png">
 			</td>
 			<td>
 				<b>Not visited</b><br>
@@ -850,7 +850,7 @@
 		</tr>
 		<tr>
 			<td>
-				<img title="Visited" alt="Visited" src="/img/xV.PNG">
+				<img title="Visited" alt="Visited" src="/img/xV.png">
 			</td>
 			<td>
 				<b>Visited</b><br>
@@ -859,7 +859,7 @@
 		</tr>
 		<tr>
 			<td>
-				<img title="Solved" alt="Solved" src="/img/xS.PNG">
+				<img title="Solved" alt="Solved" src="/img/xS.png">
 			</td>
 			<td>
 				<b>Solved</b><br>
@@ -868,7 +868,7 @@
 		</tr>
 		<tr>
 			<td>
-				<img title="Locked" alt="Locked" src="/img/xF.PNG">
+				<img title="Locked" alt="Locked" src="/img/xF.png">
 			</td>
 			<td>
 				<b>Locked</b><br>
@@ -877,7 +877,7 @@
 		</tr>
 		<tr>
 			<td>
-				<img title="Half XP" alt="Half XP" src="/img/xW.PNG">
+				<img title="Half XP" alt="Half XP" src="/img/xW.png">
 			</td>
 			<td>
 				<b>Half XP</b><br>
@@ -886,7 +886,7 @@
 		</tr>
 		<tr>
 			<td>
-				<img title="Golden" alt="Golden" src="/img/xG.PNG">
+				<img title="Golden" alt="Golden" src="/img/xG.png">
 			</td>
 			<td>
 				<b>Golden</b><br>
@@ -902,7 +902,7 @@
 			Get access to <a href="/users/donate">Tsumego Hero Premium</a>.<br><br>
 			</div>
 		<?php }else{ ?>
-			
+
 		<?php } ?>
 		<?php }else{ ?>
 			<p class="title4xx">Donations</p><br>
@@ -929,7 +929,7 @@
 			$tsumegoDates[$dt] = 0.1;
 		}
 		ksort($tsumegoDates);
-		
+
 		$td = array();
 		reset($tsumegoDates);
 		$nextDay = '';
@@ -944,26 +944,26 @@
 					$nextDay->modify('+1 day');
 					$nextDay = date_format($nextDay,"Y-m-d");
 				}
-				
+
 			}
 			$nextDay = key($tsumegoDates);
 			$nextDay = date_create($nextDay);
 			$nextDay->modify('+1 day');
 			$nextDay = date_format($nextDay,"Y-m-d");
-		
+
 			$td[$c]['date'] = key($tsumegoDates);
 			$td[$c]['num'] = current($tsumegoDates);
 			$c++;
 			next($tsumegoDates);
 		}
-		
+
 		$sum = 0;
 		for($j=0; $j<count($td); $j++){
-		
-		
+
+
 			$td[$j]['num'] = $td[$j]['num'] + $sum;
 			$date = date_create($td[$j]['date']);
-			
+
 			if($date==date_create('2019-03-27')) $td[$j]['num'] -= 1530;
 			if($date==date_create('2019-04-25')) $td[$j]['num'] -= 238;
 			if($date==date_create('2019-05-01')) $td[$j]['num'] -= 32;
@@ -971,8 +971,8 @@
 			if($date==date_create('2020-02-22')) $td[$j]['num'] -= 432;
 			$x = $td[$j]['num'];
 			$sum = $x;
-			
-			
+
+
 			//echo '<pre>';print_r($date);echo '</pre>';
 			$td[$j]['y'] = $date->format('Y');
 			$td[$j]['m'] = $date->format('m');
@@ -1001,8 +1001,8 @@
 				includeZero: true,
 				labelFontSize: 14
 			},
-			data: [{        
-				type: "area", 
+			data: [{
+				type: "area",
 				color: "#d19fe4",
 				fillOpacity: .7,
 				lineThickness: 3,
@@ -1024,34 +1024,34 @@
 		<div id="chartContainer" style="height: 400px; width: 100%;"></div>
 		<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 		<br>
-		
+
 		<p class="title4">Contributors</p>
 		<br>
 		Tsumego Hero is only in constant good shape, because there were users who helped creating the files for the problems.
 		If you want to do some tsumego training and at the same time help the website by creating files, please message me. Help is much appreciated.<br><br>
 		All contributors are listed here: <a href="/users/authors">Authors</a>
 		<br><br>
-		
+
 		<p class="title4">Admins</p>
 		<br>
 		We are looking for more admins who can confidently answer comments in the discuss area.
 		Ideally, there is a small group of active or semi-active admins that is interested in discussion, uploading problems or creating new collections.
 		Let me know if you would like to be on the productive side of Tsumego Hero. (<a href="mailto:me@joschkazimdars.com">me@joschkazimdars.com</a>)
-		
+
 		<br><br>
-		
+
 		<p class="title4">Guide To Become Strong </p>
 		<p class="titleBy">&nbsp;by Benjamin Teuber 6 Dan</p>
-		
+
 		<table border="0" class="newstable1">
 		<tr>
 			<td colspan="2">
-			Many times I hear questions and requests like "How can I become strong?" or "My Go lacks this or that. 
-			Please teach me how to be better at it!". In general, I think many people overestimate the role of 
-			a Go-Teacher. Of course, it's very important to play and analyze with stronger players too, but still 
-			the teacher is not everything. Most of the learning consists of exploring Go for yourself, and not by 
+			Many times I hear questions and requests like "How can I become strong?" or "My Go lacks this or that.
+			Please teach me how to be better at it!". In general, I think many people overestimate the role of
+			a Go-Teacher. Of course, it's very important to play and analyze with stronger players too, but still
+			the teacher is not everything. Most of the learning consists of exploring Go for yourself, and not by
 			having every single move explained.
-			Actually, most part of my study in Japan did not consist of being taught by pros, but of studying by myself. 
+			Actually, most part of my study in Japan did not consist of being taught by pros, but of studying by myself.
 			One big point of being next to professionals was that they explained how to do this.
 			<br><br>
 			For you, these lines mean that you don't have to go to Japan or find a 6-Dan teacher to become incredibly strong!!!
@@ -1062,23 +1062,23 @@
 		<h4>How to become strong (in order of importance)</h4>
 		<table >
 		<tr><td style="vertical-align:top;">1.</td><td>Play, play, play - the stronger your opponent the better for you</td></tr>
-		<tr><td style="vertical-align:top;">2.</td><td> Do Tsumego in the right way continuously. Maybe this seems to be boring for you at first, but you'll see how much fun it is 
+		<tr><td style="vertical-align:top;">2.</td><td> Do Tsumego in the right way continuously. Maybe this seems to be boring for you at first, but you'll see how much fun it is
 		once you start. It's very important how to do so!</td></tr>
-		<tr><td style="vertical-align:top;">3.</td><td>Analyze your games with other players (as above, the stronger the better) - best would be to found a private study group 
+		<tr><td style="vertical-align:top;">3.</td><td>Analyze your games with other players (as above, the stronger the better) - best would be to found a private study group
 		(ten eyes will find more than two or four...) </td></tr>
 		<tr><td style="vertical-align:top;">4.</td><td>Do Tsumego</td></tr>
 		<tr><td style="vertical-align:top;">5.</td><td>If you like, repeat and learn some pro games</td></tr>
 		<tr><td style="vertical-align:top;">6.</td><td>More Tsumego</td></tr>
 		<tr><td style="vertical-align:top;">7.</td><td>If you have some interesting book about fuseki, joseki, shape, endgame or whatever, read it if you enjoy - but don't spend too much time with it</td></tr>
 		<tr><td style="vertical-align:top;">8.</td><td>If you still have time left, how about a few tsumego-problems?</td></tr>
-		
+
 		</table>
 		<br>
 		<font size="4px"><b>
 		<a href="/sites/view/1">Read more >></a>
 		</b></font>
 		<br><br><br>
-		
+
 		<!--
 		<p class="title4 ">Contributors</p>
 		<br>
@@ -1086,14 +1086,14 @@
 		Timo (Timo Kreuzer)<br>
 		Silent gentleman (саша черных)<br>
 		Bradford (Bradford Malbon)<br>
-		GoDave89 (David Ulbricht)<br> 
+		GoDave89 (David Ulbricht)<br>
 		okimoyo (Ryan Smith)<br>
 		gobum<br>
 		Andrey<br>
 		<br>
-		
+
 		</font>
-		
+
 		<p class="title4 ">Donations in September</p>
 		<br>
 		<font size="5px">
@@ -1134,17 +1134,17 @@
 		<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 		<?php if(!Auth::isLoggedIn()) echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>'; ?>
 	</div>
-	
-		
-	
+
+
+
 	<script>
 		function donateHover(){
 			document.getElementById("donateH").src = '/img/donateButton1h.png';
-		}	
+		}
 		function donateNoHover(){
 			document.getElementById("donateH").src = "/img/donateButton1.png";
 		}
-		
+
 		function sandboxY(){
 			document.cookie = "sandbox=3";
 			document.getElementById("sandboxVolunteers").style = "display:none;";
@@ -1158,8 +1158,7 @@
 			document.getElementById("sandboxVolunteers").style = "display:none;";
 		}
 	</script>
-	
-	
-	
-	
-		
+
+
+
+
