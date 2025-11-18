@@ -3,8 +3,8 @@
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
 
-class TimeModeComponent extends Component {
-	public function init(): void {
+class TimeMode {
+	public function __construct() {
 		if (!Auth::isInTimeMode()) {
 			return;
 		}
@@ -32,6 +32,10 @@ class TimeModeComponent extends Component {
 			'conditions' => [
 				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
 				'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;
+
+		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
+		$this->overallSecondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
+			'conditions' => ['id' => $this->currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
 	}
 
 	public function startTimeMode(int $categoryID, int $rankID): void {
@@ -123,6 +127,16 @@ class TimeModeComponent extends Component {
 		}
 	}
 
+	private static function deduceAttemptStatus($result, $timeout) {
+		if ($timeout) {
+			return TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
+		}
+		if (!$result['solved']) {
+			return TimeModeUtil::$ATTEMPT_RESULT_FAILED;
+		}
+		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
+	}
+
 	public function processPlayResult($previousTsumego, $result): void {
 		if (!$this->currentSession) {
 			return;
@@ -135,8 +149,9 @@ class TimeModeComponent extends Component {
 		if (!$currentAttempt) {
 			throw new Exception("The tsumego is not in the current time mode session.");
 		}
-		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = $result['solved'] ? TimeModeUtil::$ATTEMPT_RESULT_SOLVED : TimeModeUtil::$ATTEMPT_RESULT_FAILED;
-		$seconds = Decoder::decodeSeconds($previousTsumego);
+		$timeout = Util::clearCookie('timeout');
+		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = self::deduceAttemptStatus($result, $timeout);
+		$seconds = $timeout ? $this->overallSecondsToSolve : Decoder::decodeSeconds($previousTsumego);
 		if (is_null($seconds)) {
 			throw new Exception("Seconds not provided.");
 		}
@@ -154,9 +169,7 @@ class TimeModeComponent extends Component {
 			return null;
 		}
 
-		$this->rank = ClassRegistry::init('TimeModeRank')->findById($this->currentSession['TimeModeSession']['time_mode_rank_id']);
-		$this->secondsToSolve = ClassRegistry::init('TimeModeCategory')->find('first', [
-			'conditions' => ['id' => $this->currentSession['TimeModeSession']['time_mode_category_id']]])['TimeModeCategory']['seconds'];
+		$this->secondsToSolve = $this->overallSecondsToSolve;
 
 		// first one which doesn't have a status yet
 		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
@@ -227,7 +240,8 @@ class TimeModeComponent extends Component {
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve;
+	public $secondsToSolve; // remaining time
+	public $overallSecondsToSolve; // the time to solve the problem
 	public $overallCount;
 	public $currentOrder;
 }

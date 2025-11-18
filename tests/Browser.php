@@ -42,7 +42,7 @@ class Browser {
 	}
 
 	// ADDED: Read errors and throw if any exist
-	private function assertNoJsErrors(): void {
+	public function assertNoJsErrors(): void {
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 

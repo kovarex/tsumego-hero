@@ -4,13 +4,15 @@ require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
+App::uses('TimeMode', 'Utility');
+
 use Facebook\WebDriver\WebDriverBy;
 
-class TimeModeComponentTest extends TestCaseWithAuth {
+class TimeModeTest extends TestCaseWithAuth {
 	public function testPointsCalculation() {
-		$this->assertSame(TimeModeComponent::calculatePoints(30, 30), 100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING);
-		$this->assertSame(TimeModeComponent::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
-		$this->assertSame(TimeModeComponent::calculatePoints(0, 30), 100.0);
+		$this->assertSame(TimeMode::calculatePoints(30, 30), 100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING);
+		$this->assertSame(TimeMode::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
+		$this->assertSame(TimeMode::calculatePoints(0, 30), 100.0);
 	}
 
 	public function testTimeModeRankContentsIntegrity() {
@@ -33,7 +35,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 
 	public function testRatingBoundsOneRank() {
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k']]);
-		$ratingBounds = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+		$ratingBounds = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
 
 		// with just one rank, everything belongs to it
 		$this->assertTrue(is_null($ratingBounds->min));
@@ -43,12 +45,12 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	public function testRatingBoundsTwoRanks() {
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d']]);
 
-		$ratingBounds1k = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+		$ratingBounds1k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
 		// with just one rank, everything belongs to it
 		$this->assertTrue(is_null($ratingBounds1k->min));
 		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
 
-		$ratingBounds1d = TimeModeComponent::getRatingBounds($context->timeModeRanks[1]['id']);
+		$ratingBounds1d = TimeMode::getRatingBounds($context->timeModeRanks[1]['id']);
 		// with just one rank, everything belongs to it
 		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
 		$this->assertNull($ratingBounds1d->max);
@@ -57,17 +59,17 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 	public function testRatingBoundsThreeRanks() {
 		$context = new ContextPreparator(['time-mode-ranks' => ['10k', '1k', '1d']]);
 
-		$ratingBounds10k = TimeModeComponent::getRatingBounds($context->timeModeRanks[0]['id']);
+		$ratingBounds10k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
 		// with just one rank, everything belongs to it
 		$this->assertTrue(is_null($ratingBounds10k->min));
 		$this->assertSame($ratingBounds10k->max, Rating::getRankMinimalRatingFromReadableRank('9k'));
 
-		$ratingBounds1k = TimeModeComponent::getRatingBounds($context->timeModeRanks[1]['id']);
+		$ratingBounds1k = TimeMode::getRatingBounds($context->timeModeRanks[1]['id']);
 		// with just one rank, everything belongs to it
 		$this->assertSame($ratingBounds1k->min, $ratingBounds10k->max);
 		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
 
-		$ratingBounds1d = TimeModeComponent::getRatingBounds($context->timeModeRanks[2]['id']);
+		$ratingBounds1d = TimeMode::getRatingBounds($context->timeModeRanks[2]['id']);
 		// with just one rank, everything belongs to it
 		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
 		$this->assertNull($ratingBounds1d->max);
@@ -139,7 +141,7 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++) {
 			if ($i < TimeModeUtil::$PROBLEM_COUNT) {
 				$result = $this->getTimeModeReportedTime($browser);
-				$this->assertSame($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
+				$this->assertWithinMargin($result['minutes'], 1, TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60);
 				$this->assertWithinMargin($result['seconds'], 2, 60);
 			}
 			$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
@@ -211,6 +213,41 @@ class TimeModeComponentTest extends TestCaseWithAuth {
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
 		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1);
+	}
+
+	public function testTimeModeTimeout() {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['other-tsumegos'] = [];
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+		}
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
+
+		usleep(100 * 1000);
+		$browser->driver->executeScript("window['tcount'] = 0.1;");
+		usleep(200 * 1000);
+		$browser->assertNoJsErrors();
+		$newResult = $this->getTimeModeReportedTime($browser);
+		$this->assertSame($newResult['minutes'], 0);
+		$this->assertSame($newResult['seconds'], 0);
+		$this->assertSame($newResult['decimals'], 0);
+		$browser->get('timeMode/play');
+
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]])['TimeModeSession'];
+		$attempt = ClassRegistry::init('TimeModeAttempt')->find('first', ['conditions' => ['time_mode_session_id' => $session['id']], 'order' => ['id' => 'ASC']])['TimeModeAttempt'];
+		$this->assertSame($attempt['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT);
 	}
 
 	public function testTimeModeUnlockMessage() {

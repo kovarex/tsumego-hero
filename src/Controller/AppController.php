@@ -2,6 +2,7 @@
 
 App::uses('Auth', 'Utility');
 App::uses('TsumegoFilters', 'Utility');
+App::uses('TimeMode', 'Utility');
 
 class AppController extends Controller {
 	public $viewClass = 'App';
@@ -10,8 +11,7 @@ class AppController extends Controller {
 		'Session',
 		//'DebugKit.Toolbar',
 		'Flash',
-		'PlayResultProcessor',
-		'TimeMode',
+		'PlayResultProcessor'
 	];
 
 	public static function processSGF($sgf) {
@@ -2948,7 +2948,7 @@ class AppController extends Controller {
 		$this->loadModel('Favorite');
 
 		Auth::init();
-		$this->TimeMode->init();
+		$timeMode = new TimeMode();
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
@@ -3072,7 +3072,7 @@ class AppController extends Controller {
 			}
 
 			if (!$this->request->is('ajax')) {
-				$this->PlayResultProcessor->checkPreviousPlay($this->TimeMode);
+				$this->PlayResultProcessor->checkPreviousPlay($timeMode);
 			}
 
 			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {

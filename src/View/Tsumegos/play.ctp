@@ -1038,7 +1038,9 @@
 	var timeUp = false;
 	var moveTimeout = 360;
 	var authorProblem = false;
+
 	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
+	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;
 	var whiteMoveAfterCorrectI = 0;
@@ -1829,16 +1831,13 @@
 		$(".add-tag-list-popular").hide();
 	});
 
-
+	var timer = null;
 	if(mode == 3)
-	{
-		timeModeUpdate(); // first initial update on page load
-		var timeModeTimer = setInterval(function() { timeModeUpdate(); }, 100);
-	}
+		timer = new TimeModeTimer();
 
 		$('#target').click(function(e){
 			if(locked)
-				window.location = nextTsumegoLink;
+				window.location = nextButtonLink;
 		});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
@@ -2132,7 +2131,7 @@
 			document.cookie = "skip=1";
 			document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
 		}
-		<?php echo 'window.location.href = nextTsumegoLink'; ?>
+		<?php echo 'window.location.href = nextButtonLink'; ?>
 	}
 
 	function runXPBar(increase){
@@ -2458,7 +2457,7 @@
 
 	function displayResult(result)
 	{
-		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2)*<?php echo $t['Tsumego']['id'] * 7900; ?>));
+		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
 		if(hasRevelation && revelationCounter > 0)
 		{

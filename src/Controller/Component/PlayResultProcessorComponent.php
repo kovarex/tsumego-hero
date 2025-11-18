@@ -10,7 +10,7 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 
 class PlayResultProcessorComponent extends Component {
-	public $components = ['Session', 'TimeMode'];
+	public $components = ['Session'];
 
 	public function checkPreviousPlay($timeModeComponent): void {
 		$this->checkAddFavorite();
