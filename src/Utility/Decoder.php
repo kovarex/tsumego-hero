@@ -1,7 +1,7 @@
 <?php
 
 class Decoder {
-	public static function decodeSeconds($previousTsumego): ?int {
+	public static function decodeSeconds($previousTsumego): ?float {
 		$secondsCheck = Util::clearRequiredNumericCookie('secondsCheck');
 
 		if ($secondsCheck % 79 != 0) {
