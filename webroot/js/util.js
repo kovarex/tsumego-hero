@@ -283,7 +283,7 @@ function enableRefinement()
 	refinementElement.src = '/img/hp4.png';
 	refinementElement.onmouseover = function() { this.src = '/img/hp4h.png'; };
 	refinementElement.onmouseout = function() { this.src = '/img/hp4.png'; };
-	refinementElement.onclick = function() { window.location.href = 'hero/refinement'; };
+	refinementElement.onclick = function() { window.location.href = '/hero/refinement'; };
 	refinementElement.style.cursor = 'pointer';
 }
 
