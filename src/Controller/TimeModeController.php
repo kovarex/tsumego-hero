@@ -150,7 +150,7 @@ class TimeModeController extends AppController {
 		}
 
 		// the current session wasn't a success, so it logically can't unlock shit
-		if (!$finishedSession['time_mode_session_status_id'] != TimeModeUtil::$SESSION_STATUS_SOLVED) {
+		if ($finishedSession['TimeModeSession']['time_mode_session_status_id'] != TimeModeUtil::$SESSION_STATUS_SOLVED) {
 			return null;
 		}
 

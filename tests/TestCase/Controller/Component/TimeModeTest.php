@@ -298,52 +298,85 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($attempt['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_STATUS_SKIPPED);
 	}
 
-	public function testTimeModeUnlockMessage() {
-		$browser = Browser::instance();
-		foreach ([false, true] as $higherRankPresent) {
-			foreach ($higherRankPresent ? [false, true] : [false] as $failedSessionOnRankToBeUnlocked) {
-				$contextParameters = [];
-				$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
-				$contextParameters['time-mode-ranks'] = ['5k'];
-				if ($higherRankPresent) {
-					$contextParameters['time-mode-ranks'] [] = '1d';
-				}
-				$contextParameters['tsumego'] = ['sets' => [['name' => 'set 1', 'num' => 1]]];
-				$contextParameters['time-mode-sessions'] [] = [
-					'category' => TimeModeUtil::$CATEGORY_BLITZ,
-					'rank' => '5k',
-					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
-					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
-				if ($failedSessionOnRankToBeUnlocked) {
-					$contextParameters['time-mode-sessions'] [] = [
-						'category' => TimeModeUtil::$CATEGORY_BLITZ,
-						'rank' => '1d',
-						'status' => TimeModeUtil::$SESSION_STATUS_FAILED];
-				}
-
-				$context = new ContextPreparator($contextParameters);
-				$this->assertTrue(Auth::isInTimeMode());
-
-				$browser->get('timeMode/play');
-
-				usleep(1000 * 100);
-				$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-				$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-
-				$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
-					'user_id' => Auth::getUserID(),
-					'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
-				Auth::init();
-				$this->assertFalse(Auth::isInTimeMode());
-				$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $context->timeModeSessions[0]['id']]]);
-				$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'], TimeModeUtil::$SESSION_STATUS_SOLVED);
-				$alerts = $browser->driver->findElements(WebDriverBy::cssSelector('#time-rank-unlock-alert'));
-				$this->assertSame(count($alerts) == 1, $higherRankPresent);
-				if ($higherRankPresent) {
-					$this->assertTrue($alerts[0]->isDisplayed());
-				}
-			}
+	public function checkUnlockWhen($conditions) {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		if ($conditions['alreadySolved']) {
+			$contextParameters['time-mode-sessions'] [] = [
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
 		}
+		if ($conditions['higherRankPresent']) {
+			$contextParameters['time-mode-ranks'] [] = '1d';
+		}
+		$contextParameters['tsumego'] = ['sets' => [['name' => 'set 1', 'num' => 1]]];
+		$contextParameters['time-mode-sessions'] [] = [
+			'category' => TimeModeUtil::$CATEGORY_BLITZ,
+			'rank' => '5k',
+			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
+		if ($conditions['failedSessionOnRankToBeUnlocked']) {
+			$contextParameters['time-mode-sessions'] [] = [
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '1d',
+				'status' => TimeModeUtil::$SESSION_STATUS_FAILED];
+		}
+
+		$context = new ContextPreparator($contextParameters);
+		$this->assertTrue(Auth::isInTimeMode());
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/play');
+
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('".($conditions['actuallySolvedSession'] ? 'S' : 'F')."')"); // mark the problem solved
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+
+		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
+		Auth::init();
+		$this->assertFalse(Auth::isInTimeMode());
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $context->timeModeSessions[0]['id']]]);
+		$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'],
+			$conditions['actuallySolvedSession'] ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED);
+		$alerts = $browser->driver->findElements(WebDriverBy::cssSelector('#time-rank-unlock-alert'));
+		if (count($alerts) == 1) {
+			$this->assertTrue($alerts[0]->isDisplayed());
+			return true;
+		}
+		return false;
+	}
+
+	public function testTimeModeUnlockMessage() {
+		$this->assertTrue($this->checkUnlockWhen([
+			'higherRankPresent' => true,
+			'alreadySolved' => false,
+			'failedSessionOnRankToBeUnlocked' => false,
+			'actuallySolvedSession' => true]));
+		$this->assertTrue($this->checkUnlockWhen([
+			'higherRankPresent' => true,
+			'alreadySolved' => false,
+			'failedSessionOnRankToBeUnlocked' => true,
+			'actuallySolvedSession' => true]));
+		$this->assertFalse($this->checkUnlockWhen([
+			'higherRankPresent' => false,
+			'alreadySolved' => false,
+			'failedSessionOnRankToBeUnlocked' => false,
+			'actuallySolvedSession' => true]));
+		$this->assertFalse($this->checkUnlockWhen([
+			'higherRankPresent' => true,
+			'alreadySolved' => true,
+			'failedSessionOnRankToBeUnlocked' => true,
+			'actuallySolvedSession' => true]));
+		$this->assertFalse($this->checkUnlockWhen([
+			'higherRankPresent' => true,
+			'alreadySolved' => false,
+			'failedSessionOnRankToBeUnlocked' => true,
+			'actuallySolvedSession' => false]));
 	}
 
 	public function testTimeModeResultShowsSpecifiedResult(): void {
