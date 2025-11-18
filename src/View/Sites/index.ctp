@@ -772,7 +772,7 @@
 		it is also solved in other collections. When you had a collection complete and there were unsolved problems again on
 		1. February, it means that duplicates were merged and you need to solve it again for all occurences of that board position.<br><br>
 		<div align="center">
-		<img src="/img/duplicate-explanation.JPG" title="duplicate-explanation" alt="duplicate-explanation" width="70%">
+		<img src="/img/duplicate-explanation.jpg" title="duplicate-explanation" alt="duplicate-explanation" width="70%">
 		<br>
 		</div>
 		</div>
