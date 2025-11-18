@@ -1033,7 +1033,7 @@
 	var thumbsDownSelected = false;
 	var thumbsUpSelected2 = false;
 	var thumbsDownSelected2 = false;
-	var mode = 1;
+	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
 	var timeModeEnabled = true;
 	var timeUp = false;
 	var moveTimeout = 360;
@@ -1050,6 +1050,8 @@
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
+	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
+	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
@@ -1507,10 +1509,6 @@
 		echo 'document.cookie = "rejuvenationx=2;path=/tsumegos/play;SameSite=Lax";';
 		echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'?potionAlert=1";';
 	}
-
-	if(Auth::isInLevelMode()) echo 'mode = 1;';
-	if(Auth::isInRatingMode()) echo 'mode = 2;';
-	if(Auth::isInTimeMode()) echo 'mode = 3;';
 	if(Auth::isInLevelMode()){
 	}elseif(Auth::isInRatingMode()){
 		echo '
@@ -1831,10 +1829,6 @@
 		$(".add-tag-list-popular").hide();
 	});
 
-	var timer = null;
-	if(mode == 3)
-		timer = new TimeModeTimer();
-
 		$('#target').click(function(e){
 			if(locked)
 				window.location = nextButtonLink;
@@ -2124,14 +2118,6 @@
 
 		document.getElementById("status").innerHTML = "";
 		document.getElementById("theComment").style.cssText = "display:none;";
-	}
-
-	function skip(){
-		if( $("#skipButton").text()!="Next" ) {
-			document.cookie = "skip=1";
-			document.cookie = "seconds="+seconds+";path=/tsumegos/play;SameSite=Lax";
-		}
-		<?php echo 'window.location.href = nextButtonLink'; ?>
 	}
 
 	function runXPBar(increase){
@@ -2466,6 +2452,15 @@
 			$("#revelation").attr("src", "/img/hp6.png");
 		}
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
+		if (timeModeTimer)
+			timeModeTimer.stop();
+		if (noSkipNextButtonLink)
+		{
+			nextButtonLink = noSkipNextButtonLink;
+			document.getElementById("besogo-next-button").value = "Next";
+			document.getElementById("besogo-next-button").title = "next problem";
+		}
+
 		if(result=='S')
 		{
 			xpStatus.set('solved', true);
@@ -2509,7 +2504,6 @@
 					}
 					if(goldenTsumego)
 						setCookie("type", "g");
-					$("#skipButton").text("Next");
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
 					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
@@ -2633,7 +2627,6 @@
 					sequence += "incorrect|";
 					document.cookie = "sequence="+sequence;
 					playedWrong = true;
-					$("#skipButton").text("Next");
 					setCookie("transition", 2);
 					hoverLocked = false;
 					tryAgainTomorrow = true;

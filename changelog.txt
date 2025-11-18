@@ -16,4 +16,4 @@ Bugfixes:
   - Changed XP formula to be always based on rating
   - Changed the rating->XP distribution, lower Xp for easier problems, and more for harder ones.
   - Fixed viewing current filters in se view
-  - Fixed expanding time mode results for different than the latest result
+  - Fixed expanding time mode results for different from the latest result

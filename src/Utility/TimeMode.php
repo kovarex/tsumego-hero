@@ -158,7 +158,31 @@ class TimeMode {
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($this->currentSession['TimeModeSession']['time_mode_category_id']);
 
 		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
-		$currentAttempt['TimeModeAttempt']['points'] = self::calculatePoints($seconds, $timeModeCategory['TimeModeCategory']['seconds']);
+		$currentAttempt['TimeModeAttempt']['points'] = $result['solved'] ? self::calculatePoints($seconds, $timeModeCategory['TimeModeCategory']['seconds']) : 0;
+		ClassRegistry::init('TimeModeAttempt')->save($currentAttempt);
+		$this->currentOrder++;
+	}
+
+	public function skip(): void {
+		if (!$this->currentSession) {
+			return;
+		}
+		$currentAttempt = ClassRegistry::init('TimeModeAttempt')->find('first', [
+			'conditions' => [
+				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
+				'started NOT' => null,
+				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
+		if (!$currentAttempt) {
+			throw new Exception("The tsumego is not in the current time mode session.");
+		}
+		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_SKIPPED;
+		$seconds = min($this->overallSecondsToSolve, time() - strtotime($currentAttempt['TimeModeAttempt']['started']));
+		if (is_null($seconds)) {
+			throw new Exception("Seconds not provided.");
+		}
+
+		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;
+		$currentAttempt['TimeModeAttempt']['points'] = 0;
 		ClassRegistry::init('TimeModeAttempt')->save($currentAttempt);
 		$this->currentOrder++;
 	}

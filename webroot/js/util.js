@@ -354,4 +354,9 @@ class TimeModeTimer
 			toggleBoardLock(true);
 		}
 	}
+
+	stop()
+	{
+		clearInterval(this.timeModeTimer);
+	}
 }

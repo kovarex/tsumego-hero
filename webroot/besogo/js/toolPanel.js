@@ -511,8 +511,8 @@ besogo.makeToolPanel = function (container, editor) {
         );
       } else if (mode == 3) {
         makeButtonText(
-          "Next",
-          "next problem",
+          "Skip",
+          "skip problem",
           function () { window.location.href = nextButtonLink; },
           "besogo-next-button"
         );
