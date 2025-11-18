@@ -1,5 +1,4 @@
 Fixes:
-  - Fix pictures in 'Functions and modes' and go rules (probably just copy the images from the original site)
   - intuition doesn't work: https://test.tsumego.com/7660
   - Solved + green isn't shown when it is already solved when opening
   - integrate besogo tests into our testsuite (/besogo/tests.html)
