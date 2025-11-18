@@ -332,7 +332,7 @@ class TimeModeTest extends TestCaseWithAuth {
 		$browser->get('timeMode/play');
 
 		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('".($conditions['actuallySolvedSession'] ? 'S' : 'F')."')"); // mark the problem solved
+		$browser->driver->executeScript("displayResult('" . ($conditions['actuallySolvedSession'] ? 'S' : 'F') . "')"); // mark the problem solved
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
