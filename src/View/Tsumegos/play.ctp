@@ -2454,12 +2454,6 @@
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
-		if (noSkipNextButtonLink)
-		{
-			nextButtonLink = noSkipNextButtonLink;
-			document.getElementById("besogo-next-button").value = "Next";
-			document.getElementById("besogo-next-button").title = "next problem";
-		}
 
 		if(result=='S')
 		{

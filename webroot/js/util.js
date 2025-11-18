@@ -347,10 +347,11 @@ class TimeModeTimer
 			tryAgainTomorrow = true;
 			setCookie("misplays", 1);
 			setCookie("timeout", 1);
+
 			$("#time-mode-countdown").css("color","#e03c4b");
 			document.getElementById("status").style.color = "#e03c4b";
 			document.getElementById("status").innerHTML = "<h2>Time up</h2>";
-			clearInterval(this.timeModeTimer);
+			this.stop();
 			toggleBoardLock(true);
 		}
 	}
@@ -358,5 +359,8 @@ class TimeModeTimer
 	stop()
 	{
 		clearInterval(this.timeModeTimer);
+		nextButtonLink = noSkipNextButtonLink;
+		document.getElementById("besogo-next-button").value = "Next";
+		document.getElementById("besogo-next-button").title = "next problem";
 	}
 }
