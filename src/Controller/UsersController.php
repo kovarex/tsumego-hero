@@ -2848,7 +2848,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$timeGraph = [];
 		$ro = $this->TimeModeSession->find('all', [
-			'order' => 'rank ASC',
+			'order' => 'time_mode_rank_id ASC',
 			'conditions' => [
 				'user_id' => $id,
 			],

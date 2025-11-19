@@ -1,10 +1,8 @@
 Fixes:
-  - Look at the besogo bug related to added variations making solutions incorrect
   Time mode:
     - Integrate the number of tsumegos per rank, we can probably just get it with one select, if it is too slow, we can do precalculation, but in db, not the json one that was done previously
     - solve that it shows array in the rank when solving time problems
  - diffs viewing.
- - cover user viewing (has error)
  - Mode switching fixes - as with time mode, there should probably be rating/play for rating and
    level mode should be the tsumegos/play.
  UserBoards:
