@@ -40,6 +40,16 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
+	public function testShowingSolvedOnOpenedSolvedProblem(): void {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+	}
+
 	public function checkSprintInXpAndTimeInStatus2($browser) {
 		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$status = $browser->driver->findElement(WebDriverBy::cssSelector('#status2'))->getText();

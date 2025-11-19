@@ -1,5 +1,4 @@
 Fixes:
-  - Solved + green isn't shown when it is already solved when opening
   - integrate besogo tests into our testsuite (/besogo/tests.html)
   - Look at the besogo bug related to added variations making solutions incorrect
   Time mode:

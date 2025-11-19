@@ -54,10 +54,10 @@ class TsumegoUtil {
 	}
 
 	public static function hasStateAllowingInspection($tsumego) {
-		return TsumegoUtil::isStatusAllowingInspection($tsumego['Tsumego']['status']);
+		return TsumegoUtil::isRecentlySolved($tsumego['Tsumego']['status']);
 	}
 
-	public static function isStatusAllowingInspection($status) {
+	public static function isRecentlySolved($status) {
 		return $status == 'S' || $status == 'C';
 	}
 

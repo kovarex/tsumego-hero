@@ -4,7 +4,7 @@ class TsumegoXPAndRating {
 	public function __construct(array $tsumego, string $status) {
 		if ($status == 'G') {
 			$this->goldenTsumego = true;
-		} elseif ($status == 'S') {
+		} elseif (TsumegoUtil::isRecentlySolved($status)) {
 			$this->solved = true;
 		} elseif ($status == 'W') {
 			$this->resolving = true;
