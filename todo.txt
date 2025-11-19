@@ -1,5 +1,4 @@
 Fixes:
-  - integrate besogo tests into our testsuite (/besogo/tests.html)
   - Look at the besogo bug related to added variations making solutions incorrect
   Time mode:
     - Integrate the number of tsumegos per rank, we can probably just get it with one select, if it is too slow, we can do precalculation, but in db, not the json one that was done previously
