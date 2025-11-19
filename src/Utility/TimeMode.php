@@ -196,7 +196,7 @@ class TimeMode {
 			'conditions' => [
 				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED],
-			'order' => 'time_mode_attempt_status_id']);
+			'order' => 'id ASC']);
 		if (!$attempt) {
 			return null;
 		}
