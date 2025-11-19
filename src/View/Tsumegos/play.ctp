@@ -2561,6 +2561,8 @@
 			toggleBoardLock(true);
 			displaySettings();
 		} else {//mode 1 and 3 incorrect
+			misplays++;
+			toggleBoardLock(true);
 			if(mode!=2) {
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
@@ -2583,8 +2585,6 @@
 				}
 				if(!noXP) {
 					if(!freePlayMode){
-						misplays++;
-						setCookie("misplays", misplays);
 						hoverLocked = false;
 						if(mode==1) updateHealth();
 					}
@@ -2632,8 +2632,8 @@
 					}
 					userElo = Math.round(elo2);
 				}
-				toggleBoardLock(true);
 			}
+			setCookie("misplays", misplays);
 		}
 	}
 

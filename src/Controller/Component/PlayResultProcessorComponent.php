@@ -176,7 +176,7 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	private function processRatingChange(array $previousTsumego, array $result): void {
-		if (!Auth::isInRatingMode() && !Auth::isInLevelMode()) {
+		if (!Auth::ratingisGainedInCurrentMode()) {
 			return;
 		}
 		$userRating = (float) Auth::getUser()['rating'];
@@ -203,6 +203,9 @@ class PlayResultProcessorComponent extends Component {
 	}
 
 	private function processXpChange(array $previousTsumego, array $result): void {
+		if (!Auth::XPisGainedInCurrentMode()) {
+			return;
+		}
 		if (!$result['solved']) {
 			return;
 		}

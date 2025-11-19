@@ -48,7 +48,7 @@ class TsumegoXPAndRating {
 		if (!Auth::isLoggedIn()) {
 			return;
 		}
-		if (Auth::isInTimeMode()) {
+		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode()) {
 			return;
 		}
 		echo '
