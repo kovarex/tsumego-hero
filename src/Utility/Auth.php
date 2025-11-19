@@ -88,5 +88,19 @@ class Auth {
 		Auth::saveUser();
 	}
 
+	public static function XPisGainedInCurrentMode() {
+		if (!Auth::isLoggedIn()) {
+			return false;
+		}
+		return Auth::isInLevelMode() || Auth::isInRatingMode();
+	}
+
+	public static function ratingisGainedInCurrentMode() {
+		if (!Auth::isLoggedIn()) {
+			return false;
+		}
+		return Auth::isInLevelMode() || Auth::isInRatingMode();
+	}
+
 	private static $user = null;
 }

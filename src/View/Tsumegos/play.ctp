@@ -1572,7 +1572,7 @@
 			toggleBoardLock(true);';
 	}
 
-	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || $maxNoUserLevel){
+	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || !Auth::isLoggedIn() || Auth::isInTimeMode()){
 		echo 'var noXP=true;';
 	}else{
 		echo 'var noXP=false;';
@@ -2457,7 +2457,8 @@
 
 		if(result=='S')
 		{
-			xpStatus.set('solved', true);
+			if (typeof xpStatus !== "undefined" && xpStatus)
+				xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
@@ -2560,6 +2561,8 @@
 			toggleBoardLock(true);
 			displaySettings();
 		} else {//mode 1 and 3 incorrect
+			misplays++;
+			toggleBoardLock(true);
 			if(mode!=2) {
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
@@ -2582,8 +2585,6 @@
 				}
 				if(!noXP) {
 					if(!freePlayMode){
-						misplays++;
-						setCookie("misplays", misplays);
 						hoverLocked = false;
 						if(mode==1) updateHealth();
 					}
@@ -2631,8 +2632,8 @@
 					}
 					userElo = Math.round(elo2);
 				}
-				toggleBoardLock(true);
 			}
+			setCookie("misplays", misplays);
 		}
 	}
 

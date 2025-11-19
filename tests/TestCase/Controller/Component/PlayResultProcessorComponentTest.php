@@ -170,9 +170,56 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth {
 					'rating' => 1000,
 					'mode' => Constants::$RATING_MODE],
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
-			$originalXP = $context->user['xp'];
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumego));
+		}
+	}
+
+	public function testSolvingSolvedDoesntAddXP(): void {
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
+			$this->performSolve($context, $page);
+			$this->assertSame($context->XPGained(), 0);
+		}
+	}
+
+	public function testSolvingDoubleSolvedDoesntAddXP(): void {
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
+			$this->performSolve($context, $page);
+			$this->assertSame($context->XPGained(), 0);
+		}
+	}
+
+	public function testSolvingSolvedDoesntAddRating(): void {
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
+			$this->performSolve($context, $page);
+			$this->assertSame($context->reloadUser()['rating'], 1000.0);
+		}
+	}
+
+	public function testSolvingDoubleSolvedDoesntAddRating(): void {
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
+			$this->performSolve($context, $page);
+			$this->assertSame($context->reloadUser()['rating'], 1000.0);
 		}
 	}
 

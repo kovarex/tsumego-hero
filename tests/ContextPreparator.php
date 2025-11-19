@@ -314,11 +314,7 @@ class ContextPreparator {
 	}
 
 	public function XPGained(): int {
-		$this->reloadUser();
-		$result = $this->user['xp'];
-		if ($this->user['level'] == 2) {
-			$result += 50;
-		}
+		$result = Level::getOverallXPGained($this->reloadUser());
 		$toBeLastXP = $result;
 		$result -= $this->lastXp;
 		$this->lastXp = $toBeLastXP;

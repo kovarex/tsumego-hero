@@ -48,6 +48,9 @@ class TsumegoXPAndRating {
 		if (!Auth::isLoggedIn()) {
 			return;
 		}
+		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode()) {
+			return;
+		}
 		echo '
 	let xpStatus = new XPStatus(
 	{

@@ -27,7 +27,16 @@ class PlayResultProcessorComponent extends Component {
 		}
 
 		$result = $this->checkPreviousPlayAndGetResult($previousTsumego);
-		$this->updateTsumegoStatus($previousTsumego, $result);
+
+		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'order' => 'created DESC',
+			'conditions' => [
+				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
+				'user_id' => (int) Auth::getUserID(),
+			],
+		]);
+
+		$this->updateTsumegoStatus($previousTsumego, $result, $previousTsumegoStatus);
 
 		if (!isset($result['solved'])) {
 			return;
@@ -36,11 +45,13 @@ class PlayResultProcessorComponent extends Component {
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
 		}
 
+		$previousStatusValue = $previousTsumegoStatus ? $previousTsumegoStatus['TsumegoStatus']['status'] : 'N';
+
 		$this->updateTsumegoAttempt($previousTsumego, $result);
-		$this->processRatingChange($previousTsumego, $result);
+		$this->processRatingChange($previousTsumego, $result, $previousStatusValue);
 		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
-		$this->processXpChange($previousTsumego, $result);
+		$this->processXpChange($previousTsumego, $result, $previousStatusValue);
 		$this->processErrorAchievement($result);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
@@ -58,15 +69,7 @@ class PlayResultProcessorComponent extends Component {
 		return $result;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result): void {
-		$tsumegoStatusModel = ClassRegistry::init('TsumegoStatus');
-		$previousTsumegoStatus = $tsumegoStatusModel->find('first', [
-			'order' => 'created DESC',
-			'conditions' => [
-				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
-				'user_id' => (int) Auth::getUserID(),
-			],
-		]);
+	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): void {
 		if ($previousTsumegoStatus == null) {
 			$previousTsumegoStatus['TsumegoStatus'] = [];
 			$previousTsumegoStatus['TsumegoStatus']['user_id'] = Auth::getUserID();
@@ -97,7 +100,7 @@ class PlayResultProcessorComponent extends Component {
 		}
 
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-		$tsumegoStatusModel->save($previousTsumegoStatus);
+		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
 
 	private function checkAddFavorite(): void {
@@ -175,8 +178,11 @@ class PlayResultProcessorComponent extends Component {
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
-	private function processRatingChange(array $previousTsumego, array $result): void {
-		if (!Auth::isInRatingMode() && !Auth::isInLevelMode()) {
+	private function processRatingChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void {
+		if (!Auth::ratingisGainedInCurrentMode()) {
+			return;
+		}
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus)) {
 			return;
 		}
 		$userRating = (float) Auth::getUser()['rating'];
@@ -202,7 +208,13 @@ class PlayResultProcessorComponent extends Component {
 		Auth::saveUser();
 	}
 
-	private function processXpChange(array $previousTsumego, array $result): void {
+	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void {
+		if (!Auth::XPisGainedInCurrentMode()) {
+			return;
+		}
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus)) {
+			return;
+		}
 		if (!$result['solved']) {
 			return;
 		}
