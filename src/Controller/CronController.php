@@ -23,5 +23,7 @@ class CronController extends AppController {
 		ClassRegistry::init('User')->query($query);
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
+		$this->response->statusCode(200);
+		return $this->response;
 	}
 }
