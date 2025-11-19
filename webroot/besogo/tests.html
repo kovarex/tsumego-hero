@@ -56,13 +56,13 @@
 (function() {
   let table = document.createElement("table");
   document.body.appendChild(table);
-  
+
   for (let i = 0; i < besogo.tests.length; ++i)
   {
     let test = besogo.tests[i];
     var row = table.insertRow(-1);
     var cell = row.insertCell(-1);
-  
+
     let label = document.createElement("label");
     label.innerHTML = test.suite + "/" + test.name;
     cell.appendChild(label);
@@ -79,7 +79,7 @@
     catch (error)
     {
       let fail = document.createElement("label");
-      fail.innerHTML = "&nbsp;failed&nbsp;" + error.message;
+      fail.innerHTML = "&nbsp;" +"failed" + "&nbsp;" + error.message;
       fail.style.color = "red";
       var cell = row.insertCell(-1);
       cell.appendChild(fail);
