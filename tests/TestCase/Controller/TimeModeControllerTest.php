@@ -54,7 +54,7 @@ class TimeModeControllerTest extends ControllerTestCase {
 
 	public function testTimeModePlaySwitchesToTimeMode() {
 		$contextParameters = [];
-		$contextParameters['tsumego'] = ['title' => 'hello', 'sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
+		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [
@@ -70,7 +70,7 @@ class TimeModeControllerTest extends ControllerTestCase {
 
 	public function testTimeModePlayOfTsumegoWithoutSetConnection() {
 		$contextParameters = [];
-		$contextParameters['tsumego'] = ['title' => 'hello'];
+		$contextParameters['tsumego'] = ['rating' => 1000];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [

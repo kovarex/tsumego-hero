@@ -73,9 +73,7 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 
 	public function testViewingTsumegoWithoutAnySGF() {
 		$context = new ContextPreparator(
-			['tsumego' => [
-				'title' => 'tsumego-without-sgf',
-				'sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
+			['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 
 		$this->testAction('tsumegos/play/' . $context->tsumego['id'], ['return' => 'view']);
 

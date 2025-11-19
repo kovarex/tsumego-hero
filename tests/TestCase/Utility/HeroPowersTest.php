@@ -140,6 +140,30 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->reloadUser()['used_intuition'], 1);
 	}
 
+	public function testIntuitionShowsCorrectSolution() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set 1', 'num' => 1]],
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]RU[Japanese]SZ[19]AW[jb][cc][dc][kc][ed][gd][jd][fe][ie][df][gf]AB[bc][fc][gc][hc][ic][cd][fd][be][cg](;B[ee];W[de](;B[dd];W[ec];B[cb];W[eb])(;B[cb];W[db];B[dd];W[ec];B[da];W[ef];B[eb]C[+]))(;B[cb];W[db];B[ee];W[bb];B[ca];W[ac];B[bd];W[ba](;B[de];W[ab])(;B[ab];W[de]))(;B[dd];W[ec])(;B[ec];W[dd]))']]]);
+		$browser = Browser::instance();
+		HeroPowers::changeUserSoIntuitionCanBeUsed();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->checkPowerIsActive($browser, 'intuition');
+		$browser->clickId('intuition');
+		$browser->driver->wait(10, 500)->until(function () use ($browser) { return $browser->driver->executeScript("return window.besogo.intuitionActive;"); });
+		$circles = $browser->driver->executeScript("
+			return Array.from(document.querySelectorAll('#nextMoveGroup circle'))
+				.map(c => ({
+					cx: c.getAttribute('cx'),
+					cy: c.getAttribute('cy'),
+					r: c.getAttribute('r'),
+					fill: c.getAttribute('fill')
+				}));");
+		$this->assertCount(4, $circles);
+		$this->assertCount(1, array_filter($circles, fn($c) => $c['fill'] === 'green'));
+	}
+
 	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp() {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1],

@@ -32,11 +32,9 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '15k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '10k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
@@ -61,11 +59,9 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '15k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '10k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
@@ -103,11 +99,9 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '15k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '10k problem',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
@@ -165,7 +159,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three problems in the 15k range in the same set (will be included)
 		for ($i = 0; $i < 3; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => '15k problem',
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 				'status' => $statuses[$i]];
@@ -173,7 +166,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// other 15k problem from different set, will be also included
 		$contextParams['other-tsumegos'] [] = [
-			'title' => '15k problem from set 2',
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 2', 'num' => 4]],
 			'status' => $statuses[3]];
@@ -181,7 +173,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// other problems with different difficulty, but in the same set, will be excluded
 		for ($i = 0; $i < 3; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => '10k problem',
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 				'sets' => [['name' => 'set 1', 'num' => $i + 4]]];
 		}
@@ -236,7 +227,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// 4 problems in our set
 		for ($i = 0; $i < 4; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => 'a problem',
 				'sets' => [['name' => 'set hello world', 'num' => $i + 1]],
 				'status' => $statuses[$i]];
 		}
@@ -302,7 +292,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three problems in the 15k range in different sets (sets of the problem shouldn't play a role anyway)
 		for ($i = 0; $i < 3; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => '15k problem',
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 1]]];
 		}
@@ -310,7 +299,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three problems in the 1d range in different sets
 		for ($i = 0; $i < 3; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => '1d problem',
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('1d'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 2]]];
 		}
@@ -318,7 +306,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three completely unrelated problems
 		for ($i = 0; $i < 3; $i++) {
 			$contextParams['other-tsumegos'] [] = [
-				'title' => '5d problem',
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('5d'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 3]]];
 		}
@@ -396,7 +383,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
 			for ($i = 0; $i < 3; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $rank . ' problem',
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
 			}
@@ -467,7 +453,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
 			for ($i = 0; $i < 3; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $rank . ' problem',
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
 			}
@@ -566,7 +551,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
 			for ($i = 0; $i < 3 - $key; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $tag . ' problem',
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]]];
 			}
@@ -596,7 +580,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
 			for ($i = 0; $i < 3 - $key; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $tag . ' problem',
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]]];
 			}
@@ -650,7 +633,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
 			for ($i = 0; $i < 3 - $key; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $tag . ' problem',
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => $key + 1]],
 					'tags' => [['name' => $tag]]];
 			}
@@ -716,7 +698,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['set 1', 'set 2', 'set 3', 'set 4', 'set 5'] as $key => $set) {
 			for ($i = 0; $i < 4; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $set . ' problem',
 					'sets' => [['name' => $set, 'num' => $i + 1]],
 					'status' => ($i >= $key ? 'N' : 'S')];
 			}
@@ -755,7 +736,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['atari', 'bambule', 'empty triangle', 'snapback', 'zen'] as $key => $tag) {
 			for ($i = 0; $i < 4; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $tag . ' problem',
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]],
 					'status' => ($i >= $key ? 'N' : 'S')];
@@ -794,7 +774,6 @@ class SetsControllerTest extends TestCaseWithAuth {
 		foreach (['15k', '10k', '5k', '1d', '5d'] as $key => $rank) {
 			for ($i = 0; $i < 4; $i++) {
 				$contextParams['other-tsumegos'] [] = [
-					'title' => $rank . ' problem',
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'status' => ($i >= $key ? 'N' : 'S')];

@@ -30,8 +30,8 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     if (besogo.isEmbedded)
 	  besogo.editor.displayError('Error: file not readable.');
   }
-  
-  
+
+
   //Not a 19x19 board, so it should be full board view
   //or not embedded viewer
   if (sizeX != 19 || !besogo.isEmbedded)
@@ -82,12 +82,14 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     drawBoard(coord); // Initialize the SVG element and draw the board
 
     stoneGroup = besogo.svgEl("g");
-    markupGroup = besogo.svgEl("g");
-    nextMoveGroup = besogo.svgEl("g");
+	svg.appendChild(stoneGroup); // Add placeholder group for stone layer
 
-    svg.appendChild(stoneGroup); // Add placeholder group for stone layer
-    svg.appendChild(markupGroup); // Add placeholder group for markup layer
-    svg.appendChild(nextMoveGroup);
+    markupGroup = besogo.svgEl("g");
+	svg.appendChild(markupGroup); // Add placeholder group for markup layer
+
+    nextMoveGroup = besogo.svgEl("g");
+	svg.appendChild(nextMoveGroup);
+	nextMoveGroup.setAttribute('id', 'nextMoveGroup');
 
     if (!TOUCH_FLAG)
     {
@@ -636,7 +638,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       }
     }
 
-    var group = besogo.svgEl("g");
+    nextMoveGroup.innerHTML = "";
     var circleSize = 15;
     var virtualCircleSize = 15;
     if (editor.getReviewMode())
@@ -646,55 +648,47 @@ besogo.makeBoardDisplay = function(container, editor, corner)
       {
         var child = current.children[i];
         var element = besogo.svgFilledCircle(svgPos(child.move.x), svgPos(child.move.y), child.getCorrectColor(), circleSize);
-        group.appendChild(element);
+		nextMoveGroup.appendChild(element);
       }
-      if (current.virtualChildren)
-        for (let i = 0; i < current.virtualChildren.length; ++i)
+	if (current.virtualChildren)
+		for (let i = 0; i < current.virtualChildren.length; ++i)
         {
-          var redirect = current.virtualChildren[i];
-          var element = besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize);
-          group.appendChild(element);
+			var redirect = current.virtualChildren[i];
+			nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize));
         }
     }
 
-    if (x!=-1)
+    if (x != -1)
     {
-      x+=1;
-      y+=1;
-      var element = besogo.svgFilledCircle(svgPos(x), svgPos(y), "blue", circleSize);
+		x+=1;
+		y+=1;
+		nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(x), svgPos(y), "blue", circleSize));
     }
     else
-      var element = besogo.svgFilledCircle(1, 1, "red", 0);
-    group.appendChild(element);
-    svg.replaceChild(group, nextMoveGroup); // Replace the markup group
-    nextMoveGroup = group;
+		nextMoveGroup.appendChild(besogo.svgFilledCircle(1, 1, "red", 0));
   }
 
   function redrawNextMoves(current, clear = false)
   {
-    var group = besogo.svgEl("g");
-    if (!clear)
-    {
-      var circleSize = 15;
-      var virtualCircleSize = 8;
-      for (let i = 0; i < current.children.length; ++i)
-      {
-        var child = current.children[i];
-        var element = besogo.svgFilledCircle(svgPos(child.move.x), svgPos(child.move.y), child.getCorrectColor(), circleSize);
-        group.appendChild(element);
-      }
-      if (current.virtualChildren)
-        for (let i = 0; i < current.virtualChildren.length; ++i)
-        {
-          var redirect = current.virtualChildren[i];
-          var element = besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize);
-          group.appendChild(element);
-        }
-      redrawNextMoveStatuses(group, current);
-      redrawNextMovesDiffInfo(group, current);
-    }
-    svg.replaceChild(group, nextMoveGroup); // Replace the markup group
-    nextMoveGroup = group;
+    nextMoveGroup.innerHTML = "";
+    if (clear)
+	  return;
+
+	var circleSize = 15;
+	var virtualCircleSize = 8;
+	for (let i = 0; i < current.children.length; ++i)
+	{
+		var child = current.children[i];
+		nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(child.move.x), svgPos(child.move.y), child.getCorrectColor(), circleSize));
+	}
+	if (current.virtualChildren)
+	for (let i = 0; i < current.virtualChildren.length; ++i)
+	{
+		var redirect = current.virtualChildren[i];
+		nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(redirect.move.x), svgPos(redirect.move.y), redirect.target.getCorrectColor(), virtualCircleSize));
+	}
+	redrawNextMoveStatuses(nextMoveGroup, current);
+	redrawNextMovesDiffInfo(nextMoveGroup, current);
   }
 
   function makeBacker(x, y) { // Makes a label markup backer at (x, y)

@@ -8,7 +8,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testshowNormalXP(): void {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -18,7 +18,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testShowingGoldenXP(): void {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66, 'status' => 'G']]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'G']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is golden
@@ -29,7 +29,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testShowingNormalStatusAndUpdatingToSolved(): void {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
@@ -50,7 +50,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 	public function testShowingSprintAfterSprintIsClicked(): void {
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -71,7 +71,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 				'mode' => Constants::$LEVEL_MODE,
 				'premium' => 1,
 				'sprint_start' => date('Y-m-d H:i:s')],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'difficulty' => 66]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the sprint is active from the start

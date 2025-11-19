@@ -89,16 +89,18 @@ class ContextPreparator {
 	private function prepareTsumego(?array $tsumegoInput): array {
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
-		$tsumego['rating'] = $tsumegoInput['rating'] ?: 1000;
+		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
 		assert($tsumego['id']);
 
-		$this->prepareTsumegoSets($tsumegoInput['sets'], $tsumego);
-		$this->prepareTsumegoTags($tsumegoInput['tags'], $tsumego);
-		$this->prepareTsumegoStatus($tsumegoInput['status'], $tsumego);
-		$this->prepareTsumegoAttempt($tsumegoInput['attempt'], $tsumego);
+		$this->prepareTsumegoSets(Util::extract('sets', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
+		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
 
@@ -134,6 +136,17 @@ class ContextPreparator {
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
+	}
+
+	private function prepareTsumegoSgf(?string $tsumegoSgf, $tsumego): void {
+		if (!$tsumegoSgf) {
+			return;
+		}
+		$sgf = [];
+		ClassRegistry::init('Sgf')->create($sgf);
+		$sgf['tsumego_id'] = $tsumego['id'];
+		$sgf['sgf'] = $tsumegoSgf;
+		ClassRegistry::init('Sgf')->save($sgf);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void {

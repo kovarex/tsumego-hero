@@ -178,6 +178,8 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
 
 besogo.updateCorrectValuesInternal = function(root, node)
 {
+  if (node.visited)
+    return node.correct;
   node.visited = true;
   if (node.comment.startsWith("+"))
   {
@@ -204,7 +206,7 @@ besogo.updateCorrectValuesInternal = function(root, node)
   let hasUndefined = false;
 
   for (let i = 0; i < node.children.length; ++i)
-    if (!node.children[i].visited && !node.children[i].localEdit)
+    if (!node.children[i].localEdit)
     {
       let parentStatus = besogo.updateCorrectValuesInternal(root, node.children[i]);
       if (parentStatus == CORRECT_GOOD)
@@ -218,7 +220,7 @@ besogo.updateCorrectValuesInternal = function(root, node)
     }
 
   for (let i = 0; i < node.virtualChildren.length; ++i)
-    if (!node.virtualChildren[i].visited && !node.virtualChildren[i].localEdit)
+    if (!node.virtualChildren[i].localEdit)
     {
       let parentStatus = besogo.updateCorrectValuesInternal(root, node.virtualChildren[i].target);
       if (parentStatus == CORRECT_GOOD)
