@@ -59,6 +59,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
 		usleep(1000 * 100);
@@ -80,6 +81,7 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$originalTsumego1XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
 		usleep(1000 * 100);

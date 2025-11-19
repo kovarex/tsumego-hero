@@ -57,6 +57,14 @@ class Level {
 		return $result;
 	}
 
+	public static function XPAndRatingIsGainedInTsumegoStatus($status) {
+		return $status != 'S' && $status  != 'C'; // solved or doulbe solved is already rewarded, otherwise ok
+	}
+
+	public static function getOverallXPGained($user) {
+		return Level::getXpSumToGetLevel($user['level']) + $user['xp'];
+	}
+
 	public static function oldXPSumCode($level): int {
 		$startxp = 50;
 		$sumx = 0;

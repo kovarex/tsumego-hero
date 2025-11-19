@@ -129,7 +129,7 @@
 		</tr>
 		<tr>
 			<td>XP earned:</td>
-			<td><?php echo Level::getXpSumToGetLevel($user['User']['level']).' XP'; ?></td>
+			<td><?php echo Level::getOverallGained($user['User']).' XP'; ?></td>
 		</tr>
 		<tr>
 			<td>Health:</td>
