@@ -1572,7 +1572,7 @@
 			toggleBoardLock(true);';
 	}
 
-	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || $maxNoUserLevel){
+	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || !Auth::isLoggedIn() || Auth::isInTimeMode()){
 		echo 'var noXP=true;';
 	}else{
 		echo 'var noXP=false;';
@@ -2457,7 +2457,8 @@
 
 		if(result=='S')
 		{
-			xpStatus.set('solved', true);
+			if (typeof xpStatus !== "undefined" && xpStatus)
+				xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
