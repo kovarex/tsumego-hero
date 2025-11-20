@@ -371,8 +371,10 @@ if($mode!=3){
 	</div>
 	<?php
 	if(Auth::isLoggedIn()){
-		if($levelBar==1) $textBarInMenu = "Rating Bar";
-		else $textBarInMenu = "Level Bar";
+		if($levelBar==1)
+			$textBarInMenu = "Rating Bar";
+		else
+			$textBarInMenu = "Level Bar";
 		echo '<div id="account-bar-wrapper" onmouseover="xpHover()" onmouseout="xpNoHover()">
 					  <div id="account-bar">
 							<div id="'.$accountBarLevelToRating.'" class="account-bar-user-class">
@@ -553,7 +555,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	var barPercent1 = <?php echo Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])); ?>;
 	var barPercent2 = <?php echo substr(round(Auth::getUser()['rating']), -2); ?>;
 	var barLevelNum = "<?php echo 'Level '.Auth::getUser()['level']; ?>";
-	var barRatingNum = "<?php echo $td; ?>";
+	var barRatingNum = "<?php echo Rating::getReadableRankFromRating(Auth::getUser()['rating']); ?>";
 	var levelToRatingHover = <?php echo $levelBar; ?>;
 	<?php } ?>
 	<?php
@@ -873,24 +875,24 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	function loadBar(){
 		<?php if(Auth::isLoggedIn()){ ?>
 
-		if(notMode3){
+		if (notMode3) {
 			<?php
 			$barPercent2 = substr(round(Auth::getUser()['rating']), -2);
 
-			if($mode!=3){ ?>
+			if ($mode!=3) { ?>
 
-			if(levelBar==1){
+			if (levelBar == 1) {
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
 				$("#xp-bar-fill").css("width", barPercent1+"%");
 				$("#xp-increase-fx").fadeOut(0);$("#xp-bar-fill").css({"-webkit-transition":"all 0.5s ease","box-shadow":""});
-			}else{
+			} else {
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
 				$("#xp-bar-fill").css("width", barPercent2+"%");
 				$("#xp-increase-fx").fadeOut(0);$("#xp-bar-fill").css({"-webkit-transition":"all 0.5s ease","box-shadow":""});
 			}
-			<?php }else{ ?>
+			<?php } else { ?>
 			<?php $barPercent = 100; ?>
 			$("#xp-increase-fx").css("display","inline-block");
 			$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
@@ -902,20 +904,20 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	}
 
 	function xpHover(){
-		if(notMode3){
+		if(notMode3) {
 			<?php
-			if(Auth::isLoggedIn()){
-			if($mode==1 || $mode==2){
-			?>
-			if(levelBar==1)
-				document.getElementById("account-bar-xp").innerHTML = Math.round(userXP)+"/"+userNextLvl;
-			else
-				document.getElementById("account-bar-xp").innerHTML = userElo;
-			<?php
-			}else{
-			echo 'document.getElementById("account-bar-xp").innerHTML = userXP+"/"+userNextLvl;';
-		}
-			}else{
+			if (Auth::isLoggedIn()) {
+				if ($mode==1 || $mode==2){
+				?>
+				if(levelBar==1)
+					document.getElementById("account-bar-xp").innerHTML = Math.round(userXP)+"/"+userNextLvl;
+				else
+					document.getElementById("account-bar-xp").innerHTML = userElo;
+				<?php
+				} else {
+					echo 'document.getElementById("account-bar-xp").innerHTML = userXP+"/"+userNextLvl;';
+			}
+		}else{
 			echo 'document.getElementById("account-bar-xp").innerHTML = "Level"+userXP+"/"+userNextLvl;';
 		}
 			?>
@@ -925,10 +927,10 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		document.getElementById("heroAchievements").style.display = "inline-block";
 		document.getElementById("heroLogout").style.display = "inline-block";
 	}
-	function xpNoHover(){
+	function xpNoHover() {
 		if(notMode3){
-			<?php if($mode==1 || $mode==2){ ?>
-			if(levelBar==1)
+			<?php if ($mode==1 || $mode==2) { ?>
+			if (levelBar == 1)
 				document.getElementById("account-bar-xp").innerHTML = barLevelNum;
 			else{
 				document.getElementById("account-bar-xp").innerHTML = barRatingNum;
