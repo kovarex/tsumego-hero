@@ -222,7 +222,7 @@ class PlayResultProcessorComponent extends Component {
 		$multiplier = ($result['xp-modifier'] ?: 1);
 		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
 
-		$user =& Auth::getUser();
+		$user = & Auth::getUser();
 		Level::addXPAsResultOfTsumegoSolving($user, TsumegoUtil::getXpValue($previousTsumego['Tsumego'], $multiplier));
 	}
 
