@@ -111,6 +111,7 @@ besogo.makeCommentPanel = function(container, editor)
   //container.appendChild(gameInfoEdit);
   infoTexts.C = document.createTextNode('');
   container.appendChild(commentBox);
+  commentBox.id = 'commentBox';
   commentBox.appendChild(infoTexts.C);
   container.appendChild(commentEdit);
 

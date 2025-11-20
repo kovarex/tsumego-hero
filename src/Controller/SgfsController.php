@@ -25,11 +25,8 @@ class SgfsController extends AppController {
 		$this->loadModel('Set');
 		$this->loadModel('User');
 		$this->loadModel('SetConnection');
-		$name = '';
 		$ux = '';
 		$type = 'tsumego';
-		$id2 = $id;
-		$id /= 1337;
 		$dId = [];
 		$dTitle = [];
 
@@ -121,7 +118,6 @@ class SgfsController extends AppController {
 		$this->set('name', $name);
 		$this->set('s', $s);
 		$this->set('id', $id);
-		$this->set('id2', $id2);
 		$this->set('tNum', $t['Tsumego']['num']);
 		$this->set('dId', $dId);
 		$this->set('dTitle', $dTitle);

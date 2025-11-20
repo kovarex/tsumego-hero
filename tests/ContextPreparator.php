@@ -6,6 +6,9 @@ class ContextPreparator {
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options)) {
 			$this->prepareThisUser(['name' => 'kovarex']);
 		}
@@ -113,6 +116,7 @@ class ContextPreparator {
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -160,6 +164,15 @@ class ContextPreparator {
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = $tsumegoSgf;
 		ClassRegistry::init('Sgf')->save($sgf);
+	}
+
+	private function prepareTsumegoSgfs(?array $tsumegoSgfs, $tsumego): void {
+		if (!$tsumegoSgfs) {
+			return;
+		}
+		foreach ($tsumegoSgfs as $tsumegoSgf) {
+			$this->prepareTsumegoSgf($tsumegoSgf, $tsumego);
+		}
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void {
@@ -275,10 +288,6 @@ class ContextPreparator {
 	}
 
 	private function prepareTimeModeRanks($timeModeRanks): void {
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
-		assert(ClassRegistry::init('TimeModeSession')->find('count') == 0);
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
-		assert(ClassRegistry::init('TimeModeRank')->find('count') == 0);
 		foreach ($timeModeRanks as $timeModeRankInput) {
 			$timeModeRank = [];
 			$timeModeRank['name'] = $timeModeRankInput;

@@ -4,6 +4,7 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverWait;
 
 App::uses('Util', 'Utility');
 
@@ -94,6 +95,14 @@ class Browser {
 
 		// ADDED: detect JS errors caused by click
 		$this->assertNoJsErrors();
+	}
+
+	public function idExists(string $id): bool {
+		return !empty($this->driver-> findElements(WebDriverBy::id($id)));
+	}
+
+	public function waitUntilIDExists($id) {
+		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
 	public static function instance() {

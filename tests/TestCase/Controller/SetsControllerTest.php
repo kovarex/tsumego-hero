@@ -1,6 +1,7 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverWait;
 
 require_once(__DIR__ . '/TestCaseWithAuth.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
@@ -707,7 +708,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
+		$wait = new WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			$bla = $browser->driver->getPageSource();
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';

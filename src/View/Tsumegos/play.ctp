@@ -2043,7 +2043,7 @@
 		$("#openSgfLink").css("display", "inline-block");
 		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
-			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
+			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.$t['Tsumego']['id']; ?>");
 		<?php }else{
 			$duplicateOther = array();
 			if($t['Tsumego']['duplicate']<=9)
@@ -2062,7 +2062,7 @@
 					$duplicateParamsUrl .= '-';
 			}
 			?>
-			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.($t['Tsumego']['id']*1337); ?>");
+			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.$t['Tsumego']['id']; ?>");
 		<?php } ?>
 		$("#showx8").attr("href", "<?php echo '/users/tsumego_rating/'.$t['Tsumego']['id']; ?>");
 		$("#showx4").css("display", "inline-block");

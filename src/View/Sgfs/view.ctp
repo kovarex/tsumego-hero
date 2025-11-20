@@ -62,13 +62,11 @@
 				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.$s[$i]['Sgf']['title'].'</a> ';
 			else
 				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.$s[$i]['Sgf']['title'].'</a> ';
-			if(floor($s[$i]['Sgf']['version'])==$s[$i]['Sgf']['version']) $isDecimal='.0';
-			else $isDecimal='';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1).'</a>';
+			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.(count($s) - $i).'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">
-			<a id="open-'.$s[$i]['Sgf']['id'].'">open</a>&nbsp;&nbsp;&nbsp;';
-			if($i!=count($s)-1)
+			<a id="open-'.$s[$i]['Sgf']['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
+			if ($i!=count($s)-1)
 				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'">diff</a>&nbsp;&nbsp;&nbsp;';
 			echo '<a href="#" id="dl2-'.$s[$i]['Sgf']['id'].'">download</a>';
 			if($s[$i]['Sgf']['delete'])
@@ -88,7 +86,7 @@
 	}
 
 	<?php for($i=0; $i<count($s); $i++){ ?>
-		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id']; ?>");
+		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID='.$s[$i]['Sgf']['id']; ?>");
 		<?php
 		if($i!=count($s)-1)
 			echo '$("#compare-'.$s[$i]['Sgf']['id'].'").attr("href", "/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id'].'/'.$s[$i]['Sgf']['diff'].'");';
