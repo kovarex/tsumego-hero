@@ -299,7 +299,7 @@ class AppController extends Controller {
 				$uotdChosen = true;
 			}
 		}
-		$activity = $this->TsumegoAttempt->find('all', ['limit' => 40000, 'conditions' => ['DATE(TsumegoAttempt.created)' => date('Y-m-d', strtotime('yesterday'))]]);
+		$activity = $this->TsumegoAttempt->find('all', ['limit' => 40000, 'conditions' => ['DATE(TsumegoAttempt.updated)' => date('Y-m-d', strtotime('yesterday'))]]);
 		if (!$activity) {
 			$activity = [];
 		}
@@ -473,7 +473,7 @@ class AppController extends Controller {
 		if (!$tsumegos) {
 			$tsumegos = [];
 		}
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
+		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $uid]]);
 		if (!$uts) {
 			$uts = [];
 		}
@@ -609,28 +609,6 @@ class AppController extends Controller {
 		$this->UserBoard->deleteAll(['1 = 1']);
 	}
 
-	/**
-	 * @return void
-	 */
-	protected function halfXP() {
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('DayRecord');
-		$week = $this->TsumegoStatus->find('all', ['order' => 'created DESC', 'conditions' => ['status' => 'S']]);
-		if (!$week) {
-			$week = [];
-		}
-		$oneWeek = date('Y-m-d H:i:s', strtotime('-7 days'));
-		$weekCount = count($week);
-		for ($i = 0; $i < $weekCount; $i++) {
-			if ($week[$i]['TsumegoStatus']['created'] < $oneWeek) {
-				if ($week[$i]['TsumegoStatus']['status'] == 'S') {
-					$week[$i]['TsumegoStatus']['status'] = 'W';
-					//$this->TsumegoStatus->save($week[$i]);
-				}
-			}
-		}
-	}
-
 	protected function getNewTsumego() {
 		$this->loadModel('Schedule');
 		$date = date('Y-m-d', strtotime('today'));
@@ -719,7 +697,7 @@ class AppController extends Controller {
 		if (!$ut) {
 			$ut = [];
 		}
-		$out = $this->TsumegoAttempt->find('all', ['limit' => 30000, 'order' => 'created DESC', 'conditions' => ['gain >=' => 40]]);
+		$out = $this->TsumegoAttempt->find('all', ['limit' => 30000, 'order' => 'updated DESC', 'conditions' => ['gain >=' => 40]]);
 		if (!$out) {
 			$out = [];
 		}
@@ -757,7 +735,7 @@ class AppController extends Controller {
 		$out2 = [];
 		$outCount = count($out);
 		for ($i = 0; $i < $outCount; $i++) {
-			$date2 = new DateTime($out[$i]['TsumegoAttempt']['created']);
+			$date2 = new DateTime($out[$i]['TsumegoAttempt']['updated']);
 			$date2 = $date2->format('Y-m-d');
 			if ($date === $date2) {
 				array_push($ids2, $out[$i]['TsumegoAttempt']['tsumego_id']);
@@ -2919,7 +2897,7 @@ class AppController extends Controller {
 
 	protected function signIn(array $user): void {
 		Auth::init($user);
-		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'created DESC']);
+		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
 		if ($vs) {
 			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
 		}

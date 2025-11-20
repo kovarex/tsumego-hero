@@ -166,17 +166,26 @@ class ContextPreparator {
 			'conditions' => [
 				'user_id' => $this->user['id'],
 				['tsumego_id' => $tsumego['id']]]];
+		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
+		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
 		if ($originalTsumegoStatus) {
 			if (!$tsumegoStatus) {
 				ClassRegistry::init('TsumegoStatus')->delete($originalTsumegoStatus['TsumegoStatus']['id']);
 			} else {
-				$originalTsumegoStatus['TsumegoStatus']['status'] = $tsumegoStatus;
+				$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+				if ($updated) {
+					$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
+				}
 				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 			}
 		} elseif ($tsumegoStatus) {
 			$originalTsumegoStatus = [];
-			$originalTsumegoStatus['TsumegoStatus']['status'] = $tsumegoStatus;
+			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+			if ($updated) {
+				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
+			}
+			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $this->user['id'];
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
 			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);

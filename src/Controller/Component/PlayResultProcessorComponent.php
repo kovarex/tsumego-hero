@@ -29,7 +29,6 @@ class PlayResultProcessorComponent extends Component {
 		$result = $this->checkPreviousPlayAndGetResult($previousTsumego);
 
 		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'order' => 'created DESC',
 			'conditions' => [
 				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
 				'user_id' => (int) Auth::getUserID(),

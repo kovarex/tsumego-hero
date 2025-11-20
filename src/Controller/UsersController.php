@@ -661,13 +661,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine2() { //0:02 halfXP
-		$this->halfXP();
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine3() { //0:04 t_glicko
 		$this->loadModel('User');
 		$this->loadModel('TsumegoRatingAttempt');
@@ -1274,7 +1267,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($sid == null) {
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		} else {
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
+			$ur = $this->TsumegoAttempt->find('all', ['order' => 'updated DESC', 'conditions' => ['tsumego_id' => $ids]]);
 		}
 
 		$urCount = count($ur);
@@ -2701,7 +2694,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$tsumegos) {
 			$tsumegos = [];
 		}
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
+		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $id]]);
 		if (!$uts) {
 			$uts = [];
 		}
