@@ -426,4 +426,37 @@ class TimeModeTest extends TestCaseWithAuth {
 			$this->assertSame(count($links1d) == 1, $testCase === 'solve-all' || $testCase === 'solve-5k');
 		}
 	}
+
+	public function testTimeModeOverviewTsumegoCountCalculation(): void {
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['10k', '5k', '1d', '5d'];
+		// empty 10k
+		// one tsumego in 5k category
+		$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+
+		// two in 1d category
+		for ($i = 1; $i <= 2; $i++) {
+			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('1d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+		}
+
+		// 3 in 5d category
+		for ($i = 1; $i <= 3; $i++) {
+			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+		}
+		// one in 5d category, but in a set not included in time mode
+		$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set weird', 'num' => 1, 'included_in_time_mode' => false]]];
+
+		$context = new ContextPreparator($contextParameters);
+		$browser = Browser::instance();
+		$browser->get('timeMode/overview');
+		$renderedCounts = $browser->driver->findElements(WebDriverBy::cssSelector(".imageContainerText2"));
+		$visibleCounts = array_filter($renderedCounts, function ($el) { return $el->isDisplayed(); });
+
+		$this->assertSame(count($visibleCounts), count($contextParameters['time-mode-ranks']));
+		$this->assertSame($visibleCounts[0]->getText(), "0");
+		$this->assertSame($visibleCounts[1]->getText(), "1");
+		$this->assertSame($visibleCounts[2]->getText(), "2");
+		$this->assertSame($visibleCounts[3]->getText(), "3");
+	}
 }

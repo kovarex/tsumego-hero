@@ -5,6 +5,7 @@ class ContextPreparator {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Set')->deleteAll(['1 = 1']);
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options)) {
 			$this->prepareThisUser(['name' => 'kovarex']);
 		}
@@ -198,7 +199,7 @@ class ContextPreparator {
 			ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 			$this->tsumegoSets = [];
 			foreach ($setsInput as $tsumegoSet) {
-				$set = $this->getOrCreateTsumegoSet($tsumegoSet['name']);
+				$set = $this->getOrCreateTsumegoSet(['name' => $tsumegoSet['name'], 'included_in_time_mode' => $tsumegoSet['included_in_time_mode']]);
 				$setConnection = [];
 				$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
 				$setConnection['SetConnection']['set_id'] = $set['id'];
@@ -230,11 +231,19 @@ class ContextPreparator {
 		}
 	}
 
-	private function getOrCreateTsumegoSet($name): array {
+	private function getOrCreateTsumegoSet($input): array {
+		if (is_string($input)) {
+			$name = $input;
+			$includedInTimeMode = false;
+		} else {
+			$name = $input['name'];
+			$includedInTimeMode = $input['included_in_time_mode'];
+		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		if (!$set) {
 			$set = [];
 			$set['Set']['title'] = $name;
+			$set['Set']['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved

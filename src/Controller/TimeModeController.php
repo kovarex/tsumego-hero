@@ -62,6 +62,52 @@ class TimeModeController extends AppController {
 		return $this->play();
 	}
 
+	private function getRanksWithTsumegoCount() {
+
+		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']);
+		$rankPartOfQuery = '';
+		$count = count($ranks);
+		foreach ($ranks as $index => $rank) {
+			if ($index + 1 < $count) {
+				$rankPartOfQuery .= 'WHEN rating < ' . Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank['TimeModeRank']['name']) + 1) . ' THEN \'' . $rank['TimeModeRank']['id'] . '\' ';
+			} else {
+				$rankPartOfQuery .= 'ELSE \'' . $rank['TimeModeRank']['id'] . '\'';
+			}
+
+		}
+		$counts = ClassRegistry::init('Tsumego')->query("
+SELECT
+    CASE " . $rankPartOfQuery . "
+    END AS bucket,
+    COUNT(*) AS count
+FROM
+	tsumego
+	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
+	JOIN `set` ON set_connection.set_id=`set`.id
+WHERE
+	`set`.`included_in_time_mode` = 1 AND
+	`set`.public = 1
+GROUP BY bucket
+ORDER BY MIN(rating);");
+
+		$countsByRankID = [];
+		foreach ($counts as $count) {
+			$countsByRankID[$count[0]['bucket']] = $count[0]['count'];
+		}
+
+		$result = [];
+		foreach ($ranks as $rank) {
+			$rank = $rank['TimeModeRank'];
+			if ($count = $countsByRankID[$rank['id']]) {
+				$rank['tsumego_count'] = $count;
+			} else {
+				$rank['tsumego_count'] = 0;
+			}
+			$result [] = $rank;
+		}
+		return $result;
+	}
+
 	public function overview(): mixed {
 		if (!Auth::isLoggedIn()) {
 			return $this->redirect('/users/login');
@@ -101,9 +147,8 @@ class TimeModeController extends AppController {
 
 		$this->set('lastTimeModeCategoryID', $lastTimeModeCategoryID);
 		$this->set('timeModeCategories', ClassRegistry::init('TimeModeCategory')->find('all', ['order' => 'id']));
-		$this->set('timeModeRanks', ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']));
+		$this->set('timeModeRanks', $this->getRanksWithTsumegoCount());
 		$this->set('solvedMap', $solvedMap);
-		$this->set('rxxCount', json_decode(file_get_contents('json/time_mode_overview.json'), true));
 		$this->set('ro', $timeModeSessions);
 		$this->set('achievementUpdate', $achievementUpdate);
 		return null;

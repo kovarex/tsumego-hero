@@ -28,15 +28,15 @@
 		echo '<div id="time-mode'.$categoryID.'">';
 		$unlocked = true; // first is always unlocked
 		foreach ($timeModeRanks as $timeModeRank) {
-			$rank = $timeModeRank['TimeModeRank']['name'];
-			$rankID = $timeModeRank['TimeModeRank']['id'];
+			$rank = $timeModeRank['name'];
+			$rankID = $timeModeRank['id'];
 
 			echo '<div class="imageContainer1" id="rank-selector-'.$categoryID.'-'.$rankID.'">';
 			if ($unlocked) {
 				echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">';
 			}
 			echo '<img src="/img/rankButton'.$rank.($unlocked ? '' : 'inactive').'.png" '.($unlocked ? 'onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this);"' : '').'>';
-			echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">'.$rxxCount[$i].'</div>';
+			echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">'.$timeModeRank['tsumego_count'].'</div>';
 			if ($unlocked) {
 				echo '</a>';
 			}
