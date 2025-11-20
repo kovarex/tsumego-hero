@@ -8,6 +8,15 @@ class CronController extends AppController {
 			$this->response->body('Wrong cron secret.');
 			return $this->response;
 		}
+		$this->dailyUsersReset();
+		$this->dailyTsumegoStatusReset();
+		$this->dailyStalingSolvedTsumegoStatuses();
+
+		$this->response->statusCode(200);
+		return $this->response;
+	}
+
+	private function dailyUsersReset() {
 		$query = 'UPDATE user SET';
 		$query .= ' used_refinement=0';
 		$query .= ',used_sprint=0';
@@ -21,15 +30,19 @@ class CronController extends AppController {
 		$query .= ',readingTrial=30';
 		$query .= ',reuse4=0';
 		ClassRegistry::init('User')->query($query);
+	}
+
+	private function dailyTsumegoStatusReset() {
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' where status='F'");
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' where status='X'");
+	}
+
+	private function dailyStalingSolvedTsumegoStatuses() {
 		ClassRegistry::init('TsumegoStatus')->query("
 UPDATE tsumego_status
 SET status='W'
 WHERE
 	status='S' AND
 	tsumego_status.updated < '" . date('Y-m-d H:i:s', strtotime('-7 days')) . "'");
-		$this->response->statusCode(200);
-		return $this->response;
 	}
 }
