@@ -861,24 +861,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine23() { //daily highscore
-		$activity = $this->User->find('all', ['order' => ['User.reuse3 DESC']]);
-		$todaysUsers = [];
-		$today = date('Y-m-d', strtotime('today'));
-		$activityCount = count($activity);
-		for ($i = 0; $i < $activityCount; $i++) {
-			$activity[$i]['User']['name'] = mb_convert_encoding($activity[$i]['User']['name'], 'UTF-8', 'ISO-8859-1');
-			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today) {
-				array_push($todaysUsers, $activity[$i]['User']);
-			}
-		}
-		file_put_contents('json/daily_highscore.json', json_encode($todaysUsers));
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine24() { //time mode overview
 		$sets = $this->Set->find('all', ['conditions' => ['public' => 1]]);
 		$tsumegos = [];
