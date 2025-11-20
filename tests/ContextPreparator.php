@@ -5,7 +5,11 @@ class ContextPreparator {
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);
-		$this->prepareUser(Util::extract('user', $options));
+		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options)) {
+			$this->prepareThisUser(['name' => 'kovarex']);
+		}
+		$this->prepareThisUser(Util::extract('user', $options));
+		$this->prepareOtherUsers(Util::extract('other-users', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
@@ -22,22 +26,31 @@ class ContextPreparator {
 		die("Option " . implode(",", array_keys($options)) . " not recognized\n.");
 	}
 
-	private function prepareUser(?array $user): void {
-		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
-		if (!$this->user) {
-			$this->user = [];
-			$this->user['name'] = 'kovarex';
-			$this->user['email'] = 'test@example.com';
-			$this->user['rating'] = 1500;
-			$this->user['damage'] = 0;
-			$this->user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
-			ClassRegistry::init('User')->create($this->user);
+	private function prepareThisUser(?array $user): void {
+		if (!$user) {
+			CakeSession::destroy();
+			return;
 		}
+		$this->user = $this->prepareUser($user);
+		CakeSession::write('loggedInUserID', $this->user['id']);
+		assert(CakeSession::check('loggedInUserID'));
+		Auth::init();
+		// Achievements popups can get into the way when testing, once we want to test achievements
+		// we can make this command conditional
+		$_COOKIE['disable-achievements'] = true;
+	}
 
-		$this->user['isAdmin'] = $user['admin'] ?? false;
-		$this->user['rating'] = $user['rating'] ?: 1500;
-		$this->user['premium'] = $user['premium'] ?: 0;
-		$this->user['xp'] = 0;
+	private function prepareUser(?array $userInput): array {
+		$user = [];
+		$user['name'] = Util::extract('name', $userInput) ?: 'kovarex';
+		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
+		$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
+		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
+		$user['rating'] = Util::extract('rating', $userInput) ?: 1500;
+		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
+		$user['xp'] = 0;
+		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
+		$user['daily_solved'] = Util::extract('daily_solved', $userInput) ?: 0;
 		foreach ([
 			'used_refinement',
 			'used_sprint',
@@ -45,45 +58,44 @@ class ContextPreparator {
 			'used_potion',
 			'used_intuition',
 			'used_revelation'] as $name) {
-			$this->user[$name] = $user[$name] ?: 0;
+			$user[$name] = Util::extract($name, $userInput) ?: 0;
 		}
-		$this->user['damage'] = $user['damage'] ?? 0;
-		$this->user['used_sprint'] = $user['used_sprint'] ?: 0;
-		$this->user['sprint_start'] = $user['sprint_start'] ?: null;
-		$this->user['mode'] = $user['mode'] ?: Constants::$LEVEL_MODE;
-		$this->user['level'] = $user['level'] ?: 1;
-		ClassRegistry::init('User')->save($this->user);
-		$this->user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$user['damage'] = Util::extract('damage', $userInput) ?? 0;
+		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
+		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
+		$user['level'] = Util::extract('level', $userInput) ?: 1;
+		ClassRegistry::init('User')->create($user);
+		ClassRegistry::init('User')->save($user);
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
 
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
 
-		if ($user) {
-			CakeSession::write('loggedInUserID', $this->user['id']);
-			assert(CakeSession::check('loggedInUserID'));
-			Auth::init();
-
-			if (isset($user['query'])
-				|| isset($user['filtered_sets'])
-				|| isset($user['filtered_topics'])
-				|| isset($user['filtered_tags'])
-				|| isset($user['collection_size'])) {
-				$userContribution = [];
-				$userContribution['user_id'] = $this->user['id'];
-				$userContribution['query'] = $user['query'] ?: '';
-				$userContribution['filtered_sets'] = $user['filtered_sets'] ? implode('@', $user['filtered_sets']) : '';
-				$userContribution['filtered_ranks'] = $user['filtered_ranks'] ? implode('@', $user['filtered_ranks']) : '';
-				$userContribution['filtered_tags'] = $user['filtered_tags'] ? implode('@', $user['filtered_tags']) : '';
-				$userContribution['collection_size'] = $user['collection_size'] ?: 200;
-				ClassRegistry::init('UserContribution')->create($userContribution);
-				ClassRegistry::init('UserContribution')->save($userContribution);
-			}
-		} else {
-			CakeSession::destroy();
+		if (isset($userInput['query'])
+			|| isset($userInput['filtered_sets'])
+			|| isset($userInput['filtered_topics'])
+			|| isset($userInput['filtered_tags'])
+			|| isset($userInput['collection_size'])) {
+			$userContribution = [];
+			$userContribution['user_id'] = $user['id'];
+			$userContribution['query'] = Util::extract('query', $userInput) ?: '';
+			$userContribution['filtered_sets'] = $userInput['filtered_sets'] ? implode('@', Util::extract('filtered_sets', $userInput)) : '';
+			$userContribution['filtered_ranks'] = $userInput['filtered_ranks'] ? implode('@', Util::extract('filtered_ranks', $userInput)) : '';
+			$userContribution['filtered_tags'] = $userInput['filtered_tags'] ? implode('@', Util::extract('filtered_tags', $userInput)) : '';
+			$userContribution['collection_size'] = Util::extract('collection_size', $userInput) ?: 200;
+			ClassRegistry::init('UserContribution')->create($userContribution);
+			ClassRegistry::init('UserContribution')->save($userContribution);
 		}
+		$this->checkOptionsConsumed($userInput);
+		return $user;
+	}
 
-		// Achievements popups can get into the way when testing, once we want to test achievements
-		// we can make this command conditional
-		$_COOKIE['disable-achievements'] = true;
+	private function prepareOtherUsers(?array $usersInput): void {
+		if (!$usersInput) {
+			return;
+		}
+		foreach ($usersInput as $userInput) {
+			$this->otherUsers [] = $this->prepareUser($userInput);
+		}
 	}
 
 	private function prepareTsumego(?array $tsumegoInput): array {
@@ -335,6 +347,7 @@ class ContextPreparator {
 	}
 
 	public ?array $user = null;
+	public array $otherUsers = [];
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
 	public array $allTsumegos = [];

@@ -30,7 +30,7 @@ class TestEmailer {
 
 class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	public function testLogin(): void {
-		new ContextPreparator();
+		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
@@ -44,7 +44,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testLoginWithWrongPassword(): void {
-		new ContextPreparator();
+		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
 		$this->assertNotEmpty($user);
 
@@ -54,18 +54,14 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testLogout(): void {
-		new ContextPreparator();
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		$this->assertNotEmpty($user);
-		CakeSession::write('loggedInUserID', $user['User']['id']);
-
+		new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 		$this->testAction('users/logout/');
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 	}
 
 	public function testSignUp(): void {
-		new ContextPreparator();
+		new ContextPreparator(['user' => null]);
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex' . strval($userWithBiggestID);
@@ -80,7 +76,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testSignUpWithDupliciteName(): void {
-		new ContextPreparator();
+		new ContextPreparator(['user' => null]);
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'kovarex';
@@ -95,7 +91,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testSignUpWithNameThatOnlyDiffersInCase(): void {
-		new ContextPreparator();
+		new ContextPreparator(['user' => null]);
 		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
 		$newUsername = 'Kovarex';
@@ -110,7 +106,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function registerTestEmailer() {
-		new ContextPreparator();
 		$controller = $this->generate('Users', ['methods' => ['_getEmailer']]);
 		$emailer = new TestEmailer();
 		$controller
@@ -120,31 +115,27 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 	}
 
 	public function testResetPassword(): void {
-		new ContextPreparator();
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		$this->assertNotEmpty($user);
-		$user['User']['passwordreset'] = null;
-		ClassRegistry::init('User')->save($user);
+		$context = new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
+		$user = $context->otherUsers[0];
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->registerTestEmailer();
-		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['User']['email']]], 'method' => 'POST']);
+		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => $user['email']]], 'method' => 'POST']);
 
-		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		$this->assertNotEmpty($userNew['User']['passwordreset']);
+		$userNew = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$this->assertNotEmpty($userNew['passwordreset']);
 		$this->assertNotNull(TestEmailer::$lastEmail);
-		$this->assertSame(TestEmailer::$lastEmail['to'], $user['User']['email']);
+		$this->assertSame(TestEmailer::$lastEmail['to'], $user['email']);
 		$this->assertTextContains('Password reset', TestEmailer::$lastEmail['subject']);
-		$this->assertTextContains('https://' . $_SERVER['http_host'] . '/users/newpassword/' . $userNew['User']['passwordreset'], TestEmailer::$lastEmail['body']);
+		$this->assertTextContains('https://' . $_SERVER['http_host'] . '/users/newpassword/' . $userNew['passwordreset'], TestEmailer::$lastEmail['body']);
 	}
 
 	public function testNewPassword(): void {
-		new ContextPreparator();
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		$this->assertNotEmpty($user);
+		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$resetSecret = 'reset_checksum_abc';
-		$user['User']['passwordreset'] = $resetSecret;
+		$user['passwordreset'] = $resetSecret;
 		ClassRegistry::init('User')->save($user);
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
@@ -152,8 +143,8 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 
 		$this->testAction('users/newpassword/' . $resetSecret, ['data' => ['User' => ['password' => $newPassword]], 'method' => 'POST']);
 
-		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
-		$this->assertNull($newUser['User']['passwordreset']); // password reset was cleared
+		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
+		$this->assertNull($newUser['passwordreset']); // password reset was cleared
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->assertFalse(Auth::isLoggedIn());
 
@@ -161,7 +152,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth {
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 
 		// changing the password to test again to not break other tests
-		$newUser['User']['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
+		$newUser['password_hash'] = password_hash('test', PASSWORD_DEFAULT);
 		ClassRegistry::init('User')->save($newUser);
 	}
 

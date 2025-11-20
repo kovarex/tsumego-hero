@@ -2629,14 +2629,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('DayRecord');
 
-		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]);
-		if (!$adminsList) {
-			$adminsList = [];
-		}
+		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
-		$adminsListCount = count($adminsList);
-		for ($i = 0; $i < $adminsListCount; $i++) {
-			array_push($admins, $adminsList[$i]['User']['name']);
+		foreach ($adminsList as $admin) {
+			$admins [] = $admin['User']['name'];
 		}
 		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
 		$userYesterdayName = 'Unknown';
@@ -2646,25 +2642,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$userYesterdayName = $userYesterday['User']['name'];
 			}
 		}
-		if (Auth::isLoggedIn()) {
-			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = 3;
-			$this->User->save($ux);
-		}
-		$json = json_decode(file_get_contents('json/daily_highscore.json'), true);
-		if (!$json) {
-			$json = [];
-		}
-		$jsonCount = count($json);
-		for ($i = 0; $i < $jsonCount; $i++) {
-			$u = $this->User->findById($json[$i]['id']);
-			if ($u && isset($u['User']['name'])) {
-				$json[$i]['name'] = $u['User']['name'];
-			}
+
+		$users = ClassRegistry::init('User')->query('SELECT user.name, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
+		$exportedUsers = [];
+		foreach ($users as $user) {
+			$exportedUsers [] = $user['user'];
 		}
 
-		$this->set('a', $json);
-		$this->set('uNum', count($json));
+		$this->set('leaderboard', $exportedUsers);
+		$this->set('uNum', "TODO");
 		$this->set('admins', $admins);
 		$this->set('dayRecord', $userYesterdayName);
 	}
