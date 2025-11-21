@@ -1661,17 +1661,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$counter2++;
 		}
 
-		$sc = $this->SetConnection->find('all');
+		$setConnections = $this->SetConnection->find('all');
 		$scCount = [];
 		$scCount2 = [];
-		$scCount = count($sc);
-		for ($i = 0; $i < $scCount; $i++) {
-			array_push($scCount, $sc[$i]['SetConnection']['tsumego_id']);
+		foreach ($setConnections as $setConnection) {
+			$scCount[] = $setConnection['SetConnection']['tsumego_id'];
 		}
 		$scCount = array_count_values($scCount);
 		foreach ($scCount as $key => $value) {
 			if ($value > 1) {
-				array_push($scCount2, $key);
+				$scCount2[] = $key;
 			}
 		}
 
