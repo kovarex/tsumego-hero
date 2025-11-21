@@ -333,31 +333,6 @@ class UsersController extends AppController {
 		$this->set('ts', $ts);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function test1e() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('SetConnection');
-		$this->loadModel('Set');
-
-		$x1min = 500;
-		$x1max = 1200;
-		$x2min = 100;
-		$x2max = 1200;
-
-		$x = 700;
-
-		/** @phpstan-ignore-next-line */
-		if ($x1max != $x1min) {
-			$result = $x2min + (($x2max - $x2min) / ($x1max - $x1min)) * ($x - $x1min);
-		} else {
-			$result = $x2min;
-		}
-		echo $result;
-	}
-
 	//list tsumego variations
 	/**
 	 * @return void
