@@ -210,6 +210,18 @@ class TimeModeTest extends TestCaseWithAuth {
 
 		// refresh
 		$browser->get('timeMode/play');
+		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
+		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
+			'time_mode_session_id' => $timeModeSessionID,
+			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
+		$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT);
+
+		$startedQueuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
+			'time_mode_session_id' => $timeModeSessionID,
+			'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED,
+			'started not' => null]]);
+		$this->assertSame(count($startedQueuedAttempts), 1);
+
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
 		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1);
