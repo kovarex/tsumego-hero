@@ -622,8 +622,6 @@ class Play {
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
-
-		AppController::startPageUpdate();
 		$startingPlayer = TsumegosController::getStartingPlayer($sgf2);
 
 		$eloScoreRounded = round($eloScore);

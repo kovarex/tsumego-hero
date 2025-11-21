@@ -122,7 +122,7 @@ class SitesController extends AppController {
 			}
 
 			$uts = $this->TsumegoStatus->find('all', [
-				'order' => 'created DESC',
+				'order' => 'updated DESC',
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $idArray,

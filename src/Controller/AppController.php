@@ -163,12 +163,9 @@ class AppController extends Controller {
 	/**
 	 * @return void
 	 */
-	public static function startPageUpdate() {
-		$str = '';
-		$latest = ClassRegistry::init('AchievementStatus')->find('all', ['limit' => 7, 'order' => 'created DESC']);
-		if (!$latest) {
-			$latest = [];
-		}
+	public static function getStartpage() {
+		$result = '';
+		$latest = ClassRegistry::init('AchievementStatus')->find('all', ['limit' => 7, 'order' => 'created DESC']) ?: [];
 		$latestCount = count($latest);
 		for ($i = 0; $i < $latestCount; $i++) {
 			$a = ClassRegistry::init('Achievement')->findById($latest[$i]['AchievementStatus']['achievement_id']);
@@ -182,10 +179,10 @@ class AppController extends Controller {
 			$latest[$i]['AchievementStatus']['color'] = $a['Achievement']['color'];
 			$latest[$i]['AchievementStatus']['image'] = $a['Achievement']['image'];
 			$latest[$i]['AchievementStatus']['user'] = $startPageUser;
-			$str .= '<div class="quote1"><div class="quote1a"><a href="/achievements/view/' . $a['Achievement']['id'] . '"><img src="/img/' . $a['Achievement']['image'] . '.png" width="34px"></a></div>';
-			$str .= '<div class="quote1b">Achievement gained by ' . $startPageUser . ':<br><div class=""><b>' . $a['Achievement']['name'] . '</b></div></div></div>';
+			$result .= '<div class="quote1"><div class="quote1a"><a href="/achievements/view/' . $a['Achievement']['id'] . '"><img src="/img/' . $a['Achievement']['image'] . '.png" width="34px"></a></div>';
+			$result .= '<div class="quote1b">Achievement gained by ' . $startPageUser . ':<br><div class=""><b>' . $a['Achievement']['name'] . '</b></div></div></div>';
 		}
-		file_put_contents('mainPageAjax.txt', $str);
+		return $result;
 	}
 
 	protected function saveSolvedNumber($uid) {

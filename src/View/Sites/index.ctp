@@ -379,7 +379,7 @@
 			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
-			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper"></div>';
+			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.ApPController::getStartpage().'</div>';
 		?>
 		<a href="/tsumegos/play/<?php echo $this->Session->read('lastVisit'); ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
@@ -967,39 +967,12 @@
 				$("#title-image").attr("src", "/img/modeSelect24x.png?v=1.1");
 			<?php } ?>
 		}
-		let textBuffer = "";
-		function getContent(){
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.open("GET", "mainPageAjax.txt", false);
-			xmlHttp.send(null);
-
-			if(xmlHttp.responseText!==textBuffer){
-				textBuffer = xmlHttp.responseText;
-				$("#ajaxWallpaper").css("display", "none");
-				setTimeout(nextFadeIn(xmlHttp.responseText), 100);
-				setTimeout(nextFadeIn2, 300);
-			}
-		}
-		function nextFadeIn2(){
-			$("#ajaxWallpaper").fadeIn(300);
-		}
-		function nextFadeIn(responseText){
-			var element = document.getElementById("ajaxWallpaper");
-			element.innerHTML = responseText;
-		}
 
 		var ajaxCall = $.ajax({
 			type: 'GET',
 			url: "mainPageAjax.txt",
 			dataType: 'txt'
 		});
-
-		$(document).ready(function(){
-			ajaxCall.done(function(data){
-			});
-			setInterval(getContent, 1000);
-		});
-		getContent();
 
 		let tooltipSgfs = [];
 		let popularTooltip = [];

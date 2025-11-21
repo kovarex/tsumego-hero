@@ -42,7 +42,17 @@ class Browser {
 		$this->driver->quit();
 	}
 
-	// ADDED: Read errors and throw if any exist
+	public function assertNoErrors(): void {
+		$this->assertNoException();
+		$this->assertNoJsErrors();
+	}
+
+	public function assertNoException(): void {
+		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>")) {
+			throw new Exception($this->driver->getPageSource());
+		}
+	}
+
 	public function assertNoJsErrors(): void {
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
@@ -85,19 +95,17 @@ class Browser {
 		}
 
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
-
-		// ADDED: check for JS errors
-		$this->assertNoJsErrors();
+		$this->assertNoErrors();
 	}
 
 	public function clickId($name) {
 		$this->driver->findElement(WebDriverBy::id($name))->click();
-		$this->assertNoJsErrors();
+		$this->assertNoErrors();
 	}
 
 	public function clickCssSelect($name) {
 		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
-		$this->assertNoJsErrors();
+		$this->assertNoErrors();
 	}
 
 	public function idExists(string $id): bool {
