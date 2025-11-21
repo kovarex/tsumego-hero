@@ -1,5 +1,5 @@
 <?php
-if (!Auth::isAdmin() && Auth::hasPremium())
+if (!Auth::isAdmin() && !Auth::hasPremium())
 {
   echo '<script type="text/javascript">window.location.href = "/";</script>';
   return;

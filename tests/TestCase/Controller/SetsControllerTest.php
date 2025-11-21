@@ -913,13 +913,21 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 	public function testOnlyPrivateSetsAreVisibleInSandbox(): void {
-		$context = new ContextPreparator(['tsumego' => ['sets' => [
-			['name' => 'public set', 'public' => 1, 'num' => '666'],
-			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'public set', 'public' => 1, 'num' => '666']]],
+				['sets' => [['name' => 'private set', 'public' => 0, 'num' => '777']]]]]);
 		$browser = Browser::instance();
 		$browser->get('sets/sandbox');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[1]['set-connections'][0]['set_id'] , $browser->driver->getCurrentURL());
+
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->getText(), '777');
 	}
 }
