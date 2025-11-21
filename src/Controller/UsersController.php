@@ -54,53 +54,6 @@ class UsersController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function rank_single() {
-		$this->loadModel('Tsumego');
-		$a = [];
-		$a['c'] = [];
-		$a['TimeModeAttempt'] = [];
-		$a['rank2'] = [];
-		$a['rank3'] = [];
-		$a['elo'] = [];
-		$a['elo2'] = [];
-		$counter = 0;
-		while ($counter <= 100) {
-			array_push($a['c'], $counter);
-			$rank = AppController::getTsumegoRankx($counter);
-			array_push($a['TimeModeAttempt'], $rank);
-
-			$tMax = $this->getTsumegoRankMax($counter);
-			array_push($a['rank2'], $tMax);
-
-			$tVal = $this->getTsumegoRankVal($counter);
-			if ($tMax != 0) {
-				$p = $tVal / $tMax;
-			} else {
-				$p = 0;
-			}
-			array_push($a['rank3'], $p);
-
-			$newElo = AppController::getTsumegoElo($rank, $p);
-			array_push($a['elo'], $newElo);
-
-			$adjustElo = $this->adjustElo($newElo);
-			array_push($a['elo2'], $adjustElo);
-
-			$counter += .5;
-		}
-		echo '<table>';
-		$aCount = count($a['c']);
-		for ($i = 0; $i < $aCount; $i++) {
-			echo '<tr>';
-			echo '<td>' . $a['c'][$i] . '</td><td>' . $a['TimeModeAttempt'][$i] . '</td><td>' . $a['rank3'][$i] . '</td><td>' . $a['elo'][$i] . '</td><td>' . $a['elo2'][$i] . '</td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-	}
-
-	/**
-	 * @return void
-	 */
 	public function adjusttsumego() {
 		$this->loadModel('Tsumego');
 		$ts = $this->Tsumego->find('all', ['order' => 'rating ASC']);
