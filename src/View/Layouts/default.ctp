@@ -245,7 +245,7 @@ if($mode!=3){
 							if(Auth::hasPremium() || Auth::isAdmin() || $hasFavs){
 								echo '<ul class="newMenuLi2">';
 								if(Auth::hasPremium() || Auth::isAdmin())
-									echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/beta">Sandbox</a></li>';
+									echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
 								echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
 								if(Auth::isAdmin()){
 									echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';

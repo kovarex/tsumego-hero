@@ -1,6 +1,6 @@
   <script type="text/javascript">window.location.href = "/";</script>
 	<div align="center" class="display1" style="padding-top:10px;">
-		
+
 	<div id="sandbox">
 	<h4>Removed Collections</h4>
 		<div align="left">
@@ -8,19 +8,19 @@
 		<table width="100%">
 			<tr>
 			<td>
-				<a href="/sets/beta">Sandbox</a>
+				<a href="/sets/sandbox">Sandbox</a>
 			</td>
 			<td>
 			</td>
 			</tr>
 			</table>
 		</div>
-	</div>	
+	</div>
 	<section class="scontainer">
 	  <div class="row">
 		<div class="col-12@sm">
 		  <div id="my-shuffle" class="items">
-			<?php 
+			<?php
 				for($i=0; $i<count($sets); $i++) {
 					if($sets[$i]['Set']['solved']==0) $solvedBar = '000';
 					else if($sets[$i]['Set']['solved']<2.5) $solvedBar = '025';
@@ -64,8 +64,8 @@
 					else if($sets[$i]['Set']['solved']<97.5) $solvedBar = '950';
 					else if($sets[$i]['Set']['solved']<100) $solvedBar = '975';
 					else $solvedBar = '100';
-					
-					if($sets[$i]['Set']['id']==11969 || $sets[$i]['Set']['id']==29156 || $sets[$i]['Set']['id']==31813 || $sets[$i]['Set']['id']==33007 
+
+					if($sets[$i]['Set']['id']==11969 || $sets[$i]['Set']['id']==29156 || $sets[$i]['Set']['id']==31813 || $sets[$i]['Set']['id']==33007
 					|| $sets[$i]['Set']['id']==71790 || $sets[$i]['Set']['id']==74761 || $sets[$i]['Set']['id']==81578 || $sets[$i]['Set']['id']==88156){
 						$secretAreaBg = 'sa';
 					}else{
@@ -73,17 +73,17 @@
 					}
 					$s = 's';
 					if($sets[$i]['Set']['id']==31813) $s = '';
-					
+
 					if($sets[$i]['Set']['solved']==100) $completed=' Completed';
 					else $completed='';
 					echo '
-						<div id="set'.$sets[$i]['Set']['id'].'" class="box box'.$solvedBar.$secretAreaBg.' '.$completed.'" data-reviews="'.$sets[$i]['Set']['created'].'" data-problems="'.$sets[$i]['Set']['anz'].'" 
-						data-difficulty="'.$sets[$i]['Set']['difficulty'].'" data-solved="'.$sets[$i]['Set']['solved'].'" 
+						<div id="set'.$sets[$i]['Set']['id'].'" class="box box'.$solvedBar.$secretAreaBg.' '.$completed.'" data-reviews="'.$sets[$i]['Set']['created'].'" data-problems="'.$sets[$i]['Set']['anz'].'"
+						data-difficulty="'.$sets[$i]['Set']['difficulty'].'" data-solved="'.$sets[$i]['Set']['solved'].'"
 						style="background-color:'.$sets[$i]['Set']['topicColor'].';">
 							<a href="/sets/view/'.$sets[$i]['Set']['id'].'" style="text-decoration:none;color:white;">
 								<div style="text-decoration:none;">
 									<p class="title">'.$sets[$i]['Set']['title'].'</p>
-									<p class="titleBy">by '.$sets[$i]['Set']['author'].'</p> 
+									<p class="titleBy">by '.$sets[$i]['Set']['author'].'</p>
 									<b>'.$sets[$i]['Set']['title2'].'</b>';
 									if($sets[$i]['Set']['id']!=58 && $sets[$i]['Set']['id']!=68) echo '<br><br>';
 									else echo '<br>';
@@ -103,7 +103,7 @@
 								</div>
 							</a>
 						</div>
-						
+
 					';
 				}
 			?>
@@ -113,18 +113,18 @@
 	</section>
 	<br><br>
 	</div>
-	
+
 	<script>
 		function topicColor() {
 			<?php
 				for($i=0; $i<count($sets); $i++) {
 					echo '
-						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s"; 
+						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s";
 						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.backgroundColor = "'.$sets[$i]['Set']['topicColor'].'";
 					';
 				}
 			?>
-			
+
 			var btnContainer = document.getElementById("sorter2");
 			var btns = btnContainer.getElementsByClassName("btn");
 			for (var i = 0; i < btns.length; i++){
@@ -136,32 +136,32 @@
 			<?php
 				for($i=0; $i<count($sets); $i++) {
 					echo '
-						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s"; 
+						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s";
 						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.backgroundColor = "'.$sets[$i]['Set']['solvedColor'].'";
 					';
 				}
 			?>
-			
-			
+
+
 			var btnContainer = document.getElementById("sorter2");
 			var btns = btnContainer.getElementsByClassName("btn");
 			for (var i = 0; i < btns.length; i++){
 				btns[i].className = btns[i].className.replace("btn active","btn");
 			}
 			btns[1].className = btns[1].className.replace("btn","btn active");
-			
+
 		}
-		
+
 		function difficultyColor() {
 			<?php
 				for($i=0; $i<count($sets); $i++) {
 					echo '
-						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s"; 
+						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s";
 						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.backgroundColor = "'.$sets[$i]['Set']['difficultyColor'].'";
 					';
 				}
 			?>
-			
+
 			var btnContainer = document.getElementById("sorter2");
 			var btns = btnContainer.getElementsByClassName("btn");
 			for (var i = 0; i < btns.length; i++){
@@ -173,12 +173,12 @@
 			<?php
 				for($i=0; $i<count($sets); $i++) {
 					echo '
-						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s"; 
+						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s";
 						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.backgroundColor = "'.$sets[$i]['Set']['sizeColor'].'";
 					';
 				}
 			?>
-			
+
 			var btnContainer = document.getElementById("sorter2");
 			var btns = btnContainer.getElementsByClassName("btn");
 			for (var i = 0; i < btns.length; i++){
@@ -190,12 +190,12 @@
 			<?php
 				for($i=0; $i<count($sets); $i++) {
 					echo '
-						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s"; 
+						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.transition = "all 1s";
 						document.getElementById("set'.$sets[$i]['Set']['id'].'").style.backgroundColor = "'.$sets[$i]['Set']['dateColor'].'";
 					';
 				}
 			?>
-			
+
 			var btnContainer = document.getElementById("sorter2");
 			var btns = btnContainer.getElementsByClassName("btn");
 			for (var i = 0; i < btns.length; i++){

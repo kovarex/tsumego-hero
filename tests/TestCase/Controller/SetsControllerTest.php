@@ -917,7 +917,7 @@ class SetsControllerTest extends TestCaseWithAuth {
 			['name' => 'public set', 'public' => 1, 'num' => '666'],
 			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
 		$browser = Browser::instance();
-		$browser->get('sets/beta');
+		$browser->get('sets/sandbox');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');

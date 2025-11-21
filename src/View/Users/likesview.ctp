@@ -1,7 +1,7 @@
 <div align="center">
 <h2>Likes/Dislikes</h2>
 </div>
-<div align="right"><a href="/sets/beta">back</a></div>
+<div align="right"><a href="/sets/sandbox">back</a></div>
 
 <table class="contentOnTop" width="100%">
 <tr>
@@ -21,8 +21,8 @@
 		}
 	}
 
-	//echo '<pre>'; print_r($as); echo '</pre>'; 
-	//echo '<pre>'; print_r($repSets); echo '</pre>'; 
+	//echo '<pre>'; print_r($as); echo '</pre>';
+	//echo '<pre>'; print_r($repSets); echo '</pre>';
 ?>
 </table>
 </td>

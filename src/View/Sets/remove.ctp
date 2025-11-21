@@ -13,10 +13,10 @@
 		echo $this->Form->end('Submit');
 	?>
 <br><br>
-<a href="/sets/beta"> back </a>
+<a href="/sets/sandbox"> back </a>
 </div>
 
 <?php
-	//echo '<pre>'; print_r($t); echo '</pre>'; 
+	//echo '<pre>'; print_r($t); echo '</pre>';
 	//echo $t['Tsumego']['id'];
-	if($redirect) echo '<script type="text/javascript">window.location.href = "/sets/beta";</script>';
+	if($redirect) echo '<script type="text/javascript">window.location.href = "/sets/sandbox";</script>';

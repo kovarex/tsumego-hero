@@ -288,7 +288,7 @@
 				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
 				</td>
 				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
-					<a href="/sets/beta" style="color:black;"><font size="4px">Enter</font><br></a>
+					<a href="/sets/sandbox" style="color:black;"><font size="4px">Enter</font><br></a>
 				</td>
 				<td width="33%" style="text-align:center;font-size:17px;font-weight:800;">
 				</td>

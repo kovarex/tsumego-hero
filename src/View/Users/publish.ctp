@@ -1,16 +1,16 @@
 <div align="center">
 <p class="title">
 					<br> Publish Schedule
-				<br><br> 
+				<br><br>
 				</p>
-<div align="left"><a href="/sets/beta">back</a></div>
+<div align="left"><a href="/sets/sandbox">back</a></div>
 	<table class="highscoreTable" border="0">
 	<tbody>
 	<tr>
 		<th width="60px">Date</th>
 		<th width="220px" align="left">&nbsp;Name</th>
 	</tr>
-	
+
 	<?php
 		for($i=0; $i<count($p); $i++){
 			echo '<tr><td class="timeTableLeft timeTableColor11" align="center">
@@ -21,7 +21,7 @@
 			</td></tr>';
 		}
 	?>
-			
+
 	</tbody>
 	</table>
 </div>

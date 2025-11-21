@@ -174,7 +174,7 @@ class SetsController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function beta() {
+	public function sandbox() {
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');

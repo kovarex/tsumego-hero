@@ -1628,7 +1628,7 @@
 			if($refresh=='3') echo 'window.location = "/sets/view/'.$t['Tsumego']['set_id'].'";';
 			if($refresh=='4') echo 'window.location = "/users/highscore";';
 			if($refresh=='5') echo 'window.location = "/comments";';
-			if($refresh=='6') echo 'window.location = "/sets/beta";';
+			if($refresh=='6') echo 'window.location = "/sets/sandbox";';
 			if($refresh=='7') echo 'window.location = "/users/leaderboard";';
 			if($refresh=='8') echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";';
 		?>
