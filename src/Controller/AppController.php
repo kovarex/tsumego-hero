@@ -830,17 +830,6 @@ class AppController extends Controller {
 		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
 	}
 
-	public static function decrypt($str = null) {
-		$string = $str;
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-
-		return openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
-	}
-
 	protected function checkPictureLarge($u) {
 		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null) {
 			return '<img class="google-profile-image-large" src="/img/google/' . $u['User']['picture'] . '">' . substr($u['User']['name'], 3);
