@@ -2614,7 +2614,6 @@ class AppController extends Controller {
 		if ($_COOKIE['sprint'] != 1) {
 			$this->updateSprintCondition();
 		}
-		$correctSolveAttempt = false;
 
 		if (Auth::isLoggedIn()) {
 			if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0) {
@@ -2623,34 +2622,6 @@ class AppController extends Controller {
 
 			if (!$this->request->is('ajax')) {
 				$this->PlayResultProcessor->checkPreviousPlay($timeMode);
-			}
-
-			if (isset($_COOKIE['noScore']) && isset($_COOKIE['noPreId'])) {
-				if ($_COOKIE['noScore'] != '0' && $_COOKIE['noPreId'] != '0') {
-					//$previosTsumegoX = $this->Tsumego->findById($_COOKIE['noPreId']);
-					//$previosTsumegoXsc = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => $_COOKIE['noPreId'])));
-					//$scoreArrX = explode('-', $this->decrypt($_COOKIE['noScore']));
-
-					$utPreX = $this->TsumegoStatus->find('first', ['conditions' => ['tsumego_id' => $_COOKIE['noPreId'], 'user_id' => Auth::getUserID()]]);
-					if ($utPreX == null) {
-						$utPreX['TsumegoStatus'] = [];
-						$utPreX['TsumegoStatus']['user_id'] = Auth::getUserID();
-						$utPreX['TsumegoStatus']['tsumego_id'] = $_COOKIE['noPreId'];
-					}
-					if ($utPreX['TsumegoStatus']['status'] == 'W') {
-						$utPreX['TsumegoStatus']['status'] = 'C';
-					} else {
-						$utPreX['TsumegoStatus']['status'] = 'S';
-					}
-					$utPreX['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
-					//$this->TsumegoStatus->save($utPreX);
-					//$sessionUts = $this->Session->read('loggedInUser.uts');
-					/*if (!$sessionUts) {
-					$sessionUts = [];
-					}
-					$sessionUts[$utPreX['TsumegoStatus']['tsumego_id']] = $utPreX['TsumegoStatus']['status'];
-					$this->Session->write('loggedInUser.uts', $sessionUts);*/
-				}
 			}
 		}
 		$boardNames = [];
