@@ -504,16 +504,6 @@ class Play {
 
 		Util::setCookie('previousTsumegoID', $id);
 
-		if (Auth::isLoggedIn()) {
-			$userDate = new DateTime(Auth::getUser()['created']);
-			$userDate = $userDate->format('Y-m-d');
-			if ($userDate != date('Y-m-d')) {
-				Auth::getUser()['created'] = date('Y-m-d H:i:s');
-				Auth::saveUser();
-				AppController::deleteUnusedStatuses(Auth::getUserID());
-			}
-		}
-
 		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
 
 		$sgf = [];

@@ -188,56 +188,6 @@ class AppController extends Controller {
 		file_put_contents('mainPageAjax.txt', $str);
 	}
 
-	public static function deleteUnusedStatuses(int $uid): void {
-		$s = ClassRegistry::init('Set')->find('all', [
-			'conditions' => [
-				'OR' => [
-					['public' => 1],
-					['public' => 0],
-				],
-			],
-		]) ?: [];
-		$ids = [];
-		$sCount = count($s);
-		for ($i = 0; $i < $sCount; $i++) {
-			$tSet = TsumegoUtil::collectTsumegosFromSet($s[$i]['Set']['id']);
-			foreach ($tSet as $item) {
-				$ids[] = $item['Tsumego']['id'];
-			}
-		}
-		$ut = ClassRegistry::init('TsumegoStatus')->find('all', [
-			'conditions' => [
-				'user_id' => $uid,
-				'NOT' => [
-					'tsumego_id' => $ids,
-				],
-			],
-		]);
-		if (!$ut) {
-			$ut = [];
-		}
-		$utCount = count($ut);
-		for ($i = 0; $i < $utCount; $i++) {
-			$test1 = ClassRegistry::init('Tsumego')->findById($ut[$i]['TsumegoStatus']['tsumego_id']);
-			$test2 = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $test1['Tsumego']['id']]]);
-			if (!$test2) {
-				ClassRegistry::init('TsumegoStatus')->delete($ut[$i]['TsumegoStatus']['id']);
-
-				continue;
-			}
-			$test3 = ClassRegistry::init('Set')->find('first', [
-				'id' => $test2['SetConnection']['set_id'],
-				'OR' => [
-					['public' => 1],
-					['public' => 0],
-				],
-			]);
-			if ($test3 == null) {
-				ClassRegistry::init('TsumegoStatus')->delete($ut[$i]['TsumegoStatus']['id']);
-			}
-		}
-	}
-
 	protected function saveSolvedNumber($uid) {
 		$this->loadModel('User');
 		$this->loadModel('TsumegoStatus');
