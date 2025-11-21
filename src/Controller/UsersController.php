@@ -3684,53 +3684,6 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @return void
-	 */
-	public function playerdb6() { //update solved
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Answer');
-
-		$dbToken = $this->Answer->findById(1);
-		$start = $dbToken['Answer']['message'];
-		$increment = 100;
-		$dbToken['Answer']['message'] += $increment;
-		$this->Answer->save($dbToken);
-
-		$ux = $this->User->find('all', [
-			'order' => 'id ASC',
-			'conditions' => [
-				'id >' => $start,
-				'id <=' => $start + $increment,
-			],
-		]);
-		$u = [];
-		$uxCount = count($ux);
-		for ($i = 0; $i < $uxCount; $i++) {
-			$ut = $this->TsumegoStatus->find('all', [
-				'conditions' => [
-					'user_id' => $ux[$i]['User']['id'],
-					'OR' => [
-						['status' => 'S'],
-						['status' => 'W'],
-						['status' => 'C'],
-					],
-				],
-			]);
-			$c = [];
-			$c['id'] = $ux[$i]['User']['id'];
-			$c['name'] = $ux[$i]['User']['name'];
-			$c['old'] = $ux[$i]['User']['solved'];
-			$u['User']['solved'] = count($ut);
-			$c['new'] = $ux[$i]['User']['solved'];
-			$this->User->save($u);
-
-			array_push($u, $c);
-		}
-
-		$this->set('c', $u);
-	}
-
-	/**
 	 * @param string|int $id User ID
 	 * @return void
 	 */
