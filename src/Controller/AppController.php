@@ -1029,65 +1029,6 @@ class AppController extends Controller {
 		return $v + $add;
 	}
 
-	public static function getTsumegoElo($rank, $p = null) {
-		if ($p != null) {
-			$p *= 100;
-		} else {
-			$p = 0;
-		}
-		$elo = 600;
-		if ($rank == '9d') {
-			$elo = round(2900 + $p);
-		} elseif ($rank == '8d') {
-			$elo = round(2800 + $p);
-		} elseif ($rank == '7d') {
-			$elo = round(2700 + $p);
-		} elseif ($rank == '6d') {
-			$elo = round(2600 + $p);
-		} elseif ($rank == '5d') {
-			$elo = round(2500 + $p);
-		} elseif ($rank == '4d') {
-			$elo = round(2400 + $p);
-		} elseif ($rank == '3d') {
-			$elo = round(2300 + $p);
-		} elseif ($rank == '2d') {
-			$elo = round(2200 + $p);
-		} elseif ($rank == '1d') {
-			$elo = round(2100 + $p);
-		} elseif ($rank == '1k') {
-			$elo = round(2000 + $p);
-		} elseif ($rank == '2k') {
-			$elo = round(1900 + $p);
-		} elseif ($rank == '3k') {
-			$elo = round(1800 + $p);
-		} elseif ($rank == '4k') {
-			$elo = round(1700 + $p);
-		} elseif ($rank == '5k') {
-			$elo = round(1600 + $p);
-		} elseif ($rank == '6k') {
-			$elo = round(1500 + $p);
-		} elseif ($rank == '7k') {
-			$elo = round(1400 + $p);
-		} elseif ($rank == '8k') {
-			$elo = round(1300 + $p);
-		} elseif ($rank == '9k') {
-			$elo = round(1200 + $p);
-		} elseif ($rank == '10k') {
-			$elo = round(1100 + $p);
-		} elseif ($rank == '11k') {
-			$elo = round(1000 + $p);
-		} elseif ($rank == '12k') {
-			$elo = round(900 + $p);
-		} elseif ($rank == '13k') {
-			$elo = round(800 + $p);
-		} elseif ($rank == '14k') {
-			$elo = round(700 + $p);
-		} elseif ($rank == '15k' || $rank == '16k' || $rank == '17k' || $rank == '18k' || $rank == '19k' || $rank == '20k' || $rank == '21k') {
-			$elo = round(600 + $p);
-		}
-
-		return $elo;
-	}
 	protected function getTsumegoRankVal($t) {
 		if ($t <= 0) {
 			return 0;

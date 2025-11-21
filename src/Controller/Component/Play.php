@@ -598,7 +598,7 @@ class Play {
 				$fromTo = [];
 				foreach ($tsumegoFilters->ranks as $rank) {
 					$ft = [];
-					$ft['rating >='] = AppController::getTsumegoElo($rank);
+					$ft['rating >='] = Rating::getRankMinimalRatingFromReadableRank($rank);
 					$ft['rating <'] = $ft['rating >='] + 100;
 					if ($rank == '15k') {
 						$ft['rating >='] = 50;

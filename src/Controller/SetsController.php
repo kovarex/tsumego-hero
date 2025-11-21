@@ -1021,7 +1021,7 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['image'] = $id . 'Rank.png';
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
-			$elo = AppController::getTsumegoElo($id);
+			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
 			$set['Set']['difficulty'] = $elo;
 
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
@@ -2062,12 +2062,8 @@ ORDER BY total_count DESC, partition_number";
 		$ranksArray[20]['color'] = 'rgba(244, 88, 145, [o])';
 		$ranksArray[21]['color'] = 'rgba(244, 88, 127, [o])';
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
-		$nine = $this->Tsumego->find('first', [
-			'conditions' => [
-				'rating >=' => AppController::getTsumegoElo('9d'),
-			],
-		]);
-		if ($nine != null) {
+		$nine = $this->Tsumego->find('first', ['conditions' => ['rating >=' => Rating::getRankMinimalRatingFromReadableRank('9d'),]]);
+		if ($nine) {
 			$ranksArray[23]['rank'] = '9d';
 			$ranksArray[23]['color'] = 'rgba(244, 88, 88, [o])';
 		}
