@@ -54,44 +54,6 @@ class UsersController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function rank_list() {
-		$this->loadModel('Tsumego');
-
-		$ts = $this->Tsumego->find('all', [
-			'conditions' => [
-				'id >=' => 20000,
-				'id <=' => 30000,
-			],
-		]);
-		foreach ($ts as $item) {
-			$this->set_elo($item['Tsumego']['id']);
-		}
-	}
-
-	/**
-	 * @param string|int $tid Tsumego ID
-	 * @return void
-	 */
-	private function set_elo($tid) {
-		$this->loadModel('Tsumego');
-		$t = $this->Tsumego->findById($tid);
-		$rank = AppController::getTsumegoRankx($t['Tsumego']['userWin']);
-		$tMax = $this->getTsumegoRankMax($t['Tsumego']['userWin']);
-		$tVal = $this->getTsumegoRankVal($t['Tsumego']['userWin']);
-		if ($tMax != 0) {
-			$p = $tVal / $tMax;
-		} else {
-			$p = 0;
-		}
-		$newElo = AppController::getTsumegoElo($rank, $p);
-		$adjustElo = $this->adjustElo($newElo);
-		$t['Tsumego']['rating'] = $adjustElo;
-		$this->Tsumego->save($t);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function rank_single() {
 		$this->loadModel('Tsumego');
 		$a = [];
