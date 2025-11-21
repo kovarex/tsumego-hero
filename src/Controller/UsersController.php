@@ -3316,109 +3316,6 @@ Joschka Zimdars';
 		$this->set('ratio', $ratio);
 	}
 
-	//all in one
-	/**
-	 * @return void
-	 */
-	public function set_full_tsumego_scores() {
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Tsumego');
-		$this->loadModel('PurgeList');
-		$this->loadModel('Set');
-		$this->loadModel('Sgf');
-
-		$pl = $this->PurgeList->find('first', ['order' => 'id DESC']);
-		$pl['PurgeList']['tsumego_scores'] = date('Y-m-d H:i:s');
-		$this->PurgeList->save($pl);
-
-		$ur = [];
-		$from = $this->params['url']['t'];
-		$to = $this->params['url']['t'] + 10;
-
-		$hightestT = $this->Tsumego->find('first', ['order' => 'id DESC']);
-		$hightestT++;
-		$ts = $this->Tsumego->find('all', [
-			'order' => 'id ASC',
-			'conditions' => [
-				'id >=' => $from,
-				'id <' => $to,
-			],
-		]);
-		$ts2 = $ts;
-
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'limit' => 1000, 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-			$ratio = [];
-			$ratio['s'] = 0;
-			$ratio['f'] = 0;
-			$urCount = count($ur);
-			for ($j = 0; $j < $urCount; $j++) {
-				if ($ur[$j]['TsumegoAttempt']['solved'] == 'S' || $ur[$j]['TsumegoAttempt']['solved'] == 1) {
-					$ratio['s']++;
-				} elseif ($ur[$j]['TsumegoAttempt']['solved'] == 'F' || $ur[$j]['TsumegoAttempt']['solved'] == 0) {
-					$ratio['f']++;
-				}
-			}
-			$ts[$i]['Tsumego']['solved'] = $ratio['s'];
-			$ts[$i]['Tsumego']['failed'] = $ratio['f'];
-			$count = $ts[$i]['Tsumego']['solved'] + $ts[$i]['Tsumego']['failed'];
-			$percent = $ts[$i]['Tsumego']['solved'] / $count;
-			$percent *= 100;
-			$percent = round($percent, 2);
-			$ts[$i]['Tsumego']['userWin'] = $percent;
-			$ts[$i]['Tsumego']['userLoss'] = $count;
-
-			$newXp = 110 - round($ts[$i]['Tsumego']['userWin']);
-			$ts[$i]['Tsumego']['difficultyOld'] = $ts[$i]['Tsumego']['difficulty'];
-			$ts[$i]['Tsumego']['difficulty'] = $newXp;
-
-			if ($percent >= 1 && $percent <= 23) {
-				$ts[$i]['Tsumego']['rating'] = 2500;
-			} elseif ($percent <= 26) {
-				$ts[$i]['Tsumego']['rating'] = 2400;
-			} elseif ($percent <= 29) {
-				$ts[$i]['Tsumego']['rating'] = 2300;
-			} elseif ($percent <= 32) {
-				$ts[$i]['Tsumego']['rating'] = 2200;
-			} elseif ($percent <= 35) {
-				$ts[$i]['Tsumego']['rating'] = 2100;
-			} elseif ($percent <= 38) {
-				$ts[$i]['Tsumego']['rating'] = 2000;
-			} elseif ($percent <= 42) {
-				$ts[$i]['Tsumego']['rating'] = 1900;
-			} elseif ($percent <= 46) {
-				$ts[$i]['Tsumego']['rating'] = 1800;
-			} elseif ($percent <= 50) {
-				$ts[$i]['Tsumego']['rating'] = 1700;
-			} elseif ($percent <= 55) {
-				$ts[$i]['Tsumego']['rating'] = 1600;
-			} elseif ($percent <= 60) {
-				$ts[$i]['Tsumego']['rating'] = 1500;
-			} elseif ($percent <= 65) {
-				$ts[$i]['Tsumego']['rating'] = 1400;
-			} elseif ($percent <= 70) {
-				$ts[$i]['Tsumego']['rating'] = 1300;
-			} elseif ($percent <= 75) {
-				$ts[$i]['Tsumego']['rating'] = 1200;
-			} elseif ($percent <= 80) {
-				$ts[$i]['Tsumego']['rating'] = 1100;
-			} elseif ($percent <= 85) {
-				$ts[$i]['Tsumego']['rating'] = 1000;
-			} else {
-				$ts[$i]['Tsumego']['rating'] = 900;
-			}
-
-			$this->Tsumego->save($ts[$i]);
-		}
-		$this->set('ts', $ts);
-		$this->set('ts2', $ts2);
-		$this->set('ur', $ur);
-		$this->set('from', $from);
-		$this->set('to', $to);
-		$this->set('hightestT', $hightestT);
-		$this->set('params', $this->params['url']['t']);
-	}
 	//set solved, failed
 	//users/set_tsumego_scores?t=0
 	/**
@@ -3627,34 +3524,6 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @param string|int $id User ID
-	 * @return void
-	 */
-	private function countsingle($id) {
-		$this->loadModel('Purge');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
-		$u = $this->User->findById($id);
-		$ut = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
-		$correctCounter1 = 0;
-		$utCount = count($ut);
-		for ($j = 0; $j < $utCount; $j++) {
-			if ($ut[$j]['TsumegoStatus']['status'] == 'S' || $ut[$j]['TsumegoStatus']['status'] == 'W' || $ut[$j]['TsumegoStatus']['status'] == 'C') {
-				$correctCounter1++;
-			}
-		}
-		$sum = $correctCounter1;
-		$u['User']['solved'] = $sum;
-		$u['User']['readingTrial'] = 30;
-		$this->Purge->create();
-		$p = [];
-		$p['Purge']['user_id'] = $id;
-		$p['Purge']['duplicates'] = '$' . $sum;
-		$this->Purge->save($p);
-		$this->User->save($u);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function purgelist() {
@@ -3684,40 +3553,6 @@ Joschka Zimdars';
 		$this->set('x', $u[$start]['User']['id']);
 		$this->set('s', $start);
 		$this->set('u', $u[$start]);
-		$this->set('uCount', $uCount);
-	}
-
-	/**
-	 * @return void
-	 */
-	public function countlist() {
-		$this->loadModel('Purge');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('PurgeList');
-
-		$pl = $this->PurgeList->find('first', ['order' => 'id DESC']);
-		$pl['PurgeList']['count'] = date('Y-m-d H:i:s');
-		$this->PurgeList->save($pl);
-
-		$ux = [];
-		$dbToken = $this->Purge->findById(2);
-		$start = $dbToken['Purge']['user_id'];
-		$u = $this->User->find('all', ['order' => 'id ASC']);
-		$uCount = count($u) + 50;
-		if (isset($u[$start]['User']['id'])) {
-			$this->countsingle($u[$start]['User']['id']);
-		}
-		$dbToken['Purge']['user_id']++;
-		$this->Purge->save($dbToken);
-		if ($start < $uCount) {
-			$this->set('stop', 'f');
-		} else {
-			$this->set('stop', 't');
-		}
-		$this->set('s', $start);
-		$this->set('u', $u[$start]);
-		$this->set('ux', $ux);
 		$this->set('uCount', $uCount);
 	}
 
