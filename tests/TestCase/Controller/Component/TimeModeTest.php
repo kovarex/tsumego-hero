@@ -210,6 +210,7 @@ class TimeModeTest extends TestCaseWithAuth {
 
 		// refresh
 		$browser->get('timeMode/play');
+		usleep(100 * 1000);
 		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
 		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
 			'time_mode_session_id' => $timeModeSessionID,
