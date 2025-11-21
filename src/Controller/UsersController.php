@@ -3703,32 +3703,6 @@ Joschka Zimdars';
 	/**
 	 * @return void
 	 */
-	public function cleanuts() {
-		$this->loadModel('User');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Answer');
-
-		$dbToken = $this->Answer->findById(1);
-		$start = $dbToken['Answer']['message'];
-		$increment = 200;
-		$dbToken['Answer']['message'] += $increment;
-		$this->Answer->save($dbToken);
-
-		$end = $start + $increment;
-		$u = [];
-
-		$all = $this->User->find('all', ['order' => 'id ASC']);
-		for ($i = $start; $i < $end; $i++) {
-			$uts = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $all[$i]['User']['id']]]);
-			array_push($u, $all[$i]);
-		}
-
-		$this->set('u', $u);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function playerdb6() { //update solved
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Answer');
