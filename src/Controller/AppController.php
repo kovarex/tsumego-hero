@@ -147,20 +147,6 @@ class AppController extends Controller {
 		return $arr2;
 	}
 
-	protected function getInvisibleSets() {
-		$this->loadModel('Set');
-		$invisibleSets = [];
-		$in = $this->Set->find('all', ['conditions' => ['public' => 0]]);
-		if (!$in) {
-			$in = [];
-		}
-		foreach ($in as $item) {
-			$invisibleSets[] = $item['Set']['id'];
-		}
-
-		return $invisibleSets;
-	}
-
 	protected function getDeletedSets() {
 		$dSets = [];
 		$de = $this->Set->find('all', ['conditions' => ['public' => -1]]);
