@@ -3686,23 +3686,6 @@ Joschka Zimdars';
 	/**
 	 * @return void
 	 */
-	public function activeuts() { //count active uts
-		$this->loadModel('TsumegoStatus');
-		$ux = $this->User->find('all', ['order' => 'created DESC']);
-		$u = [];
-		$uxCount = count($ux);
-		for ($i = 0; $i < $uxCount; $i++) {
-			if ($ux[$i]['User']['dbstorage'] == 1) {
-				$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $ux[$i]['User']['id']]]);
-				array_push($u, count($uts));
-			}
-		}
-		$this->set('u', $u);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function playerdb6() { //update solved
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Answer');
