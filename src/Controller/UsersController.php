@@ -3257,32 +3257,6 @@ Joschka Zimdars';
 		$this->set('params', $this->params['url']['t']);
 	}
 
-	//percentages 0-100
-	/**
-	 * @return void
-	 */
-	public function tsumego_score2() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$avg = [];
-		$count = [];
-		$ts2 = [];
-		$tsx = [];
-		$ts = $this->Tsumego->find('all', ['order' => 'userWin ASC']);
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$s = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
-			if ($s['Set']['public'] == 1 && $ts[$i]['Tsumego']['userWin'] != 0) {
-				$ts[$i]['Tsumego']['userWin'] = round($ts[$i]['Tsumego']['userWin']);
-				array_push($ts2, $ts[$i]);
-				array_push($tsx, $ts[$i]['Tsumego']['userWin']);
-			}
-		}
-
-		$this->set('ts', $ts2);
-		$this->set('tsx', $tsx);
-	}
-
 	/**
 	 * @param string|int $id User ID
 	 * @return void
