@@ -924,10 +924,29 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
 		$collectionTopDivs[0]->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/'.$context->otherTsumegos[1]['set-connections'][0]['set_id'] , $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 
 		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '777');
 	}
+
+	public function testAddingProblemInSandbox(): void {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => 1],
+			'other-tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]]]);
+		$browser = Browser::instance();
+		$browser->get('/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id']);
+
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$this->assertCount(1, $problemButtons);
+		$this->assertSame($problemButtons[0]->getText(), '1');
+		$browser->clickCssSelect('#TsumegoViewForm input[type="submit"]');
+
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$this->assertCount(2, $problemButtons);
+		$this->assertSame($problemButtons[0]->getText(), '1');
+		$this->assertSame($problemButtons[1]->getText(), '2');
+	}
+
 }

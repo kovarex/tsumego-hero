@@ -883,6 +883,32 @@ ORDER BY total_count DESC, partition_number";
 		}
 	}
 
+	public function addTsumego($setID) {
+		if (!isset($this->data['Tsumego'])) {
+			return;
+		}
+
+		ClassRegistry::init('Tsumego')->getDataSource()->begin();
+		$tsumego = [];
+		$tsumego['num'] = $this->data['Tsumego']['num'];
+		$tsumego['difficulty'] = 40;
+		$tsumego['variance'] = $this->data['Tsumego']['variance'];
+		$tsumego['description'] = $this->data['Tsumego']['description'];
+		$tsumego['hint'] = $this->data['Tsumego']['hint'];
+		$tsumego['author'] = $this->data['Tsumego']['author'];
+		ClassRegistry::init('Tsumego')->create();
+		ClassRegistry::init('Tsumego')->save($tsumego);
+		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego'];
+		$setConnection = [];
+		$setConnection['set_id'] = $setID;
+		$setConnection['tsumego_id'] = $tsumego['id'];
+		$setConnection['num'] = $this->data['Tsumego']['num'];
+		ClassRegistry::init('SetConnection')->create();
+		ClassRegistry::init('SetConnection')->save($setConnection);
+		ClassRegistry::init('Tsumego')->getDataSource()->commit();
+		return $this->redirect('/sets/view/' . $setID);
+	}
+
 	public function view(string|int|null $id = null, int $partition = 1): void {
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
@@ -1236,41 +1262,6 @@ ORDER BY total_count DESC, partition_number";
 				}
 				$this->set('formRedirect', true);
 			}
-			if (isset($this->data['Tsumego'])) {
-				if (!$formChange) {
-					$scFormChange = $this->SetConnection->find('first', ['order' => 'num DESC', 'conditions' => ['set_id' => $id]]);
-					$tFormChange = $this->Tsumego->findById($scFormChange['SetConnection']['tsumego_id']);
-					if ($scFormChange == null) {
-						$scFormChange = [];
-						$scFormChange['SetConnection']['set_id'] = $id;
-						$scFormChange['SetConnection']['num'] = $this->data['Tsumego']['num'];
-						$tFormChange = [];
-						$tFormChange['Tsumego']['rating'] = 1000;
-					}
-					$tf = [];
-					$tf['Tsumego']['num'] = $this->data['Tsumego']['num'];
-					$tf['Tsumego']['difficulty'] = 40;
-					$tf['Tsumego']['set_id'] = $id;
-					$tf['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
-					$tf['Tsumego']['description'] = $this->data['Tsumego']['description'];
-					$tf['Tsumego']['hint'] = $this->data['Tsumego']['hint'];
-					$tf['Tsumego']['author'] = $this->data['Tsumego']['author'];
-					$tf['Tsumego']['rating'] = $tFormChange['Tsumego']['rating'];
-					if (is_numeric($this->data['Tsumego']['num'])) {
-						if ($this->data['Tsumego']['num'] >= 0) {
-							$this->Tsumego->create();
-							$this->Tsumego->save($tf);
-							$tfSetHighestId = $this->Tsumego->find('first', ['order' => 'id DESC']);
-							$tfSetConnection = [];
-							$tfSetConnection['SetConnection']['set_id'] = $id;
-							$tfSetConnection['SetConnection']['tsumego_id'] = $tfSetHighestId['Tsumego']['id'];
-							$tfSetConnection['SetConnection']['num'] = $this->data['Tsumego']['num'];
-							$this->SetConnection->create();
-							$this->SetConnection->save($tfSetConnection);
-						}
-					}
-				}
-			}
 		} elseif ($tsumegoFilters->query = 'favorites') { // TODO: implement
 			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
@@ -1388,10 +1379,6 @@ ORDER BY total_count DESC, partition_number";
 				}
 				$tsumegoButton->performance = $urSum;
 			}
-		}
-		$tfs = [];
-		if ($tsumegoFilters->query == 'topics') {
-			$tfs = TsumegoUtil::collectTsumegosFromSet($id);
 		}
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
@@ -1596,7 +1583,6 @@ ORDER BY total_count DESC, partition_number";
 		}
 
 		if ($tsumegoFilters->query == 'topics') {
-			$this->set('tfs', $tfs[count($tfs) - 1]);
 			$this->set('allVcActive', $allVcActive);
 			$this->set('allVcInactive', $allVcInactive);
 			$this->set('allArActive', $allArActive);

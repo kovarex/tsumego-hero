@@ -276,19 +276,20 @@
 					<table width="100%">
 					<tr>
 					<td>';
-					if($set['Set']['public']==0){
+
+					if ($set['Set']['public'] == 0) {
 						echo '<h1>Add Problem</h1>';
-						echo $this->Form->create('Tsumego');
-						echo $this->Form->input('num', array('value' => $tfs['Tsumego']['num']+1, 'label' => 'Number: ', 'type' => 'text', 'placeholder' => 'number'));
-						echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => $tfs['Tsumego']['set_id']));
+						echo $this->Form->create('Tsumego', ['url' => '/sets/addTsumego/'.$set['Set']['id']]);
+						echo $this->Form->input('num', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Number: ', 'type' => 'text', 'placeholder' => 'number', 'id' => 'orderInput'));
+						echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => $set['Set']['id']));
 						echo $this->Form->input('variance', array('type' => 'hidden', 'value' => 100));
-						echo $this->Form->input('description', array('type' => 'hidden', 'value' => $tfs['Tsumego']['description']));
-						echo $this->Form->input('hint', array('type' => 'hidden', 'value' => $tfs['Tsumego']['hint']));
-						echo $this->Form->input('author', array('type' => 'hidden', 'value' => $tfs['Tsumego']['author']));
+						//echo $this->Form->input('description', array('type' => 'hidden', 'value' => $tfs['Tsumego']['description']));
+						//echo $this->Form->input('hint', array('type' => 'hidden', 'value' => $tfs['Tsumego']['hint']));
+						echo $this->Form->input('author', array('type' => 'hidden', 'value' => Auth::getUser()['name']));
 						if($set['Set']['id']==161){
-							echo $this->Form->input('order', array('value' => $tfs['Tsumego']['num']+1, 'label' => 'Order: ', 'type' => 'text', 'placeholder' => 'order'));
+							echo $this->Form->input('order', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Order: ', 'type' => 'text', 'placeholder' => 'order'));
 							echo $this->Form->input('type', array('value' => 1, 'label' => 'Type: ', 'type' => 'text', 'placeholder' => 'type'));
-							echo $this->Form->input('thumb', array('value' => $tfs['Tsumego']['num']+1, 'label' => 'Thumb: ', 'type' => 'text', 'placeholder' => 'thumb'));
+							echo $this->Form->input('thumb', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Thumb: ', 'type' => 'text', 'placeholder' => 'thumb'));
 						}
 						echo $this->Form->end('Submit');
 					}

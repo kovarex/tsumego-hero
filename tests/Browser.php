@@ -92,8 +92,11 @@ class Browser {
 
 	public function clickId($name) {
 		$this->driver->findElement(WebDriverBy::id($name))->click();
+		$this->assertNoJsErrors();
+	}
 
-		// ADDED: detect JS errors caused by click
+	public function clickCssSelect($name) {
+		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
 		$this->assertNoJsErrors();
 	}
 
