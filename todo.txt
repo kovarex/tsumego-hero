@@ -1,9 +1,4 @@
 Fixes:
- - The user rank should show the rank instead of array in time mode
- - diffs viewing.
- - Mode switching fixes - as with time mode, there should probably be rating/play for rating based selection
- - sandbox functionality
- - adding new tsumegos
  - publishing
  UserBoards:
   - Currently there is a table AND field in player
