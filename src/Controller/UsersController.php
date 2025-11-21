@@ -282,35 +282,6 @@ class UsersController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function adjusttsumego2() {
-		$ts = [];
-		$min = 600;
-		$max = 2600;
-
-		$scale = $max - $min;
-		$step = $scale / 100;
-		$x = [];
-		for ($i = 0; $i <= 100; $i++) {
-			$x[$i] = $min + $step * $i;
-		}
-
-		for ($i = 0; $i <= 100; $i++) {
-			$a = [];
-			$a['elo'] = $x[$i];
-			$a['xp'] = round(pow($a['elo'] / 100, 1.55) - 6);
-			array_push($ts, $a);
-		}
-
-		echo '<table>';
-		foreach ($ts as $item) {
-			echo '<tr><td>' . $item['elo'] . '</td><td>' . $item['xp'] . '</td></tr>';
-		}
-		echo '</table>';
-	}
-
-	/**
-	 * @return void
-	 */
 	public function publish() {
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
