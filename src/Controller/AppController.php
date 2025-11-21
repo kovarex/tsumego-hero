@@ -2473,38 +2473,6 @@ class AppController extends Controller {
 		ClassRegistry::init('User')->save($user);
 	}
 
-	public static function getPartitionRange($amountRemaining, $collectionSize, $partition) {
-		if ($collectionSize > 0) {
-			$amountPartitions = ceil($amountRemaining / $collectionSize);
-		} else {
-			return ['0', $collectionSize - 1];
-		}
-		if ($collectionSize > 0 && $amountRemaining % $collectionSize == 0) {
-			return [ $partition * $collectionSize,  $partition * $collectionSize + $collectionSize - 1];
-		}
-		$amountCounter = 0;
-		$amountFrom = 0;
-		$amountTo = $collectionSize - 1;
-		while ($amountRemaining > $collectionSize) {
-			if ($partition == $amountCounter) {
-				break;
-			}
-			$amountRemaining -= $collectionSize;
-			$amountCounter++;
-			$amountFrom += $collectionSize;
-			$amountTo += $collectionSize;
-		}
-		$amountTo = $amountFrom + $collectionSize - 1;
-		if ($partition >= $amountPartitions - 1) {
-			$amountTo = $amountFrom + $amountRemaining - 1;
-		}
-		$a = [];
-		$a[0] = $amountFrom;
-		$a[1] = $amountTo;
-
-		return $a;
-	}
-
 	/**
 	 * @param int $uid User ID
 	 * @return void
