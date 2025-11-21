@@ -160,10 +160,7 @@ class AppController extends Controller {
 		return $dSets;
 	}
 
-	/**
-	 * @return void
-	 */
-	public static function getStartpage() {
+	public static function getStartpage(): string {
 		$result = '';
 		$latest = ClassRegistry::init('AchievementStatus')->find('all', ['limit' => 7, 'order' => 'created DESC']) ?: [];
 		$latestCount = count($latest);
