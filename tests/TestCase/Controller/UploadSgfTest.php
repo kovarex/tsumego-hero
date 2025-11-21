@@ -62,4 +62,24 @@ class UploadSgfTest extends TestCaseWithAuth {
 		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
 		$this->assertSame($commentBox->getText(), 'Version 1');
 	}
+
+	public function testOpeningSgfDiff() {
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'status' => 'S',
+				'sgfs' => ['(;GM[1]FF[4]SZ[19]C[Version 1])', '(;GM[1]FF[4]SZ[19]C[Version 2];B[aa])']]]);
+		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 2);
+		$browser = Browser::instance();
+		$browser->get('/sgfs/view/' . $context->tsumego['id']);
+		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openDiff'));
+		$this->assertCount(1, $links);
+		$links[0]->click();
+		$browser->waitUntilIDExists('commentBox');
+		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
+		$this->assertSame($commentBox->getText(), 'Version 2');
+		$plusMark = $browser->driver->findElements(WebDriverBy::cssSelector('.sgf-plus-mark'));
+		$this->assertCount(2, $plusMark); // one on the board, one on the tree I guess? But mainly there is some
+	}
 }

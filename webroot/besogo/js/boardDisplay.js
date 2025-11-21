@@ -86,6 +86,7 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
     markupGroup = besogo.svgEl("g");
 	svg.appendChild(markupGroup); // Add placeholder group for markup layer
+	markupGroup.id = 'markupGroup';
 
     nextMoveGroup = besogo.svgEl("g");
 	svg.appendChild(nextMoveGroup);
@@ -474,10 +475,10 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   // Redraws the markup
   function redrawMarkup(current)
   {
-    var group = besogo.svgEl("g"), // Group holding markup layer elements
-        lastMove = current.move,
+    var lastMove = current.move,
         variants = editor.getVariants();
 
+	markupGroup.innerHTML = "";
     markupLayer = []; // Clear the references to the old layer
 
     for (let i = 1; i <= sizeX; i++)
@@ -509,13 +510,13 @@ besogo.makeBoardDisplay = function(container, editor, corner)
             if (!stone) // If placing label on empty spot
             {
               element = makeBacker(x, y);
-              group.appendChild(element);
+			  markupGroup.appendChild(element);
             }
             element = besogo.svgLabel(x, y, color, mark);
           }
       if (!besogo.multipleChoice)
       {
-        group.appendChild(element);
+		markupGroup.appendChild(element);
         markupLayer[fromXY(i, j)] = element;
       }
       else
@@ -534,17 +535,14 @@ besogo.makeBoardDisplay = function(container, editor, corner)
         moveToUse = current.cameFrom.getMoveToGetToVirtualChild(current);
       let color = current.nextIsBlack() ? "black" : "white";
       let element = besogo.svgCircle(svgPos(moveToUse.x), svgPos(moveToUse.y), color, 20, 4);
-      group.appendChild(element);
+      markupGroup.appendChild(element);
       markupLayer[fromXY(moveToUse.x, moveToUse.y)] = element;
       if (current.diffInfo)
         if (current.diffInfo.type == DIFF_ADDED)
-          group.appendChild(besogo.svgPlus(svgPos(moveToUse.x), svgPos(moveToUse.y), color));
+		  markupGroup.appendChild(besogo.svgPlus(svgPos(moveToUse.x), svgPos(moveToUse.y), color));
         else if (current.diffInfo.type == DIFF_REMOVED)
-          group.appendChild(besogo.svgCross(svgPos(moveToUse.x), svgPos(moveToUse.y), color));
+			markupGroup.appendChild(besogo.svgCross(svgPos(moveToUse.x), svgPos(moveToUse.y), color));
     }
-
-    svg.replaceChild(group, markupGroup); // Replace the markup group
-    markupGroup = group;
   }
 
   function redrawNextMovesDiffInfo(group, current)

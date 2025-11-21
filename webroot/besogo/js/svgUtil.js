@@ -59,7 +59,7 @@ besogo.svgShadow = function(x, y)
 besogo.realStone = function(x, y, color, index, blackStone = '', whiteStone = '')
 {
   var element;
-	
+
 	if (blackStone === '')
   {
 		if (color < 0)
@@ -76,7 +76,7 @@ besogo.realStone = function(x, y, color, index, blackStone = '', whiteStone = ''
 			color = whiteStone;
 		color = besogo.rootPath + 'img/' + color;
 	}
-   
+
     element =  besogo.svgEl("image", {
         x: (x - 44),
         y: (y - 44),
@@ -183,7 +183,8 @@ besogo.svgPlus = function(x, y, color)
       d: path,
       stroke: color,
       "stroke-width": 8,
-      fill: "none"
+      fill: "none",
+	  class: "sgf-plus-mark"
   });
 };
 

@@ -361,8 +361,8 @@
 
     if (options.sgfID) {
       try {
-        let url = new URL( window.location.origin + '/sgf/fetch/' + options.sgfID);
-		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded);
+        let url = new URL(window.location.origin + '/sgf/fetch/' + options.sgfID);
+		fetchParseLoad(url, besogo.editor, options.path, sgfLoaded, options.diffID);
 	  } catch (e) {
 		  window.alert('Error fetching sgf ' + e.message);
 		  return;
@@ -670,19 +670,11 @@
       transformation.invertColors = true;
       besogo.editor.applyTransformation(transformation);
     }
-    if (besogo.editingOnlineTsumego && besogo.diffID) {
-		// TODO: fetch the diff through the sgf api similarly to how we fetch primary sgf
-		let diffSgf = "";
-      if (diffSgf != "") {
-		  diffSgf = besogo.parseSgf(diffSgf);
-        besogo.loadSgf(diffSgf, editor, OPEN_FOR_DIFF);
-      }
-    }
     return besogo.scaleParameters;
   }
 
   // Fetches text file at url from same domain
-  function fetchParseLoad(url, editor, path, sgfLoaded) {
+  function fetchParseLoad(url, editor, path, sgfLoaded, diffID) {
     var http = new XMLHttpRequest();
 
     http.onreadystatechange = function () {
@@ -691,16 +683,48 @@
 			  // Successful fetch
 			  sgfLoaded.scaleParameters = parseAndLoad(http.responseText, editor);
 			  navigatePath(editor, path);
+
+			  // If no diff ID, we are done
+			  if (!diffID)
+				  return;
+
+			  // Otherwise fetch second SGF (the diff)
+			  const diffUrl = window.location.origin + '/sgf/fetch/' + diffID;
+			  fetchDiffSgf(diffUrl, editor);
 		  }
-		  else {
+		  else
 			  window.alert("Error when loading sgf: " + http.statusText);
-		  }
       }
     };
     http.overrideMimeType("text/plain"); // Prevents XML parsing and warnings
     http.open("GET", url.toString(), true); // Asynchronous load
     http.send();
   }
+
+	// Fetch and load the diff SGF
+	function fetchDiffSgf(url, editor) {
+		var http = new XMLHttpRequest();
+
+		http.onreadystatechange = function()
+		{
+			if (http.readyState === XMLHttpRequest.DONE)
+				if (http.status === 200)
+				{
+					let diffSgf = http.responseText.trim();
+					if (diffSgf !== "")
+					{
+						diffSgf = besogo.parseSgf(diffSgf);
+						besogo.loadSgf(diffSgf, editor, OPEN_FOR_DIFF);
+					}
+				}
+				else
+					console.warn("Error fetching diff SGF: " + http.statusText);
+		};
+
+		http.overrideMimeType("text/plain");
+		http.open("GET", url.toString(), true);
+		http.send();
+	}
 
   function navigatePath(editor, path) {
     var subPaths;
