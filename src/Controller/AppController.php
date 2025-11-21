@@ -601,14 +601,6 @@ class AppController extends Controller {
 		return $s2;
 	}
 
-	/**
-	 * @return void
-	 */
-	protected function deleteUserBoards() {
-		$this->loadModel('UserBoard');
-		$this->UserBoard->deleteAll(['1 = 1']);
-	}
-
 	protected function getNewTsumego() {
 		$this->loadModel('Schedule');
 		$date = date('Y-m-d', strtotime('today'));
@@ -2914,7 +2906,6 @@ class AppController extends Controller {
 		$this->loadModel('TimeModeAttempt');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Comment');
-		$this->loadModel('UserBoard');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('AdminActivity');
 		$this->loadModel('Achievement');

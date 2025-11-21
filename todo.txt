@@ -1,9 +1,7 @@
 Fixes:
  - publishing
  UserBoards:
-  - Currently there is a table AND field in player
-  - Get rid of the table, and use only the field
-  - convert the field to a bitfield, so it is just an integer
+   - convert the field to a bitfield, so it is just an integer
 
 Low priority
   Time mode:

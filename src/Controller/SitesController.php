@@ -15,7 +15,6 @@ class SitesController extends AppController {
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
-		$this->loadModel('UserBoard');
 		$this->loadModel('Schedule');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');

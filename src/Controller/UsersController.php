@@ -654,7 +654,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
 		if (count($dateUser) == 0) {
 			$this->uotd();
-			$this->deleteUserBoards();
 		}
 	}
 
