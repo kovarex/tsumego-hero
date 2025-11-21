@@ -607,7 +607,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	document.cookie = "difficulty=0;SameSite=Lax;expires="+lifetime+";path=/";
 	document.cookie = "seconds=0;SameSite=Lax;expires="+lifetime+";path=/";
 	document.cookie = "sequence=0;SameSite=Lax;expires="+lifetime+";path=/";
-	document.cookie = "reputation=0;SameSite=Lax;expires="+lifetime+";path=/";
 	document.cookie = "rank=0;SameSite=Lax;expires="+lifetime+";path=/";
 	document.cookie = "lastMode=0;SameSite=Lax;expires="+lifetime+";path=/";
 	document.cookie = "sound=0;SameSite=Lax;expires="+lifetime+";path=/";

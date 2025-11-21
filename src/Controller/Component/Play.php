@@ -509,20 +509,6 @@ class Play {
 
 		Util::setCookie('previousTsumegoID', $id);
 
-		if (isset($_COOKIE['reputation']) && $_COOKIE['reputation'] != '0') {
-			$reputation = [];
-			$reputation['Reputation']['user_id'] = Auth::getUserID();
-			$reputation['Reputation']['tsumego_id'] = abs($_COOKIE['reputation']);
-			if ($_COOKIE['reputation'] > 0) {
-				$reputation['Reputation']['value'] = 1;
-			} else {
-				$reputation['Reputation']['value'] = -1;
-			}
-			ClassRegistry::init('Reputation')->create();
-			ClassRegistry::init('Reputation')->save($reputation);
-			unset($_COOKIE['reputation']);
-		}
-
 		if (Auth::isLoggedIn()) {
 			$userDate = new DateTime(Auth::getUser()['created']);
 			$userDate = $userDate->format('Y-m-d');
