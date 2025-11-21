@@ -34,11 +34,12 @@
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			echo '<a href="/tsumegos/play/'.$s[$i]['Sgf']['tsumego_id'].'"> '.$s[$i]['Sgf']['title'].'</a> ';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1)'</a>';
+			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1).'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">';
 			echo '<a id="open-'.$s[$i]['Sgf']['id'].'">open</a>&nbsp;&nbsp;&nbsp;';
-			if($i!=count($s)-1) echo '<a id="compare-'.$s[$i]['Sgf']['id'].'">diff</a>&nbsp;&nbsp;&nbsp;';
+			if ($i != count($s) - 1)
+				echo '<a id="compare-'.$s[$i]['Sgf']['id'].'" class="openDiff" href="/editor?sgfID='.$s[$i]['Sgf']['id'].'&diffID='.$s[$i + 1]['Sgf']['id'].'"">diff</a>&nbsp;&nbsp;&nbsp;';
 			echo '<a href="#" id="dl2-'.$s[$i]['Sgf']['id'].'">download</a>';
 			echo '</td>
 			</tr>';
@@ -52,10 +53,6 @@
 <script>
 	<?php for($i=0; $i<count($s); $i++){ ?>
 		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id']; ?>");
-		<?php
-		if($i!=count($s)-1)
-			echo '$("#compare-'.$s[$i]['Sgf']['id'].'").attr("href", "/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id'].'/'.$s[$i]['Sgf']['diff'].'");';
-		?>
 		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
 			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
 				type: "sgf",
