@@ -3729,47 +3729,6 @@ Joschka Zimdars';
 	/**
 	 * @return void
 	 */
-	public function cleanuts2() {
-		$this->loadModel('User');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Answer');
-
-		$dbToken = $this->Answer->findById(1);
-		$start = $dbToken['Answer']['message'];
-		$increment = 10;
-		$dbToken['Answer']['message'] += $increment;
-		$this->Answer->save($dbToken);
-
-		$end = $start + $increment;
-		$u = [];
-
-		$all = $this->User->find('all', ['order' => 'id ASC']);
-		for ($i = $start; $i < $end; $i++) {
-			/*
-			$uts = $this->TsumegoStatus->find('all', array('conditions' => array('user_id' => $all[$i]['User']['id'])));
-			$outs = $this->OldTsumegoStatus->find('all', array('conditions' => array('user_id' => $all[$i]['User']['id'])));
-
-			$idMap = array();
-			$status = array();
-
-			$utsCount = count($uts);
-			for ($i=0; $i<$utsCount; $i++) {
-		  array_push($idMap, $uts[$i]['TsumegoStatus']['tsumego_id']);
-			}
-			$result = array_unique(array_diff_assoc($idMap, array_unique($idMap)));
-			if (count($result)==0) $all[$i]['User']['x'] = 'clean';
-			else $all[$i]['User']['x'] = 'duplicates';
-			*/
-
-			array_push($u, $all[$i]);
-		}
-
-		$this->set('u', $u);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function playerdb6() { //update solved
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Answer');
