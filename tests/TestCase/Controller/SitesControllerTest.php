@@ -6,7 +6,7 @@ require_once(__DIR__ . '/../../ContextPreparator.php');
 use Facebook\WebDriver\WebDriverBy;
 
 class SitesControllerTest extends ControllerTestCase {
-	function testIndex() {
+	public function testIndex() {
 		// we init DayRecord, so the main page has something to show:
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],

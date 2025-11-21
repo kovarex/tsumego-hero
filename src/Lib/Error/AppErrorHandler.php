@@ -15,7 +15,7 @@ class AppErrorHandler {
 		$message .= "#-1 " . $this->exception->getFile() . "(" . $this->exception->getLine() . ")<br>\n";
 
 		if (!($this->exception instanceof AppException)) {
-			$message = "<h2>Exception</h2><br>\n".$message;
+			$message = "<h2>Exception</h2><br>\n" . $message;
 			$message .= nl2br(htmlspecialchars($this->exception->getTraceAsString()));
 		}
 
