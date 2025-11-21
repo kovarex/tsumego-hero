@@ -2432,32 +2432,6 @@ class AppController extends Controller {
 		return $updated;
 	}
 
-	public static function getXPJump($lvl = null): int {
-		if ($lvl >= 102) {
-			return 0;
-		}
-		if ($lvl == 101) {
-			return 1150;
-		}
-		if ($lvl == 100) {
-			return 50000;
-		}
-		if ($lvl >= 70) {
-			return 150;
-		}
-		if ($lvl >= 40) {
-			return 100;
-		}
-		if ($lvl >= 20) {
-			return 50;
-		}
-		if ($lvl >= 12) {
-			return 25;
-		}
-
-		return 10;
-	}
-
 	public static function updateXP($userID, $achievementData): void {
 		$xpBonus = 0;
 		$aCount = count($achievementData);
