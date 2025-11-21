@@ -216,35 +216,6 @@ class UsersController extends AppController {
 		echo '</pre>';
 	}
 
-	//list tsumego variations
-	/**
-	 * @return void
-	 */
-	public function test2() {
-		$this->loadModel('Tsumego');
-
-		$ts = $this->Tsumego->find('all', ['order' => 'rd ASC']);
-		$more = [];
-		$less = [];
-
-		foreach ($ts as $item) {
-			if ($item['Tsumego']['rd'] > 0) {
-				$more[] = $item['Tsumego']['rd'];
-			}
-			if ($item['Tsumego']['rd'] < 0) {
-				$less[] = $item['Tsumego']['rd'];
-			}
-		}
-		echo '<pre>';
-		print_r(count($less));
-		echo '</pre>';
-		echo '<pre>';
-		print_r(count($more));
-		echo '</pre>';
-
-		$this->set('ts', $ts);
-	}
-
 	/**
 	 * @return void
 	 */
