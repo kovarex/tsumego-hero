@@ -1684,12 +1684,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$scCount2Count = count($scCount2);
 			for ($i = 0; $i < $scCount2Count; $i++) {
 				$duplicates1[$i] = [];
-				$scCount = count($sc);
-				for ($j = 0; $j < $scCount; $j++) {
-					if ($sc[$j]['SetConnection']['tsumego_id'] == $scCount2[$i]) {
-						$scT1 = $this->Tsumego->findById($sc[$j]['SetConnection']['tsumego_id']);
-						$scT1['Tsumego']['num'] = $sc[$j]['SetConnection']['num'];
-						$scT1['Tsumego']['set_id'] = $sc[$j]['SetConnection']['set_id'];
+				foreach ($setConnections as $setConnection) {
+					if ($setConnection['SetConnection']['tsumego_id'] == $scCount2[$i]) {
+						$scT1 = $this->Tsumego->findById($setConnection['SetConnection']['tsumego_id']);
+						$scT1['Tsumego']['num'] = $setConnection['SetConnection']['num'];
+						$scT1['Tsumego']['set_id'] = $setConnection['SetConnection']['set_id'];
 						$scT1['Tsumego']['status'] = 'N';
 						array_push($duplicates1[$i], $scT1);
 						array_push($idMap, $scT1['Tsumego']['id']);
