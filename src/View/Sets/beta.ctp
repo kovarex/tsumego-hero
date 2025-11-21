@@ -1,4 +1,9 @@
-  <script type="text/javascript">window.location.href = "/";</script>';
+<?php
+if (!Auth::isAdmin() && Auth::hasPremium())
+{
+  echo '<script type="text/javascript">window.location.href = "/";</script>';
+  return;
+}?>
 	<div align="center" class="display1" style="padding-top:10px;">
 	<div id="sandbox">
 	<h4>Admin Panel</h4>
@@ -30,12 +35,12 @@
 			</td>
 			</tr>
 			</table>
-		
+
 		<?php } ?>
 		</div>
 	</div>
 	<div align="center" class="set-index display1">
-	<?php 
+	<?php
 	for($i=0; $i<count($setsNew); $i++){
 		if($setsNew[$i]['amount'] == 1){
 			$problems = 'problem';
@@ -51,7 +56,7 @@
 		else
 			$isZero = 'display:none;';
 		echo '<a href="/sets/view/'.$setsNew[$i]['id'].$partitionLink.'" class="box1link">
-			<div class="box1 box1topic topic-box'.$setsNew[$i]['id'].'" 
+			<div class="box1 box1topic topic-box'.$setsNew[$i]['id'].'"
 				style="background-color:'.$setsNew[$i]['color'].';background-image: linear-gradient(rgba(169, 169, 169, 0.30), rgba(0, 0, 0, 0.35));">';
 			if($setsNew[$i]['solved']>=100)
 				echo '<div class="collection-completed">completed</div>';
@@ -88,7 +93,7 @@
 	</div>
 	<br><br>
 	<div class="accessList">
-	Admins: 
+	Admins:
 	<?php
 		for($i=0; $i<count($admins); $i++){
 			echo $admins[$i];
@@ -98,7 +103,7 @@
 	<br><br>
 	</div>
 	</div>
-	
+
 	<script>
 		<?php
 		for($i=0; $i<count($setsNew); $i++){
@@ -106,7 +111,7 @@
 			echo 'function animateNumber'.$i.'(start, end, duration) {
 				const element = document.getElementById("number'.$i.'");
 				const range = end - start;
-				const increment = range / (duration * 60); 
+				const increment = range / (duration * 60);
 				const decimalIndex = end.toString().indexOf(".");
 				const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
 				let currentNumber = start;
@@ -122,7 +127,7 @@
 							element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
 							requestAnimationFrame(step);
 					} else {
-							element.textContent = end + "%"; 
+							element.textContent = end + "%";
 					}
 				};
 				requestAnimationFrame(step);
@@ -134,7 +139,7 @@
 				$("#xp-bar-fill2'.$i.'").css("width", 0+"%");
 				$("#xp-increase-fx2'.$i.'").hide();
 				$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-				
+
 				$("#xp-bar-fill2'.$i.'").css({"width":percent+"%"});
 				$("#xp-bar-fill2'.$i.'").css("-webkit-transition","all 0.6s ease");
 				$("#xp-increase-fx2'.$i.'").fadeIn(0);
@@ -144,9 +149,9 @@
 					$("#xp-bar-fill2'.$i.'").css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
 				},600);
 			}';
-		}	
+		}
 		?>
-	
+
 	</script>
 	<style>
 		.box1:hover {

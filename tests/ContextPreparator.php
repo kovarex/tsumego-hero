@@ -212,7 +212,10 @@ class ContextPreparator {
 			ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 			$this->tsumegoSets = [];
 			foreach ($setsInput as $tsumegoSet) {
-				$set = $this->getOrCreateTsumegoSet(['name' => $tsumegoSet['name'], 'included_in_time_mode' => $tsumegoSet['included_in_time_mode']]);
+				$set = $this->getOrCreateTsumegoSet([
+					'name' => $tsumegoSet['name'],
+					'included_in_time_mode' => $tsumegoSet['included_in_time_mode'],
+					'public' => $tsumegoSet['public']]);
 				$setConnection = [];
 				$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
 				$setConnection['SetConnection']['set_id'] = $set['id'];
@@ -248,15 +251,18 @@ class ContextPreparator {
 		if (is_string($input)) {
 			$name = $input;
 			$includedInTimeMode = false;
+			$public = 1;
 		} else {
 			$name = $input['name'];
 			$includedInTimeMode = $input['included_in_time_mode'];
+			$public = $input['public'];
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		if (!$set) {
 			$set = [];
 			$set['Set']['title'] = $name;
 			$set['Set']['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
+			$set['Set']['public'] = is_null($public) ? true : $public;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved

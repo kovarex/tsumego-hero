@@ -899,4 +899,27 @@ class SetsControllerTest extends TestCaseWithAuth {
 		}
 		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
 	}
+
+	public function testOnlyPublicSetsAreVisible(): void {
+		new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'public set', 'public' => 1, 'num' => '666'],
+			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
+
+		$browser = Browser::instance();
+		$browser->get('sets');
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
+	}
+
+	public function testOnlyPrivateSetsAreVisibleInSandbox(): void {
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'public set', 'public' => 1, 'num' => '666'],
+			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
+		$browser = Browser::instance();
+		$browser->get('sets/beta');
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
+	}
 }

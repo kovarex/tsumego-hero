@@ -269,26 +269,13 @@ class SetsController extends AppController {
 			array_push($setsNew, $sn);
 		}
 
-		$accessList = $this->User->find('all', ['conditions' => ['completed' => 1]]);
-		if (!$accessList) {
-			$accessList = [];
-		}
-		$access = [];
-		foreach ($accessList as $item) {
-			$access[] = $item['User']['name'];
-		}
-
-		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]);
-		if (!$adminsList) {
-			$adminsList = [];
-		}
+		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $item) {
 			$admins[] = $item['User']['name'];
 		}
 
 		$this->set('admins', $admins);
-		$this->set('access', $access);
 		$this->set('sets', $sets);
 		$this->set('setsNew', $setsNew);
 		$this->set('overallCounter', $overallCounter);
