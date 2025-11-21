@@ -3316,47 +3316,6 @@ Joschka Zimdars';
 		$this->set('ratio', $ratio);
 	}
 
-	//score by avg distance
-	/**
-	 * @return void
-	 */
-	public function set_single_tsumego_score() {
-		$this->loadModel('Tsumego');
-
-		$ts2 = [];
-		$ts3 = [];
-		$avg = [];
-		$avg[10] = 87.382505764796;
-		$avg[20] = 73.129444444444;
-		$avg[30] = 64.567987288136;
-		$avg[40] = 56.862570224719;
-		$avg[50] = 52.194473324213;
-		$avg[60] = 45.272835820896;
-		$avg[70] = 37.944619771863;
-		$avg[80] = 31.759309210526;
-		$avg[90] = 21.345405982906;
-
-		$t = $this->Tsumego->findById(549);
-		$distance = [];
-		$lowest = 100;
-		$pos = 0;
-		for ($i = 10; $i <= 90; $i += 10) {
-			$distance[$i] = $t['Tsumego']['userWin'] - $avg[$i];
-			if ($distance[$i] < 0) {
-				$distance[$i] *= -1;
-			}
-			if ($distance[$i] < $lowest) {
-				$pos = $i;
-				$lowest = $distance[$i];
-			}
-		}
-		$t['Tsumego']['difficulty'] = $pos;
-		$this->Tsumego->save($t);
-
-		$this->set('ts', $ts2);
-		$this->set('ts3', $ts3);
-	}
-
 	//all in one
 	/**
 	 * @return void
