@@ -3385,68 +3385,6 @@ Joschka Zimdars';
 		}
 	}
 
-	//distance to avg, save closest
-	/**
-	 * @return void
-	 */
-	public function set_tsumego_scores3() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
-
-		$avg = [];
-		$avg[10] = 87.382505764796;
-		$avg[20] = 73.129444444444;
-		$avg[30] = 64.567987288136;
-		$avg[40] = 56.862570224719;
-		$avg[50] = 52.194473324213;
-		$avg[60] = 45.272835820896;
-		$avg[70] = 37.944619771863;
-		$avg[80] = 31.759309210526;
-		$avg[90] = 21.345405982906;
-
-		$ts2 = [];
-		$ts = $this->Tsumego->find('all');
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-			$ts[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-
-			$s = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
-			if ($s['Set']['public'] == 1 && $ts[$i]['Tsumego']['userWin'] != 0) {
-				array_push($ts2, $ts[$i]);
-			}
-		}
-
-		$distance = [];
-		$lowest = 100;
-		$pos = 0;
-		$ts2Count = count($ts2);
-		for ($i = 0; $i < $ts2Count; $i++) {
-			$distance = [];
-			$lowest = 100;
-			$pos = 0;
-			for ($j = 10; $j <= 90; $j += 10) {
-				$distance[$j] = $ts2[$i]['Tsumego']['userWin'] - $avg[$j];
-				if ($distance[$j] < 0) {
-					$distance[$j] *= -1;
-				}
-				if ($distance[$j] < $lowest) {
-					$pos = $j;
-					$lowest = $distance[$j];
-				}
-			}
-			$ts2[$i]['Tsumego']['difficulty'] = $pos;
-			$this->Tsumego->save($ts2[$i]);
-		}
-
-		$this->set('distance', $distance);
-		$this->set('avg', $avg);
-		$this->set('pos', $pos);
-		$this->set('lowest', $lowest);
-		$this->set('ts2', $ts2);
-	}
-
 	/**
 	 * @param string|int $id User ID
 	 * @return void
