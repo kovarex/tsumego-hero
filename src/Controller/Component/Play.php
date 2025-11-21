@@ -497,11 +497,6 @@ class Play {
 		if ($tsumegoStatus == 'G') {
 			$goldenTsumego = true;
 		}
-		if (isset($_COOKIE['TimeModeAttempt']) && $_COOKIE['TimeModeAttempt'] != '0') {
-			$drCookie = AppController::decrypt($_COOKIE['TimeModeAttempt']);
-			$drCookie2 = explode('-', $drCookie);
-			$_COOKIE['TimeModeAttempt'] = $drCookie2[1];
-		}
 
 		if (Auth::isLoggedIn() && Auth::getUser()['potion'] >= 15) {
 			AppController::setPotionCondition();
@@ -567,10 +562,6 @@ class Play {
 
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '') {
 			$t['Tsumego']['file'] = $t['Tsumego']['num'];
-		}
-		$file = 'placeholder2.sgf';
-		if ($t['Tsumego']['variance'] == 100) {
-			$file = 'placeholder2.sgf';
 		}
 		$orientation = null;
 		$colorOrientation = null;
@@ -695,7 +686,6 @@ class Play {
 
 		$allTags = AppController::getAllTags($tags);
 		$popularTags = TsumegosController::getPopularTags($tags);
-		$uc = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
