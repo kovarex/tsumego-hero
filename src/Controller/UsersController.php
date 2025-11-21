@@ -3835,42 +3835,6 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @param string|int $id User ID
-	 * @return void
-	 */
-	public function archivesingle($id) {
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Purge');
-		$ux = $this->User->findById($id);
-		$p = [];
-		$p['Purge']['user_id'] = $id;
-
-		if ($ux == null) {
-			$ux['User']['d2'] = 'null';
-		} else {
-			$d1 = date('Y-m-d', strtotime('-7 days'));
-			$date = new DateTime($ux['User']['created']);
-			$date = $date->format('Y-m-d');
-			$ux['User']['d1'] = $date;
-			if ($date < $d1) {
-				$ux['User']['d2'] = 'archive';
-				$c = count($this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $ux['User']['id']]]) ?: []);
-				if ($c == 0) {
-					$c = '';
-				}
-				$p['Purge']['duplicates'] = '-' . $c;
-			} else {
-				$ux['User']['d2'] = 'ok';
-				$p['Purge']['duplicates'] = '+';
-			}
-		}
-		$this->Purge->create();
-		$this->Purge->save($p);
-		$this->set('ux', $ux);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function purgelist() {
@@ -3923,40 +3887,6 @@ Joschka Zimdars';
 		$uCount = count($u) + 50;
 		if (isset($u[$start]['User']['id'])) {
 			$this->countsingle($u[$start]['User']['id']);
-		}
-		$dbToken['Purge']['user_id']++;
-		$this->Purge->save($dbToken);
-		if ($start < $uCount) {
-			$this->set('stop', 'f');
-		} else {
-			$this->set('stop', 't');
-		}
-		$this->set('s', $start);
-		$this->set('u', $u[$start]);
-		$this->set('ux', $ux);
-		$this->set('uCount', $uCount);
-	}
-
-	/**
-	 * @return void
-	 */
-	public function archivelist() {
-		$this->loadModel('Purge');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('PurgeList');
-
-		$pl = $this->PurgeList->find('first', ['order' => 'id DESC']);
-		$pl['PurgeList']['archive'] = date('Y-m-d H:i:s');
-		$this->PurgeList->save($pl);
-
-		$ux = [];
-		$dbToken = $this->Purge->findById(1);
-		$start = $dbToken['Purge']['user_id'];
-		$u = $this->User->find('all', ['order' => 'id ASC']);
-		$uCount = count($u) + 50;
-		if (isset($u[$start]['User']['id'])) {
-			$this->archivesingle($u[$start]['User']['id']);
 		}
 		$dbToken['Purge']['user_id']++;
 		$this->Purge->save($dbToken);
