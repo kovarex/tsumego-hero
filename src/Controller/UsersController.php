@@ -216,40 +216,6 @@ class UsersController extends AppController {
 		echo '</pre>';
 	}
 
-	//list ratings
-	/**
-	 * @return void
-	 */
-	public function test1d() {
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('SetConnection');
-		$this->loadModel('Set');
-
-		$ts = $this->Tsumego->find('all', ['order' => 'rating ASC']);
-
-		$x1min = 2200;
-		$x1max = 2673;
-		$x2min = 2200;
-		$x2max = 2900;
-
-		$tsCount = count($ts);
-		for ($i = 0; $i < $tsCount; $i++) {
-			$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-			if (!$sc) {
-				continue;
-			}
-			$s = $this->Set->findById($sc['SetConnection']['set_id']);
-			if (!$s) {
-				continue;
-			}
-			$ts[$i]['Tsumego']['TimeModeAttempt'] = Rating::getReadableRankFromRating($ts[$i]['Tsumego']['rating']);
-			$ts[$i]['Tsumego']['shift'] = $x2min;
-			$ts[$i]['Tsumego']['rank2'] = Rating::getReadableRankFromRating($x2min);
-		}
-		$this->set('ts', $ts);
-	}
-
 	//list tsumego variations
 	/**
 	 * @return void
