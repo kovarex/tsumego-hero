@@ -584,7 +584,7 @@ class Play {
 		$hash = AppController::encrypt($t['Tsumego']['num'] . 'number' . $set['Set']['id']);
 
 		$activate = true;
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			$achievementUpdate1 = AppController::checkLevelAchievements();
 			$achievementUpdate2 = AppController::checkProblemNumberAchievements();
 			$achievementUpdate3 = AppController::checkNoErrorAchievements();
