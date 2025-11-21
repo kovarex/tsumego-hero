@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Offset ''sum'' does not exist on list\<array\{tid\: mixed, sid\: mixed, status\: mixed, seconds\: mixed\}\>\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: src/Controller/AppController.php
-
-		-
 			message: '#^Binary operation "\+" between string and 1 results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1

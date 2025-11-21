@@ -327,18 +327,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine1() { //0:00 uotd
-		$this->loadModel('DayRecord');
-		$today = date('Y-m-d');
-		$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
-		if (count($dateUser) == 0) {
-			$this->uotd();
-		}
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine3() { //0:04 t_glicko
 		$this->loadModel('User');
 		$this->loadModel('TsumegoRatingAttempt');
@@ -3002,7 +2990,7 @@ Joschka Zimdars';
 		}
 		$de = $a;
 
-		$t = $this->getTsumegoOfTheDay();
+		$t = CronController::getTsumegoOfTheDay();
 
 		$ans = $this->Answer->find('all', ['limit' => 100, 'order' => 'created DESC']);
 		$s = $this->Schedule->find('all', ['limit' => 100, 'order' => 'date DESC']);

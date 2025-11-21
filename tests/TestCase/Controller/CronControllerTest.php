@@ -55,4 +55,20 @@ class CronControllerTest extends TestCaseWithAuth {
 		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[1]['id']]]);
 		$this->assertSame($status2['TsumegoStatus']['status'], 'S');
 	}
+
+	public function testUserOfTheDay() {
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
+			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]]]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->assertSame($context->reloadUser()['daily_xp'], 0);
+		$this->assertSame($context->reloadUser()['daily_solved'], 0);
+		$detkov = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'Ivan Detkov']]);
+		$this->assertSame($detkov['User']['daily_xp'], 0);
+		$this->assertSame($detkov['User']['daily_solved'], 0);
+		$dayRecords = ClassRegistry::init('DayRecord')->find('all');
+		$this->assertCount(1, $dayRecords);
+		$this->assertSame($dayRecords[0]['DayRecord']['user_id'], $context->otherUsers[0]['id']);
+	}
 }
