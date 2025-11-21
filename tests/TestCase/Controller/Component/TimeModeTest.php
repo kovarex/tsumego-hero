@@ -203,14 +203,14 @@ class TimeModeTest extends TestCaseWithAuth {
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		usleep(500 * 1000); // waiting for 1 second
+		usleep(200 * 1000);
 		$result = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
 		$this->assertWithinMargin($result['seconds'], 3, 60);
 
 		// refresh
 		$browser->get('timeMode/play');
-		usleep(100 * 1000);
+		usleep(200 * 1000);
 		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
 		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
 			'time_mode_session_id' => $timeModeSessionID,
@@ -225,7 +225,10 @@ class TimeModeTest extends TestCaseWithAuth {
 
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
-		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1);
+		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1,
+			"Started attempt time: " . $startedQueuedAttempts[0]['TimeModeAttempt']['started']
+			. " Reported time: " . $newResult['seconds'] . '.' . $newResult['decimals']
+			. " Old time: " . $result['seconds'] . '.' . $result['decimals']);
 	}
 
 	public function testTimeModeTimeout() {

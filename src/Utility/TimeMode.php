@@ -203,10 +203,13 @@ class TimeMode {
 		$attempt = $attempt['TimeModeAttempt'];
 
 		if (!$attempt['started']) {
-			$attempt['started'] = date('Y-m-d H:i:s');
+			$attempt['started'] = date('Y-m-d H:i:s.u');
 			ClassRegistry::init('TimeModeAttempt')->save($attempt);
 		} else {
-			$secondsSinceStarted = time() - strtotime($attempt['started']);
+			$start = new DateTime($attempt['started']);
+			$now = new DateTime();
+
+			$secondsSinceStarted = $now->getTimestamp() + $now->format('u') / 1e6 - ($start->getTimestamp() + $start->format('u') / 1e6);
 			$this->secondsToSolve = max(0, $this->secondsToSolve - $secondsSinceStarted);
 			if ($this->secondsToSolve == 0) {
 				$attempt['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT;
