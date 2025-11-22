@@ -17,7 +17,9 @@ return (new PhpCsFixer\Config())
        'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end',
        'classes_opening_brace' => 'next_line_unless_newline_at_signature_end',
        'functions_opening_brace' => 'next_line_unless_newline_at_signature_end'
-      ]
+      ],
+	'trailing_comma_in_multiline' => false,
+	'method_argument_space' => ['on_multiline' => 'ignore']
     ])
   ->setIndent("\t")
   ->setFinder($finder)
