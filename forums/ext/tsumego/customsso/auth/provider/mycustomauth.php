@@ -58,15 +58,16 @@ class mycustomauth implements provider_interface
 
 	public function autologin()
 	{
-		if (!isset($_SESSION['loggedInUserID'])) {
+		if (!isset($_COOKIE['login_token'])) {
 			return false;
 		}
 
-		$external_id = (int) $_SESSION['loggedInUserID'];
+		$loginToken = $_COOKIE['login_token'];
+
 
 		$sql = 'SELECT id, name, email
-                FROM user
-                WHERE id = ' . $external_id;
+        FROM user
+        WHERE login_token = "' . $this->db->sql_escape($loginToken) . '"';
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);

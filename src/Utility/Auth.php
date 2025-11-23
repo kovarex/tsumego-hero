@@ -4,6 +4,13 @@ App::uses('Constants', 'Utility');
 
 class Auth
 {
+	private function generateLoginToken(int $user_id): void
+	{
+		$token = Util::generateRandomString(50);
+		Auth::getUser()['login_token'] = $token;
+		$_COOKIE['login_token'] = $token;
+	}
+
 	public static function init($user = null): void
 	{
 		// a hack to inject login in test environment
@@ -14,6 +21,7 @@ class Auth
 		{
 			Auth::$user = $user['User'];
 			CakeSession::write('loggedInUserID', Auth::$user['id']);
+			self::generateLoginToken(Auth::getUserID());
 			return;
 		}
 
