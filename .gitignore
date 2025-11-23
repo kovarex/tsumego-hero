@@ -36,6 +36,11 @@ config/core.local.php
 .idea/
 mainPageAjax.txt
 
+/forums/cache
+/forums/store
+/forums/config.php
+/forums/vendor
+
 # IDE and editor specific files #
 #################################
 /nbproject
