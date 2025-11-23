@@ -58,7 +58,7 @@ class mycustomauth implements provider_interface
 
 	public function autologin()
 	{
-		$loginToken = $this->request->variable('login_otken', '');
+		$loginToken = $this->request->variable('login_token', '', true, request_interface::COOKIE);
 		if (empty($loginToken)) {
 			return false;
 		}
