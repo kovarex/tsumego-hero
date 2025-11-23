@@ -105,10 +105,10 @@ class mycustomauth implements provider_interface
 
 	public function get_acp_template($new_config)
 	{
-		return array(
-			'title' => 'SSO Settings',
-			'vars'  => array(),
-		);
+		return [
+			'TEMPLATE_FILE' => 'auth_sso_body.html',
+			'TEMPLATE_VARS' => [],
+		];
 	}
 
 	protected function get_or_create_bb_user($ext)
