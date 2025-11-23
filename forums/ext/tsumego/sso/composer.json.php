@@ -1,0 +1,9 @@
+{
+"name": "tsumego/sso",
+"type": "phpbb-extension",
+"description": "SSO Auth Provider",
+"version": "1.0.0",
+"time": "2025-01-01",
+"license": "GPL-2.0",
+"extra": {"display-name": "Tsumego SSO"}
+}
