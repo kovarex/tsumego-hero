@@ -1,4 +1,5 @@
 <?php
+
 namespace tsumego\customsso\auth\provider;
 
 use phpbb\auth\provider\provider_interface;
@@ -23,6 +24,31 @@ class mycustomauth implements provider_interface
 		$this->db      = $db;
 		$this->config  = $config;
 		$this->user    = $user;
+	}
+
+	public function get_login_data()
+	{
+		return array();
+	}
+
+	public function link_account(array $user)
+	{
+		return array('status' => LOGIN_SUCCESS);
+	}
+
+	public function unlink_account(array $user)
+	{
+		return array('status' => LOGIN_SUCCESS);
+	}
+
+	public function get_auth_link_data($user_id = 0)
+	{
+		return array();
+	}
+
+	public function login_link_has_necessary_data(array $data)
+	{
+		return true;
 	}
 
 	public function init()
@@ -55,7 +81,7 @@ class mycustomauth implements provider_interface
 	public function login($username, $password)
 	{
 		return array(
-			'status'    => LOGIN_ERROR,
+			'status'    => 0,
 			'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH',
 			'user_row'  => array(),
 		);
