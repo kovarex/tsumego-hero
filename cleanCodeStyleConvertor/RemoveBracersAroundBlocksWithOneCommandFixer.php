@@ -113,7 +113,7 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 				if ($tokens[$index]->getContent() == ')') {
 					$nextIndexAfterBracket = $tokens->getNextNonWhitespace($index);
 					if ($tokens[$nextIndexAfterBracket]->getContent() == '{') {
-						$index = $nextIndexAfterBracket;
+						$index = $nextIndexAfterBracket - 1;
 					}
 				}
 				continue;
@@ -123,14 +123,24 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 				$result['if-without-else'] = false;
 			}
 
+			// the if + else blocks count as one command when it comes to us needing to contain in curly braces
+			if ($tokens[$index]->getContent() == 'else' || $tokens[$index]->getContent() == 'elseif') {
+				$count--;
+				$result['whitespace-line-break-count']--;
+			}
 		}
 		$result['command-count'] = $count;
 		return $result;
 	}
 
 	protected function applyFix(\SplFileInfo $file, Tokens $tokens): void {
+		/*
 		foreach ($tokens as $index => $token) {
+			$content = $tokens[$index]->getContent();
+			echo "#$index ". str_replace("\n", "<newline>", $content)."\n";
+		}*/
 
+		foreach ($tokens as $index => $token) {
 			// find if, else, elseif, while and skip their condition blocks (if relevant)
 			// the $validStatement contains info:
 			// $validStatement['end'] Where should we start looking for the block or command
@@ -191,8 +201,8 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 			//
 			$nextTokenIndex = $tokens->getNextNonWhitespace($closingBraceIndex);
 			if (is_numeric($nextTokenIndex)
-		   && ($tokens[$nextTokenIndex]->getContent() == 'else' || $tokens[$nextTokenIndex]->getContent())
-		   && $blockInfo['if-without-else']) {
+				&& ($tokens[$nextTokenIndex]->getContent() == 'else' || $tokens[$nextTokenIndex]->getContent() == "elseif")
+				&& $blockInfo['if-without-else'] == true) {
 				continue;
 			}
 
@@ -203,7 +213,7 @@ final class RemoveBracersAroundBlocksWithOneCommandFixer extends AbstractFixer {
 			//    //bar();
 			// }
 			//
-			if ($blockInfo['whitespace-line-break-count'] > 2) {
+			if ($blockInfo['whitespace-line-break-count'] > 3) {
 				continue;
 			}
 
