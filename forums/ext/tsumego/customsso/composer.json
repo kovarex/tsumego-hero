@@ -1,9 +1,17 @@
 {
-"name": "tsumego/customsso",
-"type": "phpbb-extension",
-"description": "SSO Auth Provider",
-"version": "1.0.0",
-"time": "2025-01-01",
-"license": "GPL-2.0",
-"extra": {"display-name": "Tsumego SSO"}
+	"name": "tsumego/customsso",
+	"type": "phpbb-extension",
+	"description": "SSO Auth Provider",
+	"version": "1.0.0",
+	"time": "2025-01-01",
+	"license": "GPL-2.0",
+	"extra":
+	{
+		"display-name": "Tsumego SSO",
+		"soft-require":
+		{
+			"phpbb/phpbb": ">=3.2.0"
+		}
+	}
+
 }
