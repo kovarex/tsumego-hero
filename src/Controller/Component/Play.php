@@ -371,20 +371,18 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-				else
-					if ($this->data['Comment']['user_id'] != 33)
-					{
-						ClassRegistry::init('Comment')->create();
-						if ($this->checkCommentValid(Auth::getUserID()))
-							ClassRegistry::init('Comment')->save($this->data, true);
-					}
+				elseif ($this->data['Comment']['user_id'] != 33)
+				{
+					ClassRegistry::init('Comment')->create();
+					if ($this->checkCommentValid(Auth::getUserID()))
+						ClassRegistry::init('Comment')->save($this->data, true);
+				}
 				($this->setFunction)('formRedirect', true);
 			}
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['file'] == '/delete')
-			($this->setFunction)('deleteProblem2', true);
+			if ($aad && $aad['AdminActivity']['file'] == '/delete')($this->setFunction)('deleteProblem2', true);
 		}
 
 		if (isset($params['url']['deleteComment']))
@@ -720,8 +718,7 @@ class Play
 		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('idForSignature', $idForSignature);
 		($this->setFunction)('idForSignature2', $idForSignature2);
-		if (isset($activityValue))
-		($this->setFunction)('activityValue', $activityValue);
+		if (isset($activityValue))($this->setFunction)('activityValue', $activityValue);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
@@ -745,8 +742,7 @@ class Play
 		($this->setFunction)('doublexp', $doublexp);
 		($this->setFunction)('half', $half);
 		($this->setFunction)('set', $set);
-		if (Auth::isLoggedIn())
-		($this->setFunction)('barPercent', Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])));
+		if (Auth::isLoggedIn())($this->setFunction)('barPercent', Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])));
 		else
 		($this->setFunction)('barPercent', 0);
 		($this->setFunction)('t', $t);
@@ -778,8 +774,7 @@ class Play
 		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))
-		($this->setFunction)('requestSolution', AdminActivityUtil::requestSolution($id));
+		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityUtil::requestSolution($id));
 		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
