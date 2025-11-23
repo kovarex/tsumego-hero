@@ -32,7 +32,10 @@ class mycustomauth implements provider_interface
 
 	public function get_login_data()
 	{
-		return array();
+		return [
+			'password' => false,   // no password login
+			'autologin' => true,   // provider supports autologin
+		];
 	}
 
 	public function link_account(array $user)
