@@ -1,4 +1,6 @@
 	function createPreviewBoard(n=null, masterArrayBW=null, xMax=0, yMax=0, boardSize=19){
+		if (!masterArrayBW)
+			return;
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
 		let svg = document.createElementNS(w3,"svg");
@@ -19,7 +21,7 @@
 		yMax = increment*yMax+borderPixelsY;
 		let xPos = size+border;
 		let yPos = size+border;
-		
+
 		let img = zoom ? "/img/theBoard2.png" : "/img/theBoard.png";
 		if(boardSize==13) img = "/img/theBoard13x13.png"
 		else if(boardSize==9) img = "/img/theBoard9x9.png"

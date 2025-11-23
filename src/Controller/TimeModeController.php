@@ -49,7 +49,7 @@ class TimeModeController extends AppController
 		$this->set('nextLink', '/timeMode/skip/');
 		$this->set('noSkipNextLink', $timeMode->currentWillBeLast() ? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
 		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
-		$play->play($setConnection['SetConnection']['id'], $this->params);
+		$play->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 		$this->render('/Tsumegos/play');
 		return null;
 	}

@@ -608,7 +608,7 @@
 			}
 			echo '<div id="msg2">';
 			echo '<div id="commentPosition">Link current position</div>';
-			echo $this->Form->create('Comment');
+			echo $this->Form->create('Comment', ['id' => 'tsumegoCommentForm']);
 			echo $this->Form->input('tsumego_id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
 			if(isset($t['Tsumego']['duplicateLink']))
 				echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => str_replace('?sid=', '', $t['Tsumego']['duplicateLink'])));
