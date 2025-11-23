@@ -736,11 +736,9 @@ class TsumegosController extends AppController {
 								$n .= $m[$i] . $m[$i + 1] . $m[$i + 2] . ' ';
 								$n2 .= $i . '/' . ($i + 2) . ' ';
 							}
-						} else {
-							if (!preg_match('/[a-tA-T]/', $m[$i + 2])) {
-								$n .= $m[$i] . $m[$i + 1] . ' ';
-								$n2 .= $i . '/' . ($i + 1) . ' ';
-							}
+						} elseif (!preg_match('/[a-tA-T]/', $m[$i + 2])) {
+							$n .= $m[$i] . $m[$i + 1] . ' ';
+							$n2 .= $i . '/' . ($i + 1) . ' ';
 						}
 					}
 				}

@@ -106,10 +106,8 @@ class SgfsController extends AppController {
 					$sDiff = [];
 				}
 				$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
-			} else {
-				if ($i != count($s) - 1) {
-					$s[$i]['Sgf']['diff'] = $s[$i + 1]['Sgf']['id'];
-				}
+			} elseif ($i != count($s) - 1) {
+				$s[$i]['Sgf']['diff'] = $s[$i + 1]['Sgf']['id'];
 			}
 		}
 

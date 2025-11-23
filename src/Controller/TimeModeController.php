@@ -73,7 +73,6 @@ class TimeModeController extends AppController {
 			} else {
 				$rankPartOfQuery .= 'ELSE \'' . $rank['TimeModeRank']['id'] . '\'';
 			}
-
 		}
 		$counts = ClassRegistry::init('Tsumego')->query("
 SELECT

@@ -188,15 +188,13 @@ class CommentsController extends AppController {
 						if ($counter < 11) {
 							if (!in_array($t['Tsumego']['id'], $keyList)) {
 								$solved = 0;
-							} else {
-								if ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
+							} elseif ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
 									|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
 									|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W'
-								) {
-									$solved = 1;
-								} else {
-									$solved = 0;
-								}
+							) {
+								$solved = 1;
+							} else {
+								$solved = 0;
 							}
 							$u = $this->User->findById($comments[$i]['Comment']['user_id']);
 							if ($comments[$i]['Comment']['set_id'] == null) {
@@ -263,14 +261,12 @@ class CommentsController extends AppController {
 					if (!$premiumLock) {
 						if (!in_array($t['Tsumego']['id'], $keyList)) {
 							$solved = 0;
-						} else {
-							if ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
+						} elseif ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
 							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
 							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W') {
-								$solved = 1;
-							} else {
-								$solved = 0;
-							}
+							$solved = 1;
+						} else {
+							$solved = 0;
 						}
 						$u = $this->User->findById($comments[$i]['Comment']['user_id']);
 						if ($comments[$i]['Comment']['set_id'] == null) {

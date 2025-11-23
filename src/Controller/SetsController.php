@@ -1746,11 +1746,9 @@ ORDER BY total_count DESC, partition_number";
 			$aCond['AchievementCondition']['category'] = 's';
 			$this->AchievementCondition->create();
 			$this->AchievementCondition->save($aCond);
-		} else {
-			if ($avgTime < $acS['AchievementCondition']['value']) {
-				$acS['AchievementCondition']['value'] = $avgTime;
-				$this->AchievementCondition->save($acS);
-			}
+		} elseif ($avgTime < $acS['AchievementCondition']['value']) {
+			$acS['AchievementCondition']['value'] = $avgTime;
+			$this->AchievementCondition->save($acS);
 		}
 		if ($acA == null) {
 			$aCond = [];
@@ -1760,11 +1758,9 @@ ORDER BY total_count DESC, partition_number";
 			$aCond['AchievementCondition']['category'] = '%';
 			$this->AchievementCondition->create();
 			$this->AchievementCondition->save($aCond);
-		} else {
-			if ($accuracy > $acA['AchievementCondition']['value']) {
-				$acA['AchievementCondition']['value'] = $accuracy;
-				$this->AchievementCondition->save($acA);
-			}
+		} elseif ($accuracy > $acA['AchievementCondition']['value']) {
+			$acA['AchievementCondition']['value'] = $accuracy;
+			$this->AchievementCondition->save($acA);
 		}
 	}
 
@@ -1828,19 +1824,17 @@ ORDER BY total_count DESC, partition_number";
 						$globalSolvedCounter++;
 					}
 				}
-			} else {
-				if ($this->Session->check('noLogin')) {
-					$noLogin = $this->Session->read('noLogin');
-					$noLoginStatus = $this->Session->read('noLoginStatus');
-					$noLoginCount6 = count($noLogin);
-					for ($g = 0; $g < $noLoginCount6; $g++) {
-						$tsCount5 = count($ts);
-						for ($f = 0; $f < $tsCount5; $f++) {
-							if ($ts[$f]['Tsumego']['id'] == $noLogin[$g]) {
-								$ts[$f]['Tsumego']['status'] = $noLoginStatus[$g];
-								if ($noLoginStatus[$g] == 'S' || $noLoginStatus[$g] == 'W' || $noLoginStatus[$g] == 'C') {
-									$counter++;
-								}
+			} elseif ($this->Session->check('noLogin')) {
+				$noLogin = $this->Session->read('noLogin');
+				$noLoginStatus = $this->Session->read('noLoginStatus');
+				$noLoginCount6 = count($noLogin);
+				for ($g = 0; $g < $noLoginCount6; $g++) {
+					$tsCount5 = count($ts);
+					for ($f = 0; $f < $tsCount5; $f++) {
+						if ($ts[$f]['Tsumego']['id'] == $noLogin[$g]) {
+							$ts[$f]['Tsumego']['status'] = $noLoginStatus[$g];
+							if ($noLoginStatus[$g] == 'S' || $noLoginStatus[$g] == 'W' || $noLoginStatus[$g] == 'C') {
+								$counter++;
 							}
 						}
 					}
