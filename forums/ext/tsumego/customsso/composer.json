@@ -2,22 +2,30 @@
 	"name": "tsumego/customsso",
 	"type": "phpbb-extension",
 	"description": "SSO Auth Provider",
+	"homepage": " ",
 	"version": "1.0.0",
-	"time": "2025-01-01",
-	"license": "GPL-2.0",
+	"time": "2022-12-13",
+	"keywords": ["phpbb", "extension", "vendor", "customauth"],
+	"license": "GPL-2.0-only",
 	"authors": [
 		{
-			"name": "Your Name",
-			"homepage": "https://your-site.example"
+			"name": "Red Squirrel",
+			"email": "",
+			"homepage": "",
+			"role": "Lead Developer"
 		}
 	],
-	"extra":
-	{
-		"display-name": "Tsumego SSO",
-		"soft-require":
-		{
-			"phpbb/phpbb": ">=3.2.0"
+	"require": {
+		"php": ">=5.4.0",
+		"composer/installers": "~1.0"
+	},
+	"require-dev": {
+		"phpbb/epv": "dev-master"
+	},
+	"extra": {
+		"display-name": "Custom Authenticator",
+		"soft-require": {
+			"phpbb/phpbb": "~3.2"
 		}
 	}
-
 }
