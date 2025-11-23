@@ -113,20 +113,23 @@ class mycustomauth implements provider_interface
 
 	public function validate_session($user)
 	{
-		return isset($_SESSION['loggedInUserID']);
+		// If user is already authenticated (normal phpBB session)
+		if (!empty($user['user_id']) && $user['user_id'] > 1) {
+			return true;
+		}
+
+		// Otherwise, no session is valid
+		return false;
 	}
 
 	public function acp()
 	{
-		return ['auth_method' => 'mycustomauth'];
+		return [];
 	}
 
 	public function get_acp_template($new_config)
 	{
-		return [
-			'TEMPLATE_FILE' => '@tsumego_customsso/auth_sso_body.html',
-			'TEMPLATE_VARS' => [],
-		];
+		return [];
 	}
 
 	protected function get_or_create_bb_user($ext)
