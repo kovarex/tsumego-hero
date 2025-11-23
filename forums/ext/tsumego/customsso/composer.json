@@ -1,5 +1,5 @@
 {
-"name": "tsumego/sso",
+"name": "tsumego/customsso",
 "type": "phpbb-extension",
 "description": "SSO Auth Provider",
 "version": "1.0.0",

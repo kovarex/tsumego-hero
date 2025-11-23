@@ -1,4 +1,4 @@
 <?php
-namespace tsumego\sso;
+namespace tsumego\customsso;
 
 class ext extends \phpbb\extension\base {}

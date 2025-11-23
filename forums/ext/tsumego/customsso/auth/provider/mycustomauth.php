@@ -1,5 +1,5 @@
 <?php
-namespace tsumego\sso\auth\provider;
+namespace tsumego\customsso\auth\provider;
 
 use phpbb\auth\provider\provider_interface;
 use phpbb\request\request_interface;
