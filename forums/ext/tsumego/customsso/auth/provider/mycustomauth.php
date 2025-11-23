@@ -83,11 +83,21 @@ class mycustomauth implements provider_interface
 
 	public function login($username, $password)
 	{
-		return array(
-			'status'    => 0,
+		// If user is already logged in via SSO, allow ACP reauth
+		if ($this->user->data['user_id'] > 1) {
+			return [
+				'status'   => LOGIN_SUCCESS,
+				'error_msg'=> false,
+				'user_row' => $this->user->data,
+			];
+		}
+
+		// Otherwise: fail (no normal password login)
+		return [
+			'status'    => LOGIN_ERROR_EXTERNAL_AUTH,
 			'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH',
-			'user_row'  => array(),
-		);
+			'user_row'  => [],
+		];
 	}
 
 	public function logout($data, $new_session)
