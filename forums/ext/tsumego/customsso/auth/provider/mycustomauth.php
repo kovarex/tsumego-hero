@@ -124,12 +124,12 @@ class mycustomauth implements provider_interface
 
 	public function acp()
 	{
-		return [];
+		return false;
 	}
 
 	public function get_acp_template($new_config)
 	{
-		return [];
+		return false;
 	}
 
 	protected function get_or_create_bb_user($ext)
