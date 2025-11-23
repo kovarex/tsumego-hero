@@ -1,10 +1,10 @@
 <?php
 
-namespace tsumego\customsso\auth\provider;
+namespace ext\tsumego\customsso\auth\provider;
 
 use phpbb\auth\provider\provider_interface;
-use phpbb\request\request_interface;
 use phpbb\db\driver\driver_interface;
+use phpbb\request\request_interface;
 use phpbb\user;
 
 class mycustomauth implements provider_interface
