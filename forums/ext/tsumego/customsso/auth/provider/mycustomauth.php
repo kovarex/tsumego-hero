@@ -100,10 +100,7 @@ class mycustomauth implements provider_interface
 
 	public function acp()
 	{
-		return array(
-			'tpl'   => '',   // No ACP settings
-			'config'=> array(),
-		);
+		return false;
 	}
 
 	public function get_acp_template($new_config)
