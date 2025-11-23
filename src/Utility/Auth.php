@@ -4,7 +4,7 @@ App::uses('Constants', 'Utility');
 
 class Auth
 {
-	private function generateLoginToken(int $user_id): void
+	private static function generateLoginToken(int $user_id): void
 	{
 		$token = Util::generateRandomString(50);
 		Auth::getUser()['login_token'] = $token;
