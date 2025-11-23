@@ -100,7 +100,7 @@ class mycustomauth implements provider_interface
 
 	public function acp()
 	{
-		return false;
+		return ['auth_method' => 'mycustomauth'];
 	}
 
 	public function get_acp_template($new_config)
