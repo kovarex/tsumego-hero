@@ -5,6 +5,12 @@
 	"version": "1.0.0",
 	"time": "2025-01-01",
 	"license": "GPL-2.0",
+	"authors": [
+		{
+			"name": "Your Name",
+			"homepage": "https://your-site.example"
+		}
+	],
 	"extra":
 	{
 		"display-name": "Tsumego SSO",
