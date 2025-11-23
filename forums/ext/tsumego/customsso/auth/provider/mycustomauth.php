@@ -18,12 +18,16 @@ class mycustomauth implements provider_interface
 		request_interface $request,
 		driver_interface $db,
 		\phpbb\config\config $config,
-		user $user
+		user $user,
+		string $phpbb_root_path,
+		string $php_ext
 	) {
 		$this->request = $request;
 		$this->db      = $db;
 		$this->config  = $config;
 		$this->user    = $user;
+		$this->phpbb_root_path = $phpbb_root_path;
+		$this->php_ext = $php_ext;
 	}
 
 	public function get_login_data()
@@ -122,7 +126,7 @@ class mycustomauth implements provider_interface
 			return $user_row;
 		}
 
-		include_once(__DIR__ . '/../../../../includes/functions_user.php');
+		include_once($this->phpbb_root_path . 'includes/functions_user.' . $this->php_ext);
 
 		$user_row = array(
 			'username'         => $ext['name'],
