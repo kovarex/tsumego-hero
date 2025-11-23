@@ -8,7 +8,7 @@ class Auth
 	{
 		$token = Util::generateRandomString(50);
 		Auth::getUser()['login_token'] = $token;
-		$_COOKIE['login_token'] = $token;
+		Util::setCookie('login_token', $token);
 	}
 
 	public static function init($user = null): void
