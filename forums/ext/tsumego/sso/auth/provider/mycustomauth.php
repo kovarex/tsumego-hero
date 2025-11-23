@@ -13,14 +13,12 @@ class mycustomauth implements provider_interface
 	protected $config;
 	protected $user;
 
-	/** phpBB injects required services */
 	public function __construct(
 		request_interface $request,
 		driver_interface $db,
 		\phpbb\config\config $config,
 		user $user
-	)
-	{
+	) {
 		$this->request = $request;
 		$this->db      = $db;
 		$this->config  = $config;
@@ -32,16 +30,14 @@ class mycustomauth implements provider_interface
 		return false;
 	}
 
-	/** phpBB will call this automatically on every page load */
 	public function autologin()
 	{
 		if (!isset($_SESSION['loggedInUserID'])) {
-			return false; // not logged into site
+			return false;
 		}
 
 		$external_id = (int) $_SESSION['loggedInUserID'];
 
-		// Fetch from your custom table "user"
 		$sql = 'SELECT id, name, email
                 FROM user
                 WHERE id = ' . $external_id;
@@ -49,15 +45,15 @@ class mycustomauth implements provider_interface
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		if (!$row)
-			return false; // external user not found
+		if (!$row) {
+			return false;
+		}
 
 		return $this->get_or_create_bb_user($row);
 	}
 
 	public function login($username, $password)
 	{
-		// You can ignore phpBB’s login box — force login through your website
 		return array(
 			'status'    => LOGIN_ERROR,
 			'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH',
@@ -65,42 +61,62 @@ class mycustomauth implements provider_interface
 		);
 	}
 
+	public function logout($data, $new_session)
+	{
+		// Do nothing; logout is managed by your site
+		return true;
+	}
+
 	public function validate_session($user)
 	{
 		return isset($_SESSION['loggedInUserID']);
 	}
 
-	/** Creates or loads the phpBB user */
+	public function acp()
+	{
+		return array(
+			'tpl'   => '',   // No ACP settings
+			'config'=> array(),
+		);
+	}
+
+	public function get_acp_template($new_config)
+	{
+		return array(
+			'title' => 'SSO Settings',
+			'vars'  => array(),
+		);
+	}
+
 	protected function get_or_create_bb_user($ext)
 	{
-		// Try find matching phpBB user by email
 		$sql = 'SELECT * FROM ' . USERS_TABLE . '
-        WHERE external_id = ' . (int) $ext['id'];
+                WHERE external_id = ' . (int) $ext['id'];
 		$result = $this->db->sql_query($sql);
 		$user_row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		if ($user_row)
-			return $user_row; // existing phpBB account
+		if ($user_row) {
+			return $user_row;
+		}
 
-		// Otherwise create a new phpBB user
 		include_once(__DIR__ . '/../../../../includes/functions_user.php');
 
 		$user_row = array(
 			'username'         => $ext['name'],
 			'username_clean'   => strtolower($ext['name']),
 			'user_email'       => $ext['email'],
-			'group_id'         => 2, // REGISTERED
+			'group_id'         => 2,
 			'user_type'        => USER_NORMAL,
 			'user_ip'          => $this->user->ip,
 			'user_regdate'     => time(),
 			'user_passchg'     => time(),
-			'user_password'    => 'unused', // random, unused
+			'user_password'    => phpbb_hash(bin2hex(random_bytes(16))),
+			'external_id'      => (int) $ext['id'],
 		);
 
 		$phpbb_id = user_add($user_row);
 
-		// Fetch fully populated row
 		$sql = 'SELECT * FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $phpbb_id;
 		$result = $this->db->sql_query($sql);
 		$newrow = $this->db->sql_fetchrow($result);
