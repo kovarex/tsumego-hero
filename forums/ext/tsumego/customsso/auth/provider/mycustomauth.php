@@ -33,8 +33,10 @@ class mycustomauth implements provider_interface
 	public function get_login_data()
 	{
 		return [
-			'password' => false,   // no password login
-			'autologin' => true,   // provider supports autologin
+			'autologin'   => true,
+			'password'    => false,
+			'user_row'    => $this->user->data,
+			'credentials' => [],
 		];
 	}
 
