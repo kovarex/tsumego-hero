@@ -5,7 +5,7 @@
 		<?php echo $this->Form->create('User');?>
 		<?php echo $this->Form->input('name', array('label' => '', 'placeholder' => 'Name')); ?>
 		<?php echo $this->Form->input('email', array('label' => '', 'placeholder' => 'E-Mail')); ?>
-		<?php echo $this->Form->input('password', array('label' => '','type'=>'password', 'placeholder' => 'Password')); ?>
+		<?php echo $this->Form->input('password1', array('label' => '','type'=>'password', 'placeholder' => 'Password')); ?>
 		<?php echo $this->Form->input('password2', array('label' => '','type'=>'password', 'placeholder' => 'Retype Password')); ?>
     <?php echo $this->Form->end('Submit');?>
   	You already have an account?<br>
