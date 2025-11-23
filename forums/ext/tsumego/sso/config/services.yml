@@ -1,0 +1,10 @@
+services:
+  tsumego.sso.auth.provider.mycustomauth:
+    class: tsumego\sso\auth\provider\mycustomauth
+    arguments:
+      - '@request'
+      - '@dbal.conn'
+      - '@config'
+      - '@user'
+    tags:
+      - { name: auth.provider }
