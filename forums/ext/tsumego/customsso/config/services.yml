@@ -1,5 +1,5 @@
 services:
-  tsumego.customsso.auth.provider.mycustomauth:
+  auth.provider.mycustomauth:
     class: tsumego\customsso\auth\provider\mycustomauth
     arguments:
       - '@request'
