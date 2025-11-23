@@ -106,7 +106,7 @@ class mycustomauth implements provider_interface
 	public function get_acp_template($new_config)
 	{
 		return [
-			'TEMPLATE_FILE' => 'auth_sso_body.html',
+			'TEMPLATE_FILE' => '@tsumego_customsso/auth_sso_body.html',
 			'TEMPLATE_VARS' => [],
 		];
 	}
