@@ -113,13 +113,7 @@ class mycustomauth implements provider_interface
 
 	public function validate_session($user)
 	{
-		// If user is already authenticated (normal phpBB session)
-		if (!empty($user['user_id']) && $user['user_id'] > 1) {
-			return true;
-		}
-
-		// Otherwise, no session is valid
-		return false;
+		return true;
 	}
 
 	public function acp()
