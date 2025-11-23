@@ -24,6 +24,10 @@ RewriteEngine on
 # by default accessed at /app.php/my/controller, but can also be accessed at
 # /my/controller
 #
+
+# Do NOT rewrite inside the installer directory
+RewriteRule ^install/ - [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ app.php [QSA,L]
