@@ -1,6 +1,6 @@
 <?php
 
-namespace ext\tsumego\customsso\auth\provider;
+namespace tsumego\customsso\auth\provider;
 
 use phpbb\auth\provider\provider_interface;
 use phpbb\db\driver\driver_interface;
