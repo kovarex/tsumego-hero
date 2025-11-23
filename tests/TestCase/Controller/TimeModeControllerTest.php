@@ -2,8 +2,10 @@
 
 require_once(__DIR__ . '/../../ContextPreparator.php');
 
-class TimeModeControllerTest extends ControllerTestCase {
-	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException() {
+class TimeModeControllerTest extends ControllerTestCase
+{
+	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
@@ -14,28 +16,33 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
 	}
 
-	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException() {
+	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException()
+	{
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(AppException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
 
-	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin() {
-		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page) {
+	public function testTimeModePlayWithoutBeingLoggedInRedirectsToLogin()
+	{
+		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page)
+		{
 			new ContextPreparator();
 			$this->testAction($page);
 			$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 		}
 	}
 
-	public function testTimeModePlayWithoutSessionBeingInProgress() {
+	public function testTimeModePlayWithoutSessionBeingInProgress()
+	{
 		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
 		$this->testAction('/timeMode/play');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/overview', $this->headers['Location']);
 	}
 
-	public function testTimeModePlayWithSessionToBeFinished() {
+	public function testTimeModePlayWithSessionToBeFinished()
+	{
 		$contextParameters = [];
 		$contextParameters['tsumego'] = [];
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
@@ -52,7 +59,8 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
 
-	public function testTimeModePlaySwitchesToTimeMode() {
+	public function testTimeModePlaySwitchesToTimeMode()
+	{
 		$contextParameters = [];
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -68,7 +76,8 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->assertTrue(Auth::isInTimeMode());
 	}
 
-	public function testTimeModePlayOfTsumegoWithoutSetConnection() {
+	public function testTimeModePlayOfTsumegoWithoutSetConnection()
+	{
 		$contextParameters = [];
 		$contextParameters['tsumego'] = ['rating' => 1000];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -85,7 +94,8 @@ class TimeModeControllerTest extends ControllerTestCase {
 		$this->testAction('/timeMode/play');
 	}
 
-	public function testOpeningTimeModeResultWihoutSpcificSessionUnlocked() {
+	public function testOpeningTimeModeResultWihoutSpcificSessionUnlocked()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		new ContextPreparator($contextParameters);
@@ -94,7 +104,8 @@ class TimeModeControllerTest extends ControllerTestCase {
 		// no redirect
 		$this->assertSame(null, $this->headers['Location']);
 	}
-	public function testOpeningTimeModeResultWithInvalidTimeSessionID() {
+	public function testOpeningTimeModeResultWithInvalidTimeSessionID()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		new ContextPreparator($contextParameters);

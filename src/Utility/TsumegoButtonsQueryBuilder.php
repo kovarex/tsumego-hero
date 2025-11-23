@@ -1,23 +1,22 @@
 <?php
 
-class TsumegoButtonsQueryBuilder {
-	public function __construct($tsumegoFilters, $id) {
+class TsumegoButtonsQueryBuilder
+{
+	public function __construct($tsumegoFilters, $id)
+	{
 		$this->orderBy = 'set_connection.num, set_connection.id';
 		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = "SELECT tsumego.id, set_connection.id, set_connection.num, tsumego.alternative_response, tsumego.pass";
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
 			$this->query .= ', tsumego_status.status';
-		}
 
 		$this->query .= " FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
 		Util::addSqlCondition($this->condition, 'tsumego.deleted is NULL');
 		$this->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
 			$this->query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
-		}
-		if (!Auth::hasPremium()) {
+		if (!Auth::hasPremium())
 			Util::addSqlCondition($this->condition, '`set`.premium = false');
-		}
 
 		$this->filterRanks();
 		$this->filterSets();
@@ -31,13 +30,15 @@ class TsumegoButtonsQueryBuilder {
 		$this->query .= " ORDER BY " . $this->orderBy;
 	}
 
-	private function filterRanks() {
-		if ($this->tsumegoFilters->query == 'difficulty') { // we filter by ranks unless we query a specific difficulty
-			return;
+	private function filterRanks()
+	{
+		if ($this->tsumegoFilters->query == 'difficulty') // we filter by ranks unless we query a specific difficulty
+		{return;
 		}
 
 		$rankConditions = '';
-		foreach ($this->tsumegoFilters->ranks as $rankFilter) {
+		foreach ($this->tsumegoFilters->ranks as $rankFilter)
+		{
 			$rankCondition = '';
 			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
 			Util::addSqlOrCondition($rankConditions, $rankCondition);
@@ -45,64 +46,63 @@ class TsumegoButtonsQueryBuilder {
 		Util::addSqlCondition($this->condition, $rankConditions);
 	}
 
-	private function filterSets() {
-		if ($this->tsumegoFilters->query == 'topics') { // we filter by sets unless we query a specific set
-			return;
+	private function filterSets()
+	{
+		if ($this->tsumegoFilters->query == 'topics') // we filter by sets unless we query a specific set
+		{return;
 		}
 
-		if (!empty($this->tsumegoFilters->setIDs)) {
+		if (!empty($this->tsumegoFilters->setIDs))
 			Util::addSqlCondition($this->condition, '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')');
-		}
 	}
 
-	private function filterTags() {
-		if ($this->tsumegoFilters->query == 'tags') { // we filter by tags unless we query a specific tag
-			return;
+	private function filterTags()
+	{
+		if ($this->tsumegoFilters->query == 'tags') // we filter by tags unless we query a specific tag
+		{return;
 		}
 
-		if (empty($this->tsumegoFilters->tagIDs)) {
+		if (empty($this->tsumegoFilters->tagIDs))
 			return;
-		}
 
 		Util::addSqlCondition($this->condition, '`tag`.tag_name_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')');
 		$this->query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
 	}
 
-	private function queryRank() {
-		if ($this->tsumegoFilters->query != 'difficulty') {
+	private function queryRank()
+	{
+		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
-		}
 		$currentRank = CakeSession::read('lastSet');
 		$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
 		$ratingBounds->addSqlConditions($this->condition);
 		$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 	}
 
-	private function queryTag() {
-		if ($this->tsumegoFilters->query != 'tags') {
+	private function queryTag()
+	{
+		if ($this->tsumegoFilters->query != 'tags')
 			return;
-		}
 
 		$currentTag = CakeSession::read('lastSet');
 		$tag = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $currentTag]]);
-		if (!$tag) {
+		if (!$tag)
 			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
-		}
 		$this->query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
 		Util::addSqlCondition($this->condition, '`tag`.tag_name_id=' . $tag['TagName']['id']);
 	}
 
-	private function querySet($id) {
-		if ($this->tsumegoFilters->query != 'topics') {
+	private function querySet($id)
+	{
+		if ($this->tsumegoFilters->query != 'topics')
 			return;
-		}
 		Util::addSqlCondition($this->condition, '`set`.id=' . $id);
 	}
 
-	private function queryFavorites() {
-		if ($this->tsumegoFilters->query != 'favorites') {
+	private function queryFavorites()
+	{
+		if ($this->tsumegoFilters->query != 'favorites')
 			return;
-		}
 		$this->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
 		$this->orderBy = 'favorite.id ASC';
 	}

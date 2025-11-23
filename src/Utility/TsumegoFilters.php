@@ -1,105 +1,98 @@
 <?php
 
-class TsumegoFilters {
-	public function __construct(?string $newQuery = null) {
+class TsumegoFilters
+{
+	public function __construct(?string $newQuery = null)
+	{
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution, null, $newQuery);
 		$this->collectionSize = self::processItem('collection_size', '200', $userContribution);
 		$this->sets = self::processItem('filtered_sets', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		$this->setIDs = [];
-		foreach ($this->sets as $set) {
+		foreach ($this->sets as $set)
 			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]])['Set']['id'];
-		}
 
 		$this->ranks = self::processItem('filtered_ranks', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
 		$this->tags = self::processItem('filtered_tags', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		$this->tagIDs = [];
-		foreach ($this->tags as $tag) {
+		foreach ($this->tags as $tag)
 			$this->tagIDs[] = ClassRegistry::init('TagName')->findByName($tag)['TagName']['id'];
-		}
 
-		if ($userContribution) {
+		if ($userContribution)
 			ClassRegistry::init('UserContribution')->save($userContribution);
-		}
 	}
 
-	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null, ?string $newValue = null) {
+	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null, ?string $newValue = null)
+	{
 		$stringResult = '';
-		if ($userContribution) {
-			if ($value = $userContribution['UserContribution'][$name]) {
+		if ($userContribution)
+		{
+			if ($value = $userContribution['UserContribution'][$name])
 				$stringResult = $value;
-			}
-		} elseif (CakeSession::check('loggedOff_' . $name)) {
-			$stringResult = CakeSession::read('loggedOff_' . $name);
 		}
+		elseif (CakeSession::check('loggedOff_' . $name))
+			$stringResult = CakeSession::read('loggedOff_' . $name);
 
-		if (!empty($_COOKIE[$name])) {
+		if (!empty($_COOKIE[$name]))
+		{
 			$stringResult = $_COOKIE[$name];
-			if ($stringResult == 'clear') {
+			if ($stringResult == 'clear')
+			{
 				Util::clearCookie($name);
 				$stringResult = '';
 			}
 		}
 
-		if ($newValue) {
+		if ($newValue)
 			$stringResult = $newValue;
-		}
 
-		if ($userContribution) {
+		if ($userContribution)
 			$userContribution['UserContribution'][$name] = $stringResult;
-		} else {
+		else
 			CakeSession::write('loggedOff_' . $name, $stringResult);
-		}
 
-		if (!$stringResult) {
+		if (!$stringResult)
 			return $default;
-		}
 
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 
-	public function getSetTitle($set): string {
-		if ($this->query == 'topics') {
+	public function getSetTitle($set): string
+	{
+		if ($this->query == 'topics')
 			return $set['Set']['title'];
-		}
-		if ($this->query == 'difficulty') {
+		if ($this->query == 'difficulty')
 			return CakeSession::read('lastSet');
-		}
-		if ($this->query == 'tags') {
+		if ($this->query == 'tags')
 			return CakeSession::read('lastSet');
-		}
 
-		if ($this->query == 'favorites') {
+		if ($this->query == 'favorites')
 			return 'Favorites';
-		}
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
-	public function getSetID($set): string {
-		if ($this->query == 'topics') {
+	public function getSetID($set): string
+	{
+		if ($this->query == 'topics')
 			return $set['Set']['id'];
-		}
-		if ($this->query == 'difficulty') {
+		if ($this->query == 'difficulty')
 			return CakeSession::read('lastSet');
-		}
-		if ($this->query == 'tags') {
+		if ($this->query == 'tags')
 			return CakeSession::read('lastSet');
-		}
 
-		if ($this->query == 'favorites') {
+		if ($this->query == 'favorites')
 			return 'favorites';
-		}
 		return "Unsupported yet";
 	}
 
-	public function setQuery($query) {
+	public function setQuery($query)
+	{
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution, null, $query);
-		if ($userContribution) {
+		if ($userContribution)
 			ClassRegistry::init('UserContribution')->save($userContribution);
-		}
 	}
 
 	public string $query;

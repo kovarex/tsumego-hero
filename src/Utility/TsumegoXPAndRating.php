@@ -1,19 +1,21 @@
 <?php
 
-class TsumegoXPAndRating {
-	public function __construct(array $tsumego, string $status) {
-		if ($status == 'G') {
+class TsumegoXPAndRating
+{
+	public function __construct(array $tsumego, string $status)
+	{
+		if ($status == 'G')
 			$this->goldenTsumego = true;
-		} elseif (TsumegoUtil::isRecentlySolved($status)) {
+		elseif (TsumegoUtil::isRecentlySolved($status))
 			$this->solved = true;
-		} elseif ($status == 'W') {
+		elseif ($status == 'W')
 			$this->resolving = true;
-		}
 		$this->tsumegoRating = $tsumego['rating'];
 		$this->progressDeletionCount = TsumegoUtil::getProgressDeletionCount($tsumego);
 	}
 
-	public function render() {
+	public function render()
+	{
 		echo '<div align="center" id="xpDisplayDiv">
 		<table class="xpDisplayTable" border="0" width="70%">
 			<tr>
@@ -25,9 +27,8 @@ class TsumegoXPAndRating {
 		<div class="eloTooltip"><span id="ratingGainShort"></span><span class="eloTooltiptext" id="ratingGainLong"></span></div>
 		<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
 	</div>';
-		if (Auth::isInTimeMode()) {
+		if (Auth::isInTimeMode())
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
-		}
 		echo '</td>
 			<td style="width:33%;">
 				<div id="status" align="center" style="color:black;"></div>
@@ -44,13 +45,12 @@ class TsumegoXPAndRating {
 	</div>';
 	}
 
-	public function renderJavascript() {
-		if (!Auth::isLoggedIn()) {
+	public function renderJavascript()
+	{
+		if (!Auth::isLoggedIn())
 			return;
-		}
-		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode()) {
+		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode())
 			return;
-		}
 		echo '
 	let xpStatus = new XPStatus(
 	{
@@ -70,19 +70,16 @@ class TsumegoXPAndRating {
 	}
 
 	// changes here must be reflected in the same method in util.js
-	public static function getProgressDeletionMultiplier($progressDeletionCount): float {
-		if ($progressDeletionCount == 0) {
+	public static function getProgressDeletionMultiplier($progressDeletionCount): float
+	{
+		if ($progressDeletionCount == 0)
 			return 1;
-		}
-		if ($progressDeletionCount == 1) {
+		if ($progressDeletionCount == 1)
 			return 0.5;
-		}
-		if ($progressDeletionCount == 2) {
+		if ($progressDeletionCount == 2)
 			return 0.2;
-		}
-		if ($progressDeletionCount == 3) {
+		if ($progressDeletionCount == 3)
 			return 0.1;
-		}
 		return 0.01;
 	}
 

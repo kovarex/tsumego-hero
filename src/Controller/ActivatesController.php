@@ -1,11 +1,13 @@
 <?php
 
 App::uses('CakeEmail', 'Network/Email');
-class ActivatesController extends AppController {
+class ActivatesController extends AppController
+{
 	/**
 	 * @return void
 	 */
-	public function index() {
+	public function index()
+	{
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero - Activate');
 		$this->loadModel('User');
@@ -41,9 +43,8 @@ class ActivatesController extends AppController {
 				],
 			],
 		]);
-		if (!$us) {
+		if (!$us)
 			$us = [];
-		}
 
 		$us2 = $this->User->find('all', [
 			'conditions' => [
@@ -53,11 +54,11 @@ class ActivatesController extends AppController {
 				],
 			],
 		]);
-		if (!$us2) {
+		if (!$us2)
 			$us2 = [];
-		}
 
-		foreach ($us as $user) {
+		foreach ($us as $user)
+		{
 			/*
 			$this->Activate->create();
 			$s = $this->rdm();
@@ -90,20 +91,21 @@ class ActivatesController extends AppController {
 		$key = 0;
 		$a = [];
 		$s = '';
-		if (!empty($this->data)) {
+		if (!empty($this->data))
+		{
 			$ac = $this->Activate->find('first', ['conditions' => ['string' => $this->data['Activate']['Key']]]);
-			if ($ac) {
+			if ($ac)
+			{
 				$ac['Activate']['user_id'] = Auth::getUserID();
 				$this->Activate->save($ac);
 				$key = 1;
-			} else {
-				$key = 2;
 			}
+			else
+				$key = 2;
 		}
 
-		if ($this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]])) {
+		if ($this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]))
 			$key = 1;
-		}
 
 		$u = $this->User->findById(Auth::getUserID());
 		$u['User']['readingTrial'] = 30;

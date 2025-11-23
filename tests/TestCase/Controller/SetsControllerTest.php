@@ -7,8 +7,10 @@ require_once(__DIR__ . '/TestCaseWithAuth.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
 App::uses('TsumegoFilters', 'Utility');
 
-class SetsControllerTest extends TestCaseWithAuth {
-	public function testIndexLoggedIn(): void {
+class SetsControllerTest extends TestCaseWithAuth
+{
+	public function testIndexLoggedIn(): void
+	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
@@ -19,7 +21,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 
-	public function testIndexLoggedOff(): void {
+	public function testIndexLoggedOff(): void
+	{
 		new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'tsumego set 1', 'num' => '666'],
 			['name' => 'tsumego set 2', 'num' => '777']]]], );
@@ -29,7 +32,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertTextNotContains("Problems found 0", $this->view);
 	}
 
-	public function testIndexRankBased(): void {
+	public function testIndexRankBased(): void
+	{
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -56,7 +60,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
 
-	public function testSetViewRankBased(): void {
+	public function testSetViewRankBased(): void
+	{
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -96,7 +101,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
 
-	public function testSetViewSetBased(): void {
+	public function testSetViewSetBased(): void
+	{
 		$contextParams = [];
 		$contextParams['other-tsumegos'] = [];
 		$contextParams['other-tsumegos'] [] = [
@@ -136,29 +142,32 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
 
-	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array {
+	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
+	{
 		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
 		$this->assertCount($count, $buttons);
-		foreach ($buttons as $key => $button) {
+		foreach ($buttons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key));
-		}
 		return $buttons;
 	}
 
-	private function checkPlayTitle($browser, string $title) {
+	private function checkPlayTitle($browser, string $title)
+	{
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertTextStartsWith($title, $collectionTopDivs[0]->getText());
 	}
 
-	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void {
+	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void
+	{
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
 		$statuses = ['V', 'S', 'C', 'W'];
 
 		// three problems in the 15k range in the same set (will be included)
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
@@ -172,7 +181,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 			'status' => $statuses[3]];
 
 		// other problems with different difficulty, but in the same set, will be excluded
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 				'sets' => [['name' => 'set 1', 'num' => $i + 4]]];
@@ -218,7 +228,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'S');
 	}
 
-	public function testFullProcessOfPartitionedSetBasedSelection(): void {
+	public function testFullProcessOfPartitionedSetBasedSelection(): void
+	{
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'collection_size' => 2]];
@@ -226,7 +237,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$statuses = ['N', 'N', 'V', 'V'];
 
 		// 4 problems in our set
-		for ($i = 0; $i < 4; $i++) {
+		for ($i = 0; $i < 4; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'sets' => [['name' => 'set hello world', 'num' => $i + 1]],
 				'status' => $statuses[$i]];
@@ -282,7 +294,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 	}
 
 
-	public function testOfVisiting2RankBasedSetsBothInTheFilters(): void {
+	public function testOfVisiting2RankBasedSetsBothInTheFilters(): void
+	{
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'difficulty',
@@ -291,21 +304,24 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$contextParams['other-tsumegos'] = [];
 
 		// three problems in the 15k range in different sets (sets of the problem shouldn't play a role anyway)
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 1]]];
 		}
 
 		// three problems in the 1d range in different sets
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('1d'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 2]]];
 		}
 
 		// three completely unrelated problems
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$contextParams['other-tsumegos'] [] = [
 				'rating' => Rating::getRankMiddleRatingFromReadableRank('5d'),
 				'sets' => [['name' => 'set ' . ($i + 1), 'num' => 3]]];
@@ -368,7 +384,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
 	}
 
-	public function testQueringSetsByTopicButLimitedByRanks(): void {
+	public function testQueringSetsByTopicButLimitedByRanks(): void
+	{
 
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
@@ -381,13 +398,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three ranks, and three sets, each rank is in each set once.
 		// note that 5d is first, to check that the navigation button numbers will keep its order
 		// of 2 and 3 when 1 is filtered one.
-		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
-			for ($i = 0; $i < 3; $i++) {
+		foreach (['5d', '15k', '1d'] as $rankIndex => $rank)
+			for ($i = 0; $i < 3; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 
@@ -438,7 +455,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 	}
 
-	public function testQueringSetsByRanksButLimitedByTopics(): void {
+	public function testQueringSetsByRanksButLimitedByTopics(): void
+	{
 
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
@@ -451,13 +469,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// three ranks, and three sets, each rank is in each set once.
 		// note that 5d is first, to check that the navigation button numbers will keep its order
 		// of 2 and 3 when 1 is filtered one.
-		foreach (['5d', '15k', '1d'] as $rankIndex => $rank) {
-			for ($i = 0; $i < 3; $i++) {
+		foreach (['5d', '15k', '1d'] as $rankIndex => $rank)
+			for ($i = 0; $i < 3; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 
@@ -508,17 +526,17 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 	}
 
-	public function testSelectingTagFilters(): void {
+	public function testSelectingTagFilters(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
 		// each problem to introduce one tag type
-		foreach (['snapback', 'atari', 'empty triangle'] as $tag) {
+		foreach (['snapback', 'atari', 'empty triangle'] as $tag)
 			$contextParams['other-tsumegos'] [] = [
 				'tags' => [['name' => $tag]]];
-		}
 
 		$context = new ContextPreparator($contextParams);
 
@@ -539,7 +557,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_tags')->getValue(), 'snapback');
 	}
 
-	public function testVisitingTagBasedSets(): void {
+	public function testVisitingTagBasedSets(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -549,13 +568,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
-		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
-			for ($i = 0; $i < 3 - $key; $i++) {
+		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag)
+			for ($i = 0; $i < 3 - $key; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]]];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -567,7 +586,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($collectionTopDivs[2]->getText(), 'empty triangle');
 	}
 
-	public function testVisitingTagBasedSetsRespectsTagFilters(): void {
+	public function testVisitingTagBasedSetsRespectsTagFilters(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -578,13 +598,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
-		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
-			for ($i = 0; $i < 3 - $key; $i++) {
+		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag)
+			for ($i = 0; $i < 3 - $key; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]]];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -620,7 +640,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
 	}
 
-	public function testVisitingTopicBasedSetsRespectsTagFilters(): void {
+	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -631,13 +652,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
-		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag) {
-			for ($i = 0; $i < 3 - $key; $i++) {
+		foreach (['snapback', 'atari', 'empty triangle'] as $key => $tag)
+			for ($i = 0; $i < 3 - $key; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => $key + 1]],
 					'tags' => [['name' => $tag]]];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -678,14 +699,16 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 	}
 
-	private function checkSetFinishedPercent($browser, $index, $title, $percent): void {
+	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
+	{
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'))[$index]->getText(), $title);
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#number' . $index))->getText(), $percent);
 		$barStyle = $browser->driver->findElement(WebDriverBy::cssSelector('#xp-bar-fill2' . $index))->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
 
-	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void {
+	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -696,13 +719,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
 		// each have one unsolved
-		foreach (['set 1', 'set 2', 'set 3', 'set 4', 'set 5'] as $key => $set) {
-			for ($i = 0; $i < 4; $i++) {
+		foreach (['set 1', 'set 2', 'set 3', 'set 4', 'set 5'] as $key => $set)
+			for ($i = 0; $i < 4; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => $set, 'num' => $i + 1]],
 					'status' => ($i >= $key ? 'N' : 'S')];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -723,7 +746,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkSetFinishedPercent($browser, 4, 'set 5', '100%');
 	}
 
-	public function testTagBasedSetViewShowsSolvedPercentProperly(): void {
+	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -734,14 +758,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
 		// each have one unsolved
-		foreach (['atari', 'bambule', 'empty triangle', 'snapback', 'zen'] as $key => $tag) {
-			for ($i = 0; $i < 4; $i++) {
+		foreach (['atari', 'bambule', 'empty triangle', 'snapback', 'zen'] as $key => $tag)
+			for ($i = 0; $i < 4; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'tags' => [['name' => $tag]],
 					'status' => ($i >= $key ? 'N' : 'S')];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -761,7 +785,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkSetFinishedPercent($browser, 4, 'zen', '100%');
 	}
 
-	public function testRankBasedSetViewShowsSolvedPercentProperly(): void {
+	public function testRankBasedSetViewShowsSolvedPercentProperly(): void
+	{
 		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
@@ -772,14 +797,14 @@ class SetsControllerTest extends TestCaseWithAuth {
 		// 3 problems in stanpback, 2 in atari and 1 in empty triangle
 		// we sort by count so, this will ensure they are shown in this order as well
 		// each have one unsolved
-		foreach (['15k', '10k', '5k', '1d', '5d'] as $key => $rank) {
-			for ($i = 0; $i < 4; $i++) {
+		foreach (['15k', '10k', '5k', '1d', '5d'] as $key => $rank)
+			for ($i = 0; $i < 4; $i++)
+			{
 				$contextParams['other-tsumegos'] [] = [
 					'sets' => [['name' => 'set 1', 'num' => $i + 1]],
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'status' => ($i >= $key ? 'N' : 'S')];
 			}
-		}
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
@@ -799,13 +824,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->checkSetFinishedPercent($browser, 4, '5d', '100%');
 	}
 
-	public function testAddingToFavoritesAndViewingIt(): void {
+	public function testAddingToFavoritesAndViewingIt(): void
+	{
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParams);
 
 		$browser = Browser::instance();
@@ -827,13 +852,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 	}
 
-	public function testRemovingFavorites(): void {
+	public function testRemovingFavorites(): void
+	{
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParams);
 		$context->addFavorite($context->otherTsumegos[0]);
 
@@ -853,13 +878,13 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
 	}
 
-	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void {
+	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
+	{
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParams);
 
 		$browser = Browser::instance();
@@ -870,19 +895,18 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertTrue($tsumegoFilters->query != 'favorites');
 	}
 
-	public function testBrowsingFavoritesByNextButton(): void {
+	public function testBrowsingFavoritesByNextButton(): void
+	{
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 5; $i++) {
+		for ($i = 0; $i < 5; $i++)
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParams);
 
 		// only 3 out of 5 are favorites
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
 			$context->addFavorite($context->otherTsumegos[$i]);
-		}
 
 		$browser = Browser::instance();
 		$browser->get('sets/view/favorites');
@@ -892,7 +916,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$buttons[0]->click();
 
 		// first favorite
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < 3; $i++)
+		{
 			$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, $i, 'V');
 			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -900,7 +925,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
 	}
 
-	public function testOnlyPublicSetsAreVisible(): void {
+	public function testOnlyPublicSetsAreVisible(): void
+	{
 		new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'public set', 'public' => 1, 'num' => '666'],
 			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
@@ -912,7 +938,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
 	}
 
-	public function testOnlyPrivateSetsAreVisibleInSandbox(): void {
+	public function testOnlyPrivateSetsAreVisibleInSandbox(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [
@@ -931,7 +958,8 @@ class SetsControllerTest extends TestCaseWithAuth {
 		$this->assertSame($problemButtons[0]->getText(), '777');
 	}
 
-	public function testAddingProblemInSandbox(): void {
+	public function testAddingProblemInSandbox(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]]]);

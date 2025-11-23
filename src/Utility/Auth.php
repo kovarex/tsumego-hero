@@ -2,20 +2,23 @@
 
 App::uses('Constants', 'Utility');
 
-class Auth {
-	public static function init($user = null): void {
+class Auth
+{
+	public static function init($user = null): void
+	{
 		// a hack to inject login in test environment
-		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"])) {
+		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 			CakeSession::write("loggedInUserID", $_COOKIE["hackedLoggedInUserID"]);
-		}
 
-		if ($user) {
+		if ($user)
+		{
 			Auth::$user = $user['User'];
 			CakeSession::write('loggedInUserID', Auth::$user['id']);
 			return;
 		}
 
-		if (!CakeSession::check('loggedInUserID')) {
+		if (!CakeSession::check('loggedInUserID'))
+		{
 			Auth::$user = null;
 			return;
 		}
@@ -23,82 +26,94 @@ class Auth {
 		Auth::$user = ClassRegistry::init('User')->findById((int) CakeSession::read('loggedInUserID'))['User'];
 	}
 
-	public static function isLoggedIn(): bool {
+	public static function isLoggedIn(): bool
+	{
 		return (bool) Auth::$user;
 	}
 
-	public static function getUserID(): int {
+	public static function getUserID(): int
+	{
 		return Auth::$user ? Auth::$user['id'] : 0;
 	}
 
-	public static function &getUser() {
-		if (!Auth::$user) {
+	public static function &getUser()
+	{
+		if (!Auth::$user)
 			throw new Exception("Accessing user for writing when null");
-		}
 		return Auth::$user;
 	}
 
-	public static function isAdmin(): bool {
+	public static function isAdmin(): bool
+	{
 		return Auth::isLoggedIn() && Auth::getUser()['isAdmin'];
 	}
 
-	public static function hasPremium(): bool {
+	public static function hasPremium(): bool
+	{
 		return Auth::isLoggedIn() && Auth::getUser()['premium'];
 	}
 
-	public static function premiumLevel(): int {
+	public static function premiumLevel(): int
+	{
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
-	public static function saveUser(): void {
+	public static function saveUser(): void
+	{
 		assert(Auth::isLoggedIn());
 		ClassRegistry::init('User')->save(Auth::getUser());
 	}
 
-	public static function logout(): void {
+	public static function logout(): void
+	{
 		CakeSession::delete('loggedInUserID');
 		Auth::$user = null;
 	}
 
-	public static function getWithDefault($key, $default) {
-		if (!Auth::isLoggedIn()) {
+	public static function getWithDefault($key, $default)
+	{
+		if (!Auth::isLoggedIn())
 			return $default;
-		}
 		return Auth::getUser()[$key];
 	}
 
-	public static function getMode(): int {
+	public static function getMode(): int
+	{
 		return Auth::isLoggedIn() ? (int) Auth::getUser()['mode'] : Constants::$LEVEL_MODE;
 	}
 
-	public static function isInLevelMode(): bool {
+	public static function isInLevelMode(): bool
+	{
 		return Auth::getMode() == Constants::$LEVEL_MODE;
 	}
 
-	public static function isInRatingMode(): bool {
+	public static function isInRatingMode(): bool
+	{
 		return Auth::getMode() == Constants::$RATING_MODE;
 	}
 
-	public static function isInTimeMode(): bool {
+	public static function isInTimeMode(): bool
+	{
 		return Auth::getMode() == Constants::$TIME_MODE;
 	}
 
-	public static function addSuspicion(): void {
+	public static function addSuspicion(): void
+	{
 		Auth::getUser()['penalty'] += 1;
 		Auth::saveUser();
 	}
 
-	public static function XPisGainedInCurrentMode() {
-		if (!Auth::isLoggedIn()) {
+	public static function XPisGainedInCurrentMode()
+	{
+		if (!Auth::isLoggedIn())
 			return false;
-		}
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 
-	public static function ratingisGainedInCurrentMode() {
-		if (!Auth::isLoggedIn()) {
+	public static function ratingisGainedInCurrentMode()
+	{
+		if (!Auth::isLoggedIn())
 			return false;
-		}
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 

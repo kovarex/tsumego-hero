@@ -1,10 +1,12 @@
 <?php
 
-class AchievementsController extends AppController {
+class AchievementsController extends AppController
+{
 	/**
 	 * @return void
 	 */
-	public function index() {
+	public function index()
+	{
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementStatus');
@@ -12,27 +14,28 @@ class AchievementsController extends AppController {
 		$unlockedCounter2 = 0;
 
 		$a = $this->Achievement->find('all', ['order' => 'order ASC']);
-		if (!$a) {
+		if (!$a)
 			$a = [];
-		}
 
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
+		{
 			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$as) {
+			if (!$as)
 				$as = [];
-			}
 
-			foreach ($as as $item) {
+			foreach ($as as $item)
 				$existingAs[$item['AchievementStatus']['achievement_id']] = $item;
-			}
 		}
 
 		$aCount = count($a);
-		for ($i = 0; $i < $aCount; $i++) {
+		for ($i = 0; $i < $aCount; $i++)
+		{
 			$a[$i]['Achievement']['unlocked'] = false;
 			$a[$i]['Achievement']['created'] = '';
-			if (isset($existingAs[$a[$i]['Achievement']['id']])) {
-				if ($a[$i]['Achievement']['id'] == 46) {
+			if (isset($existingAs[$a[$i]['Achievement']['id']]))
+			{
+				if ($a[$i]['Achievement']['id'] == 46)
+				{
 					$a[$i]['Achievement']['a46value'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'];
 					$unlockedCounter2 = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'] - 1;
 				}
@@ -50,7 +53,8 @@ class AchievementsController extends AppController {
 	 * @param string|int|null $id
 	 * @return void
 	 */
-	public function view($id = null) {
+	public function view($id = null)
+	{
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementCondition');
@@ -60,50 +64,45 @@ class AchievementsController extends AppController {
 
 		$as = [];
 		$asAll = $this->AchievementStatus->find('all', ['order' => 'created DESC', 'conditions' => ['achievement_id' => $id]]);
-		if (!$asAll) {
+		if (!$asAll)
 			$asAll = [];
-		}
 		$aCount = count($asAll);
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
 			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
-		}
-		if ($as) {
+		if ($as)
+		{
 			$date = date_create($as['AchievementStatus']['created']);
 			$as['AchievementStatus']['created'] = date_format($date, 'd.m.Y H:i');
 		}
 		$asAll2 = [];
 		$count = 10;
-		if (count($asAll) < 10) {
+		if (count($asAll) < 10)
 			$count = count($asAll);
-		}
-		if (count($asAll) > 10) {
+		if (count($asAll) > 10)
 			$andMore = ' and more.';
-		} else {
+		else
 			$andMore = '.';
-		}
-		for ($i = 0; $i < $count; $i++) {
+		for ($i = 0; $i < $count; $i++)
+		{
 			$u = $this->User->findById($asAll[$i]['AchievementStatus']['user_id']);
 			$asAll[$i]['AchievementStatus']['name'] = $this->checkPicture($u);
 			$asAll2[] = $asAll[$i];
 		}
 		$asAll = $asAll2;
 
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
+		{
 			$acGolden = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'golden']]);
-			if (!$acGolden) {
+			if (!$acGolden)
 				$acGolden = [];
-			}
-			if (count($acGolden) == 0) {
+			if (count($acGolden) == 0)
 				$acGoldenCount = 0;
-			} else {
+			else
 				$acGoldenCount = $acGolden[0]['AchievementCondition']['value'];
-			}
-			if ($as) {
+			if ($as)
 				$acGoldenCount = 10;
-			}
-			if ($a['Achievement']['id'] == 97) {
+			if ($a['Achievement']['id'] == 97)
 				$a['Achievement']['additionalDescription'] = 'Progress: ' . $acGoldenCount . '/10';
-			}
 		}
 
 		$this->set('a', $a);

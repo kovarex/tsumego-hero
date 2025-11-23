@@ -5,7 +5,8 @@ App::uses('AppException', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 
-class SetsController extends AppController {
+class SetsController extends AppController
+{
 	public $helpers = ['Html', 'Form'];
 
 	public $title = 'tsumego-hero.com';
@@ -14,7 +15,8 @@ class SetsController extends AppController {
 	 * @param int|null $id Set ID
 	 * @return void
 	 */
-	public function duplicates($id = null) {
+	public function duplicates($id = null)
+	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('Sgf');
 		$this->loadModel('Duplicate');
@@ -26,58 +28,51 @@ class SetsController extends AppController {
 		$tIds = [];
 		$d2 = [];
 
-		if (isset($this->params['url']['unmark'])) {
+		if (isset($this->params['url']['unmark']))
+		{
 			$unmark = $this->Duplicate->find('all', ['conditions' => ['dGroup' => $this->params['url']['unmark']]]);
-			if (!$unmark) {
+			if (!$unmark)
 				$unmark = [];
-			}
-			foreach ($unmark as $item) {
+			foreach ($unmark as $item)
 				$this->Duplicate->delete($item['Duplicate']['id']);
-			}
 		}
 
 		$ts = TsumegoUtil::collectTsumegosFromSet($id);
 		$set = $this->Set->findById($ts[0]['Tsumego']['set_id']);
-		foreach ($ts as $item) {
+		foreach ($ts as $item)
 			$tIds[] = $item['Tsumego']['id'];
-		}
 		$d0 = $this->Duplicate->find('all', ['conditions' => ['tsumego_id' => $tIds]]);
-		if (!$d0) {
+		if (!$d0)
 			$d0 = [];
-		}
 
 		$d = [];
 		$d0Count = count($d0);
-		for ($i = 0; $i < $d0Count; $i++) {
+		for ($i = 0; $i < $d0Count; $i++)
+		{
 			$d01 = $this->Duplicate->find('all', [
 				'conditions' => [
 					'dGroup' => $d0[$i]['Duplicate']['dGroup'],
 					'NOT' => ['tsumego_id' => $d0[$i]['Duplicate']['tsumego_id']],
 				],
 			]);
-			if (!$d01) {
+			if (!$d01)
 				$d01 = [];
-			}
 			array_push($d, $d0[$i]);
-			foreach ($d01 as $item) {
+			foreach ($d01 as $item)
 				$d[] = $item;
-			}
 		}
 		$dNew = [];
 		$dCount = count($d);
-		for ($i = 0; $i < $dCount; $i++) {
+		for ($i = 0; $i < $dCount; $i++)
+		{
 			$dNewMatch = false;
 			$dNewCount2 = count($dNew);
-			for ($j = 0; $j < $dNewCount2; $j++) {
-				if ($i != $j) {
-					if ($d[$i]['Duplicate']['id'] == $dNew[$j]['Duplicate']['id']) {
+			for ($j = 0; $j < $dNewCount2; $j++)
+				if ($i != $j)
+					if ($d[$i]['Duplicate']['id'] == $dNew[$j]['Duplicate']['id'])
 						$dNewMatch = true;
-					}
-				}
-			}
-			if (!$dNewMatch) {
+			if (!$dNewMatch)
 				array_push($dNew, $d[$i]);
-			}
 		}
 		$d = $dNew;
 		$similarArr = [];
@@ -89,16 +84,17 @@ class SetsController extends AppController {
 
 		$currentGroup = -1;
 		$dCount = count($d);
-		for ($i = 0; $i < $dCount; $i++) {
-			if ($currentGroup != $d[$i]['Duplicate']['dGroup']) {
+		for ($i = 0; $i < $dCount; $i++)
+		{
+			if ($currentGroup != $d[$i]['Duplicate']['dGroup'])
+			{
 				$counter++;
 				$d2[$counter] = [];
 			}
 			$td = $this->Tsumego->findById($d[$i]['Duplicate']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
-			if (!$scT) {
+			if (!$scT)
 				continue;
-			}
 			$td['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 			$setx = $this->Set->findById($td['Tsumego']['set_id']);
@@ -109,9 +105,8 @@ class SetsController extends AppController {
 			$currentGroup = $d[$i]['Duplicate']['dGroup'];
 
 			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
-			if (!$sgf) {
+			if (!$sgf)
 				continue;
-			}
 			$sgfArr = $this->processSGF($sgf['Sgf']['sgf']);
 
 			array_push($similarArr, $sgfArr[0]);
@@ -132,7 +127,8 @@ class SetsController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function duplicatesearch() {
+	public function duplicatesearch()
+	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('Duplicate');
 		$this->Session->write('page', 'sandbox');
@@ -146,21 +142,19 @@ class SetsController extends AppController {
 				],
 			],
 		]);
-		if (!$s) {
+		if (!$s)
 			$s = [];
-		}
 		$sCount = count($s);
-		for ($i = 0; $i < $sCount; $i++) {
+		for ($i = 0; $i < $sCount; $i++)
+		{
 			//$ts = $this->Tsumego->find('all', array('conditions' => array('set_id' => $s[$i]['Set']['id'])));
 			$ts = TsumegoUtil::collectTsumegosFromSet($s[$i]['Set']['id']);
 			$tsIds = [];
-			foreach ($ts as $item) {
+			foreach ($ts as $item)
 				$tsIds[] = $item['Tsumego']['id'];
-			}
 			$d = $this->Duplicate->find('all', ['conditions' => ['tsumego_id' => $tsIds]]);
-			if (!$d) {
+			if (!$d)
 				$d = [];
-			}
 			$s[$i]['Set']['dNum'] = count($d);
 		}
 
@@ -174,7 +168,8 @@ class SetsController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function sandbox() {
+	public function sandbox()
+	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
@@ -187,9 +182,11 @@ class SetsController extends AppController {
 		$this->Session->write('title', 'Tsumego Hero - Collections');
 		$setsNew = [];
 
-		if (isset($this->params['url']['restore'])) {
+		if (isset($this->params['url']['restore']))
+		{
 			$restore = $this->Set->findById($this->params['url']['restore']);
-			if ($restore['Set']['public'] == -1) {
+			if ($restore['Set']['public'] == -1)
+			{
 				$restore['Set']['public'] = 0;
 				$this->Set->save($restore);
 			}
@@ -201,55 +198,50 @@ class SetsController extends AppController {
 		]) ?: [];
 		$u = $this->User->findById(Auth::getUserID());
 
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
+		{
 			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$uts) {
+			if (!$uts)
 				$uts = [];
-			}
 			$tsumegoStatusMap = [];
 			$utsCount4 = count($uts);
-			for ($l = 0; $l < $utsCount4; $l++) {
+			for ($l = 0; $l < $utsCount4; $l++)
 				$tsumegoStatusMap[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
-			}
 		}
 		$overallCounter = 0;
 
 		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++) {
+		for ($i = 0; $i < $setsCount; $i++)
+		{
 			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 			$elo = 0;
 			$tsCount3 = count($ts);
-			for ($k = 0; $k < $tsCount3; $k++) {
+			for ($k = 0; $k < $tsCount3; $k++)
+			{
 
 				$elo += $ts[$k]['Tsumego']['rating'];
-				if (Auth::isLoggedIn()) {
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])) {
-						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C') {
+				if (Auth::isLoggedIn())
+					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]))
+						if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
 							$counter++;
-						}
-					}
-				}
 			}
-			if (count($ts) > 0) {
+			if (count($ts) > 0)
 				$elo = $elo / count($ts);
-			} else {
+			else
 				$elo = 0;
-			}
 			$date = new DateTime($sets[$i]['Set']['created']);
 			$month = date('F', strtotime($sets[$i]['Set']['created']));
 			$setday = $date->format('d. ');
 			$setyear = $date->format('Y');
-			if ($setday[0] == 0) {
+			if ($setday[0] == 0)
 				$setday = substr($setday, -3);
-			}
 			$sets[$i]['Set']['created'] = $date->format('Ymd');
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
 			$percent = 0;
-			if (count($ts) > 0) {
+			if (count($ts) > 0)
 				$percent = $counter / count($ts) * 100;
-			}
 			$overallCounter += count($ts);
 			$sets[$i]['Set']['solvedNum'] = $counter;
 			$sets[$i]['Set']['solved'] = round($percent, 1);
@@ -271,9 +263,8 @@ class SetsController extends AppController {
 
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
-		foreach ($adminsList as $item) {
+		foreach ($adminsList as $item)
 			$admins[] = $item['User']['name'];
-		}
 
 		$this->set('admins', $admins);
 		$this->set('sets', $sets);
@@ -285,30 +276,28 @@ class SetsController extends AppController {
 	 * @param int|null $tid Tsumego ID
 	 * @return void
 	 */
-	public function create($tid = null) {
+	public function create($tid = null)
+	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$redirect = false;
 		$t = [];
-		if (isset($this->data['Set'])) {
+		if (isset($this->data['Set']))
+		{
 			$s = $this->Set->find('all', ['order' => 'id DESC']);
-			if (!$s) {
+			if (!$s)
 				$s = [];
-			}
 			$ss = [];
 			$sCount = count($s);
-			for ($i = 0; $i < $sCount; $i++) {
-				if ($s[$i]['Set']['id'] < 6472) {
+			for ($i = 0; $i < $sCount; $i++)
+				if ($s[$i]['Set']['id'] < 6472)
 					array_push($ss, $s[$i]);
-				}
-			}
 
 			$seed = str_split('abcdefghijklmnopqrstuvwxyz0123456789');
 			shuffle($seed);
 			$rand = '';
-			foreach (array_rand($seed, 6) as $k) {
+			foreach (array_rand($seed, 6) as $k)
 				$rand .= $seed[$k];
-			}
 			$hashName = '6473k339312/_' . $rand . '_' . $this->data['Set']['title'];
 			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
 
@@ -357,27 +346,25 @@ class SetsController extends AppController {
 	 * @param int $id Set ID
 	 * @return void
 	 */
-	public function remove($id) {
+	public function remove($id)
+	{
 		$this->loadModel('Tsumego');
 		$redirect = false;
 
-		if (isset($this->data['Set'])) {
-			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1) {
+		if (isset($this->data['Set']))
+			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1)
+			{
 				$setID = (int) str_replace('6473k339312-', '', $this->data['Set']['hash']);
 
 				$s = $this->Set->findById($setID);
-				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1) {
+				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1)
 					$this->Set->delete($setID);
-				}
 				$ts = TsumegoUtil::collectTsumegosFromSet($setID);
-				if (count($ts) < 50) {
-					foreach ($ts as $item) {
+				if (count($ts) < 50)
+					foreach ($ts as $item)
 						$this->Tsumego->delete($item['Tsumego']['id']);
-					}
-				}
 				$redirect = true;
 			}
-		}
 		//$this->set('t', $t);
 		$this->set('redirect', $redirect);
 	}
@@ -386,10 +373,12 @@ class SetsController extends AppController {
 	 * @param int $tid Tsumego ID
 	 * @return void
 	 */
-	public function add($tid) {
+	public function add($tid)
+	{
 		$this->loadModel('Tsumego');
 
-		if (isset($this->data['Tsumego'])) {
+		if (isset($this->data['Tsumego']))
+		{
 			$t = [];
 			$t['Tsumego']['num'] = $this->data['Tsumego']['num'];
 			$t['Tsumego']['difficulty'] = $this->data['Tsumego']['difficulty'];
@@ -401,7 +390,8 @@ class SetsController extends AppController {
 		$this->set('t', $ts[0]);
 	}
 
-	public function index(): void {
+	public function index(): void
+	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Favorite');
@@ -425,31 +415,26 @@ class SetsController extends AppController {
 		$achievementUpdate = [];
 
 		$tsumegoFilters = new TsumegoFilters();
-		if ($tsumegoFilters->query == 'favorites') {
+		if ($tsumegoFilters->query == 'favorites')
 			$tsumegoFilters->setQuery('topics');
-		}
 
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
-		foreach ($swp as $item) {
+		foreach ($swp as $item)
 			$setsWithPremium[] = $item['Set']['id'];
-		}
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 1],
 		]) ?: [];
-		foreach ($setsRaw as $set) {
-			if (Auth::hasPremium() || !$set['Set']['premium']) {
+		foreach ($setsRaw as $set)
+			if (Auth::hasPremium() || !$set['Set']['premium'])
 				$setTiles [] = $set['Set']['title'];
-			}
-		}
 
 		//difficultyTiles
 		$dt = $this->getExistingRanksArray();
-		foreach ($dt as $item) {
+		foreach ($dt as $item)
 			$difficultyTiles[] = $item['rank'];
-		}
 
 		//tagTiles
 		$tags = $this->TagName->find('all', [
@@ -460,29 +445,29 @@ class SetsController extends AppController {
 		]);
 
 		$tagTiles = [];
-		foreach ($tags as $tag) {
+		foreach ($tags as $tag)
 			$tagTiles[] = $tag['TagName']['name'];
-		}
 
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-		} else {
+		else
+		{
 			$noLoginUts = [];
 			$noLoginCount = count($this->Session->read('noLogin') ?? []);
-			for ($i = 0; $i < $noLoginCount; $i++) {
+			for ($i = 0; $i < $noLoginCount; $i++)
 				$noLoginUts[$this->Session->read('noLogin')[$i]] = $this->Session->read('noLoginStatus')[$i];
-			}
 			$tsumegoStatusMap = $noLoginUts;
 		}
 
 		//sets
-		if ($tsumegoFilters->query == 'topics') {
+		if ($tsumegoFilters->query == 'topics')
+		{
 			$rankConditions = [];
-			if (!empty($tsumegoFilters->ranks)) {
+			if (!empty($tsumegoFilters->ranks))
+			{
 				$fromTo = [];
-				foreach ($tsumegoFilters->ranks as $rank) {
+				foreach ($tsumegoFilters->ranks as $rank)
 					$fromTo [] = RatingBounds::coverRank($rank, '15k')->getConditions();
-				}
 				$rankConditions['OR'] = $fromTo;
 			}
 			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
@@ -492,15 +477,16 @@ class SetsController extends AppController {
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
-			for ($i = 0; $i < $setsRawCount; $i++) {
+			for ($i = 0; $i < $setsRawCount; $i++)
+			{
 				$ts = TsumegoUtil::collectTsumegosFromSet($setsRaw[$i]['Set']['id'], $rankConditions);
 				$currentIds = [];
 				$tsCount2 = count($ts);
-				for ($j = 0; $j < $tsCount2; $j++) {
+				for ($j = 0; $j < $tsCount2; $j++)
 					array_push($currentIds, $ts[$j]['Tsumego']['id']);
-				}
 				$setAmount = count($ts);
-				if (count($tsumegoFilters->tags) > 0) {
+				if (count($tsumegoFilters->tags) > 0)
+				{
 					$idsTemp = [];
 					$tsTagsFiltered = $this->Tag->find('all', [
 						'conditions' => [
@@ -508,19 +494,16 @@ class SetsController extends AppController {
 							'tag_name_id' => $tsumegoFilters->tagIDs,
 						],
 					]);
-					if (!$tsTagsFiltered) {
+					if (!$tsTagsFiltered)
 						$tsTagsFiltered = [];
-					}
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
-					for ($j = 0; $j < $tsTagsFilteredCount2; $j++) {
+					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
 						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
-					}
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
 				}
-				if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || Auth::hasPremium()) {
+				if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || Auth::hasPremium())
 					$searchCounter += $setAmount;
-				}
 
 				$s = [];
 				$s['id'] = $setsRaw[$i]['Set']['id'];
@@ -529,23 +512,23 @@ class SetsController extends AppController {
 				$s['color'] = $setsRaw[$i]['Set']['color'];
 				$s['premium'] = $setsRaw[$i]['Set']['premium'];
 				$s['currentIds'] = $currentIds;
-				if (count($currentIds) > 0) {
+				if (count($currentIds) > 0)
 					array_push($sets, $s);
-				}
 			}
 
 			$sets = $this->partitionCollections($sets, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
-			if ($tsumegoFilters->collectionSize >= 200) {
+			if ($tsumegoFilters->collectionSize >= 200)
+			{
 				$setsCount = count($sets);
-				for ($i = 0; $i < $setsCount; $i++) {
-					if ($sets[$i]['solved_percent'] >= 100) {
+				for ($i = 0; $i < $setsCount; $i++)
+					if ($sets[$i]['solved_percent'] >= 100)
 						$overallCounter++;
-					}
-				}
 			}
 		}
-		if (Auth::isLoggedIn()) {
-			if ($overallCounter >= 10) {
+		if (Auth::isLoggedIn())
+		{
+			if ($overallCounter >= 10)
+			{
 				$aCondition = $this->AchievementCondition->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
@@ -553,9 +536,8 @@ class SetsController extends AppController {
 						'category' => 'set',
 					],
 				]);
-				if ($aCondition == null) {
+				if ($aCondition == null)
 					$aCondition = [];
-				}
 				$aCondition['AchievementCondition']['category'] = 'set';
 				$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 				$aCondition['AchievementCondition']['value'] = $overallCounter;
@@ -563,55 +545,55 @@ class SetsController extends AppController {
 			}
 			Auth::saveUser();
 			$achievementUpdate = $this->checkSetCompletedAchievements();
-			if (count($achievementUpdate) > 0) {
+			if (count($achievementUpdate) > 0)
 				$this->updateXP(Auth::getUserID(), $achievementUpdate);
-			}
 		}
 		//difficulty
-		if ($tsumegoFilters->query == 'difficulty') {
+		if ($tsumegoFilters->query == 'difficulty')
+		{
 			$ranksArray = $this->getExistingRanksArray();
 			$newRanksArray = [];
 			$setConditions = [];
-			if (!empty($tsumegoFilters->setIDs)) {
+			if (!empty($tsumegoFilters->setIDs))
 				$setConditions['set_id'] = $tsumegoFilters->setIDs;
-			}
-			if (!empty($tsumegoFilters->ranks)) {
+			if (!empty($tsumegoFilters->ranks))
+			{
 				$ranksArray2 = [];
 				$ranksCounter = 0;
-				foreach ($tsumegoFilters->ranks as $rank) {
+				foreach ($tsumegoFilters->ranks as $rank)
+				{
 					$ranksArrayCount2 = count($ranksArray);
-					for ($j = 0; $j < $ranksArrayCount2; $j++) {
-						if ($rank == $ranksArray[$j]['rank']) {
+					for ($j = 0; $j < $ranksArrayCount2; $j++)
+						if ($rank == $ranksArray[$j]['rank'])
+						{
 							$ranksArray2[$ranksCounter]['rank'] = $ranksArray[$j]['rank'];
 							$ranksArray2[$ranksCounter]['color'] = $ranksArray[$j]['color'];
 							$ranksCounter++;
 						}
-					}
 				}
 				$ranksArray = $ranksArray2;
 			}
-			foreach ($ranksArray as $rank) {
+			foreach ($ranksArray as $rank)
+			{
 				$condition = "";
 				RatingBounds::coverRank($rank['rank'], '15k')->addSqlConditions($condition);
-				if (!Auth::hasPremium()) {
+				if (!Auth::hasPremium())
 					Util::addSqlCondition($condition, '`set`.premium = false');
-				}
 				Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
-				if (!empty($tsumegoFilters->setIDs)) {
+				if (!empty($tsumegoFilters->setIDs))
 					Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
-				}
 				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
 					"SELECT tsumego.id "
 					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
 					. " JOIN `set` ON `set`.id=set_connection.set_id WHERE " . $condition
 				) ?: [];
 				$currentIds = [];
-				foreach ($tsumegoIDs as $tsumegoID) {
+				foreach ($tsumegoIDs as $tsumegoID)
 					$currentIds [] = $tsumegoID['tsumego']['id'];
-				}
 				$setAmount = count($tsumegoIDs);
 
-				if (count($tsumegoFilters->tags) > 0) {
+				if (count($tsumegoFilters->tags) > 0)
+				{
 					$idsTemp = [];
 					$tsTagsFiltered = $this->Tag->find('all', [
 						'conditions' => [
@@ -620,9 +602,8 @@ class SetsController extends AppController {
 						],
 					]) ?: [];
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
-					for ($j = 0; $j < $tsTagsFilteredCount2; $j++) {
+					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
 						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
-					}
 
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
@@ -636,20 +617,21 @@ class SetsController extends AppController {
 				$rTemp['amount'] = $setAmount;
 				$rTemp['currentIds'] = $currentIds;
 				$rTemp['color'] = $rank['color'];
-				if (!empty($currentIds)) {
+				if (!empty($currentIds))
 					$newRanksArray [] = $rTemp;
-				}
 			}
 			$sets = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
 		}
 
 		$ranksArray = $this->getExistingRanksArray();
-		foreach ($ranksArray as &$rank) {
+		foreach ($ranksArray as &$rank)
+		{
 			$rank['id'] = $rank['rank'];
 			$rank['name'] = $rank['rank'];
 		}
 		//tags
-		if ($tsumegoFilters->query == 'tags') {
+		if ($tsumegoFilters->query == 'tags')
+		{
 			$query = "
 WITH tag_counts AS (
   SELECT
@@ -697,7 +679,8 @@ FROM partitioned
 ORDER BY total_count DESC, partition_number";
 
 			$tagsRaw = ClassRegistry::init('Tsumego')->query($query);
-			foreach ($tagsRaw as $key => $tagRaw) {
+			foreach ($tagsRaw as $key => $tagRaw)
+			{
 				$tagRaw = $tagRaw['partitioned'];
 				$tag = [];
 				$tag['id'] = $tagRaw['name'];
@@ -711,15 +694,14 @@ ORDER BY total_count DESC, partition_number";
 				$sets [] = $tag;
 			}
 		}
-		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets)) {
+		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
 			$queryRefresh = false;
-		} elseif ($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->ranks)) {
+		elseif ($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->ranks))
 			$queryRefresh = false;
-		} elseif ($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->tags)) {
+		elseif ($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->tags))
 			$queryRefresh = false;
-		} else {
+		else
 			$queryRefresh = true;
-		}
 
 		$this->set('sets', $sets);
 		$this->set('ranksArray', $ranksArray);
@@ -734,15 +716,18 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('queryRefresh', $queryRefresh);
 	}
 
-	private function partitionCollections($list, $size, $tsumegoStatusMap) {
+	private function partitionCollections($list, $size, $tsumegoStatusMap)
+	{
 		$newList = [];
 		$listCount = count($list);
-		for ($i = 0; $i < $listCount; $i++) {
+		for ($i = 0; $i < $listCount; $i++)
+		{
 			$amountTags = $list[$i]['amount'];
 			$amountCounter = 0;
 			$amountFrom = 0;
 			$amountTo = $size - 1;
-			while ($amountTags > $size) {
+			while ($amountTags > $size)
+			{
 				$newList = $this->partitionCollection($newList, $list[$i], $size, $tsumegoStatusMap, $amountFrom, $amountTo + 1, $amountCounter, true);
 				$amountTags -= $size;
 				$amountCounter++;
@@ -756,13 +741,15 @@ ORDER BY total_count DESC, partition_number";
 		return $newList;
 	}
 
-	private function partitionCollection($newList, $list, $size, $tsumegoStatusMap, $from, $to, $amountCounter, $inLoop) {
+	private function partitionCollection($newList, $list, $size, $tsumegoStatusMap, $from, $to, $amountCounter, $inLoop)
+	{
 		$tl = [];
 		$tl['id'] = $list['id'];
 		$colorValue = 1;
-		if (!$inLoop && $amountCounter == 0) {
+		if (!$inLoop && $amountCounter == 0)
 			$tl['partition'] = -1;
-		} else {
+		else
+		{
 			$tl['partition'] = $amountCounter;
 			$step = 1.5;
 			$colorValue = 1 - ($amountCounter * 0.1 * $step);
@@ -770,15 +757,13 @@ ORDER BY total_count DESC, partition_number";
 		$tl['name'] = $list['name'];
 		$tl['amount'] = $size;
 		$tl['color'] = str_replace('[o]', (string) $colorValue, $list['color']);
-		if (isset($list['premium'])) {
+		if (isset($list['premium']))
 			$tl['premium'] = $list['premium'];
-		} else {
+		else
 			$tl['premium'] = 0;
-		}
 		$currentIds = [];
-		for ($i = $from; $i < $to; $i++) {
+		for ($i = $from; $i < $to; $i++)
 			array_push($currentIds, $list['currentIds'][$i]);
-		}
 		$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 		$tl['difficulty'] = $difficultyAndSolved['difficulty'];
 		$tl['solved_percent'] = $difficultyAndSolved['solved'];
@@ -787,35 +772,32 @@ ORDER BY total_count DESC, partition_number";
 		return $newList;
 	}
 
-	private function getDifficultyAndSolved($currentTagIds, $tsumegoStatusMap) {
+	private function getDifficultyAndSolved($currentTagIds, $tsumegoStatusMap)
+	{
 		$tagTsumegoDifficulty = $this->Tsumego->find('all', ['conditions' => ['id' => $currentTagIds]]);
-		if (!$tagTsumegoDifficulty) {
+		if (!$tagTsumegoDifficulty)
 			$tagTsumegoDifficulty = [];
-		}
 		$tagDifficultyResult = 0;
 		$statusCounter = 0;
 		$tagTsumegoDifficultyCount2 = count($tagTsumegoDifficulty);
-		for ($j = 0; $j < $tagTsumegoDifficultyCount2; $j++) {
+		for ($j = 0; $j < $tagTsumegoDifficultyCount2; $j++)
+		{
 			$tagDifficultyResult += $tagTsumegoDifficulty[$j]['Tsumego']['rating'];
-			if (isset($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']])) {
-				if ($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'C') {
+			if (isset($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']]))
+				if ($tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$tagTsumegoDifficulty[$j]['Tsumego']['id']] == 'C')
 					$statusCounter++;
-				}
-			}
 		}
-		if (count($tagTsumegoDifficulty) > 0) {
+		if (count($tagTsumegoDifficulty) > 0)
 			$tagDifficultyResult = $tagDifficultyResult / count($tagTsumegoDifficulty);
-		} else {
+		else
 			$tagDifficultyResult = 0;
-		}
 		$tagDifficultyResult = Rating::getReadableRankFromRating($tagDifficultyResult);
 		$return = [];
 		$return['difficulty'] = $tagDifficultyResult;
-		if (count($currentTagIds) > 0) {
+		if (count($currentTagIds) > 0)
 			$return['solved'] = round($statusCounter / count($currentTagIds) * 100, 2);
-		} else {
+		else
 			$return['solved'] = 0;
-		}
 
 		return $return;
 	}
@@ -824,16 +806,17 @@ ORDER BY total_count DESC, partition_number";
 	 * @param int|null $id Set ID
 	 * @return void
 	 */
-	public function ui($id = null) {
+	public function ui($id = null)
+	{
 		$s = $this->Set->findById($id);
 		$redirect = false;
 
-		if (isset($_FILES['adminUpload'])) {
+		if (isset($_FILES['adminUpload']))
+		{
 			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 			$randstring = 'set_';
-			for ($i = 0; $i < 6; $i++) {
+			for ($i = 0; $i < 6; $i++)
 				$randstring .= $characters[rand(0, strlen($characters))];
-			}
 			$filename = $randstring . '_' . $_FILES['adminUpload']['name'];
 
 			$errors = [];
@@ -845,14 +828,13 @@ ORDER BY total_count DESC, partition_number";
 			$file_ext = strtolower(end($array));
 			$extensions = ['png', 'jpg'];
 
-			if (in_array($file_ext, $extensions) === false) {
+			if (in_array($file_ext, $extensions) === false)
 				$errors[] = 'png/jpg allowed.';
-			}
-			if ($file_size > 2097152) {
+			if ($file_size > 2097152)
 				$errors[] = 'The file is too large.';
-			}
 
-			if (empty($errors) == true) {
+			if (empty($errors) == true)
+			{
 				$uploadfile = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/img/' . $filename;
 				move_uploaded_file($file_tmp, $uploadfile);
 			}
@@ -868,25 +850,27 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('redirect', $redirect);
 	}
 
-	private function decodeQueryType($input) {
-		if (is_numeric($input)) {
+	private function decodeQueryType($input)
+	{
+		if (is_numeric($input))
 			return 'topics';
-		}
-		if ($input == 'favorites') {
+		if ($input == 'favorites')
 			return 'favorites';
-		}
-		try {
+		try
+		{
 			Rating::getRankFromReadableRank($input);
 			return 'difficulty';
-		} catch (Exception $e) {
+		}
+		catch (Exception $e)
+		{
 			return 'tags';
 		}
 	}
 
-	public function addTsumego($setID) {
-		if (!isset($this->data['Tsumego'])) {
+	public function addTsumego($setID)
+	{
+		if (!isset($this->data['Tsumego']))
 			return;
-		}
 
 		ClassRegistry::init('Tsumego')->getDataSource()->begin();
 		$tsumego = [];
@@ -909,7 +893,8 @@ ORDER BY total_count DESC, partition_number";
 		return $this->redirect('/sets/view/' . $setID);
 	}
 
-	public function view(string|int|null $id = null, int $partition = 1): void {
+	public function view(string|int|null $id = null, int $partition = 1): void
+	{
 		// transferring from 1 indexed for humans to 0 indexed for us programmers.
 		$partition = $partition - 1;
 		$this->loadModel('Tsumego');
@@ -929,15 +914,13 @@ ORDER BY total_count DESC, partition_number";
 		$this->loadModel('User');
 		$this->loadModel('UserContribution');
 
-		if (is_null($id)) {
+		if (is_null($id))
 			throw new AppException("Set to view not specified");
-		}
 
-		if ($id != '1') {
+		if ($id != '1')
 			$this->Session->write('page', 'set');
-		} else {
+		else
 			$this->Session->write('page', 'favs');
-		}
 		$josekiOrder = 0;
 		$tsIds = [];
 		$refreshView = false;
@@ -959,13 +942,16 @@ ORDER BY total_count DESC, partition_number";
 		$acA = null;
 
 		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
+		{
 
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 
-			if (Auth::isAdmin()) {
+			if (Auth::isAdmin())
+			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
-				if ($aad['AdminActivity']['file'] == '/delete') {
+				if ($aad['AdminActivity']['file'] == '/delete')
+				{
 					$scDelete = $this->SetConnection->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $aad['AdminActivity']['tsumego_id']]]);
 					$this->SetConnection->delete($scDelete['SetConnection']['id']);
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
@@ -974,7 +960,8 @@ ORDER BY total_count DESC, partition_number";
 				}
 			}
 		}
-		if (isset($this->params['url']['add'])) {
+		if (isset($this->params['url']['add']))
+		{
 			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
 			$scTcount = $this->SetConnection->find('first', ['conditions' => ['set_id' => $id, 'num' => 1]]);
 			$setCount = $this->Tsumego->findById($scTcount['SetConnection']['tsumego_id']);
@@ -982,15 +969,14 @@ ORDER BY total_count DESC, partition_number";
 			$setCount['Tsumego']['set_id'] = $scTcount['SetConnection']['set_id'];
 			$setCount['Tsumego']['num'] += 1;
 			$setCount['Tsumego']['variance'] = 100;
-			if (Auth::getUserID() == 72) {
+			if (Auth::getUserID() == 72)
 				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
-			} elseif (Auth::getUserID() == 1206) {
+			elseif (Auth::getUserID() == 1206)
 				$setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
-			} elseif (Auth::getUserID() == 3745) {
+			elseif (Auth::getUserID() == 3745)
 				$setCount['Tsumego']['author'] = 'Dennis Olevanov';
-			} else {
+			else
 				$setCount['Tsumego']['author'] = Auth::getUser()['name'];
-			}
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
 			$adminActivity = [];
@@ -1002,19 +988,19 @@ ORDER BY total_count DESC, partition_number";
 			$this->AdminActivity->save($adminActivity);
 		}
 
-		if (isset($this->params['url']['show'])) {
-			if ($this->params['url']['show'] == 'order') {
+		if (isset($this->params['url']['show']))
+		{
+			if ($this->params['url']['show'] == 'order')
 				$josekiOrder = 1;
-			}
-			if ($this->params['url']['show'] == 'num') {
+			if ($this->params['url']['show'] == 'num')
 				$josekiOrder = 0;
-			}
 		}
 
 		$this->Session->write('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 
-		if ($tsumegoFilters->query == 'difficulty') {
+		if ($tsumegoFilters->query == 'difficulty')
+		{
 			$set = [];
 			$set['Set']['id'] = $id;
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
@@ -1027,29 +1013,30 @@ ORDER BY total_count DESC, partition_number";
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
-		} elseif ($tsumegoFilters->query == 'tags') {
+		}
+		elseif ($tsumegoFilters->query == 'tags')
+		{
 			$set['Set']['id'] = $id;
 			$set['Set']['image'] = '';
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
 			$tagName = $this->TagName->findByName($id);
-			if ($tagName && isset($tagName['TagName']['description'])) {
+			if ($tagName && isset($tagName['TagName']['description']))
 				$set['Set']['description'] = $tagName['TagName']['description'];
-			}
 
 			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton) {
+			foreach ($tsumegoButtons as $tsumegoButton)
 				$currentIds[] = $tsumegoButton->tsumegoID;
-			}
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
-		} elseif ($tsumegoFilters->query == 'topics') {
+		}
+		elseif ($tsumegoFilters->query == 'topics')
+		{
 			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton) {
+			foreach ($tsumegoButtons as $tsumegoButton)
 				$currentIds [] =  $tsumegoButton->tsumegoID;
-			}
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set = ClassRegistry::init('Set')->findById($id);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
@@ -1059,41 +1046,40 @@ ORDER BY total_count DESC, partition_number";
 			$allArInactive = true;
 			$allPassActive = true;
 			$allPassInactive = true;
-			foreach ($tsumegoButtons as $tsumegoButton) {
-				if (!$tsumegoButton->alternativeResponse) {
+			foreach ($tsumegoButtons as $tsumegoButton)
+			{
+				if (!$tsumegoButton->alternativeResponse)
 					$allArActive = false;
-				}
-				if (!$tsumegoButton->passEnabled) {
+				if (!$tsumegoButton->passEnabled)
 					$allPassActive = false;
-				}
 			}
-			foreach ($tsumegoButtons as $tsumegoButton) {
+			foreach ($tsumegoButtons as $tsumegoButton)
 				$tsIds [] = $tsumegoButton->tsumegoID;
-			}
-			if ($set['Set']['public'] == 0) {
+			if ($set['Set']['public'] == 0)
 				$this->Session->write('page', 'sandbox');
-			}
 			$this->set('isFav', false);
-			if (isset($this->params['url']['sort'])) {
-				if ($this->params['url']['sort'] == 1) {
+			if (isset($this->params['url']['sort']))
+				if ($this->params['url']['sort'] == 1)
+				{
 					$tsId = [];
-					foreach ($tsumegoButtons as $tsumegoButton) {
+					foreach ($tsumegoButtons as $tsumegoButton)
 						$tsId [] = $tsumegoButton->tsumegoID;
-					}
 					$nr = 1;
 					$tsIdCount = count($tsId);
-					for ($i = 0; $i < $tsIdCount; $i++) {
+					for ($i = 0; $i < $tsIdCount; $i++)
+					{
 						$tsu = $this->Tsumego->findById($tsId[$i]);
-						if ($tsu['Tsumego']['num'] != $nr) {
+						if ($tsu['Tsumego']['num'] != $nr)
 							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
-						}
 						$nr++;
 					}
 					$nr = 1;
 					$tsIdCount = count($tsId);
-					for ($i = 0; $i < $tsIdCount; $i++) {
+					for ($i = 0; $i < $tsIdCount; $i++)
+					{
 						$tsu = $this->Tsumego->findById($tsId[$i]);
-						if ($tsu['Tsumego']['num'] != $nr) {
+						if ($tsu['Tsumego']['num'] != $nr)
+						{
 							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf', '6473k339312/joseki/' . $nr . '.sgf');
 							$tsu['Tsumego']['num'] = $nr;
 							$this->Tsumego->save($tsu);
@@ -1101,29 +1087,27 @@ ORDER BY total_count DESC, partition_number";
 						$nr++;
 					}
 				}
-			}
-			if (isset($this->params['url']['rename'])) {
-				if ($this->params['url']['rename'] == 1) {
+			if (isset($this->params['url']['rename']))
+				if ($this->params['url']['rename'] == 1)
+				{
 					$tsId = [];
-					foreach ($tsumegoButtons as $tsumegoButton) {
+					foreach ($tsumegoButtons as $tsumegoButton)
 						$tsId [] = $tsumegoButton->tsumegoID;
-					}
 					$nr = 1;
-					foreach ($tsId as $id) {
+					foreach ($tsId as $id)
+					{
 						$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $id]]);
 						$j['Joseki']['order'] = $nr;
 						$this->Joseki->save($j);
 						$nr++;
 					}
 				}
-			}
-			if (isset($this->data['Set']['title'])) {
-				if ($set['Set']['title'] != $this->data['Set']['title']) {
+			if (isset($this->data['Set']['title']))
+			{
+				if ($set['Set']['title'] != $this->data['Set']['title'])
 					$formChange = true;
-				}
-				if ($set['Set']['title2'] != $this->data['Set']['title2']) {
+				if ($set['Set']['title2'] != $this->data['Set']['title2'])
 					$formChange = true;
-				}
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['title'] = $this->data['Set']['title'];
@@ -1137,10 +1121,10 @@ ORDER BY total_count DESC, partition_number";
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 			}
-			if (isset($this->data['Set']['description'])) {
-				if ($set['Set']['description'] != $this->data['Set']['description']) {
+			if (isset($this->data['Set']['description']))
+			{
+				if ($set['Set']['description'] != $this->data['Set']['description'])
 					$formChange = true;
-				}
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['description'] = $this->data['Set']['description'];
@@ -1153,12 +1137,14 @@ ORDER BY total_count DESC, partition_number";
 				$adminActivity['AdminActivity']['file'] = 'settings';
 				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 			}
-			if (isset($this->data['Set']['setDifficulty'])) {
-				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900) {
+			if (isset($this->data['Set']['setDifficulty']))
+				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
+				{
 					$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
 					$setDifficulty = $this->data['Set']['setDifficulty'];
 					$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
-					for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++) {
+					for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++)
+					{
 						$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
 						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 					}
@@ -1168,11 +1154,10 @@ ORDER BY total_count DESC, partition_number";
 					$adminActivity['AdminActivity']['file'] = 'settings';
 					$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
 				}
-			}
-			if (isset($this->data['Set']['color'])) {
-				if ($set['Set']['color'] != $this->data['Set']['color']) {
+			if (isset($this->data['Set']['color']))
+			{
+				if ($set['Set']['color'] != $this->data['Set']['color'])
 					$formChange = true;
-				}
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['color'] = $this->data['Set']['color'];
@@ -1186,10 +1171,10 @@ ORDER BY total_count DESC, partition_number";
 				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				$this->AdminActivity->save($adminActivity);
 			}
-			if (isset($this->data['Set']['order'])) {
-				if ($set['Set']['order'] != $this->data['Set']['order']) {
+			if (isset($this->data['Set']['order']))
+			{
+				if ($set['Set']['order'] != $this->data['Set']['order'])
 					$formChange = true;
-				}
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['order'] = $this->data['Set']['order'];
@@ -1203,9 +1188,12 @@ ORDER BY total_count DESC, partition_number";
 				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
 				$this->AdminActivity->save($adminActivity);
 			}
-			if (isset($this->data['Settings'])) {
-				if ($this->data['Settings']['r39'] == 'on') {
-					foreach ($tsumegoButtons as $tsumegoButton) {
+			if (isset($this->data['Settings']))
+			{
+				if ($this->data['Settings']['r39'] == 'on')
+				{
+					foreach ($tsumegoButtons as $tsumegoButton)
+					{
 						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
 						$tsumego['alternative_response'] = true;
 						ClassRegistry::init('Tsumego')->save($tsumego);
@@ -1218,8 +1206,10 @@ ORDER BY total_count DESC, partition_number";
 					$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if ($this->data['Settings']['r39'] == 'off') {
-					foreach ($tsumegoButtons as $tsumegoButton) {
+				if ($this->data['Settings']['r39'] == 'off')
+				{
+					foreach ($tsumegoButtons as $tsumegoButton)
+					{
 						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
 						$tsumego['alternative_response'] = false;
 						ClassRegistry::init('Tsumego')->save($tsumego);
@@ -1232,8 +1222,10 @@ ORDER BY total_count DESC, partition_number";
 					$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if ($this->data['Settings']['r43'] == 'yes') {
-					foreach ($tsumegoButtons as $tsumegoButton) {
+				if ($this->data['Settings']['r43'] == 'yes')
+				{
+					foreach ($tsumegoButtons as $tsumegoButton)
+					{
 						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
 						$tsumego['pass'] = true;
 						ClassRegistry::init('Tsumego')->save($tsumego);
@@ -1246,8 +1238,10 @@ ORDER BY total_count DESC, partition_number";
 					$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
 					$this->AdminActivity->save($adminActivity);
 				}
-				if ($this->data['Settings']['r43'] == 'no') {
-					foreach ($tsumegoButtons as $tsumegoButton) {
+				if ($this->data['Settings']['r43'] == 'no')
+				{
+					foreach ($tsumegoButtons as $tsumegoButton)
+					{
 						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
 						$tsumego['pass'] = false;
 						ClassRegistry::init('Tsumego')->save($tsumego);
@@ -1262,58 +1256,56 @@ ORDER BY total_count DESC, partition_number";
 				}
 				$this->set('formRedirect', true);
 			}
-		} elseif ($tsumegoFilters->query = 'favorites') { // TODO: implement
-			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		}
+		elseif ($tsumegoFilters->query = 'favorites') // TODO: implement
+		{$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
 			$statusMap = [];
 			$allUtsCount = count($allUts);
-			for ($i = 0; $i < $allUtsCount; $i++) {
+			for ($i = 0; $i < $allUtsCount; $i++)
+			{
 				array_push($idMap, $allUts[$i]['TsumegoStatus']['tsumego_id']);
 				array_push($statusMap, $allUts[$i]['TsumegoStatus']['status']);
 			}
 			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$fav) {
+			if (!$fav)
 				$fav = [];
-			}
-			if (count($fav) > 0) {
+			if (count($fav) > 0)
 				$achievementUpdate = $this->checkSetAchievements(-1);
-			}
 			$ts = [];
 			$difficultyCount = 0;
 			$solvedCount = 0;
 			$sizeCount = 0;
 			$favCount = count($fav);
-			for ($i = 0; $i < $favCount; $i++) {
+			for ($i = 0; $i < $favCount; $i++)
+			{
 				$tx = $this->Tsumego->find('first', ['conditions' => ['id' => $fav[$i]['Favorite']['tsumego_id']]]);
 				$difficultyCount += $tx['Tsumego']['difficulty'];
 				$utx = $this->findUt($fav[$i]['Favorite']['tsumego_id'], $allUts, $idMap);
-				if ($utx['TsumegoStatus']['status'] == 'S' || $utx['TsumegoStatus']['status'] == 'W' || $utx['TsumegoStatus']['status'] == 'C') {
+				if ($utx['TsumegoStatus']['status'] == 'S' || $utx['TsumegoStatus']['status'] == 'W' || $utx['TsumegoStatus']['status'] == 'C')
 					$solvedCount++;
-				}
 				$sizeCount++;
 				array_push($ts, $tx);
 			}
 			$allUtsCount = count($allUts);
-			for ($i = 0; $i < $allUtsCount; $i++) {
+			for ($i = 0; $i < $allUtsCount; $i++)
+			{
 				$tsCount2 = count($ts);
-				for ($j = 0; $j < $tsCount2; $j++) {
-					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id']) {
+				for ($j = 0; $j < $tsCount2; $j++)
+					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id'])
 						$ts[$j]['Tsumego']['status'] = $allUts[$i]['TsumegoStatus']['status'];
-					}
-				}
 			}
 			$difficultyCount = Util::getRatio($difficultyCount, count($tsumegoButtons));
-			if ($difficultyCount <= 2) {
+			if ($difficultyCount <= 2)
 				$difficultyCount = 1;
-			} elseif ($difficultyCount > 2 && $difficultyCount <= 3) {
+			elseif ($difficultyCount > 2 && $difficultyCount <= 3)
 				$difficultyCount = 2;
-			} elseif ($difficultyCount > 3 && $difficultyCount <= 4) {
+			elseif ($difficultyCount > 3 && $difficultyCount <= 4)
 				$difficultyCount = 3;
-			} elseif ($difficultyCount > 4 && $difficultyCount <= 6) {
+			elseif ($difficultyCount > 4 && $difficultyCount <= 6)
 				$difficultyCount = 4;
-			} elseif ($difficultyCount > 6) {
+			elseif ($difficultyCount > 6)
 				$difficultyCount = 5;
-			}
 			$percent = Util::getPercent($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
@@ -1338,13 +1330,13 @@ ORDER BY total_count DESC, partition_number";
 			$this->set('isFav', true);
 		}
 
-		if ($tsumegoButtons->description) {
+		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
-		}
 
 		$this->Session->write('title', $set['Set']['title'] . ' on Tsumego Hero');
 
-		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
+		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
+		{
 			$ur = $this->TsumegoAttempt->find('all', [
 				'order' => 'created DESC',
 				'conditions' => [
@@ -1352,63 +1344,64 @@ ORDER BY total_count DESC, partition_number";
 					'tsumego_id' => $tsIds,
 				],
 			]) ?: [];
-			foreach ($tsumegoButtons as $tsumegoButton) {
+			foreach ($tsumegoButtons as $tsumegoButton)
+			{
 				$urTemp = [];
 				$urSum = '';
 				$tsumegoButton->seconds = 0;
 				$urCount2 = count($ur);
-				for ($j = 0; $j < $urCount2; $j++) {
-					if ($tsumegoButton->tsumegoID == $ur[$j]['TsumegoAttempt']['tsumego_id']) {
+				for ($j = 0; $j < $urCount2; $j++)
+					if ($tsumegoButton->tsumegoID == $ur[$j]['TsumegoAttempt']['tsumego_id'])
+					{
 						array_push($urTemp, $ur[$j]);
-						if ($ur[$j]['TsumegoAttempt']['solved']) {
+						if ($ur[$j]['TsumegoAttempt']['solved'])
 							$tsumegoButton->seconds = $ur[$j]['TsumegoAttempt']['seconds'];
-						}
-						if (!$ur[$j]['TsumegoAttempt']['solved']) {
+						if (!$ur[$j]['TsumegoAttempt']['solved'])
+						{
 							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
-							if ($mis == 0) {
+							if ($mis == 0)
 								$mis = 1;
-							}
-							while ($mis > 0) {
+							while ($mis > 0)
+							{
 								$urSum .= 'F';
 								$mis--;
 							}
-						} else {
-							$urSum .= $ur[$j]['TsumegoAttempt']['solved'];
 						}
+						else
+							$urSum .= $ur[$j]['TsumegoAttempt']['solved'];
 					}
-				}
 				$tsumegoButton->performance = $urSum;
 			}
 		}
 		$scoring = true;
-		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics') {
-			if (isset($this->data['Comment']['reset'])) {
-				if ($this->data['Comment']['reset'] == 'reset') {
+		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
+		{
+			if (isset($this->data['Comment']['reset']))
+				if ($this->data['Comment']['reset'] == 'reset')
+				{
 					$uts = $this->TsumegoStatus->find('all', [
 						'conditions' => [
 							'user_id' => Auth::getUserID(),
 							'tsumego_id' => $currentIds,
 						],
 					]);
-					if (!$uts) {
+					if (!$uts)
 						$uts = [];
-					}
 					$ur = $this->TsumegoAttempt->find('all', [
 						'conditions' => [
 							'user_id' => Auth::getUserID(),
 							'tsumego_id' => $currentIds,
 						],
 					]);
-					if (!$ur) {
+					if (!$ur)
 						$ur = [];
-					}
 					$urCount = count($ur);
-					for ($i = 0; $i < $urCount; $i++) {
+					for ($i = 0; $i < $urCount; $i++)
 						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
-					}
 					//$loggedInUserUts = $this->Session->read('loggedInUser.uts');
 					$utsCount = count($uts);
-					for ($i = 0; $i < $utsCount; $i++) {
+					for ($i = 0; $i < $utsCount; $i++)
+					{
 						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
 						//unset($loggedInUserUts[$uts[$i]['TsumegoStatus']['tsumego_id']]);
 					}
@@ -1420,7 +1413,6 @@ ORDER BY total_count DESC, partition_number";
 					$this->ProgressDeletion->save($pr);
 					$refreshView = true;
 				}
-			}
 			$pd = $this->ProgressDeletion->find('all', [
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
@@ -1429,81 +1421,76 @@ ORDER BY total_count DESC, partition_number";
 			]) ?: [];
 			$pdCounter = 0;
 			$pdCount = count($pd);
-			for ($i = 0; $i < $pdCount; $i++) {
+			for ($i = 0; $i < $pdCount; $i++)
+			{
 				$date = date_create($pd[$i]['ProgressDeletion']['created']);
 				$pd[$i]['ProgressDeletion']['d'] = $date->format('Y') . '-' . $date->format('m');
-				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d']) {
+				if (date('Y-m') == $pd[$i]['ProgressDeletion']['d'])
 					$pdCounter++;
-				}
 			}
 			$urSecCounter = 0;
 			$urSecAvg = 0;
 			$pSsum = 0;
 			$pFsum = 0;
 			$tsCount = count($tsumegoButtons);
-			foreach ($tsumegoButtons as $tsumegoButton) {
+			foreach ($tsumegoButtons as $tsumegoButton)
+			{
 				$tss = 0;
-				if ($tsumegoButton->seconds == 0) {
-					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status)) {
+				if ($tsumegoButton->seconds == 0)
+					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss = 60;
-					} else {
+					else
 						$tss = 0;
-					}
-				} else {
+				else
 					$tss = $tsumegoButton->seconds;
-				}
 				$urSecAvg += $tss;
 				$urSecCounter++;
 
 				$tss2 = 'F';
-				if ($tsumegoButton->performance == '') {
-					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status)) {
+				if ($tsumegoButton->performance == '')
+					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss2 = 'F';
-					} else {
+					else
 						$tss2 = '';
-					}
-				} else {
+				else
 					$tss2 = $tsumegoButton->performance;
-				}
 				$pS = substr_count($tss2, '1');
 				$pF = substr_count($tss2, 'F');
 				$pSsum += $pS;
 				$pFsum += $pF;
 			}
-			if ($urSecCounter == 0) {
+			if ($urSecCounter == 0)
 				$avgTime = 60;
-			} else {
+			else
 				$avgTime = round($urSecAvg / $urSecCounter, 2);
-			}
-			if ($pSsum + $pFsum == 0) {
+			if ($pSsum + $pFsum == 0)
 				$accuracy = 0;
-			} else {
+			else
 				$accuracy = round($pSsum / ($pSsum + $pFsum) * 100, 2);
-			}
 			$avgTime2 = $avgTime;
 			$achievementUpdate2 = [];
 			$achievementUpdate1 = [];
-			if ($set['Set']['solved'] >= 100) {
-				if ($set['Set']['id'] != 210) {
+			if ($set['Set']['solved'] >= 100)
+			{
+				if ($set['Set']['id'] != 210)
+				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
 					$achievementUpdate1 = $this->checkSetAchievements($set['Set']['id']);
 				}
-				if ($id == 50 || $id == 52 || $id == 53 || $id == 54) {
+				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
 					$achievementUpdate2 = $this->setAchievementSpecial('cc1');
-				} elseif ($id == 41 || $id == 49 || $id == 65 || $id == 66) {
+				elseif ($id == 41 || $id == 49 || $id == 65 || $id == 66)
 					$achievementUpdate2 = $this->setAchievementSpecial('cc2');
-				} elseif ($id == 186 || $id == 187 || $id == 196 || $id == 203) {
+				elseif ($id == 186 || $id == 187 || $id == 196 || $id == 203)
 					$achievementUpdate2 = $this->setAchievementSpecial('cc3');
-				} elseif ($id == 190 || $id == 193 || $id == 198) {
+				elseif ($id == 190 || $id == 193 || $id == 198)
 					$achievementUpdate2 = $this->setAchievementSpecial('1000w1');
-				} elseif ($id == 216) {
+				elseif ($id == 216)
 					$achievementUpdate2 = $this->setAchievementSpecial('1000w2');
-				}
 				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
 			}
-			if (count($achievementUpdate) > 0) {
+			if (count($achievementUpdate) > 0)
 				$this->updateXP(Auth::getUserID(), $achievementUpdate);
-			}
 
 			$acS = $this->AchievementCondition->find('first', [
 				'order' => 'value ASC',
@@ -1521,13 +1508,14 @@ ORDER BY total_count DESC, partition_number";
 					'category' => '%',
 				],
 			]);
-		} else {
-			$scoring = false;
 		}
+		else
+			$scoring = false;
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
 		$tooltipBoardSize = [];
-		foreach ($tsumegoButtons as $tsumegoButton) {
+		foreach ($tsumegoButtons as $tsumegoButton)
+		{
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoButton->tsumegoID]]);
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			$tooltipSgfs [] = $tArr[0];
@@ -1539,35 +1527,38 @@ ORDER BY total_count DESC, partition_number";
 		$allTagsSorted = [];
 		$allTagsKeys = [];
 		$allTagsCount = count($allTags);
-		for ($i = 0; $i < $allTagsCount; $i++) {
+		for ($i = 0; $i < $allTagsCount; $i++)
+		{
 			array_push($allTagsSorted, $allTags[$i]['TagName']['name']);
 			$allTagsKeys[$allTags[$i]['TagName']['name']] = $allTags[$i];
 		}
 		sort($allTagsSorted);
 		$s2Tags = [];
 		$allTagsSortedCount = count($allTagsSorted);
-		for ($i = 0; $i < $allTagsSortedCount; $i++) {
+		for ($i = 0; $i < $allTagsSortedCount; $i++)
 			array_push($s2Tags, $allTagsKeys[$allTagsSorted[$i]]);
-		}
 
 		$allTags = $s2Tags;
 
-		if (Auth::isAdmin()) {
-			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0) {
-				if ($this->params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d') {
+		if (Auth::isAdmin())
+			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0)
+				if ($this->params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d')
+				{
 					$newAddTag = explode('-', $_COOKIE['addTag']);
 					$tagSetId = (int) $newAddTag[0];
 					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
 					$tagSc = TsumegoUtil::collectTsumegosFromSet($tagSetId);
 					$tagScCount = count($tagSc);
-					for ($i = 0; $i < $tagScCount; $i++) {
+					for ($i = 0; $i < $tagScCount; $i++)
+					{
 						$tagAlreadyThere = $this->Tag->find('first', [
 							'conditions' => [
 								'tsumego_id' => $tagSc[$i]['Tsumego']['id'],
 								'tag_name_id' => $newTagName['TagName']['id'],
 							],
 						]);
-						if ($tagAlreadyThere == null) {
+						if ($tagAlreadyThere == null)
+						{
 							$saveTag = [];
 							$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
 							$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
@@ -1579,10 +1570,9 @@ ORDER BY total_count DESC, partition_number";
 					}
 					$this->set('removeCookie', 'addTag');
 				}
-			}
-		}
 
-		if ($tsumegoFilters->query == 'topics') {
+		if ($tsumegoFilters->query == 'topics')
+		{
 			$this->set('allVcActive', $allVcActive);
 			$this->set('allVcInactive', $allVcInactive);
 			$this->set('allArActive', $allArActive);
@@ -1610,7 +1600,8 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('setDifficulty', $setDifficulty);
 	}
 
-	public function download_archive(): void {
+	public function download_archive(): void
+	{
 		$s = $this->Set->find('all', [
 			'order' => 'id ASC',
 			'conditions' => [
@@ -1634,7 +1625,8 @@ ORDER BY total_count DESC, partition_number";
 	 * @param int|null $id Set ID
 	 * @return void
 	 */
-	public function download_archive2($id = null) {
+	public function download_archive2($id = null)
+	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Sgf');
@@ -1642,37 +1634,35 @@ ORDER BY total_count DESC, partition_number";
 		$title = '';
 		$t = [];
 
-		if (Auth::getUserID() == 72) {
+		if (Auth::getUserID() == 72)
+		{
 			$s = $this->Set->findById($id);
 			$title = $s['Set']['title'] . ' ' . $s['Set']['title2'];
 
 			$title = str_replace(':', '', $title);
 
-			if ($s['Set']['public'] != 1) {
+			if ($s['Set']['public'] != 1)
 				$title .= ' (sandbox)';
-			}
 
 			mkdir('download_archive/' . $title);
 
 			$ts = [];
 			$scTs = $this->SetConnection->find('all', ['conditions' => ['set_id' => $id]]);
-			if (!$scTs) {
+			if (!$scTs)
 				$scTs = [];
-			}
 
 			$scTsCount = count($scTs);
-			for ($i = 0; $i < $scTsCount; $i++) {
+			for ($i = 0; $i < $scTsCount; $i++)
+			{
 				$scT = $this->Tsumego->findById($scTs[$i]['SetConnection']['tsumego_id']);
 				$scT['Tsumego']['set_id'] = $scTs[$i]['SetConnection']['set_id'];
 				$scT['Tsumego']['num'] = $scTs[$i]['SetConnection']['num'];
 				$scT['Tsumego']['duplicateLink'] = '';
 				$scTs2 = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $scT['Tsumego']['id']]]) ?: [];
 				$scTs2Count2 = count($scTs2);
-				for ($j = 0; $j < $scTs2Count2; $j++) {
-					if (count($scTs2) > 1 && $scTs2[$j]['SetConnection']['set_id'] == $s['Set']['id']) {
+				for ($j = 0; $j < $scTs2Count2; $j++)
+					if (count($scTs2) > 1 && $scTs2[$j]['SetConnection']['set_id'] == $s['Set']['id'])
 						$scT['Tsumego']['duplicateLink'] = '?sid=' . $scT['Tsumego']['set_id'];
-					}
-				}
 
 				array_push($ts, $scT);
 			}
@@ -1681,25 +1671,23 @@ ORDER BY total_count DESC, partition_number";
 			$tsBufferLowest = 10000;
 			$tsBufferHighest = 0;
 			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++) {
+			for ($i = 0; $i < $tsCount; $i++)
+			{
 				$tsBuffer[$ts[$i]['Tsumego']['num']] = $ts[$i];
-				if ($ts[$i]['Tsumego']['num'] < $tsBufferLowest) {
+				if ($ts[$i]['Tsumego']['num'] < $tsBufferLowest)
 					$tsBufferLowest = $ts[$i]['Tsumego']['num'];
-				}
-				if ($ts[$i]['Tsumego']['num'] > $tsBufferHighest) {
+				if ($ts[$i]['Tsumego']['num'] > $tsBufferHighest)
 					$tsBufferHighest = $ts[$i]['Tsumego']['num'];
-				}
 			}
 
 			$t = [];
-			for ($i = $tsBufferLowest; $i <= $tsBufferHighest; $i++) {
-				if (isset($tsBuffer[$i])) {
+			for ($i = $tsBufferLowest; $i <= $tsBufferHighest; $i++)
+				if (isset($tsBuffer[$i]))
 					array_push($t, $tsBuffer[$i]);
-				}
-			}
 
 			$tCount = count($t);
-			for ($i = 0; $i < $tCount; $i++) {
+			for ($i = 0; $i < $tCount; $i++)
+			{
 				$t[$i]['Tsumego']['title'] = $s['Set']['title'] . ' ' . $t[$i]['Tsumego']['num'];
 				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $t[$i]['Tsumego']['id']]]);
 				$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
@@ -1733,12 +1721,14 @@ ORDER BY total_count DESC, partition_number";
 	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
-	public function updateAchievementConditions($sid, $avgTime, $accuracy) {
+	public function updateAchievementConditions($sid, $avgTime, $accuracy)
+	{
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);
 		$acA = $this->AchievementCondition->find('first', ['order' => 'value DESC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => '%']]);
 
-		if ($acS == null) {
+		if ($acS == null)
+		{
 			$aCond = [];
 			$aCond['AchievementCondition']['user_id'] = $uid;
 			$aCond['AchievementCondition']['set_id'] = $sid;
@@ -1746,11 +1736,14 @@ ORDER BY total_count DESC, partition_number";
 			$aCond['AchievementCondition']['category'] = 's';
 			$this->AchievementCondition->create();
 			$this->AchievementCondition->save($aCond);
-		} elseif ($avgTime < $acS['AchievementCondition']['value']) {
+		}
+		elseif ($avgTime < $acS['AchievementCondition']['value'])
+		{
 			$acS['AchievementCondition']['value'] = $avgTime;
 			$this->AchievementCondition->save($acS);
 		}
-		if ($acA == null) {
+		if ($acA == null)
+		{
 			$aCond = [];
 			$aCond['AchievementCondition']['user_id'] = $uid;
 			$aCond['AchievementCondition']['set_id'] = $sid;
@@ -1758,7 +1751,9 @@ ORDER BY total_count DESC, partition_number";
 			$aCond['AchievementCondition']['category'] = '%';
 			$this->AchievementCondition->create();
 			$this->AchievementCondition->save($aCond);
-		} elseif ($accuracy > $acA['AchievementCondition']['value']) {
+		}
+		elseif ($accuracy > $acA['AchievementCondition']['value'])
+		{
 			$acA['AchievementCondition']['value'] = $accuracy;
 			$this->AchievementCondition->save($acA);
 		}
@@ -1767,7 +1762,8 @@ ORDER BY total_count DESC, partition_number";
 	/**
 	 * @return void
 	 */
-	public function beta2() {
+	public function beta2()
+	{
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
@@ -1775,9 +1771,11 @@ ORDER BY total_count DESC, partition_number";
 		$this->Session->write('page', 'sandbox');
 		$this->Session->write('title', 'Deleted Collections');
 
-		if (isset($this->params['url']['remove'])) {
+		if (isset($this->params['url']['remove']))
+		{
 			$remove = $this->Set->findById($this->params['url']['remove']);
-			if ($remove['Set']['public'] == 0) {
+			if ($remove['Set']['public'] == 0)
+			{
 				$remove['Set']['public'] = -1;
 				$this->Set->save($remove);
 			}
@@ -1787,9 +1785,8 @@ ORDER BY total_count DESC, partition_number";
 			'order' => ['Set.order'],
 			'conditions' => ['public' => -1],
 		]);
-		if (!$setsX) {
+		if (!$setsX)
 			$setsX = [];
-		}
 
 		$secretPoints = 0;
 		$removeMap = [];
@@ -1805,39 +1802,42 @@ ORDER BY total_count DESC, partition_number";
 		}
 		}
 		*/
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-		}
 
 		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++) {
+		for ($i = 0; $i < $setsCount; $i++)
+		{
 			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 
-			if (Auth::isLoggedIn()) {
+			if (Auth::isLoggedIn())
+			{
 				$tsCount3 = count($ts);
-				for ($k = 0; $k < $tsCount3; $k++) {
+				for ($k = 0; $k < $tsCount3; $k++)
 					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
-					&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')) {
+					&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C'))
+					{
 						$counter++;
 						$globalSolvedCounter++;
 					}
-				}
-			} elseif ($this->Session->check('noLogin')) {
+			}
+			elseif ($this->Session->check('noLogin'))
+			{
 				$noLogin = $this->Session->read('noLogin');
 				$noLoginStatus = $this->Session->read('noLoginStatus');
 				$noLoginCount6 = count($noLogin);
-				for ($g = 0; $g < $noLoginCount6; $g++) {
+				for ($g = 0; $g < $noLoginCount6; $g++)
+				{
 					$tsCount5 = count($ts);
-					for ($f = 0; $f < $tsCount5; $f++) {
-						if ($ts[$f]['Tsumego']['id'] == $noLogin[$g]) {
+					for ($f = 0; $f < $tsCount5; $f++)
+						if ($ts[$f]['Tsumego']['id'] == $noLogin[$g])
+						{
 							$ts[$f]['Tsumego']['status'] = $noLoginStatus[$g];
-							if ($noLoginStatus[$g] == 'S' || $noLoginStatus[$g] == 'W' || $noLoginStatus[$g] == 'C') {
+							if ($noLoginStatus[$g] == 'S' || $noLoginStatus[$g] == 'W' || $noLoginStatus[$g] == 'C')
 								$counter++;
-							}
 						}
-					}
 				}
 			}
 
@@ -1845,15 +1845,13 @@ ORDER BY total_count DESC, partition_number";
 			$month = date('F', strtotime($sets[$i]['Set']['created']));
 			$setday = $date->format('d. ');
 			$setyear = $date->format('Y');
-			if ($setday[0] == 0) {
+			if ($setday[0] == 0)
 				$setday = substr($setday, -3);
-			}
 			$sets[$i]['Set']['created'] = $date->format('Ymd');
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
 
-			if (count($ts) > 0) {
+			if (count($ts) > 0)
 				$percent = $counter / count($ts) * 100;
-			}
 			$sets[$i]['Set']['solvedNum'] = $counter;
 			$sets[$i]['Set']['solved'] = round($percent, 1);
 			$sets[$i]['Set']['solvedColor'] = $this->getSolvedColor($sets[$i]['Set']['solved']);
@@ -1865,91 +1863,78 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('sets', $setsX);
 	}
 
-	private function findUt($id = null, $allUts = null, $map = null) {
+	private function findUt($id = null, $allUts = null, $map = null)
+	{
 		$currentUt = array_search($id, $map);
 		$ut = $allUts[$currentUt];
-		if ($currentUt == 0) {
-			if ($id != $map[0]) {
+		if ($currentUt == 0)
+			if ($id != $map[0])
 				$ut = null;
-			}
-		}
 
 		return $ut;
 	}
 
-	private function getDifficultyColor($difficulty = null) {
-		if ($difficulty == 1) {
+	private function getDifficultyColor($difficulty = null)
+	{
+		if ($difficulty == 1)
 			return '#33cc33';
-		}
-		if ($difficulty == 2) {
+		if ($difficulty == 2)
 			return '#709533';
-		}
-		if ($difficulty == 3) {
+		if ($difficulty == 3)
 			return '#2e3370';
-		}
-		if ($difficulty == 4) {
+		if ($difficulty == 4)
 			return '#ac5d33';
-		}
-		if ($difficulty == 5) {
+		if ($difficulty == 5)
 			return '#e02e33';
-		}
 
 		return 'white';
 	}
 
-	private function getSizeColor($size = null) {
+	private function getSizeColor($size = null)
+	{
 		$colors = [];
 		array_push($colors, '#cc6600');
 		array_push($colors, '#ac4e26');
 		array_push($colors, '#963e3e');
 		array_push($colors, '#802e58');
 		array_push($colors, '#60167d');
-		if ($size < 30) {
+		if ($size < 30)
 			return $colors[0];
-		}
-		if ($size < 60) {
+		if ($size < 60)
 			return $colors[1];
-		}
-		if ($size < 110) {
+		if ($size < 110)
 			return $colors[2];
-		}
-		if ($size < 202) {
+		if ($size < 202)
 			return $colors[3];
-		}
 
 		return $colors[4];
 	}
 
-	private function getDateColor($date = null) {
+	private function getDateColor($date = null)
+	{
 		$current = '20180705';
 		$dist = $current - $date;
 
-		if ($dist < 7) {
+		if ($dist < 7)
 			return '#0033cc';
-		}
-		if ($dist < 100) {
+		if ($dist < 100)
 			return '#0f33ad';
-		}
-		if ($dist < 150) {
+		if ($dist < 150)
 			return '#1f338f';
-		}
-		if ($dist < 200) {
+		if ($dist < 200)
 			return '#2e3370';
-		}
-		if ($dist < 300) {
+		if ($dist < 300)
 			return '#3d3352';
-		}
-		if ($dist < 400) {
+		if ($dist < 400)
 			return '#4c3333';
-		}
-		if ($dist < 500) {
+		if ($dist < 500)
 			return '#57331f';
-		}
 
 		return '#663300';
 	}
 
-	private function getSolvedColor($percent = null) {
+	private function getSolvedColor($percent = null)
+	{
 		$colors = [];
 
 		array_push($colors, '#333333');
@@ -1997,17 +1982,18 @@ ORDER BY total_count DESC, partition_number";
 		array_push($colors, '#3ecf78');
 		$steps = 2.5;
 		$colorsCount = count($colors);
-		for ($i = 0; $i < $colorsCount; $i++) {
-			if ($percent <= $steps) {
+		for ($i = 0; $i < $colorsCount; $i++)
+		{
+			if ($percent <= $steps)
 				return $colors[$i];
-			}
 			$steps += 2.5;
 		}
 
 		return '#333333';
 	}
 
-	private function getExistingRanksArray() {
+	private function getExistingRanksArray()
+	{
 		$this->loadModel('Tsumego');
 		$ranksArray = [];
 		$ranksArray[0]['rank'] = '15k';
@@ -2057,14 +2043,16 @@ ORDER BY total_count DESC, partition_number";
 		$ranksArray[21]['color'] = 'rgba(244, 88, 127, [o])';
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
 		$nine = $this->Tsumego->find('first', ['conditions' => ['rating >=' => Rating::getRankMinimalRatingFromReadableRank('9d'),]]);
-		if ($nine) {
+		if ($nine)
+		{
 			$ranksArray[23]['rank'] = '9d';
 			$ranksArray[23]['color'] = 'rgba(244, 88, 88, [o])';
 		}
 
 		return $ranksArray;
 	}
-	private function getTagColor($pos) {
+	private function getTagColor($pos)
+	{
 		$c = [];
 		$c[0] = 'rgba(217, 135, 135, [o])';
 		$c[1] = 'rgba(135, 149, 101, [o])';

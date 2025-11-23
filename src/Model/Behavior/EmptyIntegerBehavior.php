@@ -9,7 +9,8 @@
  *
  * This prevents database errors when saving form data with empty integer fields.
  */
-class EmptyIntegerBehavior extends ModelBehavior {
+class EmptyIntegerBehavior extends ModelBehavior
+{
 	/**
 	 * Cached schema information per model
 	 *
@@ -24,37 +25,42 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 * @param array $options Options array
 	 * @return bool True to continue save, false to abort
 	 */
-	public function beforeSave(Model $model, $options = []) {
-		if (empty($model->data[$model->alias])) {
+	public function beforeSave(Model $model, $options = [])
+	{
+		if (empty($model->data[$model->alias]))
 			return true;
-		}
 
 		$schema = $this->_getSchema($model);
 
-		foreach ($model->data[$model->alias] as $field => $value) {
+		foreach ($model->data[$model->alias] as $field => $value)
+		{
 			// Skip if field doesn't exist in schema
-			if (!isset($schema[$field])) {
+			if (!isset($schema[$field]))
 				continue;
-			}
 
 			$fieldSchema = $schema[$field];
 
 			// Check if field is an integer type
-			if (!$this->_isIntegerType($fieldSchema['type'])) {
+			if (!$this->_isIntegerType($fieldSchema['type']))
 				continue;
-			}
 
 			// Handle empty string
-			if ($value === '') {
+			if ($value === '')
+			{
 				// Convert empty string based on null constraint
-				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
+				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true)
+				{
 					// Nullable column: set to null
 					$model->data[$model->alias][$field] = null;
-				} else {
+				}
+				else
+				{
 					// NOT NULL column: set to 0
 					$model->data[$model->alias][$field] = 0;
 				}
-			} elseif (is_string($value) && !is_numeric($value)) {
+			}
+			elseif (is_string($value) && !is_numeric($value))
+			{
 				// Handle non-numeric strings
 				// Log warning about non-numeric string
 				CakeLog::warning(sprintf(
@@ -65,11 +71,10 @@ class EmptyIntegerBehavior extends ModelBehavior {
 				));
 
 				// Convert to 0 or null based on null constraint
-				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true) {
+				if (isset($fieldSchema['null']) && $fieldSchema['null'] === true)
 					$model->data[$model->alias][$field] = null;
-				} else {
+				else
 					$model->data[$model->alias][$field] = 0;
-				}
 			}
 		}
 
@@ -82,12 +87,12 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 * @param Model $model Model instance
 	 * @return array Schema array
 	 */
-	protected function _getSchema(Model $model) {
+	protected function _getSchema(Model $model)
+	{
 		$cacheKey = $model->alias;
 
-		if (!isset($this->_schemaCache[$cacheKey])) {
+		if (!isset($this->_schemaCache[$cacheKey]))
 			$this->_schemaCache[$cacheKey] = $model->schema();
-		}
 
 		return $this->_schemaCache[$cacheKey];
 	}
@@ -98,7 +103,8 @@ class EmptyIntegerBehavior extends ModelBehavior {
 	 * @param string $type Field type from schema
 	 * @return bool True if integer type
 	 */
-	protected function _isIntegerType($type) {
+	protected function _isIntegerType($type)
+	{
 		$integerTypes = ['integer', 'biginteger', 'smallinteger', 'tinyinteger'];
 
 		return in_array($type, $integerTypes);

@@ -5,8 +5,10 @@ require_once(__DIR__ . '/../../Browser.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
 use Facebook\WebDriver\WebDriverBy;
 
-class UploadSgfTest extends TestCaseWithAuth {
-	public function testUploadSgf() {
+class UploadSgfTest extends TestCaseWithAuth
+{
+	public function testUploadSgf()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
 			'tsumego' => [
@@ -35,7 +37,8 @@ class UploadSgfTest extends TestCaseWithAuth {
 		$this->assertTextContains('Hello from test', $sgf[0]['Sgf']['sgf']);
 	}
 
-	public function testOpeningSgfFromHistory() {
+	public function testOpeningSgfFromHistory()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
 			'tsumego' => [
@@ -63,7 +66,8 @@ class UploadSgfTest extends TestCaseWithAuth {
 		$this->assertSame($commentBox->getText(), 'Version 1');
 	}
 
-	public function testOpeningSgfDiff() {
+	public function testOpeningSgfDiff()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
 			'tsumego' => [

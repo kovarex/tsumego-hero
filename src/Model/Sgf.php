@@ -1,7 +1,9 @@
 <?php
 
-class Sgf extends AppModel {
-	public function __construct($id = false, $table = null, $ds = null) {
+class Sgf extends AppModel
+{
+	public function __construct($id = false, $table = null, $ds = null)
+	{
 		$id['table'] =  'sgf';
 		parent::__construct($id, $table, $ds);
 	}

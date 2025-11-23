@@ -1,10 +1,11 @@
 <?php
 
-class AdminActivityUtil {
-	public static function requestSolution(int $tsumegoID): bool {
-		if (!Auth::isAdmin()) {
+class AdminActivityUtil
+{
+	public static function requestSolution(int $tsumegoID): bool
+	{
+		if (!Auth::isAdmin())
 			return false;
-		}
 
 		$adminActivity = [];
 		$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();

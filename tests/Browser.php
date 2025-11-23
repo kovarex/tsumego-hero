@@ -8,8 +8,10 @@ use Facebook\WebDriver\WebDriverWait;
 
 App::uses('Util', 'Utility');
 
-class Browser {
-	public function __construct() {
+class Browser
+{
+	public function __construct()
+	{
 
 		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
 		$desiredCapabilities = DesiredCapabilities::firefox();
@@ -21,7 +23,8 @@ class Browser {
 		$firefoxOptions->addArguments(['--headless']);
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
-		try {
+		try
+		{
 			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 
 			// visit a dummy page
@@ -30,97 +33,106 @@ class Browser {
 			// Xdebug cookies
 			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug']);
 			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
-		} catch (Exception $e) {
-			if ($this->driver) {
+		}
+		catch (Exception $e)
+		{
+			if ($this->driver)
 				$this->driver->quit();
-			}
 			throw $e;
 		}
 	}
 
-	public function __destruct() {
+	public function __destruct()
+	{
 		$this->driver->quit();
 	}
 
-	public function assertNoErrors(): void {
+	public function assertNoErrors(): void
+	{
 		$this->assertNoException();
 		$this->assertNoJsErrors();
 	}
 
-	public function assertNoException(): void {
-		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>")) {
+	public function assertNoException(): void
+	{
+		if (str_contains($this->driver->getPageSource(), "<h2>Exception</h2>"))
 			throw new Exception($this->driver->getPageSource());
-		}
 	}
 
-	public function assertNoJsErrors(): void {
+	public function assertNoJsErrors(): void
+	{
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 
-		if (!empty($errors) || !empty($console)) {
+		if (!empty($errors) || !empty($console))
+		{
 			$msg = "JavaScript errors detected:\n";
 
-			foreach ($errors as $e) {
+			foreach ($errors as $e)
+			{
 				$msg .= "[JS ERROR] ";
-				if (!empty($e['raw'])) {
+				if (!empty($e['raw']))
 					$msg .= $e['raw'] . "\n\n";
-				} else {
+				else
 					$msg .= sprintf(
 						"%s (%s:%d:%d)\n%s\n\n",
 						$e['message'], $e['source'], $e['line'], $e['column'], $e['stack']
 					);
-				}
 			}
 
-			foreach ($console as $c) {
+			foreach ($console as $c)
 				$msg .= "[console.error] " . implode(" ", $c['args']) . "\n\n";
-			}
 
 			throw new Exception($msg);
 		}
 	}
 
-	public function get(string $url): void {
-		if ($url != 'empty.php' && CakeSession::check("loggedInUserID")) {
+	public function get(string $url): void
+	{
+		if ($url != 'empty.php' && CakeSession::check("loggedInUserID"))
+		{
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
 				'value' => (string) CakeSession::read("loggedInUserID")
 			]);
-			if (!empty($_COOKIE['disable-achievements'])) {
+			if (!empty($_COOKIE['disable-achievements']))
 				$this->driver->manage()->addCookie([
 					'name' => "disable-achievements",
 					'value' => "true"
 				]);
-			}
 		}
 
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}
 
-	public function clickId($name) {
+	public function clickId($name)
+	{
 		$this->driver->findElement(WebDriverBy::id($name))->click();
 		$this->assertNoErrors();
 	}
 
-	public function clickCssSelect($name) {
+	public function clickCssSelect($name)
+	{
 		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
 		$this->assertNoErrors();
 	}
 
-	public function idExists(string $id): bool {
+	public function idExists(string $id): bool
+	{
 		return !empty($this->driver-> findElements(WebDriverBy::id($id)));
 	}
 
-	public function waitUntilIDExists($id) {
+	public function waitUntilIDExists($id)
+	{
 		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
-	public static function instance() {
+	public static function instance()
+	{
 		static $browser = null;
-		if ($browser == null) {
+		if ($browser == null)
 			$browser = new Browser();
-		}
 		$browser->driver->manage()->deleteAllCookies();
 		return $browser;
 	}

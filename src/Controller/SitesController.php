@@ -1,13 +1,15 @@
 <?php
 
-class SitesController extends AppController {
+class SitesController extends AppController
+{
 	public $helpers = ['Html', 'Form'];
 
 	/**
 	 * @param mixed $var Variable parameter
 	 * @return void
 	 */
-	public function index($var = null) {
+	public function index($var = null)
+	{
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero');
 		$this->loadModel('Tsumego');
@@ -27,14 +29,13 @@ class SitesController extends AppController {
 		array_push($tdates, '2021-06-10 22:00:00');
 		//array_push($tdates, '2020-11-22 22:00:00');
 
-		foreach ($tdates as $tdate) {
+		foreach ($tdates as $tdate)
+		{
 			$ts1 = $this->Tsumego->find('all', ['conditions' => ['created' => $tdate]]);
-			if (!$ts1) {
+			if (!$ts1)
 				$ts1 = [];
-			}
-			foreach ($ts1 as $item) {
+			foreach ($ts1 as $item)
 				$tSum[] = $item;
-			}
 		}
 
 		$newTS = [];
@@ -57,20 +58,18 @@ class SitesController extends AppController {
 			}
 		}*/
 		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']);
-		if (!$uReward) {
+		if (!$uReward)
 			$uReward = [];
-		}
 		$urNames = [];
-		foreach ($uReward as $user) {
+		foreach ($uReward as $user)
 			$urNames[] = $this->checkPicture($user);
-		}
 
 		$today = date('Y-m-d');
 		$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
-		if (!$dateUser) {
+		if (!$dateUser)
 			$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
-		}
-		if (!$dateUser) {
+		if (!$dateUser)
+		{
 			$this->redirect(['controller' => 'sets', 'action' => 'index']);
 
 			return;
@@ -81,9 +80,8 @@ class SitesController extends AppController {
 		$popularTooltipInfo = [];
 		$popularTooltipBoardSize = [];
 		$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
-		if (!$ptts) {
+		if (!$ptts)
 			$ptts = [];
-		}
 		$ptArr = $this->processSGF($ptts[0]['Sgf']['sgf']);
 		$popularTooltip = $ptArr[0];
 		$popularTooltipInfo = $ptArr[2];
@@ -91,35 +89,33 @@ class SitesController extends AppController {
 
 		$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
 		$newTschedule = $this->Schedule->find('all', ['conditions' => ['date' => $today]]);
-		if (!$newTschedule) {
+		if (!$newTschedule)
 			$newTschedule = [];
-		}
 
 		$scheduleTsumego = [];
-		foreach ($newTschedule as $scheduleItem) {
+		foreach ($newTschedule as $scheduleItem)
 			$scheduleTsumego[] = $this->Tsumego->findById($scheduleItem['Schedule']['tsumego_id']);
-		}
 
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
 		$tooltipBoardSize = [];
-		foreach ($scheduleTsumego as $tsumego) {
+		foreach ($scheduleTsumego as $tsumego)
+		{
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]);
-			if (!$tts) {
+			if (!$tts)
 				$tts = [];
-			}
 			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 			$tooltipSgfs[] = $tArr[0];
 			$tooltipInfo[] = $tArr[2];
 			$tooltipBoardSize[] = $tArr[3];
 		}
 
-		if (Auth::isLoggedIn()) {
+		if (Auth::isLoggedIn())
+		{
 			$idArray = [];
 			$idArray[] = $totd['Tsumego']['id'];
-			foreach ($scheduleTsumego as $tsumego) {
+			foreach ($scheduleTsumego as $tsumego)
 				$idArray[] = $tsumego['Tsumego']['id'];
-			}
 
 			$uts = $this->TsumegoStatus->find('all', [
 				'order' => 'updated DESC',
@@ -128,108 +124,93 @@ class SitesController extends AppController {
 					'tsumego_id' => $idArray,
 				],
 			]);
-			if (!$uts) {
+			if (!$uts)
 				$uts = [];
-			}
 
 			$utsCount = count($uts);
-			for ($i = 0; $i < $utsCount; $i++) {
+			for ($i = 0; $i < $utsCount; $i++)
+			{
 				$newTSCount = count($newTS);
-				for ($j = 0; $j < $newTSCount; $j++) {
-					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newTS[$j]['Tsumego']['id']) {
+				for ($j = 0; $j < $newTSCount; $j++)
+					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newTS[$j]['Tsumego']['id'])
 						$newTS[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-					}
-				}
 				$scheduleTsumegoCount = count($scheduleTsumego);
-				for ($j = 0; $j < $scheduleTsumegoCount; $j++) {
-					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $scheduleTsumego[$j]['Tsumego']['id']) {
+				for ($j = 0; $j < $scheduleTsumegoCount; $j++)
+					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $scheduleTsumego[$j]['Tsumego']['id'])
 						$scheduleTsumego[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-					}
-				}
 
-				if (isset($totd['Tsumego']['id'])) {
-					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $totd['Tsumego']['id']) {
+				if (isset($totd['Tsumego']['id']))
+					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $totd['Tsumego']['id'])
 						$totd['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-					}
-				}
 
-				if (isset($newT['Tsumego']['id'])) {
-					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newT['Tsumego']['id']) {
+				if (isset($newT['Tsumego']['id']))
+					if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newT['Tsumego']['id'])
 						$newT['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-					}
-				}
 			}
 		}
-		if (!Auth::isLoggedIn()) {
-			if ($this->Session->check('noLogin')) {
+		if (!Auth::isLoggedIn())
+			if ($this->Session->check('noLogin'))
+			{
 				$noLogin = $this->Session->read('noLogin');
 				$noLoginStatus = $this->Session->read('noLoginStatus');
 				$noLoginCount = count($noLogin);
-				for ($i = 0; $i < $noLoginCount; $i++) {
+				for ($i = 0; $i < $noLoginCount; $i++)
+				{
 					$newTSCount = count($newTS);
-					for ($f = 0; $f < $newTSCount; $f++) {
-						if ($newTS[$f]['Tsumego']['id'] == $noLogin[$i]) {
+					for ($f = 0; $f < $newTSCount; $f++)
+						if ($newTS[$f]['Tsumego']['id'] == $noLogin[$i])
 							$newTS[$f]['Tsumego']['status'] = $noLoginStatus[$i];
-						}
-					}
 					$scheduleTsumegoCount = count($scheduleTsumego);
-					for ($f = 0; $f < $scheduleTsumegoCount; $f++) {
-						if ($scheduleTsumego[$f]['Tsumego']['id'] == $noLogin[$i]) {
+					for ($f = 0; $f < $scheduleTsumegoCount; $f++)
+						if ($scheduleTsumego[$f]['Tsumego']['id'] == $noLogin[$i])
 							$scheduleTsumego[$f]['Tsumego']['status'] = $noLoginStatus[$i];
-						}
-					}
-					if ($noLogin[$i] == $totd['Tsumego']['id']) {
+					if ($noLogin[$i] == $totd['Tsumego']['id'])
 						$totd['Tsumego']['status'] = $noLoginStatus[$i];
-					}
-					if ($noLogin[$i] == $newT['Tsumego']['id']) {
+					if ($noLogin[$i] == $newT['Tsumego']['id'])
 						$newT['Tsumego']['status'] = $noLoginStatus[$i];
-					}
 				}
 			}
-		}
 
-		if (!isset($totd['Tsumego']['status'])) {
+		if (!isset($totd['Tsumego']['status']))
 			$totd['Tsumego']['status'] = 'N';
-		}
-		if (!isset($newT['Tsumego']['status'])) {
+		if (!isset($newT['Tsumego']['status']))
 			$newT['Tsumego']['status'] = 'N';
-		}
 		$scheduleTsumegoCount = count($scheduleTsumego);
-		for ($i = 0; $i < $scheduleTsumegoCount; $i++) {
-			if (!isset($scheduleTsumego[$i]['Tsumego']['status'])) {
+		for ($i = 0; $i < $scheduleTsumegoCount; $i++)
+			if (!isset($scheduleTsumego[$i]['Tsumego']['status']))
 				$scheduleTsumego[$i]['Tsumego']['status'] = 'N';
-			}
-		}
 
 		$d1 = date(' d, Y');
 		$d1day = date('d. ');
 		$d1year = date('Y');
-		if ($d1day[0] == 0) {
+		if ($d1day[0] == 0)
 			$d1day = substr($d1day, -3);
-		}
 		$d2 = date('Y-m-d H:i:s');
 		$month = date('F', strtotime(date('Y-m-d')));
 		$d1 = $d1day . $month . ' ' . $d1year;
 		$currentQuote = $dateUser['DayRecord']['quote'];
 		$currentQuote = 'q13';
 		$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
-		if (!$userOfTheDay) {
+		if (!$userOfTheDay)
 			$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
-		}
 
 		$totdSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
-		if ($totdSc) {
+		if ($totdSc)
+		{
 			$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);
-			if ($totdS) {
+			if ($totdS)
+			{
 				$totd['Tsumego']['set'] = $totdS['Set']['title'];
 				$totd['Tsumego']['set2'] = $totdS['Set']['title2'];
 				$totd['Tsumego']['set_id'] = $totdS['Set']['id'];
 			}
 		}
 		$newTSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newT['Tsumego']['id']]]);
-		if ($newTSc) {
+		if ($newTSc)
+		{
 			$newTS = $this->Set->findById($newTSc['SetConnection']['set_id']);
-			if ($newTS) {
+			if ($newTS)
+			{
 				$newT['Tsumego']['set'] = $newTS['Set']['title'];
 				$newT['Tsumego']['set2'] = $newTS['Set']['title2'];
 				$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
@@ -284,27 +265,22 @@ class SitesController extends AppController {
 		*/
 		$tsumegoDates = [];
 		$pd = $this->PublishDate->find('all', ['order' => 'date ASC']);
-		if (!$pd) {
+		if (!$pd)
 			$pd = [];
-		}
-		foreach ($pd as $date) {
+		foreach ($pd as $date)
 			$tsumegoDates[] = $date['PublishDate']['date'];
-		}
 		$deletedS = $this->getDeletedSets();
 
 		$setsWithPremium = [];
 		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
-		if (!$swp) {
+		if (!$swp)
 			$swp = [];
-		}
-		foreach ($swp as $set) {
+		foreach ($swp as $set)
 			$setsWithPremium[] = $set['Set']['id'];
-		}
 		$totd = $this->checkForLocked($totd, $setsWithPremium);
 
-		foreach ($scheduleTsumego as $i => $tsumego) {
+		foreach ($scheduleTsumego as $i => $tsumego)
 			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
-		}
 
 		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('tsumegos', $tsumegoDates);
@@ -329,7 +305,8 @@ class SitesController extends AppController {
 	 * @param string|int|null $id
 	 * @return void
 	 */
-	public function view($id = null) {
+	public function view($id = null)
+	{
 		$news = $this->Site->find('all');
 		$this->set('news', $news[$id]);
 	}
@@ -337,7 +314,8 @@ class SitesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function impressum() {
+	public function impressum()
+	{
 		$this->Session->write('page', 'about');
 		$this->Session->write('title', 'Tsumego Hero - Legal Notice');
 	}
@@ -345,7 +323,8 @@ class SitesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function websitefunctions() {
+	public function websitefunctions()
+	{
 		$this->Session->write('page', 'websitefunctions');
 		$this->Session->write('title', 'Tsumego Hero - Website Functions');
 	}
@@ -353,7 +332,8 @@ class SitesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function gotutorial() {
+	public function gotutorial()
+	{
 		$this->Session->write('page', 'gotutorial');
 		$this->Session->write('title', 'Tsumego Hero - Go Tutorial');
 	}
@@ -361,7 +341,8 @@ class SitesController extends AppController {
 	/**
 	 * @return void
 	 */
-	public function privacypolicy() {
+	public function privacypolicy()
+	{
 		$this->Session->write('page', 'privacypolicy');
 		$this->Session->write('title', 'Tsumego Hero - Privacy Policy');
 	}

@@ -1,7 +1,9 @@
 <?php
 
-class Schedule extends AppModel {
-	public function __construct($id = false, $table = null, $ds = null) {
+class Schedule extends AppModel
+{
+	public function __construct($id = false, $table = null, $ds = null)
+	{
 		$id['table'] =  'schedule';
 		parent::__construct($id, $table, $ds);
 	}

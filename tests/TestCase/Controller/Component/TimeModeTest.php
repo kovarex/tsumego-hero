@@ -8,14 +8,17 @@ App::uses('TimeMode', 'Utility');
 
 use Facebook\WebDriver\WebDriverBy;
 
-class TimeModeTest extends TestCaseWithAuth {
-	public function testPointsCalculation() {
+class TimeModeTest extends TestCaseWithAuth
+{
+	public function testPointsCalculation()
+	{
 		$this->assertSame(TimeMode::calculatePoints(30, 30), 100 * TimeModeUtil::$POINTS_RATIO_FOR_FINISHING);
 		$this->assertSame(TimeMode::calculatePoints(50, 100), 100 * (1 + TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) / 2);
 		$this->assertSame(TimeMode::calculatePoints(0, 30), 100.0);
 	}
 
-	public function testTimeModeRankContentsIntegrity() {
+	public function testTimeModeRankContentsIntegrity()
+	{
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
 		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
 		// This fact is used to conveniently deduce the rating range of the current rank
@@ -23,8 +26,10 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertNotEmpty($allTimeModeRanks);
 
 		$previousRank = null;
-		foreach ($allTimeModeRanks as $timeModeRank) {
-			if ($previousRank) {
+		foreach ($allTimeModeRanks as $timeModeRank)
+		{
+			if ($previousRank)
+			{
 				$previousRank = Rating::getRankMinimalRatingFromReadableRank($previousRank['TimeModeRank']['name']);
 				$currentRank = Rating::getRankMinimalRatingFromReadableRank($timeModeRank['TimeModeRank']['name']);
 				$this->assertTrue($previousRank < $currentRank);
@@ -33,7 +38,8 @@ class TimeModeTest extends TestCaseWithAuth {
 		}
 	}
 
-	public function testRatingBoundsOneRank() {
+	public function testRatingBoundsOneRank()
+	{
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k']]);
 		$ratingBounds = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
 
@@ -42,7 +48,8 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertTrue(is_null($ratingBounds->max));
 	}
 
-	public function testRatingBoundsTwoRanks() {
+	public function testRatingBoundsTwoRanks()
+	{
 		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d']]);
 
 		$ratingBounds1k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
@@ -56,7 +63,8 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertNull($ratingBounds1d->max);
 	}
 
-	public function testRatingBoundsThreeRanks() {
+	public function testRatingBoundsThreeRanks()
+	{
 		$context = new ContextPreparator(['time-mode-ranks' => ['10k', '1k', '1d']]);
 
 		$ratingBounds10k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
@@ -75,7 +83,8 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertNull($ratingBounds1d->max);
 	}
 
-	public function testStartTimeMode() {
+	public function testStartTimeMode()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
@@ -101,22 +110,23 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($attempts[0]['TimeModeAttempt']['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_RESULT_QUEUED);
 	}
 
-	public function getTimeModeReportedTime($browser): array {
+	public function getTimeModeReportedTime($browser): array
+	{
 		$countdown = $browser->driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
 		$x = [];
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)\.(\d)/', $countdown, $x), 1, 'The status should contain time in format m:s.d, but it wasn\'t found in the string: "' . $countdown . "'");
 		return ['minutes' => intval($x[1]), 'seconds' => intval($x[2]), 'decimals' => intval($x[3])];
 	}
 
-	public function testTimeModeFullProcess() {
+	public function testTimeModeFullProcess()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
-		}
 
 		$context = new ContextPreparator($contextParameters);
 
@@ -138,8 +148,10 @@ class TimeModeTest extends TestCaseWithAuth {
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++) {
-			if ($i < TimeModeUtil::$PROBLEM_COUNT) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++)
+		{
+			if ($i < TimeModeUtil::$PROBLEM_COUNT)
+			{
 				$result = $this->getTimeModeReportedTime($browser);
 				$this->assertWithinMargin($result['minutes'], 1, TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60);
 				$this->assertWithinMargin($result['seconds'], 2, 60);
@@ -160,12 +172,10 @@ class TimeModeTest extends TestCaseWithAuth {
 					'time_mode_session_id' => $session['TimeModeSession']['id'],
 					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) ?: [];
 			$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - $i);
-			foreach ($solvedAttempts as $solvedAttempt) {
+			foreach ($solvedAttempts as $solvedAttempt)
 				$this->assertTrue($solvedAttempt['TimeModeAttempt']['points'] > 20);
-			}
-			if ($i == TimeModeUtil::$PROBLEM_COUNT) {
+			if ($i == TimeModeUtil::$PROBLEM_COUNT)
 				break;
-			}
 			usleep(1000 * 100);
 			$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
 			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
@@ -185,14 +195,14 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 
-	public function testTimeModeRefreshDoesntRefreshTime() {
+	public function testTimeModeRefreshDoesntRefreshTime()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -231,14 +241,14 @@ class TimeModeTest extends TestCaseWithAuth {
 			. " Old time: " . $result['seconds'] . '.' . $result['decimals']);
 	}
 
-	public function testTimeModeTimeout() {
+	public function testTimeModeTimeout()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -266,14 +276,14 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($attempt['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT);
 	}
 
-	public function testNextButtonTitleFromSkipToNextInTheTimeMode() {
+	public function testNextButtonTitleFromSkipToNextInTheTimeMode()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -289,14 +299,14 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute("value"), "Next");
 	}
 
-	public function testTimeModeSkip() {
+	public function testTimeModeSkip()
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
-		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i) {
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
-		}
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -314,27 +324,29 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($attempt['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_STATUS_SKIPPED);
 	}
 
-	public function checkUnlockWhen($conditions) {
+	public function checkUnlockWhen($conditions)
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k'];
-		if ($conditions['alreadySolved']) {
+		if ($conditions['alreadySolved'])
+		{
 			$contextParameters['time-mode-sessions'] [] = [
 				'category' => TimeModeUtil::$CATEGORY_BLITZ,
 				'rank' => '5k',
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
 		}
-		if ($conditions['higherRankPresent']) {
+		if ($conditions['higherRankPresent'])
 			$contextParameters['time-mode-ranks'] [] = '1d';
-		}
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'set 1', 'num' => 1]]];
 		$contextParameters['time-mode-sessions'] [] = [
 			'category' => TimeModeUtil::$CATEGORY_BLITZ,
 			'rank' => '5k',
 			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
 			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
-		if ($conditions['failedSessionOnRankToBeUnlocked']) {
+		if ($conditions['failedSessionOnRankToBeUnlocked'])
+		{
 			$contextParameters['time-mode-sessions'] [] = [
 				'category' => TimeModeUtil::$CATEGORY_BLITZ,
 				'rank' => '1d',
@@ -360,14 +372,16 @@ class TimeModeTest extends TestCaseWithAuth {
 		$this->assertSame($session['TimeModeSession']['time_mode_session_status_id'],
 			$conditions['actuallySolvedSession'] ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED);
 		$alerts = $browser->driver->findElements(WebDriverBy::cssSelector('#time-rank-unlock-alert'));
-		if (count($alerts) == 1) {
+		if (count($alerts) == 1)
+		{
 			$this->assertTrue($alerts[0]->isDisplayed());
 			return true;
 		}
 		return false;
 	}
 
-	public function testTimeModeUnlockMessage() {
+	public function testTimeModeUnlockMessage()
+	{
 		$this->assertTrue($this->checkUnlockWhen([
 			'higherRankPresent' => true,
 			'alreadySolved' => false,
@@ -395,38 +409,40 @@ class TimeModeTest extends TestCaseWithAuth {
 			'actuallySolvedSession' => false]));
 	}
 
-	public function testTimeModeResultShowsSpecifiedResult(): void {
+	public function testTimeModeResultShowsSpecifiedResult(): void
+	{
 		$browser = Browser::instance();
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
-		foreach ($contextParameters['time-mode-ranks'] as $rank) {
+		foreach ($contextParameters['time-mode-ranks'] as $rank)
 			$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => $rank, 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
-		}
 		$context = new ContextPreparator($contextParameters);
 
-		foreach ([0, 1] as $indexToShow) {
+		foreach ([0, 1] as $indexToShow)
+		{
 			$browser->get('timeMode/result/' . $context->timeModeSessions[$indexToShow]['id']);
-			foreach ($contextParameters['time-mode-ranks'] as $rank) {
+			foreach ($contextParameters['time-mode-ranks'] as $rank)
+			{
 				$relatedDiv = $browser->driver->findElement(WebDriverBy::cssSelector('#results_Blitz_' . $rank));
 				$this->assertSame($relatedDiv->isDisplayed(), $rank == $context->timeModeRanks[$indexToShow]['name']);
 			}
 		}
 	}
 
-	public function testTimeModeOverviewShowsUnlockedStatusesCorrectly(): void {
+	public function testTimeModeOverviewShowsUnlockedStatusesCorrectly(): void
+	{
 		$browser = Browser::instance();
 
-		foreach (['solve-nothing', 'solve-5k', 'solve-all'] as $testCase) {
+		foreach (['solve-nothing', 'solve-5k', 'solve-all'] as $testCase)
+		{
 			$contextParameters = [];
 			$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 			$contextParameters['time-mode-ranks'] = ['5k', '1d'];
-			if ($testCase === 'solve-all' || $testCase === 'solve-5k') {
+			if ($testCase === 'solve-all' || $testCase === 'solve-5k')
 				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
-			}
-			if ($testCase === 'solve-all') {
+			if ($testCase === 'solve-all')
 				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '1d', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
-			}
 			$context = new ContextPreparator($contextParameters);
 			$browser->get('timeMode/overview');
 
@@ -443,7 +459,8 @@ class TimeModeTest extends TestCaseWithAuth {
 		}
 	}
 
-	public function testTimeModeOverviewTsumegoCountCalculation(): void {
+	public function testTimeModeOverviewTsumegoCountCalculation(): void
+	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		$contextParameters['time-mode-ranks'] = ['10k', '5k', '1d', '5d'];
@@ -452,14 +469,12 @@ class TimeModeTest extends TestCaseWithAuth {
 		$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
 
 		// two in 1d category
-		for ($i = 1; $i <= 2; $i++) {
+		for ($i = 1; $i <= 2; $i++)
 			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('1d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
-		}
 
 		// 3 in 5d category
-		for ($i = 1; $i <= 3; $i++) {
+		for ($i = 1; $i <= 3; $i++)
 			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
-		}
 		// one in 5d category, but in a set not included in time mode
 		$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set weird', 'num' => 1, 'included_in_time_mode' => false]]];
 

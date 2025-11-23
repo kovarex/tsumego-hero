@@ -4,8 +4,10 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 use Facebook\WebDriver\WebDriverBy;
 
-class TsumegoXPAndRatingTest extends TestCaseWithAuth {
-	public function testshowNormalXP(): void {
+class TsumegoXPAndRatingTest extends TestCaseWithAuth
+{
+	public function testshowNormalXP(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -15,7 +17,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
-	public function testShowingGoldenXP(): void {
+	public function testShowingGoldenXP(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'G']]]);
@@ -26,7 +29,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains('Golden', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
-	public function testShowingNormalStatusAndUpdatingToSolved(): void {
+	public function testShowingNormalStatusAndUpdatingToSolved(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -40,7 +44,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
-	public function testShowingSolvedOnOpenedSolvedProblem(): void {
+	public function testShowingSolvedOnOpenedSolvedProblem(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
@@ -50,14 +55,16 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
-	public function checkSprintInXpAndTimeInStatus2($browser) {
+	public function checkSprintInXpAndTimeInStatus2($browser)
+	{
 		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$status = $browser->driver->findElement(WebDriverBy::cssSelector('#status2'))->getText();
 		$this->assertSame(preg_match('/(\d+):([0-5]\d)/', $status, $m), 1, 'The status should contain time in format m:s, but it wasn\'t found in the string: "' . $status . "'");
 		$this->assertTrue($m > 1);
 	}
 
-	public function testShowingSprintAfterSprintIsClicked(): void {
+	public function testShowingSprintAfterSprintIsClicked(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -75,7 +82,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
-	public function testShowingSprintWhenOpeningProblemWhileSprintIsActive(): void {
+	public function testShowingSprintWhenOpeningProblemWhileSprintIsActive(): void
+	{
 		$context = new ContextPreparator([
 			'user' => [
 				'mode' => Constants::$LEVEL_MODE,
@@ -89,7 +97,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
-	public function testProgressDeletionsAffectXPShownAndGained(): void {
+	public function testProgressDeletionsAffectXPShownAndGained(): void
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
@@ -108,7 +117,8 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertSame($context->XPGained(), $originalTsumegoXpValue);
 	}
 
-	public function testXPForNextLevel() {
+	public function testXPForNextLevel()
+	{
 		$this->assertSame(Level::getXPForNext(1), 50);
 		$this->assertSame(Level::getXPForNext(2), 60);
 		$this->assertSame(Level::getXPForNext(3), 70);
@@ -127,17 +137,21 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth {
 		$this->assertSame(Level::getXPForNext(102), 60000);
 	}
 
-	public function testXPForNextLevelComparedToPreviousSumCode() {
+	public function testXPForNextLevelComparedToPreviousSumCode()
+	{
 		$current = 0;
-		for ($level = 1; $level < 110; $level++) {
+		for ($level = 1; $level < 110; $level++)
+		{
 			$this->assertSame($current, Level::oldXPSumCode($level), "Level: " . $level);
 			$current += Level::getXPForNext($level);
 		}
 	}
 
-	public function testXpForNextLevelComparedToNewSumCode() {
+	public function testXpForNextLevelComparedToNewSumCode()
+	{
 		$current = 0;
-		for ($level = 1; $level < 110; $level++) {
+		for ($level = 1; $level < 110; $level++)
+		{
 			$this->assertSame($current, Level::getXpSumToGetLevel($level), "Level: " . $level);
 			$current += Level::getXPForNext($level);
 		}

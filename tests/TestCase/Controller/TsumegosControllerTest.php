@@ -5,9 +5,12 @@ require_once(__DIR__ . '/../../Browser.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
 use Facebook\WebDriver\WebDriverBy;
 
-class TsumegosControllerTest extends TestCaseWithAuth {
-	public function testSetNameAndNumIsVisible() {
-		foreach ([false, true] as $openBySetConnectionID) {
+class TsumegosControllerTest extends TestCaseWithAuth
+{
+	public function testSetNameAndNumIsVisible()
+	{
+		foreach ([false, true] as $openBySetConnectionID)
+		{
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 			$this->testAction(
 				$openBySetConnectionID
@@ -23,7 +26,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		}
 	}
 
-	public function testViewingTsumegoInMoreSets() {
+	public function testViewingTsumegoInMoreSets()
+	{
 		$context = new ContextPreparator(
 			['tsumego' => [
 				'sets' => [
@@ -49,7 +53,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains('777', $links[1]->textContent);
 	}
 
-	public function testViewingTsumegoInMoreSetsAndSpecifyingWhichOneIsTheMainOne() {
+	public function testViewingTsumegoInMoreSetsAndSpecifyingWhichOneIsTheMainOne()
+	{
 		$context = new ContextPreparator(
 			['tsumego' => [
 				'sets' => [
@@ -71,7 +76,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains("777", $this->view);
 	}
 
-	public function testViewingTsumegoWithoutAnySGF() {
+	public function testViewingTsumegoWithoutAnySGF()
+	{
 		$context = new ContextPreparator(
 			['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 
@@ -85,7 +91,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 
 	// testing the same things as testViewingTsumegoInMoreSets, but using the web driver to do so
 	// if this test fails, it probably means something is wrong with the web driver configuration
-	public function testViewingTsumegoInMoreSetsUsingWebDriver() {
+	public function testViewingTsumegoInMoreSetsUsingWebDriver()
+	{
 		$context = new ContextPreparator(
 			['tsumego' => [
 				'sets' => [
@@ -99,7 +106,8 @@ class TsumegosControllerTest extends TestCaseWithAuth {
 		$this->assertTextContains('666', $href->getText());
 	}
 
-	public function testTheNextAndBackButtonLinsWhenBothPointToOtherTsumegos() {
+	public function testTheNextAndBackButtonLinsWhenBothPointToOtherTsumegos()
+	{
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
 			'other-tsumegos' => [

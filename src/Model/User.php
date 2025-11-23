@@ -1,7 +1,9 @@
 <?php
 
-class User extends AppModel {
-	public function __construct($id = false, $table = null, $ds = null) {
+class User extends AppModel
+{
+	public function __construct($id = false, $table = null, $ds = null)
+	{
 		$id['table'] =  'user';
 		parent::__construct($id, $table, $ds);
 	}

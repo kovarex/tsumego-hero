@@ -7,7 +7,8 @@ App::uses('View', 'View');
  *
  * Extends CakePHP's View class with enhanced error handling for templates
  */
-class AppView extends View {
+class AppView extends View
+{
 	/**
 	 * Sandbox method to evaluate a template / view script with better error handling.
 	 *
@@ -19,14 +20,18 @@ class AppView extends View {
 	 * @param array $dataForView Data to include in rendered view.
 	 * @return string Rendered output
 	 */
-	protected function _evaluate($viewFile, $dataForView) {
+	protected function _evaluate($viewFile, $dataForView)
+	{
 		$__viewFile = $viewFile;
 		extract($dataForView);
 		ob_start();
 
-		try {
+		try
+		{
 			include $__viewFile;
-		} catch (Throwable $e) {
+		}
+		catch (Throwable $e)
+		{
 			ob_end_clean();
 			unset($__viewFile);
 

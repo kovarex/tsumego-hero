@@ -1,30 +1,31 @@
 <?php
 
-class Rating {
-	public static function getReadableRank(int $rank): string {
-		if ($rank <= 30) {
+class Rating
+{
+	public static function getReadableRank(int $rank): string
+	{
+		if ($rank <= 30)
 			return (string) (31 - $rank) . 'k';
-		}
 
 		return (string) ($rank - 30) . 'd';
 	}
 
-	public static function getRankFromReadableRank(string $readableRank): int {
+	public static function getRankFromReadableRank(string $readableRank): int
+	{
 		$suffix = substr($readableRank, -1);
 		$number = substr($readableRank, 0, -1);
-		if (!is_numeric($number)) {
+		if (!is_numeric($number))
 			throw new Exception($readableRank . " can't be parsed as go rank.");
-		}
-		if ($suffix == 'k') {
+		if ($suffix == 'k')
 			return 31 - $number;
-		} elseif ($suffix == 'd') {
+		elseif ($suffix == 'd')
 			return 30 + $number;
-		} else {
+		else
 			throw new Exception($readableRank . " can't be parsed as go rank.");
-		}
 	}
 
-	public static function getRankFromRating(float $rating): int {
+	public static function getRankFromRating(float $rating): int
+	{
 		// Internal number for rank representation better than the textual "18k" etc, so it is just going to be integer like this
 		// 30k   = rating [-950, -850) = rank  1
 		// "20k" = rating [  50,  150) = rank 11
@@ -37,38 +38,42 @@ class Rating {
 		// 10d   = rating [2780, 2810) = rank 40
 		// 11d   = rating [2810, 2840) = rank 41
 		// .....
-		if ($rating < 2750) {
+		if ($rating < 2750)
 			return (int) floor(max(($rating + 1050) / 100, 1));
-		}
 
 		return (int) floor(($rating - 2750) / 30) + 38;
 	}
 
-	public static function getReadableRankFromRating(float $rating): string {
+	public static function getReadableRankFromRating(float $rating): string
+	{
 		return static::getReadableRank(static::getRankFromRating($rating));
 	}
 
-	public static function getRankMinimalRating(int $rank): float {
-		if ($rank <= 38) {
+	public static function getRankMinimalRating(int $rank): float
+	{
+		if ($rank <= 38)
 			return 100 * $rank - 1050.0;
-		}
 		return ($rank - 38) * 30 + 2750.0;
 	}
 
-	public static function getRankMinimalRatingFromReadableRank(string $readableRank): float {
+	public static function getRankMinimalRatingFromReadableRank(string $readableRank): float
+	{
 		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 
-	public static function getRankMiddleRatingFromReadableRank(string $readableRank): float {
+	public static function getRankMiddleRatingFromReadableRank(string $readableRank): float
+	{
 		$rank = Rating::getRankFromReadableRank($readableRank);
 		return (Rating::getRankMinimalRating($rank) + Rating::getRankMinimalRating($rank + 1)) / 2;
 	}
 
-	private static function beta($rating) {
+	private static function beta($rating)
+	{
 		return -7 * log(3300 - $rating);
 	}
 
-	public static function calculateRatingChange($rating, $opponentRating, $result, $modifier) {
+	public static function calculateRatingChange($rating, $opponentRating, $result, $modifier)
+	{
 		$Se = 1.0 / (1.0 + exp(self::beta($opponentRating) - self::beta($rating)));
 		$con = pow(((3300 - $rating) / 200), 1.6);
 		$bonus = log(1 + exp((2300 - $rating) / 80)) / 5;
@@ -76,11 +81,11 @@ class Rating {
 	}
 
 	// changes should be reflected in util.js
-	public static function ratingToXP($rating): float {
+	public static function ratingToXP($rating): float
+	{
 		// until 1200 rating, the old formula but with half of the values
-		if ($rating < 1200) {
+		if ($rating < 1200)
 			return max(10, pow($rating / 100, 1.55) - 6) / 2;
-		}
 
 		// with higher ratings, it is important to have more aggressive exponential growth,
 		return (pow(($rating - 500) / 100, 2) - 10) / 2;

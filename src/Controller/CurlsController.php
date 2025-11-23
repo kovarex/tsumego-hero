@@ -1,10 +1,12 @@
 <?php
 
-class CurlsController extends AppController {
+class CurlsController extends AppController
+{
 	/**
 	 * @return void
 	 */
-	public function data() {
+	public function data()
+	{
 		$this->Session->write('title', 'CURLs');
 		$curls = $this->Curl->find('all', [
 			'limit' => 1000,

@@ -1,48 +1,47 @@
 <?php
 
-class RatingBounds {
-	public function __construct(?float $min = null, ?float $max = null) {
+class RatingBounds
+{
+	public function __construct(?float $min = null, ?float $max = null)
+	{
 		$this->min = $min;
 		$this->max = $max;
 	}
 
-	public function getConditions(): array {
+	public function getConditions(): array
+	{
 		$result = [];
-		if ($this->min) {
+		if ($this->min)
 			$result['rating >= '] = $this->min;
-		}
-		if ($this->max) {
+		if ($this->max)
 			$result['rating < '] = $this->max;
-		}
 		return $result;
 	}
 
-	public function addSqlConditions(string &$condition): string {
-		if ($this->min) {
+	public function addSqlConditions(string &$condition): string
+	{
+		if ($this->min)
 			Util::addSqlCondition($condition, "tsumego.rating >= " . $this->min);
-		}
-		if ($this->max) {
+		if ($this->max)
 			Util::addSqlCondition($condition, "tsumego.rating < " . $this->max);
-		}
 		return $condition;
 	}
 
-	public function textualDescription(): string {
+	public function textualDescription(): string
+	{
 		$result = '';
-		if ($this->min) {
+		if ($this->min)
 			$result .= ' from ' . $this->min;
-		}
-		if ($this->max) {
+		if ($this->max)
 			$result .= ' to ' . $this->max;
-		}
 		return $result;
 	}
 
-	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds {
+	public static function coverRank(string $rank, ?string $minimalRank = null): RatingBounds
+	{
 		$result = new RatingBounds();
-		if ($rank != $minimalRank) {
+		if ($rank != $minimalRank)
 			$result->min = Rating::getRankMinimalRatingFromReadableRank($rank);
-		}
 		$result->max = Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank) + 1);
 		return $result;
 	}

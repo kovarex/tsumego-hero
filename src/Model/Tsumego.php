@@ -1,7 +1,9 @@
 <?php
 
-class Tsumego extends AppModel {
-	public function __construct($id = false, $table = null, $ds = null) {
+class Tsumego extends AppModel
+{
+	public function __construct($id = false, $table = null, $ds = null)
+	{
 		$id['table'] = 'tsumego';
 		parent::__construct($id, $table, $ds);
 	}

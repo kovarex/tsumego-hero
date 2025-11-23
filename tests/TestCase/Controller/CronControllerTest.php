@@ -3,15 +3,18 @@
 require_once(__DIR__ . '/TestCaseWithAuth.php');
 require_once(__DIR__ . '/../../ContextPreparator.php');
 
-class CronControllerTest extends TestCaseWithAuth {
-	public function testCronResetsPowers() {
+class CronControllerTest extends TestCaseWithAuth
+{
+	public function testCronResetsPowers()
+	{
 		foreach ([
 			'used_refinement',
 			'used_sprint',
 			'used_rejuvenation',
 			'used_potion',
 			'used_intuition',
-			'used_revelation'] as $name) {
+			'used_revelation'] as $name)
+		{
 			$context = new ContextPreparator([
 				'user' => ['mode' => Constants::$LEVEL_MODE, $name => 1]]);
 			$this->assertSame($context->reloadUser()[$name], 1);
@@ -20,7 +23,8 @@ class CronControllerTest extends TestCaseWithAuth {
 		}
 	}
 
-	public function testCronResetsDamage() {
+	public function testCronResetsDamage()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => 7]]);
 		$this->assertSame($context->reloadUser()['damage'], 7);
@@ -28,7 +32,8 @@ class CronControllerTest extends TestCaseWithAuth {
 		$this->assertSame($context->reloadUser()['damage'], 0);
 	}
 
-	public function testCronResetsFailedTsumegos() {
+	public function testCronResetsFailedTsumegos()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
 			'other-tsumegos' => [
@@ -41,7 +46,8 @@ class CronControllerTest extends TestCaseWithAuth {
 		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
 	}
 
-	public function testCronChangesSolvedStatusToHalfSolved() {
+	public function testCronChangesSolvedStatusToHalfSolved()
+	{
 		$oldEnoughToTransfer = date('Y-m-d H:i:s', strtotime('-8 days'));
 		$newEnoughToTransfer = date('Y-m-d H:i:s', strtotime('-6 days'));
 		$context = new ContextPreparator([
@@ -56,7 +62,8 @@ class CronControllerTest extends TestCaseWithAuth {
 		$this->assertSame($status2['TsumegoStatus']['status'], 'S');
 	}
 
-	public function testUserOfTheDay() {
+	public function testUserOfTheDay()
+	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
 			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]]]);

@@ -1,6 +1,7 @@
 <?php
 
-class TimeModeUtil {
+class TimeModeUtil
+{
 	public static int $PROBLEM_COUNT = 10;
 	public static float $RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
 
@@ -20,8 +21,10 @@ class TimeModeUtil {
 	public static int $ATTEMPT_STATUS_TIMEOUT = 4;
 	public static int $ATTEMPT_STATUS_SKIPPED = 5;
 
-	public static function attemptStatusName($statusID): string {
-		switch ($statusID) {
+	public static function attemptStatusName($statusID): string
+	{
+		switch ($statusID)
+		{
 			case self::$ATTEMPT_RESULT_QUEUED: return 'queued';
 			case self::$ATTEMPT_RESULT_SOLVED: return 'solved';
 			case self::$ATTEMPT_RESULT_FAILED: return 'failed';

@@ -9,22 +9,22 @@ App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 
-class PlayResultProcessorComponent extends Component {
+class PlayResultProcessorComponent extends Component
+{
 	public $components = ['Session'];
 
-	public function checkPreviousPlay($timeModeComponent): void {
+	public function checkPreviousPlay($timeModeComponent): void
+	{
 		$this->checkAddFavorite();
 		$this->checkRemoveFavorite();
 
 		$previousTsumegoID = Util::clearNumericCookie('previousTsumegoID');
-		if (!$previousTsumegoID) {
+		if (!$previousTsumegoID)
 			return;
-		}
 
 		$previousTsumego = ClassRegistry::init('Tsumego')->findById($previousTsumegoID);
-		if (!$previousTsumego) {
+		if (!$previousTsumego)
 			return;
-		}
 
 		$result = $this->checkPreviousPlayAndGetResult($previousTsumego);
 
@@ -37,12 +37,10 @@ class PlayResultProcessorComponent extends Component {
 
 		$this->updateTsumegoStatus($previousTsumego, $result, $previousTsumegoStatus);
 
-		if (!isset($result['solved'])) {
+		if (!isset($result['solved']))
 			return;
-		}
-		if (HeroPowers::getSprintRemainingSeconds() > 0) {
+		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
-		}
 
 		$previousStatusValue = $previousTsumegoStatus ? $previousTsumegoStatus['TsumegoStatus']['status'] : 'N';
 
@@ -55,21 +53,24 @@ class PlayResultProcessorComponent extends Component {
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
 
-	public function checkPreviousPlayAndGetResult(&$previousTsumego): array {
+	public function checkPreviousPlayAndGetResult(&$previousTsumego): array
+	{
 		$result = [];
-		if ($misplays = $this->checkMisplay()) {
+		if ($misplays = $this->checkMisplay())
+		{
 			$result['solved'] = false;
 			$result['misplays'] = $misplays;
 		}
-		if (Decoder::decodeSuccess($previousTsumego['Tsumego']['id'])) {
+		if (Decoder::decodeSuccess($previousTsumego['Tsumego']['id']))
 			$result['solved'] = true;
-		}
 
 		return $result;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): void {
-		if ($previousTsumegoStatus == null) {
+	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): void
+	{
+		if ($previousTsumegoStatus == null)
+		{
 			$previousTsumegoStatus['TsumegoStatus'] = [];
 			$previousTsumegoStatus['TsumegoStatus']['user_id'] = Auth::getUserID();
 			$previousTsumegoStatus['TsumegoStatus']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
@@ -77,43 +78,44 @@ class PlayResultProcessorComponent extends Component {
 		}
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
-		if (isset($result['solved'])) {
-			if ($result['solved']) {
-				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') { // half xp state
-					$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
-				} else {
-					if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G') {
+		if (isset($result['solved']))
+			if ($result['solved'])
+				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') // half xp state
+				{$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
+				}
+				else
+				{
+					if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G')
 						$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
-					}
 					$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
 				}
-			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') { // failed already
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
-			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') { // if it was just visited so far (so we don't overwrite solved
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
-			} elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G') {
+			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') // failed already
+			{$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
+			}
+			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') // if it was just visited so far (so we don't overwrite solved
+			{$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
+			}
+			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G')
+			{
 				$previousTsumegoStatus['TsumegoStatus']['status'] = 'V'; // failed golden tsumego
 			}
-		}
 
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
 
-	private function checkAddFavorite(): void {
-		if (!Auth::isLoggedIn()) {
+	private function checkAddFavorite(): void
+	{
+		if (!Auth::isLoggedIn())
 			return;
-		}
 
 		$tsumegoID = Util::clearCookie('add_favorite');
-		if (empty($tsumegoID)) {
+		if (empty($tsumegoID))
 			return;
-		}
 
 		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if ($favorite) {
+		if ($favorite)
 			return;
-		}
 
 		$favorite = [];
 		$favorite['user_id'] = Auth::getUserID();
@@ -122,27 +124,25 @@ class PlayResultProcessorComponent extends Component {
 		ClassRegistry::init('Favorite')->save($favorite);
 	}
 
-	private function checkRemoveFavorite(): void {
-		if (!Auth::isLoggedIn()) {
+	private function checkRemoveFavorite(): void
+	{
+		if (!Auth::isLoggedIn())
 			return;
-		}
 
 		$tsumegoID = Util::clearCookie('remove_favorite');
-		if (empty($tsumegoID)) {
+		if (empty($tsumegoID))
 			return;
-		}
 
 		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if (!$favorite) {
+		if (!$favorite)
 			return;
-		}
 		ClassRegistry::init('Favorite')->delete($favorite['Favorite']['id']);
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result): void {
-		if (Auth::isInTimeMode()) {
+	private function updateTsumegoAttempt(array $previousTsumego, array $result): void
+	{
+		if (Auth::isInTimeMode())
 			return;
-		}
 		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find(
 			'first',
 			['conditions'
@@ -153,7 +153,8 @@ class PlayResultProcessorComponent extends Component {
 		);
 
 		// only not solved ones are updated (misplays get accumulated)
-		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved']) {
+		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved'])
+		{
 			$tsumegoAttempt = [];
 			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
@@ -162,9 +163,9 @@ class PlayResultProcessorComponent extends Component {
 			$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
-		} else {
-			$tsumegoAttempt = $lastTsumegoAttempt;
 		}
+		else
+			$tsumegoAttempt = $lastTsumegoAttempt;
 
 		$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
@@ -175,13 +176,12 @@ class PlayResultProcessorComponent extends Component {
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
-	private function processRatingChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void {
-		if (!Auth::ratingisGainedInCurrentMode()) {
+	private function processRatingChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void
+	{
+		if (!Auth::ratingisGainedInCurrentMode())
 			return;
-		}
-		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus)) {
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
-		}
 		$userRating = (float) Auth::getUser()['rating'];
 		$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
 		$newUserRating = $userRating + Rating::calculateRatingChange($userRating, $tsumegoRating, $result['solved'] ? 1 : 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
@@ -194,27 +194,24 @@ class PlayResultProcessorComponent extends Component {
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
 
-	private function processDamage(array $result): void {
-		if (!$result['misplays']) {
+	private function processDamage(array $result): void
+	{
+		if (!$result['misplays'])
 			return;
-		}
-		if (!Auth::isInLevelMode()) {
+		if (!Auth::isInLevelMode())
 			return;
-		}
 		Auth::getUser()['damage'] += $result['misplays'];
 		Auth::saveUser();
 	}
 
-	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void {
-		if (!Auth::XPisGainedInCurrentMode()) {
+	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void
+	{
+		if (!Auth::XPisGainedInCurrentMode())
 			return;
-		}
-		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus)) {
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
-		}
-		if (!$result['solved']) {
+		if (!$result['solved'])
 			return;
-		}
 
 		$multiplier = ($result['xp-modifier'] ?: 1);
 		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
@@ -223,7 +220,8 @@ class PlayResultProcessorComponent extends Component {
 		Level::addXPAsResultOfTsumegoSolving($user, TsumegoUtil::getXpValue($previousTsumego['Tsumego'], $multiplier));
 	}
 
-	private function processErrorAchievement(array $result): void {
+	private function processErrorAchievement(array $result): void
+	{
 		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -231,43 +229,42 @@ class PlayResultProcessorComponent extends Component {
 				'category' => 'err',
 			],
 		]);
-		if (!$achievementCondition) {
+		if (!$achievementCondition)
+		{
 			$achievementCondition = [];
 			ClassRegistry::init('AchievementCondition')->create();
 		}
 		$achievementCondition['AchievementCondition']['category'] = 'err';
 		$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		if ($result['solved']) {
+		if ($result['solved'])
 			$achievementCondition['AchievementCondition']['value']++;
-		} else {
+		else
 			$achievementCondition['AchievementCondition']['value'] = 0;
-		}
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	private function processUnsortedStuff(array $previousTsumego, array $result): void {
-		if (!$result['solved']) {
+	private function processUnsortedStuff(array $previousTsumego, array $result): void
+	{
+		if (!$result['solved'])
 			return;
-		}
 
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
 		AppController::updateGems($solvedTsumegoRank);
-		if ($_COOKIE['sprint'] == 1) {
+		if ($_COOKIE['sprint'] == 1)
 			AppController::updateSprintCondition(true);
-		} else {
+		else
 			AppController::updateSprintCondition();
-		}
-		if ($_COOKIE['type'] == 'g') {
+		if ($_COOKIE['type'] == 'g')
 			AppController::updateGoldenCondition(true);
-		}
 
 		Util::clearCookie('sequence');
 		Util::clearCookie('type');
 	}
 
 	/* @return The number of misplays and consumes the misplays cookie in the process */
-	private function checkMisplay(): int {
+	private function checkMisplay(): int
+	{
 		return (int) Util::clearCookie('misplays');
 	}
 }

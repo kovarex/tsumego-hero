@@ -31,7 +31,6 @@
 		"cs-modified": "sh cs-modified.sh",
 		"cs-check": "./vendor/bin/php-cs-fixer check",
 		"cs-fix": "./vendor/bin/php-cs-fixer fix",
-		"cs-fix-clean": "./cleanCodeStyleConvertor/apply.sh",
 		"stan": "phpstan analyse",
 		"migrate": "vendor/bin/phinx migrate",
 		"migrate-test": "vendor/bin/phinx migrate -e test",

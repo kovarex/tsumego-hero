@@ -6,9 +6,8 @@
 
 use Composer\InstalledVersions;
 
-if (!defined('DS')) {
+if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
-}
 define('ROOT', dirname(__DIR__));
 define('VENDORS', ROOT . DS . 'vendor' . DS);
 

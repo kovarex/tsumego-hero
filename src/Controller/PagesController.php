@@ -26,7 +26,8 @@
  *
  * @link https://book.cakephp.org/2.0/en/controllers/pages-controller.html
  */
-class PagesController extends AppController {
+class PagesController extends AppController
+{
 	/**
 	 * This controller does not use a model
 	 *
@@ -43,33 +44,31 @@ class PagesController extends AppController {
 	 * @throws MissingViewException When the view file could not be found in debug mode.
 	 * @return CakeResponse|null
 	 */
-	public function display(string ...$path) {
+	public function display(string ...$path)
+	{
 		$count = count($path);
-		if (!$count) {
+		if (!$count)
 			return $this->redirect('/');
-		}
-		if (in_array('..', $path, true) || in_array('.', $path, true)) {
+		if (in_array('..', $path, true) || in_array('.', $path, true))
 			throw new ForbiddenException();
-		}
 		$page = $subpage = $title_for_layout = null;
 
-		if (!empty($path[0])) {
+		if (!empty($path[0]))
 			$page = $path[0];
-		}
-		if (!empty($path[1])) {
+		if (!empty($path[1]))
 			$subpage = $path[1];
-		}
-		if (!empty($path[$count - 1])) {
+		if (!empty($path[$count - 1]))
 			$title_for_layout = Inflector::humanize($path[$count - 1]);
-		}
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
 
-		try {
+		try
+		{
 			return $this->render(implode('/', $path));
-		} catch (MissingViewException $e) {
-			if (Configure::read('debug')) {
+		}
+		catch (MissingViewException $e)
+		{
+			if (Configure::read('debug'))
 				throw $e;
-			}
 
 			throw new NotFoundException();
 		}

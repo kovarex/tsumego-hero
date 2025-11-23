@@ -5,8 +5,10 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 
 App::uses('HeroPowers', 'Utility');
 
-class HeroPowersTest extends TestCaseWithAuth {
-	public function testRefinementGoldenTsumego() {
+class HeroPowersTest extends TestCaseWithAuth
+{
+	public function testRefinementGoldenTsumego()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -31,7 +33,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->XPGained(), $originalTsumegoXPValue);
 	}
 
-	public function testGoldenTsumegoFail() {
+	public function testGoldenTsumegoFail()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -52,7 +55,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($status['TsumegoStatus']['status'], 'V');
 	}
 
-	public function testSprint() {
+	public function testSprint()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -71,7 +75,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->user['used_sprint'], 1);
 	}
 
-	public function testSprintPersistsToNextTsumego() {
+	public function testSprintPersistsToNextTsumego()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [
@@ -99,7 +104,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumego1XPValue);
 	}
 
-	private function checkPowerIsInactive($browser, $name) {
+	private function checkPowerIsInactive($browser, $name)
+	{
 		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
 		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
 		$this->assertNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
@@ -107,7 +113,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($element->getCssValue('cursor'), 'auto');
 	}
 
-	private function checkPowerIsActive($browser, $name) {
+	private function checkPowerIsActive($browser, $name)
+	{
 		$element = $browser->driver->findElement(WebDriverBy::cssSelector('#' . $name));
 		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onclick;"));
 		$this->assertNotNull($browser->driver->executeScript("return document.getElementById('$name').onmouseover;"));
@@ -115,7 +122,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($element->getCssValue('cursor'), 'pointer');
 	}
 
-	public function testSprintLinkNotPresentWhenSprintIsUsedUp() {
+	public function testSprintLinkNotPresentWhenSprintIsUsedUp()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_sprint' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -125,7 +133,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->checkPowerIsInactive($browser, 'sprint');
 	}
 
-	public function testUseIntuition() {
+	public function testUseIntuition()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -140,7 +149,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertSame($context->reloadUser()['used_intuition'], 1);
 	}
 
-	public function testIntuitionShowsCorrectSolution() {
+	public function testIntuitionShowsCorrectSolution()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-tsumegos' => [[
@@ -164,7 +174,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->assertCount(1, array_filter($circles, fn($c) => $c['fill'] === 'green'));
 	}
 
-	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp() {
+	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
@@ -174,7 +185,8 @@ class HeroPowersTest extends TestCaseWithAuth {
 		$this->checkPowerIsInactive($browser, 'intuition');
 	}
 
-	public function testRejuvenationRestoresHealthIntuitionAndFailedTsumegos() {
+	public function testRejuvenationRestoresHealthIntuitionAndFailedTsumegos()
+	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
 			'other-tsumegos' => [

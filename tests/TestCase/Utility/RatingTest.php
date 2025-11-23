@@ -2,8 +2,10 @@
 
 App::uses('Rating', 'Utility');
 
-class RatingTest extends CakeTestCase {
-	public function testRatingToReadableRank(): void {
+class RatingTest extends CakeTestCase
+{
+	public function testRatingToReadableRank(): void
+	{
 		$this->assertSame(Rating::getReadableRankFromRating(-100), '22k');
 		$this->assertSame(Rating::getReadableRankFromRating(0), '21k');
 		$this->assertSame(Rating::getReadableRankFromRating(100), '20k');
@@ -21,7 +23,8 @@ class RatingTest extends CakeTestCase {
 		$this->assertSame(Rating::getReadableRankFromRating(2810), '10d');
 	}
 
-	public function testRankMinimalRating(): void {
+	public function testRankMinimalRating(): void
+	{
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("30k"), -950.0);
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("20k"), 50.0);
 		$this->assertSame(Rating::getRankMinimalRatingFromReadableRank("1k"), 1950.0);

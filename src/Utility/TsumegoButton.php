@@ -1,7 +1,9 @@
 <?php
 
-class TsumegoButton {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, bool $passEnabled, bool $alternativeResponse) {
+class TsumegoButton
+{
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, bool $passEnabled, bool $alternativeResponse)
+	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
 		$this->order = $order;
@@ -10,7 +12,8 @@ class TsumegoButton {
 		$this->alternativeResponse = $alternativeResponse;
 	}
 
-	public function render(int $index) {
+	public function render(int $index)
+	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 		/*
 		$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');

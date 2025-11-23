@@ -26,7 +26,8 @@
  * Add your application-wide methods in the class below, your models
  * will inherit them.
  */
-class AppModel extends Model {
+class AppModel extends Model
+{
 	/**
 	 * Behaviors to attach to all models
 	 *
