@@ -72,18 +72,49 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 	public function testSignUp(): void
 	{
+		// Test that the signup form works correctly with matching passwords
 		new ContextPreparator(['user' => null]);
-		$this->assertFalse(Auth::isLoggedIn());
 		$userWithBiggestID = ClassRegistry::init('User')->find('first', ['order' => 'id DESC'])['User']['id'];
-		$newUsername = 'kovarex' . strval($userWithBiggestID);
-		$this->testAction('users/add/', ['data' => ['User' => ['name' => $newUsername,
-			'password1' => 'hello',
-			'password2' => 'hello',
-			'email' => $newUsername . '@email.com']], 'method' => 'POST']);
+		$newUsername = 'testuser' . strval($userWithBiggestID + 1);
+		$userCountBefore = count(ClassRegistry::init('User')->find('all'));
+
+		$browser = Browser::instance();
+
+		try
+		{
+			$browser->get('users/add');
+		}
+		catch (Exception $e)
+		{
+			if (str_contains($e->getMessage(), 'Unsecured login_uri provided'))
+			{
+				// Ignore this exception, CI is running without HTTPS
+			}
+			else
+			{
+				throw $e; // rethrow other exceptions
+			}
+		}
+
+		// Fill in the signup form
+		$browser->driver->findElement(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);
+		$browser->driver->findElement(WebDriverBy::name('data[User][email]'))->sendKeys($newUsername . '@email.com');
+		$browser->driver->findElement(WebDriverBy::name('data[User][password1]'))->sendKeys('hello123');
+		$browser->driver->findElement(WebDriverBy::name('data[User][password2]'))->sendKeys('hello123');
+
+		// Submit the form
+		$browser->driver->findElement(WebDriverBy::cssSelector('.signin input[type="submit"]'))->click();
+		usleep(1000 * 100);
+
+		// Check if user was created successfully
+		$userCountAfter = count(ClassRegistry::init('User')->find('all'));
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $newUsername]]);
-		$this->assertNotNull($newUser);
+
+		// User should be created after signup
+		$this->assertNotNull($newUser, 'User should be created after signup');
+		$this->assertSame($userCountBefore + 1, $userCountAfter, 'User count should increase by 1');
 		$this->assertSame($newUser['User']['name'], $newUsername);
-		$this->assertSame($newUser['User']['email'], $newUsername . "@email.com");
+		$this->assertSame($newUser['User']['email'], $newUsername . '@email.com');
 	}
 
 	public function testSignUpWithDupliciteName(): void
