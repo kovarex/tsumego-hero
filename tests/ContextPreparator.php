@@ -390,7 +390,7 @@ class ContextPreparator
 	{
 		if (!$dayRecords)
 			return;
-		
+
 		foreach ($dayRecords as $dayRecordInput)
 		{
 			$dayRecord = [];
@@ -407,7 +407,7 @@ class ContextPreparator
 			$dayRecord['gemCounter1'] = Util::extract('gemCounter1', $dayRecordInput) ?: 0;
 			$dayRecord['gemCounter2'] = Util::extract('gemCounter2', $dayRecordInput) ?: 0;
 			$dayRecord['gemCounter3'] = Util::extract('gemCounter3', $dayRecordInput) ?: 0;
-			
+
 			ClassRegistry::init('DayRecord')->create($dayRecord);
 			ClassRegistry::init('DayRecord')->save($dayRecord);
 			$this->checkOptionsConsumed($dayRecordInput);
