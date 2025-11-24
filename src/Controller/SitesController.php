@@ -59,6 +59,17 @@ class SitesController extends AppController
 		$popularTooltip = [];
 		$popularTooltipInfo = [];
 		$popularTooltipBoardSize = [];
+		$setsWithPremium = [];
+		$currentQuote = 'q13';
+		$d1day = date('d. ');
+		$d1year = date('Y');
+		if ($d1day[0] == 0)
+			$d1day = substr($d1day, -3);
+		$month = date('F', strtotime(date('Y-m-d')));
+		$d1 = $d1day . $month . ' ' . $d1year;
+		$totd = null;
+		$newT = null;
+
 		if ($dateUser)
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
@@ -157,16 +168,7 @@ class SitesController extends AppController
 				if (!isset($scheduleTsumego[$i]['Tsumego']['status']))
 					$scheduleTsumego[$i]['Tsumego']['status'] = 'N';
 
-			$d1 = date(' d, Y');
-			$d1day = date('d. ');
-			$d1year = date('Y');
-			if ($d1day[0] == 0)
-				$d1day = substr($d1day, -3);
-			$d2 = date('Y-m-d H:i:s');
-			$month = date('F', strtotime(date('Y-m-d')));
-			$d1 = $d1day . $month . ' ' . $d1year;
 			$currentQuote = $dateUser['DayRecord']['quote'];
-			$currentQuote = 'q13';
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
 			if (!$userOfTheDay)
 				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
@@ -203,7 +205,6 @@ class SitesController extends AppController
 			foreach ($pd as $date)
 				$tsumegoDates[] = $date['PublishDate']['date'];
 
-			$setsWithPremium = [];
 			$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
 			if (!$swp)
 				$swp = [];

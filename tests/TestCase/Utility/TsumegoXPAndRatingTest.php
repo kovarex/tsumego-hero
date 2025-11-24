@@ -101,13 +101,17 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'other-users' => [['mode' => Constants::$LEVEL_MODE, 'name' => 'Ivan Detkov']],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
 			'progress-deletions' => [
 				['set' => 'set 1', 'created' => date('Y-m-d H:i:s')],
-				['set' => 'set 1', 'created' => date('Y-m-d H:i:s', strtotime('-2 months'))]]]);
+				['set' => 'set 1', 'created' => date('Y-m-d H:i:s', strtotime('-2 months'))],
+				['set' => 'set 1', 'created' => date('Y-m-d H:i:s'), 'user' => 'Ivan Detkov']]]);
 
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+
+		// only one progress deletion affects this, one is too old, and one is from other user
 		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->otherTsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
 		usleep(1000 * 100);
 		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());

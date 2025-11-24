@@ -376,7 +376,8 @@ class ContextPreparator
 		{
 			ClassRegistry::init('ProgressDeletion')->create();
 			$progressDeletion = [];
-			$progressDeletion['user_id'] = Auth::getUserID();
+			$progressDeletion['user_id'] = $progressDeletionInput['user'] ? ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $progressDeletionInput['user']]])['User']['id'] : $this->user['id'];
+			;
 			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
 			$progressDeletion['created'] = $progressDeletionInput['created'];
 			ClassRegistry::init('ProgressDeletion')->save($progressDeletion);

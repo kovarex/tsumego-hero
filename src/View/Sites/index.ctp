@@ -9,7 +9,7 @@
 		<div class="new-tsumego-box">
 			<p class="title-date"><?php echo $d1; ?></p>
 			<?php
-			if (count($scheduleTsumego)!=0){
+			if ($newT && count($scheduleTsumego)!=0){
 				echo '<font color="#f0f0f0">Added today:</font><br>';
 				if(count($scheduleTsumego)>1){
 					if(!$scheduleTsumego[0]['Tsumego']['locked']){
@@ -38,7 +38,7 @@
 			if(count($scheduleTsumego)!=0) echo '<br><br><div class="new-tsumego-box-separator"></div>';
 			?>
 			<font color="#f0f0f0">Most popular today:</font><br>
-			<?php if(!$totd['Tsumego']['locked']){ ?>
+			<?php if($totd && !$totd['Tsumego']['locked']){ ?>
 				<a id="mostPopularToday" href="/sets/view/<?php echo $totd['Tsumego']['set_id']; ?>"><b>
 					<?php echo $totd['Tsumego']['set'].' '.$totd['Tsumego']['set2']; ?></b> - <?php echo $totd['Tsumego']['num']; ?></a><br>
 				<li class="set<?php echo $totd['Tsumego']['status']; ?>1" style="margin-top:8px;">
