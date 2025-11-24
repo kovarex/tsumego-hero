@@ -35,8 +35,8 @@ class mycustomauth implements provider_interface
 		return [
 			'autologin'   => true,
 			'password'    => false,
-			'user_row'    => $this->user->data,
 			'credentials' => [],
+			'user_row'    => [],
 		];
 	}
 
