@@ -2,7 +2,7 @@
 
 require("cleanCodeStyleConvertor/RemoveBracersAroundBlocksWithOneCommandFixer.php");
 $finder = (new PhpCsFixer\Finder())
-	->in(["src", "tests"]);
+	->in([__DIR__ . "/src", __DIR__ . "/tests"]);
 
 return (new PhpCsFixer\Config())
 	->setRules(
@@ -14,8 +14,8 @@ return (new PhpCsFixer\Config())
 			'CleanCodeStyle/remove_bracers_around_blocks_with_one_command' => true,
 			'control_structure_continuation_position' => [ 'position' => 'next_line'],
 			'control_structure_braces' => false,
-			'curly_braces_position' =>
-				[
+			'curly_braces_position'
+				=> [
 					'control_structures_opening_brace' => 'next_line_unless_newline_at_signature_end',
 					'classes_opening_brace' => 'next_line_unless_newline_at_signature_end',
 					'functions_opening_brace' => 'next_line_unless_newline_at_signature_end'
