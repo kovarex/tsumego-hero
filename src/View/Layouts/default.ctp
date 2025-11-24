@@ -237,6 +237,7 @@ if($mode!=3){
 						echo '<ul class="newMenuLi1">';
 						echo '<li><a id="tutorialLink" href="/sites/websitefunctions" '.$websitefunctionsA.'>Functions & Modes</a></li>';
 						echo '<li><a id="tutorialLink" href="/sites/gotutorial" '.$gotutorialA.'>Go Rules</a></li>';
+						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
 						echo '<li><a href="/users/authors" '.$aboutA.'>About</a></li>';
 						echo '</ul>';
 						echo '</li>';
