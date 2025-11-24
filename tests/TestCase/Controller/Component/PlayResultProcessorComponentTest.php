@@ -1,8 +1,6 @@
 <?php
 
-require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Constants', 'Utility');
-require_once(__DIR__ . '/../../../ContextPreparator.php');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {

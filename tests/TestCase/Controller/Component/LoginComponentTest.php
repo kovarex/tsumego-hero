@@ -2,8 +2,6 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
-require_once(__DIR__ . '/../TestCaseWithAuth.php');
-
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer
 {

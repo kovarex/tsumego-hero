@@ -1,8 +1,5 @@
 <?php
 
-require_once(__DIR__ . '/../TestCaseWithAuth.php');
-require_once(__DIR__ . '/../../../Browser.php');
-require_once(__DIR__ . '/../../../ContextPreparator.php');
 use Facebook\WebDriver\WebDriverBy;
 
 class TsumegoNavigationButtonsTest extends TestCaseWithAuth
