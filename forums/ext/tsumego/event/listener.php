@@ -15,8 +15,25 @@ class listener implements EventSubscriberInterface
 		// Remove logout link
 		$nav = $event['navlinks'];
 		foreach ($nav as $i => $link)
+		{
 			if (!empty($link['S_LOGOUT']))
+			{
 				unset($nav[$i]);
+				continue;
+			}
+
+			if (!empty($link['S_REGISTER']))
+			{
+				unset($nav[$i]);
+				continue;
+			}
+
+			if (!empty($link['S_LOGIN']))
+			{
+				unset($nav[$i]);
+				continue;
+			}
+		}
 		$event['navlinks'] = $nav;
 	}
 }
