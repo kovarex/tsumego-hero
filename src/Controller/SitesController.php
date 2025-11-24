@@ -89,9 +89,7 @@ class SitesController extends AppController
 
 			foreach ($scheduleTsumego as $tsumego)
 			{
-				$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]);
-				if (!$tts)
-					$tts = [];
+				$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]) ?: [];
 				$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
 				$tooltipSgfs[] = $tArr[0];
 				$tooltipInfo[] = $tArr[2];
@@ -111,9 +109,7 @@ class SitesController extends AppController
 						'user_id' => Auth::getUserID(),
 						'tsumego_id' => $idArray,
 					],
-				]);
-				if (!$uts)
-					$uts = [];
+				]) ?: [];
 
 				$utsCount = count($uts);
 				for ($i = 0; $i < $utsCount; $i++)
@@ -136,28 +132,6 @@ class SitesController extends AppController
 							$newT['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
 				}
 			}
-			if (!Auth::isLoggedIn())
-				if ($this->Session->check('noLogin'))
-				{
-					$noLogin = $this->Session->read('noLogin');
-					$noLoginStatus = $this->Session->read('noLoginStatus');
-					$noLoginCount = count($noLogin);
-					for ($i = 0; $i < $noLoginCount; $i++)
-					{
-						$newTSCount = count($newTS);
-						for ($f = 0; $f < $newTSCount; $f++)
-							if ($newTS[$f]['Tsumego']['id'] == $noLogin[$i])
-								$newTS[$f]['Tsumego']['status'] = $noLoginStatus[$i];
-						$scheduleTsumegoCount = count($scheduleTsumego);
-						for ($f = 0; $f < $scheduleTsumegoCount; $f++)
-							if ($scheduleTsumego[$f]['Tsumego']['id'] == $noLogin[$i])
-								$scheduleTsumego[$f]['Tsumego']['status'] = $noLoginStatus[$i];
-						if ($noLogin[$i] == $totd['Tsumego']['id'])
-							$totd['Tsumego']['status'] = $noLoginStatus[$i];
-						if ($noLogin[$i] == $newT['Tsumego']['id'])
-							$newT['Tsumego']['status'] = $noLoginStatus[$i];
-					}
-				}
 
 			if (!isset($totd['Tsumego']['status']))
 				$totd['Tsumego']['status'] = 'N';
@@ -199,15 +173,11 @@ class SitesController extends AppController
 			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
 			$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
 
-			$pd = $this->PublishDate->find('all', ['order' => 'date ASC']);
-			if (!$pd)
-				$pd = [];
+			$pd = $this->PublishDate->find('all', ['order' => 'date ASC']) ?: [];
 			foreach ($pd as $date)
 				$tsumegoDates[] = $date['PublishDate']['date'];
 
-			$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
-			if (!$swp)
-				$swp = [];
+			$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
 			foreach ($swp as $set)
 				$setsWithPremium[] = $set['Set']['id'];
 			$totd = $this->checkForLocked($totd, $setsWithPremium);
