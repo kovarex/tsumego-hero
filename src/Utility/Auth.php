@@ -76,6 +76,7 @@ class Auth
 	public static function logout(): void
 	{
 		CakeSession::delete('loggedInUserID');
+		Util::clearCookie('login_token');
 		Auth::$user = null;
 	}
 

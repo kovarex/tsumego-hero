@@ -107,8 +107,7 @@ class mycustomauth implements provider_interface
 
 	public function logout($data, $new_session)
 	{
-		// Do nothing; logout is managed by your site
-		return true;
+		return false;
 	}
 
 	public function validate_session($user)
