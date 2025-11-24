@@ -61,8 +61,6 @@ class SitesController extends AppController
 		$popularTooltipBoardSize = [];
 		if ($dateUser)
 		{
-			$this->redirect(['controller' => 'sets', 'action' => 'index']);
-
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
 			$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]) ?: [];
 			$ptArr = $this->processSGF($ptts[0]['Sgf']['sgf']);
