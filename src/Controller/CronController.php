@@ -315,22 +315,10 @@ WHERE
 		$id += 1;
 
 		$scT = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $ts['Tsumego']['id']]]);
-		if ($scT != null)
-		{
-			$scT['SetConnection']['set_id'] = $to;
-			$scT['SetConnection']['tsumego_id'] = $id;
-			$scT['SetConnection']['num'] = $ts['Tsumego']['num'];
-			ClassRegistry::init('SetConnection')->save($scT);
-		}
-		else
-		{
-			$scT = [];
-			$scT['SetConnection']['set_id'] = $to;
-			$scT['SetConnection']['tsumego_id'] = $id;
-			$scT['SetConnection']['num'] = $ts['Tsumego']['num'];
-			ClassRegistry::init('SetConnection')->create();
-			ClassRegistry::init('SetConnection')->save($scT);
-		}
+		if (!$scT)
+			return null;
+		$scT['SetConnection']['set_id'] = $to;
+		ClassRegistry::init('SetConnection')->save($scT);
 
 		$sid = $ts['Tsumego']['id'];
 		$ts['Tsumego']['id'] = $id;
