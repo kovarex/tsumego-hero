@@ -56,7 +56,16 @@ class UsersControllerTest extends ControllerTestCase
 		$userCountBefore = count(ClassRegistry::init('User')->find('all'));
 
 		$browser = Browser::instance();
-		$browser->get('users/add');
+
+        try {
+            $browser->get('users/add');
+        } catch (Exception $e) {
+            if (str_contains($e->getMessage(), 'Unsecured login_uri provided')) {
+                // Ignore this exception, CI is running without HTTPS
+            } else {
+                throw $e; // rethrow other exceptions
+            }
+        }
 
 		// Fill in the signup form
 		$browser->driver->findElement(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);
