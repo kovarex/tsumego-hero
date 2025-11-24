@@ -62,7 +62,7 @@ class mycustomauth implements provider_interface
 
 	public function init()
 	{
-		return false;
+		return true;
 	}
 
 	public function autologin()
