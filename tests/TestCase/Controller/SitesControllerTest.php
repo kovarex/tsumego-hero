@@ -19,4 +19,30 @@ class SitesControllerTest extends ControllerTestCase
 		$titles = $browser->driver->findElements(WebDriverBy::cssSelector('.title4'));
 		$this->assertTrue(count($titles) > 3);
 	}
+
+	public function testShowPublishedTsumego()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
+
+		ClassRegistry::init('Schedule')->create();
+		$schedule = [];
+		$schedule['tsumego_id'] = $context->otherTsumegos[0]['id'];
+		$schedule['set_id'] = $context->otherTsumegos[0]['set-connections'][0]['set_id'];
+		$schedule['date'] = date('Y-m-d');
+		$schedule['published'] = 1;
+		ClassRegistry::init('Schedule')->save($schedule);
+
+		$browser = Browser::instance();
+		try
+		{
+			$browser->get('/');
+		}
+		catch (Exception $e)
+		{}
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$this->assertSame(count($buttons), 1);
+		$this->assertSame($buttons[0]->getText(), "564");
+
+	}
 }

@@ -7,9 +7,7 @@ class TsumegoButtons extends ArrayObject
 	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null)
 	{
 		if (!$tsumegoFilters)
-		{
 			return; // Temporary until also the favorites are covered
-		}
 		$condition = "";
 		$this->fill($condition, $tsumegoFilters, $id);
 

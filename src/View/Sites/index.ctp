@@ -9,30 +9,16 @@
 		<div class="new-tsumego-box">
 			<p class="title-date"><?php echo $d1; ?></p>
 			<?php
-			if ($newT && count($scheduleTsumego)!=0){
+			if ($newT && count($tsumegoButtonsOfPublishedTsumegos)!=0){
 				echo '<font color="#f0f0f0">Added today:</font><br>';
-				if(count($scheduleTsumego)>1){
-					if(!$scheduleTsumego[0]['Tsumego']['locked']){
-						echo '<a class="scheduleTsumego" href="/sets/view/'.$newT['Tsumego']['set_id'].'"><b>
+				if(count($tsumegoButtonsOfPublishedTsumegos)>1){
+					echo '<a class="scheduleTsumego" href="/sets/view/'.$tsumegoButtonsOfPublishedTsumegos[0]->setID.'"><b>
 						'.$newT['Tsumego']['set'].' '.$newT['Tsumego']['set2'].' - '.count($scheduleTsumego).' problems</b></a><br>';
-					}else{
-						echo '<a class="scheduleTsumego" href="/users/donate"><b>
-						'.$newT['Tsumego']['set'].' '.$newT['Tsumego']['set2'].' - '.count($scheduleTsumego).' problems</b></a><br>';
-					}
 				}
-				for($i=0; $i<count($scheduleTsumego); $i++){
-					if(!$scheduleTsumego[$i]['Tsumego']['locked']){
-						echo '<li class="set'.$scheduleTsumego[$i]['Tsumego']['status'].'1" style="margin-top:8px;">
-							<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$scheduleTsumego[$i]['Tsumego']['id'].'?search=topics">'
-							.$scheduleTsumego[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
-						</li>';
-					}else{
-						echo '<li class="set'.$scheduleTsumego[$i]['Tsumego']['status'].'1" style="margin-top:8px;background-image: url(\'/img/viewButtonLocked.png\'">
-							<a class="tooltip" href="/users/donate">&nbsp;</a>
-						</li>';
-					}
-				}
-				if(count($scheduleTsumego)<=10) echo '';
+				foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
+					$tsumegoButton->render();
+				if(count($scheduleTsumego)<=10)
+					echo '';
 				else echo '<br>';
 			}
 			if(count($scheduleTsumego)!=0) echo '<br><br><div class="new-tsumego-box-separator"></div>';

@@ -32,6 +32,7 @@ class TsumegoButton
 
 	public int $tsumegoID;
 	public int $setConnectionID;
+	public int $setID;
 	public int $order;
 	public string $status;
 	public bool $passEnabled; // used for set view statistics
