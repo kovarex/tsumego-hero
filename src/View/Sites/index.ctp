@@ -373,13 +373,12 @@
 
 			//echo '<pre>';print_r($quotePick);echo '</pre>';
 
-			if(!$this->Session->check('lastVisit')) $this->Session->write('lastVisit', 15352);
 			$modeActions = '';
 			$modeActions2 = 'class="modeboxes"';
 			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
-			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.ApPController::getStartpage().'</div>';
+			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.AppController::getStartpage().'</div>';
 		?>
 		<a href="/tsumegos/play/<?php echo $this->Session->read('lastVisit'); ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
@@ -1031,12 +1030,18 @@
 				echo 'popularTooltip['.$y.'].push("'.$popularTooltip[$x][$y].'");';
 			}
 		}
-
+		?>
+		<?php if(count($tooltipSgfs) > 0): ?>
+		<?php
 		for($i=0; $i<count($scheduleTsumego); $i++)
 			echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
-		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
-
 		?>
+		<?php endif; ?>
+		<?php if(count($popularTooltip) > 0): ?>
+		<?php
+		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
+		?>
+		<?php endif; ?>
 	</script>
 	<?php
 	if(!Auth::isLoggedIn()){
