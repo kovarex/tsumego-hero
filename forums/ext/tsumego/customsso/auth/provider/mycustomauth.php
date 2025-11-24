@@ -112,7 +112,15 @@ class mycustomauth implements provider_interface
 
 	public function validate_session($user)
 	{
-		return true;
+		// If SSO token is missing but phpBB thinks user is logged in — force logout
+		$loginToken = $this->request->variable('login_token', '', true, request_interface::COOKIE);
+
+		// Skip anonymous (user_id 1)
+		if ($user['user_id'] > 1 && empty($loginToken)) {
+			return false;  // tells phpBB the session is invalid → logs user out
+		}
+
+		return true;  // session is valid
 	}
 
 	public function acp()
