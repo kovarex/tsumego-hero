@@ -3,8 +3,9 @@
 use Facebook\WebDriver\WebDriverBy;
 
 require_once(__DIR__ . '/../../ContextPreparator.php');
+require_once(__DIR__ . '/../../Browser.php');
 
-class UesrsControllerTest extends ControllerTestCase
+class UsersControllerTest extends ControllerTestCase
 {
 	public function testUserView()
 	{
