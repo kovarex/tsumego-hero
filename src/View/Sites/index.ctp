@@ -578,12 +578,12 @@
 					<li>Changed XP formula to be always based on rating</li><br>
 					<li>Changed the rating->XP distribution, lower Xp for easier problems, and more for harder ones.</li><br>
 					<li>Fixed viewing current filters in the set view</li><br>
-					<li>Fixed expanding time mode results for different from the latest result</li><br>
+					<li>Fixed expanding time mode results.</li><br>
 				</ul>
 				<br><hr><br>
-				As big parts of the code were changed by this release, it is expected that some temporary more unstable phase..<br>
+				As big parts of the code were changed by this release, it is expected to have temporary unstable phase.<br>
 				Don't hesitate to report issues in the <a href="https://tsumego.com/forums/viewforum.php?f=7">Bug reports</a> section on the forums.<br>
-				The plan is to first focus on covering the site by automated tests and improving the code quality, after that , we want to focus more on optimisations and improvements of the site, the current code coverage is 41%
+				The plan is to first focus on covering the site by automated tests and improving the code quality. Then we want to focus more on optimisations and improvements. The current code coverage is 41%
 				<br>
 				kovarex
 			</div>
