@@ -1002,8 +1002,19 @@
 			dataType: 'txt'
 		});
 
+		let tooltipSgfs = [];
 		let popularTooltip = [];
 		<?php
+		for($a=0; $a<count($tooltipSgfs); $a++){
+			echo 'tooltipSgfs['.$a.'] = [];';
+			for($y=0; $y<count($tooltipSgfs[$a]); $y++){
+				echo 'tooltipSgfs['.$a.']['.$y.'] = [];';
+				for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
+					echo 'tooltipSgfs['.$a.']['.$y.'].push("'.$tooltipSgfs[$a][$x][$y].'");';
+				}
+			}
+		}
+
 		for($y=0; $y<count($popularTooltip); $y++){
 			echo 'popularTooltip['.$y.'] = [];';
 			for($x=0; $x<count($popularTooltip[$y]); $x++){
@@ -1011,7 +1022,13 @@
 			}
 		}
 		?>
-		<?php if(count($popularTooltip) > 0): ?>
+		<?php if(count($tooltipSgfs) > 0): ?>
+		<?php
+		for($i=0; $i<count($scheduleTsumego); $i++)
+			echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
+		?>
+		<?php endif; ?>
+		<?php if(count($popularTooltip) > 0 && !empty($popularTooltipInfo) && count($popularTooltipInfo) >= 2 && !empty($popularTooltipBoardSize)): ?>
 		<?php
 		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
 		?>
