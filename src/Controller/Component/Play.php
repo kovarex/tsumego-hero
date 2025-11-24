@@ -516,7 +516,7 @@ class Play
 		}
 		else
 			$sgf = $sgfdb;
-		if ($t['Tsumego']['set_id'] == 208 || $t['Tsumego']['set_id'] == 210)
+		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
 			$tr = strpos($sgf['Sgf']['sgf'], 'TR');
 			$sq = strpos($sgf['Sgf']['sgf'], 'SQ');
