@@ -134,7 +134,7 @@ jobs:
       - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: https://localhost:8443
+          TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p coverage
