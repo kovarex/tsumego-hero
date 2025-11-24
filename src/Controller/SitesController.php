@@ -12,6 +12,11 @@ class SitesController extends AppController
 	{
 		$this->Session->write('page', 'home');
 		$this->Session->write('title', 'Tsumego Hero');
+
+		// Set default lastVisit tsumego ID if not already set (for first-time visitors)
+		if (!$this->Session->check('lastVisit'))
+			$this->Session->write('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
+
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TsumegoStatus');
