@@ -120,6 +120,11 @@ class mycustomauth implements provider_interface
 			return false;  // tells phpBB the session is invalid → logs user out
 		}
 
+		// Case 2: user is anonymous BUT SSO token exists → force new login cycle
+		if ($user['user_id'] == ANONYMOUS && !empty($loginToken)) {
+			return false;  // phpBB destroys anonymous session, autologin() will run
+		}
+
 		return true;  // session is valid
 	}
 
