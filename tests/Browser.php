@@ -21,6 +21,17 @@ class Browser
 
 		$firefoxOptions = new FirefoxOptions();
 		$firefoxOptions->addArguments(['--headless']);
+
+		$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
+		$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
+		$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
+		$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
+		$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
+		$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
+		$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
+		$firefoxOptions->setPreference('security.OCSP.require', false);
+		$firefoxOptions->setAcceptInsecureCerts(true);
+
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
 		try
