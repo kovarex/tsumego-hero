@@ -53,7 +53,16 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 		$browser = Browser::instance();
-		$browser->get('users/login');
+		try
+		{
+			$browser->get('users/login');
+		}
+		catch (Exception $e)
+		{
+			// Ignore Google Sign-In error, CI is running without HTTPS
+			if (!str_contains($e->getMessage(), 'Unsecured login_uri provided'))
+				throw $e;
+		}
 		$browser->clickId('UserName');
 		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
 		$browser->clickId('password');
@@ -98,14 +107,9 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		}
 		catch (Exception $e)
 		{
-			if (str_contains($e->getMessage(), 'Unsecured login_uri provided'))
-			{
-				// Ignore this exception, CI is running without HTTPS
-			}
-			else
-			{
-				throw $e; // rethrow other exceptions
-			}
+			// Ignore Google Sign-In error, CI is running without HTTPS
+			if (!str_contains($e->getMessage(), 'Unsecured login_uri provided'))
+				throw $e;
 		}
 
 		// Fill in the signup form
