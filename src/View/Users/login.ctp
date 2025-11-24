@@ -5,11 +5,6 @@
 	?>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<br>
-	<div align="center">
-	Sign in with:<br><br><br>
-	<a class="new-button-inactive">Name</a>
-	<a class="new-button" href="/users/login2">Email</a>
-	</div>
 	<div id="login-box" class="users form">
 		<div class="left signin">
 			<?php echo $this->Flash->render(); ?>
@@ -18,7 +13,7 @@
 			<label for="UserName"></label>
 			<div class="input text required">
 				<label for="UserName"></label>
-				<input name="data[User][name]" maxlength="50" placeholder="Username" type="text" id="UserName" required="required"/>
+				<input name="data[User][name]" maxlength="50" placeholder="Username or email" type="text" id="UserName" required="required"/>
 			</div>
 			<label for="UserPassword"></label>
 			<div class="input password required">

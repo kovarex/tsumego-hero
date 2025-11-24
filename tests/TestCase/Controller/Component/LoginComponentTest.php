@@ -51,6 +51,20 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 	}
 
+	public function testLoginWithEmail(): void
+	{
+		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
+		$browser = Browser::instance();
+		$browser->get('users/login');
+		$browser->clickId('UserName');
+		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
+		$browser->clickId('password');
+		$browser->driver->getKeyboard()->sendKeys('test');
+		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserLoginForm input[type="submit"]'));
+		$sumbitButton->click();
+		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector(".account-bar-user-class"))->getText(), 'kovarex');
+	}
+
 	public function testLoginWithWrongPassword(): void
 	{
 		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
