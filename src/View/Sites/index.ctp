@@ -560,7 +560,7 @@
 					<li style="display: list-item;">The site has moved to the prominent address of tsumego.com.</li><br>
 					<li style="display: list-item;">Refactored big parts of the code, with usage of automated tests.</li><br>
 					<li style="display: list-item;">Removed half-working features for non logged players (hearts, tsumego status, levels).</li><br>
-					<li style="display: list-item;">Added phpbb forums on <a href="https://tsumego.com/forums">tsumego.com/forums</a>, the forum users and authentication is automatically linked to the tsumego-hero account.</li><br>
+					<li style="display: list-item;">Added phpbb forums, accessible by home->forums or tsumego.com/forums. The forum users and authentication is automatically linked to the tsumego-hero account.</li><br>
 				</ul>
 				<b>Changes:</b>
 				<ul style="list-style: disc; padding-left: 40px;">
