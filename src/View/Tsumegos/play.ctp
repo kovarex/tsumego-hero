@@ -1,4 +1,4 @@
-<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210){ ?>
+<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
 	<script src="/js/multipleChoice.js"></script>
 	<style>.alertBox{height:auto!important;}</style>
 <?php }else if($tv!=null){ ?>
@@ -324,7 +324,7 @@
 	<?php }else{ ?>
 		<div id="board" align="center"></div>
 	<?php } ?>
-	<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
+	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
 		<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
@@ -907,7 +907,7 @@
 	<?php
 	}
 	?>
-	<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
+	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
 		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
 		<div class="alertBox alertInfo" id="multipleChoiceAlerts">
@@ -1173,7 +1173,7 @@
 	}
 
 	if($pl==1) echo 'besogoPlayerColor = "white";';
-	if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $t['Tsumego']['set_id']==109
+	if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id']==109
 	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236)
 	echo 'besogoPlayerColor = "black";';
 
@@ -1982,7 +1982,7 @@
 			});
 		<?php }} ?>
 
-		<?php if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210 || $tv!=null){ ?>
+		<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
 		});
@@ -2706,7 +2706,7 @@
 		<?php
 		if($alternative_response!=1)
 			echo 'options.alternativeResponse = false;';
-		if($t['Tsumego']['set_id']==208 || $t['Tsumego']['set_id']==210){
+		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0){
 			$sStatusB = '';
 			$sStatusW = '';
 			if($t['Tsumego']['semeaiType'] == 1){
