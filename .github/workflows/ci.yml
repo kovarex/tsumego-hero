@@ -21,6 +21,14 @@ jobs:
           - '8.4'
 
     services:
+      caddy:
+        image: caddy:2
+        ports:
+          - 8443:8443
+        volumes:
+          - ./Caddyfile:/etc/caddy/Caddyfile
+        options: >-
+          --add-host=host.docker.internal:172.17.0.1
       mysql:
         image: mysql:8.0
         env:
@@ -125,7 +133,7 @@ jobs:
       - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: http://host.docker.internal:8080
+          TEST_APP_URL: https://localhost:8443
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p coverage
