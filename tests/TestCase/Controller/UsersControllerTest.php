@@ -46,4 +46,25 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
 		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 	}
+
+	public function testLevelHighscore()
+	{
+		foreach ([true, false] as $loggedIn)
+		{
+			$contextParameters = [];
+			if ($loggedIn)
+				$contextParameters['user'] = ['name' => 'kovarex'];
+			$contextParameters['other-users'] = [['name' => 'Ivan Detkov']];
+			$contextParameters['other-tsumegos'] = [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]];
+			$context = new ContextPreparator($contextParameters);
+			$browser = Browser::instance();
+			$browser->get('users/highscore');
+
+			// Ivan detkov is alone in the leaderboard
+			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
+			$rows = $table->findElements(WebDriverBy::tagName("tr"));
+			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
+			$this->assertSame($rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
+		}
+	}
 }

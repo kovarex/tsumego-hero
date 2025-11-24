@@ -1895,25 +1895,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('Activate');
 
-		$this->saveSolvedNumber(Auth::getUserID());
+		if (Auth::isLoggedIn())
+			$this->saveSolvedNumber(Auth::getUserID());
 
 		$activate = false;
 		if (Auth::isLoggedIn())
 			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
-		$json = json_decode(file_get_contents('json/level_highscore.json'), true);
 
-		$uAll = $this->User->find('all', ['limit' => 1250, 'order' => 'level DESC']);
-		$uMap = [];
-		$uAllCount = count($uAll);
-		for ($i = 0; $i < $uAllCount; $i++)
-			$uMap[$uAll[$i]['User']['id']] = $uAll[$i]['User']['name'];
-		$jsonCount = count($json);
-		for ($i = 0; $i < $jsonCount; $i++)
-			if (isset($uMap[$json[$i]['id']]) && $uMap[$json[$i]['id']])
-				$json[$i]['name'] = $uMap[$json[$i]['id']];
 
-		$this->set('users', $json);
+		$users = $this->User->find('all', ['limit' => 1250, 'order' => 'level DESC, xp DESC']);
+		$this->set('users', $users);
 		$this->set('activate', $activate);
 	}
 

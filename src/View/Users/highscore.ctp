@@ -17,16 +17,16 @@
 		</div>
 	</td>
 	<td width="23%" valign="top">
-		<div align="right">	
+		<div align="right">
 		</div>
 	</td>
 </table>
 <table class="highscoreTable" border="0">
 	<tr>
-		<div align="center">	
+		<div align="center">
 			<p class="title">
 				Level Highscore
-			<br><br> 
+			<br><br>
 			</p>
 		</div>
 	</tr>
@@ -49,15 +49,16 @@
 		}}
 		$place = 1;
 		for($i=count($users)-1;$i>=0;$i--){
-			if($users[$i]['solved'] == 0) $users[$i]['solved'] = 'missing data';
+			$user = $users[$i]['User'];
+			if($user['solved'] == 0) $user['solved'] = 'missing data';
 			$bgColor = '#dddddd';
 			$statsLink4 = '';
 			if(Auth::isLoggedIn()){if(Auth::getUserID()==72){
-				$statsLink4 = '/'.$users[$i]['id'];
+				$statsLink4 = '/'.$user['id'];
 			}}
 			$uType = '';
-			if($users[$i]['type']==1) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
-			else if($users[$i]['type']==2) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
+			if($user['type']==1) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
+			else if($user['type']==2) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
 			if($i>989) $tableRowColor = 'color1';
 			else if($i>969) $tableRowColor = 'color2';
 			else if($i>939) $tableRowColor = 'color3';
@@ -77,23 +78,23 @@
 					<td align="center">
 						#'.$place.'
 					</td>
-					
+
 					<td  align="left">
-						'.$statsLink1.$statsLink4.$statsLink2.$users[$i]['name'].' '.$statsLink3.'
+						'.$statsLink1.$statsLink4.$statsLink2.$user['name'].' '.$statsLink3.'
 					</td>
 					<td>
 						'.$uType.'
 					</td>
-					
+
 					<td align="center">
-						Level '.$users[$i]['level'].'
+						Level '.$user['level'].'
 					</td>
-					
+
 					<td align="center">
-						'.$users[$i]['xpSum'].' XP
+						'.Level::getOverallXPGained($user).' XP
 					</td>
 					<td align="left">
-						'.$users[$i]['solved'].'
+						'.$user['solved'].'
 					</td>
 				</tr>
 			';
@@ -102,7 +103,7 @@
 	?>
 	</table>
 	<?php
-	
+
 	/*
 	if(Auth::getUserID()==72){
 		echo '<pre>';
@@ -122,8 +123,8 @@
 
 	<script>
 	</script>
-	
-	
+
+
 	<?php
 	/* if($i==3) $bgColor = '#9e61b6';
 			if($i==4) $bgColor = '#9e61b6';
@@ -181,6 +182,6 @@
 			if($i==29) $bgColor = '#d3d7e0';
 			*/
 	?>
-	
-	
-	
+
+
+
