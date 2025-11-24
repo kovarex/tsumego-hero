@@ -980,12 +980,6 @@
 	?>
 
 <script type="text/javascript">
-	var jrecordValue = 19;
-	<?php if($checkBSize!=19) echo 'jrecordValue = '.$checkBSize.';'; ?>
-	var jrecord = new JGO.Record(jrecordValue, jrecordValue);
-	var jboard = jrecord.jboard;
-	var jsetup = new JGO.Setup(jboard, JGO.BOARD.<?php echo $boardSize; ?>Walnut);
-	var player = <?php echo 'JGO.'.$playerColor[0]; ?>;
 	var ko = false, lastMove = false;
 	var lastHover = false, lastX = -1, lastY = -1;
 	var moveCounter = 0;
@@ -1551,8 +1545,6 @@
 	if($goldenTsumego) echo 'var goldenTsumego = true;';
 	else echo 'var goldenTsumego = false;';
 
-	if($firstPlayer=='w') echo 'player = JGO.'.$playerColor[1].';';
-
 	if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
@@ -1578,25 +1570,8 @@
 		echo 'var noXP=false;';
 	}
 
-	if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
-	if($t['Tsumego']['set_id']==156 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161){
-		if($additionalInfo['lastPlayed'][0]!=99) echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['lastPlayed'][0].', '.$additionalInfo['lastPlayed'][1].'), JGO.MARK.CIRCLE);';
-		for($i=0; $i<count($additionalInfo['triangle']); $i++){
-			echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['triangle'][$i][0].', '.$additionalInfo['triangle'][$i][1].'), JGO.MARK.TRIANGLE);';
-		}
-		for($i=0; $i<count($additionalInfo['square']); $i++){
-			echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['square'][$i][0].', '.$additionalInfo['square'][$i][1].'), JGO.MARK.SQUARE);';
-		}
-	}
-
-	//BOARD ORIENTATION
-				if($corner=='tl'){echo 'jsetup.view(0, 0, 9, 9);';
-	}else if($corner=='br'){echo 'jsetup.view(10, 10, 9, 9);';
-	}else if($corner=='bl'){echo 'jsetup.view(0, 10, 9, 9);';
-	}else if($corner=='tr'){echo 'jsetup.view(10, 0, 9, 9);';
-	}else if($corner=='b'){echo 'jsetup.view(0, 10, 19, 9);';
-	}else if($corner=='t'){echo 'jsetup.view(0, 0, 19, 9);';
-	}else{} // Full Board
+	if (!isset($additionalInfo))
+		$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
 ?>
 
 	$(document).ready(function(){
@@ -2085,7 +2060,6 @@
 	function reset(){
 		if(!tryAgainTomorrow) locked = false;
 		hoverLocked = false;
-		opponent = (player == JGO.BLACK) ? JGO.WHITE : JGO.BLACK;
 		ko = false, lastMove = false;
 		lastHover = false, lastX = -1, lastY = -1;
 		moveCounter = 0;
@@ -2098,7 +2072,8 @@
 		branch = "";
 		rw = false;
 		boardSize = 19;
-		<?php if($checkBSize!=19) echo 'boardSize = '.$checkBSize.';'; ?>
+		<?php if($checkBSize!=19)
+			echo 'boardSize = '.$checkBSize.';'; ?>
 		var i, j;
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 		heartLoss = !isStatusAllowingInspection(tStatus);
@@ -2325,79 +2300,6 @@
 		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
 	}
 
-	function review(){
-		if(reviewEnabled){
-			hoverLocked = true;
-			rw = true;
-			if(!tryAgainTomorrow) locked = false;
-			freePlayMode = false;
-
-			<?php
-				if($ui!=2){
-					echo 'player = JGO.'.$playerColor[$whoPlays2].';';
-				}
-			?>
-			opponent = (player == JGO.BLACK) ? JGO.WHITE : JGO.BLACK;
-			ko = false, lastMove = false;
-			lastHover = false, lastX = -1, lastY = -1;
-			moveCounter = 0;
-			move = 0;
-			rwLevel = 0;
-			rwBranch = 0;
-			rwSwitcher = 2;
-			inPath = false;
-			pathLock = false;
-
-			$(".reviewNavi").fadeIn(250);
-
-			boardSize = 19;
-			<?php if($checkBSize!=19) echo 'boardSize = '.$checkBSize.';'; ?>
-			var i, j;
-			for (i=0;i<boardSize; i++) {
-				for (j=0;j<boardSize; j++) {
-					jboard.setType(new JGO.Coordinate(i, j), JGO.CLEAR);
-					jboard.setMark(new JGO.Coordinate(i, j), JGO.MARK.NONE);
-				}
-			}
-
-			document.getElementById("status").innerHTML = "";
-			<?php
-				if (!isset($black)) $black = [];
-				if (!isset($white)) $white = [];
-				for($i=0; $i<count($black); $i++){
-					if($i%2 == 0){
-						echo 'jboard.setType(new JGO.Coordinate('.$black[$i].', '.$black[$i+1].'), JGO.'.$playerColor[0].');';
-					}
-				}
-				for($i=0; $i<count($white); $i++){
-					if($i%2 == 0){
-						echo 'jboard.setType(new JGO.Coordinate('.$white[$i].', '.$white[$i+1].'), JGO.'.$playerColor[1].');';
-					}
-				}
-			?>
-
-			<?php
-			if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
-			if($t['Tsumego']['set_id']==156 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161){
-				echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['lastPlayed'][0].', '.$additionalInfo['lastPlayed'][1].'), JGO.MARK.CIRCLE);';
-				for($i=0; $i<count($additionalInfo['triangle']); $i++){
-					echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['triangle'][$i][0].', '.$additionalInfo['triangle'][$i][1].'), JGO.MARK.TRIANGLE);';
-				}
-				for($i=0; $i<count($additionalInfo['square']); $i++){
-					echo 'jboard.setMark(new JGO.Coordinate('.$additionalInfo['square'][$i][0].', '.$additionalInfo['square'][$i][1].'), JGO.MARK.SQUARE);';
-				}
-			}
-			?>
-			<?php
-			if (!isset($visual)) $visual = [];
-			for($i=0; $i<count($visual); $i++){
-				if($visual[$i][3] === '+') echo 'jboard.setMark(new JGO.Coordinate('.$visual[$i][0].', '.$visual[$i][1].'), JGO.MARK.CORRECT);';
-				else echo 'jboard.setMark(new JGO.Coordinate('.$visual[$i][0].', '.$visual[$i][1].'), JGO.MARK.INCORRECT);';
-			}
-			?>
-			document.getElementById("theComment").style.cssText = "display:none;";
-		}
-	}
 	<?php
 	$dynamicCommentCoords = array();
 	$dynamicCommentCoords[0] = array();
