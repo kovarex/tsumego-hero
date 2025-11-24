@@ -408,90 +408,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		file_put_contents('json/popular_tags.json', json_encode($array));
 	}
-	/**
-	 * @return void
-	 */
-	public function routine21() //level highscore
-	{
-		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC']);
-		$stop = 1;
-		$usersCount = count($users);
-		for ($i = 0; $i < $usersCount; $i++)
-			if ($stop <= 1000)
-			{
-				$lvl = 1;
-				$toplvl = $users[$i]['User']['level'];
-				$startxp = 50;
-				$sum = 0;
-				$xpJump = 10;
-				for ($j = 1; $j < $toplvl; $j++)
-				{
-					if ($j >= 11)
-						$xpJump = 25;
-					if ($j >= 19)
-						$xpJump = 50;
-					if ($j >= 39)
-						$xpJump = 100;
-					if ($j >= 69)
-						$xpJump = 150;
-					if ($j == 99)
-						$xpJump = 50000;
-					if ($j == 100)
-						$xpJump = 1150;
-					if ($j >= 101)
-						$xpJump = 0;
-					$sum += $startxp;
-					$startxp += $xpJump;
-				}
-				$sum += $users[$i]['User']['xp'];
-				$users[$i]['User']['xpSum'] = $sum;
-				$stop++;
-			}
-		$UxpSum = [];
-		$Uname = [];
-		$Ulevel = [];
-		$Uid = [];
-		$Utype = [];
-		$Usolved = [];
-		$stop = 1;
-		$anz = 0;
-		$rand = rand(0, 9);
-		echo $rand;
-		$usersCount = count($users);
-		for ($i = 0; $i < $usersCount; $i++)
-			if ($anz < 1000)
-			{
-				array_push($UxpSum, $users[$i]['User']['xpSum']);
-				if (strlen($users[$i]['User']['name']) > 20)
-					$users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
-				array_push($Uname, $this->checkPicture($users[$i]));
-				array_push($Ulevel, $users[$i]['User']['level']);
-				array_push($Uid, $users[$i]['User']['id']);
-				array_push($Utype, $users[$i]['User']['premium']);
-				if ($users[$i]['User']['solved'] == null)
-					$users[$i]['User']['solved'] = 0;
-				if (($i + $rand) % 9 == 0)
-					array_push($Usolved, $this->saveSolvedNumber($users[$i]['User']['id']));
-				else
-					array_push($Usolved, $users[$i]['User']['solved']);
-				$anz++;
-			}
-		array_multisort($UxpSum, $Uname, $Ulevel, $Uid, $Utype, $Usolved);
-		$users2 = [];
-		$UxpSumCount = count($UxpSum);
-		for ($i = 0; $i < $UxpSumCount; $i++)
-		{
-			$a = [];
-			$a['xpSum'] = $UxpSum[$i];
-			$a['name'] = mb_convert_encoding($Uname[$i], 'UTF-8', 'ISO-8859-1');
-			$a['level'] = $Ulevel[$i];
-			$a['id'] = $Uid[$i];
-			$a['type'] = $Utype[$i];
-			$a['solved'] = $Usolved[$i];
-			array_push($users2, $a);
-		}
-		file_put_contents('json/level_highscore.json', json_encode($users2));
-	}
 
 	/**
 	 * @return void
@@ -1902,9 +1818,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (Auth::isLoggedIn())
 			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
-
-
-		$users = $this->User->find('all', ['limit' => 1250, 'order' => 'level DESC, xp DESC']);
+		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC, xp DESC']);
 		$this->set('users', $users);
 		$this->set('activate', $activate);
 	}

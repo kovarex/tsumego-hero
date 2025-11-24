@@ -48,8 +48,10 @@
 			$statsLink3 = '</a>';
 		}}
 		$place = 1;
-		for($i=count($users)-1;$i>=0;$i--){
-			$user = $users[$i]['User'];
+		foreach ($users as $index => $user)
+		{
+			$order = $index + 1;
+			$user = $user['User'];
 			if($user['solved'] == 0) $user['solved'] = 'missing data';
 			$bgColor = '#dddddd';
 			$statsLink4 = '';
@@ -57,21 +59,36 @@
 				$statsLink4 = '/'.$user['id'];
 			}}
 			$uType = '';
-			if($user['type']==1) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
-			else if($user['type']==2) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
-			if($i>989) $tableRowColor = 'color1';
-			else if($i>969) $tableRowColor = 'color2';
-			else if($i>939) $tableRowColor = 'color3';
-			else if($i>899) $tableRowColor = 'color4';
-			else if($i>799) $tableRowColor = 'color5';
-			else if($i>699) $tableRowColor = 'color6';
-			else if($i>599) $tableRowColor = 'color7';
-			else if($i>499) $tableRowColor = 'color8';
-			else if($i>399) $tableRowColor = 'color9';
-			else if($i>299) $tableRowColor = 'color10';
-			else if($i>199) $tableRowColor = 'color11';
-			else if($i>99) $tableRowColor = 'color12x';
-			else $tableRowColor = 'color13';
+			if($user['type']==1)
+				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
+			else if($user['type']==2)
+				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
+			if ($order == 1)
+				$tableRowColor = 'color1';
+			elseif ($order <= 4)
+				$tableRowColor = 'color2';
+			elseif ($order <= 50)
+				$tableRowColor = 'color3';
+			elseif ($order <= 100)
+				$tableRowColor = 'color4';
+			elseif($order <= 200)
+				$tableRowColor = 'color5';
+			elseif($order <= 300)
+				$tableRowColor = 'color6';
+			elseif($order <= 400)
+				$tableRowColor = 'color7';
+			elseif($order <= 500)
+				$tableRowColor = 'color8';
+			elseif($order <= 600)
+				$tableRowColor = 'color9';
+			elseif($order <= 700)
+				$tableRowColor = 'color10';
+			elseif($order <= 800)
+				$tableRowColor = 'color11';
+			elseif($order <= 900)
+				$tableRowColor = 'color12x';
+			else
+				$tableRowColor = 'color13';
 
 			echo '
 				<tr class="'.$tableRowColor.'">

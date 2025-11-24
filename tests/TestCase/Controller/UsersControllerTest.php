@@ -52,9 +52,8 @@ class UsersControllerTest extends ControllerTestCase
 		foreach ([true, false] as $loggedIn)
 		{
 			$contextParameters = [];
-			if ($loggedIn)
-				$contextParameters['user'] = ['name' => 'kovarex'];
-			$contextParameters['other-users'] = [['name' => 'Ivan Detkov']];
+			$contextParameters['user'] = $loggedIn ? ['name' => 'kovarex'] : null;
+			$contextParameters['other-users'] = [['name' => 'Ivan Detkov', 'level' => 10]];
 			$contextParameters['other-tsumegos'] = [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]];
 			$context = new ContextPreparator($contextParameters);
 			$browser = Browser::instance();
@@ -65,6 +64,9 @@ class UsersControllerTest extends ControllerTestCase
 			$rows = $table->findElements(WebDriverBy::tagName("tr"));
 			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
 			$this->assertSame($rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
+			if ($loggedIn)
+				$this->assertSame($rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex');
+
 		}
 	}
 }
