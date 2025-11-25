@@ -110,4 +110,85 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('/tsumegos/play/' . Constants::$DEFAULT_TSUMEGO_ID, $pageSource,
 			'Play button should use default tsumego ID when no lastVisit session exists');
 	}
+
+	/**
+	 * Test that quotes with existing images don't use fallback
+	 */
+	public function testQuoteWithImagesUsesOwnImages()
+	{
+		// Arrange: Set up context with q01 which has all images
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [],  // Create a tsumego for the day_record to reference
+			'day-records' => [
+				[
+					'date' => date('Y-m-d'),
+					'solved' => 0,
+					'quote' => 'q01', // q01 has all images and CSS
+					'userbg' => 1,
+					'visitedproblems' => 0,
+				],
+			],
+		]);
+
+		// Act: Load the index page
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		// Assert: Page should use q01's own images, not fallback
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('/img/new_startpage/q01.png', $pageSource,
+			'Should use q01 own image, not fallback');
+		$this->assertStringContainsString('/img/new_startpage/q01u.png', $pageSource,
+			'Should use q01 user image, not fallback');
+		$this->assertStringContainsString('/img/new_startpage/q01e.png', $pageSource,
+			'Should use q01 achievement image, not fallback');
+		$this->assertStringContainsString('user-pick-q01', $pageSource,
+			'Should use q01 CSS positioning, not fallback');
+	}
+
+	/**
+	 * Test that quote fallback system works correctly for quotes with missing images
+	 */
+	public function testQuoteFallbackForMissingImages()
+	{
+		// Arrange: Set up context with a quote that has no images (q44)
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumego' => [],
+			'day-records' => [
+				[
+					'date' => date('Y-m-d'),
+					'solved' => 5,
+					'quote' => 'q44', // q44 has no images, should fallback to q06
+					'userbg' => 1,
+					'visitedproblems' => 10,
+				],
+			],
+		]);
+
+		// Act: Load the index page
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		// Assert: Page should load without broken images
+		$pageSource = $browser->driver->getPageSource();
+
+		// Calculate expected fallback (q44 % 13 + 1 = 5 → q05)
+		$quoteNum = 44;
+		$fallbackNum = ($quoteNum % 13) + 1;
+		$expectedFallback = 'q' . str_pad($fallbackNum, 2, '0', STR_PAD_LEFT);
+
+		// Check that fallback images are used (q05 for q44)
+		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}.png", $pageSource,
+			"Should use {$expectedFallback} fallback image for quote q44");
+		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}u.png", $pageSource,
+			"Should use {$expectedFallback}u.png fallback for user of day");
+		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}e.png", $pageSource,
+			"Should use {$expectedFallback}e.png fallback for achievements");
+
+		// Check that CSS class uses the fallback
+		$this->assertStringContainsString("user-pick-{$expectedFallback}", $pageSource,
+			"Should use {$expectedFallback} CSS positioning fallback");
+	}
 }
