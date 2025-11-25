@@ -1759,7 +1759,20 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->signIn($user);
-		echo "<script>window.location='/sets/index';</script>";
+		$this->autoRender = false;
+
+		// Completely clear all output buffers
+		while (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		// Build and send a clean HTTP redirect
+		$this->response->statusCode(303);
+		$this->response->header('Location', '/sets/index');
+		$this->response->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+		$this->response->header('Pragma', 'no-cache');
+		$this->response->header('Expires', '0');
+		$this->response->send();
 		exit;
 	}
 
