@@ -2782,8 +2782,6 @@ Joschka Zimdars';
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		}
 		$this->signIn($u);
-		$this->Session->write('redirect', 'sets');
-
 		$this->set('name', $name);
 		$this->set('email', $email);
 		$this->set('picture', $picture);
