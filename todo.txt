@@ -1,6 +1,8 @@
-  - The publish feature (cron functionality of transferring sandbox set into public set)
+Fixes:
+ - rating selection mode is reported to be broken
+Refactoring:
   - Rules of capturing races
-  - Use tsumego button for the buttons in the index page (published/tsumego of the day)
+  - Use tsumego button for the buttons in the index page (tsumego of the day), maybe remove tsumego of the day instead.
   - Make tsumego button more encapsulated (ideally the tooltip etc right in the button, without extra javascript call needed)
  UserBoards:
    - convert the field to a bitfield, so it is just an integer
