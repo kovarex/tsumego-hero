@@ -67,11 +67,6 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 $url = parse_url($_SERVER['HTTP_HOST']);
 $url['path'] = str_replace('tsumego-hero.com','',$url['path']);
 if($url['path']=='www.') echo '<script type="text/javascript">window.location.href = "https://tsumego-hero.com'.$_SERVER['REQUEST_URI'].'";</script>';
-if($this->Session->check('redirect') && $this->Session->read('redirect')=='sets'){
-	$this->Session->delete('redirect');
-	$this->Session->write('initialLoading', 'true');
-	echo '<script type="text/javascript">window.location.href = "/";</script>';
-}
 if($this->Session->check('redirect') && $this->Session->read('redirect')=='loading'){
 	$this->Session->delete('redirect');
 	$this->Session->write('initialLoading', 'true');
