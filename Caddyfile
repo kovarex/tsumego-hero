@@ -1,5 +1,9 @@
 https://host.docker.internal:8443, https://localhost:8443 {
     bind 0.0.0.0
     tls internal
-    reverse_proxy http://host.docker.internal:8080
+
+    reverse_proxy http://host.docker.internal:8080 {
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+    }
 }
