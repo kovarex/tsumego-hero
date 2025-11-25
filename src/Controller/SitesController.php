@@ -41,9 +41,6 @@ class SitesController extends AppController
 			$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
 
 		$tsumegoDates = [];
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
 		$popularTooltip = [];
 		$popularTooltipInfo = [];
 		$popularTooltipBoardSize = [];
@@ -126,9 +123,6 @@ class SitesController extends AppController
 		$this->set('totd', $totd);
 		$this->set('newT', $newT);
 		$this->set('dateUser', $dateUser);
-		$this->set('tooltipSgfs', $tooltipSgfs);
-		$this->set('tooltipInfo', $tooltipInfo);
-		$this->set('tooltipBoardSize', $tooltipBoardSize);
 		$this->set('popularTooltip', $popularTooltip);
 		$this->set('popularTooltipInfo', $popularTooltipInfo);
 		$this->set('popularTooltipBoardSize', $popularTooltipBoardSize);
