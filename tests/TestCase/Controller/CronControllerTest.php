@@ -75,4 +75,31 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $dayRecords);
 		$this->assertSame($dayRecords[0]['DayRecord']['user_id'], $context->otherUsers[0]['id']);
 	}
+
+	public function testPublish()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 3]]]]]);
+
+		// we are testing that the publish just correctly updates the SetConnection to the new set
+		$tsumegoToMigrate = $context->otherTsumegos[0];
+		$publicSetID = $context->otherTsumegos[1]['set-connections'][0]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
+		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 0;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$newTsumego = ClassRegistry::init('Tsumego')->find('first', ['conditions' => ['id' => $tsumegoToMigrate['id']]]);
+		$newSetConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]);
+		$this->assertSame($newTsumego['Tsumego']['id'], $tsumegoToMigrate['id']);
+		$this->assertSame($newSetConnection['SetConnection']['id'], $tsumegoToMigrate['set-connections'][0]['id']);
+		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
+	}
 }

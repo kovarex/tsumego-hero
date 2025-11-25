@@ -290,59 +290,44 @@ WHERE
 	public static function getNewTsumego()
 	{
 		$date = date('Y-m-d', strtotime('today'));
-		$s = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
+		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
 		$id = 0;
-		$sCount = count($s);
-		for ($i = 0; $i < $sCount; $i++)
+		foreach ($todaysSchedule as $item)
 		{
-			$id = self::publishSingle($s[$i]['Schedule']['tsumego_id'], $s[$i]['Schedule']['set_id'], $s[$i]['Schedule']['date']);
-			$s[$i]['Schedule']['tsumego_id'] = $id;
-			$s[$i]['Schedule']['published'] = 1;
-			ClassRegistry::init('Schedule')->save($s[$i]);
+			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
+			$item['Schedule']['published'] = 1;
+			ClassRegistry::init('Schedule')->save($item);
 		}
 
 		return $id;
 	}
 
-	protected static function publishSingle($t = null, $to = null, $date = null)
+	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
 	{
-		$ts = ClassRegistry::init('Tsumego')->findById($t);
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		if (!$tsumego)
+			return;
+		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		if (!$setConnection)
+			return;
+		$setConnection['SetConnection']['set_id'] = $to;
+		ClassRegistry::init('SetConnection')->save($setConnection);
 
-		$id = ClassRegistry::init('Tsumego')->find('first', ['limit' => 1, 'order' => 'id DESC']);
-		if (!$id)
-			return null;
-		$id = $id['Tsumego']['id'];
-		$id += 1;
+		// delete tsumego stats
+		$tsumego['Tsumego']['created'] = $date . ' 22:00:00';
+		$tsumego['Tsumego']['solved'] = 0;
+		$tsumego['Tsumego']['failed'] = 0;
+		$tsumego['Tsumego']['userWin'] = 0;
+		$tsumego['Tsumego']['userLoss'] = 0;
+		ClassRegistry::init('Tsumego')->save($tsumego);
 
-		$scT = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $ts['Tsumego']['id']]]);
-		if (!$scT)
-			return null;
-		$scT['SetConnection']['set_id'] = $to;
-		ClassRegistry::init('SetConnection')->save($scT);
+		// delete any status made on the tsumego when it was in the sandbox
+		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $tsumego['Tsumego']['id']]);
 
-		$sid = $ts['Tsumego']['id'];
-		$ts['Tsumego']['id'] = $id;
-		$ts['Tsumego']['created'] = $date . ' 22:00:00';
-		$ts['Tsumego']['solved'] = 0;
-		$ts['Tsumego']['failed'] = 0;
-		$ts['Tsumego']['userWin'] = 0;
-		$ts['Tsumego']['userLoss'] = 0;
-		ClassRegistry::init('Tsumego')->create();
-		ClassRegistry::init('Tsumego')->save($ts);
-		ClassRegistry::init('Tsumego')->delete($sid);
-
-		$sgfs = ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $t]]) ?: [];
-		$sgfsCount = count($sgfs);
-		for ($i = 0; $i < $sgfsCount; $i++)
-		{
-			$sgfs[$i]['Sgf']['tsumego_id'] = $id;
-			ClassRegistry::init('Sgf')->save($sgfs[$i]);
-		}
 		$x = [];
 		$x['PublishDate']['date'] = $date . ' 22:00:00';
-		$x['PublishDate']['tsumego_id'] = $id;
+		$x['PublishDate']['tsumego_id'] = $tsumegoID;
 		ClassRegistry::init('PublishDate')->create();
 		ClassRegistry::init('PublishDate')->save($x);
-		return $id;
 	}
 }
