@@ -13,11 +13,13 @@
 			{
 				echo '<font color="#f0f0f0">Added today:</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
-				{
-					$set = ClassRegistry::init('Set')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setID);
-					echo '<a class="scheduleTsumego" href="/sets/view/'.$tsumegoButtonsOfPublishedTsumegos[0]->setID.'"><b>
-						'.$set['Set']['title'] . ' - '.count($tsumegoButtonsOfPublishedTsumegos).' problems</b></a><br>';
-				}
+					if ($setConnection = ClassRegistry::init('SetConnection')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setConnectionID))
+					{
+						$setID = $setConnection['SetConnection']['set_id'];
+						$set = ClassRegistry::init('Set')->findById($setID);
+						echo '<a class="scheduleTsumego" href="/sets/view/'.$setID.'"><b>
+							'.$set['Set']['title'] . ' - '.count($tsumegoButtonsOfPublishedTsumegos).' problems</b></a><br>';
+					}
 				foreach ($tsumegoButtonsOfPublishedTsumegos as $index => $tsumegoButton)
 					$tsumegoButton->render($index);
 				if(count($tsumegoButtonsOfPublishedTsumegos) > 10)
