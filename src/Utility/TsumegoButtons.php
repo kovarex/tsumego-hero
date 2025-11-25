@@ -151,7 +151,7 @@ class TsumegoButtons extends ArrayObject
 	// Temporary until the buttons have everything inplace
 	public function renderJS()
 	{
-		echo "let tooltipSgfs = [];";
+		echo "var tooltipSgfs = window.tooltipSgfs || [];";
 		foreach ($this as $index => $navigationButton)
 		{
 			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);

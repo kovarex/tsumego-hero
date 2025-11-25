@@ -2324,95 +2324,50 @@ class AppController extends Controller
 
 		$boardCount = 51;
 
-		if ($this->Session->check('texture') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
+		$bitmask = 0b11111111; // Default: first 8 boards enabled
+
+		if ($this->Session->check('boards_bitmask') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
 		{
-			$splitCookie = [];
 			if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')
 			{
-				$splitCookie = str_split($_COOKIE['texture']);
-				$textureCookies = $_COOKIE['texture'];
-				Auth::getUser()['texture'] = $this->Session->read('texture');
-				$this->Session->write('texture', $_COOKIE['texture']);
-				$this->set('textureCookies', $textureCookies);
-			}
-			else
-			{
+				// Convert cookie string to bitmask
+				$textureCookie = $_COOKIE['texture'];
+				$bitmask = 0;
+				$length = strlen($textureCookie);
+				$limit = min($length, 63);
+				for ($i = 0; $i < $limit; $i++)
+					if ($textureCookie[$i] == '2')
+						$bitmask |= (1 << $i);
 				if (Auth::isLoggedIn())
-					$this->Session->write('texture', Auth::getUser()['texture']);
-				$textureCookies = $this->Session->read('texture');
-				$splitTextureCookies = str_split($textureCookies);
-				$splitTextureCookiesCount = count($splitTextureCookies);
-				for ($i = 0; $i < $splitTextureCookiesCount; $i++)
-					if ($splitTextureCookies[$i] == 2)
-						$enabledBoards[$i + 1] = 'checked';
-					else
-						$enabledBoards[$i + 1] = '';
+					Auth::getUser()['boards_bitmask'] = $bitmask;
+				$this->Session->write('boards_bitmask', $bitmask);
+				// Pass the cookie back to view to maintain JS compatibility for now
+				$this->set('textureCookies', $textureCookie);
 			}
+			elseif (Auth::isLoggedIn())
+			{
+				$bitmask = (int) Auth::getUser()['boards_bitmask'];
+				$this->Session->write('boards_bitmask', $bitmask);
+			}
+			elseif ($this->Session->check('boards_bitmask'))
+				$bitmask = (int) $this->Session->read('boards_bitmask');
 
-			$splitCookieCount = count($splitCookie);
-			for ($i = 0; $i < $splitCookieCount; $i++)
-				if ($splitCookie[$i] == 2)
-					$enabledBoards[$i + 1] = 'checked';
-				else
-					$enabledBoards[$i + 1] = '';
 			if (Auth::isLoggedIn())
 				Auth::saveUser();
 		}
-
-		if (!$this->Session->check('texture'))
+		else
 		{
-			$this->Session->write('texture', '222222221111111111111111111111111111111111111111111');
-			$enabledBoards[1] = 'checked';
-			$enabledBoards[2] = 'checked';
-			$enabledBoards[3] = 'checked';
-			$enabledBoards[4] = 'checked';
-			$enabledBoards[5] = 'checked';
-			$enabledBoards[6] = 'checked';
-			$enabledBoards[7] = 'checked';
-			$enabledBoards[8] = 'checked';
-			$enabledBoards[9] = '';
-			$enabledBoards[10] = '';
-			$enabledBoards[11] = '';
-			$enabledBoards[12] = '';
-			$enabledBoards[13] = '';
-			$enabledBoards[14] = '';
-			$enabledBoards[15] = '';
-			$enabledBoards[16] = '';
-			$enabledBoards[17] = '';
-			$enabledBoards[18] = '';
-			$enabledBoards[19] = '';
-			$enabledBoards[20] = '';
-			$enabledBoards[21] = '';
-			$enabledBoards[22] = '';
-			$enabledBoards[23] = '';
-			$enabledBoards[24] = '';
-			$enabledBoards[25] = '';
-			$enabledBoards[26] = '';
-			$enabledBoards[27] = '';
-			$enabledBoards[28] = '';
-			$enabledBoards[29] = '';
-			$enabledBoards[30] = '';
-			$enabledBoards[31] = '';
-			$enabledBoards[32] = '';
-			$enabledBoards[33] = '';
-			$enabledBoards[34] = '';
-			$enabledBoards[35] = '';
-			$enabledBoards[36] = '';
-			$enabledBoards[37] = '';
-			$enabledBoards[38] = '';
-			$enabledBoards[39] = '';
-			$enabledBoards[40] = '';
-			$enabledBoards[41] = '';
-			$enabledBoards[42] = '';
-			$enabledBoards[43] = '';
-			$enabledBoards[44] = '';
-			$enabledBoards[45] = '';
-			$enabledBoards[46] = '';
-			$enabledBoards[47] = '';
-			$enabledBoards[48] = '';
-			$enabledBoards[49] = '';
-			$enabledBoards[50] = '';
-			$enabledBoards[51] = '';
+			// Default state if no session/cookie
+			$this->Session->write('boards_bitmask', $bitmask);
+		}
+
+		// Populate enabledBoards array based on bitmask
+		for ($i = 0; $i < $boardCount; $i++)
+		{
+			if (($bitmask & (1 << $i)) !== 0)
+				$enabledBoards[$i + 1] = 'checked';
+			else
+				$enabledBoards[$i + 1] = '';
 		}
 		$achievementUpdate = [];
 		if ($this->Session->check('initialLoading'))

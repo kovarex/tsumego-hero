@@ -221,7 +221,7 @@
 		for($i=0; $i<count($markTooltipBoardSize); $i++)
 			echo 'createPreviewBoard('.(999+$i).', markTooltipSgfs['.$i.'], '.$markTooltipInfo[$i][0].', '.$markTooltipInfo[$i][1].', '.$markTooltipBoardSize[$i].');';
 		?>
-		let tooltipSgfs = [];
+		var tooltipSgfs = window.tooltipSgfs || [];
 		<?php
 		for($z=0; $z<count($tooltipSgfs); $z++){
 			echo 'tooltipSgfs['.$z.'] = [];';

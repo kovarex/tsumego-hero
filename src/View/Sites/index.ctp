@@ -1011,7 +1011,7 @@
 			}
 		}
 		?>
-		<?php if(count($popularTooltip) > 0): ?>
+		<?php if(count($popularTooltip) > 0 && !empty($popularTooltipInfo) && count($popularTooltipInfo) >= 2 && !empty($popularTooltipBoardSize)): ?>
 		<?php
 		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
 		?>
