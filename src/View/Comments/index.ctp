@@ -441,7 +441,7 @@
 					counter2++;
 				}
 			});
-			let tooltipSgfs = [];
+			var tooltipSgfs = window.tooltipSgfs || [];
 			<?php
 			for($a=0; $a<count($tooltipSgfs); $a++){
 				echo 'tooltipSgfs['.$a.'] = [];';
@@ -462,7 +462,7 @@
 				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
 			}
 			?>
-			let tooltipSgfs2 = [];
+			var tooltipSgfs2 = window.tooltipSgfs2 || [];
 			<?php
 			for($a=0; $a<count($tooltipSgfs2); $a++){
 				echo 'tooltipSgfs2['.$a.'] = [];';
@@ -529,5 +529,4 @@
 			}
 
 		</style>
-
 

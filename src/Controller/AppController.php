@@ -2344,14 +2344,14 @@ class AppController extends Controller
 				// Pass the cookie back to view to maintain JS compatibility for now
 				$this->set('textureCookies', $textureCookie);
 			}
-			else
-				if (Auth::isLoggedIn())
-				{
-					$bitmask = (int) Auth::getUser()['boards_bitmask'];
-					$this->Session->write('boards_bitmask', $bitmask);
-				}
-				elseif ($this->Session->check('boards_bitmask'))
-					$bitmask = (int) $this->Session->read('boards_bitmask');
+			elseif (Auth::isLoggedIn())
+			{
+				$bitmask = (int) Auth::getUser()['boards_bitmask'];
+				$this->Session->write('boards_bitmask', $bitmask);
+			}
+			elseif ($this->Session->check('boards_bitmask'))
+			{
+				$bitmask = (int) $this->Session->read('boards_bitmask');
 			}
 
 			if (Auth::isLoggedIn())

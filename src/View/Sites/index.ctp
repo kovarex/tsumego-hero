@@ -1002,7 +1002,7 @@
 			dataType: 'txt'
 		});
 
-		let tooltipSgfs = [];
+		var tooltipSgfs = window.tooltipSgfs || [];
 		let popularTooltip = [];
 		<?php
 		for($a=0; $a<count($tooltipSgfs); $a++){

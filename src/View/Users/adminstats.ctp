@@ -111,7 +111,7 @@
 	echo '<div style="clear:both;"></div>';
 ?>
 <script>
-	let tooltipSgfs = [];
+	var tooltipSgfs = window.tooltipSgfs || [];
 	let tagList = "null";
 	let tagNameList = "null";
 	let proposalList = "null";
