@@ -131,6 +131,17 @@ jobs:
             caddy:2 > caddy.log 2>&1 &
           sleep 3
 
+      - name: Debug Caddy and PHP are reachable
+        run: |
+          echo "Testing PHP server:"
+          curl -v http://host.docker.internal:8080/empty.php || echo "PHP FAILED"
+          echo ""
+          echo "Testing Caddy server:"
+          curl -vk https://host.docker.internal:8443/empty.php || echo "CADDY FAILED"
+          echo ""
+          echo "Caddy log:"
+          cat caddy.log || true
+
       - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
