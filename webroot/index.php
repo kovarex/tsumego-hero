@@ -59,6 +59,9 @@ require_once VENDORS . 'autoload.php';
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'src' . DS . 'Cake' . DS . 'bootstrap.php';
 
+// Fix for PHP 8.x: env('argv') returns array which violates return type string|bool|null
+unset($_SERVER['argv'], $_SERVER['argc']);
+
 $dispatcher = new Dispatcher();
 $dispatcher->dispatch(
 	new CakeRequest(),
