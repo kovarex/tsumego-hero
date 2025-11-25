@@ -14,15 +14,30 @@ class Browser
 
 	public function __construct()
 	{
-
 		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
-		$desiredCapabilities = DesiredCapabilities::firefox();
-
-		$desiredCapabilities->setCapability('acceptSslCerts', false);
-		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
 
 		$firefoxOptions = new FirefoxOptions();
 		$firefoxOptions->addArguments(['--headless']);
+
+		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+
+		$firefoxOptions = new FirefoxOptions();
+		$firefoxOptions->addArguments(['--headless']);
+
+		// Firefox needs these preferences to accept self-signed HTTPS from Caddy
+		$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
+		$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
+		$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
+		$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
+		$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
+		$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
+		$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
+		$firefoxOptions->setPreference('security.OCSP.require', false);
+
+		// Build capabilities
+		$desiredCapabilities = DesiredCapabilities::firefox();
+
+		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
 		try
