@@ -1,13 +1,8 @@
 <?php
 
 App::uses('Util', 'Utility');
-
-if (Util::isInGithubCI()) {
-	// Tell CakePHP that the request is HTTPS
-	$_SERVER['HTTPS'] = 'on';
-	// Force CakePHP to generate HTTPS URLs
+if (Util::isInGithubCI())
 	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
-}
 
 /**
  * This file is loaded automatically by the app/webroot/index.php file after core.php
