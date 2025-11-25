@@ -2,11 +2,7 @@
 <IfModule mod_headers.c>
     Header always unset Alt-Svc
     Header always set Alt-Svc "clear"
-</IfModule>
-
-# Disable HTTP/2 by forcing downgrade to HTTP/1.1
-<IfModule mod_http2.c>
-    H2Disable on
+    Header always set Connection "close"
 </IfModule>
 
 <IfModule mod_rewrite.c>
