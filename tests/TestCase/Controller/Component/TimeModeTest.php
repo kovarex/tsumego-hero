@@ -1,6 +1,5 @@
 <?php
 
-require_once(__DIR__ . '/../TestCaseWithAuth.php');
 App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
