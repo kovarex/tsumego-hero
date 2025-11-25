@@ -21,6 +21,22 @@
 			Forgot password?<br>
 			<a href="/users/resetpassword">Reset</a>
 			<br><br>
+
+			<div
+				id="g_id_onload"
+				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
+				data-context="signin"
+				data-ux_mode="popup"
+				data-login_uri="/users/googlesignin"
+				data-auto_prompt="false"></div>
+			<div
+				class="g_id_signin"
+				data-type="standard"
+				data-shape="rectangular"
+				data-theme="outline"
+				data-text="sign_in_with"
+				data-size="large"></div>
+		</div>
 		<div class="right">
 		</div>
 	</div>
