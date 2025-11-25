@@ -10,17 +10,34 @@ App::uses('Util', 'Utility');
 
 class Browser
 {
+	private array $ignoredJsErrorPatterns = [];
+
 	public function __construct()
 	{
-
 		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
-		$desiredCapabilities = DesiredCapabilities::firefox();
-
-		$desiredCapabilities->setCapability('acceptSslCerts', false);
-		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
 
 		$firefoxOptions = new FirefoxOptions();
 		$firefoxOptions->addArguments(['--headless']);
+
+		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+
+		$firefoxOptions = new FirefoxOptions();
+		$firefoxOptions->addArguments(['--headless']);
+
+		// Firefox needs these preferences to accept self-signed HTTPS from Caddy
+		$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
+		$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
+		$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
+		$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
+		$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
+		$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
+		$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
+		$firefoxOptions->setPreference('security.OCSP.require', false);
+
+		// Build capabilities
+		$desiredCapabilities = DesiredCapabilities::firefox();
+
+		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
 		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
 
 		try
@@ -63,6 +80,10 @@ class Browser
 	{
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
+
+		// Filter out ignored error patterns
+		$errors = array_filter($errors, fn($e) => !$this->isIgnoredError($e));
+		$console = array_filter($console, fn($c) => !$this->isIgnoredConsoleError($c));
 
 		if (!empty($errors) || !empty($console))
 		{
@@ -128,12 +149,41 @@ class Browser
 		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
+	public function ignoreJsErrorPattern(string $pattern): void
+	{
+		$this->ignoredJsErrorPatterns[] = $pattern;
+	}
+
+	public function clearIgnoredJsErrorPatterns(): void
+	{
+		$this->ignoredJsErrorPatterns = [];
+	}
+
+	private function isIgnoredError(array $error): bool
+	{
+		$message = $error['message'] ?? $error['raw'] ?? '';
+		foreach ($this->ignoredJsErrorPatterns as $pattern)
+			if (str_contains($message, $pattern))
+				return true;
+		return false;
+	}
+
+	private function isIgnoredConsoleError(array $console): bool
+	{
+		$message = implode(" ", $console['args'] ?? []);
+		foreach ($this->ignoredJsErrorPatterns as $pattern)
+			if (str_contains($message, $pattern))
+				return true;
+		return false;
+	}
+
 	public static function instance()
 	{
 		static $browser = null;
 		if ($browser == null)
 			$browser = new Browser();
 		$browser->driver->manage()->deleteAllCookies();
+		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		return $browser;
 	}
 

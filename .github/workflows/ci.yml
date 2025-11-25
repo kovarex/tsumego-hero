@@ -37,7 +37,7 @@ jobs:
         volumes:
           - ".:/mnt/ddev_config"
         options: >-
-          --add-host=host.docker.internal:172.17.0.1
+          --add-host=host.docker.internal:host-gateway
 
     steps:
       - uses: actions/checkout@v5
@@ -122,17 +122,27 @@ jobs:
           nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
+      - name: Start Caddy HTTPS reverse proxy
+        run: |
+          nohup docker run --rm \
+            -p 8443:8443 \
+            --add-host=host.docker.internal:host-gateway \
+            --sysctl net.ipv6.conf.all.disable_ipv6=1 \
+            --sysctl net.ipv6.conf.default.disable_ipv6=1 \
+            -v "${{ github.workspace }}/Caddyfile:/etc/caddy/Caddyfile" \
+            caddy:2 > caddy.log 2>&1 &
+          sleep 6
+          echo "Caddy log:"
+          cat caddy.log || true
+
       - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: http://host.docker.internal:8080
+          TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p coverage
           ./vendor/bin/phpunit --coverage-php /tmp/coverage/phpunit.cov
-
-      - name: List coverage files
-        run: ls -la /tmp/coverage || echo "No coverage files found"
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php

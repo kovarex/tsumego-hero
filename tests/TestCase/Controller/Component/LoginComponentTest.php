@@ -2,8 +2,6 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
-require_once(__DIR__ . '/../TestCaseWithAuth.php');
-
 // this is hack until nicer solution in newer cake is possible to be used
 class TestEmailer
 {
@@ -51,6 +49,20 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 	}
 
+	public function testLoginWithEmail(): void
+	{
+		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
+		$browser = Browser::instance();
+		$browser->get('users/login');
+		$browser->clickId('UserName');
+		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
+		$browser->clickId('password');
+		$browser->driver->getKeyboard()->sendKeys('test');
+		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserLoginForm input[type="submit"]'));
+		$sumbitButton->click();
+		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector(".account-bar-user-class"))->getText(), 'kovarex');
+	}
+
 	public function testLoginWithWrongPassword(): void
 	{
 		new ContextPreparator(['other-users' => [['name' => 'kovarex']]]);
@@ -79,22 +91,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$userCountBefore = count(ClassRegistry::init('User')->find('all'));
 
 		$browser = Browser::instance();
-
-		try
-		{
-			$browser->get('users/add');
-		}
-		catch (Exception $e)
-		{
-			if (str_contains($e->getMessage(), 'Unsecured login_uri provided'))
-			{
-				// Ignore this exception, CI is running without HTTPS
-			}
-			else
-			{
-				throw $e; // rethrow other exceptions
-			}
-		}
+		$browser->get('users/add');
 
 		// Fill in the signup form
 		$browser->driver->findElement(WebDriverBy::name('data[User][name]'))->sendKeys($newUsername);

@@ -12,6 +12,7 @@ class ContextPreparator
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
 		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);
+		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
 		$this->prepareThisUser(Util::extract('user', $options));
@@ -21,6 +22,7 @@ class ContextPreparator
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
+		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -351,7 +353,7 @@ class ContextPreparator
 		$attempt = [];
 		$attempt['time_mode_session_id'] = $timeModeSessionID;
 		if (empty($this->allTsumegos))
-			throw Exception("No tsumego assign to the time mode attempt");
+			throw new Exception("No tsumego assign to the time mode attempt");
 		$attempt['tsumego_id'] = $this->allTsumegos[0]['id'];
 		$attempt['order'] = $attemptsInput['order'];
 		$attempt['time_mode_attempt_status_id'] = $attemptsInput['status'];
@@ -382,6 +384,34 @@ class ContextPreparator
 			$progressDeletion['set_id'] = $this->getOrCreateTsumegoSet($progressDeletionInput['set'])['id'];
 			$progressDeletion['created'] = $progressDeletionInput['created'];
 			ClassRegistry::init('ProgressDeletion')->save($progressDeletion);
+		}
+	}
+
+	public function prepareDayRecords(?array $dayRecords): void
+	{
+		if (!$dayRecords)
+			return;
+
+		foreach ($dayRecords as $dayRecordInput)
+		{
+			$dayRecord = [];
+			$dayRecord['user_id'] = Util::extract('user_id', $dayRecordInput) ?: $this->user['id'];
+			$dayRecord['date'] = Util::extract('date', $dayRecordInput) ?: date('Y-m-d');
+			$dayRecord['solved'] = Util::extract('solved', $dayRecordInput) ?: 0;
+			$dayRecord['quote'] = Util::extract('quote', $dayRecordInput) ?: 'q13';
+			$dayRecord['userbg'] = Util::extract('userbg', $dayRecordInput) ?: 1;
+			$dayRecord['tsumego'] = Util::extract('tsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
+			$dayRecord['newTsumego'] = Util::extract('newTsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
+			$dayRecord['usercount'] = Util::extract('usercount', $dayRecordInput) ?: 1;
+			$dayRecord['visitedproblems'] = Util::extract('visitedproblems', $dayRecordInput) ?: 0;
+			$dayRecord['gems'] = Util::extract('gems', $dayRecordInput) ?: '0-0-0';
+			$dayRecord['gemCounter1'] = Util::extract('gemCounter1', $dayRecordInput) ?: 0;
+			$dayRecord['gemCounter2'] = Util::extract('gemCounter2', $dayRecordInput) ?: 0;
+			$dayRecord['gemCounter3'] = Util::extract('gemCounter3', $dayRecordInput) ?: 0;
+
+			ClassRegistry::init('DayRecord')->create($dayRecord);
+			ClassRegistry::init('DayRecord')->save($dayRecord);
+			$this->checkOptionsConsumed($dayRecordInput);
 		}
 	}
 

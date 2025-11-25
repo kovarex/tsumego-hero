@@ -3,8 +3,6 @@
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
 
-require_once(__DIR__ . '/TestCaseWithAuth.php');
-require_once(__DIR__ . '/../../ContextPreparator.php');
 App::uses('TsumegoFilters', 'Utility');
 
 class SetsControllerTest extends TestCaseWithAuth

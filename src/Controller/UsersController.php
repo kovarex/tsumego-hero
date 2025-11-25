@@ -1731,10 +1731,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	private function getUserFromNameOrEmail()
 	{
-		if (!empty($this->data['User']['name']))
-			return $this->User->findByName($this->data['User']['name']);
-		if (!empty($this->data['User']['email']))
-			return $this->User->findByEmail($this->data['User']['email']);
+		$input = $this->data['User']['name'];
+		if (empty($input))
+			return null;
+		if ($user = $this->User->findByName($input))
+			return $user;
+		if ($user = $this->User->findByEmail($input))
+			return $user;
 		return null;
 	}
 
