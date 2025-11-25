@@ -1,4 +1,4 @@
-:8443 {
+0.0.0.0:8443 {
     tls internal
     reverse_proxy http://host.docker.internal:8080
 }
