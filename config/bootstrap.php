@@ -1,6 +1,11 @@
 <?php
 
-if (env('TEST_ENVIRONMENT') === 'github-ci') {
+App::uses('Util', 'Utility');
+
+if (Util::isInGithubCI()) {
+	// Tell CakePHP that the request is HTTPS
+	$_SERVER['HTTPS'] = 'on';
+	// Force CakePHP to generate HTTPS URLs
 	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
 }
 
