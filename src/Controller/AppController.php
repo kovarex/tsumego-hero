@@ -2350,9 +2350,7 @@ class AppController extends Controller
 				$this->Session->write('boards_bitmask', $bitmask);
 			}
 			elseif ($this->Session->check('boards_bitmask'))
-			{
 				$bitmask = (int) $this->Session->read('boards_bitmask');
-			}
 
 			if (Auth::isLoggedIn())
 				Auth::saveUser();
