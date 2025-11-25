@@ -1760,7 +1760,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->signIn($user);
 		$this->response->statusCode(303);
-		$this->response->header('Location',Router::url('/', true));
+		$this->response->header('Location', Router::url('/', true));
 		$this->response->send();
 		exit;
 	}
