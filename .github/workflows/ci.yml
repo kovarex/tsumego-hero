@@ -128,10 +128,11 @@ jobs:
             -p 8443:8443 \
             --add-host=host.docker.internal:host-gateway \
             -v $PWD/Caddyfile:/etc/caddy/Caddyfile \
+            -e CADDY_DISABLE_IPV6=1 \
             caddy:2 > caddy.log 2>&1 &
           sleep 6
           echo "Caddy log:"
-          cat caddy.log
+          cat caddy.log || true
 
       - name: Debug Caddy and PHP are reachable (runner)
         run: |
