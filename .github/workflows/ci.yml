@@ -37,7 +37,7 @@ jobs:
         volumes:
           - ".:/mnt/ddev_config"
         options: >-
-          --add-host=host.docker.internal:172.17.0.1
+          --add-host=host.docker.internal:host-gateway
 
     steps:
       - uses: actions/checkout@v5
@@ -126,18 +126,20 @@ jobs:
         run: |
           nohup docker run --rm \
             -p 8443:8443 \
+            --add-host=host.docker.internal:host-gateway \
             -v $PWD/Caddyfile:/etc/caddy/Caddyfile \
-            --add-host=host.docker.internal:172.17.0.1 \
             caddy:2 > caddy.log 2>&1 &
-          sleep 3
+          sleep 6
+          echo "Caddy log:"
+          cat caddy.log
 
-      - name: Debug Caddy and PHP are reachable
+      - name: Debug Caddy and PHP are reachable (runner)
         run: |
-          echo "Testing PHP server:"
-          curl -v http://host.docker.internal:8080/empty.php || echo "PHP FAILED"
+          echo "Testing PHP server from runner (use localhost for runner):"
+          curl -v http://localhost:8080/empty.php || echo "PHP FAILED from runner"
           echo ""
-          echo "Testing Caddy server:"
-          curl -vk https://host.docker.internal:8443/empty.php || echo "CADDY FAILED"
+          echo "Testing Caddy server from runner (use localhost for runner):"
+          curl -vk https://localhost:8443/empty.php || echo "CADDY FAILED from runner"
           echo ""
           echo "Caddy log:"
           cat caddy.log || true
