@@ -1759,8 +1759,28 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->signIn($user);
-		$this->Flash->set('Login successful.');
-		return $this->redirect(['controller' => 'sets', 'action' => 'index'], 303);
+		$this->autoRender = false;
+
+		while (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		$this->response->statusCode(303);
+		$this->response->header('Location', '/sets/index');
+		$this->response->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+		$this->response->header('Pragma', 'no-cache');
+		$this->response->header('Expires', '0');
+
+		// These lines MUST be right before send()
+		$this->response->body('');
+		$this->response->header('Content-Length', '0');
+
+		// Force overwriting ANY previous content-type
+		header_remove("Content-Type");
+		header("Content-Type: text/plain");
+
+		$this->response->send();
+		exit;
 	}
 
 	public function add()
