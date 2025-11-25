@@ -125,7 +125,6 @@ class SitesController extends AppController
 		$this->set('d1', $d1);
 		$this->set('totd', $totd);
 		$this->set('newT', $newT);
-		$this->set('scheduleTsumego', $scheduleTsumego);
 		$this->set('dateUser', $dateUser);
 		$this->set('tooltipSgfs', $tooltipSgfs);
 		$this->set('tooltipInfo', $tooltipInfo);
