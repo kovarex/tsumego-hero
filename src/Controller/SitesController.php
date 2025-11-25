@@ -28,25 +28,9 @@ class SitesController extends AppController
 		$this->loadModel('PublishDate');
 
 		$tdates = [];
-		$tSum = [];
-
-		array_push($tdates, '2021-06-09 22:00:00');
-		array_push($tdates, '2021-06-10 22:00:00');
-		//array_push($tdates, '2020-11-22 22:00:00');
-
-		foreach ($tdates as $tdate)
-		{
-			$ts1 = $this->Tsumego->find('all', ['conditions' => ['created' => $tdate]]);
-			if (!$ts1)
-				$ts1 = [];
-			foreach ($ts1 as $item)
-				$tSum[] = $item;
-		}
 
 		$newTS = [];
-		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']);
-		if (!$uReward)
-			$uReward = [];
+		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']) ?: [];
 		$urNames = [];
 		foreach ($uReward as $user)
 			$urNames[] = $this->checkPicture($user);
@@ -75,6 +59,9 @@ class SitesController extends AppController
 		$totd = null;
 		$newT = null;
 
+		$tsumegoFilters = new TsumegoFilters('published');
+		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
+
 		if ($dateUser)
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
@@ -83,9 +70,6 @@ class SitesController extends AppController
 			$popularTooltip = $ptArr[0];
 			$popularTooltipInfo = $ptArr[2];
 			$popularTooltipBoardSize = $ptArr[3];
-
-			$tsumegoFilters = new TsumegoFilters('published');
-			$tsumegoButtonsOfPublishedTsumegos = new TsumegoButton($tsumegoFilters);
 
 			$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
 

@@ -101,10 +101,10 @@ class TsumegoFilters
 	}
 
 	public string $query;
-	public int $collectionSize;
-	public array $sets;
-	public array $setIDs;
-	public array $ranks;
-	public array $tags;
-	public array $tagIDs;
+	public int $collectionSize = 0;
+	public array $sets = [];
+	public array $setIDs = [];
+	public array $ranks = [];
+	public array $tags = [];
+	public array $tagIDs = [];
 }

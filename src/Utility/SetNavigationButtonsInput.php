@@ -10,7 +10,6 @@ class SetNavigationButtonsInput
 	public function execute(TsumegoButtons $tsumegoButtons, array $currentSetConnection): void
 	{
 		$navigationButtons = $this->collectFromSetConnections($tsumegoButtons, $currentSetConnection);
-		$this->exportTooltips($navigationButtons);
 		//$this->processJosekiLevel($currentSetConnection);
 		($this->setFunction)('tsumegoButtons', $navigationButtons);
 	}
@@ -38,26 +37,6 @@ class SetNavigationButtonsInput
 			$result [] = $tsumegoButtons[$i];
 		$result [] = $tsumegoButtons[count($tsumegoButtons) - 1];
 		return $result;
-	}
-
-	private function exportTooltips($navigationButtons): void
-	{
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
-
-		foreach ($navigationButtons as $navigationButton)
-		{
-			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
-			$tooltipSgfs [] = $tArr[0];
-			$tooltipInfo [] = $tArr[2];
-			$tooltipBoardSize [] = $tArr[3];
-		}
-
-		($this->setFunction)('tooltipSgfs', $tooltipSgfs);
-		($this->setFunction)('tooltipInfo', $tooltipInfo);
-		($this->setFunction)('tooltipBoardSize', $tooltipBoardSize);
 	}
 
 	/* I'm not sure about the meaning of this, should be processd once the joseki stuff is tested
