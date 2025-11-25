@@ -1768,6 +1768,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		// Build and send a clean HTTP redirect
 		$this->response->statusCode(303);
+		$this->response->body('');
+		$this->response->header('Content-Length', '0');
+		$this->response->header('Content-Type', 'text/plain');
 		$this->response->header('Location', '/sets/index');
 		$this->response->header('Cache-Control', 'no-store, no-cache, must-revalidate');
 		$this->response->header('Pragma', 'no-cache');
