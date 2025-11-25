@@ -1761,20 +1761,24 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->signIn($user);
 		$this->autoRender = false;
 
-		// Completely clear all output buffers
 		while (ob_get_level()) {
 			ob_end_clean();
 		}
 
-		// Build and send a clean HTTP redirect
 		$this->response->statusCode(303);
-		$this->response->body('');
-		$this->response->header('Content-Length', '0');
-		$this->response->header('Content-Type', 'text/plain');
 		$this->response->header('Location', '/sets/index');
 		$this->response->header('Cache-Control', 'no-store, no-cache, must-revalidate');
 		$this->response->header('Pragma', 'no-cache');
 		$this->response->header('Expires', '0');
+
+		// These lines MUST be right before send()
+		$this->response->body('');
+		$this->response->header('Content-Length', '0');
+
+		// Force overwriting ANY previous content-type
+		header_remove("Content-Type");
+		header("Content-Type: text/plain");
+
 		$this->response->send();
 		exit;
 	}
