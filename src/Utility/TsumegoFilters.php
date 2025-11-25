@@ -7,7 +7,7 @@ class TsumegoFilters
 		if ($newQuery == 'published')
 		{
 			$this->query = $newQuery;
-		    return;
+			return;
 		}
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution, null, $newQuery);

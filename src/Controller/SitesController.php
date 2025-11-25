@@ -40,7 +40,6 @@ class SitesController extends AppController
 		if (!$dateUser)
 			$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
 
-		$scheduleTsumego = [];
 		$tsumegoDates = [];
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
@@ -118,9 +117,6 @@ class SitesController extends AppController
 				$setsWithPremium[] = $set['Set']['id'];
 			$totd = $this->checkForLocked($totd, $setsWithPremium);
 		}
-
-		foreach ($scheduleTsumego as $i => $tsumego)
-			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$this->set('hasPremium', Auth::hasPremium());

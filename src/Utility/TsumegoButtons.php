@@ -32,7 +32,7 @@ class TsumegoButtons extends ArrayObject
 			$this->currentOrder = $this[$currentIndex]->order;
 			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
 		}
-		else if (!is_null($partition))
+		elseif (!is_null($partition))
 			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 	}
 
@@ -156,14 +156,14 @@ class TsumegoButtons extends ArrayObject
 		{
 			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
 			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
-			echo 'tooltipSgfs['.$index.'] = [];';
-			for($y=0; $y<count($tArr[0]); $y++)
+			echo 'tooltipSgfs[' . $index . '] = [];';
+			for($y = 0; $y < count($tArr[0]); $y++)
 			{
-				echo 'tooltipSgfs['.$index.']['.$y.'] = [];';
-				for ($x=0; $x<count($tArr[0][$y]); $x++)
-					echo 'tooltipSgfs['.$index.']['.$y.'].push("'.$tArr[0][$x][$y].'");';
+				echo 'tooltipSgfs[' . $index . '][' . $y . '] = [];';
+				for ($x = 0; $x < count($tArr[0][$y]); $x++)
+					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tArr[0][$x][$y] . '");';
 			}
-			echo 'createPreviewBoard('.$index.', tooltipSgfs['.$index.'], '.$tArr[2][0].', '.$tArr[2][1].', '.$tArr[3].');';
+			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tArr[2][0] . ', ' . $tArr[2][1] . ', ' . $tArr[3] . ');';
 		}
 	}
 

@@ -113,7 +113,7 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'published')
 			return;
 		$this->query .= ' JOIN schedule ON `schedule`.tsumego_id = tsumego.id AND schedule.set_id = `set`.id';
-		Util::addSqlCondition($this->condition, "`schedule`.date = '".date('Y-m-d')."'");
+		Util::addSqlCondition($this->condition, "`schedule`.date = '" . date('Y-m-d') . "'");
 	}
 
 	private TsumegoFilters $tsumegoFilters;
