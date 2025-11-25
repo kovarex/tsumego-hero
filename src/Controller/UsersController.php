@@ -2746,7 +2746,7 @@ Joschka Zimdars';
 		$email = '';
 		$picture = '';
 		$id_token = $_POST['credential'];
-		$client_id = '842499094931-nt12l2fehajo4k7f39bb44fsjl0l4h6u.apps.googleusercontent.com';
+		$client_id = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
 		$token_info = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . $id_token);
 		$token_data = json_decode($token_info, true);
 		if (isset($token_data['aud']) && $token_data['aud'] == $client_id)
