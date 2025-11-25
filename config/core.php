@@ -237,7 +237,7 @@ Configure::write('Session', [
 	'cookie' => 'myApp',
 	'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
 	'cookieTimeout' => 14400, // Match session timeout
-	'autoRegenerate' => false, // DISABLED: Prevents race conditions and session loss
+	'autoRegenerate' => true,
 	'checkAgent' => false, // Don't check user agent (helps with proxies/mobile)
 	'ini' => [
 		'session.use_trans_sid' => 0,
