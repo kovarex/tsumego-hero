@@ -4,6 +4,11 @@ class TsumegoFilters
 {
 	public function __construct(?string $newQuery = null)
 	{
+		if ($newQuery == 'published')
+		{
+			$this->query = $newQuery;
+			return;
+		}
 		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
 		$this->query = self::processItem('query', 'topics', $userContribution, null, $newQuery);
 		$this->collectionSize = self::processItem('collection_size', '200', $userContribution);
@@ -96,10 +101,10 @@ class TsumegoFilters
 	}
 
 	public string $query;
-	public int $collectionSize;
-	public array $sets;
-	public array $setIDs;
-	public array $ranks;
-	public array $tags;
-	public array $tagIDs;
+	public int $collectionSize = 0;
+	public array $sets = [];
+	public array $setIDs = [];
+	public array $ranks = [];
+	public array $tags = [];
+	public array $tagIDs = [];
 }

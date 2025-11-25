@@ -23,6 +23,26 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertTrue(count($titles) > 3);
 	}
 
+	public function testShowPublishedTsumego()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
+
+		ClassRegistry::init('Schedule')->create();
+		$schedule = [];
+		$schedule['tsumego_id'] = $context->otherTsumegos[0]['id'];
+		$schedule['set_id'] = $context->otherTsumegos[0]['set-connections'][0]['set_id'];
+		$schedule['date'] = date('Y-m-d');
+		$schedule['published'] = 1;
+		ClassRegistry::init('Schedule')->save($schedule);
+
+		$browser = Browser::instance();
+		$browser->get('/');
+		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$this->assertSame(count($buttons), 1);
+		$this->assertSame($buttons[0]->getText(), "564");
+	}
+
 	/**
 	 * Test that the index page loads successfully with day_record data
 	 */
@@ -57,9 +77,7 @@ class SitesControllerTest extends ControllerTestCase
 	public function testIndexPageLoadsWithoutDayRecord()
 	{
 		// Arrange: Set up context without day_record
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-		]);
+		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
 
 		// Act: Load the index page
 		$browser = Browser::instance();

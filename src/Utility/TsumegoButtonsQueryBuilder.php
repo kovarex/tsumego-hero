@@ -25,6 +25,7 @@ class TsumegoButtonsQueryBuilder
 		$this->queryTag();
 		$this->querySet($id);
 		$this->queryFavorites();
+		$this->queryPublished();
 
 		$this->query .= ' WHERE ' . $this->condition;
 		$this->query .= " ORDER BY " . $this->orderBy;
@@ -105,6 +106,14 @@ class TsumegoButtonsQueryBuilder
 			return;
 		$this->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
 		$this->orderBy = 'favorite.id ASC';
+	}
+
+	private function queryPublished()
+	{
+		if ($this->tsumegoFilters->query != 'published')
+			return;
+		$this->query .= ' JOIN schedule ON `schedule`.tsumego_id = tsumego.id AND schedule.set_id = `set`.id';
+		Util::addSqlCondition($this->condition, "`schedule`.date = '" . date('Y-m-d') . "'");
 	}
 
 	private TsumegoFilters $tsumegoFilters;

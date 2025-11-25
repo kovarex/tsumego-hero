@@ -7,15 +7,13 @@ class TsumegoButtons extends ArrayObject
 	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null)
 	{
 		if (!$tsumegoFilters)
-		{
 			return; // Temporary until also the favorites are covered
-		}
 		$condition = "";
 		$this->fill($condition, $tsumegoFilters, $id);
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
-		if ($tsumegoFilters->query != 'topics')
+		if ($tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published')
 			$this->resetOrders();
 
 		if (!is_null($currentSetConnectionID))
@@ -34,7 +32,7 @@ class TsumegoButtons extends ArrayObject
 			$this->currentOrder = $this[$currentIndex]->order;
 			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
 		}
-		else
+		elseif (!is_null($partition))
 			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
 	}
 
@@ -148,6 +146,25 @@ class TsumegoButtons extends ArrayObject
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
 		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+	}
+
+	// Temporary until the buttons have everything inplace
+	public function renderJS()
+	{
+		echo "let tooltipSgfs = [];";
+		foreach ($this as $index => $navigationButton)
+		{
+			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
+			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
+			echo 'tooltipSgfs[' . $index . '] = [];';
+			for($y = 0; $y < count($tArr[0]); $y++)
+			{
+				echo 'tooltipSgfs[' . $index . '][' . $y . '] = [];';
+				for ($x = 0; $x < count($tArr[0][$y]); $x++)
+					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tArr[0][$x][$y] . '");';
+			}
+			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tArr[2][0] . ', ' . $tArr[2][1] . ', ' . $tArr[3] . ');';
+		}
 	}
 
 	public int $partition = 0;

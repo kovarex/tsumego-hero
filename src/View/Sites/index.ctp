@@ -9,33 +9,21 @@
 		<div class="new-tsumego-box">
 			<p class="title-date"><?php echo $d1; ?></p>
 			<?php
-			if ($newT && count($scheduleTsumego)!=0){
+			if (!empty($tsumegoButtonsOfPublishedTsumegos))
+			{
 				echo '<font color="#f0f0f0">Added today:</font><br>';
-				if(count($scheduleTsumego)>1){
-					if(!$scheduleTsumego[0]['Tsumego']['locked']){
-						echo '<a class="scheduleTsumego" href="/sets/view/'.$newT['Tsumego']['set_id'].'"><b>
-						'.$newT['Tsumego']['set'].' '.$newT['Tsumego']['set2'].' - '.count($scheduleTsumego).' problems</b></a><br>';
-					}else{
-						echo '<a class="scheduleTsumego" href="/users/donate"><b>
-						'.$newT['Tsumego']['set'].' '.$newT['Tsumego']['set2'].' - '.count($scheduleTsumego).' problems</b></a><br>';
-					}
+				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
+				{
+					$set = ClassRegistry::init('Set')->findById($tsumegoButtonsOfPublishedTsumegos[0]['set_id']);
+					echo '<a class="scheduleTsumego" href="/sets/view/'.$tsumegoButtonsOfPublishedTsumegos[0]->setID.'"><b>
+						'.$set['Set']['title'] . ' - '.count($tsumegoButtonsOfPublishedTsumegos).' problems</b></a><br>';
 				}
-				for($i=0; $i<count($scheduleTsumego); $i++){
-					if(!$scheduleTsumego[$i]['Tsumego']['locked']){
-						echo '<li class="set'.$scheduleTsumego[$i]['Tsumego']['status'].'1" style="margin-top:8px;">
-							<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$scheduleTsumego[$i]['Tsumego']['id'].'?search=topics">'
-							.$scheduleTsumego[$i]['Tsumego']['num'].'<span><div id="tooltipSvg'.$i.'"></div></span></a>
-						</li>';
-					}else{
-						echo '<li class="set'.$scheduleTsumego[$i]['Tsumego']['status'].'1" style="margin-top:8px;background-image: url(\'/img/viewButtonLocked.png\'">
-							<a class="tooltip" href="/users/donate">&nbsp;</a>
-						</li>';
-					}
-				}
-				if(count($scheduleTsumego)<=10) echo '';
-				else echo '<br>';
+				foreach ($tsumegoButtonsOfPublishedTsumegos as $index => $tsumegoButton)
+					$tsumegoButton->render($index);
+				if(count($tsumegoButtonsOfPublishedTsumegos) > 10)
+				  echo '<br>';
+				echo '<br><br><div class="new-tsumego-box-separator"></div>';
 			}
-			if(count($scheduleTsumego)!=0) echo '<br><br><div class="new-tsumego-box-separator"></div>';
 			?>
 			<font color="#f0f0f0">Most popular today:</font><br>
 			<?php if($totd && !$totd['Tsumego']['locked']){ ?>
@@ -502,6 +490,7 @@
 		}
 		?>
 		<script>
+		<?php $tsumegoButtonsOfPublishedTsumegos->renderJS(); ?>
 		window.onload = function () {
 
 		var chart = new CanvasJS.Chart("chartContainer", {
@@ -1011,19 +1000,8 @@
 			dataType: 'txt'
 		});
 
-		let tooltipSgfs = [];
 		let popularTooltip = [];
 		<?php
-		for($a=0; $a<count($tooltipSgfs); $a++){
-			echo 'tooltipSgfs['.$a.'] = [];';
-			for($y=0; $y<count($tooltipSgfs[$a]); $y++){
-				echo 'tooltipSgfs['.$a.']['.$y.'] = [];';
-				for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
-					echo 'tooltipSgfs['.$a.']['.$y.'].push("'.$tooltipSgfs[$a][$x][$y].'");';
-				}
-			}
-		}
-
 		for($y=0; $y<count($popularTooltip); $y++){
 			echo 'popularTooltip['.$y.'] = [];';
 			for($x=0; $x<count($popularTooltip[$y]); $x++){
@@ -1031,12 +1009,6 @@
 			}
 		}
 		?>
-		<?php if(count($tooltipSgfs) > 0): ?>
-		<?php
-		for($i=0; $i<count($scheduleTsumego); $i++)
-			echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
-		?>
-		<?php endif; ?>
 		<?php if(count($popularTooltip) > 0): ?>
 		<?php
 		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';

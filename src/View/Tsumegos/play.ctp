@@ -1986,23 +1986,7 @@
 			 mouseY = e.pageY;
 		});
 
-		let tooltipSgfs = [];
-
-		<?php
-		if(!Auth::isInTimeMode()){
-			for($a=0; $a<count($tooltipSgfs); $a++){
-				echo 'tooltipSgfs['.$a.'] = [];';
-				for($y=0; $y<count($tooltipSgfs[$a]); $y++){
-					echo 'tooltipSgfs['.$a.']['.$y.'] = [];';
-					for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
-						echo 'tooltipSgfs['.$a.']['.$y.'].push("'.$tooltipSgfs[$a][$x][$y].'");';
-					}
-				}
-			}
-			for($i=0; $i<count($tsumegoButtons); $i++)
-				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
-		}
-		?>
+		<?php if ($tsumegoButtons) $tsumegoButtons->renderJS(); ?>
 	});
 
 	function displaySolutionRequest(){

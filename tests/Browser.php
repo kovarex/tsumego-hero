@@ -139,6 +139,11 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	public function getCssSelect($name)
+	{
+		return $this->driver->findElements(WebDriverBy::cssSelector($name));
+	}
+
 	public function idExists(string $id): bool
 	{
 		return !empty($this->driver-> findElements(WebDriverBy::id($id)));

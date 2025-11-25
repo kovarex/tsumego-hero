@@ -28,25 +28,9 @@ class SitesController extends AppController
 		$this->loadModel('PublishDate');
 
 		$tdates = [];
-		$tSum = [];
-
-		array_push($tdates, '2021-06-09 22:00:00');
-		array_push($tdates, '2021-06-10 22:00:00');
-		//array_push($tdates, '2020-11-22 22:00:00');
-
-		foreach ($tdates as $tdate)
-		{
-			$ts1 = $this->Tsumego->find('all', ['conditions' => ['created' => $tdate]]);
-			if (!$ts1)
-				$ts1 = [];
-			foreach ($ts1 as $item)
-				$tSum[] = $item;
-		}
 
 		$newTS = [];
-		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']);
-		if (!$uReward)
-			$uReward = [];
+		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']) ?: [];
 		$urNames = [];
 		foreach ($uReward as $user)
 			$urNames[] = $this->checkPicture($user);
@@ -56,7 +40,6 @@ class SitesController extends AppController
 		if (!$dateUser)
 			$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
 
-		$scheduleTsumego = [];
 		$tsumegoDates = [];
 		$tooltipSgfs = [];
 		$tooltipInfo = [];
@@ -75,6 +58,9 @@ class SitesController extends AppController
 		$totd = null;
 		$newT = null;
 
+		$tsumegoFilters = new TsumegoFilters('published');
+		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
+
 		if ($dateUser)
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
@@ -85,67 +71,11 @@ class SitesController extends AppController
 			$popularTooltipBoardSize = $ptArr[3];
 
 			$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
-			$newTschedule = $this->Schedule->find('all', ['conditions' => ['date' => $today]]);
-			if (!$newTschedule)
-				$newTschedule = [];
-
-			foreach ($newTschedule as $scheduleItem)
-				$scheduleTsumego[] = $this->Tsumego->findById($scheduleItem['Schedule']['tsumego_id']);
-
-			foreach ($scheduleTsumego as $tsumego)
-			{
-				$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumego['Tsumego']['id']]]) ?: [];
-				$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
-				$tooltipSgfs[] = $tArr[0];
-				$tooltipInfo[] = $tArr[2];
-				$tooltipBoardSize[] = $tArr[3];
-			}
-
-			if (Auth::isLoggedIn())
-			{
-				$idArray = [];
-				$idArray[] = $totd['Tsumego']['id'];
-				foreach ($scheduleTsumego as $tsumego)
-					$idArray[] = $tsumego['Tsumego']['id'];
-
-				$uts = $this->TsumegoStatus->find('all', [
-					'order' => 'updated DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'tsumego_id' => $idArray,
-					],
-				]) ?: [];
-
-				$utsCount = count($uts);
-				for ($i = 0; $i < $utsCount; $i++)
-				{
-					$newTSCount = count($newTS);
-					for ($j = 0; $j < $newTSCount; $j++)
-						if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newTS[$j]['Tsumego']['id'])
-							$newTS[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-					$scheduleTsumegoCount = count($scheduleTsumego);
-					for ($j = 0; $j < $scheduleTsumegoCount; $j++)
-						if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $scheduleTsumego[$j]['Tsumego']['id'])
-							$scheduleTsumego[$j]['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-
-					if (isset($totd['Tsumego']['id']))
-						if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $totd['Tsumego']['id'])
-							$totd['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-
-					if (isset($newT['Tsumego']['id']))
-						if ($uts[$i]['TsumegoStatus']['tsumego_id'] == $newT['Tsumego']['id'])
-							$newT['Tsumego']['status'] = $uts[$i]['TsumegoStatus']['status'];
-				}
-			}
 
 			if (!isset($totd['Tsumego']['status']))
 				$totd['Tsumego']['status'] = 'N';
 			if (!isset($newT['Tsumego']['status']))
 				$newT['Tsumego']['status'] = 'N';
-			$scheduleTsumegoCount = count($scheduleTsumego);
-			for ($i = 0; $i < $scheduleTsumegoCount; $i++)
-				if (!isset($scheduleTsumego[$i]['Tsumego']['status']))
-					$scheduleTsumego[$i]['Tsumego']['status'] = 'N';
 
 			$currentQuote = $dateUser['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
@@ -188,16 +118,13 @@ class SitesController extends AppController
 			$totd = $this->checkForLocked($totd, $setsWithPremium);
 		}
 
-		foreach ($scheduleTsumego as $i => $tsumego)
-			$scheduleTsumego[$i] = $this->checkForLocked($tsumego, $setsWithPremium);
-
+		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('tsumegos', $tsumegoDates);
 		$this->set('quote', $currentQuote);
 		$this->set('d1', $d1);
 		$this->set('totd', $totd);
 		$this->set('newT', $newT);
-		$this->set('scheduleTsumego', $scheduleTsumego);
 		$this->set('dateUser', $dateUser);
 		$this->set('tooltipSgfs', $tooltipSgfs);
 		$this->set('tooltipInfo', $tooltipInfo);
