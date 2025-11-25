@@ -10,10 +10,10 @@
     <?php echo $this->Form->end('Submit');?>
   	You already have an account?<br>
 		<a href="/users/login">Sign In</a><br><br>
-		
+
 		<div
 				id="g_id_onload"
-				data-client_id="842499094931-nt12l2fehajo4k7f39bb44fsjl0l4h6u.apps.googleusercontent.com"
+				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
 				data-context="signin"
 				data-ux_mode="popup"
 				data-login_uri="/users/googlesignin"
@@ -28,7 +28,7 @@
 				data-size="large"
 			></div>
   </div>
-  
+
   <div class="right">
   </div>
 </div>
