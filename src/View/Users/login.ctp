@@ -42,38 +42,3 @@
 	</div>
 	<br>
 
-	<script>
-		var cacheLifetime = new Date();
-		cacheLifetime.setTime(cacheLifetime.getTime()+1*1*1*5*1000);
-		cacheLifetime = cacheLifetime.toUTCString()+"";
-
-		let cache = getCookie("cache_settings");
-		if (cache == 0)
-			document.cookie = "cache_settings=1;SameSite=none;expires="+cacheLifetime+";Secure=false";
-		setCookie("z_hash", "0");
-		localStorage.setItem("z_hash", "0");
-		function deleteAllCookies() {
-			const cookies = document.cookie.split(";");
-			for (let i = 0; i < cookies.length; i++) {
-				const cookie = cookies[i];
-				const eqPos = cookie.indexOf("=");
-				const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-				document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-			}
-		}
-		function getCookie(cname){
-			var name = cname + "=";
-			var decodedCookie = decodeURIComponent(document.cookie);
-			var ca = decodedCookie.split(';');
-			for(var i = 0; i<ca.length; i++){
-				var c = ca[i];
-				while (c.charAt(0) == ' '){
-					c = c.substring(1);
-				}
-				if (c.indexOf(name) == 0){
-					return c.substring(name.length, c.length);
-				}
-			}
-			return "";
-		}
-	</script>
