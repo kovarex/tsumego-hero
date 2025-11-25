@@ -175,9 +175,4 @@ class SitesController extends AppController
 		$this->Session->write('title', 'Tsumego Hero - Privacy Policy');
 	}
 
-	/**
-	 * @return void
-	 */
-	public function ugco5ujc() {}
-
 }
