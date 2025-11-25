@@ -511,39 +511,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	if(isset($removeCookie)){
 		echo 'setCookie("'.$removeCookie.'", "0");';
 	}
-	if(Auth::isLoggedIn()){
-	if($_COOKIE['PHPSESSID']!=0 && $_COOKIE['PHPSESSID']!=-1){
-	?>
-	// REMOVED: Never manually set PHPSESSID - PHP manages this automatically
-	// var PHPSESSID = getCookie("PHPSESSID");
-	// setCookie("PHPSESSID", PHPSESSID);
-
-	var PHPSESSID = getCookie("PHPSESSID");
-	setCookie("z_sess", PHPSESSID);
-	localStorage.setItem("z_sess", PHPSESSID);
-
-	setCookie("z_user_hash", "<?php echo md5(Auth::getUser()['name']); ?>");
-	localStorage.setItem("z_user_hash", "<?php echo md5(Auth::getUser()['name']); ?>");
-
-	setCookie("z_hash", "0");
-	localStorage.setItem("z_hash", "0");
-	<?php
-	}}else{
-	if(!isset($_COOKIE['z_sess'])){
-	?>
-	if(localStorage.hasOwnProperty('z_sess') && localStorage.hasOwnProperty('z_user_hash')){
-		let zSess = localStorage.getItem("z_sess");
-		let zUserHash = localStorage.getItem("z_user_hash");
-		setCookie("z_sess", zSess);
-		setCookie("z_user_hash", zUserHash);
-		setCookie("z_hash", "0");
-		localStorage.removeItem("z_sess");
-		localStorage.removeItem("z_user_hash");
-		window.location.href = "/";
-	}
-	<?php
-	}
-	}
 	if(Auth::isLoggedIn()){ ?>
 	var barPercent1 = <?php echo Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])); ?>;
 	var barPercent2 = <?php echo substr(round(Auth::getUser()['rating']), -2); ?>;
