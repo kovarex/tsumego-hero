@@ -14,7 +14,7 @@
 				echo '<font color="#f0f0f0">Added today:</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
 				{
-					$set = ClassRegistry::init('Set')->findById($tsumegoButtonsOfPublishedTsumegos[0]['set_id']);
+					$set = ClassRegistry::init('Set')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setID);
 					echo '<a class="scheduleTsumego" href="/sets/view/'.$tsumegoButtonsOfPublishedTsumegos[0]->setID.'"><b>
 						'.$set['Set']['title'] . ' - '.count($tsumegoButtonsOfPublishedTsumegos).' problems</b></a><br>';
 				}
