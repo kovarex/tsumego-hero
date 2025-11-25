@@ -122,6 +122,15 @@ jobs:
           nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
           sleep 3
 
+      - name: Debug Caddyfile mount
+        run: |
+          echo "Local Caddyfile:"
+          sha256sum Caddyfile
+          echo "Inside container Caddyfile:"
+          docker run --rm \
+            -v $PWD/Caddyfile:/etc/caddy/Caddyfile \
+            busybox cat /etc/caddy/Caddyfile || echo "FAILED: File not mounted!"
+
       - name: Start Caddy HTTPS reverse proxy
         run: |
           nohup docker run --rm \
