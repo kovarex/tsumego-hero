@@ -53,7 +53,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => null, 'other-users' => [['name' => 'kovarex', 'email' => 'kovarex@example.com']]]);
 		$browser = Browser::instance();
-		$browser->ignoreJsErrorPattern('Unsecured login_uri provided'); // Google Sign-In error on CI
 		$browser->get('users/login');
 		$browser->clickId('UserName');
 		$browser->driver->getKeyboard()->sendKeys('kovarex@example.com');
@@ -92,7 +91,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$userCountBefore = count(ClassRegistry::init('User')->find('all'));
 
 		$browser = Browser::instance();
-		$browser->ignoreJsErrorPattern('Unsecured login_uri provided'); // Google Sign-In error on CI
 		$browser->get('users/add');
 
 		// Fill in the signup form
