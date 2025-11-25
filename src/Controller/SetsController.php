@@ -1511,17 +1511,6 @@ ORDER BY total_count DESC, partition_number";
 		}
 		else
 			$scoring = false;
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
-		foreach ($tsumegoButtons as $tsumegoButton)
-		{
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoButton->tsumegoID]]);
-			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
-			$tooltipSgfs [] = $tArr[0];
-			$tooltipInfo [] = $tArr[2];
-			$tooltipBoardSize [] = $tArr[3];
-		}
 
 		$allTags = $this->TagName->find('all') ?: [];
 		$allTagsSorted = [];
@@ -1594,9 +1583,6 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('tooltipSgfs', $tooltipSgfs);
-		$this->set('tooltipInfo', $tooltipInfo);
-		$this->set('tooltipBoardSize', $tooltipBoardSize);
 		$this->set('setDifficulty', $setDifficulty);
 	}
 
