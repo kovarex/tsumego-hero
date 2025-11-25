@@ -1760,7 +1760,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->signIn($user);
 		$this->Flash->set('Login successful.');
-		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
+		return $this->redirect(['controller' => 'sets', 'action' => 'index'], 303);
 	}
 
 	public function add()
