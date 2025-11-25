@@ -2788,46 +2788,6 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @param string|int|null $id User ID
-	 * @return void
-	 */
-	public function fbsignin($id = null)
-	{
-		if ($_SERVER['REQUEST_METHOD'] === 'POST')
-		{
-			// Get the access token from the request
-			$input = json_decode(file_get_contents('php://input'), true);
-			$accessToken = $input['accessToken'];
-
-			// Your app credentials
-			$app_id = '866506025665869';
-			$app_secret = '6f7fd195f177db9fe30205fc52dba785';
-
-			// Exchange the short-lived token for a long-lived one (optional)
-			$url = 'https://graph.facebook.com/oauth/access_token?'
-		. 'grant_type=fb_exchange_token&'
-		. "client_id={$app_id}&"
-		. "client_secret={$app_secret}&"
-		. "fb_exchange_token={$accessToken}";
-
-			$response = file_get_contents($url);
-			$responseData = json_decode($response, true);
-
-			// Get user info from Facebook
-			$url = 'https://graph.facebook.com/me?fields=id,name,email&access_token=' . $responseData['access_token'];
-			$userInfo = file_get_contents($url);
-			$userInfoData = json_decode($userInfo, true);
-
-			// Handle login logic here, such as checking if the user exists in your database
-			// and creating a session.
-
-			echo json_encode($userInfoData); // Return user info as JSON
-		}
-		else
-			echo json_encode(['error' => 'Invalid request']);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function overview1()
