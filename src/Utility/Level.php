@@ -109,7 +109,7 @@ class Level
 		return $sumx;
 	}
 
-	public static function checkLevelUp($user)
+	public static function checkLevelUp(&$user)
 	{
 		while (true)
 		{

@@ -160,4 +160,19 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 			$current += Level::getXPForNext($level);
 		}
 	}
+
+	public function testGettingNextLevel()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 2300]]]);
+		$this->assertTrue(Rating::ratingToXP($context->otherTsumegos[0]['rating']) > Level::getXPForNext(1));
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertGreaterThan(1, $context->reloadUser()['level']);
+	}
 }
