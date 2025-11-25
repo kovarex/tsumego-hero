@@ -1,7 +1,5 @@
 <?php
 
-require_once(__DIR__ . '/../ContextPreparator.php');
-
 class BesogoTest extends ControllerTestCase
 {
 	public function testBesogoTests()

@@ -2,8 +2,6 @@
 
 use Facebook\WebDriver\WebDriverBy;
 
-require_once(__DIR__ . '/../../ContextPreparator.php');
-
 class CommentsControllerTest extends ControllerTestCase
 {
 	public function testCommentsVisible()

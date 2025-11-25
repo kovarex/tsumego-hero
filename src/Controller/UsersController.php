@@ -1737,7 +1737,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($user = $this->User->findByName($input))
 			return $user;
 		if ($user = $this->User->findByEmail($input))
-		  return $user;
+			return $user;
 		return null;
 	}
 
