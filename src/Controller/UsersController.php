@@ -2767,8 +2767,7 @@ Joschka Zimdars';
 			$userData = [];
 			$userData['User']['name'] = 'g__' . $name;
 			$userData['User']['email'] = 'g__' . $email;
-			$userData['User']['pw'] = 'k4y284t2w4v264z2a4t2h464h4x2m5x2t4v2';
-			$userData['User']['pw2'] = 'k4y284t2w4v264z2a4t2h464h4x2m5x2t4v2';
+			$userData['User']['password_hash'] = 'not used';
 			$userData['User']['external_id'] = $externalId;
 
 			if ($imageContent === false)
