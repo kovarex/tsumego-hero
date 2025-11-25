@@ -154,6 +154,16 @@ class Browser
 		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
+	public function waitUntilCssSelectorExists(string $selector, int $timeout = 5): void
+	{
+		new WebDriverWait($this->driver, $timeout, 500)->until(
+			function () use ($selector) {
+				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				return count($elements) > 0;
+			}
+		);
+	}
+
 	public function ignoreJsErrorPattern(string $pattern): void
 	{
 		$this->ignoredJsErrorPatterns[] = $pattern;

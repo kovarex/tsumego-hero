@@ -80,6 +80,8 @@ class UploadSgfTest extends TestCaseWithAuth
 		$browser->waitUntilIDExists('commentBox');
 		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
 		$this->assertSame($commentBox->getText(), 'Version 2');
+
+		$browser->waitUntilCssSelectorExists('.sgf-plus-mark');
 		$plusMark = $browser->driver->findElements(WebDriverBy::cssSelector('.sgf-plus-mark'));
 		$this->assertCount(2, $plusMark); // one on the board, one on the tree I guess? But mainly there is some
 	}
