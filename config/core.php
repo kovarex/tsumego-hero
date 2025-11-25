@@ -241,7 +241,8 @@ Configure::write('Session', [
 	'checkAgent' => false, // Don't check user agent (helps with proxies/mobile)
 	'ini' => [
 		'session.use_trans_sid' => 0,
-		'session.cookie_samesite' => 'Lax',
+		'session.cookie_samesite' => 'None',
+		'session.cookie_secure' => true,
 		'session.cookie_httponly' => true,
 		'session.cookie_path' => '/',
 		'session.gc_maxlifetime' => 864000, // 240 hours in seconds
