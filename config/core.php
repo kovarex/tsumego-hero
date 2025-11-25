@@ -232,7 +232,7 @@ Configure::write('App.encoding', 'UTF-8');
  * To use database sessions, run the app/Config/Schema/sessions.php schema using
  * the cake shell command: cake schema create Sessions
  */
-$sessionConfig = [
+Configure::write('Session', [
 	'defaults' => 'php',
 	'cookie' => 'myApp',
 	'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
@@ -247,11 +247,8 @@ $sessionConfig = [
 		'session.cookie_path' => '/',
 		'session.gc_maxlifetime' => 864000, // 240 hours in seconds
 		'session.cookie_lifetime' => 864000, // 240 hours in seconds
-	]];
-if (!Util::isInTestEnvironment())
-	$sessionConfig['ini']['session.cookie_domain'] = '.tsumego.com';
-
-Configure::write('Session',$sessionConfig);
+	],
+]);
 
 /**
  * A random string used in security hashing methods.
