@@ -12,7 +12,6 @@ class ContextPreparator
 		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
