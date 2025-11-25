@@ -1,8 +1,7 @@
 <?php
 
-// Detect HTTPS behind reverse proxy (Caddy, nginx, etc)
-if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
-	$_SERVER['HTTPS'] = 'on';
+if (env('TEST_ENVIRONMENT') === 'github-ci') {
+	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
 }
 
 /**
