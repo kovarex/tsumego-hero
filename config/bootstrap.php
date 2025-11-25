@@ -1,5 +1,10 @@
 <?php
 
+// Detect HTTPS behind reverse proxy (Caddy, nginx, etc)
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+	$_SERVER['HTTPS'] = 'on';
+}
+
 /**
  * This file is loaded automatically by the app/webroot/index.php file after core.php
  *
