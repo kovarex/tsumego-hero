@@ -1761,9 +1761,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->signIn($user);
 		$this->autoRender = false;
 
-		while (ob_get_level()) {
+		while (ob_get_level())
 			ob_end_clean();
-		}
 
 		$this->response->statusCode(303);
 		$this->response->header('Location', '/sets/index');
