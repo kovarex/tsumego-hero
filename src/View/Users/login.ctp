@@ -1,8 +1,3 @@
-	<?php
-		if(Auth::isLoggedIn()){
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}
-	?>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<br>
 	<div id="login-box" class="users form">
