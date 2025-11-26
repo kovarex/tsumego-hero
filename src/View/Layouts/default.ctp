@@ -93,7 +93,7 @@ echo $this->fetch('script');
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
-<script type="text/javascript" src="/js/util.js"></script>
+<script type="text/javascript" src="/js/util.js?v=2"></script>
 <script src="/js/dark.js"></script>
 <?php
 $modeSelector = 2;

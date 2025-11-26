@@ -1,5 +1,14 @@
-function setCookie(cookie, value){
+function setCookie(cookie, value)
+{
 	document.cookie = cookie + '=' + value + ';SameSite=Lax;path=/;';
+}
+
+function getCookie(name)
+{
+    return document.cookie
+        .split('; ')
+        .find(row => row.startsWith(name + '='))
+        ?.split('=')[1] || null;
 }
 
 function formatMultiplier(value) {

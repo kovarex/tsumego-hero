@@ -13,11 +13,13 @@
 	</div>
 	<br><br>
 	<div align="center">
-
-		<img id="timeMode3" src="/img/timeMode32.png?v=1.2" width="200" onclick="timeMode3();" onmouseover="hoverTimeMode3()" onmouseout="noHoverTimeMode3()">
-		<img id="timeMode2" src="/img/timeMode22.png" width="200" onclick="timeMode2();" onmouseover="hoverTimeMode2()" onmouseout="noHoverTimeMode2()">
-		<img id="timeMode1" src="/img/timeMode12.png" width="200" onclick="timeMode1();" onmouseover="hoverTimeMode1()" onmouseout="noHoverTimeMode1()">
-
+	<?php
+	foreach ($timeModeCategories as $timeModeCategory)
+	{
+		$categoryID = $timeModeCategory['TimeModeCategory']['id'];
+		echo '<img id="timeMode'.$categoryID.'" src="/img/timeMode'.$categoryID.'2.png" width="200" onclick="setTimeModeCategory('.$categoryID.');" onmouseover="hoverTimeMode'.$categoryID.'();" onmouseout="noHoverTimeMode'.$categoryID.'();"/>';
+	}
+	?>
 	</div>
 	<br>
 
@@ -49,85 +51,53 @@
 	echo '</div>';
 	}?>
 	<script>
-	var mode = 1;
-	var s = 0;
 
+	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $timeModeCategories[0]['TimeModeCategory']['id']; ?>;
 
-	<?php
-		if($lastMode==1) echo 'mode = 1;';
-		elseif($lastMode==2) echo 'mode = 2;';
-		elseif($lastMode==3) echo 'mode = 3;';
-	?>
-
-	if(mode!=1) $("#time-mode1").hide();
-	if(mode!=2) $("#time-mode2").hide();
-	if(mode!=3) $("#time-mode3").hide();
-
-	if(mode!=1) document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
-	if(mode!=2) document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
-	if(mode!=3) document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
-
-	document.getElementById("timeMode1").style = "cursor: pointer;";
-	document.getElementById("timeMode2").style = "cursor: pointer;";
-	document.getElementById("timeMode3").style = "cursor: pointer;";
-
-	$(document).ready(function(){
-		notMode3 = false;
-		$("#modeSelector").hide();
-	});
-
-	function timeMode1(){
-		document.getElementById("timeMode1").src = "/img/timeMode12.png";
-		document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
-		document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
-		$("#time-mode1").fadeIn(250);
-		$("#time-mode2").hide();
-		$("#time-mode3").hide();
-		mode = 1;
-		document.cookie = "lastMode=1";
-    updateRankBar();
+	function setTimeModeCategory(categoryIDToSet)
+	{
+		for (const categoryID of [<?php $result = []; foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory['TimeModeCategory']['id']; echo implode(',', $result); ?>])
+		{
+			var element = document.getElementById("timeMode" + categoryID);
+			element.style = "cursor: pointer;";
+			var section = document.getElementById("time-mode" + categoryID);
+			if (categoryID == categoryIDToSet)
+			{
+				element.src = '/img/timeMode' + categoryID + '2.png';
+				section.style.display = "block";
+			}
+			else
+			{
+				element.src = '/img/timeMode' + categoryID + 'inactive2.png';
+				section.style.display = "none";
+			}
+		}
+		updateRankBar();
+		timeModeCategoryID = categoryIDToSet;
+		setCookie('lastTimeModeCategoryID', categoryIDToSet);
 	}
-	function timeMode2(){
-		document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
-		document.getElementById("timeMode2").src = "/img/timeMode22.png";
-		document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
-		$("#time-mode1").hide();
-		$("#time-mode2").fadeIn(250);
-		$("#time-mode3").hide();
-		mode = 2;
-		document.cookie = "lastMode=2";
-    updateRankBar();
-	}
-	function timeMode3(){
-		document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
-		document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
-		document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
-		$("#time-mode1").hide();
-		$("#time-mode2").hide();
-		$("#time-mode3").fadeIn(250);
-		mode = 3;
-		document.cookie = "lastMode=3";
-    updateRankBar();
-	}
+
+	setTimeModeCategory(timeModeCategoryID);
+
 	function hoverTimeMode1(){
 		document.getElementById("timeMode1").src = "/img/timeMode1hover2.png";
 	}
 	function noHoverTimeMode1(){
-		if(mode==1) document.getElementById("timeMode1").src = "/img/timeMode12.png";
+		if(timeModeCategoryID==1) document.getElementById("timeMode1").src = "/img/timeMode12.png";
 		else document.getElementById("timeMode1").src = "/img/timeMode1inactive2.png";
 	}
 	function hoverTimeMode2(){
 		document.getElementById("timeMode2").src = "/img/timeMode2hover2.png";
 	}
 	function noHoverTimeMode2(){
-		if(mode==2) document.getElementById("timeMode2").src = "/img/timeMode22.png";
+		if(timeModeCategoryID==2) document.getElementById("timeMode2").src = "/img/timeMode22.png";
 		else document.getElementById("timeMode2").src = "/img/timeMode2inactive2.png";
 	}
 	function hoverTimeMode3(){
 		document.getElementById("timeMode3").src = "/img/timeMode3hover2.png?v=1.2";
 	}
 	function noHoverTimeMode3() {
-		if (mode == 3) document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
+		if (timeModeCategoryID == 3) document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
 		else document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
 	}
 	$("#account-bar-user2 a").css("color", "rgb(202, 102, 88)");
@@ -137,7 +107,7 @@
 	$("#account-bar-user a").attr("class", "xp-text-fill-c3x");
 
 
-  function getRankForMode(mode) {
+  function getRankForMode(timeModeCategoryID) {
   <?php
     foreach ($timeModeCategories as $timeModeCategory) {
       $timeModeCategoryID = $timeModeCategory['TimeModeCategory']['id'];
@@ -147,10 +117,10 @@
 	  else {
         $bestSolvedRank = 'no rank';
       }
-      echo "if (mode == ".$timeModeCategoryID.") return '".$bestSolvedRank."';";
+      echo "if (timeModeCategoryID == ".$timeModeCategoryID.") return '".$bestSolvedRank."';";
     }
   ?>
   }
-  function updateRankBar() { $("#account-bar-xp").text(getRankForMode(mode)); }
+  function updateRankBar() { $("#account-bar-xp").text(getRankForMode(timeModeCategoryID)); }
 	$("#xp-bar-fill").css("width","100%");
 	</script>

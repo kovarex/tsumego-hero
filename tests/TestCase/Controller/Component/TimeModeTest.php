@@ -515,15 +515,43 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// hovering shows hovered image
 		$browser->hover($div5k);
-		$browser->driver->wait(10, 50)->until(function() use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png"; });
+		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png"; });
 
 		// hovering something else shows unhovered image
 		$browser->hover($div1d);
-		$browser->driver->wait(10, 50)->until(function() use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png"; });
+		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png"; });
 
 		// locked rank shows inactive image
 		$this->assertSame(count($links1d), 0);
 		$this->assertSame(count($imgs1d), 2);
 		$this->assertSame($imgs1d[0]->getAttribute('src'), "/img/rankButton1dinactive.png");
+	}
+
+	public function testTimeModeSwitchCategory(): void
+	{
+		$browser = Browser::instance();
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
+		$context = new ContextPreparator($contextParameters);
+		$browser->get('timeMode/overview');
+
+		$div5kBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+		$div1dBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+		$div5kFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[0]['id']));
+		$div1dFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[1]['id']));
+
+		// blirz buttons are visible at start
+		$this->assertTrue($div5kBlitz->isDisplayed());
+		$this->assertTrue($div1dBlitz->isDisplayed());
+		$this->assertFalse($div5kFast->isDisplayed());
+		$this->assertFalse($div1dFast->isDisplayed());
+
+		// we switch to fast speed, and blitz buttons get hidden, instead we see fast buttons
+		$browser->clickId('timeMode'.TimeModeUtil::$CATEGORY_FAST_SPEED);
+		$this->assertFalse($div5kBlitz->isDisplayed());
+		$this->assertFalse($div1dBlitz->isDisplayed());
+		$this->assertTrue($div5kFast->isDisplayed());
+		$this->assertTrue($div1dFast->isDisplayed());
 	}
 }
