@@ -83,18 +83,16 @@ class PlayResultProcessorComponent extends Component
 			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
 		}
 
-		if ($currentStatus == 'V') // if it was just visited so far (so we don't overwrite solved
-		{
-			// only mark from visited to failed when the user has no hearts left
-			if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-				return 'F'; // set to failed
+		// not solved from now
+		if ($currentStatus == 'V') // if it was just visited so far (so we don't overwrite solved)
+		{if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+			return 'F';  // only mark as failed when the user has no hearts left
 			return $currentStatus;
 		}
 		if ($currentStatus == 'W')
 		{
-			// only mark from 'stailed solved' to 'stale failed' when the user has no hearts left
 			if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-				return 'X'; // set to failed
+				return 'X'; // only mark as 'stale failed' when the user has no hearts left
 			return $currentStatus;
 		}
 		if ($currentStatus == 'G')
