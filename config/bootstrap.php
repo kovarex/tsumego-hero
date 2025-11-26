@@ -4,6 +4,13 @@ App::uses('Util', 'Utility');
 if (Util::isInGithubCI())
 	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
 
+// Fix Chrome POST losing REQUEST_URI behind Apache rewrite
+if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL'])) {
+	// Remove the internal `/webroot` prefix
+	$_SERVER['REQUEST_URI'] = preg_replace('#^/webroot#', '', $_SERVER['REDIRECT_URL']);
+}
+
+
 /**
  * This file is loaded automatically by the app/webroot/index.php file after core.php
  *
