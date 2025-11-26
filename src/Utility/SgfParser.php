@@ -129,9 +129,7 @@ class SgfParser
 		{
 			$coords[$i] = $alphabet[$coords[$i]];
 			if ($xy)
-			{
 				$pairs[$c] = [$coords[$i], null, null];
-			}
 			else
 			{
 				$pairs[$c][1] = $coords[$i];
