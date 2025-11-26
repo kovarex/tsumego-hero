@@ -15,8 +15,8 @@
 				id="g_id_onload"
 				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
 				data-context="signin"
-				data-ux_mode="popup"
-				data-login_uri="/users/googlesignin"
+				data-ux_mode="redirect"
+				data-login_uri="<?php echo Router::url('/users/googlesignin', true); ?>"
 				data-auto_prompt="false"
 			></div>
 			<div
