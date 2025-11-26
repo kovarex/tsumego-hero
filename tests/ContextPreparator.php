@@ -4,15 +4,16 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
-		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);
-		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);
-		ClassRegistry::init('User')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Set')->deleteAll(['1 = 1']);
-		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);
-		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);
+		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
+		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
+		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User
+		ClassRegistry::init('Sgf')->deleteAll(['1 = 1']);                // FK to: User, Tsumego
+		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);    // FK to: TimeModeSession
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
+		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
+		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
 		else

@@ -7,10 +7,12 @@
 .user-pick-q01 {
   color: white !important;
 }
+
 .quote-pick-01 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q01 {
   left: 316px;
   top: 172px;
@@ -21,10 +23,12 @@
 .user-pick-q02 {
   color: #fdfdfd !important;
 }
+
 .quote-pick-02 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q02 {
   left: 316px;
   top: 106px;
@@ -35,10 +39,12 @@
 .user-pick-q03 {
   color: #e05d8f !important;
 }
+
 .quote-pick-03 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q03 {
   left: 316px;
   top: 89px;
@@ -49,10 +55,12 @@
 .user-pick-q04 {
   color: #fdfdfe !important;
 }
+
 .quote-pick-04 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q04 {
   left: 316px;
   top: 189px;
@@ -64,10 +72,12 @@
 .user-pick-q05 {
   color: #fdfdfe !important;
 }
+
 .quote-pick-05 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q05 {
   left: 316px;
   top: 121px;
@@ -80,10 +90,12 @@
 .user-pick-q06 {
   color: #ad935e !important;
 }
+
 .quote-pick-06 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q06 {
   left: 316px;
   top: 151px;
@@ -95,10 +107,12 @@
 .user-pick-q07 {
   color: #fce1c2 !important;
 }
+
 .quote-pick-07 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q07 {
   left: 342px;
   top: 113px;
@@ -110,10 +124,12 @@
 .user-pick-q08 {
   color: black !important;
 }
+
 .quote-pick-08 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q08 {
   left: 300px;
   top: 22px;
@@ -125,10 +141,12 @@
 .user-pick-q09 {
   color: white !important;
 }
+
 .quote-pick-09 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q09 {
   left: 318px;
   top: 53px;
@@ -138,13 +156,16 @@
 .user-pick-q10 {
   color: #fed487 !important;
 }
+
 .quote-pick-10 .quote1 {
   color: #302f2d !important;
 }
+
 .quote-pick-10 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q10 {
   left: 317px;
   top: 153px;
@@ -156,13 +177,15 @@
 .user-pick-q11 {
   color: #fbcc5f !important;
 }
+
 .quote-pick-11 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q11 {
   left: 321px;
-  top: 118px;
+  top: 125px;
   font-size: 15px;
   font-family: Helvetica, Times New Roman, verdana;
 }
@@ -171,13 +194,15 @@
 .user-pick-q12 {
   color: #b83330 !important;
 }
+
 .quote-pick-12 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q12 {
   left: 321px;
-  top: 118px;
+  top: 145px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
@@ -185,12 +210,33 @@
 .user-pick-q13 {
   color: white !important;
 }
+
 .quote-pick-13 {
   top: 288px;
   left: 100px;
 }
+
 .user-pick-q13 {
   left: 321px;
   top: 118px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q96 {
+  left: 280px;
+  top: 130px;
+  font-family: Helvetica, Times New Roman, verdana;
+  color: black !important;
+}
+
+.user-pick-q97 {
+  left: 321px;
+  top: 128px;
+  font-family: Helvetica, Times New Roman, verdana;
+}
+
+.user-pick-q99 {
+  left: 321px;
+  top: 210px;
   font-family: Helvetica, Times New Roman, verdana;
 }
