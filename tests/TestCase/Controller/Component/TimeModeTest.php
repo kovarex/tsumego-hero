@@ -548,7 +548,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertFalse($div1dFast->isDisplayed());
 
 		// we switch to fast speed, and blitz buttons get hidden, instead we see fast buttons
-		$browser->clickId('timeMode'.TimeModeUtil::$CATEGORY_FAST_SPEED);
+		$browser->clickId('timeMode' . TimeModeUtil::$CATEGORY_FAST_SPEED);
 		$this->assertFalse($div5kBlitz->isDisplayed());
 		$this->assertFalse($div1dBlitz->isDisplayed());
 		$this->assertTrue($div5kFast->isDisplayed());
