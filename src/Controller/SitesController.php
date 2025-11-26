@@ -1,5 +1,7 @@
 <?php
 
+App::uses('SgfParser', 'Utility');
+
 class SitesController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
@@ -62,7 +64,7 @@ class SitesController extends AppController
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
 			$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]) ?: [];
-			$ptArr = $this->processSGF($ptts[0]['Sgf']['sgf']);
+			$ptArr = SgfParser::process($ptts[0]['Sgf']['sgf']);
 			$popularTooltip = $ptArr[0];
 			$popularTooltipInfo = $ptArr[2];
 			$popularTooltipBoardSize = $ptArr[3];

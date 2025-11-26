@@ -1,5 +1,6 @@
 <?php
 
+App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');
 App::uses('TsumegoButton', 'Utility');
@@ -107,7 +108,7 @@ class SetsController extends AppController
 			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
 			if (!$sgf)
 				continue;
-			$sgfArr = $this->processSGF($sgf['Sgf']['sgf']);
+			$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
 
 			array_push($similarArr, $sgfArr[0]);
 			array_push($similarArrInfo, $sgfArr[2]);
