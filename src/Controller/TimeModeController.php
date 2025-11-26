@@ -113,7 +113,7 @@ ORDER BY MIN(rating);");
 
 		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'];
 		if (!$lastTimeModeCategoryID)
-			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC']);
+			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC'])['TimeModeCategory']['id'];
 		assert($lastTimeModeCategoryID);
 
 		$timeModeRankMap = Util::indexByID(ClassRegistry::init('TimeModeRank')->find('all', []) ?: [], 'TimeModeRank', 'name');

@@ -481,7 +481,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
 		$renderedCounts = $browser->driver->findElements(WebDriverBy::cssSelector(".imageContainerText2"));
-		$visibleCounts = array_filter($renderedCounts, function ($el) { return $el->isDisplayed(); });
+		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) { return $el->isDisplayed(); }));
 
 		$this->assertSame(count($visibleCounts), count($contextParameters['time-mode-ranks']));
 		$this->assertSame($visibleCounts[0]->getText(), "0");
@@ -494,7 +494,9 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$browser = Browser::instance();
 		$contextParameters = [];
-		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['user'] = [
+			'mode' => Constants::$LEVEL_MODE,
+			'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
@@ -531,7 +533,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$browser = Browser::instance();
 		$contextParameters = [];
-		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');

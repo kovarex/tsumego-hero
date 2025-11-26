@@ -75,6 +75,8 @@ class ContextPreparator
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
 		$user['level'] = Util::extract('level', $userInput) ?: 1;
+		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
+			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 		ClassRegistry::init('User')->create($user);
 		ClassRegistry::init('User')->save($user);
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
