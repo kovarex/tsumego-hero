@@ -1759,11 +1759,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->signIn($user);
-		$this->autoRender = false;
-
-		while (ob_get_level())
-			ob_end_clean();
-
 		return $this->redirect('/sets/');
 	}
 
