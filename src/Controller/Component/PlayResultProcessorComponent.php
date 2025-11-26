@@ -67,6 +67,41 @@ class PlayResultProcessorComponent extends Component
 		return $result;
 	}
 
+	private function getNewStatus($solved, $currentStatus, &$result)
+	{
+		if ($solved)
+		{
+			if ($currentStatus == 'W') // half xp state
+				return 'C'; // double solved
+			if ($currentStatus == 'G')
+			{
+				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
+				return 'S';
+			}
+			if ($currentStatus == 'V')
+				return 'S';
+			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
+		}
+
+		if ($currentStatus == 'V') // if it was just visited so far (so we don't overwrite solved
+		{
+			// only mark from visited to failed when the user has no hearts left
+			if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+				return 'F'; // set to failed
+			return $currentStatus;
+		}
+		if ($currentStatus == 'W')
+		{
+			// only mark from 'stailed solved' to 'stale failed' when the user has no hearts left
+			if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+				return 'X'; // set to failed
+			return $currentStatus;
+		}
+		if ($currentStatus == 'G')
+			return 'V'; // failed golden tsumego
+		return $currentStatus;
+	}
+
 	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): void
 	{
 		if ($previousTsumegoStatus == null)
@@ -79,27 +114,7 @@ class PlayResultProcessorComponent extends Component
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
 		if (isset($result['solved']))
-			if ($result['solved'])
-				if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'W') // half xp state
-				{$previousTsumegoStatus['TsumegoStatus']['status'] = 'C'; // double solved
-				}
-				else
-				{
-					if ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G')
-						$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
-					$previousTsumegoStatus['TsumegoStatus']['status'] = 'S'; // solved once
-				}
-			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'F') // failed already
-			{$previousTsumegoStatus['TsumegoStatus']['status'] = 'X'; // double failed
-			}
-			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'V') // if it was just visited so far (so we don't overwrite solved
-			{$previousTsumegoStatus['TsumegoStatus']['status'] = 'F'; // set to failed
-			}
-			elseif ($previousTsumegoStatus['TsumegoStatus']['status'] == 'G')
-			{
-				$previousTsumegoStatus['TsumegoStatus']['status'] = 'V'; // failed golden tsumego
-			}
-
+			$previousTsumegoStatus['TsumegoStatus']['status'] = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}

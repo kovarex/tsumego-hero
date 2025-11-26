@@ -78,16 +78,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testFailFromEmpty(): void
-	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
-			$this->performMisplay($context, $page);
-			$this->assertSame($context->resultTsumegoStatus['status'], 'F');
-		}
-	}
-
 	public function testVisitFromSolved(): void
 	{
 		foreach ($this->PAGES as $page)
@@ -108,22 +98,12 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testSolveFromFailed(): void
+	public function testNoSolveFromFailed(): void
 	{
 		foreach ($this->PAGES as $page)
 		{
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'F', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performSolve($context, $page);
-			$this->assertSame($context->resultTsumegoStatus['status'], 'S');
-		}
-	}
-
-	public function testFailFromVisited(): void
-	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = (new ContextPreparator(['tsumego' => ['status' => 'V', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
-			$this->performMisplay($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 		}
 	}
@@ -134,7 +114,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		{
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'F', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performMisplay($context, $page);
-			$this->assertSame($context->resultTsumegoStatus['status'], 'X');
+			$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 		}
 	}
 
@@ -377,5 +357,33 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$browser->get(self::getUrlFromPage($page, $context));
 			$this->assertSame($originalDamage + 1, $context->reloadUser()['damage']);
 		}
+	}
+
+	public function testProblemDoesntGetFailedWhenHeartsAreStillPresent(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
+			'user' => ['mode' => Constants::$LEVEL_MODE]]);
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$context->checkNewTsumegoStatusCoreValues($this);
+		$this->assertSame($context->resultTsumegoStatus['status'], 'V');
+	}
+
+	public function testProblemGetsFailedWhenHeartsAreGonePresent(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]]);
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$context->checkNewTsumegoStatusCoreValues($this);
+		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 	}
 }
