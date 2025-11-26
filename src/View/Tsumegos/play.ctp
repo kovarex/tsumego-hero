@@ -170,35 +170,7 @@
 	<tr>
 		<td align="center">
 			<div id="playTitle">
-				<?php
-					$di = $setConnection['SetConnection']['num'];
-					$di2 = '/';
-					if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites') {
-						echo '<a id="playTitleA" href="/sets/view/'.$tsumegoFilters->getSetID($set['Set']['id']).$tsumegoButtons->getPartitionLinkSuffix().'">'.$queryTitle.'</a><br>';
-						echo '<font style="font-weight:400;" color="grey">
-							<a style="color:grey;" id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">
-								('.$set['Set']['title'].$di.$t['Tsumego']['actualNum'].$di2.$amountOfOtherCollection.')
-							</a>
-						</font>';
-					}else if ($tsumegoFilters->query == 'topics') {
-						if (Auth::isInLevelMode()) {
-							if($set['Set']['id'] == 38){
-								$altTitle = 'How to win the capturing race';
-								echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].'">'.$altTitle.$di.$di2.$tsumegoButtons->highestTsumegoOrder.'</a>';
-							}else{
-								echo '<a id="playTitleA" href="/sets/view/'.$set['Set']['id'].$tsumegoButtons->getPartitionLinkSuffix().'">'.$set['Set']['title'].' '.$tsumegoButtons->getPartitionTitleSuffix().' '.$di.$di2.$tsumegoButtons->highestTsumegoOrder.'</a>';
-							}
-						}elseif(Auth::isInRatingMode()){
-							echo '<div class="slidecontainer">
-								<input type="range" min="1" max="7" value="'.$difficulty.'" class="slider" id="rangeInput" name="rangeInput">
-								<div id="sliderText">regular</div>
-							</div>';
-							echo '<a id="playTitleA" href=""></a>';
-						}elseif(Auth::isInTimeMode()) {
-							echo '<font size="5px">'.$timeMode->currentOrder.' of '.$timeMode->overallCount.'</font>';
-						}
-					}
-				?>
+				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
 				<?php
 				if (!isset($additionalInfo)) $additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99], 'mode' => 0];

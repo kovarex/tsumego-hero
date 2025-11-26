@@ -323,6 +323,27 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame($attempt['time_mode_attempt_status_id'], TimeModeUtil::$ATTEMPT_STATUS_SKIPPED);
 	}
 
+	public function testTimeTitleWithDifferentTsumegoFilters()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['other-tsumegos'] = [];
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
+		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
+		$this->assertSame($browser->getCssSelect("#playTitle")[0]->getText(), "1 of 10");
+	}
+
 	public function checkUnlockWhen($conditions)
 	{
 		$contextParameters = [];

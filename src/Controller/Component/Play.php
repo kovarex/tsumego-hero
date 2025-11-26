@@ -874,5 +874,31 @@ class Play
 		return true;
 	}
 
+	static public function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)
+	{
+		if (Auth::isInTimeMode())
+			return '<font size="5px">' . $timeMode->currentOrder . ' of ' . $timeMode->overallCount . '</font>';
+
+		if (Auth::isInRatingMode()) {
+			return '<div class="slidecontainer">
+									<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
+									<div id="sliderText">regular</div>
+								</div>
+								<a id="playTitleA" href=""></a>';
+		}
+
+		$order = $setConnection['SetConnection']['num'];
+		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')
+		{
+			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set['Set']['id']) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
+							<font style="font-weight:400;" color="grey">
+											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">
+												(' . $set['Set']['title'] . $order . $t['Tsumego']['actualNum'] . '/' . $amountOfOtherCollection . ')
+											</a>
+										</font>';
+		}
+		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';
+	}
+
 	private $setFunction;
 }
