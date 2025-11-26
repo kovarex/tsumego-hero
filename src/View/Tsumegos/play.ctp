@@ -1538,10 +1538,7 @@
 	if(Auth::isAdmin())
 		echo '$("#show5").css("display", "inline-block");';
 
-	if($goldenTsumego)
-		echo 'var goldenTsumego = true;';
-	else
-		echo 'var goldenTsumego = false;';
+	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
 	if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){
 		echo 'var locked=true; tryAgainTomorrow = true;';
