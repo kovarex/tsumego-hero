@@ -489,4 +489,41 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame($visibleCounts[2]->getText(), "2");
 		$this->assertSame($visibleCounts[3]->getText(), "3");
 	}
+
+	public function testTimeModeButtonsHover(): void
+	{
+		$browser = Browser::instance();
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
+		$context = new ContextPreparator($contextParameters);
+		$browser->get('timeMode/overview');
+
+		$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+		$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
+		$imgs5k = $div5k->findElements(WebDriverBy::tagName('img'));
+
+		$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+		$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
+		$imgs1d = $div1d->findElements(WebDriverBy::tagName('img'));
+
+		// lowest rank is always unlocked
+		$this->assertSame(count($links5k), 1);
+
+		$this->assertSame(count($imgs5k), 2); // one of the rank, one of the storage icon
+		$this->assertSame($imgs5k[0]->getAttribute('src'), "/img/rankButton5k.png");
+
+		// hovering shows hovered image
+		$browser->hover($div5k);
+		$browser->driver->wait(10, 50)->until(function() use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png"; });
+
+		// hovering something else shows unhovered image
+		$browser->hover($div1d);
+		$browser->driver->wait(10, 50)->until(function() use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png"; });
+
+		// locked rank shows inactive image
+		$this->assertSame(count($links1d), 0);
+		$this->assertSame(count($imgs1d), 2);
+		$this->assertSame($imgs1d[0]->getAttribute('src'), "/img/rankButton1dinactive.png");
+	}
 }

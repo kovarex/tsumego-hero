@@ -22,12 +22,15 @@
 	<br>
 
 	<br>
+
 	<?php
-	foreach ($timeModeCategories as $timeModeCategory) {
+	foreach ($timeModeCategories as $timeModeCategory)
+	{
 		$categoryID = $timeModeCategory['TimeModeCategory']['id'];
 		echo '<div id="time-mode'.$categoryID.'">';
 		$unlocked = true; // first is always unlocked
-		foreach ($timeModeRanks as $timeModeRank) {
+		foreach ($timeModeRanks as $timeModeRank)
+		{
 			$rank = $timeModeRank['name'];
 			$rankID = $timeModeRank['id'];
 
@@ -35,7 +38,7 @@
 			if ($unlocked) {
 				echo '<a style="text-decoration:none;" href="/timeMode/start?categoryID='.$categoryID.'&rankID='.$rankID.'">';
 			}
-			echo '<img src="/img/rankButton'.$rank.($unlocked ? '' : 'inactive').'.png" '.($unlocked ? 'onmouseover="hover_'.$rankID.'(this)" onmouseout="noHover_'.$rankID.'(this);"' : '').'>';
+			echo '<img src="/img/rankButton'.$rank.($unlocked ? '' : 'inactive').'.png" '.($unlocked ? 'onmouseover="this.src = \'/img/rankButton'.$rank.'hover.png\';" onmouseout="this.src = \'/img/rankButton'.$rank.'.png\';"' : '').'>';
 			echo '<div class="imageContainerText2"> <img class="timeModeIcons" src="/img/timeModeStored.png">'.$timeModeRank['tsumego_count'].'</div>';
 			if ($unlocked) {
 				echo '</a>';
@@ -123,18 +126,10 @@
 	function hoverTimeMode3(){
 		document.getElementById("timeMode3").src = "/img/timeMode3hover2.png?v=1.2";
 	}
-	function noHoverTimeMode3(){
-		if(mode==3) document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
+	function noHoverTimeMode3() {
+		if (mode == 3) document.getElementById("timeMode3").src = "/img/timeMode32.png?v=1.2";
 		else document.getElementById("timeMode3").src = "/img/timeMode3inactive2.png?v=1.2";
 	}
-	<?php
-    foreach ($timeModeRanks as $timeModeRank) {
-      $rankID = $timeModeRank['TimeModeRank']['id'];
-      $rankName = $timeModeRank['TimeModeRank']['name'];
-			echo 'function hover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'hover.png"; }';
-			echo 'function noHover_'.$rankID.'(element) { element.src = "/img/rankButton'.$rankName.'.png"; }';
-		}
-	?>
 	$("#account-bar-user2 a").css("color", "rgb(202, 102, 88)");
 	$("#xp-bar-fill").attr("class", "xp-bar-fill-c3");
 	$("#xp-bar-fill").removeClass("xp-bar-fill-c2");

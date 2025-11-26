@@ -5,6 +5,7 @@ use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
+use Facebook\WebDriver\Interactions\WebDriverActions;
 
 App::uses('Util', 'Utility');
 
@@ -142,6 +143,11 @@ class Browser
 	public function getCssSelect($name)
 	{
 		return $this->driver->findElements(WebDriverBy::cssSelector($name));
+	}
+
+	public function hover($element)
+	{
+		new WebDriverActions($this->driver)->moveToElement($element)->perform();
 	}
 
 	public function idExists(string $id): bool
