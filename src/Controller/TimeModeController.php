@@ -116,7 +116,6 @@ ORDER BY MIN(rating);");
 			$lastTimeModeCategoryID = ClassRegistry::init('TimeModeCategory')->find('first', ['order' => 'id DESC']);
 		assert($lastTimeModeCategoryID);
 
-		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 		$timeModeRankMap = Util::indexByID(ClassRegistry::init('TimeModeRank')->find('all', []) ?: [], 'TimeModeRank', 'name');
 
 		$timeModeStatuses = ClassRegistry::init('TimeModeSession')->find('all', [
@@ -143,7 +142,10 @@ ORDER BY MIN(rating);");
 		$this->set('timeModeCategories', ClassRegistry::init('TimeModeCategory')->find('all', ['order' => 'id']));
 		$this->set('timeModeRanks', $this->getRanksWithTsumegoCount());
 		$this->set('solvedMap', $solvedMap);
-		$this->set('ro', $timeModeSessions);
+		$finishedSessionCount = ClassRegistry::init('TimeModeSession')->find('count', ['conditions' => [
+			'user_id' => Auth::getUserID(),
+			'time_mode_session_status_id !=' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+		$this->set('hasFinishedSesssion', $finishedSessionCount > 0);
 		$this->set('achievementUpdate', $achievementUpdate);
 		return null;
 	}

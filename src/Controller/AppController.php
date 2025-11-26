@@ -2094,6 +2094,9 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn())
 		{
+			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
+				Auth::getUser()['last_time_mode_category_id'] = $lastTimeModeCategoryID;
+
 			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set')
 			{
 				$newAddTag = explode('-', $_COOKIE['addTag']);

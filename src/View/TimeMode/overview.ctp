@@ -1,15 +1,10 @@
-	<?php	if(!Auth::isLoggedIn()) echo '<script type="text/javascript">window.location.href = "/";</script>';	?>
-
 	<div align="center">
 		<h2>Time Mode Select</h2>
 	</div>
 	<br>
 	<div align="center">
 		<a class="new-button-inactive" href="#">Select</a>
-		<?php
-		if(count($ro)==0) echo '<a class="new-button-inactive" href="#">Results</a>';
-		else echo '<a class="new-button" href="/timeMode/result">Results</a>';
-		?>
+		<?php echo '<a class="new-button'.($hasFinishedSesssion ? '' : '-inactive').'" href="'.($hasFinishedSesssion ? '/timeMode/result' : '#').'">Results</a>'; ?>
 	</div>
 	<br><br>
 	<div align="center">
@@ -21,9 +16,7 @@
 	}
 	?>
 	</div>
-	<br>
-
-	<br>
+	<br><br>
 
 	<?php
 	foreach ($timeModeCategories as $timeModeCategory)
@@ -52,9 +45,9 @@
 	}?>
 	<script>
 
-	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $timeModeCategories[0]['TimeModeCategory']['id']; ?>;
+	var timeModeCategoryID = getCookie('lastTimeModeCategoryID') || <?php echo $lastTimeModeCategoryID; ?>;
 
-	function setTimeModeCategory(categoryIDToSet)
+	function setTimeModeCategory(categoryIDToSet, shouldSetCookie = true)
 	{
 		for (const categoryID of [<?php $result = []; foreach ($timeModeCategories as $timeModeCategory) $result[] = $timeModeCategory['TimeModeCategory']['id']; echo implode(',', $result); ?>])
 		{
@@ -74,10 +67,11 @@
 		}
 		updateRankBar();
 		timeModeCategoryID = categoryIDToSet;
-		setCookie('lastTimeModeCategoryID', categoryIDToSet);
+		if (shouldSetCookie)
+		  setCookie('lastTimeModeCategoryID', categoryIDToSet);
 	}
 
-	setTimeModeCategory(timeModeCategoryID);
+	setTimeModeCategory(timeModeCategoryID, false);
 
 	function hoverTimeMode1(){
 		document.getElementById("timeMode1").src = "/img/timeMode1hover2.png";
