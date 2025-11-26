@@ -2,6 +2,7 @@
 
 App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
+App::uses('SgfParser', 'Utility');
 
 class UsersController extends AppController
 {
@@ -1273,7 +1274,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$marks[$i]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $marks[$i]['Tsumego']['num'];
 			$marks[$i]['Tsumego']['status'] = $uts2[$counter2]['TsumegoStatus']['status'];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
-			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
+			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 			$markTooltipSgfs[$i] = $tArr[0];
 			$markTooltipInfo[$i] = $tArr[2];
 			$markTooltipBoardSize[$i] = $tArr[3];
@@ -1339,7 +1340,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 							if ($uts[$k]['TsumegoStatus']['tsumego_id'] == $duplicates1[$i][$j]['Tsumego']['id'])
 								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
 						$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id']]]);
-						$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
+						$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 						$tooltipSgfs[$i][$j] = $tArr[0];
 						$tooltipInfo[$i][$j] = $tArr[2];
 						$tooltipBoardSize[$i][$j] = $tArr[3];
@@ -1605,7 +1606,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tagTsumegos[$i]['Tsumego']['id']]]);
-			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
+			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs, $tArr[0]);
 			array_push($tooltipInfo, $tArr[2]);
 			array_push($tooltipBoardSize, $tArr[3]);
@@ -1618,7 +1619,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id']]]);
-			$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
+			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 			array_push($tooltipSgfs2, $tArr[0]);
 			array_push($tooltipInfo2, $tArr[2]);
 			array_push($tooltipBoardSize2, $tArr[3]);

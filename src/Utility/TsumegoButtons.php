@@ -1,5 +1,6 @@
 <?php
 
+App::uses('SgfParser', 'Utility');
 App::uses('TsumegoButtonsQueryBuilder', 'Utility');
 
 class TsumegoButtons extends ArrayObject
@@ -155,7 +156,7 @@ class TsumegoButtons extends ArrayObject
 		foreach ($this as $index => $navigationButton)
 		{
 			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			$tArr = AppController::processSGF($tts[0]['Sgf']['sgf']);
+			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 			echo 'tooltipSgfs[' . $index . '] = [];';
 			for($y = 0; $y < count($tArr[0]); $y++)
 			{

@@ -1,5 +1,7 @@
 <?php
 
+App::uses('SgfParser', 'Utility');
+
 class CommentsController extends AppController
 {
 	/**
@@ -525,7 +527,7 @@ class CommentsController extends AppController
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts) > 0)
 			{
-				$tArr = $this->processSGF($tts[0]['Sgf']['sgf']);
+				$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
 				array_push($tooltipSgfs, $tArr[0]);
 				array_push($tooltipInfo, $tArr[2]);
 				array_push($tooltipBoardSize, $tArr[3]);
@@ -540,7 +542,7 @@ class CommentsController extends AppController
 			$tts2 = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts2) > 0)
 			{
-				$tArr2 = $this->processSGF($tts2[0]['Sgf']['sgf']);
+				$tArr2 = SgfParser::process($tts2[0]['Sgf']['sgf']);
 				$tooltipSgfs2[$i] = $tArr2[0];
 				$tooltipInfo2[$i] = $tArr2[2];
 				array_push($tooltipBoardSize2, $tArr2[3]);

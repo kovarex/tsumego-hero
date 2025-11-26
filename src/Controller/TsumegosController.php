@@ -1,5 +1,6 @@
 <?php
 
+App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
@@ -209,7 +210,7 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = $this->processSGF($sgf['Sgf']['sgf']);
+		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
 		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
 
 		$sets2 = [];
@@ -264,7 +265,7 @@ class TsumegosController extends AppController
 				if ($ts[$i]['Tsumego']['id'] != $id)
 				{
 					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-					$sgfArr = $this->processSGF($sgf['Sgf']['sgf']);
+					$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
 					$numStones = count($sgfArr[1]);
 					$stoneNumberDiff = abs($numStones - $tNumStones);
 					if ($stoneNumberDiff <= $maxDifference)
@@ -351,7 +352,7 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = $this->processSGF($sgf['Sgf']['sgf']);
+		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
 		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
 
 		$this->Session->write('title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
@@ -382,7 +383,7 @@ class TsumegosController extends AppController
 				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 				if (!$sgf)
 					continue;
-				$sgfArr = $this->processSGF($sgf['Sgf']['sgf']);
+				$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
 				$numStones = isset($sgfArr[1]) ? count($sgfArr[1]) : 0;
 				$stoneNumberDiff = abs($numStones - $tNumStones);
 				$compare = $this->compare($tSgfArr[0], $sgfArr[0], false);
