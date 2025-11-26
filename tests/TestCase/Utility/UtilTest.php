@@ -105,6 +105,7 @@ class UtilTest extends CakeTestCase
 
 	public function testGetMyAddressUsesForwardedHost()
 	{
+		unset($_SERVER['TEST_ENVIRONMENT']);
 		$_SERVER['DDEV_PRIMARY_URL'] = 'https://tsumego.ddev.site:33003';
 		$_SERVER['HTTP_X_FORWARDED_HOST'] = 'forwarded.example.test';
 		$this->assertSame('https://forwarded.example.test', Util::getMyAddress());
