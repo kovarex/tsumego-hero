@@ -15,7 +15,8 @@ class ContextPreparator
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
-		$this->prepareThisUser(Util::extract('user', $options));
+		else
+			$this->prepareThisUser(Util::extract('user', $options));
 		$this->prepareOtherUsers(Util::extract('other-users', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
@@ -124,6 +125,7 @@ class ContextPreparator
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -181,6 +183,25 @@ class ContextPreparator
 			return;
 		foreach ($tsumegoSgfs as $tsumegoSgf)
 			$this->prepareTsumegoSgf($tsumegoSgf, $tsumego);
+	}
+
+	private function prepareTsumegoComments(?array $tsumegoComments, $tsumego): void
+	{
+		if (!$tsumegoComments)
+			return;
+		foreach ($tsumegoComments as $tsumegoComment)
+			$this->prepareTsumegoComment($tsumegoComment, $tsumego);
+	}
+
+	private function prepareTsumegoComment(array $commentInput, $tsumego): void
+	{
+		ClassRegistry::init('Comment')->create();
+		$comment = [];
+		$comment['message'] = Util::extract('message', $commentInput);
+		$comment['tsumego_id'] = $tsumego['id'];
+		$comment['user_id'] = $this->user['id'];
+		ClassRegistry::init('Comment')->save($comment);
+		$this->checkOptionsConsumed($commentInput);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void

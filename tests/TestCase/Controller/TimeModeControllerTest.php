@@ -26,7 +26,7 @@ class TimeModeControllerTest extends ControllerTestCase
 	{
 		foreach (['/timeMode/play', '/timeMode/overview', '/timeMode/result'] as $page)
 		{
-			new ContextPreparator();
+			new ContextPreparator(['user' => null]);
 			$this->testAction($page);
 			$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 		}

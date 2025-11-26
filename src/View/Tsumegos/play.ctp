@@ -1534,16 +1534,14 @@
 		';
 	}
 
-	if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C' || $t['Tsumego']['status']=='W'){
-		echo 'var showCommentSpace = true;';
-	}else echo 'var showCommentSpace = false;';
-	if(Auth::isAdmin()){
-		echo 'var showCommentSpace = true;';
+	echo 'var showCommentSpace = '.Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)).';';
+	if(Auth::isAdmin())
 		echo '$("#show5").css("display", "inline-block");';
-	}
-	if ($set['Set']['public']) echo 'var showCommentSpace = true;';
-	if($goldenTsumego) echo 'var goldenTsumego = true;';
-	else echo 'var goldenTsumego = false;';
+
+	if($goldenTsumego)
+		echo 'var goldenTsumego = true;';
+	else
+		echo 'var goldenTsumego = false;';
 
 	if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){
 		echo 'var locked=true; tryAgainTomorrow = true;';
