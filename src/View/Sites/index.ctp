@@ -586,7 +586,7 @@
 						}
 					?>
 				</div><br>
-				On failed attempts, while the hearts are empty, there are no board locks and "Try again tomorrow" messages, but instead you can continue to try solving the problems.
+				On failed attempts, while the hearts are empty, there are no board locks and "Try again tomorrow" messages, but instead you can continue to try solving the problems (reverted later).
 				Currently this is only enabled on <a href="/users/donate">premium</a> accounts.<br><br>
 			</div>
 		</div>

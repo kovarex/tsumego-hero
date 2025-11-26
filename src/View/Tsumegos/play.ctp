@@ -1540,10 +1540,12 @@
 
 	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
-	if($t['Tsumego']['status'] == 'setF2' || $t['Tsumego']['status'] == 'setX2'){
+	if($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')
+	{
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
-	}else echo 'var locked=false;';
+	}
+	else echo 'var locked=false;';
 
 	if($dailyMaximum){
 		echo 'var locked=true; tryAgainTomorrow = true;';
@@ -1605,7 +1607,7 @@
 		<?php
 		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 			echo '
-				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>\';
+				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow</b>\';
 				tryAgainTomorrow = true;
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("xpDisplay").innerHTML = "&nbsp;";
@@ -2474,7 +2476,7 @@
 						if(<?php echo Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) - Auth::getWithDefault('damage', 0); ?> - misplays < 0) {
 							if(hasPremium !== "1") {
 								updateCurrentNavigationButton('C');
-								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow or <a style="color:#e03c4b" target="_blank" href="/users/donate">upgrade</a></b>';
+								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow</b>';
 								tryAgainTomorrow = true;
 								toggleBoardLock(true);
 							} else {
