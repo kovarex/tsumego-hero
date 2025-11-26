@@ -1,15 +1,3 @@
-# Uncomment the following to prevent the httpoxy vulnerability
-# See: https://httpoxy.org/
-#<IfModule mod_headers.c>
-#	RequestHeader unset Proxy
-#</IfModule>
-# Disable HTTP/2 and HTTP/3 by clearing ALPN advertisement
-<IfModule mod_headers.c>
-    Header always unset Alt-Svc
-    Header always set Alt-Svc "clear"
-    Header always set Connection "close"
-</IfModule>
-
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
