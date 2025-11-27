@@ -896,10 +896,14 @@ ORDER BY total_count DESC, partition_number";
 
 		// Ensure newly created tsumegos always have an SGF record.
 		ClassRegistry::init('Sgf')->create();
-		ClassRegistry::init('Sgf')->save([
+		if (!ClassRegistry::init('Sgf')->save([
 			'tsumego_id' => $tsumego['id'],
 			'sgf' => '(;SZ[19])',
-		]);
+		]))
+		{
+			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
+			throw new AppException('Failed to create default SGF for new tsumego.');
+		}
 
 		ClassRegistry::init('Tsumego')->getDataSource()->commit();
 		return $this->redirect('/sets/view/' . $setID);

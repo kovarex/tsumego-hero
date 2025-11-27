@@ -28,11 +28,13 @@
 		else if(boardSize==5) img = "/img/theBoard5x5.png"
 		else if(boardSize==4) img = "/img/theBoard4x4.png"
 		setPreviewBoard(xMax, yMax, svg, img, n, w3, w32);
-	for(i=0;i<boardSize;i++){
-		for(j=0;j<boardSize;j++){
-			if(masterArrayBW[i][j]!=="-"){
-				let fill = (masterArrayBW[i][j]==="x") ? "black" : "white";
-				placePreviewStone(xPos, yPos, size, fill, svg, w3);
+		for (let i = 0; i < boardSize; i++)
+		{
+			for (let j = 0; j < boardSize; j++)
+			{
+				if(masterArrayBW[i][j]!=="-"){
+					let fill = (masterArrayBW[i][j]==="x") ? "black" : "white";
+					placePreviewStone(xPos, yPos, size, fill, svg, w3);
 				}
 				xPos += increment;
 			}
