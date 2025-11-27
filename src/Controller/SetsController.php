@@ -108,11 +108,11 @@ class SetsController extends AppController
 			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
 			if (!$sgf)
 				continue;
-			$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
+			$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
 
-			array_push($similarArr, $sgfArr[0]);
-			array_push($similarArrInfo, $sgfArr[2]);
-			array_push($similarArrBoardSize, $sgfArr[3]);
+			array_push($similarArr, $sgfResult->board);
+			array_push($similarArrInfo, $sgfResult->info);
+			array_push($similarArrBoardSize, $sgfResult->size);
 		}
 
 		$this->set('id', $id);
@@ -430,7 +430,7 @@ class SetsController extends AppController
 		]) ?: [];
 		foreach ($setsRaw as $set)
 			if (Auth::hasPremium() || !$set['Set']['premium'])
-				$setTiles [] = $set['Set']['title'];
+				$setTiles[] = $set['Set']['title'];
 
 		//difficultyTiles
 		$dt = $this->getExistingRanksArray();
@@ -468,13 +468,16 @@ class SetsController extends AppController
 			{
 				$fromTo = [];
 				foreach ($tsumegoFilters->ranks as $rank)
-					$fromTo [] = RatingBounds::coverRank($rank, '15k')->getConditions();
+					$fromTo[] = RatingBounds::coverRank($rank, '15k')->getConditions();
 				$rankConditions['OR'] = $fromTo;
 			}
-			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
+			$setsRaw = $this->Set->find('all', [
+				'order' => 'order ASC',
 				'conditions' => [
 					empty($tsumegoFilters->setIDs) ? null : ['id' => $tsumegoFilters->setIDs],
-					'public' => 1]]) ?: [];
+					'public' => 1
+				]
+			]) ?: [];
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
@@ -590,7 +593,7 @@ class SetsController extends AppController
 				) ?: [];
 				$currentIds = [];
 				foreach ($tsumegoIDs as $tsumegoID)
-					$currentIds [] = $tsumegoID['tsumego']['id'];
+					$currentIds[] = $tsumegoID['tsumego']['id'];
 				$setAmount = count($tsumegoIDs);
 
 				if (count($tsumegoFilters->tags) > 0)
@@ -619,7 +622,7 @@ class SetsController extends AppController
 				$rTemp['currentIds'] = $currentIds;
 				$rTemp['color'] = $rank['color'];
 				if (!empty($currentIds))
-					$newRanksArray [] = $rTemp;
+					$newRanksArray[] = $rTemp;
 			}
 			$sets = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
 		}
@@ -688,11 +691,11 @@ ORDER BY total_count DESC, partition_number";
 				$tag['amount'] = $tagRaw['usage_count'];
 				$tag['name'] = $tagRaw['name'];
 				$partition = $tagRaw['partition_number'];
-				$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
+				$colorValue = 1 - (($partition == -1) ? 0 : -($partition * 0.15));
 				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['color']));
 				$tag['solved_percent'] = round(Util::getPercent($tagRaw['solved_count'], $tagRaw['usage_count']));
 				$tag['partition'] = $partition;
-				$sets [] = $tag;
+				$sets[] = $tag;
 			}
 		}
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
@@ -890,6 +893,14 @@ ORDER BY total_count DESC, partition_number";
 		$setConnection['num'] = $this->data['Tsumego']['num'];
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save($setConnection);
+
+		// Ensure newly created tsumegos always have an SGF record.
+		ClassRegistry::init('Sgf')->create();
+		ClassRegistry::init('Sgf')->save([
+			'tsumego_id' => $tsumego['id'],
+			'sgf' => '(;SZ[19])',
+		]);
+
 		ClassRegistry::init('Tsumego')->getDataSource()->commit();
 		return $this->redirect('/sets/view/' . $setID);
 	}
@@ -1037,7 +1048,7 @@ ORDER BY total_count DESC, partition_number";
 		{
 			$currentIds = [];
 			foreach ($tsumegoButtons as $tsumegoButton)
-				$currentIds [] =  $tsumegoButton->tsumegoID;
+				$currentIds[] = $tsumegoButton->tsumegoID;
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set = ClassRegistry::init('Set')->findById($id);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
@@ -1055,7 +1066,7 @@ ORDER BY total_count DESC, partition_number";
 					$allPassActive = false;
 			}
 			foreach ($tsumegoButtons as $tsumegoButton)
-				$tsIds [] = $tsumegoButton->tsumegoID;
+				$tsIds[] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0)
 				$this->Session->write('page', 'sandbox');
 			$this->set('isFav', false);
@@ -1064,7 +1075,7 @@ ORDER BY total_count DESC, partition_number";
 				{
 					$tsId = [];
 					foreach ($tsumegoButtons as $tsumegoButton)
-						$tsId [] = $tsumegoButton->tsumegoID;
+						$tsId[] = $tsumegoButton->tsumegoID;
 					$nr = 1;
 					$tsIdCount = count($tsId);
 					for ($i = 0; $i < $tsIdCount; $i++)
@@ -1093,7 +1104,7 @@ ORDER BY total_count DESC, partition_number";
 				{
 					$tsId = [];
 					foreach ($tsumegoButtons as $tsumegoButton)
-						$tsId [] = $tsumegoButton->tsumegoID;
+						$tsId[] = $tsumegoButton->tsumegoID;
 					$nr = 1;
 					foreach ($tsId as $id)
 					{
@@ -1803,9 +1814,10 @@ ORDER BY total_count DESC, partition_number";
 			{
 				$tsCount3 = count($ts);
 				for ($k = 0; $k < $tsCount3; $k++)
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
-					&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C'))
-					{
+					if (
+						isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
+						&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
+					) {
 						$counter++;
 						$globalSolvedCounter++;
 					}

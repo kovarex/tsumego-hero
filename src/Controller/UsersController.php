@@ -67,7 +67,7 @@ class UsersController extends AppController
 		echo '<table>';
 		foreach ($ts as $item)
 			echo '<tr><td>' . $item['Tsumego']['id'] . '</td><td>' . $item['Tsumego']['difficulty']
-			. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
+				. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
 		echo '</table>';
 	}
 
@@ -1274,10 +1274,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$marks[$i]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $marks[$i]['Tsumego']['num'];
 			$marks[$i]['Tsumego']['status'] = $uts2[$counter2]['TsumegoStatus']['status'];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
-			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
-			$markTooltipSgfs[$i] = $tArr[0];
-			$markTooltipInfo[$i] = $tArr[2];
-			$markTooltipBoardSize[$i] = $tArr[3];
+			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+			$markTooltipSgfs[$i] = $tResult->board;
+			$markTooltipInfo[$i] = $tResult->info;
+			$markTooltipBoardSize[$i] = $tResult->size;
 			$counter2++;
 		}
 
@@ -1340,10 +1340,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 							if ($uts[$k]['TsumegoStatus']['tsumego_id'] == $duplicates1[$i][$j]['Tsumego']['id'])
 								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
 						$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id']]]);
-						$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
-						$tooltipSgfs[$i][$j] = $tArr[0];
-						$tooltipInfo[$i][$j] = $tArr[2];
-						$tooltipBoardSize[$i][$j] = $tArr[3];
+						$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+						$tooltipSgfs[$i][$j] = $tResult->board;
+						$tooltipInfo[$i][$j] = $tResult->info;
+						$tooltipBoardSize[$i][$j] = $tResult->size;
 					}
 				}
 			}
@@ -1606,10 +1606,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tagTsumegos[$i]['Tsumego']['id']]]);
-			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs, $tArr[0]);
-			array_push($tooltipInfo, $tArr[2]);
-			array_push($tooltipBoardSize, $tArr[3]);
+			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+			array_push($tooltipSgfs, $tResult->board);
+			array_push($tooltipInfo, $tResult->info);
+			array_push($tooltipBoardSize, $tResult->size);
 		}
 		$tooltipSgfs2 = [];
 		$tooltipInfo2 = [];
@@ -1619,10 +1619,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id']]]);
-			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs2, $tArr[0]);
-			array_push($tooltipInfo2, $tArr[2]);
-			array_push($tooltipBoardSize2, $tArr[3]);
+			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+			array_push($tooltipSgfs2, $tResult->board);
+			array_push($tooltipInfo2, $tResult->info);
+			array_push($tooltipBoardSize2, $tResult->size);
 		}
 
 		$u = $this->User->find('all', ['conditions' => ['isAdmin >' => 0]]);
@@ -2155,7 +2155,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $admin)
-			$admins [] = $admin['User']['name'];
+			$admins[] = $admin['User']['name'];
 		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
 		$userYesterdayName = 'Unknown';
 		if (count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id']))
@@ -2168,7 +2168,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$users = ClassRegistry::init('User')->query('SELECT user.name, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
 		$exportedUsers = [];
 		foreach ($users as $user)
-			$exportedUsers [] = $user['user'];
+			$exportedUsers[] = $user['user'];
 
 		$this->set('leaderboard', $exportedUsers);
 		$this->set('uNum', "TODO");

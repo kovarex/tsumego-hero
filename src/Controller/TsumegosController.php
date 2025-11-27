@@ -24,9 +24,11 @@ class TsumegosController extends AppController
 	public static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int
 	{
 		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]))
-			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
-				return $setConnection['SetConnection']['set_id'] == $currentSetID;
-			}))
+			if (
+				$result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
+					return $setConnection['SetConnection']['set_id'] == $currentSetID;
+				})
+			)
 				return $result['SetConnection']['id'];
 		return null;
 	}
@@ -47,7 +49,9 @@ class TsumegosController extends AppController
 		}
 
 		if ($setConnectionID)
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
+			return new Play(function ($name, $value) {
+				$this->set($name, $value);
+			})->play($setConnectionID, $this->params, $this->data);
 
 		if (!$id)
 			throw new AppException("Tsumego id not provided");
@@ -56,7 +60,9 @@ class TsumegosController extends AppController
 		if (!$setConnections)
 			throw new AppException("Problem without any set connection"); // some redirect/nicer message ?
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		return new Play(function ($name, $value) {
+			$this->set($name, $value);
+		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
 	public static function getPopularTags($tags)
@@ -210,8 +216,8 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
+		$tSgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+		$tNumStones = isset($tSgfResult->stones) ? count($tSgfResult->stones) : 0;
 
 		$sets2 = [];
 		$sets3 = [];
@@ -265,21 +271,21 @@ class TsumegosController extends AppController
 				if ($ts[$i]['Tsumego']['id'] != $id)
 				{
 					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-					$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-					$numStones = count($sgfArr[1]);
+					$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+					$numStones = count($sgfResult->stones);
 					$stoneNumberDiff = abs($numStones - $tNumStones);
 					if ($stoneNumberDiff <= $maxDifference)
 					{
 						if ($includeColorSwitch == 'true')
-							$compare = $this->compare($tSgfArr[0], $sgfArr[0], true);
+							$compare = $this->compare($tSgfResult->board, $sgfResult->board, true);
 						else
-							$compare = $this->compare($tSgfArr[0], $sgfArr[0], false);
+							$compare = $this->compare($tSgfResult->board, $sgfResult->board, false);
 						if ($compare[0] <= $maxDifference)
 						{
 							array_push($similarId, $ts[$i]['Tsumego']['id']);
-							array_push($similarArr, $sgfArr[0]);
-							array_push($similarArrInfo, $sgfArr[2]);
-							array_push($similarArrBoardSize, $sgfArr[3]);
+							array_push($similarArr, $sgfResult->board);
+							array_push($similarArrInfo, $sgfResult->info);
+							array_push($similarArrBoardSize, $sgfResult->size);
 							array_push($similarDiff, $compare[0]);
 							if ($compare[1] == 0)
 								array_push($similarDiffType, '');
@@ -304,9 +310,9 @@ class TsumegosController extends AppController
 
 		array_multisort($similarOrder, $similarArr, $similarArrInfo, $similarTitle, $similarDiff, $similarDiffType, $similarId);
 
-		$this->set('tSgfArr', $tSgfArr[0]);
-		$this->set('tSgfArrInfo', $tSgfArr[2]);
-		$this->set('tSgfArrBoardSize', $tSgfArr[3]);
+		$this->set('tSgfArr', $tSgfResult->board);
+		$this->set('tSgfArrInfo', $tSgfResult->info);
+		$this->set('tSgfArrBoardSize', $tSgfResult->size);
 		$this->set('similarId', $similarId);
 		$this->set('similarArr', $similarArr);
 		$this->set('similarArrInfo', $similarArrInfo);
@@ -352,8 +358,8 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
+		$tSgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+		$tNumStones = isset($tSgfResult->stones) ? count($tSgfResult->stones) : 0;
 
 		$this->Session->write('title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
 
@@ -383,14 +389,14 @@ class TsumegosController extends AppController
 				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 				if (!$sgf)
 					continue;
-				$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-				$numStones = isset($sgfArr[1]) ? count($sgfArr[1]) : 0;
+				$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+				$numStones = isset($sgfResult->stones) ? count($sgfResult->stones) : 0;
 				$stoneNumberDiff = abs($numStones - $tNumStones);
-				$compare = $this->compare($tSgfArr[0], $sgfArr[0], false);
+				$compare = $this->compare($tSgfResult->board, $sgfResult->board, false);
 				array_push($similarId, $ts[$i]['Tsumego']['id']);
-				array_push($similarArr, $sgfArr[0]);
-				array_push($similarArrInfo, $sgfArr[2]);
-				array_push($similarArrBoardSize, $sgfArr[3]);
+				array_push($similarArr, $sgfResult->board);
+				array_push($similarArrInfo, $sgfResult->info);
+				array_push($similarArrBoardSize, $sgfResult->size);
 				array_push($similarDiff, $compare[0]);
 				if ($compare[1] == 0)
 					array_push($similarDiffType, '');
@@ -459,9 +465,9 @@ class TsumegosController extends AppController
 		}
 		array_multisort($similarOrder, $similarArr, $similarArrInfo, $similarTitle, $similarDiff, $similarDiffType, $similarId, $similarArrBoardSize);
 
-		$this->set('tSgfArr', $tSgfArr[0]);
-		$this->set('tSgfArrInfo', $tSgfArr[2]);
-		$this->set('tSgfArrBoardSize', $tSgfArr[3]);
+		$this->set('tSgfArr', $tSgfResult->board);
+		$this->set('tSgfArrInfo', $tSgfResult->info);
+		$this->set('tSgfArrBoardSize', $tSgfResult->size);
 		$this->set('similarId', $similarId);
 		$this->set('similarArr', $similarArr);
 		$this->set('similarArrInfo', $similarArrInfo);

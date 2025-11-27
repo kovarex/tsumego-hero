@@ -126,8 +126,14 @@ class ContextPreparator
 		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
-		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
-		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
+		$singleSgf = Util::extract('sgf', $tsumegoInput);
+		$multipleSgfs = Util::extract('sgfs', $tsumegoInput);
+		if ($singleSgf)
+			$this->prepareTsumegoSgf($singleSgf, $tsumego);
+		if ($multipleSgfs)
+			$this->prepareTsumegoSgfs($multipleSgfs, $tsumego);
+		if (!$singleSgf && !$multipleSgfs)
+			$this->prepareTsumegoSgf(self::defaultSgf(), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
@@ -186,6 +192,11 @@ class ContextPreparator
 			return;
 		foreach ($tsumegoSgfs as $tsumegoSgf)
 			$this->prepareTsumegoSgf($tsumegoSgf, $tsumego);
+	}
+
+	private static function defaultSgf(): string
+	{
+		return '(;SZ[19])';
 	}
 
 	private function prepareTsumegoComments(?array $tsumegoComments, $tsumego): void

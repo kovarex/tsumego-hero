@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
+App::uses('SgfResult', 'Utility');
+
 class SgfParser
 {
 	/**
 	 * Parse SGF and return board, stones and info array.
 	 *
 	 * @param string $sgf
-	 * @return array{array<int,array<int,string>>, array<int,array{int,int,string}>, array{int,int}, int|string}
+	 * @return SgfResult
 	 */
-	public static function process($sgf)
+	public static function process(string $sgf): SgfResult
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);
@@ -34,10 +38,10 @@ class SgfParser
 
 		$tInfo = [$highestX, $highestY];
 
-		return [$board, $stones, $tInfo, $boardSize];
+		return new SgfResult($board, $stones, $tInfo, $boardSize);
 	}
 
-	private static function detectBoardSize($sgf)
+	private static function detectBoardSize(string $sgf): int|string
 	{
 		$boardSizePos = strpos($sgf, 'SZ');
 		if ($boardSizePos === false)
@@ -51,7 +55,7 @@ class SgfParser
 		return $size;
 	}
 
-	private static function emptyBoard($size)
+	private static function emptyBoard(int $size): array
 	{
 		$board = [];
 		for ($i = 0; $i < $size; $i++)
@@ -64,7 +68,7 @@ class SgfParser
 		return $board;
 	}
 
-	private static function normalizeOrientation($stones)
+	private static function normalizeOrientation(array $stones): array
 	{
 		if (empty($stones))
 			return $stones;
@@ -90,7 +94,7 @@ class SgfParser
 		return $stones;
 	}
 
-	private static function xFlip($stones)
+	private static function xFlip(array $stones): array
 	{
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
@@ -99,7 +103,7 @@ class SgfParser
 		return $stones;
 	}
 
-	private static function yFlip($stones)
+	private static function yFlip(array $stones): array
 	{
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
@@ -108,7 +112,7 @@ class SgfParser
 		return $stones;
 	}
 
-	private static function getInitialPosition($pos, $sgfArr, $color)
+	private static function getInitialPosition(int|bool $pos, array $sgfArr, string $color): array
 	{
 		if ($pos === false)
 			return [];
@@ -142,7 +146,7 @@ class SgfParser
 		return $pairs;
 	}
 
-	private static function getInitialPositionEnd($pos, $sgfArr)
+	private static function getInitialPositionEnd(int $pos, array $sgfArr): int
 	{
 		$endCondition = $pos;
 		$currentPos1 = $pos + 2;

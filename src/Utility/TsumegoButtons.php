@@ -54,7 +54,7 @@ class TsumegoButtons extends ArrayObject
 		$this->description = $queryBuilder->description;
 
 		foreach ($result as $index => $row)
-			$this [] = new TsumegoButton(
+			$this[] = new TsumegoButton(
 				$row['tsumego']['id'],
 				$row['set_connection']['id'],
 				$row['set_connection']['num'],
@@ -107,7 +107,9 @@ class TsumegoButtons extends ArrayObject
 
 	private function deduceCurrentIndex($currentSetConnectionID): ?int
 	{
-		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) { return $tsumegoButton->setConnectionID === $currentSetConnectionID; });
+		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) {
+			return $tsumegoButton->setConnectionID === $currentSetConnectionID;
+		});
 	}
 
 	private function updateHighestTsumegoOrder()
@@ -138,7 +140,9 @@ class TsumegoButtons extends ArrayObject
 
 	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set)
 	{
-		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) { return $tsumegoButton->setConnectionID == $setConnectionID; });
+		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
+			return $tsumegoButton->setConnectionID == $setConnectionID;
+		});
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
@@ -156,15 +160,15 @@ class TsumegoButtons extends ArrayObject
 		foreach ($this as $index => $navigationButton)
 		{
 			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
+			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
 			echo 'tooltipSgfs[' . $index . '] = [];';
-			for($y = 0; $y < count($tArr[0]); $y++)
+			for ($y = 0; $y < count($tResult->board); $y++)
 			{
 				echo 'tooltipSgfs[' . $index . '][' . $y . '] = [];';
-				for ($x = 0; $x < count($tArr[0][$y]); $x++)
-					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tArr[0][$x][$y] . '");';
+				for ($x = 0; $x < count($tResult->board[$y]); $x++)
+					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tResult->board[$x][$y] . '");';
 			}
-			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tArr[2][0] . ', ' . $tArr[2][1] . ', ' . $tArr[3] . ');';
+			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tResult->info[0] . ', ' . $tResult->info[1] . ', ' . $tResult->size . ');';
 		}
 	}
 

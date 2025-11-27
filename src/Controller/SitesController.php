@@ -64,10 +64,10 @@ class SitesController extends AppController
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
 			$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]) ?: [];
-			$ptArr = SgfParser::process($ptts[0]['Sgf']['sgf']);
-			$popularTooltip = $ptArr[0];
-			$popularTooltipInfo = $ptArr[2];
-			$popularTooltipBoardSize = $ptArr[3];
+			$ptResult = SgfParser::process($ptts[0]['Sgf']['sgf']);
+			$popularTooltip = $ptResult->board;
+			$popularTooltipInfo = $ptResult->info;
+			$popularTooltipBoardSize = $ptResult->size;
 
 			$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
 
