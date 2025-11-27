@@ -1,6 +1,6 @@
 function setCookie(cookie, value)
 {
-	document.cookie = cookie + '=' + value + ';SameSite=Lax;path=/;';
+	document.cookie = cookie + '=' + value + ';SameSite=Lax;path=/;Secure;';
 }
 
 function getCookie(name)
