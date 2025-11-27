@@ -405,7 +405,6 @@ class Play
 			$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
 			$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
 			$adminActivity['AdminActivity']['file'] = $currentSetConnection['SetConnection']['num'];
-			;
 			$adminActivity['AdminActivity']['answer'] = $deleteComment['Comment']['status'];
 			ClassRegistry::init('AdminActivity')->save($adminActivity);
 			ClassRegistry::init('Comment')->save($deleteComment);

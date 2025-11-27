@@ -601,5 +601,4 @@ class CommentsController extends AppController
 			$this->Comment->delete($id);
 		$this->set('token', $token);
 	}
-
 }
