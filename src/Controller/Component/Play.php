@@ -383,62 +383,64 @@ class Play
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 			if ($aad && $aad['AdminActivity']['file'] == '/delete')($this->setFunction)('deleteProblem2', true);
-		}
 
-		if (isset($params['url']['deleteComment']))
-		{
-			$deleteComment = ClassRegistry::init('Comment')->findById($params['url']['deleteComment']);
-			if (isset($params['url']['changeComment']))
+			if (isset($params['url']['deleteComment']))
 			{
-				if ($params['url']['changeComment'] == 1)
-					$deleteComment['Comment']['status'] = 97;
-				elseif ($params['url']['changeComment'] == 2)
-					$deleteComment['Comment']['status'] = 98;
-				elseif ($params['url']['changeComment'] == 3)
-					$deleteComment['Comment']['status'] = 96;
-				elseif ($params['url']['changeComment'] == 4)
-					$deleteComment['Comment']['status'] = 0;
+				$deleteComment = ClassRegistry::init('Comment')->findById($params['url']['deleteComment']);
+				if (isset($params['url']['changeComment']))
+				{
+					if ($params['url']['changeComment'] == 1)
+						$deleteComment['Comment']['status'] = 97;
+					elseif ($params['url']['changeComment'] == 2)
+						$deleteComment['Comment']['status'] = 98;
+					elseif ($params['url']['changeComment'] == 3)
+						$deleteComment['Comment']['status'] = 96;
+					elseif ($params['url']['changeComment'] == 4)
+						$deleteComment['Comment']['status'] = 0;
+				}
+				else
+					$deleteComment['Comment']['status'] = 99;
+				$adminActivity = [];
+				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
+				$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
+				$adminActivity['AdminActivity']['file'] = $currentSetConnection['SetConnection']['num'];
+				;
+				$adminActivity['AdminActivity']['answer'] = $deleteComment['Comment']['status'];
+				ClassRegistry::init('AdminActivity')->save($adminActivity);
+				ClassRegistry::init('Comment')->save($deleteComment);
 			}
-			else
-				$deleteComment['Comment']['status'] = 99;
-			$adminActivity = [];
-			$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-			$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-			$adminActivity['AdminActivity']['file'] = $currentSetConnection['SetConnection']['num'];
-			$adminActivity['AdminActivity']['answer'] = $deleteComment['Comment']['status'];
-			ClassRegistry::init('AdminActivity')->save($adminActivity);
-			ClassRegistry::init('Comment')->save($deleteComment);
-		}
-		if (isset($_FILES['game']))
-		{
-			$errors = [];
-			$file_size = $_FILES['game']['size'];
-			$file_tmp = $_FILES['game']['tmp_name'];
-			$array2 = explode('.', $_FILES['game']['name']);
-			$file_ext = strtolower(end($array2));
-			$extensions = ['sgf'];
-			if (in_array($file_ext, $extensions) === false)
-				$errors[] = 'Only SGF files are allowed.';
-			if ($file_size > 2097152)
-				$errors[] = 'The file is too large.';
-			$cox = count(ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
-			if (empty($set['Set']['title2']))
-				$title2 = '';
-			else
-				$title2 = '-';
-			$file_name = $set['Set']['title'] . $title2 . $set['Set']['title2'] . '-' . $currentSetConnection['SetConnection']['num'] . '-' . $cox . '.sgf';
-			$sgfComment = [];
-			ClassRegistry::init('Comment')->create();
-			$sgfComment['user_id'] = Auth::getUserID();
-			$sgfComment['tsumego_id'] = $t['Tsumego']['id'];
-			$file_name = str_replace('#', 'num', $file_name);
-			$sgfComment['message'] = '<a href="/files/ul1/' . $file_name . '">SGF</a>';
-			$sgfComment['created'] = date('Y-m-d H:i:s');
-			ClassRegistry::init('Comment')->save($sgfComment);
-			if (empty($errors) == true)
+
+			if (isset($_FILES['game']))
 			{
-				$uploadfile = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/files/ul1/' . $file_name;
-				move_uploaded_file($file_tmp, $uploadfile);
+				$errors = [];
+				$file_size = $_FILES['game']['size'];
+				$file_tmp = $_FILES['game']['tmp_name'];
+				$array2 = explode('.', $_FILES['game']['name']);
+				$file_ext = strtolower(end($array2));
+				$extensions = ['sgf'];
+				if (in_array($file_ext, $extensions) === false)
+					$errors[] = 'Only SGF files are allowed.';
+				if ($file_size > 2097152)
+					$errors[] = 'The file is too large.';
+				$cox = count(ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
+				if (empty($set['Set']['title2']))
+					$title2 = '';
+				else
+					$title2 = '-';
+				$file_name = $set['Set']['title'] . $title2 . $set['Set']['title2'] . '-' . $currentSetConnection['SetConnection']['num'] . '-' . $cox . '.sgf';
+				$sgfComment = [];
+				ClassRegistry::init('Comment')->create();
+				$sgfComment['user_id'] = Auth::getUserID();
+				$sgfComment['tsumego_id'] = $t['Tsumego']['id'];
+				$file_name = str_replace('#', 'num', $file_name);
+				$sgfComment['message'] = '<a href="/files/ul1/' . $file_name . '">SGF</a>';
+				$sgfComment['created'] = date('Y-m-d H:i:s');
+				ClassRegistry::init('Comment')->save($sgfComment);
+				if (empty($errors) == true)
+				{
+					$uploadfile = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/files/ul1/' . $file_name;
+					move_uploaded_file($file_tmp, $uploadfile);
+				}
 			}
 		}
 
@@ -464,7 +466,7 @@ class Play
 			$cou = ClassRegistry::init('User')->findById($co[$i]['Comment']['user_id']);
 			if ($cou == null)
 				$cou['User']['name'] = '[deleted user]';
-			$co[$i]['Comment']['user'] = AppController::checkPicture($cou);
+			$co[$i]['Comment']['user'] = AppController::checkPicture($cou['User']);
 			$cad = ClassRegistry::init('User')->findById($co[$i]['Comment']['admin_id']);
 			if ($cad != null)
 			{
