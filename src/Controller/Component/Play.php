@@ -456,38 +456,6 @@ class Play
 		if ($t['Tsumego']['set_id'] == 161)
 			$isSandbox = false;
 
-		$co = ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: [];
-		$counter1 = 1;
-		$coCount = count($co);
-		for ($i = 0; $i < $coCount; $i++)
-		{
-			if (strpos($co[$i]['Comment']['message'], '<a href="/files/ul1/') === false)
-				$co[$i]['Comment']['message'] = htmlspecialchars($co[$i]['Comment']['message']);
-			$cou = ClassRegistry::init('User')->findById($co[$i]['Comment']['user_id']);
-			if ($cou == null)
-				$cou['User']['name'] = '[deleted user]';
-			$co[$i]['Comment']['user'] = AppController::checkPicture($cou['User']);
-			$cad = ClassRegistry::init('User')->findById($co[$i]['Comment']['admin_id']);
-			if ($cad != null)
-			{
-				if ($cad['User']['id'] == 73)
-					$cad['User']['name'] = 'Admin';
-				$co[$i]['Comment']['admin'] = $cad['User']['name'];
-			}
-			$date = new DateTime($co[$i]['Comment']['created']);
-			$month = date('F', strtotime($co[$i]['Comment']['created']));
-			$tday = $date->format('d. ');
-			$tyear = $date->format('Y');
-			$tClock = $date->format('H:i');
-			if ($tday[0] == 0)
-				$tday = substr($tday, -3);
-			$co[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
-			$array = TsumegosController::commentCoordinates($co[$i]['Comment']['message'], $counter1, true);
-			$co[$i]['Comment']['message'] = $array[0];
-			array_push($commentCoordinates, $array[1]);
-			$counter1++;
-		}
-
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 		if (Auth::isInLevelMode())
 			if (Auth::isLoggedIn())
