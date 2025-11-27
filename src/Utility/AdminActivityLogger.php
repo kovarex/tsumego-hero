@@ -61,9 +61,6 @@ class AdminActivityLogger
 	public const DUPLICATE_REMOVE = 18;
 	public const DUPLICATE_GROUP_CREATE = 19;
 
-	// Fallback
-	public const OTHER = 20;
-
 	/**
 	 * Log any admin activity
 	 *
