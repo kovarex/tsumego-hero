@@ -8,7 +8,7 @@ function setCookie(name, value, days = 365)
 		name + "=" + encodeURIComponent(value) +
 		expires +
 		"; path=/" +
-		"; SameSite=None" +
+		"; SameSite=Lax" +
 		"; Secure";
 }
 
