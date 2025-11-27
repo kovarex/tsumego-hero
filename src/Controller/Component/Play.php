@@ -466,7 +466,7 @@ class Play
 			$cou = ClassRegistry::init('User')->findById($co[$i]['Comment']['user_id']);
 			if ($cou == null)
 				$cou['User']['name'] = '[deleted user]';
-			$co[$i]['Comment']['user'] = AppController::checkPicture($cou);
+			$co[$i]['Comment']['user'] = AppController::checkPicture($cou['User']);
 			$cad = ClassRegistry::init('User')->findById($co[$i]['Comment']['admin_id']);
 			if ($cad != null)
 			{
