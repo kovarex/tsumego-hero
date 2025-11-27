@@ -4,29 +4,78 @@
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	
 	echo '<div class="homeRight" style="width:40%">';
-		echo '<table border="0" class="statsTable">';
+		echo '<h3>Admin Activity (' . $activityTotal . ')</h3>';
+		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
+		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
 		$iCounter = 1;
-		for($i=count($ca['tsumego_id'])-1; $i>=0; $i--){
-			echo '<tr>
+		for($i=count($adminActivities['tsumego_id'])-1; $i>=0; $i--){
+			// Format date without seconds
+			$timestamp = strtotime($adminActivities['created'][$i]);
+			$dateFormatted = date('Y-m-d H:i', $timestamp);
+			
+			// Build formatted message from type and old_value/new_value
+			$contentMessage = $adminActivities['type'][$i]; // Start with type name
+			if (!empty($adminActivities['old_value'][$i]) && !empty($adminActivities['new_value'][$i]))
+			{
+				// Show old → new for edits
+				$contentMessage .= ': ' . h($adminActivities['old_value'][$i]) . ' → ' . h($adminActivities['new_value'][$i]);
+			}
+			elseif (!empty($adminActivities['new_value'][$i]))
+			{
+				// Show just new value for toggles
+				$toggleState = $adminActivities['new_value'][$i] === '1' ? 'enabled' : 'disabled';
+				$contentMessage .= ' → ' . $toggleState;
+			}
+			
+			echo '<tr style="border-bottom:1px solid #e0e0e0;">
 				<td>'.($iCounter).'</td>
-				<td><a href="/tsumegos/play/'.$ca['tsumego_id'][$i].'?search=topics">'.$ca['tsumego'][$i].'</a></td>
-				<td>'.$ca['created'][$i].'</td>
+				<td>
+					<a href="/tsumegos/play/'.$adminActivities['tsumego_id'][$i].'?search=topics">'.$adminActivities['tsumego'][$i].'</a>
+					<div style="color:#666; margin-top:5px;">'.$contentMessage.'</div>
+				</td>
+				<td>
+					<div>'.$dateFormatted.'</div>
+					<div style="font-size:0.9em; color:#666; margin-top:2px;">'.$adminActivities['name'][$i].'</div>
+				</td>
 			</tr>';
-			echo '<tr>
-				<td></td>
-				<td><b style="color:grey;">'.$ca['type'][$i].'</b><br><p class="adminText">'.$ca['name'][$i].': '.$ca['answer'][$i].'</p></td>
-				<td></td>
-			</tr>';
-			echo '<tr><td>';
-			if(count($aa2)-1!=$i) echo '<hr>';
-			echo '</td></tr>';
 			$iCounter++;
 		}
 		echo '</table>';
+		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
+		
+		// Admin Comments Section
+		if (!empty($adminComments['tsumego_id'])) {
+			echo '<h3>Admin Comments (' . $commentsTotal . ')</h3>';
+			echo $this->Pagination->render($commentsPage, $commentsPagesTotal, 'comments_page');
+			echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
+			$iCounter = 1;
+			for($i=count($adminComments['tsumego_id'])-1; $i>=0; $i--){
+				// Format date without seconds
+				$timestamp = strtotime($adminComments['created'][$i]);
+				$dateFormatted = date('Y-m-d H:i', $timestamp);
+				
+				echo '<tr style="border-bottom:1px solid #e0e0e0;">
+					<td>'.($iCounter).'</td>
+					<td>
+						<a href="/tsumegos/play/'.$adminComments['tsumego_id'][$i].'?search=topics">'.$adminComments['tsumego'][$i].'</a>
+						<div style="color:#666; margin-top:5px;">'.h($adminComments['message'][$i]).'</div>
+					</td>
+					<td>
+						<div>'.$dateFormatted.'</div>
+						<div style="font-size:0.9em; color:#666; margin-top:2px;">'.$adminComments['name'][$i].'</div>
+					</td>
+				</tr>';
+				$iCounter++;
+			}
+			echo '</table>';
+			echo $this->Pagination->render($commentsPage, $commentsPagesTotal, 'comments_page');
+		}
 	echo '</div>';
 	
 	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';
 		if($approveSgfs!=null){
+			echo '<h3 style="margin:15px 0;">SGF Proposals (' . $proposalsTotal . ')</h3>';
+			echo $this->Pagination->render($proposalsPage, $proposalsPagesTotal, 'proposals_page');
 			echo '<table border="0">';
 			for($i=0; $i<count($approveSgfs); $i++){
 				echo '<tr>';
@@ -49,9 +98,13 @@
 					<a class="new-button-default2" id="proposal-reject'.$i.'">Reject</a></td>';
 				echo '</tr>';
 			}
-			echo '</table><hr>';
+			echo '</table>';
+			echo $this->Pagination->render($proposalsPage, $proposalsPagesTotal, 'proposals_page');
+			echo '<hr>';
 		}
 		if($tagNames!=null){
+			echo '<h3 style="margin:15px 0;">Tag Names (' . $tagNamesTotal . ')</h3>';
+			echo $this->Pagination->render($tagNamesPage, $tagNamesPagesTotal, 'tagnames_page');
 			echo '<table border="0" class="tagnames-adminpanel">';
 			for($i=0; $i<count($tagNames); $i++){
 				echo '<tr>';
@@ -67,7 +120,9 @@
 					echo '</td>';
 				echo '</tr>';
 			}
-			echo '</table><hr>';
+			echo '</table>';
+			echo $this->Pagination->render($tagNamesPage, $tagNamesPagesTotal, 'tagnames_page');
+			echo '<hr>';
 		}
 		if($requestDeletion!=null){
 			echo '<table border="0">';
@@ -81,7 +136,8 @@
 			echo '</table><hr>';
 		}
 		if($tags!=null){
-			echo 'New tags: '.count($tags);
+			echo '<h3 style="margin:15px 0;">New Tags (' . $tagsTotal . ')</h3>';
+			echo $this->Pagination->render($tagsPage, $tagsPagesTotal, 'tags_page');
 			echo '<table border="0">';
 			for($i=0; $i<count($tags); $i++){
 				echo '<tr>';
@@ -105,11 +161,15 @@
 					echo '<td style="font-size:13px">'.$tags[$i]['Tag']['created'].'</td>';
 				echo '</tr>';
 			}
-			echo '</table><br><br><br><br><br>';
+			echo '</table>';
+			echo $this->Pagination->render($tagsPage, $tagsPagesTotal, 'tags_page');
+			echo '<br><br><br><br><br>';
 		}
+		
 	echo '</div>';
 	echo '<div style="clear:both;"></div>';
 ?>
+
 <script>
 	var tooltipSgfs = window.tooltipSgfs || [];
 	let tagList = "null";

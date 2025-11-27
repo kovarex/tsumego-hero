@@ -10,10 +10,12 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->deleteAll(['1 = 1']);                // FK to: User, Tsumego
 		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);    // FK to: TimeModeSession
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
+		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
+
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
 		else
@@ -25,6 +27,7 @@ class ContextPreparator
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
+		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -438,6 +441,76 @@ class ContextPreparator
 			$this->checkOptionsConsumed($dayRecordInput);
 		}
 	}
+
+	public function prepareAdminActivities(?array $adminActivities): void
+	{
+		if (!$adminActivities)
+			return;
+
+		foreach ($adminActivities as $activityInput)
+		{
+			$activity = [];
+
+			// Handle user_id - support specifying by name from other-users
+			$userId = Util::extract('user_id', $activityInput);
+			if (is_string($userId))
+			{
+				// Find user by name from otherUsers
+				$foundUser = null;
+				foreach ($this->otherUsers as $otherUser)
+					if ($otherUser['name'] === $userId)
+					{
+						$foundUser = $otherUser;
+						break;
+					}
+				$activity['user_id'] = $foundUser ? $foundUser['id'] : $this->user['id'];
+			}
+			else
+				$activity['user_id'] = $userId ?: $this->user['id'];
+
+			$activity['type'] = Util::extract('type', $activityInput);
+
+			// Support 'tsumego_id' => true to use the main context tsumego
+			// Support 'tsumego_id' => 'other:0' to use otherTsumegos[0], etc.
+			$tsumegoId = Util::extract('tsumego_id', $activityInput);
+			if ($tsumegoId === true && $this->tsumego)
+				$activity['tsumego_id'] = $this->tsumego['id'];
+			elseif (is_string($tsumegoId) && strpos($tsumegoId, 'other:') === 0)
+			{
+				$index = (int) substr($tsumegoId, 6);
+				$activity['tsumego_id'] = $this->otherTsumegos[$index]['id'] ?? null;
+			}
+			else
+				$activity['tsumego_id'] = $tsumegoId;
+
+			// Support 'set_id' => true to use the first set from main tsumego
+			$setId = Util::extract('set_id', $activityInput);
+			if ($setId === true && $this->tsumego && isset($this->tsumego['set-connections'][0]))
+				$activity['set_id'] = $this->tsumego['set-connections'][0]['set_id'];
+			else
+				$activity['set_id'] = $setId;
+
+			$activity['old_value'] = Util::extract('old_value', $activityInput);
+			$activity['new_value'] = Util::extract('new_value', $activityInput);
+
+			// Convert 'other:X' references in old_value/new_value to actual IDs
+			if (is_string($activity['old_value']) && strpos($activity['old_value'], 'other:') === 0)
+			{
+				$index = (int) substr($activity['old_value'], 6);
+				$activity['old_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+			}
+			if (is_string($activity['new_value']) && strpos($activity['new_value'], 'other:') === 0)
+			{
+				$index = (int) substr($activity['new_value'], 6);
+				$activity['new_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+			}
+
+			ClassRegistry::init('AdminActivity')->create();
+			ClassRegistry::init('AdminActivity')->save(['AdminActivity' => $activity]);
+			$this->checkOptionsConsumed($activityInput);
+		}
+	}
+
 
 	public function addFavorite($tsumego)
 	{

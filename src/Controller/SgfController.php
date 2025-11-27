@@ -1,5 +1,7 @@
 <?php
 
+App::uses('AdminActivityLogger', 'Utility');
+
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
@@ -51,13 +53,7 @@ class SgfController extends AppController
 				throw new AppException('The file is too large.');
 			$sgfData = file_get_contents($_FILES['adminUpload']['tmp_name']);
 		}
-		ClassRegistry::init('AdminActivity')->create();
-		$adminActivity = [];
-		$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-		$adminActivity['AdminActivity']['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
-		$adminActivity['AdminActivity']['file'] = $setConnection['SetConnection']['num'];
-		$adminActivity['AdminActivity']['answer'] = '??';
-		ClassRegistry::init('AdminActivity')->save($adminActivity);
+		AdminActivityLogger::log(AdminActivityLogger::SGF_UPLOAD, $setConnection['SetConnection']['tsumego_id']);
 		$sgf = [];
 		$sgf['Sgf']['sgf'] = $sgfData;
 		$sgf['Sgf']['user_id'] = Auth::getUserID();
