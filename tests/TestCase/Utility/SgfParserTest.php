@@ -34,4 +34,14 @@ class SgfParserTest extends CakeTestCase
 		$this->assertCount(19, $result->board);
 		$this->assertCount(19, $result->board[0]);
 	}
+
+	public function testProcessSupportsSmallerBoard()
+	{
+		$sgf = '(;SZ[9]AB[aa][bb]AW[cc])';
+		$result = SgfParser::process($sgf);
+
+		$this->assertEquals(9, $result->size);
+		$this->assertCount(9, $result->board);
+		$this->assertCount(9, $result->board[0]);
+	}
 }

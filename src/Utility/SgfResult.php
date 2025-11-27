@@ -8,12 +8,12 @@ readonly class SgfResult
 	 * @param array<int,array<int,string>> $board
 	 * @param array<int,array{int,int,string}> $stones
 	 * @param array{int,int} $info
-	 * @param int|string $size
+	 * @param int $size
 	 */
 	public function __construct(
 		public array $board,
 		public array $stones,
 		public array $info,
-		public int|string $size
+		public int $size
 	) {}
 }

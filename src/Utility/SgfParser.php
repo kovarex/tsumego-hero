@@ -21,8 +21,8 @@ class SgfParser
 		$white = self::getInitialPosition(strpos($sgf, 'AW'), $sgfArr, 'o');
 		$stones = array_merge($black, $white);
 
-		$board = self::emptyBoard(19);
-		$stones = self::normalizeOrientation($stones);
+		$board = self::emptyBoard($boardSize);
+		$stones = self::normalizeOrientation($stones, $boardSize);
 
 		$highestX = 0;
 		$highestY = 0;
@@ -41,7 +41,7 @@ class SgfParser
 		return new SgfResult($board, $stones, $tInfo, $boardSize);
 	}
 
-	private static function detectBoardSize(string $sgf): int|string
+	private static function detectBoardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');
 		if ($boardSizePos === false)
@@ -52,7 +52,7 @@ class SgfParser
 		if (substr($size, 1) == ']')
 			$size = substr($size, 0, 1);
 
-		return $size;
+		return (int) $size;
 	}
 
 	private static function emptyBoard(int $size): array
@@ -68,13 +68,14 @@ class SgfParser
 		return $board;
 	}
 
-	private static function normalizeOrientation(array $stones): array
+	private static function normalizeOrientation(array $stones, int $boardSize): array
 	{
 		if (empty($stones))
 			return $stones;
 
-		$lowestX = 18;
-		$lowestY = 18;
+		$maxCoord = $boardSize - 1;
+		$lowestX = $maxCoord;
+		$lowestY = $maxCoord;
 		$highestX = 0;
 		$highestY = 0;
 		$stonesCount = count($stones);
@@ -86,28 +87,30 @@ class SgfParser
 			$highestY = max($highestY, $stones[$i][1]);
 		}
 
-		if (18 - $lowestX < $lowestX)
-			$stones = self::xFlip($stones);
-		if (18 - $lowestY < $lowestY)
-			$stones = self::yFlip($stones);
+		if ($maxCoord - $lowestX < $lowestX)
+			$stones = self::xFlip($stones, $boardSize);
+		if ($maxCoord - $lowestY < $lowestY)
+			$stones = self::yFlip($stones, $boardSize);
 
 		return $stones;
 	}
 
-	private static function xFlip(array $stones): array
+	private static function xFlip(array $stones, int $boardSize): array
 	{
+		$maxCoord = $boardSize - 1;
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
-			$stones[$i][0] = 18 - $stones[$i][0];
+			$stones[$i][0] = $maxCoord - $stones[$i][0];
 
 		return $stones;
 	}
 
-	private static function yFlip(array $stones): array
+	private static function yFlip(array $stones, int $boardSize): array
 	{
+		$maxCoord = $boardSize - 1;
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
-			$stones[$i][1] = 18 - $stones[$i][1];
+			$stones[$i][1] = $maxCoord - $stones[$i][1];
 
 		return $stones;
 	}
