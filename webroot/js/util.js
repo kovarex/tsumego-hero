@@ -9,7 +9,8 @@ function setCookie(name, value, days = 365)
 		expires +
 		"; path=/" +
 		"; SameSite=Lax" +
-		"; Secure";
+		"; Secure" +
+		"; Partitioned";
 }
 
 function getCookie(name)
