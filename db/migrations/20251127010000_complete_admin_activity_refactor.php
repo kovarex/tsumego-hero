@@ -30,8 +30,23 @@ require_once __DIR__ . '/../../src/Utility/AdminActivityLogger.php';
  */
 class CompleteAdminActivityRefactor extends AbstractMigration
 {
-    public function change()
+    public function up()
     {
+        // Check if migration has already run (admin_activity_old exists as backup)
+        // If so, reset to pre-migration state for repeatable testing
+        if ($this->hasTable('admin_activity_old')) {
+            $this->output->writeln('<comment>Detected previous migration run. Resetting to pre-migration state...</comment>');
+            
+            // Drop current tables
+            $this->execute("DROP TABLE IF EXISTS admin_activity");
+            $this->execute("DROP TABLE IF EXISTS admin_activity_type");
+            
+            // Restore original table
+            $this->execute("RENAME TABLE admin_activity_old TO admin_activity");
+            
+            $this->output->writeln('<info>Reset complete. Running migration from clean state.</info>');
+        }
+        
         // STEP 1: Create admin_activity_type enum table (name only - readable as-is)
         $enumTable = $this->table('admin_activity_type', ['id' => false, 'primary_key' => 'id']);
         $enumTable
@@ -222,4 +237,38 @@ class CompleteAdminActivityRefactor extends AbstractMigration
             DEALLOCATE PREPARE stmt;
         ");
     }
+
+    public function down()
+    {
+        throw new \RuntimeException(
+            'This migration is irreversible. Data transformation from file/answer to type/old_value/new_value ' .
+            'cannot be automatically reversed. Manual restoration from admin_activity_old backup is required.'
+        );
+    }
 }
+
+/*
+ * USEFUL SQL QUERY FOR VERIFICATION
+ * ==================================
+ * 
+ * Find unmigrated records from pre-migration data:
+ * (Compares admin_activity vs admin_activity_old backup table)
+ * 
+ * SELECT 
+ *     old.id,
+ *     old.user_id,
+ *     old.tsumego_id,
+ *     old.file,
+ *     old.answer,
+ *     old.created
+ * FROM admin_activity_old old
+ * WHERE old.id NOT IN (
+ *     SELECT id FROM admin_activity 
+ *     WHERE created <= (SELECT MAX(created) FROM admin_activity_old)
+ * )
+ * ORDER BY old.created DESC
+ * LIMIT 500;
+ * 
+ * Note: Filters by date to exclude new activities created after migration.
+ * admin_activity_old contains all pre-migration records for permanent reference.
+ */
