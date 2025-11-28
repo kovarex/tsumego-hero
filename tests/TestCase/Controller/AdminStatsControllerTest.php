@@ -200,7 +200,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// Create unapproved tags
 		for ($i = 1; $i <= 105; $i++)
 		{
-			$tagName = ClassRegistry::init('TagName');
+			$tagName = ClassRegistry::init('Tag');
 			$tagName->create();
 			$tagName->save([
 				'name' => "Test Tag $i",
