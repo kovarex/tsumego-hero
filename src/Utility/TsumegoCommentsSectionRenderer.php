@@ -32,7 +32,7 @@ class TsumegoCommentsSectionRenderer
 		foreach ($this->comments as $comment)
 		{
 			echo '<div id="msg2x">';
-			$user = ClassRegistry::init('User')->findById($comment['Comment']['user_id'])['User'];
+			$user = ClassRegistry::init('User')->findById($comment['user_id'])['User'];
 			$commentColorCheck = $user['admin'];
 			$commentColor = $commentColorCheck ? 'commentBox2' : 'commentBox1';
 
@@ -54,9 +54,8 @@ class TsumegoCommentsSectionRenderer
 				$cpArray = '<img src="/img/positionIcon1.png" class="positionIcon1" onclick="commentPosition('.$cpArray.');">';
 			}
 			$comment['message'] = '|'.$comment['message'];
-			if(strpos($comment['message'], '[current position]')!=0){
+			if (strpos($comment['message'], '[current position]') != 0)
 				$comment['message'] = str_replace('[current position]', $cpArray, $comment['message']);
-			}
 			$comment['message'] = substr($comment['message'], 1);
 
 			echo '<div class="sandboxComment">';
