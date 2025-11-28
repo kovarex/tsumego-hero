@@ -3,6 +3,7 @@
 App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
+App::uses('AdminActivityLogger', 'Utility');
 
 class UsersController extends AppController
 {
@@ -1141,14 +1142,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$remove['Tsumego']['duplicate'] = 0;
 					$this->Tsumego->save($remove);
 				}
-				$sx = $this->Set->findById($remove['Tsumego']['set_id']);
-				$title = $sx['Set']['title'] . ' - ' . $remove['Tsumego']['num'];
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['removeDuplicate'];
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Removed duplicate: ' . $title;
-				$this->AdminActivity->save($adminActivity);
+				AdminActivityLogger::log(AdminActivityLogger::DUPLICATE_REMOVE, $this->params['url']['removeDuplicate']);
 			}
 			else
 				$aMessage = 'You can\'t remove the main duplicate.';
@@ -1219,14 +1213,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($j = 0; $j < $dupDelCount; $j++)
 						$this->Duplicate->delete($dupDel[$j]['Duplicate']['id']);
 				}
-				$sx = $this->Set->findById($newDmain['Tsumego']['set_id']);
-				$title = $sx['Set']['title'] . ' - ' . $newDmain['Tsumego']['num'];
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $this->params['url']['main'];
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Created duplicate group: ' . $title;
-				$this->AdminActivity->save($adminActivity);
+				AdminActivityLogger::log(AdminActivityLogger::DUPLICATE_GROUP_CREATE, $this->params['url']['main']);
 			}
 		}
 		if (!empty($this->data['Mark']))
@@ -1423,7 +1410,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('AdminActivity');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$this->loadModel('Sgf');
 		$this->loadModel('UserContribution');
 		$this->loadModel('Reject');
@@ -1495,7 +1482,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($i = 1; $i < $proposalsToApproveCount; $i++)
 					{
 						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
-						if ($proposalToApprove != null && $proposalToApprove['Sgf']['version'] == 0)
+						$firstSgf = $this->Sgf->find('first', ['order' => 'id ASC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
+						if ($proposalToApprove != null && $proposalToApprove['Sgf']['id'] == $firstSgf['Sgf']['id'])
 						{
 							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($proposalsToApprove[$i], 0, 1) == 'a')
@@ -1540,8 +1528,37 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		$tags = $this->TagConnection->find('all', ['conditions' => ['approved' => 0]]);
-		$tagNames = $this->Tag->find('all', ['conditions' => ['approved' => 0]]);
+		// Pagination setup
+		$perPage = 100;
+		$tagsPage = isset($this->params['url']['tags_page']) ? max(1, (int) $this->params['url']['tags_page']) : 1;
+		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
+		$proposalsPage = isset($this->params['url']['proposals_page']) ? max(1, (int) $this->params['url']['proposals_page']) : 1;
+		$activityPage = isset($this->params['url']['activity_page']) ? max(1, (int) $this->params['url']['activity_page']) : 1;
+		$commentsPage = isset($this->params['url']['comments_page']) ? max(1, (int) $this->params['url']['comments_page']) : 1;
+
+		$tagsOffset = ($tagsPage - 1) * $perPage;
+		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
+		$proposalsOffset = ($proposalsPage - 1) * $perPage;
+		$activityOffset = ($activityPage - 1) * $perPage;
+		$commentsOffset = ($commentsPage - 1) * $perPage;
+
+		// Get total counts
+		$tagsTotal = $this->TagConnection->find('count', ['conditions' => ['approved' => 0]]);
+		$tagNamesTotal = $this->Tag->find('count', ['conditions' => ['approved' => 0]]);
+
+		// Fetch paginated data
+		$tagConnections = $this->TagConnection->find('all', [
+			'conditions' => ['approved' => 0],
+			'limit' => $perPage,
+			'offset' => $tagsOffset,
+			'order' => 'created DESC'
+		]);
+		$tags = $this->Tag->find('all', [
+			'conditions' => ['approved' => 0],
+			'limit' => $perPage,
+			'offset' => $tagNamesOffset,
+			'order' => 'created DESC'
+		]);
 		$tagsByKey = $this->Tag->find('all');
 		$tKeys = [];
 		$tagsByKeyCount = count($tagsByKey);
@@ -1550,27 +1567,45 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$tsIds = [];
 		$tagTsumegos = [];
-		$tagsCount = count($tags);
+		$tagsCount = count($tagConnections);
 		for ($i = 0; $i < $tagsCount; $i++)
 		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tags[$i]['TagConnection']['tsumego_id']]]);
+			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tagConnections[$i]['TagConnection']['tsumego_id']]]);
 			array_push($tsIds, $at['Tsumego']['id']);
 			array_push($tagTsumegos, $at);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
 			$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-			$au = $this->User->findById($tags[$i]['TagConnection']['user_id']);
-			$tags[$i]['TagConnection']['name'] = $tKeys[$tags[$i]['TagConnection']['tag_id']];
-			$tags[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			$tags[$i]['TagConnection']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tagConnections[$i]['TagConnection']['user_id']);
+			$tagConnections[$i]['TagConnection']['name'] = $tKeys[$tagConnections[$i]['TagConnection']['tag_id']];
+			$tagConnections[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
+			$tagConnections[$i]['TagConnection']['user'] = $this->checkPicture($au);
 		}
-		$tagNamesCount = count($tagNames);
+		$tagNamesCount = count($tags);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
-			$au = $this->User->findById($tagNames[$i]['Tag']['user_id']);
-			$tagNames[$i]['Tag']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
+			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
 
-		$approveSgfs = $this->Sgf->find('all', ['conditions' => ['version' => 0]]);
+		// Find first SGF (minimum id) for each tsumego
+		$firstSgfIds = $this->Sgf->query("
+			SELECT MIN(id) as min_id
+			FROM sgf
+			GROUP BY tsumego_id
+			ORDER BY min_id DESC
+			LIMIT $perPage OFFSET $proposalsOffset
+		");
+		$firstIds = [];
+		foreach ($firstSgfIds as $row)
+			$firstIds[] = $row[0]['min_id'];
+
+		// Get total count of proposals
+		$proposalsTotal = $this->Sgf->query("
+			SELECT COUNT(DISTINCT tsumego_id) as total
+			FROM sgf
+		")[0][0]['total'];
+
+		$approveSgfs = $this->Sgf->find('all', ['conditions' => ['id' => $firstIds]]);
 		$sgfTsumegos = [];
 		$latestVersionTsumegos = [];
 		$approveSgfsCount = count($approveSgfs);
@@ -1631,93 +1666,126 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $uCount; $i++)
 			array_push($uArray, $u[$i]['User']['id']);
 
-		$aa = $this->AdminActivity->find('all', ['limit' => 100, 'order' => 'created DESC']);
+		// Get total count of admin activities
+		$activityTotal = $this->AdminActivity->find('count');
+
+		$aa = $this->AdminActivity->find('all', [
+			'limit' => $perPage,
+			'offset' => $activityOffset,
+			'order' => 'AdminActivity.created DESC',
+			'contain' => ['AdminActivityType']
+		]);
 		$aa2 = [];
 		$b1 = [];
-		$ca = [];
-		$ca['tsumego_id'] = [];
-		$ca['tsumego'] = [];
-		$ca['created'] = [];
-		$ca['name'] = [];
-		$ca['answer'] = [];
-		$ca['type'] = [];
+
+		// Separate arrays for activities and comments
+		$adminActivities = [];
+		$adminActivities['tsumego_id'] = [];
+		$adminActivities['tsumego'] = [];
+		$adminActivities['created'] = [];
+		$adminActivities['name'] = [];
+		$adminActivities['type'] = [];
+		$adminActivities['old_value'] = [];
+		$adminActivities['new_value'] = [];
+
+		$adminComments = [];
+		$adminComments['tsumego_id'] = [];
+		$adminComments['tsumego'] = [];
+		$adminComments['created'] = [];
+		$adminComments['name'] = [];
+		$adminComments['message'] = [];
+
 		$aaCount = count($aa);
 		for ($i = 0; $i < $aaCount; $i++)
 		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['tsumego_id']]]);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-			$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$as = $this->Set->find('first', ['conditions' => ['id' => $at['Tsumego']['set_id']]]);
+			// Get user info
 			$au = $this->User->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['user_id']]]);
 			$aa[$i]['AdminActivity']['name'] = $au['User']['name'];
 			$aa[$i]['AdminActivity']['isAdmin'] = $au['User']['isAdmin'];
-			$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			if ($aa[$i]['AdminActivity']['answer'] == 96)
-				$aa[$i]['AdminActivity']['answer'] = 'Approved.';
-			if ($aa[$i]['AdminActivity']['answer'] == 97)
-				$aa[$i]['AdminActivity']['answer'] = 'No answer necessary.';
-			if ($aa[$i]['AdminActivity']['answer'] == 98)
-				$aa[$i]['AdminActivity']['answer'] = 'Can\'t resolve this.';
-			if ($aa[$i]['AdminActivity']['answer'] == 99)
-				$aa[$i]['AdminActivity']['answer'] = 'Deleted.';
-			if (!strpos($aa[$i]['AdminActivity']['answer'], '.sgf'))
+
+			// Handle set-level activities (set_id is populated, tsumego_id is NULL)
+			if ($aa[$i]['AdminActivity']['set_id'] !== null && $aa[$i]['AdminActivity']['set_id'] > 0)
 			{
-				array_push($aa2, $aa[$i]);
-				array_push($ca['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
-				array_push($ca['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
-				array_push($ca['created'], $aa[$i]['AdminActivity']['created']);
-				array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
-				array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
-				array_push($ca['type'], 'Answer');
+				$as = $this->Set->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['set_id']]]);
+				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' (Set-wide)';
+				$aa[$i]['AdminActivity']['tsumego_id'] = 0; // Placeholder for display
 			}
-			elseif ($aa[$i]['AdminActivity']['isAdmin'] > 0)
+			// Handle problem-level activities (tsumego_id is populated)
+			elseif ($aa[$i]['AdminActivity']['tsumego_id'] !== null && $aa[$i]['AdminActivity']['tsumego_id'] > 0)
 			{
-				array_push($aa2, $aa[$i]);
-				array_push($ca['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
-				array_push($ca['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
-				array_push($ca['created'], $aa[$i]['AdminActivity']['created']);
-				array_push($ca['name'], $aa[$i]['AdminActivity']['name']);
-				array_push($ca['answer'], $aa[$i]['AdminActivity']['answer']);
-				array_push($ca['type'], 'Upload');
+				$at = $this->Tsumego->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['tsumego_id']]]);
+				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
+				$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
+				$as = $this->Set->find('first', ['conditions' => ['id' => $at['Tsumego']['set_id']]]);
+				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
 			}
+			else
+			{
+				// General admin activity not tied to specific tsumego or set
+				$aa[$i]['AdminActivity']['tsumego'] = 'General Admin Activity';
+				$aa[$i]['AdminActivity']['tsumego_id'] = 0;
+			}
+			// Get readable type name from enum table (names are Title Case: 'Description Edit' etc.)
+			$readableType = $aa[$i]['AdminActivityType']['name'];
+
+			array_push($aa2, $aa[$i]);
+			array_push($adminActivities['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
+			array_push($adminActivities['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
+			array_push($adminActivities['created'], $aa[$i]['AdminActivity']['created']);
+			array_push($adminActivities['name'], $aa[$i]['AdminActivity']['name']);
+			array_push($adminActivities['type'], $readableType);
+			array_push($adminActivities['old_value'], $aa[$i]['AdminActivity']['old_value']);
+			array_push($adminActivities['new_value'], $aa[$i]['AdminActivity']['new_value']);
 		}
-		$adminComments = $this->Comment->find('all', [
-			'order' => 'created DESC',
+
+		// Get total count of admin comments
+		$commentsTotal = $this->Comment->find('count', [
 			'conditions' => [
-				'created >' => $aa[count($aa) - 1]['AdminActivity']['created'],
 				'user_id' => $uArray,
 				'NOT' => [
 					'status' => [99],
 				],
 			],
 		]);
-		$adminCommentsCount = count($adminComments);
-		for ($i = 0; $i < $adminCommentsCount; $i++)
+
+		// Find paginated comments from admin users
+		$comments = $this->Comment->find('all', [
+			'order' => 'created DESC',
+			'limit' => $perPage,
+			'offset' => $commentsOffset,
+			'conditions' => [
+				'user_id' => $uArray,
+				'NOT' => [
+					'status' => [99],
+				],
+			],
+		]);
+		$commentsCount = count($comments);
+		for ($i = 0; $i < $commentsCount; $i++)
 		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $adminComments[$i]['Comment']['tsumego_id']]]);
+			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $comments[$i]['Comment']['tsumego_id']]]);
+			if (empty($at)) continue; // Skip if tsumego doesn't exist
+
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
 			$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$as = $this->Set->find('first', ['conditions' => ['id' => $at['Tsumego']['set_id']]]);
-			$au = $this->User->find('first', ['conditions' => ['id' => $adminComments[$i]['Comment']['user_id']]]);
-			array_push($ca['tsumego_id'], $adminComments[$i]['Comment']['tsumego_id']);
-			array_push($ca['tsumego'], $as['Set']['title'] . ' - ' . $at['Tsumego']['num']);
-			array_push($ca['created'], $adminComments[$i]['Comment']['created']);
-			array_push($ca['name'], $au['User']['name']);
-			array_push($ca['answer'], $adminComments[$i]['Comment']['message']);
-			array_push($ca['type'], 'Comment');
+			$au = $this->User->find('first', ['conditions' => ['id' => $comments[$i]['Comment']['user_id']]]);
+			array_push($adminComments['tsumego_id'], $comments[$i]['Comment']['tsumego_id']);
+			array_push($adminComments['tsumego'], $as['Set']['title'] . ' - ' . $at['Tsumego']['num']);
+			array_push($adminComments['created'], $comments[$i]['Comment']['created']);
+			array_push($adminComments['name'], $au['User']['name']);
+			array_push($adminComments['message'], $comments[$i]['Comment']['message']);
 		}
-		$caCount = count($ca['tsumego_id']);
-		for ($i = 0; $i < $caCount; $i++)
-			array_multisort($ca['created'], $ca['tsumego_id'], $ca['tsumego'], $ca['name'], $ca['answer'], $ca['type']);
 
 		$requestDeletion = $this->User->find('all', ['conditions' => ['dbstorage' => 1111]]);
 
 		$this->set('requestDeletion', $requestDeletion);
 		$this->set('aa', $aa);
 		$this->set('aa2', $aa2);
-		$this->set('ca', $ca);
-		$this->set('tags', $tags);
-		$this->set('tagNames', $tagNames);
+		$this->set('adminActivities', $adminActivities);
+		$this->set('adminComments', $adminComments);
+		$this->set('tags', $tagConnections);
+		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
 		$this->set('tooltipSgfs', $tooltipSgfs);
 		$this->set('tooltipInfo', $tooltipInfo);
@@ -1728,6 +1796,23 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('approveSgfs', $approveSgfs);
 		$this->set('sgfTsumegos', $sgfTsumegos);
 		$this->set('latestVersionTsumegos', $latestVersionTsumegos);
+
+		// Pagination data
+		$this->set('tagsPage', $tagsPage);
+		$this->set('tagsTotal', $tagsTotal);
+		$this->set('tagsPagesTotal', ceil($tagsTotal / $perPage));
+		$this->set('tagNamesPage', $tagNamesPage);
+		$this->set('tagNamesTotal', $tagNamesTotal);
+		$this->set('tagNamesPagesTotal', ceil($tagNamesTotal / $perPage));
+		$this->set('proposalsPage', $proposalsPage);
+		$this->set('proposalsTotal', $proposalsTotal);
+		$this->set('proposalsPagesTotal', ceil($proposalsTotal / $perPage));
+		$this->set('activityPage', $activityPage);
+		$this->set('activityTotal', $activityTotal);
+		$this->set('activityPagesTotal', ceil($activityTotal / $perPage));
+		$this->set('commentsPage', $commentsPage);
+		$this->set('commentsTotal', $commentsTotal);
+		$this->set('commentsPagesTotal', ceil($commentsTotal / $perPage));
 	}
 
 	private function getUserFromNameOrEmail()

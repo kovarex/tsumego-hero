@@ -1,5 +1,7 @@
 <?php
 
+App::uses('AdminActivityLogger', 'Utility');
+
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
@@ -60,20 +62,11 @@ class SgfController extends AppController
 		$sgf['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
 		if (!$sgfModel->save($sgf))
 		{
-			$errorMessages = array_map(function ($error) {
-				return is_array($error) ? implode(' ', $error) : $error;
-			}, $sgfModel->validationErrors);
+			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $sgfModel->validationErrors);
 			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
 			throw new AppException('Failed to upload SGF: ' . $errorMessage);
 		}
 
-		ClassRegistry::init('AdminActivity')->create();
-		$adminActivity = [];
-		$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-		$adminActivity['AdminActivity']['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
-		$adminActivity['AdminActivity']['file'] = $setConnection['SetConnection']['num'];
-		$adminActivity['AdminActivity']['answer'] = '??';
-		ClassRegistry::init('AdminActivity')->save($adminActivity);
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
 		return $this->redirect('/' . $setConnectionID);
 	}

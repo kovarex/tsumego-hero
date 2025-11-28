@@ -8,6 +8,8 @@ class AppController extends Controller
 {
 	public $viewClass = 'App';
 
+	public $helpers = ['Pagination'];
+
 	public $components = [
 		'Session',
 		//'DebugKit.Toolbar',
