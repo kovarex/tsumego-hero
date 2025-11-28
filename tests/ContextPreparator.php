@@ -10,6 +10,8 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->deleteAll(['1 = 1']);                // FK to: User, Tsumego
 		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);    // FK to: TimeModeSession
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
+		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
+		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
@@ -198,12 +200,12 @@ class ContextPreparator
 
 	private function prepareTsumegoComment(array $commentInput, $tsumego): void
 	{
-		ClassRegistry::init('Comment')->create();
+		ClassRegistry::init('TsumegoComment')->create();
 		$comment = [];
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
 		$comment['user_id'] = $this->user['id'];
-		ClassRegistry::init('Comment')->save($comment);
+		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
 	}
 

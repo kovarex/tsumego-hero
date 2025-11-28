@@ -53,6 +53,7 @@ CREATE TABLE `tsumego_comment` (
 	`created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`user_id` INT UNSIGNED NOT NULL,
 	`position` VARCHAR(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
+	`deleted` BOOL NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`),
 	INDEX `tsumego_id` (`tsumego_id`),
 	INDEX `user_id` (`user_id`),

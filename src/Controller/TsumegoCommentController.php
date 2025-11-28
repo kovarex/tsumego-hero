@@ -15,4 +15,14 @@ class TsumegoCommentController extends AppController
 		ClassRegistry::init('TsumegoComment')->save($comment);
 		return $this->redirect($this->data['Comment']['redirect']);
 	}
+
+	public function delete($id)
+	{
+		if (Auth::isAdmin())
+			return null;
+		$comment = ClassRegistry::init('TsumegoComment')->find($id);
+		$comment['deleted'] = true;
+		ClassRegistry::init('TsumegoComment')->save($comment);
+		return $this->redirect($this->data['Comment']['redirect']);
+	}
 }
