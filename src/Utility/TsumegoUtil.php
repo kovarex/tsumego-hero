@@ -98,7 +98,7 @@ FROM (
 		return $result[0][0]['deletions_count'];
 	}
 
-	static public function currentTsumegoCount()
+	public static function currentTsumegoCount()
 	{
 		return ClassRegistry::init('DayRecord')->query("SELECT
     COUNT(DISTINCT tsumego.id) AS tsumego_count
