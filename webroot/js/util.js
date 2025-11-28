@@ -1,6 +1,16 @@
-function setCookie(cookie, value)
+function setCookie(name, value, days = 365)
 {
-	document.cookie = cookie + '=' + value + ';SameSite=Lax;path=/;';
+	const date = new Date();
+	date.setTime(date.getTime() + (days * 24*60*60*1000));
+	const expires = "; expires=" + date.toUTCString();
+
+	document.cookie =
+		name + "=" + encodeURIComponent(value) +
+		expires +
+		"; path=/" +
+		"; SameSite=Lax" +
+		"; Secure" +
+		"; Partitioned";
 }
 
 function getCookie(name)
