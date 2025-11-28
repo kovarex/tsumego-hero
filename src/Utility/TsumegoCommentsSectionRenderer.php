@@ -3,13 +3,13 @@
 // renders comments related to one issue or comments without an issue
 class TsumegoCommentsSectionRenderer
 {
-	public function __construct($tsumegoID, $issueID)
+	public function __construct(int $tsumegoID, ?int $issueID)
 	{
-		$commentsInput = ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $tsumegoID, 'tsumego_issue_id' => $issueID])]) ?: [];
+		$commentsInput = ClassRegistry::init('TsumegoComment')->find('all', ['conditions' => (['tsumego_id' => $tsumegoID, 'tsumego_issue_id' => $issueID])]) ?: [];
 		$this->comments = [];
 		foreach ($commentsInput as $index => $commentInput)
 		{
-			$comment = $commentInput['Comment'];
+			$comment = $commentInput['TsumegoComment'];
 			//$co[$i]['Comment']['message'] = htmlspecialchars($co[$i]['Comment']['message']);
 			//$cou = ClassRegistry::init('User')->findById($co[$i]['Comment']['user_id']);
 			//if ($cou == null)
@@ -17,9 +17,14 @@ class TsumegoCommentsSectionRenderer
 			//$co[$i]['Comment']['user'] = AppController::checkPicture($cou['User']);
 			$array = TsumegosController::commentCoordinates($comment['message'], $index + 1, true);
 			$comment['message'] = $array[0];
-			array_push($commentCoordinates, $array[1]);
+			//array_push($commentCoordinates, $array[1]);
 			$this->comments []= $comment;
 		}
+	}
+
+	public function empty(): bool
+	{
+		return empty($this->comments);
 	}
 
 	public function render()
@@ -56,18 +61,10 @@ class TsumegoCommentsSectionRenderer
 
 			echo '<div class="sandboxComment">';
 			echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
-			echo '<div class="'.$commentColor.'">'.$user['name'].':<br>';
-			echo $comment['message'].' </div>';
+			echo '<div class="'.$commentColor.'">'.$user['name'].':<br>'.$comment['message'].' </div>';
 			echo '</td><td align="right" class="sandboxTable2time">';
 
-			$date = new DateTime($comment['created']);
-			$month = date('F', strtotime($date));
-			$tday = $date->format('d. ');
-			$tyear = $date->format('Y');
-			$tClock = $date->format('H:i');
-			if ($tday[0] == 0)
-				$tday = substr($tday, -3);
-			echo $tday . $month . ' ' . $tyear . '<br>' . $tClock;
+			echo new DateTime($comment['created'])->format('M. d. Y <br> H:i');
 			/*
 			if(Auth::getUserID() == $comment['user_id'])
 				echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
@@ -86,8 +83,7 @@ class TsumegoCommentsSectionRenderer
 					echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
 				}
 			}*/
-			echo '</td></tr></table>';
-			echo '</div>';
+			echo "</td></tr></table></div></div>\n";
 		}
 	}
 }

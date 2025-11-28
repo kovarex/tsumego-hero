@@ -1,24 +1,30 @@
 <?php
 
 declare(strict_types=1);
-
 use Phinx\Migration\AbstractMigration;
+require_once(__DIR__ . '/../../src/Model/TsumegoIssue.php');
+App::uses('TsumegoIssue', 'Model');
 
 final class ConvertComments extends AbstractMigration
 {
     public function up(): void
     {
+		$this->execute("DROP TABLE IF EXISTS `tsumego_comment`");
+		$this->execute("DROP TABLE IF EXISTS `tsumego_issue`");
+		$this->execute("DROP TABLE IF EXISTS `tsumego_issue_status`");
 		$this->execute("
 CREATE TABLE `tsumego_issue_status` (
 	`id` INT UNSIGNED NOT NULL,
-	`name` INT UNSIGNED NOT NULL)
-ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
-");
+	`name` VARCHAR(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+	PRIMARY KEY (`id`))
+ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
+
 		$this->execute("INSERT INTO tsumego_issue_status (id, name)
-VALUES (".TsumegoIssue::$OPENED_STATUS.", 'opened'),
-VALUES (".TsumegoIssue::$CLOSED_STATUS.", 'closed'),
-VALUES (".TsumegoIssue::$REVIEW_STATUS.", 'reviewed'),
-VALUES (".TsumegoIssue::$DELETED_STATUS.", 'deleted')");
+VALUES
+(".TsumegoIssue::$OPENED_STATUS.", 'opened'),
+(".TsumegoIssue::$CLOSED_STATUS.", 'closed'),
+(".TsumegoIssue::$REVIEW_STATUS.", 'reviewed'),
+(".TsumegoIssue::$DELETED_STATUS.", 'deleted')");
 
 		$this->execute("
 CREATE TABLE `tsumego_issue` (
@@ -26,15 +32,15 @@ CREATE TABLE `tsumego_issue` (
 	`tsumego_issue_status_id` INT UNSIGNED NOT NULL,
 	`tsumego_id` INT UNSIGNED NOT NULL,
 	`user_id` INT UNSIGNED NOT NULL,
-	`datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
-	INDEX (`tsumego_issue_status_id`),
+	INDEX `tsumego_issue_status_id` (`tsumego_issue_status_id`),
 	INDEX `tsumego_id` (`tsumego_id`),
 	INDEX `user_id` (`user_id`),
-	INDEX `datetime` (`datetime`),
-	CONSTRAINT `tsumego_comment_tsumego_issue_status_id` FOREIGN KEY (`tsumego_issue_status_id`) REFERENCES `tsumego_issue_status` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-	CONSTRAINT `tsumego_comment_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumego` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-	CONSTRAINT `tsumego_comment_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
+	INDEX `created` (`created`),
+	CONSTRAINT `tsumego_issue_tsumego_issue_status_id` FOREIGN KEY (`tsumego_issue_status_id`) REFERENCES `tsumego_issue_status` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+	CONSTRAINT `tsumego_issue_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumego` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT `tsumego_issue_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT)
 ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 ");
 
@@ -42,32 +48,33 @@ ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE TABLE `tsumego_comment` (
 	`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`tsumego_id` INT UNSIGNED NOT NULL,
-	`tsumego_issue_id` INT UNSIGNED NULL,
+	`tsumego_issue_id` INT UNSIGNED NULL DEFAULT NULL,
 	`message` VARCHAR(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-	`datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`user_id` INT UNSIGNED NOT NULL,
-	`position` VARCHAR(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+	`position` VARCHAR(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `tsumego_id` (`tsumego_id`),
 	INDEX `user_id` (`user_id`),
 	INDEX `tsumego_issue_id` (`tsumego_issue_id`),
-	INDEX `datetime` (`datetime`),
+	INDEX `created` (`created`),
 	CONSTRAINT `tsumego_comment_tsumego_id` FOREIGN KEY (`tsumego_id`) REFERENCES `tsumego` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT `tsumego_comment_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-	CONSTRAINT `tsumego_comment_tsumego_issue_id` FOREIGN KEY (`tsumego_issue`) REFERENCES `tsumego_issue` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)
+	CONSTRAINT `tsumego_comment_tsumego_issue_id` FOREIGN KEY (`tsumego_issue_id`) REFERENCES `tsumego_issue` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)
 ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 ");
-		$comments = ClassRegistry::init('Comment')->find('all');
+		$comments = $this->query("SELECT * from comment");
 		foreach ($comments as $comment)
 		{
 			$status = $comment['status'];
-			$intStatus = is_int($status) ? intval($status) : 100;
-			if ($intStatus >= 96)
+			$intStatus = is_numeric($status) ? intval($status) : 100;
+			if ($intStatus >= 96 && $intStatus != 100)
 				continue;
-			$comment = $comment['Comment'];
-			if (!ClassRegistry::init('User')->findById($comment['user_id']))
+			$user = $this->query("SELECT * from user where id=".$comment['user_id']);
+			if (!$user->rowCount())
 				continue;
-			if (!ClassRegistry::init('Tsumego')->findById($comment['tsumego_id']))
+			$tsumego = $this->query("SELECT * from tsumego where id=".$comment['tsumego_id']);
+			if (!$tsumego->rowCount())
 				continue;
 
 			$answerMessage = null;
@@ -90,53 +97,35 @@ ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 				case 100: $answerMessage = $status; break;
 			}
 
+			$adminUser = $this->query("SELECT * from user where id=?", [$comment['admin_id']]);
+
 			// creating mini issue from the comment
-			if ($intStatus >= 1 && $intStatus <= 14 && ClassRegistry::init('User')->findById($comment['admin_id']))
+			if ($adminUser->rowCount() && $intStatus >= 1 && $intStatus <= 14)
 			{
-				$tsumegoIssue = [];
-				$tsumegoIssue['user_id'] = $comment['user_id'];
-				$tsumegoIssue['tsumego_id'] = $comment['tsumego_id'];
-				$tsumegoIssue['tsumego_issue_status_id'] = TsumegoIssue::$OPENED_STATUS;
-				$tsumegoIssue['datetime'] = $comment['created'];
-				ClassRegistry::init('TsumegoIssue')->create();
-				ClassRegistry::init('TsumegoIssue')->save($tsumegoIssue);
-				$tsumegoIssue = ClassRegistry::init('TsumegoIssue')->find('first', ['order'=> 'id DESC'])['TsumegoIssue'];
+				$this->execute("INSERT INTO tsumego_issue (`user_id`, `tsumego_id`, `tsumego_issue_status_id`, `created`) VALUES(?, ?, ?, ?)",
+					[$comment['user_id'], $comment['tsumego_id'], strval(TsumegoIssue::$CLOSED_STATUS), $comment['created']]);
 
-				$tsumegoComment = [];
-				$tsumegoComment['user_id'] = $comment['user_id'];
-				$tsumegoComment['tsumego_id'] = $comment['tsumego_id'];
-				$tsumegoComment['message'] = $comment['message'];
-				$tsumegoComment['tsumego_issue_id'] = $tsumegoIssue['id'];
-				ClassRegistry::init('TsumegoComment')->create();
-				ClassRegistry::init('TsumegoComment')->save($tsumegoComment);
+				$tsumegoIssue = $this->query("SELECT * from tsumego_issue ORDER BY id DESC")->fetchAll()[0];
 
-				$answerComment = [];
-				$answerComment['user_id'] = $comment['user_id'];
-				$answerComment['tsumego_id'] = $comment['tsumego_id'];
-				$answerComment['message'] = $answerMessage;
-				$answerComment['tsumego_issue_id'] = $tsumegoIssue['id'];
-				ClassRegistry::init('TsumegoComment')->create();
-				ClassRegistry::init('TsumegoComment')->save($answerComment);
+
+				$this->execute("INSERT INTO tsumego_comment (`user_id`, `tsumego_id`, `tsumego_issue_id`, `message`, `created`) VALUES(?, ?, ?, ?, ?)",
+					[$comment['user_id'], $comment['tsumego_id'], $tsumegoIssue['id'], $comment['message'], $comment['created']]);
+
+				$this->execute("INSERT INTO tsumego_comment (`user_id`, `tsumego_id`, `tsumego_issue_id`, `message`, `created`) VALUES(?, ?, ?, ?, ?)",
+					[$comment['admin_id'], $comment['tsumego_id'], $tsumegoIssue['id'], $answerMessage, $comment['created']]);
 				continue;
 			}
 
 			// converting it to regular comment
-			$tsumegoComment = [];
-			$tsumegoComment['user_id'] = $comment['user_id'];
-			$tsumegoComment['tsumego_id'] = $comment['tsumego_id'];
-			$tsumegoComment['message'] = $comment['message'];
-			ClassRegistry::init('Comment')->create();
-			ClassRegistry::init('Comment')->save($tsumegoComment);
+			/*$this->execute("INSERT INTO tsumego_comment (`user_id`, `tsumego_id`, `message`, `created`) VALUES(?, ?, ?, ?)",
+				[$comment['user_id'], $comment['tsumego_id'], $comment['message'], $comment['created']]);*/
 
-			if ($answerMessage)
-			{
-				$answerComment = [];
-				$answerComment['user_id'] = $comment['user_id'];
-				$answerComment['tsumego_id'] = $comment['tsumego_id'];
-				$answerComment['message'] = $comment['message'];
-				ClassRegistry::init('Comment')->create();
-				ClassRegistry::init('Comment')->save($answerComment);
-			}
+			$this->execute("INSERT INTO tsumego_comment (`user_id`, `tsumego_id`, `message`, `created`) VALUES(?, ?, ?, ?)",
+				[$comment['user_id'], $comment['tsumego_id'], $comment['message'], $comment['created']]);
+
+			if ($answerMessage && $adminUser->rowCount())
+				$this->execute("INSERT INTO tsumego_comment (`user_id`, `tsumego_id`, `message`, `created`) VALUES(?, ?, ?, ?)",
+					[$comment['admin_id'], $comment['tsumego_id'], $answerMessage, $comment['created']]);
 		}
     }
 }

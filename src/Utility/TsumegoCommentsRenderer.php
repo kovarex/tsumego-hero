@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoCommentsSectionRenderer', 'Utility');
+
 class TsumegoCommentsRenderer
 {
 	public function __construct($tsumegoID)
@@ -8,7 +10,7 @@ class TsumegoCommentsRenderer
 		foreach ($tsumegoIssues as $tsumegoIssue) {
 			$this->issueSections []= new TsumegoIssueRenderer($tsumegoIssue);
 		}
-		$plainSection = new TsumegoCommentsSectionRenderer($tsumegoID);
+		$this->plainSection = new TsumegoCommentsSectionRenderer($tsumegoID, null);
 	}
 
 	public function render()
@@ -22,7 +24,7 @@ class TsumegoCommentsRenderer
 		echo "</div>";
 	}
 
-	public function empty()
+	public function empty(): bool
 	{
 		return empty($this->issueSections) && $this->plainSection->empty();
 	}

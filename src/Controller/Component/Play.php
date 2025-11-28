@@ -6,6 +6,7 @@ App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
+App::uses('TsumegoCommentsRenderer', 'Utility');
 
 class Play
 {

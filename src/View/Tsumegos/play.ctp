@@ -605,134 +605,12 @@
 			</div>
 		</div>
 
-		<?php }
-		if($firstRanks==0){
-		?>
+		<?php } ?>
 
 		<table class="sandboxTable" width="62%">
-		<tr>
-		<td>
-
-		<?php new TsumegoCommentsRenderer($t['Tsumego']['id'])->render(); ?>
-
-		</td>
-		</tr>
-		</table>
-
-	<?php
-	}
-	}else{
-		?>
-		<br>
-		</div><br>
-		<div align="center">
-		<table class="sandboxTable" width="62%">
-		<tr>
-		<td>
-		<?php
-		echo '<div id="commentSpace">';
-
-			$showComment2 = array();
-			$showComment3 = array();
-
-			for($i=0; $i<count($showComment); $i++){
-				if(is_numeric($showComment[$i]['Comment']['status'])) $showComment[$i]['Comment']['textAnswer'] = 'false';
-				else{
-					$showComment[$i]['Comment']['textAnswer'] = $showComment[$i]['Comment']['status'];
-					$showComment[$i]['Comment']['status'] = 100;
-				}
-				if($showComment[$i]['Comment']['status']!=99) array_push($showComment2, $showComment[$i]);
-			}
-			$showComment = $showComment2;
-			$resolvedCommentCount = 0;
-
-			if(count($showComment)>0) echo '<div id="msg1x"><a id="show2">Comments<img id="greyArrow" src="/img/greyArrow2.png"></a></div><br>';
-				echo '<div id="msg2x">';
-			for($i=count($showComment)-1; $i>=0; $i--){
-					echo '<div class="sandboxComment">';
-					echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
-					echo $showComment[$i]['Comment']['user'].':<br>';
-					echo $showComment[$i]['Comment']['message'].'<br>';
-					if($showComment[$i]['Comment']['status']!=0 && $showComment[$i]['Comment']['status']!=97 && $showComment[$i]['Comment']['status']!=98	&& $showComment[$i]['Comment']['status']!=96){
-						echo '<div class="commentAnswer">';
-							echo '<div style="padding-top:7px;"></div>'.$showComment[$i]['Comment']['admin'].':<br>';
-							if($showComment[$i]['Comment']['status']==1) echo 'Your move(s) have been added.<br>';
-							else if($showComment[$i]['Comment']['status']==2) echo 'Your file has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==3) echo 'Your solution has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==4) echo 'I disagree with your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==5) echo 'Provide sequence.<br>';
-							else if($showComment[$i]['Comment']['status']==6) echo 'Resolved.<br>';
-							else if($showComment[$i]['Comment']['status']==7) echo 'I couldn\'t follow your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==8) echo 'You seem to try sending non-SGF-files.<br>';
-							else if($showComment[$i]['Comment']['status']==9) echo 'You answer is inferior to the correct solution.<br>';
-							else if($showComment[$i]['Comment']['status']==10) echo 'I disagree with your comment. I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==11) echo 'I don\'t know.<br>';
-							else if($showComment[$i]['Comment']['status']==12) echo 'I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==13) echo 'You are right, but the presented sequence is more interesting.<br>';
-							else if($showComment[$i]['Comment']['status']==14) echo 'I didn\'t add your file.<br>';
-							else if($showComment[$i]['Comment']['status']==100) echo $showComment[$i]['Comment']['textAnswer'];
-							else echo $showComment[$i]['Comment']['status'];
-						echo '</div>';
-					}
-					echo '</td><td align="right" class="sandboxTable2time">';
-					echo $showComment[$i]['Comment']['created'];
-					if(Auth::getUserID() == $showComment[$i]['Comment']['user_id']){
-						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
-					}
-					if(Auth::isAdmin()){
-						if($showComment[$i]['Comment']['status']==0) echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Answer</a>';
-						else echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
-					}
-					echo '</td></tr></table>';
-
-					echo '<div id="adminCommentPanel'.$i.'" class="adminCommentPanel">
-					<table class="sandboxTable2" width="100%" border="0">
-					<tr>
-					<td width="50%" style="vertical-align:top">';
-						echo $this->Form->create('Comment');
-						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
-						echo $this->Form->end('Submit');
-					echo '</td>
-					<td width="50%" style="vertical-align:top">';
-
-						echo '<select id="myselect'.$i.'">
-							<option value="0"></option>
-							<option value="1">Your moves have been added.</option>
-							<option value="2">Your move has been added.</option>
-							<option value="3">Your file has been added.</option>
-							<option value="4">I disagree with your comment.</option>
-							<option value="6">Provide sequence.</option>
-							<option value="6">Resolved.</option>
-							<option value="7">I couldn\'t follow your comment.</option>
-							<option value="8">You seem to try sending non-SGF-files.</option>
-							<option value="9">You answer is inferior to the correct solution.</option>
-							<option value="10">I disagree with your comment. I added sequences.</option>
-							<option value="11">I don\'t know.</option>
-							<option value="12">I added sequences.</option>
-							<option value="13">You are right, but the presented sequence is more interesting.</option>
-							<option value="14">I didn\'t add your file.</option>
-						</select>';
-						echo '<div align="right">';
-						echo '<br><br><br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=1">No Answer Necessary</a>';
-						echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
-						echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'">Delete</a>';
-						echo '</div>';
-					echo '</td>
-					</tr>
-					</table>
-					</div>
-					';
-					echo '</div>';
-					echo '<div class="sandboxCommentSpace"></div>';
-			}
-
-		?>
-		</div>
-
-		</td>
-		</tr>
+			<tr>
+				<td><?php new TsumegoCommentsRenderer($t['Tsumego']['id'])->render(); ?></td>
+			</tr>
 		</table>
 		</div>
 	<?php
@@ -795,11 +673,6 @@
 		</div>
 	</div>
 	<?php
-	if(count($showComment)>0){
-		echo '<div align="center">';
-		echo '<font color="grey"></font>';
-		echo '</div>';
-	}
 	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
@@ -1349,20 +1222,6 @@
 		';
 	}elseif(Auth::isInTimeMode()){
 		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
-	}
-
-	for($i=count($showComment)-1; $i>=0; $i--){
-		echo '
-		$("#myselect'.$i.'").change(function(){
-			$("#CommentStatus'.$i.'").val($("#myselect'.$i.' option:selected").text());
-		});
-
-		$("#adminComment'.$i.'").click(function(e){
-			e.preventDefault();
-			$("#adminCommentPanel'.$i.'").toggle(250);
-			adminCommentOpened = true;
-		});
-		';
 	}
 
 	echo 'var showCommentSpace = '.Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)).';';
