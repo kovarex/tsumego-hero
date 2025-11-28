@@ -7,9 +7,8 @@
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<div class="homeRight">
 		<div class="new-tsumego-box">
-			<p class="title-date"><?php echo $d1; ?></p>
 			<?php
-			if (!empty($tsumegoButtonsOfPublishedTsumegos))
+			if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 			{
 				echo '<font color="#f0f0f0">Added today:</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
@@ -27,25 +26,6 @@
 				echo '<br><br><div class="new-tsumego-box-separator"></div>';
 			}
 			?>
-			<font color="#f0f0f0">Most popular today:</font><br>
-			<?php if($totd && !$totd['Tsumego']['locked']){ ?>
-				<a id="mostPopularToday" href="/sets/view/<?php echo $totd['Tsumego']['set_id']; ?>"><b>
-					<?php echo $totd['Tsumego']['set'].' '.$totd['Tsumego']['set2']; ?></b> - <?php echo $totd['Tsumego']['num']; ?></a><br>
-				<li class="set<?php echo $totd['Tsumego']['status']; ?>1" style="margin-top:8px;">
-					<a id="tooltip-hover99" class="tooltip" href="/tsumegos/play/<?php echo $totd['Tsumego']['id'].'?search=topics'; ?>">
-						<?php echo $totd['Tsumego']['num']; ?>
-						<span><div id="tooltipSvg99"></div></span>
-					</a>
-				</li>
-			<?php }else{ ?>
-				<a id="mostPopularToday" href="/users/donate"><b>
-					<?php echo $totd['Tsumego']['set'].' '.$totd['Tsumego']['set2']; ?></b> - <?php echo $totd['Tsumego']['num']; ?></a><br>
-				<li class="set<?php echo $totd['Tsumego']['status']; ?>1" style="margin-top:8px;background-image: url('/img/viewButtonLocked.png');">
-					<a class="tooltip" href="/users/donate">
-						&nbsp;
-					</a>
-				</li>
-			<?php } ?>
 			<br><br><div style="margin-top:6px"></div>
 		</div>
 
