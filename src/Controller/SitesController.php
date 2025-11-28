@@ -63,58 +63,61 @@ class SitesController extends AppController
 		if ($dateUser)
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
-			$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]) ?: [];
-			$ptResult = SgfParser::process($ptts[0]['Sgf']['sgf']);
-			$popularTooltip = $ptResult->board;
-			$popularTooltipInfo = $ptResult->info;
-			$popularTooltipBoardSize = $ptResult->size;
-
-			$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
-
-			if (!isset($totd['Tsumego']['status']))
-				$totd['Tsumego']['status'] = 'N';
-			if (!isset($newT['Tsumego']['status']))
-				$newT['Tsumego']['status'] = 'N';
-
-			$currentQuote = $dateUser['DayRecord']['quote'];
-			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
-			if (!$userOfTheDay)
-				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
-
-			$totdSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
-			if ($totdSc)
+			$ptts = $this->Sgf->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
+			if ($ptts)
 			{
-				$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);
-				if ($totdS)
+				$ptResult = SgfParser::process($ptts[0]['Sgf']['sgf']);
+				$popularTooltip = $ptResult->board;
+				$popularTooltipInfo = $ptResult->info;
+				$popularTooltipBoardSize = $ptResult->size;
+
+				$newT = $this->Tsumego->findById($dateUser['DayRecord']['newTsumego']);
+
+				if (!isset($totd['Tsumego']['status']))
+					$totd['Tsumego']['status'] = 'N';
+				if (!isset($newT['Tsumego']['status']))
+					$newT['Tsumego']['status'] = 'N';
+
+				$currentQuote = $dateUser['DayRecord']['quote'];
+				$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
+				if (!$userOfTheDay)
+					$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
+
+				$totdSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
+				if ($totdSc)
 				{
-					$totd['Tsumego']['set'] = $totdS['Set']['title'];
-					$totd['Tsumego']['set2'] = $totdS['Set']['title2'];
-					$totd['Tsumego']['set_id'] = $totdS['Set']['id'];
+					$totdS = $this->Set->findById($totdSc['SetConnection']['set_id']);
+					if ($totdS)
+					{
+						$totd['Tsumego']['set'] = $totdS['Set']['title'];
+						$totd['Tsumego']['set2'] = $totdS['Set']['title2'];
+						$totd['Tsumego']['set_id'] = $totdS['Set']['id'];
+					}
 				}
-			}
-			$newTSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newT['Tsumego']['id']]]);
-			if ($newTSc)
-			{
-				$newTS = $this->Set->findById($newTSc['SetConnection']['set_id']);
-				if ($newTS)
+				$newTSc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newT['Tsumego']['id']]]);
+				if ($newTSc)
 				{
-					$newT['Tsumego']['set'] = $newTS['Set']['title'];
-					$newT['Tsumego']['set2'] = $newTS['Set']['title2'];
-					$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
+					$newTS = $this->Set->findById($newTSc['SetConnection']['set_id']);
+					if ($newTS)
+					{
+						$newT['Tsumego']['set'] = $newTS['Set']['title'];
+						$newT['Tsumego']['set2'] = $newTS['Set']['title2'];
+						$newT['Tsumego']['set_id'] = $newTS['Set']['id'];
+					}
 				}
+
+				$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
+				$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
+
+				$pd = $this->PublishDate->find('all', ['order' => 'date ASC']) ?: [];
+				foreach ($pd as $date)
+					$tsumegoDates[] = $date['PublishDate']['date'];
+
+				$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
+				foreach ($swp as $set)
+					$setsWithPremium[] = $set['Set']['id'];
+				$totd = $this->checkForLocked($totd, $setsWithPremium);
 			}
-
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
-			$this->set('uotdbg', $dateUser['DayRecord']['userbg']);
-
-			$pd = $this->PublishDate->find('all', ['order' => 'date ASC']) ?: [];
-			foreach ($pd as $date)
-				$tsumegoDates[] = $date['PublishDate']['date'];
-
-			$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
-			foreach ($swp as $set)
-				$setsWithPremium[] = $set['Set']['id'];
-			$totd = $this->checkForLocked($totd, $setsWithPremium);
 		}
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
