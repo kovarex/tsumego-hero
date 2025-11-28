@@ -153,12 +153,12 @@
 			<?php
 			if (Auth::isLoggedIn())
 			{
-				$baseHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
-				$health = max(0, $baseHealth - Auth::getUser()['damage']);
-				for($i = 0; $i < $health; $i++){
+				$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
+				$health = max(0, $maxHealth - Auth::getUser()['damage']);
+				for($i = 0; $i < $health; $i++)
 					echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
-				}
-				for($i=0; $i < ($baseHealth - $health); $i++){
+				for($i = 0; $i < ($maxHealth - $health); $i++)
+				{
 					$h = $health+$i;
 					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
 				}
