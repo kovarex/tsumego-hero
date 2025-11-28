@@ -1410,7 +1410,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('AdminActivity');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$this->loadModel('Sgf');
 		$this->loadModel('UserContribution');
 		$this->loadModel('Reject');
