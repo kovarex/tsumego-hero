@@ -59,45 +59,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that non-admin SGF uploads are filtered out
-	 */
-	public function testNonAdminSgfUploadsFilteredOut()
-	{
-		App::uses('AdminActivityLogger', 'Utility');
-
-		// Create admin user and regular user
-		$context = new ContextPreparator([
-			'user' => ['name' => 'admin_user', 'admin' => true],
-			'other-users' => [['name' => 'regular_user', 'admin' => false]],
-			'tsumego' => [],
-			'admin-activities' => [
-				[
-					'type' => AdminActivityLogger::SGF_UPLOAD,
-					'tsumego_id' => true
-				],
-				[
-					'type' => AdminActivityLogger::SGF_UPLOAD,
-					'tsumego_id' => true,
-					'user_id' => 'regular_user' // ContextPreparator will look up by name
-				]
-			]
-		]);
-
-		// View adminstats page
-		$browser = Browser::instance();
-		$browser->get('users/adminstats');
-
-		$pageSource = $browser->driver->getPageSource();
-
-		// Admin SGF upload should be visible
-		$this->assertTextContains('admin_user', $pageSource);
-
-		// Both exist in DB
-		$allActivities = ClassRegistry::init('AdminActivity')->find('all');
-		$this->assertCount(2, $allActivities);
-	}
-
-	/**
 	 * Test set-level admin activities (activities without tsumego_id)
 	 */
 	public function testSetLevelActivities()
@@ -242,9 +203,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 				['type' => AdminActivityLogger::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
 				['type' => AdminActivityLogger::PROBLEM_DELETE, 'tsumego_id' => true],
 
-				// SGF upload (4)
-				['type' => AdminActivityLogger::SGF_UPLOAD, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
-
 				// Problem settings (5-8)
 				['type' => AdminActivityLogger::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityLogger::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
@@ -282,7 +240,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Description Edit', $pageSource);
 		$this->assertTextContains('Hint Edit', $pageSource);
 		$this->assertTextContains('Problem Delete', $pageSource);
-		$this->assertTextContains('SGF Upload', $pageSource);
 		$this->assertTextContains('Alternative Response', $pageSource);
 		$this->assertTextContains('Pass Mode', $pageSource);
 		$this->assertTextContains('Multiple Choice', $pageSource);
@@ -304,7 +261,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// Problem edits (with old → new)
 		$this->assertTextContains('Description Edit: old desc → new desc', $pageSource);
 		$this->assertTextContains('Hint Edit: old hint → new hint', $pageSource);
-		$this->assertTextContains('SGF Upload: old sgf → new sgf', $pageSource);
 
 		// Problem edits (no values - show just type name)
 		$this->assertTextContains('Problem Delete', $pageSource);

@@ -53,7 +53,6 @@ class SgfController extends AppController
 				throw new AppException('The file is too large.');
 			$sgfData = file_get_contents($_FILES['adminUpload']['tmp_name']);
 		}
-		AdminActivityLogger::log(AdminActivityLogger::SGF_UPLOAD, $setConnection['SetConnection']['tsumego_id']);
 
 		$sgfModel = ClassRegistry::init('Sgf');
 		$sgfModel->create();

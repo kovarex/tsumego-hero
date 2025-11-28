@@ -29,9 +29,6 @@ class AdminActivityLogger
 	public const HINT_EDIT = 2;
 	public const PROBLEM_DELETE = 3;
 
-	// SGF/Files
-	public const SGF_UPLOAD = 4;
-
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
 	public const ALTERNATIVE_RESPONSE = 5;
 	public const PASS_MODE = 6;

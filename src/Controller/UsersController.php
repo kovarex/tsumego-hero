@@ -1728,10 +1728,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			// Get readable type name from enum table (names are Title Case: 'Description Edit' etc.)
 			$readableType = $aa[$i]['AdminActivityType']['name'];
 
-			// Only include if admin activity (skip non-admin SGF uploads)
-			if ($aa[$i]['AdminActivity']['type'] === AdminActivityLogger::SGF_UPLOAD && $aa[$i]['AdminActivity']['isAdmin'] == 0)
-				continue;
-
 			array_push($aa2, $aa[$i]);
 			array_push($adminActivities['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
 			array_push($adminActivities['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
