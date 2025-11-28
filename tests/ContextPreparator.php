@@ -4,6 +4,8 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
+		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);                // FK to: user
 		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User
@@ -283,17 +285,17 @@ class ContextPreparator
 	{
 		if ($tagsInput)
 		{
-			ClassRegistry::init('Tag')->deleteAll(['tsumego_id' => $tsumego['id']]);
+			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 			foreach ($tagsInput as $tagInput)
 			{
 				$tag = $this->getOrCreateTag($tagInput['name']);
 				$tagConnection = [];
-				$tagConnection['Tag']['tsumego_id'] = $tsumego['id'];
-				$tagConnection['Tag']['user_id'] = $this->user['id'];
-				$tagConnection['Tag']['tag_name_id'] = $tag['id'];
-				ClassRegistry::init('Tag')->create($tagConnection);
-				ClassRegistry::init('Tag')->save($tagConnection);
-				$tagConnection = ClassRegistry::init('Tag')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
+				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
+				$tagConnection['TagConnection']['tag_id'] = $tag['id'];
+				ClassRegistry::init('TagConnection')->create($tagConnection);
+				ClassRegistry::init('TagConnection')->save($tagConnection);
+				$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
 				$tsumego['tags'] [] = $tag;
 				$tsumego['tag-connections'] [] = $tagConnection;
 			}
@@ -332,17 +334,17 @@ class ContextPreparator
 
 	private function getOrCreateTag($name): array
 	{
-		$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		if (!$tag)
 		{
 			$tag = [];
 			$tag['name'] = $name;
-			ClassRegistry::init('TagName')->create($tag);
-			ClassRegistry::init('TagName')->save($tag);
+			ClassRegistry::init('Tag')->create($tag);
+			ClassRegistry::init('Tag')->save($tag);
 			// reloading so the generated id is retrieved
-			$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
-		return $tag['TagName'];
+		return $tag['Tag'];
 	}
 
 	private function checkSetClear(int $setID): void

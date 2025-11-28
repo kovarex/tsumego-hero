@@ -221,15 +221,12 @@ class Play
 						AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $t['Tsumego']['id'], $t['Tsumego']['set_id']);
 					if ($data['Comment']['deleteTag'] != null)
 					{
-						$tagsToDelete = ClassRegistry::init('Tag')->find('all', ['conditions' => ['tsumego_id' => $id]]);
-						if (!$tagsToDelete)
-							$tagsToDelete = [];
-						$tagsToDeleteCount = count($tagsToDelete);
-						for ($i = 0; $i < $tagsToDeleteCount; $i++)
+						$tagsToDelete = ClassRegistry::init('TagConnection')->find('all', ['conditions' => ['tsumego_id' => $id]]) ?: [];
+						foreach ($tagsToDelete as $tagToDelete)
 						{
-							$tagNameForDelete = ClassRegistry::init('TagName')->findById($tagsToDelete[$i]['Tag']['tag_name_id']);
-							if ($tagNameForDelete['TagName']['name'] == $data['Comment']['deleteTag'])
-								ClassRegistry::init('Tag')->delete($tagsToDelete[$i]['Tag']['id']);
+							$tagNameForDelete = ClassRegistry::init('Tag')->findById($tagToDelete['TagConnection']['tag_id']);
+							if ($tagNameForDelete['Tag']['name'] == $data['Comment']['deleteTag'])
+								ClassRegistry::init('Tag')->delete($tagToDelete['TagConnection']['id']);
 						}
 					}
 				}
@@ -616,7 +613,7 @@ class Play
 				$isAllowedToContribute2 = true;
 			else
 			{
-				$tagsToCheck = ClassRegistry::init('Tag')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
+				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
 				if (!$tagsToCheck)
 					$tagsToCheck = [];
 				$datex = date('Y-m-d', strtotime('today'));
@@ -624,7 +621,7 @@ class Play
 
 				for ($i = 0; $i < $tagsToCheckCount; $i++)
 				{
-					$datexx = new DateTime($tagsToCheck[$i]['Tag']['created']);
+					$datexx = new DateTime($tagsToCheck[$i]['TagConnection']['created']);
 					$datexx = $datexx->format('Y-m-d');
 					if ($datex !== $datexx)
 						$isAllowedToContribute2 = true;
