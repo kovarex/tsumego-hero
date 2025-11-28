@@ -23,7 +23,7 @@
 			elseif (!empty($adminActivities['new_value'][$i]))
 			{
 				if ($adminActivities['new_value'][$i] === '1')
-					$contentMessage .= '→ enabled';
+					$contentMessage .= ' → enabled';
 				elseif ($adminActivities['new_value'][$i] === '0')
 					$contentMessage .= ' → disabled';
 				else
