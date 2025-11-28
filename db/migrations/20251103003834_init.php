@@ -657,7 +657,7 @@ CREATE TABLE `tag_names` (
 
 CREATE TABLE `tags` (
 	`id` int NOT NULL AUTO_INCREMENT,
-	`tag_id` int DEFAULT NULL,
+	`tag_name_id` int DEFAULT NULL,
 	`user_id` int DEFAULT NULL,
 	`tsumego_id` int DEFAULT NULL,
 	`approved` int DEFAULT '1',
