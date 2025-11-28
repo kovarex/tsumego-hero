@@ -12,7 +12,7 @@
 			// Format date without seconds
 			$timestamp = strtotime($adminActivities['created'][$i]);
 			$dateFormatted = date('Y-m-d H:i', $timestamp);
-			
+
 			// Build formatted message from type and old_value/new_value
 			$contentMessage = $adminActivities['type'][$i]; // Start with type name
 			if (!empty($adminActivities['old_value'][$i]) && !empty($adminActivities['new_value'][$i]))
@@ -22,11 +22,15 @@
 			}
 			elseif (!empty($adminActivities['new_value'][$i]))
 			{
-				// Show just new value for toggles
-				$toggleState = $adminActivities['new_value'][$i] === '1' ? 'enabled' : 'disabled';
-				$contentMessage .= ' → ' . $toggleState;
+				$contentMessage .= ' → ';
+				if ($adminActivities['new_value'][$i] === '1')
+					$contentMessage .= '→ enabled';
+				elseif ($adminActivities['new_value'][$i] === '0')
+					$contentMessage .= ' → disabled';
+				else
+					$contentMessage .= '[Empty]  → ' . $adminActivities['new_value'][$i];
 			}
-			
+
 			echo '<tr style="border-bottom:1px solid #e0e0e0;">
 				<td>'.($iCounter).'</td>
 				<td>
@@ -42,7 +46,7 @@
 		}
 		echo '</table>';
 		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
-		
+
 		// Admin Comments Section
 		if (!empty($adminComments['tsumego_id'])) {
 			echo '<h3>Admin Comments (' . $commentsTotal . ')</h3>';
@@ -53,7 +57,7 @@
 				// Format date without seconds
 				$timestamp = strtotime($adminComments['created'][$i]);
 				$dateFormatted = date('Y-m-d H:i', $timestamp);
-				
+
 				echo '<tr style="border-bottom:1px solid #e0e0e0;">
 					<td>'.($iCounter).'</td>
 					<td>
@@ -165,7 +169,7 @@
 			echo $this->Pagination->render($tagsPage, $tagsPagesTotal, 'tags_page');
 			echo '<br><br><br><br><br>';
 		}
-		
+
 	echo '</div>';
 	echo '<div style="clear:both;"></div>';
 ?>
