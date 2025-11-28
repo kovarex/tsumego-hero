@@ -56,9 +56,7 @@ class TsumegosController extends AppController
 		if (!$setConnections)
 			throw new AppException("Problem without any set connection"); // some redirect/nicer message ?
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return new Play(function ($name, $value) {
-			$this->set($name, $value);
-		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
 	public static function getPopularTags($tags)

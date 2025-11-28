@@ -200,10 +200,9 @@ class CommentsController extends AppController
 						{
 							if (!in_array($t['Tsumego']['id'], $keyList))
 								$solved = 0;
-							elseif (
-								$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
-								|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
-								|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W'
+							elseif ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
+									|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
+									|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W'
 							)
 								$solved = 1;
 							else
@@ -273,11 +272,9 @@ class CommentsController extends AppController
 					{
 						if (!in_array($t['Tsumego']['id'], $keyList))
 							$solved = 0;
-						elseif (
-							$keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
+						elseif ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
 							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
-							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W'
-						)
+							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W')
 							$solved = 1;
 						else
 							$solved = 0;

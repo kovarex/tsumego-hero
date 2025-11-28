@@ -67,7 +67,7 @@ class UsersController extends AppController
 		echo '<table>';
 		foreach ($ts as $item)
 			echo '<tr><td>' . $item['Tsumego']['id'] . '</td><td>' . $item['Tsumego']['difficulty']
-				. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
+			. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
 		echo '</table>';
 	}
 
@@ -2155,7 +2155,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $admin)
-			$admins[] = $admin['User']['name'];
+			$admins [] = $admin['User']['name'];
 		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
 		$userYesterdayName = 'Unknown';
 		if (count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id']))
@@ -2168,7 +2168,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$users = ClassRegistry::init('User')->query('SELECT user.name, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
 		$exportedUsers = [];
 		foreach ($users as $user)
-			$exportedUsers[] = $user['user'];
+			$exportedUsers [] = $user['user'];
 
 		$this->set('leaderboard', $exportedUsers);
 		$this->set('uNum', "TODO");
