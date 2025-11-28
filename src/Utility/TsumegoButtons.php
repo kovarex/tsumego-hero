@@ -156,15 +156,15 @@ class TsumegoButtons extends ArrayObject
 		foreach ($this as $index => $navigationButton)
 		{
 			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
+			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
 			echo 'tooltipSgfs[' . $index . '] = [];';
-			for($y = 0; $y < count($tArr[0]); $y++)
+			for($y = 0; $y < count($tResult->board); $y++)
 			{
 				echo 'tooltipSgfs[' . $index . '][' . $y . '] = [];';
-				for ($x = 0; $x < count($tArr[0][$y]); $x++)
-					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tArr[0][$x][$y] . '");';
+				for ($x = 0; $x < count($tResult->board[$y]); $x++)
+					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tResult->board[$x][$y] . '");';
 			}
-			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tArr[2][0] . ', ' . $tArr[2][1] . ', ' . $tArr[3] . ');';
+			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tResult->info[0] . ', ' . $tResult->info[1] . ', ' . $tResult->size . ');';
 		}
 	}
 

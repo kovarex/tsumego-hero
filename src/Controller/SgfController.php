@@ -54,12 +54,21 @@ class SgfController extends AppController
 			$sgfData = file_get_contents($_FILES['adminUpload']['tmp_name']);
 		}
 		AdminActivityLogger::log(AdminActivityLogger::SGF_UPLOAD, $setConnection['SetConnection']['tsumego_id']);
+
+		$sgfModel = ClassRegistry::init('Sgf');
+		$sgfModel->create();
 		$sgf = [];
-		$sgf['Sgf']['sgf'] = $sgfData;
-		$sgf['Sgf']['user_id'] = Auth::getUserID();
-		$sgf['Sgf']['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
+		$sgf['sgf'] = $sgfData;
+		$sgf['user_id'] = Auth::getUserID();
+		$sgf['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
+		if (!$sgfModel->save($sgf))
+		{
+			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $sgfModel->validationErrors);
+			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
+			throw new AppException('Failed to upload SGF: ' . $errorMessage);
+		}
+
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
-		ClassRegistry::init('Sgf')->save($sgf);
 		return $this->redirect('/' . $setConnectionID);
 	}
 }

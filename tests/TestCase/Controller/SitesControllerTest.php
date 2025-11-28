@@ -9,8 +9,29 @@ class SitesControllerTest extends ControllerTestCase
 		// we init DayRecord, so the main page has something to show:
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
-			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]]]);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
+			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+
+		// Ensure there is a DayRecord pointing to an existing tsumego
+		ClassRegistry::init('DayRecord')->create();
+		ClassRegistry::init('DayRecord')->save([
+			'DayRecord' => [
+				'user_id' => $context->user['id'],
+				'date' => date('Y-m-d'),
+				'solved' => 5,
+				'quote' => 'q13',
+				'userbg' => 1,
+				'tsumego' => $context->tsumego['id'],
+				'newTsumego' => $context->tsumego['id'],
+				'usercount' => 1,
+				'visitedproblems' => 1,
+				'gems' => '0-0-0',
+				'gemCounter1' => 0,
+				'gemCounter2' => 0,
+				'gemCounter3' => 0,
+			],
+		]);
+
 		$browser = Browser::instance();
 		try
 		{
@@ -19,8 +40,7 @@ class SitesControllerTest extends ControllerTestCase
 		catch (Exception $e)
 		{
 		} // ignoring js errors on the main page for now
-		$titles = $browser->driver->findElements(WebDriverBy::cssSelector('.title4'));
-		$this->assertTrue(count($titles) > 3);
+		$this->assertStringContainsString('New Collection', $browser->driver->getPageSource());
 	}
 
 	public function testShowPublishedTsumego()

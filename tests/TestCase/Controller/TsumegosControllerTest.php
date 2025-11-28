@@ -119,4 +119,43 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
+
+	public function testShowFullHearts()
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
+		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
+		$this->assertCount(0, $emptyHearts);
+		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $fullHearts);
+	}
+
+	public function testShowFullPartialHearts()
+	{
+		$context = new ContextPreparator([
+			'user' => ['damage' => '1'],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
+		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
+		$this->assertCount(1, $emptyHearts);
+		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']) - 1, $fullHearts);
+	}
+
+	public function testShowHeartsWithDamageHigherThanHealth()
+	{
+		$context = new ContextPreparator([
+			'user' => ['damage' => '10000'],
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
+		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
+		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $emptyHearts);
+		$this->assertCount(0, $fullHearts);
+	}
 }
