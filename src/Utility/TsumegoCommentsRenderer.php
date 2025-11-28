@@ -1,6 +1,7 @@
 <?php
 
 App::uses('TsumegoCommentsSectionRenderer', 'Utility');
+App::uses('TsumegoIssuesRenderer', 'Utility');
 
 class TsumegoCommentsRenderer
 {
@@ -8,7 +9,7 @@ class TsumegoCommentsRenderer
 	{
 		$tsumegoIssues = ClassRegistry::init('TsumegoIssue')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 		foreach ($tsumegoIssues as $tsumegoIssue) {
-			$this->issueSections []= new TsumegoIssueRenderer($tsumegoIssue);
+			$this->issueSections []= new TsumegoIssuesRenderer($tsumegoIssue['TsumegoIssue']);
 		}
 		$this->plainSection = new TsumegoCommentsSectionRenderer($tsumegoID, null);
 	}

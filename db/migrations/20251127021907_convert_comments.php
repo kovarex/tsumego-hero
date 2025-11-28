@@ -77,6 +77,9 @@ ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 			if (!$tsumego->rowCount())
 				continue;
 
+			if ($status == "Your moves have been added.")
+				$intStatus = 1;
+
 			$answerMessage = null;
 			switch ($intStatus)
 			{

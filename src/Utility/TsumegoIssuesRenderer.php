@@ -1,11 +1,13 @@
 <?php
 
-class TsumegoIssueRenderer
+App::uses('TsumegoCommentsSectionRenderer', 'Utility');
+
+class TsumegoIssuesRenderer
 {
 	public function __construct($tsumegoIssue)
 	{
 		$this->tsumegoIssue = $tsumegoIssue;
-		$this->commentsSectionRenderer = new TsumegoCommentsSectionRenderer($tsumegoIssue['tsumego_id']);
+		$this->commentsSectionRenderer = new TsumegoCommentsSectionRenderer($tsumegoIssue['tsumego_id'], $tsumegoIssue['id']);
 	}
 
 	public function render()
