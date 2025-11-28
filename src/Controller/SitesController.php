@@ -63,7 +63,7 @@ class SitesController extends AppController
 		if ($dateUser)
 		{
 			$totd = $this->Tsumego->findById($dateUser['DayRecord']['tsumego']);
-			$ptts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]) ?: [];
+			$ptts = $this->Sgf->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $totd['Tsumego']['id']]]);
 			if ($ptts)
 			{
 				$ptResult = SgfParser::process($ptts[0]['Sgf']['sgf']);
