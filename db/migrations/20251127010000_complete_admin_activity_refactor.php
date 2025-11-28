@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../src/Utility/AdminActivityLogger.php';
  * Complete AdminActivity refactoring: from old file/answer schema to new enum-based type/old_value/new_value schema.
  *
  * This migration:
- * 1. Creates admin_activity_type enum table (19 activity types)
+ * 1. Creates admin_activity_type enum table (18 activity types)
  * 2. Migrates data from file/answer to type(INT)/old_value/new_value
  * 3. Adds foreign keys and indexes
  *
@@ -128,41 +128,41 @@ class CompleteAdminActivityRefactor extends AbstractMigration
 						/* Type 3: PROBLEM_DELETE - Problem deleted */
 						WHEN old.file = '/delete' OR (old.file = 'description' AND old.answer LIKE 'Problem deleted.%') THEN 3
 
-						/* Type 5: ALTERNATIVE_RESPONSE - AR mode toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%alternative response mode%' AND old.answer NOT LIKE '%for set%' THEN 5
+						/* Type 4: ALTERNATIVE_RESPONSE - AR mode toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%alternative response mode%' AND old.answer NOT LIKE '%for set%' THEN 4
 
-						/* Type 6: PASS_MODE - Pass mode toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%passing%' AND old.answer NOT LIKE '%for set%' THEN 6
+						/* Type 5: PASS_MODE - Pass mode toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%passing%' AND old.answer NOT LIKE '%for set%' THEN 5
 
-						/* Type 7: MULTIPLE_CHOICE - MC problem type toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%multiple choice%' THEN 7
+						/* Type 6: MULTIPLE_CHOICE - MC problem type toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%multiple choice%' THEN 6
 
-						/* Type 8: SCORE_ESTIMATING - SE problem type toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%score estimating%' THEN 8
+						/* Type 7: SCORE_ESTIMATING - SE problem type toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%score estimating%' THEN 7
 
-						/* Type 9: SOLUTION_REQUEST - Solution requested */
-						WHEN old.file = 'settings' AND old.answer = 'requested solution' THEN 9
+						/* Type 8: SOLUTION_REQUEST - Solution requested */
+						WHEN old.file = 'settings' AND old.answer = 'requested solution' THEN 8
 
-						/* Type 10: SET_TITLE_EDIT - Set title edited */
-						WHEN old.file = 'settings' AND old.answer LIKE '%meta data for set%' THEN 10
+						/* Type 9: SET_TITLE_EDIT - Set title edited */
+						WHEN old.file = 'settings' AND old.answer LIKE '%meta data for set%' THEN 9
 
-						/* Type 14: SET_RATING_EDIT - Set rating edited */
-						WHEN old.file = 'settings' AND old.answer LIKE '%rating data for set%' THEN 14
+						/* Type 13: SET_RATING_EDIT - Set rating edited */
+						WHEN old.file = 'settings' AND old.answer LIKE '%rating data for set%' THEN 13
 
-						/* Type 15: PROBLEM_ADD - Problem added to set */
-						WHEN old.file = 'description' AND old.answer LIKE 'Added problem for%' THEN 15
+						/* Type 14: PROBLEM_ADD - Problem added to set */
+						WHEN old.file = 'description' AND old.answer LIKE 'Added problem for%' THEN 14
 
-						/* Type 16: SET_ALTERNATIVE_RESPONSE - Set-wide AR toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%alternative response mode for set%' THEN 16
+						/* Type 15: SET_ALTERNATIVE_RESPONSE - Set-wide AR toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%alternative response mode for set%' THEN 15
 
-						/* Type 17: SET_PASS_MODE - Set-wide pass mode toggled (new_value = 0/1) */
-						WHEN old.file = 'settings' AND old.answer LIKE '%passing for set%' THEN 17
+						/* Type 16: SET_PASS_MODE - Set-wide pass mode toggled (new_value = 0/1) */
+						WHEN old.file = 'settings' AND old.answer LIKE '%passing for set%' THEN 16
 
-						/* Type 18: DUPLICATE_REMOVE - Duplicate problem removed */
-						WHEN old.file = 'settings' AND old.answer LIKE '%Removed duplicate:%' THEN 18
+						/* Type 17: DUPLICATE_REMOVE - Duplicate problem removed */
+						WHEN old.file = 'settings' AND old.answer LIKE '%Removed duplicate:%' THEN 17
 
-						/* Type 19: DUPLICATE_GROUP_CREATE - Duplicate group created */
-						WHEN old.file = 'settings' AND old.answer LIKE '%Created duplicate group:%' THEN 19
+						/* Type 18: DUPLICATE_GROUP_CREATE - Duplicate group created */
+						WHEN old.file = 'settings' AND old.answer LIKE '%Created duplicate group:%' THEN 18
 
 						/* Skip unrecognized activities */
 						ELSE NULL

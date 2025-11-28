@@ -11,7 +11,7 @@ App::uses('AdminActivityLogger', 'Utility');
  * - Tests adminstats page pagination and display
  * - Tests filtering out non-admin SGF uploads
  * - Tests pagination with multiple sections (activity, proposals, tags, tagnames)
- * - Tests all 19 activity types display correctly with formatted messages
+ * - Tests all 18 activity types display correctly with formatted messages
  */
 class AdminStatsControllerTest extends ControllerTestCase
 {
@@ -182,7 +182,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test all 19 activity types display correctly
+	 * Test all 18 activity types display correctly
 	 * Uses controller-level testing to avoid browser HTML truncation
 	 */
 	public function testAllActivityTypesDisplay()
@@ -203,30 +203,30 @@ class AdminStatsControllerTest extends ControllerTestCase
 				['type' => AdminActivityLogger::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
 				['type' => AdminActivityLogger::PROBLEM_DELETE, 'tsumego_id' => true],
 
-				// Problem settings (5-8)
+				// Problem settings (4-7)
 				['type' => AdminActivityLogger::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityLogger::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityLogger::MULTIPLE_CHOICE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityLogger::SCORE_ESTIMATING, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
-				// User requests (9)
+				// User requests (8)
 				['type' => AdminActivityLogger::SOLUTION_REQUEST, 'tsumego_id' => true],
 
-				// Set metadata (10-14)
+				// Set metadata (9-13)
 				['type' => AdminActivityLogger::SET_TITLE_EDIT, 'set_id' => true, 'old_value' => 'Old Set', 'new_value' => 'New Set'],
 				['type' => AdminActivityLogger::SET_DESCRIPTION_EDIT, 'set_id' => true, 'old_value' => 'Old desc', 'new_value' => 'New desc'],
 				['type' => AdminActivityLogger::SET_COLOR_EDIT, 'set_id' => true, 'old_value' => 'red', 'new_value' => 'blue'],
 				['type' => AdminActivityLogger::SET_ORDER_EDIT, 'set_id' => true, 'old_value' => '10', 'new_value' => '20'],
 				['type' => AdminActivityLogger::SET_RATING_EDIT, 'set_id' => true, 'old_value' => '1000', 'new_value' => '1100'],
 
-				// Problem management (15) - uses other-tsumegos[0]
+				// Problem management (14) - uses other-tsumegos[0]
 				['type' => AdminActivityLogger::PROBLEM_ADD, 'tsumego_id' => 'other:0', 'set_id' => true],
 
-				// Set-wide settings (16-17)
+				// Set-wide settings (15-16)
 				['type' => AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityLogger::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
-				// Duplicate management (18-19) - reference other tsumego in old_value
+				// Duplicate management (17-18) - reference other tsumego in old_value
 				['type' => AdminActivityLogger::DUPLICATE_REMOVE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 				['type' => AdminActivityLogger::DUPLICATE_GROUP_CREATE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 			]
