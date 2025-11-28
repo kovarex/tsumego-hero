@@ -177,6 +177,7 @@ class TimeModeTest extends TestCaseWithAuth
 				break;
 			usleep(1000 * 100);
 			$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+			usleep(1000 * 50);
 			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 			$this->assertTrue($nextButton->isEnabled());
 			$this->assertTrue($nextButton->isDisplayed());

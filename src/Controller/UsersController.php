@@ -1547,13 +1547,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tagNamesTotal = $this->Tag->find('count', ['conditions' => ['approved' => 0]]);
 
 		// Fetch paginated data
-		$tags = $this->Tag->find('all', [
+		$tagConnections = $this->TagConnection->find('all', [
 			'conditions' => ['approved' => 0],
 			'limit' => $perPage,
 			'offset' => $tagsOffset,
 			'order' => 'created DESC'
 		]);
-		$tagNames = $this->Tag->find('all', [
+		$tags = $this->Tag->find('all', [
 			'conditions' => ['approved' => 0],
 			'limit' => $perPage,
 			'offset' => $tagNamesOffset,
@@ -1567,24 +1567,24 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$tsIds = [];
 		$tagTsumegos = [];
-		$tagsCount = count($tags);
+		$tagsCount = count($tagConnections);
 		for ($i = 0; $i < $tagsCount; $i++)
 		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tags[$i]['TagConnection']['tsumego_id']]]);
+			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tagConnections[$i]['TagConnection']['tsumego_id']]]);
 			array_push($tsIds, $at['Tsumego']['id']);
 			array_push($tagTsumegos, $at);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
 			$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-			$au = $this->User->findById($tags[$i]['TagConnection']['user_id']);
-			$tags[$i]['TagConnection']['name'] = $tKeys[$tags[$i]['TagConnection']['tag_id']];
-			$tags[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			$tags[$i]['TagConnection']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tagConnections[$i]['TagConnection']['user_id']);
+			$tagConnections[$i]['TagConnection']['name'] = $tKeys[$tagConnections[$i]['TagConnection']['tag_id']];
+			$tagConnections[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
+			$tagConnections[$i]['TagConnection']['user'] = $this->checkPicture($au);
 		}
-		$tagNamesCount = count($tagNames);
+		$tagNamesCount = count($tags);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
-			$au = $this->User->findById($tagNames[$i]['Tag']['user_id']);
-			$tagNames[$i]['Tag']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
+			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
 
 		// Find first SGF (minimum id) for each tsumego
@@ -1788,8 +1788,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('aa2', $aa2);
 		$this->set('adminActivities', $adminActivities);
 		$this->set('adminComments', $adminComments);
-		$this->set('tags', $tags);
-		$this->set('tagNames', $tagNames);
+		$this->set('tags', $tagConnections);
+		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
 		$this->set('tooltipSgfs', $tooltipSgfs);
 		$this->set('tooltipInfo', $tooltipInfo);
