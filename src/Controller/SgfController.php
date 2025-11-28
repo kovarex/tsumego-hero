@@ -51,6 +51,22 @@ class SgfController extends AppController
 				throw new AppException('The file is too large.');
 			$sgfData = file_get_contents($_FILES['adminUpload']['tmp_name']);
 		}
+
+		$sgfModel = ClassRegistry::init('Sgf');
+		$sgfModel->create();
+		$sgf = [];
+		$sgf['sgf'] = $sgfData;
+		$sgf['user_id'] = Auth::getUserID();
+		$sgf['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
+		if (!$sgfModel->save($sgf))
+		{
+			$errorMessages = array_map(function ($error) {
+				return is_array($error) ? implode(' ', $error) : $error;
+			}, $sgfModel->validationErrors);
+			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
+			throw new AppException('Failed to upload SGF: ' . $errorMessage);
+		}
+
 		ClassRegistry::init('AdminActivity')->create();
 		$adminActivity = [];
 		$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
@@ -58,12 +74,7 @@ class SgfController extends AppController
 		$adminActivity['AdminActivity']['file'] = $setConnection['SetConnection']['num'];
 		$adminActivity['AdminActivity']['answer'] = '??';
 		ClassRegistry::init('AdminActivity')->save($adminActivity);
-		$sgf = [];
-		$sgf['Sgf']['sgf'] = $sgfData;
-		$sgf['Sgf']['user_id'] = Auth::getUserID();
-		$sgf['Sgf']['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
-		ClassRegistry::init('Sgf')->save($sgf);
 		return $this->redirect('/' . $setConnectionID);
 	}
 }

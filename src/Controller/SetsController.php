@@ -108,11 +108,11 @@ class SetsController extends AppController
 			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
 			if (!$sgf)
 				continue;
-			$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
+			$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
 
-			array_push($similarArr, $sgfArr[0]);
-			array_push($similarArrInfo, $sgfArr[2]);
-			array_push($similarArrBoardSize, $sgfArr[3]);
+			array_push($similarArr, $sgfResult->board);
+			array_push($similarArrInfo, $sgfResult->info);
+			array_push($similarArrBoardSize, $sgfResult->size);
 		}
 
 		$this->set('id', $id);
@@ -890,6 +890,15 @@ ORDER BY total_count DESC, partition_number";
 		$setConnection['num'] = $this->data['Tsumego']['num'];
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save($setConnection);
+
+		// Ensure newly created tsumegos always have an SGF record.
+		ClassRegistry::init('Sgf')->create();
+		if (!ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumego['id'], 'sgf' => '(;SZ[19])']))
+		{
+			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
+			throw new AppException('Failed to create default SGF for new tsumego.');
+		}
+
 		ClassRegistry::init('Tsumego')->getDataSource()->commit();
 		return $this->redirect('/sets/view/' . $setID);
 	}

@@ -527,10 +527,10 @@ class CommentsController extends AppController
 			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts) > 0)
 			{
-				$tArr = SgfParser::process($tts[0]['Sgf']['sgf']);
-				array_push($tooltipSgfs, $tArr[0]);
-				array_push($tooltipInfo, $tArr[2]);
-				array_push($tooltipBoardSize, $tArr[3]);
+				$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+				array_push($tooltipSgfs, $tResult->board);
+				array_push($tooltipInfo, $tResult->info);
+				array_push($tooltipBoardSize, $tResult->size);
 			}
 		}
 		$yourcCount2 = count($yourc);
@@ -542,10 +542,10 @@ class CommentsController extends AppController
 			$tts2 = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
 			if (count($tts2) > 0)
 			{
-				$tArr2 = SgfParser::process($tts2[0]['Sgf']['sgf']);
-				$tooltipSgfs2[$i] = $tArr2[0];
-				$tooltipInfo2[$i] = $tArr2[2];
-				array_push($tooltipBoardSize2, $tArr2[3]);
+				$tResult2 = SgfParser::process($tts2[0]['Sgf']['sgf']);
+				$tooltipSgfs2[$i] = $tResult2->board;
+				$tooltipInfo2[$i] = $tResult2->info;
+				array_push($tooltipBoardSize2, $tResult2->size);
 			}
 		}
 		$admins = $this->User->find('all', ['conditions' => ['isAdmin' => 1]]);

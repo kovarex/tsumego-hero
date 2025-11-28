@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
+App::uses('SgfResult', 'Utility');
+
 class SgfParser
 {
 	/**
 	 * Parse SGF and return board, stones and info array.
 	 *
 	 * @param string $sgf
-	 * @return array{array<int,array<int,string>>, array<int,array{int,int,string}>, array{int,int}, int|string}
+	 * @return SgfResult
 	 */
-	public static function process($sgf)
+	public static function process(string $sgf): SgfResult
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);
@@ -17,8 +21,8 @@ class SgfParser
 		$white = self::getInitialPosition(strpos($sgf, 'AW'), $sgfArr, 'o');
 		$stones = array_merge($black, $white);
 
-		$board = self::emptyBoard(19);
-		$stones = self::normalizeOrientation($stones);
+		$board = self::emptyBoard($boardSize);
+		$stones = self::normalizeOrientation($stones, $boardSize);
 
 		$highestX = 0;
 		$highestY = 0;
@@ -34,10 +38,10 @@ class SgfParser
 
 		$tInfo = [$highestX, $highestY];
 
-		return [$board, $stones, $tInfo, $boardSize];
+		return new SgfResult($board, $stones, $tInfo, $boardSize);
 	}
 
-	private static function detectBoardSize($sgf)
+	private static function detectBoardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');
 		if ($boardSizePos === false)
@@ -48,10 +52,10 @@ class SgfParser
 		if (substr($size, 1) == ']')
 			$size = substr($size, 0, 1);
 
-		return $size;
+		return (int) $size;
 	}
 
-	private static function emptyBoard($size)
+	private static function emptyBoard(int $size): array
 	{
 		$board = [];
 		for ($i = 0; $i < $size; $i++)
@@ -64,13 +68,14 @@ class SgfParser
 		return $board;
 	}
 
-	private static function normalizeOrientation($stones)
+	private static function normalizeOrientation(array $stones, int $boardSize): array
 	{
 		if (empty($stones))
 			return $stones;
 
-		$lowestX = 18;
-		$lowestY = 18;
+		$maxCoord = $boardSize - 1;
+		$lowestX = $maxCoord;
+		$lowestY = $maxCoord;
 		$highestX = 0;
 		$highestY = 0;
 		$stonesCount = count($stones);
@@ -82,33 +87,35 @@ class SgfParser
 			$highestY = max($highestY, $stones[$i][1]);
 		}
 
-		if (18 - $lowestX < $lowestX)
-			$stones = self::xFlip($stones);
-		if (18 - $lowestY < $lowestY)
-			$stones = self::yFlip($stones);
+		if ($maxCoord - $lowestX < $lowestX)
+			$stones = self::xFlip($stones, $boardSize);
+		if ($maxCoord - $lowestY < $lowestY)
+			$stones = self::yFlip($stones, $boardSize);
 
 		return $stones;
 	}
 
-	private static function xFlip($stones)
+	private static function xFlip(array $stones, int $boardSize): array
 	{
+		$maxCoord = $boardSize - 1;
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
-			$stones[$i][0] = 18 - $stones[$i][0];
+			$stones[$i][0] = $maxCoord - $stones[$i][0];
 
 		return $stones;
 	}
 
-	private static function yFlip($stones)
+	private static function yFlip(array $stones, int $boardSize): array
 	{
+		$maxCoord = $boardSize - 1;
 		$stonesCount = count($stones);
 		for ($i = 0; $i < $stonesCount; $i++)
-			$stones[$i][1] = 18 - $stones[$i][1];
+			$stones[$i][1] = $maxCoord - $stones[$i][1];
 
 		return $stones;
 	}
 
-	private static function getInitialPosition($pos, $sgfArr, $color)
+	private static function getInitialPosition(int|bool $pos, array $sgfArr, string $color): array
 	{
 		if ($pos === false)
 			return [];
@@ -142,7 +149,7 @@ class SgfParser
 		return $pairs;
 	}
 
-	private static function getInitialPositionEnd($pos, $sgfArr)
+	private static function getInitialPositionEnd(int $pos, array $sgfArr): int
 	{
 		$endCondition = $pos;
 		$currentPos1 = $pos + 2;
