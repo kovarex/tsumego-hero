@@ -3025,12 +3025,9 @@ Joschka Zimdars';
 			array_push($a, $de[$i]['Set']['id']);
 		$de = $a;
 
-		$t = CronController::getTsumegoOfTheDay();
-
 		$ans = $this->Answer->find('all', ['limit' => 100, 'order' => 'created DESC']);
 		$s = $this->Schedule->find('all', ['limit' => 100, 'order' => 'date DESC']);
 
-		$this->set('t', $t);
 		$this->set('ans', $ans);
 		$this->set('s', $s);
 		$this->set('p', $p);
