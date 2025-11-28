@@ -66,8 +66,8 @@ class TsumegoButtonsQueryBuilder
 		if (empty($this->tsumegoFilters->tagIDs))
 			return;
 
-		Util::addSqlCondition($this->condition, '`tag`.tag_name_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')');
-		$this->query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
+		Util::addSqlCondition($this->condition, '`tag_connection`.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')');
+		$this->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
 	}
 
 	private function queryRank()
@@ -86,11 +86,11 @@ class TsumegoButtonsQueryBuilder
 			return;
 
 		$currentTag = CakeSession::read('lastSet');
-		$tag = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $currentTag]]);
+		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
 			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
-		$this->query .= ' LEFT JOIN tag ON tag.tsumego_id=tsumego.id';
-		Util::addSqlCondition($this->condition, '`tag`.tag_name_id=' . $tag['TagName']['id']);
+		$this->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
+		Util::addSqlCondition($this->condition, 'tag_connection.tag_id=' . $tag['Tag']['id']);
 	}
 
 	private function querySet($id)

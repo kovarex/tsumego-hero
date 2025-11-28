@@ -645,7 +645,7 @@
 	let newTag = null;
 	<?php
 		for($i=0;$i<count($allTags);$i++)
-			echo 'allTags.push("'.$allTags[$i]['TagName']['name'].'");';
+			echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
 	?>
 	drawTags();
 
@@ -721,9 +721,9 @@
 		$tags  = (array)$tags;
 		$allTags = (array)$allTags;
 			for($i=0;$i<count($tags);$i++)
-				echo 'tags.push("'.$tags[$i]['Tag']['name'].'");';
+				echo 'tags.push("'.$tags[$i]['TagConnection']['name'].'");';
 			for($i=0;$i<count($allTags);$i++)
-				echo 'allTags.push("'.$allTags[$i]['TagName']['name'].'");';
+				echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
 		?>
 		drawTags();
 	});

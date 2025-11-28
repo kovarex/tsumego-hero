@@ -33,7 +33,7 @@ class UsersController extends AppController
 		$this->loadModel('SetConnection');
 		$this->loadModel('Duplicate');
 		$this->loadModel('PublishDate');
-		$this->loadModel('TagName');
+		$this->loadModel('Tag');
 	}
 
 	/**
@@ -383,11 +383,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function routine20(): void //popular tags
 	{
-		$tags = $this->Tag->find('all', ['conditions' => ['approved' => 1]]);
+		$tags = $this->TagConnection->find('all', ['conditions' => ['approved' => 1]]);
 		$tagCount = [];
 		$tagsCount = count($tags);
 		for ($i = 0; $i < $tagsCount; $i++)
-			array_push($tagCount, $tags[$i]['Tag']['tag_name_id']);
+			array_push($tagCount, $tags[$i]['TagConnection']['tag_id']);
 
 		$tagCount = array_count_values($tagCount);
 		$tagId = [];
@@ -1423,7 +1423,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('AdminActivity');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('TagName');
+		$this->loadModel('Tag');
 		$this->loadModel('Sgf');
 		$this->loadModel('UserContribution');
 		$this->loadModel('Reject');
@@ -1438,27 +1438,27 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$tagsToApproveCount = count($tagsToApprove);
 					for ($i = 1; $i < $tagsToApproveCount; $i++)
 					{
-						$tagToApprove = $this->Tag->findById(substr($tagsToApprove[$i], 1));
-						if ($tagToApprove != null && $tagToApprove['Tag']['approved'] != 1)
+						$tagToApprove = $this->TagConnection->findById(substr($tagsToApprove[$i], 1));
+						if ($tagToApprove != null && $tagToApprove['TagConnection']['approved'] != 1)
 						{
 							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagsToApprove[$i], 0, 1) == 'a')
 							{
-								$tagToApprove['Tag']['approved'] = '1';
-								$this->Tag->save($tagToApprove);
-								AppController::handleContribution($tagToApprove['Tag']['user_id'], 'added_tag');
+								$tagToApprove['TagConnection']['approved'] = '1';
+								$this->TagConnection->save($tagToApprove);
+								AppController::handleContribution($tagToApprove['TagConnection']['user_id'], 'added_tag');
 							}
 							else
 							{
 								$reject = [];
-								$reject['Reject']['tsumego_id'] = $tagToApprove['Tag']['tsumego_id'];
-								$reject['Reject']['user_id'] = $tagToApprove['Tag']['user_id'];
+								$reject['Reject']['tsumego_id'] = $tagToApprove['TagConnection']['tsumego_id'];
+								$reject['Reject']['user_id'] = $tagToApprove['TagConnection']['user_id'];
 								$reject['Reject']['type'] = 'tag';
-								$tagNameId = $this->TagName->findById($tagToApprove['Tag']['tag_name_id']);
-								$reject['Reject']['text'] = $tagNameId['TagName']['name'];
+								$tagNameId = $this->Tag->findById($tagToApprove['TagConnection']['tag_id']);
+								$reject['Reject']['text'] = $tagNameId['Tag']['name'];
 								$this->Reject->create();
 								$this->Reject->save($reject);
-								$this->Tag->delete($tagToApprove['Tag']['id']);
+								$this->TagConnection->delete($tagToApprove['TagConnection']['id']);
 							}
 						}
 					}
@@ -1467,25 +1467,25 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$tagNamesToApproveCount = count($tagNamesToApprove);
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++)
 					{
-						$tagNameToApprove = $this->TagName->findById(substr($tagNamesToApprove[$i], 1));
-						if ($tagNameToApprove != null && $tagNameToApprove['TagName']['approved'] != 1)
+						$tagNameToApprove = $this->Tag->findById(substr($tagNamesToApprove[$i], 1));
+						if ($tagNameToApprove != null && $tagNameToApprove['Tag']['approved'] != 1)
 						{
 							AppController::handleContribution(Auth::getUserID(), 'reviewed');
 							if (substr($tagNamesToApprove[$i], 0, 1) == 'a')
 							{
-								$tagNameToApprove['TagName']['approved'] = '1';
-								$this->TagName->save($tagNameToApprove);
-								AppController::handleContribution($tagNameToApprove['TagName']['user_id'], 'created_tag');
+								$tagNameToApprove['Tag']['approved'] = '1';
+								$this->Tag->save($tagNameToApprove);
+								AppController::handleContribution($tagNameToApprove['Tag']['user_id'], 'created_tag');
 							}
 							else
 							{
 								$reject = [];
-								$reject['Reject']['user_id'] = $tagNameToApprove['TagName']['user_id'];
+								$reject['Reject']['user_id'] = $tagNameToApprove['Tag']['user_id'];
 								$reject['Reject']['type'] = 'tag name';
-								$reject['Reject']['text'] = $tagNameToApprove['TagName']['name'];
+								$reject['Reject']['text'] = $tagNameToApprove['Tag']['name'];
 								$this->Reject->create();
 								$this->Reject->save($reject);
-								$this->TagName->delete($tagNameToApprove['TagName']['id']);
+								$this->Tag->delete($tagNameToApprove['Tag']['id']);
 							}
 						}
 					}
@@ -1540,34 +1540,34 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		$tags = $this->Tag->find('all', ['conditions' => ['approved' => 0]]);
-		$tagNames = $this->TagName->find('all', ['conditions' => ['approved' => 0]]);
-		$tagsByKey = $this->TagName->find('all');
+		$tags = $this->TagConnection->find('all', ['conditions' => ['approved' => 0]]);
+		$tagNames = $this->Tag->find('all', ['conditions' => ['approved' => 0]]);
+		$tagsByKey = $this->Tag->find('all');
 		$tKeys = [];
 		$tagsByKeyCount = count($tagsByKey);
 		for ($i = 0; $i < $tagsByKeyCount; $i++)
-			$tKeys[$tagsByKey[$i]['TagName']['id']] = $tagsByKey[$i]['TagName']['name'];
+			$tKeys[$tagsByKey[$i]['Tag']['id']] = $tagsByKey[$i]['Tag']['name'];
 
 		$tsIds = [];
 		$tagTsumegos = [];
 		$tagsCount = count($tags);
 		for ($i = 0; $i < $tagsCount; $i++)
 		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tags[$i]['Tag']['tsumego_id']]]);
+			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tags[$i]['TagConnection']['tsumego_id']]]);
 			array_push($tsIds, $at['Tsumego']['id']);
 			array_push($tagTsumegos, $at);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
 			$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['name'] = $tKeys[$tags[$i]['Tag']['tag_name_id']];
-			$tags[$i]['Tag']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tags[$i]['TagConnection']['user_id']);
+			$tags[$i]['TagConnection']['name'] = $tKeys[$tags[$i]['TagConnection']['tag_id']];
+			$tags[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
+			$tags[$i]['TagConnection']['user'] = $this->checkPicture($au);
 		}
 		$tagNamesCount = count($tagNames);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
-			$au = $this->User->findById($tagNames[$i]['TagName']['user_id']);
-			$tagNames[$i]['TagName']['user'] = $this->checkPicture($au);
+			$au = $this->User->findById($tagNames[$i]['Tag']['user_id']);
+			$tagNames[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
 
 		$approveSgfs = $this->Sgf->find('all', ['conditions' => ['version' => 0]]);

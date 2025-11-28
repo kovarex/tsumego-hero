@@ -657,7 +657,7 @@ CREATE TABLE `tag_names` (
 
 CREATE TABLE `tags` (
 	`id` int NOT NULL AUTO_INCREMENT,
-	`tag_name_id` int DEFAULT NULL,
+	`tag_id` int DEFAULT NULL,
 	`user_id` int DEFAULT NULL,
 	`tsumego_id` int DEFAULT NULL,
 	`approved` int DEFAULT '1',
@@ -665,7 +665,7 @@ CREATE TABLE `tags` (
 	PRIMARY KEY (`id`),
 	KEY `tsumego_id` (`tsumego_id`),
 	KEY `user_id` (`user_id`),
-	KEY `tag_name_id` (`tag_name_id`)
+	KEY `tag_id` (`tag_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17769 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

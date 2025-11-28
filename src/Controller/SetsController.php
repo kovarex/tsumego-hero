@@ -438,7 +438,7 @@ class SetsController extends AppController
 			$difficultyTiles[] = $item['rank'];
 
 		//tagTiles
-		$tags = $this->TagName->find('all', [
+		$tags = $this->Tag->find('all', [
 			'conditions' => [
 				'approved' => 1,
 				'NOT' => ['name' => 'Tsumego'],
@@ -447,7 +447,7 @@ class SetsController extends AppController
 
 		$tagTiles = [];
 		foreach ($tags as $tag)
-			$tagTiles[] = $tag['TagName']['name'];
+			$tagTiles[] = $tag['Tag']['name'];
 
 		if (Auth::isLoggedIn())
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
@@ -489,17 +489,14 @@ class SetsController extends AppController
 				if (count($tsumegoFilters->tags) > 0)
 				{
 					$idsTemp = [];
-					$tsTagsFiltered = $this->Tag->find('all', [
+					$tsTagsFiltered = ClassRegistry::init('TagConnection')->find('all', [
 						'conditions' => [
 							'tsumego_id' => $currentIds,
-							'tag_name_id' => $tsumegoFilters->tagIDs,
-						],
-					]);
-					if (!$tsTagsFiltered)
-						$tsTagsFiltered = [];
+							'tag_id' => $tsumegoFilters->tagIDs,
+						]]) ?: [];
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
+						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
 				}
@@ -596,15 +593,15 @@ class SetsController extends AppController
 				if (count($tsumegoFilters->tags) > 0)
 				{
 					$idsTemp = [];
-					$tsTagsFiltered = $this->Tag->find('all', [
+					$tsTagsFiltered = $this->TagConnection->find('all', [
 						'conditions' => [
 							'tsumego_id' => $currentIds,
-							'tag_name_id' => $tsumegoFilters->tagIDs,
+							'tag_id' => $tsumegoFilters->tagIDs,
 						],
 					]) ?: [];
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
+						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
 
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
@@ -636,26 +633,26 @@ class SetsController extends AppController
 			$query = "
 WITH tag_counts AS (
   SELECT
-    tag_name.id AS tag_id,
-    tag_name.name AS tag_name,
-    tag_name.color AS tag_color,
+    tag.id AS tag_id,
+    tag.name AS tag_name,
+    tag.color AS tag_color,
     COUNT(tsumego.id) AS total_count
   FROM tsumego
-  JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag_name.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
-  GROUP BY tag_name.id
+  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
+  JOIN tag ON tag.id = tag_connection.tag_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
+  GROUP BY tag.id
 ),
 numbered AS (
   SELECT
-    tag_name.id AS tag_id,
-    tag_name.name AS tag_name,
-    tag_name.color AS tag_color,
+    tag.id AS tag_id,
+    tag.name AS tag_name,
+    tag.color AS tag_color,
     tsumego.id AS tsumego_id,
-    ROW_NUMBER() OVER (PARTITION BY tag_name.id ORDER BY tsumego.id) AS rn,
+    ROW_NUMBER() OVER (PARTITION BY tag.id ORDER BY tsumego.id) AS rn,
     tsumego_status.status
   FROM tsumego
-  JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id
+  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
+  JOIN tag ON tag.id = tag_connection.tag_id
   LEFT JOIN tsumego_status
       ON tsumego_status.user_id = " . Auth::getUserID() . "
       AND tsumego_status.tsumego_id = tsumego.id
@@ -919,7 +916,7 @@ ORDER BY total_count DESC, partition_number";
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
-		$this->loadModel('TagName');
+		$this->loadModel('Tag');
 		$this->loadModel('Tag');
 		$this->loadModel('User');
 		$this->loadModel('UserContribution');
@@ -1030,9 +1027,9 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['image'] = '';
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
-			$tagName = $this->TagName->findByName($id);
-			if ($tagName && isset($tagName['TagName']['description']))
-				$set['Set']['description'] = $tagName['TagName']['description'];
+			$tagName = $this->Tag->findByName($id);
+			if ($tagName && isset($tagName['Tag']['description']))
+				$set['Set']['description'] = $tagName['Tag']['description'];
 
 			$currentIds = [];
 			foreach ($tsumegoButtons as $tsumegoButton)
@@ -1522,14 +1519,14 @@ ORDER BY total_count DESC, partition_number";
 		else
 			$scoring = false;
 
-		$allTags = $this->TagName->find('all') ?: [];
+		$allTags = $this->Tag->find('all') ?: [];
 		$allTagsSorted = [];
 		$allTagsKeys = [];
 		$allTagsCount = count($allTags);
 		for ($i = 0; $i < $allTagsCount; $i++)
 		{
-			array_push($allTagsSorted, $allTags[$i]['TagName']['name']);
-			$allTagsKeys[$allTags[$i]['TagName']['name']] = $allTags[$i];
+			array_push($allTagsSorted, $allTags[$i]['Tag']['name']);
+			$allTagsKeys[$allTags[$i]['Tag']['name']] = $allTags[$i];
 		}
 		sort($allTagsSorted);
 		$s2Tags = [];
@@ -1545,26 +1542,26 @@ ORDER BY total_count DESC, partition_number";
 				{
 					$newAddTag = explode('-', $_COOKIE['addTag']);
 					$tagSetId = (int) $newAddTag[0];
-					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
+					$newTagName = $this->Tag->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
 					$tagSc = TsumegoUtil::collectTsumegosFromSet($tagSetId);
 					$tagScCount = count($tagSc);
 					for ($i = 0; $i < $tagScCount; $i++)
 					{
-						$tagAlreadyThere = $this->Tag->find('first', [
+						$tagAlreadyThere = $this->TagConnection->find('first', [
 							'conditions' => [
 								'tsumego_id' => $tagSc[$i]['Tsumego']['id'],
-								'tag_name_id' => $newTagName['TagName']['id'],
+								'tag_id' => $newTagName['Tag']['id'],
 							],
 						]);
 						if ($tagAlreadyThere == null)
 						{
 							$saveTag = [];
-							$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
-							$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
-							$saveTag['Tag']['user_id'] = Auth::getUserID();
-							$saveTag['Tag']['approved'] = 1;
-							$this->Tag->create();
-							$this->Tag->save($saveTag);
+							$saveTag['TagConnection']['tag_id'] = $newTagName['Tag']['id'];
+							$saveTag['TagConnection']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
+							$saveTag['TagConnection']['user_id'] = Auth::getUserID();
+							$saveTag['TagConnection']['approved'] = 1;
+							$this->TagConnection->create();
+							$this->TagConnection->save($saveTag);
 						}
 					}
 					$this->set('removeCookie', 'addTag');
