@@ -6,7 +6,6 @@
 	<a href="/users/tsumego_score">set score</a>
 	<br><br><br>
 	<?php
-		//echo $t;
 		//echo '<pre>'; print_r($pl); echo '</pre>';
 		echo '<table border="1">';
 		echo '<th>start</th><th>empty_uts</th><th>purge</th><th>count</th><th>archive</th><th>tsumego_scores</th><th>set_scores</th>';
@@ -22,7 +21,7 @@
 			echo '</tr>';
 		}
 		echo '</table>';
-		
+
 		echo '<h1>Add Problem</h1>';
 		echo $this->Form->create('Schedule');
 		echo $this->Form->input('num', array('label' => 'num: ', 'type' => 'text', 'placeholder' => 'num'));
