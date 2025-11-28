@@ -221,8 +221,8 @@ class CompleteAdminActivityRefactor extends AbstractMigration
             WHERE type IS NOT NULL  -- Only migrate recognized activity patterns
         ");
 
-        // STEP 5: Rename tables atomically (preserve old table as backup)
-        $this->execute("RENAME TABLE admin_activity TO admin_activity_old, admin_activity_new TO admin_activity");
+        // STEP 5: drop the old table
+        $this->execute("DROP TABLE admin_activity");
 
         // STEP 6: Set AUTO_INCREMENT to next available ID (handle empty table case)
         $this->execute("
@@ -242,29 +242,3 @@ class CompleteAdminActivityRefactor extends AbstractMigration
         );
     }
 }
-
-/*
- * USEFUL SQL QUERY FOR VERIFICATION
- * ==================================
- *
- * Find unmigrated records from pre-migration data:
- * (Compares admin_activity vs admin_activity_old backup table)
- *
- * SELECT
- *     old.id,
- *     old.user_id,
- *     old.tsumego_id,
- *     old.file,
- *     old.answer,
- *     old.created
- * FROM admin_activity_old old
- * WHERE old.id NOT IN (
- *     SELECT id FROM admin_activity
- *     WHERE created <= (SELECT MAX(created) FROM admin_activity_old)
- * )
- * ORDER BY old.created DESC
- * LIMIT 500;
- *
- * Note: Filters by date to exclude new activities created after migration.
- * admin_activity_old contains all pre-migration records for permanent reference.
- */
