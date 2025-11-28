@@ -24,11 +24,9 @@ class TsumegosController extends AppController
 	public static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int
 	{
 		if ($setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]))
-			if (
-				$result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
-					return $setConnection['SetConnection']['set_id'] == $currentSetID;
-				})
-			)
+			if ($result = array_find($setConnections, function (array $setConnection) use (&$currentSetID): bool {
+				return $setConnection['SetConnection']['set_id'] == $currentSetID;
+			}))
 				return $result['SetConnection']['id'];
 		return null;
 	}
@@ -49,9 +47,7 @@ class TsumegosController extends AppController
 		}
 
 		if ($setConnectionID)
-			return new Play(function ($name, $value) {
-				$this->set($name, $value);
-			})->play($setConnectionID, $this->params, $this->data);
+			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
 
 		if (!$id)
 			throw new AppException("Tsumego id not provided");

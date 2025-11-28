@@ -471,13 +471,10 @@ class SetsController extends AppController
 					$fromTo[] = RatingBounds::coverRank($rank, '15k')->getConditions();
 				$rankConditions['OR'] = $fromTo;
 			}
-			$setsRaw = $this->Set->find('all', [
-				'order' => 'order ASC',
+			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
 				'conditions' => [
 					empty($tsumegoFilters->setIDs) ? null : ['id' => $tsumegoFilters->setIDs],
-					'public' => 1
-				]
-			]) ?: [];
+					'public' => 1]]) ?: [];
 
 			$achievementUpdate = [];
 			$setsRawCount = count($setsRaw);
@@ -896,10 +893,7 @@ ORDER BY total_count DESC, partition_number";
 
 		// Ensure newly created tsumegos always have an SGF record.
 		ClassRegistry::init('Sgf')->create();
-		if (!ClassRegistry::init('Sgf')->save([
-			'tsumego_id' => $tsumego['id'],
-			'sgf' => '(;SZ[19])',
-		]))
+		if (!ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumego['id'], 'sgf' => '(;SZ[19])']))
 		{
 			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
 			throw new AppException('Failed to create default SGF for new tsumego.');
@@ -1818,10 +1812,8 @@ ORDER BY total_count DESC, partition_number";
 			{
 				$tsCount3 = count($ts);
 				for ($k = 0; $k < $tsCount3; $k++)
-					if (
-						isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
-						&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
-					) {
+					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]) && ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C'))
+					{
 						$counter++;
 						$globalSolvedCounter++;
 					}
