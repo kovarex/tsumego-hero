@@ -155,8 +155,10 @@ class TsumegoButtons extends ArrayObject
 		echo "var tooltipSgfs = window.tooltipSgfs || [];";
 		foreach ($this as $index => $navigationButton)
 		{
-			$tts = ClassRegistry::init('Sgf')->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
+			$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
+			if (!$sgf)
+				continue;
+			$tResult = SgfParser::process($sgf['Sgf']['sgf']);
 			echo 'tooltipSgfs[' . $index . '] = [];';
 			for($y = 0; $y < count($tResult->board); $y++)
 			{
