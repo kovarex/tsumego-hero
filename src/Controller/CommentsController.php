@@ -275,7 +275,7 @@ class CommentsController extends AppController
 						elseif ($keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'S'
 							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'C'
 							|| $keyListStatus[array_search($t['Tsumego']['id'], $keyList)] == 'W')
-							$solved = 1;
+								$solved = 1;
 						else
 							$solved = 0;
 						$u = $this->User->findById($comments[$i]['Comment']['user_id']);
