@@ -122,6 +122,7 @@ class ContextPreparator
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
 		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
+		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];

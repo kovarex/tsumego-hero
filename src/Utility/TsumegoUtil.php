@@ -97,4 +97,14 @@ FROM (
 ) AS unique_deletions');
 		return $result[0][0]['deletions_count'];
 	}
+
+	static public function currentTsumegoCount()
+	{
+		return ClassRegistry::init('DayRecord')->query("SELECT
+    COUNT(DISTINCT tsumego.id) AS tsumego_count
+FROM tsumego
+JOIN set_connection ON set_connection.tsumego_id = tsumego.id
+JOIN `set` ON set_connection.set_id = `set`.id
+WHERE tsumego.deleted is null AND `set`.public = 1")[0][0]['tsumego_count'];
+	}
 }

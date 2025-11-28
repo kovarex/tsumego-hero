@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoUtil', 'Util');
+
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
@@ -133,18 +135,19 @@ WHERE
 		ClassRegistry::init('Achievement')->save($arch3);
 
 		ClassRegistry::init('DayRecord')->create();
-		$dateUser = [];
-		$dateUser['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
-		$dateUser['DayRecord']['date'] = $today;
-		$dateUser['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
-		$dateUser['DayRecord']['quote'] = $currentQuote;
-		$dateUser['DayRecord']['usercount'] = count($usersNum);
-		$dateUser['DayRecord']['visitedproblems'] = $visitedProblems;
-		$dateUser['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
-		$dateUser['DayRecord']['gemCounter1'] = 0;
-		$dateUser['DayRecord']['gemCounter2'] = 0;
-		$dateUser['DayRecord']['gemCounter3'] = 0;
-		ClassRegistry::init('DayRecord')->save($dateUser);
+		$dayRecord = [];
+		$dayRecord['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
+		$dayRecord['DayRecord']['date'] = $today;
+		$dayRecord['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
+		$dayRecord['DayRecord']['quote'] = $currentQuote;
+		$dayRecord['DayRecord']['usercount'] = count($usersNum);
+		$dayRecord['DayRecord']['visitedproblems'] = $visitedProblems;
+		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
+		$dayRecord['DayRecord']['gemCounter1'] = 0;
+		$dayRecord['DayRecord']['gemCounter2'] = 0;
+		$dayRecord['DayRecord']['gemCounter3'] = 0;
+		$dayRecord['DayRecord']['tsumego_count'] = TsumegoUtil::currentTsumegoCount();
+		ClassRegistry::init('DayRecord')->save($dayRecord);
 
 		ClassRegistry::init('AchievementCondition')->create();
 		$achievementCondition = [];
