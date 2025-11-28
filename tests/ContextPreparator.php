@@ -4,6 +4,8 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
+		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);                // FK to: user
 		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User
@@ -12,10 +14,12 @@ class ContextPreparator
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
 		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
 		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
+		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
+
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
 		else
@@ -27,6 +31,7 @@ class ContextPreparator
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
+		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -128,8 +133,14 @@ class ContextPreparator
 		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
-		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
-		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
+		$singleSgf = Util::extract('sgf', $tsumegoInput);
+		$multipleSgfs = Util::extract('sgfs', $tsumegoInput);
+		if ($singleSgf)
+			$this->prepareTsumegoSgf($singleSgf, $tsumego);
+		if ($multipleSgfs)
+			$this->prepareTsumegoSgfs($multipleSgfs, $tsumego);
+		if (!$singleSgf && !$multipleSgfs)
+			$this->prepareTsumegoSgf(self::defaultSgf(), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
@@ -188,6 +199,11 @@ class ContextPreparator
 			return;
 		foreach ($tsumegoSgfs as $tsumegoSgf)
 			$this->prepareTsumegoSgf($tsumegoSgf, $tsumego);
+	}
+
+	private static function defaultSgf(): string
+	{
+		return '(;SZ[19])';
 	}
 
 	private function prepareTsumegoComments(?array $tsumegoComments, $tsumego): void
@@ -271,17 +287,17 @@ class ContextPreparator
 	{
 		if ($tagsInput)
 		{
-			ClassRegistry::init('Tag')->deleteAll(['tsumego_id' => $tsumego['id']]);
+			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 			foreach ($tagsInput as $tagInput)
 			{
 				$tag = $this->getOrCreateTag($tagInput['name']);
 				$tagConnection = [];
-				$tagConnection['Tag']['tsumego_id'] = $tsumego['id'];
-				$tagConnection['Tag']['user_id'] = $this->user['id'];
-				$tagConnection['Tag']['tag_name_id'] = $tag['id'];
-				ClassRegistry::init('Tag')->create($tagConnection);
-				ClassRegistry::init('Tag')->save($tagConnection);
-				$tagConnection = ClassRegistry::init('Tag')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
+				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
+				$tagConnection['TagConnection']['tag_id'] = $tag['id'];
+				ClassRegistry::init('TagConnection')->create($tagConnection);
+				ClassRegistry::init('TagConnection')->save($tagConnection);
+				$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
 				$tsumego['tags'] [] = $tag;
 				$tsumego['tag-connections'] [] = $tagConnection;
 			}
@@ -320,17 +336,17 @@ class ContextPreparator
 
 	private function getOrCreateTag($name): array
 	{
-		$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		if (!$tag)
 		{
 			$tag = [];
 			$tag['name'] = $name;
-			ClassRegistry::init('TagName')->create($tag);
-			ClassRegistry::init('TagName')->save($tag);
+			ClassRegistry::init('Tag')->create($tag);
+			ClassRegistry::init('Tag')->save($tag);
 			// reloading so the generated id is retrieved
-			$tag  = ClassRegistry::init('TagName')->find('first', ['conditions' => ['name' => $name]]);
+			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
-		return $tag['TagName'];
+		return $tag['Tag'];
 	}
 
 	private function checkSetClear(int $setID): void
@@ -440,6 +456,76 @@ class ContextPreparator
 			$this->checkOptionsConsumed($dayRecordInput);
 		}
 	}
+
+	public function prepareAdminActivities(?array $adminActivities): void
+	{
+		if (!$adminActivities)
+			return;
+
+		foreach ($adminActivities as $activityInput)
+		{
+			$activity = [];
+
+			// Handle user_id - support specifying by name from other-users
+			$userId = Util::extract('user_id', $activityInput);
+			if (is_string($userId))
+			{
+				// Find user by name from otherUsers
+				$foundUser = null;
+				foreach ($this->otherUsers as $otherUser)
+					if ($otherUser['name'] === $userId)
+					{
+						$foundUser = $otherUser;
+						break;
+					}
+				$activity['user_id'] = $foundUser ? $foundUser['id'] : $this->user['id'];
+			}
+			else
+				$activity['user_id'] = $userId ?: $this->user['id'];
+
+			$activity['type'] = Util::extract('type', $activityInput);
+
+			// Support 'tsumego_id' => true to use the main context tsumego
+			// Support 'tsumego_id' => 'other:0' to use otherTsumegos[0], etc.
+			$tsumegoId = Util::extract('tsumego_id', $activityInput);
+			if ($tsumegoId === true && $this->tsumego)
+				$activity['tsumego_id'] = $this->tsumego['id'];
+			elseif (is_string($tsumegoId) && strpos($tsumegoId, 'other:') === 0)
+			{
+				$index = (int) substr($tsumegoId, 6);
+				$activity['tsumego_id'] = $this->otherTsumegos[$index]['id'] ?? null;
+			}
+			else
+				$activity['tsumego_id'] = $tsumegoId;
+
+			// Support 'set_id' => true to use the first set from main tsumego
+			$setId = Util::extract('set_id', $activityInput);
+			if ($setId === true && $this->tsumego && isset($this->tsumego['set-connections'][0]))
+				$activity['set_id'] = $this->tsumego['set-connections'][0]['set_id'];
+			else
+				$activity['set_id'] = $setId;
+
+			$activity['old_value'] = Util::extract('old_value', $activityInput);
+			$activity['new_value'] = Util::extract('new_value', $activityInput);
+
+			// Convert 'other:X' references in old_value/new_value to actual IDs
+			if (is_string($activity['old_value']) && strpos($activity['old_value'], 'other:') === 0)
+			{
+				$index = (int) substr($activity['old_value'], 6);
+				$activity['old_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+			}
+			if (is_string($activity['new_value']) && strpos($activity['new_value'], 'other:') === 0)
+			{
+				$index = (int) substr($activity['new_value'], 6);
+				$activity['new_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+			}
+
+			ClassRegistry::init('AdminActivity')->create();
+			ClassRegistry::init('AdminActivity')->save(['AdminActivity' => $activity]);
+			$this->checkOptionsConsumed($activityInput);
+		}
+	}
+
 
 	public function addFavorite($tsumego)
 	{

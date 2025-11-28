@@ -7,6 +7,7 @@ App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('TsumegoCommentsRenderer', 'Utility');
+App::uses('AdminActivityLogger', 'Utility');
 
 class Play
 {
@@ -194,48 +195,41 @@ class Play
 			{
 				if (isset($data['Comment']['status']) && !isset($data['Study2']))
 				{
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = $currentSetConnection['SetConnection']['num'];
-					$adminActivity['AdminActivity']['answer'] = $data['Comment']['status'];
-					ClassRegistry::init('AdminActivity')->save($adminActivity);
+					$statusCode = (int) $data['Comment']['status'];
 					ClassRegistry::init('Comment')->save($data, true);
 				}
 				elseif (isset($data['Comment']['modifyDescription']))
 				{
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-					$adminActivity['AdminActivity']['file'] = 'description';
-					$adminActivity['AdminActivity']['answer'] = 'Description: ' . $data['Comment']['modifyDescription'] . ' ' . $data['Comment']['modifyHint'];
-					$t['Tsumego']['description'] = $data['Comment']['modifyDescription'];
-					$t['Tsumego']['hint'] = $data['Comment']['modifyHint'];
+					// Get original values for comparison
+					$oldDescription = $t['Tsumego']['description'];
+					$oldHint = $t['Tsumego']['hint'];
+					$newDescription = $data['Comment']['modifyDescription'];
+					$newHint = $data['Comment']['modifyHint'];
+
+					// Log description change if different
+					if ($oldDescription !== $newDescription)
+						AdminActivityLogger::log(AdminActivityLogger::DESCRIPTION_EDIT, $t['Tsumego']['id'], null, $oldDescription, $newDescription);				// Log hint change if different
+					if ($oldHint !== $newHint)
+						AdminActivityLogger::log(AdminActivityLogger::HINT_EDIT, $t['Tsumego']['id'], null, $oldHint, $newHint);
+					$t['Tsumego']['description'] = $newDescription;
+					$t['Tsumego']['hint'] = $newHint;
 					$t['Tsumego']['author'] = $data['Comment']['modifyAuthor'];
 					if ($data['Comment']['modifyElo'] < 2900)
 						$t['Tsumego']['rating'] = $data['Comment']['modifyElo'];
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
-
 					if ($data['Comment']['deleteProblem'] == 'delete')
-					{
-						$adminActivity['AdminActivity']['answer'] = 'Problem deleted. (' . $t['Tsumego']['set_id'] . '-' . $t['Tsumego']['id'] . ')';
-						$adminActivity['AdminActivity']['file'] = '/delete';
-					}
+						AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $t['Tsumego']['id'], $t['Tsumego']['set_id']);
 					if ($data['Comment']['deleteTag'] != null)
 					{
-						$tagsToDelete = ClassRegistry::init('Tag')->find('all', ['conditions' => ['tsumego_id' => $id]]);
-						if (!$tagsToDelete)
-							$tagsToDelete = [];
-						$tagsToDeleteCount = count($tagsToDelete);
-						for ($i = 0; $i < $tagsToDeleteCount; $i++)
+						$tagsToDelete = ClassRegistry::init('TagConnection')->find('all', ['conditions' => ['tsumego_id' => $id]]) ?: [];
+						foreach ($tagsToDelete as $tagToDelete)
 						{
-							$tagNameForDelete = ClassRegistry::init('TagName')->findById($tagsToDelete[$i]['Tag']['tag_name_id']);
-							if ($tagNameForDelete['TagName']['name'] == $data['Comment']['deleteTag'])
-								ClassRegistry::init('Tag')->delete($tagsToDelete[$i]['Tag']['id']);
+							$tagNameForDelete = ClassRegistry::init('Tag')->findById($tagToDelete['TagConnection']['tag_id']);
+							if ($tagNameForDelete['Tag']['name'] == $data['Comment']['deleteTag'])
+								ClassRegistry::init('Tag')->delete($tagToDelete['TagConnection']['id']);
 						}
 					}
-					ClassRegistry::init('AdminActivity')->save($adminActivity);
 				}
 				elseif (isset($data['Study']))
 				{
@@ -258,54 +252,16 @@ class Play
 				elseif (isset($data['Settings']))
 				{
 					if ($data['Settings']['r39'] == 'on' && $t['Tsumego']['alternative_response'] != 1)
-					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Turned on alternative response mode';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
-					}
+						AdminActivityLogger::log(AdminActivityLogger::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '1');
 					if ($data['Settings']['r39'] == 'off' && $t['Tsumego']['alternative_response'] != 0)
-					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Turned off alternative response mode';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
-					}
+						AdminActivityLogger::log(AdminActivityLogger::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'no' && $t['Tsumego']['pass'] != 0)
-					{
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Disabled passing';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity);
-					}
+						AdminActivityLogger::log(AdminActivityLogger::PASS_MODE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1)
-					{
-						$adminActivity = [];
-						$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity['AdminActivity']['file'] = 'settings';
-						$adminActivity['AdminActivity']['answer'] = 'Enabled passing';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity);
-					}
+						AdminActivityLogger::log(AdminActivityLogger::PASS_MODE, $t['Tsumego']['id'], null, null, '1');
 					if ($data['Settings']['r41'] == 'yes' && $tsumegoVariant == null)
 					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to multiple choice';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
+						AdminActivityLogger::log(AdminActivityLogger::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '1');
 						$tv1 = [];
 						$tv1['TsumegoVariant']['tsumego_id'] = $id;
 						$tv1['TsumegoVariant']['type'] = 'multiple_choice';
@@ -319,25 +275,13 @@ class Play
 					}
 					if ($data['Settings']['r41'] == 'no' && $tsumegoVariant != null)
 					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Deleted multiple choice problem type';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
+						AdminActivityLogger::log(AdminActivityLogger::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '0');
 						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
 						$tsumegoVariant = null;
 					}
 					if ($data['Settings']['r42'] == 'yes' && $tsumegoVariant == null)
 					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Changed problem type to score estimating';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
+						AdminActivityLogger::log(AdminActivityLogger::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '1');
 						$tv1 = [];
 						$tv1['TsumegoVariant']['tsumego_id'] = $id;
 						$tv1['TsumegoVariant']['type'] = 'score_estimating';
@@ -347,13 +291,7 @@ class Play
 					}
 					if ($data['Settings']['r42'] == 'no' && $tsumegoVariant != null)
 					{
-						$adminActivity2 = [];
-						$adminActivity2['AdminActivity']['user_id'] = Auth::getUserID();
-						$adminActivity2['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-						$adminActivity2['AdminActivity']['file'] = 'settings';
-						$adminActivity2['AdminActivity']['answer'] = 'Deleted score estimating problem type';
-						ClassRegistry::init('AdminActivity')->create();
-						ClassRegistry::init('AdminActivity')->save($adminActivity2);
+						AdminActivityLogger::log(AdminActivityLogger::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '0');
 						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
 						$tsumegoVariant = null;
 					}
@@ -383,7 +321,7 @@ class Play
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['file'] == '/delete')($this->setFunction)('deleteProblem2', true);
+			if ($aad && $aad['AdminActivity']['type'] === AdminActivityLogger::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
 
 			if (isset($params['url']['deleteComment']))
 			{
@@ -401,13 +339,6 @@ class Play
 				}
 				else
 					$deleteComment['Comment']['status'] = 99;
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $t['Tsumego']['id'];
-				$adminActivity['AdminActivity']['file'] = $currentSetConnection['SetConnection']['num'];
-				;
-				$adminActivity['AdminActivity']['answer'] = $deleteComment['Comment']['status'];
-				ClassRegistry::init('AdminActivity')->save($adminActivity);
 				ClassRegistry::init('Comment')->save($deleteComment);
 			}
 
@@ -651,7 +582,7 @@ class Play
 				$isAllowedToContribute2 = true;
 			else
 			{
-				$tagsToCheck = ClassRegistry::init('Tag')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
+				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
 				if (!$tagsToCheck)
 					$tagsToCheck = [];
 				$datex = date('Y-m-d', strtotime('today'));
@@ -659,7 +590,7 @@ class Play
 
 				for ($i = 0; $i < $tagsToCheckCount; $i++)
 				{
-					$datexx = new DateTime($tagsToCheck[$i]['Tag']['created']);
+					$datexx = new DateTime($tagsToCheck[$i]['TagConnection']['created']);
 					$datexx = $datexx->format('Y-m-d');
 					if ($datex !== $datexx)
 						$isAllowedToContribute2 = true;
@@ -744,7 +675,7 @@ class Play
 		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityUtil::requestSolution($id));
+		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityLogger::SOLUTION_REQUEST, $id));
 		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);

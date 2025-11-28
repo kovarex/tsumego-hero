@@ -23,7 +23,7 @@ class TsumegoFilters
 
 		$this->tagIDs = [];
 		foreach ($this->tags as $tag)
-			$this->tagIDs[] = ClassRegistry::init('TagName')->findByName($tag)['TagName']['id'];
+			$this->tagIDs[] = ClassRegistry::init('Tag')->findByName($tag)['Tag']['id'];
 
 		if ($userContribution)
 			ClassRegistry::init('UserContribution')->save($userContribution);

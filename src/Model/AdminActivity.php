@@ -2,10 +2,14 @@
 
 class AdminActivity extends AppModel
 {
-	public function __construct($id = false, $table = null, $ds = null)
-	{
-		$id['table'] =  'admin_activity';
-		parent::__construct($id, $table, $ds);
+	public $useTable = 'admin_activity';
+	public $actsAs = ['Containable'];
 
-	}
+	public $belongsTo = [
+		'AdminActivityType' => [
+			'className' => 'AdminActivityType',
+			'foreignKey' => 'type',
+			'fields' => ['name']
+		]
+	];
 }

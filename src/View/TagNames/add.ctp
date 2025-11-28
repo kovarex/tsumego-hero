@@ -4,8 +4,8 @@
 <div class="tags-content"  align="center">
   <h1>Add Tag</h1>
 
-  <?php echo $this->Form->create('TagName'); ?> 
-  
+  <?php echo $this->Form->create('Tag'); ?>
+
   <table>
     <tr>
       <td><label for="TagNameName">Name:</label></td>
@@ -33,10 +33,10 @@
 	<br> <br><br> <br><br> <br>
   </div>
 	<div class="existing-tags-list">
-		Other tags: 
-		<?php 
+		Other tags:
+		<?php
 			for($i=0;$i<count($allTags)-1;$i++){
-				echo '<a href="/tag_names/view/'.$allTags[$i]['TagName']['id'].'">'.$allTags[$i]['TagName']['name'].'</a>';
+				echo '<a href="/tag_names/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
 				if($i<count($allTags)-2)
 					echo ', ';
 			}

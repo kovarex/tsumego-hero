@@ -5,6 +5,7 @@ App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
+App::uses('AdminActivityLogger', 'Utility');
 
 class SetsController extends AppController
 {
@@ -108,11 +109,11 @@ class SetsController extends AppController
 			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
 			if (!$sgf)
 				continue;
-			$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
+			$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
 
-			array_push($similarArr, $sgfArr[0]);
-			array_push($similarArrInfo, $sgfArr[2]);
-			array_push($similarArrBoardSize, $sgfArr[3]);
+			array_push($similarArr, $sgfResult->board);
+			array_push($similarArrInfo, $sgfResult->info);
+			array_push($similarArrBoardSize, $sgfResult->size);
 		}
 
 		$this->set('id', $id);
@@ -438,7 +439,7 @@ class SetsController extends AppController
 			$difficultyTiles[] = $item['rank'];
 
 		//tagTiles
-		$tags = $this->TagName->find('all', [
+		$tags = $this->Tag->find('all', [
 			'conditions' => [
 				'approved' => 1,
 				'NOT' => ['name' => 'Tsumego'],
@@ -447,7 +448,7 @@ class SetsController extends AppController
 
 		$tagTiles = [];
 		foreach ($tags as $tag)
-			$tagTiles[] = $tag['TagName']['name'];
+			$tagTiles[] = $tag['Tag']['name'];
 
 		if (Auth::isLoggedIn())
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
@@ -489,17 +490,14 @@ class SetsController extends AppController
 				if (count($tsumegoFilters->tags) > 0)
 				{
 					$idsTemp = [];
-					$tsTagsFiltered = $this->Tag->find('all', [
+					$tsTagsFiltered = ClassRegistry::init('TagConnection')->find('all', [
 						'conditions' => [
 							'tsumego_id' => $currentIds,
-							'tag_name_id' => $tsumegoFilters->tagIDs,
-						],
-					]);
-					if (!$tsTagsFiltered)
-						$tsTagsFiltered = [];
+							'tag_id' => $tsumegoFilters->tagIDs,
+						]]) ?: [];
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
+						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
 				}
@@ -596,15 +594,15 @@ class SetsController extends AppController
 				if (count($tsumegoFilters->tags) > 0)
 				{
 					$idsTemp = [];
-					$tsTagsFiltered = $this->Tag->find('all', [
+					$tsTagsFiltered = $this->TagConnection->find('all', [
 						'conditions' => [
 							'tsumego_id' => $currentIds,
-							'tag_name_id' => $tsumegoFilters->tagIDs,
+							'tag_id' => $tsumegoFilters->tagIDs,
 						],
 					]) ?: [];
 					$tsTagsFilteredCount2 = count($tsTagsFiltered);
 					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['Tag']['tsumego_id']);
+						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
 
 					$currentIds = array_unique($idsTemp);
 					$setAmount = count($currentIds);
@@ -636,26 +634,26 @@ class SetsController extends AppController
 			$query = "
 WITH tag_counts AS (
   SELECT
-    tag_name.id AS tag_id,
-    tag_name.name AS tag_name,
-    tag_name.color AS tag_color,
+    tag.id AS tag_id,
+    tag.name AS tag_name,
+    tag.color AS tag_color,
     COUNT(tsumego.id) AS total_count
   FROM tsumego
-  JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag_name.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
-  GROUP BY tag_name.id
+  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
+  JOIN tag ON tag.id = tag_connection.tag_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
+  GROUP BY tag.id
 ),
 numbered AS (
   SELECT
-    tag_name.id AS tag_id,
-    tag_name.name AS tag_name,
-    tag_name.color AS tag_color,
+    tag.id AS tag_id,
+    tag.name AS tag_name,
+    tag.color AS tag_color,
     tsumego.id AS tsumego_id,
-    ROW_NUMBER() OVER (PARTITION BY tag_name.id ORDER BY tsumego.id) AS rn,
+    ROW_NUMBER() OVER (PARTITION BY tag.id ORDER BY tsumego.id) AS rn,
     tsumego_status.status
   FROM tsumego
-  JOIN tag ON tag.tsumego_id = tsumego.id
-  JOIN tag_name ON tag_name.id = tag.tag_name_id
+  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
+  JOIN tag ON tag.id = tag_connection.tag_id
   LEFT JOIN tsumego_status
       ON tsumego_status.user_id = " . Auth::getUserID() . "
       AND tsumego_status.tsumego_id = tsumego.id
@@ -890,6 +888,15 @@ ORDER BY total_count DESC, partition_number";
 		$setConnection['num'] = $this->data['Tsumego']['num'];
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save($setConnection);
+
+		// Ensure newly created tsumegos always have an SGF record.
+		ClassRegistry::init('Sgf')->create();
+		if (!ClassRegistry::init('Sgf')->save(['tsumego_id' => $tsumego['id'], 'sgf' => '(;SZ[19])']))
+		{
+			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
+			throw new AppException('Failed to create default SGF for new tsumego.');
+		}
+
 		ClassRegistry::init('Tsumego')->getDataSource()->commit();
 		return $this->redirect('/sets/view/' . $setID);
 	}
@@ -910,7 +917,7 @@ ORDER BY total_count DESC, partition_number";
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
-		$this->loadModel('TagName');
+		$this->loadModel('Tag');
 		$this->loadModel('Tag');
 		$this->loadModel('User');
 		$this->loadModel('UserContribution');
@@ -951,13 +958,12 @@ ORDER BY total_count DESC, partition_number";
 			if (Auth::isAdmin())
 			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
-				if ($aad['AdminActivity']['file'] == '/delete')
+				// Check if last activity was a problem deletion - if so, actually delete it
+				if (isset($aad['AdminActivity']['type']) && $aad['AdminActivity']['type'] == AdminActivityLogger::PROBLEM_DELETE)
 				{
 					$scDelete = $this->SetConnection->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $aad['AdminActivity']['tsumego_id']]]);
 					$this->SetConnection->delete($scDelete['SetConnection']['id']);
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
-					$aad['AdminActivity']['file'] = 'description';
-					$this->AdminActivity->save($aad);
 				}
 			}
 		}
@@ -980,15 +986,9 @@ ORDER BY total_count DESC, partition_number";
 				$setCount['Tsumego']['author'] = Auth::getUser()['name'];
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
-			$adminActivity = [];
-			$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-			$adminActivity['AdminActivity']['tsumego_id'] = 0;
-			$adminActivity['AdminActivity']['file'] = 'description';
 			$set = $this->Set->findById($id);
-			$adminActivity['AdminActivity']['answer'] = 'Added problem for ' . $set['Set']['title'];
-			$this->AdminActivity->save($adminActivity);
+			AdminActivityLogger::log(AdminActivityLogger::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
 		}
-
 		if (isset($this->params['url']['show']))
 		{
 			if ($this->params['url']['show'] == 'order')
@@ -1021,9 +1021,9 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['image'] = '';
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
-			$tagName = $this->TagName->findByName($id);
-			if ($tagName && isset($tagName['TagName']['description']))
-				$set['Set']['description'] = $tagName['TagName']['description'];
+			$tagName = $this->Tag->findByName($id);
+			if ($tagName && isset($tagName['Tag']['description']))
+				$set['Set']['description'] = $tagName['Tag']['description'];
 
 			$currentIds = [];
 			foreach ($tsumegoButtons as $tsumegoButton)
@@ -1115,12 +1115,9 @@ ORDER BY total_count DESC, partition_number";
 				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
 				$this->set('data', $changeSet['Set']['title']);
 				$this->Set->save($changeSet, true);
+				$oldTitle = $set['Set']['title'];
 				$set = $this->Set->findById($id);
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+				AdminActivityLogger::log(AdminActivityLogger::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
 			}
 			if (isset($this->data['Set']['description']))
 			{
@@ -1131,12 +1128,9 @@ ORDER BY total_count DESC, partition_number";
 				$changeSet['Set']['description'] = $this->data['Set']['description'];
 				$this->set('data', $changeSet['Set']['description']);
 				$this->Set->save($changeSet, true);
+				$oldDescription = $set['Set']['description'];
 				$set = $this->Set->findById($id);
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
+				AdminActivityLogger::log(AdminActivityLogger::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
 			}
 			if (isset($this->data['Set']['setDifficulty']))
 				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
@@ -1149,11 +1143,7 @@ ORDER BY total_count DESC, partition_number";
 						$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
 						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 					}
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Edited rating data for set ' . $set['Set']['title'];
+					AdminActivityLogger::log(AdminActivityLogger::SET_RATING_EDIT, null, $id);
 				}
 			if (isset($this->data['Set']['color']))
 			{
@@ -1164,13 +1154,9 @@ ORDER BY total_count DESC, partition_number";
 				$changeSet['Set']['color'] = $this->data['Set']['color'];
 				$this->set('data', $changeSet['Set']['color']);
 				$this->Set->save($changeSet, true);
+				$oldColor = $set['Set']['color'];
 				$set = $this->Set->findById($id);
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
-				$this->AdminActivity->save($adminActivity);
+				AdminActivityLogger::log(AdminActivityLogger::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
 			}
 			if (isset($this->data['Set']['order']))
 			{
@@ -1181,13 +1167,9 @@ ORDER BY total_count DESC, partition_number";
 				$changeSet['Set']['order'] = $this->data['Set']['order'];
 				$this->set('data', $changeSet['Set']['order']);
 				$this->Set->save($changeSet, true);
+				$oldOrder = $set['Set']['order'];
 				$set = $this->Set->findById($id);
-				$adminActivity = [];
-				$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-				$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-				$adminActivity['AdminActivity']['file'] = 'settings';
-				$adminActivity['AdminActivity']['answer'] = 'Edited meta data for set ' . $set['Set']['title'];
-				$this->AdminActivity->save($adminActivity);
+				AdminActivityLogger::log(AdminActivityLogger::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
 			}
 			if (isset($this->data['Settings']))
 			{
@@ -1200,12 +1182,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allArActive = true;
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Turned on alternative response mode for set ' . $set['Set']['title'];
-					$this->AdminActivity->save($adminActivity);
+					AdminActivityLogger::log(AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, null, $id, null, '1');
 				}
 				if ($this->data['Settings']['r39'] == 'off')
 				{
@@ -1216,12 +1193,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allArInactive = true;
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Turned off alternative response mode for set ' . $set['Set']['title'];
-					$this->AdminActivity->save($adminActivity);
+					AdminActivityLogger::log(AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, null, $id, null, '0');
 				}
 				if ($this->data['Settings']['r43'] == 'yes')
 				{
@@ -1232,12 +1204,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allPassActive = true;
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Enabled passing for set ' . $set['Set']['title'];
-					$this->AdminActivity->save($adminActivity);
+					AdminActivityLogger::log(AdminActivityLogger::SET_PASS_MODE, null, $id, null, '1');
 				}
 				if ($this->data['Settings']['r43'] == 'no')
 				{
@@ -1248,12 +1215,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allPassInactive = true;
-					$adminActivity = [];
-					$adminActivity['AdminActivity']['user_id'] = Auth::getUserID();
-					$adminActivity['AdminActivity']['tsumego_id'] = $tsumegoButtons[0]->tsumegoID;
-					$adminActivity['AdminActivity']['file'] = 'settings';
-					$adminActivity['AdminActivity']['answer'] = 'Disabled passing for set ' . $set['Set']['title'];
-					$this->AdminActivity->save($adminActivity);
+					AdminActivityLogger::log(AdminActivityLogger::SET_PASS_MODE, null, $id, null, '0');
 				}
 				$this->set('formRedirect', true);
 			}
@@ -1513,14 +1475,14 @@ ORDER BY total_count DESC, partition_number";
 		else
 			$scoring = false;
 
-		$allTags = $this->TagName->find('all') ?: [];
+		$allTags = $this->Tag->find('all') ?: [];
 		$allTagsSorted = [];
 		$allTagsKeys = [];
 		$allTagsCount = count($allTags);
 		for ($i = 0; $i < $allTagsCount; $i++)
 		{
-			array_push($allTagsSorted, $allTags[$i]['TagName']['name']);
-			$allTagsKeys[$allTags[$i]['TagName']['name']] = $allTags[$i];
+			array_push($allTagsSorted, $allTags[$i]['Tag']['name']);
+			$allTagsKeys[$allTags[$i]['Tag']['name']] = $allTags[$i];
 		}
 		sort($allTagsSorted);
 		$s2Tags = [];
@@ -1536,26 +1498,26 @@ ORDER BY total_count DESC, partition_number";
 				{
 					$newAddTag = explode('-', $_COOKIE['addTag']);
 					$tagSetId = (int) $newAddTag[0];
-					$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
+					$newTagName = $this->Tag->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
 					$tagSc = TsumegoUtil::collectTsumegosFromSet($tagSetId);
 					$tagScCount = count($tagSc);
 					for ($i = 0; $i < $tagScCount; $i++)
 					{
-						$tagAlreadyThere = $this->Tag->find('first', [
+						$tagAlreadyThere = $this->TagConnection->find('first', [
 							'conditions' => [
 								'tsumego_id' => $tagSc[$i]['Tsumego']['id'],
-								'tag_name_id' => $newTagName['TagName']['id'],
+								'tag_id' => $newTagName['Tag']['id'],
 							],
 						]);
 						if ($tagAlreadyThere == null)
 						{
 							$saveTag = [];
-							$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
-							$saveTag['Tag']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
-							$saveTag['Tag']['user_id'] = Auth::getUserID();
-							$saveTag['Tag']['approved'] = 1;
-							$this->Tag->create();
-							$this->Tag->save($saveTag);
+							$saveTag['TagConnection']['tag_id'] = $newTagName['Tag']['id'];
+							$saveTag['TagConnection']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
+							$saveTag['TagConnection']['user_id'] = Auth::getUserID();
+							$saveTag['TagConnection']['approved'] = 1;
+							$this->TagConnection->create();
+							$this->TagConnection->save($saveTag);
 						}
 					}
 					$this->set('removeCookie', 'addTag');

@@ -526,8 +526,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testSelectingTagFilters(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
@@ -557,8 +555,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTagBasedSets(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags']];
@@ -586,8 +582,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTagBasedSetsRespectsTagFilters(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags',
@@ -640,8 +634,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'topics',
@@ -707,8 +699,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'topics']];
@@ -746,8 +736,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags']];
@@ -785,8 +773,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testRankBasedSetViewShowsSolvedPercentProperly(): void
 	{
-		ClassRegistry::init('TagName')->deleteAll(['1 = 1']);
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'difficulty']];

@@ -11,15 +11,16 @@ class UploadSgfTest extends TestCaseWithAuth
 			'tsumego' => [
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
-		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 0);
+		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]]));
+		$this->assertGreaterThanOrEqual(1, $initialCount);
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 0);
+		$this->assertSame($initialCount, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])));
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
 		$openLink->click();
-		usleep(1000 * 100);
+		$browser->waitUntilIDExists('#sgfCommentButton');
 		$commentEditButton = $browser->driver->findElement(WebDriverBy::cssSelector('#sgfCommentButton'));
 		$commentEditButton->click();
 		$commentEditField = $browser->driver->findElement(WebDriverBy::cssSelector('#commentEditField'));
@@ -29,8 +30,10 @@ class UploadSgfTest extends TestCaseWithAuth
 		$saveButton = $browser->driver->findElement(WebDriverBy::cssSelector('#saveSGFButton'));
 		$saveButton->click();
 
-		$sgf = ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]]);
-		$this->assertEquals(count($sgf), 1);
+		$sgf = ClassRegistry::init('Sgf')->find('all', [
+			'conditions' => ['tsumego_id' => $context->tsumego['id']],
+			'order' => 'id DESC']);
+		$this->assertSame($initialCount + 1, count($sgf));
 		$this->assertTextContains('Hello from test', $sgf[0]['Sgf']['sgf']);
 	}
 

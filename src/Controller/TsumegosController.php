@@ -64,14 +64,14 @@ class TsumegosController extends AppController
 		// for some reason, this returns null in the test environment
 		$json = json_decode(file_get_contents('json/popular_tags.json')) ?: [];
 		$a = [];
-		$tn = ClassRegistry::init('TagName')->find('all');
+		$tn = ClassRegistry::init('Tag')->find('all');
 		if (!$tn)
 			$tn = [];
 		$tnKeys = [];
 		$tnCount = count($tn);
 
 		for ($i = 0; $i < $tnCount; $i++)
-			$tnKeys[$tn[$i]['TagName']['id']] = $tn[$i]['TagName']['name'];
+			$tnKeys[$tn[$i]['Tag']['id']] = $tn[$i]['Tag']['name'];
 		$jsonCount = count($json);
 
 		for ($i = 0; $i < $jsonCount; $i++)
@@ -85,7 +85,7 @@ class TsumegosController extends AppController
 			$tagsCount = count($tags);
 
 			for ($i = 0; $i < $tagsCount; $i++)
-				if ($a[$x] == $tags[$i]['Tag']['name'])
+				if ($a[$x] == $tags[$i]['TagConnection']['name'])
 					$found = true;
 			if (!$found)
 			{
@@ -100,16 +100,13 @@ class TsumegosController extends AppController
 
 	public static function getTags($tsumego_id)
 	{
-		$tags = ClassRegistry::init('Tag')->find('all', ['conditions' => ['tsumego_id' => $tsumego_id]]);
-		if (!$tags)
-			$tags = [];
+		$tags = ClassRegistry::init('TagConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumego_id]]) ?: [];
 		$tagsCount = count($tags);
-
 		for ($i = 0; $i < $tagsCount; $i++)
 		{
-			$tn = ClassRegistry::init('TagName')->findById($tags[$i]['Tag']['tag_name_id']);
-			$tags[$i]['Tag']['name'] = $tn['TagName']['name'];
-			$tags[$i]['Tag']['hint'] = $tn['TagName']['hint'];
+			$tn = ClassRegistry::init('Tag')->findById($tags[$i]['TagConnection']['tag_id']);
+			$tags[$i]['TagConnection']['name'] = $tn['Tag']['name'];
+			$tags[$i]['TagConnection']['hint'] = $tn['Tag']['hint'];
 		}
 
 		return $tags;
@@ -132,7 +129,7 @@ class TsumegosController extends AppController
 		$newArrayCount = count($newArray);
 
 		for ($i = 0; $i < $newArrayCount; $i++)
-			if ($x['Tag']['tag_name_id'] == $newArray[$i]['Tag']['tag_name_id'] && $x['Tag']['approved'] == 1)
+			if ($x['TagConnection']['tag_id'] == $newArray[$i]['TagConnection']['tag_id'] && $x['TagConnection']['approved'] == 1)
 				return true;
 
 		return false;
@@ -210,8 +207,8 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
+		$tSgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+		$tNumStones = isset($tSgfResult->stones) ? count($tSgfResult->stones) : 0;
 
 		$sets2 = [];
 		$sets3 = [];
@@ -265,21 +262,21 @@ class TsumegosController extends AppController
 				if ($ts[$i]['Tsumego']['id'] != $id)
 				{
 					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-					$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-					$numStones = count($sgfArr[1]);
+					$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+					$numStones = count($sgfResult->stones);
 					$stoneNumberDiff = abs($numStones - $tNumStones);
 					if ($stoneNumberDiff <= $maxDifference)
 					{
 						if ($includeColorSwitch == 'true')
-							$compare = $this->compare($tSgfArr[0], $sgfArr[0], true);
+							$compare = $this->compare($tSgfResult->board, $sgfResult->board, true);
 						else
-							$compare = $this->compare($tSgfArr[0], $sgfArr[0], false);
+							$compare = $this->compare($tSgfResult->board, $sgfResult->board, false);
 						if ($compare[0] <= $maxDifference)
 						{
 							array_push($similarId, $ts[$i]['Tsumego']['id']);
-							array_push($similarArr, $sgfArr[0]);
-							array_push($similarArrInfo, $sgfArr[2]);
-							array_push($similarArrBoardSize, $sgfArr[3]);
+							array_push($similarArr, $sgfResult->board);
+							array_push($similarArrInfo, $sgfResult->info);
+							array_push($similarArrBoardSize, $sgfResult->size);
 							array_push($similarDiff, $compare[0]);
 							if ($compare[1] == 0)
 								array_push($similarDiffType, '');
@@ -304,9 +301,9 @@ class TsumegosController extends AppController
 
 		array_multisort($similarOrder, $similarArr, $similarArrInfo, $similarTitle, $similarDiff, $similarDiffType, $similarId);
 
-		$this->set('tSgfArr', $tSgfArr[0]);
-		$this->set('tSgfArrInfo', $tSgfArr[2]);
-		$this->set('tSgfArrBoardSize', $tSgfArr[3]);
+		$this->set('tSgfArr', $tSgfResult->board);
+		$this->set('tSgfArrInfo', $tSgfResult->info);
+		$this->set('tSgfArrBoardSize', $tSgfResult->size);
 		$this->set('similarId', $similarId);
 		$this->set('similarArr', $similarArr);
 		$this->set('similarArrInfo', $similarArrInfo);
@@ -352,8 +349,8 @@ class TsumegosController extends AppController
 		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$tSgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-		$tNumStones = isset($tSgfArr[1]) ? count($tSgfArr[1]) : 0;
+		$tSgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+		$tNumStones = isset($tSgfResult->stones) ? count($tSgfResult->stones) : 0;
 
 		$this->Session->write('title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
 
@@ -383,14 +380,14 @@ class TsumegosController extends AppController
 				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 				if (!$sgf)
 					continue;
-				$sgfArr = SgfParser::process($sgf['Sgf']['sgf']);
-				$numStones = isset($sgfArr[1]) ? count($sgfArr[1]) : 0;
+				$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
+				$numStones = isset($sgfResult->stones) ? count($sgfResult->stones) : 0;
 				$stoneNumberDiff = abs($numStones - $tNumStones);
-				$compare = $this->compare($tSgfArr[0], $sgfArr[0], false);
+				$compare = $this->compare($tSgfResult->board, $sgfResult->board, false);
 				array_push($similarId, $ts[$i]['Tsumego']['id']);
-				array_push($similarArr, $sgfArr[0]);
-				array_push($similarArrInfo, $sgfArr[2]);
-				array_push($similarArrBoardSize, $sgfArr[3]);
+				array_push($similarArr, $sgfResult->board);
+				array_push($similarArrInfo, $sgfResult->info);
+				array_push($similarArrBoardSize, $sgfResult->size);
 				array_push($similarDiff, $compare[0]);
 				if ($compare[1] == 0)
 					array_push($similarDiffType, '');
@@ -459,9 +456,9 @@ class TsumegosController extends AppController
 		}
 		array_multisort($similarOrder, $similarArr, $similarArrInfo, $similarTitle, $similarDiff, $similarDiffType, $similarId, $similarArrBoardSize);
 
-		$this->set('tSgfArr', $tSgfArr[0]);
-		$this->set('tSgfArrInfo', $tSgfArr[2]);
-		$this->set('tSgfArrBoardSize', $tSgfArr[3]);
+		$this->set('tSgfArr', $tSgfResult->board);
+		$this->set('tSgfArrInfo', $tSgfResult->info);
+		$this->set('tSgfArrBoardSize', $tSgfResult->size);
 		$this->set('similarId', $similarId);
 		$this->set('similarArr', $similarArr);
 		$this->set('similarArrInfo', $similarArrInfo);

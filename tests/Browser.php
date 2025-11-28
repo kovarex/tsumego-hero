@@ -45,6 +45,8 @@ class Browser
 		{
 			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
 
+			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
+
 			// visit a dummy page
 			$this->driver->get(Util::getMyAddress() . '/empty.php');
 

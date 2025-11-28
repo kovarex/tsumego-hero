@@ -8,6 +8,8 @@ class AppController extends Controller
 {
 	public $viewClass = 'App';
 
+	public $helpers = ['Pagination'];
+
 	public $components = [
 		'Session',
 		//'DebugKit.Toolbar',
@@ -148,16 +150,16 @@ class AppController extends Controller
 	public static function getAllTags($not)
 	{
 		$a = [];
-		$notApproved = ClassRegistry::init('TagName')->find('all', ['conditions' => ['approved' => 0]]);
+		$notApproved = ClassRegistry::init('Tag')->find('all', ['conditions' => ['approved' => 0]]);
 		if (!$notApproved)
 			$notApproved = [];
 		$notCount = count($not);
 		for ($i = 0; $i < $notCount; $i++)
-			array_push($a, $not[$i]['Tag']['tag_name_id']);
+			array_push($a, $not[$i]['TagConnection']['tag_id']);
 		$notApprovedCount = count($notApproved);
 		for ($i = 0; $i < $notApprovedCount; $i++)
-			array_push($a, $notApproved[$i]['TagName']['id']);
-		$tn = ClassRegistry::init('TagName')->find('all', [
+			array_push($a, $notApproved[$i]['Tag']['id']);
+		$tn = ClassRegistry::init('Tag')->find('all', [
 			'conditions' => [
 				'NOT' => ['id' => $a],
 			],
@@ -169,8 +171,8 @@ class AppController extends Controller
 		$tnCount = count($tn);
 		for ($i = 0; $i < $tnCount; $i++)
 		{
-			array_push($sorted, $tn[$i]['TagName']['name']);
-			$keys[$tn[$i]['TagName']['name']] = $tn[$i];
+			array_push($sorted, $tn[$i]['Tag']['name']);
+			$keys[$tn[$i]['Tag']['name']] = $tn[$i];
 		}
 		sort($sorted);
 		$s2 = [];
@@ -1947,7 +1949,7 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('TagName');
+		$this->loadModel('Tag');
 		$this->loadModel('Favorite');
 
 		Auth::init();
@@ -1970,15 +1972,15 @@ class AppController extends Controller
 			{
 				$newAddTag = explode('-', $_COOKIE['addTag']);
 				$tagId = $newAddTag[0];
-				$newTagName = $this->TagName->find('first', ['conditions' => ['name' => str_replace($tagId . '-', '', $_COOKIE['addTag'])]]);
+				$newTagName = $this->Tag->find('first', ['conditions' => ['name' => str_replace($tagId . '-', '', $_COOKIE['addTag'])]]);
 				if ($newTagName)
 				{
 					$saveTag = [];
-					$saveTag['Tag']['tag_name_id'] = $newTagName['TagName']['id'];
-					$saveTag['Tag']['tsumego_id'] = $tagId;
-					$saveTag['Tag']['user_id'] = Auth::getUserID();
-					$saveTag['Tag']['approved'] = 0;
-					$this->Tag->save($saveTag);
+					$saveTag['TagConnection']['tag_id'] = $newTagName['Tag']['id'];
+					$saveTag['TagConnection']['tsumego_id'] = $tagId;
+					$saveTag['TagConnection']['user_id'] = Auth::getUserID();
+					$saveTag['TagConnection']['approved'] = 0;
+					$this->TagConnection->save($saveTag);
 				}
 				$this->set('removeCookie', 'addTag');
 			}
