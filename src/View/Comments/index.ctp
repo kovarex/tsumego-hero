@@ -83,7 +83,7 @@
 							if(count($comments)==11) echo '<a href="/comments?'.$unresolvedSet.$filter1.'direction=next&index='.$num1.'&comment-id='.$idToken1.$moreparams.'" class="new-button" >next page</a>';
 							else echo '<a class="new-button-inactive" >next page</a>';
 						}
-						if(Auth::isAdmin()){
+						if(Auth::isAdmin()) {
 							if($unresolved=='false'){
 								echo '<div style="float:right;">
 									<a href="/comments?unresolved=true" class="new-button2">all</a>

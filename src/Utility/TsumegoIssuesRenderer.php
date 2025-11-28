@@ -12,7 +12,7 @@ class TsumegoIssuesRenderer
 
 	public function render()
 	{
-		echo TsumegoIssue::statusName($this->tsumegoIssue['tsumego_issue_status_id']). " issue";
+		echo TsumegoIssue::statusName($this->tsumegoIssue['tsumego_issue_status_id']) . " issue";
 		$this->commentsSectionRenderer->render();
 	}
 

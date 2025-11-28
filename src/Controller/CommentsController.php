@@ -408,15 +408,7 @@ class CommentsController extends AppController
 		if ($unresolvedSet == 'true')
 		{
 			$this->set('unresolved', $unresolved);
-			$this->set('comments3', count(ClassRegistry::init('TsumegoComments')->find('all', [
-				'order' => 'created DESC',
-				'conditions' => [
-					'status' => 0,
-					[
-						'NOT' => ['user_id' => 0],
-					],
-				],
-			]) ?: []));
+			$this->set('comments3', count(ClassRegistry::init('TsumegoComment')->find('all', ['order' => 'created DESC', 'conditions' => ['deleted' => false]]) ?: []));
 		}
 
 		$currentPositionPlaceholder = '<img src="/img/positionIcon1.png" class="positionIcon1" style="cursor:context-menu;">';

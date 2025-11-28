@@ -3,10 +3,11 @@
 // renders comments related to one issue or comments without an issue
 class TsumegoCommentsSectionRenderer
 {
+	public array $comments = [];
+
 	public function __construct(int $tsumegoID, ?int $issueID)
 	{
 		$commentsInput = ClassRegistry::init('TsumegoComment')->find('all', ['conditions' => (['tsumego_id' => $tsumegoID, 'tsumego_issue_id' => $issueID])]) ?: [];
-		$this->comments = [];
 		foreach ($commentsInput as $index => $commentInput)
 		{
 			$comment = $commentInput['TsumegoComment'];
@@ -18,7 +19,7 @@ class TsumegoCommentsSectionRenderer
 			$array = TsumegosController::commentCoordinates($comment['message'], $index + 1, true);
 			$comment['message'] = $array[0];
 			//array_push($commentCoordinates, $array[1]);
-			$this->comments []= $comment;
+			$this->comments [] = $comment;
 		}
 	}
 
@@ -37,30 +38,30 @@ class TsumegoCommentsSectionRenderer
 			$commentColor = $commentColorCheck ? 'commentBox2' : 'commentBox1';
 
 			$cpArray = null;
-			if($comment['position']!=null)
+			if($comment['position'] != null)
 			{
 				$cpNew = null;
 				if(strpos($comment['position'], '|') !== false)
 				{
 					$cpNew = explode("|", $comment['position']);
 					$cp = explode('/', $cpNew[0]);
-					$cpNew[1] = ',\''.$cpNew[1].'\'';
+					$cpNew[1] = ',\'' . $cpNew[1] . '\'';
 				}
 				else
 					$cp = explode('/', $comment['position']);
-				$cpArray = $cp[0].','.$cp[1].','.$cp[2].','.$cp[3].','.$cp[4].','.$cp[5].','.$cp[6].','.$cp[7].',\''.$cp[8].'\'';
-				if($cpNew!=null)
+				$cpArray = $cp[0] . ',' . $cp[1] . ',' . $cp[2] . ',' . $cp[3] . ',' . $cp[4] . ',' . $cp[5] . ',' . $cp[6] . ',' . $cp[7] . ',\'' . $cp[8] . '\'';
+				if($cpNew != null)
 					$cpArray .= $cpNew[1];
-				$cpArray = '<img src="/img/positionIcon1.png" class="positionIcon1" onclick="commentPosition('.$cpArray.');">';
+				$cpArray = '<img src="/img/positionIcon1.png" class="positionIcon1" onclick="commentPosition(' . $cpArray . ');">';
 			}
-			$comment['message'] = '|'.$comment['message'];
+			$comment['message'] = '|' . $comment['message'];
 			if (strpos($comment['message'], '[current position]') != 0)
 				$comment['message'] = str_replace('[current position]', $cpArray, $comment['message']);
 			$comment['message'] = substr($comment['message'], 1);
 
 			echo '<div class="sandboxComment">';
 			echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
-			echo '<div class="'.$commentColor.'">'.$user['name'].':<br>'.$comment['message'].' </div>';
+			echo '<div class="' . $commentColor . '">' . $user['name'] . ':<br>' . $comment['message'] . ' </div>';
 			echo '</td><td align="right" class="sandboxTable2time">';
 
 			echo new DateTime($comment['created'])->format('M. d. Y <br> H:i');

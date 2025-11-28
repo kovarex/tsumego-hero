@@ -697,7 +697,6 @@ class Play
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);
-		($this->setFunction)('showComment', $co);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);

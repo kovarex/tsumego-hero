@@ -8,9 +8,8 @@ class TsumegoCommentsRenderer
 	public function __construct($tsumegoID)
 	{
 		$tsumegoIssues = ClassRegistry::init('TsumegoIssue')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]);
-		foreach ($tsumegoIssues as $tsumegoIssue) {
-			$this->issueSections []= new TsumegoIssuesRenderer($tsumegoIssue['TsumegoIssue']);
-		}
+		foreach ($tsumegoIssues as $tsumegoIssue)
+			$this->issueSections [] = new TsumegoIssuesRenderer($tsumegoIssue['TsumegoIssue']);
 		$this->plainSection = new TsumegoCommentsSectionRenderer($tsumegoID, null);
 	}
 
