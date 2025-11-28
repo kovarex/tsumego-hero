@@ -1,18 +1,18 @@
 <?php
 
-class TsumegoCommentController extends Controller
+class TsumegoCommentController extends AppController
 {
-  function add()
-  {
-	  if (!Auth::isLoggedIn())
-		  return null;
-	  $comment = [];
-	  $comment['tsumego_id'] = $_POST['tsumegoID'];
-	  $comment['message'] = $_POST['message'];
-	  $comment['tsumego_issue_id'] = $_POST['tsumegoIssueID'];
-	  $comment['user_id'] = Auth::getUserID();
-	  ClassRegistry::init('Comment')->create($comment);
-	  ClassRegistry::init('Comment')->save($comment);
-	  return $this->redirect($_POST['redirect']);
-  }
+	public function add()
+	{
+		if (!Auth::isLoggedIn())
+			return null;
+		$comment = [];
+		$comment['tsumego_id'] = $this->data['Comment']['tsumego_id'];
+		$comment['message'] = $this->data['Comment']['message'];
+		$comment['tsumego_issue_id'] = $this->data['Comment']['tsumego_issue_id'];
+		$comment['user_id'] = Auth::getUserID();
+		ClassRegistry::init('TsumegoComment')->create($comment);
+		ClassRegistry::init('TsumegoComment')->save($comment);
+		return $this->redirect($this->data['Comment']['redirect']);
+	}
 }

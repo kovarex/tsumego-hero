@@ -568,44 +568,29 @@
 					}
 				}
 			}else echo '<br>';
-			//if(Auth::hasPremium()){
-			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
-			$allowed = true;
-			if(Auth::isLoggedIn()){
-				if(Auth::getUserID()!=5080){
-					echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
-				}else{
-					$allowed = false;
-				}
+			if(Auth::isLoggedIn())
+			{
+				echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
+				echo '<div id="msg2">';
+				echo '<div id="commentPosition">Link current position</div>';
+				echo $this->Form->create('Comment', ['id' => 'tsumegoCommentForm', 'url' => '/tsumegoComment/add']);
+				echo $this->Form->input('tsumego_id', ['type' => 'hidden', 'value' => $t['Tsumego']['id']]);
+				echo $this->Form->input('redirect', ['type' => 'hidden', 'value' => '/' . $setConnection['SetConnection']['id']]);
+				echo $this->Form->input('message', ['label' => '', 'type' => 'textarea', 'placeholder' => 'Message']);
+				echo $this->Form->input('position', ['label' => '', 'type' => 'hidden']);
+				echo $this->Form->end('Submit');
+				echo '<br>';
+				echo '<a id="show3">Upload SGF<img id="greyArrow2" src="/img/greyArrow1.png"></a>';
+				echo '<div id="msg3">';
+				echo '<br>';
+				echo '<form action="" method="POST" enctype="multipart/form-data">';
+				echo '<input type="file" name="game" />';
+				echo '<input value="Submit" type="submit"/>';
+				echo '</form>';
+				echo '</div>';
+				echo '</div>';
 			}
-			echo '<div id="msg2">';
-			echo '<div id="commentPosition">Link current position</div>';
-			echo $this->Form->create('Comment', ['id' => 'tsumegoCommentForm']);
-			echo $this->Form->input('tsumego_id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-			if(isset($t['Tsumego']['duplicateLink']))
-				echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => str_replace('?sid=', '', $t['Tsumego']['duplicateLink'])));
-			echo $this->Form->input('user_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-			if($allowed)
-				echo $this->Form->input('message', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
-			echo $this->Form->input('position', array('label' => '', 'type' => 'hidden'));
-
-			if(Auth::isAdmin())
-				echo $this->Form->input('status', array('type' => 'hidden', 'value' => 97));
-
-			echo $this->Form->end('Submit');
-		?>
-		<br>
-			<a id="show3">Upload SGF<img id="greyArrow2" src="/img/greyArrow1.png"></a>
-			<div id="msg3">
-				<br>
-				<form action="" method="POST" enctype="multipart/form-data">
-					<input type="file" name="game" />
-					<input value="Submit" type="submit"/>
-				</form>
-			</div>
-		</div>
-
-		<?php } ?>
+		} ?>
 
 		<table class="sandboxTable" width="62%">
 			<tr>
