@@ -415,75 +415,6 @@
 		</div>
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
-		<?php
-		$tsumegoDates = array();
-		for($j=0; $j<count($tsumegos); $j++){
-			$date = date_create($tsumegos[$j]);
-			array_push($tsumegoDates, date_format($date,"Y-m-d"));
-		}
-		$tsumegoDates = array_count_values($tsumegoDates);
-		$tsumegoDates['2018-02-07'] = 160;
-		$tsumegoDates['2018-03-11'] = 151;
-		$tsumegoDates['2018-04-10'] = 205;
-		$tsumegoDates['2018-04-25'] = 204;
-		$tsumegoDates['2018-05-04'] = 89;
-		$dt = new DateTime();
-		$dt = $dt->format('Y-m-d');
-		if(!isset($tsumegoDates[$dt])){
-			$tsumegoDates[$dt] = 0.1;
-		}
-		ksort($tsumegoDates);
-
-		$td = array();
-		reset($tsumegoDates);
-		$nextDay = '';
-		$c = 0;
-		while(current($tsumegoDates)){
-			if(key($tsumegoDates)!=$nextDay&&$nextDay!=''){
-				while(key($tsumegoDates)!=$nextDay){
-					$td[$c]['date'] = $nextDay;
-					$td[$c]['num'] = 0;
-					$c++;
-					$nextDay = date_create($nextDay);
-					$nextDay->modify('+1 day');
-					$nextDay = date_format($nextDay,"Y-m-d");
-				}
-
-			}
-			$nextDay = key($tsumegoDates);
-			$nextDay = date_create($nextDay);
-			$nextDay->modify('+1 day');
-			$nextDay = date_format($nextDay,"Y-m-d");
-
-			$td[$c]['date'] = key($tsumegoDates);
-			$td[$c]['num'] = current($tsumegoDates);
-			$c++;
-			next($tsumegoDates);
-		}
-
-		$sum = 0;
-		for($j=0; $j<count($td); $j++){
-			$td[$j]['num'] = $td[$j]['num'] + $sum;
-			$date = date_create($td[$j]['date']);
-
-			if($date==date_create('2019-03-27')) $td[$j]['num'] -= 1277;
-			if($date==date_create('2019-04-25')) $td[$j]['num'] -= 238;
-			if($date==date_create('2019-05-01')) $td[$j]['num'] -= 32;
-			if($date==date_create('2019-05-19')) $td[$j]['num'] -= 40;
-			if($date==date_create('2020-02-22')) $td[$j]['num'] -= 347;
-			if($date==date_create('2023-09-01')) $td[$j]['num'] -= 4;
-			if($date==date_create('2023-10-04')) $td[$j]['num'] -= 10;
-			if($date==date_create('2024-08-18')) $td[$j]['num'] -= 31;
-			$x = $td[$j]['num'];
-			$sum = $x;
-
-			$td[$j]['y'] = $date->format('Y');
-			$td[$j]['m'] = $date->format('m');
-			$td[$j]['m'] = $td[$j]['m'] - 1;
-			$td[$j]['d'] = $date->format('d');
-			$td[$j]['d'] = $td[$j]['d'] * 1;
-		}
-		?>
 		<script>
 		<?php $tsumegoButtonsOfPublishedTsumegos->renderJS(); ?>
 		window.onload = function () {
@@ -512,11 +443,11 @@
 				lineThickness: 3,
 				dataPoints: [
 					<?php
-						for($j=0; $j<count($td); $j++){
-							$td[$j]['num'] = round($td[$j]['num']);
-							echo '{ x: new Date('.$td[$j]['y'].', '.$td[$j]['m'].', '.$td[$j]['d'].'), y: '.$td[$j]['num'].' }';
-							if($j!=count($td)-1) echo ',';
-						}
+						echo implode(",", array_map(function($dayRecord)
+						{
+							$date = new DateTime($dayRecord['DayRecord']['date']);
+							return '{ x: new Date('.$date->format('Y').', '.$date->format('m').', '.$date->format('d').'), y: '.$dayRecord['DayRecord']['tsumego_count'].' }';
+						}, $dayRecords));
 					?>
 				]
 			}]
@@ -994,21 +925,6 @@
 			url: "mainPageAjax.txt",
 			dataType: 'txt'
 		});
-
-		let popularTooltip = [];
-		<?php
-		for($y=0; $y<count($popularTooltip); $y++){
-			echo 'popularTooltip['.$y.'] = [];';
-			for($x=0; $x<count($popularTooltip[$y]); $x++){
-				echo 'popularTooltip['.$y.'].push("'.$popularTooltip[$x][$y].'");';
-			}
-		}
-		?>
-		<?php if(count($popularTooltip) > 0 && !empty($popularTooltipInfo) && count($popularTooltipInfo) >= 2 && !empty($popularTooltipBoardSize)): ?>
-		<?php
-		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
-		?>
-		<?php endif; ?>
 	</script>
 	<?php
 	if(!Auth::isLoggedIn()){

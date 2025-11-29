@@ -35,50 +35,28 @@ class SitesController extends AppController
 			$urNames[] = $this->checkPicture($user);
 
 		$today = date('Y-m-d');
-		$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
-		if (!$dateUser)
-			$dateUser = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
+		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
+		if (!$dayRecord)
+			$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
 
-		$tsumegoDates = [];
-		$popularTooltip = [];
-		$popularTooltipInfo = [];
-		$popularTooltipBoardSize = [];
-		$setsWithPremium = [];
 		$currentQuote = 'q13';
-		$d1day = date('d. ');
-		$d1year = date('Y');
-		if ($d1day[0] == 0)
-			$d1day = substr($d1day, -3);
-		$month = date('F', strtotime(date('Y-m-d')));
-		$d1 = $d1day . $month . ' ' . $d1year;
-		$totd = null;
-		$newT = null;
 
 		$tsumegoFilters = new TsumegoFilters('published');
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 
-		if ($dateUser)
+		if ($dayRecord)
 		{
-			$currentQuote = $dateUser['DayRecord']['quote'];
-			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dateUser['DayRecord']['user_id']]]);
+			$currentQuote = $dayRecord['DayRecord']['quote'];
+			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
 			if (!$userOfTheDay)
 				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
-
 			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
-			$pd = $this->PublishDate->find('all', ['order' => 'date ASC']) ?: [];
-
-			foreach ($pd as $date)
-				$tsumegoDates[] = $date['PublishDate']['date'];
 		}
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
-		$this->set('hasPremium', Auth::hasPremium());
-		$this->set('tsumegos', $tsumegoDates);
+		$this->set('dayRecords', ClassRegistry::init('DayRecord')->find('all', ['order' => 'date ASC']));
 		$this->set('quote', $currentQuote);
-		$this->set('dateUser', $dateUser);
-		$this->set('popularTooltip', $popularTooltip);
-		$this->set('popularTooltipInfo', $popularTooltipInfo);
-		$this->set('popularTooltipBoardSize', $popularTooltipBoardSize);
+		$this->set('dayRecord', $dayRecord);
 		$this->set('urNames', $urNames);
 	}
 
