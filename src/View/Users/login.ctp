@@ -8,12 +8,12 @@
 			<label for="UserName"></label>
 			<div class="input text required">
 				<label for="UserName"></label>
-				<input name="data[User][name]" maxlength="50" placeholder="Username or email" type="text" id="UserName" required="required"/>
+				<input name="username" maxlength="50" placeholder="Username or email" type="text" id="UserName" required="required"/>
 			</div>
 			<label for="UserPassword"></label>
 			<div class="input password required">
 				<label for="password"></label>
-				<input name="data[User][password]" type="password" placeholder="Password" id="password" required="required"/>
+				<input name="password" type="password" placeholder="Password" id="password" required="required"/>
 			</div>
 			<?php echo $this->Form->end('Submit'); ?>
 			Need an account?<br>

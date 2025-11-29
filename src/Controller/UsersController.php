@@ -1817,7 +1817,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	private function getUserFromNameOrEmail()
 	{
-		$input = $this->data['User']['name'];
+		$input = $this->data['username'];
 		if (empty($input))
 			return null;
 		if ($user = $this->User->findByName($input))
@@ -1829,7 +1829,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function login()
 	{
-		if (!$this->data['User'])
+		if (!$this->data['username'])
 			return null;
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
@@ -2819,7 +2819,7 @@ Joschka Zimdars';
 	{
 		if (!$user)
 			return false;
-		return password_verify($data['User']['password'], $user['User']['password_hash']);
+		return password_verify($data['password'], $user['User']['password_hash']);
 	}
 
 	/**

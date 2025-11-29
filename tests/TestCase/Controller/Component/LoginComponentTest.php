@@ -45,7 +45,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		ClassRegistry::init('User')->save($user);
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
-		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'test']], 'method' => 'POST']);
+		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => 'test'], 'method' => 'POST']);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 	}
 
@@ -192,7 +192,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->assertFalse(Auth::isLoggedIn());
 
-		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => $newPassword]], 'method' => 'POST']);
+		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => $newPassword], 'method' => 'POST']);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 
 		// changing the password to test again to not break other tests

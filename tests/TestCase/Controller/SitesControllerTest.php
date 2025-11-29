@@ -75,7 +75,6 @@ class SitesControllerTest extends ControllerTestCase
 					'date' => date('Y-m-d'), // Today
 					'solved' => 5,
 					'quote' => 'q13',
-					'userbg' => 1,
 					'visitedproblems' => 10,
 				],
 			],
@@ -143,7 +142,6 @@ class SitesControllerTest extends ControllerTestCase
 					'date' => date('Y-m-d'),
 					'solved' => 0,
 					'quote' => 'q01', // q01 has all images and CSS
-					'userbg' => 1,
 					'visitedproblems' => 0,
 				],
 			],
@@ -179,7 +177,6 @@ class SitesControllerTest extends ControllerTestCase
 					'date' => date('Y-m-d'),
 					'solved' => 5,
 					'quote' => 'q44', // q44 has no images, should fallback to q06
-					'userbg' => 1,
 					'visitedproblems' => 10,
 				],
 			],
