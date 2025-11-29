@@ -1,5 +1,5 @@
 <script src ="/js/previewBoard.js"></script>
-<?php 
+<?php
 	if(!Auth::isLoggedIn())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 
@@ -11,7 +11,7 @@
 	for($i=0; $i<10; $i++){
 		if(is_numeric($comments[$i]['Comment']['status'])) $comments[$i]['Comment']['textAnswer'] = 'false';
 		else{
-			$comments[$i]['Comment']['textAnswer'] = $comments[$i]['Comment']['status'];	
+			$comments[$i]['Comment']['textAnswer'] = $comments[$i]['Comment']['status'];
 			$comments[$i]['Comment']['status'] = 100;
 		}
 	}
@@ -45,7 +45,7 @@
 		<div class="new1" width="100%" style="margin-bottom:15px;">
 			<div align="center">
 				<br>
-				<?php 
+				<?php
 					if(!$empty){
 						if(Auth::isAdmin()){
 							if(!isset($unresolved)){ $unresolved = 'false'; $unresolvedSet = 'false'; }
@@ -103,9 +103,9 @@
 					}
 				?>
 				<br><br>
-			</div>	
+			</div>
 		</div>
-		<?php 
+		<?php
 			for($j=0; $j<10; $j++){
 				if(isset($comments[$j]['Comment']['user_name'])){
 					if($j<100) $display = " ";
@@ -126,7 +126,7 @@
 						echo '<table class="sandboxTable2" width="100%" border="0">';
 							echo '
 								<tr>
-								<td width="73%">		
+								<td width="73%">
 								<div style="padding-bottom:7px;"><b>#'.$comments[$j]['Comment']['counter'].'</b> | ';
 								if($comments[$j]['Comment']['num']!=null){
 									echo '<a href="/tsumegos/play/'.$comments[$j]['Comment']['tsumego_id'].$sid.$QorA.'search=topics">
@@ -137,10 +137,10 @@
 								}
 								echo '<br>
 								</div>
-								<div class="'.$commentColor.'"> 
+								<div class="'.$commentColor.'">
 								'.$comments[$j]['Comment']['user_name'].':<br>
 								'.$comments[$j]['Comment']['message'].'</div>';
-								
+
 								if($comments[$j]['Comment']['status']!=0 && $comments[$j]['Comment']['status']!=97 && $comments[$j]['Comment']['status']!=98 && $comments[$j]['Comment']['status']!=96){
 									echo '<div class="commentAnswer"><div style="padding-top:7px;"></div>'.$comments[$j]['Comment']['admin_name'].':<br>';
 									if($comments[$j]['Comment']['status']==1) echo 'Your moves have been added.<br>';
@@ -159,7 +159,7 @@
 									else if($comments[$j]['Comment']['status']==14) echo 'I didn\'t add your file.<br>';
 									else if($comments[$j]['Comment']['status']==100) echo $comments[$j]['Comment']['textAnswer'];
 									else echo $comments[$j]['Comment']['status'];
-									
+
 									echo '</div>';
 								}
 								echo '</td>
@@ -174,7 +174,7 @@
 												<a id="tooltip-hover'.$j.'" class="tooltip" href="/tsumegos/play/'.$comments[$j]['Comment']['tsumego_id'].$sid.$QorA
 												.'search=topics">'.$comments[$j]['Comment']['num']
 												.'<span><div id="tooltipSvg'.$j.'"></div></span></a>
-												
+
 											</li>
 										</div>
 									</div>
@@ -185,7 +185,7 @@
 								<td colspan="2">
 									<div width="100%">
 										<div align="center">
-											
+
 										</div>
 									</div>
 								</td>
@@ -203,14 +203,14 @@
 						echo '<table class="sandboxTable2" width="100%" border="0">';
 							echo '
 								<tr>
-								<td width="73%">		
-								<div><b>#'.$comments[$j]['Comment']['counter'].'</b> | 
+								<td width="73%">
+								<div><b>#'.$comments[$j]['Comment']['counter'].'</b> |
 								<a href="/tsumegos/play/'.$comments[$j]['Comment']['tsumego_id'].$sid.$QorA.'search=topics">
 									'.$comments[$j]['Comment']['set'].' '.$comments[$j]['Comment']['set2'].' - '.$comments[$j]['Comment']['num'].'
 								</a><br>
 								<div class="commentAnswer" style="color:#5e5e5e;"><div style="padding-top:14px;"></div>[You need to solve this problem to see the comment]</div>
 								</div>';
-								
+
 								echo '</td>
 								<td class="sandboxTable2time" align="right">'.$comments[$j]['Comment']['created'].'</td>';
 							echo '</tr>';
@@ -221,7 +221,7 @@
 											<div align="center">
 												<li id="naviElement0" class="set'.$comments[$j]['Comment']['user_tsumego'].'1" style="float:left;margin-top:14px;">
 													<a href="/tsumegos/play/'.$comments[$j]['Comment']['tsumego_id'].$sid.$QorA.'search=topics">'.$comments[$j]['Comment']['num'].'</a>
-													
+
 												</li>
 											</div>
 										</div>
@@ -241,7 +241,7 @@
 		?>
 	<div width="100%">
 		<div align="center">
-			<?php 
+			<?php
 				if(!$empty){
 					if($firstPage && count($comments)<11);
 					else{
@@ -255,8 +255,8 @@
 				}
 			?>
 			<br><br>
-		</div>	
-	</div>	
+		</div>
+	</div>
 	</td>
 	<?php
 		$yourempty = false;
@@ -267,7 +267,7 @@
 		for($i=0; $i<10; $i++){
 			if(is_numeric($yourComments[$i]['Comment']['status'])) $yourComments[$i]['Comment']['textAnswer'] = 'false';
 			else{
-				$yourComments[$i]['Comment']['textAnswer'] = $yourComments[$i]['Comment']['status'];	
+				$yourComments[$i]['Comment']['textAnswer'] = $yourComments[$i]['Comment']['status'];
 				$yourComments[$i]['Comment']['status'] = 100;
 			}
 		}
@@ -290,7 +290,7 @@
 		<div class="new1" width="100%" style="margin-bottom:15px;">
 			<div align="center">
 				<br>
-				<?php 
+				<?php
 					if(!$yourempty){
 						if($yourfirstPage && count($yourComments)<11) ;
 						else{
@@ -306,10 +306,10 @@
 					}
 				?>
 				<br><br>
-			</div>	
+			</div>
 		</div>
-		<?php 
-			
+		<?php
+
 			for($j=0; $j<10; $j++){
 				if(isset($yourComments[$j]['Comment']['user_name'])){
 					if($j<100) $yourdisplay = " ";
@@ -328,17 +328,17 @@
 					echo '<div class="sandboxComment" id="comment'.$j.'" '.$yourdisplay.'>
 						<table class="sandboxTable2" width="100%" border="0">';
 							echo '<tr>
-								<td width="73%">		
-								<div style="padding-bottom:7px;"><b>#'.$yourComments[$j]['Comment']['counter'].'</b> | 
+								<td width="73%">
+								<div style="padding-bottom:7px;"><b>#'.$yourComments[$j]['Comment']['counter'].'</b> |
 								<a href="/tsumegos/play/'.$yourComments[$j]['Comment']['tsumego_id'].$sid.$QorA.'search=topics">
 									'.$yourComments[$j]['Comment']['set'].' '.$yourComments[$j]['Comment']['set2'].' - '.$yourComments[$j]['Comment']['num'].'
 								</a><br>
-								
+
 								</div>
-								<div class="'.$commentColor.'"> 
+								<div class="'.$commentColor.'">
 								'.$yourComments[$j]['Comment']['user_name'].':<br>
 								'.$yourComments[$j]['Comment']['message'].'</div>';
-								
+
 								if($yourComments[$j]['Comment']['status']!=0 && $yourComments[$j]['Comment']['status']!=97 && $yourComments[$j]['Comment']['status']!=98 && $comments[$j]['Comment']['status']!=96){
 									echo '<div class="commentAnswer"><div style="padding-top:7px;"></div>'.$yourComments[$j]['Comment']['admin_name'].':<br>';
 									if($yourComments[$j]['Comment']['status']==1) echo 'Your moves have been added.<br>';
@@ -358,7 +358,7 @@
 									else if($yourComments[$j]['Comment']['status']==99) echo 'Your comment has been removed.<br>';
 									else if($yourComments[$j]['Comment']['status']==100) echo $yourComments[$j]['Comment']['textAnswer'];
 									else echo $yourComments[$j]['Comment']['status'];
-									
+
 									echo '</div>';
 								}
 								echo '</td>
@@ -390,7 +390,7 @@
 		?>
 	<div width="100%">
 		<div align="center">
-			<?php 
+			<?php
 				if(!$yourempty){
 					if($yourfirstPage && count($yourComments)<11) ;
 					else{
@@ -402,18 +402,18 @@
 						else echo '<a class="new-button-inactive" >next page</a>';
 					}
 				}
-				
+
 			?>
 			<br><br>
-			
-		</div>	
+
+		</div>
 	</div>
-	
+
 	</td>
 	</tr>
 	</table>
 </div>
-<?php 
+<?php
 //echo '<pre>';print_r($comments);echo '</pre>';
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -429,7 +429,7 @@
 					counter++;
 				}
 			});
-			
+
 			let loadMore2 = 10;
 			$('#more-button2').click(function(e){
 				e.preventDefault();
@@ -456,9 +456,9 @@
 				if(!isset($tooltipInfo[$i][0]))
 					$tooltipInfo[$i][0] = 0;
 				if(!isset($tooltipInfo[$i][1]))
-					$tooltipInfo[$i][1] = 0;	
+					$tooltipInfo[$i][1] = 0;
 				if(!isset($tooltipBoardSize[$i]))
-					$tooltipBoardSize[$i] = 19;	
+					$tooltipBoardSize[$i] = 19;
 				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
 			}
 			?>
@@ -468,7 +468,7 @@
 				echo 'tooltipSgfs2['.$a.'] = [];';
 				for($y=0; $y<count($tooltipSgfs2[$a]); $y++){
 					echo 'tooltipSgfs2['.$a.']['.$y.'] = [];';
-					for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
+					for($x=0; $x<count($tooltipSgfs2[$a][$y]); $x++){
 						echo 'tooltipSgfs2['.$a.']['.$y.'].push("'.$tooltipSgfs2[$a][$x][$y].'");';
 					}
 				}
@@ -477,9 +477,9 @@
 				if(!isset($tooltipInfo2[$i][0]))
 					$tooltipInfo2[$i][0] = 0;
 				if(!isset($tooltipInfo2[$i][1]))
-					$tooltipInfo2[$i][1] = 0;	
+					$tooltipInfo2[$i][1] = 0;
 				if(!isset($tooltipBoardSize2[$i]))
-					$tooltipBoardSize2[$i] = 19;		
+					$tooltipBoardSize2[$i] = 19;
 				echo 'createPreviewBoard('.(99+$i).', tooltipSgfs2['.$i.'], '.$tooltipInfo2[$i][0].', '.$tooltipInfo2[$i][1].', '.$tooltipBoardSize2[$i].');';
 			}
 			?>
@@ -511,7 +511,7 @@
 			.unresolved-tab-list li.unresolved-active a, .tab-list li a:hover{
 				background: #e5e5e5;
 				color:#666;
-			   
+
 			}
 			.unresolved-tab-panel{
 				display: none;
@@ -522,7 +522,7 @@
 			}
 			.unresolved-tab-panel.unresolved-active{
 				display: block;
-				
+
 			}
 			.unresolved-tab-list p{
 				margin: 20px;
