@@ -283,29 +283,32 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		return new CakeEmail();
 	}
 
-	/**
-	 * @param string|null $checksum Password reset checksum
-	 * @return void
-	 */
-	public function newpassword($checksum = null)
+	// @param string|null $checksum Password reset checksum
+	public function newpassword($checksum = null): mixed
 	{
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
-		$valid = false;
 		$done = false;
 		if ($checksum == null)
 			$checksum = 1;
 		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
-		if ($user)
+		$valid = ($user != null);
+		if (!$user)
+			return null;
+
+		if ($this->data['User']['password'])
 		{
 			$user['User']['passwordreset'] = null;
 			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
-			$done = true;
+			$this->Flash->set("Password changed");
+			return $this->redirect("/users/login");
 		}
 
 		$this->set('valid', $valid);
 		$this->set('done', $done);
+		$this->set('checksum', $checksum);
+		return null;
 	}
 
 	/**
