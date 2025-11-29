@@ -38,7 +38,7 @@ besogo.addTest("GameRoot", "RemoveVariation", function()
   CHECK_EQUALS(child.children.length, 1);
   CHECK_EQUALS(root.nodeHashTable.size(), 2);
   child.destroy();
-  
+
   CHECK_EQUALS(root.children.length, 0);
   CHECK_EQUALS(root.nodeHashTable.size(), 0);
 });
@@ -49,9 +49,40 @@ besogo.addTest("GameRoot", "TwoOrderOfMovesLeadToTheSameNode", function()
   let root = besogo.makeGameRoot();
   let finalChild = root.registerMove(1, 1).registerMove(1, 2).registerMove(2, 1).registerMove(2, 2);
   let otherOrder = root.registerMove(2, 1).registerMove(2, 2).registerMove(1, 1);
-  
+
   CHECK_EQUALS(otherOrder.virtualChildren.length, 1);
   CHECK(otherOrder.virtualChildren[0].target == finalChild);
   CHECK_EQUALS(finalChild.virtualParents.length, 1);
   CHECK(finalChild.virtualParents[0] == otherOrder);
+});
+
+besogo.addTest("GameRoot", "LocalEditDoesntBreakValidVariation", function()
+{
+	let root = besogo.makeGameRoot();
+	let move1 = root.registerMove(1, 1);
+	let move2 = move1.registerMove(1, 2);
+	let move3 = move2.registerMove(1, 3);
+
+	CHECK_EQUALS(move1.correct, CORRECT_BAD);
+	CHECK_EQUALS(move2.correct, CORRECT_BAD);
+	CHECK_EQUALS(move3.correct, CORRECT_BAD);
+	move3.setCorrectSource(CORRECT_GOOD);
+	CHECK_EQUALS(move1.correct, CORRECT_GOOD);
+	CHECK_EQUALS(move2.correct, CORRECT_GOOD);
+	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
+
+	// moves are marked as visited, simulating we already went through these
+	move1.visited = true;
+	move2.visited = true;
+
+	let localEditMove = move2.makeChild();
+	localEditMove.localEdit = true;
+	localEditMove.playMove(2, 3);
+	move2.registerChild(localEditMove);
+
+	CHECK(move2.children.length, 2);
+	CHECK(move2.children[1].localEdit);
+	CHECK_EQUALS(move1.correct, CORRECT_GOOD);
+	CHECK_EQUALS(move2.correct, CORRECT_GOOD);
+	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
 });

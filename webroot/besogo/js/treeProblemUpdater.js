@@ -110,7 +110,7 @@ besogo.updateCorrectValues = function(root)
     besogo.updateCorrectValuesInternal(root, root);
   else
     besogo.updateCorrectValuesBasedOnStatus(root, root.goal, root.status, true /* isCorrectBranch */);
-  root.unvisit();
+  root.unvisitRecursion();
 }
 
 besogo.updateStatusResult = function(solversMove, child, status, goal, superkoMeansDead)
@@ -178,9 +178,9 @@ besogo.updateStatusValuesInternal = function(root, node, goal)
 
 besogo.updateCorrectValuesInternal = function(root, node)
 {
-  if (node.visited)
+  if (node.visitedInRecursion)
     return node.correct;
-  node.visited = true;
+  node.visitedInRecursion = true;
   if (node.comment.startsWith("+"))
   {
     if (!node.correctSource)
