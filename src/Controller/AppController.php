@@ -1949,7 +1949,7 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$this->loadModel('Favorite');
 
 		Auth::init();
@@ -1980,7 +1980,8 @@ class AppController extends Controller
 					$saveTag['TagConnection']['tsumego_id'] = $tagId;
 					$saveTag['TagConnection']['user_id'] = Auth::getUserID();
 					$saveTag['TagConnection']['approved'] = 0;
-					$this->TagConnection->save($saveTag);
+					ClassRegistry::init('TagConnection')->create();
+					ClassRegistry::init('TagConnection')->save($saveTag);
 				}
 				$this->set('removeCookie', 'addTag');
 			}

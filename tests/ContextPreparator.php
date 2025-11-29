@@ -30,6 +30,7 @@ class ContextPreparator
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
+		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -289,7 +290,7 @@ class ContextPreparator
 			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 			foreach ($tagsInput as $tagInput)
 			{
-				$tag = $this->getOrCreateTag($tagInput['name']);
+				$tag = $this->getOrCreateTag(['name' => $tagInput['name']]);
 				$tagConnection = [];
 				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
 				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
@@ -333,8 +334,9 @@ class ContextPreparator
 		return $set['Set'];
 	}
 
-	private function getOrCreateTag($name): array
+	private function getOrCreateTag($tagInput): array
 	{
+		$name = Util::extract('name', $tagInput);
 		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		if (!$tag)
 		{
@@ -345,6 +347,7 @@ class ContextPreparator
 			// reloading so the generated id is retrieved
 			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
+		$this->checkOptionsConsumed($tagInput);
 		return $tag['Tag'];
 	}
 
@@ -523,6 +526,13 @@ class ContextPreparator
 		}
 	}
 
+	public function prepareTags($tagsInput): void
+	{
+		if (!$tagsInput)
+			return;
+		foreach ($tagsInput as $tagInput)
+			$this->getOrCreateTag($tagInput);
+	}
 
 	public function addFavorite($tsumego)
 	{
