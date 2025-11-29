@@ -8,7 +8,6 @@ final class TsumegoStatistics extends AbstractMigration
 {
     public function up(): void
     {
-		//$this->execute("ALTER TABLE `day_record` DROP COLUMN `tsumego_count`");
 		$this->execute("ALTER TABLE `day_record` ADD COLUMN `tsumego_count` INT UNSIGNED NOT NULL");
 		$this->execute("ALTER TABLE `day_record` CHANGE `user_id` `user_id` INT UNSIGNED NULL DEFAULT NULL");
 		$this->execute("ALTER TABLE `day_record` CHANGE `visitedproblems` `visitedproblems` INT NOT NULL DEFAULT '0'");
