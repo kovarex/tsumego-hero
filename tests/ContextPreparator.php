@@ -440,9 +440,7 @@ class ContextPreparator
 			$dayRecord['date'] = Util::extract('date', $dayRecordInput) ?: date('Y-m-d');
 			$dayRecord['solved'] = Util::extract('solved', $dayRecordInput) ?: 0;
 			$dayRecord['quote'] = Util::extract('quote', $dayRecordInput) ?: 'q13';
-			$dayRecord['userbg'] = Util::extract('userbg', $dayRecordInput) ?: 1;
-			$dayRecord['tsumego'] = Util::extract('tsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
-			$dayRecord['newTsumego'] = Util::extract('newTsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
+			$dayRecord['tsumego_count'] = Util::extract('tsumego_count', $dayRecordInput) ?: 0;
 			$dayRecord['usercount'] = Util::extract('usercount', $dayRecordInput) ?: 1;
 			$dayRecord['visitedproblems'] = Util::extract('visitedproblems', $dayRecordInput) ?: 0;
 			$dayRecord['gems'] = Util::extract('gems', $dayRecordInput) ?: '0-0-0';
