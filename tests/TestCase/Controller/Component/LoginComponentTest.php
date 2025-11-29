@@ -182,10 +182,14 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user['passwordreset'] = $resetSecret;
 		ClassRegistry::init('User')->save($user);
 
+		$browser = Browser::instance();
 		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$browser->get('users/newpassword/' . $resetSecret);
+		$browser->clickId("password");
 		$newPassword = Util::generateRandomString(20);
-
-		$this->testAction('users/newpassword/' . $resetSecret, ['data' => ['User' => ['password' => $newPassword]], 'method' => 'POST']);
+		$browser->driver->getKeyboard()->sendKeys($newPassword);
+		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserNewpasswordForm input[type="submit"]'));
+		$sumbitButton->click();
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertNull($newUser['passwordreset']); // password reset was cleared
