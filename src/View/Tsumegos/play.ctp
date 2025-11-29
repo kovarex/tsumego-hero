@@ -9,10 +9,10 @@
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
 <script src="/besogo/js/transformation.js"></script>
-<script src="/besogo/js/treeProblemUpdater.js"></script>
+<script src="/besogo/js/treeProblemUpdater.js?v=2"></script>
 <script src="/besogo/js/nodeHashTable.js"></script>
 <script src="/besogo/js/editor.js"></script>
-<script src="/besogo/js/gameRoot.js"></script>
+<script src="/besogo/js/gameRoot.js?v=2"></script>
 <script src="/besogo/js/status.js"></script>
 <script src="/besogo/js/svgUtil.js"></script>
 <script src="/besogo/js/cookieUtil.js"></script>
