@@ -304,7 +304,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$user['User']['passwordreset'] = null;
 			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
-			$done = true;
+			$this->Flash->set("Password changed");
+			return $this->redirect("/users/login");
 		}
 
 		$this->set('valid', $valid);
