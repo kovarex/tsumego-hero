@@ -158,4 +158,31 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $emptyHearts);
 		$this->assertCount(0, $fullHearts);
 	}
+
+	public function testCommentCoordinatesHaveHoverSpans()
+	{
+		// Create a tsumego with a comment containing coordinates
+		$context = new ContextPreparator([
+			'user' => ['admin' => true], // Admin so comments are visible
+			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
+		]);
+
+		// Add a comment with coordinates
+		$comment = ClassRegistry::init('TsumegoComment');
+		$comment->save([
+			'tsumego_id' => $context->tsumego['id'],
+			'user_id' => $context->user['id'],
+			'message' => 'Try playing at R19 or S18, they both work.',
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumego['id'], ['return' => 'view']);
+
+		// Check that coordinate spans exist in the HTML
+		$this->assertTextContains('go-coord', $this->view);
+		$this->assertTextContains('onmouseover="ccIn', $this->view);
+
+		// Check the JavaScript functions are generated
+		$this->assertTextContains('function ccIn', $this->view);
+		$this->assertTextContains('showCoordPopup', $this->view);
+	}
 }

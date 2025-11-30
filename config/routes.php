@@ -22,7 +22,7 @@
  */
 
 
-require_once(__DIR__."/../src/UrlRoute.php");
+require_once(__DIR__ . "/../src/UrlRoute.php");
 /**
  * Here, we are connecting '/' (base path) to controller called 'Pages',
  * its action called 'display', and we pass a param to select the view file
@@ -33,6 +33,56 @@ Router::connect('/', ['controller' => 'sites', 'action' => 'index'], ['routeClas
  * ...and connect the rest of 'Pages' controller's URLs.
  */
 Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
+
+/**
+ * TsumegoComments routes - for managing comments on tsumego problems
+ */
+Router::connect(
+	'/tsumego-comments/add',
+	['controller' => 'TsumegoComments', 'action' => 'add']
+);
+Router::connect(
+	'/tsumego-comments/delete/:id',
+	['controller' => 'TsumegoComments', 'action' => 'delete'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+// Backward compatibility with old singular URL
+Router::connect(
+	'/tsumegoComment/add',
+	['controller' => 'TsumegoComments', 'action' => 'add']
+);
+
+/**
+ * TsumegoIssues routes - for managing issues on tsumego problems
+ */
+Router::connect(
+	'/tsumego-issues',
+	['controller' => 'TsumegoIssues', 'action' => 'index']
+);
+Router::connect(
+	'/tsumego-issues/create',
+	['controller' => 'TsumegoIssues', 'action' => 'create']
+);
+Router::connect(
+	'/tsumego-issues/close/:id',
+	['controller' => 'TsumegoIssues', 'action' => 'close'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/tsumego-issues/reopen/:id',
+	['controller' => 'TsumegoIssues', 'action' => 'reopen'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/tsumego-issues/move-comment/:id',
+	['controller' => 'TsumegoIssues', 'action' => 'moveComment'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/tsumego-issues/remove-comment/:id',
+	['controller' => 'TsumegoIssues', 'action' => 'removeComment'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 

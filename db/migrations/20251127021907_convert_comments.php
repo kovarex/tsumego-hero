@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 use Phinx\Migration\AbstractMigration;
-require_once(__DIR__ . '/../../src/Model/TsumegoIssue.php');
-App::uses('TsumegoIssue', 'Model');
 
 final class ConvertComments extends AbstractMigration
 {
@@ -19,12 +17,12 @@ CREATE TABLE `tsumego_issue_status` (
 	PRIMARY KEY (`id`))
 ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
 
+		// Status values: 1=opened, 2=closed, 3=reviewed (deleted is a boolean column on the issue)
 		$this->execute("INSERT INTO tsumego_issue_status (id, name)
 VALUES
-(".TsumegoIssue::$OPENED_STATUS.", 'opened'),
-(".TsumegoIssue::$CLOSED_STATUS.", 'closed'),
-(".TsumegoIssue::$REVIEW_STATUS.", 'reviewed'),
-(".TsumegoIssue::$DELETED_STATUS.", 'deleted')");
+(1, 'opened'),
+(2, 'closed'),
+(3, 'reviewed')");
 
 		$this->execute("
 CREATE TABLE `tsumego_issue` (
@@ -33,6 +31,7 @@ CREATE TABLE `tsumego_issue` (
 	`tsumego_id` INT UNSIGNED NOT NULL,
 	`user_id` INT UNSIGNED NOT NULL,
 	`created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`deleted` BOOL NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`),
 	INDEX `tsumego_issue_status_id` (`tsumego_issue_status_id`),
 	INDEX `tsumego_id` (`tsumego_id`),
@@ -106,8 +105,9 @@ ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 			// creating mini issue from the comment
 			if ($adminUser->rowCount() && $intStatus >= 1 && $intStatus <= 14)
 			{
-				$this->execute("INSERT INTO tsumego_issue (`user_id`, `tsumego_id`, `tsumego_issue_status_id`, `created`) VALUES(?, ?, ?, ?)",
-					[$comment['user_id'], $comment['tsumego_id'], strval(TsumegoIssue::$CLOSED_STATUS), $comment['created']]);
+				// 2 = CLOSED_STATUS
+			$this->execute("INSERT INTO tsumego_issue (`user_id`, `tsumego_id`, `tsumego_issue_status_id`, `created`) VALUES(?, ?, ?, ?)",
+					[$comment['user_id'], $comment['tsumego_id'], '2', $comment['created']]);
 
 				$tsumegoIssue = $this->query("SELECT * from tsumego_issue ORDER BY id DESC")->fetchAll()[0];
 

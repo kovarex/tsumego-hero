@@ -11,6 +11,12 @@ function darkAndLight() {
     $("#darkButtonImage3").attr("src", "/img/dark-icon1.png");
     document.cookie = "lightDark=dark";
 
+    // Toggle body class for new CSS-based theming
+    $("body").removeClass("light-theme").addClass("dark-theme");
+
+    // Clear any inline styles from new CSS-managed components so CSS body class selectors work
+    $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
+
     $(".new1, .title4, .new1, #playTitleA").css("color", "#f0f0f0");
     $(".modify-description").css("color", "#f0f0f0");
     $("body").css("background", "linear-gradient(#2a2a2a, #111)");
@@ -33,6 +39,8 @@ function darkAndLight() {
     $("li.setV2").css("border", "1px solid #f0f0f0");
     $(".sandboxTable2time").css("color", "#b9b9b9");
     $(".besogo-container").css("background", "#2a2a2a");
+
+    // NOTE: tsumego-issue and tsumego-comments__form are styled via CSS body.dark-theme selectors
 
     $(
       ".highscoreTable .color12, #sandbox, .userstatsstbale a, .admin-panel"
@@ -122,6 +130,12 @@ function darkAndLight() {
     $("#darkButtonImage").attr("src", "/img/light-icon1x.png");
     $("#darkButtonImage2").attr("src", "/img/light-icon1x.png");
     $("#darkButtonImage3").attr("src", "/img/light-icon1x.png");
+
+    // Toggle body class for new CSS-based theming
+    $("body").removeClass("dark-theme").addClass("light-theme");
+
+    // Clear any inline styles from new CSS-managed components so CSS body class selectors work
+    $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
     $(".new1, .title4, .new1, #playTitleA").css("color", "black");
     $(".modify-description").css("color", "black");

@@ -142,6 +142,7 @@ class ContextPreparator
 		if (!$singleSgf && !$multipleSgfs)
 			$this->prepareTsumegoSgf(self::defaultSgf(), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -214,15 +215,49 @@ class ContextPreparator
 			$this->prepareTsumegoComment($tsumegoComment, $tsumego);
 	}
 
-	private function prepareTsumegoComment(array $commentInput, $tsumego): void
+	private function prepareTsumegoComment(array $commentInput, $tsumego, ?int $issueId = null): void
 	{
 		ClassRegistry::init('TsumegoComment')->create();
 		$comment = [];
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
 		$comment['user_id'] = $this->user['id'];
+		if ($issueId !== null)
+			$comment['tsumego_issue_id'] = $issueId;
 		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
+	}
+
+	private function prepareTsumegoIssues(?array $tsumegoIssues, $tsumego): void
+	{
+		if (!$tsumegoIssues)
+			return;
+		foreach ($tsumegoIssues as $tsumegoIssue)
+			$this->prepareTsumegoIssue($tsumegoIssue, $tsumego);
+	}
+
+	private function prepareTsumegoIssue(array $issueInput, $tsumego): void
+	{
+		App::uses('TsumegoIssue', 'Model');
+
+		// Create the issue
+		ClassRegistry::init('TsumegoIssue')->create();
+		$issue = [];
+		$issue['tsumego_id'] = $tsumego['id'];
+		$issue['user_id'] = $this->user['id'];
+		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		ClassRegistry::init('TsumegoIssue')->save($issue);
+
+		// Get the created issue ID
+		$createdIssue = ClassRegistry::init('TsumegoIssue')->find('first', ['order' => 'id DESC']);
+		$issueId = $createdIssue['TsumegoIssue']['id'];
+
+		// Create initial comment for the issue
+		$message = Util::extract('message', $issueInput);
+		if ($message)
+			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
+
+		$this->checkOptionsConsumed($issueInput);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void

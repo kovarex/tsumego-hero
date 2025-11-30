@@ -6,6 +6,7 @@ App::uses('TsumegoButtons', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
+App::uses('TsumegoComment', 'Model');
 App::uses('TsumegoCommentsRenderer', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 
@@ -149,8 +150,8 @@ class Play
 							if ($raS['Set']['id'] != 210 && $raS['Set']['id'] != 191 && $raS['Set']['id'] != 181 && $raS['Set']['id'] != 207 && $raS['Set']['id'] != 172
 								&& $raS['Set']['id'] != 202 && $raS['Set']['id'] != 237 && $raS['Set']['id'] != 81578 && $raS['Set']['id'] != 74761 && $raS['Set']['id'] != 71790 && $raS['Set']['id'] != 33007
 								&& $raS['Set']['id'] != 31813 && $raS['Set']['id'] != 29156 && $raS['Set']['id'] != 11969 && $raS['Set']['id'] != 6473)
-									if (!in_array($raS['Set']['id'], $setsWithPremium) || $hasPremium)
-										$ratingFound = true;
+								if (!in_array($raS['Set']['id'], $setsWithPremium) || $hasPremium)
+									$ratingFound = true;
 						if ($ratingFound == false)
 							$ratingFoundCounter++;
 					}
@@ -177,7 +178,7 @@ class Play
 			}
 		}
 
-		$t = ClassRegistry::init('Tsumego')->findById($id);//the tsumego
+		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
 		if (Auth::isLoggedIn())
 			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
@@ -662,7 +663,6 @@ class Play
 		($this->setFunction)('potion', $potion);
 		($this->setFunction)('potionSuccess', $potionSuccess);
 		($this->setFunction)('reviewCheat', $reviewCheat);
-		($this->setFunction)('commentCoordinates', $commentCoordinates);
 		($this->setFunction)('part', $t['Tsumego']['part']);
 		($this->setFunction)('checkBSize', $checkBSize);
 		($this->setFunction)('potionAlert', $potionAlert);
@@ -684,6 +684,15 @@ class Play
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
+
+		// Load comments and issues data for the view
+		$commentsData = $this->loadCommentsData($id);
+		($this->setFunction)('tsumegoIssues', $commentsData['issues']);
+		($this->setFunction)('tsumegoPlainComments', $commentsData['plainComments']);
+		// Merge comment coordinates with any existing ones
+		$commentCoordinates = array_merge($commentCoordinates, $commentsData['coordinates']);
+		($this->setFunction)('commentCoordinates', $commentCoordinates);
+
 		return null;
 	}
 
@@ -795,6 +804,112 @@ class Play
 											</a>
 										</font>';
 		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';
+	}
+
+	/**
+	 * Load tsumego comments and issues data for the view.
+	 *
+	 * @param int $tsumegoId
+	 * @return array{issues: array, plainComments: array, coordinates: array}
+	 */
+	public function loadCommentsData(int $tsumegoId): array
+	{
+		/** @var TsumegoIssue $issueModel */
+		$issueModel = ClassRegistry::init('TsumegoIssue');
+		/** @var TsumegoComment $commentModel */
+		$commentModel = ClassRegistry::init('TsumegoComment');
+
+		// Counter only increments when coordinates are found (matches $fn1 in play.ctp)
+		$counter = 1;
+		$allCoordinates = [];
+
+		// Load issues with their comments (exclude deleted issues)
+		$issuesRaw = $issueModel->find('all', [
+			'conditions' => [
+				'tsumego_id' => $tsumegoId,
+				'deleted' => false,
+			],
+			'order' => 'TsumegoIssue.created DESC',
+		]) ?: [];
+
+		/** @var User $userModel */
+		$userModel = ClassRegistry::init('User');
+
+		$issues = [];
+		foreach ($issuesRaw as $issueRaw)
+		{
+			$issue = $issueRaw['TsumegoIssue'];
+
+			// Load author
+			$author = $userModel->findById($issue['user_id']);
+			$issue['author'] = $author ? $author['User'] : ['name' => '[deleted user]'];
+
+			// Load comments for this issue with global counter
+			$commentsRaw = $commentModel->find('all', [
+				'conditions' => [
+					'tsumego_id' => $tsumegoId,
+					'tsumego_issue_id' => $issue['id'],
+					'deleted' => false,
+				],
+				'order' => 'created ASC',
+			]) ?: [];
+
+			$issueComments = [];
+			foreach ($commentsRaw as $commentRaw)
+			{
+				$comment = $commentRaw['TsumegoComment'];
+				$user = $userModel->findById($comment['user_id']);
+				$comment['user'] = $user ? $user['User'] : ['name' => '[deleted user]', 'admin' => 0];
+
+				// Process message for coordinates with global counter
+				$array = TsumegosController::commentCoordinates($comment['message'], $counter, true);
+				$comment['message'] = $array[0];
+				if (!empty($array[1]))
+				{
+					$allCoordinates[] = $array[1];
+					$counter++; // Only increment when coordinates were added
+				}
+
+				$issueComments[] = $comment;
+			}
+			$issue['comments'] = $issueComments;
+			$issues[] = $issue;
+		}
+
+		// Load standalone comments (not associated with any issue) with global counter
+		$plainCommentsRaw = $commentModel->find('all', [
+			'conditions' => [
+				'tsumego_id' => $tsumegoId,
+				'tsumego_issue_id' => null,
+				'deleted' => false,
+			],
+			'order' => 'created ASC',
+		]) ?: [];
+
+		$plainComments = [];
+		foreach ($plainCommentsRaw as $commentRaw)
+		{
+			$comment = $commentRaw['TsumegoComment'];
+			$user = $userModel->findById($comment['user_id']);
+			$comment['user'] = $user ? $user['User'] : ['name' => '[deleted user]', 'admin' => 0];
+
+			// Process message for coordinates with global counter
+			$array = TsumegosController::commentCoordinates($comment['message'], $counter, true);
+			$comment['message'] = $array[0];
+			if (!empty($array[1]))
+			{
+				$allCoordinates[] = $array[1];
+				$counter++; // Only increment when coordinates were added
+			}
+
+			$plainComments[] = $comment;
+		}
+
+		return [
+			'issues' => $issues,
+			'plainComments' => $plainComments,
+			'coordinates' => $allCoordinates,
+		];
 	}
 
 	private $setFunction;
