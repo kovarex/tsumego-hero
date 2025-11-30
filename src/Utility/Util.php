@@ -4,16 +4,32 @@ class Util
 {
 	public static function setCookie($name, $value)
 	{
-		setcookie($name, $value, time() + 365 * 24 * 60 * 60, "/", "", true, false);
+		setcookie('name', 'value', [
+			'expires'  => time() + 365 * 24 * 60 * 60,
+			'path'     => '/',
+			'domain'   => '',
+			'secure'   => true,
+			'httponly' => true,
+			'samesite' => 'Lax'
+		]);
 	}
 
 	/* @return The value of the cleared cookie */
 	public static function clearCookie(string $name): ?string
 	{
-		$result = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : null;
-		setcookie($name, '', 1, "/", "", true, false);
-		$_COOKIE[$name] = '';
-		return $result;
+		$previous = $_COOKIE[$name] ?? null;
+		setcookie($name,'',
+			[
+				'expires'  => time() - 3600,
+				'path'     => '/',
+				'domain'   => '',       // must match original
+				'secure'   => true,     // must match original
+				'httponly' => false,    // must match original
+				'samesite' => 'Lax'     // MUST match original if defined
+			]);
+
+		unset($_COOKIE[$name]);
+		return $previous;
 	}
 
 	/* @return Int value of the cleared cookie, returns null if the cookeie isn't present. throws if it isn't numeric */
