@@ -141,7 +141,8 @@ class Util
 	{
 		if (empty($condition))
 			return;
-		if (empty($existingCondition)) {
+		if (empty($existingCondition))
+		{
 			$existingCondition = $condition;
 			return;
 		}
@@ -154,7 +155,8 @@ class Util
 
 	public static function addSqlOrCondition(&$existingCondition, $condition): void
 	{
-		if (empty($existingCondition)) {
+		if (empty($existingCondition))
+		{
 			$existingCondition = $condition;
 			return;
 		}
