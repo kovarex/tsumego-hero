@@ -24,87 +24,21 @@ class TsumegoIssuesController extends AppController
 	public function index()
 	{
 		$this->loadModel('TsumegoIssue');
-		$this->loadModel('TsumegoComment');
-		$this->loadModel('Tsumego');
-		$this->loadModel('User');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
 
 		$this->Session->write('title', 'Tsumego Hero - Issues');
 		$this->Session->write('page', 'issues');
 
-		// Filter by status (default: opened)
+		// Get filter and pagination params
 		$statusFilter = $this->request->query('status') ?: 'opened';
-		$conditions = [];
+		$page = (int) ($this->request->query('page') ?: 1);
 
-		if ($statusFilter === 'opened')
-			$conditions['tsumego_issue_status_id'] = TsumegoIssue::$OPENED_STATUS;
-		elseif ($statusFilter === 'closed')
-			$conditions['tsumego_issue_status_id'] = TsumegoIssue::$CLOSED_STATUS;
-		// 'all' = no filter
+		// Single optimized query using model method
+		$issues = $this->TsumegoIssue->findForIndex($statusFilter, 20, $page);
 
-		// Pagination
-		$this->paginate = [
-			'TsumegoIssue' => [
-				'limit' => 20,
-				'order' => ['TsumegoIssue.created' => 'DESC'],
-				'conditions' => $conditions,
-			],
-		];
-
-		$issues = $this->paginate('TsumegoIssue');
-
-		// Enrich issues with tsumego info, author, and first comment
-		foreach ($issues as &$issue)
-		{
-			// Get author
-			$author = $this->User->findById($issue['TsumegoIssue']['user_id']);
-			$issue['Author'] = $author ? $author['User'] : ['name' => '[deleted user]'];
-
-			// Get tsumego info
-			$tsumego = $this->Tsumego->findById($issue['TsumegoIssue']['tsumego_id']);
-			$issue['Tsumego'] = $tsumego ? $tsumego['Tsumego'] : null;
-
-			// Get set info for the tsumego
-			if ($issue['Tsumego'])
-			{
-				$setConnection = $this->SetConnection->find('first', [
-					'conditions' => ['tsumego_id' => $issue['Tsumego']['id']],
-				]);
-				if ($setConnection)
-				{
-					$set = $this->Set->findById($setConnection['SetConnection']['set_id']);
-					$issue['Set'] = $set ? $set['Set'] : null;
-					$issue['TsumegoNum'] = $setConnection['SetConnection']['num'];
-				}
-			}
-
-			// Get first comment (the issue description)
-			$firstComment = $this->TsumegoComment->find('first', [
-				'conditions' => [
-					'tsumego_issue_id' => $issue['TsumegoIssue']['id'],
-					'deleted' => false,
-				],
-				'order' => ['created' => 'ASC'],
-			]);
-			$issue['FirstComment'] = $firstComment ? $firstComment['TsumegoComment'] : null;
-
-			// Get comment count
-			$issue['CommentCount'] = $this->TsumegoComment->find('count', [
-				'conditions' => [
-					'tsumego_issue_id' => $issue['TsumegoIssue']['id'],
-					'deleted' => false,
-				],
-			]);
-		}
-
-		// Get counts for tabs
-		$openCount = $this->TsumegoIssue->find('count', [
-			'conditions' => ['tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS],
-		]);
-		$closedCount = $this->TsumegoIssue->find('count', [
-			'conditions' => ['tsumego_issue_status_id' => TsumegoIssue::$CLOSED_STATUS],
-		]);
+		// Get tab counts
+		$counts = $this->TsumegoIssue->getIndexCounts();
+		$openCount = $counts['open'];
+		$closedCount = $counts['closed'];
 
 		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount'));
 	}
