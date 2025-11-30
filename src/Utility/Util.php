@@ -2,12 +2,19 @@
 
 class Util
 {
+
+	public static function getCookieDomain(): ?string
+	{
+		$host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
+		return $host;
+	}
+
 	public static function setCookie($name, $value)
 	{
 		setcookie($name, $value, [
 			'expires'  => time() + 365 * 24 * 60 * 60,
 			'path'     => '/',
-			'domain'   => '',
+			'domain'   => Util::getCookieDomain(),
 			'secure'   => true,
 			'httponly' => false,
 			'samesite' => 'Lax'
@@ -22,7 +29,7 @@ class Util
 			[
 				'expires'  => time() - 3600,
 				'path'     => '/',
-				'domain'   => '',
+				'domain'   => self::getCookieDomain(),
 				'secure'   => true,
 				'httponly' => false,
 				'samesite' => 'Lax'
