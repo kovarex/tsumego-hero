@@ -41,6 +41,7 @@ class TagConnectionsEdit
 					let tag = this.tags.find(tag => tag.name === tagName);
 					tag.isAdded = true;
 					tag.isApproved = this.isAdmin;
+					tag.isMine = true;
 					this.draw();
 				}
 			});

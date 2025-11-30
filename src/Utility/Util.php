@@ -177,6 +177,7 @@ class Util
 
 	public static function query($sql, $params = [])
 	{
+		/** @phpstan-ignore-next-line */
 		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
 		$stmt->execute($params);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);

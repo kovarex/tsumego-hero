@@ -37,7 +37,7 @@ LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.ts
 
 		$tags = [];
 		foreach ($this->tags as $tag)
-			$tags []= '{' . implode(', ', array_map(fn($k, $v) => $k . ': ' . var_export($v, true),array_keys($tag),$tag)) . '}' . PHP_EOL;
+			$tags [] = '{' . implode(', ', array_map(fn($k, $v) => $k . ': ' . var_export($v, true), array_keys($tag), $tag)) . '}' . PHP_EOL;
 		$constructorParams[] = 'tags: [' . implode(", ", $tags) . ']';
 
 		echo "var tagConnectionsEdit = new TagConnectionsEdit({" . implode(", ", $constructorParams) . "});" . PHP_EOL;
