@@ -35,7 +35,8 @@
 		"migrate": "vendor/bin/phinx migrate",
 		"migrate-test": "vendor/bin/phinx migrate -e test",
 		"migrate-status": "vendor/bin/phinx status",
-		"migrate-rollback": "vendor/bin/phinx rollback"
+		"migrate-rollback": "vendor/bin/phinx rollback",
+		"images:webp": "bash scripts/convert-to-webp.sh"
 	},
     "config": {
         "sort-packages": true,

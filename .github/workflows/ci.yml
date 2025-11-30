@@ -41,6 +41,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Required for git-restore-mtime to access full history
+
+      - name: Restore file modification times
+        uses: chetan/git-restore-mtime-action@v2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -70,6 +75,20 @@ jobs:
 
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
+
+      - name: Install ImageMagick for WebP conversion
+        run: sudo apt-get install -y imagemagick
+
+      - name: Generate WebP images
+        run: composer images:webp
+
+      - name: Commit generated WebP files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        if: github.event_name == 'push'
+        with:
+          commit_message: "chore: auto-generate WebP images"
+          file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
+          skip_checkout: true
 
       - name: Setup database config
         run: |
@@ -142,7 +161,7 @@ jobs:
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p coverage
-          ./vendor/bin/phpunit --coverage-php /tmp/coverage/phpunit.cov
+          ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php
