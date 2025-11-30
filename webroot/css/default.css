@@ -7274,6 +7274,17 @@ ul ul {
   border-left-width: 4px;
 }
 
+/* Pending issue state - optimistic update before server response */
+.tsumego-issue--pending {
+  opacity: 0.7;
+  border-color: #aaa;
+  border-style: dashed;
+}
+
+.tsumego-issue--pending .tsumego-issue__header {
+  color: #999;
+}
+
 .tsumego-issue__header {
   display: flex;
   flex-wrap: wrap;
@@ -7697,6 +7708,175 @@ ul ul {
 .removeFromIssue:hover {
   color: #a44;
   text-decoration: underline;
+}
+
+/* =============================================================================
+   Drag & Drop Comment Movement (Admin only)
+   ============================================================================= */
+
+/* Drag handle on comments */
+.tsumego-comment__drag-handle-cell {
+  width: 36px;
+  vertical-align: middle;
+  padding-right: 8px;
+}
+
+.tsumego-comment__drag-handle {
+  display: inline-block;
+  cursor: grab;
+  font-size: 24px;
+  color: #999;
+  user-select: none;
+  padding: 8px 10px;
+  border-radius: 4px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.tsumego-comment__drag-handle:hover {
+  color: #555;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tsumego-comment__drag-handle:active {
+  cursor: grabbing;
+  color: #333;
+}
+
+/* Comment being dragged */
+.tsumego-comment--dragging {
+  opacity: 0.5;
+  transform: rotate(1deg);
+}
+
+/* SortableJS ghost (placeholder) */
+.tsumego-comment--ghost {
+  opacity: 0.3;
+  background: #c8ebfb;
+}
+
+/* Issue drop overlay - appears over issue during drag */
+.tsumego-issue {
+  position: relative;
+}
+
+.tsumego-issue__drop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(91, 192, 222, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 8px;
+  border: 3px dashed #337ab7;
+  pointer-events: auto; /* Ensure overlay receives events */
+}
+
+.tsumego-issue__drop-overlay span {
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.tsumego-issue__drop-overlay--active {
+  background: rgba(51, 122, 183, 0.9);
+  border-color: #fff;
+}
+
+/* Source issue overlay - different color for return */
+.tsumego-issue__drop-overlay--source {
+  background: rgba(240, 173, 78, 0.85);
+  border-color: #c87f0a;
+}
+
+.tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active {
+  background: rgba(200, 127, 10, 0.9);
+  border-color: #fff;
+}
+
+.tsumego-dnd__issue-dropzone {
+  position: relative;
+}
+
+/* Drop zones (hidden by default, shown during drag) */
+.tsumego-dnd__dropzone {
+  margin: 10px 14px;
+  padding: 20px;
+  border: 2px dashed #aaa;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  background: #f9f9f9;
+  transition: all 0.15s ease;
+}
+
+.tsumego-dnd__dropzone--standalone {
+  border-color: #5cb85c;
+  background: rgba(92, 184, 92, 0.05);
+}
+
+.tsumego-dnd__dropzone--new-issue {
+  border-color: #f0ad4e;
+  background: rgba(240, 173, 78, 0.05);
+}
+
+/* Drop zone hover/active states */
+.tsumego-dnd__dropzone--active {
+  border-color: #4a90d9;
+  background: rgba(74, 144, 217, 0.1);
+  color: #333;
+}
+
+.tsumego-dnd__dropzone--standalone.tsumego-dnd__dropzone--active {
+  border-color: #3d8b3d;
+  background: rgba(92, 184, 92, 0.2);
+}
+
+.tsumego-dnd__dropzone--new-issue.tsumego-dnd__dropzone--active {
+  border-color: #c87f0a;
+  background: rgba(240, 173, 78, 0.2);
+}
+
+/* Issue drop zone indicator */
+.tsumego-dnd__issue-drop-indicator {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 2px dashed #4a90d9;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.08);
+}
+
+/* Issue box when receiving a drop */
+.tsumego-issue--drop-target {
+  border-color: #4a90d9 !important;
+  box-shadow: 0 0 8px rgba(74, 144, 217, 0.3);
+}
+
+/* Standalone comment wrapper during drag mode */
+.tsumego-comment--standalone.tsumego-dnd--drag-mode {
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  margin-left: 12px;
+  margin-right: 12px;
+  padding: 10px;
+}
+
+/* Ghost element for sortable */
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  background: rgba(74, 144, 217, 0.1);
+  border-radius: 4px;
 }
 
 /* =============================================================================

@@ -44,12 +44,21 @@ if (!isset($openIssueCount))
 // Combine and sort by date for "all" view
 $allItems = [];
 
-// Add issues
+// Add issues - use EARLIEST comment's date for sorting (not issue creation date)
 foreach ($issues as $index => $issue)
 {
+	// Find earliest comment creation date
+	$sortDate = $issue['created']; // Fallback to issue creation date
+	if (!empty($issue['comments']))
+	{
+		$earliestCommentDate = $issue['comments'][0]['created']; // Comments are ordered ASC
+		if (strtotime($earliestCommentDate) < strtotime($sortDate))
+			$sortDate = $earliestCommentDate;
+	}
+	
 	$allItems[] = [
 		'type' => 'issue',
-		'created' => $issue['created'],
+		'created' => $sortDate, // Use earliest comment date for sorting
 		'data' => $issue,
 		'issueNumber' => $index + 1,
 	];
@@ -72,9 +81,10 @@ usort($allItems, function ($a, $b) {
 });
 
 $isEmpty = empty($allItems);
+$canDragComment = Auth::isAdmin();
 ?>
 <!-- Morphable container - htmx targets this for all comment actions -->
-<div id="comments-section-<?php echo $tsumegoId; ?>" hx-ext="morph">
+<div id="comments-section-<?php echo $tsumegoId; ?>" hx-ext="morph" data-tsumego-id="<?php echo $tsumegoId; ?>">
 	<!-- Header with toggle -->
 	<div id="msg1x">
 		<a id="show2" class="tsumego-comments__toggle">
@@ -105,6 +115,13 @@ $isEmpty = empty($allItems);
 
 		<!-- All items view -->
 		<div class="tsumego-comments__content" data-view="all" id="tsumego-comments-content">
+			<?php if ($canDragComment): ?>
+				<!-- Drop zone: Create new issue (shown when dragging) -->
+				<div class="tsumego-dnd__dropzone tsumego-dnd__dropzone--new-issue" data-target="new" style="display: none;">
+					📋 Drop here to create NEW issue
+				</div>
+			<?php endif; ?>
+
 			<?php foreach ($allItems as $item): ?>
 				<?php if ($item['type'] === 'issue'): ?>
 					<?php

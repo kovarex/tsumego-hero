@@ -42,9 +42,10 @@ $isOwner = Auth::isLoggedIn() && Auth::getUserID() == $issue['user_id'];
 $canClose = ($isAdmin || $isOwner) && $isOpened;
 $canReopen = $isAdmin && $isClosed;
 $canReply = Auth::isLoggedIn();
+$canDragComment = Auth::isAdmin();
 ?>
 
-<div class="tsumego-issue tsumego-issue--<?php echo $isOpened ? 'opened' : 'closed'; ?>" id="issue-<?php echo $issue['id']; ?>">
+<div class="tsumego-issue tsumego-issue--<?php echo $isOpened ? 'opened' : 'closed'; ?>" id="issue-<?php echo $issue['id']; ?>" data-issue-id="<?php echo $issue['id']; ?>">
 	<div class="tsumego-issue__header">
 		<span class="tsumego-issue__title">
 			Issue #<?php echo h($issueNumber); ?>
@@ -89,7 +90,7 @@ $canReply = Auth::isLoggedIn();
 		<?php endif; ?>
 	</div>
 
-	<div class="tsumego-issue__comments" id="issue-<?php echo $issue['id']; ?>-comments">
+	<div class="tsumego-issue__comments tsumego-dnd__issue-dropzone" id="issue-<?php echo $issue['id']; ?>-comments" data-issue-id="<?php echo $issue['id']; ?>">
 		<?php if (!empty($comments)): ?>
 			<?php foreach ($comments as $commentIndex => $comment): ?>
 				<?php

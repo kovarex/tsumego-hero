@@ -339,9 +339,11 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 
-		// Initially there should be no issues
-		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextNotContains('Issue #', $pageSource, 'Should have no issues initially');
+		// Initially there should be no issue DOM elements
+		// Note: We check for .tsumego-issue elements, not "Issue #" text
+		// because the page source includes JS template strings with "Issue #"
+		$issues = $browser->getCssSelect('.tsumego-issue');
+		$this->assertCount(0, $issues, 'Should have no issue elements initially');
 
 		// Check the "Report as issue" checkbox
 		$checkbox = $browser->driver->findElement(WebDriverBy::id('reportIssueCheckbox-tsumegoCommentForm'));
@@ -358,7 +360,11 @@ class CommentsControllerTest extends ControllerTestCase
 		// Wait for htmx to process
 		usleep(2000 * 1000);
 
-		// Verify issue appears without page reload
+		// Verify issue appears without page reload - check DOM element
+		$issues = $browser->getCssSelect('.tsumego-issue');
+		$this->assertCount(1, $issues, 'Issue element should appear after submission');
+
+		// Verify the text content
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Issue #1', $pageSource, 'Issue should appear after submission');
 		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');

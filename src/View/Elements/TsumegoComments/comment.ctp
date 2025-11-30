@@ -63,13 +63,18 @@ $formattedTime = $createdDate->format('H:i');
 // Check if current user can delete this comment
 $canDelete = Auth::isAdmin() || (Auth::isLoggedIn() && Auth::getUserID() == $comment['user_id']);
 $isInIssue = !empty($comment['tsumego_issue_id']);
-$canMoveComment = Auth::isAdmin();
+$canDragComment = Auth::isAdmin();
 ?>
 <?php if ($standalone): ?><div class="tsumego-comment--standalone"><?php endif; ?>
-<div class="tsumego-comment" id="comment-<?php echo $comment['id']; ?>" data-comment-id="<?php echo $comment['id']; ?>" data-in-issue="<?php echo $isInIssue ? '1' : '0'; ?>">
+<div class="tsumego-comment<?php echo $canDragComment ? ' tsumego-comment--draggable' : ''; ?>" id="comment-<?php echo $comment['id']; ?>" data-comment-id="<?php echo $comment['id']; ?>" data-in-issue="<?php echo $isInIssue ? '1' : '0'; ?>">
 	<div class="sandboxComment">
 		<table class="sandboxTable2" width="100%" border="0">
 			<tr>
+				<?php if ($canDragComment): ?>
+					<td class="tsumego-comment__drag-handle-cell">
+						<span class="tsumego-comment__drag-handle" title="Drag to move comment">☰</span>
+					</td>
+				<?php endif; ?>
 				<td>
 					<div class="<?php echo $commentColorClass; ?>">
 						<span class="tsumego-comment__author"><?php echo h($authorName); ?>:</span><br>
@@ -91,10 +96,6 @@ $canMoveComment = Auth::isAdmin();
 									class="deleteComment">
 								Delete
 							</button>
-						<?php endif; ?>
-
-						<?php if ($canMoveComment): ?>
-							<a href="#" class="adminAction moveToIssue" onclick="showMoveToIssueDialog(<?php echo $comment['id']; ?>, <?php echo $comment['tsumego_issue_id'] ?? 'null'; ?>); return false;">Move</a>
 						<?php endif; ?>
 					<?php endif; ?>
 				</td>

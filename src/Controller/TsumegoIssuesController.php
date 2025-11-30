@@ -279,6 +279,7 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * POST data:
 	 * - Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
+	 * - Comment.htmx: '1' if htmx request (returns rendered section instead of redirect)
 	 *
 	 * @param int $commentId Comment ID to move
 	 * @return CakeResponse|null
@@ -290,6 +291,12 @@ class TsumegoIssuesController extends AppController
 
 		if (!Auth::isAdmin())
 		{
+			if ($this->isHtmxRequest())
+			{
+				$this->response->statusCode(403);
+				$this->response->body('Only admins can move comments.');
+				return $this->response;
+			}
 			$this->Flash->error('Only admins can move comments.');
 			return $this->redirect($this->referer());
 		}
@@ -299,18 +306,29 @@ class TsumegoIssuesController extends AppController
 
 		if (!$comment)
 		{
+			if ($this->isHtmxRequest())
+			{
+				$this->response->statusCode(404);
+				$this->response->body('Comment not found.');
+				return $this->response;
+			}
 			$this->Flash->error('Comment not found.');
 			return $this->redirect($this->referer());
 		}
 
+		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
+		$isHtmx = $this->isHtmxRequest() || $this->request->data('Comment.htmx');
 
 		// Handle 'standalone' - remove from issue
 		if ($targetIssueId === 'standalone')
 		{
 			if (empty($currentIssueId))
 			{
+				if ($isHtmx)
+					return $this->_renderCommentsSection($tsumegoId);
+
 				$this->Flash->info('Comment is already standalone.');
 				$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 				return $this->redirect($redirect);
@@ -319,13 +337,25 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->id = $commentId;
 			if ($TsumegoComment->saveField('tsumego_issue_id', null))
 			{
-				$this->Flash->success('Comment removed from issue.');
 				// Check if issue is now empty and delete it
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
+
+				if ($isHtmx)
+					return $this->_renderCommentsSection($tsumegoId);
+
+				$this->Flash->success('Comment removed from issue.');
 			}
 			else
+			{
+				if ($isHtmx)
+				{
+					$this->response->statusCode(500);
+					$this->response->body('Failed to remove comment from issue.');
+					return $this->response;
+				}
 				$this->Flash->error('Failed to remove comment from issue.');
+			}
 
 			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 			return $this->redirect($redirect);
@@ -344,6 +374,12 @@ class TsumegoIssuesController extends AppController
 			$TsumegoIssue->create();
 			if (!$TsumegoIssue->save($issue))
 			{
+				if ($isHtmx)
+				{
+					$this->response->statusCode(500);
+					$this->response->body('Failed to create new issue.');
+					return $this->response;
+				}
 				$this->Flash->error('Failed to create new issue.');
 				return $this->redirect($this->referer());
 			}
@@ -353,6 +389,9 @@ class TsumegoIssuesController extends AppController
 		// Check if moving to same issue
 		if ($currentIssueId == $targetIssueId)
 		{
+			if ($isHtmx)
+				return $this->_renderCommentsSection($tsumegoId);
+
 			$this->Flash->info('Comment is already in this issue.');
 			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 			return $this->redirect($redirect);
@@ -362,16 +401,28 @@ class TsumegoIssuesController extends AppController
 		$TsumegoComment->id = $commentId;
 		if ($TsumegoComment->saveField('tsumego_issue_id', $targetIssueId))
 		{
-			$this->Flash->success('Comment moved to issue.');
 			// Check if old issue is now empty and delete it
 			if (!empty($currentIssueId))
 			{
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
 			}
+
+			if ($isHtmx)
+				return $this->_renderCommentsSection($tsumegoId);
+
+			$this->Flash->success('Comment moved to issue.');
 		}
 		else
+		{
+			if ($isHtmx)
+			{
+				$this->response->statusCode(500);
+				$this->response->body('Failed to move comment.');
+				return $this->response;
+			}
 			$this->Flash->error('Failed to move comment.');
+		}
 
 		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 		return $this->redirect($redirect);
