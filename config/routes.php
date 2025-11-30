@@ -78,11 +78,6 @@ Router::connect(
 	['controller' => 'TsumegoIssues', 'action' => 'moveComment'],
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
-Router::connect(
-	'/tsumego-issues/remove-comment/:id',
-	['controller' => 'TsumegoIssues', 'action' => 'removeComment'],
-	['pass' => ['id'], 'id' => '[0-9]+']
-);
 
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 

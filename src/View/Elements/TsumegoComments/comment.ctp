@@ -48,7 +48,7 @@ $message = $comment['message'];
 if ($positionButton && strpos($message, '[current position]') !== false)
 	$message = str_replace('[current position]', $positionButton, $message);
 
-// Note: Go coordinates processing is done in Play::loadCommentsForIssue via TsumegosController::commentCoordinates
+// Note: Go coordinates processing is done in Tsumego::loadCommentsData via TsumegosController::commentCoordinates
 
 // Format date
 $createdDate = new DateTime($comment['created']);

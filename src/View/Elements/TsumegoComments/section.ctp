@@ -4,7 +4,7 @@
  * Comments section element - combines issues and standalone comments.
  *
  * Variables:
- * @var array $issues Array of issues with their comments (from Play::loadCommentsData)
+ * @var array $issues Array of issues with their comments (from Tsumego::loadCommentsData)
  * @var array $plainComments Array of comments not belonging to any issue
  * @var int $tsumegoId The tsumego ID
  */

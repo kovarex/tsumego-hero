@@ -23,8 +23,6 @@ App::uses('TsumegosController', 'Controller');
  *   - 2 = closed
  *   - 3 = reviewed
  *
- * Custom find types:
- * - find('withComments', ['conditions' => ['tsumego_id' => $id]]) - Returns issues with loaded author and comments
  */
 class TsumegoIssue extends AppModel
 {
@@ -48,13 +46,6 @@ class TsumegoIssue extends AppModel
 	public static int $REVIEW_STATUS = 3;
 
 	/**
-	 * Custom find types available on this model.
-	 *
-	 * @var array<string, bool>
-	 */
-	public $findMethods = ['withComments' => true, 'forIndex' => true];
-
-	/**
 	 * Get the human-readable name for a status.
 	 *
 	 * @param int $status The status ID
@@ -70,57 +61,6 @@ class TsumegoIssue extends AppModel
 		if ($status === self::$REVIEW_STATUS)
 			return 'Reviewed';
 		throw new \Exception("Invalid issue status: $status");
-	}
-
-	/**
-	 * Custom find type: withComments
-	 *
-	 * Loads issues with their author and comments (each comment with its user).
-	 * Usage: $this->TsumegoIssue->find('withComments', ['conditions' => ['tsumego_id' => $id]])
-	 *
-	 * @param string $state 'before' or 'after'
-	 * @param array $query Query parameters
-	 * @param array $results Results from database (only in 'after' state)
-	 * @return array Modified query (before) or processed results with _coordinates key (after)
-	 */
-	protected function _findWithComments(string $state, array $query, array $results = []): array
-	{
-		if ($state === 'before')
-		{
-			// Set default ordering if not specified
-			if (empty($query['order']))
-				$query['order'] = 'TsumegoIssue.created DESC';
-
-			return $query;
-		}
-
-		// 'after' state - process results
-		$tsumegoId = $query['conditions']['tsumego_id'] ?? null;
-		$processedIssues = [];
-		$allCoordinates = [];
-
-		foreach ($results as $issueRaw)
-		{
-			$issue = $issueRaw['TsumegoIssue'];
-
-			// Load author
-			/** @var User $userModel */
-			$userModel = ClassRegistry::init('User');
-			$author = $userModel->findById($issue['user_id']);
-			$issue['author'] = $author ? $author['User'] : ['name' => '[deleted user]'];
-
-			// Load comments for this issue
-			$commentsData = $this->loadCommentsForIssue($tsumegoId, $issue['id']);
-			$issue['comments'] = $commentsData['comments'];
-			$allCoordinates = array_merge($allCoordinates, $commentsData['coordinates']);
-
-			$processedIssues[] = $issue;
-		}
-
-		// Store coordinates in a special key that can be extracted later
-		$processedIssues['_coordinates'] = $allCoordinates;
-
-		return $processedIssues;
 	}
 
 	/**

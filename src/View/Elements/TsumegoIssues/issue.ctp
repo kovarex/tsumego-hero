@@ -80,7 +80,7 @@ $canReply = Auth::isLoggedIn();
 		<?php if (!empty($comments)): ?>
 			<?php foreach ($comments as $commentIndex => $comment): ?>
 				<?php
-				// User data is already loaded by Play::loadCommentsForIssue
+				// User data is already loaded by Tsumego::loadCommentsData
 				$commentUserData = $comment['user'] ?? ['name' => '[deleted user]'];
 				?>
 				<?php echo $this->element('TsumegoComments/comment', [
