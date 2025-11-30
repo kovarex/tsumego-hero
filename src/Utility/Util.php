@@ -9,7 +9,7 @@ class Util
 			'path'     => '/',
 			'domain'   => '',
 			'secure'   => true,
-			'httponly' => true,
+			'httponly' => false,
 			'samesite' => 'Lax'
 		]);
 	}
@@ -22,10 +22,10 @@ class Util
 			[
 				'expires'  => time() - 3600,
 				'path'     => '/',
-				'domain'   => '',       // must match original
-				'secure'   => true,     // must match original
-				'httponly' => false,    // must match original
-				'samesite' => 'Lax'     // MUST match original if defined
+				'domain'   => '',
+				'secure'   => true,
+				'httponly' => false,
+				'samesite' => 'Lax'
 			]);
 
 		unset($_COOKIE[$name]);
