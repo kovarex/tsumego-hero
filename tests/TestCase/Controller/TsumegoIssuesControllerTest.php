@@ -121,4 +121,76 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		// (either empty table or "no issues" message)
 		$this->assertTextContains('Issues', $pageSource);
 	}
+
+	/**
+	 * Test that pagination appears when there are more than 20 issues.
+	 */
+	public function testPaginationAppearsWhenNeeded()
+	{
+		// Create many issues (25 to trigger pagination with 20 per page)
+		$issues = [];
+		for ($i = 1; $i <= 25; $i++)
+			$issues[] = ['message' => "Issue number $i"];
+
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Pagination Test Set', 'num' => '1']],
+				'issues' => $issues,
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('tsumego-issues?status=opened');
+
+		$pageSource = $browser->driver->getPageSource();
+
+		// Verify pagination links appear
+		$this->assertTextContains('Next', $pageSource);
+		$this->assertTextContains('class="pagination-link', $pageSource);
+
+		// Issues are sorted by created DESC (newest first)
+		// So page 1 shows issues 25, 24, 23, ... 6 (20 issues)
+		// And page 2 shows issues 5, 4, 3, 2, 1 (5 issues)
+		$this->assertTextContains('Issue number 25', $pageSource);
+		$this->assertTextContains('Issue number 6', $pageSource);
+		// Issue 5 should be on page 2, not page 1
+		$this->assertTextNotContains('Issue number 5<', $pageSource);
+	}
+
+	/**
+	 * Test that pagination page 2 shows correct issues.
+	 */
+	public function testPaginationPage2()
+	{
+		// Create 25 issues
+		$issues = [];
+		for ($i = 1; $i <= 25; $i++)
+			$issues[] = ['message' => "Paged Issue $i"];
+
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Page 2 Test Set', 'num' => '1']],
+				'issues' => $issues,
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('tsumego-issues?status=opened&page=2');
+
+		$pageSource = $browser->driver->getPageSource();
+
+		// Issues are sorted by created DESC (newest first)
+		// Page 2 shows older issues (5, 4, 3, 2, 1)
+		// Just verify that we have some issues and prev link
+		$this->assertTextContains('Paged Issue', $pageSource);
+
+		// Page 2 should NOT show page 1's newest issues
+		$this->assertTextNotContains('Paged Issue 25', $pageSource);
+		$this->assertTextNotContains('Paged Issue 24', $pageSource);
+
+		// Verify Prev link exists on page 2
+		$this->assertTextContains('Prev', $pageSource);
+	}
 }

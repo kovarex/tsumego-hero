@@ -3,6 +3,9 @@
 /**
  * Comment form element.
  *
+ * Uses idiomorph for React-like DOM diffing - the entire comments section is re-rendered
+ * and morphed, so we don't need complex target selection.
+ *
  * Variables:
  * @var int $tsumegoId The tsumego ID to comment on
  * @var int|null $issueId If set, this is a reply to a specific issue
@@ -18,7 +21,12 @@ $isReplyToIssue = !empty($issueId);
 		<h4>Add Comment</h4>
 	<?php endif; ?>
 
-	<form method="post" action="/tsumego-comments/add" id="<?php echo $formId; ?>" onsubmit="return preventDoubleSubmit('<?php echo $formId; ?>')">
+	<form method="post" action="/tsumego-comments/add" id="<?php echo $formId; ?>"
+		  hx-post="/tsumego-comments/add"
+		  hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+		  hx-swap="morph:outerHTML"
+		  hx-disabled-elt="find button[type='submit']"
+		  hx-on::after-request="if(event.detail.successful) { this.reset(); var indicator = document.getElementById('positionIndicator-<?php echo $formId; ?>'); if(indicator) indicator.style.display='none'; }">
 		<input type="hidden" name="data[Comment][tsumego_id]" value="<?php echo $tsumegoId; ?>">
 		<input type="hidden" name="data[Comment][redirect]" value="<?php echo $this->request->here; ?>">
 		<?php if ($isReplyToIssue): ?>
@@ -68,39 +76,26 @@ $isReplyToIssue = !empty($issueId);
 </style>
 
 <script>
-	// Track forms that are currently submitting to prevent double-submit
-	var submittingForms = {};
-
-	function preventDoubleSubmit(formId) {
-		if (submittingForms[formId]) {
-			return false; // Already submitting
-		}
-
-		var submitBtn = document.getElementById('submitBtn-' + formId);
-		if (submitBtn) {
-			submitBtn.disabled = true;
-		}
-
-		submittingForms[formId] = true;
-		return true;
-	}
-
 	function toggleIssueMode(formId) {
 		var checkbox = document.getElementById('reportIssueCheckbox-' + formId);
 		var form = document.getElementById(formId);
 
 		if (checkbox && checkbox.checked) {
-			// Creating new issue - change action
+			// Creating new issue - change action and htmx attribute
 			form.action = '/tsumego-issues/create';
+			form.setAttribute('hx-post', '/tsumego-issues/create');
 			// Update field names for issue creation
 			form.querySelector('[name="data[Comment][tsumego_id]"]').name = 'data[Issue][tsumego_id]';
 			form.querySelector('[name="data[Comment][message]"]').name = 'data[Issue][message]';
 			form.querySelector('[name="data[Comment][redirect]"]').name = 'data[Issue][redirect]';
 			var positionField = document.getElementById('commentPosition-' + formId);
 			if (positionField) positionField.name = 'data[Issue][position]';
+			// Re-process htmx attributes after dynamic change
+			htmx.process(form);
 		} else {
 			// Regular comment
 			form.action = '/tsumego-comments/add';
+			form.setAttribute('hx-post', '/tsumego-comments/add');
 			var tsumegoIdField = form.querySelector('[name="data[Issue][tsumego_id]"]');
 			var messageField = form.querySelector('[name="data[Issue][message]"]');
 			var redirectField = form.querySelector('[name="data[Issue][redirect]"]');
@@ -110,6 +105,8 @@ $isReplyToIssue = !empty($issueId);
 			var positionField = document.getElementById('commentPosition-' + formId);
 			if (positionField && positionField.name === 'data[Issue][position]')
 				positionField.name = 'data[Comment][position]';
+			// Re-process htmx attributes after dynamic change
+			htmx.process(form);
 		}
 	}
 

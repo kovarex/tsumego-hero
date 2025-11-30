@@ -226,4 +226,48 @@ class TsumegoIssue extends AppModel
 			]),
 		];
 	}
+
+	/**
+	 * Get comment section counts for a specific tsumego.
+	 *
+	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES) via htmx OOB.
+	 *
+	 * @param int $tsumegoId The tsumego ID
+	 * @return array{total: int, comments: int, issues: int, openIssues: int}
+	 */
+	public function getCommentSectionCounts(int $tsumegoId): array
+	{
+		$TsumegoComment = ClassRegistry::init('TsumegoComment');
+
+		// Count standalone comments (not in any issue)
+		$commentCount = $TsumegoComment->find('count', [
+			'conditions' => [
+				'TsumegoComment.tsumego_id' => $tsumegoId,
+				'TsumegoComment.tsumego_issue_id IS NULL',
+				'TsumegoComment.deleted' => false,
+			],
+		]);
+
+		// Count issues for this tsumego
+		$issueCount = $this->find('count', [
+			'conditions' => [
+				'TsumegoIssue.tsumego_id' => $tsumegoId,
+			],
+		]);
+
+		// Count open issues for this tsumego
+		$openIssueCount = $this->find('count', [
+			'conditions' => [
+				'TsumegoIssue.tsumego_id' => $tsumegoId,
+				'TsumegoIssue.tsumego_issue_status_id' => self::$OPENED_STATUS,
+			],
+		]);
+
+		return [
+			'total' => $commentCount + $issueCount,
+			'comments' => $commentCount,
+			'issues' => $issueCount,
+			'openIssues' => $openIssueCount,
+		];
+	}
 }

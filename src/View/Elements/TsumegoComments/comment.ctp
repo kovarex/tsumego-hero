@@ -3,6 +3,9 @@
 /**
  * Single comment element.
  *
+ * Uses idiomorph for React-like DOM diffing - delete action re-renders
+ * the entire comments section.
+ *
  * Variables:
  * @var array $comment The comment data (TsumegoComment model data)
  * @var array $user The user who wrote the comment (User model data)
@@ -10,10 +13,12 @@
  * @var int $tsumegoId The tsumego ID this comment belongs to
  * @var bool $showActions Whether to show delete/move actions (default: true)
  * @var array $allIssues Optional: all issues for this tsumego (for dropdown)
+ * @var bool $standalone Whether to wrap in standalone container div (default: false)
  */
 
 // Default values
 $showActions = $showActions ?? true;
+$standalone = $standalone ?? false;
 $index = $index ?? 1;
 $allIssues = $allIssues ?? [];
 
@@ -60,7 +65,7 @@ $canDelete = Auth::isAdmin() || (Auth::isLoggedIn() && Auth::getUserID() == $com
 $isInIssue = !empty($comment['tsumego_issue_id']);
 $canMoveComment = Auth::isAdmin();
 ?>
-
+<?php if ($standalone): ?><div class="tsumego-comment--standalone"><?php endif; ?>
 <div class="tsumego-comment" id="comment-<?php echo $comment['id']; ?>" data-comment-id="<?php echo $comment['id']; ?>" data-in-issue="<?php echo $isInIssue ? '1' : '0'; ?>">
 	<div class="sandboxComment">
 		<table class="sandboxTable2" width="100%" border="0">
@@ -77,10 +82,15 @@ $canMoveComment = Auth::isAdmin();
 
 					<?php if ($showActions): ?>
 						<?php if ($canDelete): ?>
-							<form method="post" action="/tsumego-comments/delete/<?php echo $comment['id']; ?>" style="display:inline;">
-								<input type="hidden" name="data[Comment][redirect]" value="<?php echo $this->request->here; ?>">
-								<button type="submit" class="deleteComment" onclick="return confirm('Delete this comment?');">Delete</button>
-							</form>
+							<button type="button"
+									hx-post="/tsumego-comments/delete/<?php echo $comment['id']; ?>"
+									hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+									hx-swap="morph:outerHTML"
+									hx-confirm="Delete this comment?"
+									hx-disabled-elt="this"
+									class="deleteComment">
+								Delete
+							</button>
 						<?php endif; ?>
 
 						<?php if ($canMoveComment): ?>
@@ -92,3 +102,4 @@ $canMoveComment = Auth::isAdmin();
 		</table>
 	</div>
 </div>
+<?php if ($standalone): ?></div><?php endif; ?>

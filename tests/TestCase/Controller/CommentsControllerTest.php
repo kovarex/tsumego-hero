@@ -29,6 +29,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTrue($submitButton->isEnabled());
 		$submitButton->click();
 
+		usleep(1500 * 1000);
+
 		// Verify comment appears in the comments list
 		$browser->get('comments');
 		$this->assertTextContains('My first comment', $browser->driver->getPageSource());
@@ -73,7 +75,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 
-		// Content should be visible by default
+		// Content should be visible by default (check the collapsible wrapper #msg2x)
 		$content = $browser->driver->findElement(WebDriverBy::id('msg2x'));
 		$this->assertTrue($content->isDisplayed());
 
@@ -157,7 +159,10 @@ class CommentsControllerTest extends ControllerTestCase
 		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue__reply-form button[type="submit"]'));
 		$submitButton->click();
 
-		// Verify reply appears on the page
+		// Wait for htmx to process the response
+		usleep(1500 * 1000);
+
+		// Verify reply appears on the page after reload
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('My reply to this issue', $pageSource);
@@ -181,15 +186,183 @@ class CommentsControllerTest extends ControllerTestCase
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Comment to delete', $pageSource);
 
-		// Find and click the Delete button (accept the confirm dialog)
-		$deleteButton = $browser->driver->findElement(WebDriverBy::cssSelector('.deleteComment'));
-		// Execute JS to override confirm and click
+		// Override confirm BEFORE htmx tries to use it (htmx uses window.confirm)
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
+
+		// Find and click the Delete button
+		$deleteButton = $browser->driver->findElement(WebDriverBy::cssSelector('.deleteComment'));
 		$deleteButton->click();
 
-		// Verify comment is no longer visible
+		// Wait for htmx to process the delete request
+		usleep(1500 * 1000);
+
+		// Verify comment is no longer visible (reload to confirm it's deleted)
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextNotContains('Comment to delete', $pageSource);
+	}
+
+	/**
+	 * Test deleting the last comment in an issue removes the entire issue via htmx.
+	 *
+	 * When the last comment in an issue is deleted, the issue itself should be
+	 * removed from the DOM immediately (not just after page refresh).
+	 */
+	public function testDeleteLastCommentInIssueRemovesIssue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [['message' => 'This is the only comment in this issue']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Verify issue and comment are visible
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('This is the only comment in this issue', $pageSource);
+		$this->assertTextContains('tsumego-issue', $pageSource); // Issue container class
+
+		// Override confirm for htmx
+		$browser->driver->executeScript("window.confirm = function() { return true; };");
+
+		// Find the delete button for the comment inside the issue
+		$deleteButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue .deleteComment'));
+		$deleteButton->click();
+
+		// Wait for htmx to process the delete request
+		usleep(1500 * 1000);
+
+		// Verify issue is immediately gone from DOM (without reload)
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextNotContains('This is the only comment in this issue', $pageSource);
+
+		// Also verify the issue container is gone
+		$issueElements = $browser->driver->findElements(WebDriverBy::cssSelector('.tsumego-issue'));
+		$this->assertEmpty($issueElements, 'Issue element should be removed from DOM after deleting last comment');
+	}
+
+	/**
+	 * Test that comment counts update via htmx when deleting a comment.
+	 *
+	 * The counts in the section header and tabs should update immediately after deleting.
+	 */
+	public function testDeleteCommentUpdatesCountsViaHtmx()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [['message' => 'Issue comment 1']],
+				'comments' => [['message' => 'Standalone comment 1']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Expand comments section
+		$browser->idExists('msg2x');
+
+		// Verify initial counts: 1 issue + 1 standalone = 2 total
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('ALL (2)', $pageSource, 'Should show ALL (2) initially');
+		$this->assertTextContains('COMMENTS (1)', $pageSource, 'Should show COMMENTS (1) initially');
+		$this->assertTextContains('ISSUES (1)', $pageSource, 'Should show ISSUES (1) initially');
+
+		// Override confirm for htmx
+		$browser->driver->executeScript("window.confirm = function() { return true; };");
+
+		// Delete the standalone comment
+		$deleteButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comment--standalone .deleteComment'));
+		$deleteButton->click();
+
+		// Wait for htmx to process
+		usleep(1500 * 1000);
+
+		// Verify counts updated: should now show 1 total (just the issue)
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('ALL (1)', $pageSource, 'Should show ALL (1) after deleting standalone comment');
+		$this->assertTextContains('COMMENTS (0)', $pageSource, 'Should show COMMENTS (0) after deleting standalone comment');
+		$this->assertTextContains('ISSUES (1)', $pageSource, 'Should still show ISSUES (1)');
+	}
+
+	/**
+	 * Test that closing an issue updates the open count badge via htmx OOB.
+	 *
+	 * When an issue is closed on the play page, the "🔴 1 open" badge should update.
+	 */
+	public function testCloseIssueUpdatesOpenCountBadge()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'test set', 'num' => '1']],
+				'issues' => [['message' => 'Open issue comment']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Expand comments section
+		$browser->idExists('msg2x');
+
+		// Verify open badge shows "1 open" initially
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('1 open', $pageSource, 'Should show 1 open initially');
+
+		// Click close button on the issue
+		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
+		$closeButton->click();
+
+		// Wait for htmx to process
+		usleep(1500 * 1000);
+
+		// Verify open badge is gone (no more open issues)
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextNotContains('1 open', $pageSource, 'Should not show "1 open" after closing');
+		// The issue status should now show "Closed"
+		$this->assertTextContains('Closed', $pageSource, 'Issue should show Closed status');
+	}
+
+	/**
+	 * Test that creating an issue via "Report as issue" checkbox works via htmx.
+	 *
+	 * When user checks "Report as issue" and submits, the issue should appear
+	 * without page reload and counts should update.
+	 */
+	public function testCreateIssueViaCheckbox()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'test set', 'num' => '1']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Initially there should be no issues
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextNotContains('Issue #', $pageSource, 'Should have no issues initially');
+
+		// Check the "Report as issue" checkbox
+		$checkbox = $browser->driver->findElement(WebDriverBy::id('reportIssueCheckbox-tsumegoCommentForm'));
+		$checkbox->click();
+
+		// Fill in the message
+		$textarea = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+		$textarea->sendKeys('This is a test issue report');
+
+		// Submit the form
+		$submitButton = $browser->driver->findElement(WebDriverBy::id('submitBtn-tsumegoCommentForm'));
+		$submitButton->click();
+
+		// Wait for htmx to process
+		usleep(2000 * 1000);
+
+		// Verify issue appears without page reload
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Issue #1', $pageSource, 'Issue should appear after submission');
+		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');
+		$this->assertTextContains('ISSUES (1)', $pageSource, 'Issues count should update');
+		$this->assertTextContains('1 open', $pageSource, 'Open issues badge should show');
 	}
 }

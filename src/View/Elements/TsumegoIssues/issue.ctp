@@ -3,6 +3,9 @@
 /**
  * Single issue element with all its comments.
  *
+ * Uses idiomorph for React-like DOM diffing - close/reopen actions re-render
+ * the entire comments section.
+ *
  * Variables:
  * @var array $issue The issue data (TsumegoIssue model data)
  * @var array $comments Array of comments belonging to this issue
@@ -60,23 +63,33 @@ $canReply = Auth::isLoggedIn();
 		<?php if ($canClose || $canReopen): ?>
 			<span class="tsumego-issue__actions">
 				<?php if ($canClose): ?>
-					<form method="post" action="/tsumego-issues/close/<?php echo $issue['id']; ?>" style="display:inline;">
-						<input type="hidden" name="data[Issue][redirect]" value="<?php echo $this->request->here; ?>">
-						<button type="submit" class="btn btn--success btn--small">✓ Close Issue</button>
-					</form>
+					<button type="button"
+							hx-post="/tsumego-issues/close/<?php echo $issue['id']; ?>"
+							hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+							hx-swap="morph:outerHTML"
+							hx-vals='{"source":"play"}'
+							hx-disabled-elt="this"
+							class="btn btn--success btn--small">
+						✓ Close Issue
+					</button>
 				<?php endif; ?>
 
 				<?php if ($canReopen): ?>
-					<form method="post" action="/tsumego-issues/reopen/<?php echo $issue['id']; ?>" style="display:inline;">
-						<input type="hidden" name="data[Issue][redirect]" value="<?php echo $this->request->here; ?>">
-						<button type="submit" class="btn btn--warning btn--small">↩ Reopen</button>
-					</form>
+					<button type="button"
+							hx-post="/tsumego-issues/reopen/<?php echo $issue['id']; ?>"
+							hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+							hx-swap="morph:outerHTML"
+							hx-vals='{"source":"play"}'
+							hx-disabled-elt="this"
+							class="btn btn--warning btn--small">
+						↩ Reopen
+					</button>
 				<?php endif; ?>
 			</span>
 		<?php endif; ?>
 	</div>
 
-	<div class="tsumego-issue__comments">
+	<div class="tsumego-issue__comments" id="issue-<?php echo $issue['id']; ?>-comments">
 		<?php if (!empty($comments)): ?>
 			<?php foreach ($comments as $commentIndex => $comment): ?>
 				<?php

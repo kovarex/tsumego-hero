@@ -31,16 +31,34 @@ class TsumegoIssuesController extends AppController
 		// Get filter and pagination params
 		$statusFilter = $this->request->query('status') ?: 'opened';
 		$page = (int) ($this->request->query('page') ?: 1);
+		$perPage = 20;
 
 		// Single optimized query using model method
-		$issues = $this->TsumegoIssue->findForIndex($statusFilter, 20, $page);
+		$issues = $this->TsumegoIssue->findForIndex($statusFilter, $perPage, $page);
 
-		// Get tab counts
+		// Get tab counts (also used for pagination)
 		$counts = $this->TsumegoIssue->getIndexCounts();
 		$openCount = $counts['open'];
 		$closedCount = $counts['closed'];
 
-		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount'));
+		// Calculate total for pagination based on current filter
+		$totalCount = match ($statusFilter)
+		{
+			'opened' => $openCount,
+			'closed' => $closedCount,
+			default => $openCount + $closedCount, // 'all'
+		};
+		$totalPages = (int) ceil($totalCount / $perPage);
+
+		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount', 'totalPages', 'perPage'));
+		$this->set('currentPage', $page);
+
+		// For htmx requests, return the issues-section element (idiomorph handles the diff)
+		if ($this->isHtmxRequest())
+		{
+			$this->layout = false;
+			$this->render('/Elements/TsumegoIssues/issues-section');
+		}
 	}
 
 	/**
@@ -107,9 +125,21 @@ class TsumegoIssuesController extends AppController
 		{
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
+			if ($this->isHtmxRequest())
+			{
+				$this->response->statusCode(422);
+				$this->layout = false;
+				$this->autoRender = false;
+				$this->response->body('<div class="alert alert--error">Failed to create issue.</div>');
+				return $this->response;
+			}
 			$this->Flash->error('Failed to create issue comment.');
 			return $this->redirect($this->referer());
 		}
+
+		// For htmx requests, return the full comments section (idiomorph handles the diff)
+		if ($this->isHtmxRequest())
+			return $this->_renderCommentsSection($tsumegoId);
 
 		$this->Flash->success('Issue reported successfully.');
 		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
@@ -170,6 +200,19 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->save($comment);
 		}
 
+		// For htmx requests, return updated content
+		if ($this->isHtmxRequest())
+		{
+			$source = $this->request->data('source') ?: 'list';
+
+			// Play page source - return full comments section (idiomorph handles the diff)
+			if ($source === 'play')
+				return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
+
+			// Issues list page - render with pagination support
+			return $this->_renderIssuesSection();
+		}
+
 		$this->Flash->success('Issue closed.');
 		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
 		return $this->redirect($redirect);
@@ -204,11 +247,27 @@ class TsumegoIssuesController extends AppController
 		}
 
 		$TsumegoIssue->id = $id;
-		if ($TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
-			$this->Flash->success('Issue reopened.');
-		else
+		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
+		{
 			$this->Flash->error('Failed to reopen issue.');
+			$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
+			return $this->redirect($redirect);
+		}
 
+		// For htmx requests, return updated content
+		if ($this->isHtmxRequest())
+		{
+			$source = $this->request->data('source') ?: 'list';
+
+			// Play page source - return full comments section (idiomorph handles the diff)
+			if ($source === 'play')
+				return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
+
+			// Issues list page - render with pagination support
+			return $this->_renderIssuesSection();
+		}
+
+		$this->Flash->success('Issue reopened.');
 		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
 		return $this->redirect($redirect);
 	}
@@ -316,5 +375,67 @@ class TsumegoIssuesController extends AppController
 
 		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 		return $this->redirect($redirect);
+	}
+
+	/**
+	 * Helper method to render the issues section for htmx responses.
+	 *
+	 * Extracts filter/page from request data and renders the issues-section element.
+	 *
+	 * @return CakeResponse
+	 */
+	protected function _renderIssuesSection(): CakeResponse
+	{
+		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+
+		$filter = $this->request->data('filter') ?: 'all';
+		$page = (int) ($this->request->data('page') ?: 1);
+		if ($page < 1)
+			$page = 1;
+
+		$perPage = 20;
+		$issues = $TsumegoIssue->findForIndex($filter, $perPage, $page);
+		$counts = $TsumegoIssue->getIndexCounts();
+
+		$totalCount = $filter === 'opened' ? $counts['open'] : ($filter === 'closed' ? $counts['closed'] : $counts['open'] + $counts['closed']);
+		$totalPages = max(1, (int) ceil($totalCount / $perPage));
+
+		$this->set('issues', $issues);
+		$this->set('statusFilter', $filter);
+		$this->set('openCount', $counts['open']);
+		$this->set('closedCount', $counts['closed']);
+		$this->set('currentPage', $page);
+		$this->set('totalPages', $totalPages);
+
+		$this->layout = false;
+		return $this->render('/Elements/TsumegoIssues/issues-section');
+	}
+
+	/**
+	 * Render the morphable comments section content for htmx morph responses (play page).
+	 *
+	 * Loads all comments data and renders just the inner content element.
+	 *
+	 * @param int $tsumegoId The tsumego ID
+	 * @return CakeResponse
+	 */
+	protected function _renderCommentsSection(int $tsumegoId): CakeResponse
+	{
+		$Tsumego = ClassRegistry::init('Tsumego');
+		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+
+		$commentsData = $Tsumego->loadCommentsData($tsumegoId);
+		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+
+		$this->set('tsumegoId', $tsumegoId);
+		$this->set('issues', $commentsData['issues']);
+		$this->set('plainComments', $commentsData['plainComments']);
+		$this->set('totalCount', $counts['total']);
+		$this->set('commentCount', $counts['comments']);
+		$this->set('issueCount', $counts['issues']);
+		$this->set('openIssueCount', $counts['openIssues']);
+
+		$this->layout = false;
+		return $this->render('/Elements/TsumegoComments/section-content');
 	}
 }
