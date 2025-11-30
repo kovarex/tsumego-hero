@@ -11,26 +11,27 @@ class TagConnectionsEdit
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->populateTags();
-		$this->allTags = AppController::getAllTags($this->tags);
-		$this->populatePopularTags();
+		$this->allTags = $this->getTagsToAdd(false);
+		$this->popularTags = $this->getTagsToAdd(true);
 	}
 
-	private function populatePopularTags()
+	private function getTagsToAdd($popular)
 	{
-		$result = ClassRegistry::init('Tag')->query("
+		$queryResult = ClassRegistry::init('Tag')->query("
 SELECT
-	tag.name as tag_name
+	tag.name as tag_name,
+	tag_connection.id IS NOT NULL as is_added
 FROM tag
-LEFT JOIN tag_connection ON tag_connection.tsumego_id=? AND tag_connection.user_id=? AND tag_connection.tag_id = tag.id
-LEFT JOIN tag_connection AS approved_connection ON approved_connection.tsumego_id=? AND approved_connection.tag_id = tag.id AND approved_connection.approved = 1
+LEFT JOIN tag_connection ON my_tag_connection.tsumego_id=? AND tag_connection.user_id=? AND tag_connection.tag_id = tag.id
 WHERE
-	tag_connection.id IS NULL AND
-	approved_connection.id IS NULL AND
-	tag.popular = true",
-			[$this->tsumegoID, Auth::getUserID(), $this->tsumegoID]);
+	(tag_connection.id IS NULL OR (tag_connection.approved = false AND tag_connection.user_id = ?))" .
+			($popular ? " AND popular = " . Util::boolString($popular) : "") . ")",
+			[$this->tsumegoID, Auth::getUserID(), Auth::getUserID()]);
 
-		foreach ($result as $tag)
-			$this->popularTags[] = $tag['tag']['tag_name'];
+		$result = [];
+		foreach ($queryResult as $tag)
+			$result[] = ['name' => $tag['tag']['tag_name'], 'is_added' => $tag['tag']['is_added']];
+		return $result;
 	}
 
 	private function populateTags()
@@ -44,7 +45,8 @@ SELECT
 FROM tag_connection
 JOIN tag ON tag_connection.tag_id = tag.id
 WHERE
-tag_connection.tsumego_id = ?", [$this->tsumegoID]);
+tag_connection.tsumego_id = ? AND
+(tag_connection.approved = 1 OR tag_connection.user_id = ?)", [$this->tsumegoID, Auth::getUserID()]);
 		foreach ($result as $row)
 		{
 			$tag = [];
@@ -63,15 +65,15 @@ tag_connection.tsumego_id = ?", [$this->tsumegoID]);
 		foreach ($this->tags as $tag)
 		{
 			echo 'tagConnectionsEdit.tags.push("' . $tag['name'] . '");';
-			echo 'tagConnectionsEdit.unapprovedTags.push("' . $tag['tag_approved'] . '");';
+			echo 'tagConnectionsEdit.approvedInfo.push("' . $tag['tag_approved'] . '");';
 			echo 'tagConnectionsEdit.tagsGivesHint.push("' . $tag['hint'] . '");';
 			echo 'tagConnectionsEdit.idTags.push("' . $tag['tag_id'] . '");';
 		}
 
 		foreach ($this->allTags as $tag)
 		{
-			echo 'tagConnectionsEdit.allTags.push("' . $tag['Tag']['name'] . '");';
-			echo 'tagConnectionsEdit.idTags.push("' . $tag['Tag']['name'] . '");';
+			echo 'tagConnectionsEdit.allTags.push({name: "' . $tag['name'] . '", isAdded: ' . Util::boolString($tag['is_added']) . '});';
+			echo 'tagConnectionsEdit.idTags.push("' . $tag['name'] . '");';
 		}
 		foreach ($this->popularTags as $tag)
 			echo 'tagConnectionsEdit.popularTags.push("' . $tag . '");';

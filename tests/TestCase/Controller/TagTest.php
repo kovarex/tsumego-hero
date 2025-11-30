@@ -82,7 +82,7 @@ class TagTest extends ControllerTestCase
 				'other-users' => [['name' => 'Ivan detkov']],
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
-					'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
+					'tags' => [['name' => 'atari', 'approved' => 1, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
 				'tags' => [['name' => 'snapback', 'popular' => $popular]]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -120,6 +120,40 @@ class TagTest extends ControllerTestCase
 				$this->assertSame(1, count($addTagLinks));
 				$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
 			}
+		}
+	}
+
+	public function testShowOthersUnapprovedTagsInAddTagsButNotClickable()
+	{
+		foreach ([false, true] as $popular)
+		{
+			$context = new ContextPreparator([
+				'user' => ['mode' => Constants::$LEVEL_MODE],
+				'other-users' => [['name' => 'Ivan detkov']],
+				'other-tsumegos' => [[
+					'sets' => [['name' => 'set-1', 'num' => 1]],
+					'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
+				'tags' => [['name' => 'snapback', 'popular' => $popular]]]);
+			$browser = Browser::instance();
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-atari")); // tag is not in the list
+			$browser->clickId('open-add-tag-menu');
+			if (!$popular)
+				$browser->clickId('open-more-tags');
+
+			$sourceList = $popular ? 'add-tag-list-popular' : 'add-tag-list';
+			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
+
+			$this->assertSame(3, count($addTagLinks));
+			$this->assertSame($addTagLinks[0]->getText(), "atari");
+			$this->assertSame($addTagLinks[1]->getText(), "snapback");
+			if ($popular)
+				$this->assertSame($addTagLinks[2]->getText(), "[more]");
+			else
+				$this->assertSame($addTagLinks[2]->getText(), "[Create new tag]");
+
+			$this->assertSame($addTagLinks[0]->getTagName(), 'span'); // added by someone else, not addable
+			$this->assertSame($addTagLinks[1]->getTagName(), 'a');
 		}
 	}
 }

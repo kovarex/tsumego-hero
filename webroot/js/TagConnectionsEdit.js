@@ -2,7 +2,7 @@ class TagConnectionsEdit
 {
 	tags = [];
 	allTags = [];
-	unapprovedTags = [];
+	approvedInfo = {};
 	tagsGivesHint = [];
 	idTags = [];
 	popularTags = [];
@@ -15,8 +15,8 @@ class TagConnectionsEdit
 				type: 'POST',
 				success: (response) =>
 				{
-					this.allTags = this.allTags.filter(tag => tag !== tagName);
-					this.popularTags = this.popularTags.filter(tag => tag !== tagName);
+					this.allTags = this.allTags.filter(tag => tag.name !== tagName);
+					this.popularTags = this.popularTags.filter(tag => tag.name !== tagName);
 					this.tags.push(tagName);
 					this.draw();
 				}
@@ -42,6 +42,19 @@ class TagConnectionsEdit
 			});
 	}
 
+	updateTagToAddList(id, source)
+	{
+		$("." + id).html("");
+		$("." + id).append("Add tag: ");
+		const html = source
+		.map(tag =>
+			tag.isAdded ?
+				'<span>${tag.name}</span>' :
+				`<a class="add-tag-list-anchor" id="${makeIdValidName(tag.name)}">${tag.name}</a>`
+		).join(', ');
+		$("." + id).append(html);
+	}
+
 	draw()
 	{
 		$(".tag-list").html("");
@@ -60,27 +73,12 @@ class TagConnectionsEdit
 					$(".tag-list").append('<p class="tag-comma">, </p>');
 		}
 
-		$(".add-tag-list-popular").html("");
-		$(".add-tag-list-popular").append("Add tag: ");
-		for (let i=0; i < this.popularTags.length; i++)
-		{
-			$(".add-tag-list-popular").append('<a class="add-tag-list-anchor" id="' + makeIdValidName(this.popularTags[i])+'">'
-				+ this.popularTags[i]+'</a>');
-			if (i < this.popularTags.length-1)
-				$(".add-tag-list-popular").append(', ');
-		}
+		this.updateTagToAddList('add-tag-list-popular', this.popularTags);
 		$(".add-tag-list-popular").append(' <a class="add-tag-list-anchor" id="open-more-tags">[more]</a>');
 
-		$(".add-tag-list").html("");
-		$(".add-tag-list").append("Add tag: ");
-		for (let i = 0; i < this.allTags.length; i++)
-		{
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="' + makeIdValidName(this.allTags[i])+'">'
-				+ this.allTags[i]+'</a>');
-			if (i < this.allTags.length - 1)
-				$(".add-tag-list").append(', ');
-		}
+		this.updateTagToAddList('add-tag-list', this.allTags);
 		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
+
 		if (problemSolved)
 			$(".tag-gives-hint").css("display", "inline");
 	}

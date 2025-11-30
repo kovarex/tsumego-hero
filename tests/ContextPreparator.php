@@ -298,7 +298,8 @@ class ContextPreparator
 			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
 			$tagConnection['TagConnection']['user_id'] = self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'];
 			$tagConnection['TagConnection']['tag_id'] = $tag['id'];
-			$tagConnection['TagConnection']['approved'] = Util::extract('approved', $tagInput) ?: 1;
+			$approved = Util::extract('approved', $tagInput);
+			$tagConnection['TagConnection']['approved'] = !is_null($approved) ? $approved : 1;
 			ClassRegistry::init('TagConnection')->create($tagConnection);
 			ClassRegistry::init('TagConnection')->save($tagConnection);
 			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
