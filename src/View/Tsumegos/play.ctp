@@ -1625,16 +1625,6 @@
 	<?php if($firstRanks==0)
 		echo "tagConnectionsEdit.draw();"; ?>
 
-	for(let i = 0; i < tagConnectionsEdit.allTags.length; i++)
-	{
-		let currentIdValue = "#"+makeIdValidName(tagConnectionsEdit.allTags[i].name);
-		$('.tag-container').on('click', currentIdValue, function(e)
-		{
-			e.preventDefault();
-			tagConnectionsEdit.add($(currentIdValue).text());
-		});
-	}
-
 	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
 		$("#open-add-tag-menu").hide();
 		$(".add-tag-list").hide();

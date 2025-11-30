@@ -594,7 +594,7 @@ class Play
 
 		if (Auth::isLoggedIn())
 			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
-		$tagConnectionsEdit = new TagConnectionsEdit($id);
+		$tagConnectionsEdit = new TagConnectionsEdit($id, TsumegoUtil::hasStateAllowingInspection($t));
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
