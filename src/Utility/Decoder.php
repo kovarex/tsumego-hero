@@ -26,7 +26,7 @@ class Decoder
 		if (empty($solvedCheck))
 			return false;
 
-		$decryptedSolvedCheck = explode('-', Util::wierdDecrypt($solvedCheck));
+		$decryptedSolvedCheck = explode('-', Util::decrypt($solvedCheck));
 		if (count($decryptedSolvedCheck) != 2)
 		{
 			Auth::addSuspicion();
