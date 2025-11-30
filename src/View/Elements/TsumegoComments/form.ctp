@@ -63,7 +63,7 @@ $isReplyToIssue = !empty($issueId);
 <style>
 	.tsumego-comments__submit-btn:disabled {
 		opacity: 0.6;
-		cursor: not-allowed;
+		cursor: wait;
 	}
 </style>
 

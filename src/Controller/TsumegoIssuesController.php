@@ -55,7 +55,8 @@ class TsumegoIssuesController extends AppController
 		$issues = $this->paginate('TsumegoIssue');
 
 		// Enrich issues with tsumego info, author, and first comment
-		foreach ($issues as &$issue) {
+		foreach ($issues as &$issue)
+		{
 			// Get author
 			$author = $this->User->findById($issue['TsumegoIssue']['user_id']);
 			$issue['Author'] = $author ? $author['User'] : ['name' => '[deleted user]'];
@@ -65,11 +66,13 @@ class TsumegoIssuesController extends AppController
 			$issue['Tsumego'] = $tsumego ? $tsumego['Tsumego'] : null;
 
 			// Get set info for the tsumego
-			if ($issue['Tsumego']) {
+			if ($issue['Tsumego'])
+			{
 				$setConnection = $this->SetConnection->find('first', [
 					'conditions' => ['tsumego_id' => $issue['Tsumego']['id']],
 				]);
-				if ($setConnection) {
+				if ($setConnection)
+				{
 					$set = $this->Set->findById($setConnection['SetConnection']['set_id']);
 					$issue['Set'] = $set ? $set['Set'] : null;
 					$issue['TsumegoNum'] = $setConnection['SetConnection']['num'];
@@ -121,7 +124,8 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isLoggedIn()) {
+		if (!Auth::isLoggedIn())
+		{
 			$this->Flash->error('You must be logged in to report an issue.');
 			return $this->redirect($this->referer());
 		}
@@ -130,7 +134,8 @@ class TsumegoIssuesController extends AppController
 		$message = $this->request->data('Issue.message');
 		$position = $this->request->data('Issue.position');
 
-		if (empty($tsumegoId) || empty($message)) {
+		if (empty($tsumegoId) || empty($message))
+		{
 			$this->Flash->error('Tsumego ID and message are required.');
 			return $this->redirect($this->referer());
 		}
@@ -146,7 +151,8 @@ class TsumegoIssuesController extends AppController
 		];
 
 		$TsumegoIssue->create();
-		if (!$TsumegoIssue->save($issue)) {
+		if (!$TsumegoIssue->save($issue))
+		{
 			$this->Flash->error('Failed to create issue.');
 			return $this->redirect($this->referer());
 		}
@@ -163,7 +169,8 @@ class TsumegoIssuesController extends AppController
 		];
 
 		$TsumegoComment->create();
-		if (!$TsumegoComment->save($comment)) {
+		if (!$TsumegoComment->save($comment))
+		{
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
 			$this->Flash->error('Failed to create issue comment.');
@@ -192,28 +199,32 @@ class TsumegoIssuesController extends AppController
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
-		if (!$issue) {
+		if (!$issue)
+		{
 			$this->Flash->error('Issue not found.');
 			return $this->redirect($this->referer());
 		}
 
 		// Only admin or issue author can close
 		$isOwner = $issue['TsumegoIssue']['user_id'] === Auth::getUserID();
-		if (!Auth::isAdmin() && !$isOwner) {
+		if (!Auth::isAdmin() && !$isOwner)
+		{
 			$this->Flash->error('You are not authorized to close this issue.');
 			return $this->redirect($this->referer());
 		}
 
 		// Update status to closed
 		$TsumegoIssue->id = $id;
-		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS)) {
+		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS))
+		{
 			$this->Flash->error('Failed to close issue.');
 			return $this->redirect($this->referer());
 		}
 
 		// Add closing comment if provided
 		$closingMessage = $this->request->data('Issue.message');
-		if (!empty($closingMessage)) {
+		if (!empty($closingMessage))
+		{
 			$TsumegoComment = ClassRegistry::init('TsumegoComment');
 			$comment = [
 				'tsumego_id' => $issue['TsumegoIssue']['tsumego_id'],
@@ -243,7 +254,8 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isAdmin()) {
+		if (!Auth::isAdmin())
+		{
 			$this->Flash->error('Only admins can reopen issues.');
 			return $this->redirect($this->referer());
 		}
@@ -251,7 +263,8 @@ class TsumegoIssuesController extends AppController
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
-		if (!$issue) {
+		if (!$issue)
+		{
 			$this->Flash->error('Issue not found.');
 			return $this->redirect($this->referer());
 		}
@@ -282,7 +295,8 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isAdmin()) {
+		if (!Auth::isAdmin())
+		{
 			$this->Flash->error('Only admins can move comments.');
 			return $this->redirect($this->referer());
 		}
@@ -290,7 +304,8 @@ class TsumegoIssuesController extends AppController
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($commentId);
 
-		if (!$comment) {
+		if (!$comment)
+		{
 			$this->Flash->error('Comment not found.');
 			return $this->redirect($this->referer());
 		}
@@ -299,20 +314,24 @@ class TsumegoIssuesController extends AppController
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
 
 		// Handle 'standalone' - remove from issue
-		if ($targetIssueId === 'standalone') {
-			if (empty($currentIssueId)) {
+		if ($targetIssueId === 'standalone')
+		{
+			if (empty($currentIssueId))
+			{
 				$this->Flash->info('Comment is already standalone.');
 				$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 				return $this->redirect($redirect);
 			}
 
 			$TsumegoComment->id = $commentId;
-			if ($TsumegoComment->saveField('tsumego_issue_id', null)) {
+			if ($TsumegoComment->saveField('tsumego_issue_id', null))
+			{
 				$this->Flash->success('Comment removed from issue.');
 				// Check if issue is now empty and delete it
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
-			} else
+			}
+			else
 				$this->Flash->error('Failed to remove comment from issue.');
 
 			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
@@ -320,7 +339,8 @@ class TsumegoIssuesController extends AppController
 		}
 
 		// Handle 'new' - create new issue
-		if ($targetIssueId === 'new') {
+		if ($targetIssueId === 'new')
+		{
 			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 			$issue = [
 				'tsumego_id' => $comment['TsumegoComment']['tsumego_id'],
@@ -329,7 +349,8 @@ class TsumegoIssuesController extends AppController
 			];
 
 			$TsumegoIssue->create();
-			if (!$TsumegoIssue->save($issue)) {
+			if (!$TsumegoIssue->save($issue))
+			{
 				$this->Flash->error('Failed to create new issue.');
 				return $this->redirect($this->referer());
 			}
@@ -337,7 +358,8 @@ class TsumegoIssuesController extends AppController
 		}
 
 		// Check if moving to same issue
-		if ($currentIssueId == $targetIssueId) {
+		if ($currentIssueId == $targetIssueId)
+		{
 			$this->Flash->info('Comment is already in this issue.');
 			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 			return $this->redirect($redirect);
@@ -345,65 +367,18 @@ class TsumegoIssuesController extends AppController
 
 		// Move the comment to the target issue
 		$TsumegoComment->id = $commentId;
-		if ($TsumegoComment->saveField('tsumego_issue_id', $targetIssueId)) {
+		if ($TsumegoComment->saveField('tsumego_issue_id', $targetIssueId))
+		{
 			$this->Flash->success('Comment moved to issue.');
 			// Check if old issue is now empty and delete it
-			if (!empty($currentIssueId)) {
+			if (!empty($currentIssueId))
+			{
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
 			}
-		} else
+		}
+		else
 			$this->Flash->error('Failed to move comment.');
-
-		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
-	}
-
-	/**
-	 * Remove a comment from its issue (make it standalone).
-	 *
-	 * Admin only. If this was the last comment in the issue, the issue is also deleted.
-	 *
-	 * @deprecated Use moveComment with tsumego_issue_id='standalone' instead
-	 * @param int $commentId Comment ID to remove from issue
-	 * @return CakeResponse|null
-	 */
-	public function removeComment($commentId)
-	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
-		if (!Auth::isAdmin()) {
-			$this->Flash->error('Only admins can remove comments from issues.');
-			return $this->redirect($this->referer());
-		}
-
-		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->findById($commentId);
-
-		if (!$comment) {
-			$this->Flash->error('Comment not found.');
-			return $this->redirect($this->referer());
-		}
-
-		if (empty($comment['TsumegoComment']['tsumego_issue_id'])) {
-			$this->Flash->error('Comment is not attached to any issue.');
-			return $this->redirect($this->referer());
-		}
-
-		// Remember the issue ID before removing
-		$issueId = $comment['TsumegoComment']['tsumego_issue_id'];
-
-		// Remove the comment from the issue
-		$TsumegoComment->id = $commentId;
-		if ($TsumegoComment->saveField('tsumego_issue_id', null)) {
-			$this->Flash->success('Comment removed from issue.');
-
-			// Check if issue is now empty and delete it
-			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-			$TsumegoIssue->deleteIfEmpty($issueId);
-		} else
-			$this->Flash->error('Failed to remove comment from issue.');
 
 		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
 		return $this->redirect($redirect);

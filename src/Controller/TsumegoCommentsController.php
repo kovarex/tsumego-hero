@@ -27,7 +27,8 @@ class TsumegoCommentsController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isLoggedIn()) {
+		if (!Auth::isLoggedIn())
+		{
 			$this->Flash->error('You must be logged in to comment.');
 			return $this->redirect($this->referer());
 		}
@@ -68,14 +69,16 @@ class TsumegoCommentsController extends AppController
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
 
-		if (!$comment) {
+		if (!$comment)
+		{
 			$this->Flash->error('Comment not found.');
 			return $this->redirect($this->referer());
 		}
 
 		// Only admin or comment author can delete
 		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
-		if (!Auth::isAdmin() && !$isOwner) {
+		if (!Auth::isAdmin() && !$isOwner)
+		{
 			$this->Flash->error('You are not authorized to delete this comment.');
 			return $this->redirect($this->referer());
 		}
@@ -85,15 +88,18 @@ class TsumegoCommentsController extends AppController
 
 		// Soft delete
 		$TsumegoComment->id = $id;
-		if ($TsumegoComment->saveField('deleted', true)) {
+		if ($TsumegoComment->saveField('deleted', true))
+		{
 			$this->Flash->success('Comment deleted.');
 
 			// If comment was part of an issue, check if issue is now empty and delete it
-			if (!empty($issueId)) {
+			if (!empty($issueId))
+			{
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($issueId);
 			}
-		} else
+		}
+		else
 			$this->Flash->error('Failed to delete comment.');
 
 		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();

@@ -29,6 +29,7 @@ App::uses('TsumegosController', 'Controller');
 class TsumegoIssue extends AppModel
 {
 	public $useTable = 'tsumego_issue';
+	public $actsAs = ['Containable'];
 
 	public $belongsTo = [
 		'Tsumego',
@@ -84,7 +85,8 @@ class TsumegoIssue extends AppModel
 	 */
 	protected function _findWithComments(string $state, array $query, array $results = []): array
 	{
-		if ($state === 'before') {
+		if ($state === 'before')
+		{
 			// Set default ordering if not specified
 			if (empty($query['order']))
 				$query['order'] = 'TsumegoIssue.created DESC';
@@ -97,7 +99,8 @@ class TsumegoIssue extends AppModel
 		$processedIssues = [];
 		$allCoordinates = [];
 
-		foreach ($results as $issueRaw) {
+		foreach ($results as $issueRaw)
+		{
 			$issue = $issueRaw['TsumegoIssue'];
 
 			// Load author
@@ -118,54 +121,6 @@ class TsumegoIssue extends AppModel
 		$processedIssues['_coordinates'] = $allCoordinates;
 
 		return $processedIssues;
-	}
-
-	/**
-	 * Load comments for a specific issue (with user data and processed messages).
-	 *
-	 * @param int|null $tsumegoId
-	 * @param int $issueId
-	 * @return array{comments: array, coordinates: array}
-	 */
-	public function loadCommentsForIssue(?int $tsumegoId, int $issueId): array
-	{
-		/** @var TsumegoComment $commentModel */
-		$commentModel = ClassRegistry::init('TsumegoComment');
-
-		$commentsRaw = $commentModel->find('all', [
-			'conditions' => [
-				'tsumego_id' => $tsumegoId,
-				'tsumego_issue_id' => $issueId,
-				'deleted' => false,
-			],
-			'order' => 'created ASC',
-		]) ?: [];
-
-		/** @var User $userModel */
-		$userModel = ClassRegistry::init('User');
-
-		$comments = [];
-		$coordinates = [];
-		foreach ($commentsRaw as $index => $commentRaw) {
-			$comment = $commentRaw['TsumegoComment'];
-
-			// Load user
-			$user = $userModel->findById($comment['user_id']);
-			$comment['user'] = $user ? $user['User'] : ['name' => '[deleted user]', 'admin' => 0];
-
-			// Process message for coordinates
-			$array = TsumegosController::commentCoordinates($comment['message'], $index + 1, true);
-			$comment['message'] = $array[0];
-			if (!empty($array[1]))
-				$coordinates[] = $array[1];
-
-			$comments[] = $comment;
-		}
-
-		return [
-			'comments' => $comments,
-			'coordinates' => $coordinates,
-		];
 	}
 
 	/**
