@@ -220,16 +220,6 @@ class Play
 						ClassRegistry::init('Tsumego')->save($t, true);
 					if ($data['Comment']['deleteProblem'] == 'delete')
 						AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $t['Tsumego']['id'], $t['Tsumego']['set_id']);
-					if ($data['Comment']['deleteTag'] != null)
-					{
-						$tagsToDelete = ClassRegistry::init('TagConnection')->find('all', ['conditions' => ['tsumego_id' => $id]]) ?: [];
-						foreach ($tagsToDelete as $tagToDelete)
-						{
-							$tagNameForDelete = ClassRegistry::init('Tag')->findById($tagToDelete['TagConnection']['tag_id']);
-							if ($tagNameForDelete['Tag']['name'] == $data['Comment']['deleteTag'])
-								ClassRegistry::init('Tag')->delete($tagToDelete['TagConnection']['id']);
-						}
-					}
 				}
 				elseif (isset($data['Study']))
 				{
