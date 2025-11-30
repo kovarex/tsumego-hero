@@ -227,7 +227,7 @@ class TagTest extends ControllerTestCase
 		}
 		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
 		{
-			$this->assertTextContains('Tsumego with id="'. $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
+			$this->assertTextContains('Tsumego with id="' . $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
 		}
 	}
 
@@ -314,7 +314,7 @@ class TagTest extends ControllerTestCase
 		}
 		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
 		{
-			$this->assertTextContains('Tsumego with id="'. $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
+			$this->assertTextContains('Tsumego with id="' . $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
 		}
 	}
 
