@@ -392,3 +392,25 @@ function makeIdValidName(name)
 			str[i] = "-";
 	return "tag-"+str.join("");
 }
+
+function makeAjaxCall(urlToCall, method)
+{
+	$.ajax({
+		url: urlToCall,
+		type: 'POST',
+		complete: (xhr) =>
+		{
+			if (xhr.status >= 200 && xhr.status < 300)
+				method(xhr.responseText);
+			else
+				alert("Ajax call returned: " + (xhr.responseText || "Unknown error"));
+		}
+	});
+	/*
+	$.ajax(
+		{
+			url: urlToCall,
+			type: 'POST',
+			success: (response) => method(response)
+		});*/
+}

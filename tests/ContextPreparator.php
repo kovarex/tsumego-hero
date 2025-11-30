@@ -357,6 +357,7 @@ class ContextPreparator
 			Util::extract('popular', $tagInput);
 
 		$this->checkOptionsConsumed($tagInput);
+		$this->tags[] = $tag['Tag'];
 		return $tag['Tag'];
 	}
 

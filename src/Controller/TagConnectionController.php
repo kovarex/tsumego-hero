@@ -7,12 +7,14 @@ class TagConnectionController extends AppController
 		if (!Auth::isLoggedIn())
 		{
 			$this->response->statusCode(403);
+			$this->response->body('Not logged in.');
 			return $this->response;
 		}
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)
 		{
 			$this->response->statusCode(403);
+			$this->response->body('Tag "' . $tagName . '" doesn\'t exist.');
 			return $this->response;
 		}
 
@@ -20,14 +22,26 @@ class TagConnectionController extends AppController
 		if (!$tsumego)
 		{
 			$this->response->statusCode(403);
+			$this->response->body('Tsumego with id="' . $tsumegoID . '" wasn\'t found.');
+			return $this->response;
+		}
+
+		$tagConnection = ClassRegistry::init('TagConnection')->find('first', [
+			'conditions' => [
+				'tsumego_id' => $tsumegoID,
+				'tag_id' => $tag['Tag']['id']]]);
+		if ($tagConnection)
+		{
+			$this->response->statusCode(403);
+			$this->response->body('The tsumego already has tag ' . $tag['Tag']['name'] . '.');
 			return $this->response;
 		}
 
 		$tagConnection = [];
-		$tagConnection['TagConnection']['tag_id'] = $tag['Tag']['id'];
-		$tagConnection['TagConnection']['tsumego_id'] = $tsumegoID;
-		$tagConnection['TagConnection']['user_id'] = Auth::getUserID();
-		$tagConnection['TagConnection']['approved'] = Auth::isAdmin() ? 1 : 0;
+		$tagConnection['tag_id'] = $tag['Tag']['id'];
+		$tagConnection['tsumego_id'] = $tsumegoID;
+		$tagConnection['user_id'] = Auth::getUserID();
+		$tagConnection['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('TagConnection')->create();
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 		$this->response->statusCode(200);

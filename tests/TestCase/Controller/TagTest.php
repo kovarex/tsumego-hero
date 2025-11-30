@@ -170,4 +170,91 @@ class TagTest extends ControllerTestCase
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari"));
 		}
 	}
+
+	public function testTryToAddTagWhenNotLoggedIn()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tags' => [['name' => 'snapback', 'popular' => true]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('open-add-tag-menu');
+		$browser->driver->manage()->deleteAllCookies(); // we suddenly get logged off
+		try
+		{
+			$browser->clickId('tag-snapback');
+			$this->fail('Expected alert was not thrown.');
+		}
+		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
+		{
+			$this->assertTextContains("Not logged in", $e->getMessage());
+		}
+	}
+
+	public function testTryToAddNonExistingTag()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tags' => [['name' => 'snapback', 'popular' => true]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('open-add-tag-menu');
+		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
+		try
+		{
+			$browser->clickId('tag-snapback');
+			$this->fail('Expected alert was not thrown.');
+		}
+		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
+		{
+			$this->assertTextContains('Tag "snapback" doesn\'t exist.', $e->getMessage());
+		}
+	}
+
+	public function testTryToAddTagToNonExistingTsumego()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tags' => [['name' => 'snapback', 'popular' => true]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('open-add-tag-menu');
+		ClassRegistry::init('Tsumego')->delete($context->otherTsumegos[0]['id']);
+		try
+		{
+			$browser->clickId('tag-snapback');
+			$this->fail('Expected alert was not thrown.');
+		}
+		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
+		{
+			$this->assertTextContains('Tsumego with id="'. $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
+		}
+	}
+
+	public function testTryToAddDupliciteTag()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tags' => [['name' => 'snapback', 'popular' => true]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('open-add-tag-menu');
+
+		$tagConnection = [];
+		$tagConnection['tag_id'] = $context->tags[0]['id'];
+		$tagConnection['tsumego_id'] = $context->otherTsumegos[0]['id'];
+		$tagConnection['user_id'] = $context->user['id'];
+		$tagConnection['approved'] = 1;
+		ClassRegistry::init('TagConnection')->create();
+		ClassRegistry::init('TagConnection')->save($tagConnection);
+		try
+		{
+			$browser->clickId('tag-snapback');
+			$this->fail('Expected alert was not thrown.');
+		}
+		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
+		{
+			$this->assertTextContains('The tsumego already has tag snapback.', $e->getMessage());
+		}
+	}
 }

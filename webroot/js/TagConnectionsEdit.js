@@ -32,19 +32,16 @@ class TagConnectionsEdit
 
 	add(tagName)
 	{
-		$.ajax(
-			{
-				url: '/tagConnection/add/' + this.tsumegoID + '/' + tagName,
-				type: 'POST',
-				success: (response) =>
+		makeAjaxCall(
+			'/tagConnection/add/' + this.tsumegoID + '/' + tagName,
+			(response) =>
 				{
 					let tag = this.tags.find(tag => tag.name === tagName);
 					tag.isAdded = true;
 					tag.isApproved = this.isAdmin;
 					tag.isMine = true;
 					this.draw();
-				}
-			});
+				});
 	}
 
 	remove(tagName)
