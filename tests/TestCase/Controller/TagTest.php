@@ -83,7 +83,7 @@ class TagTest extends ControllerTestCase
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
-				'tags' => [['name' => 'snapback']]]);
+				'tags' => [['name' => 'snapback', 'popular' => $popular]]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari")); // tag is in the list
@@ -96,6 +96,15 @@ class TagTest extends ControllerTestCase
 			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 			if ($popular)
 			{
+				$this->assertSame(2, count($addTagLinks));
+				$this->assertSame($addTagLinks[0]->getText(), "snapback");
+				$this->assertSame($addTagLinks[1]->getText(), "[more]");
+
+				// cick to add the snapback
+				$addTagLinks[0]->click();
+				$addTagLinks = $browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor');
+
+				// tag is not in the list
 				$this->assertSame(1, count($addTagLinks));
 				$this->assertSame($addTagLinks[0]->getText(), "[more]");
 			}
@@ -104,6 +113,12 @@ class TagTest extends ControllerTestCase
 				$this->assertSame(2, count($addTagLinks));
 				$this->assertSame($addTagLinks[0]->getText(), "snapback");
 				$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
+
+				//add the snapback and test, that it will be no longer offered as tag to add
+				$addTagLinks[0]->click();
+				$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
+				$this->assertSame(1, count($addTagLinks));
+				$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
 			}
 		}
 	}

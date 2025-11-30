@@ -15,11 +15,8 @@ class TagConnectionsEdit
 				type: 'POST',
 				success: (response) =>
 				{
-					let newAllTags = [];
-					for(let i=0; i < this.allTags.length; i++)
-						if (this.allTags[i] !== tagName)
-							newAllTags.push(this.allTags[i]);
-					this.allTags = newAllTags;
+					this.allTags = this.allTags.filter(tag => tag !== tagName);
+					this.popularTags = this.popularTags.filter(tag => tag !== tagName);
 					this.tags.push(tagName);
 					this.draw();
 				}
