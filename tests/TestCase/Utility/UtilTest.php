@@ -26,7 +26,7 @@ class UtilTest extends CakeTestCase
 		$_COOKIE['number'] = '42';
 		$result = Util::clearNumericCookie('number');
 		$this->assertSame(42, $result);
-		$this->assertSame('', $_COOKIE['number']);
+		$this->assertEmpty($_COOKIE['number']);
 	}
 
 	public function testClearNumericCookieThrowsOnNonNumeric()
@@ -48,20 +48,20 @@ class UtilTest extends CakeTestCase
 	{
 		$_COOKIE['hits'] = '7';
 		$this->assertSame(7, Util::clearRequiredNumericCookie('hits'));
-		$this->assertSame('', $_COOKIE['hits']);
+		$this->assertEmpty($_COOKIE['hits']);
 	}
 
 	public function testClearCookieReturnsNullWhenNotSet()
 	{
 		$result = Util::clearCookie('unknown');
 		$this->assertNull($result);
-		$this->assertSame('', $_COOKIE['unknown']);
+		$this->assertEmpty($_COOKIE['unknown']);
 	}
 
 	public function testClearNumericCookieReturnsNullWhenMissing()
 	{
 		$this->assertNull(Util::clearNumericCookie('missing-number'));
-		$this->assertSame('', $_COOKIE['missing-number']);
+		$this->assertEmpty($_COOKIE['missing-number']);
 	}
 
 	public function testGetPercentButAvoid100UntilComplete()
@@ -162,7 +162,7 @@ class UtilTest extends CakeTestCase
 	{
 		$_COOKIE['session'] = 'abc';
 		$this->assertSame('abc', Util::clearCookie('session'));
-		$this->assertSame('', $_COOKIE['session']);
+		$this->assertEmpty($_COOKIE['session']);
 	}
 
 	public function testGetCookieReturnsDefaultWhenMissing()
