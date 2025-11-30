@@ -30,6 +30,7 @@
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
 <script src ="/js/previewBoard.js"></script>
+<script src ="/js/tagController.js"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){
@@ -1005,6 +1006,7 @@
 	var timeUp = false;
 	var moveTimeout = 360;
 	var authorProblem = false;
+	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
 
 	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
 	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
@@ -1036,6 +1038,8 @@
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
+	var tagController = new TagController();
+	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1617,150 +1621,30 @@
 		}
 		?>
 <?php TsumegoUtil::getJavascriptMethodisStatusAllowingInspection(); ?>
-	let tags = [];
-	let unapprovedTags = [];
-	let tagsGivesHint = [];
-	let idTags = [];
-	let allTags = [];
-	let popularTags = [];
-	let newTag = null;
+
 	<?php
 		for($i=0;$i<count($tags);$i++){
-			echo 'tags.push("'.$tags[$i]['TagConnection']['name'].'");';
-			echo 'unapprovedTags.push("'.$tags[$i]['TagConnection']['approved'].'");';
-			echo 'tagsGivesHint.push("'.$tags[$i]['TagConnection']['hint'].'");';
-			echo 'idTags.push("'.$tags[$i]['TagConnection']['tag_id'].'");';
+			echo 'tagController.tags.push("'.$tags[$i]['TagConnection']['name'].'");';
+			echo 'tagController.unapprovedTags.push("'.$tags[$i]['TagConnection']['approved'].'");';
+			echo 'tagController.tagsGivesHint.push("'.$tags[$i]['TagConnection']['hint'].'");';
+			echo 'tagController.idTags.push("'.$tags[$i]['TagConnection']['tag_id'].'");';
 		}
 		for($i=0;$i<count($allTags);$i++)
-			echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
+			echo 'tagController.allTags.push("'.$allTags[$i]['Tag']['name'].'");';
 		for($i=0;$i<count($popularTags);$i++)
-			echo 'popularTags.push("'.$popularTags[$i].'");';
+			echo 'tagController.popularTags.push("'.$popularTags[$i].'");';
 	?>
-	<?php if($firstRanks==0){ ?>
-	drawTags();
-	<?php } ?>
-	function drawTags(){
-		if(tags.length>0) $(".tag-list").append("Tags: ");
-		let foundNewTag = false;
-		for(let i=0;i<tags.length;i++){
-			let isNewTag = '';
-			if(tags[i]===newTag){
-				isNewTag = 'is-new-tag';
-				foundNewTag = true;
-			}else if(unapprovedTags[i]==0){
-				isNewTag = 'is-new-tag';
-			}
-			if(tagsGivesHint[i]==1){
-				isNewTag = 'tag-gives-hint '+isNewTag;
-			}
-			let tagLink = 'href="/tag_names/view/'+idTags[i]+'"';
-			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
-			if(typeof idTags[i] === "undefined"){
-				tagLink = '';
-				tagLinkId = '';
-			}
-			$(".tag-list").append('<a '+tagLink+' class="'+isNewTag+'" '+tagLinkId+'>'+tags[i]+'</a>');
-			if(i<tags.length-1){
-				if(tagsGivesHint[i]==1){
-					$(".tag-list").append('<p class="tag-gives-hint">, </p>');
-				}else{
-					if(!isLastComma(i, tagsGivesHint, tags))
-						$(".tag-list").append('<p class="tag-comma">, </p>');
-					else
-						$(".tag-list").append('<p class="tag-gives-hint">, </p>');
-				}
-			}
-		}
-		if(foundNewTag){
-			$(".tag-list").append(" ");
-			$(".tag-list").append('<button id="undo-tags-button">x</button>');
-			$("#undo-tags-button").show();
-		}
+	<?php if($firstRanks==0) echo "tagController.draw();"; ?>
 
-		$(".add-tag-list-popular").append("Add tag: ");
-		for(let i=0;i<popularTags.length;i++){
-			$(".add-tag-list-popular").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(popularTags[i])+'">'
-			+popularTags[i]+'</a>');
-			if(i<popularTags.length-1)
-				$(".add-tag-list-popular").append(', ');
-		}
-		$(".add-tag-list-popular").append(' <a class="add-tag-list-anchor" id="open-more-tags">[more]</a>');
-
-		$(".add-tag-list").append("Add tag: ");
-		for(let i=0;i<allTags.length;i++){
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
-			+allTags[i]+'</a>');
-			if(i<allTags.length-1)
-				$(".add-tag-list").append(', ');
-		}
-		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
-		<?php
-			if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C')
-				echo '$(".tag-gives-hint").css("display", "inline");';
-		?>
-	}
-
-	function makeIdValidName(name){
-		let str = name.split("");
-		for(let i=0;i<str.length; i++)
-			if(!str[i].match(/[a-z]/i) && !str[i].match(/[0-9]/i))
-				str[i] = "-";
-		return "tag-"+str.join("");
-	}
-
-	function isLastComma(index, hints, tags){
-		if(index >= hints.length-1){
-			if(newTag!=null)
-				return false;
-			else
-				return true;
-		}
-		for(let i=index+1;i<hints.length;i++){
-			if(hints[i]==0)
-				return false;
-		}
-		return true;
-	}
-
-	for(let i=0;i<allTags.length;i++){
-		let currentIdValue = "#"+makeIdValidName(allTags[i]);
-		$('.tag-container').on('click', currentIdValue, function(e){
+	for(let i = 0; i < tagController.allTags.length; i++)
+	{
+		let currentIdValue = "#"+makeIdValidName(tagController.allTags[i]);
+		$('.tag-container').on('click', currentIdValue, function(e)
+		{
 			e.preventDefault();
-			setCookie("addTag", "<?php echo $t['Tsumego']['id']; ?>-"+allTags[i]);
-			newTag = $(currentIdValue).text();
-			let newAllTags = [];
-			for(let i=0;i<allTags.length;i++){
-				if(allTags[i] !== $(currentIdValue).text())
-					newAllTags.push(allTags[i]);
-			}
-			allTags = newAllTags;
-			tags.push($(currentIdValue).text());
-			$(".tag-list").html("");
-			$(".add-tag-list").html("");
-			$(".add-tag-list-popular").html("");
-			drawTags();
-			$(".add-tag-list").hide();
-			$(".add-tag-list-popular").hide();
+			tagController.add(tsumegoID, $(currentIdValue).text());
 		});
 	}
-	$('.tag-container').on('click', '#undo-tags-button', function(){
-		setCookie("addTag", 0);
-		$(".tag-list").html("");
-		$(".add-tag-list").html("");
-		$(".add-tag-list-popular").html("");
-		$(".add-tag-list-popular").show();
-		$(".add-tag-list").hide();
-		tags = [];
-		allTags = [];
-		newTag = null;
-		<?php
-			for($i=0;$i<count($tags);$i++)
-				echo 'tags.push("'.$tags[$i]['TagConnection']['name'].'");';
-			for($i=0;$i<count($allTags);$i++)
-				echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
-		?>
-		drawTags();
-	});
 
 	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
 		$("#open-add-tag-menu").hide();
@@ -2313,6 +2197,7 @@
 
 		if(result=='S')
 		{
+			problemSolved = true;
 			if (typeof xpStatus !== "undefined" && xpStatus)
 				xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");

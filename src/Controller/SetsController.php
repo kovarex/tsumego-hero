@@ -1492,37 +1492,6 @@ ORDER BY total_count DESC, partition_number";
 
 		$allTags = $s2Tags;
 
-		if (Auth::isAdmin())
-			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0)
-				if ($this->params['url']['hash'] == '32bb90e8976aab5298d5da10fe66f21d')
-				{
-					$newAddTag = explode('-', $_COOKIE['addTag']);
-					$tagSetId = (int) $newAddTag[0];
-					$newTagName = $this->Tag->find('first', ['conditions' => ['name' => str_replace($tagSetId . '-', '', $_COOKIE['addTag'])]]);
-					$tagSc = TsumegoUtil::collectTsumegosFromSet($tagSetId);
-					$tagScCount = count($tagSc);
-					for ($i = 0; $i < $tagScCount; $i++)
-					{
-						$tagAlreadyThere = $this->TagConnection->find('first', [
-							'conditions' => [
-								'tsumego_id' => $tagSc[$i]['Tsumego']['id'],
-								'tag_id' => $newTagName['Tag']['id'],
-							],
-						]);
-						if ($tagAlreadyThere == null)
-						{
-							$saveTag = [];
-							$saveTag['TagConnection']['tag_id'] = $newTagName['Tag']['id'];
-							$saveTag['TagConnection']['tsumego_id'] = $tagSc[$i]['Tsumego']['id'];
-							$saveTag['TagConnection']['user_id'] = Auth::getUserID();
-							$saveTag['TagConnection']['approved'] = 1;
-							$this->TagConnection->create();
-							$this->TagConnection->save($saveTag);
-						}
-					}
-					$this->set('removeCookie', 'addTag');
-				}
-
 		if ($tsumegoFilters->query == 'topics')
 		{
 			$this->set('allVcActive', $allVcActive);

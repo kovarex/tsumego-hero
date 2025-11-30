@@ -383,3 +383,12 @@ class TimeModeTimer
 		document.getElementById("besogo-next-button").title = "next problem";
 	}
 }
+
+function makeIdValidName(name)
+{
+	let str = name.split("");
+	for (let i = 0; i < str.length; i++)
+		if (!str[i].match(/[a-z]/i) && !str[i].match(/[0-9]/i))
+			str[i] = "-";
+	return "tag-"+str.join("");
+}
