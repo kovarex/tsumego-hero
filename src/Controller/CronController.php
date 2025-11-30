@@ -209,7 +209,7 @@ JOIN (
     FROM tag_connection
     GROUP BY tag_id
     ORDER BY COUNT(*) DESC
-    LIMIT ".Tag::$POPULAR_COUNT."
+    LIMIT " . Tag::$POPULAR_COUNT . "
 ) AS top_tags ON tag.id = top_tags.tag_id
 SET tag.popular = 1;");
 	}

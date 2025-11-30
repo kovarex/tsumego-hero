@@ -154,7 +154,7 @@ class AppController extends Controller
 		if (!$notApproved)
 			$notApproved = [];
 		foreach ($not as $item)
-			$a[]= $item['tag_id'];
+			$a[] = $item['tag_id'];
 		$notApprovedCount = count($notApproved);
 		for ($i = 0; $i < $notApprovedCount; $i++)
 			array_push($a, $notApproved[$i]['Tag']['id']);

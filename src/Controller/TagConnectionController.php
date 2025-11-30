@@ -2,7 +2,7 @@
 
 class TagConnectionController extends AppController
 {
-	function add($tsumegoID, $tagName)
+	public function add($tsumegoID, $tagName)
 	{
 		if (!Auth::isLoggedIn())
 		{

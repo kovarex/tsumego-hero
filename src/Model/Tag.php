@@ -7,5 +7,5 @@ class Tag extends AppModel
 		$id['table'] =  'tag';
 		parent::__construct($id, $table, $ds);
 	}
-	static public int $POPULAR_COUNT = 10;
+	public static int $POPULAR_COUNT = 10;
 }
