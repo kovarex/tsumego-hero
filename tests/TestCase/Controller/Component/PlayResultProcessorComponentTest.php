@@ -26,7 +26,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	private function performSolve(ContextPreparator &$context, $page): void
 	{
 		$_COOKIE['mode'] = '1';
-		$_COOKIE['solvedCheck'] = Util::wierdEncrypt($context->tsumego['id'] . '-' . time());
+		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumego['id'] . '-' . time());
 		$_COOKIE['secondsCheck'] = $context->tsumego['id'] * 7900 * 0.01;
 		$this->performVisit($context, $page);
 		$this->assertEmpty($_COOKIE['score']); // should be processed and cleared
@@ -42,8 +42,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testVisitFromEmpty(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performVisit($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'V');
@@ -52,8 +51,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolveFromEmpty(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'S');
@@ -63,11 +61,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	public function testSolveFromEmptyByWebDriver(): void
 	{
 		$browser = Browser::instance();
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => ['mode' => Constants::$LEVEL_MODE],
-				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
+				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]
+			]);
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 			usleep(1000 * 100);
 			$browser->driver->executeScript("displayResult('S')"); // Fail the problem
@@ -80,8 +78,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testVisitFromSolved(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performVisit($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'S');
@@ -90,8 +87,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testHalfXpStatusToDoubleSolved(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'W', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performSolve($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'C');
@@ -100,8 +96,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testNoSolveFromFailed(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'F', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performSolve($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'F');
@@ -110,8 +105,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailFromFailed(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'F', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performMisplay($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'F');
@@ -120,8 +114,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailFromSolved(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'S', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performMisplay($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'S'); // shouldn't be affected
@@ -130,8 +123,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailFromDoubleSolved(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = (new ContextPreparator(['tsumego' => ['status' => 'C', 'sets' => [['name' => 'set 1', 'num' => 1]]]]));
 			$this->performMisplay($context, $page);
 			$this->assertSame($context->resultTsumegoStatus['status'], 'C'); // shouldn't be affected
@@ -140,13 +132,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingAddsRating(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
+			]);
 			$originalRating = $context->user['rating'];
 			$this->performSolve($context, $page);
 			$this->assertLessThan($context->reloadUser()['rating'], $originalRating);
@@ -156,13 +149,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailingDropsRating(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
+			]);
 			$originalRating = $context->user['rating'];
 			$this->performMisplay($context, $page);
 			$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
@@ -172,13 +166,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingAddsXP(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
+			]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumego));
 		}
@@ -186,13 +181,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingSolvedDoesntAddXP(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']
+			]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), 0);
 		}
@@ -200,13 +196,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingDoubleSolvedDoesntAddXP(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']
+			]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), 0);
 		}
@@ -214,13 +211,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingSolvedDoesntAddRating(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']
+			]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->reloadUser()['rating'], 1000.0);
 		}
@@ -228,13 +226,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingDoubleSolvedDoesntAddRating(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
+					'mode' => Constants::$RATING_MODE
+				],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']
+			]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->reloadUser()['rating'], 1000.0);
 		}
@@ -242,8 +241,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingAddsNewTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 
 			$this->performSolve($context, $page);
@@ -256,11 +254,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingUpdatesExistingNotSolvedTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => [
-				'attempt' => ['solved' => false, 'misplays' => 66],
-				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'tsumego' => [
+					'attempt' => ['solved' => false, 'misplays' => 66],
+					'sets' => [['name' => 'set 1', 'num' => 1]]
+				]
+			]);
 
 			$this->performSolve($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
@@ -272,11 +272,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingDoesntUpdateExistingSolvedTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => [
-				'attempt' => ['solved' => true, 'misplays' => 66],
-				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'tsumego' => [
+					'attempt' => ['solved' => true, 'misplays' => 66],
+					'sets' => [['name' => 'set 1', 'num' => 1]]
+				]
+			]);
 			$this->performSolve($context, $page);
 			$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 			$this->assertSame(count($tsumegoAttempts), 2); // the solved one wasn't updated
@@ -289,8 +291,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailingAddsNewTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performMisplay($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
@@ -302,11 +303,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailingUpdatesExistingNotSolvedTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => [
-				'attempt' => ['solved' => false, 'misplays' => 66],
-				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		foreach ($this->PAGES as $page) {
+			$context = new ContextPreparator([
+				'tsumego' => [
+					'attempt' => ['solved' => false, 'misplays' => 66],
+					'sets' => [['name' => 'set 1', 'num' => 1]]
+				]
+			]);
 			$this->performMisplay($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 			$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
@@ -317,8 +320,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailingDoesntUpdateExistingSolvedTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['attempt' => ['solved' => true, 'misplays' => 66], 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performMisplay($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
@@ -332,8 +334,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testFailAddsDamage(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalDamage = intval($context->user['damage']);
 			$this->performMisplay($context, $page);
@@ -344,11 +345,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	public function testFailAddsDamageUsingWebDriver(): void
 	{
 		$browser = Browser::instance();
-		foreach ($this->PAGES as $page)
-		{
+		foreach ($this->PAGES as $page) {
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-				'user' => ['mode' => Constants::$LEVEL_MODE]]);
+				'user' => ['mode' => Constants::$LEVEL_MODE]
+			]);
 			$originalDamage = intval($context->user['damage']);
 
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
@@ -364,7 +365,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-			'user' => ['mode' => Constants::$LEVEL_MODE]]);
+			'user' => ['mode' => Constants::$LEVEL_MODE]
+		]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
@@ -378,7 +380,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]]);
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]
+		]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('F')"); // Fail the problem

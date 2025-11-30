@@ -6,14 +6,12 @@ class Decoder
 	{
 		$secondsCheck = Util::clearRequiredNumericCookie('secondsCheck');
 
-		if ($secondsCheck % 79 != 0)
-		{
+		if ($secondsCheck % 79 != 0) {
 			Auth::addSuspicion();
 			return null;
 		}
 		$secondsCheck /= 79;
-		if ($secondsCheck % $previousTsumego['Tsumego']['id'] != 0)
-		{
+		if ($secondsCheck % $previousTsumego['Tsumego']['id'] != 0) {
 			Auth::addSuspicion();
 			return null;
 		}
@@ -26,14 +24,12 @@ class Decoder
 		if (empty($solvedCheck))
 			return false;
 
-		$decryptedSolvedCheck = explode('-', Util::wierdDecrypt($solvedCheck));
-		if (count($decryptedSolvedCheck) != 2)
-		{
+		$decryptedSolvedCheck = explode('-', Util::decrypt($solvedCheck));
+		if (count($decryptedSolvedCheck) != 2) {
 			Auth::addSuspicion();
 			return false;
 		}
-		if ($decryptedSolvedCheck[0] != $previousTsumegoID)
-		{
+		if ($decryptedSolvedCheck[0] != $previousTsumegoID) {
 			Auth::addSuspicion();
 			return false;
 		}
