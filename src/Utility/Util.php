@@ -146,7 +146,7 @@ class Util
 			$existingCondition = $condition;
 			return;
 		}
-		$existingCondition .= " AND ";
+		$existingCondition .= " AND " ;
 		if (str_contains($condition, " OR "))
 			$existingCondition .= '(' . $condition . ')';
 		else

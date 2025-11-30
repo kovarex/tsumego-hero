@@ -67,8 +67,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		{
 			$context = new ContextPreparator([
 				'user' => ['mode' => Constants::$LEVEL_MODE],
-				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]
-			]);
+				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 			usleep(1000 * 100);
 			$browser->driver->executeScript("displayResult('S')"); // Fail the problem
@@ -146,10 +145,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performSolve($context, $page);
 			$this->assertLessThan($context->reloadUser()['rating'], $originalRating);
@@ -164,10 +161,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performMisplay($context, $page);
 			$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
@@ -182,10 +177,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumego));
 		}
@@ -198,10 +191,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), 0);
 		}
@@ -214,10 +205,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->XPGained(), 0);
 		}
@@ -230,10 +219,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->reloadUser()['rating'], 1000.0);
 		}
@@ -246,10 +233,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => [
 					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE
-				],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']
-			]);
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'C']]);
 			$this->performSolve($context, $page);
 			$this->assertSame($context->reloadUser()['rating'], 1000.0);
 		}
@@ -273,12 +258,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		foreach ($this->PAGES as $page)
 		{
-			$context = new ContextPreparator([
-				'tsumego' => [
-					'attempt' => ['solved' => false, 'misplays' => 66],
-					'sets' => [['name' => 'set 1', 'num' => 1]]
-				]
-			]);
+			$context = new ContextPreparator(['tsumego' => [
+				'attempt' => ['solved' => false, 'misplays' => 66],
+				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 
 			$this->performSolve($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
@@ -292,12 +274,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		foreach ($this->PAGES as $page)
 		{
-			$context = new ContextPreparator([
-				'tsumego' => [
-					'attempt' => ['solved' => true, 'misplays' => 66],
-					'sets' => [['name' => 'set 1', 'num' => 1]]
-				]
-			]);
+			$context = new ContextPreparator(['tsumego' => [
+				'attempt' => ['solved' => true, 'misplays' => 66],
+				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performSolve($context, $page);
 			$tsumegoAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 			$this->assertSame(count($tsumegoAttempts), 2); // the solved one wasn't updated
@@ -325,12 +304,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		foreach ($this->PAGES as $page)
 		{
-			$context = new ContextPreparator([
-				'tsumego' => [
-					'attempt' => ['solved' => false, 'misplays' => 66],
-					'sets' => [['name' => 'set 1', 'num' => 1]]
-				]
-			]);
+			$context = new ContextPreparator(['tsumego' => [
+				'attempt' => ['solved' => false, 'misplays' => 66],
+				'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$this->performMisplay($context, $page);
 			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
 			$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
@@ -372,8 +348,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		{
 			$context = new ContextPreparator([
 				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-				'user' => ['mode' => Constants::$LEVEL_MODE]
-			]);
+				'user' => ['mode' => Constants::$LEVEL_MODE]]);
 			$originalDamage = intval($context->user['damage']);
 
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
@@ -389,8 +364,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-			'user' => ['mode' => Constants::$LEVEL_MODE]
-		]);
+			'user' => ['mode' => Constants::$LEVEL_MODE]]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
@@ -404,8 +378,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]
-		]);
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		usleep(1000 * 100);
 		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
