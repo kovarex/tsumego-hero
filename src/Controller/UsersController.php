@@ -2424,7 +2424,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		$timeGraph = $this->formatTimegraph($timeGraph);
 
-		$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
+		$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 
 		$deletedTsumegoStatusCount = 0;
 		$canResetOldTsumegoStatuses = $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
@@ -2449,7 +2449,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$user['User']['dbstorage'] = 99;
 				$this->User->save($user);
 
-				$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
+				$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 			}
 
 		$asCount = count($as);

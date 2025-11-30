@@ -51,7 +51,7 @@ class Util
 		return $randomString;
 	}
 
-	public static function getPercentButAvoid100UntillComplete(int $value, int $max): int
+	public static function getPercentButAvoid100UntilComplete(int $value, int $max): int
 	{
 		assert($value <= $max);
 		$result = (int) round(Util::getRatio($value, $max));
@@ -60,24 +60,22 @@ class Util
 		return $result;
 	}
 
-	public static function wierdEncrypt(string $str): string
+	private const SECRET_KEY = 'my_simple_secret_keyx';
+	private const SECRET_IV = 'my_simple_secret_ivx';
+	private const ENCRYPT_METHOD = 'AES-256-CBC';
+
+	public static function encrypt(string $str): string
 	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
+		$key = hash('sha256', self::SECRET_KEY);
+		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
+		return base64_encode(openssl_encrypt($str, self::ENCRYPT_METHOD, $key, 0, $iv));
 	}
 
-	public static function wierdDecrypt(string $str): string
+	public static function decrypt(string $str): string
 	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		return openssl_decrypt(base64_decode($str), $encrypt_method, $key, 0, $iv);
+		$key = hash('sha256', self::SECRET_KEY);
+		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
+		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
 	public static function extract(string $name, array &$inputArray)
