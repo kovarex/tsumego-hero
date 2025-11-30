@@ -389,7 +389,15 @@
 			<div class="modeBox44" onmouseover="mode4hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php } ?>
+
 		<img src="/img/new_startpage/<?php echo $achievementImage; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
+
+		<p class="title4">Update 30.11.2025</p>
+		<div class="new1">
+			<p>There is a lot of work going on. More details can be found in the forum posts</p>
+			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
+			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
+		</div>
 
 		<?php if(
 			!Auth::isLoggedIn()
@@ -404,6 +412,7 @@
 			</div>
 			</div>
 		<?php } ?>
+
 		<p class="title4"<?php if(Auth::isLoggedIn()) echo ' style="margin-top:2px;"'; ?>>Recent Upgrades</p>
 		<div class="new1">
 			<table class="newx">
@@ -463,44 +472,6 @@
 
 		<!-- LEFT NEWS -->
 		<div id="news-left-19">
-			<p class="title4">Update 24.11.2025</p>
-			<div class="new1"><br>
-				Let me introduce you the first in a series of changes to tsumego-hero:
-				<hr>
-				Version: 0.1<br>
-				Date: 24.11.2025<br>
-				<b>Big changes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li style="display: list-item;">The site has moved to the prominent address of tsumego.com.</li><br>
-					<li style="display: list-item;">Refactored big parts of the code, with usage of automated tests.</li><br>
-					<li style="display: list-item;">Removed half-working features for non logged players (hearts, tsumego status, levels).</li><br>
-					<li style="display: list-item;">Added phpbb forums, accessible by home->forums or tsumego.com/forums. The forum users and authentication is automatically linked to the tsumego-hero account.</li><br>
-				</ul>
-				<b>Changes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>XP and rating changes of the current tsumego are always shown when relevant: "what you see is what you get".</li><br>
-					<li>Changed rating formula to be the same as the official tournament rating formula, current modifier is 0.5</li><br>
-				</ul>
-				<b>Optimisations:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>Optimisation of set index, set view and play.</li><br>
-					<li>Decreased the size of html output of some of the pages.</li><br>
-				</ul>
-				<b>Bugfixes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>Unified the sign-in mechanism, should be stable now.</li><br>
-					<li>Changed XP formula to be always based on rating</li><br>
-					<li>Changed the rating->XP distribution, lower Xp for easier problems, and more for harder ones.</li><br>
-					<li>Fixed viewing current filters in the set view</li><br>
-					<li>Fixed expanding time mode results.</li><br>
-				</ul>
-				<br><hr><br>
-				As big parts of the code were changed by this release, it is expected to have temporary unstable phase.<br>
-				Don't hesitate to report issues in the <a href="https://tsumego.com/forums/viewforum.php?f=7">Bug reports</a> section on the forums.<br>
-				The plan is to first focus on covering the site by automated tests and improving the code quality. Then we want to focus more on optimisations and improvements. The current code coverage is 41%
-				<br>
-				kovarex
-			</div>
 			<p class="title4">Update 17.05.2025</p>
 			<div class="new1"><br>
 				<div align="center">
