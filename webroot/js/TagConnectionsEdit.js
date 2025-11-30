@@ -49,7 +49,7 @@ class TagConnectionsEdit
 		const html = source
 		.map(tag =>
 			tag.isAdded ?
-				'<span>${tag.name}</span>' :
+				`<span class="add-tag-list-anchor">${tag.name}</span>` :
 				`<a class="add-tag-list-anchor" id="${makeIdValidName(tag.name)}">${tag.name}</a>`
 		).join(', ');
 		$("." + id).append(html);

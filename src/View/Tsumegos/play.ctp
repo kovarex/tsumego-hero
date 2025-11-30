@@ -1627,7 +1627,7 @@
 
 	for(let i = 0; i < tagConnectionsEdit.allTags.length; i++)
 	{
-		let currentIdValue = "#"+makeIdValidName(tagConnectionsEdit.allTags[i]);
+		let currentIdValue = "#"+makeIdValidName(tagConnectionsEdit.allTags[i].name);
 		$('.tag-container').on('click', currentIdValue, function(e)
 		{
 			e.preventDefault();

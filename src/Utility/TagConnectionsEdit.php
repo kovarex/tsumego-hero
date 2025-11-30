@@ -22,15 +22,15 @@ SELECT
 	tag.name as tag_name,
 	tag_connection.id IS NOT NULL as is_added
 FROM tag
-LEFT JOIN tag_connection ON my_tag_connection.tsumego_id=? AND tag_connection.user_id=? AND tag_connection.tag_id = tag.id
+LEFT JOIN tag_connection ON tag_connection.tsumego_id=? AND tag_connection.tag_id = tag.id
 WHERE
-	(tag_connection.id IS NULL OR (tag_connection.approved = false AND tag_connection.user_id = ?))" .
-			($popular ? " AND popular = " . Util::boolString($popular) : "") . ")",
-			[$this->tsumegoID, Auth::getUserID(), Auth::getUserID()]);
+	(tag_connection.id IS NULL OR (tag_connection.approved = false AND tag_connection.user_id != ?))" .
+			($popular ? " AND popular = " . Util::boolString($popular) : ""),
+			[$this->tsumegoID, Auth::getUserID()]);
 
 		$result = [];
 		foreach ($queryResult as $tag)
-			$result[] = ['name' => $tag['tag']['tag_name'], 'is_added' => $tag['tag']['is_added']];
+			$result[] = ['name' => $tag['tag']['tag_name'], 'is_added' => $tag[0]['is_added']];
 		return $result;
 	}
 
@@ -64,18 +64,17 @@ tag_connection.tsumego_id = ? AND
 
 		foreach ($this->tags as $tag)
 		{
-			echo 'tagConnectionsEdit.tags.push("' . $tag['name'] . '");';
-			echo 'tagConnectionsEdit.approvedInfo.push("' . $tag['tag_approved'] . '");';
-			echo 'tagConnectionsEdit.tagsGivesHint.push("' . $tag['hint'] . '");';
-			echo 'tagConnectionsEdit.idTags.push("' . $tag['tag_id'] . '");';
+			echo 'tagConnectionsEdit.tags.push("' . $tag['name'] . '");' . PHP_EOL;
+			echo 'tagConnectionsEdit.tagsGivesHint.push("' . $tag['hint'] . '");'. PHP_EOL;
+			echo 'tagConnectionsEdit.idTags.push("' . $tag['tag_id'] . '");'. PHP_EOL;
 		}
 
 		foreach ($this->allTags as $tag)
 		{
-			echo 'tagConnectionsEdit.allTags.push({name: "' . $tag['name'] . '", isAdded: ' . Util::boolString($tag['is_added']) . '});';
-			echo 'tagConnectionsEdit.idTags.push("' . $tag['name'] . '");';
+			echo 'tagConnectionsEdit.allTags.push({name: "' . $tag['name'] . '", isAdded: ' . Util::boolString($tag['is_added']) . '});'. PHP_EOL;
+			echo 'tagConnectionsEdit.idTags.push("' . $tag['name'] . '");'. PHP_EOL;
 		}
 		foreach ($this->popularTags as $tag)
-			echo 'tagConnectionsEdit.popularTags.push("' . $tag . '");';
+			echo 'tagConnectionsEdit.popularTags.push({name: "' . $tag['name'] . '", isAdded: ' . Util::boolString($tag['is_added']) . '});'. PHP_EOL;
 	}
 }

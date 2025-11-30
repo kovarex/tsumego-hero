@@ -353,6 +353,9 @@ class ContextPreparator
 			// reloading so the generated id is retrieved
 			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
+		else
+			Util::extract('popular', $tagInput);
+
 		$this->checkOptionsConsumed($tagInput);
 		return $tag['Tag'];
 	}
