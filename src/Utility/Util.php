@@ -174,4 +174,12 @@ class Util
 	{
 		return intdiv($level, 5) + 10;
 	}
+
+	public static function query($sql, $params = [])
+	{
+		/** @phpstan-ignore-next-line */
+		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
 }

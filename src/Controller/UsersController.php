@@ -385,35 +385,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('trs', $trs);
 	}
 
-	public function routine20(): void //popular tags
-	{
-		$tags = $this->TagConnection->find('all', ['conditions' => ['approved' => 1]]);
-		$tagCount = [];
-		$tagsCount = count($tags);
-		for ($i = 0; $i < $tagsCount; $i++)
-			array_push($tagCount, $tags[$i]['TagConnection']['tag_id']);
-
-		$tagCount = array_count_values($tagCount);
-		$tagId = [];
-		$tagNum = [];
-		foreach ($tagCount as $key => $value)
-		{
-			array_push($tagId, $key);
-			array_push($tagNum, $value);
-		}
-		array_multisort($tagNum, $tagId);
-		$array = [];
-		$tagIdCount = count($tagId);
-		for ($i = $tagIdCount - 1; $i >= 0; $i--)
-		{
-			$a = [];
-			$a['id'] = $tagId[$i];
-			$a['num'] = $tagNum[$i];
-			array_push($array, $a);
-		}
-		file_put_contents('json/popular_tags.json', json_encode($array));
-	}
-
 	/**
 	 * @return void
 	 */

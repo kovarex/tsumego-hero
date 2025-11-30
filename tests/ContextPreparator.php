@@ -285,22 +285,27 @@ class ContextPreparator
 
 	private function prepareTsumegoTags($tagsInput, &$tsumego): void
 	{
-		if ($tagsInput)
+		if (!$tagsInput)
+			return;
+
+		ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
+		foreach ($tagsInput as $tagInput)
 		{
-			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
-			foreach ($tagsInput as $tagInput)
-			{
-				$tag = $this->getOrCreateTag(['name' => $tagInput['name']]);
-				$tagConnection = [];
-				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
-				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
-				$tagConnection['TagConnection']['tag_id'] = $tag['id'];
-				ClassRegistry::init('TagConnection')->create($tagConnection);
-				ClassRegistry::init('TagConnection')->save($tagConnection);
-				$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
-				$tsumego['tags'] [] = $tag;
-				$tsumego['tag-connections'] [] = $tagConnection;
-			}
+			$tag = $this->getOrCreateTag([
+				'name' => Util::extract('name', $tagInput),
+				'popular' => Util::extract('popular', $tagInput) ?: false]);
+			$tagConnection = [];
+			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
+			$tagConnection['TagConnection']['user_id'] = self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'];
+			$tagConnection['TagConnection']['tag_id'] = $tag['id'];
+			$approved = Util::extract('approved', $tagInput);
+			$tagConnection['TagConnection']['approved'] = !is_null($approved) ? $approved : 1;
+			ClassRegistry::init('TagConnection')->create($tagConnection);
+			ClassRegistry::init('TagConnection')->save($tagConnection);
+			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['TagConnection'];
+			$tsumego['tags'] [] = $tag;
+			$tsumego['tag-connections'] [] = $tagConnection;
+			$this->checkOptionsConsumed($tagInput);
 		}
 	}
 
@@ -341,13 +346,18 @@ class ContextPreparator
 		if (!$tag)
 		{
 			$tag = [];
+			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
 			// reloading so the generated id is retrieved
 			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
+		else
+			Util::extract('popular', $tagInput);
+
 		$this->checkOptionsConsumed($tagInput);
+		$this->tags[] = $tag['Tag'];
 		return $tag['Tag'];
 	}
 
@@ -556,6 +566,13 @@ class ContextPreparator
 		$result -= $this->lastXp;
 		$this->lastXp = $toBeLastXP;
 		return $result;
+	}
+
+	public static function getUserIdFromName($input): ?int
+	{
+		if (!$input)
+			return null;
+		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $input]])['User']['id'];
 	}
 
 	public ?array $user = null;

@@ -30,7 +30,7 @@
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
 <script src ="/js/previewBoard.js"></script>
-<script src ="/js/tagController.js"></script>
+<script src ="/js/TagConnectionsEdit.js"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){
@@ -372,7 +372,7 @@
 			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
 			<?php if($isAllowedToContribute){ ?>
 			<?php if($t['Tsumego']['set_id']!=181 && $t['Tsumego']['set_id']!=191){ ?>
-				Add tag
+				Edit tags
 			<?php } ?>
 			<?php } ?>
 			</a></div>
@@ -1038,7 +1038,7 @@
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	var tagController = new TagController();
+	<?php $tagConnectionsEdit->renderJs(); ?>
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
@@ -1622,31 +1622,12 @@
 		?>
 <?php TsumegoUtil::getJavascriptMethodisStatusAllowingInspection(); ?>
 
-	<?php
-		for($i=0;$i<count($tags);$i++){
-			echo 'tagController.tags.push("'.$tags[$i]['TagConnection']['name'].'");';
-			echo 'tagController.unapprovedTags.push("'.$tags[$i]['TagConnection']['approved'].'");';
-			echo 'tagController.tagsGivesHint.push("'.$tags[$i]['TagConnection']['hint'].'");';
-			echo 'tagController.idTags.push("'.$tags[$i]['TagConnection']['tag_id'].'");';
-		}
-		for($i=0;$i<count($allTags);$i++)
-			echo 'tagController.allTags.push("'.$allTags[$i]['Tag']['name'].'");';
-		for($i=0;$i<count($popularTags);$i++)
-			echo 'tagController.popularTags.push("'.$popularTags[$i].'");';
-	?>
-	<?php if($firstRanks==0) echo "tagController.draw();"; ?>
+	<?php if($firstRanks==0)
+		echo "tagConnectionsEdit.draw();"; ?>
 
-	for(let i = 0; i < tagController.allTags.length; i++)
+	$('.tag-container').on('click', "#open-add-tag-menu", function(e)
 	{
-		let currentIdValue = "#"+makeIdValidName(tagController.allTags[i]);
-		$('.tag-container').on('click', currentIdValue, function(e)
-		{
-			e.preventDefault();
-			tagController.add(tsumegoID, $(currentIdValue).text());
-		});
-	}
-
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
+		tagConnectionsEdit.actiateEdit();
 		$("#open-add-tag-menu").hide();
 		$(".add-tag-list").hide();
 		$(".add-tag-list-popular").show();

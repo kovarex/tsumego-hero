@@ -153,9 +153,8 @@ class AppController extends Controller
 		$notApproved = ClassRegistry::init('Tag')->find('all', ['conditions' => ['approved' => 0]]);
 		if (!$notApproved)
 			$notApproved = [];
-		$notCount = count($not);
-		for ($i = 0; $i < $notCount; $i++)
-			array_push($a, $not[$i]['TagConnection']['tag_id']);
+		foreach ($not as $item)
+			$a[] = $item['tag_id'];
 		$notApprovedCount = count($notApproved);
 		for ($i = 0; $i < $notApprovedCount; $i++)
 			array_push($a, $notApproved[$i]['Tag']['id']);
@@ -1949,7 +1948,6 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('TagConnection');
 		$this->loadModel('Favorite');
 
 		Auth::init();
