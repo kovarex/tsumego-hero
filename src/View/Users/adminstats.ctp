@@ -46,33 +46,6 @@
 		echo '</table>';
 		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
 
-		// Admin Comments Section
-		if (!empty($adminComments['tsumego_id'])) {
-			echo '<h3>Admin Comments (' . $commentsTotal . ')</h3>';
-			echo $this->Pagination->render($commentsPage, $commentsPagesTotal, 'comments_page');
-			echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
-			$iCounter = 1;
-			for($i=count($adminComments['tsumego_id'])-1; $i>=0; $i--){
-				// Format date without seconds
-				$timestamp = strtotime($adminComments['created'][$i]);
-				$dateFormatted = date('Y-m-d H:i', $timestamp);
-
-				echo '<tr style="border-bottom:1px solid #e0e0e0;">
-					<td>'.($iCounter).'</td>
-					<td>
-						<a href="/tsumegos/play/'.$adminComments['tsumego_id'][$i].'?search=topics">'.$adminComments['tsumego'][$i].'</a>
-						<div style="color:#666; margin-top:5px;">'.h($adminComments['message'][$i]).'</div>
-					</td>
-					<td>
-						<div>'.$dateFormatted.'</div>
-						<div style="font-size:0.9em; color:#666; margin-top:2px;">'.$adminComments['name'][$i].'</div>
-					</td>
-				</tr>';
-				$iCounter++;
-			}
-			echo '</table>';
-			echo $this->Pagination->render($commentsPage, $commentsPagesTotal, 'comments_page');
-		}
 	echo '</div>';
 
 	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';

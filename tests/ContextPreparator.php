@@ -492,10 +492,60 @@ class ContextPreparator
 		}
 	}
 
+	/**
+	 * Ensures admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants.
+	 * This is needed because the test database might have stale or incorrect IDs.
+	 */
+	private function ensureAdminActivityTypes(): void
+	{
+		App::uses('AdminActivityLogger', 'Utility');
+
+		// Define all activity types with their correct IDs from AdminActivityLogger constants
+		$types = [
+			AdminActivityLogger::DESCRIPTION_EDIT => 'Description Edit',
+			AdminActivityLogger::HINT_EDIT => 'Hint Edit',
+			AdminActivityLogger::PROBLEM_DELETE => 'Problem Delete',
+			AdminActivityLogger::ALTERNATIVE_RESPONSE => 'Alternative Response',
+			AdminActivityLogger::PASS_MODE => 'Pass Mode',
+			AdminActivityLogger::MULTIPLE_CHOICE => 'Multiple Choice',
+			AdminActivityLogger::SCORE_ESTIMATING => 'Score Estimating',
+			AdminActivityLogger::SOLUTION_REQUEST => 'Solution Request',
+			AdminActivityLogger::SET_TITLE_EDIT => 'Set Title Edit',
+			AdminActivityLogger::SET_DESCRIPTION_EDIT => 'Set Description Edit',
+			AdminActivityLogger::SET_COLOR_EDIT => 'Set Color Edit',
+			AdminActivityLogger::SET_ORDER_EDIT => 'Set Order Edit',
+			AdminActivityLogger::SET_RATING_EDIT => 'Set Rating Edit',
+			AdminActivityLogger::PROBLEM_ADD => 'Problem Add',
+			AdminActivityLogger::SET_ALTERNATIVE_RESPONSE => 'Set Alternative Response',
+			AdminActivityLogger::SET_PASS_MODE => 'Set Pass Mode',
+			AdminActivityLogger::DUPLICATE_REMOVE => 'Duplicate Remove',
+			AdminActivityLogger::DUPLICATE_GROUP_CREATE => 'Duplicate Group Create',
+		];
+
+		$adminActivityType = ClassRegistry::init('AdminActivityType');
+
+		// Clear existing entries and repopulate with correct IDs
+		$adminActivityType->deleteAll(['1 = 1']);
+
+		foreach ($types as $id => $name)
+		{
+			$adminActivityType->create();
+			$adminActivityType->save([
+				'AdminActivityType' => [
+					'id' => $id,
+					'name' => $name,
+				]
+			], false);
+		}
+	}
+
 	public function prepareAdminActivities(?array $adminActivities): void
 	{
 		if (!$adminActivities)
 			return;
+
+		// Ensure admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants
+		$this->ensureAdminActivityTypes();
 
 		foreach ($adminActivities as $activityInput)
 		{
