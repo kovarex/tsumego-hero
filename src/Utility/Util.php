@@ -2,7 +2,6 @@
 
 class Util
 {
-
 	public static function getCookieDomain(): ?string
 	{
 		$host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
@@ -25,7 +24,7 @@ class Util
 	public static function clearCookie(string $name): ?string
 	{
 		$previous = $_COOKIE[$name] ?? null;
-		setcookie($name,'',
+		setcookie($name, '',
 			[
 				'expires'  => time() - 3600,
 				'path'     => '/',
