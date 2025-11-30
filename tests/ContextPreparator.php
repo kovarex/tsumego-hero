@@ -285,22 +285,26 @@ class ContextPreparator
 
 	private function prepareTsumegoTags($tagsInput, &$tsumego): void
 	{
-		if ($tagsInput)
+		if (!$tagsInput)
+			return;
+
+		ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
+		foreach ($tagsInput as $tagInput)
 		{
-			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
-			foreach ($tagsInput as $tagInput)
-			{
-				$tag = $this->getOrCreateTag(['name' => $tagInput['name']]);
-				$tagConnection = [];
-				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
-				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
-				$tagConnection['TagConnection']['tag_id'] = $tag['id'];
-				ClassRegistry::init('TagConnection')->create($tagConnection);
-				ClassRegistry::init('TagConnection')->save($tagConnection);
-				$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
-				$tsumego['tags'] [] = $tag;
-				$tsumego['tag-connections'] [] = $tagConnection;
-			}
+			$tag = $this->getOrCreateTag([
+				'name' => Util::extract('name', $tagInput),
+				'popular' => Util::extract('popular', $tagInput) ?: false]);
+			$tagConnection = [];
+			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
+			$tagConnection['TagConnection']['user_id'] = $this->user['id'];
+			$tagConnection['TagConnection']['tag_id'] = $tag['id'];
+			$tagConnection['TagConnection']['approved'] = Util::extract('approved', $tagInput) ?: 1;
+			ClassRegistry::init('TagConnection')->create($tagConnection);
+			ClassRegistry::init('TagConnection')->save($tagConnection);
+			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+			$tsumego['tags'] [] = $tag;
+			$tsumego['tag-connections'] [] = $tagConnection;
+			$this->checkOptionsConsumed($tagInput);
 		}
 	}
 
@@ -341,6 +345,7 @@ class ContextPreparator
 		if (!$tag)
 		{
 			$tag = [];
+			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);

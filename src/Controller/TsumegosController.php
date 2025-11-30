@@ -59,45 +59,6 @@ class TsumegosController extends AppController
 		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
-	public static function getPopularTags($tags)
-	{
-		// for some reason, this returns null in the test environment
-		$json = json_decode(file_get_contents('json/popular_tags.json')) ?: [];
-		$a = [];
-		$tn = ClassRegistry::init('Tag')->find('all');
-		if (!$tn)
-			$tn = [];
-		$tnKeys = [];
-		$tnCount = count($tn);
-
-		for ($i = 0; $i < $tnCount; $i++)
-			$tnKeys[$tn[$i]['Tag']['id']] = $tn[$i]['Tag']['name'];
-		$jsonCount = count($json);
-
-		for ($i = 0; $i < $jsonCount; $i++)
-			array_push($a, $tnKeys[$json[$i]->id]);
-		$aNew = [];
-		$added = 0;
-		$x = 0;
-		while ($added < 10 && $x < count($a))
-		{
-			$found = false;
-			$tagsCount = count($tags);
-
-			for ($i = 0; $i < $tagsCount; $i++)
-				if ($a[$x] == $tags[$i]['TagConnection']['name'])
-					$found = true;
-			if (!$found)
-			{
-				array_push($aNew, $a[$x]);
-				$added++;
-			}
-			$x++;
-		}
-
-		return $aNew;
-	}
-
 	public static function inArrayX($x, $newArray)
 	{
 		$newArrayCount = count($newArray);

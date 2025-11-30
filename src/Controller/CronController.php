@@ -18,6 +18,7 @@ class CronController extends AppController
 		self::createDayRecord();
 		self::publish();
 		$this->dailyUsersReset();
+		$this->updatePopularTags();
 
 		$this->response->statusCode(200);
 		return $this->response;
@@ -197,5 +198,19 @@ WHERE
 		$x['PublishDate']['tsumego_id'] = $tsumegoID;
 		ClassRegistry::init('PublishDate')->create();
 		ClassRegistry::init('PublishDate')->save($x);
+	}
+
+	private static function updatePopularTags()
+	{
+		ClassRegistry::init('Tag')->query("
+UPDATE tag
+JOIN (
+    SELECT tag_id
+    FROM tag_connection
+    GROUP BY tag_id
+    ORDER BY COUNT(*) DESC
+    LIMIT ".Tag::$POPULAR_COUNT."
+) AS top_tags ON tag.id = top_tags.tag_id
+SET tag.popular = 1;");
 	}
 }

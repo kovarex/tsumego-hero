@@ -12,7 +12,23 @@ class TagConnectionsEdit
 		$this->tsumegoID = $tsumegoID;
 		$this->populateTags();
 		$this->allTags = AppController::getAllTags($this->tags);
-		$this->popularTags = TsumegosController::getPopularTags($this->tags);
+		$this->populatePopularTags();
+	}
+
+	private function populatePopularTags()
+	{
+		$result = ClassRegistry::init('Tag')->query("
+SELECT
+	tag.name as tag_name
+FROM tag
+LEFT JOIN tag_connection ON tag_connection.tsumego_id=? AND tag_connection.user_id=? AND tag_connection.tag_id = tag.id
+WHERE
+	tag_connection.id is NULL AND
+	tag.popular = true",
+			[$this->tsumegoID, Auth::getUserID()]);
+
+		foreach ($result as $tag)
+			$this->popularTags[] = $tag['tag']['tag_name'];
 	}
 
 	private function populateTags()
