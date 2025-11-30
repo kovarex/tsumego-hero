@@ -46,16 +46,12 @@ class TagConnectionsEdit
 
 	remove(tagName)
 	{
-		$.ajax(
+		makeAjaxCall('/tagConnection/remove/' + this.tsumegoID + '/' + tagName,
+			(response) =>
 			{
-				url: '/tagConnection/remove/' + this.tsumegoID + '/' + tagName,
-				type: 'POST',
-				success: (response) =>
-				{
-					let tag = this.tags.find(tag => tag.name === tagName);
-					tag.isAdded = false;
-					this.draw();
-				}
+				let tag = this.tags.find(tag => tag.name === tagName);
+				tag.isAdded = false;
+				this.draw();
 			});
 	}
 
@@ -71,7 +67,7 @@ class TagConnectionsEdit
 				const tagLinkId = `id="${makeIdValidName(tag.name)}"`;
 				let part = `<a ${tagLink} ${tagLinkId}>${tag.name}</a>`;
 				if ((tag.isMine && !tag.isApproved) || this.isAdmin)
-					part += ` <button onclick="tagConnectionsEdit.remove('${tag.name}');">x</button>`;
+					part += ` <button onclick="tagConnectionsEdit.remove('${tag.name}');" id="remove-${makeIdValidName(tag.name)}">x</button>`;
 				return part;
 			})
 			.join(", ");

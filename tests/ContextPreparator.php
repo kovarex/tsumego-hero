@@ -302,7 +302,7 @@ class ContextPreparator
 			$tagConnection['TagConnection']['approved'] = !is_null($approved) ? $approved : 1;
 			ClassRegistry::init('TagConnection')->create($tagConnection);
 			ClassRegistry::init('TagConnection')->save($tagConnection);
-			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['TagConnection'];
 			$tsumego['tags'] [] = $tag;
 			$tsumego['tag-connections'] [] = $tagConnection;
 			$this->checkOptionsConsumed($tagInput);

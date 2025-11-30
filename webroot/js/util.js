@@ -406,11 +406,4 @@ function makeAjaxCall(urlToCall, method)
 				alert("Ajax call returned: " + (xhr.responseText || "Unknown error"));
 		}
 	});
-	/*
-	$.ajax(
-		{
-			url: urlToCall,
-			type: 'POST',
-			success: (response) => method(response)
-		});*/
 }
