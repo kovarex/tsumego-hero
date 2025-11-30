@@ -1631,7 +1631,7 @@
 		$('.tag-container').on('click', currentIdValue, function(e)
 		{
 			e.preventDefault();
-			tagConnectionsEdit.add(tsumegoID, $(currentIdValue).text());
+			tagConnectionsEdit.add($(currentIdValue).text());
 		});
 	}
 

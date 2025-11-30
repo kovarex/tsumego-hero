@@ -156,4 +156,18 @@ class TagTest extends ControllerTestCase
 			$this->assertSame($addTagLinks[1]->getTagName(), 'a');
 		}
 	}
+
+	public function testRemoveMyUnapprovedTag()
+	{
+		foreach ([false, true] as $popular)
+		{
+			$context = new ContextPreparator([
+				'other-tsumegos' => [[
+					'sets' => [['name' => 'set-1', 'num' => 1]],
+					'tags' => [['name' => 'atari', 'approved' => 0, 'popular' => $popular]]]]]);
+			$browser = Browser::instance();
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari"));
+		}
+	}
 }

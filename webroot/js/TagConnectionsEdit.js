@@ -2,41 +2,43 @@ class TagConnectionsEdit
 {
 	tags = [];
 	allTags = [];
-	approvedInfo = {};
 	tagsGivesHint = [];
 	idTags = [];
 	popularTags = [];
+	tsumegoID;
+	isAdmin;
 
-	add(tsumegoID, tagName)
+	constructor(tsumegoID, isAdmin)
+	{
+		this.tsumegoID = tsumegoID;
+		this.isAdmin = isAdmin;
+	}
+
+	add(tagName)
 	{
 		$.ajax(
 			{
-				url: '/tagConnection/add/' + tsumegoID + '/' + tagName,
+				url: '/tagConnection/add/' + this.tsumegoID + '/' + tagName,
 				type: 'POST',
 				success: (response) =>
 				{
 					this.allTags = this.allTags.filter(tag => tag.name !== tagName);
 					this.popularTags = this.popularTags.filter(tag => tag.name !== tagName);
-					this.tags.push(tagName);
+					this.tags.push({name: tagName, isMyUnapproved: !this.isAdmin});
 					this.draw();
 				}
 			});
 	}
 
-	remove(tsumegoID, tagName)
+	remove(tagName)
 	{
 		$.ajax(
 			{
-				url: '/tagConnection/remove/' + tsumegoID + '/' + tagName,
+				url: '/tagConnection/remove/' + this.tsumegoID + '/' + tagName,
 				type: 'POST',
 				success: (response) =>
 				{
-					let newTags = [];
-					for(let i=0; i < this.tags.length; i++)
-						if (this.tags[i] !== tagName)
-							newAllTags.push(this.tags[i]);
-					this.tags = newTags;
-					this.allTags.push(tagName);
+					this.allTags.push({name: tagName, isAdded: false});
 					this.draw();
 				}
 			});
@@ -60,18 +62,20 @@ class TagConnectionsEdit
 		$(".tag-list").html("");
 		if(this.tags.length > 0)
 			$(".tag-list").append("Tags: ");
-		for(let i = 0;i < this.tags.length; i++)
+		this.tags.forEach((tag, i) =>
 		{
 			let tagLink = 'href="/tag_names/view/' + this.idTags[i]+'"';
-			let tagLinkId = 'id="'+makeIdValidName(this.tags[i])+'"';
+			let tagLinkId = 'id="'+makeIdValidName(tag.name)+'"';
             let tagLinkClass = this.tagsGivesHint[i] == 1 ? 'tag-gives-hint ' : '';
-			$(".tag-list").append('<a '+tagLink+' class="' + tagLinkClass + '" '+tagLinkId+'>' + this.tags[i] + '</a>');
+			$(".tag-list").append('<a '+tagLink+' class="' + tagLinkClass + '" '+tagLinkId+'>' + tag.name + '</a>');
+			if (tag.isMyUnapproved)
+				$(".tag-list").append(` <button onclick="tagConnectionsEdit.remove('${tag.name}');">x</button>`);
 			if (i < this.tags.length - 1)
 				if(this.tagsGivesHint[i] == 1)
 					$(".tag-list").append('<p class="tag-gives-hint">, </p>');
 				else
 					$(".tag-list").append('<p class="tag-comma">, </p>');
-		}
+		});
 
 		this.updateTagToAddList('add-tag-list-popular', this.popularTags);
 		$(".add-tag-list-popular").append(' <a class="add-tag-list-anchor" id="open-more-tags">[more]</a>');
