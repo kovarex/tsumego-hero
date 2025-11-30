@@ -4,7 +4,7 @@ class Util
 {
 	public static function setCookie($name, $value)
 	{
-		setcookie('name', 'value', [
+		setcookie($name, $value, [
 			'expires'  => time() + 365 * 24 * 60 * 60,
 			'path'     => '/',
 			'domain'   => '',
