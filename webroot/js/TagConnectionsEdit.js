@@ -66,7 +66,7 @@ class TagConnectionsEdit
 				const tagLink = `href="/tag_names/view/${tag.id}"`;
 				const tagLinkId = `id="${makeIdValidName(tag.name)}"`;
 				let part = `<a ${tagLink} ${tagLinkId}>${tag.name}</a>`;
-				if ((tag.isMine && !tag.isApproved) || this.isAdmin)
+				if ((tag.isMine && !tag.isApproved) || (this.editActivated && this.isAdmin))
 					part += ` <button onclick="tagConnectionsEdit.remove('${tag.name}');" id="remove-${makeIdValidName(tag.name)}">x</button>`;
 				return part;
 			})
@@ -99,5 +99,11 @@ class TagConnectionsEdit
 		this.updateTagList();
 		this.updateTagToAddList('add-tag-list-popular', true);
 		this.updateTagToAddList('add-tag-list', false);
+	}
+
+	actiateEdit()
+	{
+		this.editActivated = true;
+		this.draw();
 	}
 }

@@ -372,7 +372,7 @@
 			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
 			<?php if($isAllowedToContribute){ ?>
 			<?php if($t['Tsumego']['set_id']!=181 && $t['Tsumego']['set_id']!=191){ ?>
-				Add tag
+				Edit tags
 			<?php } ?>
 			<?php } ?>
 			</a></div>
@@ -1625,7 +1625,9 @@
 	<?php if($firstRanks==0)
 		echo "tagConnectionsEdit.draw();"; ?>
 
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
+	$('.tag-container').on('click', "#open-add-tag-menu", function(e)
+	{
+		tagConnectionsEdit.actiateEdit();
 		$("#open-add-tag-menu").hide();
 		$(".add-tag-list").hide();
 		$(".add-tag-list-popular").show();
