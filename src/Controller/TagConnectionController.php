@@ -27,7 +27,7 @@ class TagConnectionController extends AppController
 		$tagConnection['TagConnection']['tag_id'] = $tag['Tag']['id'];
 		$tagConnection['TagConnection']['tsumego_id'] = $tsumegoID;
 		$tagConnection['TagConnection']['user_id'] = Auth::getUserID();
-		$tagConnection['TagConnection']['approved'] = 0;
+		$tagConnection['TagConnection']['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('TagConnection')->create();
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 		$this->response->statusCode(200);
