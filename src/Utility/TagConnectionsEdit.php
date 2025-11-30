@@ -33,7 +33,7 @@ LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.ts
 		$constructorParams = [];
 		$constructorParams[] = 'tsumegoID:' . $this->tsumegoID;
 		$constructorParams[] = 'isAdmin:' . Util::boolString(Auth::isAdmin());
-		$constructorParams[] = 'problemSolved:' . Util::boolString($this->problemsSolved);
+		$constructorParams[] = 'problemSolved:' . Util::boolString($this->problemSolved);
 
 		$tags = [];
 		foreach ($this->tags as $tag)

@@ -38,7 +38,7 @@ class TagConnectionsEdit
 				type: 'POST',
 				success: (response) =>
 				{
-					const tag = this.tags.find(tag => tag.name === tagName);
+					let tag = this.tags.find(tag => tag.name === tagName);
 					tag.isAdded = true;
 					tag.isApproved = this.isAdmin;
 					this.draw();
@@ -46,18 +46,16 @@ class TagConnectionsEdit
 			});
 	}
 
-	remove(tagToRemove)
+	remove(tagName)
 	{
 		$.ajax(
 			{
-				url: '/tagConnection/remove/' + this.tsumegoID + '/' + tagToRemove.name,
+				url: '/tagConnection/remove/' + this.tsumegoID + '/' + tagName,
 				type: 'POST',
 				success: (response) =>
 				{
-					this.allTags.push({name: tag.name, isAdded: false});
-					if (tagToRemove.isPopular)
-						this.popularTags.push();
-					this.tags = this.tagsfilter(tag => tag.name != tagToRemove.name);
+					let tag = this.tags.find(tag => tag.name === tagName);
+					tag.isAdded = false;
 					this.draw();
 				}
 			});
@@ -69,7 +67,7 @@ class TagConnectionsEdit
 			.filter(tag =>
 				tag.isAdded &&
 				(tag.isApproved || tag.isMine) &&
-				(this.editActivated || !tag.isHint))
+				(this.problemSolved || !tag.isHint))
 			.map((tag, i) => {
 				const tagLink = `href="/tag_names/view/${tag.id}"`;
 				const tagLinkId = `id="${makeIdValidName(tag.name)}"`;
@@ -87,7 +85,9 @@ class TagConnectionsEdit
 		$("." + id).html("");
 		$("." + id).append("Add tag: ");
 		const html = this.tags
-			.filter(tag => !popular || tag.isPopular)
+			.filter(tag =>
+				(!popular || tag.isPopular) &&
+				(!tag.isAdded || !tag.isMine && !tag.isApproved))
 			.map(tag =>
 				tag.isAdded ?
 					`<span class="add-tag-list-anchor">${tag.name}</span>` :
