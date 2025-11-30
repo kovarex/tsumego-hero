@@ -41,7 +41,7 @@ SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
 	tag.hint as tag_hint,
-	tag.popular as tag_popular
+	tag.popular as tag_popular,
 	tag_connection.approved as tag_approved
 FROM tag_connection
 JOIN tag ON tag_connection.tag_id = tag.id
