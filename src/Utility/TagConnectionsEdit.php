@@ -49,8 +49,12 @@ tag_connection.tsumego_id = ?", [$this->tsumegoID]);
 			echo 'tagConnectionsEdit.tagsGivesHint.push("' . $tag['hint'] . '");';
 			echo 'tagConnectionsEdit.idTags.push("' . $tag['tag_id'] . '");';
 		}
+
 		foreach ($this->allTags as $tag)
+		{
 			echo 'tagConnectionsEdit.allTags.push("' . $tag['Tag']['name'] . '");';
+			echo 'tagConnectionsEdit.idTags.push("' . $tag['Tag']['name'] . '");';
+		}
 		foreach ($this->popularTags as $tag)
 			echo 'tagConnectionsEdit.popularTags.push("' . $tag . '");';
 	}
