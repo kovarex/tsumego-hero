@@ -1,4 +1,4 @@
-class TagController
+class TagConnectionsEdit
 {
 	tags = [];
 	allTags = [];
@@ -22,6 +22,30 @@ class TagController
 							newAllTags.push(this.allTags[i]);
 					this.allTags = newAllTags;
 					this.tags.push(tagName);
+					$(".tag-list").html("");
+					$(".add-tag-list").html("");
+					$(".add-tag-list-popular").html("");
+					this.draw();
+					$(".add-tag-list").hide();
+					$(".add-tag-list-popular").hide();
+				}
+			});
+	}
+
+	remove(tsumegoID, tagName)
+	{
+		$.ajax(
+			{
+				url: '/tagConnection/remove/' + tsumegoID + '/' + tagName,
+				type: 'POST',
+				success: (response) =>
+				{
+					let newTags = [];
+					for(let i=0; i < this.tags.length; i++)
+						if (this.tags[i] !== tagName)
+							newAllTags.push(this.tags[i]);
+					this.tags = newTags;
+					this.allTags.push(tagName);
 					$(".tag-list").html("");
 					$(".add-tag-list").html("");
 					$(".add-tag-list-popular").html("");

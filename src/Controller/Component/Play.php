@@ -7,6 +7,7 @@ App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('TagConnectionsEdit', 'Utility');
 
 class Play
 {
@@ -593,11 +594,7 @@ class Play
 
 		if (Auth::isLoggedIn())
 			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
-		$tags = TsumegosController::getTags($id);
-		$tags = TsumegosController::checkTagDuplicates($tags);
-
-		$allTags = AppController::getAllTags($tags);
-		$popularTags = TsumegosController::getPopularTags($tags);
+		$tagConnectionsEdit = new TagConnectionsEdit($id);
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
@@ -613,9 +610,7 @@ class Play
 				$isAllowedToContribute2 = true;
 			else
 			{
-				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
-				if (!$tagsToCheck)
-					$tagsToCheck = [];
+				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 				$datex = date('Y-m-d', strtotime('today'));
 				$tagsToCheckCount = count($tagsToCheck);
 
@@ -645,9 +640,7 @@ class Play
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('isAllowedToContribute2', $isAllowedToContribute2);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
-		($this->setFunction)('allTags', $allTags);
-		($this->setFunction)('tags', $tags);
-		($this->setFunction)('popularTags', $popularTags);
+		($this->setFunction)('tagConnectionsEdit', $tagConnectionsEdit);
 		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('idForSignature', $idForSignature);
 		($this->setFunction)('idForSignature2', $idForSignature2);

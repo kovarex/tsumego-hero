@@ -19,6 +19,7 @@ class TagTest extends ControllerTestCase
 			$tagConnection = ClassRegistry::init('TagConnection')->find('first', []);
 			$this->assertNotNull($tagConnection);
 			$this->assertSame($tagConnection['TagConnection']['approved'], $isAdmin ? 1 : 0);
+			$this->assertNotNull($browser->getCssSelect("#tag-list #snapback")); // tag was added to the list
 		}
 	}
 }

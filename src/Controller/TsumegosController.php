@@ -98,32 +98,6 @@ class TsumegosController extends AppController
 		return $aNew;
 	}
 
-	public static function getTags($tsumego_id)
-	{
-		$tags = ClassRegistry::init('TagConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumego_id]]) ?: [];
-		$tagsCount = count($tags);
-		for ($i = 0; $i < $tagsCount; $i++)
-		{
-			$tn = ClassRegistry::init('Tag')->findById($tags[$i]['TagConnection']['tag_id']);
-			$tags[$i]['TagConnection']['name'] = $tn['Tag']['name'];
-			$tags[$i]['TagConnection']['hint'] = $tn['Tag']['hint'];
-		}
-
-		return $tags;
-	}
-
-	public static function checkTagDuplicates($array)
-	{
-		$newArray = [];
-		$arrayCount = count($array);
-
-		for ($i = 0; $i < $arrayCount; $i++)
-			if (!TsumegosController::inArrayX($array[$i], $newArray))
-				array_push($newArray, $array[$i]);
-
-		return $newArray;
-	}
-
 	public static function inArrayX($x, $newArray)
 	{
 		$newArrayCount = count($newArray);
