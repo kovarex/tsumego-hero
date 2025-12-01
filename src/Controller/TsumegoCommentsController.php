@@ -13,7 +13,6 @@
  */
 class TsumegoCommentsController extends AppController
 {
-
 	/**
 	 * Add a new comment to a tsumego.
 	 *

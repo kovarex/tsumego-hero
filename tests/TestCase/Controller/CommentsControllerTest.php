@@ -17,11 +17,11 @@ class CommentsControllerTest extends ControllerTestCase
 			'tsumego' => [
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
-	$browser = Browser::instance();
-	$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-	$this->expandComments($browser); // Expand comments section (hidden by default)
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default)
 
-	// The comment form is now directly in the comments section
+		// The comment form is now directly in the comments section
 		$messageField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
 		$messageField->click();
 		$messageField->sendKeys("My first comment");
@@ -124,11 +124,11 @@ class CommentsControllerTest extends ControllerTestCase
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'comments' => [['message' => 'Play at C3 for the solution']],
 				'status' => 'S']]);
-	$browser = Browser::instance();
-	$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-	$this->expandComments($browser); // Expand comments section (hidden by default)
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default)
 
-	// Find the coordinate span
+		// Find the coordinate span
 		$coordSpan = $browser->driver->findElement(WebDriverBy::cssSelector('.go-coord'));
 		$this->assertNotNull($coordSpan);
 		$this->assertEquals('C3', $coordSpan->getText());
