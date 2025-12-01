@@ -1534,6 +1534,7 @@ if (
 	}
 			msg2xselected = !msg2xselected;
 			});
+		$("#msg2x").hide();
 		$("#msg3").hide();
 		$("#show3").click(function(){
 			if(!msg3selected){
