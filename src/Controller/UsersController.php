@@ -1803,6 +1803,21 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function login()
 	{
+		$this->Session->write('page', 'login');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
+
+		// On GET request, store the referer in session for redirect after login
+		if (!$this->request->is('post'))
+		{
+			$referer = $this->referer(null, true);
+			// Don't redirect back to login page itself
+			if ($referer && strpos($referer, '/users/login') === false)
+				$this->Session->write('login_redirect', $referer);
+			else
+				$this->Session->delete('login_redirect');
+			return null;
+		}
+
 		if (!$this->data['username'])
 			return null;
 		$user = $this->getUserFromNameOrEmail();
@@ -1819,7 +1834,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->signIn($user);
-		return $this->redirect('/sets/');
+
+		// Redirect to the page where user came from, or default to /sets/
+		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
+		$this->Session->delete('login_redirect');
+		return $this->redirect($redirect);
 	}
 
 	public function add()
@@ -2797,7 +2816,7 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @return void
+	 * @return CakeResponse|null
 	 */
 	public function googlesignin()
 	{
@@ -2841,9 +2860,11 @@ Joschka Zimdars';
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		}
 		$this->signIn($u);
-		$this->set('name', $name);
-		$this->set('email', $email);
-		$this->set('picture', $picture);
+
+		// Redirect to the page where user came from, or default to /sets/
+		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
+		$this->Session->delete('login_redirect');
+		return $this->redirect($redirect);
 	}
 
 	/**
