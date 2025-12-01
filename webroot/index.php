@@ -23,7 +23,7 @@ if (!defined('DS')) {
 	define('DS', DIRECTORY_SEPARATOR);
 }
 
-$primaryConfig = dirname(__DIR__) . '/private/tsumego/config/define.local.php';
+$primaryConfig = '/home/private/tsumego/config/define.local.php';
 $secondaryConfig = dirname(__DIR__) . DS . 'config' . DS . 'define.php';
 if (file_exists($primaryConfig))
 	require_once $primaryConfig;
