@@ -100,7 +100,7 @@ class SetsController extends AppController
 			$td['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 
 			$setx = $this->Set->findById($td['Tsumego']['set_id']);
-			$td['Tsumego']['title'] = $setx['Set']['title'] . ' - ' . $td['Tsumego']['num'];
+			$td['Tsumego']['title'] = $setx['Set']['title'] . ' - ' . $scT['SetConnection']['num'];
 			$td['Tsumego']['dGroup'] = $d[$i]['Duplicate']['dGroup'];
 
 			array_push($d2[$counter], $td);
@@ -319,8 +319,6 @@ class SetsController extends AppController
 
 			$t = [];
 			$t['Tsumego']['id'] = $tMax['Tsumego']['id'] + 1;
-			$t['Tsumego']['set_id'] = 206;
-			$t['Tsumego']['num'] = 1;
 			$t['Tsumego']['difficulty'] = 4;
 			$t['Tsumego']['variance'] = 100;
 			$t['Tsumego']['description'] = 'b to kill';
@@ -382,7 +380,6 @@ class SetsController extends AppController
 		if (isset($this->data['Tsumego']))
 		{
 			$t = [];
-			$t['Tsumego']['num'] = $this->data['Tsumego']['num'];
 			$t['Tsumego']['difficulty'] = $this->data['Tsumego']['difficulty'];
 			$t['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
 			$t['Tsumego']['description'] = $this->data['Tsumego']['description'];

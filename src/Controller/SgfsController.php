@@ -57,7 +57,7 @@ class SgfsController extends AppController
 		$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
-		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $t['Tsumego']['num'];
+		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
 		$this->Session->write('title', 'Upload History of ' . $name);
 
 		if (isset($this->params['url']['user']))
