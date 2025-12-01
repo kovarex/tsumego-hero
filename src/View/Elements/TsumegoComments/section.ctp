@@ -123,47 +123,18 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 		console.log('[Comment DnD] Drag handles found, setting up SortableJS...');
 
 		var dropZones = {
-			newIssue: document.querySelector('.tsumego-dnd__dropzone--new-issue')
+			// Drop zones removed - using Make Issue button instead
 		};
 
 		var activeSortables = [];
 		var currentDraggedComment = null;
-		var currentDragState = null; // Store original position for ESC cancel
+		var currentDragState = null; // Store original position for tracking
+		var dragCancelled = false; // Flag to prevent drop handlers from executing
 
-		// Cancel current drag operation
-		function cancelDrag()
-		{
-			if (currentDragState)
-			{
-				console.log('[Comment DnD] Canceling drag, restoring to original position');
-				var item = currentDragState.item;
-				var from = currentDragState.from;
-				var oldIndex = currentDragState.oldIndex;
-				
-				// Restore to original position
-				if (from && item)
-				{
-					var referenceNode = from.children[oldIndex] || null;
-					from.insertBefore(item, referenceNode);
-				}
-				
-				// Reset state
-				currentDragState = null;
-				currentDraggedComment = null;
-				showDropZones(false);
-				
-				// Remove dragging classes
-				item.classList.remove('tsumego-comment--dragging', 'tsumego-comment--ghost');
-			}
-		}
-
-		// Listen for ESC key to cancel drag
-		document.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape' && currentDragState)
-			{
-				cancelDrag();
-			}
-		});
+		// NOTE: ESC key cancel is NOT supported by SortableJS.
+		// The library maintainer confirmed: "It impossible to do when using Native DND."
+		// Even with forceFallback:true, SortableJS has no keyboard event handling.
+		// Would require forking SortableJS or custom implementation.
 
 		// Move comment via htmx-style POST
 		function moveComment(commentId, targetIssueId)
@@ -201,12 +172,42 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 			});
 		}
 
-		// Show/hide drop zones during drag
+		// Show/hide drop zones during drag (no longer needed - using buttons instead)
 		function showDropZones(show)
 		{
-			console.log('[Comment DnD] showDropZones:', show);
-			Object.values(dropZones).forEach(function(zone) {
-				if (zone) zone.style.display = show ? 'block' : 'none';
+			// Drop zones have been removed in favor of "Make Issue" buttons
+			// This function is kept for compatibility but does nothing
+		}
+
+		// Show/hide issue drop targets (must be defined before initDragDrop)
+		function showIssueDropTargets(show, sourceIssueId)
+		{
+			document.querySelectorAll('.tsumego-issue').forEach(function(issueEl) {
+				var issueId = issueEl.dataset.issueId;
+				var overlay = issueEl.querySelector('.tsumego-issue__drop-overlay');
+				if (overlay)
+				{
+					if (show)
+					{
+						overlay.style.display = 'flex';
+						// Mark source issue overlay differently
+						if (issueId === sourceIssueId)
+						{
+							overlay.classList.add('tsumego-issue__drop-overlay--source');
+							overlay.querySelector('span').textContent = 'Drop to return comment';
+						}
+						else
+						{
+							overlay.classList.remove('tsumego-issue__drop-overlay--source');
+							overlay.querySelector('span').textContent = 'Drop here to add to this issue';
+						}
+					}
+					else
+					{
+						overlay.style.display = 'none';
+						overlay.classList.remove('tsumego-issue__drop-overlay--source');
+					}
+				}
 			});
 		}
 
@@ -220,9 +221,6 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 				if (s && s.destroy) s.destroy();
 			});
 			activeSortables = [];
-
-			// Re-query drop zones
-			dropZones.newIssue = document.querySelector('.tsumego-dnd__dropzone--new-issue');
 
 			// Find all containers that hold draggable comments
 			var commentsContent = document.getElementById('tsumego-comments-content');
@@ -242,6 +240,10 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 				},
 				sort: false, // Don't allow reordering
 				animation: 150,
+				scroll: true, // Enable auto-scroll when dragging near edges
+				scrollSensitivity: 80, // px from edge to start scrolling
+				scrollSpeed: 15, // px per frame scroll speed
+				bubbleScroll: true, // Enable scrolling in ancestor scroll containers too
 				handle: '.tsumego-comment__drag-handle',
 				draggable: '.tsumego-comment--standalone', // Only standalone wrappers are draggable here
 				ghostClass: 'tsumego-comment--ghost',
@@ -270,6 +272,13 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					currentDragState = null;
 				},
 				onAdd: function(evt) {
+					// Check if drag was cancelled
+					if (dragCancelled)
+					{
+						console.log('[Comment DnD] onAdd ignored - drag was cancelled');
+						return;
+					}
+					
 					// Comment dropped into main area (making it standalone)
 					var comment = evt.item.querySelector('.tsumego-comment') || evt.item;
 					var commentId = comment.dataset.commentId;
@@ -286,38 +295,6 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 			activeSortables.push(mainSortable);
 			console.log('[Comment DnD] Main sortable created');
 			
-			// Define showIssueDropTargets before it's used
-			function showIssueDropTargets(show, sourceIssueId)
-			{
-				document.querySelectorAll('.tsumego-issue').forEach(function(issueEl) {
-					var issueId = issueEl.dataset.issueId;
-					var overlay = issueEl.querySelector('.tsumego-issue__drop-overlay');
-					if (overlay)
-					{
-						if (show)
-						{
-							overlay.style.display = 'flex';
-							// Mark source issue overlay differently
-							if (issueId === sourceIssueId)
-							{
-								overlay.classList.add('tsumego-issue__drop-overlay--source');
-								overlay.querySelector('span').textContent = 'Drop to return comment';
-							}
-							else
-							{
-								overlay.classList.remove('tsumego-issue__drop-overlay--source');
-								overlay.querySelector('span').textContent = 'Drop here to add to this issue';
-							}
-						}
-						else
-						{
-							overlay.style.display = 'none';
-							overlay.classList.remove('tsumego-issue__drop-overlay--source');
-						}
-					}
-				});
-			}
-
 			// Create sortable for each issue's comment container
 			// IMPORTANT: Use a DIFFERENT group name so issue sortables don't interact with each other
 			// This prevents flickering when dragging over same issue's comments
@@ -335,6 +312,10 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					},
 					sort: false,
 					animation: 0,
+					scroll: true, // Enable auto-scroll when dragging near edges
+					scrollSensitivity: 80, // px from edge to start scrolling
+					scrollSpeed: 15, // px per frame scroll speed
+					bubbleScroll: true, // Enable scrolling in ancestor scroll containers too
 					handle: '.tsumego-comment__drag-handle',
 					draggable: '.tsumego-comment',
 					ghostClass: 'tsumego-comment--ghost',
@@ -434,47 +415,7 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 				});
 			}
 
-			// Set up "New Issue" drop zone as SortableJS target (standalone zone no longer needed)
-			if (dropZones.newIssue) {
-				var newIssueSortable = new Sortable(dropZones.newIssue, {
-					group: {
-						name: 'comments',
-						pull: false,
-						put: true // Accept drops
-					},
-					sort: false,
-					ghostClass: 'tsumego-comment--ghost',
-					onAdd: function(evt) {
-						var comment = evt.item.querySelector('.tsumego-comment') || evt.item;
-						var commentId = comment.dataset.commentId;
-						console.log('[Comment DnD] Drop to new issue:', commentId);
-						
-						// Clear drag state before server call
-						currentDragState = null;
-						
-						// Optimistic: Create a fake issue wrapper and move element there
-						var fakeIssue = document.createElement('div');
-						fakeIssue.className = 'tsumego-issue tsumego-issue--pending';
-						fakeIssue.innerHTML = '<div class="tsumego-issue__header"><span class="tsumego-issue__status tsumego-issue__status--open">OPEN</span><span class="tsumego-issue__label">Issue #... (creating...)</span></div><div class="tsumego-dnd__issue-dropzone"></div>';
-						
-						// Move the comment into the fake issue
-						var dropzone = fakeIssue.querySelector('.tsumego-dnd__issue-dropzone');
-						dropzone.appendChild(evt.item);
-						
-						// Insert fake issue into the content area (before the drop zone)
-						var contentArea = document.getElementById('tsumego-comments-content');
-						if (contentArea && dropZones.newIssue)
-							contentArea.insertBefore(fakeIssue, dropZones.newIssue);
-						
-						// Hide the drop zone
-						dropZones.newIssue.style.display = 'none';
-						
-						moveComment(commentId, 'new');
-					}
-				});
-				activeSortables.push(newIssueSortable);
-				console.log('[Comment DnD] New issue drop zone sortable created');
-			}
+			// Drop zone for new issue removed - using Make Issue button instead
 
 			console.log('[Comment DnD] Setup complete with', activeSortables.length, 'sortables');
 		}

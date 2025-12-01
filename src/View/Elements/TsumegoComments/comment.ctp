@@ -55,10 +55,9 @@ if ($positionButton && strpos($message, '[current position]') !== false)
 
 // Note: Go coordinates processing is done in Tsumego::loadCommentsData via TsumegosController::commentCoordinates
 
-// Format date
+// Format date - combine date and time on one line
 $createdDate = new DateTime($comment['created']);
-$formattedDate = $createdDate->format('M. d, Y');
-$formattedTime = $createdDate->format('H:i');
+$formattedDate = $createdDate->format('M. d, Y H:i');
 
 // Check if current user can delete this comment
 $canDelete = Auth::isAdmin() || (Auth::isLoggedIn() && Auth::getUserID() == $comment['user_id']);
@@ -82,8 +81,7 @@ $canDragComment = Auth::isAdmin();
 					</div>
 				</td>
 				<td align="right" class="sandboxTable2time">
-					<span class="tsumego-comment__date"><?php echo $formattedDate; ?></span><br>
-					<span class="tsumego-comment__time"><?php echo $formattedTime; ?></span>
+					<span class="tsumego-comment__date"><?php echo $formattedDate; ?></span>
 
 					<?php if ($showActions): ?>
 						<?php if ($canDelete): ?>
@@ -95,6 +93,17 @@ $canDragComment = Auth::isAdmin();
 									hx-disabled-elt="this"
 									class="deleteComment">
 								Delete
+							</button>
+						<?php endif; ?>
+						<?php if ($canDragComment && !$isInIssue): ?>
+							<button type="button"
+									hx-post="/tsumego-issues/move-comment/<?php echo $comment['id']; ?>"
+									hx-vals='{"data[Comment][tsumego_issue_id]":"new","data[Comment][htmx]":"1"}'
+									hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+									hx-swap="morph:outerHTML"
+									hx-disabled-elt="this"
+									class="tsumego-comment__make-issue-btn">
+								📋 Make Issue
 							</button>
 						<?php endif; ?>
 					<?php endif; ?>

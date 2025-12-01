@@ -115,13 +115,6 @@ $canDragComment = Auth::isAdmin();
 
 		<!-- All items view -->
 		<div class="tsumego-comments__content" data-view="all" id="tsumego-comments-content">
-			<?php if ($canDragComment): ?>
-				<!-- Drop zone: Create new issue (shown when dragging) -->
-				<div class="tsumego-dnd__dropzone tsumego-dnd__dropzone--new-issue" data-target="new" style="display: none;">
-					📋 Drop here to create NEW issue
-				</div>
-			<?php endif; ?>
-
 			<?php foreach ($allItems as $item): ?>
 				<?php if ($item['type'] === 'issue'): ?>
 					<?php
