@@ -182,6 +182,70 @@ class Browser
 		);
 	}
 
+	/**
+	 * Perform a drag-and-drop operation using WebDriverActions.
+	 *
+	 * @param \Facebook\WebDriver\WebDriverElement $source The element to drag
+	 * @param \Facebook\WebDriver\WebDriverElement $target The element to drop onto
+	 */
+	public function dragAndDrop($source, $target): void
+	{
+		$actions = new WebDriverActions($this->driver);
+		$actions->dragAndDrop($source, $target)->perform();
+	}
+
+	/**
+	 * Drag element to target using click-hold-move-release pattern.
+	 * More reliable for some JS frameworks (like SortableJS) than native dragAndDrop.
+	 * Automatically scrolls elements into view before dragging.
+	 *
+	 * @param \Facebook\WebDriver\WebDriverElement $source The element to drag
+	 * @param \Facebook\WebDriver\WebDriverElement $target The element to drop onto
+	 * @param int $holdMs Milliseconds to hold before moving (used for usleep between actions)
+	 */
+	public function dragAndDropWithHold($source, $target, int $holdMs = 100): void
+	{
+		// Scroll source element into viewport center
+		$this->driver->executeScript("arguments[0].scrollIntoView({block: 'center'});", [$source]);
+		usleep(100000);
+
+		$actions = new WebDriverActions($this->driver);
+		$actions->clickAndHold($source)->perform();
+
+		usleep($holdMs * 1000);
+
+		// Scroll target into view
+		$this->driver->executeScript("arguments[0].scrollIntoView({block: 'center'});", [$target]);
+		usleep(100000);
+
+		$actions = new WebDriverActions($this->driver);
+		$actions->moveToElement($target)->perform();
+
+		usleep($holdMs * 1000);
+
+		$actions = new WebDriverActions($this->driver);
+		$actions->release()->perform();
+	}
+
+	/**
+	 * Press the Escape key to cancel drag operations.
+	 * Uses JavaScript to dispatch keydown event since WebDriverActions.sendKeys needs an element.
+	 */
+	public function pressEscape(): void
+	{
+		$this->driver->executeScript("
+			var event = new KeyboardEvent('keydown', {
+				key: 'Escape',
+				code: 'Escape',
+				keyCode: 27,
+				which: 27,
+				bubbles: true,
+				cancelable: true
+			});
+			document.dispatchEvent(event);
+		");
+	}
+
 	public function ignoreJsErrorPattern(string $pattern): void
 	{
 		$this->ignoredJsErrorPatterns[] = $pattern;

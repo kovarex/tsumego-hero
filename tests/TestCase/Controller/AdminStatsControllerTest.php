@@ -286,47 +286,4 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Set Alternative Response → enabled', $pageSource);
 		$this->assertTextContains('Set Pass Mode → enabled', $pageSource);
 	}
-
-	/**
-	 * Test admin comments section displays separately from activities
-	 */
-	public function testAdminCommentsSection()
-	{
-		App::uses('AdminActivityLogger', 'Utility');
-
-		$context = new ContextPreparator([
-			'user' => ['admin' => true, 'name' => 'admin_user'],
-			'tsumego' => [
-				'comments' => [
-					['message' => 'This is an admin comment about this problem']
-				]
-			],
-			'admin-activities' => [
-				[
-					'type' => AdminActivityLogger::DESCRIPTION_EDIT,
-					'tsumego_id' => true,
-					'old_value' => 'Old desc',
-					'new_value' => 'New desc'
-				]
-			]
-		]);
-
-		$browser = Browser::instance();
-		$browser->get('users/adminstats');
-
-		$pageSource = $browser->driver->getPageSource();
-
-		// Should show both sections
-		$this->assertTextContains('Admin Activity', $pageSource);
-		$this->assertTextContains('Admin Comments', $pageSource);
-
-		// Activity should show type and old→new
-		$this->assertTextContains('Description Edit: Old desc → New desc', $pageSource);
-
-		// Comment should show message text
-		$this->assertTextContains('This is an admin comment about this problem', $pageSource);
-
-		// Both should show username
-		$this->assertTextContains('admin_user', $pageSource);
-	}
 }

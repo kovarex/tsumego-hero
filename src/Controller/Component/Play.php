@@ -177,7 +177,7 @@ class Play
 			}
 		}
 
-		$t = ClassRegistry::init('Tsumego')->findById($id);//the tsumego
+		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
 		if (Auth::isLoggedIn())
 			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
@@ -377,38 +377,6 @@ class Play
 				$isSandbox = true;
 		if ($t['Tsumego']['set_id'] == 161)
 			$isSandbox = false;
-
-		$co = ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: [];
-		$counter1 = 1;
-		$coCount = count($co);
-		for ($i = 0; $i < $coCount; $i++)
-		{
-			if (strpos($co[$i]['Comment']['message'], '<a href="/files/ul1/') === false)
-				$co[$i]['Comment']['message'] = htmlspecialchars($co[$i]['Comment']['message']);
-			$cou = ClassRegistry::init('User')->findById($co[$i]['Comment']['user_id']);
-			if ($cou == null)
-				$cou['User']['name'] = '[deleted user]';
-			$co[$i]['Comment']['user'] = AppController::checkPicture($cou['User']);
-			$cad = ClassRegistry::init('User')->findById($co[$i]['Comment']['admin_id']);
-			if ($cad != null)
-			{
-				if ($cad['User']['id'] == 73)
-					$cad['User']['name'] = 'Admin';
-				$co[$i]['Comment']['admin'] = $cad['User']['name'];
-			}
-			$date = new DateTime($co[$i]['Comment']['created']);
-			$month = date('F', strtotime($co[$i]['Comment']['created']));
-			$tday = $date->format('d. ');
-			$tyear = $date->format('Y');
-			$tClock = $date->format('H:i');
-			if ($tday[0] == 0)
-				$tday = substr($tday, -3);
-			$co[$i]['Comment']['created'] = $tday . $month . ' ' . $tyear . '<br>' . $tClock;
-			$array = TsumegosController::commentCoordinates($co[$i]['Comment']['message'], $counter1, true);
-			$co[$i]['Comment']['message'] = $array[0];
-			array_push($commentCoordinates, $array[1]);
-			$counter1++;
-		}
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 		if (Auth::isInLevelMode())
@@ -642,7 +610,6 @@ class Play
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);
-		($this->setFunction)('showComment', $co);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
@@ -677,7 +644,6 @@ class Play
 		($this->setFunction)('potion', $potion);
 		($this->setFunction)('potionSuccess', $potionSuccess);
 		($this->setFunction)('reviewCheat', $reviewCheat);
-		($this->setFunction)('commentCoordinates', $commentCoordinates);
 		($this->setFunction)('part', $t['Tsumego']['part']);
 		($this->setFunction)('checkBSize', $checkBSize);
 		($this->setFunction)('potionAlert', $potionAlert);
@@ -699,6 +665,15 @@ class Play
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('hasPremium', $hasPremium);
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
+
+		// Load comments and issues data for the view
+		$commentsData = ClassRegistry::init('Tsumego')->loadCommentsData($id);
+		($this->setFunction)('tsumegoIssues', $commentsData['issues']);
+		($this->setFunction)('tsumegoPlainComments', $commentsData['plainComments']);
+		// Merge comment coordinates with any existing ones
+		$commentCoordinates = array_merge($commentCoordinates, $commentsData['coordinates']);
+		($this->setFunction)('commentCoordinates', $commentCoordinates);
+
 		return null;
 	}
 

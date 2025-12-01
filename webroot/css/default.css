@@ -1,4 +1,4 @@
-@font-face {
+﻿@font-face {
   font-family: "Exo Regular";
   font-style: normal;
   font-weight: normal;
@@ -6272,4 +6272,1328 @@ ul ul {
 @media screen and (max-width: 1160px) {
 }
 @media screen and (max-width: 1130px) {
+}
+
+/* =============================================================================
+   Tsumego Comments & Issues Styling
+   ============================================================================= */
+
+/* Comments Section Container */
+.tsumego-comments-section {
+  margin-top: 10px;
+}
+
+/* Comments Toggle Header */
+.tsumego-comments__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.tsumego-comments__toggle:hover {
+  color: #1e6bb8;
+}
+
+.tsumego-comments__arrow {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+/* Tab Navigation */
+.tsumego-comments__tabs {
+  margin-bottom: 15px;
+  padding: 0 14px 10px 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.tsumego-comments__tab {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: Georgia, serif;
+  font-size: 13px;
+}
+
+.tsumego-comments__tab.active {
+  background: #717171;
+  color: white;
+  border-color: #717171;
+}
+
+.tsumego-comments__tab:hover:not(.active) {
+  background: #e5e5e5;
+}
+
+.tsumego-comments__open-badge {
+  margin-left: 5px;
+  font-size: 11px;
+}
+
+/* Issue Styling - Visual box to separate from regular comments */
+.tsumego-issue {
+  margin: 20px 14px;
+  padding: 15px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.tsumego-issue--opened {
+  border-color: #d9534f;
+  border-left-width: 4px;
+}
+
+.tsumego-issue--closed {
+  border-color: #5cb85c;
+  border-left-width: 4px;
+}
+
+/* Pending issue state - optimistic update before server response */
+.tsumego-issue--pending {
+  opacity: 0.7;
+  border-color: #aaa;
+  border-style: dashed;
+}
+
+.tsumego-issue--pending .tsumego-issue__header {
+  color: #999;
+}
+
+.tsumego-issue__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tsumego-issue__title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.tsumego-issue__badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.tsumego-issue__badge.status--opened {
+  background: #f2dede;
+  color: #a94442;
+}
+
+.tsumego-issue__badge.status--closed {
+  background: #dff0d8;
+  color: #3c763d;
+}
+
+.tsumego-issue__meta {
+  color: #717171;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.tsumego-issue__actions {
+  margin-left: auto;
+}
+
+.tsumego-issue__comments {
+  margin-top: 10px;
+}
+
+.tsumego-issue__empty {
+  color: #999;
+  font-style: italic;
+  padding: 10px;
+}
+
+/* Issue reply button and form */
+.tsumego-issue__reply-toggle {
+  padding: 8px 14px;
+  border-top: 1px dashed #ddd;
+}
+
+.tsumego-issue__reply-btn {
+  background: transparent;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+}
+
+.tsumego-issue__reply-btn:hover {
+  background: #f5f5f5;
+  border-color: #666;
+}
+
+.tsumego-issue__reply-form {
+  padding: 10px 14px;
+  background: #f8f8f8;
+  border-top: 1px solid #eee;
+}
+
+.tsumego-issue__reply-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 50px;
+  box-sizing: border-box;
+}
+
+.tsumego-issue__reply-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.tsumego-issue__reply-actions button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tsumego-issue__reply-actions button[type="submit"] {
+  background: #4a90d9;
+  color: white;
+  border: none;
+}
+
+.tsumego-issue__reply-actions button[type="submit"]:hover {
+  background: #3a7bc8;
+}
+
+.tsumego-issue__reply-actions button[type="button"] {
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+}
+
+.tsumego-issue__reply-actions button[type="button"]:hover {
+  background: #d0d0d0;
+}
+
+/* Button styles for issue actions */
+.btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn--small {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.btn--success {
+  background: #5cb85c;
+  color: white;
+}
+
+.btn--success:hover {
+  background: #449d44;
+}
+
+.btn--warning {
+  background: #f0ad4e;
+  color: white;
+}
+
+.btn--warning:hover {
+  background: #ec971f;
+}
+
+/* Standalone comment styling */
+.tsumego-comment--standalone {
+  margin: 10px 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dotted #ddd;
+}
+
+.tsumego-comment--standalone:last-child {
+  border-bottom: none;
+}
+
+/* Comment styling */
+.tsumego-comment {
+  margin-bottom: 8px;
+}
+
+.tsumego-comment__author {
+  font-weight: bold;
+  display: inline; /* Don't break onto new line, let br handle it */
+}
+
+/* Comment text content - ensure consistent spacing */
+.commentBox1,
+.commentBox2 {
+  line-height: 1.5;
+}
+
+.tsumego-comment__date,
+.tsumego-comment__time {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Go coordinate styling - hover to highlight on board */
+.go-coord {
+  color: #1e6bb8;
+  cursor: help;
+  border-bottom: 1px dotted #1e6bb8;
+  font-weight: 500;
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+}
+
+.go-coord:hover {
+  background-color: rgba(30, 107, 184, 0.2);
+  border-bottom-color: transparent;
+}
+
+/* Comments inside issues - remove the inner box styling */
+.tsumego-issue .sandboxComment {
+  background: transparent;
+  box-shadow: none;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.tsumego-issue .tsumego-comment:last-child .sandboxComment {
+  border-bottom: none;
+}
+
+/* Move to Issue link styling */
+.moveToIssue {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #888 !important;
+  text-decoration: none;
+}
+
+.moveToIssue:hover {
+  color: #113cd4 !important;
+  text-decoration: underline;
+}
+
+/* Delete button cleanup - make it look dangerous */
+.deleteComment {
+  background: transparent;
+  border: 1px solid #d33;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  margin-top: 3px;
+  border-radius: 3px;
+  color: #c00;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.deleteComment:hover {
+  background: #d33;
+  color: #fff;
+}
+
+/* Make Issue button for standalone comments */
+.tsumego-comment__make-issue-btn {
+  background: #f0ad4e;
+  border: 1px solid #c87f0a;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-top: 3px;
+  margin-left: 5px;
+  border-radius: 3px;
+  transition: background 0.15s ease;
+}
+
+.tsumego-comment__make-issue-btn:hover {
+  background: #ec971f;
+}
+
+.tsumego-comment__make-issue-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Login prompt */
+.tsumego-comments__login-prompt {
+  padding: 15px;
+  text-align: center;
+  color: #717171;
+}
+
+.tsumego-comments__login-prompt a {
+  color: #113cd4;
+}
+
+/* Add Comment form styling */
+.tsumego-comments__form {
+  margin: 20px 14px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.tsumego-comments__form h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.tsumego-comments__form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.tsumego-comments__form-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.tsumego-comments__form label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.tsumego-comments__position-btn {
+  background: transparent;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tsumego-comments__position-btn:hover {
+  background: #eee;
+}
+
+.tsumego-comments__position-indicator {
+  display: none;
+  font-size: 12px;
+  color: #2a2;
+}
+
+.tsumego-comments__position-indicator a {
+  color: #c33;
+  margin-left: 5px;
+}
+
+.tsumego-comments__submit-btn {
+  margin-top: 12px;
+  background: #4a90d9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tsumego-comments__submit-btn:hover {
+  background: #3a7bc8;
+}
+
+/* Form buttons container */
+.tsumego-comments__form-buttons {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+/* Cancel button */
+.tsumego-comments__cancel-btn {
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tsumego-comments__cancel-btn:hover {
+  background: #d0d0d0;
+}
+
+/* Move to Issue Dialog */
+.tsumego-comments__dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tsumego-comments__dialog-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 90%;
+}
+
+.tsumego-comments__dialog-content h4 {
+  margin: 0 0 15px 0;
+}
+
+.tsumego-comments__dialog-content select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.tsumego-comments__dialog-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.tsumego-comments__dialog-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tsumego-comments__dialog-buttons button[type="submit"] {
+  background: #4a90d9;
+  color: white;
+  border: none;
+}
+
+.tsumego-comments__dialog-buttons button[type="button"] {
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+}
+
+/* Remove from Issue link */
+.removeFromIssue {
+  color: #c66;
+  font-size: 11px;
+  text-decoration: none;
+  margin-left: 8px;
+}
+
+.removeFromIssue:hover {
+  color: #a44;
+  text-decoration: underline;
+}
+
+/* =============================================================================
+   Drag & Drop Comment Movement (Admin only)
+   ============================================================================= */
+
+/* Drag handle on comments */
+.tsumego-comment__drag-handle-cell {
+  width: 36px;
+  vertical-align: middle;
+  padding-right: 8px;
+}
+
+.tsumego-comment__drag-handle {
+  display: inline-block;
+  cursor: grab;
+  font-size: 24px;
+  color: #999;
+  user-select: none;
+  padding: 8px 10px;
+  border-radius: 4px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.tsumego-comment__drag-handle:hover {
+  color: #555;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tsumego-comment__drag-handle:active {
+  cursor: grabbing;
+  color: #333;
+}
+
+/* Comment being dragged */
+.tsumego-comment--dragging {
+  opacity: 0.5;
+  transform: rotate(1deg);
+}
+
+/* SortableJS ghost (placeholder) */
+.tsumego-comment--ghost {
+  opacity: 0.3;
+  background: #c8ebfb;
+}
+
+/* Issue drop overlay - appears over issue during drag */
+.tsumego-issue {
+  position: relative;
+}
+
+.tsumego-issue__drop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(91, 192, 222, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 8px;
+  border: 3px dashed #337ab7;
+  pointer-events: auto; /* Ensure overlay receives events */
+}
+
+.tsumego-issue__drop-overlay span {
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.tsumego-issue__drop-overlay--active {
+  background: rgba(51, 122, 183, 0.9);
+  border-color: #fff;
+}
+
+/* Source issue overlay - different color for return */
+.tsumego-issue__drop-overlay--source {
+  background: rgba(240, 173, 78, 0.85);
+  border-color: #c87f0a;
+}
+
+.tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active {
+  background: rgba(200, 127, 10, 0.9);
+  border-color: #fff;
+}
+
+.tsumego-dnd__issue-dropzone {
+  position: relative;
+}
+
+/* Drop zones (hidden by default, shown during drag) */
+.tsumego-dnd__dropzone {
+  margin: 10px 14px;
+  padding: 20px;
+  border: 2px dashed #aaa;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  background: #f9f9f9;
+  transition: all 0.15s ease;
+}
+
+.tsumego-dnd__dropzone--standalone {
+  border-color: #5cb85c;
+  background: rgba(92, 184, 92, 0.05);
+}
+
+.tsumego-dnd__dropzone--new-issue {
+  border-color: #f0ad4e;
+  background: rgba(240, 173, 78, 0.05);
+}
+
+/* Drop zone hover/active states */
+.tsumego-dnd__dropzone--active {
+  border-color: #4a90d9;
+  background: rgba(74, 144, 217, 0.1);
+  color: #333;
+}
+
+.tsumego-dnd__dropzone--standalone.tsumego-dnd__dropzone--active {
+  border-color: #3d8b3d;
+  background: rgba(92, 184, 92, 0.2);
+}
+
+.tsumego-dnd__dropzone--new-issue.tsumego-dnd__dropzone--active {
+  border-color: #c87f0a;
+  background: rgba(240, 173, 78, 0.2);
+}
+
+/* Issue drop zone indicator */
+.tsumego-dnd__issue-drop-indicator {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 2px dashed #4a90d9;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.08);
+}
+
+/* Issue box when receiving a drop */
+.tsumego-issue--drop-target {
+  border-color: #4a90d9 !important;
+  box-shadow: 0 0 8px rgba(74, 144, 217, 0.3);
+}
+
+/* Standalone comment wrapper during drag mode */
+.tsumego-comment--standalone.tsumego-dnd--drag-mode {
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  margin-left: 12px;
+  margin-right: 12px;
+  padding: 10px;
+}
+
+/* Ghost element for sortable */
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  background: rgba(74, 144, 217, 0.1);
+  border-radius: 4px;
+}
+
+/* =============================================================================
+   Light Theme Explicit Overrides (reset any inline styles from dark mode toggle)
+   ============================================================================= */
+
+body.light-theme .tsumego-issue {
+  background: #fafafa !important;
+  border-color: #ccc !important;
+}
+
+body.light-theme .tsumego-issue__header {
+  border-bottom-color: #ddd !important;
+}
+
+body.light-theme .tsumego-issue__title {
+  color: #333 !important;
+}
+
+body.light-theme .tsumego-issue__meta {
+  color: #666 !important;
+}
+
+body.light-theme .tsumego-comments__form {
+  background: #f5f5f5 !important;
+  border-color: #ddd !important;
+}
+
+body.light-theme .tsumego-comments__form textarea {
+  background: #fff !important;
+  color: #333 !important;
+  border-color: #ccc !important;
+}
+
+body.light-theme .tsumego-comments__form h4 {
+  color: #333 !important;
+}
+
+/* =============================================================================
+   Issues Page Styling (/tsumego-issues)
+   ============================================================================= */
+
+.issues-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.issues-page__description {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.issues-page__filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.issues-filter {
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.issues-filter--active {
+  background: #007bff;
+  color: white;
+}
+
+.issues-list__item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: white;
+}
+
+.issues-list__item--opened {
+  border-left: 4px solid #dc3545;
+}
+
+.issues-list__item--closed {
+  border-left: 4px solid #28a745;
+}
+
+.issues-list__item-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.issues-list__badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.badge--opened {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.badge--closed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.issues-list__title {
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.issues-list__meta {
+  color: #666;
+  font-size: 14px;
+}
+
+.issues-list__meta a {
+  color: #007bff;
+}
+
+.issues-list__preview {
+  color: #444;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.issues-list__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.issues-list__empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 18px;
+}
+
+.issues-page__pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination-link {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pagination-link:hover {
+  background: #e9e9e9;
+  border-color: #ccc;
+  text-decoration: none;
+}
+
+.pagination-link--active {
+  background: #4a90d9;
+  border-color: #3a7cbd;
+  color: #fff;
+  font-weight: bold;
+}
+
+.pagination-link--disabled {
+  background: #f5f5f5;
+  border-color: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  display: inline-block;
+  padding: 6px 8px;
+  color: #666;
+}
+
+@media screen and (max-width: 1230px) {}
+
+@media screen and (max-width: 1160px) {}
+
+@media screen and (max-width: 1130px) {}
+
+
+
+/* =============================================================================
+   Tsumego Comments & Issues - Dark Theme Overrides
+   NOTE: Using body.dark-theme prefix so these styles ONLY apply when dark mode
+   is active (not just when dark.css is loaded). This allows proper toggling.
+   ============================================================================= */
+
+/* Issue box - darker background with subtle border */
+body.dark-theme .tsumego-issue {
+  background: linear-gradient(#3a3a3a, #2a2a2a);
+  border-color: #555;
+}
+
+body.dark-theme .tsumego-issue--opened {
+  border-color: #c9302c;
+  border-left-color: #d9534f;
+}
+
+body.dark-theme .tsumego-issue--closed {
+  border-color: #449d44;
+  border-left-color: #5cb85c;
+}
+
+body.dark-theme .tsumego-issue__header {
+  border-bottom-color: #444;
+}
+
+body.dark-theme .tsumego-issue__title {
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-issue__badge.status--opened {
+  background: #5a2a2a;
+  color: #ff6b6b;
+}
+
+body.dark-theme .tsumego-issue__badge.status--closed {
+  background: #2a4a2a;
+  color: #6bff6b;
+}
+
+body.dark-theme .tsumego-issue__meta {
+  color: #999;
+}
+
+/* Standalone comments separator */
+body.dark-theme .tsumego-comment--standalone {
+  border-bottom-color: #444;
+}
+
+/* Comments Toggle Header - dark theme */
+body.dark-theme .tsumego-comments__toggle {
+  color: #ccc;
+}
+
+body.dark-theme .tsumego-comments__toggle:hover {
+  color: #7cb3ff;
+}
+
+/* Tab navigation - dark theme */
+body.dark-theme .tsumego-comments__tab {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #ccc;
+}
+
+body.dark-theme .tsumego-comments__tab.active {
+  background: #555;
+  border-color: #666;
+  color: #fff;
+}
+
+body.dark-theme .tsumego-comments__tab:hover:not(.active) {
+  background: #444;
+}
+
+/* Buttons in dark theme */
+body.dark-theme .btn--success {
+  background: #449d44;
+}
+
+body.dark-theme .btn--success:hover {
+  background: #398439;
+}
+
+body.dark-theme .btn--warning {
+  background: #ec971f;
+}
+
+body.dark-theme .btn--warning:hover {
+  background: #d58512;
+}
+
+/* Login prompt */
+body.dark-theme .tsumego-comments__login-prompt {
+  color: #999;
+}
+
+body.dark-theme .tsumego-comments__login-prompt a {
+  color: #70ddff;
+}
+
+/* Comments inside issues - dark theme */
+body.dark-theme .tsumego-issue .sandboxComment {
+  background: transparent;
+  box-shadow: none;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Move to Issue link - dark theme */
+body.dark-theme .moveToIssue {
+  color: #888 !important;
+}
+
+body.dark-theme .moveToIssue:hover {
+  color: #70ddff !important;
+}
+
+/* Delete button - dark theme */
+body.dark-theme .deleteComment {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+body.dark-theme .deleteComment:hover {
+  background: #ff4444;
+  color: #fff;
+  border-color: #ff4444;
+}
+
+/* Make Issue button - dark theme */
+body.dark-theme .tsumego-comment__make-issue-btn {
+  background: #c87f0a;
+  border-color: #a66508;
+}
+
+body.dark-theme .tsumego-comment__make-issue-btn:hover {
+  background: #ec971f;
+}
+
+/* Add Comment form - dark theme */
+body.dark-theme .tsumego-comments__form {
+  background: #3a3a3a;
+}
+
+body.dark-theme .tsumego-comments__form h4 {
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-comments__form textarea {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-comments__form textarea:focus {
+  border-color: #70ddff;
+  outline: none;
+}
+
+body.dark-theme .tsumego-comments__form textarea::placeholder {
+  color: #888;
+}
+
+body.dark-theme .tsumego-comments__form label {
+  color: #ccc;
+}
+
+body.dark-theme .tsumego-comments__position-btn {
+  background: #444;
+  border-color: #666;
+  color: #ccc;
+}
+
+body.dark-theme .tsumego-comments__position-btn:hover {
+  background: #555;
+}
+
+body.dark-theme .tsumego-comments__submit-btn {
+  background: #4a90d9;
+}
+
+body.dark-theme .tsumego-comments__submit-btn:hover {
+  background: #5aa0e9;
+}
+
+/* Cancel button - dark theme */
+body.dark-theme .tsumego-comments__cancel-btn {
+  background: #555;
+  border-color: #666;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-comments__cancel-btn:hover {
+  background: #666;
+}
+
+/* Go coordinate - dark theme */
+body.dark-theme .go-coord {
+  color: #6db3f2;
+  border-bottom-color: #6db3f2;
+}
+
+body.dark-theme .go-coord:hover {
+  background-color: rgba(109, 179, 242, 0.25);
+  border-bottom-color: transparent;
+}
+
+/* Move to Issue Dialog - dark theme */
+body.dark-theme .tsumego-comments__dialog-content {
+  background: #3a3a3a;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-comments__dialog-content select {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-comments__dialog-buttons button[type="button"] {
+  background: #555;
+  border-color: #666;
+  color: #f0f0f0;
+}
+
+/* Remove from Issue link - dark theme */
+body.dark-theme .removeFromIssue {
+  color: #e88;
+}
+
+body.dark-theme .removeFromIssue:hover {
+  color: #faa;
+}
+
+/* Issue reply button and form - dark theme */
+body.dark-theme .tsumego-issue__reply-toggle {
+  border-top-color: #555;
+}
+
+body.dark-theme .tsumego-issue__reply-btn {
+  color: #aaa;
+  border-color: #666;
+}
+
+body.dark-theme .tsumego-issue__reply-btn:hover {
+  background: #444;
+  border-color: #888;
+  color: #ddd;
+}
+
+body.dark-theme .tsumego-issue__reply-form {
+  background: #333;
+  border-top-color: #444;
+}
+
+body.dark-theme .tsumego-issue__reply-form textarea {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-issue__reply-form textarea:focus {
+  border-color: #70ddff;
+  outline: none;
+}
+
+body.dark-theme .tsumego-issue__reply-form textarea::placeholder {
+  color: #888;
+}
+
+body.dark-theme .tsumego-issue__reply-actions button[type="button"] {
+  background: #555;
+  border-color: #666;
+  color: #f0f0f0;
+}
+
+body.dark-theme .tsumego-issue__reply-actions button[type="button"]:hover {
+  background: #666;
+}
+
+/* =============================================================================
+   Issues Page (/tsumego-issues) - Dark Theme
+   ============================================================================= */
+
+body.dark-theme .issues-page__description {
+  color: #999;
+}
+
+body.dark-theme .issues-filter {
+  background: #3a3a3a;
+  color: #ccc;
+}
+
+body.dark-theme .issues-filter--active {
+  background: #007bff;
+  color: white;
+}
+
+body.dark-theme .issues-list__item {
+  border-color: #555;
+  background: linear-gradient(#3a3a3a, #2a2a2a);
+  color: #f0f0f0;
+}
+
+body.dark-theme .issues-list__item--opened {
+  border-left-color: #dc3545;
+}
+
+body.dark-theme .issues-list__item--closed {
+  border-left-color: #28a745;
+}
+
+body.dark-theme .badge--opened {
+  background: #5a2a2a;
+  color: #ff6b6b;
+}
+
+body.dark-theme .badge--closed {
+  background: #2a4a2a;
+  color: #6bff6b;
+}
+
+body.dark-theme .issues-list__meta {
+  color: #999;
+}
+
+body.dark-theme .issues-list__preview {
+  background: #2a2a2a;
+  color: #ccc;
+}
+
+body.dark-theme .issues-list__empty {
+  color: #999;
+}
+
+body.dark-theme .pagination-link {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #ccc;
+}
+
+body.dark-theme .pagination-link:hover {
+  background: #4a4a4a;
+  border-color: #666;
+}
+
+body.dark-theme .pagination-link--active {
+  background: #4a90d9;
+  border-color: #3a7cbd;
+  color: #fff;
+}
+
+body.dark-theme .pagination-link--disabled {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #555;
+}
+
+body.dark-theme .pagination-ellipsis {
+  color: #777;
+}
+
+/* ==========================================================================
+   HTMX Loading Indicators
+   ========================================================================== */
+
+.htmx-indicator {
+  display: none;
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+  display: inline;
+  opacity: 1;
+}
+
+/* Disable buttons/links during htmx request */
+.htmx-request [hx-post],
+.htmx-request [hx-get],
+[disabled].btn {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Subtle loading state for swapped content */
+.htmx-swapping {
+  opacity: 0.5;
+}
+
+.htmx-settling {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+
+/* Ensure button colors work in dark mode */
+body.dark-theme .btn--success,
+body.dark-theme .btn--warning {
+  color: white !important;
 }

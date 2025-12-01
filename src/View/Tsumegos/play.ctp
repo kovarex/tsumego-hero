@@ -1,4 +1,4 @@
-<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
+﻿<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
 	<script src="/js/multipleChoice.js"></script>
 	<style>.alertBox{height:auto!important;}</style>
 <?php }else if($tv!=null){ ?>
@@ -70,8 +70,10 @@
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
 
-	if($t['Tsumego']['set_id']==6473 ||$t['Tsumego']['set_id']==11969 || $t['Tsumego']['set_id']==29156 || $t['Tsumego']['set_id']==31813 || $t['Tsumego']['set_id']==33007
-	|| $t['Tsumego']['set_id']==71790 || $t['Tsumego']['set_id']==74761 || $t['Tsumego']['set_id']==81578 || $t['Tsumego']['set_id']==88156){
+if (
+	$t['Tsumego']['set_id'] == 6473 || $t['Tsumego']['set_id'] == 11969 || $t['Tsumego']['set_id'] == 29156 || $t['Tsumego']['set_id'] == 31813 || $t['Tsumego']['set_id'] == 33007
+	|| $t['Tsumego']['set_id'] == 71790 || $t['Tsumego']['set_id'] == 74761 || $t['Tsumego']['set_id'] == 81578 || $t['Tsumego']['set_id'] == 88156
+) {
 		echo '<style>#xpDisplay{font-weight:800;color:#60167d;}</style>';
 	}
 	if($t['Tsumego']['premium']==1){
@@ -122,8 +124,10 @@
 		$pl = rand(0,1);
 		$plRand = true;
 	}
-	if($checkBSize!=19 || $t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161 || $t['Tsumego']['set_id']==239
-	|| $t['Tsumego']['set_id']==243 || $t['Tsumego']['set_id']==244 || $t['Tsumego']['set_id']==246 || $t['Tsumego']['set_id']==251 || $t['Tsumego']['set_id']==253)
+if (
+	$checkBSize != 19 || $t['Tsumego']['set_id'] == 159 || $t['Tsumego']['set_id'] == 161 || $t['Tsumego']['set_id'] == 239
+	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253
+)
 		$pl=0;
 	if($pl==0){
 		$playerColor[0] = 'BLACK';
@@ -162,8 +166,8 @@
 				{
 					$h = $health+$i;
 					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
-				}
-			}
+	}
+	}
 			?>
 		</div>
 	</td>
@@ -238,7 +242,7 @@
 			echo '<div id="titleDescription" class="titleDescription2">';
 		if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 			echo '<b>'.$t['Tsumego']['description'].'</b> ';
-		else
+	else
 			echo '<a id="descriptionText">'.$t['Tsumego']['description'].'</a> ';
 		if(isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.$t['Tsumego']['hint'].')</font>';
@@ -248,8 +252,8 @@
 				echo 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | ';
 				echo 'White captures: '.$tv['TsumegoVariant']['answer3'].' | ';
 				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
-			}
-		}
+	}
+	}
 		if(Auth::isAdmin()){
 		?>
 		<a class="modify-description" href="#">(Edit)</a>
@@ -341,7 +345,7 @@
 				if($index == 0 || $index == count($tsumegoButtons) - 2)
 					echo '<li class="setBlank"></li>';
 				$i++;
-			}
+	}
 			?>
 		</div>
 	</div>
@@ -358,11 +362,11 @@
 				if(!$hasSgfProposal) {
 					if($isAllowedToContribute)
 						$makeProposal = 'Make Proposal';
-				} else {
+	}else{
 					$makeProposal = 'Proposal sent';
 					$proposalSentColor = 'color:#717171;';
-				}
-			}
+	}
+	}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
 		?>
@@ -394,18 +398,20 @@
 					<div class="active-tiles-container tiles-view"></div>
 				</div>
 			</div>';
-		}
+	}
 		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
         echo '<div class="duplicateTable">Is duplicate group:<br>';
-        echo implode(', ', array_map(function($setConnection) { return '<a href="/'.$setConnection['SetConnection']['id'].'">'
-          .$setConnection['SetConnection']['title'].'</a>'; }, $setConnections));
+		echo implode(', ', array_map(function ($setConnection) {
+			return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
+				. $setConnection['SetConnection']['title'] . '</a>';
+		}, $setConnections));
         echo '</div><br>';
-      }
+	}
 	if (Auth::isLoggedIn()) {
 		if ($firstRanks==0) {
 			if($sgf['Sgf']['user_id']!=33)
 				$adHighlight = 'historyLink';
-			else
+	else
 				$adHighlight = '';
 
 			if(Auth::isAdmin()){
@@ -418,42 +424,42 @@
 					if($alternative_response==1){
 						$arOn = 'checked="checked"';
 						$arOff = '';
-					}else{
+	}else{
 						$arOn = '';
 						$arOff = 'checked="checked"';
-					}
+	}
 					if($passEnabled==1){
 						$passOn = 'checked="checked"';
 						$passOff = '';
-					}else{
+	}else{
 						$passOn = '';
 						$passOff = 'checked="checked"';
-					}
+	}
 					if($set_duplicate==-1){
 						$duOn = 'checked="checked"';
 						$duOff = '';
-					}else{
+	}else{
 						$duOn = '';
 						$duOff = 'checked="checked"';
-					}
+	}
 					if($tv==null){
 						$multipleNo = 'checked="checked"';
 						$multipleYes = '';
 						$scoreEstNo = 'checked="checked"';
 						$scoreEstYes = '';
-					}else{
+	}else{
 						if($tv['TsumegoVariant']['type'] == 'multiple_choice'){
 							$multipleNo = '';
 							$multipleYes = 'checked="checked"';
 							$scoreEstNo = 'checked="checked"';
 							$scoreEstYes = '';
-						}else{
+	}else{
 							$multipleNo = 'checked="checked"';
 							$multipleYes = '';
 							$scoreEstNo = '';
 							$scoreEstYes = 'checked="checked"';
-						}
-					}
+	}
+	}
 					if(Auth::isAdmin()){
 					echo '<div id="msg4">
 							<br>
@@ -476,16 +482,15 @@
 											echo '<td>Mark as duplicate</td>';
 											echo '<td><input type="radio" id="r40" name="data[Settings][r40]" value="off" '.$duOff.'><label for="r40">no</label></td>
 											<td><input type="radio" id="r40" name="data[Settings][r40]" value="on" '.$duOn.'><label for="r40">yes</label></td>';
-										}else{
-
-										}
+	}else{
+	}
 									echo '</tr>';
 									echo '<tr>
 										<td>Enable passing</td>
 										<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" '.$passOff.'><label for="r43">no</label></td>
 										<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" '.$passOn.'><label for="r43">yes</label></td>
 									</tr>';
-									if($isSandbox){
+	if($isSandbox){
 										echo '<tr>
 											<td>Multiple choice problem</td>
 											<td><input type="radio" id="r41" name="data[Settings][r41]" value="no" '.$multipleNo.'><label for="r41">no</label></td>
@@ -496,14 +501,14 @@
 											<td><input type="radio" id="r42" name="data[Settings][r42]" value="no" '.$scoreEstNo.'><label for="r42">no</label></td>
 											<td><input type="radio" id="r42" name="data[Settings][r42]" value="yes" '.$scoreEstYes.'><label for="r42">yes</label></td>
 										</tr>';
-									}
+	}
 								echo '</table>
 								<br>
 								<input value="Submit" type="submit"/>
 							</form>
 						</div>
 						<br><br>';
-				}
+	}
 				if($isSandbox && $tv!=null){
 					if($tv['TsumegoVariant']['type']=='multiple_choice'){
 						$studyCorrectOptions = array(
@@ -532,7 +537,7 @@
 						echo $this->Form->end('Submit');
 						echo '<br><br>';
 						echo '</div>';
-					}else{
+	}else{
 						echo '<a id="showSE" class="selectable-text" style="display: inline-block;">Edit correct answer
 						<img id="greyArrowSE" src="/img/greyArrow1.png"></a><br><br>';
 						echo '<div id="showxSE">';
@@ -567,320 +572,25 @@
 						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
 						echo '<br>';
 						echo '</div>';
-					}
-				}
+	}
+	}
 			}else echo '<br>';
-			//if(Auth::hasPremium()){
-			//if($t['Tsumego']['set_id']!=122 && $t['Tsumego']['set_id']!=124 && $t['Tsumego']['set_id']!=127 && $t['Tsumego']['set_id']!=139){
-			$allowed = true;
-			if(Auth::isLoggedIn()){
-				if(Auth::getUserID()!=5080){
-					echo '<div id="msg1">Leave a <a id="show">message<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>';
-				}else{
-					$allowed = false;
-				}
-			}
-			echo '<div id="msg2">';
-			echo '<div id="commentPosition">Link current position</div>';
-			echo $this->Form->create('Comment', ['id' => 'tsumegoCommentForm']);
-			echo $this->Form->input('tsumego_id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-			if(isset($t['Tsumego']['duplicateLink']))
-				echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => str_replace('?sid=', '', $t['Tsumego']['duplicateLink'])));
-			echo $this->Form->input('user_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-			if($allowed)
-				echo $this->Form->input('message', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
-			echo $this->Form->input('position', array('label' => '', 'type' => 'hidden'));
+	} ?>
 
-			if(Auth::isAdmin())
-				echo $this->Form->input('status', array('type' => 'hidden', 'value' => 97));
-
-			echo $this->Form->end('Submit');
-		?>
-		<br>
-			<a id="show3">Upload SGF<img id="greyArrow2" src="/img/greyArrow1.png"></a>
-			<div id="msg3">
-				<br>
-				<form action="" method="POST" enctype="multipart/form-data">
-					<input type="file" name="game" />
-					<input value="Submit" type="submit"/>
-				</form>
+		<table class="sandboxTable" width="62%">
+		<tr>
+				<td><?php echo $this->element('TsumegoComments/section', [
+						'issues' => $tsumegoIssues ?? [],
+						'plainComments' => $tsumegoPlainComments ?? [],
+						'tsumegoId' => $t['Tsumego']['id'],
+						't' => $t,
+					]); ?></td>
+					</tr>
+					</table>
 			</div>
-		</div>
-
-		<?php }
-		if($firstRanks==0){
-		?>
-
-		<table class="sandboxTable" width="62%">
-		<tr>
-		<td>
-
 		<?php
-		echo '<div id="commentSpace">';
-			$showComment2 = array();
-			$showComment3 = array();
-
-			for($i=0; $i<count($showComment); $i++){
-				if(is_numeric($showComment[$i]['Comment']['status'])) $showComment[$i]['Comment']['textAnswer'] = 'false';
-				else{
-					$showComment[$i]['Comment']['textAnswer'] = $showComment[$i]['Comment']['status'];
-					$showComment[$i]['Comment']['status'] = 100;
-				}
-				if($showComment[$i]['Comment']['status']!=99) array_push($showComment2, $showComment[$i]);
-			}
-			$showComment = $showComment2;
-			$resolvedCommentCount = 0;
-
-			if(count($showComment)>0) echo '<div id="msg1x"><a id="show2">Comments<img id="greyArrow" src="/img/greyArrow2.png"></a></div><br>';
-				echo '<div id="msg2x">';
-			for($i=count($showComment)-1; $i>=0; $i--){
-					$commentColorCheck = false;
-					for($a=0; $a<count($admins); $a++){
-						if($showComment[$i]['Comment']['user']==$admins[$a]['User']['name']) $commentColorCheck = true;
-					}
-					if($commentColorCheck) $commentColor = 'commentBox2';
-					else $commentColor = 'commentBox1';
-
-					$cpArray = null;
-					if($showComment[$i]['Comment']['position']!=null){
-						$cpNew = null;
-						if(strpos($showComment[$i]['Comment']['position'], '|') !== false){
-							$cpNew = explode("|", $showComment[$i]['Comment']['position']);
-							$cp = explode('/', $cpNew[0]);
-							$cpNew[1] = ',\''.$cpNew[1].'\'';
-						}else
-							$cp = explode('/', $showComment[$i]['Comment']['position']);
-						$cpArray = $cp[0].','.$cp[1].','.$cp[2].','.$cp[3].','.$cp[4].','.$cp[5].','.$cp[6].','.$cp[7].',\''.$cp[8].'\'';
-						if($cpNew!=null)
-							$cpArray .= $cpNew[1];
-						$cpArray = '<img src="/img/positionIcon1.png" class="positionIcon1" onclick="commentPosition('.$cpArray.');">';
-					}
-					$showComment[$i]['Comment']['message'] = '|'.$showComment[$i]['Comment']['message'];
-					if(strpos($showComment[$i]['Comment']['message'], '[current position]')!=0){
-						$showComment[$i]['Comment']['message'] = str_replace('[current position]', $cpArray, $showComment[$i]['Comment']['message']);
-					}
-					$showComment[$i]['Comment']['message'] = substr($showComment[$i]['Comment']['message'], 1);
-
-					echo '<div class="sandboxComment">';
-					echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
-					echo '<div class="'.$commentColor.'">'.$showComment[$i]['Comment']['user'].':<br>';
-					echo $showComment[$i]['Comment']['message'].' </div>';
-					if($showComment[$i]['Comment']['status']!=0 && $showComment[$i]['Comment']['status']!=97 && $showComment[$i]['Comment']['status']!=98 && $showComment[$i]['Comment']['status']!=96){
-						echo '<div class="commentAnswer">';
-							echo '<div style="padding-top:7px;"></div>'.$showComment[$i]['Comment']['admin'].':<br>';
-							if($showComment[$i]['Comment']['status']==1) echo 'Your move(s) have been added.<br>';
-							else if($showComment[$i]['Comment']['status']==2) echo 'Your file has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==3) echo 'Your solution has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==4) echo 'I disagree with your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==5) echo 'Provide sequence.<br>';
-							else if($showComment[$i]['Comment']['status']==6) echo 'Resolved.<br>';
-							else if($showComment[$i]['Comment']['status']==7) echo 'I couldn\'t follow your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==8) echo 'You seem to try sending non-SGF-files.<br>';
-							else if($showComment[$i]['Comment']['status']==9) echo 'You answer is inferior to the correct solution.<br>';
-							else if($showComment[$i]['Comment']['status']==10) echo 'I disagree with your comment. I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==11) echo 'I don\'t know.<br>';
-							else if($showComment[$i]['Comment']['status']==12) echo 'I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==13) echo 'You are right, but the presented sequence is more interesting.<br>';
-							else if($showComment[$i]['Comment']['status']==14) echo 'I didn\'t add your file.<br>';
-							else if($showComment[$i]['Comment']['status']==100) echo $showComment[$i]['Comment']['textAnswer'];
-							else echo $showComment[$i]['Comment']['status'];
-						echo '</div>';
-					}
-					echo '</td><td align="right" class="sandboxTable2time">';
-					echo $showComment[$i]['Comment']['created'];
-					if(Auth::getUserID() == $showComment[$i]['Comment']['user_id']){
-						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
-					}
-					if(Auth::isAdmin()){
-						if($showComment[$i]['Comment']['status']==0){
-							//echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
-							echo '<br>';
-							if(Auth::getUserID()!=$showComment[$i]['Comment']['user_id'] && $commentColorCheck){
-								echo '<a class="deleteComment" style="text-decoration:none;" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=3">
-									<img class="thumbs-small" title="approve this comment" width="20px" src="/img/thumbs-small.png">
-								</a>';
-							}
-							echo '&nbsp;<a id="adminComment'.$i.'" class="adminComment" href="">Answer</a>';
-
-						}else{
-							echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
-						}
-					}
-					echo '</td></tr></table>';
-
-					echo '<div id="adminCommentPanel'.$i.'" class="adminCommentPanel">
-					<table class="sandboxTable2" width="100%" border="0">
-					<tr>
-					<td width="50%" style="vertical-align:top">';
-						echo $this->Form->create('Comment');
-						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
-						echo $this->Form->end('Submit');
-					echo '</td>
-					<td width="50%" style="vertical-align:top">';
-
-						echo '<select id="myselect'.$i.'">
-							<option value="0"></option>
-							<option value="1">Your moves have been added.</option>
-							<option value="2">Your move has been added.</option>
-							<option value="3">Your file has been added.</option>
-							<option value="4">I disagree with your comment.</option>
-							<option value="6">Provide sequence.</option>
-							<option value="6">Resolved.</option>
-							<option value="7">I couldn\'t follow your comment.</option>
-							<option value="8">You seem to try sending non-SGF-files.</option>
-							<option value="9">You answer is inferior to the correct solution.</option>
-							<option value="10">I disagree with your comment. I added sequences.</option>
-							<option value="11">I don\'t know.</option>
-							<option value="12">I added sequences.</option>
-							<option value="13">You are right, but the presented sequence is more interesting.</option>
-							<option value="14">I didn\'t add your file.</option>
-						</select>';
-						echo '<div align="right">';
-						echo '<br><br>';
-						if($showComment[$i]['Comment']['status'] != 0){
-							echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=4">Mask as unresolved</a>';
-						}else{
-							echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=1">Mark as resolved</a>';
-						}
-						echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'">Delete</a>';
-						echo '</div>';
-					echo '</td>
-					</tr>
-					</table>
-					</div>
-					';
-					echo '</div>';
-					echo '<div class="sandboxCommentSpace"></div>';
-			}
-
-		?>
-		</div>
-
-		</td>
-		</tr>
-		</table>
-
-	<?php
 	}
-	}else{
 		?>
-		<br>
-		</div><br>
-		<div align="center">
-		<table class="sandboxTable" width="62%">
-		<tr>
-		<td>
-		<?php
-		echo '<div id="commentSpace">';
-
-			$showComment2 = array();
-			$showComment3 = array();
-
-			for($i=0; $i<count($showComment); $i++){
-				if(is_numeric($showComment[$i]['Comment']['status'])) $showComment[$i]['Comment']['textAnswer'] = 'false';
-				else{
-					$showComment[$i]['Comment']['textAnswer'] = $showComment[$i]['Comment']['status'];
-					$showComment[$i]['Comment']['status'] = 100;
-				}
-				if($showComment[$i]['Comment']['status']!=99) array_push($showComment2, $showComment[$i]);
-			}
-			$showComment = $showComment2;
-			$resolvedCommentCount = 0;
-
-			if(count($showComment)>0) echo '<div id="msg1x"><a id="show2">Comments<img id="greyArrow" src="/img/greyArrow2.png"></a></div><br>';
-				echo '<div id="msg2x">';
-			for($i=count($showComment)-1; $i>=0; $i--){
-					echo '<div class="sandboxComment">';
-					echo '<table class="sandboxTable2" width="100%" border="0"><tr><td>';
-					echo $showComment[$i]['Comment']['user'].':<br>';
-					echo $showComment[$i]['Comment']['message'].'<br>';
-					if($showComment[$i]['Comment']['status']!=0 && $showComment[$i]['Comment']['status']!=97 && $showComment[$i]['Comment']['status']!=98	&& $showComment[$i]['Comment']['status']!=96){
-						echo '<div class="commentAnswer">';
-							echo '<div style="padding-top:7px;"></div>'.$showComment[$i]['Comment']['admin'].':<br>';
-							if($showComment[$i]['Comment']['status']==1) echo 'Your move(s) have been added.<br>';
-							else if($showComment[$i]['Comment']['status']==2) echo 'Your file has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==3) echo 'Your solution has been added.<br>';
-							else if($showComment[$i]['Comment']['status']==4) echo 'I disagree with your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==5) echo 'Provide sequence.<br>';
-							else if($showComment[$i]['Comment']['status']==6) echo 'Resolved.<br>';
-							else if($showComment[$i]['Comment']['status']==7) echo 'I couldn\'t follow your comment.<br>';
-							else if($showComment[$i]['Comment']['status']==8) echo 'You seem to try sending non-SGF-files.<br>';
-							else if($showComment[$i]['Comment']['status']==9) echo 'You answer is inferior to the correct solution.<br>';
-							else if($showComment[$i]['Comment']['status']==10) echo 'I disagree with your comment. I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==11) echo 'I don\'t know.<br>';
-							else if($showComment[$i]['Comment']['status']==12) echo 'I added sequences.<br>';
-							else if($showComment[$i]['Comment']['status']==13) echo 'You are right, but the presented sequence is more interesting.<br>';
-							else if($showComment[$i]['Comment']['status']==14) echo 'I didn\'t add your file.<br>';
-							else if($showComment[$i]['Comment']['status']==100) echo $showComment[$i]['Comment']['textAnswer'];
-							else echo $showComment[$i]['Comment']['status'];
-						echo '</div>';
-					}
-					echo '</td><td align="right" class="sandboxTable2time">';
-					echo $showComment[$i]['Comment']['created'];
-					if(Auth::getUserID() == $showComment[$i]['Comment']['user_id']){
-						echo '<a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'"><br>Delete</a>';
-					}
-					if(Auth::isAdmin()){
-						if($showComment[$i]['Comment']['status']==0) echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Answer</a>';
-						else echo '<a id="adminComment'.$i.'" class="adminComment" href=""><br>Edit</a>';
-					}
-					echo '</td></tr></table>';
-
-					echo '<div id="adminCommentPanel'.$i.'" class="adminCommentPanel">
-					<table class="sandboxTable2" width="100%" border="0">
-					<tr>
-					<td width="50%" style="vertical-align:top">';
-						echo $this->Form->create('Comment');
-						echo $this->Form->input('id', array('type' => 'hidden', 'value' => $showComment[$i]['Comment']['id']));
-						echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-						echo $this->Form->input('status', array('id' => 'CommentStatus'.$i, 'label' => '', 'type' => 'textarea', 'placeholder' => 'Message'));
-						echo $this->Form->end('Submit');
-					echo '</td>
-					<td width="50%" style="vertical-align:top">';
-
-						echo '<select id="myselect'.$i.'">
-							<option value="0"></option>
-							<option value="1">Your moves have been added.</option>
-							<option value="2">Your move has been added.</option>
-							<option value="3">Your file has been added.</option>
-							<option value="4">I disagree with your comment.</option>
-							<option value="6">Provide sequence.</option>
-							<option value="6">Resolved.</option>
-							<option value="7">I couldn\'t follow your comment.</option>
-							<option value="8">You seem to try sending non-SGF-files.</option>
-							<option value="9">You answer is inferior to the correct solution.</option>
-							<option value="10">I disagree with your comment. I added sequences.</option>
-							<option value="11">I don\'t know.</option>
-							<option value="12">I added sequences.</option>
-							<option value="13">You are right, but the presented sequence is more interesting.</option>
-							<option value="14">I didn\'t add your file.</option>
-						</select>';
-						echo '<div align="right">';
-						echo '<br><br><br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=1">No Answer Necessary</a>';
-						echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'&changeComment=2">Can\'t Resolve This</a>';
-						echo '<br><a class="deleteComment" href="/tsumegos/play/'.$t['Tsumego']['id'].'?deleteComment='.$showComment[$i]['Comment']['id'].'">Delete</a>';
-						echo '</div>';
-					echo '</td>
-					</tr>
-					</table>
-					</div>
-					';
-					echo '</div>';
-					echo '<div class="sandboxCommentSpace"></div>';
-			}
-
-		?>
-		</div>
-
-		</td>
-		</tr>
-		</table>
-		</div>
-	<?php
-	}
-	?>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
 		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
@@ -893,7 +603,7 @@
 		<div id="multipleChoiceText"></div>
 		<div class="clear1"></div>
 		</span>
-		</div>
+					</div>
 		</label>
 	<?php }else{ ?>
 		<?php if($potionAlert){ ?>
@@ -903,14 +613,14 @@
 			<div class="alertBanner" align="center">
 			Hero Power
 			<span class="alertClose">x</span>
-			</div>
+		</div>
 			<span class="alertText">
-			<?php
+	<?php
 			echo '<img id="hpIcon1" src="/img/hp5.png">
 			You found a potion, your hearts have been restored.<br>'
-			?>
+		?>
 			<br class="clear1"/></span>
-			</div>
+					</div>
 		</label>
 	<?php }else{ ?>
 		<label>
@@ -934,15 +644,10 @@
 		<div class="loader-content">
 			<div class="loader-text">
 				searching...
-			</div>
 		</div>
-	</div>
-	<?php
-	if(count($showComment)>0){
-		echo '<div align="center">';
-		echo '<font color="grey"></font>';
-		echo '</div>';
-	}
+		</div>
+			</div>
+		<?php
 	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
@@ -951,11 +656,14 @@
 	§TESTING AREA§
 	echo '<pre>'; print_r($levelBar); echo '</pre>';
 	*/
-	?>
+		?>
 
 <script type="text/javascript">
-	var ko = false, lastMove = false;
-	var lastHover = false, lastX = -1, lastY = -1;
+	var ko = false,
+		lastMove = false;
+	var lastHover = false,
+		lastX = -1,
+		lastY = -1;
 	var moveCounter = 0;
 	var move = 0;
 	var branch = "";
@@ -1073,28 +781,28 @@
 		current.parentElement.parentElement.className = 'set' + status + '1';
 	}
 
-	<?php
+<?php
 		if($hasRevelation)
 			echo 'let hasRevelation = true;';
-		else
+	else
 			echo 'let hasRevelation = false;';
 		$tsumegoXPAndRating->renderJavascript();
 		HeroPowers::renderJavascript();
-	?>
+		?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
 			$("#msgFilters").fadeIn(250);
 			document.getElementById("greyArrowFilter").src = "/img/greyArrow2.png";
-		}else{
+	}else{
 			$("#msgFilters").fadeOut(250);
 			document.getElementById("greyArrowFilter").src = "/img/greyArrow1.png";
-		}
+	}
 		msgFilterSelected = !msgFilterSelected;
 	});
 
 	$("#msgFilters").css("display", "none");
 
-	<?php
+			<?php
 		if($tsumegoFilters->query != 'topics')
 			foreach ($tsumegoFilters->sets as $setName)
 				echo 'activeTopicTiles.push("'.$setName.'");';
@@ -1104,7 +812,7 @@
 		if($tsumegoFilters->query != 'tags')
 			foreach ($tsumegoFilters->tags as $tag)
 				echo 'activeTagTiles.push("'.$tag.'");';
-	?>
+		?>
 	drawActiveTiles();
 
 	function drawActiveTiles(){
@@ -1128,24 +836,27 @@
 		window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
 	});
 
-	<?php
+<?php
 	if($tv!=null){
 	if($tv['TsumegoVariant']['type']=='multiple_choice' && $tv['TsumegoVariant']['explanation']!=""){
 		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
-	}}
+	}
+	}
 
-	if(Auth::isLoggedIn()){
-		if(Auth::isAdmin()){
+			if(Auth::isLoggedIn()){
+					if(Auth::isAdmin()){
 			echo '$(".modify-description-panel").hide();';
-		}
+	}
 		echo 'var besogoUserId = '.Auth::getUserID().';';
-	}else{
+						}else{
 		echo 'besogoNoLogin = true;';
 	}
 
 	if($pl==1) echo 'besogoPlayerColor = "white";';
-	if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id']==109
-	|| $t['Tsumego']['set_id']==233 || $t['Tsumego']['set_id']==236)
+	if (
+		!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id'] == 109
+		|| $t['Tsumego']['set_id'] == 233 || $t['Tsumego']['set_id'] == 236
+	)
 	echo 'besogoPlayerColor = "black";';
 
 	if ($authorx == Auth::getWithDefault('name', ''))
@@ -1159,7 +870,7 @@
 	}else if(Auth::isInRatingMode())
 		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
 	echo '
-	';
+					';
 	if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 		echo 'set159 = true;';
 	if($t['Tsumego']['set_id']==161)
@@ -1171,21 +882,23 @@
 	var eloScore = <?php echo $eloScore; ?>;
 	var eloScore2 = <?php echo $eloScore2; ?>;
 
-	<?php
+<?php
 		if($corner=='t' || $corner=='b' || $corner=='full board'){
 			echo '$("#plus2").css("left", "340px");';
-		}
-	?>
+	}
+			?>
 
 	<?php if(!Auth::isInTimeMode()){ ?>
+
 		function incrementSeconds(){
 			seconds += 1;
-		}
+	}
 		var secondsx = setInterval(incrementSeconds, 1000);
 	<?php }else{ ?>
+
 		function incrementSeconds(){
 			seconds += 0.1;
-		}
+	}
 		var secondsx = setInterval(incrementSeconds, 100);
 	<?php } ?>
 	$(".adminCommentPanel").hide();
@@ -1206,35 +919,51 @@
 	const Slider = document.querySelector('input[name=rangeInput]');
 
 	if(difficulty==1){
-		$('#sliderText').css({"color":"hsl(138, 47%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(138, 47%, 50%)"
+	});
 		$('#sliderText').text("very easy");
 		Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
 	}else if(difficulty==2){
-		$('#sliderText').css({"color":"hsl(138, 31%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(138, 31%, 50%)"
+	});
 		$('#sliderText').text("easy");
 		Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
 	}else if(difficulty==3){
-		$('#sliderText').css({"color":"hsl(138, 15%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(138, 15%, 50%)"
+		});
 			$('#sliderText').text("casual");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
 	}else if(difficulty==4){
-		$('#sliderText').css({"color":"hsl(138, 0%, 47%)"});
+			$('#sliderText').css({
+				"color": "hsl(138, 0%, 47%)"
+		});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 	}else if(difficulty==5){
-		$('#sliderText').css({"color":"hsl(0, 31%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(0, 31%, 50%)"
+		});
 			$('#sliderText').text("challenging");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 31%, 50%)');
 	}else if(difficulty==6){
-		$('#sliderText').css({"color":"hsl(0, 52%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(0, 52%, 50%)"
+		});
 			$('#sliderText').text("difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
 	}else if(difficulty==7){
-		$('#sliderText').css({"color":"hsl(0, 66%, 50%)"});
+			$('#sliderText').css({
+				"color": "hsl(0, 66%, 50%)"
+		});
 			$('#sliderText').text("very difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
 	}else{
-		$('#sliderText').css({"color":"hsl(138, 0%, 47%)"});
+			$('#sliderText').css({
+				"color": "hsl(138, 0%, 47%)"
+		});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 	}
@@ -1243,45 +972,61 @@
 		const Slider = document.querySelector('input[name=rangeInput]');
 		document.cookie = "difficulty="+this.value;
 		if(this.value==1){
-			$('#sliderText').css({"color":"hsl(138, 47%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(138, 47%, 50%)"
+		});
 			$('#sliderText').text("very easy");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
 		}else if(this.value==2){
-			$('#sliderText').css({"color":"hsl(138, 31%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(138, 31%, 50%)"
+		});
 			$('#sliderText').text("easy");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
 		}else if(this.value==3){
-			$('#sliderText').css({"color":"hsl(138, 15%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(138, 15%, 50%)"
+		});
 			$('#sliderText').text("casual");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
 		}else if(this.value==4){
-			$('#sliderText').css({"color":"hsl(138, 0%, 47%)"});
+				$('#sliderText').css({
+					"color": "hsl(138, 0%, 47%)"
+		});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 		}else if(this.value==5){
-			$('#sliderText').css({"color":"hsl(0, 34%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(0, 34%, 50%)"
+	});
 			$('#sliderText').text("challenging");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 34%, 50%)');
 		}else if(this.value==6){
-			$('#sliderText').css({"color":"hsl(0, 52%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(0, 52%, 50%)"
+	});
 			$('#sliderText').text("difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
 		}else if(this.value==7){
-			$('#sliderText').css({"color":"hsl(0, 66%, 50%)"});
+				$('#sliderText').css({
+					"color": "hsl(0, 66%, 50%)"
+		});
 			$('#sliderText').text("very difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
-		}else{
-			$('#sliderText').css({"color":"#616161"});
+	}else{
+				$('#sliderText').css({
+					"color": "#616161"
+		});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-		}
-	});
+	}
+		});
 	<?php } ?>
 	$(".modify-description").click(function(e){
 		adminCommentOpened = true;
 		e.preventDefault();
 		$(".modify-description-panel").toggle(250);
-	});
+		});
 
 	<?php if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){
@@ -1297,10 +1042,10 @@
 				if(guess==correctNum){
 					displayResult("S");
 					color = "#3ecf78";
-				}else{
+	}else{
 					displayResult("F");
 					color = "#e0747f";
-				}
+	}
 				hasChosen = true;
 				locked = true;
 				$("#ScoreEstimatingSE").prop("disabled", true);
@@ -1309,7 +1054,7 @@
 				$("#besogo-se-more").css("background-color", color);
 				$("#besogo-se-less").css("background-color", color);
 				$("#submitScoreEstimatingSE").css("background-color", color);
-			}
+	}
 		});
 		$("#submitScoreEstimatingBlackWins").click(function(e){
 			e.preventDefault();
@@ -1318,7 +1063,7 @@
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
 					res1 = "Result: Jigo";
-				else
+	else
 					res1 = "Result: "+scoreResult;
 				$("#se-result-text").css("opacity", "1");
 				$("#se-result-text").text(res1);
@@ -1328,18 +1073,18 @@
 					displayResult("S");
 					color = "#3ecf78";
 					color2 = "rgb(12, 187, 12)";
-				}else{
+	}else{
 					displayResult("F");
 					color = "#e0747f";
 					color2 = "rgb(224, 60, 75)";
-				}
+	}
 				hasChosen = true;
 				locked = true;
 				$("#submitScoreEstimatingBlackWins").css("background-color", color);
 				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
 				$("#submitScoreEstimatingJigo").css("background-color", color);
 				$("#se-result-text").css("color", color2);
-			}
+	}
 		});
 		$("#submitScoreEstimatingWhiteWins").click(function(e){
 			e.preventDefault();
@@ -1348,7 +1093,7 @@
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
 					res1 = "Result: Jigo";
-				else
+	else
 					res1 = "Result: "+scoreResult;
 				$("#se-result-text").css("opacity", "1");
 				$("#se-result-text").text(res1);
@@ -1358,19 +1103,19 @@
 					displayResult("S");
 					color = "#3ecf78";
 					color2 = "rgb(12, 187, 12)";
-				}else{
+	}else{
 					displayResult("F");
 					color = "#e0747f";
 					color2 = "rgb(224, 60, 75)";
-				}
+	}
 				hasChosen = true;
 				locked = true;
 				$("#submitScoreEstimatingBlackWins").css("background-color", color);
 				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
 				$("#submitScoreEstimatingJigo").css("background-color", color);
 				$("#se-result-text").css("color", color2);
-			}
-		});
+	}
+			});
 		$("#submitScoreEstimatingJigo").click(function(e){
 			e.preventDefault();
 			let scoreResult = "<?php echo $tv['TsumegoVariant']['winner']; ?>";
@@ -1378,7 +1123,7 @@
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
 					res1 = "Result: Jigo";
-				else
+	else
 					res1 = "Result: "+scoreResult;
 				$("#se-result-text").css("opacity", "1");
 				$("#se-result-text").text(res1);
@@ -1388,19 +1133,19 @@
 					displayResult("S");
 					color = "#3ecf78";
 					color2 = "rgb(12, 187, 12)";
-				}else{
+	}else{
 					displayResult("F");
 					color = "#e0747f";
 					color2 = "rgb(224, 60, 75)";
-				}
+	}
 				hasChosen = true;
 				locked = true;
 				$("#submitScoreEstimatingBlackWins").css("background-color", color);
 				$("#submitScoreEstimatingWhiteWins").css("background-color", color);
 				$("#submitScoreEstimatingJigo").css("background-color", color);
 				$("#se-result-text").css("color", color2);
-			}
-		});
+	}
+			});
 		$("#besogo-se-edit-black").click(function(e){
 			e.preventDefault();
 			let chars = "";
@@ -1410,10 +1155,10 @@
 			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
 				chars = "B+";
 				num = v.slice(2);
-			}else{
+	}else{
 				chars = "B+";
 				num = v;
-			}
+	}
 			$("#scoreEstEditField").val(chars+num);
 		});
 		$("#besogo-se-edit-white").click(function(e){
@@ -1425,12 +1170,12 @@
 			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
 				chars = "W+";
 				num = v.slice(2);
-			}else{
+	}else{
 				chars = "W+";
 				num = v;
-			}
+	}
 			$("#scoreEstEditField").val(chars+num);
-		});
+			});
 		$("#besogo-se-edit-more").click(function(e){
 			e.preventDefault();
 			let chars = "";
@@ -1440,16 +1185,16 @@
 			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
 				chars = v.slice(0,2);
 				num = v.slice(2);
-			}else{
+	}else{
 				chars = "";
 				num = v;
-			}
+	}
 			if(num=="")
 				num=0;
 			if(is_numeric(num)){
 				num = parseFloat(num);
 				num += .5;
-			}
+	}
 			$("#scoreEstEditField").val(chars+num);
 		});
 		$("#besogo-se-edit-less").click(function(e){
@@ -1461,17 +1206,17 @@
 			if(v.slice(0,2)=="B+" || v.slice(0,2)=="W+"){
 				chars = v.slice(0,2);
 				num = v.slice(2);
-			}else{
+	}else{
 				chars = "";
 				num = v;
-			}
+	}
 			if(num=="")
 				num=0;
 			if(is_numeric(num)){
 				num = parseFloat(num);
 				if(num>0)
 					num -= .5;
-			}
+	}
 			$("#scoreEstEditField").val(chars+num);
 		});
 	<?php } ?>
@@ -1492,37 +1237,22 @@
 			$("#msg1").hide();
 			$("#reviewButton").hide();
 			$("#reviewButton2").hide();
-		';
+					';
 	}elseif(Auth::isInTimeMode()){
 		echo '$("#account-bar-user > a").css({color:"#ca6658"});';
 	}
 
-	for($i=count($showComment)-1; $i>=0; $i--){
-		echo '
-		$("#myselect'.$i.'").change(function(){
-			$("#CommentStatus'.$i.'").val($("#myselect'.$i.' option:selected").text());
-		});
-
-		$("#adminComment'.$i.'").click(function(e){
-			e.preventDefault();
-			$("#adminCommentPanel'.$i.'").toggle(250);
-			adminCommentOpened = true;
-		});
-		';
-	}
-
-	echo 'var showCommentSpace = '.Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)).';';
-	if(Auth::isAdmin())
+	$showComments = TsumegoUtil::hasStateAllowingInspection($t) || Auth::isAdmin();
+	echo 'var showCommentSpace = ' . Util::boolString($showComments) . ';';
+			if(Auth::isAdmin())
 		echo '$("#show5").css("display", "inline-block");';
 
 	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
-	if($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')
-	{
+	if ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X') {
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
-	}
-	else echo 'var locked=false;';
+	} else echo 'var locked=false;';
 
 	if($dailyMaximum){
 		echo 'var locked=true; tryAgainTomorrow = true;';
@@ -1546,13 +1276,13 @@
 
 	if (!isset($additionalInfo))
 		$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
-?>
+	?>
 
 	$(document).ready(function(){
-		<?php
+	<?php
 		if($t['Tsumego']['set_id']==210){
 			echo '$("#author-notice").hide();';
-		}
+	}
 			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
 			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
@@ -1563,14 +1293,17 @@
 			if(Auth::isInTimeMode()){
 				echo 'notMode3 = false;';
 				echo '$("#account-bar-xp").text("'.$timeMode->rank.'");';
-				?>
+	?>
 				$("#xp-increase-fx").css("display","inline-block");
 				$("#xp-bar-fill").css("box-shadow", "-5px 0px 10px #fff inset");
 				<?php echo '$("#xp-bar-fill").css("width","'.Util::getPercent($timeMode->currentOrder - 1, $timeMode->overallCount).'%");'; ?>
 				$("#xp-increase-fx").fadeOut(0);
-				$("#xp-bar-fill").css({"-webkit-transition":"all 0.0s ease","box-shadow":""});
-				<?php
-			}
+			$("#xp-bar-fill").css({
+				"-webkit-transition": "all 0.0s ease",
+				"box-shadow": ""
+		});
+	<?php
+	}
 
 			if($refresh=='1') echo 'window.location = "/";';
 			if($refresh=='2') echo 'window.location = "/sets";';
@@ -1580,46 +1313,46 @@
 			if($refresh=='6') echo 'window.location = "/sets/sandbox";';
 			if($refresh=='7') echo 'window.location = "/users/leaderboard";';
 			if($refresh=='8') echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";';
-		?>
-		<?php
+	?>
+	<?php
 		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
-			echo '
+		echo '
 				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow</b>\';
 				tryAgainTomorrow = true;
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("xpDisplay").innerHTML = "&nbsp;";
-			';
-		}
+	';
+	}
 		if($potionAlert){
 			echo '$(".alertBox").fadeIn(500);';
-		}
+	}
 		if($isSemeai){
 			echo '
 				tryAgainTomorrow = true;
 				locked = true;
-			';
-		}
+		';
+	}
 		if($doublexp!=null && !$goldenTsumego){
 			echo 'doubleXP = true; countDownDate = '.$doublexp.';';
-		}
+	}
 
 		if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C'){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
-		}
-		if(Auth::isLoggedIn()){
-			if(Auth::isAdmin()){
-				if($isSandbox){
+	}
+	if(Auth::isLoggedIn()){
+					if(Auth::isAdmin()){
+	if($isSandbox){
 					//$reviewEnabled = true;
 					//echo 'reviewEnabled = true;';
-				}
-			}
-		}
+	}
+	}
+	}
 		if($reviewCheat){
 			$reviewEnabled = true;
 			echo 'reviewEnabled = true;';
-		}
-		?>
+	}
+	?>
 <?php TsumegoUtil::getJavascriptMethodisStatusAllowingInspection(); ?>
 
 	<?php if($firstRanks==0)
@@ -1629,63 +1362,64 @@
 	{
 		tagConnectionsEdit.activateEdit();
 		$("#open-add-tag-menu").hide();
-		$(".add-tag-list").hide();
-		$(".add-tag-list-popular").show();
-	});
+			$(".add-tag-list").hide();
+			$(".add-tag-list-popular").show();
+		});
 
 	$('.tag-container').on('click', "#open-more-tags", function(e){
 		$("#open-add-tag-menu").hide();
 		$(".add-tag-list").show();
-		$(".add-tag-list-popular").hide();
-	});
+			$(".add-tag-list-popular").hide();
+		});
 
 		$('#target').click(function(e){
 			if(locked)
 				window.location = nextButtonLink;
-		});
+	});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
 		$("#show").click(function(){
 			if(!msg2selected){
 				$("#msg2").fadeIn(250);
 				document.getElementById("greyArrow1").src = "/img/greyArrow2.png";
-			}else{
+	}else{
 				$("#msg2").fadeOut(250);
 				document.getElementById("greyArrow1").src = "/img/greyArrow1.png";
-			}
+	}
 			msg2selected = !msg2selected;
-		});
+			});
 
 		$("#show2").click(function(){
 			if(!msg2xselected){
 				$("#msg2x").fadeIn(250);
 				document.getElementById("greyArrow").src = "/img/greyArrow2.png";
-			}else{
+	}else{
 				$("#msg2x").fadeOut(250);
 				document.getElementById("greyArrow").src = "/img/greyArrow1.png";
-			}
+	}
 			msg2xselected = !msg2xselected;
-		});
+			});
+		$("#msg2x").hide();
 		$("#msg3").hide();
 		$("#show3").click(function(){
 			if(!msg3selected){
 				$("#msg3").fadeIn(250);
 				document.getElementById("greyArrow2").src = "/img/greyArrow2.png";
-			}else{
+	}else{
 				$("#msg3").fadeOut(250);
 				document.getElementById("greyArrow2").src = "/img/greyArrow1.png";
-			}
+	}
 			msg3selected = !msg3selected;
-		});
+	});
 
 		$("#show4").click(function(){
 			if(!msg4selected){
 				$("#msg4").fadeIn(250);
 				document.getElementById("greyArrow4").src = "/img/greyArrow2.png";
-			}else{
+	}else{
 				$("#msg4").fadeOut(250);
 				document.getElementById("greyArrow4").src = "/img/greyArrow1.png";
-			}
+	}
 			msg4selected = !msg4selected;
 		});
 
@@ -1693,10 +1427,10 @@
 			if(!msg5selected){
 				$("#msg5").fadeIn(250);
 				document.getElementById("greyArrow5").src = "/img/greyArrow2.png";
-			}else{
+	}else{
 				$("#msg5").fadeOut(250);
 				document.getElementById("greyArrow5").src = "/img/greyArrow1.png";
-			}
+	}
 			msg5selected = !msg5selected;
 		});
 		<?php if($tv!=null){ ?>
@@ -1706,24 +1440,24 @@
 				if(!msgMCselected){
 					$("#showxMC").fadeIn(250);
 					document.getElementById("greyArrowMC").src = "/img/greyArrow2.png";
-				}else{
+	}else{
 					$("#showxMC").fadeOut(250);
 					document.getElementById("greyArrowMC").src = "/img/greyArrow1.png";
-				}
+	}
 				msgMCselected = !msgMCselected;
-			});
+				});
 		<?php }else{ ?>
 			$("#showxSE").hide();
 			$("#showSE").click(function(){
 				if(!msgSEselected){
 					$("#showxSE").fadeIn(250);
 					document.getElementById("greyArrowSE").src = "/img/greyArrow2.png";
-				}else{
+	}else{
 					$("#showxSE").fadeOut(250);
 					document.getElementById("greyArrowSE").src = "/img/greyArrow1.png";
-				}
+	}
 				msgSEselected = !msgSEselected;
-			});
+				});
 		<?php } ?>
 		<?php } ?>
 		$("#commentPosition").click(function(){
@@ -1740,42 +1474,42 @@
 				for(let i=isInTree[1]['x'].length-1;i>=0;i--)
 				additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
 				additionalCoords = " + " + additionalCoords;
-			}
+	}
 			if(commentContent.includes("[current position]")){
 			 commentContent = commentContent.replace('[current position]','');
-			}
+	}
 			$("#CommentMessage").val(commentContent + "[current position]" + additionalCoords);
 
 			if(current===null || current.move===null){
 			$("#CommentPosition").val(
 				"-1/-1/0/0/0/0/0/0/0"
 			);
-			}else{
+	}else{
 				pX = -1;
 				pY = -1;
 			if(current.moveNumber>1){
 				pX = current.parent.move.x;
 				pY = current.parent.move.y;
-			}
+	}
 			if(current.children.length===0){
 				cX = -1;
 				cY = -1;
-			}else{
+	}else{
 				cX = current.children[0].move.x;
 				cY = current.children[0].move.y;
-			}
+	}
 
 			let newP = current.parent;
 			let newPcoords = current.move.x+"/"+current.move.y+"+";
 				while(newP!==null && newP.move!==null){
 					newPcoords += newP.move.x+"/"+newP.move.y+"+"
 					newP = newP.parent;
-				}
+	}
 				newPcoords = newPcoords.slice(0, -1);
 			$("#CommentPosition").val(
 				current.move.x+"/"+current.move.y+"/"+pX+"/"+pY+"/"+cX+"/"+cY+"/"+current.moveNumber+"/"+current.children.length+"/"+besogoOrientation[0]+"|"+newPcoords
 			);
-			}
+	}
 		});
 		let solutionRequest = true;
 		<?php if(TsumegoUtil::hasStateAllowingInspection($t) || $isSandbox) { ?>
@@ -1784,18 +1518,20 @@
 		<?php } ?>
 		if(authorProblem)
 			displaySettings();
-		<?php if (Auth::isAdmin()) { if (!$requestSolution) { ?>
+		<?php if (Auth::isAdmin()) {
+			if (!$requestSolution) { ?>
 			if(solutionRequest)
 				displaySolutionRequest();
 			$("#showx99").click(function(){
 				window.location.href = "/tsumegos/play/"+<?php echo $t['Tsumego']['id']; ?>+"?requestSolution="+<?php echo Auth::getUserID(); ?>;
-			});
-		<?php }} ?>
+				});
+		<?php }
+		} ?>
 
 		<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null){ ?>
 		$("#alertCheckbox").change(function(){
 			$("#multipleChoiceAlerts").fadeOut(500);
-		});
+			});
 		<?php } ?>
 		$("#customAlertCheckbox").change(function(){
 			$("#customAlerts").fadeOut(500);
@@ -1810,7 +1546,9 @@
 			jsCreateDownloadFile("<?php echo $setConnection['SetConnection']['num']; ?>");
 		});
 		$("#showx7x").click(function(){
-			$('.loader-container').css({"display":"flex"});
+			$('.loader-container').css({
+				"display": "flex"
+			});
 			window.location.href="/tsumegos/duplicatesearch/<?php echo $t['Tsumego']['id']; ?>";
 		});
 
@@ -1842,20 +1580,20 @@
 			$duplicateOther = array();
 			if($t['Tsumego']['duplicate']<=9)
 				$duplicateMain = $t['Tsumego']['id'];
-			else
+	else
 				array_push($duplicateOther, $t['Tsumego']['id']);
       foreach ($setConnections as $setConnectionX)
 			for($i=0; $i<count($setConnections); $i++){
 				if($setConnectionX['id'] != $setConnection['id'])
 					array_push($duplicateOther, $setConnections['SetConnection']['tsumego_id']);
-			}
+	}
 			$duplicateParamsUrl = '?duplicates=';
 			for($i=0; $i<count($duplicateOther); $i++){
 				$duplicateParamsUrl .= $duplicateOther[$i];
 				if($i!=count($duplicateOther)-1)
 					$duplicateParamsUrl .= '-';
-			}
-			?>
+	}
+		?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.$t['Tsumego']['id']; ?>");
 		<?php } ?>
 		$("#showx8").attr("href", "<?php echo '/users/tsumego_rating/'.$t['Tsumego']['id']; ?>");
@@ -1864,7 +1602,7 @@
 		$("#show5").css("display", "inline-block");
 		$("#showx6").css("display", "inline-block");
 		$("#showx8").css("display", "inline-block");
-		<?php } ?>
+	<?php } ?>
 	}
 
 	function jsCreateDownloadFile(name){
@@ -1873,7 +1611,7 @@
 				type: "sgf",
 			});
 			saveAs(blob, name+".sgf");
-		}
+	}
 	}
 
 	function reset(){
@@ -1907,7 +1645,7 @@
 			misplays++;
 			document.cookie = "misplays="+misplays+";path=/tsumegos/play;SameSite=Lax";
 			updateHealth();
-		}
+	}
 		move = 0;
 
 		document.getElementById("status").innerHTML = "";
@@ -1924,13 +1662,21 @@
 				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).' + xpStatus.getXP())/userNextlvl*100, 100);
 				barPercent1 = newXP2;
 				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);'; ?>
-				$("#xp-bar-fill").css({"width":newXP2+"%"});
+				$("#xp-bar-fill").css({
+					"width": newXP2 + "%"
+				});
 				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 				$("#xp-increase-fx").fadeIn(0);
-				$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+				$("#xp-bar-fill").css({
+					"-webkit-transition": "all 1s ease",
+					"box-shadow": ""
+				});
 				setTimeout(function(){
 					$("#xp-increase-fx").fadeOut(500);
-					$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+					$("#xp-bar-fill").css({
+						"-webkit-transition": "all 1s ease",
+						"box-shadow": ""
+					});
 				},1000);
 			}else if(levelBar==2){
 				if(!ratingBarLock){
@@ -1941,30 +1687,46 @@
 					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
 					barPercent1 = Math.min(('.Auth::getWithDefault('xp', 1).'+xpStatus.getXP())/userNextlvl*100, 100);
 					barPercent2 = newXP2;'; ?>
-					$("#xp-bar-fill").css({"width":newXP2+"%"});
+					$("#xp-bar-fill").css({
+						"width": newXP2 + "%"
+					});
 					$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 					$("#xp-increase-fx").fadeIn(0);
-					$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+					$("#xp-bar-fill").css({
+						"-webkit-transition": "all 1s ease",
+						"box-shadow": ""
+					});
 					setTimeout(function(){
 						$("#xp-increase-fx").fadeOut(500);
-						$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+						$("#xp-bar-fill").css({
+							"-webkit-transition": "all 1s ease",
+							"box-shadow": ""
+						});
 					},1000);
-				}
-			}
+	}
+	}
 		}else if(mode==3){
 			<?php
 				$xxx2 = $stopParameter > 0 ? (($crs+1)/$stopParameter)*100 : 0;
 				if($xxx2>100) $xxx2 = 100;
-			?>
-			$("#xp-bar-fill").css({"width":"<?php echo $xxx2; ?>%"});
+		?>
+			$("#xp-bar-fill").css({
+				"width": "<?php echo $xxx2; ?>%"
+			});
 			$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
 			$("#xp-increase-fx").fadeIn(0);
-			$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+			$("#xp-bar-fill").css({
+				"-webkit-transition": "all 1s ease",
+				"box-shadow": ""
+			});
 			setTimeout(function(){
 				$("#xp-increase-fx").fadeOut(500);
-				$("#xp-bar-fill").css({"-webkit-transition":"all 1s ease","box-shadow":""});
+				$("#xp-bar-fill").css({
+					"-webkit-transition": "all 1s ease",
+					"box-shadow": ""
+				});
 			},1000);
-		}
+	}
 	}
 
 	function runXPNumber(id, start, end, duration, ulvl){
@@ -1987,16 +1749,16 @@
 					obj.innerHTML = current+"/"+runXPNumberNextLvl;
 				}else if(levelBar==2)
 					obj.innerHTML = current;
-			}else{
+	}else{
 				obj.innerHTML = current+"/"+runXPNumberNextLvl;
-			}
+	}
 			if(current == end){
 				clearInterval(timer);
-			}
+	}
 		}, stepTime);
 		ratingBarLock = true;
 	}
-	<?php } ?>
+			<?php } ?>
 	}
 
 	function updateHealth(){
@@ -2007,8 +1769,8 @@
 				echo 'if(misplays=='.$m.')document.getElementById("heart'.$h.'").src = "/img/'.$emptyHeart.'.png"; ';
 				$health--;
 				$m++;
-			}
-		?>
+	}
+			?>
 	}
 
 	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
@@ -2025,26 +1787,33 @@
 		if(newX!=false)
 			positionParams[9] = newX;
 		besogo.editor.commentPosition(positionParams);
+
+		// Scroll to board so user can see the position
+		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');
+		if (boardElement) {
+			boardElement.scrollIntoView({
+				behavior: 'smooth',
+				block: 'center'
+			});
+	}
 	}
 
 	function rejuvenation(){
-		$.ajax(
-			{
+		$.ajax({
 				url: '/hero/rejuvenation',
 				type: 'POST',
-				success: function(response)
-				{
+			success: function(response) {
 					<?php
 					$health = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
 					for($i = 0; $i < $health; $i++) {
 						echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
-					}
-					?>
+	}
+			?>
 					misplays = 0;
 					disableRejuvenation();
 					enableIntuition();
-				}
-			});
+	}
+		});
 	}
 
 	function revelation(){
@@ -2054,7 +1823,7 @@
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-				else
+	else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
 				besogo.editor.setReviewEnabled(true);
 				besogo.editor.setControlButtonLock(false);
@@ -2066,23 +1835,26 @@
 				setCookie("noScore", "<?php echo $solvedCheck; ?>");
 				setCookie("noPreId", "<?php echo $t['Tsumego']['id']; ?>");
 				setCookie("revelation", "1");
-			<?php } ?>
+					<?php } ?>
 			document.getElementById("revelation").src = "/img/hp6x.png";
 			document.getElementById("revelation").style = "cursor: context-menu;";
 			$("#revelation").attr("title","Revelation (<?php echo Auth::getWithDefault('revelation', 0) - 1; ?>): Solves a problem, but you don\'t get any reward.");
 			revelationEnabled = false;
-		}
+	}
 	}
 
 	function thumbsUpHover(){
 		if(!thumbsUpSelected && !thumbsUpSelected2) document.getElementById("thumbs-up").src = '/img/thumbs-up.png';
 	}
+
 	function thumbsUpNoHover(){
 		if(!thumbsUpSelected && !thumbsUpSelected2) document.getElementById("thumbs-up").src = '/img/thumbs-up-inactive.png';
 	}
+
 	function thumbsDownHover(){
 		if(!thumbsDownSelected && !thumbsDownSelected2) document.getElementById("thumbs-down").src = '/img/thumbs-down.png';
 	}
+
 	function thumbsDownNoHover(){
 		if(!thumbsDownSelected && !thumbsDownSelected2) document.getElementById("thumbs-down").src = '/img/thumbs-down-inactive.png';
 	}
@@ -2099,21 +1871,24 @@
 					window.location.href = previousButtonLink;
 				}else if(keycode == '39'){
 					window.location.href =  nextButtonLink;
-				}
-			}
-		}
+	}
+	}
+	}
 	});
 
 	function m1hover(){
 		$("#modeSwitcher1 label").css("background-color", "#5dcb89");
 	}
+
 	function m1noHover(){
 		if(ui==1) $("#modeSwitcher1 label").css("background-color", "#54b97c");
 		else $("#modeSwitcher1 label").css("background-color", "#5b5d60");
 	}
+
 	function m2hover(){
 		$("#modeSwitcher2 label").css("background-color", "#ca7a6f");
 	}
+
 	function m2noHover(){
 		if(ui==2) $("#modeSwitcher2 label").css("background-color", "#ca6658");
 		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
@@ -2124,6 +1899,59 @@
 	$dynamicCommentCoords[0] = array();
 	$dynamicCommentCoords[1] = array();
 
+	// Create floating board popup for coordinate hover
+			echo '
+	var coordPopupBoard = null;
+	var coordPopupDiv = null;
+	var coordPopupTimeout = null;
+
+	function createCoordPopup() {
+		if (coordPopupDiv) return;
+		coordPopupDiv = document.createElement("div");
+		coordPopupDiv.id = "coord-popup-board";
+		coordPopupDiv.style.cssText = "position:fixed;z-index:10000;display:none;background:#d4a76a;border:3px solid #8b5a2b;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.3);padding:8px;pointer-events:none;";
+		document.body.appendChild(coordPopupDiv);
+	}
+
+	function showCoordPopup(coord, event) {
+		createCoordPopup();
+		var mainBoard = document.querySelector(".besogo-board svg");
+		if (!mainBoard) return;
+
+		// Always highlight on main board
+		besogo.editor.displayHoverCoord(coord);
+
+		// Clear any pending hide
+		if (coordPopupTimeout) {
+			clearTimeout(coordPopupTimeout);
+			coordPopupTimeout = null;
+	}
+
+		// Show popup near cursor
+		var clone = mainBoard.cloneNode(true);
+		clone.style.width = "400px";
+		clone.style.height = "400px";
+		coordPopupDiv.innerHTML = "";
+		coordPopupDiv.appendChild(clone);
+
+		// Position near cursor
+		var x = event.clientX + 15;
+		var y = event.clientY - 200;
+		if (x + 430 > window.innerWidth) x = event.clientX - 430;
+		if (y < 10) y = 10;
+		if (y + 430 > window.innerHeight) y = window.innerHeight - 430;
+
+		coordPopupDiv.style.left = x + "px";
+		coordPopupDiv.style.top = y + "px";
+		coordPopupDiv.style.display = "block";
+	}
+
+	function hideCoordPopup() {
+		if (coordPopupDiv) coordPopupDiv.style.display = "none";
+		besogo.editor.displayHoverCoord(-1);
+	}
+		';
+
 	if (!isset($commentCoordinates)) $commentCoordinates = [];
 	$fn1 = 1;
 	for($i=0; $i<count($commentCoordinates); $i++){
@@ -2133,14 +1961,14 @@
 			for($j=count($n2x)-1; $j>=0; $j--){
 				$n2xx = explode('-', $n2x[$j]);
 				if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-					echo 'function ccIn'.$fn1.$fn2.'(){besogo.editor.displayHoverCoord("'.$n2xx[2].'");}';
-					echo 'function ccOut'.$fn1.$fn2.'(){besogo.editor.displayHoverCoord(-1);}';
+					echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
+					echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
 					array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
 					array_push($dynamicCommentCoords[1], $n2xx[2]);
 					$fn2++;
-				}
-			}
-		}
+	}
+	}
+	}
 		$fn1++;
 	}
 
@@ -2151,32 +1979,30 @@
 		for($j=count($n2x)-1; $j>=0; $j--){
 			$n2xx = explode('-', $n2x[$j]);
 			if(strlen($n2xx[0])>0 && strlen($n2xx[1])>0){
-				echo 'function ccIn'.$fn1.$fn2.'(){besogo.editor.displayHoverCoord("'.$n2xx[2].'");}';
-				echo 'function ccOut'.$fn1.$fn2.'(){besogo.editor.displayHoverCoord(-1);}';
+				echo 'function ccIn' . $fn1 . $fn2 . '(e){showCoordPopup("' . $n2xx[2] . '",e||window.event);}';
+				echo 'function ccOut' . $fn1 . $fn2 . '(){hideCoordPopup();}';
 				array_push($dynamicCommentCoords[0], 'ccIn'.$fn1.$fn2);
 				array_push($dynamicCommentCoords[1], $n2xx[2]);
 				$fn2++;
-			}
-		}
+	}
+	}
 	}
 	$fn1++;
-	?>
+		?>
 
-	function displayResult(result)
-	{
+	function displayResult(result) {
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
-		if(hasRevelation && revelationCounter > 0)
-		{
+		if (hasRevelation && revelationCounter > 0) {
 			revelationEnabled = true;
 			$(".revelation-anchor").css("cursor", "pointer");
 			$("#revelation").attr("src", "/img/hp6.png");
-		}
+	}
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		if(result=='S')
+		if (result == 'S')
 		{
 			problemSolved = true;
 			tagConnectionsEdit.onProblemSolved();
@@ -2187,7 +2013,7 @@
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-			else
+	else
 				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
@@ -2202,24 +2028,24 @@
 				if(set159){
 					document.getElementById("theComment").style.cssText = "visibility:visible;color:green;";
 					document.getElementById("theComment").innerHTML = "xxx";
-				}
+	}
 				if(mode == <?php echo Constants::$TIME_MODE; ?>) {
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","<?php echo $playGreenColor; ?>");
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
 					runXPBar(true);
-				}
+	}
 				if(!noXP) {
 					x2 = "<?php echo $solvedCheck; ?>";
 					if(!doubleXP) {
 						x3 = 1;
-					}else{
+	}else{
 						x3 = 2;
-					}
+	}
 					if(goldenTsumego) {
 						x3 = 1;
-					}
+	}
 					if(goldenTsumego)
 						setCookie("type", "g");
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
@@ -2229,29 +2055,29 @@
 					if(xpReward > userNextlvl) {
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
-					}
+	}
 					<?php if(Auth::isLoggedIn()){ ?>
 					if(mode==1 && levelBar==1){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
-					}
+	}
 					if(mode==1 && levelBar==2){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', '0'); ?>, elo2, 1000, ulvl);
-					}
+	}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
-					<?php } ?>
+	<?php } ?>
 					noXP = true;
-				}else{
+	}else{
 					if(mode==1){
 						document.cookie = "correctNoPoints=1";
 						if(levelBar==2){
 							runXPBar(true);
 							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
-						}
-					}
-				}
+	}
+	}
+	}
 			} else {//mode 2 correct
 				besogoMode2Solved = true;
 				if(!noXP) {
@@ -2266,21 +2092,21 @@
 					if(xpReward>userNextlvl){
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
-					}
+	}
 					runXPBar(true);
 					if(levelBar==1){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
-					}
+	}
 					if(levelBar==2){
 						runXPBar(true);
 						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
-					}
+	}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
 					noXP = true;
-				}
-			}
+	}
+	}
 			toggleBoardLock(true);
 			displaySettings();
 		} else {//mode 1 and 3 incorrect
@@ -2292,25 +2118,25 @@
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
+	else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
 				if(mode==3) {
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
 					toggleBoardLock(true);
-				}
+	}
 				noLastMark = true;
 				if (mode==1 && levelBar==2 && misplays==0) {
 					elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 					runXPBar(false);
 					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
 					userElo = Math.round(elo2);
-				}
+	}
 				if(!noXP) {
 					if(!freePlayMode){
 						hoverLocked = false;
 						if(mode==1) updateHealth();
-					}
+	}
 					freePlayMode = true;
 					if(mode==1) {
 						if(<?php echo Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) - Auth::getWithDefault('damage', 0); ?> - misplays < 0) {
@@ -2319,16 +2145,16 @@
 								document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow</b>';
 								tryAgainTomorrow = true;
 								toggleBoardLock(true);
-							} else {
+	}else{
 								updateCurrentNavigationButton('X');
 								document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
-							}
-						}
-					}
+	}
+	}
+	}
 					if(goldenTsumego) {
 						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
-					}
-				}
+	}
+	}
 			}else{//mode 2 incorrect
 				elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 				branch = "no";
@@ -2339,7 +2165,7 @@
 				setCookie("mode", mode);
 				if(light==true)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
+	else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
 				if(!noXP){
 					sequence += "incorrect|";
@@ -2352,12 +2178,12 @@
 					if(levelBar==2) {
 						runXPBar(false);
 						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
-					}
+	}
 					userElo = Math.round(elo2);
-				}
-			}
+	}
+	}
 			setCookie("misplays", misplays);
-		}
+	}
 	}
 
 	function toggleBoardLock(t, multipleChoice=false){
@@ -2365,7 +2191,7 @@
 			t = true;
 		if (t)
 			boardLockValue = 1;
-		else
+	else
 			boardLockValue = 0;
 		if(multipleChoice)
 			multipleChoiceEnabled = true;
@@ -2376,7 +2202,7 @@
 		$("#customAlerts").fadeIn(500);
 		if(color==='red')
 			$(".alertBanner").addClass("alertBannerIncorrect");
-		else
+	else
 			$(".alertBanner").addClass("alertBannerCorrect");
 		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
 	}
@@ -2395,7 +2221,7 @@
 			setCookie("misplays", misplays);
 			setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 			updateHealth();
-		}
+	}
 	}
 	</script>
 	<?php if($ui==2){ ?>
@@ -2410,12 +2236,12 @@
 		for (i = 0; i < params.length; i++){
 			value = params[i].split("=");
 			options[value.shift()] = value.join("=");
-		}
+	}
 
 		options.panels = "tree+control";
 		<?php
 		if(Auth::isAdmin()) echo 'options.panels = "tree+control+tool+comment+file";';
-		?>
+					?>
 		options.tsumegoPlayTool = 'auto';
 		options.realstones = true;
 		options.nowheel = true;
@@ -2424,7 +2250,7 @@
 		options.multipleChoiceSetup = [];
 		if(mode!=3)
 		options.alternativeResponse = true;
-		else
+	else
 		options.alternativeResponse = false;
 		<?php
 		if($alternative_response!=1)
@@ -2439,8 +2265,7 @@
 				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
 				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
 				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-			}
-			else if($t['Tsumego']['semeaiType'] == 2){
+				} else if ($t['Tsumego']['semeaiType'] == 2) {
 				$sStatusB = rand(0,$t['Tsumego']['libertyCount']);
 				$sStatusW = rand(0,$t['Tsumego']['libertyCount']);
 			}else if($t['Tsumego']['semeaiType'] == 3){
@@ -2463,7 +2288,7 @@
 			}else if($t['Tsumego']['semeaiType'] == 6){
 				$sStatusB = rand(0,$t['Tsumego']['variance']);
 				$sStatusW = rand(0,$t['Tsumego']['variance']);
-			}
+	}
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
@@ -2480,7 +2305,7 @@
 				else a2.push(0);
 				sStatusB--;
 				sStatusW--;
-			}
+	}
 			let a3 = a1.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a4 = a2.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a5 = [];
@@ -2497,8 +2322,8 @@
 			a5.push("'.$tv['TsumegoVariant']['answer4'].'");
 			customMultipleChoiceAnswer = '.$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
-		}
-		?>
+	}
+	?>
 		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
 		options.corner = shuffledCornerArray[0];
@@ -2514,29 +2339,27 @@
 		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
 		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
-		if (options.height && options.width && options.resize === 'fixed')
-		{
+			if (options.height && options.width && options.resize === 'fixed') {
 			div.style.height = options.height + 'px';
 			div.style.width = options.width + 'px';
-		}
+	}
 		options.reviewMode = false;
 		options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
 		if($requestSolution)
 			echo 'options.reviewEnabled = true;';
-	?>
+		?>
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerDisplayResult(displayResult);
-	besogo.editor.registerShowComment(function(commentText)
-		{
+			besogo.editor.registerShowComment(function(commentText) {
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
 			$("#theComment").text(commentText);
-		});
-	function addStyleLink(cssURL)
-	{
+			});
+
+			function addStyleLink(cssURL) {
 		var element = document.createElement('link');
 		element.href = cssURL;
 		element.type = 'text/css';
@@ -2549,22 +2372,29 @@
 		for($i=0; $i<count($dynamicCommentCoords[0]); $i++){
 			echo 'besogo.editor.dynamicCommentCoords("'.$dynamicCommentCoords[0][$i].'", "'.$dynamicCommentCoords[1][$i].'");';
 			echo 'besogo.editor.adjustCommentCoords();';
-		}
-	?>
+	}
+		?>
 	</script>
-	<?php } ?>
+<?php } ?>
 	<style>
 		#msg2,
 		#msg4,
 		#msg5 {
 			display: none;
-		}
-		.besogo-panels{display: none;flex-basis: 50%;}
+	}
+
+	.besogo-panels {
+		display: none;
+		flex-basis: 50%;
+	}
+
 		#msgFilters{
 			display:inline-block;
 			margin:0 4px 8px
-		}
-		#showFilters, .showFilters{
+	}
+
+	#showFilters,
+	.showFilters {
 				<?php
 			$displayNone = false;
 			if($set['Set']['id']==1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
@@ -2577,7 +2407,6 @@
 				$displayNone = true;
 			if($displayNone)
 				echo 'display:none;';
-			?>
-			margin:8px 4px;
-		}
+		?>margin: 8px 4px;
+	}
 	</style>

@@ -701,11 +701,11 @@ class TsumegosController extends AppController
 				$a = substr($c, 0, (int) $n2xx[0]);
 				$cx = substr($c, (int) $n2xx[0], (int) $n2xx[1] - (int) $n2xx[0] + 1);
 				if ($noSyntax)
-					$b = '<a href="#" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '()" onmouseout="ccOut' . $counter . $fn . '()" return false;>';
+					$b = '<span class="go-coord" title="Hover to highlight on board" id="ccIn' . $counter . $fn . '" onmouseover="ccIn' . $counter . $fn . '(event)" onmouseout="ccOut' . $counter . $fn . '()">';
 				else
-					$b = '<a href=\"#\" title="original: ' . $cx . '" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '()\" onmouseout=\"ccOut' . $counter . $fn . '()\" return false;>';
+					$b = '<span class=\"go-coord\" title="Hover to highlight on board" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '(event)\" onmouseout=\"ccOut' . $counter . $fn . '()\">';
 
-				$d = '</a>';
+				$d = '</span>';
 				$e = substr($c, $n2xx[1] + 1, strlen($c) - 1);
 				$coordForBesogo[$i] = $cx;
 				$c = $a . $b . $cx . $d . $e;

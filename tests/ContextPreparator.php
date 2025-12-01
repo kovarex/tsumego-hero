@@ -12,6 +12,8 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->deleteAll(['1 = 1']);                // FK to: User, Tsumego
 		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);    // FK to: TimeModeSession
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
+		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
+		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
@@ -142,6 +144,7 @@ class ContextPreparator
 		if (!$singleSgf && !$multipleSgfs)
 			$this->prepareTsumegoSgf(self::defaultSgf(), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
 		return $tsumego;
 	}
@@ -214,15 +217,49 @@ class ContextPreparator
 			$this->prepareTsumegoComment($tsumegoComment, $tsumego);
 	}
 
-	private function prepareTsumegoComment(array $commentInput, $tsumego): void
+	private function prepareTsumegoComment(array $commentInput, $tsumego, ?int $issueId = null): void
 	{
-		ClassRegistry::init('Comment')->create();
+		ClassRegistry::init('TsumegoComment')->create();
 		$comment = [];
 		$comment['message'] = Util::extract('message', $commentInput);
 		$comment['tsumego_id'] = $tsumego['id'];
 		$comment['user_id'] = $this->user['id'];
-		ClassRegistry::init('Comment')->save($comment);
+		if ($issueId !== null)
+			$comment['tsumego_issue_id'] = $issueId;
+		ClassRegistry::init('TsumegoComment')->save($comment);
 		$this->checkOptionsConsumed($commentInput);
+	}
+
+	private function prepareTsumegoIssues(?array $tsumegoIssues, $tsumego): void
+	{
+		if (!$tsumegoIssues)
+			return;
+		foreach ($tsumegoIssues as $tsumegoIssue)
+			$this->prepareTsumegoIssue($tsumegoIssue, $tsumego);
+	}
+
+	private function prepareTsumegoIssue(array $issueInput, $tsumego): void
+	{
+		App::uses('TsumegoIssue', 'Model');
+
+		// Create the issue
+		ClassRegistry::init('TsumegoIssue')->create();
+		$issue = [];
+		$issue['tsumego_id'] = $tsumego['id'];
+		$issue['user_id'] = $this->user['id'];
+		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
+		ClassRegistry::init('TsumegoIssue')->save($issue);
+
+		// Get the created issue ID
+		$createdIssue = ClassRegistry::init('TsumegoIssue')->find('first', ['order' => 'id DESC']);
+		$issueId = $createdIssue['TsumegoIssue']['id'];
+
+		// Create initial comment for the issue
+		$message = Util::extract('message', $issueInput);
+		if ($message)
+			$this->prepareTsumegoComment(['message' => $message], $tsumego, $issueId);
+
+		$this->checkOptionsConsumed($issueInput);
 	}
 
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void
@@ -472,10 +509,60 @@ class ContextPreparator
 		}
 	}
 
+	/**
+	 * Ensures admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants.
+	 * This is needed because the test database might have stale or incorrect IDs.
+	 */
+	private function ensureAdminActivityTypes(): void
+	{
+		App::uses('AdminActivityLogger', 'Utility');
+
+		// Define all activity types with their correct IDs from AdminActivityLogger constants
+		$types = [
+			AdminActivityLogger::DESCRIPTION_EDIT => 'Description Edit',
+			AdminActivityLogger::HINT_EDIT => 'Hint Edit',
+			AdminActivityLogger::PROBLEM_DELETE => 'Problem Delete',
+			AdminActivityLogger::ALTERNATIVE_RESPONSE => 'Alternative Response',
+			AdminActivityLogger::PASS_MODE => 'Pass Mode',
+			AdminActivityLogger::MULTIPLE_CHOICE => 'Multiple Choice',
+			AdminActivityLogger::SCORE_ESTIMATING => 'Score Estimating',
+			AdminActivityLogger::SOLUTION_REQUEST => 'Solution Request',
+			AdminActivityLogger::SET_TITLE_EDIT => 'Set Title Edit',
+			AdminActivityLogger::SET_DESCRIPTION_EDIT => 'Set Description Edit',
+			AdminActivityLogger::SET_COLOR_EDIT => 'Set Color Edit',
+			AdminActivityLogger::SET_ORDER_EDIT => 'Set Order Edit',
+			AdminActivityLogger::SET_RATING_EDIT => 'Set Rating Edit',
+			AdminActivityLogger::PROBLEM_ADD => 'Problem Add',
+			AdminActivityLogger::SET_ALTERNATIVE_RESPONSE => 'Set Alternative Response',
+			AdminActivityLogger::SET_PASS_MODE => 'Set Pass Mode',
+			AdminActivityLogger::DUPLICATE_REMOVE => 'Duplicate Remove',
+			AdminActivityLogger::DUPLICATE_GROUP_CREATE => 'Duplicate Group Create',
+		];
+
+		$adminActivityType = ClassRegistry::init('AdminActivityType');
+
+		// Clear existing entries and repopulate with correct IDs
+		$adminActivityType->deleteAll(['1 = 1']);
+
+		foreach ($types as $id => $name)
+		{
+			$adminActivityType->create();
+			$adminActivityType->save([
+				'AdminActivityType' => [
+					'id' => $id,
+					'name' => $name,
+				]
+			], false);
+		}
+	}
+
 	public function prepareAdminActivities(?array $adminActivities): void
 	{
 		if (!$adminActivities)
 			return;
+
+		// Ensure admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants
+		$this->ensureAdminActivityTypes();
 
 		foreach ($adminActivities as $activityInput)
 		{
