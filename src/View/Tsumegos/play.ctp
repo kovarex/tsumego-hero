@@ -30,7 +30,7 @@
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
 <script src ="/js/previewBoard.js"></script>
-<script src ="/js/TagConnectionsEdit.js?v=2"></script>
+<script src ="/js/TagConnectionsEdit.js?v=3"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){
@@ -1627,7 +1627,7 @@
 
 	$('.tag-container').on('click', "#open-add-tag-menu", function(e)
 	{
-		tagConnectionsEdit.actiateEdit();
+		tagConnectionsEdit.activateEdit();
 		$("#open-add-tag-menu").hide();
 		$(".add-tag-list").hide();
 		$(".add-tag-list-popular").show();

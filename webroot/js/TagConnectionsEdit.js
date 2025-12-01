@@ -101,7 +101,7 @@ class TagConnectionsEdit
 		this.updateTagToAddList('add-tag-list', false);
 	}
 
-	actiateEdit()
+	activateEdit()
 	{
 		this.editActivated = true;
 		this.draw();
