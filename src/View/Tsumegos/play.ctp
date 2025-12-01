@@ -675,7 +675,7 @@ if (
 	var multipleChoiceSelected = false;
 	var safetyLock = false;
 	var msg2selected = false;
-	var msg2xselected = true; // Comments content visible by default
+	var msg2xselected = false;
 	var msg3selected = false;
 	var msg4selected = false;
 	var msg5selected = false;
