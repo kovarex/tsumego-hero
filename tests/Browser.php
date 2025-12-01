@@ -172,6 +172,16 @@ class Browser
 		);
 	}
 
+	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 5): void
+	{
+		new WebDriverWait($this->driver, $timeout, 500)->until(
+			function () use ($selector) {
+				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				return count($elements) == 0;
+			}
+		);
+	}
+
 	public function ignoreJsErrorPattern(string $pattern): void
 	{
 		$this->ignoredJsErrorPatterns[] = $pattern;

@@ -187,6 +187,12 @@ class TagTest extends ControllerTestCase
 			$browser = Browser::instance();
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari"));
+			$this->assertNotEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]));
+
+			$browser->clickId("remove-tag-atari");
+			$browser->waitUntilCssSelectorDoesntExist(".tag-list #tag-atari");
+			$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-atari"));
+			$this->assertEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]));
 		}
 	}
 
