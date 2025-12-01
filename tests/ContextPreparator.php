@@ -32,6 +32,7 @@ class ContextPreparator
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
+		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
 	}
 
@@ -124,6 +125,7 @@ class ContextPreparator
 		$tsumego = [];
 		$tsumego['description'] = 'test-tsumego';
 		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
+		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -320,22 +322,27 @@ class ContextPreparator
 
 	private function prepareTsumegoTags($tagsInput, &$tsumego): void
 	{
-		if ($tagsInput)
+		if (!$tagsInput)
+			return;
+
+		ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
+		foreach ($tagsInput as $tagInput)
 		{
-			ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
-			foreach ($tagsInput as $tagInput)
-			{
-				$tag = $this->getOrCreateTag($tagInput['name']);
-				$tagConnection = [];
-				$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
-				$tagConnection['TagConnection']['user_id'] = $this->user['id'];
-				$tagConnection['TagConnection']['tag_id'] = $tag['id'];
-				ClassRegistry::init('TagConnection')->create($tagConnection);
-				ClassRegistry::init('TagConnection')->save($tagConnection);
-				$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
-				$tsumego['tags'] [] = $tag;
-				$tsumego['tag-connections'] [] = $tagConnection;
-			}
+			$tag = $this->getOrCreateTag([
+				'name' => Util::extract('name', $tagInput),
+				'popular' => Util::extract('popular', $tagInput) ?: false]);
+			$tagConnection = [];
+			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
+			$tagConnection['TagConnection']['user_id'] = self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'];
+			$tagConnection['TagConnection']['tag_id'] = $tag['id'];
+			$approved = Util::extract('approved', $tagInput);
+			$tagConnection['TagConnection']['approved'] = !is_null($approved) ? $approved : 1;
+			ClassRegistry::init('TagConnection')->create($tagConnection);
+			ClassRegistry::init('TagConnection')->save($tagConnection);
+			$tagConnection = ClassRegistry::init('TagConnection')->find('first', ['order' => ['id' => 'DESC']])['TagConnection'];
+			$tsumego['tags'] [] = $tag;
+			$tsumego['tag-connections'] [] = $tagConnection;
+			$this->checkOptionsConsumed($tagInput);
 		}
 	}
 
@@ -369,18 +376,25 @@ class ContextPreparator
 		return $set['Set'];
 	}
 
-	private function getOrCreateTag($name): array
+	private function getOrCreateTag($tagInput): array
 	{
+		$name = Util::extract('name', $tagInput);
 		$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		if (!$tag)
 		{
 			$tag = [];
+			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
 			// reloading so the generated id is retrieved
 			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
+		else
+			Util::extract('popular', $tagInput);
+
+		$this->checkOptionsConsumed($tagInput);
+		$this->tags[] = $tag['Tag'];
 		return $tag['Tag'];
 	}
 
@@ -476,9 +490,7 @@ class ContextPreparator
 			$dayRecord['date'] = Util::extract('date', $dayRecordInput) ?: date('Y-m-d');
 			$dayRecord['solved'] = Util::extract('solved', $dayRecordInput) ?: 0;
 			$dayRecord['quote'] = Util::extract('quote', $dayRecordInput) ?: 'q13';
-			$dayRecord['userbg'] = Util::extract('userbg', $dayRecordInput) ?: 1;
-			$dayRecord['tsumego'] = Util::extract('tsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
-			$dayRecord['newTsumego'] = Util::extract('newTsumego', $dayRecordInput) ?: ($this->tsumego ? $this->tsumego['id'] : 1);
+			$dayRecord['tsumego_count'] = Util::extract('tsumego_count', $dayRecordInput) ?: 0;
 			$dayRecord['usercount'] = Util::extract('usercount', $dayRecordInput) ?: 1;
 			$dayRecord['visitedproblems'] = Util::extract('visitedproblems', $dayRecordInput) ?: 0;
 			$dayRecord['gems'] = Util::extract('gems', $dayRecordInput) ?: '0-0-0';
@@ -611,6 +623,13 @@ class ContextPreparator
 		}
 	}
 
+	public function prepareTags($tagsInput): void
+	{
+		if (!$tagsInput)
+			return;
+		foreach ($tagsInput as $tagInput)
+			$this->getOrCreateTag($tagInput);
+	}
 
 	public function addFavorite($tsumego)
 	{
@@ -634,6 +653,13 @@ class ContextPreparator
 		$result -= $this->lastXp;
 		$this->lastXp = $toBeLastXP;
 		return $result;
+	}
+
+	public static function getUserIdFromName($input): ?int
+	{
+		if (!$input)
+			return null;
+		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $input]])['User']['id'];
 	}
 
 	public ?array $user = null;

@@ -1,7 +1,22 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+	# WebP Support: Serve WebP images when browser supports and file exists
+	# Browser sends "Accept: image/webp" -> we serve .webp instead of .png/.jpg
+	RewriteCond %{HTTP_ACCEPT} image/webp
+	RewriteCond %{REQUEST_URI} ^(.+)\.(jpe?g|png)$
+	RewriteCond %{DOCUMENT_ROOT}%1.webp -f
+	RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,L]
+
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteRule ^ index.php [L]
+	RewriteRule ^(.+)$ index.php [QSA,L]
+</IfModule>
+
+# Add Vary: Accept header for proper caching of image content negotiation
+<IfModule mod_headers.c>
+	<FilesMatch "\.(png|jpe?g|webp)$">
+		Header set Vary "Accept"
+	</FilesMatch>
 </IfModule>

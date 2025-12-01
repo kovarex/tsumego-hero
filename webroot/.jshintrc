@@ -18,5 +18,6 @@
     "strict": true, // strict mode
     "trailing": true, // we hate trailing whitespace
     "node": true, // understand Node.js require, exports and module globals
-    "browser": false // Few globals defined on per-access basis
+    "browser": false, // Few globals defined on per-access basis
+	"esversion": 11
 }

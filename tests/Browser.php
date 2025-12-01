@@ -290,5 +290,10 @@ class Browser
 		return $browser;
 	}
 
+	public function getAlertText()
+	{
+		return $this->driver->switchTo()->alert()->getText();
+	}
+
 	public $driver;
 }

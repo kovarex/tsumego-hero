@@ -45,7 +45,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		ClassRegistry::init('User')->save($user);
 
 		$this->assertNull(CakeSession::read('loggedInUserID'));
-		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => 'test']], 'method' => 'POST']);
+		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => 'test'], 'method' => 'POST']);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 	}
 
@@ -182,17 +182,23 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$user['passwordreset'] = $resetSecret;
 		ClassRegistry::init('User')->save($user);
 
+		$browser = Browser::instance();
 		$this->assertNull(CakeSession::read('loggedInUserID'));
+		$browser->get('users/newpassword/' . $resetSecret);
+		$browser->clickId("password");
 		$newPassword = Util::generateRandomString(20);
-
-		$this->testAction('users/newpassword/' . $resetSecret, ['data' => ['User' => ['password' => $newPassword]], 'method' => 'POST']);
+		$browser->driver->getKeyboard()->sendKeys($newPassword);
+		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserNewpasswordForm input[type="submit"]'));
+		$sumbitButton->click();
+		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->driver->getCurrentURL());
+		$this->assertTextContains("Password changed", $browser->driver->getPageSource());
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];
 		$this->assertNull($newUser['passwordreset']); // password reset was cleared
 		$this->assertNull(CakeSession::read('loggedInUserID'));
 		$this->assertFalse(Auth::isLoggedIn());
 
-		$this->testAction('users/login/', ['data' => ['User' => ['name' => 'kovarex', 'password' => $newPassword]], 'method' => 'POST']);
+		$this->testAction('users/login/', ['data' => ['username' => 'kovarex', 'password' => $newPassword], 'method' => 'POST']);
 		$this->assertNotNull(CakeSession::read('loggedInUserID'));
 
 		// changing the password to test again to not break other tests

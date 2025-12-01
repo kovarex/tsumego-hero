@@ -1,4 +1,4 @@
-﻿<script src ="/js/previewBoard.js"></script>
+<script src ="/js/previewBoard.js"></script>
 <?php
 	if(!Auth::isLoggedIn())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
@@ -14,7 +14,7 @@
 			$comments[$i]['TsumegoComment']['textAnswer'] = $comments[$i]['TsumegoComment']['status'];
 			$comments[$i]['TsumegoComment']['status'] = 100;
 		}
-		}
+	}
 	if(count($comments)!=11){
 		$num1 = $comments[0]['TsumegoComment']['counter']+9;
 		for($j=0; $j<10; $j++){
@@ -27,7 +27,7 @@
 			$num1 = $comments[$j]['TsumegoComment']['counter'];
 			$idToken1 = $comments[$j]['TsumegoComment']['id'];
 		}
-		}
+	}
 ?>
 
 <div class="imp">
@@ -104,7 +104,7 @@
 				?>
 				<br><br>
 			</div>
-			</div>
+		</div>
 		<?php
 			for($j=0; $j<10; $j++){
 				if(isset($comments[$j]['TsumegoComment']['user_name'])){
@@ -187,7 +187,7 @@
 										<div align="center">
 
 										</div>
-										</div>
+									</div>
 								</td>
 							</tr>';
 							}
@@ -256,7 +256,7 @@
 			?>
 			<br><br>
 		</div>
-		</div>
+	</div>
 	</td>
 	<?php
 		$yourempty = false;
@@ -270,7 +270,7 @@
 				$yourComments[$i]['TsumegoComment']['textAnswer'] = $yourComments[$i]['TsumegoComment']['status'];
 				$yourComments[$i]['TsumegoComment']['status'] = 100;
 			}
-			}
+		}
 		if(count($yourComments)!=11){
 			$yournum1 = $yourComments[0]['TsumegoComment']['counter']+9;
 			for($j=0; $j<10; $j++){
@@ -307,7 +307,7 @@
 				?>
 				<br><br>
 			</div>
-			</div>
+		</div>
 		<?php
 
 			for($j=0; $j<10; $j++){
@@ -406,13 +406,13 @@
 			?>
 			<br><br>
 
-								</div>
-								</div>
+		</div>
+	</div>
 
 	</td>
 	</tr>
 	</table>
-								</div>
+</div>
 <?php
 //echo '<pre>';print_r($comments);echo '</pre>';
 ?>
@@ -468,7 +468,7 @@
 				echo 'tooltipSgfs2['.$a.'] = [];';
 				for($y=0; $y<count($tooltipSgfs2[$a]); $y++){
 					echo 'tooltipSgfs2['.$a.']['.$y.'] = [];';
-					for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
+					for($x=0; $x<count($tooltipSgfs2[$a][$y]); $x++){
 						echo 'tooltipSgfs2['.$a.']['.$y.'].push("'.$tooltipSgfs2[$a][$x][$y].'");';
 						}
 						}
@@ -512,7 +512,7 @@
 				background: #e5e5e5;
 				color:#666;
 
-						}
+			}
 			.unresolved-tab-panel{
 				display: none;
 				color:#666;
@@ -523,7 +523,7 @@
 			.unresolved-tab-panel.unresolved-active{
 				display: block;
 
-						}
+			}
 			.unresolved-tab-list p{
 				margin: 20px;
 						}

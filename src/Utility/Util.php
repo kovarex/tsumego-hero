@@ -2,18 +2,40 @@
 
 class Util
 {
+	public static function getCookieDomain(): ?string
+	{
+		$host = preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '');
+		return $host;
+	}
+
 	public static function setCookie($name, $value)
 	{
-		setcookie($name, $value, time() + 365 * 24 * 60 * 60, "/", "", true, false);
+		setcookie($name, $value, [
+			'expires'  => time() + 365 * 24 * 60 * 60,
+			'path'     => '/',
+			'domain'   => Util::getCookieDomain(),
+			'secure'   => true,
+			'httponly' => false,
+			'samesite' => 'Lax'
+		]);
 	}
 
 	/* @return The value of the cleared cookie */
 	public static function clearCookie(string $name): ?string
 	{
-		$result = !empty($_COOKIE[$name]) ? $_COOKIE[$name] : null;
-		setcookie($name, '', 1, "/", "", true, false);
-		$_COOKIE[$name] = '';
-		return $result;
+		$previous = $_COOKIE[$name] ?? null;
+		setcookie($name, '',
+			[
+				'expires'  => time() - 3600,
+				'path'     => '/',
+				'domain'   => self::getCookieDomain(),
+				'secure'   => true,
+				'httponly' => false,
+				'samesite' => 'Lax'
+			]);
+
+		unset($_COOKIE[$name]);
+		return $previous;
 	}
 
 	/* @return Int value of the cleared cookie, returns null if the cookeie isn't present. throws if it isn't numeric */
@@ -51,7 +73,7 @@ class Util
 		return $randomString;
 	}
 
-	public static function getPercentButAvoid100UntillComplete(int $value, int $max): int
+	public static function getPercentButAvoid100UntilComplete(int $value, int $max): int
 	{
 		assert($value <= $max);
 		$result = (int) round(Util::getRatio($value, $max));
@@ -60,24 +82,22 @@ class Util
 		return $result;
 	}
 
-	public static function wierdEncrypt(string $str): string
+	private const SECRET_KEY = 'my_simple_secret_keyx';
+	private const SECRET_IV = 'my_simple_secret_ivx';
+	private const ENCRYPT_METHOD = 'AES-256-CBC';
+
+	public static function encrypt(string $str): string
 	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
+		$key = hash('sha256', self::SECRET_KEY);
+		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
+		return base64_encode(openssl_encrypt($str, self::ENCRYPT_METHOD, $key, 0, $iv));
 	}
 
-	public static function wierdDecrypt(string $str): string
+	public static function decrypt(string $str): string
 	{
-		$secret_key = 'my_simple_secret_keyx';
-		$secret_iv = 'my_simple_secret_ivx';
-		$encrypt_method = 'AES-256-CBC';
-		$key = hash('sha256', $secret_key);
-		$iv = substr(hash('sha256', $secret_iv), 0, 16);
-		return openssl_decrypt(base64_decode($str), $encrypt_method, $key, 0, $iv);
+		$key = hash('sha256', self::SECRET_KEY);
+		$iv = substr(hash('sha256', self::SECRET_IV), 0, 16);
+		return openssl_decrypt(base64_decode($str), self::ENCRYPT_METHOD, $key, 0, $iv);
 	}
 
 	public static function extract(string $name, array &$inputArray)
@@ -173,5 +193,13 @@ class Util
 	public static function getHealthBasedOnLevel(int $level): int
 	{
 		return intdiv($level, 5) + 10;
+	}
+
+	public static function query($sql, $params = [])
+	{
+		/** @phpstan-ignore-next-line */
+		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 }

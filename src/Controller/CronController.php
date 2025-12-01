@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoUtil', 'Util');
+
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
@@ -13,8 +15,10 @@ class CronController extends AppController
 		}
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
-		self::userOfTheDay();
+		self::createDayRecord();
+		self::publish();
 		$this->dailyUsersReset();
+		$this->updatePopularTags();
 
 		$this->response->statusCode(200);
 		return $this->response;
@@ -85,7 +89,7 @@ WHERE
 		throw new Exception("Quote couldn't be generated");
 	}
 
-	private function userOfTheDay()
+	private function createDayRecord()
 	{
 		$userOfTheDay = self::deduceUserOfTheDay();
 		$currentQuote = self::deduceQuoteToUse();
@@ -132,21 +136,19 @@ WHERE
 		ClassRegistry::init('Achievement')->save($arch3);
 
 		ClassRegistry::init('DayRecord')->create();
-		$dateUser = [];
-		$dateUser['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
-		$dateUser['DayRecord']['date'] = $today;
-		$dateUser['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
-		$dateUser['DayRecord']['quote'] = $currentQuote;
-		$dateUser['DayRecord']['tsumego'] = self::getTsumegoOfTheDay();
-		$dateUser['DayRecord']['userbg'] = 0;
-		$dateUser['DayRecord']['newTsumego'] = $this->getNewTsumego();
-		$dateUser['DayRecord']['usercount'] = count($usersNum);
-		$dateUser['DayRecord']['visitedproblems'] = $visitedProblems;
-		$dateUser['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
-		$dateUser['DayRecord']['gemCounter1'] = 0;
-		$dateUser['DayRecord']['gemCounter2'] = 0;
-		$dateUser['DayRecord']['gemCounter3'] = 0;
-		ClassRegistry::init('DayRecord')->save($dateUser);
+		$dayRecord = [];
+		$dayRecord['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
+		$dayRecord['DayRecord']['date'] = $today;
+		$dayRecord['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
+		$dayRecord['DayRecord']['quote'] = $currentQuote;
+		$dayRecord['DayRecord']['usercount'] = count($usersNum);
+		$dayRecord['DayRecord']['visitedproblems'] = $visitedProblems;
+		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
+		$dayRecord['DayRecord']['gemCounter1'] = 0;
+		$dayRecord['DayRecord']['gemCounter2'] = 0;
+		$dayRecord['DayRecord']['gemCounter3'] = 0;
+		$dayRecord['DayRecord']['tsumego_count'] = TsumegoUtil::currentTsumegoCount();
+		ClassRegistry::init('DayRecord')->save($dayRecord);
 
 		ClassRegistry::init('AchievementCondition')->create();
 		$achievementCondition = [];
@@ -157,149 +159,16 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
-	public static function getTsumegoOfTheDay()
-	{
-		$ut = ClassRegistry::init('TsumegoRatingAttempt')->find('all', ['limit' => 10000, 'order' => 'created DESC', 'conditions' => ['status' => 'S']]) ?: [];
-		$out = ClassRegistry::init('TsumegoAttempt')->find('all', ['limit' => 30000, 'order' => 'created DESC', 'conditions' => ['gain >=' => 40]]) ?: [];
-		$date = date('Y-m-d', strtotime('yesterday'));
-		$s = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
-		$ids = [];
-		$utCount = count($ut);
-		for ($i = 0; $i < $utCount; $i++)
-		{
-			$date2 = new DateTime($ut[$i]['TsumegoRatingAttempt']['created']);
-			$date2 = $date2->format('Y-m-d');
-			if ($date === $date2)
-				array_push($ids, $ut[$i]['TsumegoRatingAttempt']['tsumego_id']);
-		}
-		$ids = array_count_values($ids);
-		$highest = 0;
-		$best = [];
-		foreach ($ids as $key => $value)
-			if ($value > $highest)
-				$highest = $value;
-		foreach ($ids as $key => $value)
-			if ($value == $highest)
-			{
-				$x = [];
-				$x[$key] = $value;
-				array_push($best, $x);
-			}
-		$ids2 = [];
-		$out2 = [];
-		$outCount = count($out);
-		for ($i = 0; $i < $outCount; $i++)
-		{
-			$date2 = new DateTime($out[$i]['TsumegoAttempt']['updated']);
-			$date2 = $date2->format('Y-m-d');
-			if ($date === $date2)
-			{
-				array_push($ids2, $out[$i]['TsumegoAttempt']['tsumego_id']);
-				array_push($out2, $out[$i]);
-			}
-		}
-		$ids2 = array_count_values($ids2);
-		$highest = 0;
-		$best2 = [];
-		foreach ($ids2 as $key => $value)
-			if ($value > $highest)
-				$highest = $value;
-		$done = false;
-		$found = 0;
-		$decrement = 0;
-		$best3 = [];
-		$findNum = 20;
-		if (count($ids2))
-			while (!$done)
-			{
-				foreach ($ids2 as $key => $value)
-					if ($value == $highest - $decrement)
-					{
-						array_push($best2, $key);
-						array_push($best3, $value);
-						$found++;
-					}
-				$decrement++;
-				if ($found < $findNum)
-					$done = false;
-				else
-					$done = true;
-			}
-		$newBest = [];
-		for ($j = 0; $j < $findNum; $j++)
-		{
-			$newBest[$j] = [];
-			$newBest[$j]['sum'] = 0;
-		}
-		$out2Count = count($out2);
-		for ($i = 0; $i < $out2Count; $i++)
-			for ($j = 0; $j < $findNum; $j++)
-				if ($out2[$i]['TsumegoAttempt']['tsumego_id'] == $best2[$j])
-				{
-					$x = [];
-					$x['tid'] = $out2[$i]['TsumegoAttempt']['tsumego_id'];
-					$tx = ClassRegistry::init('Tsumego')->findById($x['tid']);
-					$scT = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tx['Tsumego']['id']]]);
-					$tx['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-					$x['sid'] = $tx['Tsumego']['set_id'];
-					$x['status'] = $out2[$i]['TsumegoAttempt']['solved'];
-					$x['seconds'] = $out2[$i]['TsumegoAttempt']['seconds'];
-
-					$newBest[$j][] = $x;
-				}
-		$newBestCount = count($newBest);
-		for ($i = 0; $i < $newBestCount; $i++)
-		{
-			$sum = 0;
-			$newBestICount = count($newBest[$i]);
-			for ($j = 0; $j < $newBestICount; $j++)
-				if ($newBest[$i][$j]['seconds'] != null)
-				{
-					if ($newBest[$i][$j]['seconds'] > 300)
-						$newBest[$i][$j]['seconds'] = 300;
-					$sum += $newBest[$i][$j]['seconds'];
-				}
-			$sum = $sum * count($newBest[$i]);
-			$newBest[$i]['sum'] = $sum;
-		}
-		$highest = 0;
-		$hid = 0;
-		$newBestCount = count($newBest);
-		for ($i = 0; $i < $newBestCount; $i++)
-			if (isset($newBest[$i]['sum'])
-				&& $newBest[$i]['sum'] > $highest
-				&& $newBest[$i][0]['sid'] != 104
-				&& $newBest[$i][0]['sid'] != 105
-				&& $newBest[$i][0]['sid'] != 117)
-			{
-				$yesterday = false;
-				$sCount = count($s);
-				for ($j = 0; $j < $sCount; $j++)
-					if ($newBest[$i][0]['tid'] == $s[$j]['Schedule']['tsumego_id'])
-						$yesterday = true;
-				if (!$yesterday)
-				{
-					$highest = $newBest[$i]['sum'];
-					$hid = $i;
-				}
-			}
-
-		return $newBest[$hid][0]['tid'];
-	}
-
-	public static function getNewTsumego()
+	public static function publish()
 	{
 		$date = date('Y-m-d', strtotime('today'));
 		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
-		$id = 0;
 		foreach ($todaysSchedule as $item)
 		{
 			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
 			$item['Schedule']['published'] = 1;
 			ClassRegistry::init('Schedule')->save($item);
 		}
-
-		return $id;
 	}
 
 	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
@@ -329,5 +198,19 @@ WHERE
 		$x['PublishDate']['tsumego_id'] = $tsumegoID;
 		ClassRegistry::init('PublishDate')->create();
 		ClassRegistry::init('PublishDate')->save($x);
+	}
+
+	private static function updatePopularTags()
+	{
+		ClassRegistry::init('Tag')->query("
+UPDATE tag
+JOIN (
+    SELECT tag_id
+    FROM tag_connection
+    GROUP BY tag_id
+    ORDER BY COUNT(*) DESC
+    LIMIT " . Tag::$POPULAR_COUNT . "
+) AS top_tags ON tag.id = top_tags.tag_id
+SET tag.popular = 1;");
 	}
 }

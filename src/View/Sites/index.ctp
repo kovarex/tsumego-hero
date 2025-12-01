@@ -7,9 +7,8 @@
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<div class="homeRight">
 		<div class="new-tsumego-box">
-			<p class="title-date"><?php echo $d1; ?></p>
 			<?php
-			if (!empty($tsumegoButtonsOfPublishedTsumegos))
+			if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 			{
 				echo '<font color="#f0f0f0">Added today:</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
@@ -27,25 +26,6 @@
 				echo '<br><br><div class="new-tsumego-box-separator"></div>';
 			}
 			?>
-			<font color="#f0f0f0">Most popular today:</font><br>
-			<?php if($totd && !$totd['Tsumego']['locked']){ ?>
-				<a id="mostPopularToday" href="/sets/view/<?php echo $totd['Tsumego']['set_id']; ?>"><b>
-					<?php echo $totd['Tsumego']['set'].' '.$totd['Tsumego']['set2']; ?></b> - <?php echo $totd['Tsumego']['num']; ?></a><br>
-				<li class="set<?php echo $totd['Tsumego']['status']; ?>1" style="margin-top:8px;">
-					<a id="tooltip-hover99" class="tooltip" href="/tsumegos/play/<?php echo $totd['Tsumego']['id'].'?search=topics'; ?>">
-						<?php echo $totd['Tsumego']['num']; ?>
-						<span><div id="tooltipSvg99"></div></span>
-					</a>
-				</li>
-			<?php }else{ ?>
-				<a id="mostPopularToday" href="/users/donate"><b>
-					<?php echo $totd['Tsumego']['set'].' '.$totd['Tsumego']['set2']; ?></b> - <?php echo $totd['Tsumego']['num']; ?></a><br>
-				<li class="set<?php echo $totd['Tsumego']['status']; ?>1" style="margin-top:8px;background-image: url('/img/viewButtonLocked.png');">
-					<a class="tooltip" href="/users/donate">
-						&nbsp;
-					</a>
-				</li>
-			<?php } ?>
 			<br><br><div style="margin-top:6px"></div>
 		</div>
 
@@ -409,7 +389,15 @@
 			<div class="modeBox44" onmouseover="mode4hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php } ?>
+
 		<img src="/img/new_startpage/<?php echo $achievementImage; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
+
+		<p class="title4">Update 30.11.2025</p>
+		<div class="new1">
+			<p>There is a lot of work going on. More details can be found in the forum posts</p>
+			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
+			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
+		</div>
 
 		<?php if(
 			!Auth::isLoggedIn()
@@ -424,6 +412,7 @@
 			</div>
 			</div>
 		<?php } ?>
+
 		<p class="title4"<?php if(Auth::isLoggedIn()) echo ' style="margin-top:2px;"'; ?>>Recent Upgrades</p>
 		<div class="new1">
 			<table class="newx">
@@ -435,75 +424,6 @@
 		</div>
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
-		<?php
-		$tsumegoDates = array();
-		for($j=0; $j<count($tsumegos); $j++){
-			$date = date_create($tsumegos[$j]);
-			array_push($tsumegoDates, date_format($date,"Y-m-d"));
-		}
-		$tsumegoDates = array_count_values($tsumegoDates);
-		$tsumegoDates['2018-02-07'] = 160;
-		$tsumegoDates['2018-03-11'] = 151;
-		$tsumegoDates['2018-04-10'] = 205;
-		$tsumegoDates['2018-04-25'] = 204;
-		$tsumegoDates['2018-05-04'] = 89;
-		$dt = new DateTime();
-		$dt = $dt->format('Y-m-d');
-		if(!isset($tsumegoDates[$dt])){
-			$tsumegoDates[$dt] = 0.1;
-		}
-		ksort($tsumegoDates);
-
-		$td = array();
-		reset($tsumegoDates);
-		$nextDay = '';
-		$c = 0;
-		while(current($tsumegoDates)){
-			if(key($tsumegoDates)!=$nextDay&&$nextDay!=''){
-				while(key($tsumegoDates)!=$nextDay){
-					$td[$c]['date'] = $nextDay;
-					$td[$c]['num'] = 0;
-					$c++;
-					$nextDay = date_create($nextDay);
-					$nextDay->modify('+1 day');
-					$nextDay = date_format($nextDay,"Y-m-d");
-				}
-
-			}
-			$nextDay = key($tsumegoDates);
-			$nextDay = date_create($nextDay);
-			$nextDay->modify('+1 day');
-			$nextDay = date_format($nextDay,"Y-m-d");
-
-			$td[$c]['date'] = key($tsumegoDates);
-			$td[$c]['num'] = current($tsumegoDates);
-			$c++;
-			next($tsumegoDates);
-		}
-
-		$sum = 0;
-		for($j=0; $j<count($td); $j++){
-			$td[$j]['num'] = $td[$j]['num'] + $sum;
-			$date = date_create($td[$j]['date']);
-
-			if($date==date_create('2019-03-27')) $td[$j]['num'] -= 1277;
-			if($date==date_create('2019-04-25')) $td[$j]['num'] -= 238;
-			if($date==date_create('2019-05-01')) $td[$j]['num'] -= 32;
-			if($date==date_create('2019-05-19')) $td[$j]['num'] -= 40;
-			if($date==date_create('2020-02-22')) $td[$j]['num'] -= 347;
-			if($date==date_create('2023-09-01')) $td[$j]['num'] -= 4;
-			if($date==date_create('2023-10-04')) $td[$j]['num'] -= 10;
-			if($date==date_create('2024-08-18')) $td[$j]['num'] -= 31;
-			$x = $td[$j]['num'];
-			$sum = $x;
-
-			$td[$j]['y'] = $date->format('Y');
-			$td[$j]['m'] = $date->format('m');
-			$td[$j]['m'] = $td[$j]['m'] - 1;
-			$td[$j]['d'] = $date->format('d');
-			$td[$j]['d'] = $td[$j]['d'] * 1;
-		}
-		?>
 		<script>
 		<?php $tsumegoButtonsOfPublishedTsumegos->renderJS(); ?>
 		window.onload = function () {
@@ -532,11 +452,11 @@
 				lineThickness: 3,
 				dataPoints: [
 					<?php
-						for($j=0; $j<count($td); $j++){
-							$td[$j]['num'] = round($td[$j]['num']);
-							echo '{ x: new Date('.$td[$j]['y'].', '.$td[$j]['m'].', '.$td[$j]['d'].'), y: '.$td[$j]['num'].' }';
-							if($j!=count($td)-1) echo ',';
-						}
+						echo implode(",", array_map(function($dayRecord)
+						{
+							$date = new DateTime($dayRecord['DayRecord']['date']);
+							return '{ x: new Date('.$date->format('Y').', '.$date->format('m').', '.$date->format('d').'), y: '.$dayRecord['DayRecord']['tsumego_count'].' }';
+						}, $dayRecords));
 					?>
 				]
 			}]
@@ -552,44 +472,6 @@
 
 		<!-- LEFT NEWS -->
 		<div id="news-left-19">
-			<p class="title4">Update 24.11.2025</p>
-			<div class="new1"><br>
-				Let me introduce you the first in a series of changes to tsumego-hero:
-				<hr>
-				Version: 0.1<br>
-				Date: 24.11.2025<br>
-				<b>Big changes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li style="display: list-item;">The site has moved to the prominent address of tsumego.com.</li><br>
-					<li style="display: list-item;">Refactored big parts of the code, with usage of automated tests.</li><br>
-					<li style="display: list-item;">Removed half-working features for non logged players (hearts, tsumego status, levels).</li><br>
-					<li style="display: list-item;">Added phpbb forums, accessible by home->forums or tsumego.com/forums. The forum users and authentication is automatically linked to the tsumego-hero account.</li><br>
-				</ul>
-				<b>Changes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>XP and rating changes of the current tsumego are always shown when relevant: "what you see is what you get".</li><br>
-					<li>Changed rating formula to be the same as the official tournament rating formula, current modifier is 0.5</li><br>
-				</ul>
-				<b>Optimisations:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>Optimisation of set index, set view and play.</li><br>
-					<li>Decreased the size of html output of some of the pages.</li><br>
-				</ul>
-				<b>Bugfixes:</b>
-				<ul style="list-style: disc; padding-left: 40px;">
-					<li>Unified the sign-in mechanism, should be stable now.</li><br>
-					<li>Changed XP formula to be always based on rating</li><br>
-					<li>Changed the rating->XP distribution, lower Xp for easier problems, and more for harder ones.</li><br>
-					<li>Fixed viewing current filters in the set view</li><br>
-					<li>Fixed expanding time mode results.</li><br>
-				</ul>
-				<br><hr><br>
-				As big parts of the code were changed by this release, it is expected to have temporary unstable phase.<br>
-				Don't hesitate to report issues in the <a href="https://tsumego.com/forums/viewforum.php?f=7">Bug reports</a> section on the forums.<br>
-				The plan is to first focus on covering the site by automated tests and improving the code quality. Then we want to focus more on optimisations and improvements. The current code coverage is 41%
-				<br>
-				kovarex
-			</div>
 			<p class="title4">Update 17.05.2025</p>
 			<div class="new1"><br>
 				<div align="center">
@@ -1014,21 +896,6 @@
 			url: "mainPageAjax.txt",
 			dataType: 'txt'
 		});
-
-		let popularTooltip = [];
-		<?php
-		for($y=0; $y<count($popularTooltip); $y++){
-			echo 'popularTooltip['.$y.'] = [];';
-			for($x=0; $x<count($popularTooltip[$y]); $x++){
-				echo 'popularTooltip['.$y.'].push("'.$popularTooltip[$x][$y].'");';
-			}
-		}
-		?>
-		<?php if(count($popularTooltip) > 0 && !empty($popularTooltipInfo) && count($popularTooltipInfo) >= 2 && !empty($popularTooltipBoardSize)): ?>
-		<?php
-		echo 'createPreviewBoard(99, popularTooltip, '.$popularTooltipInfo[0].', '.$popularTooltipInfo[1].', '.$popularTooltipBoardSize.');';
-		?>
-		<?php endif; ?>
 	</script>
 	<?php
 	if(!Auth::isLoggedIn()){

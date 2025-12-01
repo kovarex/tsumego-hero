@@ -283,29 +283,32 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		return new CakeEmail();
 	}
 
-	/**
-	 * @param string|null $checksum Password reset checksum
-	 * @return void
-	 */
-	public function newpassword($checksum = null)
+	// @param string|null $checksum Password reset checksum
+	public function newpassword($checksum = null): mixed
 	{
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
-		$valid = false;
 		$done = false;
 		if ($checksum == null)
 			$checksum = 1;
 		$user = $this->User->find('first', ['conditions' => ['passwordreset' => $checksum]]);
-		if ($user)
+		$valid = ($user != null);
+		if (!$user)
+			return null;
+
+		if ($this->data['User']['password'])
 		{
 			$user['User']['passwordreset'] = null;
 			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
-			$done = true;
+			$this->Flash->set("Password changed");
+			return $this->redirect("/users/login");
 		}
 
 		$this->set('valid', $valid);
 		$this->set('done', $done);
+		$this->set('checksum', $checksum);
+		return null;
 	}
 
 	/**
@@ -380,35 +383,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->set('activeToday', $activeToday);
 		$this->set('trs', $trs);
-	}
-
-	public function routine20(): void //popular tags
-	{
-		$tags = $this->TagConnection->find('all', ['conditions' => ['approved' => 1]]);
-		$tagCount = [];
-		$tagsCount = count($tags);
-		for ($i = 0; $i < $tagsCount; $i++)
-			array_push($tagCount, $tags[$i]['TagConnection']['tag_id']);
-
-		$tagCount = array_count_values($tagCount);
-		$tagId = [];
-		$tagNum = [];
-		foreach ($tagCount as $key => $value)
-		{
-			array_push($tagId, $key);
-			array_push($tagNum, $value);
-		}
-		array_multisort($tagNum, $tagId);
-		$array = [];
-		$tagIdCount = count($tagId);
-		for ($i = $tagIdCount - 1; $i >= 0; $i--)
-		{
-			$a = [];
-			$a['id'] = $tagId[$i];
-			$a['num'] = $tagNum[$i];
-			array_push($array, $a);
-		}
-		file_put_contents('json/popular_tags.json', json_encode($array));
 	}
 
 	/**
@@ -1817,7 +1791,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	private function getUserFromNameOrEmail()
 	{
-		$input = $this->data['User']['name'];
+		$input = $this->data['username'];
 		if (empty($input))
 			return null;
 		if ($user = $this->User->findByName($input))
@@ -1829,7 +1803,22 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function login()
 	{
-		if (!$this->data['User'])
+		$this->Session->write('page', 'login');
+		$this->Session->write('title', 'Tsumego Hero - Sign In');
+
+		// On GET request, store the referer in session for redirect after login
+		if (!$this->request->is('post'))
+		{
+			$referer = $this->referer(null, true);
+			// Don't redirect back to login page itself
+			if ($referer && strpos($referer, '/users/login') === false)
+				$this->Session->write('login_redirect', $referer);
+			else
+				$this->Session->delete('login_redirect');
+			return null;
+		}
+
+		if (!$this->data['username'])
 			return null;
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
@@ -1845,7 +1834,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 
 		$this->signIn($user);
-		return $this->redirect('/sets/');
+
+		// Redirect to the page where user came from, or default to /sets/
+		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
+		$this->Session->delete('login_redirect');
+		return $this->redirect($redirect);
 	}
 
 	public function add()
@@ -2450,7 +2443,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		}
 		$timeGraph = $this->formatTimegraph($timeGraph);
 
-		$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
+		$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 
 		$deletedTsumegoStatusCount = 0;
 		$canResetOldTsumegoStatuses = $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
@@ -2475,7 +2468,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$user['User']['dbstorage'] = 99;
 				$this->User->save($user);
 
-				$percentSolved = Util::getPercentButAvoid100UntillComplete($user['User']['solved'], $tsumegoNum);
+				$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 			}
 
 		$asCount = count($as);
@@ -2819,11 +2812,11 @@ Joschka Zimdars';
 	{
 		if (!$user)
 			return false;
-		return password_verify($data['User']['password'], $user['User']['password_hash']);
+		return password_verify($data['password'], $user['User']['password_hash']);
 	}
 
 	/**
-	 * @return void
+	 * @return CakeResponse|null
 	 */
 	public function googlesignin()
 	{
@@ -2867,9 +2860,11 @@ Joschka Zimdars';
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		}
 		$this->signIn($u);
-		$this->set('name', $name);
-		$this->set('email', $email);
-		$this->set('picture', $picture);
+
+		// Redirect to the page where user came from, or default to /sets/
+		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
+		$this->Session->delete('login_redirect');
+		return $this->redirect($redirect);
 	}
 
 	/**
@@ -3025,12 +3020,9 @@ Joschka Zimdars';
 			array_push($a, $de[$i]['Set']['id']);
 		$de = $a;
 
-		$t = CronController::getTsumegoOfTheDay();
-
 		$ans = $this->Answer->find('all', ['limit' => 100, 'order' => 'created DESC']);
 		$s = $this->Schedule->find('all', ['limit' => 100, 'order' => 'date DESC']);
 
-		$this->set('t', $t);
 		$this->set('ans', $ans);
 		$this->set('s', $s);
 		$this->set('p', $p);

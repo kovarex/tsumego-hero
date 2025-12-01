@@ -35,7 +35,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.cameFrom = null;
     node.statusSource = null;
     node.status = null;
-    node.visited = false;
+    node.visited = false; // player already was in this position while solving
+	node.visitedInRecursion = false; // internal bool for recursive algorithm
     node.localEdit = false;
   }
   initNode(root, null); // Initialize root node with null parent
@@ -590,7 +591,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     }
   }
 
-  root.setCorrectSource = function(value, editor)
+  root.setCorrectSource = function(value, editor = null)
   {
     if (value === this.correctSource)
       return;
@@ -598,7 +599,8 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
       return;
     this.correctSource = value;
     besogo.updateCorrectValues(this.getRoot());
-    editor.notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
+	if (editor)
+      editor.notifyListeners({ treeChange: true, navChange: true, stoneChange: true });
   }
 
   root.checkTsumegoHeroCompatibility = function(root)
@@ -828,6 +830,13 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     this.visited = false;
     for (let i = 0; i < this.children.length; ++i)
       this.children[i].unvisit();
+  }
+
+  root.unvisitRecursion = function()
+  {
+    this.visitedInRecursion = false;
+    for (let i = 0; i < this.children.length; ++i)
+      this.children[i].unvisitRecursion();
   }
 
   root.getCorrespondingChild = function(otherChild)

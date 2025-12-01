@@ -23,14 +23,18 @@ if (!defined('DS')) {
 	define('DS', DIRECTORY_SEPARATOR);
 }
 
-if (!is_file(dirname(__DIR__) . DS . 'config' . DS . 'define.php')) {
+$primaryConfig = '/home/private/tsumego/config/define.local.php';
+$secondaryConfig = dirname(__DIR__) . DS . 'config' . DS . 'define.php';
+if (file_exists($primaryConfig))
+	require_once $primaryConfig;
+elseif (file_exists($secondaryConfig))
+	require_once $secondaryConfig;
+else
 	trigger_error(
 		'Configuration file "config' . DS . 'define.php" could not be loaded. '
 		. 'Please ensure this file exists and is readable.',
 		E_USER_ERROR,
 	);
-}
-require_once dirname(__DIR__) . DS . 'config' . DS . 'define.php';
 
 // For the built-in server
 if (PHP_SAPI === 'cli-server') {

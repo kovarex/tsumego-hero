@@ -4,6 +4,56 @@ use Facebook\WebDriver\WebDriverBy;
 
 class UsersControllerTest extends ControllerTestCase
 {
+	/**
+	 * Test that login redirects back to the page where user came from.
+	 */
+	public function testLoginRedirectsToReferer()
+	{
+		// Create a user that can log in (password is "test" - see ContextPreparator)
+		$context = new ContextPreparator([
+			'user' => null, // Not logged in
+			'other-users' => [['name' => 'testuser']],
+		]);
+		$browser = Browser::instance();
+
+		// Go to highscore page first
+		$browser->get('users/highscore');
+		$this->assertStringContainsString('Highscore', $browser->driver->getPageSource());
+
+		// Click login link from the page (this sets proper referer and stores in session)
+		$browser->driver->findElement(WebDriverBy::id('signInMenu'))->click();
+		usleep(200 * 1000);
+
+		// Fill in login form
+		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('testuser');
+		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+
+		// Should be redirected back to highscore page
+		usleep(200 * 1000);
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
+	}
+
+	/**
+	 * Test that login page has Google Sign In option.
+	 *
+	 * The redirect for both regular and Google login uses session storage.
+	 * We can't test actual Google OAuth due to token verification.
+	 */
+	public function testLoginPageHasGoogleSignIn()
+	{
+		$context = new ContextPreparator(['user' => null]);
+		$browser = Browser::instance();
+
+		// Go to login page
+		$browser->get('users/login');
+		usleep(100 * 1000);
+
+		// Verify Google Sign In button is present
+		$this->assertTrue($browser->idExists('g_id_onload'), 'Google Sign In should be available');
+	}
+
 	public function testUserView()
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);

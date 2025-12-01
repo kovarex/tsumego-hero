@@ -178,9 +178,8 @@ class AppController extends Controller
 		$notApproved = ClassRegistry::init('Tag')->find('all', ['conditions' => ['approved' => 0]]);
 		if (!$notApproved)
 			$notApproved = [];
-		$notCount = count($not);
-		for ($i = 0; $i < $notCount; $i++)
-			array_push($a, $not[$i]['TagConnection']['tag_id']);
+		foreach ($not as $item)
+			$a[] = $item['tag_id'];
 		$notApprovedCount = count($notApproved);
 		for ($i = 0; $i < $notApprovedCount; $i++)
 			array_push($a, $notApproved[$i]['Tag']['id']);
@@ -1974,7 +1973,6 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Tag');
 		$this->loadModel('Favorite');
 
 		Auth::init();
@@ -1992,23 +1990,6 @@ class AppController extends Controller
 		{
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::getUser()['last_time_mode_category_id'] = $lastTimeModeCategoryID;
-
-			if (isset($_COOKIE['addTag']) && $_COOKIE['addTag'] != 0 && $this->Session->read('page') != 'set')
-			{
-				$newAddTag = explode('-', $_COOKIE['addTag']);
-				$tagId = $newAddTag[0];
-				$newTagName = $this->Tag->find('first', ['conditions' => ['name' => str_replace($tagId . '-', '', $_COOKIE['addTag'])]]);
-				if ($newTagName)
-				{
-					$saveTag = [];
-					$saveTag['TagConnection']['tag_id'] = $newTagName['Tag']['id'];
-					$saveTag['TagConnection']['tsumego_id'] = $tagId;
-					$saveTag['TagConnection']['user_id'] = Auth::getUserID();
-					$saveTag['TagConnection']['approved'] = 0;
-					$this->TagConnection->save($saveTag);
-				}
-				$this->set('removeCookie', 'addTag');
-			}
 			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
 			&& strlen($_COOKIE['z_sess']) > 5)
 			{
