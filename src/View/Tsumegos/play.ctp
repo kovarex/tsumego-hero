@@ -30,7 +30,7 @@
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
 <script src ="/js/previewBoard.js"></script>
-<script src ="/js/TagConnectionsEdit.js"></script>
+<script src ="/js/TagConnectionsEdit.js?v=2"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){
@@ -2179,6 +2179,7 @@
 		if(result=='S')
 		{
 			problemSolved = true;
+			tagConnectionsEdit.onProblemSolved();
 			if (typeof xpStatus !== "undefined" && xpStatus)
 				xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");

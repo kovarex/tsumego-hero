@@ -293,7 +293,8 @@ class ContextPreparator
 		{
 			$tag = $this->getOrCreateTag([
 				'name' => Util::extract('name', $tagInput),
-				'popular' => Util::extract('popular', $tagInput) ?: false]);
+				'popular' => Util::extract('popular', $tagInput) ?: false,
+				'is_hint' => Util::extract('is_hint', $tagInput) ?: 0]);
 			$tagConnection = [];
 			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
 			$tagConnection['TagConnection']['user_id'] = self::getUserIdFromName(Util::extract('user', $tagInput)) ?: $this->user['id'];
@@ -347,6 +348,7 @@ class ContextPreparator
 		{
 			$tag = [];
 			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
+			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
@@ -354,7 +356,10 @@ class ContextPreparator
 			$tag  = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $name]]);
 		}
 		else
+		{
 			Util::extract('popular', $tagInput);
+			Util::extract('is_hint', $tagInput);
+		}
 
 		$this->checkOptionsConsumed($tagInput);
 		$this->tags[] = $tag['Tag'];

@@ -106,4 +106,12 @@ class TagConnectionsEdit
 		this.editActivated = true;
 		this.draw();
 	}
+
+	onProblemSolved()
+	{
+		if (this.problemSolved)
+			return;
+		this.problemSolved = true;
+		this.draw();
+	}
 }

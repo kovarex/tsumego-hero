@@ -157,6 +157,25 @@ class TagTest extends ControllerTestCase
 		}
 	}
 
+	public function testShowTagWhichIsHintAfterProblemGetsSolved()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'tags' => [
+					['name' => 'no-hint-tag'],
+					['name' => 'hint-tag', 'is_hint' => 1]]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-no-hint-tag"));
+		$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-hint-tag"));
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-no-hint-tag"));
+		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-hint-tag"));
+	}
+
 	public function testRemoveMyUnapprovedTag()
 	{
 		foreach ([false, true] as $popular)
