@@ -394,6 +394,12 @@
 
 		<p class="title4">Update 30.11.2025</p>
 		<div class="new1">
+			<p><b>Warning:</b><p>
+			<p>
+				If you have issues with problems always removing hearts on refresh, or similar, please try to clear the cookies this way:<br>
+				<img src="/img/cookies-cleanup.png" alt="This is how you clean the cookies." style="border: 2px solid #555;"><br>
+				I made several changes which should make the new cookies behave properly, but I didn't find a way to remove the old ones, which are breaking stuff.
+			</p>
 			<p>There is a lot of work going on. More details can be found in the forum posts</p>
 			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
 			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
