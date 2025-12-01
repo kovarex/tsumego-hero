@@ -30,7 +30,7 @@
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
 <script src ="/js/previewBoard.js"></script>
-<script src ="/js/TagConnectionsEdit.js?v=3"></script>
+<script src ="/js/TagConnectionsEdit.js?v=4"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){

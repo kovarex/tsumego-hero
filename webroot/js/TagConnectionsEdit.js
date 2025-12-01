@@ -71,7 +71,22 @@ class TagConnectionsEdit
 				return part;
 			})
 			.join(", ");
-		$(".tag-list").html(html.length > 0 ? ("Tags: " + html) : "");
+
+		let result = html;
+
+		if (!this.problemSolved)
+		{
+			const hintCount = this.tags.filter(tag =>
+				tag.isHint &&
+				tag.isAdded &&
+				(tag.isApproved || tag.isMine)
+			).length;
+			if (hintCount > 0)
+				result += ' (' + hintCount + ' hidden)';
+		}
+		if (result.length > 0)
+			result = 'Tags: ' + result;
+		$(".tag-list").html(result);
 	}
 
 	updateTagToAddList(id, popular)
