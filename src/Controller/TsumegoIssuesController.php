@@ -51,9 +51,13 @@ class TsumegoIssuesController extends AppController
 		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount', 'totalPages', 'perPage'));
 		$this->set('currentPage', $page);
 
-		// Return the issues-section element (idiomorph handles the diff)
-		$this->layout = false;
-		$this->render('/Elements/TsumegoIssues/issues-section');
+		// htmx requests get just the issues-section element (idiomorph handles the diff)
+		if ($this->isHtmxRequest())
+		{
+			$this->layout = false;
+			$this->render('/Elements/TsumegoIssues/issues-section');
+		}
+		// Regular requests get the full page with layout
 	}
 
 	/**
