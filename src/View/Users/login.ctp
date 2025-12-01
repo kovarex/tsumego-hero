@@ -4,7 +4,7 @@
 		<div class="left signin">
 			<?php echo $this->Flash->render(); ?>
 			 <h1>Sign in</h1>
-			<?php echo $this->Form->create('User', array('action' => 'login')); ?>
+			<?php echo $this->Form->create('User', ['action' => 'login']); ?>
 			<label for="UserName"></label>
 			<div class="input text required">
 				<label for="UserName"></label>
