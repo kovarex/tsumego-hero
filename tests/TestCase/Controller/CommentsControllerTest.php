@@ -17,10 +17,11 @@ class CommentsControllerTest extends ControllerTestCase
 			'tsumego' => [
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+	$browser = Browser::instance();
+	$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+	$this->expandComments($browser); // Expand comments section (hidden by default)
 
-		// The comment form is now directly in the comments section
+	// The comment form is now directly in the comments section
 		$messageField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__form textarea'));
 		$messageField->click();
 		$messageField->sendKeys("My first comment");
@@ -67,7 +68,7 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testCommentsToggle()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'comments' => [['message' => 'test comment']],
@@ -75,20 +76,20 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 
-		// Content should be visible by default (check the collapsible wrapper #msg2x)
+		// Content should be HIDDEN by default (msg2xselected = false)
 		$content = $browser->driver->findElement(WebDriverBy::id('msg2x'));
-		$this->assertTrue($content->isDisplayed());
+		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden by default');
 
-		// Click toggle to collapse
+		// Click toggle to EXPAND
 		$toggle = $browser->driver->findElement(WebDriverBy::id('show2'));
 		$toggle->click();
 		usleep(300 * 1000); // Wait for animation
-		$this->assertFalse($content->isDisplayed());
+		$this->assertTrue($content->isDisplayed(), 'Comments should be visible after first click');
 
-		// Click toggle to expand again
+		// Click toggle to COLLAPSE again
 		$toggle->click();
 		usleep(300 * 1000);
-		$this->assertTrue($content->isDisplayed());
+		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after second click');
 	}
 
 	/**
@@ -123,10 +124,11 @@ class CommentsControllerTest extends ControllerTestCase
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'comments' => [['message' => 'Play at C3 for the solution']],
 				'status' => 'S']]);
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+	$browser = Browser::instance();
+	$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+	$this->expandComments($browser); // Expand comments section (hidden by default)
 
-		// Find the coordinate span
+	// Find the coordinate span
 		$coordSpan = $browser->driver->findElement(WebDriverBy::cssSelector('.go-coord'));
 		$this->assertNotNull($coordSpan);
 		$this->assertEquals('C3', $coordSpan->getText());
@@ -145,6 +147,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Click Reply button to show the reply form
 		$replyButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue__reply-btn'));
@@ -181,6 +184,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify comment is visible
 		$pageSource = $browser->driver->getPageSource();
@@ -218,6 +222,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify issue and comment are visible
 		$pageSource = $browser->driver->getPageSource();
@@ -259,8 +264,9 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
-		// Expand comments section
+		// Verify comments section is visible
 		$browser->idExists('msg2x');
 
 		// Verify initial counts: 1 issue + 1 standalone = 2 total
@@ -301,8 +307,9 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
-		// Expand comments section
+		// Verify comments section is visible
 		$browser->idExists('msg2x');
 
 		// Verify open badge shows "1 open" initially
@@ -338,6 +345,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Initially there should be no issue DOM elements
 		// Note: We check for .tsumego-issue elements, not "Issue #" text
@@ -370,5 +378,24 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');
 		$this->assertTextContains('ISSUES (1)', $pageSource, 'Issues count should update');
 		$this->assertTextContains('1 open', $pageSource, 'Open issues badge should show');
+	}
+
+	/**
+	 * Expand comments section if it's hidden.
+	 *
+	 * Comments are hidden by default. This helper ensures the comments section
+	 * is visible before interacting with it.
+	 */
+	private function expandComments($browser)
+	{
+		// Check if #msg2x (comments content) is visible
+		$commentsContent = $browser->driver->findElement(WebDriverBy::id('msg2x'));
+		if (!$commentsContent->isDisplayed())
+		{
+			// Click the toggle button to expand
+			$toggleButton = $browser->driver->findElement(WebDriverBy::id('show2'));
+			$toggleButton->click();
+			usleep(350 * 1000); // Wait for fadeIn animation (250ms + buffer)
+		}
 	}
 }

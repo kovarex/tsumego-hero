@@ -8,10 +8,11 @@
  *
  * Uses idiomorph for React-like DOM diffing - htmx responses return the full
  * comments section and idiomorph handles efficient DOM updates.
+ *
+ * This controller is htmx-only - all responses return HTML fragments for htmx.
  */
 class TsumegoCommentsController extends AppController
 {
-	public $components = ['Flash'];
 
 	/**
 	 * Add a new comment to a tsumego.
@@ -32,8 +33,9 @@ class TsumegoCommentsController extends AppController
 
 		if (!Auth::isLoggedIn())
 		{
-			$this->Flash->error('You must be logged in to comment.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(401);
+			$this->response->body('You must be logged in to comment.');
+			return $this->response;
 		}
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
@@ -49,26 +51,15 @@ class TsumegoCommentsController extends AppController
 		$TsumegoComment->create();
 		if (!$TsumegoComment->save($comment))
 		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(422);
-				$this->layout = false;
-				$this->autoRender = false;
-				$this->response->body('<div class="alert alert--error">Failed to add comment.</div>');
-				return $this->response;
-			}
-			$this->Flash->error('Failed to add comment.');
-			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-			return $this->redirect($redirect);
+			$this->response->statusCode(422);
+			$this->layout = false;
+			$this->autoRender = false;
+			$this->response->body('<div class="alert alert--error">Failed to add comment.</div>');
+			return $this->response;
 		}
 
-		// For htmx requests, return the full comments section (idiomorph handles the diff)
-		if ($this->isHtmxRequest())
-			return $this->_renderCommentsSection($tsumegoId);
-
-		$this->Flash->success('Comment added successfully.');
-		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		// Return the full comments section (idiomorph handles the diff)
+		return $this->_renderCommentsSection($tsumegoId);
 	}
 
 	/**
@@ -90,32 +81,18 @@ class TsumegoCommentsController extends AppController
 
 		if (!$comment)
 		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(404);
-				$this->layout = false;
-				$this->autoRender = false;
-				$this->response->body('');
-				return $this->response;
-			}
-			$this->Flash->error('Comment not found.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(404);
+			$this->response->body('Comment not found.');
+			return $this->response;
 		}
 
 		// Only admin or comment author can delete
 		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
 		if (!Auth::isAdmin() && !$isOwner)
 		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(403);
-				$this->layout = false;
-				$this->autoRender = false;
-				$this->response->body('');
-				return $this->response;
-			}
-			$this->Flash->error('You are not authorized to delete this comment.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(403);
+			$this->response->body('You are not authorized to delete this comment.');
+			return $this->response;
 		}
 
 		// Remember the issue ID and tsumego ID before deleting
@@ -124,36 +101,22 @@ class TsumegoCommentsController extends AppController
 
 		// Soft delete
 		$TsumegoComment->id = $id;
-		if ($TsumegoComment->saveField('deleted', true))
+		if (!$TsumegoComment->saveField('deleted', true))
 		{
-			// If comment was part of an issue, check if issue is now empty and delete it
-			if (!empty($issueId))
-			{
-				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-				$TsumegoIssue->deleteIfEmpty($issueId);
-			}
-
-			// For htmx requests, return the full comments section (idiomorph handles the diff)
-			if ($this->isHtmxRequest())
-				return $this->_renderCommentsSection($tsumegoId);
-
-			$this->Flash->success('Comment deleted.');
-		}
-		else
-		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(500);
-				$this->layout = false;
-				$this->autoRender = false;
-				$this->response->body('');
-				return $this->response;
-			}
-			$this->Flash->error('Failed to delete comment.');
+			$this->response->statusCode(500);
+			$this->response->body('Failed to delete comment.');
+			return $this->response;
 		}
 
-		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		// If comment was part of an issue, check if issue is now empty and delete it
+		if (!empty($issueId))
+		{
+			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+			$TsumegoIssue->deleteIfEmpty($issueId);
+		}
+
+		// Return the full comments section (idiomorph handles the diff)
+		return $this->_renderCommentsSection($tsumegoId);
 	}
 
 	/**
