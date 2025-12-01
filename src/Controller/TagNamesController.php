@@ -70,26 +70,15 @@ class TagNamesController extends AppController
 		$tagNames = $this->Tag->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
 		if (!$tagNames)
 			$tagNames = [];
-		$tags = $this->TagConnection->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
-		if (!$tags)
-			$tags = [];
+		$tags = ClassRegistry::init('TagConnection')->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]) ?: [];
 		$proposals = $this->Sgf->find('all', [
 			'limit' => 50,
 			'order' => 'created DESC',
 			'conditions' => ['user_id' => $id],
-		]);
-		if (!$proposals)
-			$proposals = [];
-		$rejectedProposals = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'proposal']]);
-		if (!$rejectedProposals)
-			$rejectedProposals = [];
-		$rejectedTags = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag']]);
-		if (!$rejectedTags)
-			$rejectedTags = [];
-		$rejectedTagNames = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag name']]);
-		if (!$rejectedTagNames)
-			$rejectedTagNames = [];
-
+		]) ?: [];
+		$rejectedProposals = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'proposal']]) ?: [];
+		$rejectedTags = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag']]) ?: [];
+		$rejectedTagNames = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag name']]) ?: [];
 		$tagNamesCount = count($tagNames);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{

@@ -116,4 +116,16 @@ class UsersControllerTest extends ControllerTestCase
 
 		}
 	}
+
+	public function testUserContributionsShowsTagAdded()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'tags' => [['name' => 'atari', 'user' => 'kovarex']]]]]);
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$browser->clickId("navigate-to-contributions");
+		$this->assertTextContains('kovarex added the tag <i>atari</i>', $browser->driver->getPageSource());
+	}
 }
