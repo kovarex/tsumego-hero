@@ -63,7 +63,7 @@ class CommentsControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that the comments section can be collapsed/expanded.
+	 * Test that the comments section can be collapsed/expanded via tabs.
 	 */
 	public function testCommentsToggle()
 	{
@@ -76,20 +76,21 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 
-		// Content should be HIDDEN by default (msg2xselected = false)
+		// Content should be HIDDEN by default (no tab selected)
 		$content = $browser->driver->findElement(WebDriverBy::id('msg2x'));
 		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden by default');
 
-		// Click toggle to EXPAND
-		$toggle = $browser->driver->findElement(WebDriverBy::id('show2'));
-		$toggle->click();
+		// Click COMMENTS tab to EXPAND
+		$commentsTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
+		$commentsTab->click();
 		usleep(300 * 1000); // Wait for animation
-		$this->assertTrue($content->isDisplayed(), 'Comments should be visible after first click');
+		$this->assertTrue($content->isDisplayed(), 'Comments should be visible after clicking COMMENTS tab');
+		$this->assertTrue($commentsTab->getAttribute('class') === 'tsumego-comments__tab active' || strpos($commentsTab->getAttribute('class'), 'active') !== false, 'COMMENTS tab should be active');
 
-		// Click toggle to COLLAPSE again
-		$toggle->click();
+		// Click same tab again to COLLAPSE
+		$commentsTab->click();
 		usleep(300 * 1000);
-		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after second click');
+		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after clicking COMMENTS tab again');
 	}
 
 	/**
@@ -270,10 +271,10 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->idExists('msg2x');
 
 		// Verify initial counts: 1 issue + 1 standalone = 2 total
+		// COMMENTS tab shows comments + open issues, CLOSED ISSUES tab shows closed issues
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('ALL (2)', $pageSource, 'Should show ALL (2) initially');
-		$this->assertTextContains('COMMENTS (1)', $pageSource, 'Should show COMMENTS (1) initially');
-		$this->assertTextContains('ISSUES (1)', $pageSource, 'Should show ISSUES (1) initially');
+		$this->assertTextContains('COMMENTS (1 + 1 open issue)', $pageSource, 'Should show COMMENTS with open issue count initially');
+		$this->assertTextContains('CLOSED ISSUES (0)', $pageSource, 'Should show CLOSED ISSUES (0) initially');
 
 		// Override confirm for htmx
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
@@ -285,17 +286,16 @@ class CommentsControllerTest extends ControllerTestCase
 		// Wait for htmx to process
 		usleep(1500 * 1000);
 
-		// Verify counts updated: should now show 1 total (just the issue)
+		// Verify counts updated: should now show 0 comments + 1 open issue
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('ALL (1)', $pageSource, 'Should show ALL (1) after deleting standalone comment');
-		$this->assertTextContains('COMMENTS (0)', $pageSource, 'Should show COMMENTS (0) after deleting standalone comment');
-		$this->assertTextContains('ISSUES (1)', $pageSource, 'Should still show ISSUES (1)');
+		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'Should show COMMENTS with 0 comments after deleting');
+		$this->assertTextContains('CLOSED ISSUES (0)', $pageSource, 'Should still show CLOSED ISSUES (0)');
 	}
 
 	/**
-	 * Test that closing an issue updates the open count badge via htmx OOB.
+	 * Test that closing an issue updates the tab counts via htmx.
 	 *
-	 * When an issue is closed on the play page, the "🔴 1 open" badge should update.
+	 * When an issue is closed on the play page, the COMMENTS and CLOSED ISSUES counts should update.
 	 */
 	public function testCloseIssueUpdatesOpenCountBadge()
 	{
@@ -312,9 +312,10 @@ class CommentsControllerTest extends ControllerTestCase
 		// Verify comments section is visible
 		$browser->idExists('msg2x');
 
-		// Verify open badge shows "1 open" initially
+		// Verify initial counts: 0 comments + 1 open issue in COMMENTS tab, 0 in CLOSED ISSUES tab
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('1 open', $pageSource, 'Should show 1 open initially');
+		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'Should show COMMENTS with 1 open issue initially');
+		$this->assertTextContains('CLOSED ISSUES (0)', $pageSource, 'Should show CLOSED ISSUES (0) initially');
 
 		// Click close button on the issue
 		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
@@ -323,9 +324,10 @@ class CommentsControllerTest extends ControllerTestCase
 		// Wait for htmx to process
 		usleep(1500 * 1000);
 
-		// Verify open badge is gone (no more open issues)
+		// Verify counts updated: 0 comments, 0 open issues in COMMENTS, 1 in CLOSED ISSUES
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextNotContains('1 open', $pageSource, 'Should not show "1 open" after closing');
+		$this->assertTextContains('COMMENTS (0)', $pageSource, 'Should show COMMENTS (0) after closing');
+		$this->assertTextContains('CLOSED ISSUES (1)', $pageSource, 'Should show CLOSED ISSUES (1) after closing');
 		// The issue status should now show "Closed"
 		$this->assertTextContains('Closed', $pageSource, 'Issue should show Closed status');
 	}
@@ -376,8 +378,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Issue #1', $pageSource, 'Issue should appear after submission');
 		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');
-		$this->assertTextContains('ISSUES (1)', $pageSource, 'Issues count should update');
-		$this->assertTextContains('1 open', $pageSource, 'Open issues badge should show');
+		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'COMMENTS count should update with open issue');
+		$this->assertTextContains('CLOSED ISSUES (0)', $pageSource, 'CLOSED ISSUES count should stay at 0');
 	}
 
 	/**
@@ -565,10 +567,343 @@ class CommentsControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that filter state (COMMENTS tab) is preserved when replying to an issue via htmx.
+	 *
+	 * When viewing comments tab (open issues + comments), adding a reply to an open issue
+	 * should NOT cause closed issues to become visible - the filter must be preserved.
+	 */
+	public function testFilterPreservedAfterReplyToOpenIssue()
+	{
+		// Setup: Create tsumego with one open issue AND one closed issue
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [
+					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
+					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
+				],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Click COMMENTS tab (shows open issues + comments)
+
+		// Verify: Open issue is visible
+		$openIssues = $browser->getCssSelect('.tsumego-issue--opened');
+		$this->assertCount(1, $openIssues, 'Should have 1 open issue visible');
+		$this->assertTrue($openIssues[0]->isDisplayed(), 'Open issue should be visible');
+
+		// Verify: Closed issue is NOT visible (filtered out)
+		$closedIssues = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssues, 'Should have 1 closed issue in DOM');
+		$this->assertFalse($closedIssues[0]->isDisplayed(), 'Closed issue should be hidden');
+
+		// Click Reply on the open issue
+		$replyButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-btn'));
+		$replyButton->click();
+		usleep(200 * 1000);
+
+		// Fill in and submit the reply
+		$replyField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
+		$replyField->sendKeys("Reply to open issue");
+		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]'));
+		$submitButton->click();
+		usleep(1500 * 1000); // Wait for htmx response and idiomorph
+
+		// After htmx morph: Closed issue should STILL be hidden
+		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after morph');
+		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after morph');
+
+		// And open issue should still be visible
+		$openIssuesAfter = $browser->getCssSelect('.tsumego-issue--opened');
+		$this->assertCount(1, $openIssuesAfter, 'Should still have 1 open issue after morph');
+		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after morph');
+	}
+
+	/**
+	 * Test that filter state is preserved when adding a standalone comment via htmx.
+	 *
+	 * When viewing comments tab with closed issues present, adding a new standalone comment
+	 * should NOT cause closed issues to become visible - the filter must be preserved.
+	 */
+	public function testFilterPreservedAfterAddingStandaloneComment()
+	{
+		// Setup: Create tsumego with a standalone comment AND a closed issue
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'comments' => [['message' => 'Existing standalone comment']],
+				'issues' => [
+					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
+				],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
+
+		// Verify: Standalone comment is visible
+		$standaloneComments = $browser->getCssSelect('.tsumego-comment--standalone');
+		$this->assertCount(1, $standaloneComments, 'Should have 1 standalone comment visible');
+		$this->assertTrue($standaloneComments[0]->isDisplayed(), 'Standalone comment should be visible');
+
+		// Verify: Closed issue is NOT visible (filtered out)
+		$closedIssues = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssues, 'Should have 1 closed issue in DOM');
+		$this->assertFalse($closedIssues[0]->isDisplayed(), 'Closed issue should be hidden');
+
+		// Add a new standalone comment via the form (use main form, not reply forms)
+		$messageField = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+		$messageField->click();
+		$messageField->sendKeys("New standalone comment");
+		$submitButton = $browser->driver->findElement(WebDriverBy::id('submitBtn-tsumegoCommentForm'));
+		$submitButton->click();
+		usleep(1500 * 1000); // Wait for htmx response and idiomorph
+
+		// After htmx morph: Closed issue should STILL be hidden
+		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after morph');
+		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after adding comment');
+
+		// New comment should be visible
+		$standaloneCommentsAfter = $browser->getCssSelect('.tsumego-comment--standalone');
+		$this->assertCount(2, $standaloneCommentsAfter, 'Should have 2 standalone comments after adding');
+	}
+
+	/**
+	 * Test that filter state is preserved when deleting a comment from an open issue via htmx.
+	 *
+	 * When viewing comments tab with closed issues present, deleting a comment from an open issue
+	 * should NOT cause closed issues to become visible - the filter must be preserved.
+	 */
+	public function testFilterPreservedAfterDeletingCommentFromOpenIssue()
+	{
+		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can delete any comment
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [
+					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
+					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
+				],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
+
+		// Add a second comment to the open issue so we can delete one
+		$replyButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-btn'));
+		$replyButton->click();
+		usleep(200 * 1000);
+		$replyField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
+		$replyField->sendKeys("Extra comment to delete");
+		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]'));
+		$submitButton->click();
+		usleep(1500 * 1000);
+
+		// Verify: Closed issue is NOT visible (filtered out)
+		$closedIssues = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssues, 'Should have 1 closed issue in DOM');
+		$this->assertFalse($closedIssues[0]->isDisplayed(), 'Closed issue should be hidden before delete');
+
+		// Override confirm BEFORE deleting
+		$browser->driver->executeScript("window.confirm = function() { return true; };");
+
+		// Find and click delete on one of the comments in the open issue
+		$deleteButtons = $browser->getCssSelect('.tsumego-issue--opened .deleteComment');
+		$this->assertGreaterThan(0, count($deleteButtons), 'Should have delete buttons in open issue');
+		$deleteButtons[0]->click();
+		usleep(1500 * 1000); // Wait for htmx response and idiomorph
+
+		// After htmx morph: Closed issue should STILL be hidden
+		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after delete');
+		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after deleting comment');
+
+		// Open issue should still be visible
+		$openIssuesAfter = $browser->getCssSelect('.tsumego-issue--opened');
+		$this->assertCount(1, $openIssuesAfter, 'Should still have 1 open issue after delete');
+		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after delete');
+	}
+
+	/**
+	 * Test that filter state is preserved when moving a comment out of an issue via drag-and-drop.
+	 *
+	 * When viewing comments tab with closed issues present, moving a comment out of an open issue
+	 * (to standalone) should NOT cause closed issues to become visible - the filter must be preserved.
+	 */
+	public function testFilterPreservedAfterMovingCommentOutOfIssue()
+	{
+		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can drag-and-drop
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [
+					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
+					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
+				],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
+
+		// Add a second comment to the open issue so we can move one
+		$replyButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-btn'));
+		$replyButton->click();
+		usleep(200 * 1000);
+		$replyField = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form textarea'));
+		$replyField->sendKeys("Comment to move");
+		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]'));
+		$submitButton->click();
+		usleep(1500 * 1000);
+
+		// Get the comment ID to move
+		$commentElements = $browser->getCssSelect('.tsumego-issue--opened .tsumego-comment');
+		$this->assertGreaterThan(0, count($commentElements), 'Should have comments in open issue');
+		$commentId = $commentElements[0]->getAttribute('data-comment-id');
+
+		// Verify: Closed issue is NOT visible (filtered out)
+		$closedIssues = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssues, 'Should have 1 closed issue in DOM');
+		$this->assertFalse($closedIssues[0]->isDisplayed(), 'Closed issue should be hidden before move');
+
+		// Simulate the move-comment API call via JavaScript (emulating drag-and-drop)
+		$browser->driver->executeScript("
+			var formData = new FormData();
+			formData.append('data[Comment][tsumego_issue_id]', 'standalone');
+			formData.append('data[Comment][htmx]', '1');
+			fetch('/tsumego-issues/move-comment/' + " . $commentId . ", {
+				method: 'POST',
+				body: formData,
+				headers: {'HX-Request': 'true'}
+			}).then(function(response) {
+				return response.text();
+			}).then(function(html) {
+				var target = document.getElementById('comments-section-" . $context->tsumego['id'] . "');
+				if (target && html) {
+					Idiomorph.morph(target, html, {morphStyle: 'outerHTML'});
+					// Re-apply filter state after morph
+					if (typeof currentCommentsFilter !== 'undefined' && currentCommentsFilter) {
+						setTimeout(function() {
+							var targetTab = document.querySelector('.tsumego-comments__tab[data-filter=\"' + currentCommentsFilter + '\"]');
+							if (targetTab) targetTab.classList.add('active');
+							applyCommentsFilter(currentCommentsFilter);
+						}, 50);
+					}
+				}
+			});
+		");
+		usleep(2000 * 1000); // Wait for fetch, morph, and filter re-apply
+
+		// After morph: Closed issue should STILL be hidden
+		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after move');
+		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after moving comment');
+
+		// Open issue should still be visible
+		$openIssuesAfter = $browser->getCssSelect('.tsumego-issue--opened');
+		$this->assertCount(1, $openIssuesAfter, 'Should still have 1 open issue after move');
+		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after move');
+	}
+
+	/**
+	 * Test that the comment form is hidden when viewing the CLOSED ISSUES tab.
+	 */
+	public function testCommentFormHiddenOnClosedIssuesTab()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'issues' => [
+					['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS],
+				],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Click COMMENTS tab - form should be visible
+		$commentsTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
+		$commentsTab->click();
+		usleep(300 * 1000);
+
+		$form = $browser->driver->findElement(WebDriverBy::id('tsumegoCommentForm'));
+		$formWrapper = $form->findElement(WebDriverBy::xpath('./..'));
+		$this->assertTrue($formWrapper->isDisplayed(), 'Comment form should be visible on COMMENTS tab');
+
+		// Click CLOSED ISSUES tab - form should be hidden
+		$closedTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="closed"]'));
+		$closedTab->click();
+		usleep(300 * 1000);
+
+		$this->assertFalse($formWrapper->isDisplayed(), 'Comment form should be hidden on CLOSED ISSUES tab');
+
+		// Click COMMENTS tab again - form should be visible again
+		$commentsTab->click();
+		usleep(300 * 1000);
+
+		$this->assertTrue($formWrapper->isDisplayed(), 'Comment form should be visible when back on COMMENTS tab');
+	}
+
+	/**
+	 * Test that a newly added comment can be dragged (Make Issue button works).
+	 *
+	 * After adding a comment via htmx, the new comment should have a working Make Issue button.
+	 */
+	public function testNewlyAddedCommentCanBeDragged()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can drag
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser);
+
+		// Add a new comment
+		$messageField = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+		$messageField->click();
+		$messageField->sendKeys("Comment to make into issue");
+		$submitButton = $browser->driver->findElement(WebDriverBy::id('submitBtn-tsumegoCommentForm'));
+		$submitButton->click();
+		usleep(2000 * 1000); // Wait for htmx response and idiomorph
+
+		// Verify the comment was added
+		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
+		$standaloneComments = $browser->getCssSelect('.tsumego-comment--standalone');
+		$this->assertCount(1, $standaloneComments, 'Should have 1 standalone comment');
+
+		// Find and click the Make Issue button
+		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comment--standalone .tsumego-comment__make-issue-btn'));
+		$this->assertTrue($makeIssueBtn->isDisplayed(), 'Make Issue button should be visible');
+		$this->assertTrue($makeIssueBtn->isEnabled(), 'Make Issue button should be enabled');
+		$makeIssueBtn->click();
+
+		// Wait for htmx update
+		usleep(1500 * 1000);
+		$browser->waitUntilCssSelectorExists('.tsumego-issue', 5);
+
+		// Verify comment is now in an issue
+		$issues = $browser->getCssSelect('.tsumego-issue');
+		$this->assertCount(1, $issues, 'Should have 1 issue now');
+		$standaloneCommentsAfter = $browser->getCssSelect('.tsumego-comment--standalone');
+		$this->assertCount(0, $standaloneCommentsAfter, 'Should have 0 standalone comments after making issue');
+
+		// Verify the comment content is still there
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Comment to make into issue', $pageSource);
+		$this->assertTextContains('Issue #1', $pageSource);
+	}
+
+	/**
 	 * Expand comments section if it's hidden.
 	 *
 	 * Comments are hidden by default. This helper ensures the comments section
-	 * is visible before interacting with it.
+	 * is visible by clicking the COMMENTS tab.
 	 */
 	private function expandComments($browser)
 	{
@@ -576,10 +911,10 @@ class CommentsControllerTest extends ControllerTestCase
 		$commentsContent = $browser->driver->findElement(WebDriverBy::id('msg2x'));
 		if (!$commentsContent->isDisplayed())
 		{
-			// Click the toggle button to expand
-			$toggleButton = $browser->driver->findElement(WebDriverBy::id('show2'));
-			$toggleButton->click();
-			usleep(350 * 1000); // Wait for fadeIn animation (250ms + buffer)
+			// Click the COMMENTS tab to expand
+			$commentsTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
+			$commentsTab->click();
+			usleep(350 * 1000); // Wait for any animation
 		}
 	}
 }

@@ -17,12 +17,11 @@ CREATE TABLE `tsumego_issue_status` (
 	PRIMARY KEY (`id`))
 ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-		// Status values: 1=opened, 2=closed, 3=reviewed (deleted is a boolean column on the issue)
+		// Status values: 1=opened, 2=closed (deleted is a boolean column on the issue)
 		$this->execute("INSERT INTO tsumego_issue_status (id, name)
 VALUES
 (1, 'opened'),
-(2, 'closed'),
-(3, 'reviewed')");
+(2, 'closed')");
 
 		$this->execute("
 CREATE TABLE `tsumego_issue` (

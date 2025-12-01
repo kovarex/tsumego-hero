@@ -21,7 +21,6 @@ App::uses('TsumegosController', 'Controller');
  * Statuses (tsumego_issue_status table):
  *   - 1 = opened
  *   - 2 = closed
- *   - 3 = reviewed
  *
  */
 class TsumegoIssue extends AppModel
@@ -43,7 +42,6 @@ class TsumegoIssue extends AppModel
 
 	public static int $OPENED_STATUS = 1;
 	public static int $CLOSED_STATUS = 2;
-	public static int $REVIEW_STATUS = 3;
 
 	/**
 	 * Get the human-readable name for a status.
@@ -58,8 +56,6 @@ class TsumegoIssue extends AppModel
 			return 'Opened';
 		if ($status === self::$CLOSED_STATUS)
 			return 'Closed';
-		if ($status === self::$REVIEW_STATUS)
-			return 'Reviewed';
 		throw new \Exception("Invalid issue status: $status");
 	}
 

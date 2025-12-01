@@ -47,26 +47,101 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 </div>
 
 <script>
+	// Store current filter state (survives idiomorph)
+	var currentCommentsFilter = null;
+
 	// Tab switching - use event delegation to handle dynamically replaced content
+	// Clicking a tab both expands/toggles the content AND filters to that view
 	document.addEventListener('click', function(e) {
 		if (e.target.classList.contains('tsumego-comments__tab')) {
+			var clickedTab = e.target;
+			var wasActive = clickedTab.classList.contains('active');
+			var filter = clickedTab.dataset.filter;
+			var content = document.getElementById('msg2x');
+			
+			// If clicking an already-active tab, collapse (deselect all)
+			if (wasActive) {
+				clickedTab.classList.remove('active');
+				currentCommentsFilter = null;
+				if (content) {
+					content.style.display = 'none';
+				}
+				return;
+			}
+			
+			// Otherwise, switch to this tab
 			var tabs = document.querySelectorAll('.tsumego-comments__tab');
 			tabs.forEach(function(t) {
 				t.classList.remove('active');
 			});
-			e.target.classList.add('active');
+			clickedTab.classList.add('active');
+			currentCommentsFilter = filter;
+			
+			// Show the content
+			if (content) {
+				content.style.display = '';
+			}
 
-			var filter = e.target.dataset.filter;
-			var items = document.querySelectorAll('.tsumego-issue, .tsumego-comment--standalone');
-			items.forEach(function(item) {
-				if (filter === 'all') {
+			// Apply filter to items
+			applyCommentsFilter(filter);
+		}
+	});
+
+	// Apply filter to show/hide items based on selected tab
+	function applyCommentsFilter(filter) {
+		var items = document.querySelectorAll('.tsumego-issue, .tsumego-comment--standalone');
+		items.forEach(function(item) {
+			if (filter === 'open') {
+				// Show standalone comments and open issues
+				if (item.classList.contains('tsumego-comment--standalone') || item.classList.contains('tsumego-issue--opened')) {
 					item.style.display = '';
-				} else if (filter === 'issues') {
-					item.style.display = item.classList.contains('tsumego-issue') ? '' : 'none';
-				} else if (filter === 'comments') {
-					item.style.display = item.classList.contains('tsumego-comment--standalone') ? '' : 'none';
+				} else {
+					item.style.display = 'none';
 				}
-			});
+			} else if (filter === 'closed') {
+				// Show only closed issues
+				if (item.classList.contains('tsumego-issue--closed')) {
+					item.style.display = '';
+				} else {
+					item.style.display = 'none';
+				}
+			}
+		});
+
+		// Show/hide main comment form based on filter
+		// Main form should only show on "open" tab, not "closed"
+		var mainForm = document.getElementById('tsumegoCommentForm');
+		if (mainForm) {
+			var formWrapper = mainForm.closest('.tsumego-comments__form');
+			if (formWrapper) {
+				formWrapper.style.display = (filter === 'open') ? '' : 'none';
+			}
+		}
+		// Also handle login prompt for non-logged-in users
+		var loginPrompt = document.querySelector('.tsumego-comments__login-prompt');
+		if (loginPrompt) {
+			loginPrompt.style.display = (filter === 'open') ? '' : 'none';
+		}
+	}
+
+	// Re-apply current filter after htmx morph (preserves filter state)
+	// Use htmx:afterSettle which fires after all content is settled
+	document.body.addEventListener('htmx:afterSettle', function(e) {
+		// Only handle comments section morphs
+		if (e.detail.target && e.detail.target.id && e.detail.target.id.startsWith('comments-section-')) {
+			// Restore filter state from variable (idiomorph replaces the tabs)
+			if (currentCommentsFilter) {
+				// Use setTimeout to ensure DOM is fully updated after morph
+				setTimeout(function() {
+					// Re-apply active class to the correct tab
+					var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + currentCommentsFilter + '"]');
+					if (targetTab) {
+						targetTab.classList.add('active');
+					}
+					// Re-apply filter to items
+					applyCommentsFilter(currentCommentsFilter);
+				}, 50);
+			}
 		}
 	});
 
@@ -112,15 +187,8 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 		var tsumegoId = section.dataset.tsumegoId;
 		console.log('[Comment DnD] Initializing for tsumego:', tsumegoId);
 
-		// Check if drag handles exist (admin only)
-		var hasHandles = document.querySelector('.tsumego-comment__drag-handle');
-		if (!hasHandles)
-		{
-			console.log('[Comment DnD] No drag handles found (user is not admin), skipping init.');
-			return;
-		}
-
-		console.log('[Comment DnD] Drag handles found, setting up SortableJS...');
+		// Note: We don't check for drag handles here anymore - they may be added later via htmx
+		// The check is now inside initDragDrop()
 
 		var dropZones = {
 			// Drop zones removed - using Make Issue button instead
@@ -163,7 +231,20 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 				if (target && html)
 				{
 					Idiomorph.morph(target, html, {morphStyle: 'outerHTML'});
+					// Re-process htmx attributes on new content (idiomorph doesn't trigger htmx)
+					var newTarget = document.getElementById('comments-section-' + tsumegoId);
+					if (newTarget) htmx.process(newTarget);
 					setTimeout(initDragDrop, 100);
+					// Re-apply filter state after direct Idiomorph morph (not htmx)
+					if (typeof currentCommentsFilter !== 'undefined' && currentCommentsFilter) {
+						setTimeout(function() {
+							var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + currentCommentsFilter + '"]');
+							if (targetTab) {
+								targetTab.classList.add('active');
+							}
+							applyCommentsFilter(currentCommentsFilter);
+						}, 50);
+					}
 				}
 			})
 			.catch(function(err) {
@@ -222,12 +303,21 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 			});
 			activeSortables = [];
 
+			// Check if drag handles exist (admin only) - check each time since comments may be added dynamically
+			var hasHandles = document.querySelector('.tsumego-comment__drag-handle');
+			if (!hasHandles) {
+				console.log('[Comment DnD] No drag handles found (user is not admin or no comments yet)');
+				return;
+			}
+
 			// Find all containers that hold draggable comments
 			var commentsContent = document.getElementById('tsumego-comments-content');
 			if (!commentsContent) {
 				console.log('[Comment DnD] No comments content container found');
 				return;
 			}
+
+			console.log('[Comment DnD] Setting up SortableJS...');
 
 			// Create sortable for main content area
 			// Standalone comments are wrapped in .tsumego-comment--standalone, so we drag those wrappers

@@ -41,7 +41,13 @@ if (!isset($openIssueCount))
 			$openIssueCount++;
 }
 
-// Combine and sort by date for "all" view
+// Count closed issues
+$closedIssueCount = $issueCount - $openIssueCount;
+
+// "Open" tab count = standalone comments + open issues
+$openTabCount = $commentCount + $openIssueCount;
+
+// Combine and sort by date for "open" view (comments + open issues)
 $allItems = [];
 
 // Add issues - use EARLIEST comment's date for sorting (not issue creation date)
@@ -85,66 +91,52 @@ $canDragComment = Auth::isAdmin();
 ?>
 <!-- Morphable container - htmx targets this for all comment actions -->
 <div id="comments-section-<?php echo $tsumegoId; ?>" hx-ext="morph" data-tsumego-id="<?php echo $tsumegoId; ?>">
-	<!-- Header with toggle -->
-	<div id="msg1x">
-		<a id="show2" class="tsumego-comments__toggle">
-			Comments <?php if ($totalCount > 0): ?>(<?php echo $totalCount; ?>)<?php endif; ?>
-			<img id="greyArrow" src="/img/greyArrow2.png" class="tsumego-comments__arrow">
-		</a>
+	<!-- Tab navigation - always visible, clicking toggles content -->
+	<div class="tsumego-comments__tabs" id="msg1x">
+		<button class="tsumego-comments__tab" data-filter="open">
+			COMMENTS (<?php echo $commentCount; ?><?php if ($openIssueCount > 0): ?> + <?php echo $openIssueCount; ?> open issue<?php echo $openIssueCount > 1 ? 's' : ''; ?><?php endif; ?>)
+		</button>
+		<button class="tsumego-comments__tab" data-filter="closed">
+			CLOSED ISSUES (<?php echo $closedIssueCount; ?>)
+		</button>
 	</div>
 
-	<!-- Collapsible wrapper (toggled by #show2 in play.ctp) -->
+	<!-- Collapsible wrapper (toggled by tab clicks) -->
 	<div id="msg2x">
 		<?php if (!$isEmpty): ?>
-			<!-- Tab navigation -->
-			<div class="tsumego-comments__tabs">
-				<button class="tsumego-comments__tab active" data-filter="all">
-					ALL (<?php echo $totalCount; ?>)
-				</button>
-				<button class="tsumego-comments__tab" data-filter="comments">
-					COMMENTS (<?php echo $commentCount; ?>)
-				</button>
-				<button class="tsumego-comments__tab" data-filter="issues">
-					ISSUES (<?php echo $issueCount; ?>)
-					<?php if ($openIssueCount > 0): ?>
-						<span class="tsumego-comments__tab-badge">🔴 <?php echo $openIssueCount; ?> open</span>
+			<!-- All items view -->
+			<div class="tsumego-comments__content" data-view="all" id="tsumego-comments-content">
+				<?php foreach ($allItems as $item): ?>
+					<?php if ($item['type'] === 'issue'): ?>
+						<?php
+						$issueData = $item['data'];
+						$issueComments = $issueData['comments'] ?? [];
+						$issueAuthor = $issueData['author'] ?? ['name' => '[deleted user]'];
+						?>
+						<?php echo $this->element('TsumegoIssues/issue', [
+							'issue' => $issueData,
+							'comments' => $issueComments,
+							'author' => $issueAuthor,
+							'issueNumber' => $item['issueNumber'],
+							'tsumegoId' => $tsumegoId,
+						]); ?>
+					<?php else: ?>
+						<?php
+						$commentData = $item['data'];
+						$commentUserData = $commentData['user'] ?? ['name' => '[deleted user]'];
+						?>
+						<?php echo $this->element('TsumegoComments/comment', [
+							'comment' => $commentData,
+							'user' => $commentUserData,
+							'index' => $item['index'],
+							'tsumegoId' => $tsumegoId,
+							'showActions' => true,
+							'standalone' => true,
+						]); ?>
 					<?php endif; ?>
-				</button>
+				<?php endforeach; ?>
 			</div>
 		<?php endif; ?>
-
-		<!-- All items view -->
-		<div class="tsumego-comments__content" data-view="all" id="tsumego-comments-content">
-			<?php foreach ($allItems as $item): ?>
-				<?php if ($item['type'] === 'issue'): ?>
-					<?php
-					$issueData = $item['data'];
-					$issueComments = $issueData['comments'] ?? [];
-					$issueAuthor = $issueData['author'] ?? ['name' => '[deleted user]'];
-					?>
-					<?php echo $this->element('TsumegoIssues/issue', [
-						'issue' => $issueData,
-						'comments' => $issueComments,
-						'author' => $issueAuthor,
-						'issueNumber' => $item['issueNumber'],
-						'tsumegoId' => $tsumegoId,
-					]); ?>
-				<?php else: ?>
-					<?php
-					$commentData = $item['data'];
-					$commentUserData = $commentData['user'] ?? ['name' => '[deleted user]'];
-					?>
-					<?php echo $this->element('TsumegoComments/comment', [
-						'comment' => $commentData,
-						'user' => $commentUserData,
-						'index' => $item['index'],
-						'tsumegoId' => $tsumegoId,
-						'showActions' => true,
-						'standalone' => true,
-					]); ?>
-				<?php endif; ?>
-			<?php endforeach; ?>
-		</div>
 
 		<!-- Comment Form -->
 		<?php if (Auth::isLoggedIn()): ?>

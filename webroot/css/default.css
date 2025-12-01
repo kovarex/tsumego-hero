@@ -6310,7 +6310,7 @@ ul ul {
 /* Tab Navigation */
 .tsumego-comments__tabs {
   margin-bottom: 15px;
-  padding: 0 14px;
+  padding: 0 14px 10px 14px;
   display: flex;
   gap: 10px;
 }
