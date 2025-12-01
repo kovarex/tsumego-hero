@@ -88,7 +88,7 @@ class UsersController extends AppController
 		$s = $this->Set->findById($sc['SetConnection']['set_id']);
 		if (!$s)
 			throw new NotFoundException('Set not found');
-		$name = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
+		$name = $s['Set']['title'] . ' - ' . $sc['SetConnection']['num'];
 		$ta = $this->TsumegoAttempt->find('all', [
 			'order' => 'created ASC',
 			'conditions' => [
@@ -205,7 +205,7 @@ class UsersController extends AppController
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$p[$i]['Schedule']['num'] = $t['Tsumego']['num'];
+			$p[$i]['Schedule']['num'] = $scT['SetConnection']['num'];
 			$p[$i]['Schedule']['set'] = $s['Set']['title'] . ' ' . $s['Set']['title2'] . ' ';
 		}
 		$this->set('p', $p);
@@ -533,7 +533,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
+			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $scT['SetConnection']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];

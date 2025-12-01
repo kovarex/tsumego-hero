@@ -70,26 +70,15 @@ class TagNamesController extends AppController
 		$tagNames = $this->Tag->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
 		if (!$tagNames)
 			$tagNames = [];
-		$tags = $this->TagConnection->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
-		if (!$tags)
-			$tags = [];
+		$tags = ClassRegistry::init('TagConnection')->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]) ?: [];
 		$proposals = $this->Sgf->find('all', [
 			'limit' => 50,
 			'order' => 'created DESC',
 			'conditions' => ['user_id' => $id],
-		]);
-		if (!$proposals)
-			$proposals = [];
-		$rejectedProposals = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'proposal']]);
-		if (!$rejectedProposals)
-			$rejectedProposals = [];
-		$rejectedTags = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag']]);
-		if (!$rejectedTags)
-			$rejectedTags = [];
-		$rejectedTagNames = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag name']]);
-		if (!$rejectedTagNames)
-			$rejectedTagNames = [];
-
+		]) ?: [];
+		$rejectedProposals = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'proposal']]) ?: [];
+		$rejectedTags = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag']]) ?: [];
+		$rejectedTagNames = $this->Reject->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'type' => 'tag name']]) ?: [];
 		$tagNamesCount = count($tagNames);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
@@ -141,7 +130,7 @@ class TagNamesController extends AppController
 				$tags[$i]['TagConnection']['tag_name'] = '<i>[not found]</i>';
 			else
 				$tags[$i]['TagConnection']['tag_name'] = $tnx['Tag']['name'];
-			$tags[$i]['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $tx['Tsumego']['num'];
+			$tags[$i]['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$tags[$i]['TagConnection']['user'] = $ux['User']['name'];
 			$tags[$i]['TagConnection']['type'] = 'tag';
 			$tags[$i]['TagConnection']['status'] = '<b style="color:#047804">accepted</b>';
@@ -166,7 +155,7 @@ class TagNamesController extends AppController
 			$r = [];
 			$r['TagConnection']['tsumego_id'] = $rejectedTags[$i]['Reject']['tsumego_id'];
 			$r['TagConnection']['tag_name'] = $rejectedTags[$i]['Reject']['text'];
-			$r['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $tx['Tsumego']['num'];
+			$r['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$r['TagConnection']['user'] = $ux['User']['name'];
 			$r['TagConnection']['type'] = $rejectedTags[$i]['Reject']['type'];
 			$r['TagConnection']['status'] = '<b style="color:#ce3a47">rejected</b>';
@@ -191,7 +180,7 @@ class TagNamesController extends AppController
 				continue;
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($proposals[$i]['Sgf']['user_id']);
-			$proposals[$i]['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $tx['Tsumego']['num'];
+			$proposals[$i]['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$proposals[$i]['Sgf']['status'] = '<b style="color:#047804">accepted</b>';
 			$proposals[$i]['Sgf']['user'] = $ux['User']['name'];
 			$proposals[$i]['Sgf']['type'] = 'proposal';
@@ -215,7 +204,7 @@ class TagNamesController extends AppController
 			$ux = $this->User->findById($rejectedProposals[$i]['Reject']['user_id']);
 			$r = [];
 			$r['Sgf']['tsumego_id'] = $rejectedProposals[$i]['Reject']['tsumego_id'];
-			$r['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $tx['Tsumego']['num'];
+			$r['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$r['Sgf']['status'] = '<b style="color:#ce3a47">rejected</b>';
 			$r['Sgf']['type'] = $rejectedProposals[$i]['Reject']['type'];
 			$r['Sgf']['user'] = $ux['User']['name'];

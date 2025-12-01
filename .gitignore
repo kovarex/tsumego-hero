@@ -21,6 +21,8 @@
 /phpunit.xml
 config/database.php
 config/email.php
+config/core.local.php
+config/define.local.php
 .php-cs-fixer.cache
 ./.php-cs-fixer.php
 
@@ -31,15 +33,13 @@ config/email.php
 /img/google/*.png
 webroot/mainPageAjax.txt
 webroot/userLogger.html
+webroot/forums/cache
+webroot/forums/store
+webroot/forums/config.php
+webroot/forums/vendor
 .ddev/
-config/core.local.php
 .idea/
 mainPageAjax.txt
-
-/forums/cache
-/forums/store
-/forums/config.php
-/forums/vendor
 
 # IDE and editor specific files #
 #################################

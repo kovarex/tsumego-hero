@@ -172,18 +172,12 @@ class Browser
 		);
 	}
 
-	/**
-	 * Wait for a CSS selector to NOT exist in the DOM.
-	 *
-	 * @param string $selector CSS selector to check for absence
-	 * @param int $timeout Maximum seconds to wait
-	 */
-	public function waitUntilCssSelectorNotExists(string $selector, int $timeout = 10): void
+	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 5): void
 	{
-		new WebDriverWait($this->driver, $timeout, 200)->until(
+		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
-				return count($elements) === 0;
+				return count($elements) == 0;
 			}
 		);
 	}

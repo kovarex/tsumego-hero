@@ -6,7 +6,7 @@
 
 		</div>
 		<div class="user-header2">
-			<a href="/tag_names/user/<?php echo Auth::getUserID(); ?>" class="new-button-time">contributions</a>
+			<a href="/tag_names/user/<?php echo Auth::getUserID(); ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
 		</div>
 	</div>
 	<div class="userMain1">
