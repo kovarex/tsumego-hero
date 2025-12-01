@@ -10,8 +10,6 @@ App::uses('TsumegoIssue', 'Model');
  */
 class TsumegoIssuesController extends AppController
 {
-	public $components = ['Flash'];
-
 	/**
 	 * List all issues with optional filtering.
 	 *
@@ -53,12 +51,9 @@ class TsumegoIssuesController extends AppController
 		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount', 'totalPages', 'perPage'));
 		$this->set('currentPage', $page);
 
-		// For htmx requests, return the issues-section element (idiomorph handles the diff)
-		if ($this->isHtmxRequest())
-		{
-			$this->layout = false;
-			$this->render('/Elements/TsumegoIssues/issues-section');
-		}
+		// Return the issues-section element (idiomorph handles the diff)
+		$this->layout = false;
+		$this->render('/Elements/TsumegoIssues/issues-section');
 	}
 
 	/**
@@ -78,8 +73,9 @@ class TsumegoIssuesController extends AppController
 
 		if (!Auth::isLoggedIn())
 		{
-			$this->Flash->error('You must be logged in to report an issue.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(401);
+			$this->response->body('You must be logged in to report an issue.');
+			return $this->response;
 		}
 
 		$tsumegoId = $this->request->data('Issue.tsumego_id');
@@ -88,8 +84,9 @@ class TsumegoIssuesController extends AppController
 
 		if (empty($tsumegoId) || empty($message))
 		{
-			$this->Flash->error('Tsumego ID and message are required.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(400);
+			$this->response->body('Tsumego ID and message are required.');
+			return $this->response;
 		}
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
@@ -105,8 +102,9 @@ class TsumegoIssuesController extends AppController
 		$TsumegoIssue->create();
 		if (!$TsumegoIssue->save($issue))
 		{
-			$this->Flash->error('Failed to create issue.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(500);
+			$this->response->body('Failed to create issue.');
+			return $this->response;
 		}
 
 		$issueId = $TsumegoIssue->getLastInsertID();
@@ -125,25 +123,15 @@ class TsumegoIssuesController extends AppController
 		{
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(422);
-				$this->layout = false;
-				$this->autoRender = false;
-				$this->response->body('<div class="alert alert--error">Failed to create issue.</div>');
-				return $this->response;
-			}
-			$this->Flash->error('Failed to create issue comment.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(422);
+			$this->layout = false;
+			$this->autoRender = false;
+			$this->response->body('<div class="alert alert--error">Failed to create issue.</div>');
+			return $this->response;
 		}
 
-		// For htmx requests, return the full comments section (idiomorph handles the diff)
-		if ($this->isHtmxRequest())
-			return $this->_renderCommentsSection($tsumegoId);
-
-		$this->Flash->success('Issue reported successfully.');
-		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		// Return the full comments section (idiomorph handles the diff)
+		return $this->_renderCommentsSection($tsumegoId);
 	}
 
 	/**
@@ -165,24 +153,27 @@ class TsumegoIssuesController extends AppController
 
 		if (!$issue)
 		{
-			$this->Flash->error('Issue not found.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(404);
+			$this->response->body('Issue not found.');
+			return $this->response;
 		}
 
 		// Only admin or issue author can close
 		$isOwner = $issue['TsumegoIssue']['user_id'] === Auth::getUserID();
 		if (!Auth::isAdmin() && !$isOwner)
 		{
-			$this->Flash->error('You are not authorized to close this issue.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(403);
+			$this->response->body('You are not authorized to close this issue.');
+			return $this->response;
 		}
 
 		// Update status to closed
 		$TsumegoIssue->id = $id;
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS))
 		{
-			$this->Flash->error('Failed to close issue.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(500);
+			$this->response->body('Failed to close issue.');
+			return $this->response;
 		}
 
 		// Add closing comment if provided
@@ -200,22 +191,15 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->save($comment);
 		}
 
-		// For htmx requests, return updated content
-		if ($this->isHtmxRequest())
-		{
-			$source = $this->request->data('source') ?: 'list';
+		// Return updated content
+		$source = $this->request->data('source') ?: 'list';
 
-			// Play page source - return full comments section (idiomorph handles the diff)
-			if ($source === 'play')
-				return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
+		// Play page source - return full comments section (idiomorph handles the diff)
+		if ($source === 'play')
+			return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
 
-			// Issues list page - render with pagination support
-			return $this->_renderIssuesSection();
-		}
-
-		$this->Flash->success('Issue closed.');
-		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		// Issues list page - render with pagination support
+		return $this->_renderIssuesSection();
 	}
 
 	/**
@@ -233,8 +217,9 @@ class TsumegoIssuesController extends AppController
 
 		if (!Auth::isAdmin())
 		{
-			$this->Flash->error('Only admins can reopen issues.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(403);
+			$this->response->body('Only admins can reopen issues.');
+			return $this->response;
 		}
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
@@ -242,34 +227,28 @@ class TsumegoIssuesController extends AppController
 
 		if (!$issue)
 		{
-			$this->Flash->error('Issue not found.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(404);
+			$this->response->body('Issue not found.');
+			return $this->response;
 		}
 
 		$TsumegoIssue->id = $id;
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
 		{
-			$this->Flash->error('Failed to reopen issue.');
-			$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
-			return $this->redirect($redirect);
+			$this->response->statusCode(500);
+			$this->response->body('Failed to reopen issue.');
+			return $this->response;
 		}
 
-		// For htmx requests, return updated content
-		if ($this->isHtmxRequest())
-		{
-			$source = $this->request->data('source') ?: 'list';
+		// Return updated content
+		$source = $this->request->data('source') ?: 'list';
 
-			// Play page source - return full comments section (idiomorph handles the diff)
-			if ($source === 'play')
-				return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
+		// Play page source - return full comments section (idiomorph handles the diff)
+		if ($source === 'play')
+			return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
 
-			// Issues list page - render with pagination support
-			return $this->_renderIssuesSection();
-		}
-
-		$this->Flash->success('Issue reopened.');
-		$redirect = $this->request->data('Issue.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		// Issues list page - render with pagination support
+		return $this->_renderIssuesSection();
 	}
 
 	/**
@@ -279,7 +258,6 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * POST data:
 	 * - Comment.tsumego_issue_id: 'standalone' | 'new' | int (issue ID)
-	 * - Comment.htmx: '1' if htmx request (returns rendered section instead of redirect)
 	 *
 	 * @param int $commentId Comment ID to move
 	 * @return CakeResponse|null
@@ -291,14 +269,9 @@ class TsumegoIssuesController extends AppController
 
 		if (!Auth::isAdmin())
 		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(403);
-				$this->response->body('Only admins can move comments.');
-				return $this->response;
-			}
-			$this->Flash->error('Only admins can move comments.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(403);
+			$this->response->body('Only admins can move comments.');
+			return $this->response;
 		}
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
@@ -306,33 +279,20 @@ class TsumegoIssuesController extends AppController
 
 		if (!$comment)
 		{
-			if ($this->isHtmxRequest())
-			{
-				$this->response->statusCode(404);
-				$this->response->body('Comment not found.');
-				return $this->response;
-			}
-			$this->Flash->error('Comment not found.');
-			return $this->redirect($this->referer());
+			$this->response->statusCode(404);
+			$this->response->body('Comment not found.');
+			return $this->response;
 		}
 
 		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
-		$isHtmx = $this->isHtmxRequest() || $this->request->data('Comment.htmx');
 
 		// Handle 'standalone' - remove from issue
 		if ($targetIssueId === 'standalone')
 		{
 			if (empty($currentIssueId))
-			{
-				if ($isHtmx)
-					return $this->_renderCommentsSection($tsumegoId);
-
-				$this->Flash->info('Comment is already standalone.');
-				$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-				return $this->redirect($redirect);
-			}
+				return $this->_renderCommentsSection($tsumegoId);
 
 			$TsumegoComment->id = $commentId;
 			if ($TsumegoComment->saveField('tsumego_issue_id', null))
@@ -340,25 +300,12 @@ class TsumegoIssuesController extends AppController
 				// Check if issue is now empty and delete it
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
-
-				if ($isHtmx)
-					return $this->_renderCommentsSection($tsumegoId);
-
-				$this->Flash->success('Comment removed from issue.');
-			}
-			else
-			{
-				if ($isHtmx)
-				{
-					$this->response->statusCode(500);
-					$this->response->body('Failed to remove comment from issue.');
-					return $this->response;
-				}
-				$this->Flash->error('Failed to remove comment from issue.');
+				return $this->_renderCommentsSection($tsumegoId);
 			}
 
-			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-			return $this->redirect($redirect);
+			$this->response->statusCode(500);
+			$this->response->body('Failed to remove comment from issue.');
+			return $this->response;
 		}
 
 		// Handle 'new' - create new issue
@@ -374,28 +321,16 @@ class TsumegoIssuesController extends AppController
 			$TsumegoIssue->create();
 			if (!$TsumegoIssue->save($issue))
 			{
-				if ($isHtmx)
-				{
-					$this->response->statusCode(500);
-					$this->response->body('Failed to create new issue.');
-					return $this->response;
-				}
-				$this->Flash->error('Failed to create new issue.');
-				return $this->redirect($this->referer());
+				$this->response->statusCode(500);
+				$this->response->body('Failed to create new issue.');
+				return $this->response;
 			}
 			$targetIssueId = $TsumegoIssue->getLastInsertID();
 		}
 
 		// Check if moving to same issue
 		if ($currentIssueId == $targetIssueId)
-		{
-			if ($isHtmx)
-				return $this->_renderCommentsSection($tsumegoId);
-
-			$this->Flash->info('Comment is already in this issue.');
-			$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-			return $this->redirect($redirect);
-		}
+			return $this->_renderCommentsSection($tsumegoId);
 
 		// Move the comment to the target issue
 		$TsumegoComment->id = $commentId;
@@ -407,25 +342,12 @@ class TsumegoIssuesController extends AppController
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
 			}
-
-			if ($isHtmx)
-				return $this->_renderCommentsSection($tsumegoId);
-
-			$this->Flash->success('Comment moved to issue.');
-		}
-		else
-		{
-			if ($isHtmx)
-			{
-				$this->response->statusCode(500);
-				$this->response->body('Failed to move comment.');
-				return $this->response;
-			}
-			$this->Flash->error('Failed to move comment.');
+			return $this->_renderCommentsSection($tsumegoId);
 		}
 
-		$redirect = $this->request->data('Comment.redirect') ?: $this->referer();
-		return $this->redirect($redirect);
+		$this->response->statusCode(500);
+		$this->response->body('Failed to move comment.');
+		return $this->response;
 	}
 
 	/**
