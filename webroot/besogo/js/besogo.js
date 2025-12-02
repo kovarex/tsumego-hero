@@ -440,18 +440,42 @@
       return;
     }
 
+    // Constants matching boardDisplay.js
+    const CELL_SIZE = 88; // Same as in boardDisplay.js
+    const BOARD_MARGIN = 75; // Coord margin
     const bp = besogo.boardParameters;
 
-    // DON'T recalculate boardWidth/boardHeight - they were set during initial load
-    // Corner transformations just change the viewBox, not the size!
-    console.log('[updateBoardDisplay] Using EXISTING boardWidth:', bp.boardWidth, 'boardHeight:', bp.boardHeight);
-    console.log('[updateBoardDisplay] Using EXISTING boardWidth2:', bp.boardWidth2, 'boardWidth3:', bp.boardWidth3);
-    console.log('[updateBoardDisplay] Using EXISTING boardHeight2:', bp.boardHeight2, 'boardHeight3:', bp.boardHeight3);
+    // Recalculate board dimensions using scaleParameters.highest
+    // This is what drawBoard() uses, and it contains PRE-transformation values
+    // which is correct - we want the SIZE of the puzzle area, not the coordinates
+    const modifiedSizeX = besogo.scaleParameters.highest.x;
+    const modifiedSizeY = besogo.scaleParameters.highest.y;
 
-    // Update corner orientation
+    console.log('[updateBoardDisplay] scaleParameters.highest:', besogo.scaleParameters.highest);
+    console.log('[updateBoardDisplay] Using modifiedSizeX:', modifiedSizeX, 'modifiedSizeY:', modifiedSizeY);
+
+    const numberOfXEdges = (besogo.scaleParameters.distanceToRight() !== 0) ? 1 : 2;
+    const numberOfYEdges = (besogo.scaleParameters.distanceToBottom() !== 0) ? 1 : 2;
+
+    console.log('[updateBoardDisplay] numberOfXEdges:', numberOfXEdges, 'numberOfYEdges:', numberOfYEdges);
+
+    // Recalculate board dimensions (same logic as drawBoard())
+    bp.boardWidth = numberOfXEdges * BOARD_MARGIN + modifiedSizeX * CELL_SIZE;
+    bp.boardHeight = numberOfYEdges * BOARD_MARGIN + modifiedSizeY * CELL_SIZE;
+
+    console.log('[updateBoardDisplay] NEW boardWidth:', bp.boardWidth, 'boardHeight:', bp.boardHeight);
+
+    // Recalculate helper parameters
+    bp.boardWidth2 = bp.fullBoardWidth - bp.boardWidth;
+    bp.boardWidth3 = bp.fullBoardWidth - bp.boardWidth2;
+    bp.boardHeight2 = bp.fullBoardWidth - bp.boardHeight;
+    bp.boardHeight3 = bp.fullBoardWidth - bp.boardHeight2;
     bp.corner = cornerOrientation;
 
-    // Update viewBox based on corner orientation (using EXISTING board parameters)
+    console.log('[updateBoardDisplay] boardWidth2:', bp.boardWidth2, 'boardWidth3:', bp.boardWidth3);
+    console.log('[updateBoardDisplay] boardHeight2:', bp.boardHeight2, 'boardHeight3:', bp.boardHeight3);
+
+    // Update viewBox based on corner orientation
     var newViewBox;
     if (besogo.scaleParameters.orientation === 'full-board') {
       if (cornerOrientation === 'full-board') {
@@ -683,31 +707,43 @@
 
       //if another corner than top-left is set
       if (corner == "top-right") {
-        let transformation = besogo.makeTransformation();
-        transformation.hFlip = true;
-        besogo.editor.applyTransformation(transformation);
+        // Only apply hFlip if puzzle doesn't span full width
+        if (besogo.scaleParameters.distanceToLeft() !== 0 || besogo.scaleParameters.distanceToRight() !== 0) {
+          let transformation = besogo.makeTransformation();
+          transformation.hFlip = true;
+          besogo.editor.applyTransformation(transformation);
+          besogo.coordArea["lowestX"] = 18 - besogo.coordArea["lowestX"];
+          besogo.coordArea["highestX"] = 18 - besogo.coordArea["highestX"];
+        }
         besogo.scaleParameters.orientation = "top-right";
-        besogo.coordArea["lowestX"] = 18 - besogo.coordArea["lowestX"];
-        besogo.coordArea["highestX"] = 18 - besogo.coordArea["highestX"];
       } else if (corner == "bottom-left") {
-        let transformation = besogo.makeTransformation();
-        transformation.vFlip = true;
-        besogo.editor.applyTransformation(transformation);
+        // Only apply vFlip if puzzle doesn't span full height
+        if (besogo.scaleParameters.distanceToTop() !== 0 || besogo.scaleParameters.distanceToBottom() !== 0) {
+          let transformation = besogo.makeTransformation();
+          transformation.vFlip = true;
+          besogo.editor.applyTransformation(transformation);
+          besogo.coordArea["lowestY"] = 18 - besogo.coordArea["lowestY"];
+          besogo.coordArea["highestY"] = 18 - besogo.coordArea["highestY"];
+        }
         besogo.scaleParameters.orientation = "bottom-left";
-        besogo.coordArea["lowestY"] = 18 - besogo.coordArea["lowestY"];
-        besogo.coordArea["highestY"] = 18 - besogo.coordArea["highestY"];
       } else if (corner == "bottom-right") {
-        let transformation = besogo.makeTransformation();
-        transformation.hFlip = true;
-        besogo.editor.applyTransformation(transformation);
-        transformation = besogo.makeTransformation();
-        transformation.vFlip = true;
-        besogo.editor.applyTransformation(transformation);
+        // Only apply hFlip if puzzle doesn't span full width
+        if (besogo.scaleParameters.distanceToLeft() !== 0 || besogo.scaleParameters.distanceToRight() !== 0) {
+          let transformation = besogo.makeTransformation();
+          transformation.hFlip = true;
+          besogo.editor.applyTransformation(transformation);
+          besogo.coordArea["lowestX"] = 18 - besogo.coordArea["lowestX"];
+          besogo.coordArea["highestX"] = 18 - besogo.coordArea["highestX"];
+        }
+        // Only apply vFlip if puzzle doesn't span full height
+        if (besogo.scaleParameters.distanceToTop() !== 0 || besogo.scaleParameters.distanceToBottom() !== 0) {
+          transformation = besogo.makeTransformation();
+          transformation.vFlip = true;
+          besogo.editor.applyTransformation(transformation);
+          besogo.coordArea["lowestY"] = 18 - besogo.coordArea["lowestY"];
+          besogo.coordArea["highestY"] = 18 - besogo.coordArea["highestY"];
+        }
         besogo.scaleParameters.orientation = "bottom-right";
-        besogo.coordArea["lowestX"] = 18 - besogo.coordArea["lowestX"];
-        besogo.coordArea["highestX"] = 18 - besogo.coordArea["highestX"];
-        besogo.coordArea["lowestY"] = 18 - besogo.coordArea["lowestY"];
-        besogo.coordArea["highestY"] = 18 - besogo.coordArea["highestY"];
       }
     }
     let convertedCoords = besogo.coord["western"](
