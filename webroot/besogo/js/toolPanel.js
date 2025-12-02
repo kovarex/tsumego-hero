@@ -79,6 +79,7 @@ besogo.makeToolPanel = function (container, editor) {
           $("#boardSpinClockwise").css("opacity", ".62");
           besogo.boardParameters["corner"] = "top-left";
           besogo.editor.adjustCommentCoords();
+          besogo.editor.adjustPositionPaths();
         }
       );
 
@@ -137,6 +138,7 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "top-right";
             besogo.editor.adjustCommentCoords();
+            besogo.editor.adjustPositionPaths();
           }
         );
       }
@@ -195,6 +197,7 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-left";
             besogo.editor.adjustCommentCoords();
+            besogo.editor.adjustPositionPaths();
           }
         );
       }
@@ -251,6 +254,7 @@ besogo.makeToolPanel = function (container, editor) {
             $("#boardSpinClockwise").css("opacity", ".62");
             besogo.boardParameters["corner"] = "bottom-right";
             besogo.editor.adjustCommentCoords();
+            besogo.editor.adjustPositionPaths();
           }
         );
       }

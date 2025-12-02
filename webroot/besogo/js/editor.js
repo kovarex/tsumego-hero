@@ -40,7 +40,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     remainingRequiredNodes = [],
     commentParamList = [],
     displayResult = null,
-    showComment = null;
+    showComment = null,
+    commentPositionLabels = null; // Stores {node, labels} for temporary position labels
 
   return {
     addListener: addListener,
@@ -94,6 +95,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     getOrientation: getOrientation,
     dynamicCommentCoords: dynamicCommentCoords,
     adjustCommentCoords: adjustCommentCoords,
+    adjustPositionPaths: adjustPositionPaths,
     isMoveInTree: isMoveInTree,
     searchNodesForTreePosition: searchNodesForTreePosition,
     setFullEditor: setFullEditor,
@@ -232,6 +234,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     if (!current.hasChildDependingOnAutoPlay(autoPlay))
       // Check if no children
       return; // Do nothing if no children (avoid notification)
+    // Clear any temporary comment position labels before navigating
+    clearCommentPositionLabels();
     while (current.hasChildDependingOnAutoPlay(autoPlay) && num !== 0) {
       if (navHistory.length)
         // Non-empty navigation history
@@ -291,6 +295,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     if (!current.parent)
       // Check if root
       return; // Do nothing if already at root (avoid notification)
+    // Clear any temporary comment position labels before navigating
+    clearCommentPositionLabels();
     while (current.parent && num !== 0) {
       navHistory.push(current); // Save current into navigation history
       if (current.cameFrom) current = current.cameFrom;
@@ -312,6 +318,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       // Exit early if only child
       if (siblings.length === 1) return;
 
+      // Clear any temporary comment position labels before navigating
+      clearCommentPositionLabels();
+
       // Find index of current amongst siblings
       i = siblings.indexOf(current);
 
@@ -331,6 +340,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       // Check if root
       return; // Do nothing if already at root
 
+    // Clear any temporary comment position labels before navigating
+    clearCommentPositionLabels();
+
     navHistory.push(current); // Save starting position in case we do not find a branch point
 
     while (current.parent && current.parent.children.length === 1)
@@ -346,9 +358,23 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
   // Sets the current node
   function setCurrent(node) {
     if (current !== node) {
+      // Clear any temporary comment position labels before navigating
+      clearCommentPositionLabels();
       current = node;
       // Notify listeners of navigation (with no tree edits)
       notifyListeners({ navChange: true });
+    }
+  }
+
+  // Clears temporary labels added by commentPosition
+  function clearCommentPositionLabels() {
+    if (commentPositionLabels && commentPositionLabels.node) {
+      var node = commentPositionLabels.node;
+      var labels = commentPositionLabels.labels;
+      for (var i = 0; i < labels.length; i++) {
+        node.addMarkup(labels[i].x, labels[i].y, 0); // Remove markup
+      }
+      commentPositionLabels = null;
     }
   }
 
@@ -933,10 +959,40 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
             break;
           }
         }
-        if (foundMatch !== false) setCurrent(commentParamList[foundMatch]);
+        if (foundMatch !== false) {
+          setCurrent(commentParamList[foundMatch]);
+          // Add move number labels on the path stones
+          addPathMoveNumbers(positionParams2);
+        }
         else setCurrent(root);
       }
     } else setCurrent(root);
+  }
+
+  // Adds move number labels (1, 2, 3...) on stones in a position path
+  function addPathMoveNumbers(pathCoords) {
+    if (!pathCoords || pathCoords.length === 0) return;
+    
+    // Clear any existing comment position labels first
+    clearCommentPositionLabels();
+    
+    // Track the labels we're adding so we can remove them later
+    var labels = [];
+    
+    // Add labels for each move in the path
+    for (let i = 0; i < pathCoords.length; i++) {
+      var x = parseInt(pathCoords[i][0]);
+      var y = parseInt(pathCoords[i][1]);
+      var moveNum = (i + 1).toString();
+      current.addMarkup(x, y, moveNum);
+      labels.push({x: x, y: y});
+    }
+    
+    // Store the labels so we can clear them on navigation
+    commentPositionLabels = {node: current, labels: labels};
+    
+    // Notify listeners to redraw the board
+    notifyListeners({ markupChange: true });
   }
 
   function compareFoundCommentMoves(
@@ -1140,6 +1196,69 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
         $("#" + besogo.dynamicCommentCoords[0][i]).text(c1 + c2);
       }
     }
+  }
+
+  // Updates position path displays when board orientation changes
+  // Position paths store raw coordinates in data-path attribute (e.g., "17/3+16/4")
+  // This function recalculates the display text based on current board orientation
+  function adjustPositionPaths() {
+    var boardSize = besogo.scaleParameters["boardCoordSize"] || 19;
+    var labels = besogo.coord["western"](boardSize, boardSize);
+    var corner = besogo.boardParameters && besogo.boardParameters.corner;
+    
+    // Find all position-path elements
+    var paths = document.querySelectorAll('.position-path');
+    if (!paths || paths.length === 0) return;
+    
+    paths.forEach(function(pathEl) {
+      var button = pathEl.closest('.position-button');
+      if (!button) return;
+      
+      var rawPath = button.getAttribute('data-path');
+      if (!rawPath) return;
+      
+      // Parse path coordinates (e.g., "16/3+17/3" -> [[16,3], [17,3]])
+      // Path is stored as [target, parent, ...] so first element is the destination
+      var coords = rawPath.split('+').map(function(pair) {
+        var xy = pair.split('/');
+        return [parseInt(xy[0]), parseInt(xy[1])];
+      });
+      
+      // Apply current transformation based on corner orientation
+      var transformedCoords = coords.map(function(coord) {
+        var x = coord[0];
+        var y = coord[1];
+        
+        // Apply transformation based on current corner
+        // The raw coordinates are stored as they were in the original orientation
+        // We need to transform to match the current view
+        if (corner === 'top-right') {
+          x = boardSize - x + 1;  // Flip horizontally
+        } else if (corner === 'bottom-left') {
+          y = boardSize - y + 1;  // Flip vertically
+        } else if (corner === 'bottom-right') {
+          x = boardSize - x + 1;  // Flip both
+          y = boardSize - y + 1;
+        }
+        // top-left: no transformation needed
+        
+        return [x, y];
+      });
+      
+      // Convert to Western notation
+      var displayParts = transformedCoords.map(function(coord) {
+        var col = labels.x[coord[0]] || '?';
+        var row = labels.y[coord[1]] || '?';
+        return col + row;
+      });
+      
+      // Reverse for chronological display (ancestor→target)
+      // Path is stored as [target, parent, ...] but we display as ancestor→target
+      displayParts.reverse();
+      
+      // Update the display
+      pathEl.textContent = displayParts.join('→');
+    });
   }
 
   function isMoveInTree(cu) {

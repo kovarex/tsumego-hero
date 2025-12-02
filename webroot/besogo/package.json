@@ -5,7 +5,7 @@
   "main": "besogo.all.js",
   "scripts": {
     "build": "./build.sh",
-    "prepare": "npm run build"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,9 @@
   "bugs": {
     "url": "https://github.com/yewang/besogo/issues"
   },
-  "homepage": "http://yewang.github.io/besogo/"
+  "homepage": "http://yewang.github.io/besogo/",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
 }

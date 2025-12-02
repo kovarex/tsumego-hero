@@ -29,9 +29,119 @@ $commentColorClass = $isAdmin ? 'commentBox2' : 'commentBox1';
 // Get author name
 $authorName = $user['name'] ?? '[deleted user]';
 
-// Process position button if comment has a position
+// Process message - parse position tags and replace with clickable buttons
+$message = $comment['message'];
+
+// New format: [x/y/pX/pY/cX/cY/moveNumber/childrenCount/orientation|path]
+// No pos: prefix, no {display} suffix - display is computed dynamically
+// Path is stored in REVERSE order: [target, parent, grandparent, ...]
+$posButtonIndex = 0;
+$message = preg_replace_callback(
+	'/\[(\d+\/\d+\/-?\d+\/-?\d+\/-?\d+\/-?\d+\/\d+\/\d+\/[a-z\-]+(?:\|[\d\/\+]+)?)\]/',
+	function ($matches) use (&$posButtonIndex) {
+		$positionData = $matches[1];
+		$posButtonIndex++;
+
+		// Parse position data to build JS arguments and display path
+		if (strpos($positionData, '|') !== false)
+		{
+			$parts = explode("|", $positionData);
+			$positionParts = explode('/', $parts[0]);
+			$pathStr = $parts[1];
+			$additionalArg = ",'" . $pathStr . "'";
+			
+			// Compute display from path coordinates
+			// Path is stored as [target, parent, ...] so we reverse for display
+			$pathCoords = explode('+', $pathStr);
+			$displayParts = [];
+			foreach ($pathCoords as $coord)
+			{
+				$xy = explode('/', $coord);
+				if (count($xy) >= 2)
+				{
+					$x = (int) $xy[0];  // 1-indexed column (1-19)
+					$y = (int) $xy[1];  // 1-indexed row from top (1-19)
+					// Convert to Western notation (A-T, skipping I)
+					// Column: x=1 -> A, x=2 -> B, ... x=8 -> H, x=9 -> J (skip I), etc.
+					$cols = 'ABCDEFGHJKLMNOPQRST';  // 19 letters (no I)
+					$col = ($x >= 1 && $x <= 19) ? $cols[$x - 1] : '?';
+					// Row: In Western notation, row 1 is at bottom, row 19 at top
+					// So y=1 (top in internal coords) -> 19, y=19 (bottom) -> 1
+					$row = 19 - $y + 1;  // = 20 - y
+					$displayParts[] = $col . $row;
+				}
+			}
+			// Reverse for chronological display (ancestor→target)
+			$displayPath = implode('→', array_reverse($displayParts));
+		}
+		else
+		{
+			$positionParts = explode('/', $positionData);
+			$additionalArg = '';
+			$displayPath = 'position';
+			$pathStr = ''; // No path data for non-path positions
+		}
+
+		if (count($positionParts) >= 9)
+		{
+			$jsArgs = implode(',', array_slice($positionParts, 0, 8)) . ",'" . $positionParts[8] . "'" . $additionalArg;
+			// Store raw path in data-path for JS rotation updates
+			$dataPath = h($pathStr);
+			return '<span class="position-button" onclick="commentPosition(' . $jsArgs . ');" title="Show position: ' . h($displayPath) . '" data-path="' . $dataPath . '">'
+				. '<img src="/img/positionIcon1.png" class="positionIcon1" alt="">'
+				. '<span class="position-path">' . h($displayPath) . '</span>'
+				. '</span>';
+		}
+
+		// Fallback: return original text if parsing fails
+		return $matches[0];
+	},
+	$message
+);
+
+// Legacy format: [pos:data]{display} - for backward compatibility
+$message = preg_replace_callback(
+	'/\[pos:([^\]]+)\]\{([^}]+)\}/',
+	function ($matches) use (&$posButtonIndex) {
+		$positionData = $matches[1];
+		$displayPath = $matches[2];
+		$posButtonIndex++;
+
+		// Parse position data to build JS arguments
+		$pathStr = '';
+		if (strpos($positionData, '|') !== false)
+		{
+			$parts = explode("|", $positionData);
+			$positionParts = explode('/', $parts[0]);
+			$pathStr = $parts[1];
+			$additionalArg = ",'" . $pathStr . "'";
+		}
+		else
+		{
+			$positionParts = explode('/', $positionData);
+			$additionalArg = '';
+		}
+
+		if (count($positionParts) >= 9)
+		{
+			$jsArgs = implode(',', array_slice($positionParts, 0, 8)) . ",'" . $positionParts[8] . "'" . $additionalArg;
+			// Store raw path in data-path for JS rotation updates
+			$dataPath = h($pathStr);
+			return '<span class="position-button" onclick="commentPosition(' . $jsArgs . ');" title="Show position: ' . h($displayPath) . '" data-path="' . $dataPath . '">'
+				. '<img src="/img/positionIcon1.png" class="positionIcon1" alt="">'
+				. '<span class="position-path">' . h($displayPath) . '</span>'
+				. '</span>';
+		}
+
+		// Fallback: return original text if parsing fails
+		return $matches[0];
+	},
+	$message
+);
+
+// Legacy support: Process old position field if present and no new-format positions found
 $positionButton = '';
-if (!empty($comment['position'])) {
+if (!empty($comment['position']) && $posButtonIndex === 0) {
 	$position = $comment['position'];
 	if (strpos($position, '|') !== false) {
 		$parts = explode("|", $position);
@@ -48,8 +158,7 @@ if (!empty($comment['position'])) {
 	}
 }
 
-// Process message - replace [current position] placeholder with position button
-$message = $comment['message'];
+// Process message - replace [current position] placeholder with legacy position button
 if ($positionButton && strpos($message, '[current position]') !== false)
 	$message = str_replace('[current position]', $positionButton, $message);
 

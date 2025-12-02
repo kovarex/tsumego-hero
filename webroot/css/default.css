@@ -4419,6 +4419,30 @@ nav ul ul ul li {
   top: 2px;
   cursor: pointer;
 }
+.position-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+.position-button:hover {
+  background: #e0e0e0;
+}
+.position-button .positionIcon1 {
+  top: 0;
+  width: 14px;
+  height: 14px;
+}
+.position-path {
+  color: #333;
+}
 .duplicateTable {
   max-width: 800px;
 }

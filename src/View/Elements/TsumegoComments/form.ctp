@@ -26,13 +26,12 @@ $isReplyToIssue = !empty($issueId);
 		  hx-target="#comments-section-<?php echo $tsumegoId; ?>"
 		  hx-swap="morph:outerHTML"
 		  hx-disabled-elt="find button[type='submit']"
-		  hx-on::after-request="if(event.detail.successful) { this.reset(); var indicator = document.getElementById('positionIndicator-<?php echo $formId; ?>'); if(indicator) indicator.style.display='none'; }">
+		  hx-on::after-request="if(event.detail.successful) { this.reset(); }">
 		<input type="hidden" name="data[Comment][tsumego_id]" value="<?php echo $tsumegoId; ?>">
 		<input type="hidden" name="data[Comment][redirect]" value="<?php echo $this->request->here; ?>">
 		<?php if ($isReplyToIssue): ?>
 			<input type="hidden" name="data[Comment][tsumego_issue_id]" value="<?php echo $issueId; ?>">
 		<?php endif; ?>
-		<input type="hidden" name="data[Comment][position]" id="commentPosition-<?php echo $formId; ?>" value="">
 
 		<textarea
 			name="data[Comment][message]"
@@ -53,11 +52,6 @@ $isReplyToIssue = !empty($issueId);
 				<img src="/img/positionIcon1.png" width="16" alt="">
 				Add board position
 			</button>
-
-			<span id="positionIndicator-<?php echo $formId; ?>" class="tsumego-comments__position-indicator" style="display: none;">
-				✓ Position attached
-				<a href="#" onclick="clearPosition('<?php echo $formId; ?>'); return false;">Remove</a>
-			</span>
 		</div>
 
 		<div class="tsumego-comments__form-buttons">
@@ -88,8 +82,6 @@ $isReplyToIssue = !empty($issueId);
 			form.querySelector('[name="data[Comment][tsumego_id]"]').name = 'data[Issue][tsumego_id]';
 			form.querySelector('[name="data[Comment][message]"]').name = 'data[Issue][message]';
 			form.querySelector('[name="data[Comment][redirect]"]').name = 'data[Issue][redirect]';
-			var positionField = document.getElementById('commentPosition-' + formId);
-			if (positionField) positionField.name = 'data[Issue][position]';
 			// Re-process htmx attributes after dynamic change
 			htmx.process(form);
 		} else {
@@ -102,9 +94,6 @@ $isReplyToIssue = !empty($issueId);
 			if (tsumegoIdField) tsumegoIdField.name = 'data[Comment][tsumego_id]';
 			if (messageField) messageField.name = 'data[Comment][message]';
 			if (redirectField) redirectField.name = 'data[Comment][redirect]';
-			var positionField = document.getElementById('commentPosition-' + formId);
-			if (positionField && positionField.name === 'data[Issue][position]')
-				positionField.name = 'data[Comment][position]';
 			// Re-process htmx attributes after dynamic change
 			htmx.process(form);
 		}
@@ -118,98 +107,143 @@ $isReplyToIssue = !empty($issueId);
 		}
 
 		var messageField = document.getElementById('commentMessage-' + formId);
-		var positionField = document.getElementById('commentPosition-' + formId);
-		var indicator = document.getElementById('positionIndicator-' + formId);
-
-		if (!messageField || !positionField) {
-			alert('Form fields not found');
+		if (!messageField) {
+			alert('Message field not found');
 			return;
 		}
 
-		// Get current position from besogo editor (same logic as play.ctp)
+		// Get current position from besogo editor
 		var current = besogo.editor.getCurrent();
 		var besogoOrientation = besogo.editor.getOrientation();
 		if (besogoOrientation[1] == "full-board")
 			besogoOrientation[0] = besogoOrientation[1];
 
-		var additionalCoords = "";
-		var originalCurrent = current; // Keep reference to original current
+		// Get board size and coordinate labels
+		var root = current;
+		while (root && root.parent) root = root.parent;
+		var size = root ? root.getSize() : {x: 19, y: 19};
+		var sizeX = size.x;
+		var sizeY = size.y;
+		var labels = besogo.coord['western'](sizeX, sizeY);
 
-		// Only call isMoveInTree if current exists, has move data, and has navTreeX
-		// This prevents errors when current is at root or in invalid state
-		if (current && current.move && typeof current.navTreeX !== 'undefined') {
-			try {
-				var isInTree = besogo.editor.isMoveInTree(current);
-				if (isInTree && isInTree[0] !== null) {
-					current = isInTree[0];
-				}
-				// If isInTree[0] is null, keep using originalCurrent
+		// Build position data string and human-readable path
+		var positionData;
+		var displayPath = '';
 
-				if (isInTree && isInTree[1] && isInTree[1]['x'] && isInTree[1]['x'].length > 0) {
-					for (var i = isInTree[1]['x'].length - 1; i >= 0; i--)
-						additionalCoords += isInTree[1]['x'][i] + isInTree[1]['y'][i] + " ";
-					additionalCoords = " + " + additionalCoords;
-				}
-			} catch (e) {
-				console.warn('isMoveInTree error, using current position:', e);
-				current = originalCurrent; // Fallback to original current
-			}
-		}
-
-		// Update message with position marker
-		var commentContent = messageField.value;
-		if (commentContent.includes("[current position]")) {
-			commentContent = commentContent.replace('[current position]', '');
-		}
-		messageField.value = commentContent + "[current position]" + additionalCoords;
-
-		// Set hidden position field - use originalCurrent if current is invalid
-		var positionCurrent = (current && current.move) ? current : originalCurrent;
-		if (positionCurrent === null || positionCurrent.move === null) {
-			positionField.value = "-1/-1/0/0/0/0/0/0/0";
+		if (current === null || current.move === null) {
+			positionData = "-1/-1/0/0/0/0/0/0/" + besogoOrientation[0];
+			displayPath = 'start';
 		} else {
-			var pX = -1,
-				pY = -1;
-			if (positionCurrent.moveNumber > 1 && positionCurrent.parent && positionCurrent.parent.move) {
-				pX = positionCurrent.parent.move.x;
-				pY = positionCurrent.parent.move.y;
+			var pX = -1, pY = -1;
+			if (current.moveNumber > 1 && current.parent && current.parent.move) {
+				pX = current.parent.move.x;
+				pY = current.parent.move.y;
 			}
-			var cX, cY;
-			if (!positionCurrent.children || positionCurrent.children.length === 0) {
-				cX = -1;
-				cY = -1;
-			} else {
-				cX = positionCurrent.children[0].move.x;
-				cY = positionCurrent.children[0].move.y;
+			var cX = -1, cY = -1;
+			if (current.children && current.children.length > 0) {
+				cX = current.children[0].move.x;
+				cY = current.children[0].move.y;
 			}
 
-			var newP = positionCurrent.parent;
-			var newPcoords = positionCurrent.move.x + "/" + positionCurrent.move.y + "+";
-			while (newP !== null && newP.move !== null) {
-				newPcoords += newP.move.x + "/" + newP.move.y + "+";
-				newP = newP.parent;
+			// Build path string (all moves leading to this position)
+			// Path is stored in REVERSE order: [target, parent, grandparent, ...]
+			// This matches how compareFoundCommentMoves traverses upward from the target node
+			var pathCoords = [];
+			var pathDisplay = [];
+			var node = current;
+			while (node !== null && node.move !== null) {
+				pathCoords.push(node.move.x + "/" + node.move.y);  // push = target first
+				// Convert to Western coordinate (e.g., "C12")
+				var coord = labels.x[node.move.x] + labels.y[node.move.y];
+				pathDisplay.unshift(coord);  // unshift for display = chronological order
+				node = node.parent;
 			}
-			newPcoords = newPcoords.slice(0, -1);
-			positionField.value = positionCurrent.move.x + "/" + positionCurrent.move.y + "/" + pX + "/" + pY + "/" + cX + "/" + cY + "/" + positionCurrent.moveNumber + "/" + (positionCurrent.children ? positionCurrent.children.length : 0) + "/" + besogoOrientation[0] + "|" + newPcoords;
+			var pathStr = pathCoords.join("+");
+			displayPath = pathDisplay.join('→');
+
+			positionData = current.move.x + "/" + current.move.y + "/" + pX + "/" + pY + "/" +
+				cX + "/" + cY + "/" + current.moveNumber + "/" +
+				(current.children ? current.children.length : 0) + "/" +
+				besogoOrientation[0] + "|" + pathStr;
 		}
 
-		// Show indicator
-		if (indicator) {
-			indicator.style.display = 'inline';
-		}
+		// Show readable format in textarea: [A12→B13]
+		// Store position data as hidden attribute on form for later extraction
+		var readableTag = "[" + displayPath + "]";
+		
+		// Store the mapping of readable to data format (without pos: prefix)
+		if (!window._positionMappings) window._positionMappings = {};
+		if (!window._positionMappings[formId]) window._positionMappings[formId] = [];
+		window._positionMappings[formId].push({
+			readable: readableTag,
+			data: "[" + positionData + "]"
+		});
+
+		// Insert readable format at cursor position in textarea
+		var cursor = messageField.selectionStart || messageField.value.length;
+		var text = messageField.value;
+		messageField.value = text.slice(0, cursor) + readableTag + text.slice(cursor);
+		messageField.selectionStart = messageField.selectionEnd = cursor + readableTag.length;
+		messageField.focus();
 	}
 
-	function clearPosition(formId) {
-		var positionField = document.getElementById('commentPosition-' + formId);
-		var messageField = document.getElementById('commentMessage-' + formId);
-		var indicator = document.getElementById('positionIndicator-' + formId);
+	// Listen for Ctrl+Click coordinates from besogo board
+	// Only add listener once (check if already added)
+	if (!window._besogoCoordClickListenerAdded) {
+		window._besogoCoordClickListenerAdded = true;
+		document.addEventListener('besogoCoordClick', function(e) {
+			// Try to find a focused textarea, or the main comment form
+			var target = document.activeElement;
+			if (!target || target.tagName !== 'TEXTAREA') {
+				// Fall back to main comment form textarea
+				target = document.getElementById('commentMessage-tsumegoCommentForm');
+			}
 
-		if (positionField) positionField.value = '';
-		if (indicator) indicator.style.display = 'none';
+			if (target && target.tagName === 'TEXTAREA') {
+				var start = target.selectionStart || 0;
+				var end = target.selectionEnd || 0;
+				var text = target.value;
+				var coord = e.detail.coord + ' ';
+				target.value = text.slice(0, start) + coord + text.slice(end);
+				target.selectionStart = target.selectionEnd = start + coord.length;
+				target.focus();
+			}
+		});
+	}
 
-		// Also remove [current position] marker from message
-		if (messageField && messageField.value.includes('[current position]')) {
-			messageField.value = messageField.value.replace(/\[current position\].*$/, '').trim();
-		}
+	// Intercept htmx form submission to convert readable position format to data format
+	if (!window._positionConvertListenerAdded) {
+		window._positionConvertListenerAdded = true;
+		document.body.addEventListener('htmx:configRequest', function(e) {
+			var form = e.detail.elt;
+			if (!form || form.tagName !== 'FORM') return;
+			
+			var formId = form.id;
+			if (!formId) return;
+			
+			// Check if this form has position mappings
+			var mappings = window._positionMappings && window._positionMappings[formId];
+			if (!mappings || mappings.length === 0) return;
+			
+			// Find the message field in the request parameters
+			var messageKey = 'data[Comment][message]';
+			if (form.querySelector('[name="data[Issue][message]"]')) {
+				messageKey = 'data[Issue][message]';
+			}
+			
+			var message = e.detail.parameters[messageKey];
+			if (!message) return;
+			
+			// Replace all readable tags with data format
+			for (var i = 0; i < mappings.length; i++) {
+				var mapping = mappings[i];
+				message = message.replace(mapping.readable, mapping.data);
+			}
+			
+			e.detail.parameters[messageKey] = message;
+			
+			// Clear mappings for this form after conversion
+			window._positionMappings[formId] = [];
+		});
 	}
 </script>

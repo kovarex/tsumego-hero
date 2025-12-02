@@ -136,6 +136,83 @@ class CommentsControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that Ctrl+Click on the board inserts coordinates into the comment textarea.
+	 */
+	public function testCtrlClickInsertsCoordinate()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Ctrl+Click Test', 'num' => '1']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser);
+
+		// Focus on comment textarea
+		$textarea = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+		$textarea->click();
+		$textarea->clear();
+
+		// Get the textarea value before click
+		$valueBefore = $textarea->getAttribute('value');
+		$this->assertEquals('', $valueBefore, 'Textarea should be empty initially');
+
+		// Simulate Ctrl+Click by dispatching the besogoCoordClick event
+		// (Selenium WebDriver has trouble with Ctrl+Click on SVG elements)
+		$browser->driver->executeScript("
+			document.dispatchEvent(new CustomEvent('besogoCoordClick', {
+				detail: { coord: 'C3', x: 3, y: 17 }
+			}));
+		");
+		usleep(300 * 1000);
+
+		// Verify coordinate was inserted
+		$valueAfter = $textarea->getAttribute('value');
+		$this->assertStringContainsString('C3', $valueAfter, 'Coordinate should be inserted');
+	}
+
+	/**
+	 * Test that Ctrl+Click inserts coordinate at cursor position.
+	 */
+	public function testCtrlClickInsertsAtCursor()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Ctrl+Click Test', 'num' => '1']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser);
+
+		// Focus on comment textarea and type some text
+		$textarea = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+		$textarea->click();
+		$textarea->sendKeys('Start  End'); // Note: space between Start and End for cursor positioning
+
+		// Position cursor between Start and End (after 6 characters: "Start ")
+		$browser->driver->executeScript("
+			var ta = document.getElementById('commentMessage-tsumegoCommentForm');
+			ta.selectionStart = 6;
+			ta.selectionEnd = 6;
+			ta.focus();
+		");
+
+		// Dispatch Ctrl+Click event
+		$browser->driver->executeScript("
+			document.dispatchEvent(new CustomEvent('besogoCoordClick', {
+				detail: { coord: 'Q17', x: 17, y: 3 }
+			}));
+		");
+		usleep(300 * 1000);
+
+		// Verify coordinate was inserted in the middle
+		$valueAfter = $textarea->getAttribute('value');
+		$this->assertEquals('Start Q17  End', $valueAfter, 'Coordinate should be inserted at cursor position');
+	}
+
+	/**
 	 * Test that a user can reply to an issue.
 	 */
 	public function testReplyToIssue()
@@ -922,5 +999,78 @@ class CommentsControllerTest extends ControllerTestCase
 			$commentsTab->click();
 			usleep(350 * 1000); // Wait for any animation
 		}
+	}
+
+	/**
+	 * Test that comments with embedded position data render clickable position buttons.
+	 *
+	 * Tests that [pos:data]{display} format in comment message gets rendered as clickable buttons.
+	 */
+	public function testEmbeddedPositionRendersAsButton()
+	{
+		// Create tsumego with a comment containing embedded position
+		// The position format: [pos:x/y/pX/pY/cX/cY/moveNumber/childrenCount/orientation|path]{display}
+		$positionData = '[pos:17/3/-1/-1/16/4/1/1/lower-right|17/3]{S3}';
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Position Test Set', 'num' => '1']],
+				'comments' => [['message' => 'Check this position: ' . $positionData . ' and let me know.']],
+				'status' => 'S',
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser);
+
+		// Verify position button is rendered (should have position-button class)
+		$positionButtons = $browser->getCssSelect('.position-button');
+		$this->assertCount(1, $positionButtons, 'Should have 1 position button');
+
+		// Verify the display path is shown
+		$positionPath = $browser->getCssSelect('.position-path');
+		$this->assertCount(1, $positionPath, 'Should have position path text');
+
+		// The path text should contain "S3" (the display text from {S3})
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('S3', $pageSource, 'Position display path should be shown');
+
+		// Verify the comment text around the button is still there
+		$this->assertTextContains('Check this position:', $pageSource, 'Text before position should be visible');
+		$this->assertTextContains('and let me know', $pageSource, 'Text after position should be visible');
+	}
+
+	/**
+	 * Test that comments can have multiple positions embedded.
+	 *
+	 * Tests that [pos:data1]{display1} and [pos:data2]{display2} both render as buttons.
+	 */
+	public function testMultipleEmbeddedPositions()
+	{
+		// Create tsumego with multiple positions in one comment
+		$pos1 = '[pos:17/3/-1/-1/16/4/1/1/lower-right|17/3]{S3}';
+		$pos2 = '[pos:16/4/17/3/15/5/2/1/lower-right|17/3+16/4]{S3→R4}';
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'tsumego' => [
+				'sets' => [['name' => 'Multi-Position Test Set', 'num' => '1']],
+				'comments' => [['message' => 'First move: ' . $pos1 . ' and second move: ' . $pos2]],
+				'status' => 'S',
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$this->expandComments($browser);
+
+		// Verify both position buttons are rendered
+		$positionButtons = $browser->getCssSelect('.position-button');
+		$this->assertCount(2, $positionButtons, 'Should have 2 position buttons');
+
+		// Verify both display paths are shown
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('S3', $pageSource, 'First position path should be shown');
+		$this->assertTextContains('R4', $pageSource, 'Second position path should contain R4');
 	}
 }

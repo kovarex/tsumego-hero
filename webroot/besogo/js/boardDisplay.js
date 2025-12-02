@@ -385,6 +385,18 @@ besogo.makeBoardDisplay = function(container, editor, corner)
         editor.setReviewMode(false);
         besogo.intuitionActive = false;
       }
+
+      // Ctrl+Click dispatches custom event with coordinates for comment insertion
+      if (event.ctrlKey) {
+        var labels = besogo.coord['western'](sizeX, sizeY);
+        var coordStr = labels.x[i] + labels.y[j];
+        document.dispatchEvent(new CustomEvent('besogoCoordClick', {
+          detail: { coord: coordStr, x: i, y: j }
+        }));
+        event.preventDefault();
+        return;
+      }
+
       editor.click(i, j, event.ctrlKey, event.shiftKey);
       if (!TOUCH_FLAG)
         (handleOver(i, j))(); // Ensures that any updated tool is visible
