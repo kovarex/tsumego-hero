@@ -2362,19 +2362,21 @@ h4 {
   font-weight: 800;
   line-height: 20px;
 }
-.title4 {
-  padding: 8px;
-  margin-top: 6px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  background: linear-gradient(#e1e1e1, #bdbdbd);
-  border-radius: 4px 4px 0 0;
-  border: 1px solid #777;
+.title4
+{
+	padding: 8px;
+	margin-top: 6px;
+	margin-bottom: 0px;
+	font-size: 24px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	line-height: 20px;
+	text-decoration: none;
+	background: var(--title4-gradient);
+	border-radius: 4px 4px 0 0;
+	border: 1px solid #777;
+	color: var(--text-color);
 }
 .title4x {
   float: left;
