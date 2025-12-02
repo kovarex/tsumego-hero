@@ -1571,6 +1571,7 @@ li a.menuLi {
   color: black;
 }
 #playTitleA { color: var(--text-color); }
+#descriptionText { color: var(--text-softer-color); }
 #header {
   margin-bottom: 2px;
   padding: 2px;
