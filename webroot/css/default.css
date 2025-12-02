@@ -6335,6 +6335,17 @@ ul ul {
   background: #e5e5e5;
 }
 
+/* Empty state for COMMENTS tab - no content */
+.tsumego-comments__tab--empty {
+  color: #999;
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.tsumego-comments__tab--empty:hover {
+  background: #e8e8e8;
+}
+
 .tsumego-comments__open-badge {
   margin-left: 5px;
   font-size: 11px;
@@ -6357,6 +6368,23 @@ ul ul {
 .tsumego-issue--closed {
   border-color: #5cb85c;
   border-left-width: 4px;
+}
+
+/* Highlight effect when scrolling to issue via hash anchor */
+/* Light mode: blue/purple highlight on white background */
+.tsumego-issue--highlight {
+  animation: issue-highlight-light 2s ease-out;
+}
+
+@keyframes issue-highlight-light {
+  0% {
+    background: #e6f0ff;
+    box-shadow: 0 0 20px rgba(66, 133, 244, 0.6);
+  }
+  100% {
+    background: #fafafa;
+    box-shadow: none;
+  }
 }
 
 /* Pending issue state - optimistic update before server response */
@@ -6384,6 +6412,16 @@ ul ul {
   font-weight: bold;
   font-size: 14px;
   color: #333;
+}
+
+.tsumego-issue__title a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.tsumego-issue__title a:hover {
+  color: #0056b3;
+  text-decoration: underline;
 }
 
 .tsumego-issue__badge {
@@ -7139,8 +7177,31 @@ body.light-theme .tsumego-comments__form h4 {
 .issues-list__empty {
   text-align: center;
   padding: 40px;
-  color: #666;
-  font-size: 18px;
+}
+
+/* Problem reference header in global issues list */
+.issues-list__problem-ref {
+  background: #e9ecef;
+  padding: 8px 14px;
+  margin: 15px 0 0 0;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.issues-list__problem-ref a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.issues-list__problem-ref a:hover {
+  text-decoration: underline;
+}
+
+/* When issue.ctp is used inside issues-list, adjust its margins */
+.issues-list .tsumego-issue {
+  margin: 0 0 20px 0;
+  border-radius: 0 0 6px 6px;
 }
 
 .issues-page__pagination {
@@ -7225,6 +7286,14 @@ body.dark-theme .tsumego-issue__title {
   color: #f0f0f0;
 }
 
+body.dark-theme .tsumego-issue__title a {
+  color: #6db3f2;
+}
+
+body.dark-theme .tsumego-issue__title a:hover {
+  color: #9dd0ff;
+}
+
 body.dark-theme .tsumego-issue__badge.status--opened {
   background: #5a2a2a;
   color: #ff6b6b;
@@ -7270,6 +7339,17 @@ body.dark-theme .tsumego-comments__tab:hover:not(.active) {
   background: #444;
 }
 
+/* Empty tab dark theme */
+body.dark-theme .tsumego-comments__tab--empty {
+  color: #777;
+  background: #2a2a2a;
+  border-color: #444;
+}
+
+body.dark-theme .tsumego-comments__tab--empty:hover {
+  background: #333;
+}
+
 /* Buttons in dark theme */
 body.dark-theme .btn--success {
   background: #449d44;
@@ -7285,6 +7365,23 @@ body.dark-theme .btn--warning {
 
 body.dark-theme .btn--warning:hover {
   background: #d58512;
+}
+
+/* Dark theme highlight animation for hash anchor scroll */
+/* Dark mode: white/light highlight on dark background */
+body.dark-theme .tsumego-issue--highlight {
+  animation: issue-highlight-dark 2s ease-out;
+}
+
+@keyframes issue-highlight-dark {
+  0% {
+    background: linear-gradient(#666, #555);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    background: linear-gradient(#3a3a3a, #2a2a2a);
+    box-shadow: none;
+  }
 }
 
 /* Login prompt */

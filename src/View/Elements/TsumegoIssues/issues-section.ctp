@@ -6,10 +6,11 @@
  * When htmx uses morph swap, it updates the entire section and
  * idiomorph figures out what actually changed in the DOM.
  *
- * This eliminates the need for OOB swaps and complex controller logic.
+ * Uses the shared issue.ctp element for consistent display across
+ * both the global issues list and play page.
  *
  * Variables:
- * @var array $issues Array of issues with enriched data
+ * @var array $issues Array of issues with enriched data (from findForIndex)
  * @var string $statusFilter Current filter ('opened', 'closed', 'all')
  * @var int $openCount Number of open issues
  * @var int $closedCount Number of closed issues
@@ -73,92 +74,39 @@ $totalPages = $totalPages ?? 1;
 				<?php endif; ?>
 			</p>
 		<?php else: ?>
-			<?php foreach ($issues as $issue): ?>
+			<?php foreach ($issues as $issueItem): ?>
 				<?php
-				$issueData = $issue['TsumegoIssue'];
-				$author = $issue['Author'] ?? ['name' => '[deleted user]'];
-				$tsumego = $issue['Tsumego'] ?? null;
-				$set = $issue['Set'] ?? null;
-				$tsumegoNum = $issue['TsumegoNum'] ?? null;
-				$firstComment = $issue['FirstComment'] ?? null;
-				$commentCount = $issue['CommentCount'] ?? 0;
+				// Build problem link and title for the global list context
+				$tsumegoId = $issueItem['tsumegoId'];
+				$set = $issueItem['Set'] ?? null;
+				$tsumegoNum = $issueItem['TsumegoNum'] ?? null;
 
-				$statusId = $issueData['tsumego_issue_status_id'];
-				$isOpened = $statusId == TsumegoIssue::$OPENED_STATUS;
-				$statusName = TsumegoIssue::statusName($statusId);
-
-				$createdDate = new DateTime($issueData['created']);
-				$formattedDate = $createdDate->format('M. d, Y');
-
-				// Build problem link
-				$problemLink = $tsumego ? '/tsumegos/play/' . $tsumego['id'] : '#';
-				$problemTitle = '';
+				$problemLink = '/tsumegos/play/' . $tsumegoId;
 				if ($set && $tsumegoNum)
 					$problemTitle = $set['title'] . ' #' . $tsumegoNum;
-				elseif ($tsumego)
-					$problemTitle = 'Problem #' . $tsumego['id'];
 				else
-					$problemTitle = 'Unknown problem';
+					$problemTitle = 'Problem #' . $tsumegoId;
 				?>
 
-				<div class="issues-list__item <?php echo $isOpened ? 'issues-list__item--opened' : 'issues-list__item--closed'; ?>"
-					id="issue-item-<?php echo $issueData['id']; ?>">
-					<div class="issues-list__item-header">
-						<span class="issues-list__badge <?php echo $isOpened ? 'badge--opened' : 'badge--closed'; ?>">
-							<?php echo $isOpened ? '🔴' : '✅'; ?> <?php echo $statusName; ?>
-						</span>
-
-						<a href="<?php echo $problemLink; ?>#issue-<?php echo $issueData['id']; ?>" class="issues-list__title">
-							Issue #<?php echo $issueData['id']; ?>
-						</a>
-
-						<span class="issues-list__meta">
-							on <a href="<?php echo $problemLink; ?>"><?php echo h($problemTitle); ?></a>
-							by <?php echo h($author['name']); ?>
-							• <?php echo $formattedDate; ?>
-							• <?php echo $commentCount; ?> comment<?php echo $commentCount !== 1 ? 's' : ''; ?>
-						</span>
-					</div>
-
-					<?php if ($firstComment): ?>
-						<div class="issues-list__preview">
-							<?php echo h(mb_substr($firstComment['message'], 0, 200)); ?>
-							<?php if (mb_strlen($firstComment['message']) > 200): ?>...<?php endif; ?>
-						</div>
-					<?php endif; ?>
-
-					<div class="issues-list__actions">
-						<a href="<?php echo $problemLink; ?>#issue-<?php echo $issueData['id']; ?>" class="btn btn--small">
-							View Issue
-						</a>
-
-						<?php if (Auth::isAdmin() || (Auth::isLoggedIn() && Auth::getUserID() == $issueData['user_id'])): ?>
-							<?php if ($isOpened): ?>
-								<button type="button"
-										hx-post="/tsumego-issues/close/<?php echo $issueData['id']; ?>"
-										hx-target="#issues-section"
-										hx-swap="morph:outerHTML"
-										hx-vals='{"filter":"<?php echo h($statusFilter); ?>","page":<?php echo $currentPage; ?>}'
-										hx-disabled-elt="this"
-										class="btn btn--small btn--success">
-									Close
-								</button>
-							<?php endif; ?>
-						<?php endif; ?>
-
-						<?php if (Auth::isAdmin() && !$isOpened): ?>
-							<button type="button"
-									hx-post="/tsumego-issues/reopen/<?php echo $issueData['id']; ?>"
-									hx-target="#issues-section"
-									hx-swap="morph:outerHTML"
-									hx-vals='{"filter":"<?php echo h($statusFilter); ?>","page":<?php echo $currentPage; ?>}'
-									hx-disabled-elt="this"
-									class="btn btn--small btn--warning">
-								Reopen
-							</button>
-						<?php endif; ?>
-					</div>
+				<!-- Problem reference header for global list -->
+				<div class="issues-list__problem-ref">
+					<a href="<?php echo $problemLink; ?>"><?php echo h($problemTitle); ?></a>
 				</div>
+
+				<?php
+				// Use the shared issue.ctp element
+				echo $this->element('TsumegoIssues/issue', [
+					'issue' => $issueItem['issue'],
+					'comments' => $issueItem['comments'],
+					'author' => $issueItem['author'],
+					'issueNumber' => $issueItem['issue']['id'], // Use issue ID in global list
+					'tsumegoId' => $tsumegoId,
+					// Global list context - htmx targets #issues-section
+					'globalListContext' => true,
+					'statusFilter' => $statusFilter,
+					'currentPage' => $currentPage,
+				]);
+				?>
 			<?php endforeach; ?>
 		<?php endif; ?>
 	</div>

@@ -42,7 +42,7 @@ class Tsumego extends AppModel
 		$counter = 1;
 		$allCoordinates = [];
 
-		// Load issues with their author using Containable (exclude deleted issues)
+		// Query 1: Load all issues with their authors
 		$issuesRaw = $issueModel->find('all', [
 			'conditions' => [
 				'tsumego_id' => $tsumegoId,
@@ -52,30 +52,35 @@ class Tsumego extends AppModel
 			'contain' => ['User'],
 		]) ?: [];
 
-		$issues = [];
+		// Collect issue IDs for batch comment loading
+		$issueIds = [];
+		$issuesMap = [];
 		foreach ($issuesRaw as $issueRaw)
 		{
 			$issue = $issueRaw['TsumegoIssue'];
-
-			// Author loaded via Containable
+			$issueIds[] = $issue['id'];
 			$issue['author'] = !empty($issueRaw['User']) ? $issueRaw['User'] : ['name' => '[deleted user]'];
+			$issue['comments'] = []; // Will be filled from batch query
+			$issuesMap[$issue['id']] = $issue;
+		}
 
-			// Load comments for this issue with User via Containable
-			$commentsRaw = $commentModel->find('all', [
+		// Query 2: Load ALL comments for ALL issues in one query
+		if (!empty($issueIds))
+		{
+			$issueCommentsRaw = $commentModel->find('all', [
 				'conditions' => [
-					'TsumegoComment.tsumego_id' => $tsumegoId,
-					'TsumegoComment.tsumego_issue_id' => $issue['id'],
+					'TsumegoComment.tsumego_issue_id' => $issueIds,
 					'TsumegoComment.deleted' => false,
 				],
 				'order' => 'TsumegoComment.created ASC',
 				'contain' => ['User'],
 			]) ?: [];
 
-			$issueComments = [];
-			foreach ($commentsRaw as $commentRaw)
+			// Group comments by issue_id
+			foreach ($issueCommentsRaw as $commentRaw)
 			{
 				$comment = $commentRaw['TsumegoComment'];
-				// User loaded via Containable
+				$issueId = $comment['tsumego_issue_id'];
 				$comment['user'] = !empty($commentRaw['User']) ? $commentRaw['User'] : ['name' => '[deleted user]', 'isAdmin' => 0];
 
 				// Process message for coordinates with global counter
@@ -84,16 +89,23 @@ class Tsumego extends AppModel
 				if (!empty($array[1]))
 				{
 					$allCoordinates[] = $array[1];
-					$counter++; // Only increment when coordinates were added
+					$counter++;
 				}
 
-				$issueComments[] = $comment;
+				$issuesMap[$issueId]['comments'][] = $comment;
 			}
-			$issue['comments'] = $issueComments;
-			$issues[] = $issue;
 		}
 
-		// Load standalone comments (not associated with any issue) with User via Containable
+		// Convert map back to ordered array (preserves original DESC order)
+		$issues = [];
+		foreach ($issuesRaw as $issueRaw)
+		{
+			$issueId = $issueRaw['TsumegoIssue']['id'];
+			if (isset($issuesMap[$issueId]))
+				$issues[] = $issuesMap[$issueId];
+		}
+
+		// Query 3: Load standalone comments (not associated with any issue)
 		$plainCommentsRaw = $commentModel->find('all', [
 			'conditions' => [
 				'TsumegoComment.tsumego_id' => $tsumegoId,
@@ -108,7 +120,6 @@ class Tsumego extends AppModel
 		foreach ($plainCommentsRaw as $commentRaw)
 		{
 			$comment = $commentRaw['TsumegoComment'];
-			// User loaded via Containable
 			$comment['user'] = !empty($commentRaw['User']) ? $commentRaw['User'] : ['name' => '[deleted user]', 'isAdmin' => 0];
 
 			// Process message for coordinates with global counter
@@ -117,7 +128,7 @@ class Tsumego extends AppModel
 			if (!empty($array[1]))
 			{
 				$allCoordinates[] = $array[1];
-				$counter++; // Only increment when coordinates were added
+				$counter++;
 			}
 
 			$plainComments[] = $comment;

@@ -97,10 +97,10 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 		$pageSource = $browser->driver->getPageSource();
 
-		// Should show the issue and a link to the problem
+		// Should show the issue with its comment
 		$this->assertTextContains('Issue with link', $pageSource);
-		// Check there's a View Issue button (indicating link exists)
-		$this->assertTextContains('View Issue', $pageSource);
+		// Check there's a link to the problem set
+		$this->assertTextContains('Link Test Set', $pageSource);
 	}
 
 	/**

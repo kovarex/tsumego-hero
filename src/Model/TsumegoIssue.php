@@ -89,17 +89,13 @@ class TsumegoIssue extends AppModel
 	/**
 	 * Find issues for the global issues index page.
 	 *
-	 * Uses a single optimized SQL query with:
-	 * - JOINs to user, tsumego, set_connection, set tables
-	 * - Derived table (tc_agg) to pre-aggregate comment counts and find first comment
-	 * - Additional JOIN to get first comment message
-	 *
-	 * This avoids correlated subqueries which would run per-row.
+	 * Returns issues with all their comments, formatted to be compatible with
+	 * the TsumegoIssues/issue.ctp element (same format as Tsumego::loadCommentsData).
 	 *
 	 * @param string $status 'opened', 'closed', or 'all' (default: 'opened')
 	 * @param int $limit Number of results per page (default: 20)
 	 * @param int $page Page number for pagination (default: 1)
-	 * @return array Formatted issues ready for the view
+	 * @return array Formatted issues ready for the view (compatible with issue.ctp element)
 	 */
 	public function findForIndex(string $status = 'opened', int $limit = 20, int $page = 1): array
 	{
@@ -108,96 +104,124 @@ class TsumegoIssue extends AppModel
 		// Build status condition
 		$statusCondition = '';
 		if ($status === 'opened')
-			$statusCondition = 'AND TsumegoIssue.tsumego_issue_status_id = ' . self::$OPENED_STATUS;
+			$statusCondition = 'AND tsumego_issue_status_id = ' . self::$OPENED_STATUS;
 		elseif ($status === 'closed')
-			$statusCondition = 'AND TsumegoIssue.tsumego_issue_status_id = ' . self::$CLOSED_STATUS;
+			$statusCondition = 'AND tsumego_issue_status_id = ' . self::$CLOSED_STATUS;
 
-		// Optimized query using derived table instead of correlated subqueries
-		// The derived table (tc_agg) computes aggregates ONCE, then joins
-		// We use another derived table (PrimarySet) to handle the 1:N set_connection relation
-		$sql = "
-			SELECT
-				TsumegoIssue.id,
-				TsumegoIssue.tsumego_issue_status_id,
-				TsumegoIssue.tsumego_id,
-				TsumegoIssue.user_id,
-				TsumegoIssue.created,
-				User.id AS author_id,
-				User.name AS author_name,
-				PrimarySet.num AS tsumego_num,
-				`Set`.id AS set_id,
-				`Set`.title AS set_title,
-				tc_first.message AS first_message,
-				COALESCE(tc_agg.comment_count, 0) AS comment_count
-			FROM tsumego_issue TsumegoIssue
-			LEFT JOIN user User ON User.id = TsumegoIssue.user_id
-			LEFT JOIN tsumego Tsumego ON Tsumego.id = TsumegoIssue.tsumego_id
-			LEFT JOIN (
-				SELECT tsumego_id, MIN(id) AS min_id
-				FROM set_connection
-				GROUP BY tsumego_id
-			) FirstSetConn ON FirstSetConn.tsumego_id = Tsumego.id
-			LEFT JOIN set_connection PrimarySet ON PrimarySet.id = FirstSetConn.min_id
-			LEFT JOIN `set` `Set` ON `Set`.id = PrimarySet.set_id
-			LEFT JOIN (
-				SELECT
-					tsumego_issue_id,
-					MIN(created) AS first_comment_created,
-					COUNT(*) AS comment_count
-				FROM tsumego_comment
-				WHERE deleted = 0
-				GROUP BY tsumego_issue_id
-			) tc_agg ON tc_agg.tsumego_issue_id = TsumegoIssue.id
-			LEFT JOIN tsumego_comment tc_first
-				ON tc_first.tsumego_issue_id = TsumegoIssue.id
-				AND tc_first.created = tc_agg.first_comment_created
-				AND tc_first.deleted = 0
-			WHERE TsumegoIssue.deleted = 0
+		// Query 1: Get paginated issue IDs
+		$idsSql = "
+			SELECT id
+			FROM tsumego_issue
+			WHERE deleted = 0
 			{$statusCondition}
-			ORDER BY TsumegoIssue.created DESC
+			ORDER BY created DESC, id DESC
 			LIMIT {$limit} OFFSET {$offset}
 		";
+		$idsResult = $this->query($idsSql) ?: [];
+		$issueIds = array_column(array_column($idsResult, 'tsumego_issue'), 'id');
 
-		$rawResults = $this->query($sql);
+		if (empty($issueIds))
+			return [];
 
-		$processed = [];
-		foreach ($rawResults as $row)
+		$issueIdsStr = implode(',', array_map('intval', $issueIds));
+
+		// Query 2: Get full data for those issues only
+		$sql = "
+			SELECT
+				ti.id AS issue_id,
+				ti.tsumego_issue_status_id,
+				ti.tsumego_id,
+				ti.user_id AS issue_user_id,
+				ti.created AS issue_created,
+				u.name AS issue_author_name,
+				tc.id AS comment_id,
+				tc.message AS comment_text,
+				tc.created AS comment_created,
+				tc.user_id AS comment_user_id,
+				cu.name AS comment_author_name,
+				cu.isAdmin AS comment_author_isAdmin,
+				s.id AS set_id,
+				s.title AS set_title,
+				sc.num AS tsumego_num
+			FROM tsumego_issue ti
+			LEFT JOIN user u ON u.id = ti.user_id
+			LEFT JOIN tsumego_comment tc ON tc.tsumego_issue_id = ti.id AND tc.deleted = 0
+			LEFT JOIN user cu ON cu.id = tc.user_id
+			LEFT JOIN (
+				SELECT sc1.tsumego_id, sc1.num, sc1.set_id
+				FROM set_connection sc1
+				INNER JOIN (
+					SELECT tsumego_id, MIN(id) as min_id
+					FROM set_connection
+					GROUP BY tsumego_id
+				) sc2 ON sc1.id = sc2.min_id
+			) sc ON sc.tsumego_id = ti.tsumego_id
+			LEFT JOIN `set` s ON s.id = sc.set_id
+			WHERE ti.id IN ({$issueIdsStr})
+			ORDER BY ti.created DESC, ti.id DESC, tc.created ASC
+		";
+
+		$rows = $this->query($sql) ?: [];
+
+		// Group results by issue, maintaining order from first query
+		$issuesMap = [];
+
+		foreach ($rows as $row)
 		{
-			// CakePHP query() returns data grouped by table aliases
-			// Aliased columns (AS x) go into their source table's array
-			$issueData = $row['TsumegoIssue'] ?? [];
-			$userData = $row['User'] ?? [];
-			$setData = $row['Set'] ?? [];
-			$primarySetData = $row['PrimarySet'] ?? [];
-			$tcFirstData = $row['tc_first'] ?? [];
+			$issueId = $row['ti']['issue_id'];
 
-			// COALESCE results go in [0] array
-			$virtualData = $row[0] ?? [];
+			if (!isset($issuesMap[$issueId]))
+			{
+				$issuesMap[$issueId] = [
+					'issue' => [
+						'id' => $issueId,
+						'tsumego_issue_status_id' => $row['ti']['tsumego_issue_status_id'],
+						'tsumego_id' => $row['ti']['tsumego_id'],
+						'user_id' => $row['ti']['issue_user_id'],
+						'created' => $row['ti']['issue_created'],
+					],
+					'comments' => [],
+					'author' => $row['u']['issue_author_name']
+						? ['name' => $row['u']['issue_author_name']]
+						: ['name' => '[deleted user]'],
+					'tsumegoId' => $row['ti']['tsumego_id'],
+					'Set' => $row['s']['set_id'] ? [
+						'id' => $row['s']['set_id'],
+						'title' => $row['s']['set_title'],
+					] : null,
+					'TsumegoNum' => $row['sc']['tsumego_num'] ?? null,
+				];
+			}
 
-			// tsumego_id from the issue is authoritative
-			$tsumegoId = $issueData['tsumego_id'] ?? null;
-
-			$processed[] = [
-				'TsumegoIssue' => [
-					'id' => $issueData['id'] ?? null,
-					'tsumego_issue_status_id' => $issueData['tsumego_issue_status_id'] ?? null,
-					'tsumego_id' => $tsumegoId,
-					'user_id' => $issueData['user_id'] ?? null,
-					'created' => $issueData['created'] ?? null,
-				],
-				'Author' => [
-					'id' => $userData['author_id'] ?? null,
-					'name' => $userData['author_name'] ?? '[deleted user]',
-				],
-				'Tsumego' => $tsumegoId ? ['id' => $tsumegoId] : null,
-				'Set' => !empty($setData['set_id']) ? ['id' => $setData['set_id'], 'title' => $setData['set_title'] ?? null] : null,
-				'TsumegoNum' => $primarySetData['tsumego_num'] ?? null,
-				'FirstComment' => !empty($tcFirstData['first_message']) ? ['message' => $tcFirstData['first_message']] : null,
-				'CommentCount' => (int) ($virtualData['comment_count'] ?? 0),
-			];
+			// Add comment if exists
+			if (!empty($row['tc']['comment_id']))
+			{
+				$issuesMap[$issueId]['comments'][] = [
+					'id' => $row['tc']['comment_id'],
+					'message' => $row['tc']['comment_text'],
+					'created' => $row['tc']['comment_created'],
+					'user_id' => $row['tc']['comment_user_id'],
+					'user' => $row['cu']['comment_author_name']
+						? [
+							'name' => $row['cu']['comment_author_name'],
+							'isAdmin' => $row['cu']['comment_author_isAdmin'],
+						]
+						: ['name' => '[deleted user]', 'isAdmin' => 0],
+				];
+			}
 		}
 
-		return $processed;
+		// Build result in original order (from first query)
+		$result = [];
+		foreach ($issueIds as $index => $issueId)
+			if (isset($issuesMap[$issueId]))
+			{
+				$issueData = $issuesMap[$issueId];
+				$issueData['issueNumber'] = $offset + $index + 1;
+				$result[] = $issueData;
+			}
+
+		return $result;
 	}
 
 	/**

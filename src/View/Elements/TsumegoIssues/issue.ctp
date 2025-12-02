@@ -12,6 +12,9 @@
  * @var array $author The user who created the issue (User model data)
  * @var int $issueNumber Display number for this issue (Issue #1, #2, etc.)
  * @var int $tsumegoId The tsumego ID this issue belongs to
+ * @var bool $globalListContext Whether this is rendered in the global issues list (default: false)
+ * @var string $statusFilter Current filter for global list context
+ * @var int $currentPage Current page for global list context
  */
 
 App::uses('TsumegoIssue', 'Model');
@@ -19,6 +22,9 @@ App::uses('TsumegoIssue', 'Model');
 // Default values
 $issueNumber = $issueNumber ?? $issue['id'];
 $tsumegoId = $tsumegoId ?? $issue['tsumego_id'];
+$globalListContext = $globalListContext ?? false;
+$statusFilter = $statusFilter ?? 'all';
+$currentPage = $currentPage ?? 1;
 
 // Get status info
 $statusId = $issue['tsumego_issue_status_id'];
@@ -41,14 +47,30 @@ $isAdmin = Auth::isAdmin();
 $isOwner = Auth::isLoggedIn() && Auth::getUserID() == $issue['user_id'];
 $canClose = ($isAdmin || $isOwner) && $isOpened;
 $canReopen = $isAdmin && $isClosed;
-$canReply = Auth::isLoggedIn();
-$canDragComment = Auth::isAdmin();
+$canReply = Auth::isLoggedIn() && !$globalListContext;  // Disable reply in global list
+$canDragComment = Auth::isAdmin() && !$globalListContext;  // Disable drag handles in global list
+
+// htmx target and values depend on context
+if ($globalListContext)
+{
+	$htmxTarget = '#issues-section';
+	$htmxVals = json_encode(['filter' => $statusFilter, 'page' => $currentPage]);
+}
+else
+{
+	$htmxTarget = '#comments-section-' . $tsumegoId;
+	$htmxVals = json_encode(['source' => 'play']);
+}
 ?>
 
 <div class="tsumego-issue tsumego-issue--<?php echo $isOpened ? 'opened' : 'closed'; ?>" id="issue-<?php echo $issue['id']; ?>" data-issue-id="<?php echo $issue['id']; ?>">
 	<div class="tsumego-issue__header">
 		<span class="tsumego-issue__title">
-			Issue #<?php echo h($issueNumber); ?>
+			<?php if ($globalListContext): ?>
+				<a href="/tsumegos/play/<?php echo $tsumegoId; ?>#issue-<?php echo $issue['id']; ?>">Issue #<?php echo h($issueNumber); ?></a>
+			<?php else: ?>
+				Issue #<?php echo h($issueNumber); ?>
+			<?php endif; ?>
 		</span>
 		<span class="tsumego-issue__badge <?php echo $statusClass; ?>">
 			<?php if ($isOpened): ?>
@@ -66,9 +88,9 @@ $canDragComment = Auth::isAdmin();
 				<?php if ($canClose): ?>
 					<button type="button"
 							hx-post="/tsumego-issues/close/<?php echo $issue['id']; ?>"
-							hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+							hx-target="<?php echo $htmxTarget; ?>"
 							hx-swap="morph:outerHTML"
-							hx-vals='{"source":"play"}'
+							hx-vals='<?php echo h($htmxVals); ?>'
 							hx-disabled-elt="this"
 							class="btn btn--success btn--small">
 						✓ Close Issue
@@ -78,9 +100,9 @@ $canDragComment = Auth::isAdmin();
 				<?php if ($canReopen): ?>
 					<button type="button"
 							hx-post="/tsumego-issues/reopen/<?php echo $issue['id']; ?>"
-							hx-target="#comments-section-<?php echo $tsumegoId; ?>"
+							hx-target="<?php echo $htmxTarget; ?>"
 							hx-swap="morph:outerHTML"
-							hx-vals='{"source":"play"}'
+							hx-vals='<?php echo h($htmxVals); ?>'
 							hx-disabled-elt="this"
 							class="btn btn--warning btn--small">
 						↩ Reopen
@@ -102,7 +124,7 @@ $canDragComment = Auth::isAdmin();
 					'user' => $commentUserData,
 					'index' => ($issueNumber * 100) + $commentIndex + 1, // Unique index for coordinate links
 					'tsumegoId' => $tsumegoId,
-					'showActions' => true,
+					'showActions' => !$globalListContext,  // Disable delete/move in global list
 				]); ?>
 			<?php endforeach; ?>
 		<?php else: ?>

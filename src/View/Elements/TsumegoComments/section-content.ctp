@@ -88,16 +88,49 @@ usort($allItems, function ($a, $b) {
 
 $isEmpty = empty($allItems);
 $canDragComment = Auth::isAdmin();
+
+// Determine COMMENTS tab style and text
+$hasContent = $commentCount > 0 || $openIssueCount > 0;
+$commentsTabClass = 'tsumego-comments__tab';
+if (!$hasContent)
+	$commentsTabClass .= ' tsumego-comments__tab--empty';
+
+// Build COMMENTS tab text
+if ($hasContent)
+{
+	$commentsTabText = 'COMMENTS (' . $commentCount;
+	if ($openIssueCount > 0)
+		$commentsTabText .= ' + ' . $openIssueCount . ' open issue' . ($openIssueCount > 1 ? 's' : '');
+	$commentsTabText .= ')';
+	if ($openIssueCount > 0)
+		$commentsTabText = '🔴 ' . $commentsTabText;
+}
+else
+{
+	$commentsTabText = 'COMMENTS';
+}
+
+// Determine CLOSED ISSUES tab style and text
+$closedTabClass = 'tsumego-comments__tab';
+if ($closedIssueCount == 0)
+{
+	$closedTabClass .= ' tsumego-comments__tab--empty';
+	$closedTabText = 'CLOSED ISSUES';
+}
+else
+{
+	$closedTabText = 'CLOSED ISSUES (' . $closedIssueCount . ')';
+}
 ?>
 <!-- Morphable container - htmx targets this for all comment actions -->
 <div id="comments-section-<?php echo $tsumegoId; ?>" hx-ext="morph" data-tsumego-id="<?php echo $tsumegoId; ?>">
 	<!-- Tab navigation - always visible, clicking toggles content -->
 	<div class="tsumego-comments__tabs" id="msg1x">
-		<button class="tsumego-comments__tab" data-filter="open">
-			COMMENTS (<?php echo $commentCount; ?><?php if ($openIssueCount > 0): ?> + <?php echo $openIssueCount; ?> open issue<?php echo $openIssueCount > 1 ? 's' : ''; ?><?php endif; ?>)
+		<button class="<?php echo $commentsTabClass; ?>" data-filter="open">
+			<?php echo $commentsTabText; ?>
 		</button>
-		<button class="tsumego-comments__tab" data-filter="closed">
-			CLOSED ISSUES (<?php echo $closedIssueCount; ?>)
+		<button class="<?php echo $closedTabClass; ?>" data-filter="closed">
+			<?php echo $closedTabText; ?>
 		</button>
 	</div>
 

@@ -521,4 +521,70 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 
 		console.log('[Comment DnD] SortableJS setup initiated');
 	})();
+
+	// ==========================================================================
+	// Auto-expand and scroll to issue if hash anchor is present
+	// ==========================================================================
+	(function() {
+		'use strict';
+
+		function checkHashAndScrollToIssue() {
+			var hash = window.location.hash;
+			if (!hash || !hash.startsWith('#issue-')) return;
+
+			var issueId = hash.substring(1); // Remove leading #
+			var issueElement = document.getElementById(issueId);
+			
+			if (!issueElement) {
+				console.log('[Hash Scroll] Issue element not found:', issueId);
+				return;
+			}
+
+			console.log('[Hash Scroll] Found issue element:', issueId);
+
+			// Expand the comments section if collapsed
+			var content = document.getElementById('msg2x');
+			if (content && content.style.display === 'none') {
+				content.style.display = '';
+			}
+
+			// Activate the appropriate tab based on issue status
+			var isOpened = issueElement.classList.contains('tsumego-issue--opened');
+			var filterToActivate = isOpened ? 'open' : 'closed';
+			
+			// Activate tab
+			var tabs = document.querySelectorAll('.tsumego-comments__tab');
+			tabs.forEach(function(t) { t.classList.remove('active'); });
+			
+			var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + filterToActivate + '"]');
+			if (targetTab) {
+				targetTab.classList.add('active');
+				currentCommentsFilter = filterToActivate;
+			}
+
+			// Apply filter to show the issue
+			applyCommentsFilter(filterToActivate);
+
+			// Scroll to the issue with a small delay to ensure DOM is ready
+			setTimeout(function() {
+				issueElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				// Add highlight effect
+				issueElement.classList.add('tsumego-issue--highlight');
+				setTimeout(function() {
+					issueElement.classList.remove('tsumego-issue--highlight');
+				}, 2000);
+			}, 100);
+		}
+
+		// Run on page load
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', checkHashAndScrollToIssue);
+		} else {
+			// DOM already loaded, run immediately
+			checkHashAndScrollToIssue();
+		}
+
+		// Also handle hash changes (e.g., user clicks a link with hash)
+		window.addEventListener('hashchange', checkHashAndScrollToIssue);
+	})();
 </script>
