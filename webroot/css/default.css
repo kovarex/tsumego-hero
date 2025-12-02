@@ -1570,9 +1570,7 @@ li a.menuLi {
   font-weight: 800;
   color: black;
 }
-#playTitleA {
-  color: black;
-}
+#playTitleA { color: var(--text-color); }
 #header {
   margin-bottom: 2px;
   padding: 2px;

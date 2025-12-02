@@ -17,7 +17,6 @@ function darkAndLight()
     // Clear any inline styles from new CSS-managed components so CSS body class selectors work
     $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
-    $("#playTitleA").css("color", "#f0f0f0");
     $(".modify-description").css("color", "#f0f0f0");
     $("body").css("background", "linear-gradient(#2a2a2a, #111)");
     $("body").css("background-attachment", "fixed");
@@ -126,7 +125,6 @@ function darkAndLight()
     // Clear any inline styles from new CSS-managed components so CSS body class selectors work
     $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
-    $("#playTitleA").css("color", "black");
     $(".modify-description").css("color", "black");
     $("body").css("background", "linear-gradient(#282828, #424141)");
     $("body").css("background-attachment", "fixed");
