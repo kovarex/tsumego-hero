@@ -178,49 +178,48 @@
 					// Update besogo player color
 					besogoPlayerColor = data.playerColor || 'black';
 
-					// Load the new SGF with corner transformation (for variety like normal page loads)
-					// Pick a random corner: top-left, top-right, bottom-left, bottom-right
-					var corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-					var randomCorner = corners[Math.floor(Math.random() * corners.length)];
+
+				// Load the new SGF with corner transformation (for variety like normal page loads)
+				// Pick a random corner: top-left, top-right, bottom-left, bottom-right
+				var corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+				var randomCorner = corners[Math.floor(Math.random() * corners.length)];
+				
+				if (besogo && besogo.reloadSgf && besogo.editor) {
+					besogo.playerColor = besogoPlayerColor;
 					
-					if (besogo && besogo.reloadSgf && besogo.editor) {
-						besogo.playerColor = besogoPlayerColor;
-						
-						console.log('[ZEN] Before reloadSgf - corner:', randomCorner);
-						
-						// Use reloadSgf which applies corner transformations (hFlip/vFlip)
-						// This ensures the board gets a random orientation just like normal page loads
-						besogo.reloadSgf(data.sgf, randomCorner);
-						
-						console.log('[ZEN] After reloadSgf, calling updateBoardDisplay');
-						
-						// Update board parameters and viewBox to match the new coordArea
-						// This fixes the "empty board" bug where board shows wrong area after navigation
+					console.log('[ZEN] Before reloadSgf - corner:', randomCorner);
+					
+					// Use reloadSgf which applies corner transformations (hFlip/vFlip)
+					// This ensures the board gets a random orientation just like normal page loads
+					besogo.reloadSgf(data.sgf, randomCorner);
+					
+					console.log('[ZEN] After reloadSgf, calling setAutoPlay and notify');
+					
+					besogo.editor.setAutoPlay(true);
+					besogo.editor.setCurrent(besogo.editor.getRoot());
+					
+					// Notify listeners to update the board display
+					besogo.editor.notifyListeners({
+						treeChange: true,
+						navChange: true,
+						stoneChange: true,
+						coord: besogo.editor.getCoordStyle()
+					});
+					
+					// Update board parameters and viewBox AFTER a microtask delay
+					// This ensures the editor listeners have finished processing the transformation
+					setTimeout(function() {
+						console.log('[ZEN] Calling updateBoardDisplay with delay');
 						if (typeof besogo.updateBoardDisplay === 'function') {
 							besogo.updateBoardDisplay(randomCorner);
 						} else {
 							console.error('[ZEN] besogo.updateBoardDisplay is not a function!');
 						}
-						
-						console.log('[ZEN] After updateBoardDisplay, calling setAutoPlay');
-						
-						besogo.editor.setAutoPlay(true);
-						besogo.editor.setCurrent(besogo.editor.getRoot());
-						
-						// Notify listeners to update the board display
-						besogo.editor.notifyListeners({
-							treeChange: true,
-							navChange: true,
-							stoneChange: true,
-							coord: besogo.editor.getCoordStyle()
-						});
-						
 						console.log('[ZEN] Zen navigation complete');
-					} else {
-						console.error('ZEN: Failed to load SGF - reloadSgf:', typeof besogo.reloadSgf, 'editor:', !!besogo.editor);
-					}
-
-					// Update URL without page reload
+					}, 0);
+				} else {
+					console.error('ZEN: Failed to load SGF - reloadSgf:', typeof besogo.reloadSgf, 'editor:', !!besogo.editor);
+				}					// Update URL without page reload
 					history.pushState({}, '', targetLink);
 
 					// Remove any result glow effects
