@@ -745,9 +745,9 @@
 			<div class="new1">
 			<br>
 			<div align="center">
-			<a class="menuIcons2" id="darkButton2" onclick="darkAndLight();"><img id="darkButtonImage2" src="/img/light-icon1x.png" width="30px"></a>
+			<a class="menuIcons2" id="darkButton2" onclick="darkAndLight();"><img id="darkButtonImage2"></a>
 			<h1 class="darkButton2">Dark Theme</h1>
-			<a class="menuIcons2" id="darkButton3" onclick="darkAndLight();"><img id="darkButtonImage3" src="/img/light-icon1x.png" width="30px"></a>
+			<a class="menuIcons2" id="darkButton3" onclick="darkAndLight();"><img id="darkButtonImage3"></a>
 			</div>
 			<br>
 			<br>

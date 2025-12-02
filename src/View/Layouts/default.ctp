@@ -340,15 +340,9 @@ $accountBarLevelToRating = 'account-bar-user';
 									</div>
 									</div>
 						</li>
-						<?php
-						if($lightDark=='dark')
-							$lightDarkImage = 'dark-icon1';
-						else
-							$lightDarkImage = 'light-icon1x';
-						echo '<li class="menuIcons1">
-						<a class="menuIcons2" id="darkButton" onclick="darkAndLight();"><img id="darkButtonImage" src="/img/'.$lightDarkImage.'.png?v=3.6" width="30px"></a>
-					</li>';
-						?>
+						<li class="menuIcons1">
+							<a class="menuIcons2" id="darkButton" onclick="darkAndLight();"><img id="darkButtonImage"></a>
+						</li>
 					</ul>
 				</nav>
 			</div>
@@ -538,23 +532,15 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		';
 	}
 	?>
-	let light = true;
-		<?php
-	if($lightDark=='dark'){
-		echo 'light = false;';
-		if($this->Session->read('page')=='home'){
-			echo '$("#darkButtonImage2").attr("src","/img/dark-icon1.png");';
-			echo '$("#darkButtonImage3").attr("src","/img/dark-icon1.png");';
-	}
-	}
-	?>
-
-		function updateSoundValue(value) {
-		if (typeof besogo !== 'undefined'){
+	let light = <?php echo Util::boolString($lightDark == 'light'); ?>;
+	function updateSoundValue(value)
+	{
+		if (typeof besogo !== 'undefined')
+		{
 			if(typeof value === 'undefined' || value === null)
 				value = false;
 			besogo.editor.setSoundEnabled(value);
-	}
+		}
 		soundsEnabled = value;
 	}
 	document.cookie = "score=0;SameSite=Lax;expires="+lifetime+";path=/";

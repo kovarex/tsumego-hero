@@ -1,4 +1,5 @@
-function darkAndLight() {
+function darkAndLight()
+{
 	const link = document.getElementById("theme-css-constants");
 	const current = link.getAttribute("href");
 
@@ -8,18 +9,7 @@ function darkAndLight() {
 		link.setAttribute("href", "/css/light-constants.css?v=light");
 
   if (light) {
-	link.href = "/css/dark-constants.css";
-    //make dark
-    document.cookie = "lightDark=dark;path=/";
-    document.cookie = "lightDark=dark;path=/sets/view";
-    document.cookie = "lightDark=dark;path=/tsumegos/play";
-    document.cookie = "lightDark=dark;path=/users";
-    document.cookie = "lightDark=dark;path=/users/view";
-    $("#darkButtonImage").attr("src", "/img/dark-icon1.png");
-    $("#darkButtonImage2").attr("src", "/img/dark-icon1.png");
-    $("#darkButtonImage3").attr("src", "/img/dark-icon1.png");
-    document.cookie = "lightDark=dark";
-
+	setCookie("lightDark", "dark");
     // Toggle body class for new CSS-based theming
     $("body").removeClass("light-theme").addClass("dark-theme");
 
@@ -126,16 +116,10 @@ function darkAndLight() {
     $(".h1profile h1, .profileTable2 a").css("color", "#fff");
     $(".set-search").css("color", "#fff");
     $(".set-search, #set-size-input").css("background", "#222222");
-  } else {
-    //make light
-    document.cookie = "lightDark=light;path=/";
-    document.cookie = "lightDark=light;path=/sets/view";
-    document.cookie = "lightDark=light;path=/tsumegos/play";
-    document.cookie = "lightDark=light;path=/users";
-    document.cookie = "lightDark=light;path=/users/view";
-    $("#darkButtonImage").attr("src", "/img/light-icon1x.png");
-    $("#darkButtonImage2").attr("src", "/img/light-icon1x.png");
-    $("#darkButtonImage3").attr("src", "/img/light-icon1x.png");
+  }
+  else
+  {
+	setCookie("lightDark", "light");
 
     // Toggle body class for new CSS-based theming
     $("body").removeClass("dark-theme").addClass("light-theme");

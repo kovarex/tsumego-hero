@@ -7614,3 +7614,20 @@ body.dark-theme .btn--success,
 body.dark-theme .btn--warning {
   color: white !important;
 }
+
+
+#darkButtonImage
+{
+	content: var(--dark-button-icon);
+	width:30px;
+}
+#darkButtonImage2
+{
+	content: var(--dark-button-icon);
+	width:30px;
+}
+#darkButtonImage3
+{
+	content: var(--dark-button-icon);
+	width:30px;
+}
