@@ -8,6 +8,10 @@ class AdminActivityType extends AppModel
 	public const DESCRIPTION_EDIT = 1;
 	public const HINT_EDIT = 2;
 	public const PROBLEM_DELETE = 3;
+	public const AUTHOR_EDIT = 19;
+	public const RATING_EDIT = 20;
+	public const MINIMUM_RATING_EDIT = 21;
+	public const MAXIMUM_RATING_EDIT = 22;
 
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
 	public const ALTERNATIVE_RESPONSE = 4;

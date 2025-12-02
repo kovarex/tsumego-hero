@@ -65,7 +65,7 @@ class Rating
 		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 
-	public static function getRankMiddleRatingFromRank(string $rank): float
+	public static function getRankMiddleRatingFromRank(int $rank): float
 	{
 		return (Rating::getRankMinimalRating($rank) + Rating::getRankMinimalRating($rank + 1)) / 2;
 	}
@@ -103,14 +103,14 @@ class Rating
 	{
 		if (is_numeric($input))
 		{
-			if (!self::isReasonableRating($input))
-				throw RatingParseException("Rating of ". $input. "isn't reasonable");
-			return $input;
+			if (!self::isReasonableRating((float)$input))
+				throw new RatingParseException("Rating of ". $input. "isn't reasonable");
+			return (float)$input;
 		}
 		return self::getRankMiddleRatingFromReadableRank($input);
 	}
 
-	public static function isReasonableRating(int $rating)
+	public static function isReasonableRating(float $rating)
 	{
 		return $rating >= -950 && // 30k
 				$rating < 3200; // the formula stops working at 3300

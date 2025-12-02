@@ -520,7 +520,7 @@ class ContextPreparator
 	private function ensureAdminActivityTypes(): void
 	{
 		App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+		App::uses('AdminActivityType', 'Model');
 
 		// Define all activity types with their correct IDs from AdminActivityLogger constants
 		$types = [
@@ -542,7 +542,10 @@ App::uses('AdminActivityType', 'Model');
 			AdminActivityType::SET_PASS_MODE => 'Set Pass Mode',
 			AdminActivityType::DUPLICATE_REMOVE => 'Duplicate Remove',
 			AdminActivityType::DUPLICATE_GROUP_CREATE => 'Duplicate Group Create',
-		];
+			AdminActivityType::AUTHOR_EDIT => 'Author Edit',
+			AdminActivityType::RATING_EDIT => 'Rating Edit',
+			AdminActivityType::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
+			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

@@ -212,4 +212,11 @@ class Util
 			$result = min($max, $result);
 		return $result;
 	}
+
+	public static function strOrNull($input): ?string
+	{
+		if (is_null($input))
+			return null;
+		return strval($input);
+	}
 }

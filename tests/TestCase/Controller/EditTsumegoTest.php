@@ -4,7 +4,7 @@ use Facebook\WebDriver\WebDriverKeys;
 
 class EditTsumegoTest extends ControllerTestCase
 {
-	public function testEditTsumegoDescription()
+	public function testEditTsumego()
 	{
 		$testCases = [];
 		$testCases[]= ['field' => 'description', 'value' => 'bar', 'result' => 'bar'];
@@ -74,7 +74,18 @@ class EditTsumegoTest extends ControllerTestCase
 
 			if ($testCase['field'] == 'delete')
 			{
-				$this->assertSame($testCase['value'] == 'delete', !is_null($tsumego['Tsumego']['deleted']));
+				$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+				if ($testCase['value'] == 'delete')
+				{
+					$this->assertCount(1, $adminActivities);
+					$this->assertSame(AdminActivityType::PROBLEM_DELETE, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertNotNull($tsumego['Tsumego']['deleted']);
+				}
+				else
+				{
+					$this->assertCount(0, $adminActivities);
+					$this->assertNull($tsumego['Tsumego']['deleted']);
+				}
 				continue;
 			}
 
@@ -93,6 +104,43 @@ class EditTsumegoTest extends ControllerTestCase
 			$this->assertSame($testCase['field'] == 'rating' ? $testCase['result'] : $expectedRating, $tsumego['Tsumego']['rating']);
 			$this->assertSame($testCase['field'] == 'minimum-rating' ? $testCase['result'] : null, $tsumego['Tsumego']['minimum_rating']);
 			$this->assertSame($testCase['field'] == 'maximum-rating' ? $testCase['result'] : null, $tsumego['Tsumego']['maximum_rating']);
+
+			$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+			if ($testCase['result'] == $testCase['value']) // when we expect it to succeed
+			{
+				$this->assertSame($testCase['value'], $adminActivities[0]['AdminActivity']['new_value']);
+				$this->assertCount(1, $adminActivities);
+				if ($testCase['field'] == 'description')
+				{
+					$this->assertSame(AdminActivityType::DESCRIPTION_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame("foo", $adminActivities[0]['AdminActivity']['old_value']);
+				}
+				if ($testCase['field'] == 'hint')
+				{
+					$this->assertSame(AdminActivityType::HINT_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame("think", $adminActivities[0]['AdminActivity']['old_value']);
+				}
+				elseif ($testCase['field'] == 'author')
+				{
+					$this->assertSame(AdminActivityType::AUTHOR_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame("Ivan Detkov", $adminActivities[0]['AdminActivity']['old_value']);
+				}
+				elseif ($testCase['field'] == 'rating')
+				{
+					$this->assertSame(AdminActivityType::RATING_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame("666", $adminActivities[0]['AdminActivity']['old_value']);
+				}
+				elseif ($testCase['field'] == 'minimum-rating')
+				{
+					$this->assertSame(AdminActivityType::MINIMUM_RATING_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
+				}
+				elseif ($testCase['field'] == 'maximum-rating')
+				{
+					$this->assertSame(AdminActivityType::MAXIMUM_RATING_EDIT, $adminActivities[0]['AdminActivity']['type']);
+					$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
+				}
+			}
 		}
 	}
 

@@ -916,9 +916,26 @@ class TsumegosController extends AppController
 			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
 			$tsumego['hint'] = $this->data['hint'];
 		}
-		$tsumego['author'] = $this->data['author'];
-		$tsumego['minimum_rating'] = $minimumRating;
-		$tsumego['maximum_rating'] = $maximumRating;
+		if ($tsumego['author'] != $this->data['author'])
+		{
+			AdminActivityLogger::log(AdminActivityType::AUTHOR_EDIT, $tsumegoID, null, $tsumego['author'], $this->data['author']);
+			$tsumego['author'] = $this->data['author'];
+		}
+		if ($tsumego['minimum_rating'] != $minimumRating)
+		{
+			AdminActivityLogger::log(AdminActivityType::MINIMUM_RATING_EDIT, $tsumegoID, null,  Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
+			$tsumego['minimum_rating'] = $minimumRating;
+		}
+
+		if ($tsumego['maximum_rating'] != $maximumRating)
+		{
+			AdminActivityLogger::log(AdminActivityType::MAXIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['maximum_rating']), Util::strOrNull($maximumRating));
+			$tsumego['maximum_rating'] = $maximumRating;
+		}
+
+		if ($tsumego['rating'] != $rating)
+			AdminActivityLogger::log(AdminActivityType::RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['rating']), Util::strOrNull($rating));
+
 		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
 
 		ClassRegistry::init('Tsumego')->save($tsumego);

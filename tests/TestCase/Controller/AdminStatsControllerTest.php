@@ -206,6 +206,10 @@ App::uses('AdminActivityType', 'Model');
 				// Problem edits (1-3)
 				['type' => AdminActivityType::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
 				['type' => AdminActivityType::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
+				['type' => AdminActivityType::AUTHOR_EDIT, 'tsumego_id' => true, 'old_value' => 'old author', 'new_value' => 'new author'],
+				['type' => AdminActivityType::RATING_EDIT, 'tsumego_id' => true, 'old_value' => '666', 'new_value' => '777'],
+				['type' => AdminActivityType::MINIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '1000', 'new_value' => '1500'],
+				['type' => AdminActivityType::MAXIMUM_RATING_EDIT, 'tsumego_id' => true, 'old_value' => '900', 'new_value' => '800'],
 				['type' => AdminActivityType::PROBLEM_DELETE, 'tsumego_id' => true],
 
 				// Problem settings (4-7)
@@ -244,6 +248,10 @@ App::uses('AdminActivityType', 'Model');
 		// Verify all 19 activity type names appear in HTML
 		$this->assertTextContains('Description Edit', $pageSource);
 		$this->assertTextContains('Hint Edit', $pageSource);
+		$this->assertTextContains('Author Edit', $pageSource);
+		$this->assertTextContains('Rating Edit', $pageSource);
+		$this->assertTextContains('Minimum Rating Edit', $pageSource);
+		$this->assertTextContains('Maximum Rating Edit', $pageSource);
 		$this->assertTextContains('Problem Delete', $pageSource);
 		$this->assertTextContains('Alternative Response', $pageSource);
 		$this->assertTextContains('Pass Mode', $pageSource);
