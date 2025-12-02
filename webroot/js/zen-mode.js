@@ -35,15 +35,22 @@
 			enableZenMode();
 	}
 
-	// Toggle button click
-	var toggleBtn = document.getElementById('zen-mode-toggle');
-	if (toggleBtn)
-		toggleBtn.addEventListener('click', toggleZenMode);
+	// Toggle button click - use event delegation on document since the button gets replaced
+	// during zen mode navigation
+	document.addEventListener('click', function(e) {
+		if (e.target && e.target.id === 'zen-mode-toggle') {
+			toggleZenMode();
+			e.preventDefault();
+		}
+	});
 
-	// Exit button click
-	var exitBtn = document.getElementById('zen-mode-exit');
-	if (exitBtn)
-		exitBtn.addEventListener('click', disableZenMode);
+	// Exit button click - also use event delegation
+	document.addEventListener('click', function(e) {
+		if (e.target && e.target.id === 'zen-mode-exit') {
+			disableZenMode();
+			e.preventDefault();
+		}
+	});
 
 	// Keyboard shortcuts
 	document.addEventListener('keydown', function(e) {
@@ -219,16 +226,24 @@
 					}, 0);
 				} else {
 					console.error('ZEN: Failed to load SGF - reloadSgf:', typeof besogo.reloadSgf, 'editor:', !!besogo.editor);
-				}					// Update URL without page reload
-					history.pushState({}, '', targetLink);
+				}
+				
+				// Update URL without page reload
+				history.pushState({}, '', targetLink);
+				
+				// Update next/back button href attributes (they were set to old values when created)
+				var nextBtn = document.getElementById('besogo-next-button');
+				if (nextBtn) nextBtn.href = nextButtonLink;
+				var backBtn = document.getElementById('besogo-back-button');
+				if (backBtn) backBtn.href = previousButtonLink;
 
-					// Remove any result glow effects
-					var besogoBoard = document.querySelector('.besogo-board');
-					if (besogoBoard) {
-						besogoBoard.style.boxShadow = '';
-					}
+				// Remove any result glow effects
+				var besogoBoard = document.querySelector('.besogo-board');
+				if (besogoBoard) {
+					besogoBoard.style.boxShadow = '';
+				}
 
-					resolve();
+				resolve();
 				})
 				.catch(function(error) {
 					console.error('Zen mode navigation error:', error);
