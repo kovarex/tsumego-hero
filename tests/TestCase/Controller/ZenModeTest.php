@@ -510,12 +510,12 @@ class ZenModeTest extends TestCaseWithAuth
 			var board = document.getElementById('board') || document.getElementById('target');
 			return board ? board.innerHTML.length : 0;
 		");
-		
+
 		// Debug: capture console logs from navigation
 		$debugLogs = $browser->driver->executeScript("
 			return window.zenDebugLogs || [];
 		");
-		
+
 		$this->assertGreaterThan(100, $boardHtml, 'Board should have substantial content (besogo SVG) after navigation. Debug: ' . json_encode($debugLogs));
 
 		// Verify besogo container is present
