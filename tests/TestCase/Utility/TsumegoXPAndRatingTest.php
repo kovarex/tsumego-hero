@@ -55,6 +55,20 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
+	public function testShowingNormalXPOn30kProblem(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-tsumegos' => [['rating' => Rating::getRankMiddleRatingFromReadableRank('30k'), 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+
+		$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
+		$this->assertTextContains('Solved', $xpDisplayText);
+		$this->assertTextContains('1 XP', $xpDisplayText);
+	}
+
 	public function checkSprintInXpAndTimeInStatus2($browser)
 	{
 		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
@@ -139,6 +153,13 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$this->assertSame(Level::getXPForNext(100), 58850);
 		$this->assertSame(Level::getXPForNext(101), 60000);
 		$this->assertSame(Level::getXPForNext(102), 60000);
+	}
+
+	public function testXPForRating()
+	{
+		$this->assertGreaterThan(0, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('30k')));
+		$this->assertGreaterThan(20, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5k')));
+		$this->assertGreaterThan(100, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5d')));
 	}
 
 	public function testXPForNextLevelComparedToPreviousSumCode()

@@ -91,6 +91,9 @@ class Rating
 	// changes should be reflected in util.js
 	public static function ratingToXP($rating): float
 	{
+		if ($rating < 0)
+			return 1 + max(0, ($rating / 1000 + 0.9) * 3);
+
 		// until 1200 rating, the old formula but with half of the values
 		if ($rating < 1200)
 			return max(10, pow($rating / 100, 1.55) - 6) / 2;

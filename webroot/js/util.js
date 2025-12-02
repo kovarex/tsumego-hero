@@ -331,10 +331,12 @@ function calculateRatingChange(rating, opponentRating, result, modifier)
 
 function ratingToXP(rating)
 {
+	if (rating < 0)
+		return 1 + Math.max(0, (rating / 1000 + 0.9) * 3);
+
 	// until 1200 rating, the old formula but with half of the values
-	if (rating < 1200) {
+	if (rating < 1200)
 		return Math.max(10, Math.pow(rating / 100, 1.55) - 6) / 2;
-	}
 
 	// with higher ratings, it is important to have more aggressive exponential growth,
 	return (Math.pow((rating - 500)/ 100, 2) - 10) / 2;
