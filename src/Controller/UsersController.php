@@ -142,54 +142,7 @@ class UsersController extends AppController
 		$this->set('finish', count($ts) - 1);
 	}
 
-	//fix glitched problems
-	/**
-	 * @param string|int|null $id Tsumego ID
-	 * @return void
-	 */
-	public function test1b($id = null)
-	{
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-
-		$t = $this->Tsumego->find('all', [
-			'conditions' => [
-				'rd <' => -500,
-			],
-		]);
-		$ta = [];
-		$tCount = count($t);
-		for ($i = 0; $i < $tCount; $i++)
-		{
-			$ta = $this->TsumegoAttempt->find('all', [
-				'limit' => 2,
-				'order' => 'created ASC',
-				'conditions' => [
-					'tsumego_id' => $t[$i]['Tsumego']['id'],
-					'NOT' => [
-						'tsumego_elo' => 0,
-					],
-				],
-			]);
-			$t[$i]['Tsumego']['rd'] = 0;
-			$t[$i]['Tsumego']['rating'] = $ta[0]['TsumegoAttempt']['tsumego_elo'];
-			$this->Tsumego->save($t[$i]);
-			echo '<pre>';
-			print_r('saved ' . $t[$i]['Tsumego']['id']);
-			echo '</pre>';
-		}
-		echo '<pre>';
-		print_r(count($t));
-		echo '</pre>';
-		echo '<pre>';
-		print_r($ta[0]['TsumegoAttempt']['tsumego_elo']);
-		echo '</pre>';
-	}
-
-	/**
-	 * @return void
-	 */
-	public function publish()
+	public function publish(): void
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');

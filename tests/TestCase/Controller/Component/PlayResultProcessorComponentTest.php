@@ -138,7 +138,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testSolvingAddsRating(): void
+	public function testSolvingAddsRatingOfPlayerAndDecreasesRatingOfTsumego(): void
 	{
 		foreach ($this->PAGES as $page)
 		{
@@ -149,12 +149,36 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performSolve($context, $page);
-			$this->assertLessThan($context->reloadUser()['rating'], $originalRating);
+			// user rating is increased
+			$this->assertGreaterThan($originalRating, $context->reloadUser()['rating']);
 			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
+			// tsumego rating is decreased
+			$this->assertLessThan(1000, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
 		}
 	}
 
-	public function testFailingDropsRating(): void
+	public function testSolvingCantDecreaseTsumegoRatingUnderItsMinimum(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'minimum_rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+			$originalRating = $context->user['rating'];
+			$this->performSolve($context, $page);
+
+			//user rating is increased
+			$this->assertGreaterThan($originalRating, $context->reloadUser()['rating']);
+			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
+
+			// tsumego can't get any lower
+			$this->assertSame(1000.0, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
+		}
+	}
+
+	public function testFailingDropsRatingOfPlayerAndIncreasesRatingOfTsumego(): void
 	{
 		foreach ($this->PAGES as $page)
 		{
@@ -165,8 +189,33 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$originalRating = $context->user['rating'];
 			$this->performMisplay($context, $page);
+			// user rating is decreased
 			$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
 			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
+			// tsumego rating is increased
+			$this->assertGreaterThan(1000, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
+		}
+	}
+
+	public function testFailingCantIncreaseTsumegoRatingOverItsMaximum(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator([
+				'user' => [
+					'rating' => 1000,
+					'mode' => Constants::$RATING_MODE],
+				'tsumego' => ['rating' => 1000, 'maximum_rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+			$originalRating = $context->user['rating'];
+			$this->performMisplay($context, $page);
+			$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
+
+			// player still looses rating
+			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
+			$this->assertGreaterThan(100, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
+
+			// but tsumego can't get higher anymore
+			$this->assertSame(1000.0, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
 		}
 	}
 
