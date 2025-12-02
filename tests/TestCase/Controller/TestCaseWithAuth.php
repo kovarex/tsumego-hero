@@ -80,7 +80,7 @@ class TestCaseWithAuth extends ControllerTestCase
 		else
 			$statusValue = $currentStatus;
 
-		$this->assertSame($button->getAttribute('class'), 'set' . $statusValue . '1');
+		$this->assertSame(explode(" ", $button->getAttribute('class'))[0], 'status' . $statusValue);
 		$link = $button->findElement(WebDriverBy::tagName('a'));
 		$this->assertTextStartsWith('/' . $context->otherTsumegos[$index]['set-connections'][0]['id'], $link->getAttribute('href'));
 	}
