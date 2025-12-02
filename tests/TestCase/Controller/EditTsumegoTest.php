@@ -40,7 +40,7 @@ class EditTsumegoTest extends ControllerTestCase
 					'rating' => 666]]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-			$browser->clickCssSelect(".modify-description");
+			$browser->clickId("modify-description");
 
 			$browser->clickCssSelect("#" . $testCase['field']);
 			$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
@@ -157,7 +157,7 @@ class EditTsumegoTest extends ControllerTestCase
 				'maximum_rating' => Rating::getRankMiddleRatingFromReadableRank("15k")]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$browser->clickCssSelect(".modify-description");
+		$browser->clickId("modify-description");
 		$this->assertSame($browser->getCssSelect("#rating")[0]->getAttribute("value"), "10k");
 		$this->assertSame($browser->getCssSelect("#minimum-rating")[0]->getAttribute("value"), "5k");
 		$this->assertSame($browser->getCssSelect("#maximum-rating")[0]->getAttribute("value"), "15k");

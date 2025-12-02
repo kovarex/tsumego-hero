@@ -7634,3 +7634,4 @@ body.dark-theme .btn--warning {
 	content: var(--dark-button-icon);
 	width:30px;
 }
+.grey-link { color: var(--text-softer-color); }

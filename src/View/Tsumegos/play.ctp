@@ -255,7 +255,7 @@ if (
 	}
 	}
 		if(Auth::isAdmin()) { ?>
-		<a class="modify-description" href="#">(Edit)</a>
+		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(250);">(Edit)</a>
 		<div class="modify-description-panel">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
@@ -1043,12 +1043,6 @@ if (
 	}
 		});
 	<?php } ?>
-	$(".modify-description").click(function(e){
-		adminCommentOpened = true;
-		e.preventDefault();
-		$(".modify-description-panel").toggle(250);
-		});
-
 	<?php if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();

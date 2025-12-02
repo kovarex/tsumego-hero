@@ -165,16 +165,9 @@ li.statusN { background-color: #444; }
 }
 #status2 font font,
 .titleDescription1 font,
-.modify-description,
-.statsTable font {
-  color: grey;
-}
-.signin {
-  background: #515151;
-}
-#achievementWrapper font {
-  color: #717171;
-}
+.statsTable font { color: grey; }
+.signin { background: #515151; }
+#achievementWrapper font { color: #717171; }
 .achievementColorBlack2,
 .achievementColorPurple2,
 .achievementColorGreen2,

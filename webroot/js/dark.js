@@ -16,7 +16,6 @@ function darkAndLight()
     // Clear any inline styles from new CSS-managed components so CSS body class selectors work
     $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
-    $(".modify-description").css("color", "#f0f0f0");
     $("body").css("background", "linear-gradient(#2a2a2a, #111)");
     $("body").css("background-attachment", "fixed");
     $("body, font, .filterLabel1, .timeTableColor11").css("color", "#f0f0f0");
@@ -89,7 +88,7 @@ function darkAndLight()
       "#show, #commentPosition, #show3, .selectable-text, .admin-panel #show2, .admin-panel #show3, .admin-panel #show4, .admin-panel #show5, .admin-panel font"
     ).css("color", "#f0f0f0");
     $(
-      "#status2 font font, .titleDescription1 font, .modify-description, .statsTable font"
+      "#status2 font font, .titleDescription1 font, .statsTable font"
     ).css("color", "grey");
     $(".achievement1, .achievement2, .achievementSmall").css(
       "background",
@@ -124,7 +123,6 @@ function darkAndLight()
     // Clear any inline styles from new CSS-managed components so CSS body class selectors work
     $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
-    $(".modify-description").css("color", "black");
     $("body").css("background", "linear-gradient(#282828, #424141)");
     $("body").css("background-attachment", "fixed");
     $("body, font, .filterLabel1, .timeTableColor11").css("color", "black");
