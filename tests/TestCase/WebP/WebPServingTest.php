@@ -9,9 +9,9 @@
  * 3. JPEG requests with Accept: image/webp serve WebP files
  * 4. Vary: Accept header is included for proper caching
  *
- * NOTE: These tests require Apache with mod_rewrite (for .htaccess support).
- * They are excluded in CI (--exclude-group apache-only) which uses PHP built-in server.
- * Run locally with DDEV (apache-fpm) to validate WebP serving.
+ * Requires Apache with mod_rewrite. Excluded on CI because PHP's built-in server
+ * doesn't process .htaccess files. Run locally with DDEV (Apache):
+ *   vendor/bin/phpunit --group apache-only
  *
  * @group apache-only
  */

@@ -2,7 +2,7 @@ name: tsumego
 type: cakephp
 docroot: webroot
 php_version: "8.4"
-webserver_type: apache-fpm
+webserver_type: nginx-fpm
 router_http_port: "33002"
 router_https_port: "33003"
 xdebug_enabled: true
