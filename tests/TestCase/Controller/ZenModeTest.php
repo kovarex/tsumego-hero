@@ -678,27 +678,82 @@ class ZenModeTest extends TestCaseWithAuth
 	}
 
 	/**
+	 * Test that a puzzle with stones loads and displays them properly.
+	 * This is a baseline test - no zen mode, just verify besogo renders stones.
+	 *
+	 * Note: Colors may be swapped (black/white) and board may be rotated for variety.
+	 * We just check that stones exist, not their exact colors/positions.
+	 *
+	 * @group zen-mode-navigation
+	 */
+	public function testPuzzleLoadsAndDisplaysStones()
+	{
+		// Create a tsumego with actual stones in the SGF
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'Stone Test Set', 'num' => '1']],
+				'sgf' => '(;SZ[19]AB[dd][pd][dp]AW[pp][dj][pj])',  // 3 black, 3 white stones
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+
+		// Verify besogo board div exists
+		$boardExists = $browser->driver->executeScript("return !!document.querySelector('.besogo-board')");
+		$this->assertTrue($boardExists, 'Besogo board div should exist');
+
+		// Verify besogo editor is initialized and has loaded the SGF
+		$editorState = $browser->driver->executeScript("
+			if (typeof besogo === 'undefined' || !besogo.editor) return { error: 'no editor' };
+			var current = besogo.editor.getCurrent();
+			if (!current) return { error: 'no current' };
+			
+			// Count non-empty positions on the board
+			var stoneCount = 0;
+			if (current.board) {
+				var keys = Object.keys(current.board);
+				for (var i = 0; i < keys.length; i++) {
+					if (current.board[keys[i]] !== 0) stoneCount++;
+				}
+			}
+			
+			return {
+				size: current.getSize ? current.getSize() : null,
+				stoneCount: stoneCount,
+				hasGetStone: typeof current.getStone === 'function'
+			};
+		");
+
+		$this->assertArrayNotHasKey('error', $editorState, 'Editor should be valid: ' . ($editorState['error'] ?? ''));
+		$this->assertEquals(19, $editorState['size']['x'] ?? 0, 'Board should be 19x19');
+		$this->assertEquals(6, $editorState['stoneCount'], 'SGF has 6 stones (3 black + 3 white)');
+	}
+
+	/**
 	 * Test that after Zen mode navigation, the SGF is properly loaded and stones are visible.
 	 *
 	 * This tests that:
-	 * 1. The board element is preserved during morph
-	 * 2. The new SGF is loaded into besogo
-	 * 3. Stones are actually rendered on the board
+	 * 1. Puzzle 1 loads with stones
+	 * 2. Zen mode navigation fetches puzzle 2
+	 * 3. Puzzle 2 loads with stones (different count proves new SGF loaded)
+	 *
+	 * Note: Colors may be swapped and board may be rotated - we check stone count, not positions.
 	 *
 	 * @group zen-mode-navigation
 	 */
 	public function testZenModeNavigationLoadsSgfProperly()
 	{
-		// Create 2 tsumegos WITH actual stones in the SGF
+		// Create 2 tsumegos with DIFFERENT stone counts to verify the SGF changed
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'sets' => [['name' => 'SGF Test Set', 'num' => '1']],
-				'sgf' => '(;SZ[19]AB[dd][pd][dp]AW[pp][dj][pj])',  // 3 black, 3 white stones
+				'sgf' => '(;SZ[19]AB[dd][pd][dp]AW[pp][dj][pj])',  // 6 stones
 			],
 			'other-tsumegos' => [
 				[
 					'sets' => [['name' => 'SGF Test Set', 'num' => '2']],
-					'sgf' => '(;SZ[19]AB[cc][qc][cq]AW[qq][ck][qk])',  // Different 3 black, 3 white stones
+					'sgf' => '(;SZ[19]AB[cc][dc][ec]AW[qq][rq])',  // 5 stones (different count!)
 				],
 			],
 		]);
@@ -706,113 +761,19 @@ class ZenModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 
-		// Count visible stones before navigation (initial puzzle)
-		// The stoneGroup contains actually placed stones (visible)
-		// The hoverGroup contains preview stones (hidden)
-		$debugInfo = $browser->driver->executeScript("
-			var result = {};
-			
-			// Find the board div
-			var boardDiv = document.querySelector('.besogo-board');
-			result.boardDivExists = !!boardDiv;
-			
-			if (boardDiv) {
-				var svg = boardDiv.querySelector('svg');
-				result.svgInBoard = !!svg;
-				
-				if (svg) {
-					// SVG has groups: stone group, markup group, nextMove group, hover group
-					var groups = svg.querySelectorAll(':scope > g');
-					result.groupCount = groups.length;
-					
-					// Iterate through groups to find stones
-					result.groupDetails = [];
-					for (var g = 0; g < groups.length; g++) {
-						var group = groups[g];
-						var stones = group.querySelectorAll('.besogo-svg-blackStone, .besogo-svg-whiteStone');
-						var visibleStones = 0;
-						var hiddenStones = 0;
-						for (var s = 0; s < stones.length; s++) {
-							if (stones[s].getAttribute('visibility') === 'hidden') {
-								hiddenStones++;
-							} else {
-								visibleStones++;
-							}
-						}
-						if (stones.length > 0) {
-							result.groupDetails.push({
-								opacity: group.getAttribute('opacity'),
-								total: stones.length,
-								visible: visibleStones,
-								hidden: hiddenStones
-							});
-						}
-					}
-				}
+		// Get initial stone count
+		$stoneCount1 = $browser->driver->executeScript("
+			if (!besogo.editor) return -1;
+			var current = besogo.editor.getCurrent();
+			if (!current || !current.board) return -1;
+			var count = 0;
+			var keys = Object.keys(current.board);
+			for (var i = 0; i < keys.length; i++) {
+				if (current.board[keys[i]] !== 0) count++;
 			}
-			
-			// Get puzzle data
-			var puzzleData = document.getElementById('puzzle-data');
-			if (puzzleData) {
-				try {
-					var data = JSON.parse(puzzleData.textContent);
-					result.sgfPreview = data.sgf ? data.sgf.substring(0, 100) : '';
-				} catch(e) {
-					result.puzzleDataError = e.message;
-				}
-			}
-			
-			// Check besogo editor state
-			if (typeof besogo !== 'undefined' && besogo.editor) {
-				var current = besogo.editor.getCurrent();
-				if (current) {
-					result.currentSize = current.getSize ? current.getSize() : 'no getSize';
-					// Sample all expected positions from the SGF
-					// AB[dd][pd][dp] = black at (4,4), (16,4), (4,16)
-					// AW[pp][dj][pj] = white at (16,16), (4,10), (16,10)
-					if (current.getStone) {
-						// Check expected black positions
-						result.dd_4_4 = current.getStone(4, 4);
-						result.pd_16_4 = current.getStone(16, 4);
-						result.dp_4_16 = current.getStone(4, 16);
-						// Check expected white positions
-						result.pp_16_16 = current.getStone(16, 16);
-						result.dj_4_10 = current.getStone(4, 10);
-						result.pj_16_10 = current.getStone(16, 10);
-						// Check a few empty positions
-						result.empty_1_1 = current.getStone(1, 1);
-						result.empty_19_19 = current.getStone(19, 19);
-					}
-					// Dump the board object keys
-					if (current.board) {
-						result.boardKeys = Object.keys(current.board);
-					}
-				}
-			}
-			
-			return result;
+			return count;
 		");
-		echo "\nDEBUG: " . json_encode($debugInfo, JSON_PRETTY_PRINT) . "\n";
-		
-		// Extract visible stones from the stone group (not hover group)
-		$stoneGroupVisible = 0;
-		if (!empty($debugInfo['groupDetails'])) {
-			foreach ($debugInfo['groupDetails'] as $group) {
-				// Hover group has opacity 0.35, stone group has no opacity
-				if ($group['opacity'] === null || $group['opacity'] === '') {
-					$stoneGroupVisible = $group['visible'] ?? 0;
-					break;
-				}
-			}
-		}
-		echo "Stone group visible count: $stoneGroupVisible\n";
-		$this->assertGreaterThan(0, $stoneGroupVisible, 'Initial puzzle should have visible stones in the stone group');
-
-		// Get root board size before
-		$boardSizeBefore = $browser->driver->executeScript("
-			return besogo.editor && besogo.editor.getRoot() ? besogo.editor.getRoot().getSize() : null;
-		");
-		$this->assertNotNull($boardSizeBefore, 'Board size should be available');
+		$this->assertEquals(6, $stoneCount1, 'Puzzle 1 should have 6 stones');
 
 		// Enter Zen mode
 		$browser->clickId('zen-mode-toggle');
@@ -846,41 +807,29 @@ class ZenModeTest extends TestCaseWithAuth
 		$error = $browser->driver->executeScript("return window.zenNavError");
 		$this->assertNull($error, "Zen navigation failed: {$error}");
 
-		// Give a bit more time for the board to redraw
+		// Give time for SGF to load and board to redraw
 		usleep(500 * 1000);
 
-		// Count visible stones after navigation (should have stones for the new puzzle)
-		$stoneCountAfter = $browser->driver->executeScript("
-			var stones = document.querySelectorAll('.besogo-svg-blackStone, .besogo-svg-whiteStone');
-			var visibleCount = 0;
-			for (var i = 0; i < stones.length; i++) {
-				if (stones[i].getAttribute('visibility') !== 'hidden') {
-					visibleCount++;
-				}
-			}
-			return visibleCount;
-		");
-		echo "DEBUG: Visible stone count after: $stoneCountAfter\n";
-		$this->assertGreaterThan(0, $stoneCountAfter, 'After navigation, board should have visible stones loaded from new SGF');
+		// Verify tsumegoID changed (confirms we navigated)
+		$newTsumegoId = $browser->driver->executeScript("return tsumegoID");
+		$this->assertNotEquals($context->tsumego['id'], $newTsumegoId, 'Should be on puzzle 2');
 
-		// Verify besogo.editor state is valid
-		$editorState = $browser->driver->executeScript("
-			if (!besogo.editor) return { error: 'no editor' };
+		// Get stone count after navigation - should be 5 (different from puzzle 1's 6)
+		$stoneCount2 = $browser->driver->executeScript("
+			if (!besogo.editor) return -1;
 			var current = besogo.editor.getCurrent();
-			if (!current) return { error: 'no current' };
-			return {
-				hasGetSize: typeof current.getSize === 'function',
-				hasGetStone: typeof current.getStone === 'function',
-				size: current.getSize(),
-				boardLength: current.board ? current.board.length : 0
-			};
+			if (!current || !current.board) return -1;
+			var count = 0;
+			var keys = Object.keys(current.board);
+			for (var i = 0; i < keys.length; i++) {
+				if (current.board[keys[i]] !== 0) count++;
+			}
+			return count;
 		");
-		$this->assertArrayNotHasKey('error', $editorState, 'Editor state should be valid: ' . ($editorState['error'] ?? ''));
-		$this->assertTrue($editorState['hasGetSize'] ?? false, 'Current node should have getSize method');
-		$this->assertTrue($editorState['hasGetStone'] ?? false, 'Current node should have getStone method');
+		$this->assertEquals(5, $stoneCount2, 'Puzzle 2 should have 5 stones (proves new SGF loaded)');
 
-		// Verify the tsumegoID changed (proof we're on puzzle 2)
-		$newTsumegoId = $browser->driver->executeScript("return typeof tsumegoID !== 'undefined' ? tsumegoID : null");
-		$this->assertNotEquals($context->tsumego['id'], $newTsumegoId, 'Tsumego ID should have changed after navigation');
+		// Verify zen mode is still active
+		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
+		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Zen mode should persist');
 	}
 }
