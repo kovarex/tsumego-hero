@@ -3,10 +3,10 @@ function darkAndLight()
 	const link = document.getElementById("theme-css-constants");
 	const current = link.getAttribute("href");
 
-	if (current.includes("light-constants.css"))
-		link.setAttribute("href", "/css/dark-constants.css?v=dark");
-	else
+	if (light)
 		link.setAttribute("href", "/css/light-constants.css?v=light");
+	else
+		link.setAttribute("href", "/css/dark-constants.css?v=dark");
 
   if (light)
   {
