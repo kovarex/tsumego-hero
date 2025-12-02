@@ -3,6 +3,7 @@
 use Facebook\WebDriver\WebDriverBy;
 
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 /**
  * AdminStatsControllerTest
@@ -25,7 +26,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'tsumego' => [],
 			'admin-activities' => [
 				[
-					'type' => AdminActivityLogger::DESCRIPTION_EDIT,
+					'type' => AdminActivityType::DESCRIPTION_EDIT,
 					'tsumego_id' => true,
 					'old_value' => 'Old desc',
 					'new_value' => 'New desc'
@@ -64,6 +65,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	public function testSetLevelActivities()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -72,7 +74,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 			],
 			'admin-activities' => [
 				[
-					'type' => AdminActivityLogger::SET_TITLE_EDIT,
+					'type' => AdminActivityType::SET_TITLE_EDIT,
 					'set_id' => true,
 					'old_value' => 'Old Title',
 					'new_value' => 'New Title'
@@ -95,13 +97,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 	public function testActivityPagination()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
 		for ($i = 1; $i <= 105; $i++)
 		{
 			$activities[] = [
-				'type' => AdminActivityLogger::DESCRIPTION_EDIT,
+				'type' => AdminActivityType::DESCRIPTION_EDIT,
 				'tsumego_id' => true,
 				'old_value' => "Old desc $i",
 				'new_value' => "New desc $i"
@@ -139,13 +142,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 	public function testMultiplePaginationsIndependent()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
 		for ($i = 1; $i <= 105; $i++)
 		{
 			$activities[] = [
-				'type' => AdminActivityLogger::DESCRIPTION_EDIT,
+				'type' => AdminActivityType::DESCRIPTION_EDIT,
 				'tsumego_id' => true,
 				'old_value' => "Old desc $i",
 				'new_value' => "New desc $i"
@@ -188,6 +192,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	public function testAllActivityTypesDisplay()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
+		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -199,36 +204,36 @@ class AdminStatsControllerTest extends ControllerTestCase
 			],
 			'admin-activities' => [
 				// Problem edits (1-3)
-				['type' => AdminActivityLogger::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
-				['type' => AdminActivityLogger::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
-				['type' => AdminActivityLogger::PROBLEM_DELETE, 'tsumego_id' => true],
+				['type' => AdminActivityType::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
+				['type' => AdminActivityType::HINT_EDIT, 'tsumego_id' => true, 'old_value' => 'old hint', 'new_value' => 'new hint'],
+				['type' => AdminActivityType::PROBLEM_DELETE, 'tsumego_id' => true],
 
 				// Problem settings (4-7)
-				['type' => AdminActivityLogger::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityLogger::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityLogger::MULTIPLE_CHOICE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityLogger::SCORE_ESTIMATING, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::ALTERNATIVE_RESPONSE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::PASS_MODE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::MULTIPLE_CHOICE, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::SCORE_ESTIMATING, 'tsumego_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
 				// User requests (8)
-				['type' => AdminActivityLogger::SOLUTION_REQUEST, 'tsumego_id' => true],
+				['type' => AdminActivityType::SOLUTION_REQUEST, 'tsumego_id' => true],
 
 				// Set metadata (9-13)
-				['type' => AdminActivityLogger::SET_TITLE_EDIT, 'set_id' => true, 'old_value' => 'Old Set', 'new_value' => 'New Set'],
-				['type' => AdminActivityLogger::SET_DESCRIPTION_EDIT, 'set_id' => true, 'old_value' => 'Old desc', 'new_value' => 'New desc'],
-				['type' => AdminActivityLogger::SET_COLOR_EDIT, 'set_id' => true, 'old_value' => 'red', 'new_value' => 'blue'],
-				['type' => AdminActivityLogger::SET_ORDER_EDIT, 'set_id' => true, 'old_value' => '10', 'new_value' => '20'],
-				['type' => AdminActivityLogger::SET_RATING_EDIT, 'set_id' => true, 'old_value' => '1000', 'new_value' => '1100'],
+				['type' => AdminActivityType::SET_TITLE_EDIT, 'set_id' => true, 'old_value' => 'Old Set', 'new_value' => 'New Set'],
+				['type' => AdminActivityType::SET_DESCRIPTION_EDIT, 'set_id' => true, 'old_value' => 'Old desc', 'new_value' => 'New desc'],
+				['type' => AdminActivityType::SET_COLOR_EDIT, 'set_id' => true, 'old_value' => 'red', 'new_value' => 'blue'],
+				['type' => AdminActivityType::SET_ORDER_EDIT, 'set_id' => true, 'old_value' => '10', 'new_value' => '20'],
+				['type' => AdminActivityType::SET_RATING_EDIT, 'set_id' => true, 'old_value' => '1000', 'new_value' => '1100'],
 
 				// Problem management (14) - uses other-tsumegos[0]
-				['type' => AdminActivityLogger::PROBLEM_ADD, 'tsumego_id' => 'other:0', 'set_id' => true],
+				['type' => AdminActivityType::PROBLEM_ADD, 'tsumego_id' => 'other:0', 'set_id' => true],
 
 				// Set-wide settings (15-16)
-				['type' => AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
-				['type' => AdminActivityLogger::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
+				['type' => AdminActivityType::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
 				// Duplicate management (17-18) - reference other tsumego in old_value
-				['type' => AdminActivityLogger::DUPLICATE_REMOVE, 'tsumego_id' => true, 'old_value' => 'other:0'],
-				['type' => AdminActivityLogger::DUPLICATE_GROUP_CREATE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+				['type' => AdminActivityType::DUPLICATE_REMOVE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+				['type' => AdminActivityType::DUPLICATE_GROUP_CREATE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 			]
 		]);
 

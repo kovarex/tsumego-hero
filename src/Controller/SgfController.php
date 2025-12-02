@@ -1,6 +1,7 @@
 <?php
 
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 class SgfController extends AppController
 {

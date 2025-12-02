@@ -855,7 +855,7 @@ class TsumegosController extends AppController
 		{
 			$tsumego['deleted'] = date('Y-m-d H:i:s');
 			ClassRegistry::init('Tsumego')->save($tsumego);
-			AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $tsumegoID);
+			AdminActivityLogger::log(AdminActivityType::PROBLEM_DELETE, $tsumegoID);
 			return $this->redirect("/sets");
 		}
 
@@ -907,13 +907,13 @@ class TsumegosController extends AppController
 
 		if ($tsumego['description'] != $this->data['description'])
 		{
-			AdminActivityLogger::log(AdminActivityLogger::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $this->data['description']);
+			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $this->data['description']);
 			$tsumego['description'] = $this->data['description'];
 		}
 
 		if ($tsumego['hint'] != $this->data['hint'])
 		{
-			AdminActivityLogger::log(AdminActivityLogger::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
+			AdminActivityLogger::log(AdminActivityType::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
 			$tsumego['hint'] = $this->data['hint'];
 		}
 		$tsumego['author'] = $this->data['author'];

@@ -60,24 +60,24 @@ class CompleteAdminActivityRefactor extends AbstractMigration
 		// Using AdminActivityLogger constants for type IDs
 		$this->execute("
 			INSERT INTO admin_activity_type (id, name) VALUES
-			(" . AdminActivityLogger::DESCRIPTION_EDIT . ", 'Description Edit'),
-			(" . AdminActivityLogger::HINT_EDIT . ", 'Hint Edit'),
-			(" . AdminActivityLogger::PROBLEM_DELETE . ", 'Problem Delete'),
-			(" . AdminActivityLogger::ALTERNATIVE_RESPONSE . ", 'Alternative Response'),
-			(" . AdminActivityLogger::PASS_MODE . ", 'Pass Mode'),
-			(" . AdminActivityLogger::MULTIPLE_CHOICE . ", 'Multiple Choice'),
-			(" . AdminActivityLogger::SCORE_ESTIMATING . ", 'Score Estimating'),
-			(" . AdminActivityLogger::SOLUTION_REQUEST . ", 'Solution Request'),
-			(" . AdminActivityLogger::SET_TITLE_EDIT . ", 'Set Title Edit'),
-			(" . AdminActivityLogger::SET_DESCRIPTION_EDIT . ", 'Set Description Edit'),
-			(" . AdminActivityLogger::SET_COLOR_EDIT . ", 'Set Color Edit'),
-			(" . AdminActivityLogger::SET_ORDER_EDIT . ", 'Set Order Edit'),
-			(" . AdminActivityLogger::SET_RATING_EDIT . ", 'Set Rating Edit'),
-			(" . AdminActivityLogger::PROBLEM_ADD . ", 'Problem Add'),
-			(" . AdminActivityLogger::SET_ALTERNATIVE_RESPONSE . ", 'Set Alternative Response'),
-			(" . AdminActivityLogger::SET_PASS_MODE . ", 'Set Pass Mode'),
-			(" . AdminActivityLogger::DUPLICATE_REMOVE . ", 'Duplicate Remove'),
-			(" . AdminActivityLogger::DUPLICATE_GROUP_CREATE . ", 'Duplicate Group Create');
+			(" . AdminActivityType::DESCRIPTION_EDIT . ", 'Description Edit'),
+			(" . AdminActivityType::HINT_EDIT . ", 'Hint Edit'),
+			(" . AdminActivityType::PROBLEM_DELETE . ", 'Problem Delete'),
+			(" . AdminActivityType::ALTERNATIVE_RESPONSE . ", 'Alternative Response'),
+			(" . AdminActivityType::PASS_MODE . ", 'Pass Mode'),
+			(" . AdminActivityType::MULTIPLE_CHOICE . ", 'Multiple Choice'),
+			(" . AdminActivityType::SCORE_ESTIMATING . ", 'Score Estimating'),
+			(" . AdminActivityType::SOLUTION_REQUEST . ", 'Solution Request'),
+			(" . AdminActivityType::SET_TITLE_EDIT . ", 'Set Title Edit'),
+			(" . AdminActivityType::SET_DESCRIPTION_EDIT . ", 'Set Description Edit'),
+			(" . AdminActivityType::SET_COLOR_EDIT . ", 'Set Color Edit'),
+			(" . AdminActivityType::SET_ORDER_EDIT . ", 'Set Order Edit'),
+			(" . AdminActivityType::SET_RATING_EDIT . ", 'Set Rating Edit'),
+			(" . AdminActivityType::PROBLEM_ADD . ", 'Problem Add'),
+			(" . AdminActivityType::SET_ALTERNATIVE_RESPONSE . ", 'Set Alternative Response'),
+			(" . AdminActivityType::SET_PASS_MODE . ", 'Set Pass Mode'),
+			(" . AdminActivityType::DUPLICATE_REMOVE . ", 'Duplicate Remove'),
+			(" . AdminActivityType::DUPLICATE_GROUP_CREATE . ", 'Duplicate Group Create');
 		");
 
 		// STEP 3: Create new admin_activity table with final schema

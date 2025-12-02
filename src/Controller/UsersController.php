@@ -4,6 +4,7 @@ App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 class UsersController extends AppController
 {
@@ -1069,7 +1070,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$remove['Tsumego']['duplicate'] = 0;
 					$this->Tsumego->save($remove);
 				}
-				AdminActivityLogger::log(AdminActivityLogger::DUPLICATE_REMOVE, $this->params['url']['removeDuplicate']);
+				AdminActivityLogger::log(AdminActivityType::DUPLICATE_REMOVE, $this->params['url']['removeDuplicate']);
 			}
 			else
 				$aMessage = 'You can\'t remove the main duplicate.';
@@ -1140,7 +1141,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					for ($j = 0; $j < $dupDelCount; $j++)
 						$this->Duplicate->delete($dupDel[$j]['Duplicate']['id']);
 				}
-				AdminActivityLogger::log(AdminActivityLogger::DUPLICATE_GROUP_CREATE, $this->params['url']['main']);
+				AdminActivityLogger::log(AdminActivityType::DUPLICATE_GROUP_CREATE, $this->params['url']['main']);
 			}
 		}
 		if (!empty($this->data['Mark']))

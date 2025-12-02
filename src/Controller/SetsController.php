@@ -6,6 +6,7 @@ App::uses('AppException', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 
 class SetsController extends AppController
 {
@@ -956,7 +957,7 @@ ORDER BY total_count DESC, partition_number";
 			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
 				// Check if last activity was a problem deletion - if so, actually delete it
-				if (isset($aad['AdminActivity']['type']) && $aad['AdminActivity']['type'] == AdminActivityLogger::PROBLEM_DELETE)
+				if (isset($aad['AdminActivity']['type']) && $aad['AdminActivity']['type'] == AdminActivityType::PROBLEM_DELETE)
 				{
 					$scDelete = $this->SetConnection->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $aad['AdminActivity']['tsumego_id']]]);
 					$this->SetConnection->delete($scDelete['SetConnection']['id']);
@@ -984,7 +985,7 @@ ORDER BY total_count DESC, partition_number";
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
 			$set = $this->Set->findById($id);
-			AdminActivityLogger::log(AdminActivityLogger::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
+			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
 		}
 		if (isset($this->params['url']['show']))
 		{
@@ -1114,7 +1115,7 @@ ORDER BY total_count DESC, partition_number";
 				$this->Set->save($changeSet, true);
 				$oldTitle = $set['Set']['title'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityLogger::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
+				AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
 			}
 			if (isset($this->data['Set']['description']))
 			{
@@ -1127,7 +1128,7 @@ ORDER BY total_count DESC, partition_number";
 				$this->Set->save($changeSet, true);
 				$oldDescription = $set['Set']['description'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityLogger::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
+				AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
 			}
 			if (isset($this->data['Set']['setDifficulty']))
 				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
@@ -1144,7 +1145,7 @@ ORDER BY total_count DESC, partition_number";
 								$setDifficultyTsumegoSet[$i]['Tsumego']['maximum_rating']);
 						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 					}
-					AdminActivityLogger::log(AdminActivityLogger::SET_RATING_EDIT, null, $id);
+					AdminActivityLogger::log(AdminActivityType::SET_RATING_EDIT, null, $id);
 				}
 			if (isset($this->data['Set']['color']))
 			{
@@ -1157,7 +1158,7 @@ ORDER BY total_count DESC, partition_number";
 				$this->Set->save($changeSet, true);
 				$oldColor = $set['Set']['color'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityLogger::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
+				AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
 			}
 			if (isset($this->data['Set']['order']))
 			{
@@ -1170,7 +1171,7 @@ ORDER BY total_count DESC, partition_number";
 				$this->Set->save($changeSet, true);
 				$oldOrder = $set['Set']['order'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityLogger::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
+				AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
 			}
 			if (isset($this->data['Settings']))
 			{
@@ -1183,7 +1184,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allArActive = true;
-					AdminActivityLogger::log(AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, null, $id, null, '1');
+					AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, $id, null, '1');
 				}
 				if ($this->data['Settings']['r39'] == 'off')
 				{
@@ -1194,7 +1195,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allArInactive = true;
-					AdminActivityLogger::log(AdminActivityLogger::SET_ALTERNATIVE_RESPONSE, null, $id, null, '0');
+					AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, $id, null, '0');
 				}
 				if ($this->data['Settings']['r43'] == 'yes')
 				{
@@ -1205,7 +1206,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allPassActive = true;
-					AdminActivityLogger::log(AdminActivityLogger::SET_PASS_MODE, null, $id, null, '1');
+					AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, $id, null, '1');
 				}
 				if ($this->data['Settings']['r43'] == 'no')
 				{
@@ -1216,7 +1217,7 @@ ORDER BY total_count DESC, partition_number";
 						ClassRegistry::init('Tsumego')->save($tsumego);
 					}
 					$allPassInactive = true;
-					AdminActivityLogger::log(AdminActivityLogger::SET_PASS_MODE, null, $id, null, '0');
+					AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, $id, null, '0');
 				}
 				$this->set('formRedirect', true);
 			}

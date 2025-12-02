@@ -7,6 +7,7 @@ App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('AdminActivityType', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
 
 class Play
@@ -219,16 +220,16 @@ class Play
 				elseif (isset($data['Settings']))
 				{
 					if ($data['Settings']['r39'] == 'on' && $t['Tsumego']['alternative_response'] != 1)
-						AdminActivityLogger::log(AdminActivityLogger::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '1');
+						AdminActivityLogger::log(AdminActivityType::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '1');
 					if ($data['Settings']['r39'] == 'off' && $t['Tsumego']['alternative_response'] != 0)
-						AdminActivityLogger::log(AdminActivityLogger::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '0');
+						AdminActivityLogger::log(AdminActivityType::ALTERNATIVE_RESPONSE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'no' && $t['Tsumego']['pass'] != 0)
-						AdminActivityLogger::log(AdminActivityLogger::PASS_MODE, $t['Tsumego']['id'], null, null, '0');
+						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '0');
 					if ($data['Settings']['r43'] == 'yes' && $t['Tsumego']['pass'] != 1)
-						AdminActivityLogger::log(AdminActivityLogger::PASS_MODE, $t['Tsumego']['id'], null, null, '1');
+						AdminActivityLogger::log(AdminActivityType::PASS_MODE, $t['Tsumego']['id'], null, null, '1');
 					if ($data['Settings']['r41'] == 'yes' && $tsumegoVariant == null)
 					{
-						AdminActivityLogger::log(AdminActivityLogger::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '1');
+						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '1');
 						$tv1 = [];
 						$tv1['TsumegoVariant']['tsumego_id'] = $id;
 						$tv1['TsumegoVariant']['type'] = 'multiple_choice';
@@ -242,13 +243,13 @@ class Play
 					}
 					if ($data['Settings']['r41'] == 'no' && $tsumegoVariant != null)
 					{
-						AdminActivityLogger::log(AdminActivityLogger::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '0');
+						AdminActivityLogger::log(AdminActivityType::MULTIPLE_CHOICE, $t['Tsumego']['id'], null, null, '0');
 						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
 						$tsumegoVariant = null;
 					}
 					if ($data['Settings']['r42'] == 'yes' && $tsumegoVariant == null)
 					{
-						AdminActivityLogger::log(AdminActivityLogger::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '1');
+						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '1');
 						$tv1 = [];
 						$tv1['TsumegoVariant']['tsumego_id'] = $id;
 						$tv1['TsumegoVariant']['type'] = 'score_estimating';
@@ -258,7 +259,7 @@ class Play
 					}
 					if ($data['Settings']['r42'] == 'no' && $tsumegoVariant != null)
 					{
-						AdminActivityLogger::log(AdminActivityLogger::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '0');
+						AdminActivityLogger::log(AdminActivityType::SCORE_ESTIMATING, $t['Tsumego']['id'], null, null, '0');
 						ClassRegistry::init('TsumegoVariant')->delete($tsumegoVariant['TsumegoVariant']['id']);
 						$tsumegoVariant = null;
 					}
@@ -288,7 +289,7 @@ class Play
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['type'] === AdminActivityLogger::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
+			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
 
 			if (isset($params['url']['deleteComment']))
 			{
@@ -633,7 +634,7 @@ class Play
 		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
-		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityLogger::SOLUTION_REQUEST, $id));
+		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
 		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
