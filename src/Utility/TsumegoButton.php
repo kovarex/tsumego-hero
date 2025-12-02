@@ -25,7 +25,7 @@ class TsumegoButton
 		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : ''). '">';
+		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
 		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
 		echo '</li>';
 	}
