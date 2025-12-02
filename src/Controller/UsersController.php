@@ -1643,9 +1643,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			{
 				$at = $this->Tsumego->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['tsumego_id']]]);
 				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-				$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-				$as = $this->Set->find('first', ['conditions' => ['id' => $at['Tsumego']['set_id']]]);
-				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
+				$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
+				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $scT['SetConnection']['num'];
 			}
 			else
 			{
