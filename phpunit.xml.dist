@@ -16,6 +16,11 @@
             <directory>./tests/TestCase/</directory>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>apache-only</group>
+        </exclude>
+    </groups>
     <coverage>
         <include>
             <directory suffix=".php">./src</directory>
