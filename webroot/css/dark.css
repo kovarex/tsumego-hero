@@ -68,9 +68,6 @@ li.setBlank {
 a {
   color: #f0f0f0;
 }
-li.setV2 {
-  border: 1px solid #f0f0f0;
-}
 .sandboxTable2time {
   color: #b9b9b9;
 }
@@ -90,36 +87,15 @@ li.setV2 {
   background-color: #f0f0f0;
   color: #323232;
 }
-li.setS1,
-li.setC1 {
-  background-color: #0a4;
-}
-li.setF1,
-li.setX1 {
-  background-color: #dd3a4b;
-}
-li.setW1 {
-  background-color: #00aeab;
-}
-li.setV1 {
-  background-color: #0088e3;
-}
-li.setG1 {
-  background-color: #b0bd00;
-}
-li.setN1 {
-  background-color: #444;
-}
-li.setV2,
-li.set2,
-li.setS2,
-li.setW2,
-li.setC2,
-li.setF2,
-li.setX2,
-li.setG2 {
-  border: 2px solid #f0f0f0;
-}
+li.statusS,
+li.statusC { background-color: #0a4; }
+li.statusF,
+li.statusX { background-color: #dd3a4b; }
+li.statusW { background-color: #00aeab; }
+li.statusV { background-color: #0088e3; }
+li.statusG { background-color: #b0bd00; }
+li.statusN { background-color: #444; }
+
 .setViewAccuracy {
   color: #c234ff;
 }

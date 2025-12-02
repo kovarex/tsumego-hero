@@ -1,5 +1,14 @@
 function darkAndLight() {
+	const link = document.getElementById("theme-css-constants");
+	const current = link.getAttribute("href");
+
+	if (current.includes("light-constants.css"))
+		link.setAttribute("href", "/css/dark-constants.css?v=dark");
+	else
+		link.setAttribute("href", "/css/light-constants.css?v=light");
+
   if (light) {
+	link.href = "/css/dark-constants.css";
     //make dark
     document.cookie = "lightDark=dark;path=/";
     document.cookie = "lightDark=dark;path=/sets/view";
@@ -54,15 +63,12 @@ function darkAndLight() {
     $(".btn.active, .btn:active").css("color", "#323232");
     $(".btn:active:hover").css("background-color", "#f0f0f0");
     $(".btn:active:hover").css("color", "#323232");
-    $("li.setS1,li.setC1").css("background-color", "#0a4");
-    $("li.setF1,li.setX1").css("background-color", "#dd3a4b");
-    $("li.setW1").css("background-color", "#00aeab");
-    $("li.setV1").css("background-color", "#0088e3");
-    $("li.setN1").css("background-color", "#444");
-    $("li.setG1").css("background-color", "#b0bd00");
-    $(
-      "li.setV2,li.set2,li.setS2,li.setW2,li.setC2,li.setF2,li.setX2,li.setG2"
-    ).css("border", "2px solid #f0f0f0");
+    $("li.statusS,li.statusC").css("background-color", "#0a4");
+    $("li.statusF,li.statusX").css("background-color", "#dd3a4b");
+    $("li.statusW").css("background-color", "#00aeab");
+    $("li.statusV").css("background-color", "#0088e3");
+    $("li.statusN").css("background-color", "#444");
+    $("li.statusG").css("background-color", "#b0bd00");
     $(".setViewAccuracy").css("color", "#c234ff");
     $(".setViewTime").css("color", "#d55e29");
     $(".admin-panel, .selectable-text, .admin-panel font").css(
@@ -170,15 +176,12 @@ function darkAndLight() {
     $(".highscoreTable .color12").css("background-color", "#ddd");
     $(".btn.active, .btn:active").css("background-color", "#323232");
     $(".btn.active, .btn:active").css("color", "#fff");
-    $("li.setS1,li.setC1").css("background-color", "#3ecf78");
-    $("li.setF1,li.setX1").css("background-color", "#c63f4d");
-    $("li.setW1").css("background-color", "34cfcc");
-    $("li.setV1").css("background-color", "2d98e0");
-    $("li.setN1").css("background-color", "7f8287");
-    $("li.setG1").css("background-color", "#d7e062");
-    $(
-      "li.setV2,li.set2,li.setS2,li.setW2,li.setC2,li.setF2,li.setX2,li.setG2"
-    ).css("border", "1px solid black");
+    $("li.statusS,li.statusC").css("background-color", "#3ecf78");
+    $("li.statusF,li.statusX").css("background-color", "#c63f4d");
+    $("li.statusW").css("background-color", "34cfcc");
+    $("li.statusV").css("background-color", "2d98e0");
+    $("li.statusN").css("background-color", "7f8287");
+    $("li.statusG").css("background-color", "#d7e062");
     $(".setViewAccuracy").css("color", "#722394");
     $(".setViewTime").css("color", "#b34717");
     $(".admin-panel, .selectable-text, .admin-panel font").css(

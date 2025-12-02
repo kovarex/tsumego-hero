@@ -25,14 +25,13 @@ class TsumegoButton
 		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-		echo '<li class="set' . $this->status . '1">';
+		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : ''). '">';
 		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
 		echo '</li>';
 	}
 
 	public int $tsumegoID;
 	public int $setConnectionID;
-	public int $setID;
 	public int $order;
 	public string $status;
 	public bool $passEnabled; // used for set view statistics
