@@ -202,7 +202,10 @@ class PlayResultProcessorComponent extends Component
 		Auth::getUser()['rating'] = $newUserRating;
 		Auth::saveUser();
 
-		$previousTsumego['Tsumego']['rating'] = $newTsumegoRating;
+		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
+			$newTsumegoRating,
+			$previousTsumego['Tsumego']['minimum_rating'],
+			$previousTsumego['Tsumego']['maximum_rating']);
 		$previousTsumego['Tsumego']['activity_value']++;
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}

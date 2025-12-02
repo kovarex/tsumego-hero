@@ -1137,7 +1137,11 @@ ORDER BY total_count DESC, partition_number";
 					$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
 					for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++)
 					{
-						$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] = $this->data['Set']['setDifficulty'];
+						$setDifficultyTsumegoSet[$i]['Tsumego']['rating'] =
+							Util::clampOptional(
+								$this->data['Set']['setDifficulty'],
+								$setDifficultyTsumegoSet[$i]['Tsumego']['minimum_rating'],
+								$setDifficultyTsumegoSet[$i]['Tsumego']['maximum_rating']);
 						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
 					}
 					AdminActivityLogger::log(AdminActivityLogger::SET_RATING_EDIT, null, $id);

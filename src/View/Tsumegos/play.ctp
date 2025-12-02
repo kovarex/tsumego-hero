@@ -66,7 +66,7 @@
 	if(isset($deleteProblem2)) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if($isSandbox){
 		$sandboxComment = '(Sandbox)';
-		if(!Auth::hasPremium())
+		if(!Auth::hasPremium() && !Auth::isAdmin())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}else $sandboxComment = '';
 
@@ -77,7 +77,7 @@ if (
 		echo '<style>#xpDisplay{font-weight:800;color:#60167d;}</style>';
 	}
 	if($t['Tsumego']['premium']==1){
-		if(!Auth::hasPremium())
+		if(!Auth::hasPremium() && !Auth::isAdmin())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
 
@@ -254,26 +254,46 @@ if (
 				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
 	}
 	}
-		if(Auth::isAdmin()){
-		?>
+		if(Auth::isAdmin()) { ?>
 		<a class="modify-description" href="#">(Edit)</a>
 		<div class="modify-description-panel">
-			<?php
-				$placeholder = str_replace($descriptionColor, '[b]', $t['Tsumego']['description']);
-				echo $this->Form->create('Comment');
-				echo $this->Form->input('id', array('type' => 'hidden', 'value' => $t['Tsumego']['id']));
-				echo $this->Form->input('admin_id', array('type' => 'hidden', 'value' => Auth::getUserID()));
-				echo $this->Form->input('modifyDescription', array('value' => $placeholder, 'label' => '', 'type' => 'text', 'placeholder' => 'Description'));
-				echo $this->Form->input('modifyHint', array('value' => $t['Tsumego']['hint'], 'label' => '', 'type' => 'text', 'placeholder' => 'Hint'));
-				if(true) $modifyDescriptionType = 'text';
-				else $modifyDescriptionType = 'hidden';
-				echo $this->Form->input('modifyElo', array('value' => $t['Tsumego']['rating'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Rating'));
-				echo $this->Form->input('modifyAuthor', array('value' => $t['Tsumego']['author'], 'label' => '', 'type' => $modifyDescriptionType, 'placeholder' => 'Author'));
-				echo $this->Form->input('deleteTag', array('label' => '', 'type' => 'text', 'placeholder' => 'Delete Tag'));
-				if($isSandbox)
-					echo $this->Form->input('deleteProblem', array('value' => '', 'label' => '', 'type' => 'text', 'placeholder' => 'delete'));
-				echo $this->Form->end('Submit');
-			?>
+			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
+				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
+				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
+				<table>
+					<tr>
+						<td><label for="description">Desription:</label></td>
+						<td><input type="text" name="description" id="description" value="<?php echo addslashes(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
+					</tr>
+					<tr>
+						<td><label for="hint">Hint:</label></td>
+						<td><input type="text" name="hint" id="hint" value="<?php echo addslashes($t['Tsumego']['hint']); ?>"></td>
+					</tr>
+					<tr>
+						<td><label for="rating">Rating:</label></td>
+						<td><input type="text" name="rating" id="rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t['Tsumego']['rating']); ?>"></td>
+					</tr>
+					<tr>
+						<td><label for="minimum-rating">Minimum rating:</label></td>
+						<td><input type="text" name="minimum-rating" id="minimum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t['Tsumego']['minimum_rating']); ?>"></td>
+					</tr>
+					<tr>
+						<td><label for="maximum-rating">Maximum rating:</label></td>
+						<td><input type="text" name="maximum-rating" id="maximum-rating" value="<?php echo Rating::getReadableRankFromRatingWhenPossible($t['Tsumego']['maximum_rating']); ?>"></td>
+					</tr>
+					<tr>
+						<td><label for="author">Author:</label></td>
+						<td><input type="text" name="author" id="author" value="<?php echo $t['Tsumego']['author']; ?>"></td>
+					</tr>
+					<?php if ($isSandbox) { ?>
+					<tr>
+						<td><label for="delete">Delete:</label></td>
+						<td><input type="text" name="delete" id="delete" value="" placeholder="Type delete"></td>
+					</tr>
+					<?php } ?>
+				</table>
+				<input type="submit" value="submit" id="tsumego-edit-submit">
+			</form>
 		</div>
 		<?php } ?>
 		</div>

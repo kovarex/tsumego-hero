@@ -123,9 +123,13 @@ class ContextPreparator
 	private function prepareTsumego(?array $tsumegoInput): array
 	{
 		$tsumego = [];
-		$tsumego['description'] = 'test-tsumego';
+		$tsumego['description'] = Util::extract('description', $tsumegoInput) ?: 'test-tsumego';
+		$tsumego['hint'] = Util::extract('hint', $tsumegoInput) ?: '';
 		$tsumego['rating'] = Util::extract('rating', $tsumegoInput) ?: 1000;
+		$tsumego['minimum_rating'] = Util::extract('minimum_rating', $tsumegoInput) ?: null;
+		$tsumego['maximum_rating'] = Util::extract('maximum_rating', $tsumegoInput) ?: null;
 		$tsumego['deleted'] = Util::extract('deleted', $tsumegoInput);
+		$tsumego['author'] = Util::extract('author', $tsumegoInput) ?: '';
 		ClassRegistry::init('Tsumego')->create($tsumego);
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
@@ -297,26 +301,26 @@ class ContextPreparator
 
 	private function prepareTsumegoSets($setsInput, &$tsumego): void
 	{
-		if ($setsInput)
+		if (!$setsInput)
+			return;
+
+		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
+		$this->tsumegoSets = [];
+		foreach ($setsInput as $tsumegoSet)
 		{
-			ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
-			$this->tsumegoSets = [];
-			foreach ($setsInput as $tsumegoSet)
-			{
-				$set = $this->getOrCreateTsumegoSet([
-					'name' => $tsumegoSet['name'],
-					'included_in_time_mode' => $tsumegoSet['included_in_time_mode'],
-					'public' => $tsumegoSet['public']]);
-				$setConnection = [];
-				$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
-				$setConnection['SetConnection']['set_id'] = $set['id'];
-				$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
-				ClassRegistry::init('SetConnection')->create($setConnection);
-				ClassRegistry::init('SetConnection')->save($setConnection);
-				$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
-				$tsumego['sets'] [] = $set;
-				$tsumego['set-connections'] [] = $setConnection;
-			}
+			$set = $this->getOrCreateTsumegoSet([
+				'name' => $tsumegoSet['name'],
+				'included_in_time_mode' => $tsumegoSet['included_in_time_mode'],
+				'public' => $tsumegoSet['public']]);
+			$setConnection = [];
+			$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
+			$setConnection['SetConnection']['set_id'] = $set['id'];
+			$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
+			ClassRegistry::init('SetConnection')->create($setConnection);
+			ClassRegistry::init('SetConnection')->save($setConnection);
+			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+			$tsumego['sets'] [] = $set;
+			$tsumego['set-connections'] [] = $setConnection;
 		}
 	}
 

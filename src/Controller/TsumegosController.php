@@ -839,4 +839,89 @@ class TsumegosController extends AppController
 		return 0;
 	}
 
+	public function edit($tsumegoID)
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect($this->data['redirect']);
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		if (!$tsumego)
+		{
+			$this->Flash->set("Tsumego with id=" . $tsumegoID . ' doesn\'t exist.');
+			return $this->redirect('/sets');
+		}
+		$tsumego = $tsumego['Tsumego'];
+
+		if ($this->data['delete'] == 'delete')
+		{
+			$tsumego['deleted'] = date('Y-m-d H:i:s');
+			ClassRegistry::init('Tsumego')->save($tsumego);
+			AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $tsumegoID);
+			return $this->redirect("/sets");
+		}
+
+		try
+		{
+			$rating = Rating::parseRatingOrReadableRank($this->data['rating']);
+		}
+		catch (RatingParseException $e)
+		{
+			$this->Flash->set("Rating parse error:" . $e->getMessage());
+			return $this->redirect($this->data['redirect']);
+		}
+
+		$minimumRating = null;
+		if (!empty($this->data['minimum-rating']))
+		{
+			try
+			{
+				$minimumRating = Rating::parseRatingOrReadableRank($this->data['minimum-rating']);
+			}
+			catch (RatingParseException $e)
+			{
+				$this->Flash->set("Minimum rating parse error:" . $e->getMessage());
+				return $this->redirect($this->data['redirect']);
+			}
+		}
+
+		$maximumRating = null;
+		if (!empty($this->data['maximum-rating']))
+		{
+			try
+			{
+				$maximumRating = Rating::parseRatingOrReadableRank($this->data['maximum-rating']);
+			}
+			catch (RatingParseException $e)
+			{
+				$this->Flash->set("Maximum rating parse error:" . $e->getMessage());
+				return $this->redirect($this->data['redirect']);
+			}
+		}
+
+		if (!is_null($minimumRating) &&
+			!is_null($maximumRating) &&
+			$minimumRating > $maximumRating)
+		{
+			$this->Flash->set("Minimum rating can't be bigger than maximum");
+			return $this->redirect($this->data['redirect']);
+		}
+
+		if ($tsumego['description'] != $this->data['description'])
+		{
+			AdminActivityLogger::log(AdminActivityLogger::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $this->data['description']);
+			$tsumego['description'] = $this->data['description'];
+		}
+
+		if ($tsumego['hint'] != $this->data['hint'])
+		{
+			AdminActivityLogger::log(AdminActivityLogger::HINT_EDIT, $tsumegoID, null, $tsumego['hint'], $this->data['hint']);
+			$tsumego['hint'] = $this->data['hint'];
+		}
+		$tsumego['author'] = $this->data['author'];
+		$tsumego['minimum_rating'] = $minimumRating;
+		$tsumego['maximum_rating'] = $maximumRating;
+		$tsumego['rating'] = Util::clampOptional($rating, $minimumRating, $maximumRating);
+
+		ClassRegistry::init('Tsumego')->save($tsumego);
+		return $this->redirect($this->data['redirect']);
+	}
 }

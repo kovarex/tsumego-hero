@@ -198,29 +198,6 @@ class Play
 					$statusCode = (int) $data['Comment']['status'];
 					ClassRegistry::init('Comment')->save($data, true);
 				}
-				elseif (isset($data['Comment']['modifyDescription']))
-				{
-					// Get original values for comparison
-					$oldDescription = $t['Tsumego']['description'];
-					$oldHint = $t['Tsumego']['hint'];
-					$newDescription = $data['Comment']['modifyDescription'];
-					$newHint = $data['Comment']['modifyHint'];
-
-					// Log description change if different
-					if ($oldDescription !== $newDescription)
-						AdminActivityLogger::log(AdminActivityLogger::DESCRIPTION_EDIT, $t['Tsumego']['id'], null, $oldDescription, $newDescription);				// Log hint change if different
-					if ($oldHint !== $newHint)
-						AdminActivityLogger::log(AdminActivityLogger::HINT_EDIT, $t['Tsumego']['id'], null, $oldHint, $newHint);
-					$t['Tsumego']['description'] = $newDescription;
-					$t['Tsumego']['hint'] = $newHint;
-					$t['Tsumego']['author'] = $data['Comment']['modifyAuthor'];
-					if ($data['Comment']['modifyElo'] < 2900)
-						$t['Tsumego']['rating'] = $data['Comment']['modifyElo'];
-					if ($t['Tsumego']['rating'] > 100)
-						ClassRegistry::init('Tsumego')->save($t, true);
-					if ($data['Comment']['deleteProblem'] == 'delete')
-						AdminActivityLogger::log(AdminActivityLogger::PROBLEM_DELETE, $t['Tsumego']['id'], $t['Tsumego']['set_id']);
-				}
 				elseif (isset($data['Study']))
 				{
 					$tsumegoVariant['TsumegoVariant']['answer1'] = $data['Study']['study1'];
@@ -373,7 +350,7 @@ class Play
 		}
 		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]) ?: [];
 		foreach ($sandboxSets as $sandboxSet)
-			if ($t['Tsumego']['set_id'] == $sandboxSet['Set']['id'])
+			if ($set['Set']['id'] == $sandboxSet['Set']['id'])
 				$isSandbox = true;
 		if ($t['Tsumego']['set_id'] == 161)
 			$isSandbox = false;

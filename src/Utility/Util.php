@@ -202,4 +202,14 @@ class Util
 		$stmt->execute($params);
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
+
+	public static function clampOptional($value, $min, $max)
+	{
+		$result = $value;
+		if (!is_null($min))
+			$result = max($min, $result);
+		if (!is_null($max))
+			$result = min($max, $result);
+		return $result;
+	}
 }

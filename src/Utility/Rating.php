@@ -1,5 +1,9 @@
 <?php
 
+use function PHPUnit\Framework\isNull;
+
+App::uses('RatingParseException', 'Utility');
+
 class Rating
 {
 	public static function getReadableRank(int $rank): string
@@ -15,13 +19,13 @@ class Rating
 		$suffix = substr($readableRank, -1);
 		$number = substr($readableRank, 0, -1);
 		if (!is_numeric($number))
-			throw new Exception($readableRank . " can't be parsed as go rank.");
+			throw new RatingParseException($readableRank . " can't be parsed as go rank.");
 		if ($suffix == 'k')
 			return 31 - $number;
 		elseif ($suffix == 'd')
 			return 30 + $number;
 		else
-			throw new Exception($readableRank . " can't be parsed as go rank.");
+			throw new RatingParseException($readableRank . " can't be parsed as go rank.");
 	}
 
 	public static function getRankFromRating(float $rating): int
@@ -61,10 +65,14 @@ class Rating
 		return Rating::getRankMinimalRating(Rating::getRankFromReadableRank($readableRank));
 	}
 
+	public static function getRankMiddleRatingFromRank(string $rank): float
+	{
+		return (Rating::getRankMinimalRating($rank) + Rating::getRankMinimalRating($rank + 1)) / 2;
+	}
+
 	public static function getRankMiddleRatingFromReadableRank(string $readableRank): float
 	{
-		$rank = Rating::getRankFromReadableRank($readableRank);
-		return (Rating::getRankMinimalRating($rank) + Rating::getRankMinimalRating($rank + 1)) / 2;
+		return Rating::getRankMiddleRatingFromRank(Rating::getRankFromReadableRank($readableRank));
 	}
 
 	private static function beta($rating)
@@ -89,5 +97,32 @@ class Rating
 
 		// with higher ratings, it is important to have more aggressive exponential growth,
 		return (pow(($rating - 500) / 100, 2) - 10) / 2;
+	}
+
+	public static function parseRatingOrReadableRank(string $input): float
+	{
+		if (is_numeric($input))
+		{
+			if (!self::isReasonableRating($input))
+				throw RatingParseException("Rating of ". $input. "isn't reasonable");
+			return $input;
+		}
+		return self::getRankMiddleRatingFromReadableRank($input);
+	}
+
+	public static function isReasonableRating(int $rating)
+	{
+		return $rating >= -950 && // 30k
+				$rating < 3200; // the formula stops working at 3300
+	}
+
+	public static function getReadableRankFromRatingWhenPossible(?float $rating): string
+	{
+		if (is_null($rating))
+			return '';
+		$rank = self::getRankFromRating($rating);
+		if (self::getRankMiddleRatingFromRank($rank) == $rating)
+			return Rating::getReadableRank($rank);
+		return strval($rating);
 	}
 }
