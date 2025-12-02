@@ -177,37 +177,27 @@
 					besogoPlayerColor = data.playerColor || 'black';
 
 					// Parse and load the new SGF into besogo
-					console.log('ZEN: Loading SGF, length:', data.sgf ? data.sgf.length : 0);
-					console.log('ZEN: SGF content:', data.sgf);
 					var parsedSgf = besogo.parseSgf(data.sgf);
-					console.log('ZEN: parsedSgf props:', parsedSgf ? parsedSgf.props : 'null');
-					console.log('ZEN: parsedSgf props with AB/AW:', parsedSgf ? parsedSgf.props.filter(function(p) { return p.id === 'AB' || p.id === 'AW'; }) : 'null');
 					
 					if (parsedSgf && besogo.editor) {
 						besogo.playerColor = besogoPlayerColor;
 						
-						// Get size from SGF
-						var szProp = parsedSgf.props.find(function(p) { return p.id === 'SZ'; });
-						console.log('ZEN: SGF size property:', szProp);
-						
 						// Load the SGF which will call loadRoot internally
-						var scaleParams = besogo.loadSgf(parsedSgf, besogo.editor);
-						console.log('ZEN: scaleParameters returned:', scaleParams);
-						console.log('ZEN: After loadSgf, getRoot().getSize():', besogo.editor.getRoot().getSize());
-						
-						var current = besogo.editor.getCurrent();
-						console.log('ZEN: After loadSgf getCurrent board length:', current.board ? current.board.length : 'no board');
-						console.log('ZEN: getCurrent getStone(1,1):', current.getStone ? current.getStone(1,1) : 'no getStone');
-						console.log('ZEN: getCurrent getStone(10,10):', current.getStone ? current.getStone(10,10) : 'no getStone');
+						// This updates besogo.scaleParameters with new orientation/viewBox data
+						besogo.loadSgf(parsedSgf, besogo.editor);
 						
 						besogo.editor.setAutoPlay(true);
 						besogo.editor.setCurrent(besogo.editor.getRoot());
+						
+						// Pass coord style to force board display reinitialization
+						// This is needed because the new SGF may have different scaleParameters
+						// (orientation, corner view, etc.) even if the board size is the same
 						besogo.editor.notifyListeners({
 							treeChange: true,
 							navChange: true,
-							stoneChange: true
+							stoneChange: true,
+							coord: besogo.editor.getCoordStyle()  // Force board display to reinitialize viewBox
 						});
-						console.log('ZEN: SGF loaded and notified');
 					} else {
 						console.error('ZEN: Failed to load SGF - parsedSgf:', !!parsedSgf, 'editor:', !!besogo.editor);
 					}
