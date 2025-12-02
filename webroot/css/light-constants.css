@@ -2,6 +2,7 @@
 {
     --text-color: black;
 	--text-softer-color: grey;
+	--link-color: #0000EE;
 	--current-border-color: #111;
 	--dark-button-icon: url("/img/light-icon1x.png");
 	--new1-gradient: linear-gradient(#fff, #f2f2f2);

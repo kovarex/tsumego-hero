@@ -20,7 +20,6 @@ function darkAndLight()
     $("body").css("background-attachment", "fixed");
     $(".filterLabel1, .timeTableColor11").css("color", "#f0f0f0");
     $(".whitebox2, h2, .imp").css("background-color", "#2a2a2a");
-    $(".new1 a").css("color", "#f0f0f0");
     $(".besogo-container").css("background-color", "#2a2a2a");
     $(".sandboxComment").css("background", "linear-gradient(#666, #424242)");
     $(".sandboxComment").css("box-shadow", "2px 2px #0f0f0f");
@@ -98,7 +97,7 @@ function darkAndLight()
     $(".admin-panel h1").css("color", "#f0f0f0");
     $("#uotdStartPage").css("background-color", "none");
     $("#uotdStartPage").css("background-color", "transparent");
-    $(".new1 a, .new1 b, .scheduleTsumego").css("color", "#f0f0f0");
+    $(".new1 b, .scheduleTsumego").css("color", "#f0f0f0");
     $("#levelBarDisplay1").css("accent-color", "#56bb2c");
     $("#levelBarDisplay1text").css("color", "#56bb2c");
     $("#levelBarDisplay2").css("accent-color", "#c240f7");
@@ -188,7 +187,6 @@ function darkAndLight()
     $(".homeCenter2, .title6").css("color", "#000");
     $("#xpDisplay").css("color", "#000");
     $(".sandboxTable2 a, .statsTable a").css("color", "#0066cc");
-    $(".new1 a").css("color", "#0066cc");
     $(".new-button").css("color", "#fff");
     $(".signin").css("background-color", "#fff");
     $("#achievementWrapper font").css("color", "gray");
@@ -199,7 +197,7 @@ function darkAndLight()
     $("#timeButton, #ratioButton, #numbersButton").css("color", "#74d13f");
     $("#uotdStartPage").css("background-color", "none");
     $("#uotdStartPage").css("background-color", "transparent");
-    $(".new1 a, .new1 b, .scheduleTsumego").css("color", "black");
+    $(".new1 b, .scheduleTsumego").css("color", "black");
     $(
       ".setN1 a, .setV1 a, .setS1 a, .setC1 a, .setF1 a, .setX1 a, .setW1 a, .setG1 a, .setA1 a"
     ).css("color", "white");
