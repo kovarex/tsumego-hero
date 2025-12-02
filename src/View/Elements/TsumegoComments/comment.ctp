@@ -62,7 +62,7 @@ $formattedDate = $createdDate->format('M. d, Y H:i');
 // Check if current user can delete this comment
 $canDelete = Auth::isAdmin() || (Auth::isLoggedIn() && Auth::getUserID() == $comment['user_id']);
 $isInIssue = !empty($comment['tsumego_issue_id']);
-$canDragComment = Auth::isAdmin();
+$canDragComment = Auth::isAdmin() && $showActions;  // Respect showActions to disable in global list
 ?>
 <?php if ($standalone): ?><div class="tsumego-comment--standalone"><?php endif; ?>
 <div class="tsumego-comment<?php echo $canDragComment ? ' tsumego-comment--draggable' : ''; ?>" id="comment-<?php echo $comment['id']; ?>" data-comment-id="<?php echo $comment['id']; ?>" data-in-issue="<?php echo $isInIssue ? '1' : '0'; ?>">
