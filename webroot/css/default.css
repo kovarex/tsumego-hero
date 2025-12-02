@@ -343,7 +343,7 @@ li.setElement {
   background-color: grey;
 }
 
-li[class^="set"] {
+li[class^="status"] {
   font-weight: 700;
   width: 58px;
   text-align: center;
@@ -367,125 +367,36 @@ li[class^="set"] {
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
 }
-li.setBlank {
-  background-color: white;
-  width: 5px;
-  opacity: 0;
+
+li.statusCurrent {
+	outline: 3px solid #111111;   /* or any color */
+	outline-offset: 2px;          /* move it away from the element */
 }
-li.setN1 {
-  background-color: #7f8287;
-}
-li.setN1:hover {
-  background-color: #a6a9b0;
-}
-li.setV1 {
-  background-color: #2d98e0;
-}
-.setV1:hover {
-  background-color: #74b5e0;
-}
-li.setV2 {
-  background-color: #005c99;
-  border: 1px solid black;
-}
-li.setV2:hover {
-  background-color: #2d98e0;
-}
-li.set2 {
-  background-color: #005c99;
-  border: 1px solid black;
-}
-li.set2:hover {
-  background-color: #2d98e0;
-}
-li.setS1 {
-  background-color: #3ecf78;
-}
-li.setS1:hover {
-  background-color: #6be39a;
-}
-li.setS2 {
-  background-color: #1c9946;
-  border: 1px solid black;
-}
-li.setS2:hover {
-  background-color: #3ecf78;
-}
-li.setW1 {
-  background-color: #34cfcc;
-}
-li.setW1:hover {
-  background-color: #7acfcd;
-}
-li.setW2 {
-  background-color: #269694;
-  border: 1px solid black;
-}
-li.setW2:hover {
-  background-color: #34cfcc;
-}
-li.setC1 {
-  background-color: #3ecf78;
-}
-li.setC1:hover {
-  background-color: #6be39a;
-}
-li.setC2 {
-  background-color: #1c9946;
-  border: 1px solid black;
-}
-li.setC2:hover {
-  background-color: #3ecf78;
-}
-li.setF1 {
-  background-color: #e0747f;
-}
-li.setF1:hover {
-  background-color: #e09da4;
-}
-li.setF2 {
-  background-color: #c63f4d;
-  border: 1px solid black;
-}
-li.setF2:hover {
-  background-color: #e0747f;
-}
-li.setX1 {
-  background-color: #e0747f;
-}
-li.setX1:hover {
-  background-color: #e09da4;
-}
-li.setX2 {
-  background-color: #c63f4d;
-  border: 1px solid black;
-}
-li.setX2:hover {
-  background-color: #e0747f;
-}
-li.setG1 {
-  background-color: #d7e062;
-}
-.setG1:hover {
-  background-color: #e5ee74;
-}
-li.setG2 {
-  background-color: #c1c958;
-  border: 1px solid black;
-}
-li.setG2:hover {
-  background-color: #d7e062;
-}
-li.setA1 {
-  background-color: #fff;
-}
-.setA1:hover {
-  background-color: #eee;
-}
-li.setA1 a {
-  color: #555;
-  font-family: arial black;
-}
+
+li.statusN { background-color: #7f8287; }
+li.statusN:hover { background-color: #a6a9b0; }
+
+li.statusV { background-color: #2d98e0; }
+li.statusV:hover { background-color: #74b5e0; }
+
+li.statusS,
+li.statusC { background-color: #3ecf78; }
+
+li.statusS:hover,
+li.statusC:hover { background-color: #6be39a; }
+
+li.statusW { background-color: #34cfcc; }
+li.statusW:hover { background-color: #7acfcd; }
+
+li.statusF,
+li.statusX { background-color: #e0747f; }
+
+li.statusF:hover,
+li.statusX:hover { background-color: #e09da4; }
+
+li.statusG { background-color: #d7e062; }
+li.statusG:hover { background-color: #e5ee74; }
+
 li a {
   display: block;
   color: white;

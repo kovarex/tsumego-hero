@@ -54,12 +54,12 @@ function darkAndLight() {
     $(".btn.active, .btn:active").css("color", "#323232");
     $(".btn:active:hover").css("background-color", "#f0f0f0");
     $(".btn:active:hover").css("color", "#323232");
-    $("li.setS1,li.setC1").css("background-color", "#0a4");
-    $("li.setF1,li.setX1").css("background-color", "#dd3a4b");
-    $("li.setW1").css("background-color", "#00aeab");
-    $("li.setV1").css("background-color", "#0088e3");
-    $("li.setN1").css("background-color", "#444");
-    $("li.setG1").css("background-color", "#b0bd00");
+    $("li.statusS,li.statusC").css("background-color", "#0a4");
+    $("li.statusF,li.statusX").css("background-color", "#dd3a4b");
+    $("li.statusW").css("background-color", "#00aeab");
+    $("li.statusV").css("background-color", "#0088e3");
+    $("li.statusN").css("background-color", "#444");
+    $("li.statusG").css("background-color", "#b0bd00");
     $(
       "li.setV2,li.set2,li.setS2,li.setW2,li.setC2,li.setF2,li.setX2,li.setG2"
     ).css("border", "2px solid #f0f0f0");
