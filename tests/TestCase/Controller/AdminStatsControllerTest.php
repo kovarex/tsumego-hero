@@ -65,7 +65,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	public function testSetLevelActivities()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+		App::uses('AdminActivityType', 'Model');
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -97,7 +97,7 @@ App::uses('AdminActivityType', 'Model');
 	public function testActivityPagination()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];
@@ -142,7 +142,7 @@ App::uses('AdminActivityType', 'Model');
 	public function testMultiplePaginationsIndependent()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
-App::uses('AdminActivityType', 'Model');
+		App::uses('AdminActivityType', 'Model');
 
 		// Build activities array programmatically
 		$activities = [];

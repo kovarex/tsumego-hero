@@ -103,17 +103,17 @@ class Rating
 	{
 		if (is_numeric($input))
 		{
-			if (!self::isReasonableRating((float)$input))
-				throw new RatingParseException("Rating of ". $input. "isn't reasonable");
-			return (float)$input;
+			if (!self::isReasonableRating((float) $input))
+				throw new RatingParseException("Rating of " . $input . "isn't reasonable");
+			return (float) $input;
 		}
 		return self::getRankMiddleRatingFromReadableRank($input);
 	}
 
 	public static function isReasonableRating(float $rating)
 	{
-		return $rating >= -950 && // 30k
-				$rating < 3200; // the formula stops working at 3300
+		return $rating >= -950 // 30k
+				&& $rating < 3200; // the formula stops working at 3300
 	}
 
 	public static function getReadableRankFromRatingWhenPossible(?float $rating): string

@@ -897,9 +897,9 @@ class TsumegosController extends AppController
 			}
 		}
 
-		if (!is_null($minimumRating) &&
-			!is_null($maximumRating) &&
-			$minimumRating > $maximumRating)
+		if (!is_null($minimumRating)
+			&& !is_null($maximumRating)
+			&& $minimumRating > $maximumRating)
 		{
 			$this->Flash->set("Minimum rating can't be bigger than maximum");
 			return $this->redirect($this->data['redirect']);
@@ -923,7 +923,7 @@ class TsumegosController extends AppController
 		}
 		if ($tsumego['minimum_rating'] != $minimumRating)
 		{
-			AdminActivityLogger::log(AdminActivityType::MINIMUM_RATING_EDIT, $tsumegoID, null,  Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
+			AdminActivityLogger::log(AdminActivityType::MINIMUM_RATING_EDIT, $tsumegoID, null, Util::strOrNull($tsumego['minimum_rating']), Util::strOrNull($minimumRating));
 			$tsumego['minimum_rating'] = $minimumRating;
 		}
 
