@@ -793,12 +793,13 @@ if (
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
 
-	function updateCurrentNavigationButton(status) {
+	function updateCurrentNavigationButton(status)
+	{
 		current = document.getElementById("currentNavigationButton");
 		// The navigation buttons don't exist in all of the modes
 		if (!current)
 			return;
-		current.parentElement.parentElement.className = 'set' + status + '1';
+		current.parentElement.parentElement.className = 'status' + status + ' statusCurrent';
 	}
 
 <?php

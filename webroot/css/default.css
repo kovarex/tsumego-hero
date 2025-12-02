@@ -368,9 +368,18 @@ li[class^="status"] {
   border-top-left-radius: 9px;
 }
 
-li.statusCurrent {
-	outline: 3px solid #111111;   /* or any color */
-	outline-offset: 2px;          /* move it away from the element */
+li.statusCurrent { position: relative; }
+li.statusCurrent::before
+{
+	content: "";
+	position: absolute;
+
+	inset: -5px;
+	border-radius: 9px;
+	border: 3px solid var(--current-border-color);
+
+	z-index: 20;
+	pointer-events: none;
 }
 
 li.statusN { background-color: #7f8287; }
