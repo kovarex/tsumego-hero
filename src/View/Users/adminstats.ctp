@@ -8,7 +8,8 @@
 		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
 		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
 		$iCounter = 1;
-		for($i=count($adminActivities['tsumego_id'])-1; $i>=0; $i--){
+		for ($i = 0; $i < count($adminActivities['tsumego_id']); $i++)
+		{
 			// Format date without seconds
 			$timestamp = strtotime($adminActivities['created'][$i]);
 			$dateFormatted = date('Y-m-d H:i', $timestamp);
