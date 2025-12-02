@@ -2876,13 +2876,15 @@ h4 {
   text-align:right;
   width:200px;
 }
-.new1 {
-  background: linear-gradient(#fff, #f2f2f2);
-  border-radius: 0 0 4px 4px;
-  border-bottom: 1px solid #777;
-  border-left: 1px solid #777;
-  border-right: 1px solid #777;
-  padding: 8px;
+.new1
+{
+	background: var(--new1-gradient);
+	border-radius: 0 0 4px 4px;
+	border-bottom: 1px solid #777;
+	border-left: 1px solid #777;
+	border-right: 1px solid #777;
+	padding: 8px;
+	color: var(--text-color);
 }
 .new-tsumego-box{
   background-repeat: no-repeat;

@@ -1,6 +1,6 @@
-body {
+body
+{
   background: linear-gradient(#2a2a2a, #111);
-  background-color: linear-gradient(#2a2a2a, #111);
   background-attachment: fixed;
 }
 body,
@@ -12,10 +12,6 @@ font,
 .whitebox2,
 .imp {
   background-color: #2a2a2a;
-}
-.new1 {
-  background: linear-gradient(#3c3c3c, #2a2a2a);
-  color: #f0f0f0;
 }
 .title4 {
   color: #f0f0f0;

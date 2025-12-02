@@ -16,13 +16,12 @@ function darkAndLight()
     // Clear any inline styles from new CSS-managed components so CSS body class selectors work
     $(".tsumego-issue, .tsumego-issue__header, .tsumego-issue__title, .tsumego-issue__meta, .tsumego-comments__form, .tsumego-comments__form textarea, .tsumego-comments__form h4").removeAttr("style");
 
-    $(".new1, .title4, .new1, #playTitleA").css("color", "#f0f0f0");
+    $(".title4, #playTitleA").css("color", "#f0f0f0");
     $(".modify-description").css("color", "#f0f0f0");
     $("body").css("background", "linear-gradient(#2a2a2a, #111)");
     $("body").css("background-attachment", "fixed");
     $("body, font, .filterLabel1, .timeTableColor11").css("color", "#f0f0f0");
     $(".whitebox2, h2, .imp").css("background-color", "#2a2a2a");
-    $(".new1").css("background", "linear-gradient(#3c3c3c, #2a2a2a)");
     $(".new1 a").css("color", "#f0f0f0");
     $(".title4").css("background", "linear-gradient(#737373, #4a4a4a)");
     $(".besogo-container").css("background-color", "#2a2a2a");
@@ -133,7 +132,6 @@ function darkAndLight()
     $("body").css("background-attachment", "fixed");
     $("body, font, .filterLabel1, .timeTableColor11").css("color", "black");
     $(".whitebox2, h2, .imp").css("background-color", "#fff");
-    $(".new1").css("background", "linear-gradient(#fff, #f2f2f2)");
     $(".title4").css("background", "linear-gradient(#e1e1e1, #bdbdbd)");
     $(".besogo-container").css("background-color", "#fff");
     $("li.setBlank").css("background-color", "#fff");

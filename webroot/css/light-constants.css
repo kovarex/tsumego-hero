@@ -1,5 +1,7 @@
 :root
 {
+    --text-color: black;
 	--current-border-color: #111;
 	--dark-button-icon: url("/img/light-icon1x.png");
+	--new1-gradient: linear-gradient(#fff, #f2f2f2);
 }
