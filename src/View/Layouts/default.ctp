@@ -81,7 +81,7 @@ echo $this->Html->charset();
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
 <meta property="og:title" content="Tsumego Hero">
-<link rel="stylesheet" type="text/css" href="/css/default.css?v=<?php echo filemtime(WWW_ROOT . 'css/default.css'); ?>">
+<link rel="stylesheet" type="text/css" href="/css/default.css?v=2">
 	<?php
 if($lightDark=='dark')
 	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.3">';
