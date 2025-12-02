@@ -363,7 +363,7 @@ if (
 			foreach ($tsumegoButtons as $index => $tsumegoButton) {
 				$tsumegoButton->render($index, $fav);
 				if($index == 0 || $index == count($tsumegoButtons) - 2)
-					echo '<li class="setBlank"></li>';
+					echo '<span class="gap10"></span>';
 				$i++;
 	}
 			?>

@@ -363,6 +363,13 @@ li[class^="status"] {
   border-top-left-radius: 9px;
 }
 
+.gap10
+{
+	float: left;
+	width: 10px;
+	height: 1px;
+}
+
 li.statusCurrent { position: relative; }
 li.statusCurrent::before
 {

@@ -30,14 +30,6 @@
 .admin-panel-main-page ul li:hover {
   background: linear-gradient(#888787, #666666);
 }
-li.setBlank {
-  background-color: #2a2a2a;
-  background-image: none;
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
-  border-left: none;
-}
 .sandboxComment {
   background: linear-gradient(#666, #424242);
   box-shadow: 2px 2px #0f0f0f;

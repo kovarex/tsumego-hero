@@ -22,12 +22,6 @@ function darkAndLight()
     $(".whitebox2, h2, .imp").css("background-color", "#2a2a2a");
     $(".new1 a").css("color", "#f0f0f0");
     $(".besogo-container").css("background-color", "#2a2a2a");
-    $("li.setBlank").css("background-color", "#2a2a2a");
-    $("li.setBlank").css("background-image", "none");
-    $("li.setBlank").css("border-top", "none");
-    $("li.setBlank").css("border-right", "none");
-    $("li.setBlank").css("border-bottom", "none");
-    $("li.setBlank").css("border-left", "none");
     $(".sandboxComment").css("background", "linear-gradient(#666, #424242)");
     $(".sandboxComment").css("box-shadow", "2px 2px #0f0f0f");
     $(".commentBox2, .commentAnswer, .adminText").css("color", "#70ddff");
@@ -128,12 +122,6 @@ function darkAndLight()
     $("font, .filterLabel1, .timeTableColor11").css("color", "black");
     $(".whitebox2, h2, .imp").css("background-color", "#fff");
     $(".besogo-container").css("background-color", "#fff");
-    $("li.setBlank").css("background-color", "#fff");
-    $("li.setBlank").css("background-image", "none");
-    $("li.setBlank").css("border-top", "none");
-    $("li.setBlank").css("border-right", "none");
-    $("li.setBlank").css("border-bottom", "none");
-    $("li.setBlank").css("border-left", "none");
     $(".sandboxComment").css("background", "#ddd");
     $(".sandboxComment").css("box-shadow", "2px 2px #999");
     $(".commentBox2, .commentAnswer").css("color", "#113cd4");
