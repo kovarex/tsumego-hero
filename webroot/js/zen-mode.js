@@ -78,7 +78,9 @@
 				return;
 			}
 
-			fetch(nextButtonLink)
+			var targetLink = nextButtonLink; // Save the link we're navigating to
+
+			fetch(targetLink)
 				.then(function(response) {
 					if (!response.ok) throw new Error('HTTP ' + response.status);
 					return response.text();
@@ -176,22 +178,22 @@
 					// Update besogo player color
 					besogoPlayerColor = data.playerColor || 'black';
 
-					// Parse and load the new SGF into besogo
-					var parsedSgf = besogo.parseSgf(data.sgf);
+					// Load the new SGF with corner transformation (for variety like normal page loads)
+					// Pick a random corner: top-left, top-right, bottom-left, bottom-right
+					var corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+					var randomCorner = corners[Math.floor(Math.random() * corners.length)];
 					
-					if (parsedSgf && besogo.editor) {
+					if (besogo && besogo.reloadSgf && besogo.editor) {
 						besogo.playerColor = besogoPlayerColor;
 						
-						// Load the SGF which will call loadRoot internally
-						// This updates besogo.scaleParameters with new orientation/viewBox data
-						besogo.loadSgf(parsedSgf, besogo.editor);
+						// Use reloadSgf which applies corner transformations (hFlip/vFlip)
+						// This ensures the board gets a random orientation just like normal page loads
+						besogo.reloadSgf(data.sgf, randomCorner);
 						
 						besogo.editor.setAutoPlay(true);
 						besogo.editor.setCurrent(besogo.editor.getRoot());
 						
-						// Pass coord style to force board display reinitialization
-						// This is needed because the new SGF may have different scaleParameters
-						// (orientation, corner view, etc.) even if the board size is the same
+						// Notify listeners to update the board display
 						besogo.editor.notifyListeners({
 							treeChange: true,
 							navChange: true,
@@ -199,11 +201,11 @@
 							coord: besogo.editor.getCoordStyle()  // Force board display to reinitialize viewBox
 						});
 					} else {
-						console.error('ZEN: Failed to load SGF - parsedSgf:', !!parsedSgf, 'editor:', !!besogo.editor);
+						console.error('ZEN: Failed to load SGF - reloadSgf:', typeof besogo.reloadSgf, 'editor:', !!besogo.editor);
 					}
 
 					// Update URL without page reload
-					history.pushState({}, '', nextButtonLink);
+					history.pushState({}, '', targetLink);
 
 					// Remove any result glow effects
 					var besogoBoard = document.querySelector('.besogo-board');
