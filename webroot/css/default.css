@@ -158,22 +158,17 @@
   }
 }
 
-body {
-  /*font-family:Georgia,verdana,helvetica,arial,sans-serif;
-		font-family: verdana;
-		font-family: Times New Roman;
-		green:  #74d14c
-		purple: #d19fe4
-		*/
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 100%;
-  margin: 0;
-  text-align: justify;
-  background: linear-gradient(#282828, #424141);
-  background-color: linear-gradient(#282828, #424141);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-attachment: fixed;
+body
+{
+	font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
+	font-size: 100%;
+	margin: 0;
+	text-align: justify;
+	background: var(--body-background-gradient);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	color: var(--text-color);
 }
 #container {
   position: relative;

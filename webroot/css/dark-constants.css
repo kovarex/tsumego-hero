@@ -6,4 +6,5 @@
 	--dark-button-icon: url("/img/dark-icon1.png");
 	--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
     --title4-gradient: linear-gradient(#737373, #4a4a4a);
+	--body-background-gradient: linear-gradient(#2a2a2a, #111);
 }

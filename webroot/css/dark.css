@@ -1,10 +1,3 @@
-body
-{
-  background: linear-gradient(#2a2a2a, #111);
-  background-attachment: fixed;
-}
-body,
-font,
 .filterLabel1,
 .timeTableColor11 {
   color: #f0f0f0;

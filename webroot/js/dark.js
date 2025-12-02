@@ -18,7 +18,7 @@ function darkAndLight()
 
     $("body").css("background", "linear-gradient(#2a2a2a, #111)");
     $("body").css("background-attachment", "fixed");
-    $("body, font, .filterLabel1, .timeTableColor11").css("color", "#f0f0f0");
+    $(".filterLabel1, .timeTableColor11").css("color", "#f0f0f0");
     $(".whitebox2, h2, .imp").css("background-color", "#2a2a2a");
     $(".new1 a").css("color", "#f0f0f0");
     $(".besogo-container").css("background-color", "#2a2a2a");
@@ -125,7 +125,7 @@ function darkAndLight()
 
     $("body").css("background", "linear-gradient(#282828, #424141)");
     $("body").css("background-attachment", "fixed");
-    $("body, font, .filterLabel1, .timeTableColor11").css("color", "black");
+    $("font, .filterLabel1, .timeTableColor11").css("color", "black");
     $(".whitebox2, h2, .imp").css("background-color", "#fff");
     $(".besogo-container").css("background-color", "#fff");
     $("li.setBlank").css("background-color", "#fff");
