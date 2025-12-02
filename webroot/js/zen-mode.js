@@ -186,9 +186,23 @@
 					if (besogo && besogo.reloadSgf && besogo.editor) {
 						besogo.playerColor = besogoPlayerColor;
 						
+						console.log('[ZEN] Before reloadSgf - corner:', randomCorner);
+						
 						// Use reloadSgf which applies corner transformations (hFlip/vFlip)
 						// This ensures the board gets a random orientation just like normal page loads
 						besogo.reloadSgf(data.sgf, randomCorner);
+						
+						console.log('[ZEN] After reloadSgf, calling updateBoardDisplay');
+						
+						// Update board parameters and viewBox to match the new coordArea
+						// This fixes the "empty board" bug where board shows wrong area after navigation
+						if (typeof besogo.updateBoardDisplay === 'function') {
+							besogo.updateBoardDisplay(randomCorner);
+						} else {
+							console.error('[ZEN] besogo.updateBoardDisplay is not a function!');
+						}
+						
+						console.log('[ZEN] After updateBoardDisplay, calling setAutoPlay');
 						
 						besogo.editor.setAutoPlay(true);
 						besogo.editor.setCurrent(besogo.editor.getRoot());
@@ -198,8 +212,10 @@
 							treeChange: true,
 							navChange: true,
 							stoneChange: true,
-							coord: besogo.editor.getCoordStyle()  // Force board display to reinitialize viewBox
+							coord: besogo.editor.getCoordStyle()
 						});
+						
+						console.log('[ZEN] Zen navigation complete');
 					} else {
 						console.error('ZEN: Failed to load SGF - reloadSgf:', typeof besogo.reloadSgf, 'editor:', !!besogo.editor);
 					}

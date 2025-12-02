@@ -422,6 +422,58 @@
     return parseAndLoad(sgfText, besogo.editor);
   };
 
+  // Update board parameters and viewBox after reloading SGF
+  // Call this after reloadSgf() to reinitialize the board display with new coordArea
+  besogo.updateBoardDisplay = function(cornerOrientation) {
+    console.log('[updateBoardDisplay] START - corner:', cornerOrientation);
+    
+    if (!besogo.boardCanvasSvg) {
+      console.error('[updateBoardDisplay] ABORT - no boardCanvasSvg');
+      return;
+    }
+    if (!besogo.scaleParameters) {
+      console.error('[updateBoardDisplay] ABORT - no scaleParameters');
+      return;
+    }
+    if (!besogo.coordArea) {
+      console.error('[updateBoardDisplay] ABORT - no coordArea');
+      return;
+    }
+
+    const bp = besogo.boardParameters;
+
+    // DON'T recalculate boardWidth/boardHeight - they were set during initial load
+    // Corner transformations just change the viewBox, not the size!
+    console.log('[updateBoardDisplay] Using EXISTING boardWidth:', bp.boardWidth, 'boardHeight:', bp.boardHeight);
+    console.log('[updateBoardDisplay] Using EXISTING boardWidth2:', bp.boardWidth2, 'boardWidth3:', bp.boardWidth3);
+    console.log('[updateBoardDisplay] Using EXISTING boardHeight2:', bp.boardHeight2, 'boardHeight3:', bp.boardHeight3);
+
+    // Update corner orientation
+    bp.corner = cornerOrientation;
+
+    // Update viewBox based on corner orientation (using EXISTING board parameters)
+    var newViewBox;
+    if (besogo.scaleParameters.orientation === 'full-board') {
+      if (cornerOrientation === 'full-board') {
+        newViewBox = '0 0 ' + bp.fullBoardWidth + ' ' + bp.boardHeight;
+      }
+    } else if (cornerOrientation === 'top-left') {
+      newViewBox = '0 0 ' + bp.boardWidth3 + ' ' + bp.boardHeight3;
+    } else if (cornerOrientation === 'top-right') {
+      newViewBox = bp.boardWidth2 + ' 0 ' + bp.boardWidth3 + ' ' + bp.boardHeight3;
+    } else if (cornerOrientation === 'bottom-left') {
+      newViewBox = '0 ' + bp.boardHeight2 + ' ' + bp.boardWidth3 + ' ' + bp.boardHeight3;
+    } else if (cornerOrientation === 'bottom-right') {
+      newViewBox = bp.boardWidth2 + ' ' + bp.boardHeight2 + ' ' + bp.boardWidth3 + ' ' + bp.boardHeight3;
+    }
+
+    console.log('[updateBoardDisplay] Setting viewBox to:', newViewBox);
+    if (newViewBox) {
+      besogo.boardCanvasSvg.setAttribute('viewBox', newViewBox);
+    }
+    console.log('[updateBoardDisplay] DONE');
+  };
+
   besogo.parseSize = function (input) {
     var matches, sizeX, sizeY;
 
