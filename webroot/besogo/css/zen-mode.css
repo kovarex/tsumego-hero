@@ -1,0 +1,136 @@
+/* Zen Mode - Distraction-free tsumego solving */
+
+/* Zen Mode Toggle Link (styled like other selectable-text links) */
+#zen-mode-toggle {
+	cursor: pointer;
+}
+
+/* Zen Mode Exit Button (only visible in zen mode) */
+#zen-mode-exit {
+	display: none;
+	position: fixed;
+	top: 15px;
+	right: 15px;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.2);
+	color: white;
+	border: none;
+	cursor: pointer;
+	font-size: 18px;
+	z-index: 10000;
+	transition: opacity 0.3s;
+	opacity: 0.3;
+	pointer-events: auto;
+}
+#zen-mode-exit:hover {
+	opacity: 1;
+	background: rgba(255, 255, 255, 0.4);
+}
+
+/* Zen Mode Active State */
+body.zen-mode {
+	background: #1a1a1a !important;
+	overflow: hidden;
+}
+
+body.zen-mode #zen-mode-toggle {
+	display: none !important;
+}
+
+body.zen-mode #zen-mode-exit {
+	display: block;
+}
+
+/* Remove container styling in Zen mode */
+body.zen-mode .whitebox2 {
+	border: none !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	width: auto !important;
+	min-height: auto !important;
+}
+
+body.zen-mode #container {
+	background: transparent !important;
+}
+
+body.zen-mode .besogo-container {
+	background: transparent !important;
+}
+
+/* Hide header, footer, and navigation in Zen mode */
+body.zen-mode .whitebox1,
+body.zen-mode #logo1,
+body.zen-mode .outerMenu1,
+body.zen-mode .outerMenu2,
+body.zen-mode .outerMenu3,
+body.zen-mode #footer,
+body.zen-mode .footerLinks,
+body.zen-mode #account-bar,
+body.zen-mode #account-bar-wrapper {
+	display: none !important;
+}
+
+/* Hide play page specific elements in Zen mode */
+body.zen-mode #health,
+body.zen-mode .titleDescription1,
+body.zen-mode .titleDescription2,
+body.zen-mode #theComment,
+body.zen-mode .tsumegoNavi1,
+body.zen-mode .tsumegoNavi-middle,
+body.zen-mode .tsumegoNavi-middle2,
+body.zen-mode .tag-container,
+body.zen-mode .selectable-text,
+body.zen-mode #commentSpace,
+body.zen-mode .hero-powers-container,
+body.zen-mode .upgradeLink,
+body.zen-mode .filters-outer,
+body.zen-mode #errorMessageOuter,
+body.zen-mode #status,
+body.zen-mode #status2,
+body.zen-mode #xpDisplayDiv,
+body.zen-mode .xpDisplayTable,
+body.zen-mode #xpDisplay,
+body.zen-mode .gameInfo,
+body.zen-mode #author-notice,
+body.zen-mode .mode1,
+body.zen-mode .mode3,
+body.zen-mode .alertBox,
+body.zen-mode .besogo-tsumegoPlayTool,
+body.zen-mode .duplicateTable,
+body.zen-mode .modify-description,
+body.zen-mode .modify-description-panel,
+body.zen-mode #playTitle,
+body.zen-mode .title4,
+body.zen-mode .new1,
+body.zen-mode .homeCenter2 {
+	display: none !important;
+}
+
+/* Center and expand the board in Zen mode */
+body.zen-mode #board,
+body.zen-mode #target {
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	margin: 0 !important;
+	z-index: 9998 !important;
+}
+
+body.zen-mode .besogo-board {
+	max-width: 90vmin !important;
+	max-height: 90vmin !important;
+	margin: 0 auto !important;
+}
+
+/* Visual feedback for correct/wrong in Zen mode */
+body.zen-mode.zen-correct .besogo-board {
+	box-shadow: 0 0 60px 20px rgba(0, 255, 0, 0.5);
+}
+
+body.zen-mode.zen-wrong .besogo-board {
+	box-shadow: 0 0 60px 20px rgba(255, 0, 0, 0.5);
+}
