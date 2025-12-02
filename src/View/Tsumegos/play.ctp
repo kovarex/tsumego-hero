@@ -1,10 +1,36 @@
-﻿<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
+﻿<!-- Puzzle data for Zen Mode navigation (stays in #content) -->
+<script type="application/json" id="puzzle-data">
+<?php
+// The SGF is stored with JS string concatenation like: (;GM[1]"+"\n"+"...) 
+// We need to evaluate that to get the actual SGF string
+$sgfRaw = $sgf['Sgf']['sgf'];
+// Replace the "+"\n"+" pattern with actual newlines
+$sgfClean = str_replace(['"+"\n"+"', '"+"\r\n"+"'], "\n", $sgfRaw);
+echo json_encode([
+	'tsumegoID' => $t['Tsumego']['id'],
+	'nextButtonLink' => $nextLink,
+	'previousButtonLink' => $previousLink,
+	'setID' => $set['Set']['id'],
+	'sgf' => $sgfClean,
+	'playerColor' => isset($pl) && $pl == 1 ? 'white' : 'black',
+	'file' => $file ?? '',
+	'author' => $t['Tsumego']['author'] ?? '',
+	'title' => $set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'],
+]);
+?>
+</script>
+
+<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
 	<script src="/js/multipleChoice.js"></script>
 	<style>.alertBox{height:auto!important;}</style>
 <?php }else if($tv!=null){ ?>
 	<script src="/js/multipleChoiceCustom.js"></script>
 	<script src="/js/scoreEstimatingCustom.js"></script>
 <?php } ?>
+
+<!-- Zen Mode CSS -->
+<link rel="stylesheet" type="text/css" href="/besogo/css/zen-mode.css">
+
 <link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
@@ -409,7 +435,8 @@ if (
 			echo '<a id="openSgfLink" href="/editor?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
 			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
-			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo '<a id="showFilters" style="margin-right:20px;" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo '<a id="zen-mode-toggle" class="selectable-text" title="Zen Mode - distraction-free solving (Z)">Zen Mode</a>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
 				<div id="msgFilters">
@@ -2200,6 +2227,15 @@ if (
 	}
 			setCookie("misplays", misplays);
 	}
+
+		// Zen Mode auto-advance: move to next problem after brief delay
+		if (window.isZenModeActive && window.isZenModeActive()) {
+			setTimeout(function() {
+				if (typeof window.zenModeNavigateToNext === 'function') {
+					window.zenModeNavigateToNext();
+				}
+			}, 800); // Brief delay for glow effect to be visible
+		}
 	}
 
 	function toggleBoardLock(t, multipleChoice=false){
@@ -2426,3 +2462,8 @@ if (
 		?>margin: 8px 4px;
 	}
 	</style>
+
+<!-- Zen Mode Exit Button (only visible in zen mode) -->
+<button id="zen-mode-exit" title="Exit Zen Mode (Esc)">✕</button>
+
+<script src="/js/zen-mode.js"></script>
