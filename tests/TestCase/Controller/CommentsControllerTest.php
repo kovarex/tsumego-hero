@@ -273,10 +273,11 @@ class CommentsControllerTest extends ControllerTestCase
 		// Verify initial counts: 1 issue + 1 standalone = 2 total
 		// COMMENTS tab shows comments + open issues, CLOSED ISSUES tab shows closed issues
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('COMMENTS (1 + 1 open issue)', $pageSource, 'Should show COMMENTS with open issue count initially');
+		$this->assertTextContains('1 COMMENT', $pageSource, 'Should show 1 COMMENT initially');
+		$this->assertTextContains('🔴 1 OPEN ISSUE', $pageSource, 'Should show open issue indicator initially');
 		// Empty CLOSED ISSUES tab shows no count in parentheses
 		$this->assertTextContains('CLOSED ISSUES', $pageSource, 'Should show CLOSED ISSUES tab');
-		$this->assertTextNotContains('CLOSED ISSUES (', $pageSource, 'Empty CLOSED ISSUES should have no count');
+		// CLOSED ISSUES tab is now just empty text "CLOSED ISSUES" when count is 0
 
 		// Override confirm for htmx
 		$browser->driver->executeScript("window.confirm = function() { return true; };");
@@ -290,8 +291,8 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Verify counts updated: should now show 0 comments + 1 open issue
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'Should show COMMENTS with 0 comments after deleting');
-		$this->assertTextNotContains('CLOSED ISSUES (', $pageSource, 'Should still show empty CLOSED ISSUES tab (no count)');
+		$this->assertTextContains('🔴 1 OPEN ISSUE', $pageSource, 'Should show only open issue after deleting comment');
+		// CLOSED ISSUES tab shows just "CLOSED ISSUES" when empty (no number prefix)
 	}
 
 	/**
@@ -316,10 +317,10 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Verify initial counts: 0 comments + 1 open issue in COMMENTS tab, 0 in CLOSED ISSUES tab
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'Should show COMMENTS with 1 open issue initially');
+		$this->assertTextContains('🔴 1 OPEN ISSUE', $pageSource, 'Should show open issue indicator initially');
 		// Empty CLOSED ISSUES tab shows no count in parentheses
 		$this->assertTextContains('CLOSED ISSUES', $pageSource, 'Should show CLOSED ISSUES tab');
-		$this->assertTextNotContains('CLOSED ISSUES (', $pageSource, 'Empty CLOSED ISSUES should have no count initially');
+		// CLOSED ISSUES tab shows just "CLOSED ISSUES" when empty
 
 		// Click close button on the issue
 		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
@@ -332,7 +333,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$pageSource = $browser->driver->getPageSource();
 		// When count is 0, tab shows "COMMENTS" without count (gray styling)
 		$this->assertTextContains('COMMENTS', $pageSource, 'Should show COMMENTS tab after closing');
-		$this->assertTextContains('CLOSED ISSUES (1)', $pageSource, 'Should show CLOSED ISSUES (1) after closing');
+		$this->assertTextContains('1 CLOSED ISSUE', $pageSource, 'Should show 1 CLOSED ISSUE after closing');
 		// The issue status should now show "Closed"
 		$this->assertTextContains('Closed', $pageSource, 'Issue should show Closed status');
 	}
@@ -383,8 +384,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Issue #1', $pageSource, 'Issue should appear after submission');
 		$this->assertTextContains('This is a test issue report', $pageSource, 'Issue message should appear');
-		$this->assertTextContains('COMMENTS (0 + 1 open issue)', $pageSource, 'COMMENTS count should update with open issue');
-		$this->assertTextNotContains('CLOSED ISSUES (', $pageSource, 'CLOSED ISSUES tab should stay empty (no count)');
+		$this->assertTextContains('🔴 1 OPEN ISSUE', $pageSource, 'Tab should show open issue indicator');
+		// CLOSED ISSUES tab shows just "CLOSED ISSUES" when empty (no number prefix)
 	}
 
 	/**

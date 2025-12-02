@@ -96,21 +96,26 @@ if (!$hasContent)
 	$commentsTabClass .= ' tsumego-comments__tab--empty';
 
 // Build COMMENTS tab text
-if ($hasContent)
-{
-	$commentsTabText = 'COMMENTS (' . $commentCount;
-	if ($openIssueCount > 0)
-		$commentsTabText .= ' + ' . $openIssueCount . ' open issue' . ($openIssueCount > 1 ? 's' : '');
-	$commentsTabText .= ')';
-	if ($openIssueCount > 0)
-		$commentsTabText = '🔴 ' . $commentsTabText;
-}
+// Format: "COMMENTS", "5 COMMENTS", "5 COMMENTS 🔴 2 OPEN ISSUES", or "🔴 2 OPEN ISSUES"
+$commentsPart = '';
+if ($commentCount > 0)
+	$commentsPart = $commentCount . ' COMMENT' . ($commentCount > 1 ? 'S' : '');
+
+$issuesPart = '';
+if ($openIssueCount > 0)
+	$issuesPart = '🔴 ' . $openIssueCount . ' OPEN ISSUE' . ($openIssueCount > 1 ? 'S' : '');
+
+if ($commentsPart && $issuesPart)
+	$commentsTabText = $commentsPart . ' ' . $issuesPart;
+elseif ($commentsPart)
+	$commentsTabText = $commentsPart;
+elseif ($issuesPart)
+	$commentsTabText = $issuesPart;
 else
-{
 	$commentsTabText = 'COMMENTS';
-}
 
 // Determine CLOSED ISSUES tab style and text
+// Format: "CLOSED ISSUES" or "3 CLOSED ISSUES"
 $closedTabClass = 'tsumego-comments__tab';
 if ($closedIssueCount == 0)
 {
@@ -119,7 +124,7 @@ if ($closedIssueCount == 0)
 }
 else
 {
-	$closedTabText = 'CLOSED ISSUES (' . $closedIssueCount . ')';
+	$closedTabText = $closedIssueCount . ' CLOSED ISSUE' . ($closedIssueCount > 1 ? 'S' : '');
 }
 ?>
 <!-- Morphable container - htmx targets this for all comment actions -->
