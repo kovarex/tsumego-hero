@@ -1759,15 +1759,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->Session->write('page', 'login');
 		$this->Session->write('title', 'Tsumego Hero - Sign In');
 
-		// On GET request, store the referer in session for redirect after login
+		// On GET request, prepare redirect URL with HMAC signature (fully stateless)
 		if (!$this->request->is('post'))
 		{
 			$referer = $this->referer(null, true);
 			// Don't redirect back to login page itself
-			if ($referer && strpos($referer, '/users/login') === false)
-				$this->Session->write('login_redirect', $referer);
-			else
-				$this->Session->delete('login_redirect');
+			$redirectUrl = ($referer && strpos($referer, '/users/login') === false) ? $referer : '/sets/';
+
+			// Sign the redirect URL with HMAC to prevent tampering (no session needed)
+			$signature = $this->signRedirectUrl($redirectUrl);
+
+			// Pass to view for hidden field and Google data-state
+			$this->set('redirectUrl', $redirectUrl);
+			$this->set('redirectSignature', $signature);
 			return null;
 		}
 
@@ -1788,16 +1792,65 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->signIn($user);
 
-		// Redirect to the page where user came from, or default to /sets/
-		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
-		$this->Session->delete('login_redirect');
+		// Verify and use redirect URL from POST data
+		$redirect = $this->getVerifiedRedirectUrl(
+			$this->request->data('redirect'),
+			$this->request->data('redirect_signature')
+		);
 		return $this->redirect($redirect);
+	}
+
+	/**
+	 * Sign a redirect URL with HMAC to prevent tampering.
+	 * This allows stateless redirect URL handling without sessions.
+	 */
+	private function signRedirectUrl(string $redirectUrl): string
+	{
+		return hash_hmac('sha256', $redirectUrl, Configure::read('Security.salt'));
+	}
+
+	/**
+	 * Verify redirect URL signature and return safe redirect URL.
+	 * Returns default redirect if signature is invalid or URL is not relative.
+	 */
+	private function getVerifiedRedirectUrl(?string $redirectUrl, ?string $signature): string
+	{
+		$defaultRedirect = '/sets/';
+
+		if (!$redirectUrl || !$signature)
+			return $defaultRedirect;
+
+		// Verify HMAC signature
+		$expectedSignature = $this->signRedirectUrl($redirectUrl);
+		if (!hash_equals($expectedSignature, $signature))
+			return $defaultRedirect;
+
+		// Prevent open redirect attacks - only allow relative URLs
+		if (!$this->isRelativeUrl($redirectUrl))
+			return $defaultRedirect;
+
+		return $redirectUrl;
+	}
+
+	/**
+	 * Check if URL is relative (starts with / but not //)
+	 */
+	private function isRelativeUrl(string $url): bool
+	{
+		return strlen($url) > 0 && $url[0] === '/' && (strlen($url) < 2 || $url[1] !== '/');
 	}
 
 	public function add()
 	{
 		$this->Session->write('page', 'user');
 		$this->Session->write('title', 'Tsumego Hero - Sign Up');
+
+		// Prepare signed redirect URL for Google Sign-In state (fully stateless)
+		$redirectUrl = '/sets/';
+		$signature = $this->signRedirectUrl($redirectUrl);
+		$this->set('redirectUrl', $redirectUrl);
+		$this->set('redirectSignature', $signature);
+
 		if (empty($this->data))
 			return;
 
@@ -2814,9 +2867,20 @@ Joschka Zimdars';
 		}
 		$this->signIn($u);
 
-		// Redirect to the page where user came from, or default to /sets/
-		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
-		$this->Session->delete('login_redirect');
+		// Get redirect URL from state parameter (set via data-state in the button)
+		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
+		// We use HMAC signature to prevent redirect URL tampering (stateless)
+		$redirect = '/sets/';
+		$stateJson = $_POST['state'] ?? null;
+		if ($stateJson)
+		{
+			$stateData = json_decode(base64_decode($stateJson), true);
+			if ($stateData)
+				$redirect = $this->getVerifiedRedirectUrl(
+					$stateData['redirect'] ?? null,
+					$stateData['signature'] ?? null
+				);
+		}
 		return $this->redirect($redirect);
 	}
 
