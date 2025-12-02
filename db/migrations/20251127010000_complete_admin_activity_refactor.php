@@ -1,9 +1,7 @@
 <?php
 
 use Phinx\Migration\AbstractMigration;
-
-// Load AdminActivityLogger for type ID constants
-require_once __DIR__ . '/../../src/Utility/AdminActivityLogger.php';
+require_once __DIR__ . '/../../src/Model/AdminActivityType.php';
 
 
 /**
