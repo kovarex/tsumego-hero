@@ -416,6 +416,12 @@
   };
 
   // Parses size parameter from SGF format
+  // Expose parseAndLoad for zen mode navigation with corner transformations
+  besogo.reloadSgf = function(sgfText, newCorner) {
+    corner = newCorner;
+    return parseAndLoad(sgfText, besogo.editor);
+  };
+
   besogo.parseSize = function (input) {
     var matches, sizeX, sizeY;
 

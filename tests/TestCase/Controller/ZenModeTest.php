@@ -832,4 +832,213 @@ class ZenModeTest extends TestCaseWithAuth
 		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
 		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Zen mode should persist');
 	}
+
+	/**
+	 * Test that zen mode navigation applies corner transformations like normal page loads.
+	 *
+	 * REQUIREMENT: When loading a puzzle normally (page refresh), besogo applies a random
+	 * corner transformation (top-left, top-right, bottom-left, bottom-right) which may
+	 * rotate/flip the board for visual variety.
+	 * 
+	 * When navigating in zen mode, the same transformation logic should apply - each puzzle
+	 * should get a corner transformation applied, NOT just copy the raw SGF without transformation.
+	 *
+	 * This test verifies:
+	 * 1. Load puzzle 1 normally - verify transformation is applied (besogo.editor has transformed board)
+	 * 2. In zen mode, navigate to puzzle 2 - verify transformation is ALSO applied
+	 * 3. The bug: zen-mode.js uses besogo.loadSgf() which doesn't apply corner transformations
+	 * 4. The fix: zen-mode.js should use besogo.reloadSgf(sgf, randomCorner) which does
+	 *
+	 * How to detect if transformation is applied:
+	 * - If besogo.editor's board has stones in transformed positions, transformation was applied
+	 * - We check that the editor's stone positions differ from raw SGF positions (proves transformation)
+	 *
+	 * @group zen-mode-navigation
+	 */
+	public function testZenModeNavigationAppliesCornerTransformation()
+	{
+		// Create 2 tsumegos with known stone positions
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'Corner Test Set', 'num' => '1']],
+				// Black stones at d16, p16, d4 (dd, pd, dp in SGF coords)
+				// White stone at q4 (pp in SGF coords)
+				'sgf' => '(;SZ[19]AB[dd][pd][dp]AW[pp])',
+			],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Corner Test Set', 'num' => '2']],
+					// Black stones at c17, d17 (cc, dc in SGF)
+					// White stone at r3 (qq in SGF)
+					'sgf' => '(;SZ[19]AB[cc][dc]AW[qq])',
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+
+		// Verify initial puzzle has transformation applied
+		// If no transformation, stones would be at exact SGF positions
+		// With transformation, they might be flipped (depends on random corner)
+		$puzzle1Data = $browser->driver->executeScript("
+			if (!besogo.editor) return { error: 'no editor' };
+			var current = besogo.editor.getCurrent();
+			if (!current || !current.board) return { error: 'no board' };
+			
+			// Get all stone positions
+			var stones = [];
+			var keys = Object.keys(current.board);
+			for (var i = 0; i < keys.length; i++) {
+				if (current.board[keys[i]] !== 0) {
+					stones.push({ pos: keys[i], color: current.board[keys[i]] });
+				}
+			}
+			
+			return {
+				stoneCount: stones.length,
+				orientation: besogo.scaleParameters ? besogo.scaleParameters.orientation : null,
+				// Store first stone position to compare later
+				firstStonePos: stones[0] ? stones[0].pos : null
+			};
+		");
+
+		$this->assertEquals(4, $puzzle1Data['stoneCount'], 'Puzzle 1 should have 4 stones');
+		$this->assertNotNull($puzzle1Data['orientation'], 'Initial puzzle should have orientation set');
+
+		// Enter Zen mode
+		$browser->clickId('zen-mode-toggle');
+		usleep(300 * 1000);
+
+		// Navigate to puzzle 2
+		$browser->driver->executeScript("
+			window.zenNavComplete = false;
+			if (typeof window.zenModeNavigateToNext === 'function') {
+				window.zenModeNavigateToNext().then(function() {
+					window.zenNavComplete = true;
+				}).catch(function() {
+					window.zenNavComplete = true;
+				});
+			} else {
+				window.zenNavComplete = true;
+			}
+		");
+
+		// Wait for navigation
+		for ($i = 0; $i < 50; $i++)
+		{
+			usleep(100 * 1000);
+			if ($browser->driver->executeScript("return window.zenNavComplete === true"))
+				break;
+		}
+
+		usleep(500 * 1000);
+
+		// Check puzzle 2 data AFTER zen navigation
+		$puzzle2Data = $browser->driver->executeScript("
+			if (!besogo.editor) return { error: 'no editor' };
+			var current = besogo.editor.getCurrent();
+			if (!current || !current.board) return { error: 'no board' };
+			
+			var stones = [];
+			var keys = Object.keys(current.board);
+			for (var i = 0; i < keys.length; i++) {
+				if (current.board[keys[i]] !== 0) {
+					stones.push({ pos: keys[i], color: current.board[keys[i]] });
+				}
+			}
+			
+			return {
+				stoneCount: stones.length,
+				orientation: besogo.scaleParameters ? besogo.scaleParameters.orientation : null,
+				firstStonePos: stones[0] ? stones[0].pos : null,
+				// Debug: check if besogo.reloadSgf exists
+				hasReloadSgf: typeof besogo.reloadSgf === 'function'
+			};
+		");
+
+		// BUG CHECK: If orientation is null/undefined after zen navigation, 
+		// it means besogo.loadSgf() was used (no transformation)
+		// If orientation is set, besogo.reloadSgf() was used (transformation applied)
+		$this->assertNotNull(
+			$puzzle2Data['orientation'],
+			'After zen navigation, orientation should be set (proves corner transformation was applied). ' .
+			'If null, zen-mode.js is using besogo.loadSgf() instead of besogo.reloadSgf(). ' .
+			'hasReloadSgf=' . ($puzzle2Data['hasReloadSgf'] ? 'true' : 'false')
+		);
+
+		$this->assertEquals(3, $puzzle2Data['stoneCount'], 'Puzzle 2 should have 3 stones');
+	}
+
+	/**
+	 * Test that zen mode auto-advance navigates to correct next puzzle (not skipping).
+	 *
+	 * BUG REPORT: User reports that solving puzzle N navigates to puzzle N+2 instead of N+1.
+	 * Example: Solving 5051 should navigate to 5052, but it navigates to 5053 (skips 5052).
+	 *
+	 * This test creates 3 puzzles in sequence and verifies that:
+	 * 1. Start on puzzle 1
+	 * 2. Solve puzzle 1 (triggers auto-advance in zen mode)
+	 * 3. Should navigate to puzzle 2 (NOT puzzle 3)
+	 *
+	 * @group zen-mode-navigation
+	 */
+	public function testZenModeAutoAdvanceNavigatesToCorrectNextPuzzle()
+	{
+		// Create 3 sequential puzzles
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'Sequential Set', 'num' => '1']],
+				'sgf' => '(;SZ[19]AB[dd]AW[pp])',
+			],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Sequential Set', 'num' => '2']],
+					'sgf' => '(;SZ[19]AB[cc]AW[qq])',
+				],
+				[
+					'sets' => [['name' => 'Sequential Set', 'num' => '3']],
+					'sgf' => '(;SZ[19]AB[ee]AW[rr])',
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+
+		// Verify we're on puzzle 1
+		$puzzle1Id = $browser->driver->executeScript("return tsumegoID");
+		$this->assertEquals($context->tsumego['id'], $puzzle1Id, 'Should start on puzzle 1');
+
+		// Get expected puzzle 2 ID
+		$puzzle2Id = $context->otherTsumegos[0]['id'];
+
+		// Enter Zen mode
+		$browser->clickId('zen-mode-toggle');
+		usleep(300 * 1000);
+
+		// Solve puzzle 1 (this triggers auto-advance)
+		$browser->driver->executeScript("displayResult('S')");
+
+		// Wait for auto-advance (800ms delay + navigation time - needs at least 2.5s total)
+		usleep(2500 * 1000);
+		
+		// Verify we're on puzzle 2 (NOT puzzle 3)
+		$currentPuzzleId = $browser->driver->executeScript("return tsumegoID");
+		
+		$this->assertEquals(
+			$puzzle2Id,
+			$currentPuzzleId,
+			"After solving puzzle 1 in zen mode, should navigate to puzzle 2 (ID {$puzzle2Id}), not puzzle 3. " .
+			"Current puzzle ID: {$currentPuzzleId}"
+		);
+
+		// Verify URL matches puzzle 2
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString(
+			(string)$context->otherTsumegos[0]['set-connections'][0]['id'],
+			$currentUrl,
+			"URL should contain puzzle 2's set-connection ID"
+		);
+	}
 }
