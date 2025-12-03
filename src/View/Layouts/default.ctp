@@ -82,7 +82,7 @@ echo $this->Html->charset();
 <meta name="Author" content="Joschka Zimdars">
 <meta property="og:title" content="Tsumego Hero">
 <link rel="stylesheet" type="text/css" href="/css/<?php echo $lightDark?>-constants.css" id="theme-css-constants">
-<link rel="stylesheet" type="text/css" href="/css/default.css?v=2">
+<link rel="stylesheet" type="text/css" href="/css/default.css?v=3">
 	<?php
 if($lightDark=='dark')
 	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.3">';
