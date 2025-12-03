@@ -89,6 +89,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
+    displayHoverSequence: displayHoverSequence,
     commentPosition: commentPosition,
     commentTreeSearch: commentTreeSearch,
     commentTreeSearchExtendPath: commentTreeSearchExtendPath,
@@ -111,6 +112,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 
   function displayHoverCoord(c) {
     besogo.boardDisplay.displayHoverCoord(c);
+  }
+
+  function displayHoverSequence(coords) {
+    besogo.boardDisplay.displayHoverSequence(coords);
   }
 
   // Sets the active tool, returns false if failed

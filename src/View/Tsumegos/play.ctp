@@ -1793,7 +1793,10 @@ if (
 			?>
 	}
 
-	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
+	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false)
+	{
+		if (!window.besogo || !besogo.editor) return;  // Besogo not initialized yet
+		
 		positionParams = [];
 		positionParams[0] = x;
 		positionParams[1] = y;
@@ -1810,7 +1813,8 @@ if (
 
 		// Scroll to board so user can see the position
 		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');
-		if (boardElement) {
+		if (boardElement)
+		{
 			boardElement.scrollIntoView({
 				behavior: 'smooth',
 				block: 'center'
@@ -2372,6 +2376,7 @@ if (
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
+	console.log('Besogo created. Editor methods:', Object.keys(besogo.editor));
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerDisplayResult(displayResult);
 			besogo.editor.registerShowComment(function(commentText) {
@@ -2394,6 +2399,161 @@ if (
 			echo 'besogo.editor.adjustCommentCoords();';
 	}
 		?>
+
+	// Hover handlers for position buttons (multi-coord sequences)
+	document.addEventListener('DOMContentLoaded', function() {
+		var positionButtons = document.querySelectorAll('.position-button');
+		positionButtons.forEach(function(button) {
+			button.addEventListener('mouseenter', function(e)
+			{
+				var dataPath = this.getAttribute('data-path');
+				if (!dataPath) return;
+				
+				// Get current board orientation
+				var orientationData = besogo.editor && besogo.editor.getOrientation ? 
+					besogo.editor.getOrientation() : ['top-left', 'normal'];
+				var currentCorner = orientationData[0];
+				if (currentCorner) currentCorner = currentCorner.trim();
+				
+				if (!currentCorner) currentCorner = 'top-left';  // Default to top-left (stored orientation)
+				
+				// Parse path format: "17/16+17/17+18/17" (x/y pairs separated by +)
+				var pathParts = dataPath.split('+');
+				var coords = [];
+				
+				console.log('[HOVER DEBUG] Corner:', currentCorner, '| Raw path:', dataPath);
+				
+				// Extract and transform coordinates
+				for (var i = 0; i < pathParts.length; i++)
+				{
+					var xy = pathParts[i].split('/');
+					if (xy.length === 2)
+					{
+						var x = parseInt(xy[0]);
+						var y = parseInt(xy[1]);
+						
+						// Stored coords are 1-indexed top-left orientation (from migration)
+						// Transform to match current board orientation
+						var transformed = transformCoordinate(x, y, currentCorner);
+						
+						console.log('[HOVER DEBUG] Coord', i, ': stored=(', x, ',', y, 
+							') corner=', currentCorner, 
+							' -> transformed=(', transformed.x, ',', transformed.y, 
+							') -> 0-indexed=(', (transformed.x-1), ',', (transformed.y-1), ')');
+						
+						// displayHoverSequence expects 0-indexed coords
+						coords.push({x: transformed.x - 1, y: transformed.y - 1, label: (i + 1).toString()});
+					}
+				}
+				
+				// Display numbered stones on hover
+				if (coords.length > 0)
+				{
+					console.log('[HOVER DEBUG] Final coords to display:', coords);
+					showPositionPopup(coords, e);
+				}
+			});
+			
+			button.addEventListener('mouseleave', function() {
+				hidePositionPopup();
+			});
+		});
+		
+		/**
+		 * Transform coordinates from stored top-left orientation to current board corner
+		 * @param {number} x - 1-indexed x coordinate (stored as top-left)
+		 * @param {number} y - 1-indexed y coordinate (stored as top-left)
+		 * @param {string} currentCorner - Current board orientation ('top-left', 'top-right', 'bottom-left', 'bottom-right')
+		 * @returns {{x: number, y: number}} - Transformed 1-indexed coordinates
+		 */
+		function transformCoordinate(x, y, currentCorner)
+		{
+			// Stored coordinates are in TOP-LEFT orientation (from migration)
+			// Need to transform to match current board corner
+			var boardSize = 19;
+			
+			if (!currentCorner || currentCorner === 'top-left')
+			{
+				// No transformation needed - already in top-left
+				return {x: x, y: y};
+			}
+			
+			if (currentCorner === 'top-right')
+			{
+				// Flip x only
+				return {x: boardSize - x + 1, y: y};
+			}
+			
+			if (currentCorner === 'bottom-left')
+			{
+				// Flip y only
+				return {x: x, y: boardSize - y + 1};
+			}
+			
+			if (currentCorner === 'bottom-right')
+			{
+				// Flip both x and y
+				return {x: boardSize - x + 1, y: boardSize - y + 1};
+			}
+			
+			// Unknown corner - return as-is with warning
+			console.warn('[transformCoordinate] Unknown corner:', currentCorner);
+			return {x: x, y: y};
+		}
+	});
+	
+	function showPositionPopup(coords, event)
+	{
+		console.log('[showPositionPopup] Called with', coords.length, 'coords');
+		
+		if (!window.besogo || !besogo.editor || typeof besogo.editor.displayHoverSequence !== 'function')
+		{
+			console.warn('Besogo not ready for hover display', {
+				hasBesogo: !!window.besogo,
+				hasEditor: window.besogo && !!besogo.editor,
+				hasDisplayHoverSequence: window.besogo && besogo.editor && typeof besogo.editor.displayHoverSequence
+			});
+			return;  // Besogo not initialized yet
+		}
+		
+		createCoordPopup();
+		var mainBoard = document.querySelector(".besogo-board svg");
+		if (!mainBoard)
+		{
+			console.warn('[showPositionPopup] No .besogo-board svg found');
+			return;
+		}
+		
+		console.log('[showPositionPopup] Calling displayHoverSequence...');
+		// Display numbered stones on main board
+		besogo.editor.displayHoverSequence(coords);
+		console.log('[showPositionPopup] displayHoverSequence returned');
+		
+		// Show popup near cursor with board copy
+		var clone = mainBoard.cloneNode(true);
+		clone.style.width = "400px";
+		clone.style.height = "400px";
+		coordPopupDiv.innerHTML = "";
+		coordPopupDiv.appendChild(clone);
+		
+		// Position near cursor
+		var x = event.clientX + 15;
+		var y = event.clientY - 200;
+		if (x + 430 > window.innerWidth) x = event.clientX - 430;
+		if (y < 10) y = 10;
+		if (y + 430 > window.innerHeight) y = window.innerHeight - 430;
+		
+		coordPopupDiv.style.left = x + "px";
+		coordPopupDiv.style.top = y + "px";
+		coordPopupDiv.style.display = "block";
+	}
+	
+	function hidePositionPopup()
+	{
+		if (coordPopupDiv) coordPopupDiv.style.display = "none";
+		if (window.besogo && besogo.editor && typeof besogo.editor.displayHoverSequence === 'function')
+			besogo.editor.displayHoverSequence([]);  // Clear stones
+	}
 	</script>
 <?php } ?>
 	<style>

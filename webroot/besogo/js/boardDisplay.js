@@ -63,7 +63,8 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
   return {
       redrawHover: redrawHover,
-    displayHoverCoord: displayHoverCoord
+    displayHoverCoord: displayHoverCoord,
+    displayHoverSequence: displayHoverSequence
     };
 
   // Function for setting the flag for touch interfaces
@@ -672,10 +673,70 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     {
 		x+=1;
 		y+=1;
-		nextMoveGroup.appendChild(besogo.svgFilledCircle(svgPos(x), svgPos(y), "blue", circleSize));
+		// Display as black stone with "1" label (unified with sequence display)
+		var stoneGroup = besogo.svgEl("g");
+		var circle = besogo.svgFilledCircle(svgPos(x), svgPos(y), "black", 20);
+		stoneGroup.appendChild(circle);
+		
+		var text = besogo.svgEl("text");
+		text.setAttribute("x", svgPos(x));
+		text.setAttribute("y", svgPos(y));
+		text.setAttribute("text-anchor", "middle");
+		text.setAttribute("dominant-baseline", "central");
+		text.setAttribute("font-size", "14");
+		text.setAttribute("font-weight", "bold");
+		text.setAttribute("fill", "white");
+		text.textContent = "1";
+		stoneGroup.appendChild(text);
+		
+		nextMoveGroup.appendChild(stoneGroup);
     }
     else
 		nextMoveGroup.appendChild(besogo.svgFilledCircle(1, 1, "red", 0));
+  }
+
+  function displayHoverSequence(coords)
+  {
+    // Clear existing hover display
+    nextMoveGroup.innerHTML = "";
+    
+    if (!coords || coords.length === 0) {
+      // Empty array = clear display
+      nextMoveGroup.appendChild(besogo.svgFilledCircle(1, 1, "red", 0));
+      return;
+    }
+    
+    // Draw numbered stones for each coordinate in sequence
+    for (var i = 0; i < coords.length; i++) {
+      var coord = coords[i];
+      var x = coord.x + 1;  // Board display is 1-indexed
+      var y = coord.y + 1;
+      
+      // Determine stone color (alternate black/white, starting with black)
+      var color = (i % 2 === 0) ? "black" : "white";
+      var textColor = (i % 2 === 0) ? "white" : "black";
+      
+      // Draw stone with number label
+      var stoneGroup = besogo.svgEl("g");
+      
+      // Stone circle
+      var circle = besogo.svgFilledCircle(svgPos(x), svgPos(y), color, 20);
+      stoneGroup.appendChild(circle);
+      
+      // Number label
+      var text = besogo.svgEl("text");
+      text.setAttribute("x", svgPos(x));
+      text.setAttribute("y", svgPos(y));
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      text.setAttribute("font-size", "14");
+      text.setAttribute("font-weight", "bold");
+      text.setAttribute("fill", textColor);
+      text.textContent = coord.label;
+      stoneGroup.appendChild(text);
+      
+      nextMoveGroup.appendChild(stoneGroup);
+    }
   }
 
   function redrawNextMoves(current, clear = false)

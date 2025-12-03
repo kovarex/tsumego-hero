@@ -337,6 +337,7 @@
 
     // Make the core editor object
     besogo.editor = besogo.makeEditor(options.size.x, options.size.y, options);
+    console.log('makeEditor returned:', Object.keys(besogo.editor).filter(k => k.includes('Hover') || k.includes('comment')));
     container.besogoEditor = besogo.editor;
     besogo.editor.setTool(options.tool);
     if (options.tsumegoPlayTool) besogo.editor.setTool(options.tsumegoPlayTool);
