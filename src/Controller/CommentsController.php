@@ -4,10 +4,8 @@ App::uses('SgfParser', 'Utility');
 
 class CommentsController extends AppController
 {
-	/**
-	 * @return void
-	 */
-	public function index()
+
+	public function index(): void
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
@@ -31,6 +29,7 @@ class CommentsController extends AppController
 		$paramyourdirection = 0;
 		$paramyourindex = 0;
 		$unresolvedSet = 'true';
+		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->params['url']));
 		if (!isset($this->params['url']['unresolved']))
 		{
 			$unresolved = 'false';
@@ -271,7 +270,7 @@ class CommentsController extends AppController
 		$yourlastEntry = true;
 		$yourfirstPage = false;
 		$yourComments = [];
-		if (!isset($this->params['url']['your-comment-id']))
+		if (!isset($this->params['url']['your-comment-offset']))
 		{
 			$yourComments = ClassRegistry::init('TsumegoComment')->find('all', [
 				'limit' => 500,
@@ -289,7 +288,7 @@ class CommentsController extends AppController
 					'limit' => 500,
 					'order' => 'created DESC',
 					'conditions' => [
-						'Comment.id <' => $this->params['url']['your-comment-id'],
+						'id <' => $this->params['url']['your-comment-id'],
 						'user_id' => Auth::getUserID()]]) ?: [];
 			elseif (($this->params['url']['your-direction'] == 'prev'))
 			{
@@ -297,7 +296,7 @@ class CommentsController extends AppController
 					'limit' => 500,
 					'order' => 'created ASC',
 					'conditions' => [
-						'Comment.id >' => $this->params['url']['your-comment-id'],
+						'id >' => $this->params['url']['your-comment-id'],
 						'user_id' => Auth::getUserID()]]) ?: [];
 				$yourreverseOrder = true;
 			}
