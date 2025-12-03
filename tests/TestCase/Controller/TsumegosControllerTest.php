@@ -189,38 +189,48 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testArrowKeysInCommentTextareaDoNotNavigate()
 	{
-		$context = new ContextPreparator([
-			'other-tsumegos' => [
-				[],
-				[]
-			]
-		]);
+		foreach ([false, true] as $focusComment)
+		{
+			$context = new ContextPreparator([
+				'user' => ['admin' => true],
+				'other-tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => '1']]],
+				['sets' => [['name' => 'test set', 'num' => '2']]]]]);
 
-		$browser = Browser::instance();
-		$currentUrl = Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'];
+			$browser = Browser::instance();
+			$currentUrl = Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'];
 
-		// Navigate to first problem
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame($currentUrl, $browser->driver->getCurrentURL());
+			// Navigate to first problem
+			$browser->get($context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertSame($currentUrl, $browser->driver->getCurrentURL());
 
-		// Focus the comment textarea
-		$commentTextarea = $browser->driver->findElement(WebDriverBy::id('theComment'));
-		$commentTextarea->clear();
-		$commentTextarea->sendKeys('Test comment');
-		$browser->driver->executeScript("document.getElementById('theComment').focus();");
+			// Focus the comment textarea
+			$browser->clickId("open-comments-button");
+			$commentTextarea = $browser->driver->findElement(WebDriverBy::id('commentMessage-tsumegoCommentForm'));
+			if ($focusComment)
+				$commentTextarea->click();
 
-		// Send RIGHT arrow key (should not navigate to next problem)
-		$commentTextarea->sendKeys(WebDriverKeys::ARROW_RIGHT);
+			// Send RIGHT arrow key (should not navigate to next problem)
+			$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ARROW_RIGHT);
 
-		// Verify URL hasn't changed (we're still on the same problem)
-		$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
-			'Arrow right key in comment textarea should not navigate to next problem');
+			usleep(1000 * 200); // I need specific wait here, as I'm also testing that it doesn't navigate
 
-		// Send LEFT arrow key (should not navigate to previous problem)
-		$commentTextarea->sendKeys(WebDriverKeys::ARROW_LEFT);
+			// Verify URL hasn't changed (we're still on the same problem)
+			if ($focusComment)
+				$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
+					'Arrow right key in comment textarea should not navigate to next problem');
+			else
+				$this->assertSame(
+					Util::getMyAddress() . '/' . $context->otherTsumegos[1]['set-connections'][0]['id'],
+					$browser->driver->getCurrentURL()); // when not focused on comment, the key should get us to the next problem
 
-		// Verify URL still hasn't changed
-		$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
-			'Arrow left key in comment textarea should not navigate to previous problem');
+			// Send LEFT arrow key (should not navigate to previous problem)
+			$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ARROW_LEFT);
+			usleep(1000 * 200); // I need specific wait here, as I'm also testing that it doesn't navigate
+
+			// Verify URL still hasn't changed when focused, and if we are focused, we should get back to the original one
+			$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
+				'Arrow left key in comment textarea should not navigate to previous problem');
+		}
 	}
 }
