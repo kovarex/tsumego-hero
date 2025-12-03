@@ -1,6 +1,7 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverKeys;
 
 class TsumegosControllerTest extends TestCaseWithAuth
 {
@@ -184,5 +185,42 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// Check the JavaScript functions are generated
 		$this->assertTextContains('function ccIn', $this->view);
 		$this->assertTextContains('showCoordPopup', $this->view);
+	}
+
+	public function testArrowKeysInCommentTextareaDoNotNavigate()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [
+				[],
+				[]
+			]
+		]);
+
+		$browser = Browser::instance();
+		$currentUrl = Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'];
+
+		// Navigate to first problem
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame($currentUrl, $browser->driver->getCurrentURL());
+
+		// Focus the comment textarea
+		$commentTextarea = $browser->driver->findElement(WebDriverBy::id('theComment'));
+		$commentTextarea->clear();
+		$commentTextarea->sendKeys('Test comment');
+		$browser->driver->executeScript("document.getElementById('theComment').focus();");
+
+		// Send RIGHT arrow key (should not navigate to next problem)
+		$commentTextarea->sendKeys(WebDriverKeys::ARROW_RIGHT);
+
+		// Verify URL hasn't changed (we're still on the same problem)
+		$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
+			'Arrow right key in comment textarea should not navigate to next problem');
+
+		// Send LEFT arrow key (should not navigate to previous problem)
+		$commentTextarea->sendKeys(WebDriverKeys::ARROW_LEFT);
+
+		// Verify URL still hasn't changed
+		$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
+			'Arrow left key in comment textarea should not navigate to previous problem');
 	}
 }

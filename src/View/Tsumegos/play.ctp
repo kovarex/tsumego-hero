@@ -1882,13 +1882,18 @@ if (
 		var keycode = (event.keyCode ? event.keyCode : event.which);
 		if(mode!=2){
 			if(!msg2selected && !adminCommentOpened && !besogo.editor.getReviewMode()){
-				if(keycode == '37') {
-					window.location.href = previousButtonLink;
-				}else if(keycode == '39'){
-					window.location.href =  nextButtonLink;
-	}
-	}
-	}
+				// Don't navigate if focus is on a textarea or text input
+				var activeElement = document.activeElement;
+				var isTextInput = activeElement && (activeElement.tagName === 'TEXTAREA' || (activeElement.tagName === 'INPUT' && activeElement.type === 'text'));
+				if (!isTextInput) {
+					if(keycode == '37') {
+						window.location.href = previousButtonLink;
+					}else if(keycode == '39'){
+						window.location.href =  nextButtonLink;
+					}
+				}
+			}
+		}
 	});
 
 	function m1hover(){
