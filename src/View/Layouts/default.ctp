@@ -85,7 +85,7 @@ echo $this->Html->charset();
 <link rel="stylesheet" type="text/css" href="/css/default.css?v=3">
 	<?php
 if($lightDark=='dark')
-	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.3">';
+	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.4">';
 
 echo $this->Html->meta('icon');
 echo $this->fetch('meta');
