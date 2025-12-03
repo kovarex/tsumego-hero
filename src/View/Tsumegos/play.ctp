@@ -255,7 +255,7 @@ if (
 	}
 	}
 		if(Auth::isAdmin()) { ?>
-		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(250);">(Edit)</a>
+		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
 		<div class="modify-description-panel">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
