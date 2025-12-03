@@ -213,7 +213,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			// Send RIGHT arrow key (should not navigate to next problem)
 			$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ARROW_RIGHT);
 
-			usleep(1000 * 200); // I need specific wait here, as I'm also testing that it doesn't navigate
+			usleep(1000 * 300); // I need specific wait here, as I'm also testing that it doesn't navigate
 
 			// Verify URL hasn't changed (we're still on the same problem)
 			if ($focusComment)
@@ -226,7 +226,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 			// Send LEFT arrow key (should not navigate to previous problem)
 			$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ARROW_LEFT);
-			usleep(1000 * 200); // I need specific wait here, as I'm also testing that it doesn't navigate
+			usleep(1000 * 300); // I need specific wait here, as I'm also testing that it doesn't navigate
 
 			// Verify URL still hasn't changed when focused, and if we are focused, we should get back to the original one
 			$this->assertSame($currentUrl, $browser->driver->getCurrentURL(),
