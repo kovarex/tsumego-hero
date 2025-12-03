@@ -61,7 +61,7 @@ foreach ($issues as $index => $issue)
 		if (strtotime($earliestCommentDate) < strtotime($sortDate))
 			$sortDate = $earliestCommentDate;
 	}
-	
+
 	$allItems[] = [
 		'type' => 'issue',
 		'created' => $sortDate, // Use earliest comment date for sorting
@@ -131,7 +131,7 @@ else
 <div id="comments-section-<?php echo $tsumegoId; ?>" hx-ext="morph" data-tsumego-id="<?php echo $tsumegoId; ?>">
 	<!-- Tab navigation - always visible, clicking toggles content -->
 	<div class="tsumego-comments__tabs" id="msg1x">
-		<button class="<?php echo $commentsTabClass; ?>" data-filter="open">
+		<button class="<?php echo $commentsTabClass; ?>" data-filter="open" id="open-comments-button">
 			<?php echo $commentsTabText; ?>
 		</button>
 		<button class="<?php echo $closedTabClass; ?>" data-filter="closed">
