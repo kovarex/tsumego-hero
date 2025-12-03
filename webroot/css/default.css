@@ -384,28 +384,28 @@ li.statusCurrent::before
 	pointer-events: none;
 }
 
-li.statusN { background-color: #7f8287; }
+li.statusN { background-color: var(--status-n-color); }
 li.statusN:hover { background-color: #a6a9b0; }
 
-li.statusV { background-color: #2d98e0; }
+li.statusV { background-color: var(--status-v-color); }
 li.statusV:hover { background-color: #74b5e0; }
 
 li.statusS,
-li.statusC { background-color: #3ecf78; }
+li.statusC { background-color: var(--status-solved-color); }
 
 li.statusS:hover,
 li.statusC:hover { background-color: #6be39a; }
 
-li.statusW { background-color: #34cfcc; }
+li.statusW { background-color: var(--status-w-color); }
 li.statusW:hover { background-color: #7acfcd; }
 
 li.statusF,
-li.statusX { background-color: #e0747f; }
+li.statusX { background-color: var(--status-failed-color); }
 
 li.statusF:hover,
 li.statusX:hover { background-color: #e09da4; }
 
-li.statusG { background-color: #d7e062; }
+li.statusG { background-color: var(--status-g-color); }
 li.statusG:hover { background-color: #e5ee74; }
 
 li a {

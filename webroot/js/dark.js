@@ -42,12 +42,6 @@ function darkAndLight()
     $(".btn.active, .btn:active").css("color", "#323232");
     $(".btn:active:hover").css("background-color", "#f0f0f0");
     $(".btn:active:hover").css("color", "#323232");
-    $("li.statusS,li.statusC").css("background-color", "#0a4");
-    $("li.statusF,li.statusX").css("background-color", "#dd3a4b");
-    $("li.statusW").css("background-color", "#00aeab");
-    $("li.statusV").css("background-color", "#0088e3");
-    $("li.statusN").css("background-color", "#444");
-    $("li.statusG").css("background-color", "#b0bd00");
     $(".setViewAccuracy").css("color", "#c234ff");
     $(".setViewTime").css("color", "#d55e29");
     $(".admin-panel, .selectable-text, .admin-panel font").css(
@@ -139,12 +133,6 @@ function darkAndLight()
     $(".highscoreTable .color12").css("background-color", "#ddd");
     $(".btn.active, .btn:active").css("background-color", "#323232");
     $(".btn.active, .btn:active").css("color", "#fff");
-    $("li.statusS,li.statusC").css("background-color", "#3ecf78");
-    $("li.statusF,li.statusX").css("background-color", "#c63f4d");
-    $("li.statusW").css("background-color", "34cfcc");
-    $("li.statusV").css("background-color", "2d98e0");
-    $("li.statusN").css("background-color", "7f8287");
-    $("li.statusG").css("background-color", "#d7e062");
     $(".setViewAccuracy").css("color", "#722394");
     $(".setViewTime").css("color", "#b34717");
     $(".admin-panel, .selectable-text, .admin-panel font").css(

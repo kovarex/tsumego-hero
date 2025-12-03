@@ -59,14 +59,6 @@
   background-color: #f0f0f0;
   color: #323232;
 }
-li.statusS,
-li.statusC { background-color: #0a4; }
-li.statusF,
-li.statusX { background-color: #dd3a4b; }
-li.statusW { background-color: #00aeab; }
-li.statusV { background-color: #0088e3; }
-li.statusG { background-color: #b0bd00; }
-li.statusN { background-color: #444; }
 
 .setViewAccuracy {
   color: #c234ff;

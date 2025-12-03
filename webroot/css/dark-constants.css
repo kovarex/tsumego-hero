@@ -8,4 +8,10 @@
 	--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
     --title4-gradient: linear-gradient(#737373, #4a4a4a);
 	--body-background-gradient: linear-gradient(#2a2a2a, #111);
+	--status-solved-color: #0a4;
+	--status-failed-color: #dd3a4b;
+	--status-w-color: #00aeab;
+	--status-v-color: #0088e3;
+	--status-n-color: #444;
+	--status-g-color: #b0bd00;
 }
