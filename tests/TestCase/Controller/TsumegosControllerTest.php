@@ -194,8 +194,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$context = new ContextPreparator([
 				'user' => ['admin' => true],
 				'other-tsumegos' => [
-				['sets' => [['name' => 'test set', 'num' => '1']]],
-				['sets' => [['name' => 'test set', 'num' => '2']]]]]);
+					['sets' => [['name' => 'test set', 'num' => '1']]],
+					['sets' => [['name' => 'test set', 'num' => '2']]]]]);
 
 			$browser = Browser::instance();
 			$currentUrl = Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'];
