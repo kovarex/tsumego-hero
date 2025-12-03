@@ -56,15 +56,7 @@ class TestCaseWithAuth extends ControllerTestCase
 	{
 		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
 
-		// removing the hole after first problem (the dividng empty li)
-		if (count($navigationButtons) > 1)
-			array_splice($navigationButtons, 1, 1);
-
-		// removing the hole before last
-		if (count($navigationButtons) > 2)
-			array_splice($navigationButtons, count($navigationButtons) - 2, 1);
-
-		$this->assertCount($count, $navigationButtons); // 4 testing ones and two 'empty' borders
+		$this->assertCount($count, $navigationButtons);
 		foreach ($navigationButtons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key), $indexFunction($currentIndex), $currentStatus);
 	}
