@@ -1,4 +1,3 @@
-<script src ="/js/previewBoard.js"></script>
 <?php
 	if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';

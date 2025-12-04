@@ -3,7 +3,6 @@
 	$highestLeft = 19;
 	$highestRight = 17;
 ?>
-	<script src ="/js/previewBoard.js"></script>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<div class="homeRight">
 		<div class="new-tsumego-box">

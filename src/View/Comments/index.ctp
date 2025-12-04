@@ -1,4 +1,3 @@
-<script src ="/js/previewBoard.js"></script>
 <div class="imp">
 <?php if(Auth::isAdmin()){ ?>
 	<div class="admin-panel-main-page" style="top:10px;left:540px">

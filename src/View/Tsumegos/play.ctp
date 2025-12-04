@@ -29,7 +29,6 @@
 <script src="/besogo/js/diffInfo.js"></script>
 <script src="/besogo/js/scaleParameters.js"></script>
 <script src ="/FileSaver.min.js"></script>
-<script src ="/js/previewBoard.js"></script>
 <script src ="/js/TagConnectionsEdit.js?v=4"></script>
 <?php
 	$choice = array();

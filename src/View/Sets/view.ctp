@@ -1,4 +1,3 @@
-<script src ="/js/previewBoard.js"></script>
 <?php
 	$noImage = false;
 	if($isFav) $noImage = true;
