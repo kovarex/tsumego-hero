@@ -17,11 +17,30 @@ class SmokeTest extends ControllerTestCase
 	 */
 	public function testAllMajorPagesLoadWithoutErrors()
 	{
-		// Create test user
+		// Create realistic production-like test data
 		$context = new ContextPreparator([
 			'user' => ['name' => 'smoketest', 'rating' => 1500],
+			'other-users' => [
+				['name' => 'opponent1', 'rating' => 1600],
+				['name' => 'opponent2', 'rating' => 1400],
+			],
+			'tsumego' => [
+				'rating' => 1000,
+				'sets' => [
+					['name' => 'Free Set', 'num' => '1'],
+				],
+			],
+			'other-tsumegos' => [
+				['rating' => 1100],
+				['rating' => 1200],
+			],
+			'day-records' => [
+				['date' => date('Y-m-d'), 'solved' => 10, 'visitedproblems' => 20],
+			],
 		]);
 		$browser = Browser::instance();
+		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
+		$setId = $context->tsumego['sets'][0]['id'];
 		$userId = $context->user['id'];
 
 		$pages = [
@@ -30,18 +49,15 @@ class SmokeTest extends ControllerTestCase
 
 			// Collections
 			['url' => 'sets', 'name' => 'Sets index'],
+			['url' => "sets/view/$setId", 'name' => 'Set view'],
+			['url' => 'sets/view/favorites', 'name' => 'Favorites'],
 
-			// NOTE: Skipping pages that require specific DB records or premium access:
-			// - sets/sandbox (requires premium)
-			// - sets/view/favorites (requires auth + favorites data)
-			// - sets/view/{id} (requires set to exist in DB)
-			// - tsumegos/play/{id} (requires tsumego to exist in DB)
-			// - timeMode/overview (MySQL 8 BUCKET reserved word bug)
+			// Tsumego play
+			['url' => $setConnectionId, 'name' => 'Tsumego play'],
 
 			// Achievements & rewards (work without specific data)
 			['url' => 'achievements', 'name' => 'Achievements'],
 			['url' => 'users/rewards', 'name' => 'Rewards'],
-			// ['url' => 'achievements/view/1', 'name' => 'Achievement view'], // TODO: Test with real achievement ID
 
 			// User pages
 			['url' => "users/view/$userId", 'name' => 'User profile'],
@@ -49,7 +65,6 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'users/highscore', 'name' => 'Level highscore'],
 			['url' => 'users/rating', 'name' => 'Rating highscore'],
 			// NOTE: /users/achievements requires json/achievement_highscore.json which is generated externally
-			// ['url' => 'users/achievements', 'name' => 'Achievement highscore'],
 			['url' => 'users/added_tags', 'name' => 'Tag highscore'],
 			['url' => 'users/leaderboard', 'name' => 'Daily leaderboard'],
 
