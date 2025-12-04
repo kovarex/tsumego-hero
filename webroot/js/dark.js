@@ -1,11 +1,11 @@
 function darkAndLight()
 {
-	const link = document.getElementById("theme-css");
+	const link = document.getElementById("theme-css-constants");
 
 	if (light)
-		link.setAttribute("href", "/cache_css/dark-theme.css");
+		link.setAttribute("href", "/css/dark-constants.css");
 	else
-		link.setAttribute("href", "/cache_css/light-theme.css");
+		link.setAttribute("href", "/css/light-constants.css");
 
   if (light)
   {
