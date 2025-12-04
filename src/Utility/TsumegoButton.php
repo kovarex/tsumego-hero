@@ -2,7 +2,7 @@
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, bool $passEnabled, bool $alternativeResponse)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, bool $passEnabled, bool $alternativeResponse)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
@@ -12,7 +12,7 @@ class TsumegoButton
 		$this->alternativeResponse = $alternativeResponse;
 	}
 
-	public function render(int $index)
+	public function render()
 	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 		/*
@@ -25,7 +25,7 @@ class TsumegoButton
 		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
+		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
 		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . '<span class="tooltip-box"></span></a>';
 		echo '</li>';
 	}
@@ -47,7 +47,7 @@ class TsumegoButton
 	public int $tsumegoID;
 	public int $setConnectionID;
 	public int $order;
-	public string $status;
+	public ?string $status;
 	public bool $passEnabled; // used for set view statistics
 	public bool $alternativeResponse ; // used for set view statistics
 	public float $seconds = 0;
