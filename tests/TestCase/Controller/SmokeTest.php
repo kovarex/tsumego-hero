@@ -46,6 +46,12 @@ class SmokeTest extends ControllerTestCase
 		$pages = [
 			// Core pages
 			['url' => '', 'name' => 'Homepage'],
+			// NOTE: Skipping pages that require specific DB records or premium access:
+			// - sets/sandbox (requires premium)
+			// - sets/view/favorites (requires auth + favorites data)
+			// - sets/view/{id} (requires set to exist in DB)
+			// - tsumegos/play/{id} (requires tsumego to exist in DB)
+			// - timeMode/overview (MySQL 8 BUCKET reserved word bug)
 
 			// Collections
 			['url' => 'sets', 'name' => 'Sets index'],
@@ -58,6 +64,7 @@ class SmokeTest extends ControllerTestCase
 			// Achievements & rewards (work without specific data)
 			['url' => 'achievements', 'name' => 'Achievements'],
 			['url' => 'users/rewards', 'name' => 'Rewards'],
+			// ['url' => 'achievements/view/1', 'name' => 'Achievement view'], // TODO: Test with real achievement ID
 
 			// User pages
 			['url' => "users/view/$userId", 'name' => 'User profile'],
@@ -65,6 +72,7 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'users/highscore', 'name' => 'Level highscore'],
 			['url' => 'users/rating', 'name' => 'Rating highscore'],
 			// NOTE: /users/achievements requires json/achievement_highscore.json which is generated externally
+			// ['url' => 'users/achievements', 'name' => 'Achievement highscore'],
 			['url' => 'users/added_tags', 'name' => 'Tag highscore'],
 			['url' => 'users/leaderboard', 'name' => 'Daily leaderboard'],
 
