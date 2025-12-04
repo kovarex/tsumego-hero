@@ -2803,13 +2803,9 @@ Joschka Zimdars';
 			throw new MethodNotAllowedException();
 
 		if ($this->Comment->delete($id))
-			$this->Flash->success(
-				__('The post with id: %s has been deleted.', h($id))
-			);
+			CookieFlash::set(__('The post with id: %s has been deleted.', h($id)), 'success');
 		else
-			$this->Flash->error(
-				__('The post with id: %s could not be deleted.', h($id))
-			);
+			CookieFlash::set(__('The post with id: %s could not be deleted.', h($id)), 'error');
 
 		return $this->redirect(['action' => '/stats']);
 	}

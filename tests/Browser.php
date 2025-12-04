@@ -280,6 +280,15 @@ class Browser
 		static $browser = null;
 		if ($browser == null)
 			$browser = new Browser();
+		// Dismiss any lingering alerts from previous tests
+		try
+		{
+			$browser->driver->switchTo()->alert()->dismiss();
+		}
+		catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+		{
+			// No alert present, that's fine
+		}
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		return $browser;

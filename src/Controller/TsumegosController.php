@@ -5,6 +5,7 @@ App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('AppException', 'Utility');
+App::uses('CookieFlash', 'Utility');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -846,7 +847,7 @@ class TsumegosController extends AppController
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 		{
-			$this->Flash->set("Tsumego with id=" . $tsumegoID . ' doesn\'t exist.');
+			CookieFlash::set("Tsumego with id=" . $tsumegoID . ' doesn\'t exist.', 'error');
 			return $this->redirect('/sets');
 		}
 		$tsumego = $tsumego['Tsumego'];
@@ -865,7 +866,7 @@ class TsumegosController extends AppController
 		}
 		catch (RatingParseException $e)
 		{
-			$this->Flash->set("Rating parse error:" . $e->getMessage());
+			CookieFlash::set("Rating parse error:" . $e->getMessage(), 'error');
 			return $this->redirect($this->data['redirect']);
 		}
 
@@ -878,7 +879,7 @@ class TsumegosController extends AppController
 			}
 			catch (RatingParseException $e)
 			{
-				$this->Flash->set("Minimum rating parse error:" . $e->getMessage());
+				CookieFlash::set("Minimum rating parse error:" . $e->getMessage(), 'error');
 				return $this->redirect($this->data['redirect']);
 			}
 		}
@@ -892,7 +893,7 @@ class TsumegosController extends AppController
 			}
 			catch (RatingParseException $e)
 			{
-				$this->Flash->set("Maximum rating parse error:" . $e->getMessage());
+				CookieFlash::set("Maximum rating parse error:" . $e->getMessage(), 'error');
 				return $this->redirect($this->data['redirect']);
 			}
 		}
@@ -901,7 +902,7 @@ class TsumegosController extends AppController
 			&& !is_null($maximumRating)
 			&& $minimumRating > $maximumRating)
 		{
-			$this->Flash->set("Minimum rating can't be bigger than maximum");
+			CookieFlash::set("Minimum rating can't be bigger than maximum", 'error');
 			return $this->redirect($this->data['redirect']);
 		}
 
