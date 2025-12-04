@@ -73,11 +73,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Setup AssetCompress for CI
-        run: |
-          # Enable dispatcher filter in CI (normally disabled in production)
-          sed -i 's/alwaysEnableController = false/alwaysEnableController = true/' src/Config/asset_compress.ini
-
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
@@ -98,7 +93,14 @@ jobs:
       - name: Setup tmp directories
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
-          chmod -R 777 tmp
+          mkdir -p webroot/cache_css webroot/cache_js
+          chmod -R 777 tmp webroot/cache_css webroot/cache_js
+
+      - name: Build AssetCompress assets
+        run: |
+          ./bin/cake AssetCompress.AssetCompress build
+          echo "Built AssetCompress assets:"
+          ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
 
       - name: Setup database config
         run: |
