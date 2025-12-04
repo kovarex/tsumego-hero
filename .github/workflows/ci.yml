@@ -100,6 +100,8 @@ jobs:
           mkdir -p webroot/cache_css webroot/cache_js
           chmod -R 777 webroot/cache_css webroot/cache_js
           ./bin/cake AssetCompress.AssetCompress build
+          echo "Verifying built bundles:"
+          ls -lh webroot/cache_css/ webroot/cache_js/ || echo "No bundles found!"
 
       - name: Setup database config
         run: |
