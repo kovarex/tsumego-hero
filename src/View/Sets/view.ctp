@@ -736,7 +736,6 @@
 		<?php
 			if($refreshView)
 				echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";';
-			$tsumegoButtons->renderJS();
 		?>
 	</script>
 	<style>

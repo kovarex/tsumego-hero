@@ -26,8 +26,27 @@ class TsumegoButton
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
 		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . '<span class="tooltip-box"></span></a>';
 		echo '</li>';
+	}
+
+	private function generateTooltip(): string
+	{
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
+		if (!$sgf)
+			return '';
+		$result = '';
+		$result .= 'if (this.querySelector(\'svg\')) return;';
+		$result .= 'tooltipSgf = [];' . PHP_EOL;
+		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
+		for($y = 0; $y < count($sgf->board); $y++)
+		{
+			$result .= 'tooltipSgf[' . $y . '] = [];' . PHP_EOL;
+			for ($x = 0; $x < count($sgf->board[$y]); $x++)
+				$result .= 'tooltipSgf[' . $y . '].push(\'' . $sgf->board[$x][$y] . '\');' . PHP_EOL;
+		}
+		$result .= 'createPreviewBoard(this, tooltipSgf,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
+		return $result;
 	}
 
 	public int $tsumegoID;

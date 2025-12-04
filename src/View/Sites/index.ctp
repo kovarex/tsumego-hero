@@ -431,7 +431,6 @@
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
 		<script>
-		<?php $tsumegoButtonsOfPublishedTsumegos->renderJS(); ?>
 		window.onload = function () {
 
 		var chart = new CanvasJS.Chart("chartContainer", {
