@@ -48,12 +48,15 @@ class ContextPreparator
 	{
 		if (!$user)
 		{
-			CakeSession::destroy();
+			Auth::logout();
+			unset($_COOKIE['hackedLoggedInUserID']);
 			return;
 		}
 		$this->user = $this->prepareUser($user);
-		CakeSession::write('loggedInUserID', $this->user['id']);
-		assert(CakeSession::check('loggedInUserID'));
+		
+		// Set hackedLoggedInUserID for test environment auth
+		$_COOKIE['hackedLoggedInUserID'] = $this->user['id'];
+		
 		Auth::init();
 		// Achievements popups can get into the way when testing, once we want to test achievements
 		// we can make this command conditional

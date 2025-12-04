@@ -18,6 +18,8 @@ class Util
 			'httponly' => false,
 			'samesite' => 'Lax'
 		]);
+		// Also update $_COOKIE so the value is available in the current request
+		$_COOKIE[$name] = $value;
 	}
 
 	/* @return The value of the cleared cookie */

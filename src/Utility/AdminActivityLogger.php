@@ -1,7 +1,7 @@
 <?php
 
 App::uses('ClassRegistry', 'Utility');
-App::uses('CakeSession', 'Model/Datasource');
+App::uses('Auth', 'Utility');
 
 /**
  * AdminActivityLogger
@@ -42,7 +42,7 @@ class AdminActivityLogger
 	 */
 	public static function log($type, $tsumegoId = null, $setId = null, $oldValue = null, $newValue = null)
 	{
-		$userId = CakeSession::read('loggedInUserID');
+		$userId = Auth::getUserID();
 		if (!$userId)
 			return false; // Only logged-in users
 

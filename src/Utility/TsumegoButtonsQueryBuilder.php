@@ -74,7 +74,7 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
-		$currentRank = CakeSession::read('lastSet');
+		$currentRank = $_COOKIE['lastSet'] ?? '15k';
 		$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
 		$ratingBounds->addSqlConditions($this->condition);
 		$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
@@ -85,7 +85,7 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'tags')
 			return;
 
-		$currentTag = CakeSession::read('lastSet');
+		$currentTag = $_COOKIE['lastSet'] ?? '';
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
 			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");

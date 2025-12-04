@@ -264,7 +264,7 @@ class TsumegosController extends AppController
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Signature');
-		$this->Session->write('page', 'play');
+		$this->set('_page', 'play');
 
 		$similarId = [];
 		$similarArr = [];
@@ -287,7 +287,7 @@ class TsumegosController extends AppController
 		$tSgfResult = SgfParser::process($sgf['Sgf']['sgf']);
 		$tNumStones = isset($tSgfResult->stones) ? count($tSgfResult->stones) : 0;
 
-		$this->Session->write('title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
+		$this->set('_title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
 
 		$t = $this->Tsumego->findById($id);
 		$sig = $this->Signature->find('all', ['conditions' => ['tsumego_id' => $id]]);

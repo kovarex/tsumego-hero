@@ -114,11 +114,11 @@ class Browser
 
 	public function get(string $url): void
 	{
-		if ($url != 'empty.php' && CakeSession::check("loggedInUserID"))
+		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
-				'value' => (string) CakeSession::read("loggedInUserID")
+				'value' => (string) Auth::getUserID()
 			]);
 			if (!empty($_COOKIE['disable-achievements']))
 				$this->driver->manage()->addCookie([

@@ -8,8 +8,8 @@ class ActivatesController extends AppController
 	 */
 	public function index()
 	{
-		$this->Session->write('page', 'home');
-		$this->Session->write('title', 'Tsumego Hero - Activate');
+		$this->set('_page', 'home');
+		$this->set('_title', 'Tsumego Hero - Activate');
 		$this->loadModel('User');
 
 		/*

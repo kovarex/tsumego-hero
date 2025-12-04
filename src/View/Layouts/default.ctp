@@ -2,6 +2,7 @@
 <html lang="en">
 <?php
 App::uses('Level', 'Utility');
+App::uses('CookieFlash', 'Utility');
 if (Configure::read('debug')) { ?>
 <script>
 	(function () {
@@ -64,18 +65,17 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 ?>
 <?php
-if($this->Session->check('redirect') && $this->Session->read('redirect')=='loading'){
-	$this->Session->delete('redirect');
-	$this->Session->write('initialLoading', 'true');
+// Check redirect cookie and handle loading page redirect
+if (isset($_COOKIE['redirect']) && $_COOKIE['redirect'] == 'loading')
+{
+	Util::clearCookie('redirect');
+	Util::setCookie('initialLoading', 'true');
 	echo '<script type="text/javascript">window.location.href = "/users/loading";</script>';
 }
 echo $this->Html->charset();
 ?>
 <title>
-<?php
-	if(!$this->Session->check('title')) echo 'Tsumego Hero';
-	else echo $this->Session->read('title');
-?>
+<?php echo $_title ?? 'Tsumego Hero'; ?>
 </title>
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
@@ -139,8 +139,7 @@ $accountBarLevelToRating = 'account-bar-user';
 		</div>
 		<div class="outerMenu1">
 				<?php
-			if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
-			else $lv = '15352';
+			$lv = $_COOKIE['lastVisit'] ?? '15352';
 
 			if(Auth::isLoggedIn()){
 				if(Auth::hasPremium()) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
@@ -180,31 +179,32 @@ $accountBarLevelToRating = 'account-bar-user';
 			$gotutorialA = '';
 			$aboutA = '';
 
-			if($this->Session->read('page') == 'home') $homeA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'set') $collectionsA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page')=='play' || $this->Session->read('page')=='level mode' || $this->Session->read('page')=='rating mode' || $this->Session->read('page')=='time mode'){
+			$_page = $_page ?? '';
+			if($_page == 'home') $homeA = 'style="color:#74d14c;"';
+			else if($_page == 'set') $collectionsA = 'style="color:#74d14c;"';
+			else if($_page=='play' || $_page=='level mode' || $_page=='rating mode' || $_page=='time mode'){
 				$refreshLinkToStart = 'id="refreshLinkToStart"';
 				$refreshLinkToSets = 'id="refreshLinkToSets"';
 				$refreshLinkToHighscore = 'id="refreshLinkToHighscore"';
 				$refreshLinkToLeaderboard = 'id="refreshLinkToLeaderboard"';
 				$refreshLinkToSandbox = 'id="refreshLinkToSandbox"';
 				$refreshLinkToDiscuss = 'id="refreshLinkToDiscuss"';
-				if($this->Session->read('page') == 'level mode') $levelModeA = 'style="color:#74d14c;"';
-				else if($this->Session->read('page') == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
-				else if($this->Session->read('page') == 'time mode') $timeModeA = 'style="color:#74d14c;"';
-				} else if ($this->Session->read('page') == 'highscore') $highscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'discuss') $discussA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'about') $aboutA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
-			else if($this->Session->read('page') == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
+				if($_page == 'level mode') $levelModeA = 'style="color:#74d14c;"';
+				else if($_page == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
+				else if($_page == 'time mode') $timeModeA = 'style="color:#74d14c;"';
+				} else if ($_page == 'highscore') $highscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'discuss') $discussA = 'style="color:#74d14c;"';
+			else if($_page == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
+			else if($_page == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
+			else if($_page == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
+			else if($_page == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
+			else if($_page == 'about') $aboutA = 'style="color:#74d14c;"';
+			else if($_page == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
 
 			if(isset($nextMode['Tsumego']['id'])){
 				if($nextMode['Tsumego']['id']==null) $nextMode['Tsumego']['id'] = 15352;
@@ -259,8 +259,7 @@ $accountBarLevelToRating = 'account-bar-user';
 								echo '</ul>';
 								}
 								}
-						if($this->Session->check('lastVisit')) $sessionLastVisit = $this->Session->read('lastVisit');
-						else $sessionLastVisit = 15352;
+						$sessionLastVisit = $_COOKIE['lastVisit'] ?? 15352;
 						echo '</li>';
 						echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
 						echo '<ul class="newMenuLi3">';
@@ -353,7 +352,7 @@ $accountBarLevelToRating = 'account-bar-user';
 		<div class="outerMenu3">
 			<?php
 			$currentPage = '';
-			if($this->Session->read('page') == 'user')
+			if($_page == 'user')
 				$currentPage = 'style="color:#74d14c;" ';
 			if(!Auth::isLoggedIn())
 				echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
@@ -415,8 +414,7 @@ $accountBarLevelToRating = 'account-bar-user';
 	}
 		echo $refreshLinkToLeaderboardBackup.$refreshLinkToSandboxBackup.$refreshLinkToDiscussBackup;
 		echo '<div id="content" '.$setHeight.'>';
-		echo $this->Session->flash();
-		echo $this->Flash->render();
+		echo CookieFlash::render();
 		echo $this->fetch('content');
 		?>
 	</div>
@@ -518,7 +516,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	var levelToRatingHover = <?php echo $levelBar; ?>;
 	<?php } ?>
 		<?php
-	if($this->Session->read('page')!='level mode' && $this->Session->read('page')!='rating mode' && $this->Session->read('page')!='time mode')
+	if($_page!='level mode' && $_page!='rating mode' && $_page!='time mode')
 		echo 'setCookie("mode", 1);';
 
 	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;

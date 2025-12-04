@@ -15,8 +15,8 @@ class CommentsController extends AppController
 		$this->loadModel('User');
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
-		$this->Session->write('title', 'Tsumego Hero - Discuss');
-		$this->Session->write('page', 'discuss');
+		$this->set('_title', 'Tsumego Hero - Discuss');
+		$this->set('_page', 'discuss');
 		$c = [];
 		$setsWithPremium = [];
 		$index = 0;

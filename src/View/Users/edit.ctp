@@ -32,7 +32,7 @@
 
 <div class="users form">
 <h2><?php  __('Account');?></h2>
-    <?php $session->flash(); ?>
+    <?php echo CookieFlash::render(); ?>
     
     <fieldset>
         <legend><?php __('Account bearbeiten');?></legend>

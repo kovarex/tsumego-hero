@@ -6,6 +6,7 @@
     "license": "proprietary",
     "require": {
 		"php": ">=8.4",
+		"firebase/php-jwt": "^6.11.1",
 		"pieceofcake2/cakephp": "^2.12"
 	},
     "require-dev": {
