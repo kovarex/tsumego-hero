@@ -31,6 +31,7 @@ class CommentsController extends AppController
 		$paramyourindex = 0;
 		$unresolvedSet = 'true';
 		$this->set('yourComments', new CommentsRenderer("your_comments", Auth::getUserID(), $this->params['url']));
+		$this->set('allComments', new CommentsRenderer("all_comments", null, $this->params['url']));
 		if (!isset($this->params['url']['unresolved']))
 		{
 			$unresolved = 'false';

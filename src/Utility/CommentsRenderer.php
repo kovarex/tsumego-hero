@@ -2,9 +2,10 @@
 
 class CommentsRenderer
 {
-	public function __construct($name, $userID, $urlParams)
+	public function __construct(string $name, ?int $userID, $urlParams)
 	{
 		$this->userID = $userID;
+		$this->params = $urlParams;
 		$this->page = isset($params[$name . '_page']) ? max(1, (int) $this->params[$name . '_page']) : 1;
 	}
 
@@ -84,7 +85,7 @@ FROM
 			echo '<div class="space"><br></div>';
 		}
 	}
-	public int $userID;
+	public ?int $userID;
 	public int $page;
 	public static int $PAGE_SIZE = 10;
 }

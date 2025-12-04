@@ -44,68 +44,9 @@
 		<p class="title4">Comments</p>
 		<div class="new1" width="100%" style="margin-bottom:15px;">
 			<div align="center">
-				<br>
-				<?php
-					if(!$empty){
-						if(Auth::isAdmin()){
-							if(!isset($unresolved)){ $unresolved = 'false'; $unresolvedSet = 'false'; }
-							else $unresolvedSet = 'true';
-							if($unresolvedSet == 'false'){
-								$unresolvedSet = '';
-							}else{
-								if($unresolved == 'false'){ $unresolvedSet = 'unresolved=false&'; $filter1=='false'; }
-								elseif($unresolved == 'true'){ $unresolvedSet = 'unresolved=true&'; $filter1=='false'; }
-							}
-							}
-						if(isset($filter1)){
-							if($filter1=='true') $filter11='false';
-							else $filter11='true';
-							if($filter11=='false'){ $filterx='viewable'; $filterx2=''; }
-							else{ $filterx='all'; $filterx2='2'; }
-							echo '
-							<div style="float:left;">
-								<a href="/comments?filter='.$filter11.'" class="new-button'.$filterx2.'">'.$filterx.'</a>
-							</div>';
-							$filter1 = 'filter='.$filter1.'&';
-						}else{
-							echo '
-							<div style="float:left;">
-								<a href="/comments?filter=false" class="new-button">viewable</a>
-							</div>';
-							$filter1 = '';
-						}
-						if($firstPage && count($comments)<11);
-						else{
-							$moreparams = '';
-							if($paramyourcommentid!=0) $moreparams = '&your-direction='.$paramyourdirection.'&your-index='.$paramyourindex.'&your-comment-id='.$paramyourcommentid;
-							if($index!=0) echo '<a href="/comments?'.$unresolvedSet.$filter1.'direction=prev&index='.($num1-20).'&comment-id='.$idToken2.$moreparams.'" class="new-button" >prev. page</a>';
-							else echo '<a class="new-button-inactive" >prev. page</a>';
-							if(count($comments)==11) echo '<a href="/comments?'.$unresolvedSet.$filter1.'direction=next&index='.$num1.'&comment-id='.$idToken1.$moreparams.'" class="new-button" >next page</a>';
-							else echo '<a class="new-button-inactive" >next page</a>';
-						}
-						if(Auth::isAdmin()){
-							if($unresolved=='false'){
-								echo '<div style="float:right;">
-									<a href="/comments?unresolved=true" class="new-button2">all</a>
-								</div>';
-							}elseif($unresolved=='true'){
-								echo '<div style="float:right;">
-									<a href="/comments?unresolved=false" class="new-button">unresolved('.$comments3.')</a>
-								</div>';
-						}
-						}else{
-								echo '<div style="float:right;">
-								<a href="" class="new-button-inactive3"></a>
-								</div>';
-						}
-						}else{
-						echo 'There are no comments to your solved problems.';
-							}
-				?>
-				<br><br>
+				<?php $allComments->render(); ?>
 			</div>
 		</div>
-		<?php $yourComments->render(); ?>
 	<div width="100%">
 		<div align="center">
 			<?php
@@ -127,13 +68,10 @@
 	</td>
 	<td width="50%">
 		<p class="title4">Your Comments</p>
-		<div class="new1" width="100%" style="margin-bottom:15px;">
-			<div align="center"></div>
+		<div width="100%">
+			<div align="center"><br></div>
+			<?php $yourComments->render(); ?>
 		</div>
-	<div width="100%">
-		<div align="center"><br><br></div>
-	</div>
-
 	</td>
 	</tr>
 	</table>
