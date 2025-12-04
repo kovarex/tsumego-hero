@@ -26,8 +26,22 @@ class TsumegoButton
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
 		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . '<span class="tooltip-box"></span></a>';
 		echo '</li>';
+	}
+
+	private function generateTooltip(): string
+	{
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
+		if (!$sgf)
+			return '';
+		$result = '';
+		$result .= 'if (this.querySelector(\'svg\')) return;';
+		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
+		$result .= 'black = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->blackStones)) . '\';';
+		$result .= 'white = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->whiteStones)) . '\';';
+		$result .= 'createPreviewBoard(this, black, white,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
+		return $result;
 	}
 
 	public int $tsumegoID;
