@@ -139,7 +139,7 @@ jobs:
               ];
           }
           EOF
-          cp config/core.local.example.php config/core.local.php
+          cp .github/ci/core.local.php config/core.local.php
 
       - name: Import database schema
         run: |
