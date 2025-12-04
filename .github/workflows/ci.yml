@@ -73,6 +73,16 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Setup AssetCompress for CI
+        run: |
+          # CI uses controller for dynamic asset serving (no build needed)
+          # MUST be before composer install so config loads correctly on bootstrap
+          mkdir -p src/Config
+          cat > src/Config/asset_compress.local.ini << 'EOF'
+          [General]
+          alwaysEnableController = true
+          EOF
+
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
@@ -94,14 +104,6 @@ jobs:
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
           chmod -R 777 tmp
-
-      - name: Setup AssetCompress for CI
-        run: |
-          # CI uses controller for dynamic asset serving (no build needed)
-          cat > src/Config/asset_compress.local.ini << 'EOF'
-          [General]
-          alwaysEnableController = true
-          EOF
 
       - name: Setup database config
         run: |
