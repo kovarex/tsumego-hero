@@ -95,13 +95,13 @@ jobs:
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
           chmod -R 777 tmp
 
-      - name: Build AssetCompress bundles
+      - name: Setup AssetCompress for CI
         run: |
-          mkdir -p webroot/cache_css webroot/cache_js
-          chmod -R 777 webroot/cache_css webroot/cache_js
-          ./bin/cake AssetCompress.AssetCompress build
-          echo "Verifying built bundles:"
-          ls -lh webroot/cache_css/ webroot/cache_js/ || echo "No bundles found!"
+          # CI uses controller for dynamic asset serving (no build needed)
+          cat > src/Config/asset_compress.local.ini << 'EOF'
+          [General]
+          alwaysEnableController = true
+          EOF
 
       - name: Setup database config
         run: |
