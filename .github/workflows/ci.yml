@@ -173,6 +173,11 @@ jobs:
         run: |
           mkdir -p coverage
           ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
+          
+          # Debug: Check SERVER_NAME and debug mode
+          echo ""
+          echo "Debug info from xdebug-prepend.php:"
+          cat /tmp/ci-debug.log || echo "(no debug log found)"
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php
