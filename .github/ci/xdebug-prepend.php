@@ -1,11 +1,4 @@
 <?php
-// Debug: Log server environment to file
-file_put_contents('/tmp/ci-debug.log', 
-	"[XdebugPrepend] SERVER_NAME=" . ($_SERVER['SERVER_NAME'] ?? 'NOT SET') . "\n" .
-	"[XdebugPrepend] HTTP_HOST=" . ($_SERVER['HTTP_HOST'] ?? 'NOT SET') . "\n",
-	FILE_APPEND
-);
-
 if (!function_exists('xdebug_start_code_coverage')) return;
 try {
 	@xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);

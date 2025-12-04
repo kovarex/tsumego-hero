@@ -101,9 +101,6 @@ jobs:
           ./bin/cake AssetCompress.AssetCompress build
           echo "Built AssetCompress assets:"
           ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
-          echo ""
-          echo "AssetCompress build time file:"
-          ls -lh tmp/asset_compress_build_time || echo "WARNING: Build time file not created!"
 
       - name: Setup database config
         run: |
@@ -173,11 +170,6 @@ jobs:
         run: |
           mkdir -p coverage
           ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
-          
-          # Debug: Check SERVER_NAME and debug mode
-          echo ""
-          echo "Debug info from xdebug-prepend.php:"
-          cat /tmp/ci-debug.log || echo "(no debug log found)"
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php
