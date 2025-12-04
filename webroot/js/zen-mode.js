@@ -1,17 +1,92 @@
 /**
- * Zen Mode functionality for Tsumego Hero
+ * Zen Mode - Simplified with idiomorph (no board preservation needed!)
  *
- * Provides a distraction-free puzzle-solving experience with:
- * - Toggle on/off with 'z' key or button click
- * - Exit with Escape key or exit button
- * - Auto-advance to next puzzle after solving (no page flash)
- *
- * Dependencies:
- * - Expects #zen-mode-toggle and #zen-mode-exit elements in DOM
- * - Expects global variables: nextButtonLink, previousButtonLink, tsumegoID, setID, etc.
- * - Expects besogo library for Go board manipulation
- * - Expects #puzzle-data JSON element on fetched pages
+ * Key insight: Don't preserve board - let idiomorph replace it with fresh HTML,
+ * then besogo re-initializes on the new board element.
  */
+(function() {
+	'use strict';
+
+	var zenModeActive = document.body.classList.contains('zen-mode');
+
+	function enableZenMode() {
+		if (zenModeActive) return;
+		zenModeActive = true;
+		document.body.classList.add('zen-mode');
+	}
+
+	function disableZenMode() {
+		if (zenModeActive) return;
+		zenModeActive = false;
+		document.body.classList.remove('zen-mode');
+	}
+
+	// Toggle/exit with event delegation
+	document.addEventListener('click', function(e) {
+		if (e.target && e.target.id === 'zen-mode-toggle') {
+			enableZenMode();
+			e.preventDefault();
+		}
+		if (e.target && e.target.id === 'zen-mode-exit') {
+			disableZenMode();
+			e.preventDefault();
+		}
+	});
+
+	// Keyboard shortcuts
+	document.addEventListener('keydown', function(e) {
+		if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+		if (e.key === 'z' || e.key === 'Z') {
+			if (zenModeActive) disableZenMode(); else enableZenMode();
+			e.preventDefault();
+		}
+		if (e.key === 'Escape' && zenModeActive) {
+			disableZenMode();
+			e.preventDefault();
+		}
+	});
+
+	// Expose for displayResult
+	window.isZenModeActive = function() { return zenModeActive; };
+
+	/**
+	 * Navigate to next puzzle - morph content including board
+	 */
+	window.zenModeNavigateToNext = function() {
+		if (!nextButtonLink) return Promise.reject(new Error('No next link'));
+
+		return fetch(nextButtonLink)
+			.then(response => response.text())
+			.then(html => {
+				var parser = new DOMParser();
+				var doc = parser.parseFromString(html, 'text/html');
+				var newContent = doc.getElementById('content');
+				
+				if (!newContent) throw new Error('No #content in response');
+
+				// Morph the entire content - INCLUDING the board
+				var currentContent = document.getElementById('content');
+				if (currentContent && typeof Idiomorph !== 'undefined') {
+					Idiomorph.morph(currentContent, newContent, {
+						morphStyle: 'innerHTML'
+					});
+				}
+
+				// Re-process htmx attributes
+				if (typeof htmx !== 'undefined') {
+					htmx.process(currentContent);
+				}
+
+				// Besogo should auto-initialize on the new board element
+				// If not, we may need to call besogo init here
+				
+				// Update URL
+				history.pushState({}, '', nextButtonLink);
+			})
+			.catch(error => console.error('[ZEN] Navigation error:', error));
+	};
+})();
+
 (function() {
 	// Check if zen mode is active (body class persists since we only swap #content)
 	var zenModeActive = document.body.classList.contains('zen-mode');
