@@ -35,44 +35,9 @@ class CommentsRenderer
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
-		{
 			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'], false, false)->render();
-			echo '<li id="naviElement0" class="set'.$comments[$j]['TsumegoComment']['user_tsumego'].'1" style="float:left;margin-top:14px;">
-									<a id="tooltip-hover'.$j.'" class="tooltip" href="/tsumegos/play/'.$comments[$j]['TsumegoComment']['tsumego_id'].$sid.$QorA
-				.'search=topics">'.$comments[$j]['TsumegoComment']['num']
-				.'<span><div id="tooltipSvg'.$j.'"></div></span></a>
-
-								</li>';
 		echo '</div></div></td></tr>';
 		echo '</table>';
-
-		/*
-		{
-			echo '</td>
-						<td class="sandboxTable2time" align="right">'.$comments[$j]['TsumegoComment']['created'].'</td>';
-			echo '</tr>';
-			echo '
-						<tr>
-							<td colspan="2">
-								<div width="100%">
-									<div align="center">
-										<li id="naviElement0" class="set'.$comments[$j]['TsumegoComment']['user_tsumego'].'1" style="float:left;margin-top:14px;">
-											<a href="/tsumegos/play/'.$comments[$j]['TsumegoComment']['tsumego_id'].$sid.$QorA.'search=topics">'.$comments[$j]['TsumegoComment']['num'].'</a>
-
-										</li>
-									</div>
-									</div>
-							</td>
-						</tr>
-					';
-			echo '</table>';
-		}
-		echo '</div>';
-		if($j<100) $display = " ";
-		else $display = 'style="display:none;"';
-		echo '<div id="space'.$j.'" '.$display.'">';
-		echo '<br>';
-		echo '</div>';*/
 	}
 
 	public function render()
