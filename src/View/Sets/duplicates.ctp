@@ -1,4 +1,9 @@
-	<?php $counter = 0; ?>
+	<?php
+// Load preview board library for duplicate search results
+echo $this->AssetCompress->script('preview');
+
+$counter = 0;
+?>
 	<div align="center">
 	<p class="title">
 		<br>
