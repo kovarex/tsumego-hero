@@ -90,6 +90,12 @@ jobs:
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
           skip_checkout: true
 
+      - name: Build AssetCompress bundles
+        run: |
+          mkdir -p webroot/cache_css webroot/cache_js
+          chmod -R 777 webroot/cache_css webroot/cache_js
+          ./bin/cake AssetCompress.AssetCompress build
+
       - name: Setup database config
         run: |
           cat > config/database.php << 'EOF'
