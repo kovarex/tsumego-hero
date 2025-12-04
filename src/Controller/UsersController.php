@@ -1690,12 +1690,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tags', $tagConnections);
 		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
-		$this->set('tooltipSgfs', $tooltipSgfs);
-		$this->set('tooltipInfo', $tooltipInfo);
-		$this->set('tooltipBoardSize', $tooltipBoardSize);
-		$this->set('tooltipSgfs2', $tooltipSgfs2);
-		$this->set('tooltipInfo2', $tooltipInfo2);
-		$this->set('tooltipBoardSize2', $tooltipBoardSize2);
 		$this->set('approveSgfs', $approveSgfs);
 		$this->set('sgfTsumegos', $sgfTsumegos);
 		$this->set('latestVersionTsumegos', $latestVersionTsumegos);
