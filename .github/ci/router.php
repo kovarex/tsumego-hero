@@ -14,7 +14,8 @@ $requestUri = $_SERVER['REQUEST_URI'];
 $uriWithoutQuery = parse_url($requestUri, PHP_URL_PATH);
 
 // Use DOCUMENT_ROOT which php -S sets to the -t directory (webroot/)
-$filePath = $_SERVER['DOCUMENT_ROOT'] . $uriWithoutQuery;
+// Ensure no double slashes when concatenating
+$filePath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $uriWithoutQuery;
 
 // If the requested file exists, serve it directly (CSS, JS, images, etc.)
 if (file_exists($filePath))
