@@ -76,12 +76,8 @@ jobs:
       - name: Setup AssetCompress for CI
         run: |
           # CI uses controller for dynamic asset serving (no build needed)
-          # MUST be before composer install so config loads correctly on bootstrap
-          mkdir -p src/Config
-          cat > src/Config/asset_compress.local.ini << 'EOF'
-          [General]
-          alwaysEnableController = true
-          EOF
+          # Enable controller mode directly in config file
+          sed -i 's/alwaysEnableController = false/alwaysEnableController = true/' src/Config/asset_compress.ini
 
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
