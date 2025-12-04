@@ -155,8 +155,8 @@ class Util
 	public static function getInternalAddress()
 	{
 		if (Util::isInGithubCI())
-			return 'https://host.docker.internal:8443/vendor/bin';
-		return 'http://localhost/var/www/html/vendor/bin';
+			return 'https://host.docker.internal:8443';
+		return 'http://localhost';
 	}
 
 	public static function addSqlCondition(&$existingCondition, $condition): void
