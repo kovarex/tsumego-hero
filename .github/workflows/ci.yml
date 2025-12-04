@@ -168,6 +168,16 @@ jobs:
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
+          vendor/bin/phpunit --coverage-clover /tmp/coverage/clover.xml
+
+      - name: Debug router issues (on failure)
+        if: failure()
+        run: |
+          echo "=== Router Debug Log ==="
+          cat /tmp/router-debug.log || echo "No router debug log found"
+          echo ""
+          echo "=== Last 50 lines of server.log ==="
+          tail -n 50 server.log || echo "No server log found"
           mkdir -p coverage
           ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
 
