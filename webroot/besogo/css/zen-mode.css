@@ -43,6 +43,67 @@ body.zen-mode #zen-mode-exit {
 	display: block;
 }
 
+/* Subtle ESC key indicator in zen mode */
+body.zen-mode::after {
+	content: "ESC";
+	position: fixed;
+	top: 15px;
+	right: 60px;
+	padding: 4px 8px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.3);
+	font-size: 11px;
+	font-family: monospace;
+	font-weight: bold;
+	z-index: 10000;
+	pointer-events: none;
+	letter-spacing: 1px;
+}
+
+/* Puzzle metadata in zen mode - very subtle, top-right */
+body.zen-mode #zen-metadata {
+	display: block !important;
+	position: fixed !important;
+	top: 50px !important;
+	right: 15px !important;
+	text-align: right !important;
+	z-index: 10000 !important;
+	opacity: 0.4 !important;
+	transition: opacity 0.3s !important;
+}
+
+body.zen-mode #zen-metadata:hover {
+	opacity: 0.8 !important;
+}
+
+body.zen-mode .zen-meta-title {
+	font-size: 13px !important;
+	color: rgba(255, 255, 255, 0.6) !important;
+	margin-bottom: 4px !important;
+	font-weight: 500 !important;
+}
+
+body.zen-mode .zen-meta-info {
+	font-size: 11px !important;
+	color: rgba(255, 255, 255, 0.4) !important;
+}
+
+body.zen-mode .zen-meta-rating {
+	font-weight: 600 !important;
+	color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.zen-mode .zen-meta-separator {
+	margin: 0 6px !important;
+	opacity: 0.3 !important;
+}
+
+body.zen-mode .zen-meta-author {
+	font-style: italic !important;
+}
+
 /* Remove container styling in Zen mode */
 body.zen-mode .whitebox2 {
 	border: none !important;
@@ -67,17 +128,70 @@ body.zen-mode .outerMenu1,
 body.zen-mode .outerMenu2,
 body.zen-mode .outerMenu3,
 body.zen-mode #footer,
-body.zen-mode .footerLinks,
-body.zen-mode #account-bar,
-body.zen-mode #account-bar-wrapper {
+body.zen-mode .footerLinks {
 	display: none !important;
 }
 
-/* Hide play page specific elements in Zen mode */
-body.zen-mode #health,
+/* Hide account bar in zen mode - we want minimal distractions */
+body.zen-mode #account-bar-wrapper,
+body.zen-mode #account-bar {
+	display: none !important;
+}
+
+/* Keep health visible and positioned in zen mode */
+body.zen-mode #health {
+	position: fixed !important;
+	top: 10px !important;
+	left: 10px !important;
+	z-index: 9999 !important;
+	padding: 10px !important;
+	background: rgba(0, 0, 0, 0.3) !important;
+	border-radius: 8px !important;
+}
+
+/* Keep SGF comments (#theComment) visible in zen mode - but only if it has content */
+body.zen-mode #theComment {
+	display: none !important; /* Hidden by default */
+	position: fixed !important;
+	bottom: 10px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	z-index: 9999 !important;
+	padding: 10px 20px !important;
+	background: rgba(0, 0, 0, 0.7) !important;
+	border-radius: 8px !important;
+	color: white !important;
+	max-width: 80% !important;
+	text-align: center !important;
+}
+
+/* Show #theComment only when it has content */
+body.zen-mode #theComment:not(:empty) {
+	display: block !important;
+}
+
+/* Keep puzzle description visible in zen mode */
 body.zen-mode .titleDescription1,
-body.zen-mode .titleDescription2,
-body.zen-mode #theComment,
+body.zen-mode .titleDescription2 {
+	display: block !important;
+	position: fixed !important;
+	top: 10px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	z-index: 9999 !important;
+	padding: 10px 20px !important;
+	background: rgba(0, 0, 0, 0.7) !important;
+	border-radius: 8px !important;
+}
+
+body.zen-mode #descriptionText {
+	color: white !important;
+	font-size: 18px !important;
+	font-weight: bold !important;
+	text-decoration: none !important;
+}
+
+/* Hide play page specific elements in Zen mode */
 body.zen-mode .tsumegoNavi1,
 body.zen-mode .tsumegoNavi-middle,
 body.zen-mode .tsumegoNavi-middle2,

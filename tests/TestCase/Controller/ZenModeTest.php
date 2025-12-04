@@ -45,20 +45,22 @@ class ZenModeTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Test that clicking the Zen mode toggle hides non-board elements.
+	 * Test that clicking the Zen mode toggle hides non-board elements but keeps essential puzzle info.
 	 */
 	public function testZenModeHidesNonBoardElements()
 	{
 		$context = new ContextPreparator([
+			'user' => ['name' => 'zentest', 'rating' => 1500],
 			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
 		]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
+		usleep(500 * 1000); // Wait for page load
 
-		// Elements should be visible before Zen mode
-		$header = $browser->driver->findElement(WebDriverBy::id('account-bar'));
-		$this->assertTrue($header->isDisplayed(), 'Header should be visible before Zen mode');
+		// Health should be visible for logged-in users
+		$health = $browser->driver->findElement(WebDriverBy::id('health'));
+		$this->assertTrue($health->isDisplayed(), 'Health should be visible before Zen mode');
 
 		// Click Zen mode toggle
 		$browser->clickId('zen-mode-toggle');
@@ -68,12 +70,28 @@ class ZenModeTest extends TestCaseWithAuth
 		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
 		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Body should have zen-mode class');
 
-		// Header should be hidden in Zen mode
-		$this->assertFalse($header->isDisplayed(), 'Header should be hidden in Zen mode');
+		// VISIBLE: Health should REMAIN visible in Zen mode (top-left)
+		$this->assertTrue($health->isDisplayed(), 'Health should remain visible in Zen mode');
 
-		// Board should still be visible (use .besogo-board which is the actual board element created by besogo)
+		// VISIBLE: Board should still be visible
 		$board = $browser->driver->findElement(WebDriverBy::cssSelector('.besogo-board'));
 		$this->assertTrue($board->isDisplayed(), 'Board should remain visible in Zen mode');
+
+		// VISIBLE: Description text should be visible (top-center)
+		$descriptionText = $browser->driver->findElement(WebDriverBy::id('descriptionText'));
+		$this->assertTrue($descriptionText->isDisplayed(), 'Description should be visible in Zen mode');
+
+		// VISIBLE: Zen metadata should be visible (top-right)
+		$zenMetadata = $browser->driver->findElement(WebDriverBy::id('zen-metadata'));
+		$this->assertTrue($zenMetadata->isDisplayed(), 'Zen metadata should be visible in Zen mode');
+
+		// VISIBLE: theComment element should exist (bottom-center, shown when has content)
+		$theComment = $browser->driver->findElement(WebDriverBy::id('theComment'));
+		$this->assertNotNull($theComment, 'theComment should exist in Zen mode');
+
+		// HIDDEN: Play title should be hidden
+		$playTitle = $browser->driver->findElement(WebDriverBy::id('playTitle'));
+		$this->assertFalse($playTitle->isDisplayed(), 'Play title should be hidden in Zen mode');
 	}
 
 	/**
@@ -630,5 +648,143 @@ class ZenModeTest extends TestCaseWithAuth
 		// Verify zen mode is still active
 		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
 		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Zen mode should persist');
+	}
+
+	/**
+	 * Test that #theComment element is visible with white text in zen mode.
+	 */
+	public function testCommentVisibleWithWhiteTextInZenMode()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'zentest', 'rating' => 1500],
+			'tsumego' => [
+				'sets' => [['name' => 'test set', 'num' => '1']],
+				// Use the default SGF which has a proper solution
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id'] . '?zen=1');
+		usleep(500 * 1000); // Wait for page load and zen mode to activate
+
+		// Body should have zen-mode class
+		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
+		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Body should have zen-mode class');
+
+		// Find #theComment element
+		$comment = $browser->driver->findElement(WebDriverBy::id('theComment'));
+		$this->assertTrue($comment->isDisplayed(), '#theComment should be displayed in zen mode');
+
+		// Find #descriptionText element ("Black to capture")
+		$description = $browser->driver->findElement(WebDriverBy::id('descriptionText'));
+		$this->assertTrue($description->isDisplayed(), '#descriptionText should be displayed in zen mode');
+
+		// Verify description has actual text content visible
+		$descriptionText = $description->getText();
+		$this->assertNotEmpty($descriptionText, '#descriptionText should have visible text content');
+		$this->assertGreaterThan(5, strlen($descriptionText), '#descriptionText should have meaningful text (more than 5 chars)');
+
+		// Note: We can't check specific text content because it depends on the SGF structure
+		// and whether Besogo has initialized. The key thing is that the element is visible
+		// and styled correctly (white text, fixed position, etc.)
+
+		// Check computed styles using JavaScript
+		$computedStyles = $browser->driver->executeScript("
+			var element = document.getElementById('theComment');
+			var styles = window.getComputedStyle(element);
+			return {
+				display: styles.display,
+				color: styles.color,
+				position: styles.position,
+				bottom: styles.bottom,
+				zIndex: styles.zIndex
+			};
+		");
+
+		// Verify display is not 'none'
+		$this->assertNotEquals('none', $computedStyles['display'], '#theComment display should not be none');
+
+		// Verify color is white or close to white (rgb(255, 255, 255))
+		$this->assertMatchesRegularExpression(
+			'/rgb\s*\(\s*25[0-5]\s*,\s*25[0-5]\s*,\s*25[0-5]\s*\)/',
+			$computedStyles['color'],
+			'#theComment text color should be white'
+		);
+
+		// Verify fixed positioning at bottom
+		$this->assertEquals('fixed', $computedStyles['position'], '#theComment should be fixed positioned');
+		$this->assertEquals('10px', $computedStyles['bottom'], '#theComment should be 10px from bottom');
+
+		// Verify high z-index
+		$this->assertGreaterThanOrEqual(9999, (int)$computedStyles['zIndex'], '#theComment should have high z-index');
+
+		// Check #descriptionText styles (positioned at top-center)
+		$descriptionStyles = $browser->driver->executeScript("
+			var element = document.getElementById('descriptionText');
+			var parent = element.parentElement; // Get the titleDescription parent
+			var styles = window.getComputedStyle(element);
+			var parentStyles = window.getComputedStyle(parent);
+			return {
+				display: styles.display,
+				color: styles.color,
+				parentPosition: parentStyles.position,
+				parentTop: parentStyles.top,
+				parentZIndex: parentStyles.zIndex
+			};
+		");
+
+		$this->assertNotEquals('none', $descriptionStyles['display'], '#descriptionText display should not be none');
+		$this->assertEquals('fixed', $descriptionStyles['parentPosition'], 'Parent should be fixed positioned');
+		$this->assertEquals('10px', $descriptionStyles['parentTop'], 'Parent should be 10px from top');
+		$this->assertGreaterThanOrEqual(9999, (int)$descriptionStyles['parentZIndex'], 'Parent should have high z-index');
+	}
+
+	/**
+	 * Test that all visible elements update when navigating to next puzzle in zen mode.
+	 */
+	public function testZenModeElementsUpdateOnNavigation()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'zentest', 'rating' => 1500],
+			'tsumego' => [
+				'sets' => [['name' => 'Zen Set', 'num' => '1']],
+				'description' => 'Black to kill',
+				'rating' => 1000,
+			],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Zen Set', 'num' => '2']],
+					'description' => 'White to live',
+					'rating' => 1200,
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id'] . '?zen=1');
+		usleep(500 * 1000);
+
+		$initialDescription = $browser->driver->findElement(WebDriverBy::id('descriptionText'))->getText();
+		$initialMetadata = $browser->driver->findElement(WebDriverBy::id('zen-metadata'))->getText();
+		$initialTsumegoId = $browser->driver->executeScript("return tsumegoID");
+
+		$this->assertStringContainsString('Black to kill', $initialDescription, 'Initial description should contain Black to kill');
+		$this->assertStringContainsString('Zen Set #1', $initialMetadata, 'Initial metadata should contain Zen Set #1');
+
+		$browser->driver->getKeyboard()->sendKeys('x');
+		usleep(1000 * 1000);
+
+		$newDescription = $browser->driver->findElement(WebDriverBy::id('descriptionText'))->getText();
+		$newMetadata = $browser->driver->findElement(WebDriverBy::id('zen-metadata'))->getText();
+		$newTsumegoId = $browser->driver->executeScript("return tsumegoID");
+
+		$this->assertNotEquals($initialTsumegoId, $newTsumegoId, 'Tsumego ID should change after navigation');
+		$this->assertNotEquals($initialDescription, $newDescription, 'Description should update after navigation');
+		$this->assertStringContainsString('White to live', $newDescription, 'New description should contain White to live');
+		$this->assertNotEquals($initialMetadata, $newMetadata, 'Metadata should update after navigation');
+		$this->assertStringContainsString('Zen Set #2', $newMetadata, 'New metadata should contain Zen Set #2');
+
+		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
+		$this->assertStringContainsString('zen-mode', $body->getAttribute('class'), 'Should still be in zen mode');
 	}
 }

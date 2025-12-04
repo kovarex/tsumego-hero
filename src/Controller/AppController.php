@@ -2227,6 +2227,26 @@ class AppController extends Controller
 			Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
 			$this->set('user', Auth::getUser());
 		}
+
+		// Handle zen mode state
+		$zenMode = false;
+		if (isset($_GET['zen']))
+		{
+			if ($_GET['zen'] == '1')
+			{
+				setcookie('zenMode', '1', time() + 3600, '/');
+				$zenMode = true;
+			}
+			else
+			{
+				setcookie('zenMode', '', time() - 3600, '/');
+				$zenMode = false;
+			}
+		}
+		elseif (isset($_COOKIE['zenMode']) && $_COOKIE['zenMode'] == '1')
+			$zenMode = true;
+
+		$this->set('zenMode', $zenMode);
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);

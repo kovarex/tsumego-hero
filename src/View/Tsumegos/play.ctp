@@ -190,6 +190,15 @@ if (
 	<table>
 	<tr>
 		<td align="center">
+			<!-- Zen mode metadata (hidden by default, styled by CSS in zen mode) -->
+			<div id="zen-metadata" style="display:none;">
+				<div class="zen-meta-title"><?php echo htmlspecialchars($set['Set']['title'] . ' #' . $setConnection['SetConnection']['num']); ?></div>
+				<div class="zen-meta-info">
+					<span class="zen-meta-rating"><?php echo Rating::getReadableRankFromRatingWhenPossible($t['Tsumego']['rating']); ?></span>
+					<span class="zen-meta-separator">•</span>
+					<span class="zen-meta-author"><?php echo htmlspecialchars($t['Tsumego']['author']); ?></span>
+				</div>
+			</div>
 			<div id="playTitle">
 				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
@@ -1726,9 +1735,9 @@ if (
 				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(0, 255, 0, 0.2)");
 	else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(80, 255, 0, 0.3)");
 				besogo.editor.setReviewEnabled(true);
 				besogo.editor.setControlButtonLock(false);
 				toggleBoardLock(true);
@@ -1925,9 +1934,9 @@ if (
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
+				$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(0, 255, 0, 0.2)");
 			else
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+				$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(80, 255, 0, 0.3)");
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
 			noLastMark = true;
@@ -2005,11 +2014,10 @@ if (
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
 				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(mode==3)
-				{
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
+				if(mode==3) {
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
 					toggleBoardLock(true);
@@ -2048,11 +2056,10 @@ if (
 				besogoMode2Solved = true;
 				setCookie("mode", mode);
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
 				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(!noXP)
-				{
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
+				if(!noXP){
 					sequence += "incorrect|";
 					document.cookie = "sequence="+sequence;
 					playedWrong = true;
