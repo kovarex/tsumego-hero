@@ -19,7 +19,7 @@ class PaginationHelper extends AppHelper
 	 * @param string $paramName Query parameter name (e.g., 'activity_page')
 	 * @return string HTML pagination controls
 	 */
-	static public function render($currentPage, $totalPages, $paramName)
+	public static function render($currentPage, $totalPages, $paramName)
 	{
 		if ($totalPages <= 1)
 			return '';

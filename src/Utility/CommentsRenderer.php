@@ -7,7 +7,6 @@ class CommentsRenderer
 		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
-		$this->page = isset($params[$name . '_page']) ? max(1, (int) $this->params[$name . '_page']) : 1;
 	}
 
 	private function renderComment($comment, $index)
@@ -15,18 +14,18 @@ class CommentsRenderer
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'commentBox2' : 'commentBox1';
 		echo '<table class="sandboxTable2" width="100%" border="0">';
-		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#'.($index + 1).'</b> | ';
+		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
 		{
 			echo '<a href="/' . $comment['set_connection_id'] . '?search=topics">';
-			echo $comment['set_title']. ' - '. $comment['set_num'].'</a><br>';
+			echo $comment['set_title'] . ' - ' . $comment['set_num'] . '</a><br>';
 		}
 		else
-			echo '<i>Problem (id=' . $comment['tsumego_id']. 'doesn\'t have set connection.</i>';
+			echo '<i>Problem (id=' . $comment['tsumego_id'] . 'doesn\'t have set connection.</i>';
 
 		echo '<br></div>';
-		echo '<div class="'.$commentColor.'">';
-		echo $comment['from_name'].':<br>';
+		echo '<div class="' . $commentColor . '">';
+		echo $comment['from_name'] . ':<br>';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
 			echo $comment['message'];
 		else
@@ -48,7 +47,6 @@ class CommentsRenderer
 	{
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
-		$this->userID;
 
 		$queryCondition = "";
 		if ($this->userID)
@@ -85,7 +83,7 @@ FROM
 		$offset = $pageIndex * self::$PAGE_SIZE;
 		$queryFrom .= ' OFFSET ' . $offset;
 		$comments = Util::query($querySelects . $queryFrom, $parameters);
-		echo PaginationHelper::render($pageIndex, ceil($count / self::$PAGE_SIZE), $this->name);
+		echo PaginationHelper::render($pageIndex, intval(ceil($count / self::$PAGE_SIZE)), $this->name);
 		foreach ($comments as $index => $comment)
 		{
 			$this->renderComment($comment, $index + $offset);
@@ -93,7 +91,7 @@ FROM
 		}
 	}
 	public ?int $userID;
-	public int $page;
 	public static int $PAGE_SIZE = 10;
 	public string $name;
+	public array $params;
 }

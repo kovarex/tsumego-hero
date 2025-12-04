@@ -5,7 +5,6 @@ App::uses('CommentsRenderer', 'Utility');
 
 class CommentsController extends AppController
 {
-
 	public function index(): mixed
 	{
 		if (!Auth::isLoggedIn())
