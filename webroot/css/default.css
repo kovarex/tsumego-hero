@@ -7637,3 +7637,12 @@ body.dark-theme .btn--warning {
 	width:30px;
 }
 .grey-link { color: var(--text-softer-color); }
+
+.tooltip-box
+{
+	display: none;
+	position: absolute;
+	left: 100%;
+	top: 0;
+	z-index: 1000;
+}

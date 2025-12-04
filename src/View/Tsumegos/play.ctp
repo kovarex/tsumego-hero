@@ -1573,8 +1573,6 @@ if (
 			 mouseX = e.pageX;
 			 mouseY = e.pageY;
 		});
-
-		<?php if ($tsumegoButtons) $tsumegoButtons->renderJS(); ?>
 	});
 
 	function displaySolutionRequest(){

@@ -452,15 +452,6 @@
 					}
 					}
 					}
-			for($i=0; $i<10; $i++){
-				if(!isset($tooltipInfo[$i][0]))
-					$tooltipInfo[$i][0] = 0;
-				if(!isset($tooltipInfo[$i][1]))
-					$tooltipInfo[$i][1] = 0;
-				if(!isset($tooltipBoardSize[$i]))
-					$tooltipBoardSize[$i] = 19;
-				echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
-					}
 			?>
 			var tooltipSgfs2 = window.tooltipSgfs2 || [];
 		<?php
@@ -472,15 +463,6 @@
 						echo 'tooltipSgfs2['.$a.']['.$y.'].push("'.$tooltipSgfs2[$a][$x][$y].'");';
 						}
 						}
-						}
-			for($i=0; $i<10; $i++){
-				if(!isset($tooltipInfo2[$i][0]))
-					$tooltipInfo2[$i][0] = 0;
-				if(!isset($tooltipInfo2[$i][1]))
-					$tooltipInfo2[$i][1] = 0;
-				if(!isset($tooltipBoardSize2[$i]))
-					$tooltipBoardSize2[$i] = 19;
-				echo 'createPreviewBoard('.(99+$i).', tooltipSgfs2['.$i.'], '.$tooltipInfo2[$i][0].', '.$tooltipInfo2[$i][1].', '.$tooltipBoardSize2[$i].');';
 						}
 				?>
 		</script>
