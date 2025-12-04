@@ -9,8 +9,12 @@
  * Usage: php -S localhost:8080 -t webroot router.php
  */
 
+// Parse the URI without query string for file existence check
+$requestUri = $_SERVER['REQUEST_URI'];
+$uriWithoutQuery = parse_url($requestUri, PHP_URL_PATH);
+
 // If the requested file exists, serve it directly (CSS, JS, images, etc.)
-if (file_exists($_SERVER['DOCUMENT_ROOT'] . $_SERVER['REQUEST_URI']))
+if (file_exists($_SERVER['DOCUMENT_ROOT'] . $uriWithoutQuery))
 {
 	return false; // Serve the file directly
 }
