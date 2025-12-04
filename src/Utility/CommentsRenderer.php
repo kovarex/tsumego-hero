@@ -18,51 +18,62 @@ class CommentsRenderer
 		{
 			echo '<a href="/' . $comment['set_connection_id'] . '?search=topics">';
 			echo $comment['set_title']. ' - '. $comment['set_num'].'</a><br>';
-			echo '<div class="commentAnswer" style="color:#5e5e5e;"><div style="padding-top:14px;"></div>[You need to solve this problem to see the comment]</div></div>';
 		}
 		else
 			echo '<i>Problem (id=' . $comment['tsumego_id']. 'doesn\'t have set connection.</i>';
 
 		echo '<br></div>';
 		echo '<div class="'.$commentColor.'">';
-		echo $comment['user_name'].':<br>';
+		echo $comment['from_name'].':<br>';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
 			echo $comment['message'];
 		else
-			echo 'You can\'t seee comment of unsloved problem.';
+			echo '<div class="commentAnswer" style="color:#5e5e5e;"><div style="padding-top:14px;"></div>[You need to solve this problem to see the comment]</div>';
+		echo '</div>';
 		echo '</td><td class="sandboxTable2time" align="right">'.$comment['created'].'</td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
 			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'], false, false)->render();
-		echo '</div></div></td></tr>';
+		echo '</div></td></tr>';
 		echo '</table>';
+		echo '</div>';
 	}
 
 	public function render()
 	{
 		$parameters = [];
-		$parameters[] = $this->userID;
+		$parameters[] = Auth::getUserID();
+		$this->userID;
 
-		$comments = Util::query("
+		$queryCondition = "";
+		if ($this->userID)
+			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
+
+		$query = "
 SELECT
 	tsumego_comment.message AS message,
 	tsumego_comment.tsumego_id AS tsumego_id,
-	tsumego_status.status AS status
+	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
+	user.name as from_name,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
 	set_connection.num as set_num
-
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
 	JOIN user ON tsumego_comment.user_id = user.id
-	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND AND tsumego_status.user_id = ?
+	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.tsumego_id = tsumego.id
-    LEFT JOIN set ON set_connection.set_id = set.id
-", $parameters);
+    LEFT JOIN `set` ON set_connection.set_id = `set`.id";
+
+		if (!empty($queryCondition))
+		$query .= " WHERE " . $queryCondition;
+		$query .= ' LIMIT ' . self::$PAGE_SIZE;
+
+		$comments = Util::query($query, $parameters);
 		$pagination = ClassRegistry::init('Pagination');
 		$pageIndex = 0; // TODO: index based
 		foreach ($comments as $index => $comment)
@@ -70,4 +81,5 @@ FROM
 	}
 	public int $userID;
 	public int $page;
+	public static int $PAGE_SIZE = 10;
 }
