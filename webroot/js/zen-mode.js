@@ -241,6 +241,14 @@
 					author = data.author || '';
 					clearFile = data.title || '';
 
+					// Update description text element if available
+					if (data.description) {
+						var descElement = document.getElementById('descriptionText');
+						if (descElement) {
+							descElement.textContent = data.description;
+						}
+					}
+
 					// Reset puzzle state
 					ko = false;
 					lastMove = false;

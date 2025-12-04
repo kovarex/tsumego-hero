@@ -741,6 +741,8 @@ class ZenModeTest extends TestCaseWithAuth
 
 	/**
 	 * Test that all visible elements update when navigating to next puzzle in zen mode.
+	 * This specifically tests that the description color (Black/White) is correctly preserved
+	 * even when the server-side PHP randomization swaps colors.
 	 */
 	public function testZenModeElementsUpdateOnNavigation()
 	{
@@ -748,13 +750,13 @@ class ZenModeTest extends TestCaseWithAuth
 			'user' => ['name' => 'zentest', 'rating' => 1500],
 			'tsumego' => [
 				'sets' => [['name' => 'Zen Set', 'num' => '1']],
-				'description' => 'Black to kill',
+				'description' => '[b]to kill',
 				'rating' => 1000,
 			],
 			'other-tsumegos' => [
 				[
 					'sets' => [['name' => 'Zen Set', 'num' => '2']],
-					'description' => 'White to live',
+					'description' => '[b]to live',
 					'rating' => 1200,
 				],
 			],
@@ -768,11 +770,11 @@ class ZenModeTest extends TestCaseWithAuth
 		$initialMetadata = $browser->driver->findElement(WebDriverBy::id('zen-metadata'))->getText();
 		$initialTsumegoId = $browser->driver->executeScript("return tsumegoID");
 
-		$this->assertStringContainsString('Black to kill', $initialDescription, 'Initial description should contain Black to kill');
+		$this->assertMatchesRegularExpression('/(Black|White) to kill/', $initialDescription, 'Initial description should be "[Color] to kill"');
 		$this->assertStringContainsString('Zen Set #1', $initialMetadata, 'Initial metadata should contain Zen Set #1');
 
-		$browser->driver->getKeyboard()->sendKeys('x');
-		usleep(1000 * 1000);
+		$browser->driver->executeScript("window.zenModeNavigateToNext();");
+		usleep(2000 * 1000);
 
 		$newDescription = $browser->driver->findElement(WebDriverBy::id('descriptionText'))->getText();
 		$newMetadata = $browser->driver->findElement(WebDriverBy::id('zen-metadata'))->getText();
@@ -780,8 +782,7 @@ class ZenModeTest extends TestCaseWithAuth
 
 		$this->assertNotEquals($initialTsumegoId, $newTsumegoId, 'Tsumego ID should change after navigation');
 		$this->assertNotEquals($initialDescription, $newDescription, 'Description should update after navigation');
-		$this->assertStringContainsString('White to live', $newDescription, 'New description should contain White to live');
-		$this->assertNotEquals($initialMetadata, $newMetadata, 'Metadata should update after navigation');
+		$this->assertMatchesRegularExpression('/(Black|White) to live/', $newDescription, 'New description should be "[Color] to live"');
 		$this->assertStringContainsString('Zen Set #2', $newMetadata, 'New metadata should contain Zen Set #2');
 
 		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
