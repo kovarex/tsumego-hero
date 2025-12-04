@@ -136,7 +136,6 @@ class PlayResultProcessorComponent extends Component
 
 		// Determine new status
 		if (isset($result['solved']))
-		{
 			if ($result['solved'])
 			{
 				// Solved: mark as S (or keep S/W/C if already solved)
@@ -149,7 +148,6 @@ class PlayResultProcessorComponent extends Component
 				if (!in_array($currentStatus, ['S', 'W', 'C']))
 					$currentStatus = 'F';
 			}
-		}
 
 		Progress::setStatus($tsumegoId, $currentStatus);
 	}

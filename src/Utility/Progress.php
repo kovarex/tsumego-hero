@@ -141,10 +141,8 @@ class Progress
 		// Filter to only requested IDs
 		$result = [];
 		foreach ($tsumegoIds as $id)
-		{
 			if (isset($cache[$id]))
 				$result[$id] = $cache[$id];
-		}
 		return $result;
 	}
 

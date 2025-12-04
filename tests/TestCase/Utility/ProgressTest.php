@@ -46,7 +46,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Ensure no cookie
 		unset($_COOKIE['guest_progress']);
@@ -60,7 +60,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Set a status
 		Progress::setStatus(12345, 'S');
@@ -75,7 +75,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Set multiple statuses
 		Progress::setStatus(100, 'S');
@@ -91,7 +91,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Set multiple statuses
 		Progress::setStatus(100, 'S');
@@ -108,7 +108,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Set a status
 		Progress::setStatus(12345, 'S');
@@ -132,7 +132,7 @@ class ProgressTest extends CakeTestCase
 	{
 		// Ensure no user is logged in
 		Auth::logout();
-        unset($_COOKIE['hackedLoggedInUserID']);
+		unset($_COOKIE['hackedLoggedInUserID']);
 
 		// Set initial status
 		Progress::setStatus(12345, 'V');

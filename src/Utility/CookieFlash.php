@@ -132,7 +132,8 @@ class CookieFlash
 		$type = self::getType();  // Get type BEFORE get() clears it
 		$message = self::get();
 
-		$cssClass = match ($type) {
+		$cssClass = match ($type)
+		{
 			'error' => 'alert-error',
 			'success' => 'alert-success',
 			'warning' => 'alert-warning',

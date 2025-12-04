@@ -53,10 +53,10 @@ class ContextPreparator
 			return;
 		}
 		$this->user = $this->prepareUser($user);
-		
+
 		// Set hackedLoggedInUserID for test environment auth
 		$_COOKIE['hackedLoggedInUserID'] = $this->user['id'];
-		
+
 		Auth::init();
 		// Achievements popups can get into the way when testing, once we want to test achievements
 		// we can make this command conditional

@@ -406,10 +406,9 @@ class Play
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 
-		if ($tsumegoFilters->query == 'topics')
-			($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		else
-			($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
 		if (!Auth::isInTimeMode())
 		{
@@ -469,19 +468,15 @@ class Play
 		}
 
 		$admins = ClassRegistry::init('User')->find('all', ['conditions' => ['isAdmin' => 1]]);
-		if (Auth::isInRatingMode() || Auth::isInTimeMode())
-			($this->setFunction)('_title', 'Tsumego Hero');
+		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
 
 		$crs = 0;
 
-		if (Auth::isInLevelMode())
-			($this->setFunction)('page', 'level mode');
-		elseif (Auth::isInRatingMode())
-			($this->setFunction)('page', 'rating mode');
-		elseif (Auth::isInTimeMode())
-			($this->setFunction)('page', 'time mode');
+		if (Auth::isInLevelMode())($this->setFunction)('page', 'level mode');
+		elseif (Auth::isInRatingMode())($this->setFunction)('page', 'rating mode');
+		elseif (Auth::isInTimeMode())($this->setFunction)('page', 'time mode');
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
