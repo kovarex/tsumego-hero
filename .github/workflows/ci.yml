@@ -90,6 +90,11 @@ jobs:
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
           skip_checkout: true
 
+      - name: Setup tmp directories
+        run: |
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
+          chmod -R 777 tmp
+
       - name: Build AssetCompress bundles
         run: |
           mkdir -p webroot/cache_css webroot/cache_js
@@ -131,11 +136,6 @@ jobs:
           }
           EOF
           cp config/core.local.example.php config/core.local.php
-
-      - name: Setup tmp directories
-        run: |
-          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
-          chmod -R 777 tmp
 
       - name: Import database schema
         run: |
