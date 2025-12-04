@@ -80,7 +80,7 @@ FROM
 		$pageIndex = isset($this->params[$this->name]) ? max(1, (int) $this->params[$this->name]) : 1;
 		$count = Util::query("SELECT COUNT(*) " . $queryFrom, $parameters)[0]['COUNT(*)'];
 
-		$offset = $pageIndex * self::$PAGE_SIZE;
+		$offset = ($pageIndex - 1) * self::$PAGE_SIZE;
 		$queryFrom .= ' OFFSET ' . $offset;
 		$comments = Util::query($querySelects . $queryFrom, $parameters);
 		echo PaginationHelper::render($pageIndex, intval(ceil($count / self::$PAGE_SIZE)), $this->name);
