@@ -1,4 +1,3 @@
-<script src ="/js/previewBoard.js"></script>
 <?php
 	if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
@@ -217,29 +216,5 @@
 				$(".tag-submit-button").html("Submit ("+submitCount+")");
 			});';
 		}
-
-		for($a=0; $a<count($tooltipSgfs); $a++){
-			echo 'tooltipSgfs['.$a.'] = [];';
-			for($y=0; $y<count($tooltipSgfs[$a]); $y++){
-				echo 'tooltipSgfs['.$a.']['.$y.'] = [];';
-				for($x=0; $x<count($tooltipSgfs[$a][$y]); $x++){
-					echo 'tooltipSgfs['.$a.']['.$y.'].push("'.$tooltipSgfs[$a][$x][$y].'");';
-				}
-			}
-		}
-		for($i=0; $i<count($tagTsumegos); $i++)
-			echo 'createPreviewBoard('.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo[$i][0].', '.$tooltipInfo[$i][1].', '.$tooltipBoardSize[$i].');';
-
-		for($a=0; $a<count($tooltipSgfs2); $a++){
-			echo 'tooltipSgfs['.$a.'] = [];';
-			for($y=0; $y<count($tooltipSgfs2[$a]); $y++){
-				echo 'tooltipSgfs['.$a.']['.$y.'] = [];';
-				for($x=0; $x<count($tooltipSgfs2[$a][$y]); $x++){
-					echo 'tooltipSgfs['.$a.']['.$y.'].push("'.$tooltipSgfs2[$a][$x][$y].'");';
-				}
-			}
-		}
-		for($i=0; $i<count($sgfTsumegos); $i++)
-			echo 'createPreviewBoard(999'.$i.', tooltipSgfs['.$i.'], '.$tooltipInfo2[$i][0].', '.$tooltipInfo2[$i][1].', '.$tooltipBoardSize2[$i].');';
 	?>
 </script>

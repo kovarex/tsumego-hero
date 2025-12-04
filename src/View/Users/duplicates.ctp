@@ -1,14 +1,13 @@
-<script src ="/js/previewBoard.js"></script>
 <?php
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}	
+		}
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
 	?>
-	<div class="homeRight">	
+	<div class="homeRight">
 	<h1>Set mark by tsumego id</h1>
 	<?php
 	echo '<div>';
@@ -173,7 +172,7 @@
 				echo '<p style="color:#cb382c">'.$errSet.'</p>';
 			if($errSet!='')
 				echo '<p style="color:#cb382c">'.$errNotNull.'</p>';
-			
+
 			echo '<hr>';
 			$cx = 0;
 			for($i=0; $i<count($d); $i++){
@@ -181,7 +180,7 @@
 				echo '<br>';
 				for($j=0; $j<count($d[$i]); $j++){
 					echo '<a href="/tsumegos/play/'.$d[$i][$j]['Tsumego']['id'].$d[$i][$j]['Tsumego']['duplicateLink'].'">'.$d[$i][$j]['Tsumego']['title'].'</a>';
-					
+
 					if($j<count($d[$i])-1)
 						echo ', ';
 				}
@@ -195,15 +194,15 @@
 					</td>';
 					$cx++;
 				}
-				
+
 				echo '<br><br><br>';
 			}
-			if(!$showAll)	
+			if(!$showAll)
 				echo '<a href="/users/duplicates?load=true">Show all</a>';
-			
+
 		?>
 		<br><br><br><br><br><br><br><br><br><br>
-		
+
 	</div>
 	<div style="clear:both;"></div>
 	<script>
@@ -240,7 +239,7 @@
 			for($j=0; $j<count($d[$i]); $j++){
 				echo 'createPreviewBoard('.$cx.', tooltipSgfs['.$i.']['.$j.'], '.$tooltipInfo[$i][$j][0].', '.$tooltipInfo[$i][$j][1].', '.$tooltipBoardSize[$i][$j].');';
 				$cx++;
-			}	
+			}
 		?>
 	</script>
 	<style>

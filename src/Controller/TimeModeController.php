@@ -63,10 +63,31 @@ class TimeModeController extends AppController
 
 	private function getRanksWithTsumegoCount()
 	{
-
 		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']);
 		$rankPartOfQuery = '';
 		$count = count($ranks);
+		if ($count == 0)
+			return null;
+		if ($count == 1)
+		{
+			$result = [];
+			$rank = $ranks[0]['TimeModeRank'];
+
+			$count = Util::query("
+SELECT
+    COUNT(*) AS count
+FROM
+	tsumego
+	JOIN set_connection ON set_connection.tsumego_id=tsumego.id
+	JOIN `set` ON set_connection.set_id=`set`.id
+WHERE
+	`set`.`included_in_time_mode` = 1 AND
+	`set`.public = 1");
+
+			$rank['tsumego_count'] = $count[0]['count'];
+			$result[] = $rank;
+			return $result;
+		}
 		foreach ($ranks as $index => $rank)
 			if ($index + 1 < $count)
 				$rankPartOfQuery .= 'WHEN rating < ' . Rating::getRankMinimalRating(Rating::getRankFromReadableRank($rank['TimeModeRank']['name']) + 1) . ' THEN \'' . $rank['TimeModeRank']['id'] . '\' ';

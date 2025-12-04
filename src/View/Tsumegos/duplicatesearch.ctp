@@ -1,5 +1,4 @@
 	<?php ?>
-	<script src ="/js/previewBoard.js"></script>
 	<div align="center">
 	<p class="title">
 		<br>
@@ -16,7 +15,7 @@
 			</div>
 		</td>
 		<td width="50%">
-		<?php 
+		<?php
 			for($i=0; $i<count($similarArr); $i++){
 				if($similarDiff[$i]==0) $description1 = 'No difference. ';
 				else if($similarDiff[$i]==1) $description1 = $similarDiff[$i].' stone different. ';
@@ -43,7 +42,7 @@
 				echo 'tSgfArr['.$y.'].push("'.$tSgfArr[$x][$y].'");';
 			}
 		}
-		
+
 		for($a=0; $a<count($similarArr); $a++){
 			echo 'similarArr['.$a.'] = [];';
 			for($y=0; $y<count($similarArr[$a]); $y++){
@@ -58,6 +57,6 @@
 			echo 'createPreviewBoard('.$i.', similarArr['.$i.'], '.$similarArrInfo[$i][0].', '.$similarArrInfo[$i][1].', '.$similarArrBoardSize[$i].');';
 		}
 		?>
-		
+
 	</script>
 	<style>.duplicateSearchTable td{vertical-align: top;padding:14px;}</style>

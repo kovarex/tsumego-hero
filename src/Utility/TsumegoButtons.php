@@ -149,27 +149,6 @@ class TsumegoButtons extends ArrayObject
 		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
 	}
 
-	// Temporary until the buttons have everything inplace
-	public function renderJS()
-	{
-		echo "var tooltipSgfs = window.tooltipSgfs || [];";
-		foreach ($this as $index => $navigationButton)
-		{
-			$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $navigationButton->tsumegoID]]);
-			if (!$sgf)
-				continue;
-			$tResult = SgfParser::process($sgf['Sgf']['sgf']);
-			echo 'tooltipSgfs[' . $index . '] = [];';
-			for($y = 0; $y < count($tResult->board); $y++)
-			{
-				echo 'tooltipSgfs[' . $index . '][' . $y . '] = [];';
-				for ($x = 0; $x < count($tResult->board[$y]); $x++)
-					echo 'tooltipSgfs[' . $index . '][' . $y . '].push("' . $tResult->board[$x][$y] . '");';
-			}
-			echo 'createPreviewBoard(' . $index . ', tooltipSgfs[' . $index . '], ' . $tResult->info[0] . ', ' . $tResult->info[1] . ', ' . $tResult->size . ');';
-		}
-	}
-
 	public int $partition = 0;
 	public bool $isPartitioned = false;
 	public int $highestTsumegoOrder = -1;

@@ -82,7 +82,7 @@ echo $this->Html->charset();
 <meta name="Author" content="Joschka Zimdars">
 <meta property="og:title" content="Tsumego Hero">
 <link rel="stylesheet" type="text/css" href="/css/<?php echo $lightDark?>-constants.css" id="theme-css-constants">
-<link rel="stylesheet" type="text/css" href="/css/default.css?v=3">
+<link rel="stylesheet" type="text/css" href="/css/default.css?v=4">
 	<?php
 if($lightDark=='dark')
 	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.4">';
@@ -92,6 +92,7 @@ echo $this->fetch('meta');
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
+<script src ="/js/previewBoard.js?v=2"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>

@@ -1,6 +1,3 @@
-
-	
-	<script src ="/js/previewBoard.js"></script>
 	<?php $counter = 0; ?>
 	<div align="center">
 	<p class="title">
@@ -29,27 +26,27 @@
 				<div align="left"><a href="/sets/duplicates/<?php echo $id.'?unmark='.$d2[$i][0]['Tsumego']['dGroup']; ?>">Remove duplicate mark</a></div>
 			</td>
 			</tr>
-			
+
 		<?php } ?>
 	</table>
-	
+
 	<?php
 		if(count($d2)==0)
 			echo '<div align="center">No duplicates found.</div>';
 		$counter = 0;
 		/*
-		echo '<pre>'; print_r($d); echo '</pre>'; 
-		echo '<pre>'; print_r($ts); echo '</pre>'; 
+		echo '<pre>'; print_r($d); echo '</pre>';
+		echo '<pre>'; print_r($ts); echo '</pre>';
 		echo '<pre>'; print_r(count($d)); echo '</pre>';
 		 echo '<pre>'; print_r($similarArr); echo '</pre>';
 		*/
 		//echo '<pre>'; print_r($d2); echo '</pre>';
 	?>
-	
+
 	<script>
 		let similarArr = [];
 		<?php
-		
+
 		for($a=0; $a<count($similarArr); $a++){
 			echo 'similarArr['.$a.'] = [];';
 			for($y=0; $y<count($similarArr[$a]); $y++){
@@ -67,9 +64,9 @@
 			echo 'createPreviewBoard('.$i.', similarArr['.$i.'], '.$similarArrInfo[$i][0].', '.$similarArrInfo[$i][1].', '.$similarArrBoardSize[$i].');';
 		}
 		?>
-		
+
 	</script>
-	
+
 	<style>
 		.duplicateSearchTable td{vertical-align: top;padding:14px;}
 		.duplicateSearchTable .td2{padding:0 14px;}

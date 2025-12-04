@@ -1,6 +1,22 @@
-	function createPreviewBoard(n=null, masterArrayBW=null, xMax=0, yMax=0, boardSize=19){
-		if (!masterArrayBW)
-			return;
+	function decodeLetter(c) { return c.charCodeAt(0) - 97; }
+
+	function drawStoneString(coordString, fill, size, increment, border, svg, w3)
+	{
+		for (let i = 0; i < coordString.length; i += 2)
+		{
+			let x = decodeLetter(coordString[i]);
+			let y = decodeLetter(coordString[i+1]);
+
+			// Convert board coords → board coords
+			let xPos = (x * increment) + size + border;
+			let yPos = (y * increment) + size + border;
+
+			placePreviewStone(xPos, yPos, size, fill, svg, w3);
+		}
+	}
+
+	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
+	{
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
 		let svg = document.createElementNS(w3,"svg");
@@ -13,7 +29,8 @@
 		yMax = (yMax>=13) ? 19 : yMax+4;
 		let borderPixelsY = (yMax==19) ? size : size/2;
 		let increment = size*2;
-		if(boardSize==13){
+		if(boardSize==13)
+		{
 			xMax = 13;
 			yMax = 13;
 		}
@@ -27,36 +44,31 @@
 		else if(boardSize==9) img = "/img/theBoard9x9.png"
 		else if(boardSize==5) img = "/img/theBoard5x5.png"
 		else if(boardSize==4) img = "/img/theBoard4x4.png"
-		setPreviewBoard(xMax, yMax, svg, img, n, w3, w32);
-		for (let i = 0; i < boardSize; i++)
-		{
-			for (let j = 0; j < boardSize; j++)
-			{
-				if(masterArrayBW[i][j]!=="-"){
-					let fill = (masterArrayBW[i][j]==="x") ? "black" : "white";
-					placePreviewStone(xPos, yPos, size, fill, svg, w3);
-				}
-				xPos += increment;
-			}
-			xPos = size+border;
-			yPos += increment;
-		}
-		setPreviewBoardCss(xMax, yMax, n, svg);
-		hoverForPreviewBoard(n);
+		setPreviewBoard(xMax, yMax, svg, img, w3, w32);
+		drawStoneString(black, "black", size, increment, border, svg, w3);
+		drawStoneString(white, "white", size, increment, border, svg, w3);
+		svg.style.width = xMax + "px";
+		svg.style.height = yMax + "px";
+		let targetContainer = target.querySelector('span');
+		targetContainer.appendChild(svg);
+		hoverForPreviewBoard(target);
 	}
-	function setPreviewBoard(xMax, yMax, svg, img, n, w3, w32){
+
+	function setPreviewBoard(xMax, yMax, svg, img, w3, w32)
+	{
 		svg.setAttributeNS(w3,"width", xMax);
 		svg.setAttributeNS(w3,"height", yMax);
 		let svgImg = document.createElementNS(w3,"image");
 		svgImg.setAttributeNS(w3,"width", xMax);
 		svgImg.setAttributeNS(w3,"height", yMax);
 		svgImg.setAttributeNS(w32,"href", img);
-		svgImg.setAttributeNS(w3,"id","theImage"+n);
 		svgImg.setAttributeNS(w3,"x","0");
 		svgImg.setAttributeNS(w3,"y","0");
 		svg.appendChild(svgImg);
 	}
-	function placePreviewStone(x, y, size, fill, svg, w3){
+
+	function placePreviewStone(x, y, size, fill, svg, w3)
+	{
 		let svgCircle = document.createElementNS(w3, "circle");
 		svgCircle.setAttribute("cx", x);
 		svgCircle.setAttribute("cy", y);
@@ -64,16 +76,18 @@
 		svgCircle.setAttribute("fill", fill);
 		svg.appendChild(svgCircle);
 	}
-	function setPreviewBoardCss(xMax, yMax, n, svg){
-		document.querySelector("#tooltipSvg"+n).appendChild(svg);
-		$("#tooltipSvg"+n+" svg").css("width", xMax);
-		$("#tooltipSvg"+n+" svg").css("height", yMax);
-	}
-	function hoverForPreviewBoard(n){
-		$("#tooltip-hover"+n).mouseover(function(){
-		  $("#tooltip-hover"+n+" span").css({"display":"block","position":"absolute","overflow":"hidden"});
+
+	function hoverForPreviewBoard(target)
+	{
+		target.addEventListener("mouseenter", function () {
+			const span = this.querySelector('span');
+			span.style.display = "block";
+			span.style.position = "absolute";
+			span.style.overflow = "hidden";
 		});
-		$("#tooltip-hover"+n).mouseout(function(){
-		  $("#tooltip-hover"+n+" span").css({"display":"none"});
+
+		target.addEventListener("mouseleave", function () {
+			const span = this.querySelector('span');
+			span.style.display = "none";
 		});
 	}

@@ -1,4 +1,3 @@
-<script src ="/js/previewBoard.js"></script>
 <?php
 	$noImage = false;
 	if($isFav) $noImage = true;
@@ -736,7 +735,6 @@
 		<?php
 			if($refreshView)
 				echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";';
-			$tsumegoButtons->renderJS();
 		?>
 	</script>
 	<style>

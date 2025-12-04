@@ -2,7 +2,7 @@
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, string $status, bool $passEnabled, bool $alternativeResponse)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, bool $passEnabled, bool $alternativeResponse)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
@@ -12,7 +12,7 @@ class TsumegoButton
 		$this->alternativeResponse = $alternativeResponse;
 	}
 
-	public function render(int $index)
+	public function render()
 	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 		/*
@@ -25,15 +25,29 @@ class TsumegoButton
 		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
 		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
 
-		echo '<li class="status' . $this->status . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a id="tooltip-hover' . $index . '" class="tooltip" href="/' . $this->setConnectionID . '">' . $num . '<span><div id="tooltipSvg' . $index . '"></div></span></a>';
+		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . '<span class="tooltip-box"></span></a>';
 		echo '</li>';
+	}
+
+	private function generateTooltip(): string
+	{
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
+		if (!$sgf)
+			return '';
+		$result = '';
+		$result .= 'if (this.querySelector(\'svg\')) return;';
+		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
+		$result .= 'black = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->blackStones)) . '\';';
+		$result .= 'white = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->whiteStones)) . '\';';
+		$result .= 'createPreviewBoard(this, black, white,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
+		return $result;
 	}
 
 	public int $tsumegoID;
 	public int $setConnectionID;
 	public int $order;
-	public string $status;
+	public ?string $status;
 	public bool $passEnabled; // used for set view statistics
 	public bool $alternativeResponse ; // used for set view statistics
 	public float $seconds = 0;
