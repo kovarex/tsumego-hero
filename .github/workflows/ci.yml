@@ -73,6 +73,11 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Setup AssetCompress for CI
+        run: |
+          # Enable dispatcher filter in CI (normally disabled in production)
+          sed -i 's/alwaysEnableController = false/alwaysEnableController = true/' src/Config/asset_compress.ini
+
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
