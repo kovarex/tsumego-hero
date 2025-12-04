@@ -73,12 +73,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
-      - name: Setup AssetCompress for CI
-        run: |
-          # CI uses controller for dynamic asset serving (no build needed)
-          # Enable controller mode directly in config file
-          sed -i 's/alwaysEnableController = false/alwaysEnableController = true/' src/Config/asset_compress.ini
-
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 

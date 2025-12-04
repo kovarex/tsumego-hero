@@ -2,6 +2,12 @@ https://host.docker.internal:8443, https://localhost:8443 {
     bind 0.0.0.0
     tls internal
 
+    # Strip timestamps from AssetCompress URLs so dispatcher can handle them
+    # Rewrites /cache_css/home.v1234567.css → /cache_css/home.css
+    # Rewrites /cache_js/preview.v1234567.js → /cache_js/preview.js
+    @assetTimestamped path_regexp ^/(cache_css|cache_js)/(.+)\.v\d+\.(css|js)$
+    rewrite @assetTimestamped /{http.regexp.1}/{http.regexp.2}.{http.regexp.3}
+
     reverse_proxy http://host.docker.internal:8080 {
         header_up X-Forwarded-Proto https
         header_up X-Forwarded-Host {host}
