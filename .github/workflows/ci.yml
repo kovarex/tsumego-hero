@@ -101,6 +101,9 @@ jobs:
           ./bin/cake AssetCompress.AssetCompress build
           echo "Built AssetCompress assets:"
           ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
+          echo ""
+          echo "AssetCompress build time file:"
+          ls -lh tmp/asset_compress_build_time || echo "WARNING: Build time file not created!"
 
       - name: Setup database config
         run: |
