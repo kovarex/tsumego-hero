@@ -17,18 +17,6 @@ $uriWithoutQuery = parse_url($requestUri, PHP_URL_PATH);
 // Ensure no double slashes when concatenating
 $filePath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $uriWithoutQuery;
 
-// Debug logging for CI troubleshooting
-$debugLog = "/tmp/router-debug.log";
-$debugInfo = sprintf(
-	"[%s] URI: %s | DOCUMENT_ROOT: %s | FilePath: %s | Exists: %s\n",
-	date('Y-m-d H:i:s'),
-	$uriWithoutQuery,
-	$_SERVER['DOCUMENT_ROOT'],
-	$filePath,
-	file_exists($filePath) ? 'YES' : 'NO'
-);
-file_put_contents($debugLog, $debugInfo, FILE_APPEND);
-
 // If the requested file exists, serve it directly (CSS, JS, images, etc.)
 if (file_exists($filePath))
 {
