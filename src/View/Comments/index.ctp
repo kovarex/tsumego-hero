@@ -143,18 +143,6 @@
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script>
-			let loadMore = 10;
-			$('#more-button').click(function(e){
-				e.preventDefault();
-				let counter = 0;
-				while(counter<10){
-					$('#comment'+loadMore).fadeIn();
-					$('#space'+loadMore).fadeIn();
-					loadMore++;
-					counter++;
-				}
-			});
-
 			let loadMore2 = 10;
 			$('#more-button2').click(function(e){
 				e.preventDefault();

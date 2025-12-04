@@ -30,7 +30,8 @@ class CommentsRenderer
 		else
 			echo '<div class="commentAnswer" style="color:#5e5e5e;"><div style="padding-top:14px;"></div>[You need to solve this problem to see the comment]</div>';
 		echo '</div>';
-		echo '</td><td class="sandboxTable2time" align="right">'.$comment['created'].'</td>';
+		$date = new DateTime($comment['created']);
+		echo '</td><td class="sandboxTable2time" align="right">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
@@ -55,6 +56,7 @@ class CommentsRenderer
 SELECT
 	tsumego_comment.message AS message,
 	tsumego_comment.tsumego_id AS tsumego_id,
+	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
 	user.name as from_name,
@@ -77,7 +79,10 @@ FROM
 		$pagination = ClassRegistry::init('Pagination');
 		$pageIndex = 0; // TODO: index based
 		foreach ($comments as $index => $comment)
+		{
 			$this->renderComment($comment, $index);
+			echo '<div class="space"><br></div>';
+		}
 	}
 	public int $userID;
 	public int $page;
