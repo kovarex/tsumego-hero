@@ -39,11 +39,11 @@ class TsumegoButton
 		$result .= 'if (this.querySelector(\'svg\')) return;';
 		$result .= 'tooltipSgf = [];' . PHP_EOL;
 		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
-		for($y = 0; $y < count($sgf->board); $y++)
+		for ($y = 0; $y < count($sgf->board); $y++)
 		{
-			$result .= 'tooltipSgf[' . $y . '] = [];' . PHP_EOL;
-			for ($x = 0; $x < count($sgf->board[$y]); $x++)
-				$result .= 'tooltipSgf[' . $y . '].push(\'' . $sgf->board[$x][$y] . '\');' . PHP_EOL;
+			$col = array_column($sgf->board, $y);
+			$row = implode('', $col);
+			$result .= "tooltipSgf[$y] = '$row';" . PHP_EOL;
 		}
 		$result .= 'createPreviewBoard(this, tooltipSgf,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
 		return $result;
