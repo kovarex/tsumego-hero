@@ -159,7 +159,7 @@ class Preferences
 			return $default;
 
 		$value = $userContribution['UserContribution'][$key];
-		return ($value === '' || $value === null) ? $default : $value;
+		return ($value === '') ? $default : $value;
 	}
 
 	/**
