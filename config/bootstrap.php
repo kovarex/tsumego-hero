@@ -84,6 +84,9 @@ Cache::config('default', ['engine' => 'File']);
  */
 CakePlugin::loadAll();
 
+// AssetCompress needs bootstrap enabled to register dispatcher filter
+CakePlugin::load('AssetCompress', ['bootstrap' => true]);
+
 /**
  * To prefer app translation over plugin translation, you can set
  *
