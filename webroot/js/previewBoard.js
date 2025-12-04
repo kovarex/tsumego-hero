@@ -1,7 +1,22 @@
-	function createPreviewBoard(target, masterArrayBW=null, xMax=0, yMax=0, boardSize=19)
+	function decodeLetter(c) { return c.charCodeAt(0) - 97; }
+
+	function drawStoneString(coordString, fill, size, increment, border, svg, w3)
 	{
-		if (!masterArrayBW)
-			return;
+		for (let i = 0; i < coordString.length; i += 2)
+		{
+			let x = decodeLetter(coordString[i]);
+			let y = decodeLetter(coordString[i+1]);
+
+			// Convert board coords → board coords
+			let xPos = (x * increment) + size + border;
+			let yPos = (y * increment) + size + border;
+
+			placePreviewStone(xPos, yPos, size, fill, svg, w3);
+		}
+	}
+
+	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
+	{
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
 		let svg = document.createElementNS(w3,"svg");
@@ -30,19 +45,8 @@
 		else if(boardSize==5) img = "/img/theBoard5x5.png"
 		else if(boardSize==4) img = "/img/theBoard4x4.png"
 		setPreviewBoard(xMax, yMax, svg, img, w3, w32);
-		for (let i = 0; i < boardSize; i++)
-		{
-			for (let j = 0; j < boardSize; j++)
-			{
-				if(masterArrayBW[i][j]!=="-"){
-					let fill = (masterArrayBW[i][j]==="x") ? "black" : "white";
-					placePreviewStone(xPos, yPos, size, fill, svg, w3);
-				}
-				xPos += increment;
-			}
-			xPos = size+border;
-			yPos += increment;
-		}
+		drawStoneString(black, "black", size, increment, border, svg, w3);
+		drawStoneString(white, "white", size, increment, border, svg, w3);
 		svg.style.width = xMax + "px";
 		svg.style.height = yMax + "px";
 		let targetContainer = target.querySelector('span');
