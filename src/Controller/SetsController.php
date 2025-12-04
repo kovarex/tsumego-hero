@@ -78,9 +78,6 @@ class SetsController extends AppController
 				array_push($dNew, $d[$i]);
 		}
 		$d = $dNew;
-		$similarArr = [];
-		$similarArrInfo = [];
-		$similarArrBoardSize = [];
 
 		$counter2 = 0;
 		$counter = -1;
@@ -106,15 +103,6 @@ class SetsController extends AppController
 
 			array_push($d2[$counter], $td);
 			$currentGroup = $d[$i]['Duplicate']['dGroup'];
-
-			$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $td['Tsumego']['id']]]);
-			if (!$sgf)
-				continue;
-			$sgfResult = SgfParser::process($sgf['Sgf']['sgf']);
-
-			array_push($similarArr, $sgfResult->board);
-			array_push($similarArrInfo, $sgfResult->info);
-			array_push($similarArrBoardSize, $sgfResult->size);
 		}
 
 		$this->set('id', $id);
@@ -122,9 +110,6 @@ class SetsController extends AppController
 		$this->set('ts', $ts);
 		$this->set('d', $d);
 		$this->set('d2', $d2);
-		$this->set('similarArr', $similarArr);
-		$this->set('similarArrInfo', $similarArrInfo);
-		$this->set('similarArrBoardSize', $similarArrBoardSize);
 	}
 
 	/**

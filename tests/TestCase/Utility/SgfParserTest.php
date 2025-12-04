@@ -13,7 +13,8 @@ class SgfParserTest extends CakeTestCase
 		$this->assertInstanceOf('SgfResult', $result);
 		$this->assertEquals(19, $result->size);
 		$this->assertIsArray($result->board);
-		$this->assertIsArray($result->stones);
+		$this->assertIsArray($result->blackStones);
+		$this->assertIsArray($result->whiteStones);
 		$this->assertIsArray($result->info);
 	}
 
@@ -28,7 +29,8 @@ class SgfParserTest extends CakeTestCase
 		// Check stones
 		// SgfParser normalizes orientation, so exact coordinates might change if it flips/rotates.
 		// But let's check if we have stones.
-		$this->assertNotEmpty($result->stones);
+		$this->assertNotEmpty($result->blackStones);
+		$this->assertNotEmpty($result->whiteStones);
 
 		// Check board array structure
 		$this->assertCount(19, $result->board);

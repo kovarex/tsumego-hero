@@ -425,32 +425,10 @@ class CommentsController extends AppController
 			if (strpos($c[$i]['TsumegoComment']['message'], '<a href="/files/ul1/') === false)
 				$c[$i]['TsumegoComment']['message'] = htmlspecialchars($c[$i]['TsumegoComment']['message']);
 			$c[$i]['TsumegoComment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $c[$i]['TsumegoComment']['message']);
-
-			$tBuffer = $this->Tsumego->findById($c[$i]['TsumegoComment']['tsumego_id']);
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
-			if (count($tts) > 0)
-			{
-				$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
-				array_push($tooltipSgfs, $tResult->board);
-				array_push($tooltipInfo, $tResult->info);
-				array_push($tooltipBoardSize, $tResult->size);
-			}
 		}
 		$yourcCount2 = count($yourc);
 		for ($i = 0; $i < $yourcCount2; $i++)
-		{
 			$yourc[$i]['TsumegoComment']['message'] = str_replace('[current position]', $currentPositionPlaceholder, $yourc[$i]['TsumegoComment']['message']);
-
-			$tBuffer = $this->Tsumego->findById($yourc[$i]['TsumegoComment']['tsumego_id']);
-			$tts2 = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tBuffer['Tsumego']['id']]]);
-			if (count($tts2) > 0)
-			{
-				$tResult2 = SgfParser::process($tts2[0]['Sgf']['sgf']);
-				$tooltipSgfs2[$i] = $tResult2->board;
-				$tooltipInfo2[$i] = $tResult2->info;
-				array_push($tooltipBoardSize2, $tResult2->size);
-			}
-		}
 		$admins = $this->User->find('all', ['conditions' => ['isAdmin' => 1]]);
 
 		if (Auth::isAdmin())

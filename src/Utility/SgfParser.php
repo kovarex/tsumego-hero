@@ -19,8 +19,8 @@ class SgfParser
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);
 
-		$blackStones = self::getInitialPosition(strpos($sgf, 'AB'), $sgfArr, 'x');
-		$whiteStones = self::getInitialPosition(strpos($sgf, 'AW'), $sgfArr, 'o');
+		$blackStones = self::getInitialPosition(strpos($sgf, 'AB'), $sgfArr);
+		$whiteStones = self::getInitialPosition(strpos($sgf, 'AW'), $sgfArr);
 
 		$boardBounds = new BoardBounds();
 		foreach ($blackStones as $stone)

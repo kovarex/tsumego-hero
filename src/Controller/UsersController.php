@@ -1188,11 +1188,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$s = $this->Set->findById($marks[$i]['Tsumego']['set_id']);
 			$marks[$i]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $marks[$i]['Tsumego']['num'];
 			$marks[$i]['Tsumego']['status'] = $uts2[$counter2]['TsumegoStatus']['status'];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
-			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
-			$markTooltipSgfs[$i] = $tResult->board;
-			$markTooltipInfo[$i] = $tResult->info;
-			$markTooltipBoardSize[$i] = $tResult->size;
 			$counter2++;
 		}
 
@@ -1254,11 +1249,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 						for ($k = 0; $k < $utsCount; $k++)
 							if ($uts[$k]['TsumegoStatus']['tsumego_id'] == $duplicates1[$i][$j]['Tsumego']['id'])
 								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
-						$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id']]]);
-						$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
-						$tooltipSgfs[$i][$j] = $tResult->board;
-						$tooltipInfo[$i][$j] = $tResult->info;
-						$tooltipBoardSize[$i][$j] = $tResult->size;
 					}
 				}
 			}
@@ -1566,27 +1556,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$tooltipBoardSize = [];
 		$tagTsumegosCount = count($tagTsumegos);
 		for ($i = 0; $i < $tagTsumegosCount; $i++)
-		{
 			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $tagTsumegos[$i]['Tsumego']['id']]]);
-			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs, $tResult->board);
-			array_push($tooltipInfo, $tResult->info);
-			array_push($tooltipBoardSize, $tResult->size);
-		}
 		$tooltipSgfs2 = [];
 		$tooltipInfo2 = [];
 		$tooltipBoardSize2 = [];
 		$sgfTsumegosCount = count($sgfTsumegos);
 		for ($i = 0; $i < $sgfTsumegosCount; $i++)
-		{
 			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
-			$tts = $this->Sgf->find('all', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $sgfTsumegos[$i]['Tsumego']['id']]]);
-			$tResult = SgfParser::process($tts[0]['Sgf']['sgf']);
-			array_push($tooltipSgfs2, $tResult->board);
-			array_push($tooltipInfo2, $tResult->info);
-			array_push($tooltipBoardSize2, $tResult->size);
-		}
 
 		$u = $this->User->find('all', ['conditions' => ['isAdmin >' => 0]]);
 		$uArray = [];

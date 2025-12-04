@@ -2,13 +2,13 @@
 
 class BoardPosition
 {
-	function __construct($x, $y)
+	public function __construct($x, $y)
 	{
 		$this->x = $x;
 		$this->y = $y;
 	}
 
-	static function fromLetters($x, $y): BoardPosition
+	public static function fromLetters($x, $y): BoardPosition
 	{
 		return new BoardPosition(ord($x) - ord('a'), ord($y) - ord('a'));
 	}
@@ -28,5 +28,6 @@ class BoardPosition
 		$this->y = $size - 1 - $this->y;
 	}
 
-	public $x, $y;
+	public $x;
+	public $y;
 }
