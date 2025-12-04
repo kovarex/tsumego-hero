@@ -200,9 +200,8 @@ class jwtauth implements provider_interface
 	protected function getJwtSecret(): string
 	{
 		// Load CakePHP config file
-		// From: webroot/forums/ext/tsumego/customsso/auth/provider/jwtauth.php
-		// To:   config/core.php
-		$configPath = dirname(dirname(dirname(dirname(dirname(dirname(__DIR__)))))) . '/config/core.php';
+		// phpbb_root_path points to webroot/forums/, we need config/core.php at project root
+		$configPath = $this->phpbb_root_path . '../../config/core.php';
 		
 		if (!file_exists($configPath))
 			throw new \Exception('Config file not found: ' . $configPath);
