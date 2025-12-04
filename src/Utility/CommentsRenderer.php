@@ -4,6 +4,7 @@ class CommentsRenderer
 {
 	public function __construct(string $name, ?int $userID, $urlParams)
 	{
+		$this->name = $name;
 		$this->userID = $userID;
 		$this->params = $urlParams;
 		$this->page = isset($params[$name . '_page']) ? max(1, (int) $this->params[$name . '_page']) : 1;
@@ -14,7 +15,7 @@ class CommentsRenderer
 		echo '<div class="sandboxComment">';
 		$commentColor = $comment['from_admin'] ? 'commentBox2' : 'commentBox1';
 		echo '<table class="sandboxTable2" width="100%" border="0">';
-		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#'.$index.'</b> | ';
+		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#'.($index + 1).'</b> | ';
 		if ($comment['set_connection_id'])
 		{
 			echo '<a href="/' . $comment['set_connection_id'] . '?search=topics">';
@@ -53,7 +54,7 @@ class CommentsRenderer
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 
-		$query = "
+		$querySelects = "
 SELECT
 	tsumego_comment.message AS message,
 	tsumego_comment.tsumego_id AS tsumego_id,
@@ -63,7 +64,8 @@ SELECT
 	user.name as from_name,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
-	set_connection.num as set_num
+	set_connection.num as set_num";
+		$queryFrom = "
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
@@ -73,19 +75,25 @@ FROM
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 
 		if (!empty($queryCondition))
-		$query .= " WHERE " . $queryCondition;
-		$query .= ' LIMIT ' . self::$PAGE_SIZE;
+			$queryFrom .= " WHERE " . $queryCondition;
+		$queryFrom .= ' ORDER BY tsumego_comment.created DESC';
+		$queryFrom .= ' LIMIT ' . self::$PAGE_SIZE;
 
-		$comments = Util::query($query, $parameters);
-		$pagination = ClassRegistry::init('Pagination');
-		$pageIndex = 0; // TODO: index based
+		$pageIndex = isset($this->params[$this->name]) ? max(1, (int) $this->params[$this->name]) : 1;
+		$count = Util::query("SELECT COUNT(*) " . $queryFrom, $parameters)[0]['COUNT(*)'];
+
+		$offset = $pageIndex * self::$PAGE_SIZE;
+		$queryFrom .= ' OFFSET ' . $offset;
+		$comments = Util::query($querySelects . $queryFrom, $parameters);
+		echo PaginationHelper::render($pageIndex, ceil($count / self::$PAGE_SIZE), $this->name);
 		foreach ($comments as $index => $comment)
 		{
-			$this->renderComment($comment, $index);
+			$this->renderComment($comment, $index + $offset);
 			echo '<div class="space"><br></div>';
 		}
 	}
 	public ?int $userID;
 	public int $page;
 	public static int $PAGE_SIZE = 10;
+	public string $name;
 }
