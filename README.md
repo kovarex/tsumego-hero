@@ -81,16 +81,16 @@ These changes just had to be done, so the data structure we are working on is cl
 
 ### Setup on server (part 1)
 
-	git clone https://github.com/kovarex/tsumego-hero.git
+	git clone https://github.com/kovarex/tsumego-hero.git .
 
 ### Final step (part 2) - both local and server
 
 	./deploy.sh
 
-	This when ran for the first time, it will ask for db credentials and generate the proper config files for cake and forums.
+This when ran for the first time, it will ask for db credentials and generate the proper config files for cake and forums.
 
-	Other than that pulls git, installs composer stuff, sets required folders and their access rights, update minification, runs migrations (also for test db in local environment with ddev).
-	So running ./deploy.sh is the way to always update server or dev enrironment to the up to date state.
+Other than that pulls git, installs composer stuff, sets required folders and their access rights, update minification, runs migrations (also for test db in local environment with ddev).
+So running ./deploy.sh is the way to always update server or dev enrironment to the up to date state.
 
 ### Debug with phpstorm
 
