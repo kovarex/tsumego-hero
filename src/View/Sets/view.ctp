@@ -180,7 +180,7 @@
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/tsumegos/play/'.$set['Set']['t'].'">Start</a>';
+					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/'.$set['Set']['t'].'">Start</a>';
 					?>
 				</div>
 			</td>
