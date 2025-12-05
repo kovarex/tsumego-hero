@@ -1,4 +1,8 @@
-﻿<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
+﻿<?php
+// Open Graph meta tags for social sharing
+echo $this->element('open_graph_meta');
+?>
+<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
 	<script src="/js/multipleChoice.js"></script>
 	<style>.alertBox{height:auto!important;}</style>
 <?php }else if($tv!=null){ ?>
