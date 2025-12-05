@@ -43,11 +43,19 @@ class Browser
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
-			$this->driver->get(Util::getMyAddress() . '/empty.php');
+		$this->driver->get(Util::getMyAddress() . '/empty.php');
 
-			// Xdebug cookies
-			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug']);
-			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
+		// CRITICAL: Signal test mode ONCE in constructor (before any real navigation)
+		$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1"]);
+
+		// Xdebug cookies
+		$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug']);
+		$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
+
+		// Pass TEST_TOKEN to browser so it uses the same parallel test database
+		$testToken = getenv('TEST_TOKEN');
+		if ($testToken)
+			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken]);
 		}
 		catch (Exception $e)
 		{
@@ -106,10 +114,36 @@ class Browser
 		}
 	}
 
+	/**
+	 * Restore test mode cookies after deleteAllCookies() calls in tests
+	 * deleteAllCookies removes auth AND test cookies, we need to put test cookies back
+	 */
+	public function restoreTestModeCookies(): void
+	{
+		$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1"]);
+		$testToken = getenv('TEST_TOKEN');
+		if ($testToken)
+			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken]);
+	}
+
 	public function get(string $url): void
 	{
-		if ($url != 'empty.php' && Auth::isLoggedIn())
+		$fullUrl = Util::getMyAddress() . '/' . $url;
+
+		// OPTIMIZATION: Pass test mode via query parameter to avoid cookie reload
+		// Append PHPUNIT_TEST=1 and TEST_TOKEN to URL
+		$separator = (strpos($url, '?') !== false) ? '&' : '?';
+		$fullUrl .= $separator . 'PHPUNIT_TEST=1';
+		$testToken = getenv('TEST_TOKEN');
+		if ($testToken)
+			$fullUrl .= '&TEST_TOKEN=' . $testToken;
+
+		// Set auth cookies if needed (these still require cookies unfortunately)
+		$needsAuthCookies = ($url != 'empty.php' && Auth::isLoggedIn());
+		if ($needsAuthCookies)
 		{
+			// Must navigate first to set cookies
+			$this->driver->get($fullUrl);
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
 				'value' => (string) Auth::getUserID()
@@ -123,7 +157,13 @@ class Browser
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
 		$url = ltrim($url, '/');
+		// Navigate (first time if no auth, or reload with auth cookies)
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
+
+		// Wait for page to be fully loaded (important in parallel testing)
+		$this->driver->wait(5)->until(function ($driver) {
+			return $driver->executeScript('return document.readyState') === 'complete';
+		});
 		$this->assertNoErrors();
 	}
 
@@ -382,6 +422,47 @@ class Browser
 		if (count($clickableRects) < $boardSize * $boardSize + 1)
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
+	}
+
+	/**
+	 * Wait for alert to appear (for AJAX calls that show async alerts)
+	 * @param int $timeoutSeconds Maximum time to wait
+	 * @return bool True if alert appeared, false if timeout
+	 */
+	public function waitForAlert(int $timeoutSeconds = 5): bool
+	{
+		try
+		{
+			$this->driver->wait($timeoutSeconds)->until(function ($driver) {
+				try
+				{
+					$driver->switchTo()->alert();
+					return true;
+				}
+				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+				{
+					return false;
+				}
+			});
+			return true;
+		}
+		catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Click element and wait for alert (for testing error cases)
+	 * @param string $id Element ID to click
+	 * @param int $timeoutSeconds Maximum time to wait for alert
+	 * @throws Exception if alert doesn't appear
+	 */
+	public function clickIdAndExpectAlert(string $id, int $timeoutSeconds = 3): void
+	{
+		$this->clickId($id);
+		if (!$this->waitForAlert($timeoutSeconds))
+			throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
 	}
 
 	public $driver;

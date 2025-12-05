@@ -151,13 +151,13 @@ WHERE
 		$dayRecord['DayRecord']['tsumego_count'] = TsumegoUtil::currentTsumegoCount();
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
-		ClassRegistry::init('AchievementCondition')->create();
-		$achievementCondition = [];
-		$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
-		$achievementCondition['AchievementCondition']['set_id'] = null;
-		$achievementCondition['AchievementCondition']['category'] = 'uotd';
-		$achievementCondition['AchievementCondition']['value'] = 1;
-		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
+	ClassRegistry::init('AchievementCondition')->create();
+	$achievementCondition = [];
+	$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
+	$achievementCondition['AchievementCondition']['set_id'] = null; // NULL for non-set achievements
+	$achievementCondition['AchievementCondition']['category'] = 'uotd';
+	$achievementCondition['AchievementCondition']['value'] = 1;
+	ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
 	public static function publish()

@@ -144,7 +144,10 @@ class TimeModeTest extends TestCaseWithAuth
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
 
-		Auth::init();
+		// Reload user from database to see changes made by browser request
+		$userId = Auth::getUserID();
+		$userData = ClassRegistry::init('User')->findById($userId);
+		Auth::init($userData);
 		$this->assertTrue(Auth::isInTimeMode());
 
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; $i++)

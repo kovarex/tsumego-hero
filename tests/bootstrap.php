@@ -6,6 +6,11 @@
 
 use Composer\InstalledVersions;
 
+// Mark that we're running in test environment
+// This is checked by config/database.php to switch to test database
+putenv('PHPUNIT_RUNNING=1');
+$_ENV['PHPUNIT_RUNNING'] = '1';
+
 if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', dirname(__DIR__));

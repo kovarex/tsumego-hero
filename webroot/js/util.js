@@ -235,6 +235,17 @@ function makeIdValidName(name)
 
 function makeAjaxCall(urlToCall, method)
 {
+	// Preserve PHPUNIT_TEST query parameter from current page for test isolation
+	if (window.location.search.includes('PHPUNIT_TEST=1'))
+	{
+		const separator = urlToCall.includes('?') ? '&' : '?';
+		urlToCall += separator + 'PHPUNIT_TEST=1';
+		// Also preserve TEST_TOKEN if present
+		const testTokenMatch = window.location.search.match(/TEST_TOKEN=(\d+)/);
+		if (testTokenMatch)
+			urlToCall += '&TEST_TOKEN=' + testTokenMatch[1];
+	}
+
 	$.ajax({
 		url: urlToCall,
 		type: 'POST',
