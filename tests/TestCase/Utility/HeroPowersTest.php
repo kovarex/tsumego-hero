@@ -70,8 +70,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		// Wait for sprint AJAX call to complete and UI to update
-		usleep(1000 * 1000);
+		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
@@ -94,8 +93,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		// Wait for sprint AJAX call to complete and UI to update
-		usleep(1000 * 1000);
+		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
 		// clicking next after solving, sprint is still visible:
