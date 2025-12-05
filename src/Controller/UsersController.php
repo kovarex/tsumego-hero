@@ -1868,9 +1868,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('Activate');
 
-		if (Auth::isLoggedIn())
-			$this->saveSolvedNumber(Auth::getUserID());
-
 		$activate = false;
 		if (Auth::isLoggedIn())
 			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
@@ -2247,8 +2244,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('TimeModeSession');
 		$hideEmail = Auth::getUserID() != $id;
 
-		$solvedUts2 = $this->saveSolvedNumber($id);
-
 		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
 		$ach = $this->Achievement->find('all');
 
@@ -2496,7 +2491,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('hideEmail', $hideEmail);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('solvedUts2', $solvedUts2);
 		$this->set('highestElo', $highestElo);
 		$this->set('highestEloRank', $highestEloRank);
 		$this->set('highestRo', $highestRo);

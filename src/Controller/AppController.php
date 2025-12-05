@@ -75,47 +75,6 @@ class AppController extends Controller
 		return $result;
 	}
 
-	protected function saveSolvedNumber($uid)
-	{
-		$this->loadModel('User');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
-
-		$solvedUts2 = 0;
-		$tsumegos = $this->SetConnection->find('all');
-		if (!$tsumegos)
-			$tsumegos = [];
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$uts)
-			$uts = [];
-		$setKeys = [];
-		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]);
-		if (!$setArray)
-			$setArray = [];
-
-		$setArrayCount = count($setArray);
-		for ($i = 0; $i < $setArrayCount; $i++)
-			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
-
-		$scs = [];
-		$tsumegosCount = count($tsumegos);
-		for ($j = 0; $j < $tsumegosCount; $j++)
-			if (!isset($scs[$tsumegos[$j]['SetConnection']['tsumego_id']]))
-				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']] = 1;
-			else
-				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']]++;
-		$utsCount = count($uts);
-		for ($j = 0; $j < $utsCount; $j++)
-			if ($uts[$j]['TsumegoStatus']['status'] == 'S' || $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C')
-				if (isset($scs[$uts[$j]['TsumegoStatus']['tsumego_id']]))
-					$solvedUts2 += $scs[$uts[$j]['TsumegoStatus']['tsumego_id']];
-		Auth::getUser()['solved'] = $solvedUts2;
-		Auth::saveUser();
-
-		return $solvedUts2;
-	}
-
 	/**
 	 * @return void
 	 */
@@ -251,7 +210,6 @@ class AppController extends Controller
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
 			$danSolveCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$danSolveCondition['AchievementCondition']['set_id'] = $tId;
 			$danSolveCondition['AchievementCondition']['value']++;
 
 			ClassRegistry::init('AchievementCondition')->save($danSolveCondition);

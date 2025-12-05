@@ -128,4 +128,12 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->clickId("navigate-to-contributions");
 		$this->assertTextContains('kovarex added the tag <i>atari</i>', $browser->driver->getPageSource());
 	}
+
+	public function testOpenUserPageWhenNotLoggedIn()
+	{
+		$context = new ContextPreparator(['other-users' => [['name' => 'Ivan Detkov']]]);
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->otherUsers[0]['id']);
+		$this->assertTextContains('Ivan Detkov', $browser->driver->getPageSource());
+	}
 }

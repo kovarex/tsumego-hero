@@ -144,4 +144,16 @@ class CronControllerTest extends TestCaseWithAuth
 		$unpopularTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => 'unpopular-tag']]);
 		$this->assertSame($unpopularTag['Tag']['popular'], false);
 	}
+
+	public function testUpdateSolved()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [
+				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S'],
+				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'S']],
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
+		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->otherTsumegos[0]['id']]);
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->assertSame($context->reloadUser()['solved'], 1);
+	}
 }

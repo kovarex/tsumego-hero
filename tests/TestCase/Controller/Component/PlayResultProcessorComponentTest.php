@@ -436,4 +436,21 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$context->checkNewTsumegoStatusCoreValues($this);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
 	}
+
+	public function testSolvedIncreasedBySolvingNotSolved(): void
+	{
+		foreach (['N', 'S'] as $previousStatus)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $previousStatus],
+				'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 66]]);
+			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+			usleep(1000 * 100);
+			$browser->driver->executeScript("displayResult('S')");
+			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+			$context->checkNewTsumegoStatusCoreValues($this);
+			$this->assertSame($context->reloadUser()['solved'], $previousStatus == 'S' ? 66 : 67);
+		}
+	}
 }
