@@ -35,6 +35,14 @@ class CommentsControllerTest extends ControllerTestCase
 		// Verify comment appears in the comments list
 		$browser->get('comments');
 		$this->assertTextContains('My first comment', $browser->driver->getPageSource());
+
+		// verify that deleted comment isn't visible
+		$comment = ClassRegistry::init('TsumegoComment')->find('first');
+		$comment['TsumegoComment']['deleted'] = 1;
+		ClassRegistry::init('TsumegoComment')->save($comment);
+
+		$browser->get('comments');
+		$this->assertTextNotContains('My first comment', $browser->driver->getPageSource());
 	}
 
 	/**
