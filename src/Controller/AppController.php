@@ -2274,7 +2274,6 @@ class AppController extends Controller
 		// Handle zen mode state
 		$zenMode = false;
 		if (isset($_GET['zen']))
-		{
 			if ($_GET['zen'] == '1')
 			{
 				setcookie('zenMode', '1', time() + 3600, '/');
@@ -2285,7 +2284,6 @@ class AppController extends Controller
 				setcookie('zenMode', '', time() - 3600, '/');
 				$zenMode = false;
 			}
-		}
 		elseif (isset($_COOKIE['zenMode']) && $_COOKIE['zenMode'] == '1')
 			$zenMode = true;
 
