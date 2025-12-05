@@ -277,6 +277,11 @@
 		<?php
 		echo 'function animateNumber(index, start, end, duration) {
 				const element = document.getElementById("number" + index);
+				if (!element) 
+				{
+					console.warn("Element with ID number" + index + " not found.");
+					return; // Element not found, skip animation
+				}
 				const range = end - start;
 				const increment = range / (duration * 60);
 				const decimalIndex = end.toString().indexOf(".");

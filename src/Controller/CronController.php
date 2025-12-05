@@ -153,7 +153,7 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->create();
 		$achievementCondition = [];
 		$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
-		$achievementCondition['AchievementCondition']['set_id'] = 0;
+		$achievementCondition['AchievementCondition']['set_id'] = null; // NULL for non-set achievements
 		$achievementCondition['AchievementCondition']['category'] = 'uotd';
 		$achievementCondition['AchievementCondition']['value'] = 1;
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);

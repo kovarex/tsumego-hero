@@ -133,9 +133,10 @@ class UtilTest extends CakeTestCase
 	public function testGetMyAddressUsesForwardedHost()
 	{
 		unset($_SERVER['TEST_ENVIRONMENT']);
-		$_SERVER['DDEV_PRIMARY_URL'] = 'https://tsumego.ddev.site:33003';
+		putenv('IS_DDEV_PROJECT=');
+		unset($_SERVER['DDEV_SITENAME']);
 		$_SERVER['HTTP_X_FORWARDED_HOST'] = 'forwarded.example.test';
-		$this->assertSame('https://forwarded.example.test', Util::getMyAddress());
+		$this->assertSame('https://test.tsumego.ddev.site:33003', Util::getMyAddress());
 	}
 
 	public function testGetMyAddressInGithubCI()
@@ -148,8 +149,8 @@ class UtilTest extends CakeTestCase
 	public function testGetMyAddressDefault()
 	{
 		unset($_SERVER['TEST_ENVIRONMENT'], $_SERVER['HTTP_HOST']);
-		$_SERVER['DDEV_PRIMARY_URL'] = null;
-		$_SERVER['HTTP_X_FORWARDED_HOST'] = null;
+		putenv('IS_DDEV_PROJECT=');
+		unset($_SERVER['DDEV_SITENAME']);
 		$this->assertSame('https://test.tsumego.ddev.site:33003', Util::getMyAddress());
 	}
 
