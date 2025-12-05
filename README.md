@@ -24,7 +24,7 @@ These changes just had to be done, so the data structure we are working on is cl
 `Day D` is the day where we migrate the tsumego-hero site database into tsumego.com and make it the official new home of the site.
 `Day D` can become once the core functionality of the site is covered by tests, and we do some public testing on test.tsumego.com
 
-## Local Setup (part 2)
+## Local Setup (part 1)
 
 - Instal ddev [ddev](https://ddev.com/get-started/).
 
@@ -83,7 +83,7 @@ These changes just had to be done, so the data structure we are working on is cl
 
 	git clone https://github.com/kovarex/tsumego-hero.git
 
-### Setup final step (both local and server)
+### Final step (part 2) - both local and server
 
 	./deploy.sh
 
