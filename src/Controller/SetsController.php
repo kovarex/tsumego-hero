@@ -1012,7 +1012,6 @@ ORDER BY total_count DESC, partition_number";
 			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
-			// Set 't' to the first unsolved set connection ID for the Start button link
 			$set['Set']['t'] = $this->getFirstUnsolvedSetConnectionId($tsumegoButtons);
 		}
 		elseif ($tsumegoFilters->query == 'tags')
@@ -1032,7 +1031,6 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
-			// Set 't' to the first unsolved set connection ID for the Start button link
 			$set['Set']['t'] = $this->getFirstUnsolvedSetConnectionId($tsumegoButtons);
 		}
 		elseif ($tsumegoFilters->query == 'topics')
@@ -1045,7 +1043,6 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
 			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
-			// Set 't' to the first unsolved set connection ID for the Start button link
 			$set['Set']['t'] = $this->getFirstUnsolvedSetConnectionId($tsumegoButtons);
 			$allArActive = true;
 			$allArInactive = true;
