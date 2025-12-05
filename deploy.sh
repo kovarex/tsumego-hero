@@ -57,12 +57,12 @@ if [[ ! -f "$DB_CONFIG_FILE" ]]; then
     ESC_PASS=$(printf '%s\n' "$DB_PASS" | sed 's/[&/\]/\\&/g')
     ESC_NAME=$(printf '%s\n' "$DB_NAME" | sed 's/[&/\]/\\&/g')
 
-    sed -i \
-        -e "s|'template_db_host'|'$ESC_HOST'|g" \
-        -e "s|'template_db_user'|'$ESC_USER'|g" \
-        -e "s|'template_db_password'|'$ESC_PASS'|g" \
-        -e "s|'db'|'$ESC_NAME'|g" \
-        "$DB_CONFIG_FILE"
+    ssed -i '' \
+         -e "s|'template_db_host'|'$ESC_HOST'|g" \
+         -e "s|'template_db_user'|'$ESC_USER'|g" \
+         -e "s|'template_db_password'|'$ESC_PASS'|g" \
+         -e "s|'db'|'$ESC_NAME'|g" \
+         "$DB_CONFIG_FILE"
 else
     echo "config/database.php already exists, skipping."
 fi
