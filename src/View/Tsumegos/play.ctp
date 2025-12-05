@@ -2485,6 +2485,6 @@ echo json_encode([
 	</style>
 
 <!-- Zen Mode Exit Button (only visible in zen mode) -->
-<button id="zen-mode-exit" title="Exit Zen Mode (Esc)">✕</button>
+<button id="zen-mode-exit" title="Exit Zen Mode (Esc)">ESC</button>
 
 <script src="/js/zen-mode.js"></script>
