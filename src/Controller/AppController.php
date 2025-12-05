@@ -2229,9 +2229,6 @@ class AppController extends Controller
 			}
 			elseif (!empty($_COOKIE['boards_bitmask']))
 				$bitmask = (int) $_COOKIE['boards_bitmask'];
-
-			if (Auth::isLoggedIn())
-				Auth::saveUser();
 		}
 		else
 		{
@@ -2286,6 +2283,8 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
 		$this->set('hasFavs', $hasFavs);
+		if (Auth::isLoggedIn())
+			Auth::saveUser();
 	}
 
 	public function afterFilter() {}
