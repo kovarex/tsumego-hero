@@ -1340,14 +1340,9 @@ ORDER BY total_count DESC, partition_number";
 					$urCount = count($ur);
 					for ($i = 0; $i < $urCount; $i++)
 						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
-					//$loggedInUserUts = $this->Session->read('loggedInUser.uts');
 					$utsCount = count($uts);
 					for ($i = 0; $i < $utsCount; $i++)
-					{
 						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
-						//unset($loggedInUserUts[$uts[$i]['TsumegoStatus']['tsumego_id']]);
-					}
-					//$this->Session->write('loggedInUser.uts', $loggedInUserUts);
 					$pr = [];
 					$pr['ProgressDeletion']['user_id'] = Auth::getUserID();
 					$pr['ProgressDeletion']['set_id'] = $id;

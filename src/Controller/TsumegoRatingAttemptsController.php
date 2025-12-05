@@ -269,7 +269,7 @@ class TsumegoRatingAttemptsController extends AppController
 		$this->loadModel('SetConnection');
 		$this->loadModel('TsumegoAttempt');
 		if (Auth::getUserID() != $trid && Auth::getUserID() != 72)
-			$this->Session->write('redirect', 'sets');
+			Util::setCookie('redirect', 'sets');
 
 		$trs = $this->TsumegoAttempt->find('all', [
 			'limit' => 200,

@@ -234,20 +234,12 @@ Configure::write('App.encoding', 'UTF-8');
  */
 Configure::write('Session', [
 	'defaults' => 'php',
-	'cookie' => 'myApp',
-	'timeout' => 14400, // Set the timeout to 240 hours (in minutes: 240 * 60 = 14400)
-	'cookieTimeout' => 14400, // Match session timeout
-	'autoRegenerate' => true,
-	'checkAgent' => false, // Don't check user agent (helps with proxies/mobile)
 	'ini' => [
+		'session.use_cookies' => 0,
+		'session.use_only_cookies' => 0,
 		'session.use_trans_sid' => 0,
-		'session.cookie_samesite' => 'None',
-		'session.cookie_secure' => true,
-		'session.cookie_httponly' => true,
-		'session.cookie_path' => '/',
-		'session.gc_maxlifetime' => 864000, // 240 hours in seconds
-		'session.cookie_lifetime' => 864000, // 240 hours in seconds
-	],
+		'session.auto_start' => 0
+	]
 ]);
 
 /**

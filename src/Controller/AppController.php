@@ -11,9 +11,7 @@ class AppController extends Controller
 	public $helpers = ['Pagination'];
 
 	public $components = [
-		'Session',
 		//'DebugKit.Toolbar',
-		'Flash',
 		'PlayResultProcessor'
 	];
 
@@ -1951,9 +1949,9 @@ class AppController extends Controller
 		Auth::init($user);
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
 		if ($vs)
-			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
-		$this->Session->write('texture', $user['User']['texture']);
-		$this->Session->write('check1', $user['User']['id']);
+			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
+		Util::setCookie('texture', $user['User']['texture']);
+		Util::setCookie('check1', $user['User']['id']);
 	}
 
 	public function beforeFilter(): void
@@ -2206,7 +2204,7 @@ class AppController extends Controller
 
 		$bitmask = 0b11111111; // Default: first 8 boards enabled
 
-		if ($this->Session->check('boards_bitmask') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
+		if (!empty($_COOKIE['boards_bitmask']) || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
 		{
 			if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')
 			{
@@ -2220,17 +2218,17 @@ class AppController extends Controller
 						$bitmask |= (1 << $i);
 				if (Auth::isLoggedIn())
 					Auth::getUser()['boards_bitmask'] = $bitmask;
-				$this->Session->write('boards_bitmask', $bitmask);
+				Util::setCookie('boards_bitmask', $bitmask);
 				// Pass the cookie back to view to maintain JS compatibility for now
 				$this->set('textureCookies', $textureCookie);
 			}
 			elseif (Auth::isLoggedIn())
 			{
 				$bitmask = (int) Auth::getUser()['boards_bitmask'];
-				$this->Session->write('boards_bitmask', $bitmask);
+				Util::setCookie('boards_bitmask', $bitmask);
 			}
-			elseif ($this->Session->check('boards_bitmask'))
-				$bitmask = (int) $this->Session->read('boards_bitmask');
+			elseif (!empty($_COOKIE['boards_bitmask']))
+				$bitmask = (int) $_COOKIE['boards_bitmask'];
 
 			if (Auth::isLoggedIn())
 				Auth::saveUser();
@@ -2238,7 +2236,7 @@ class AppController extends Controller
 		else
 		{
 			// Default state if no session/cookie
-			$this->Session->write('boards_bitmask', $bitmask);
+			Util::setCookie('boards_bitmask', $bitmask);
 		}
 
 		// Populate enabledBoards array based on bitmask
@@ -2250,7 +2248,7 @@ class AppController extends Controller
 				$enabledBoards[$i + 1] = '';
 		}
 		$achievementUpdate = [];
-		if ($this->Session->check('initialLoading'))
+		if (Util::clearCookie('initialLoading'))
 		{
 			$achievementUpdate1 = $this->checkLevelAchievements();
 			$achievementUpdate2 = $this->checkProblemNumberAchievements();
@@ -2264,7 +2262,6 @@ class AppController extends Controller
 				$achievementUpdate4 ?: [],
 				$achievementUpdate5 ?: []
 			);
-			$this->Session->delete('initialLoading');
 		}
 
 		if (count($achievementUpdate) > 0)

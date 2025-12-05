@@ -16,8 +16,8 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero');
 
 		// Set default lastVisit tsumego ID if not already set (for first-time visitors)
-		if (!$this->Session->check('lastVisit'))
-			$this->Session->write('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
+		if (empty($_COOKIE['lastVisit']))
+			Util::setCookie('lastVisit', Constants::$DEFAULT_TSUMEGO_ID);
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');

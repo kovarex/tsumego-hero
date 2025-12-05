@@ -2,7 +2,7 @@
 	<br>
 	<div id="login-box" class="users form">
 		<div class="left signin">
-			<?php echo $this->Flash->render(); ?>
+			<?php echo CookieFlash::render(); ?>
 			 <h1>Sign in</h1>
 			<?php echo $this->Form->create('User', ['action' => 'login']); ?>
 			<input type="hidden" name="redirect" value="<?php echo h($redirectUrl); ?>"/>
