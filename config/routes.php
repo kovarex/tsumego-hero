@@ -93,6 +93,15 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 
+/**
+ * Tsumego image generation for Open Graph / social sharing
+ */
+Router::connect(
+	'/tsumego-image/:id',
+	['controller' => 'TsumegoImages', 'action' => 'tsumegoImage'],
+	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the SetConnection
+);
+
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 
 /**
