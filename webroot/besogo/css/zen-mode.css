@@ -1,0 +1,242 @@
+/* Zen Mode - Distraction-free tsumego solving */
+
+/* Zen Mode Toggle Link (styled like other selectable-text links) */
+#zen-mode-toggle {
+	cursor: pointer;
+}
+
+/* Zen Mode Exit Button (styled like ESC key) */
+#zen-mode-exit {
+	display: none;
+	position: fixed;
+	top: 15px;
+	right: 15px;
+	padding: 6px 12px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.4);
+	cursor: pointer;
+	font-size: 11px;
+	font-family: monospace;
+	font-weight: bold;
+	z-index: 10000;
+	letter-spacing: 1px;
+	transition: all 0.3s;
+}
+#zen-mode-exit:hover {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.3);
+	color: rgba(255, 255, 255, 0.8);
+}
+
+/* Zen Mode Active State */
+body.zen-mode {
+	background: #1a1a1a !important;
+	overflow: hidden;
+}
+
+body.zen-mode #zen-mode-toggle {
+	display: none !important;
+}
+
+body.zen-mode #zen-mode-exit {
+	display: block;
+}
+
+/* Puzzle metadata in zen mode - ultra-subtle, bottom-right */
+body.zen-mode #zen-metadata {
+	display: block !important;
+	position: fixed !important;
+	bottom: 15px !important;
+	right: 15px !important;
+	text-align: right !important;
+	z-index: 10000 !important;
+	opacity: 0.15 !important;
+	transition: opacity 0.3s !important;
+}
+
+body.zen-mode #zen-metadata:hover {
+	opacity: 0.6 !important;
+}
+
+body.zen-mode .zen-meta-title {
+	font-size: 13px !important;
+	color: rgba(255, 255, 255, 0.6) !important;
+	margin-bottom: 4px !important;
+	font-weight: 500 !important;
+}
+
+body.zen-mode .zen-meta-info {
+	font-size: 11px !important;
+	color: rgba(255, 255, 255, 0.4) !important;
+}
+
+body.zen-mode .zen-meta-rating {
+	font-weight: 600 !important;
+	color: rgba(255, 255, 255, 0.5) !important;
+}
+
+body.zen-mode .zen-meta-separator {
+	margin: 0 6px !important;
+	opacity: 0.3 !important;
+}
+
+body.zen-mode .zen-meta-author {
+	font-style: italic !important;
+}
+
+/* Remove container styling in Zen mode */
+body.zen-mode .whitebox2 {
+	border: none !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	width: auto !important;
+	min-height: auto !important;
+}
+
+body.zen-mode #container {
+	background: transparent !important;
+}
+
+body.zen-mode .besogo-container {
+	background: transparent !important;
+}
+
+/* Hide header, footer, and navigation in Zen mode */
+body.zen-mode .whitebox1,
+body.zen-mode #logo1,
+body.zen-mode .outerMenu1,
+body.zen-mode .outerMenu2,
+body.zen-mode .outerMenu3,
+body.zen-mode #footer,
+body.zen-mode .footerLinks {
+	display: none !important;
+}
+
+/* Hide account bar in zen mode - we want minimal distractions */
+body.zen-mode #account-bar-wrapper,
+body.zen-mode #account-bar {
+	display: none !important;
+}
+
+/* Keep health visible and positioned in zen mode */
+body.zen-mode #health {
+	position: fixed !important;
+	top: 10px !important;
+	left: 10px !important;
+	z-index: 9999 !important;
+	padding: 10px !important;
+	background: rgba(0, 0, 0, 0.3) !important;
+	border-radius: 8px !important;
+}
+
+/* Keep SGF comments (#theComment) visible in zen mode - appears above description on hover */
+body.zen-mode #theComment {
+	display: none !important; /* Hidden by default */
+	position: fixed !important;
+	bottom: 50px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	max-width: 400px !important;
+	padding: 6px 12px !important;
+	background: rgba(0, 0, 0, 0.75) !important;
+	border-radius: 4px !important;
+	color: rgba(255, 255, 255, 0.8) !important;
+	font-size: 12px !important;
+	font-style: italic !important;
+	text-align: center !important;
+	opacity: 0 !important;
+	transition: opacity 0.3s !important;
+	pointer-events: none !important;
+	z-index: 10000 !important;
+}
+
+/* Show #theComment only when it has content */
+body.zen-mode #theComment:not(:empty) {
+	display: block !important;
+}
+
+/* Show #theComment on hover over content area (board) */
+body.zen-mode #content:hover #theComment:not(:empty) {
+	opacity: 1 !important;
+}
+
+/* Keep puzzle description visible in zen mode - moved to bottom, smaller */
+body.zen-mode .titleDescription1,
+body.zen-mode .titleDescription2 {
+	display: block !important;
+	position: fixed !important;
+	bottom: 15px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	z-index: 9999 !important;
+	padding: 6px 14px !important;
+	background: rgba(0, 0, 0, 0.6) !important;
+	border-radius: 6px !important;
+}
+
+body.zen-mode #descriptionText {
+	color: rgba(255, 255, 255, 0.9) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+	text-decoration: none !important;
+}
+
+/* Hide play page specific elements in Zen mode */
+body.zen-mode .tsumegoNavi1,
+body.zen-mode .tsumegoNavi-middle,
+body.zen-mode .tsumegoNavi-middle2,
+body.zen-mode .tag-container,
+body.zen-mode .selectable-text,
+body.zen-mode #commentSpace,
+body.zen-mode .hero-powers-container,
+body.zen-mode .upgradeLink,
+body.zen-mode .filters-outer,
+body.zen-mode #errorMessageOuter,
+body.zen-mode #status,
+body.zen-mode #status2,
+body.zen-mode #xpDisplayDiv,
+body.zen-mode .xpDisplayTable,
+body.zen-mode #xpDisplay,
+body.zen-mode .gameInfo,
+body.zen-mode #author-notice,
+body.zen-mode .mode1,
+body.zen-mode .mode3,
+body.zen-mode .alertBox,
+body.zen-mode .besogo-tsumegoPlayTool,
+body.zen-mode .duplicateTable,
+body.zen-mode .modify-description,
+body.zen-mode .modify-description-panel,
+body.zen-mode #playTitle,
+body.zen-mode .title4,
+body.zen-mode .new1,
+body.zen-mode .homeCenter2 {
+	display: none !important;
+}
+
+/* Center and expand the board in Zen mode */
+body.zen-mode #board,
+body.zen-mode #target {
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	margin: 0 !important;
+	z-index: 9998 !important;
+}
+
+body.zen-mode .besogo-board {
+	max-width: 90vmin !important;
+	max-height: 90vmin !important;
+	margin: 0 auto !important;
+}
+
+/* Visual feedback for correct/wrong in Zen mode */
+body.zen-mode.zen-correct .besogo-board {
+	box-shadow: 0 0 60px 20px rgba(0, 255, 0, 0.5);
+}
+
+body.zen-mode.zen-wrong .besogo-board {
+	box-shadow: 0 0 60px 20px rgba(255, 0, 0, 0.5);
+}
