@@ -467,7 +467,6 @@ class Play
 				AppController::updateXP(Auth::getUserID(), $achievementUpdate);
 		}
 
-		$admins = ClassRegistry::init('User')->find('all', ['conditions' => ['isAdmin' => 1]]);
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
@@ -581,7 +580,6 @@ class Play
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('sgf2', $sgf2);
 		($this->setFunction)('crs', $crs);
-		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
