@@ -704,21 +704,21 @@ class ZenModeTest extends TestCaseWithAuth
 		// Verify display is not 'none'
 		$this->assertNotEquals('none', $computedStyles['display'], '#theComment display should not be none');
 
-		// Verify color is white or close to white (rgb(255, 255, 255))
+		// Verify color is white or close to white (rgba with high values, allowing opacity)
 		$this->assertMatchesRegularExpression(
-			'/rgb\s*\(\s*25[0-5]\s*,\s*25[0-5]\s*,\s*25[0-5]\s*\)/',
+			'/rgba?\s*\(\s*25[0-5]\s*,\s*25[0-5]\s*,\s*25[0-5]\s*(,\s*[0-9.]+)?\s*\)/',
 			$computedStyles['color'],
-			'#theComment text color should be white'
+			'#theComment text color should be white or near-white'
 		);
 
-		// Verify fixed positioning at bottom
+		// Verify fixed positioning at bottom (50px - above description at 15px)
 		$this->assertEquals('fixed', $computedStyles['position'], '#theComment should be fixed positioned');
-		$this->assertEquals('10px', $computedStyles['bottom'], '#theComment should be 10px from bottom');
+		$this->assertEquals('50px', $computedStyles['bottom'], '#theComment should be 50px from bottom');
 
 		// Verify high z-index
 		$this->assertGreaterThanOrEqual(9999, (int)$computedStyles['zIndex'], '#theComment should have high z-index');
 
-		// Check #descriptionText styles (positioned at top-center)
+		// Check #descriptionText styles (positioned at bottom-center in zen mode)
 		$descriptionStyles = $browser->driver->executeScript("
 			var element = document.getElementById('descriptionText');
 			var parent = element.parentElement; // Get the titleDescription parent
@@ -728,14 +728,14 @@ class ZenModeTest extends TestCaseWithAuth
 				display: styles.display,
 				color: styles.color,
 				parentPosition: parentStyles.position,
-				parentTop: parentStyles.top,
+				parentBottom: parentStyles.bottom,
 				parentZIndex: parentStyles.zIndex
 			};
 		");
 
 		$this->assertNotEquals('none', $descriptionStyles['display'], '#descriptionText display should not be none');
 		$this->assertEquals('fixed', $descriptionStyles['parentPosition'], 'Parent should be fixed positioned');
-		$this->assertEquals('10px', $descriptionStyles['parentTop'], 'Parent should be 10px from top');
+		$this->assertEquals('15px', $descriptionStyles['parentBottom'], 'Parent should be 15px from bottom');
 		$this->assertGreaterThanOrEqual(9999, (int)$descriptionStyles['parentZIndex'], 'Parent should have high z-index');
 	}
 

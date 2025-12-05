@@ -5,28 +5,29 @@
 	cursor: pointer;
 }
 
-/* Zen Mode Exit Button (only visible in zen mode) */
+/* Zen Mode Exit Button (styled like ESC key) */
 #zen-mode-exit {
 	display: none;
 	position: fixed;
 	top: 15px;
 	right: 15px;
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.2);
-	color: white;
-	border: none;
+	padding: 6px 12px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.4);
 	cursor: pointer;
-	font-size: 18px;
+	font-size: 11px;
+	font-family: monospace;
+	font-weight: bold;
 	z-index: 10000;
-	transition: opacity 0.3s;
-	opacity: 0.3;
-	pointer-events: auto;
+	letter-spacing: 1px;
+	transition: all 0.3s;
 }
 #zen-mode-exit:hover {
-	opacity: 1;
-	background: rgba(255, 255, 255, 0.4);
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.3);
+	color: rgba(255, 255, 255, 0.8);
 }
 
 /* Zen Mode Active State */
@@ -43,39 +44,20 @@ body.zen-mode #zen-mode-exit {
 	display: block;
 }
 
-/* Subtle ESC key indicator in zen mode */
-body.zen-mode::after {
-	content: "ESC";
-	position: fixed;
-	top: 15px;
-	right: 60px;
-	padding: 4px 8px;
-	background: rgba(255, 255, 255, 0.05);
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-radius: 4px;
-	color: rgba(255, 255, 255, 0.3);
-	font-size: 11px;
-	font-family: monospace;
-	font-weight: bold;
-	z-index: 10000;
-	pointer-events: none;
-	letter-spacing: 1px;
-}
-
-/* Puzzle metadata in zen mode - very subtle, top-right */
+/* Puzzle metadata in zen mode - ultra-subtle, bottom-right */
 body.zen-mode #zen-metadata {
 	display: block !important;
 	position: fixed !important;
-	top: 50px !important;
+	bottom: 15px !important;
 	right: 15px !important;
 	text-align: right !important;
 	z-index: 10000 !important;
-	opacity: 0.4 !important;
+	opacity: 0.15 !important;
 	transition: opacity 0.3s !important;
 }
 
 body.zen-mode #zen-metadata:hover {
-	opacity: 0.8 !important;
+	opacity: 0.6 !important;
 }
 
 body.zen-mode .zen-meta-title {
@@ -149,20 +131,25 @@ body.zen-mode #health {
 	border-radius: 8px !important;
 }
 
-/* Keep SGF comments (#theComment) visible in zen mode - but only if it has content */
+/* Keep SGF comments (#theComment) visible in zen mode - appears above description on hover */
 body.zen-mode #theComment {
 	display: none !important; /* Hidden by default */
 	position: fixed !important;
-	bottom: 10px !important;
+	bottom: 50px !important;
 	left: 50% !important;
 	transform: translateX(-50%) !important;
-	z-index: 9999 !important;
-	padding: 10px 20px !important;
-	background: rgba(0, 0, 0, 0.7) !important;
-	border-radius: 8px !important;
-	color: white !important;
-	max-width: 80% !important;
+	max-width: 400px !important;
+	padding: 6px 12px !important;
+	background: rgba(0, 0, 0, 0.75) !important;
+	border-radius: 4px !important;
+	color: rgba(255, 255, 255, 0.8) !important;
+	font-size: 12px !important;
+	font-style: italic !important;
 	text-align: center !important;
+	opacity: 0 !important;
+	transition: opacity 0.3s !important;
+	pointer-events: none !important;
+	z-index: 10000 !important;
 }
 
 /* Show #theComment only when it has content */
@@ -170,24 +157,29 @@ body.zen-mode #theComment:not(:empty) {
 	display: block !important;
 }
 
-/* Keep puzzle description visible in zen mode */
+/* Show #theComment on hover over content area (board) */
+body.zen-mode #content:hover #theComment:not(:empty) {
+	opacity: 1 !important;
+}
+
+/* Keep puzzle description visible in zen mode - moved to bottom, smaller */
 body.zen-mode .titleDescription1,
 body.zen-mode .titleDescription2 {
 	display: block !important;
 	position: fixed !important;
-	top: 10px !important;
+	bottom: 15px !important;
 	left: 50% !important;
 	transform: translateX(-50%) !important;
 	z-index: 9999 !important;
-	padding: 10px 20px !important;
-	background: rgba(0, 0, 0, 0.7) !important;
-	border-radius: 8px !important;
+	padding: 6px 14px !important;
+	background: rgba(0, 0, 0, 0.6) !important;
+	border-radius: 6px !important;
 }
 
 body.zen-mode #descriptionText {
-	color: white !important;
-	font-size: 18px !important;
-	font-weight: bold !important;
+	color: rgba(255, 255, 255, 0.9) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
 	text-decoration: none !important;
 }
 
