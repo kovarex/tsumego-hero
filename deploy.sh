@@ -15,6 +15,20 @@ NEED_DB_INPUT=false
 
 echo "=== Deploy started ==="
 
+### Detect DDEV environment
+IS_DDEV=false
+if command -v ddev >/dev/null 2>&1; then
+    IS_DDEV=true
+    echo "DDEV environment detected."
+fi
+
+### Select MySQL client (local or DDEV)
+if [[ "$IS_DDEV" = true ]]; then
+    MYSQL="ddev mysql"
+else
+    MYSQL="mysql"
+fi
+
 ### Detect if we need DB credentials
 if [[ ! -f "$DB_CONFIG_FILE" || ! -f "$PHPBB_CONFIG_FILE" ]]; then
     NEED_DB_INPUT=true
@@ -49,22 +63,31 @@ if [[ "$NEED_DB_INPUT" = true ]]; then
     echo "  User:     $DB_USER"
     echo "  Password: $DB_PASS"
 
+    db_exists() {
+        $MYSQL -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
+            -e "SHOW DATABASES LIKE '$1';" 2>/dev/null | grep "$1" >/dev/null
+    }
+
     echo "=== Ensuring main database exists ==="
     if db_exists "$DB_NAME"; then
         echo "Database $DB_NAME already exists."
     else
         echo "Creating database $DB_NAME..."
-        mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
+        $MYSQL -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
             -e "CREATE DATABASE $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
     fi
 
-    echo "=== Ensuring test database exists ==="
-    if db_exists "test"; then
-        echo "Test database already exists."
+    if [[ "$IS_DDEV" = true ]]; then
+        echo "=== Ensuring test database exists (DDEV only) ==="
+        if db_exists "test"; then
+            echo "Test database already exists."
+        else
+            echo "Creating test database..."
+            $MYSQL -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
+                -e "CREATE DATABASE test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        fi
     else
-        echo "Creating test database..."
-        mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
-            -e "CREATE DATABASE test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        echo "Skipping test database creation (not DDEV)."
     fi
 fi
 
@@ -85,7 +108,6 @@ else
     echo "config/database.php already exists, skipping."
 fi
 
-
 ### Generate phpBB config.php if missing
 if [[ ! -f "$PHPBB_CONFIG_FILE" ]]; then
     echo "Creating webroot/forums/config.php ..."
@@ -102,8 +124,15 @@ else
     echo "webroot/forums/config.php already exists, skipping."
 fi
 
+
+### Composer install (host in dev, local in prod)
 echo "Running Composer..."
-composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+if [[ "$IS_DDEV" = true ]]; then
+    ddev composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+else
+    composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+fi
+
 
 echo "=== Setting up permissions ==="
 chmod 777 "$ROOT_DIR/tmp"
@@ -123,8 +152,14 @@ chmod 777 "$ROOT_DIR/webroot/forums/store"
 chmod 777 "$ROOT_DIR/webroot/forums/files"
 chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 
+
+### Run migrations (inside container in dev, locally in production)
 echo "=== Running migrations ==="
-vendor/bin/phinx migrate
-vendor/bin/phinx migrate -e test
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec vendor/bin/phinx migrate
+    ddev exec vendor/bin/phinx migrate -e test
+else
+    vendor/bin/phinx migrate
+fi
 
 echo "=== Deploy complete ==="
