@@ -36,12 +36,19 @@ if [[ "$NEED_DB_INPUT" = true ]]; then
     read -p "Database password (default: db): " DB_PASS
     DB_PASS=${DB_PASS:-db}
 
+    # Escape replacement values for sed (only once)
+    ESC_HOST=$(printf '%s\n' "$DB_HOST" | sed 's/[&/\]/\\&/g')
+    ESC_USER=$(printf '%s\n' "$DB_USER" | sed 's/[&/\]/\\&/g')
+    ESC_PASS=$(printf '%s\n' "$DB_PASS" | sed 's/[&/\]/\\&/g')
+    ESC_NAME=$(printf '%s\n' "$DB_NAME" | sed 's/[&/\]/\\&/g')
+
     echo ""
     echo "Using values:"
     echo "  Host:     $DB_HOST"
     echo "  Database: $DB_NAME"
     echo "  User:     $DB_USER"
     echo "  Password: $DB_PASS"
+
 fi
 
 
@@ -50,12 +57,6 @@ if [[ ! -f "$DB_CONFIG_FILE" ]]; then
     echo "Creating config/database.php ..."
 
     cp "$DB_CONFIG_TEMPLATE" "$DB_CONFIG_FILE"
-
-    # Escape replacement values for sed
-    ESC_HOST=$(printf '%s\n' "$DB_HOST" | sed 's/[&/\]/\\&/g')
-    ESC_USER=$(printf '%s\n' "$DB_USER" | sed 's/[&/\]/\\&/g')
-    ESC_PASS=$(printf '%s\n' "$DB_PASS" | sed 's/[&/\]/\\&/g')
-    ESC_NAME=$(printf '%s\n' "$DB_NAME" | sed 's/[&/\]/\\&/g')
 
     sed -i '' \
          -e "s|'template_db_host'|'$ESC_HOST'|g" \
@@ -74,11 +75,11 @@ if [[ ! -f "$PHPBB_CONFIG_FILE" ]]; then
 
     cp "$PHPBB_CONFIG_TEMPLATE" "$PHPBB_CONFIG_FILE"
 
-    sed -i \
-        -e "s/template_db_host/$DB_HOST/" \
-        -e "s/template_db_user/$DB_USER/" \
-        -e "s/template_db_password/$DB_PASS/" \
-        -e "s/db/$DB_NAME/" \
+    sed -i '' \
+        -e "s|template_db_host|$ESC_HOST|g" \
+        -e "s|template_db_user|$ESC_USER|g" \
+        -e "s|template_db_password|$ESC_PASS|g" \
+        -e "s|dbname = 'db'|dbname = '$ESC_NAME'|g" \
         "$PHPBB_CONFIG_FILE"
 else
     echo "webroot/forums/config.php already exists, skipping."
