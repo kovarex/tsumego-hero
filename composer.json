@@ -13,6 +13,7 @@
 		"tedivm/jshrink": "^1.8"
 	},
     "require-dev": {
+		"brianium/paratest": "^6.11",
 		"php-webdriver/webdriver": "^1.15",
 		"friendsofphp/php-cs-fixer": "^3.89",
 		"phpstan/phpstan": "^2.1",
@@ -29,7 +30,8 @@
 	"scripts": {
 		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
 		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
-		"test": "phpunit",
+		"test": "vendor/bin/paratest --processes=4 --runner=WrapperRunner",
+		"test-sequential": "phpunit",
 		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
 		"cs-modified": "sh cs-modified.sh",
 		"cs-check": "./vendor/bin/php-cs-fixer check",

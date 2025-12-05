@@ -1,0 +1,73 @@
+version: '3.6'
+services:
+  selenium-hub:
+    container_name: ddev-${DDEV_SITENAME}-selenium-hub
+    image: selenium/hub:4.16.0
+    ports:
+      - "4444:4444"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=120
+      - SE_NODE_SESSION_TIMEOUT=120
+
+  selenium-node-1:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-1
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    # VNC access at http://localhost:7901
+    ports:
+      - "7901:7900"
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_VNC_NO_PASSWORD=1
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-2:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-2
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-3:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-3
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-4:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-4
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
