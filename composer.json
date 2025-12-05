@@ -6,15 +6,11 @@
     "license": "proprietary",
     "require": {
 		"php": ">=8.4",
-<<<<<<< HEAD
-		"markstory/asset_compress": "^0.26",
-		"pieceofcake2/cakephp": "^2.12",
-		"tedivm/jshrink": "^1.8"
-=======
 		"firebase/php-jwt": "^6.11.1",
+		"markstory/asset_compress": "^0.26",
+		"tedivm/jshrink": "^1.8",
 		"pieceofcake2/cakephp": "^2.12",
 		"robmorgan/phinx": "^0.16.10"
->>>>>>> master
 	},
     "require-dev": {
 		"php-webdriver/webdriver": "^1.15",

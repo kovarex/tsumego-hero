@@ -4,9 +4,332 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "11f1a31e4472ea2278e3d15e7b27ebdc",
+    "content-hash": "de6edfb418acf9612e1ce9285adac095",
     "packages": [
+        {
+            "name": "cakephp/chronos",
+            "version": "3.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/chronos.git",
+                "reference": "1e417fdd4a3c6602b6c4634cf54aa9b065127fa2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/chronos/zipball/1e417fdd4a3c6602b6c4634cf54aa9b065127fa2",
+                "reference": "1e417fdd4a3c6602b6c4634cf54aa9b065127fa2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "psr/clock": "^1.0"
+            },
+            "provide": {
+                "psr/clock-implementation": "1.0"
+            },
+            "require-dev": {
+                "cakephp/cakephp-codesniffer": "^5.0",
+                "phpunit/phpunit": "^10.5.58 || ^11.1.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Chronos\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Brian Nesbitt",
+                    "email": "brian@nesbot.com",
+                    "homepage": "http://nesbot.com"
+                },
+                {
+                    "name": "The CakePHP Team",
+                    "homepage": "https://cakephp.org"
+                }
+            ],
+            "description": "A simple API extension for DateTime.",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "date",
+                "datetime",
+                "time"
+            ],
+            "support": {
+                "issues": "https://github.com/cakephp/chronos/issues",
+                "source": "https://github.com/cakephp/chronos"
+            },
+            "time": "2025-10-30T13:08:23+00:00"
+        },
+        {
+            "name": "cakephp/core",
+            "version": "5.2.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/core.git",
+                "reference": "f18f37c04832831ca37f5300212b1adddcc54b86"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/core/zipball/f18f37c04832831ca37f5300212b1adddcc54b86",
+                "reference": "f18f37c04832831ca37f5300212b1adddcc54b86",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/utility": "5.2.*@dev",
+                "league/container": "^4.2",
+                "php": ">=8.1",
+                "psr/container": "^1.1 || ^2.0"
+            },
+            "provide": {
+                "psr/container-implementation": "^2.0"
+            },
+            "suggest": {
+                "cakephp/cache": "To use Configure::store() and restore().",
+                "cakephp/event": "To use PluginApplicationInterface or plugin applications.",
+                "league/container": "To use Container and ServiceProvider classes"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "functions.php"
+                ],
+                "psr-4": {
+                    "Cake\\Core\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/core/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP Framework Core classes",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "core",
+                "framework"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/core"
+            },
+            "time": "2025-11-14T14:52:55+00:00"
+        },
+        {
+            "name": "cakephp/database",
+            "version": "5.2.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/database.git",
+                "reference": "cf855540be5a0f522394827398c9552fe1656146"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/database/zipball/cf855540be5a0f522394827398c9552fe1656146",
+                "reference": "cf855540be5a0f522394827398c9552fe1656146",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/chronos": "^3.1",
+                "cakephp/core": "5.2.*@dev",
+                "cakephp/datasource": "5.2.*@dev",
+                "php": ">=8.1",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "cakephp/i18n": "5.2.*@dev",
+                "cakephp/log": "5.2.*@dev"
+            },
+            "suggest": {
+                "cakephp/i18n": "If you are using locale-aware datetime formats.",
+                "cakephp/log": "If you want to use query logging without providing a logger yourself."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Database\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/database/graphs/contributors"
+                }
+            ],
+            "description": "Flexible and powerful Database abstraction library with a familiar PDO-like API",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "abstraction",
+                "cakephp",
+                "database",
+                "database abstraction",
+                "pdo"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/database"
+            },
+            "time": "2025-11-16T20:33:48+00:00"
+        },
+        {
+            "name": "cakephp/datasource",
+            "version": "5.2.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/datasource.git",
+                "reference": "906a8b719b6dc241fa81a55be20c9adc51c31f74"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/datasource/zipball/906a8b719b6dc241fa81a55be20c9adc51c31f74",
+                "reference": "906a8b719b6dc241fa81a55be20c9adc51c31f74",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "php": ">=8.1",
+                "psr/simple-cache": "^2.0 || ^3.0"
+            },
+            "require-dev": {
+                "cakephp/cache": "5.2.*@dev",
+                "cakephp/collection": "5.2.*@dev",
+                "cakephp/utility": "5.2.*@dev"
+            },
+            "suggest": {
+                "cakephp/cache": "If you decide to use Query caching.",
+                "cakephp/collection": "If you decide to use ResultSetInterface.",
+                "cakephp/utility": "If you decide to use EntityTrait."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Cake\\Datasource\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/datasource/graphs/contributors"
+                }
+            ],
+            "description": "Provides connection managing and traits for Entities and Queries that can be reused for different datastores",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "connection management",
+                "datasource",
+                "entity",
+                "query"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/datasource"
+            },
+            "time": "2025-11-14T14:52:55+00:00"
+        },
+        {
+            "name": "cakephp/utility",
+            "version": "5.2.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cakephp/utility.git",
+                "reference": "df9bc4e420db3b4a02cafad896398bad48813e50"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cakephp/utility/zipball/df9bc4e420db3b4a02cafad896398bad48813e50",
+                "reference": "df9bc4e420db3b4a02cafad896398bad48813e50",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/core": "5.2.*@dev",
+                "php": ">=8.1"
+            },
+            "suggest": {
+                "ext-intl": "To use Text::transliterate() or Text::slug()",
+                "lib-ICU": "To use Text::transliterate() or Text::slug()"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-5.x": "5.2.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Cake\\Utility\\": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CakePHP Community",
+                    "homepage": "https://github.com/cakephp/utility/graphs/contributors"
+                }
+            ],
+            "description": "CakePHP Utility classes such as Inflector, String, Hash, and Security",
+            "homepage": "https://cakephp.org",
+            "keywords": [
+                "cakephp",
+                "hash",
+                "inflector",
+                "security",
+                "string",
+                "utility"
+            ],
+            "support": {
+                "forum": "https://stackoverflow.com/tags/cakephp",
+                "irc": "irc://irc.freenode.org/cakephp",
+                "issues": "https://github.com/cakephp/cakephp/issues",
+                "source": "https://github.com/cakephp/utility"
+            },
+            "time": "2025-11-14T14:52:55+00:00"
+        },
         {
             "name": "composer/ca-bundle",
             "version": "1.5.9",
@@ -226,799 +549,6 @@
             "time": "2024-06-24T20:46:46+00:00"
         },
         {
-            "name": "markstory/asset_compress",
-            "version": "0.26",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/markstory/asset_compress.git",
-                "reference": "471b77e3a702ba89acf4cd127bb73cf5320c6c1e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/markstory/asset_compress/zipball/471b77e3a702ba89acf4cd127bb73cf5320c6c1e",
-                "reference": "471b77e3a702ba89acf4cd127bb73cf5320c6c1e",
-                "shasum": ""
-            },
-            "require": {
-                "cakephp/cakephp": ">=2.4 <3.0",
-                "composer/installers": "*",
-                "php": ">=5.3.0"
-            },
-            "type": "cakephp-plugin",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Mark Story",
-                    "homepage": "http://mark-story.com",
-                    "role": "Author"
-                }
-            ],
-            "description": "An asset compression plugin for CakePHP. Provides file concatenation and a flexible filter system for preprocessing and minification.",
-            "homepage": "https://github.com/markstory/asset_compress",
-            "keywords": [
-                "assets",
-                "cakephp",
-                "coffee-script",
-                "less",
-                "minifier",
-                "sass"
-            ],
-            "support": {
-                "issues": "https://github.com/markstory/asset_compress/issues",
-                "source": "https://github.com/markstory/asset_compress"
-            },
-            "time": "2018-12-15T19:40:03+00:00"
-        },
-        {
-            "name": "php81_bc/strftime",
-            "version": "0.7.6",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/alphp/strftime.git",
-                "reference": "d115595bccd137660d25e9e05fb656143594b404"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/alphp/strftime/zipball/d115595bccd137660d25e9e05fb656143594b404",
-                "reference": "d115595bccd137660d25e9e05fb656143594b404",
-                "shasum": ""
-            },
-            "require": {
-                "ext-intl": "*",
-                "php": ">=7.1.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "@stable"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/php-8.1-strftime.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fernando Herrero",
-                    "homepage": "https://github.com/alphp/strftime/graphs/contributors"
-                }
-            ],
-            "description": "Locale-formatted strftime using IntlDateFormatter (PHP 8.1 compatible)",
-            "support": {
-                "issues": "https://github.com/alphp/strftime/issues",
-                "source": "https://github.com/alphp/strftime"
-            },
-            "time": "2024-11-19T14:01:36+00:00"
-        },
-        {
-            "name": "pieceofcake2/cakephp",
-            "version": "v2.12.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pieceofcake2/cakephp.git",
-                "reference": "37a789e7e2e016eff994e92f741dd998c1d5e2ae"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pieceofcake2/cakephp/zipball/37a789e7e2e016eff994e92f741dd998c1d5e2ae",
-                "reference": "37a789e7e2e016eff994e92f741dd998c1d5e2ae",
-                "shasum": ""
-            },
-            "require": {
-                "composer/ca-bundle": "^1.5",
-                "ext-dom": "*",
-                "ext-libxml": "*",
-                "ext-simplexml": "*",
-                "php": ">=8.0",
-                "php81_bc/strftime": "^0.7.5",
-                "symfony/polyfill-intl-icu": "^1.29",
-                "symfony/polyfill-mbstring": "^1.29"
-            },
-            "replace": {
-                "cakephp/cakephp": "^2.0"
-            },
-            "require-dev": {
-                "cakephp/cakephp-codesniffer": "^5.0",
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^9.6",
-                "pieceofcake2/app": "^2.3",
-                "pieceofcake2/phpstan-cakephp2": "^0.2.1",
-                "rector/rector": "^2.1"
-            },
-            "suggest": {
-                "ext-intl": "Required to use IntlDateFormatter instead of strftime, if not Symfony polyfill will be used.",
-                "ext-mbstring": "For better performance with multibyte string operations, install the native mbstring extension instead of using the polyfill",
-                "ext-mcrypt": "You need to install ext-openssl or ext-mcrypt to use AES-256 encryption",
-                "ext-openssl": "You need to install ext-openssl or ext-mcrypt to use AES-256 encryption"
-            },
-            "bin": [
-                "bin/cake"
-            ],
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "src/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "The CakePHP 2 framework",
-            "keywords": [
-                "cakephp",
-                "cakephp2",
-                "framework"
-            ],
-            "support": {
-                "issues": "https://github.com/pieceofcake2/cakephp/issues",
-                "source": "https://github.com/pieceofcake2/cakephp/tree/v2.12.0"
-            },
-            "time": "2025-10-09T06:52:46+00:00"
-        },
-        {
-            "name": "symfony/polyfill-intl-icu",
-            "version": "v1.33.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-intl-icu.git",
-                "reference": "bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-icu/zipball/bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c",
-                "reference": "bfc8fa13dbaf21d69114b0efcd72ab700fb04d0c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "suggest": {
-                "ext-intl": "For best performance and support of other locales than \"en\""
-            },
-            "type": "library",
-            "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/polyfill",
-                    "name": "symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Intl\\Icu\\": ""
-                },
-                "classmap": [
-                    "Resources/stubs"
-                ],
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill for intl's ICU-related data and classes",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "icu",
-                "intl",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-intl-icu/tree/v1.33.0"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2025-06-20T22:24:30+00:00"
-        },
-        {
-            "name": "symfony/polyfill-mbstring",
-            "version": "v1.33.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6d857f4d76bd4b343eac26d6b539585d2bc56493",
-                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493",
-                "shasum": ""
-            },
-            "require": {
-                "ext-iconv": "*",
-                "php": ">=7.2"
-            },
-            "provide": {
-                "ext-mbstring": "*"
-            },
-            "suggest": {
-                "ext-mbstring": "For best performance"
-            },
-            "type": "library",
-            "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/polyfill",
-                    "name": "symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Mbstring\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill for the Mbstring extension",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "mbstring",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.33.0"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-12-23T08:48:59+00:00"
-        },
-        {
-            "name": "tedivm/jshrink",
-            "version": "v1.8.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tedious/JShrink.git",
-                "reference": "f76454d4c48ddae6354a2f0eeb16633d4e755c9a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tedious/JShrink/zipball/f76454d4c48ddae6354a2f0eeb16633d4e755c9a",
-                "reference": "f76454d4c48ddae6354a2f0eeb16633d4e755c9a",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.0|^8.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.14",
-                "php-coveralls/php-coveralls": "^2.5.0",
-                "phpunit/phpunit": "^9|^10"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "JShrink": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Robert Hafner",
-                    "email": "tedivm@tedivm.com"
-                }
-            ],
-            "description": "Javascript Minifier built in PHP",
-            "homepage": "http://github.com/tedious/JShrink",
-            "keywords": [
-                "javascript",
-                "minifier"
-            ],
-            "support": {
-                "issues": "https://github.com/tedious/JShrink/issues",
-                "source": "https://github.com/tedious/JShrink/tree/v1.8.1"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/tedivm",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/tedivm/jshrink",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2025-11-20T14:34:30+00:00"
-        }
-    ],
-    "packages-dev": [
-        {
-=======
-    "content-hash": "cf0f2c9826413ce30a97e22fbf32acf3",
-    "packages": [
-        {
->>>>>>> master
-            "name": "cakephp/chronos",
-            "version": "3.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cakephp/chronos.git",
-                "reference": "1e417fdd4a3c6602b6c4634cf54aa9b065127fa2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/chronos/zipball/1e417fdd4a3c6602b6c4634cf54aa9b065127fa2",
-                "reference": "1e417fdd4a3c6602b6c4634cf54aa9b065127fa2",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.1",
-                "psr/clock": "^1.0"
-            },
-            "provide": {
-                "psr/clock-implementation": "1.0"
-            },
-            "require-dev": {
-                "cakephp/cakephp-codesniffer": "^5.0",
-                "phpunit/phpunit": "^10.5.58 || ^11.1.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Cake\\Chronos\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Brian Nesbitt",
-                    "email": "brian@nesbot.com",
-                    "homepage": "http://nesbot.com"
-                },
-                {
-                    "name": "The CakePHP Team",
-                    "homepage": "https://cakephp.org"
-                }
-            ],
-            "description": "A simple API extension for DateTime.",
-            "homepage": "https://cakephp.org",
-            "keywords": [
-                "date",
-                "datetime",
-                "time"
-            ],
-            "support": {
-                "issues": "https://github.com/cakephp/chronos/issues",
-                "source": "https://github.com/cakephp/chronos"
-            },
-            "time": "2025-10-30T13:08:23+00:00"
-        },
-        {
-            "name": "cakephp/core",
-            "version": "5.2.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cakephp/core.git",
-                "reference": "231d67d9e192491e80f8e3f367822dbadcb6d15a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/core/zipball/231d67d9e192491e80f8e3f367822dbadcb6d15a",
-                "reference": "231d67d9e192491e80f8e3f367822dbadcb6d15a",
-                "shasum": ""
-            },
-            "require": {
-                "cakephp/utility": "5.2.*@dev",
-                "league/container": "^4.2",
-                "php": ">=8.1",
-                "psr/container": "^1.1 || ^2.0"
-            },
-            "provide": {
-                "psr/container-implementation": "^2.0"
-            },
-            "suggest": {
-                "cakephp/cache": "To use Configure::store() and restore().",
-                "cakephp/event": "To use PluginApplicationInterface or plugin applications.",
-                "league/container": "To use Container and ServiceProvider classes"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-5.x": "5.2.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "functions.php"
-                ],
-                "psr-4": {
-                    "Cake\\Core\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "CakePHP Community",
-                    "homepage": "https://github.com/cakephp/core/graphs/contributors"
-                }
-            ],
-            "description": "CakePHP Framework Core classes",
-            "homepage": "https://cakephp.org",
-            "keywords": [
-                "cakephp",
-                "core",
-                "framework"
-            ],
-            "support": {
-                "forum": "https://stackoverflow.com/tags/cakephp",
-                "irc": "irc://irc.freenode.org/cakephp",
-                "issues": "https://github.com/cakephp/cakephp/issues",
-                "source": "https://github.com/cakephp/core"
-            },
-            "time": "2025-08-30T05:23:22+00:00"
-        },
-        {
-            "name": "cakephp/database",
-            "version": "5.2.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cakephp/database.git",
-                "reference": "3027321fdd696cba09b1cad536f89e90f6c6693f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/database/zipball/3027321fdd696cba09b1cad536f89e90f6c6693f",
-                "reference": "3027321fdd696cba09b1cad536f89e90f6c6693f",
-                "shasum": ""
-            },
-            "require": {
-                "cakephp/chronos": "^3.1",
-                "cakephp/core": "5.2.*@dev",
-                "cakephp/datasource": "5.2.*@dev",
-                "php": ">=8.1",
-                "psr/log": "^3.0"
-            },
-            "require-dev": {
-                "cakephp/i18n": "5.2.*@dev",
-                "cakephp/log": "5.2.*@dev"
-            },
-            "suggest": {
-                "cakephp/i18n": "If you are using locale-aware datetime formats.",
-                "cakephp/log": "If you want to use query logging without providing a logger yourself."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-5.x": "5.2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Cake\\Database\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "CakePHP Community",
-                    "homepage": "https://github.com/cakephp/database/graphs/contributors"
-                }
-            ],
-            "description": "Flexible and powerful Database abstraction library with a familiar PDO-like API",
-            "homepage": "https://cakephp.org",
-            "keywords": [
-                "abstraction",
-                "cakephp",
-                "database",
-                "database abstraction",
-                "pdo"
-            ],
-            "support": {
-                "forum": "https://stackoverflow.com/tags/cakephp",
-                "irc": "irc://irc.freenode.org/cakephp",
-                "issues": "https://github.com/cakephp/cakephp/issues",
-                "source": "https://github.com/cakephp/database"
-            },
-            "time": "2025-10-15T09:58:33+00:00"
-        },
-        {
-            "name": "cakephp/datasource",
-            "version": "5.2.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cakephp/datasource.git",
-                "reference": "35cd45fdea18854e4f8fd7bdb5fa487d104a8efd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/datasource/zipball/35cd45fdea18854e4f8fd7bdb5fa487d104a8efd",
-                "reference": "35cd45fdea18854e4f8fd7bdb5fa487d104a8efd",
-                "shasum": ""
-            },
-            "require": {
-                "cakephp/core": "5.2.*@dev",
-                "php": ">=8.1",
-                "psr/simple-cache": "^2.0 || ^3.0"
-            },
-            "require-dev": {
-                "cakephp/cache": "5.2.*@dev",
-                "cakephp/collection": "5.2.*@dev",
-                "cakephp/utility": "5.2.*@dev"
-            },
-            "suggest": {
-                "cakephp/cache": "If you decide to use Query caching.",
-                "cakephp/collection": "If you decide to use ResultSetInterface.",
-                "cakephp/utility": "If you decide to use EntityTrait."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-5.x": "5.2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Cake\\Datasource\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "CakePHP Community",
-                    "homepage": "https://github.com/cakephp/datasource/graphs/contributors"
-                }
-            ],
-            "description": "Provides connection managing and traits for Entities and Queries that can be reused for different datastores",
-            "homepage": "https://cakephp.org",
-            "keywords": [
-                "cakephp",
-                "connection management",
-                "datasource",
-                "entity",
-                "query"
-            ],
-            "support": {
-                "forum": "https://stackoverflow.com/tags/cakephp",
-                "irc": "irc://irc.freenode.org/cakephp",
-                "issues": "https://github.com/cakephp/cakephp/issues",
-                "source": "https://github.com/cakephp/datasource"
-            },
-            "time": "2025-09-04T00:13:11+00:00"
-        },
-        {
-            "name": "cakephp/utility",
-            "version": "5.2.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cakephp/utility.git",
-                "reference": "9d2bafa62f457084b7ce4737f2f71d2a40fc6812"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cakephp/utility/zipball/9d2bafa62f457084b7ce4737f2f71d2a40fc6812",
-                "reference": "9d2bafa62f457084b7ce4737f2f71d2a40fc6812",
-                "shasum": ""
-            },
-            "require": {
-                "cakephp/core": "5.2.*@dev",
-                "php": ">=8.1"
-            },
-            "suggest": {
-                "ext-intl": "To use Text::transliterate() or Text::slug()",
-                "lib-ICU": "To use Text::transliterate() or Text::slug()"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-5.x": "5.2.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Cake\\Utility\\": "."
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "CakePHP Community",
-                    "homepage": "https://github.com/cakephp/utility/graphs/contributors"
-                }
-            ],
-            "description": "CakePHP Utility classes such as Inflector, String, Hash, and Security",
-            "homepage": "https://cakephp.org",
-            "keywords": [
-                "cakephp",
-                "hash",
-                "inflector",
-                "security",
-                "string",
-                "utility"
-            ],
-            "support": {
-                "forum": "https://stackoverflow.com/tags/cakephp",
-                "irc": "irc://irc.freenode.org/cakephp",
-                "issues": "https://github.com/cakephp/cakephp/issues",
-                "source": "https://github.com/cakephp/utility"
-            },
-            "time": "2025-09-06T07:02:20+00:00"
-        },
-        {
-            "name": "composer/ca-bundle",
-            "version": "1.5.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "1905981ee626e6f852448b7aaa978f8666c5bc54"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/1905981ee626e6f852448b7aaa978f8666c5bc54",
-                "reference": "1905981ee626e6f852448b7aaa978f8666c5bc54",
-                "shasum": ""
-            },
-            "require": {
-                "ext-openssl": "*",
-                "ext-pcre": "*",
-                "php": "^7.2 || ^8.0"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^8 || ^9",
-                "psr/log": "^1.0 || ^2.0 || ^3.0",
-                "symfony/process": "^4.0 || ^5.0 || ^6.0 || ^7.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Composer\\CaBundle\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jordi Boggiano",
-                    "email": "j.boggiano@seld.be",
-                    "homepage": "http://seld.be"
-                }
-            ],
-            "description": "Lets you find a path to the system CA bundle, and includes a fallback to the Mozilla CA bundle.",
-            "keywords": [
-                "cabundle",
-                "cacert",
-                "certificate",
-                "ssl",
-                "tls"
-            ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.5.9"
-            },
-            "funding": [
-                {
-                    "url": "https://packagist.com",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/composer",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-11-06T11:46:17+00:00"
-        },
-        {
             "name": "firebase/php-jwt",
             "version": "v6.11.1",
             "source": {
@@ -1162,6 +692,53 @@
                 }
             ],
             "time": "2025-05-20T12:55:37+00:00"
+        },
+        {
+            "name": "markstory/asset_compress",
+            "version": "0.26",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/markstory/asset_compress.git",
+                "reference": "471b77e3a702ba89acf4cd127bb73cf5320c6c1e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/markstory/asset_compress/zipball/471b77e3a702ba89acf4cd127bb73cf5320c6c1e",
+                "reference": "471b77e3a702ba89acf4cd127bb73cf5320c6c1e",
+                "shasum": ""
+            },
+            "require": {
+                "cakephp/cakephp": ">=2.4 <3.0",
+                "composer/installers": "*",
+                "php": ">=5.3.0"
+            },
+            "type": "cakephp-plugin",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Story",
+                    "homepage": "http://mark-story.com",
+                    "role": "Author"
+                }
+            ],
+            "description": "An asset compression plugin for CakePHP. Provides file concatenation and a flexible filter system for preprocessing and minification.",
+            "homepage": "https://github.com/markstory/asset_compress",
+            "keywords": [
+                "assets",
+                "cakephp",
+                "coffee-script",
+                "less",
+                "minifier",
+                "sass"
+            ],
+            "support": {
+                "issues": "https://github.com/markstory/asset_compress/issues",
+                "source": "https://github.com/markstory/asset_compress"
+            },
+            "time": "2018-12-15T19:40:03+00:00"
         },
         {
             "name": "php81_bc/strftime",
@@ -2475,6 +2052,66 @@
                 }
             ],
             "time": "2025-09-11T14:37:55+00:00"
+        },
+        {
+            "name": "tedivm/jshrink",
+            "version": "v1.8.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tedious/JShrink.git",
+                "reference": "f76454d4c48ddae6354a2f0eeb16633d4e755c9a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tedious/JShrink/zipball/f76454d4c48ddae6354a2f0eeb16633d4e755c9a",
+                "reference": "f76454d4c48ddae6354a2f0eeb16633d4e755c9a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0|^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.14",
+                "php-coveralls/php-coveralls": "^2.5.0",
+                "phpunit/phpunit": "^9|^10"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "JShrink": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Robert Hafner",
+                    "email": "tedivm@tedivm.com"
+                }
+            ],
+            "description": "Javascript Minifier built in PHP",
+            "homepage": "http://github.com/tedious/JShrink",
+            "keywords": [
+                "javascript",
+                "minifier"
+            ],
+            "support": {
+                "issues": "https://github.com/tedious/JShrink/issues",
+                "source": "https://github.com/tedious/JShrink/tree/v1.8.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/tedivm",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/tedivm/jshrink",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2025-11-20T14:34:30+00:00"
         }
     ],
     "packages-dev": [
@@ -2944,16 +2581,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.91.2",
+            "version": "v3.91.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "f171dc216bc8a4192d5a0876a899cce6f9e379d6"
+                "reference": "9f10aa6390cea91da175ea608880e942d7c0226e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/f171dc216bc8a4192d5a0876a899cce6f9e379d6",
-                "reference": "f171dc216bc8a4192d5a0876a899cce6f9e379d6",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/9f10aa6390cea91da175ea608880e942d7c0226e",
+                "reference": "9f10aa6390cea91da175ea608880e942d7c0226e",
                 "shasum": ""
             },
             "require": {
@@ -3035,7 +2672,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.91.2"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.91.3"
             },
             "funding": [
                 {
@@ -3043,7 +2680,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-01T20:56:13+00:00"
+            "time": "2025-12-05T19:45:37+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3349,11 +2986,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.32",
+            "version": "2.1.33",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e126cad1e30a99b137b8ed75a85a676450ebb227",
-                "reference": "e126cad1e30a99b137b8ed75a85a676450ebb227",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9e800e6bee7d5bd02784d4c6069b48032d16224f",
+                "reference": "9e800e6bee7d5bd02784d4c6069b48032d16224f",
                 "shasum": ""
             },
             "require": {
@@ -3398,7 +3035,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-11T15:18:17+00:00"
+            "time": "2025-12-05T10:24:31+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -6358,11 +5995,6 @@
     "platform": {
         "php": ">=8.4"
     },
-<<<<<<< HEAD
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
-=======
     "platform-dev": [],
     "plugin-api-version": "2.6.0"
->>>>>>> master
 }
