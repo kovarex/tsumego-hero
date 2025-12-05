@@ -2,8 +2,8 @@
 
 use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
-use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
@@ -16,31 +16,26 @@ class Browser
 
 	public function __construct()
 	{
-		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-hub:4444';
 
-		$firefoxOptions = new FirefoxOptions();
-		$firefoxOptions->addArguments(['--headless']);
+		// Set HEADED=1 environment variable to watch tests visually
+		$chromeOptions = new ChromeOptions();
+		$chromeOptions->setExperimentalOption('w3c', true);
+		
+		$isHeaded = getenv('HEADED') === '1' || getenv('HEADED') === 'true';
+		if (!$isHeaded)
+		{
+			$chromeOptions->addArguments([
+				'--headless=new',
+				'--no-sandbox',
+				'--disable-dev-shm-usage',
+				'--disable-gpu'
+			]);
+		}
 
-		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
-
-		$firefoxOptions = new FirefoxOptions();
-		$firefoxOptions->addArguments(['--headless']);
-
-		// Firefox needs these preferences to accept self-signed HTTPS from Caddy
-		$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
-		$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
-		$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
-		$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
-		$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
-		$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
-		$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
-		$firefoxOptions->setPreference('security.OCSP.require', false);
-
-		// Build capabilities
-		$desiredCapabilities = DesiredCapabilities::firefox();
-
+		$desiredCapabilities = DesiredCapabilities::chrome();
 		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
-		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
+		$desiredCapabilities->setCapability(ChromeOptions::CAPABILITY, $chromeOptions);
 
 		try
 		{
@@ -48,7 +43,6 @@ class Browser
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
-			// visit a dummy page
 			$this->driver->get(Util::getMyAddress() . '/empty.php');
 
 			// Xdebug cookies
@@ -133,15 +127,53 @@ class Browser
 		$this->assertNoErrors();
 	}
 
-	public function clickId($name)
+	public function clickId($name, $timeout = 10)
 	{
-		$this->driver->findElement(WebDriverBy::id($name))->click();
+		// Wait for element to be present and clickable
+		$wait = new WebDriverWait($this->driver, $timeout, 500);
+		$element = $wait->until(function () use ($name)
+		{
+			try
+			{
+				$el = $this->driver->findElement(WebDriverBy::id($name));
+				// Check if element is displayed and enabled
+				if ($el->isDisplayed() && $el->isEnabled())
+					return $el;
+			}
+			catch (Exception $e)
+			{
+			}
+			return null;
+		});
+
+		if (!$element)
+			throw new Exception("Element with ID '$name' not found or not clickable after {$timeout}s");
+
+		$element->click();
 		$this->assertNoErrors();
 	}
 
-	public function clickCssSelect($name)
+	public function clickCssSelect($name, $timeout = 10)
 	{
-		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
+		$wait = new WebDriverWait($this->driver, $timeout, 500);
+		$element = $wait->until(function () use ($name)
+		{
+			try
+			{
+				$el = $this->driver->findElement(WebDriverBy::cssSelector($name));
+				if ($el->isDisplayed() && $el->isEnabled())
+					return $el;
+			}
+			catch (Exception $e)
+			{
+			}
+			return null;
+		});
+
+		if (!$element)
+			throw new Exception("Element with selector '$name' not found or not clickable after {$timeout}s");
+
+		$element->click();
 		$this->assertNoErrors();
 	}
 

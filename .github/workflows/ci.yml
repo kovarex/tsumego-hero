@@ -25,17 +25,31 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
+          MYSQL_DATABASE: test_1
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      selenium-firefox:
-        image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
+      selenium-hub:
+        image: selenium/hub:4.16.0
         ports:
-          - 4444
-        volumes:
-          - ".:/mnt/ddev_config"
+          - 4444:4444
+
+      selenium-node-1:
+        image: seleniarm/node-chromium:120.0
+        env:
+          SE_EVENT_BUS_HOST: selenium-hub
+          SE_EVENT_BUS_PUBLISH_PORT: 4442
+          SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+        options: >-
+          --add-host=host.docker.internal:host-gateway
+
+      selenium-node-2:
+        image: seleniarm/node-chromium:120.0
+        env:
+          SE_EVENT_BUS_HOST: selenium-hub
+          SE_EVENT_BUS_PUBLISH_PORT: 4442
+          SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
         options: >-
           --add-host=host.docker.internal:host-gateway
 
@@ -51,16 +65,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl, xdebug
-          coverage: xdebug
-
-      - name: Configure Xdebug for coverage
-        run: |
-            echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
-            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
-            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
-            php -v
-            php -m | grep xdebug || (echo "Xdebug not found!" && exit 1)
+          extensions: mbstring, intl, pcov
+          coverage: pcov
 
       - name: Get composer cache directory
         id: composer-cache
@@ -113,12 +119,15 @@ jobs:
                   'host' => '127.0.0.1',
                   'login' => 'root',
                   'password' => 'root',
-                  'database' => 'test',
+                  'database' => 'test_1',
                   'prefix' => '',
                   'encoding' => 'utf8',
               ];
 
               public function __construct() {
+                  if (getenv('TEST_TOKEN')) {
+                      $this->test['database'] = 'test_' . getenv('TEST_TOKEN');
+                  }
                   if (Configure::read('debug') > 0) {
                       $this->default['log'] = true;
                   }
@@ -130,7 +139,7 @@ jobs:
                   'host' => '127.0.0.1',
                   'login' => 'root',
                   'password' => 'root',
-                  'database' => 'test',
+                  'database' => 'test_1',
                   'prefix' => '',
                   'encoding' => 'utf8',
               ];
@@ -138,9 +147,10 @@ jobs:
           EOF
           cp .github/ci/core.local.php config/core.local.php
 
-      - name: Import database schema
+      - name: Setup tmp directories
         run: |
-          ./vendor/bin/phinx migrate -e test
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
+          chmod -R 777 tmp
 
       - name: Start built-in PHP server
         run: |
@@ -162,17 +172,37 @@ jobs:
           echo "Caddy log:"
           cat caddy.log || true
 
-      - name: Run tests with coverage
+      - name: Run parallel tests
         env:
           SELENIUM_URL: http://localhost:4444
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASS: root
+          DB_NAME: test_1
+          TEST_WORKERS: 2
+        run: |
+          bash scripts/run-parallel-tests.sh --exclude-group=apache-only
+
+      - name: Run tests with coverage (master only)
+        if: github.ref == 'refs/heads/master'
+        env:
+          SELENIUM_URL: http://localhost:4444
+          TEST_APP_URL: https://host.docker.internal:8443
+          TEST_ENVIRONMENT: github-ci
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASS: root
+          DB_NAME: test_1
+          TEST_WORKERS: 2
         run: |
           mkdir -p /tmp/coverage
           # Run all tests (excluding apache-only) with coverage in both formats
           vendor/bin/phpunit --exclude-group apache-only --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
 
       - name: Merge coverage files
+        if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
 
       - name: Deploy coverage to GitHub Pages
