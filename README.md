@@ -24,7 +24,7 @@ These changes just had to be done, so the data structure we are working on is cl
 `Day D` is the day where we migrate the tsumego-hero site database into tsumego.com and make it the official new home of the site.
 `Day D` can become once the core functionality of the site is covered by tests, and we do some public testing on test.tsumego.com
 
-## Setup
+## Local Setup (part 2)
 
 - Instal ddev [ddev](https://ddev.com/get-started/).
 
@@ -32,7 +32,6 @@ These changes just had to be done, so the data structure we are working on is cl
 8.4 is too new to be installed in an easy way, we have a script you can call to install it on the machine
 
 	setup/php-install.sh
-
 
 ### ddev install
 - Copy .ddev.example/ folder to .ddev/
@@ -80,6 +79,19 @@ These changes just had to be done, so the data structure we are working on is cl
 
 	ddev launch
 
+### Setup on server (part 1)
+
+	git clone https://github.com/kovarex/tsumego-hero.git
+
+### Setup final step (both local and server)
+
+	./deploy.sh
+
+	This when ran for the first time, it will ask for db credentials and generate the proper config files for cake and forums.
+
+	Other than that pulls git, installs composer stuff, sets required folders and their access rights, update minification, runs migrations (also for test db in local environment with ddev).
+	So running ./deploy.sh is the way to always update server or dev enrironment to the up to date state.
+
 ### Debug with phpstorm
 
 https://www.jetbrains.com/help/phpstorm/debugging-with-phpstorm-ultimate-guide.html#setup-from-zero
@@ -109,7 +121,7 @@ This project uses [Phinx](https://phinx.org/) for database migrations.
 Phinx is a database migration tool that allows you to version control your database schema changes.
 Phinx is configured via `phinx.php` which automatically loads database credentials from CakePHP's `config/database.php`. Migrations are stored in `db/migrations/` and seeds in `db/seeds/`.
 
-- Migrate the current database to the newest version:
+- Migrate the current database to the newest version (but you don't have to do it manually, it is included in ./deploy.sh)
 
 
 	vendor/bin/phinx migrate
