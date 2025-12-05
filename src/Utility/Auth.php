@@ -34,7 +34,7 @@ class Auth
 		{
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
-			JwtAuth::setAuthCookie(Auth::$user['id']);
+			JwtAuth::setAuthCookie(Auth::getUserID());
 			self::generateLoginToken(Auth::getUserID()); // For phpBB2 forum SSO
 			return;
 		}
