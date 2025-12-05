@@ -49,6 +49,23 @@ if [[ "$NEED_DB_INPUT" = true ]]; then
     echo "  User:     $DB_USER"
     echo "  Password: $DB_PASS"
 
+    echo "=== Ensuring main database exists ==="
+    if db_exists "$DB_NAME"; then
+        echo "Database $DB_NAME already exists."
+    else
+        echo "Creating database $DB_NAME..."
+        mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
+            -e "CREATE DATABASE $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    fi
+
+    echo "=== Ensuring test database exists ==="
+    if db_exists "test"; then
+        echo "Test database already exists."
+    else
+        echo "Creating test database..."
+        mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" \
+            -e "CREATE DATABASE test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    fi
 fi
 
 
@@ -108,6 +125,6 @@ chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 
 echo "=== Running migrations ==="
 vendor/bin/phinx migrate
-#vendor/bin/phinx migrate -e test
+vendor/bin/phinx migrate -e test
 
 echo "=== Deploy complete ==="
