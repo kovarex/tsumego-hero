@@ -14,4 +14,8 @@
 	--status-v-color: #2d98e0;
 	--status-n-color: #7f8287;
 	--status-g-color: #d7e062;
+	--paginator-button-text-color: #333;
+	--active-paginator-button-background-color: #333;
+	--active-paginator-button-text-color: #fff;
+	--paginator-info-text-color: #666;
 }
