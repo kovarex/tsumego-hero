@@ -6,7 +6,7 @@
 <?php if($valid){ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
-		<?php echo $this->Session->flash(); ?>
+		<?php echo CookieFlash::render(); ?>
 		 <h1>New password:</h1>
 		<form action="/users/newpassword/<?php echo $checksum; ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	

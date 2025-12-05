@@ -6,7 +6,7 @@
 <?php if(!$sent){ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
-		<?php echo $this->Session->flash(); ?>
+		<?php echo CookieFlash::render(); ?>
 		 <h1>Please enter your E-Mail</h1>
 		<?php echo $this->Form->create('User', array('action' => 'resetpassword')); ?>
 		<label for="UserEmail"></label>
@@ -23,7 +23,7 @@
 <?php }else{ ?>
 <div id="login-box" class="users form">
 	<div class="left signin">
-		<?php echo $this->Session->flash(); ?>
+		<?php echo CookieFlash::render(); ?>
 		 <h3>Please check your mailbox.</h3>
 		
 	</div>

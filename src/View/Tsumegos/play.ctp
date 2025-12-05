@@ -102,8 +102,7 @@ if (
 	else if($t['Tsumego']['set_id']==81578) $choice[0] = $boardPositions[50]; //Moves of Resistance
 	else if($t['Tsumego']['set_id']==88156) $choice[0] = $boardPositions[50]; //Hand of God
 	else echo '<script type="text/javascript" src="/'.$boardSize.'/board'.$choice[0][0].'.js"></script>'; // Regular
-	if($this->Session->check('lastVisit')) $lv = $this->Session->read('lastVisit');
-	else $lv = '15352';
+	$lv = $_COOKIE['lastVisit'] ?? '15352';
 	$a1 = '';
 	$b1 = '';
 	$c1 = '';

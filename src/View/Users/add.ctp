@@ -11,6 +11,13 @@
   	You already have an account?<br>
 		<a href="/users/login">Sign In</a><br><br>
 
+		<?php
+		// Encode redirect URL + signature in state for Google Sign-In (stateless)
+		$googleState = base64_encode(json_encode([
+			'redirect' => $redirectUrl,
+			'signature' => $redirectSignature,
+		]));
+		?>
 		<div
 				id="g_id_onload"
 				data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
@@ -26,6 +33,7 @@
 				data-theme="outline"
 				data-text="sign_in_with"
 				data-size="large"
+				data-state="<?php echo h($googleState); ?>"
 			></div>
   </div>
 

@@ -114,11 +114,11 @@ class Browser
 
 	public function get(string $url): void
 	{
-		if ($url != 'empty.php' && CakeSession::check("loggedInUserID"))
+		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
-				'value' => (string) CakeSession::read("loggedInUserID")
+				'value' => (string) Auth::getUserID()
 			]);
 			if (!empty($_COOKIE['disable-achievements']))
 				$this->driver->manage()->addCookie([
@@ -282,6 +282,15 @@ class Browser
 		static $browser = null;
 		if ($browser == null)
 			$browser = new Browser();
+		// Dismiss any lingering alerts from previous tests
+		try
+		{
+			$browser->driver->switchTo()->alert()->dismiss();
+		}
+		catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+		{
+			// No alert present, that's fine
+		}
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		return $browser;

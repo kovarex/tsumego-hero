@@ -11,9 +11,7 @@ class AppController extends Controller
 	public $helpers = ['Pagination', 'AssetCompress.AssetCompress'];
 
 	public $components = [
-		'Session',
 		//'DebugKit.Toolbar',
-		'Flash',
 		'PlayResultProcessor'
 	];
 
@@ -75,47 +73,6 @@ class AppController extends Controller
 			$result .= '<div class="quote1b">Achievement gained by ' . $startPageUser . ':<br><div class=""><b>' . $a['Achievement']['name'] . '</b></div></div></div>';
 		}
 		return $result;
-	}
-
-	protected function saveSolvedNumber($uid)
-	{
-		$this->loadModel('User');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
-
-		$solvedUts2 = 0;
-		$tsumegos = $this->SetConnection->find('all');
-		if (!$tsumegos)
-			$tsumegos = [];
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$uts)
-			$uts = [];
-		$setKeys = [];
-		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]);
-		if (!$setArray)
-			$setArray = [];
-
-		$setArrayCount = count($setArray);
-		for ($i = 0; $i < $setArrayCount; $i++)
-			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
-
-		$scs = [];
-		$tsumegosCount = count($tsumegos);
-		for ($j = 0; $j < $tsumegosCount; $j++)
-			if (!isset($scs[$tsumegos[$j]['SetConnection']['tsumego_id']]))
-				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']] = 1;
-			else
-				$scs[$tsumegos[$j]['SetConnection']['tsumego_id']]++;
-		$utsCount = count($uts);
-		for ($j = 0; $j < $utsCount; $j++)
-			if ($uts[$j]['TsumegoStatus']['status'] == 'S' || $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C')
-				if (isset($scs[$uts[$j]['TsumegoStatus']['tsumego_id']]))
-					$solvedUts2 += $scs[$uts[$j]['TsumegoStatus']['tsumego_id']];
-		Auth::getUser()['solved'] = $solvedUts2;
-		Auth::saveUser();
-
-		return $solvedUts2;
 	}
 
 	/**
@@ -253,7 +210,6 @@ class AppController extends Controller
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
 			$danSolveCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$danSolveCondition['AchievementCondition']['set_id'] = $tId;
 			$danSolveCondition['AchievementCondition']['value']++;
 
 			ClassRegistry::init('AchievementCondition')->save($danSolveCondition);
@@ -1951,9 +1907,9 @@ class AppController extends Controller
 		Auth::init($user);
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
 		if ($vs)
-			$this->Session->write('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
-		$this->Session->write('texture', $user['User']['texture']);
-		$this->Session->write('check1', $user['User']['id']);
+			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
+		Util::setCookie('texture', $user['User']['texture']);
+		Util::setCookie('check1', $user['User']['id']);
 	}
 
 	public function beforeFilter(): void
@@ -2206,7 +2162,7 @@ class AppController extends Controller
 
 		$bitmask = 0b11111111; // Default: first 8 boards enabled
 
-		if ($this->Session->check('boards_bitmask') || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
+		if (!empty($_COOKIE['boards_bitmask']) || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
 		{
 			if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')
 			{
@@ -2220,25 +2176,22 @@ class AppController extends Controller
 						$bitmask |= (1 << $i);
 				if (Auth::isLoggedIn())
 					Auth::getUser()['boards_bitmask'] = $bitmask;
-				$this->Session->write('boards_bitmask', $bitmask);
+				Util::setCookie('boards_bitmask', $bitmask);
 				// Pass the cookie back to view to maintain JS compatibility for now
 				$this->set('textureCookies', $textureCookie);
 			}
 			elseif (Auth::isLoggedIn())
 			{
 				$bitmask = (int) Auth::getUser()['boards_bitmask'];
-				$this->Session->write('boards_bitmask', $bitmask);
+				Util::setCookie('boards_bitmask', $bitmask);
 			}
-			elseif ($this->Session->check('boards_bitmask'))
-				$bitmask = (int) $this->Session->read('boards_bitmask');
-
-			if (Auth::isLoggedIn())
-				Auth::saveUser();
+			elseif (!empty($_COOKIE['boards_bitmask']))
+				$bitmask = (int) $_COOKIE['boards_bitmask'];
 		}
 		else
 		{
 			// Default state if no session/cookie
-			$this->Session->write('boards_bitmask', $bitmask);
+			Util::setCookie('boards_bitmask', $bitmask);
 		}
 
 		// Populate enabledBoards array based on bitmask
@@ -2250,7 +2203,7 @@ class AppController extends Controller
 				$enabledBoards[$i + 1] = '';
 		}
 		$achievementUpdate = [];
-		if ($this->Session->check('initialLoading'))
+		if (Util::clearCookie('initialLoading'))
 		{
 			$achievementUpdate1 = $this->checkLevelAchievements();
 			$achievementUpdate2 = $this->checkProblemNumberAchievements();
@@ -2264,7 +2217,6 @@ class AppController extends Controller
 				$achievementUpdate4 ?: [],
 				$achievementUpdate5 ?: []
 			);
-			$this->Session->delete('initialLoading');
 		}
 
 		if (count($achievementUpdate) > 0)
@@ -2289,6 +2241,8 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
 		$this->set('hasFavs', $hasFavs);
+		if (Auth::isLoggedIn())
+			Auth::saveUser();
 	}
 
 	public function afterFilter() {}

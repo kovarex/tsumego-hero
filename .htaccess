@@ -1,8 +1,0 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine on
-
-    # Allow phpBB forums to run outside /webroot
-    RewriteRule ^forums(/.*)?$ - [L]
-
-    RewriteRule ^(.*)$ webroot/$1 [L]
-</IfModule>

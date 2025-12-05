@@ -1,6 +1,6 @@
 services:
-  auth.provider.mycustomauth:
-    class: tsumego\customsso\auth\provider\mycustomauth
+  auth.provider.jwtauth:
+    class: tsumego\customsso\auth\provider\jwtauth
     arguments:
       - '@request'
       - '@dbal.conn'

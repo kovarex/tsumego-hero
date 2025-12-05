@@ -7,7 +7,7 @@ class CurlsController extends AppController
 	 */
 	public function data()
 	{
-		$this->Session->write('title', 'CURLs');
+		$this->set('_title', 'CURLs');
 		$curls = $this->Curl->find('all', [
 			'limit' => 1000,
 			'order' => 'id DESC',

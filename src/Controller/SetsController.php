@@ -7,6 +7,7 @@ App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('Progress', 'Utility');
 
 class SetsController extends AppController
 {
@@ -25,8 +26,8 @@ class SetsController extends AppController
 		$this->loadModel('Duplicate');
 		$this->loadModel('SetConnection');
 
-		$this->Session->write('page', 'sandbox');
-		$this->Session->write('title', 'Tsumego Hero - Duplicates');
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Tsumego Hero - Duplicates');
 
 		$tIds = [];
 		$d2 = [];
@@ -119,8 +120,8 @@ class SetsController extends AppController
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('Duplicate');
-		$this->Session->write('page', 'sandbox');
-		$this->Session->write('title', 'Duplicate Search Results');
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Duplicate Search Results');
 		$s = $this->Set->find('all', [
 			'order' => 'created DESC',
 			'conditions' => [
@@ -166,8 +167,8 @@ class SetsController extends AppController
 		$this->loadModel('Comment');
 		$this->loadModel('SetConnection');
 
-		$this->Session->write('page', 'sandbox');
-		$this->Session->write('title', 'Tsumego Hero - Collections');
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Tsumego Hero - Collections');
 		$setsNew = [];
 
 		if (isset($this->params['url']['restore']))
@@ -384,8 +385,8 @@ class SetsController extends AppController
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('SetConnection');
 		$this->loadModel('UserContribution');
-		$this->Session->write('page', 'set');
-		$this->Session->write('title', 'Tsumego Hero - Collections');
+		$this->set('_page', 'set');
+		$this->set('_title', 'Tsumego Hero - Collections');
 
 		$setTiles = [];
 		$difficultyTiles = [];
@@ -433,16 +434,7 @@ class SetsController extends AppController
 		foreach ($tags as $tag)
 			$tagTiles[] = $tag['Tag']['name'];
 
-		if (Auth::isLoggedIn())
-			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-		else
-		{
-			$noLoginUts = [];
-			$noLoginCount = count($this->Session->read('noLogin') ?? []);
-			for ($i = 0; $i < $noLoginCount; $i++)
-				$noLoginUts[$this->Session->read('noLogin')[$i]] = $this->Session->read('noLoginStatus')[$i];
-			$tsumegoStatusMap = $noLoginUts;
-		}
+		$tsumegoStatusMap = Auth::isLoggedIn() ? TsumegoUtil::getMapForCurrentUser() : [];
 
 		//sets
 		if ($tsumegoFilters->query == 'topics')
@@ -909,9 +901,9 @@ ORDER BY total_count DESC, partition_number";
 			throw new AppException("Set to view not specified");
 
 		if ($id != '1')
-			$this->Session->write('page', 'set');
+			$this->set('_page', 'set');
 		else
-			$this->Session->write('page', 'favs');
+			$this->set('_page', 'favs');
 		$josekiOrder = 0;
 		$tsIds = [];
 		$refreshView = false;
@@ -980,7 +972,7 @@ ORDER BY total_count DESC, partition_number";
 				$josekiOrder = 0;
 		}
 
-		$this->Session->write('lastSet', $id);
+		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 
 		if ($tsumegoFilters->query == 'difficulty')
@@ -1040,7 +1032,7 @@ ORDER BY total_count DESC, partition_number";
 			foreach ($tsumegoButtons as $tsumegoButton)
 				$tsIds [] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0)
-				$this->Session->write('page', 'sandbox');
+				$this->set('_page', 'sandbox');
 			$this->set('isFav', false);
 			if (isset($this->params['url']['sort']))
 				if ($this->params['url']['sort'] == 1)
@@ -1283,7 +1275,7 @@ ORDER BY total_count DESC, partition_number";
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
 
-		$this->Session->write('title', $set['Set']['title'] . ' on Tsumego Hero');
+		$this->set('_title', $set['Set']['title'] . ' on Tsumego Hero');
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
@@ -1348,14 +1340,9 @@ ORDER BY total_count DESC, partition_number";
 					$urCount = count($ur);
 					for ($i = 0; $i < $urCount; $i++)
 						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
-					//$loggedInUserUts = $this->Session->read('loggedInUser.uts');
 					$utsCount = count($uts);
 					for ($i = 0; $i < $utsCount; $i++)
-					{
 						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
-						//unset($loggedInUserUts[$uts[$i]['TsumegoStatus']['tsumego_id']]);
-					}
-					//$this->Session->write('loggedInUser.uts', $loggedInUserUts);
 					$pr = [];
 					$pr['ProgressDeletion']['user_id'] = Auth::getUserID();
 					$pr['ProgressDeletion']['set_id'] = $id;
@@ -1673,8 +1660,8 @@ ORDER BY total_count DESC, partition_number";
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 
-		$this->Session->write('page', 'sandbox');
-		$this->Session->write('title', 'Deleted Collections');
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Deleted Collections');
 
 		if (isset($this->params['url']['remove']))
 		{
@@ -1707,6 +1694,7 @@ ORDER BY total_count DESC, partition_number";
 		}
 		}
 		*/
+		// Get progress map: Progress handles logged-in (DB) vs guests (cookie) internally
 		if (Auth::isLoggedIn())
 			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 
@@ -1717,34 +1705,14 @@ ORDER BY total_count DESC, partition_number";
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 
-			if (Auth::isLoggedIn())
-			{
-				$tsCount3 = count($ts);
-				for ($k = 0; $k < $tsCount3; $k++)
-					if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
-					&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C'))
-					{
-						$counter++;
-						$globalSolvedCounter++;
-					}
-			}
-			elseif ($this->Session->check('noLogin'))
-			{
-				$noLogin = $this->Session->read('noLogin');
-				$noLoginStatus = $this->Session->read('noLoginStatus');
-				$noLoginCount6 = count($noLogin);
-				for ($g = 0; $g < $noLoginCount6; $g++)
+			$tsCount3 = count($ts);
+			for ($k = 0; $k < $tsCount3; $k++)
+				if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])
+				&& ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C'))
 				{
-					$tsCount5 = count($ts);
-					for ($f = 0; $f < $tsCount5; $f++)
-						if ($ts[$f]['Tsumego']['id'] == $noLogin[$g])
-						{
-							$ts[$f]['Tsumego']['status'] = $noLoginStatus[$g];
-							if ($noLoginStatus[$g] == 'S' || $noLoginStatus[$g] == 'W' || $noLoginStatus[$g] == 'C')
-								$counter++;
-						}
+					$counter++;
+					$globalSolvedCounter++;
 				}
-			}
 
 			$date = new DateTime($sets[$i]['Set']['created']);
 			$month = date('F', strtotime($sets[$i]['Set']['created']));

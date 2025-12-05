@@ -34,11 +34,6 @@
   background: linear-gradient(#666, #424242);
   box-shadow: 2px 2px #0f0f0f;
 }
-.commentBox2,
-.commentAnswer,
-.adminText {
-  color: #70ddff;
-}
 
 .sandboxTable2time {
   color: #b9b9b9;

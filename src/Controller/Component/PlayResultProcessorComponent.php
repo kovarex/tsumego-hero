@@ -8,6 +8,7 @@ App::uses('Decoder', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
+App::uses('Progress', 'Utility');
 
 class PlayResultProcessorComponent extends Component
 {
@@ -78,7 +79,7 @@ class PlayResultProcessorComponent extends Component
 				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
 				return 'S';
 			}
-			if ($currentStatus == 'V')
+			if ($currentStatus == 'V' || $currentStatus == 'N')
 				return 'S';
 			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
 		}
@@ -112,7 +113,12 @@ class PlayResultProcessorComponent extends Component
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
 		if (isset($result['solved']))
-			$previousTsumegoStatus['TsumegoStatus']['status'] = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+		{
+			$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+			if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
+				Auth::getUser()['solved'] = Auth::getUser()['solved'] + 1;
+			$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
+		}
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}

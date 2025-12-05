@@ -5,10 +5,10 @@ App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('CookieFlash', 'Utility');
 
 class UsersController extends AppController
 {
-	public $components = ['Flash'];
 	public $name = 'Users';
 
 	public $pageTitle = 'Users';
@@ -211,8 +211,8 @@ class UsersController extends AppController
 	 */
 	public function resetpassword()
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Sign In');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Sign In');
 		$this->set('sent', !empty($this->data));
 		if (empty($this->data))
 			return;
@@ -240,8 +240,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	// @param string|null $checksum Password reset checksum
 	public function newpassword($checksum = null): mixed
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Sign In');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Sign In');
 		$done = false;
 		if ($checksum == null)
 			$checksum = 1;
@@ -255,7 +255,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$user['User']['passwordreset'] = null;
 			$user['User']['password_hash'] = password_hash($this->data['User']['password'], PASSWORD_DEFAULT);
 			$this->User->save($user);
-			$this->Flash->set("Password changed");
+			CookieFlash::set("Password changed", 'success');
 			return $this->redirect("/users/login");
 		}
 
@@ -459,8 +459,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats($uid = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'USER STATS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
@@ -511,8 +511,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats2($uid = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'USER STATS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
@@ -658,8 +658,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats3($sid = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'USER STATS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
@@ -708,8 +708,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function stats($p = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'PAGE STATS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'PAGE STATS');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Comment');
 		$this->loadModel('User');
@@ -812,8 +812,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function uservisits()
 	{
-		$this->Session->write('page', 'set');
-		$this->Session->write('title', 'User Visits');
+		$this->set('_page', 'set');
+		$this->set('_title', 'User Visits');
 		$this->loadModel('Answer');
 
 		$ans = $this->Answer->find('all', ['order' => 'created DESC']);
@@ -1012,8 +1012,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function duplicates()
 	{
-		$this->Session->write('page', 'sandbox');
-		$this->Session->write('title', 'Merge Duplicates');
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Merge Duplicates');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Set');
@@ -1275,8 +1275,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function uploads()
 	{
-		$this->Session->write('page', 'set');
-		$this->Session->write('title', 'Uploads');
+		$this->set('_page', 'set');
+		$this->set('_title', 'Uploads');
 		$this->loadModel('Sgf');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
@@ -1315,8 +1315,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function adminstats($p = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Admin Panel');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Admin Panel');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('TsumegoRatingAttempt');
@@ -1726,18 +1726,22 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function login()
 	{
-		$this->Session->write('page', 'login');
-		$this->Session->write('title', 'Tsumego Hero - Sign In');
+		$this->set('_page', 'login');
+		$this->set('_title', 'Tsumego Hero - Sign In');
 
-		// On GET request, store the referer in session for redirect after login
+		// On GET request, prepare redirect URL with HMAC signature (fully stateless)
 		if (!$this->request->is('post'))
 		{
 			$referer = $this->referer(null, true);
 			// Don't redirect back to login page itself
-			if ($referer && strpos($referer, '/users/login') === false)
-				$this->Session->write('login_redirect', $referer);
-			else
-				$this->Session->delete('login_redirect');
+			$redirectUrl = ($referer && strpos($referer, '/users/login') === false) ? $referer : '/sets/';
+
+			// Sign the redirect URL with HMAC to prevent tampering (no session needed)
+			$signature = $this->signRedirectUrl($redirectUrl);
+
+			// Pass to view for hidden field and Google data-state
+			$this->set('redirectUrl', $redirectUrl);
+			$this->set('redirectSignature', $signature);
 			return null;
 		}
 
@@ -1746,34 +1750,83 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->getUserFromNameOrEmail();
 		if (!$user)
 		{
-			$this->Flash->set('Unknown user');
+			CookieFlash::set('Unknown user', 'error');
 			return null;
 		}
 
 		if (!$this->validateLogin($this->data, $user))
 		{
-			$this->Flash->set('Incorrect password');
+			CookieFlash::set('Incorrect password', 'error');
 			return null;
 		}
 
 		$this->signIn($user);
 
-		// Redirect to the page where user came from, or default to /sets/
-		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
-		$this->Session->delete('login_redirect');
+		// Verify and use redirect URL from POST data
+		$redirect = $this->getVerifiedRedirectUrl(
+			$this->request->data('redirect'),
+			$this->request->data('redirect_signature')
+		);
 		return $this->redirect($redirect);
+	}
+
+	/**
+	 * Sign a redirect URL with HMAC to prevent tampering.
+	 * This allows stateless redirect URL handling without sessions.
+	 */
+	private function signRedirectUrl(string $redirectUrl): string
+	{
+		return hash_hmac('sha256', $redirectUrl, Configure::read('Security.salt'));
+	}
+
+	/**
+	 * Verify redirect URL signature and return safe redirect URL.
+	 * Returns default redirect if signature is invalid or URL is not relative.
+	 */
+	private function getVerifiedRedirectUrl(?string $redirectUrl, ?string $signature): string
+	{
+		$defaultRedirect = '/sets/';
+
+		if (!$redirectUrl || !$signature)
+			return $defaultRedirect;
+
+		// Verify HMAC signature
+		$expectedSignature = $this->signRedirectUrl($redirectUrl);
+		if (!hash_equals($expectedSignature, $signature))
+			return $defaultRedirect;
+
+		// Prevent open redirect attacks - only allow relative URLs
+		if (!$this->isRelativeUrl($redirectUrl))
+			return $defaultRedirect;
+
+		return $redirectUrl;
+	}
+
+	/**
+	 * Check if URL is relative (starts with / but not //)
+	 */
+	private function isRelativeUrl(string $url): bool
+	{
+		return strlen($url) > 0 && $url[0] === '/' && (strlen($url) < 2 || $url[1] !== '/');
 	}
 
 	public function add()
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Sign Up');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Sign Up');
+
+		// Prepare signed redirect URL for Google Sign-In state (fully stateless)
+		$redirectUrl = '/sets/';
+		$signature = $this->signRedirectUrl($redirectUrl);
+		$this->set('redirectUrl', $redirectUrl);
+		$this->set('redirectSignature', $signature);
+
 		if (empty($this->data))
 			return;
 
 		if ($this->data['User']['password1'] != $this->data['User']['password2'])
 		{
-			$this->Flash->set('passwords don\'t match');
+			CookieFlash::set('passwords don\'t match', 'error');
 			return;
 		}
 
@@ -1787,20 +1840,20 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			if (!$this->User->save($userData, true))
 			{
-				$this->Flash->set('Unable to create user with this name');
+				CookieFlash::set('Unable to create user with this name', 'error');
 				return;
 			}
 		}
 		catch (Exception $e)
 		{
-			$this->Flash->set('Unable to create user with this name');
+			CookieFlash::set('Unable to create user with this name', 'error');
 			return;
 		}
 
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $this->data['User']['name']]]);
 		if (!$user)
 			die("New user created, but it is not possible to load it.");
-		$this->Flash->set(__('Registration successful.'));
+		CookieFlash::set(__('Registration successful.'), 'success');
 		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
 	}
 
@@ -1809,14 +1862,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function highscore()
 	{
-		$this->Session->write('page', 'levelHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Highscore');
+		$this->set('_page', 'levelHighscore');
+		$this->set('_title', 'Tsumego Hero - Highscore');
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('Activate');
-
-		if (Auth::isLoggedIn())
-			$this->saveSolvedNumber(Auth::getUserID());
 
 		$activate = false;
 		if (Auth::isLoggedIn())
@@ -1832,8 +1882,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function rating()
 	{
-		$this->Session->write('page', 'ratingHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Rating');
+		$this->set('_page', 'ratingHighscore');
+		$this->set('_title', 'Tsumego Hero - Rating');
 
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
@@ -1860,8 +1910,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function added_tags()
 	{
-		$this->Session->write('page', 'timeHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Added Tags');
+		$this->set('_page', 'timeHighscore');
+		$this->set('_title', 'Tsumego Hero - Added Tags');
 		$this->loadModel('UserContribution');
 
 		$list = [];
@@ -1956,8 +2006,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function achievements()
 	{
-		$this->Session->write('page', 'achievementHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Achievements Highscore');
+		$this->set('_page', 'achievementHighscore');
+		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
 		$this->loadModel('AchievementStatus');
@@ -1989,8 +2039,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function highscore3()
 	{
-		$this->Session->write('page', 'timeHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Time Highscore');
+		$this->set('_page', 'timeHighscore');
+		$this->set('_title', 'Tsumego Hero - Time Highscore');
 
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
@@ -2147,8 +2197,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function leaderboard()
 	{
-		$this->Session->write('page', 'dailyHighscore');
-		$this->Session->write('title', 'Tsumego Hero - Daily Highscore');
+		$this->set('_page', 'dailyHighscore');
+		$this->set('_title', 'Tsumego Hero - Daily Highscore');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Tsumego');
 		$this->loadModel('DayRecord');
@@ -2183,7 +2233,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function view($id = null)
 	{
-		$this->Session->write('page', 'user');
+		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('Tsumego');
@@ -2194,13 +2244,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('TimeModeSession');
 		$hideEmail = Auth::getUserID() != $id;
 
-		$solvedUts2 = $this->saveSolvedNumber($id);
-
 		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
-		$this->Session->write('title', 'Profile of ' . $user['User']['name']);
+		$this->set('_title', 'Profile of ' . $user['User']['name']);
 
 		// user edit
 		// TODO: should be its own action
@@ -2443,7 +2491,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('hideEmail', $hideEmail);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('solvedUts2', $solvedUts2);
 		$this->set('highestElo', $highestElo);
 		$this->set('highestEloRank', $highestEloRank);
 		$this->set('highestRo', $highestRo);
@@ -2534,8 +2581,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function donate($id = null)
 	{
-		$this->Session->write('page', 'home');
-		$this->Session->write('title', 'Tsumego Hero - Upgrade');
+		$this->set('_page', 'home');
+		$this->set('_title', 'Tsumego Hero - Upgrade');
 
 		$overallCounter = 0;
 		$sandboxSets = $this->Set->find('all', ['conditions' => ['public' => 0]]);
@@ -2574,8 +2621,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
-		$this->Session->write('page', 'about');
-		$this->Session->write('title', 'Tsumego Hero - About');
+		$this->set('_page', 'about');
+		$this->set('_title', 'Tsumego Hero - About');
 
 		$authors = $this->Tsumego->find('all', [
 			'order' => 'created DESC',
@@ -2647,8 +2694,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function success($id = null)
 	{
-		$this->Session->write('page', 'home');
-		$this->Session->write('title', 'Tsumego Hero - Success');
+		$this->set('_page', 'home');
+		$this->set('_title', 'Tsumego Hero - Success');
 
 		$s = $this->User->findById(Auth::getUserID());
 		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
@@ -2689,8 +2736,8 @@ Joschka Zimdars';
 	 */
 	public function penalty($id = null)
 	{
-		$this->Session->write('page', 'home');
-		$this->Session->write('title', 'Tsumego Hero - Penalty');
+		$this->set('_page', 'home');
+		$this->set('_title', 'Tsumego Hero - Penalty');
 		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
 		Auth::saveUser();
 		$this->set('id', $id);
@@ -2720,13 +2767,9 @@ Joschka Zimdars';
 			throw new MethodNotAllowedException();
 
 		if ($this->Comment->delete($id))
-			$this->Flash->success(
-				__('The post with id: %s has been deleted.', h($id))
-			);
+			CookieFlash::set(__('The post with id: %s has been deleted.', h($id)), 'success');
 		else
-			$this->Flash->error(
-				__('The post with id: %s could not be deleted.', h($id))
-			);
+			CookieFlash::set(__('The post with id: %s could not be deleted.', h($id)), 'error');
 
 		return $this->redirect(['action' => '/stats']);
 	}
@@ -2784,9 +2827,20 @@ Joschka Zimdars';
 		}
 		$this->signIn($u);
 
-		// Redirect to the page where user came from, or default to /sets/
-		$redirect = $this->Session->read('login_redirect') ?: '/sets/';
-		$this->Session->delete('login_redirect');
+		// Get redirect URL from state parameter (set via data-state in the button)
+		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
+		// We use HMAC signature to prevent redirect URL tampering (stateless)
+		$redirect = '/sets/';
+		$stateJson = $_POST['state'] ?? null;
+		if ($stateJson)
+		{
+			$stateData = json_decode(base64_decode($stateJson), true);
+			if ($stateData)
+				$redirect = $this->getVerifiedRedirectUrl(
+					$stateData['redirect'] ?? null,
+					$stateData['signature'] ?? null
+				);
+		}
 		return $this->redirect($redirect);
 	}
 

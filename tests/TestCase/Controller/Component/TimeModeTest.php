@@ -578,4 +578,51 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertTrue($div5kFast->isDisplayed());
 		$this->assertTrue($div1dFast->isDisplayed());
 	}
+
+	public function testTimeModeSessionWithNothingQueued(): void
+	{
+		$contextParameters = [
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'time-mode-ranks' => ['5k']];
+
+		// I prepare tsumegos in a way that one will be always left from the time mode selection
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+			$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/overview');
+		$browser->get('/timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
+
+		$tsumegosInTimeMode = [];
+		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all');
+		foreach ($attempts as $attempt)
+			$tsumegosInTimeMode[$attempt['TimeModeAttempt']['tsumego_id']] = true;
+
+		$tsumegoIDNotInTimeMode = array_find($context->otherTsumegos, fn($t) => !$tsumegosInTimeMode[$t['id']])['id'];
+		$setConnectionIDNotInTimeMode = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]])['SetConnection']['id'];
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		usleep(1000 * 50);
+
+		// we found the only tsumego NOT in the time mode, and we open it in no-time mode
+		// first time, we are processing the previous time mode attempt
+		$browser->get('/' . $setConnectionIDNotInTimeMode);
+
+		// now se solve the only tsumego not in time mode
+		usleep(1000 * 100);
+		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		usleep(1000 * 50);
+
+		Auth::getUser()['mode'] = Constants::$TIME_MODE; // I force the time mode to be active
+		Auth::saveUser();
+
+		// I'm processing result of the play which wasn't time mode related, while time mode is also activated
+		$browser->get('/sets');
+		$statusOfNoTimeProblemPlay = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]]);
+		$this->assertSame($statusOfNoTimeProblemPlay['TsumegoStatus']['status'], 'S');
+	}
 }

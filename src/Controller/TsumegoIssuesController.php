@@ -23,8 +23,8 @@ class TsumegoIssuesController extends AppController
 	{
 		$this->loadModel('TsumegoIssue');
 
-		$this->Session->write('title', 'Tsumego Hero - Issues');
-		$this->Session->write('page', 'issues');
+		$this->set('_title', 'Tsumego Hero - Issues');
+		$this->set('_page', 'issues');
 
 		// Get filter and pagination params
 		$statusFilter = $this->request->query('status') ?: 'opened';

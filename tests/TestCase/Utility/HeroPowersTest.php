@@ -46,9 +46,12 @@ class HeroPowersTest extends TestCaseWithAuth
 		// Grabbing this just to detect page reload later
 		$oldBodyElement = $browser->driver->findElement(WebDriverBy::cssSelector('body'));
 		$browser->driver->executeScript("displayResult('F')"); // fail the problem
-		// the display result show refresh the page
+		// the display result should refresh the page
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($oldBodyElement));
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+
+		// Wait for navigation buttons to load
+		$browser->driver->wait(10)->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::cssSelector('div.tsumegoNavi2 li')));
 
 		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
@@ -60,13 +63,14 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
-		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
+		$tsumego = ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego'];
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue($tsumego);
 		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		usleep(1000 * 100);
+		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
@@ -89,7 +93,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		usleep(1000 * 100);
+		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
 		// clicking next after solving, sprint is still visible:

@@ -15,6 +15,7 @@
  */
 
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
+App::uses('CookieFlash', 'Utility');
 ?>
 <!DOCTYPE html>
 <html>
@@ -41,7 +42,7 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 		</div>
 		<div id="content">
 
-			<?php echo $this->Session->flash(); ?>
+			<?php echo CookieFlash::render(); ?>
 
 			<?php echo $this->fetch('content'); ?>
 		</div>

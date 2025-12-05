@@ -33,7 +33,7 @@ class Play
 
 	public function play(int $setConnectionID, $params, $data): mixed
 	{
-		CakeSession::write('page', 'play');
+		($this->setFunction)('page', 'play');
 
 		$highestTsumegoOrder = 0;
 		$nextMode = null;
@@ -57,7 +57,6 @@ class Play
 		$achievementUpdate = [];
 		$tRank = '15k';
 		$nothingInRange = false;
-		$tsumegoStatusMap = [];
 		$setsWithPremium = [];
 		$queryTitle = '';
 
@@ -187,9 +186,9 @@ class Play
 			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
 
 		if ($t == null)
-			$t = ClassRegistry::init('Tsumego')->findById(CakeSession::read('lastVisit'));
+			$t = ClassRegistry::init('Tsumego')->findById($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
 
-		CakeSession::write('lastVisit', $id);
+		Util::setCookie('lastVisit', $id);
 
 		if (Auth::isLoggedIn())
 			if (!empty($data))
@@ -357,14 +356,6 @@ class Play
 			$isSandbox = false;
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
-		if (Auth::isInLevelMode())
-			if (Auth::isLoggedIn())
-			{
-				$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-				$utsMapx = array_count_values($tsumegoStatusMap);
-				$correctCounter = $utsMapx['C'] + $utsMapx['S'] + $utsMapx['W'];
-				Auth::getUser()['solved'] = $correctCounter;
-			}
 
 		if ($tsumegoStatus == 'G')
 			$goldenTsumego = true;
@@ -406,10 +397,9 @@ class Play
 		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
 		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
 
-		if ($tsumegoFilters->query == 'topics')
-			CakeSession::write('title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		else
-			CakeSession::write('title', CakeSession::read('lastSet') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
+		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
 		if (!Auth::isInTimeMode())
 		{
@@ -468,20 +458,15 @@ class Play
 				AppController::updateXP(Auth::getUserID(), $achievementUpdate);
 		}
 
-		$admins = ClassRegistry::init('User')->find('all', ['conditions' => ['isAdmin' => 1]]);
-		if (Auth::isInRatingMode() || Auth::isInTimeMode())
-			CakeSession::write('title', 'Tsumego Hero');
+		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
 
 		$crs = 0;
 
-		if (Auth::isInLevelMode())
-			CakeSession::write('page', 'level mode');
-		elseif (Auth::isInRatingMode())
-			CakeSession::write('page', 'rating mode');
-		elseif (Auth::isInTimeMode())
-			CakeSession::write('page', 'time mode');
+		if (Auth::isInLevelMode())($this->setFunction)('page', 'level mode');
+		elseif (Auth::isInRatingMode())($this->setFunction)('page', 'rating mode');
+		elseif (Auth::isInTimeMode())($this->setFunction)('page', 'time mode');
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
@@ -586,7 +571,6 @@ class Play
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('sgf2', $sgf2);
 		($this->setFunction)('crs', $crs);
-		($this->setFunction)('admins', $admins);
 		($this->setFunction)('refresh', $refresh);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);

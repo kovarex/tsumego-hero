@@ -450,7 +450,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+		$browser->driver->getPageSource();
+		$this->assertCount(2, $browser->getCssSelect('.title4'));
+		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), 'set 1');
 	}
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void
