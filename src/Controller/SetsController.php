@@ -434,8 +434,7 @@ class SetsController extends AppController
 		foreach ($tags as $tag)
 			$tagTiles[] = $tag['Tag']['name'];
 
-		// Get progress map: Progress handles logged-in (DB) vs guests (cookie) internally
-		$tsumegoStatusMap = Progress::getMap();
+		$tsumegoStatusMap = Auth::isLoggedIn() ? TsumegoUtil::getMapForCurrentUser() : [];
 
 		//sets
 		if ($tsumegoFilters->query == 'topics')
@@ -1701,7 +1700,8 @@ ORDER BY total_count DESC, partition_number";
 		}
 		*/
 		// Get progress map: Progress handles logged-in (DB) vs guests (cookie) internally
-		$tsumegoStatusMap = Progress::getMap();
+		if (Auth::isLoggedIn())
+			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
 
 		$setsCount = count($sets);
 		for ($i = 0; $i < $setsCount; $i++)
@@ -1710,7 +1710,6 @@ ORDER BY total_count DESC, partition_number";
 			$sets[$i]['Set']['anz'] = count($ts);
 			$counter = 0;
 
-			// Count solved tsumegos - Progress::getMap() already handles both guests and logged-in users
 			$tsCount3 = count($ts);
 			for ($k = 0; $k < $tsCount3; $k++)
 				if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']])

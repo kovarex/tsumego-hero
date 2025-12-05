@@ -29,13 +29,6 @@ class PlayResultProcessorComponent extends Component
 
 		$result = $this->checkPreviousPlayAndGetResult($previousTsumego);
 
-		// Handle guest progress separately (simpler, no XP/rating)
-		if (!Auth::isLoggedIn())
-		{
-			$this->updateGuestProgress($previousTsumego, $result);
-			return;
-		}
-
 		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
 			'conditions' => [
 				'tsumego_id' => (int) $previousTsumego['Tsumego']['id'],
@@ -123,33 +116,6 @@ class PlayResultProcessorComponent extends Component
 			$previousTsumegoStatus['TsumegoStatus']['status'] = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
-	}
-
-	/**
-	 * Update guest progress using cookie-based storage.
-	 * Simpler than logged-in users: no XP, no rating, just V/S/F status.
-	 */
-	private function updateGuestProgress(array $previousTsumego, array $result): void
-	{
-		$tsumegoId = (int) $previousTsumego['Tsumego']['id'];
-		$currentStatus = Progress::getStatus($tsumegoId) ?? 'V';
-
-		// Determine new status
-		if (isset($result['solved']))
-			if ($result['solved'])
-			{
-				// Solved: mark as S (or keep S/W/C if already solved)
-				if (!in_array($currentStatus, ['S', 'W', 'C']))
-					$currentStatus = 'S';
-			}
-			else
-			{
-				// Failed: mark as F (only if not already solved)
-				if (!in_array($currentStatus, ['S', 'W', 'C']))
-					$currentStatus = 'F';
-			}
-
-		Progress::setStatus($tsumegoId, $currentStatus);
 	}
 
 	private function checkAddFavorite(): void
