@@ -91,14 +91,14 @@ composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
 echo "=== Setting up permissions ==="
 chmod 777 "$ROOT_DIR/tmp"
 chmod 777 "$ROOT_DIR/tmp/logs"
-mkdir -p "$ROOT_DIR/logs/cache"
-chmod 777 "$ROOT_DIR/logs/cache"
-mkdir -p "$ROOT_DIR/cache/models"
-chmod 777 "$ROOT_DIR/cache/models"
-mkdir -p "$ROOT_DIR/cache/persistent"
-chmod 777 "$ROOT_DIR/cache/persistent"
-mkdir -p "$ROOT_DIR/cache/views"
-chmod 777 "$ROOT_DIR/cache/views"
+mkdir -p "$ROOT_DIR/tmp/logs/cache"
+chmod 777 "$ROOT_DIR/tmp/logs/cache"
+mkdir -p "$ROOT_DIR/tmp/cache/models"
+chmod 777 "$ROOT_DIR/tmp/cache/models"
+mkdir -p "$ROOT_DIR/tmp/cache/persistent"
+chmod 777 "$ROOT_DIR/tmp/cache/persistent"
+mkdir -p "$ROOT_DIR/tmp/cache/views"
+chmod 777 "$ROOT_DIR/tmp/cache/views"
 chmod 777 "$ROOT_DIR/webroot/forums/cache"
 mkdir -p "$ROOT_DIR/webroot/forums/cache/production"
 chmod 777 "$ROOT_DIR/webroot/forums/cache/production"
@@ -108,6 +108,6 @@ chmod 777 "$ROOT_DIR/webroot/forums/images/avatars/upload"
 
 echo "=== Running migrations ==="
 vendor/bin/phinx migrate
-vendor/bin/phinx migrate -e test
+#vendor/bin/phinx migrate -e test
 
 echo "=== Deploy complete ==="
