@@ -7,7 +7,8 @@
     "require": {
 		"php": ">=8.4",
 		"firebase/php-jwt": "^6.11.1",
-		"pieceofcake2/cakephp": "^2.12"
+		"pieceofcake2/cakephp": "^2.12",
+		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
 		"php-webdriver/webdriver": "^1.15",
@@ -18,8 +19,7 @@
 		"phpunit/phpunit": "^9.6",
 		"pieceofcake2/bake": "^1.0",
 		"pieceofcake2/debug_kit": "^2.2",
-		"pieceofcake2/phpstan-cakephp2": "^0.2.1",
-		"robmorgan/phinx": "^0.16.10"
+		"pieceofcake2/phpstan-cakephp2": "^0.2.1"
 	},
     "autoload": {
         "classmap": ["src/"]
