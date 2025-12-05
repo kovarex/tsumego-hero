@@ -282,9 +282,6 @@ body
   cursor: pointer;
 }
 
-.commentAnswer {
-  color: #113cd4;
-}
 .sandboxComment2 {
   position: absolute;
   right: 0;
@@ -7637,6 +7634,7 @@ body.dark-theme .btn--warning {
 	width:30px;
 }
 .grey-link { color: var(--text-softer-color); }
+.grey-text { color: var(--text-softer-color); }
 
 .tooltip-box
 {
@@ -7674,3 +7672,5 @@ body.dark-theme .btn--warning {
 	color: var(--paginator-info-text-color);
 	margin-right:10px;
 }
+
+.admin-text { color: var(--admin-text-color); }

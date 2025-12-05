@@ -23,7 +23,6 @@ function darkAndLight()
     $(".besogo-container").css("background-color", "#2a2a2a");
     $(".sandboxComment").css("background", "linear-gradient(#666, #424242)");
     $(".sandboxComment").css("box-shadow", "2px 2px #0f0f0f");
-    $(".commentBox2, .commentAnswer, .adminText").css("color", "#70ddff");
     $("li.setV2").css("border", "1px solid #f0f0f0");
     $(".sandboxTable2time").css("color", "#b9b9b9");
     $(".besogo-container").css("background", "#2a2a2a");
@@ -117,7 +116,6 @@ function darkAndLight()
     $(".besogo-container").css("background-color", "#fff");
     $(".sandboxComment").css("background", "#ddd");
     $(".sandboxComment").css("box-shadow", "2px 2px #999");
-    $(".commentBox2, .commentAnswer").css("color", "#113cd4");
     $(".adminText").css("color", "#000");
     $("li.setV2").css("border", "1px solid black");
     $(".sandboxTable2time").css("color", "#575757");
