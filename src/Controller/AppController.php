@@ -251,7 +251,7 @@ class AppController extends Controller
 			}
 			$danSolveCondition['AchievementCondition']['category'] = $danSolveCategory;
 			$danSolveCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-			$danSolveCondition['AchievementCondition']['set_id'] = null;  // danSolve tracks user progress, not set-specific
+			$danSolveCondition['AchievementCondition']['set_id'] = $tId;
 			$danSolveCondition['AchievementCondition']['value']++;
 
 			ClassRegistry::init('AchievementCondition')->save($danSolveCondition);
