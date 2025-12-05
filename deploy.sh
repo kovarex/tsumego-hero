@@ -165,6 +165,10 @@ fi
 # Pre-build and minify all CSS/JS assets for production (faster page loads)
 # This generates all files in webroot/cache_css/ and webroot/cache_js/
 echo "=== Comporessing css and js ==="
+mkdir -p "$ROOT_DIR/webroot/cache_js"
+chmod 777 "$ROOT_DIR/webroot/cache_js"
+mkdir -p "$ROOT_DIR/webroot/cache_css"
+chmod 777 "$ROOT_DIR/webroot/cache_css"
 ./bin/cake asset_compress build
 
 echo "=== Deploy complete ==="
