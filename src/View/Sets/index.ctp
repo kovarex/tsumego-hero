@@ -278,7 +278,8 @@
 		echo 'function animateNumber(index, start, end, duration) {
 				const element = document.getElementById("number" + index);
 				// Null check: premium locked sets don\'t have number elements
-				if (!element) {
+				if (!element)
+				{
 					console.warn("Element number" + index + " not found.");
 					return;
 				}
