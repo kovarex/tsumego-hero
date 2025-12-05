@@ -716,7 +716,7 @@ class ZenModeTest extends TestCaseWithAuth
 		$this->assertEquals('50px', $computedStyles['bottom'], '#theComment should be 50px from bottom');
 
 		// Verify high z-index
-		$this->assertGreaterThanOrEqual(9999, (int)$computedStyles['zIndex'], '#theComment should have high z-index');
+		$this->assertGreaterThanOrEqual(9999, (int) $computedStyles['zIndex'], '#theComment should have high z-index');
 
 		// Check #descriptionText styles (positioned at bottom-center in zen mode)
 		$descriptionStyles = $browser->driver->executeScript("
@@ -736,7 +736,7 @@ class ZenModeTest extends TestCaseWithAuth
 		$this->assertNotEquals('none', $descriptionStyles['display'], '#descriptionText display should not be none');
 		$this->assertEquals('fixed', $descriptionStyles['parentPosition'], 'Parent should be fixed positioned');
 		$this->assertEquals('15px', $descriptionStyles['parentBottom'], 'Parent should be 15px from bottom');
-		$this->assertGreaterThanOrEqual(9999, (int)$descriptionStyles['parentZIndex'], 'Parent should have high z-index');
+		$this->assertGreaterThanOrEqual(9999, (int) $descriptionStyles['parentZIndex'], 'Parent should have high z-index');
 	}
 
 	/**
