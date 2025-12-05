@@ -17,7 +17,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	private function performVisit(ContextPreparator &$context, $page): void
 	{
-		CakeSession::write('loggedInUserID', $context->user['id']);
+		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
+		Auth::init(); // Re-init to recognize the user
 		$_COOKIE['previousTsumegoID'] = $context->tsumego['id'];
 		$this->testAction(self::getUrlFromPage($page, $context));
 		$context->checkNewTsumegoStatusCoreValues($this);

@@ -7,6 +7,8 @@ class CommentsController extends AppController
 {
 	public function index(): mixed
 	{
+		$this->set('_title', 'Tsumego Hero - Discuss');
+		$this->set('_page', 'discuss');
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 		$this->Session->write('title', 'Tsumego Hero - Discuss');

@@ -1,9 +1,14 @@
 <?php
 
 App::uses('Constants', 'Utility');
+App::uses('JwtAuth', 'Utility');
 
 class Auth
 {
+	/**
+	 * Generate random login token for phpBB2 forum SSO
+	 * The forum reads this cookie to authenticate users automatically
+	 */
 	private static function generateLoginToken(int $user_id): void
 	{
 		$token = Util::generateRandomString(50);
@@ -16,23 +21,38 @@ class Auth
 	{
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
-			CakeSession::write("loggedInUserID", $_COOKIE["hackedLoggedInUserID"]);
+		{
+			$userData = ClassRegistry::init('User')->findById((int) $_COOKIE["hackedLoggedInUserID"]);
+			if ($userData)
+			{
+				Auth::$user = $userData['User'];
+				return;
+			}
+		}
 
 		if ($user)
 		{
 			Auth::$user = $user['User'];
-			CakeSession::write('loggedInUserID', Auth::$user['id']);
-			self::generateLoginToken(Auth::getUserID());
+			// Set JWT cookie for stateless auth
+			JwtAuth::setAuthCookie(Auth::getUserID());
+			self::generateLoginToken(Auth::getUserID()); // For phpBB2 forum SSO
 			return;
 		}
 
-		if (!CakeSession::check('loggedInUserID'))
+		// Try JWT cookie (stateless auth)
+		$userIdFromJwt = JwtAuth::getUserIdFromCookie();
+		if ($userIdFromJwt)
 		{
-			Auth::$user = null;
-			return;
+			$userData = ClassRegistry::init('User')->findById($userIdFromJwt);
+			if ($userData)
+			{
+				Auth::$user = $userData['User'];
+				return;
+			}
 		}
 
-		Auth::$user = ClassRegistry::init('User')->findById((int) CakeSession::read('loggedInUserID'))['User'];
+		// Not logged in
+		Auth::$user = null;
 	}
 
 	public static function isLoggedIn(): bool
@@ -75,7 +95,8 @@ class Auth
 
 	public static function logout(): void
 	{
-		CakeSession::delete('loggedInUserID');
+		// Clear JWT cookie and phpBB2 SSO token
+		JwtAuth::clearAuthCookie();
 		Util::clearCookie('login_token');
 		Auth::$user = null;
 	}

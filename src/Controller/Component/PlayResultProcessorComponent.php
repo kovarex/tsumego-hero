@@ -8,6 +8,7 @@ App::uses('Decoder', 'Utility');
 App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
+App::uses('Progress', 'Utility');
 
 class PlayResultProcessorComponent extends Component
 {

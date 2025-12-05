@@ -12,4 +12,3 @@ parameters:
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
 		- '#Call to an undefined method .*\:\:findBy.+\(#'
-		- '#Call to an undefined method FlashComponent.+\(#'

@@ -114,9 +114,9 @@ class SitesControllerTest extends ControllerTestCase
 			'user' => ['name' => 'testuser'],
 		]);
 
-		// Clear lastVisit session to simulate first-time visitor
-		CakeSession::delete('lastVisit');
-		$this->assertFalse(CakeSession::check('lastVisit'), 'lastVisit should be cleared initially');
+		// Clear lastVisit cookie to simulate first-time visitor
+		unset($_COOKIE['lastVisit']);
+		$this->assertFalse(isset($_COOKIE['lastVisit']), 'lastVisit should be cleared initially');
 
 		// Act: Load the index page
 		$browser = Browser::instance();
@@ -205,5 +205,44 @@ class SitesControllerTest extends ControllerTestCase
 		// Check that CSS class uses the fallback
 		$this->assertStringContainsString("user-pick-{$expectedFallback}", $pageSource,
 			"Should use {$expectedFallback} CSS positioning fallback");
+	}
+
+	/**
+	 * Test that page title is set correctly via view variables (not session)
+	 * This is part of the session elimination effort - Phase 1: View State
+	 */
+	public function testPageTitleSetViaViewVariable()
+	{
+		// Arrange
+		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		// Act: Load the index page
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		// Assert: Title should be "Tsumego Hero" for the index page
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertMatchesRegularExpression('/<title>\s*Tsumego Hero\s*<\/title>/', $pageSource,
+			'Index page should have title "Tsumego Hero"');
+	}
+
+	/**
+	 * Test that navigation highlighting works correctly for home page
+	 * This is part of the session elimination effort - Phase 1: View State
+	 */
+	public function testNavigationHighlightingForHomePage()
+	{
+		// Arrange
+		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		// Act: Load the index page
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		// Assert: Home link should have the green highlight color
+		$pageSource = $browser->driver->getPageSource();
+		// The home link should have style="color:#74d14c;" when on home page
+		$this->assertStringContainsString('style="color:#74d14c;"', $pageSource,
+			'Home page should have navigation highlighting');
 	}
 }

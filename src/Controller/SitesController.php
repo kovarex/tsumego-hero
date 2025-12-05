@@ -12,8 +12,8 @@ class SitesController extends AppController
 	 */
 	public function index($var = null)
 	{
-		$this->Session->write('page', 'home');
-		$this->Session->write('title', 'Tsumego Hero');
+		$this->set('_page', 'home');
+		$this->set('_title', 'Tsumego Hero');
 
 		// Set default lastVisit tsumego ID if not already set (for first-time visitors)
 		if (!$this->Session->check('lastVisit'))
@@ -75,8 +75,8 @@ class SitesController extends AppController
 	 */
 	public function impressum()
 	{
-		$this->Session->write('page', 'about');
-		$this->Session->write('title', 'Tsumego Hero - Legal Notice');
+		$this->set('_page', 'about');
+		$this->set('_title', 'Tsumego Hero - Legal Notice');
 	}
 
 	/**
@@ -84,8 +84,8 @@ class SitesController extends AppController
 	 */
 	public function websitefunctions()
 	{
-		$this->Session->write('page', 'websitefunctions');
-		$this->Session->write('title', 'Tsumego Hero - Website Functions');
+		$this->set('_page', 'websitefunctions');
+		$this->set('_title', 'Tsumego Hero - Website Functions');
 	}
 
 	/**
@@ -93,8 +93,8 @@ class SitesController extends AppController
 	 */
 	public function gotutorial()
 	{
-		$this->Session->write('page', 'gotutorial');
-		$this->Session->write('title', 'Tsumego Hero - Go Tutorial');
+		$this->set('_page', 'gotutorial');
+		$this->set('_title', 'Tsumego Hero - Go Tutorial');
 	}
 
 	/**
@@ -102,8 +102,8 @@ class SitesController extends AppController
 	 */
 	public function privacypolicy()
 	{
-		$this->Session->write('page', 'privacypolicy');
-		$this->Session->write('title', 'Tsumego Hero - Privacy Policy');
+		$this->set('_page', 'privacypolicy');
+		$this->set('_title', 'Tsumego Hero - Privacy Policy');
 	}
 
 }

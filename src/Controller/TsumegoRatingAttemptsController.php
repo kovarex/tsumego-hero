@@ -8,8 +8,8 @@ class TsumegoRatingAttemptsController extends AppController
 	 */
 	public function index($trid = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'TSUMEGO RECORDS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'TSUMEGO RECORDS');
 		if ($trid == null)
 		{
 			$trs = $this->TsumegoRatingAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
@@ -35,8 +35,8 @@ class TsumegoRatingAttemptsController extends AppController
 	 */
 	public function json($type = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'TSUMEGO RECORDS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'TSUMEGO RECORDS');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
@@ -139,8 +139,8 @@ class TsumegoRatingAttemptsController extends AppController
 	 */
 	public function csv($type = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'TSUMEGO RECORDS');
+		$this->set('_page', 'user');
+		$this->set('_title', 'TSUMEGO RECORDS');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('User');
 
@@ -262,8 +262,8 @@ class TsumegoRatingAttemptsController extends AppController
 	 */
 	public function user($trid)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'History of ' . Auth::getUser()['name']);
+		$this->set('_page', 'user');
+		$this->set('_title', 'History of ' . Auth::getUser()['name']);
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');

@@ -362,10 +362,10 @@
 			else $modeActions2 = 'class="modeboxes"';
 			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.AppController::getStartpage().'</div>';
 		?>
-		<a href="/tsumegos/play/<?php echo $this->Session->read('lastVisit'); ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/tsumegos/play/<?php echo $this->Session->read('lastVisit'); ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
 			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php if(Auth::isLoggedIn()){ ?>
@@ -536,30 +536,6 @@
 			• Longer sessions.<br>
 			• Sign in with Google account.<br>
 			• Option to delete all account related data.<br>
-			<div align="center">
-				<div class="g-signin">
-					<?php if(Auth::isLoggedIn()){ ?>
-					<img src="/img/google-logo.png" title="google-logo" alt="google-logo" width="40px" style="border-radius:25%">
-					<?php }else{ ?>
-					<div
-						id="g_id_onload"
-						data-client_id="986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com"
-						data-context="signin"
-						data-ux_mode="popup"
-						data-login_uri="/users/googlesignin"
-						data-auto_prompt="false"
-					></div>
-					<div
-						class="g_id_signin"
-						data-type="standard"
-						data-shape="rectangular"
-						data-theme="outline"
-						data-text="sign_in_with"
-						data-size="large"
-					></div>
-					<?php } ?>
-				</div>
-			</div>
 		</div>
 		</div>
 
@@ -662,7 +638,7 @@
 		$link2 = '';
 		$link3 = '';
 		if(Auth::isLoggedIn()){
-			$link1 = '/tsumegos/play/'.$this->Session->read('lastVisit').'?mode=1';
+			$link1 = '/tsumegos/play/' . ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
 			$link2 = '/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2';
 			$link3 = '/timeMode/overview';
 		}

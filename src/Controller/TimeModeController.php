@@ -129,8 +129,8 @@ ORDER BY MIN(rating);");
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
-		$this->Session->write('title', 'Time Mode - Select');
-		$this->Session->write('page', 'time mode');
+		$this->set('_title', 'Time Mode - Select');
+		$this->set('_page', 'time mode');
 
 		$lastTimeModeCategoryID = Auth::getUser()['last_time_mode_category_id'];
 		if (!$lastTimeModeCategoryID)
@@ -265,8 +265,8 @@ ORDER BY MIN(rating);");
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeSession');
 		$this->loadModel('SetConnection');
-		$this->Session->write('title', 'Time Mode - Result');
-		$this->Session->write('page', 'time mode');
+		$this->set('_title', 'Time Mode - Result');
+		$this->set('_page', 'time mode');
 
 		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
 		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
