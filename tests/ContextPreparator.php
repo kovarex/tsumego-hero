@@ -317,18 +317,19 @@ class ContextPreparator
 		foreach ($setsInput as $tsumegoSet)
 		{
 			$set = $this->getOrCreateTsumegoSet([
-				'name' => $tsumegoSet['name'],
-				'included_in_time_mode' => $tsumegoSet['included_in_time_mode'],
-				'public' => $tsumegoSet['public']]);
+				'name' => Util::extract('name', $tsumegoSet),
+				'included_in_time_mode' => Util::extract('included_in_time_mode', $tsumegoSet),
+				'public' => Util::extract('public', $tsumegoSet)]);
 			$setConnection = [];
 			$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
 			$setConnection['SetConnection']['set_id'] = $set['id'];
-			$setConnection['SetConnection']['num'] = $tsumegoSet['num'];
+			$setConnection['SetConnection']['num'] = Util::extract('num', $tsumegoSet);
 			ClassRegistry::init('SetConnection')->create($setConnection);
 			ClassRegistry::init('SetConnection')->save($setConnection);
 			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
 			$tsumego['sets'] [] = $set;
 			$tsumego['set-connections'] [] = $setConnection;
+			$this->checkOptionsConsumed($tsumegoSet);
 		}
 	}
 

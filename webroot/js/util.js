@@ -173,7 +173,7 @@ class XPStatus
 
 	getXPInternal(multiplier)
 	{
-		return ratingToXP(this.tsumegoRating) * multiplier;
+		return ratingToXP(this.tsumegoRating, multiplier);
 	}
 }
 
@@ -330,7 +330,13 @@ function calculateRatingChange(rating, opponentRating, result, modifier)
 	return modifier * (con * (result - Se) + bonus);
 }
 
-function ratingToXP(rating)
+// changes should be reflrected in Rating.php
+function ratingToXP(rating, multiplier)
+{
+	return Math.ceil(ratingToXPFloat(rating) * multiplier);
+}
+
+function ratingToXPFloat(rating)
 {
 	if (rating < 0)
 		return 1 + Math.max(0, (rating / 1000 + 0.9) * 3);
