@@ -85,11 +85,14 @@ echo $this->Html->charset();
 // Main app CSS bundle
 echo $this->AssetCompress->css('app');
 
-// Theme-specific CSS bundle (includes constants)
-if($lightDark=='dark')
-	echo $this->AssetCompress->css('dark-theme');
-else
-	echo $this->AssetCompress->css('light-theme');
+// Load both theme CSS bundles for JavaScript-based theme switching
+// Initial state: one enabled, one disabled based on cookie
+echo '<link rel="stylesheet" id="dark-theme-css" href="' . 
+	$this->AssetCompress->url('dark-theme.css') . '"' . 
+	($lightDark === 'dark' ? '' : ' disabled') . ' />';
+echo '<link rel="stylesheet" id="light-theme-css" href="' . 
+	$this->AssetCompress->url('light-theme.css') . '"' . 
+	($lightDark === 'light' ? '' : ' disabled') . ' />';
 
 echo $this->Html->meta('icon');
 echo $this->fetch('meta');
