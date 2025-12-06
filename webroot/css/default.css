@@ -4474,10 +4474,10 @@ select.flat-select:hover {
   border-top-right-radius: 2px;
   cursor: pointer;
 }
-.modeSelector1 {
+.modeSelectorInRatingBar {
   background-image: linear-gradient(#6bac4a, #457128);
 }
-.modeSelector2 {
+.modeSelectorInLevelBar {
   background-image: linear-gradient(#bd73d9, #9d31be);
 }
 

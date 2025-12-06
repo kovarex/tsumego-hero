@@ -22,6 +22,7 @@ class AccountWidget
 			$rankSize = $nextRank - $rankStart;
 			$barRatio = (Auth::getUser()['rating'] - $rankStart) / $rankSize;
 			$barText = Rating::getReadableRankFromRating(Auth::getUser()['rating']);
+			$modeSelectorClass = 'modeSelectorInRatingBar';
 		}
 		else
 		{
@@ -30,6 +31,7 @@ class AccountWidget
 			$accountBarClassname = 'account-bar-level';
 			$barRatio = Auth::getUser()['xp'] / Level::getXPForNext(Auth::getUser()['level']);
 			$barText = 'Level ' . Auth::getUser()['level'];
+			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}
 
 		echo '<div id="account-bar-wrapper" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
@@ -70,7 +72,7 @@ class AccountWidget
 				<li><a href="/users/logout">Sign Out</a></li>
 			</div>';
 		if (!Auth::isInTimeMode())
-			echo '<div id="modeSelector" class="modeSelector'.$modeSelector.'"></div>';
+			echo '<div id="modeSelector" class="'. $modeSelectorClass .'" onclick="accountWidget.switchBarInMenu();"></div>';
 	}
 
 	static public function renderJS()
