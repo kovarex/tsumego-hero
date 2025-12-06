@@ -15,18 +15,33 @@ class TsumegoButton
 	public function render()
 	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
-		/*
-		$persormanceS = substr_count($ts[$i]['Tsumego']['performance'], '1');
-		$persormanceF = substr_count($ts[$i]['Tsumego']['performance'], 'F');
-		if($persormanceS==0 && $persormanceF==0) $num2 = '-';
-		else $num2 = $persormanceS.'/'.$persormanceF;
-		$num2 = '<div class="setViewButtons2">'.$num2.'</div>';
-		if($ts[$i]['Tsumego']['seconds']=='') $num3 = '-';
-		else $num3 = $ts[$i]['Tsumego']['seconds'].'s';
-		$num3 = '<div class="setViewButtons3">'.$num3.'</div>';*/
+
+		// Calculate accuracy (performance) as percentage
+		if (empty($this->performance))
+		{
+			$persormanceS = 0;
+			$persormanceF = 0;
+		}
+		else
+		{
+			$persormanceS = substr_count($this->performance, '1');
+			$persormanceF = substr_count($this->performance, 'F');
+		}
+		if ($persormanceS == 0 && $persormanceF == 0)
+			$num2 = '-';
+		else
+			$num2 = $persormanceS . '/' . $persormanceF;
+		$num2 = '<div class="setViewButtons2">' . $num2 . '</div>';
+
+		// Calculate time
+		if ($this->seconds == 0 || $this->seconds == '')
+			$num3 = '-';
+		else
+			$num3 = $this->seconds . 's';
+		$num3 = '<div class="setViewButtons3">' . $num3 . '</div>';
 
 		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . '<span class="tooltip-box"></span></a>';
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . $num2 . $num3 . '<span class="tooltip-box"></span></a>';
 		echo '</li>';
 	}
 
