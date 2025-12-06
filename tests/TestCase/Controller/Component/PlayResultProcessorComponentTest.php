@@ -153,6 +153,8 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			// user rating is increased
 			$this->assertGreaterThan($originalRating, $context->reloadUser()['rating']);
 			$this->assertWithinMargin($originalRating, $context->user['rating'], 100); // shouldn't move more than 100 points
+			$expectedChange = Rating::calculateRatingChange(1000, 1000, 1, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+			$this->assertLessThan(0.1, abs($originalRating + $expectedChange - $context->reloadUser()['rating']));
 			// tsumego rating is decreased
 			$this->assertLessThan(1000, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
 		}

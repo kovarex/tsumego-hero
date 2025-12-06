@@ -220,13 +220,11 @@ class PlayResultProcessorComponent extends Component
 		if ($result['solved'])
 			self::processRatingChangeStep($userRating, $tsumegoRating, true);
 
-		$newUserRating = $userRating + Rating::calculateRatingChange($userRating, $tsumegoRating, $result['solved'] ? 1 : 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
-		$newTsumegoRating = $tsumegoRating + Rating::calculateRatingChange($tsumegoRating, $userRating, $result['solved'] ? 0 : 1, Constants::$TSUMEGO_RATING_CALCULATION_MODIFIER);
-		Auth::getUser()['rating'] = $newUserRating;
+		Auth::getUser()['rating'] = $userRating;
 		Auth::saveUser();
 
 		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
-			$newTsumegoRating,
+			$tsumegoRating,
 			$previousTsumego['Tsumego']['minimum_rating'],
 			$previousTsumego['Tsumego']['maximum_rating']);
 		$previousTsumego['Tsumego']['activity_value']++;
