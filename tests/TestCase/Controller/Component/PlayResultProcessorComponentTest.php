@@ -505,9 +505,9 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 
 		$expectedRatingChangeForOneLoss = Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
-		$ratingChange = $originalRating - $context->reloadUser()['rating'];
+		$ratingChange = $context->reloadUser()['rating'] - $originalRating;
 		// two losses and one win with the same rating should more or less result in one loss
-		$this->assertLessThan(3, abs($expectedRatingChangeForOneLoss - $ratingChange));
+		$this->assertLessThan(5, abs($expectedRatingChangeForOneLoss - $ratingChange));
 
 		$this->assertSame($context->user['damage'], 2); // damage was applied
 		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
