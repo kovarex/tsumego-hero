@@ -12,43 +12,48 @@ class SetsViewStartButtonTest extends ControllerTestCase
 {
 	public function testStartButtonNavigatesToFirstUnsolvedPuzzle(): void
 	{
-		// Create test context with multiple tsumegos in a test set
-		// First 2 are solved, 3rd is unsolved (target), 4th-5th are also unsolved
-		// Start button should link to #3 (first unsolved in middle of set)
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'sets' => [['name' => 'Test Start Button Set', 'num' => '3']],
-				'status' => 'V' // Not solved - this should be where Start button links to
-			],
-			'other-tsumegos' => [
-				['sets' => [['name' => 'Test Start Button Set', 'num' => '1']], 'status' => 'S'], // Solved
-				['sets' => [['name' => 'Test Start Button Set', 'num' => '2']], 'status' => 'S'], // Solved
-				['sets' => [['name' => 'Test Start Button Set', 'num' => '4']], 'status' => 'V'], // Also unsolved
-				['sets' => [['name' => 'Test Start Button Set', 'num' => '5']], 'status' => 'V'], // Also unsolved
-			]
-		]);
+		// when $statusToPick is 'W' (solved once more than a week ago)
+		// I'm testing the case when everything is solved, so I want to pick first 'W' problem
+		foreach (['V', 'W'] as $statusToPick)
+		{
+			// Create test context with multiple tsumegos in a test set
+			// First 2 are solved, 3rd is unsolved (target), 4th-5th are also unsolved
+			// Start button should link to #3 (first unsolved in middle of set)
+			$context = new ContextPreparator([
+				'tsumego' => [
+					'sets' => [['name' => 'Test Start Button Set', 'num' => '3']],
+					'status' => $statusToPick // Not solved - this should be where Start button links to
+				],
+				'other-tsumegos' => [
+					['sets' => [['name' => 'Test Start Button Set', 'num' => '1']], 'status' => 'S'], // Solved
+					['sets' => [['name' => 'Test Start Button Set', 'num' => '2']], 'status' => 'S'], // Solved
+					['sets' => [['name' => 'Test Start Button Set', 'num' => '4']], 'status' => $statusToPick], // Also unsolved
+					['sets' => [['name' => 'Test Start Button Set', 'num' => '5']], 'status' => $statusToPick], // Also unsolved
+				]
+			]);
 
-		$browser = Browser::instance();
+			$browser = Browser::instance();
 
-		// 1. Open the set view page using the created set ID
-		$setId = $context->tsumego['sets'][0]['id'];
-		$browser->get('sets/view/' . $setId);
+			// 1. Open the set view page using the created set ID
+			$setId = $context->tsumego['sets'][0]['id'];
+			$browser->get('sets/view/' . $setId);
 
-		// 2. Verify we're on the set view page
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
+			// 2. Verify we're on the set view page
+			$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
 
-		// Wait for page to fully load
-		$browser->waitUntilCssSelectorExists('a.new-button.new-buttonx');
+			// Wait for page to fully load
+			$browser->waitUntilCssSelectorExists('a.new-button.new-buttonx');
 
-		// 3. Find and click the Start button (using CSS selector since linkText didn't work)
-		$startButton = $browser->getCssSelect('a.new-button.new-buttonx')[0];
-		$this->assertTrue($startButton->isDisplayed(), 'Start button should be visible');
-		$startButton->click();
+			// 3. Find and click the Start button (using CSS selector since linkText didn't work)
+			$startButton = $browser->getCssSelect('a.new-button.new-buttonx')[0];
+			$this->assertTrue($startButton->isDisplayed(), 'Start button should be visible');
+			$startButton->click();
 
-		// 4. Verify we navigated to the FIRST UNSOLVED puzzle (problem #3, not #1)
-		// The URL is /{setConnectionId} (short form)
-		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
-		$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
-		$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
+			// 4. Verify we navigated to the FIRST UNSOLVED puzzle (problem #3, not #1)
+			// The URL is /{setConnectionId} (short form)
+			$setConnectionId = $context->tsumego['set-connections'][0]['id'];
+			$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
+			$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
+		}
 	}
 }
