@@ -21,7 +21,7 @@ class AccountWidget
 		this.accountBar = document.getElementById('account-bar-user');
 		this.xpIncreaseFx = document.getElementById('xp-increase-fx')
 
-		this.bar.style.webkitTransition = "all 0.5s ease";
+		this.bar.style.webkitTransition = "all 1s ease";
 		this.bar.style.boxShadow = "";
 
 		this.setup();
@@ -57,7 +57,7 @@ class AccountWidget
 		let nextRank = Rating.getRankMinimalRating(rank + 1);
 		let rankSize = nextRank - rankStart;
 		this.setBarRatio((this.rating - rankStart) / rankSize);
-		this.barCaption.innerHTML = this.hovered ? this.rating : Rating.getReadableRankFromRating(this.rating);
+		this.barCaption.innerHTML = this.hovered ? Math.round(this.rating) : Rating.getReadableRankFromRating(this.rating);
 	}
 
 	showTimeMode()
@@ -105,5 +105,26 @@ class AccountWidget
 			this.show = 'level';
 		}
 		this.setup();
+	}
+
+	animate(increase)
+	{
+		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
+		if  (increase)
+		{
+			this.xp += xpStatus.getXP();
+			while (this.checkLevelUp());
+		}
+		this.xpIncreaseFx.style.display = 'inline-block';
+		setTimeout(() => {this.xpIncreaseFx.style.display = "none";}, 1000);
+	}
+
+	checkLevelUp()
+	{
+		let xpForNextLevel = getXPForNextLevel(this.level);
+		if (xpForNextLevel > this.xp)
+			return false;
+		this.xp -= xpForNextLevel;
+		return true;
 	}
 }

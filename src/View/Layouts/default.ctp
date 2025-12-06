@@ -863,55 +863,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		document.getElementById("donateH2").src = "/img/donateButton1.png";
 	}
 
-	function runXPBar2(){
-		<?php
-		if($mode==1){
-	?>
-		newXP2 = 100;
-		newXP = 100;
-		if(newXP2>=100){
-			newXP2=100;
-	}
-
-				$("#xp-bar-fill").css({
-					"width": newXP2 + "%"
-				});
-		$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
-				$("#xp-increase-fx").fadeIn(0);
-				$("#xp-bar-fill").css({
-					"-webkit-transition": "all 1s ease",
-					"box-shadow": ""
-				});
-		setTimeout(function(){
-			$("#xp-increase-fx").fadeOut(500);
-					$("#xp-bar-fill").css({
-						"-webkit-transition": "all 1s ease",
-						"box-shadow": ""
-					});
-		},1000);
-		<?php
-	}
-	?>
-	}
-
-	function runXPNumber2(id, start, end, duration, ulvl){
-		userXP = end;
-		userLevel = ulvl;
-		var range = end - start;
-		var current = start;
-		var increment = end > start? 1 : -1;
-		var stepTime = Math.abs(Math.floor(duration / range));
-		var obj = document.getElementById(id);
-		var nextlvl = 0;
-		var timer = setInterval(function(){
-			current += increment;
-			obj.innerHTML = current + nextlvl;
-			if(current == end) {
-				clearInterval(timer);
-	}
-		}, stepTime);
-	}
-
 	function deleteAllCookies() {
 		const cookies = document.cookie.split(";");
 

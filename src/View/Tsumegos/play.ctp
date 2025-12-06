@@ -1664,36 +1664,15 @@ if (
 		document.getElementById("theComment").style.cssText = "display:none;";
 	}
 
-	function runXPBar(increase){
+	function runXPBar(increase)
+	{
+		accountWidget.animate(increase);
+		/*
 		if (mode==1 || mode==2) {
 			if(levelBar==1 && increase==true){
-				if(!doubleXP) x2 = 1;
-				else x2 = 2;
-				<?php
-				echo 'userNextlvl = '. Level::getXPForNext(Auth::getWithDefault('level', 1)).';
-				newXP2 = Math.min(('.Auth::getWithDefault('xp', 0).' + xpStatus.getXP())/userNextlvl*100, 100);
-				barPercent1 = newXP2;
-				barPercent2 = Math.min('.substr(round(Auth::getWithDefault('rating', 0)), -2).'+ '.$eloScoreRounded.', 100);'; ?>
-				$("#xp-bar-fill").css({
-					"width": newXP2 + "%"
-				});
-				$("#xp-bar-fill").css("-webkit-transition","all 1s ease");
-				$("#xp-increase-fx").fadeIn(0);
-				$("#xp-bar-fill").css({
-					"-webkit-transition": "all 1s ease",
-					"box-shadow": ""
-				});
-				setTimeout(function(){
-					$("#xp-increase-fx").fadeOut(500);
-					$("#xp-bar-fill").css({
-						"-webkit-transition": "all 1s ease",
-						"box-shadow": ""
-					});
-				},1000);
+
 			}else if(levelBar==2){
 				if(!ratingBarLock){
-					if(!doubleXP) x2 = 1;
-					else x2 = 2;
 					<?php echo 'userNextlvl = '.Level::getXPForNext(Auth::getWithDefault('level', 1)).';
 					if(increase) newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScoreRounded.', 100);
 					else newXP2 = Math.min('.substr(round(Auth::getWithDefault('rating', 1)), -2).'+ '.$eloScore2Rounded.', 100);
@@ -1738,10 +1717,13 @@ if (
 					"box-shadow": ""
 				});
 			},1000);
-	}
+	}*/
 	}
 
-	function runXPNumber(id, start, end, duration, ulvl){
+	function runXPNumber(id, start, end, duration, ulvl)
+	{
+		accountWidget.animate(true);
+		/*
 	start = Math.round(start);
 	end = Math.round(end);
 	<?php if(Auth::isLoggedIn()){ ?>
@@ -1770,7 +1752,7 @@ if (
 		}, stepTime);
 		ratingBarLock = true;
 	}
-			<?php } ?>
+			<?php } ?>*/
 	}
 
 	function updateHealth(){
@@ -2074,14 +2056,15 @@ if (
 						ulvl = ulvl + 1;
 	}
 					<?php if(Auth::isLoggedIn()){ ?>
-					if(mode==1 && levelBar==1){
-						runXPBar(true);
+					runXPBar(true);
+					if(mode==1 && accountWidget.show == 'level')
+					{
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
-	}
-					if(mode==1 && levelBar==2){
-						runXPBar(true);
+					}
+					if(mode==1 && accountWidget.show == 'rating')
+					{
 						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', '0'); ?>, elo2, 1000, ulvl);
-	}
+					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
 	<?php } ?>
@@ -2089,10 +2072,11 @@ if (
 	}else{
 					if(mode==1){
 						document.cookie = "correctNoPoints=1";
-						if(levelBar==2){
+						if (accountWidget.show == 'rating')
+						{
 							runXPBar(true);
 							runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
-	}
+						}
 	}
 	}
 			} else {//mode 2 correct
@@ -2145,13 +2129,8 @@ if (
 					toggleBoardLock(true);
 				}
 				noLastMark = true;
-				if (mode==1 && levelBar==2 && misplays==0)
-				{
-					elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
+				if (mode==1 && misplays==0)
 					runXPBar(false);
-					runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
-					userElo = Math.round(elo2);
-				}
 				if(!noXP)
 				{
 					if(!freePlayMode)
