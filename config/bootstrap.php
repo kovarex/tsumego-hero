@@ -113,6 +113,7 @@ CakePlugin::load('AssetCompress', ['bootstrap' => true]);
 Configure::write('Dispatcher.filters', [
 	'AssetDispatcher',
 	'CacheDispatcher',
+	'AssetCompress.AssetCompressor',
 ]);
 
 /**

@@ -157,7 +157,10 @@ composer cs-modified # Only run phpcs on modified files
 composer stan -- src/Controller
 composer cs-check -- src/Utility
 
-# Test specific methods (side ddev container!):
+# Build asset bundles (required for AssetBundlingTest):
+./bin/cake AssetCompress.AssetCompress build
+
+# Test specific methods (inside ddev container!):
 vendor/bin/phpunit path/to/test.php --filter=testMethodName
 ```
 

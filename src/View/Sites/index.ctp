@@ -1,8 +1,4 @@
 <?php
-// Load home page specific CSS and JS
-echo $this->AssetCompress->css('home');
-echo $this->AssetCompress->script('preview');
-
 $highestLeft = 19;
 $highestRight = 17;
 ?>

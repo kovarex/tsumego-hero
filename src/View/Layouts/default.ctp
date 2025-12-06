@@ -81,25 +81,28 @@ echo $this->Html->charset();
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
 <meta property="og:title" content="Tsumego Hero">
-<link rel="stylesheet" type="text/css" href="/css/<?php echo $lightDark?>-constants.css" id="theme-css-constants">
-<link rel="stylesheet" type="text/css" href="/css/default.css?v=4">
-	<?php
+<?php
+// Main app CSS bundle
+echo $this->AssetCompress->css('app');
+
+// Theme-specific CSS bundle (includes constants)
 if($lightDark=='dark')
-	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.4">';
+	echo $this->AssetCompress->css('dark-theme');
+else
+	echo $this->AssetCompress->css('light-theme');
 
 echo $this->Html->meta('icon');
 echo $this->fetch('meta');
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
-<script src ="/js/previewBoard.js?v=2"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
-<script type="text/javascript" src="/js/util.js?v=8"></script>
-<script src="/js/dark.js?v=<?php echo filemtime(WWW_ROOT . 'js/dark.js'); ?>"></script>
+<?php
+echo $this->AssetCompress->script('app');
+?>
 <?php
 $modeSelector = 2;
 $accountBarLevelToRating = 'account-bar-user';

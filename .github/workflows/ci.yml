@@ -168,8 +168,10 @@ jobs:
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
+          # Run all tests including ci-only group for coverage
           vendor/bin/phpunit --coverage-clover /tmp/coverage/clover.xml
 
+          # Run tests excluding apache-only (ci-only included) for detailed coverage
           mkdir -p coverage
           ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
 

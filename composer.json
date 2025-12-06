@@ -6,7 +6,7 @@
     "license": "proprietary",
     "require": {
 		"php": ">=8.4",
-		"markstory/asset_compress": "^0.26",
+		"markstory/asset_compress": "^0.26.0",
 		"pieceofcake2/cakephp": "^2.12",
 		"tedivm/jshrink": "^1.8"
 	},
