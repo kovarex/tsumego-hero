@@ -57,7 +57,6 @@ class Play
 		$achievementUpdate = [];
 		$tRank = '15k';
 		$nothingInRange = false;
-		$tsumegoStatusMap = [];
 		$setsWithPremium = [];
 		$queryTitle = '';
 
@@ -357,14 +356,6 @@ class Play
 			$isSandbox = false;
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
-		if (Auth::isInLevelMode())
-			if (Auth::isLoggedIn())
-			{
-				$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-				$utsMapx = array_count_values($tsumegoStatusMap);
-				$correctCounter = $utsMapx['C'] + $utsMapx['S'] + $utsMapx['W'];
-				Auth::getUser()['solved'] = $correctCounter;
-			}
 
 		if ($tsumegoStatus == 'G')
 			$goldenTsumego = true;

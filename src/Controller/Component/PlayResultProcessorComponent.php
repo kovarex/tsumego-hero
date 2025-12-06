@@ -79,7 +79,7 @@ class PlayResultProcessorComponent extends Component
 				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER;
 				return 'S';
 			}
-			if ($currentStatus == 'V')
+			if ($currentStatus == 'V' || $currentStatus == 'N')
 				return 'S';
 			return $currentStatus; // failed can't be unfailed by solving, user has to wait until next day or rejuvenation
 		}
@@ -113,7 +113,12 @@ class PlayResultProcessorComponent extends Component
 		$_COOKIE['previousTsumegoBuffer'] = $previousTsumegoStatus['TsumegoStatus']['status'];
 
 		if (isset($result['solved']))
-			$previousTsumegoStatus['TsumegoStatus']['status'] = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+		{
+			$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
+			if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
+				Auth::getUser()['solved'] = Auth::getUser()['solved'] + 1;
+			$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
+		}
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
@@ -190,6 +195,14 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
+	private static function processRatingChangeStep(float &$userRating, float &$tsumegoRating, bool $isWin): void
+	{
+		$userRatingDelta = Rating::calculateRatingChange($userRating, $tsumegoRating, $isWin ? 1 : 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+		$tsumegoRatingDelta = Rating::calculateRatingChange($tsumegoRating, $userRating, $isWin ? 0 : 1, Constants::$TSUMEGO_RATING_CALCULATION_MODIFIER);
+		$userRating += $userRatingDelta;
+		$tsumegoRating += $tsumegoRatingDelta;
+	}
+
 	private function processRatingChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
@@ -198,6 +211,15 @@ class PlayResultProcessorComponent extends Component
 			return;
 		$userRating = (float) Auth::getUser()['rating'];
 		$tsumegoRating = (float) $previousTsumego['Tsumego']['rating'];
+
+		//process misplays first
+		for ($i = 0; $i < $result['misplays']; $i++)
+			self::processRatingChangeStep($userRating, $tsumegoRating, false);
+
+		// lastly process the solve
+		if ($result['solved'])
+			self::processRatingChangeStep($userRating, $tsumegoRating, true);
+
 		$newUserRating = $userRating + Rating::calculateRatingChange($userRating, $tsumegoRating, $result['solved'] ? 1 : 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
 		$newTsumegoRating = $tsumegoRating + Rating::calculateRatingChange($tsumegoRating, $userRating, $result['solved'] ? 0 : 1, Constants::$TSUMEGO_RATING_CALCULATION_MODIFIER);
 		Auth::getUser()['rating'] = $newUserRating;

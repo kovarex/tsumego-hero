@@ -282,9 +282,6 @@ body
   cursor: pointer;
 }
 
-.commentAnswer {
-  color: #113cd4;
-}
 .sandboxComment2 {
   position: absolute;
   right: 0;
@@ -7637,6 +7634,7 @@ body.dark-theme .btn--warning {
 	width:30px;
 }
 .grey-link { color: var(--text-softer-color); }
+.grey-text { color: var(--text-softer-color); }
 
 .tooltip-box
 {
@@ -7646,3 +7644,33 @@ body.dark-theme .btn--warning {
 	top: 0;
 	z-index: 1000;
 }
+
+.paginator-link
+{
+	display:inline-block;
+	margin:0 2px;
+	padding:5px 10px;
+	border:1px solid #ccc;
+	text-decoration:none;
+	color: var(--paginator-button-text-color);
+	border-radius:3px;
+}
+
+.active-paginator-link
+{
+	display:inline-block;
+	margin:0 2px;
+	padding:5px 10px;
+	background: var(--active-paginator-button-background-color);
+	color: var(--active-paginator-button-text-color);
+	border:1px solid #333;
+	border-radius:3px;
+}
+
+.paginator-info
+{
+	color: var(--paginator-info-text-color);
+	margin-right:10px;
+}
+
+.admin-text { color: var(--admin-text-color); }

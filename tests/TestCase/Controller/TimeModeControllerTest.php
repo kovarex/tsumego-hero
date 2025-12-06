@@ -102,6 +102,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		// no redirect
 		$this->assertSame(null, $this->headers['Location']);
 	}
+
 	public function testOpeningTimeModeResultWithInvalidTimeSessionID()
 	{
 		$contextParameters = [];

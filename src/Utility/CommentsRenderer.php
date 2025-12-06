@@ -12,7 +12,7 @@ class CommentsRenderer
 	private function renderComment($comment, $index)
 	{
 		echo '<div class="sandboxComment">';
-		$commentColor = $comment['from_admin'] ? 'commentBox2' : 'commentBox1';
+		$commentColor = $comment['from_admin'] ? 'admin-text' : '';
 		echo '<table class="sandboxTable2" width="100%" border="0">';
 		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
@@ -26,11 +26,11 @@ class CommentsRenderer
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
 		echo $comment['from_name'] . ':<br>';
+		echo '</div>';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
 			echo $comment['message'];
 		else
-			echo '<div class="commentAnswer" style="color:#5e5e5e;"><div style="padding-top:14px;"></div>[You need to solve this problem to see the comment]</div>';
-		echo '</div>';
+			echo '<div class="grey-text">[You need to solve this problem to see the comment]</div>';
 		$date = new DateTime($comment['created']);
 		echo '</td><td class="sandboxTable2time" align="right">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</td>';
 		echo '</tr>';
@@ -48,7 +48,7 @@ class CommentsRenderer
 		$parameters = [];
 		$parameters[] = Auth::getUserID();
 
-		$queryCondition = "";
+		$queryCondition = "tsumego_comment.deleted = 0";
 		if ($this->userID)
 			Util::addSqlCondition($queryCondition, "tsumego_comment.user_id = " . $this->userID);
 
