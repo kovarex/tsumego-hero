@@ -187,4 +187,4 @@ jobs:
         run: composer stan -- --error-format=github
 
       - name: Run PHPCS
-        run: composer cs-check
+        run: composer cs-check -- --diff
