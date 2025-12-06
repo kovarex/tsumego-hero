@@ -1,8 +1,30 @@
 <?php
 
+class XPForNextCalculator
+{
+	public function __construct($level)
+	{
+		foreach (Level::getSections() as $section)
+			if ($this->section($level, $section[0], $section[1]))
+				return;
+	}
+
+	public function section($level, $to, $jump): bool
+	{
+		$steps = min($to, $level) - $this->from;
+		$this->result += $steps * $jump;
+		$this->from = $to;
+		return $level <= $to;
+	}
+
+	public int $from = 1;
+	public int $result = 50;
+}
+
 class Level
 {
-	private static function getSections(): array
+	// this needs to be up to date with level code in util.js
+	public static function getSections(): array
 	{
 		static $sections = [
 			[11, 10],
@@ -16,23 +38,9 @@ class Level
 		return $sections;
 	}
 
-	private static function section($level, &$from, $to, $jump, &$result): bool
-	{
-		$steps = min($to, $level) - $from;
-		$result += $steps * $jump;
-		$from = $to;
-		return $level <= $to;
-	}
-
 	public static function getXPForNext($level): int
 	{
-		$result = 50;
-		$from = 1;
-
-		foreach (self::getSections() as $section)
-			if (self::section($level, $from, $section[0], $section[1], $result))
-				return $result;
-		return $result;
+		return new XPForNextCalculator($level)->result;
 	}
 
 	private static function sectionSum($level, &$from, $to, $jump, &$result, &$xpIncrease): bool
