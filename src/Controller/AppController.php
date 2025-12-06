@@ -2048,7 +2048,7 @@ class AppController extends Controller
 			if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0)
 				Auth::getUser()['revelation'] -= 1;
 
-			if (!$this->request->is('ajax'))
+			if (!$this->request->is('ajax') && !$this->isHtmxRequest())
 				$this->PlayResultProcessor->checkPreviousPlay($timeMode);
 		}
 		$boardNames = [];
