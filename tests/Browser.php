@@ -296,6 +296,12 @@ class Browser
 		return $browser;
 	}
 
+	public function playWithResult(string $result): void
+	{
+		usleep(1000 * 100);
+		$this->driver->executeScript("displayResult('" . $result . "')");
+	}
+
 	public function getAlertText()
 	{
 		return $this->driver->switchTo()->alert()->getText();

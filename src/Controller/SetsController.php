@@ -777,6 +777,28 @@ ORDER BY total_count DESC, partition_number";
 	}
 
 	/**
+	 * Gets the first unsolved set connection ID from a collection of tsumego buttons.
+	 * Falls back to the first button if all are solved.
+	 *
+	 * @param TsumegoButtons $tsumegoButtons Iterator of TsumegoButton objects
+	 * @return int|null The setConnectionID of the first unsolved button, or first button if all solved, or null if empty
+	 */
+	private function getFirstUnsolvedSetConnectionId($tsumegoButtons)
+	{
+		if (empty($tsumegoButtons))
+			return null;
+		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
+			return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
+		}))
+			return $firstUnsolvedButton->setConnectionID;
+		if ($firstRecentlyUnsolved = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
+			return !TsumegoUtil::isRecentlySolved($tsumegoButton->status);
+		}))
+			return $firstRecentlyUnsolved->setConnectionID;
+		return $tsumegoButtons[0]->setConnectionID;
+	}
+
+	/**
 	 * @param int|null $id Set ID
 	 * @return void
 	 */
@@ -974,6 +996,7 @@ ORDER BY total_count DESC, partition_number";
 
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
+		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
 
 		if ($tsumegoFilters->query == 'difficulty')
 		{
@@ -1260,7 +1283,6 @@ ORDER BY total_count DESC, partition_number";
 			$set['Set']['order'] = 0;
 			$set['Set']['public'] = 1;
 			$set['Set']['created'] = 20180322;
-			$set['Set']['t'] = '222';
 			$set['Set']['createdDisplay'] = '22. March 2018';
 			$set['Set']['solvedNum'] = $sizeCount;
 			$set['Set']['solved'] = round($percent, 1);

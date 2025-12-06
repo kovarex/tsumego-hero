@@ -453,4 +453,59 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$this->assertSame($context->reloadUser()['solved'], $previousStatus == 'S' ? 66 : 67);
 		}
 	}
+
+	public function testFailingResetAndSolvingAppliesBothFailAndSolve(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'rating' => 1000,
+				'mode' => Constants::$RATING_MODE],
+			'tsumego' => ['rating' => 500, 'maximum_rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		$originalRating = $context->user['rating'];
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->playWithResult('F');
+		$browser->clickId("besogo-reset-button");
+		$browser->playWithResult('S');
+
+		// reopen the page
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// player has 500 more rating than the problem, so losss + win should lose rating
+		$this->assertLessThan($originalRating, $context->reloadUser()['rating']);
+
+		// tsumego has 500 less rating than user, so loss + win should move it up
+		$this->assertGreaterThan(500, ClassRegistry::init('Tsumego')->findById($context->tsumego['id'])['Tsumego']['rating']);
+
+		$this->assertSame($context->user['damage'], 1); // damage was applied
+		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
+	}
+
+	public function testFailingTwiceResetAndSolvingAppliesBothFailAndSolve(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'rating' => 1000,
+				'mode' => Constants::$RATING_MODE],
+			'tsumego' => ['rating' => 1000, 'maximum_rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		$originalRating = $context->user['rating'];
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->playWithResult('F');
+		$browser->clickId("besogo-reset-button");
+		$browser->playWithResult('F');
+		$browser->clickId("besogo-reset-button");
+		$browser->playWithResult('S');
+
+		// reopen the page
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		$expectedRatingChangeForOneLoss = Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+		$ratingChange = $originalRating - $context->reloadUser()['rating'];
+		// two losses and one win with the same rating should more or less result in one loss
+		$this->assertLessThan(3, abs($expectedRatingChangeForOneLoss - $ratingChange));
+
+		$this->assertSame($context->user['damage'], 2); // damage was applied
+		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
+	}
 }

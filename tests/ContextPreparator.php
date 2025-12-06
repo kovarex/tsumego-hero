@@ -15,6 +15,7 @@ class ContextPreparator
 		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
 		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
+		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
@@ -84,10 +85,13 @@ class ContextPreparator
 			'used_intuition',
 			'used_revelation'] as $name)
 				$user[$name] = Util::extract($name, $userInput) ?: 0;
-		$user['damage'] = Util::extract('damage', $userInput) ?? 0;
+		$user['level'] = Util::extract('level', $userInput) ?: 1;
+		if ($health = Util::extract('health', $userInput))
+			$user['damage'] = Util::getHealthBasedOnLevel($user['level']) - $health;
+		else
+			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
-		$user['level'] = Util::extract('level', $userInput) ?: 1;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
 		ClassRegistry::init('User')->create($user);
