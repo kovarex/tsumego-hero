@@ -29,7 +29,6 @@ class AccountWidget
 
 	setup()
 	{
-		this.xpIncreaseFx.style.display = "none";
 		if (this.show == 'level')
 			this.showLevel();
 		else if (this.show == 'rating')
