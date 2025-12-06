@@ -1313,13 +1313,15 @@ ORDER BY total_count DESC, partition_number";
 				$urTemp = [];
 				$urSum = '';
 				$tsumegoButton->seconds = 0;
+				$solvedSeconds = []; // Track all successful solve times to find minimum (best)
 				$urCount2 = count($ur);
 				for ($j = 0; $j < $urCount2; $j++)
 					if ($tsumegoButton->tsumegoID == $ur[$j]['TsumegoAttempt']['tsumego_id'])
 					{
 						array_push($urTemp, $ur[$j]);
 						if ($ur[$j]['TsumegoAttempt']['solved'])
-							$tsumegoButton->seconds = $ur[$j]['TsumegoAttempt']['seconds'];
+							$solvedSeconds[] = $ur[$j]['TsumegoAttempt']['seconds'];
+
 						if (!$ur[$j]['TsumegoAttempt']['solved'])
 						{
 							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
@@ -1334,6 +1336,9 @@ ORDER BY total_count DESC, partition_number";
 						else
 							$urSum .= $ur[$j]['TsumegoAttempt']['solved'];
 					}
+				// Use minimum (best) solve time from all successful attempts
+				if (!empty($solvedSeconds))
+					$tsumegoButton->seconds = min($solvedSeconds);
 				$tsumegoButton->performance = $urSum;
 			}
 		}
