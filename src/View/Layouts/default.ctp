@@ -507,10 +507,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			updateSoundValue(true);
 		}
 
-		$("#modeSelector").click(function(){
-			levelBarChange(modeSelector);
-		});
-
 		$("#adminLink-more").click(function(){
 			$(".additional-adminLink").show();
 			$(".additional-adminLink2").hide();
@@ -532,7 +528,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			clearInterval(timer);
 			return;
 		}
-		var days = Math.floor(distance / _day);
 		var hours = Math.floor((distance % _day) / _hour);
 		var minutes = Math.floor((distance % _hour) / _minute);
 		var seconds = Math.floor((distance % _minute) / _second);
@@ -556,7 +551,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 				clearInterval(timer);
 				return;
 			}
-			var days = Math.floor(distance / _day);
 			var hours = Math.floor((distance % _day) / _hour);
 			var minutes = Math.floor((distance % _hour) / _minute);
 			var seconds = Math.floor((distance % _minute) / _second);
