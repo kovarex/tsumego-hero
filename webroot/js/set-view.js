@@ -25,19 +25,10 @@ function initSetImageZoom()
 			const tableRect = table ? table.getBoundingClientRect() : {left: 0, width: 600};
 			const centerX = tableRect.left + (tableRect.width / 2);
 
-			clone.style.cssText = `position:fixed;top:50%;left:${centerX}px;transform:translate(-50%,-50%) scale(3);z-index:9999;cursor:pointer;transition:transform 0.3s;max-width:${tableRect.width * 0.8}px;max-height:90vh;border:3px solid #333;box-shadow:0 0 20px rgba(0,0,0,0.5)`;
+			clone.style.cssText = `position:fixed;top:50%;left:${centerX}px;transform:translate(-50%,-50%) scale(3);z-index:9999;cursor:pointer;transition:transform 0.3s;max-width:${tableRect.width * 0.8}px;max-height:90vh;border:3px solid #333;box-shadow:0 0 20px rgba(0,0,0,0.5);pointer-events:none`;
 			clone.className = 'zoom-preview';
 			document.body.appendChild(clone);
 			activeClone = clone;
-
-			const removeClone = () =>
-			{
-				if (clone.parentNode)
-					clone.remove();
-				activeClone = null;
-			};
-
-			clone.addEventListener('mouseleave', removeClone);
 
 			clone.addEventListener('click', () =>
 			{
@@ -48,14 +39,11 @@ function initSetImageZoom()
 
 		img.addEventListener('mouseleave', () =>
 		{
-			setTimeout(() =>
+			if (activeClone)
 			{
-				if (activeClone && !activeClone.matches(':hover'))
-				{
-					activeClone.remove();
-					activeClone = null;
-				}
-			}, 50);
+				activeClone.remove();
+				activeClone = null;
+			}
 		});
 	});
 }
