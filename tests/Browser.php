@@ -148,6 +148,11 @@ class Browser
 		return $this->driver->findElements(WebDriverBy::cssSelector($name));
 	}
 
+	public function find($name)
+	{
+		return $this->driver->findElement(WebDriverBy::cssSelector($name));
+	}
+
 	public function hover($element)
 	{
 		new WebDriverActions($this->driver)->moveToElement($element)->perform();
@@ -303,6 +308,11 @@ class Browser
 	public function getAlertText()
 	{
 		return $this->driver->switchTo()->alert()->getText();
+	}
+
+	public function setCookie($name, $value)
+	{
+		$this->driver->manage()->addCookie(['name' => $name, 'value' => $value]);
 	}
 
 	public $driver;

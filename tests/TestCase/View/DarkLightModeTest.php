@@ -1,7 +1,6 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use Facebook\WebDriver\Cookie;
 
 /**
  * Tests for dark/light mode theming functionality.

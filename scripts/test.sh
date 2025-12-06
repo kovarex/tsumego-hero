@@ -7,4 +7,4 @@ else
   filter_parameter=""
 fi
 
-phpunit --stop-on-failure --colors=always $filter_parameter 2>&1
+phpunit --stop-on-failure --colors=always $filter_parameter $3 2>&1
