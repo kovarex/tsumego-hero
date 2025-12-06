@@ -963,4 +963,187 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemButtons[1]->getText(), '2');
 	}
 
+	/**
+	 * Test set view Completed tab shows problem ORDER numbers (1, 2, 3...)
+	 * This is the default view - shows which problems exist in the set
+	 */
+	public function testSetViewCompletedTabShowsOrderNumbers()
+	{
+		// Create ONE set with THREE tsumegos
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'other-tsumegos' => [
+				['sets' => [['name' => 'Test Set', 'num' => 1]]],
+				['sets' => [['name' => 'Test Set', 'num' => 2]]],
+				['sets' => [['name' => 'Test Set', 'num' => 3]]],
+			],
+		]);
+
+		$browser = Browser::instance();
+		// Get set ID from first other-tsumego
+		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
+
+		$browser->get("sets/view/{$setId}");
+
+		// Completed tab should be active by default - find problem buttons
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+
+		// Should show problem numbers: 1, 2, 3
+		$this->assertCount(3, $buttons, 'Should have 3 problems in set');
+		$this->assertSame('1', trim($buttons[0]->getText()));
+		$this->assertSame('2', trim($buttons[1]->getText()));
+		$this->assertSame('3', trim($buttons[2]->getText()));
+
+		// setViewButtons2 (accuracy) and setViewButtons3 (time) should be hidden
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		foreach ($accuracyButtons as $btn)
+			$this->assertFalse($btn->isDisplayed(), 'Accuracy buttons should be hidden on Completed tab');
+
+		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		foreach ($timeButtons as $btn)
+			$this->assertFalse($btn->isDisplayed(), 'Time buttons should be hidden on Completed tab');
+	}
+
+	/**
+	 * Test set view button CSS classes reflect problem status
+	 * Buttons should have statusN (not attempted), statusS (solved), statusF (failed), etc.
+	 */
+	public function testSetViewButtonStatusClasses()
+	{
+		// Create set with 3 problems: not attempted, solved, failed
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 1]]
+					// Not attempted
+				],
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 2]],
+					'status' => 'S',  // Solved
+				],
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 3]],
+					'status' => 'F',  // Failed
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
+		$browser->get("sets/view/{$setId}");
+
+		// Find the <li> elements (button containers with status classes)
+		$listItems = $browser->driver->findElements(WebDriverBy::cssSelector('li[class*="status"]'));
+		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
+
+		// Problem 1: Not attempted - should have statusN class
+		$this->assertStringContainsString('statusN', $listItems[0]->getAttribute('class'), 'Problem 1 should have statusN (not attempted)');
+
+		// Problem 2: Solved - should have statusS class
+		$this->assertStringContainsString('statusS', $listItems[1]->getAttribute('class'), 'Problem 2 should have statusS (solved)');
+
+		// Problem 3: Failed - should have statusF class
+		$this->assertStringContainsString('statusF', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
+	}
+
+	/**
+	 * Test set view Accuracy tab shows success/failure ratio (e.g., "3/1" = 3 solved, 1 failed)
+	 * As per UI description: "The solved and failed (s/f) attempts are displayed."
+	 */
+	public function testSetViewAccuracyTabShowsSuccessFailureRatio()
+	{
+		// Create ONE set with TWO tsumegos, first has multiple attempts
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 1]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'mode' => 1],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5, 'mode' => 1],
+						['solved' => 1, 'seconds' => 12, 'gain' => 5, 'mode' => 1],
+						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'mode' => 1, 'misplays' => 1],
+					],
+				],
+				['sets' => [['name' => 'Test Set', 'num' => 2]]],  // No attempts
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
+		$browser->get("sets/view/{$setId}");
+
+		// Click Accuracy tab
+		$accuracyTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
+		$accuracyTab->click();
+		sleep(1);
+
+		// Check accuracy buttons are visible
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$this->assertCount(2, $accuracyButtons);
+
+		// Problem 1 should show "3/1" (3 solved, 1 failed)
+		$this->assertTrue($accuracyButtons[0]->isDisplayed());
+		$this->assertSame('3/1', trim($accuracyButtons[0]->getText()), 'Problem 1 accuracy should be 3/1');
+
+		// Problem 2 should show "-" (no attempts)
+		$this->assertTrue($accuracyButtons[1]->isDisplayed());
+		$this->assertSame('-', trim($accuracyButtons[1]->getText()), 'Problem 2 accuracy should be - (no attempts)');
+
+		// Order numbers and time should be hidden
+		$orderButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		foreach ($orderButtons as $btn)
+			$this->assertFalse($btn->isDisplayed(), 'Order numbers should be hidden on Accuracy tab');
+	}
+
+	/**
+	 * Test set view Time tab shows MINIMUM (best) solve time in seconds
+	 * As per UI description: "The time (in seconds) for solving is displayed."
+	 */
+	public function testSetViewTimeTabShowsMinimumSolveTime()
+	{
+		// Create ONE set with TWO tsumegos
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'other-tsumegos' => [
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 1]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'mode' => 1],
+						['solved' => 1, 'seconds' => 20, 'gain' => 5, 'mode' => 1],
+						['solved' => 1, 'seconds' => 30, 'gain' => 5, 'mode' => 1],
+					],
+				],
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 2]],
+					'attempts' => [
+						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'mode' => 1, 'misplays' => 1],
+					],
+				],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
+		$browser->get("sets/view/{$setId}");
+
+		// Click Time tab - use specific selector to avoid Time Mode menu link
+		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
+		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
+		sleep(1);
+
+		// Check time buttons are visible
+		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$this->assertCount(2, $timeButtons);
+
+		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)
+		$this->assertTrue($timeButtons[0]->isDisplayed());
+		$this->assertSame('10s', trim($timeButtons[0]->getText()), 'Problem 1 time should be 10s (best time)');
+
+		// Problem 2 should show "-" (no successful solves)
+		$this->assertTrue($timeButtons[1]->isDisplayed());
+		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2 time should be - (no successful solves)');
+	}
+
 }
