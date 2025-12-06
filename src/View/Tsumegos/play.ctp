@@ -2083,7 +2083,9 @@ if (
 						}
 					}
 				}
-			} else {//mode 2 correct
+			}
+			else
+			{//mode 2 correct
 				besogoMode2Solved = true;
 				if(!noXP) {
 					sequence += "correct|";
@@ -2094,30 +2096,36 @@ if (
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
 					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
-					if(xpReward>userNextlvl){
+					if(xpReward>userNextlvl)
+					{
 						xpReward = userNextlvl;
 						ulvl = ulvl + 1;
-	}
+					}
 					runXPBar(true);
-					if(levelBar==1){
+					if(levelBar==1)
+					{
 						runXPBar(true);
 						runXPNumber("account-bar-xp", userXP, xpReward, 1000, ulvl);
-	}
-					if(levelBar==2){
+					}
+					if(levelBar==2)
+					{
 						runXPBar(true);
 						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, ulvl);
-	}
+					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
 					noXP = true;
-	}
-	}
+				}
+			}
 			toggleBoardLock(true);
 			displaySettings();
-		} else {//mode 1 and 3 incorrect
+		}
+		else //incorrect
+		{
+			accountWidget.animate(false);
 			misplays++;
 			toggleBoardLock(true);
-			if(mode!=2)
+			if (mode != 2)
 			{
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
@@ -2133,8 +2141,6 @@ if (
 					toggleBoardLock(true);
 				}
 				noLastMark = true;
-				if (mode==1 && misplays==0)
-					runXPBar(false);
 				if(!noXP)
 				{
 					if(!freePlayMode)
@@ -2180,11 +2186,6 @@ if (
 					hoverLocked = false;
 					tryAgainTomorrow = true;
 					freePlayMode = true;
-					if(levelBar==2)
-					{
-						runXPBar(false);
-						runXPNumber("account-bar-xp", <?php echo Auth::getWithDefault('rating', 0); ?>, elo2, 1000, <?php echo Auth::getWithDefault('level', 0); ?>);
-					}
 					userElo = Math.round(elo2);
 				}
 			}

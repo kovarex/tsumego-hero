@@ -11,15 +11,7 @@ class AccountWidget
 		{
 
 		}
-		elseif (Util::getCookie('levelBar') == 1)
-		{
-			$textBarInMenu = "Rating Bar";
-			$barClassname = 'xp-bar-fill-c1';
-			$accountBarClassname = 'account-bar-level';
-			$barRatio = Auth::getUser()['xp'] / Level::getXPForNext(Auth::getUser()['level']);
-			$barText = 'Level ' . Auth::getUser()['level'];
-		}
-		else
+		elseif (Util::getCookie('showInAccountWidget') == 'rating')
 		{
 			$textBarInMenu = "Level Bar";
 			$barClassname = 'xp-bar-fill-c2';
@@ -30,6 +22,14 @@ class AccountWidget
 			$rankSize = $nextRank - $rankStart;
 			$barRatio = (Auth::getUser()['rating'] - $rankStart) / $rankSize;
 			$barText = Rating::getReadableRankFromRating(Auth::getUser()['rating']);
+		}
+		else
+		{
+			$textBarInMenu = "Rating Bar";
+			$barClassname = 'xp-bar-fill-c1';
+			$accountBarClassname = 'account-bar-level';
+			$barRatio = Auth::getUser()['xp'] / Level::getXPForNext(Auth::getUser()['level']);
+			$barText = 'Level ' . Auth::getUser()['level'];
 		}
 
 		echo '<div id="account-bar-wrapper" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
@@ -82,7 +82,7 @@ class AccountWidget
 					rating: " . Auth::getUser()['rating'] .",
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
-					show: '" . (Util::getCookie('levelBar') == 1 ? 'level' : 'rating') . "'});";
+					show: '" . (Util::getCookie('showInAccountWidget') == 'rating' ? 'rating' : 'level') . "'});";
 		else
 			echo "null;";
 	}

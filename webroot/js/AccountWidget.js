@@ -94,18 +94,18 @@ class AccountWidget
 
 	switchBarInMenu()
 	{
-		if(this.show == 'level')
-		{
-			this.textBarInMenu.innerHTML = 'Level Bar';
-			this.show = 'rating';
-			setCookie('levelBar', 2);
-		}
-		else
+		if(this.show == 'rating')
 		{
 			this.textBarInMenu.innerHTML = 'Rating Bar';
 			this.show = 'level';
-			setCookie('levelBar', 1);
 		}
+		else
+		{
+			this.textBarInMenu.innerHTML = 'Level Bar';
+			this.show = 'rating';
+		}
+		setCookie('showInAccountWidget', this.show);
+
 		this.setup();
 	}
 
@@ -119,6 +119,7 @@ class AccountWidget
 			while (this.checkLevelUp());
 		}
 		this.xpIncreaseFx.style.display = 'inline-block';
+		this.setup();
 		setTimeout(() => {this.xpIncreaseFx.style.display = "none";}, 1000);
 	}
 
