@@ -9,7 +9,7 @@ class XPForNextCalculator
 				return;
 	}
 
-	public function section($level, $to, $jump, ): bool
+	public function section($level, $to, $jump): bool
 	{
 		$steps = min($to, $level) - $this->from;
 		$this->result += $steps * $jump;

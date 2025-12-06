@@ -417,6 +417,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			';
 		$xpBonus += $achievementUpdate[$i][4];
 		}
+	}
 	?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS(); ?>

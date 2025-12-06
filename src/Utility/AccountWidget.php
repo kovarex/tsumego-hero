@@ -1,15 +1,21 @@
 <?php
+
 class AccountWidget
 {
 	// to avoid flickering, I need to setup the original values also directly in the html
 	// as the javascript update is too late and it would "flicker" when the page is begin loaded
-	static public function render()
+	public static function render()
 	{
 		if(!Auth::isLoggedIn())
 			return;
 		if (Auth::isInTimeMode())
 		{
-
+			$barClassname = '';
+			$barRatio = 1;
+			$accountBarClassname = '';
+			$barText = '';
+			$textBarInMenu = '';
+			$modeSelectorClass = '';
 		}
 		elseif (Util::getCookie('showInAccountWidget') == 'rating')
 		{
@@ -37,12 +43,12 @@ class AccountWidget
 		echo '<div id="account-bar-wrapper" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				  <div id="account-bar">
 						<div id="account-bar-user" class="account-bar-user-class">
-							<a href="/users/view/'.Auth::getUserID().'">
-								'.Auth::getUser()['name'].'
+							<a href="/users/view/' . Auth::getUserID() . '">
+								' . Auth::getUser()['name'] . '
 							</a>
 						</div>
 						<div id="xp-bar">
-							  <div id="xp-bar-fill" class="'.$barClassname.'" style="width: ' . $barRatio * 100 .'%">
+							  <div id="xp-bar-fill" class="' . $barClassname . '" style="width: ' . $barRatio * 100 . '%">
 									<div id="xp-increase-fx" style="display:none;">
 										<div id="xp-increase-fx-flicker">
 											<div class="xp-increase-glow1"></div>
@@ -59,11 +65,11 @@ class AccountWidget
 					</div>
 				</div>
 			<div id="heroProfile" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
-				<li><a href="/users/view/'.Auth::getUserID().'">Profile</a></li>
+				<li><a href="/users/view/' . Auth::getUserID() . '">Profile</a></li>
 			</div>';
 
 		echo '<div id="heroBar" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
-				<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">'.$textBarInMenu.'</a></li>
+				<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">' . $textBarInMenu . '</a></li>
 			</div>
 			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
@@ -72,16 +78,16 @@ class AccountWidget
 				<li><a href="/users/logout">Sign Out</a></li>
 			</div>';
 		if (!Auth::isInTimeMode())
-			echo '<div id="modeSelector" class="'. $modeSelectorClass .'" onclick="accountWidget.switchBarInMenu();"></div>';
+			echo '<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
 	}
 
-	static public function renderJS()
+	public static function renderJS()
 	{
 		echo "var accountWidget =";
 		if (Auth::isLoggedIn())
 			echo " new AccountWidget(
 				{
-					rating: " . Auth::getUser()['rating'] .",
+					rating: " . Auth::getUser()['rating'] . ",
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
 					show: '" . (Util::getCookie('showInAccountWidget') == 'rating' ? 'rating' : 'level') . "'});";
