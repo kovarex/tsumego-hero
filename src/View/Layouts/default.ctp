@@ -417,11 +417,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			';
 		$xpBonus += $achievementUpdate[$i][4];
 		}
-	if (Auth::getUser()['xp']+ $xpBonus >= Level::getXPForNext(Auth::getUser()['level'])) {
-		$increaseValue = 100;
-	} else
-		$increaseValue = 50;
-	}
 	?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS(); ?>
@@ -470,9 +465,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	}
 
 	setCookie("lightDark", "<?php echo $lightDark; ?>");
-	<?php if(Auth::isLoggedIn()){ ?>
-	setCookie("levelBar", "<?php echo $levelBar; ?>");
-	<?php } ?>
 	setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
 	setCookie("lastProfileRight", "<?php echo $lastProfileRight; ?>");
 	setCookie("type", "0");
