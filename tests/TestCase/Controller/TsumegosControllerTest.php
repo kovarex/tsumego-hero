@@ -200,6 +200,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains("Try again tomorrow", $browser->driver->getPageSource());
 		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
 		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
-		$this->checkPlayNavigationButtons($browser, 1, $context, function($index) { return 0; }, function($index) { return 1;}, 0, 'F');
+		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return 0; }, function ($index) { return 1;}, 0, 'F');
 	}
 }
