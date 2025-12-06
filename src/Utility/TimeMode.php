@@ -148,7 +148,7 @@ class TimeMode
 				'tsumego_id' => $previousTsumego['Tsumego']['id'],
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
 		if (!$currentAttempt)
-			throw new Exception("The tsumego is not in the current time mode session.");
+			return; // this tsumego is not related to our time mode session, we ignore it
 		$timeout = Util::clearCookie('timeout');
 		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = self::deduceAttemptStatus($result, $timeout);
 		$seconds = $timeout ? $this->overallSecondsToSolve : Decoder::decodeSeconds($previousTsumego);

@@ -1,7 +1,7 @@
 :root
 {
     --text-color: black;
-	--text-softer-color: grey;
+	--text-softer-color: #666666;
 	--link-color: #0000EE;
 	--current-border-color: #111;
 	--dark-button-icon: url("/img/light-icon1x.png");
@@ -14,4 +14,9 @@
 	--status-v-color: #2d98e0;
 	--status-n-color: #7f8287;
 	--status-g-color: #d7e062;
+	--paginator-button-text-color: #333;
+	--active-paginator-button-background-color: #333;
+	--active-paginator-button-text-color: #fff;
+	--paginator-info-text-color: #666;
+	--admin-text-color: #1010EE;
 }

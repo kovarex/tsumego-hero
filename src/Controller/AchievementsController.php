@@ -7,8 +7,8 @@ class AchievementsController extends AppController
 	 */
 	public function index()
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Achievements');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementStatus');
 		$existingAs = [];
 		$unlockedCounter2 = 0;
@@ -55,8 +55,8 @@ class AchievementsController extends AppController
 	 */
 	public function view($id = null)
 	{
-		$this->Session->write('page', 'user');
-		$this->Session->write('title', 'Tsumego Hero - Achievements');
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');

@@ -35,17 +35,14 @@ class PaginationHelper extends AppHelper
 
 		// Style variables for easy customization
 		$containerStyle = 'margin:15px 0; text-align:center;';
-		$infoStyle = 'color:#666; margin-right:10px;';
-		$linkStyle = 'display:inline-block; margin:0 2px; padding:5px 10px; border:1px solid #ccc; text-decoration:none; color:#333; border-radius:3px;';
-		$activeStyle = 'display:inline-block; margin:0 2px; padding:5px 10px; background:#333; color:#fff; border:1px solid #333; border-radius:3px;';
 		$ellipsisStyle = 'margin:0 5px; color:#999;';
 
 		$output = '<div id="' . $divId . '" style="' . $containerStyle . '">';
-		$output .= '<span style="' . $infoStyle . '">Page ' . $currentPage . ' of ' . $totalPages . '</span>';
+		$output .= '<span class="paginator-info">Page ' . $currentPage . ' of ' . $totalPages . '</span>';
 
 		// Previous button
 		if ($currentPage > 1)
-			$output .= '<a style="' . $linkStyle . '" href="' . $baseQuery . $paramName . '=' . ($currentPage - 1) . $anchorId . '">« Previous</a>';
+			$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . ($currentPage - 1) . $anchorId . '">« Previous</a>';
 
 		// Show page numbers with reduced range for tighter pagination
 		$pages = [];
@@ -64,15 +61,15 @@ class PaginationHelper extends AppHelper
 			if ($page > $lastPage + 1)
 				$output .= '<span style="' . $ellipsisStyle . '">...</span>';
 			if ($page == $currentPage)
-				$output .= '<span style="' . $activeStyle . '">' . $page . '</span>';
+				$output .= '<span class="active-paginator-link">' . $page . '</span>';
 			else
-				$output .= '<a style="' . $linkStyle . '" href="' . $baseQuery . $paramName . '=' . $page . $anchorId . '">' . $page . '</a>';
+				$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . $page . $anchorId . '">' . $page . '</a>';
 			$lastPage = $page;
 		}
 
 		// Next button
 		if ($currentPage < $totalPages)
-			$output .= '<a style="' . $linkStyle . '" href="' . $baseQuery . $paramName . '=' . ($currentPage + 1) . $anchorId . '">Next »</a>';
+			$output .= '<a class="paginator-link" href="' . $baseQuery . $paramName . '=' . ($currentPage + 1) . $anchorId . '">Next »</a>';
 
 		$output .= '</div>';
 		return $output;

@@ -19,6 +19,7 @@ class CronController extends AppController
 		self::publish();
 		$this->dailyUsersReset();
 		$this->updatePopularTags();
+		$this->updateSolvedCounts();
 
 		$this->response->statusCode(200);
 		return $this->response;
@@ -153,7 +154,7 @@ WHERE
 		ClassRegistry::init('AchievementCondition')->create();
 		$achievementCondition = [];
 		$achievementCondition['AchievementCondition']['user_id'] = $userOfTheDay['User']['id'];
-		$achievementCondition['AchievementCondition']['set_id'] = 0;
+		$achievementCondition['AchievementCondition']['set_id'] = null;
 		$achievementCondition['AchievementCondition']['category'] = 'uotd';
 		$achievementCondition['AchievementCondition']['value'] = 1;
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
@@ -212,5 +213,17 @@ JOIN (
     LIMIT " . Tag::$POPULAR_COUNT . "
 ) AS top_tags ON tag.id = top_tags.tag_id
 SET tag.popular = 1;");
+	}
+
+	private static function updateSolvedCounts()
+	{
+		Util::query("UPDATE user u
+LEFT JOIN (
+    SELECT user_id, COUNT(*) AS cnt
+    FROM tsumego_status
+    WHERE status IN ('S', 'W', 'C', 'X')
+    GROUP BY user_id
+) ts ON ts.user_id = u.id
+SET u.solved = COALESCE(ts.cnt, 0)");
 	}
 }

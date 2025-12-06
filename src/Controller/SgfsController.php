@@ -7,8 +7,8 @@ class SgfsController extends AppController
 	 */
 	public function index()
 	{
-		$this->Session->write('title', 'Tsumego Hero');
-		$this->Session->write('page', 'play');
+		$this->set('_title', 'Tsumego Hero');
+		$this->set('_page', 'play');
 		$sgfs = $this->Sgf->find('all');
 		if (!$sgfs)
 			$sgfs = [];
@@ -22,7 +22,7 @@ class SgfsController extends AppController
 	 */
 	public function view($id = null)
 	{
-		$this->Session->write('page', 'play');
+		$this->set('_page', 'play');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('User');
@@ -58,7 +58,7 @@ class SgfsController extends AppController
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
 		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
-		$this->Session->write('title', 'Upload History of ' . $name);
+		$this->set('_title', 'Upload History of ' . $name);
 
 		if (isset($this->params['url']['user']))
 		{

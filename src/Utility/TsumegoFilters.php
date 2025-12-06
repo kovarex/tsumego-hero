@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Preferences', 'Utility');
+
 class TsumegoFilters
 {
 	public function __construct(?string $newQuery = null)
@@ -9,37 +11,38 @@ class TsumegoFilters
 			$this->query = $newQuery;
 			return;
 		}
-		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
-		$this->query = self::processItem('query', 'topics', $userContribution, null, $newQuery);
-		$this->collectionSize = self::processItem('collection_size', '200', $userContribution);
-		$this->sets = self::processItem('filtered_sets', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
+
+		$this->query = self::processItem('query', 'topics', null, $newQuery);
+		$this->collectionSize = (int) self::processItem('collection_size', '200');
+		$this->sets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		$this->setIDs = [];
 		foreach ($this->sets as $set)
 			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]])['Set']['id'];
 
-		$this->ranks = self::processItem('filtered_ranks', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
-		$this->tags = self::processItem('filtered_tags', [], $userContribution, function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$this->ranks = self::processItem('filtered_ranks', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$this->tags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		$this->tagIDs = [];
 		foreach ($this->tags as $tag)
 			$this->tagIDs[] = ClassRegistry::init('Tag')->findByName($tag)['Tag']['id'];
-
-		if ($userContribution)
-			ClassRegistry::init('UserContribution')->save($userContribution);
 	}
 
-	private static function processItem(string $name, mixed $default, &$userContribution, $processToResult = null, ?string $newValue = null)
+	/**
+	 * Process a preference item with optional transformation and new value override.
+	 *
+	 * @param string $name The preference key
+	 * @param mixed $default Default value if not set
+	 * @param callable|null $processToResult Optional callback to transform the stored string value
+	 * @param string|null $newValue Optional new value to set
+	 * @return mixed The processed value
+	 */
+	private static function processItem(string $name, mixed $default, $processToResult = null, ?string $newValue = null)
 	{
-		$stringResult = '';
-		if ($userContribution)
-		{
-			if ($value = $userContribution['UserContribution'][$name])
-				$stringResult = $value;
-		}
-		elseif (CakeSession::check('loggedOff_' . $name))
-			$stringResult = CakeSession::read('loggedOff_' . $name);
+		// Get current value from Preferences (handles both logged-in and guest storage)
+		$stringResult = Preferences::get($name, '');
 
+		// Check for cookie override (used for filter links like /topics?filtered_sets=SetName)
 		if (!empty($_COOKIE[$name]))
 		{
 			$stringResult = $_COOKIE[$name];
@@ -50,17 +53,18 @@ class TsumegoFilters
 			}
 		}
 
+		// Apply new value if provided
 		if ($newValue)
 			$stringResult = $newValue;
 
-		if ($userContribution)
-			$userContribution['UserContribution'][$name] = $stringResult;
-		else
-			CakeSession::write('loggedOff_' . $name, $stringResult);
+		// Save back to preferences if value changed or was overridden
+		Preferences::set($name, $stringResult);
 
+		// Return default if empty
 		if (!$stringResult)
 			return $default;
 
+		// Apply transformation if provided
 		return $processToResult ? $processToResult($stringResult) : $stringResult;
 	}
 
@@ -69,9 +73,9 @@ class TsumegoFilters
 		if ($this->query == 'topics')
 			return $set['Set']['title'];
 		if ($this->query == 'difficulty')
-			return CakeSession::read('lastSet');
+			return $_COOKIE['lastSet'] ?? 'Tsumego';
 		if ($this->query == 'tags')
-			return CakeSession::read('lastSet');
+			return $_COOKIE['lastSet'] ?? 'Tsumego';
 
 		if ($this->query == 'favorites')
 			return 'Favorites';
@@ -83,9 +87,9 @@ class TsumegoFilters
 		if ($this->query == 'topics')
 			return $set['Set']['id'];
 		if ($this->query == 'difficulty')
-			return CakeSession::read('lastSet');
+			return $_COOKIE['lastSet'] ?? 'favorites';
 		if ($this->query == 'tags')
-			return CakeSession::read('lastSet');
+			return $_COOKIE['lastSet'] ?? 'favorites';
 
 		if ($this->query == 'favorites')
 			return 'favorites';
@@ -94,10 +98,7 @@ class TsumegoFilters
 
 	public function setQuery($query)
 	{
-		$userContribution = Auth::isLoggedIn() ? ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]) : null;
-		$this->query = self::processItem('query', 'topics', $userContribution, null, $query);
-		if ($userContribution)
-			ClassRegistry::init('UserContribution')->save($userContribution);
+		$this->query = self::processItem('query', 'topics', null, $query);
 	}
 
 	public string $query;

@@ -8,19 +8,23 @@ class TestCaseWithAuth extends ControllerTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		CakeSession::destroy();
+		// Clear auth state
+		Auth::logout();
+		unset($_COOKIE['hackedLoggedInUserID']);
 	}
 
 	public function login($username)
 	{
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']]);
+		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $username]]);
 		$this->assertNotNull($user);
-		CakeSession::write('loggedInUserID', $user['User']['id']);
+		$_COOKIE['hackedLoggedInUserID'] = $user['User']['id'];
+		Auth::init();
 	}
 
 	public function logout()
 	{
-		CakeSession::destroy();
+		Auth::logout();
+		unset($_COOKIE['hackedLoggedInUserID']);
 	}
 
 	public function setLoggedIn(bool $loggedIn)
@@ -33,9 +37,9 @@ class TestCaseWithAuth extends ControllerTestCase
 
 	public function testLogin()
 	{
-		$this->assertFalse(CakeSession::check('loggedInUserID'));
+		$this->assertFalse(Auth::isLoggedIn());
 		$this->login('kovarex');
-		$this->assertTrue(CakeSession::check('loggedInUserID'));
+		$this->assertTrue(Auth::isLoggedIn());
 	}
 
 	public function getStringDom()

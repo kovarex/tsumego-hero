@@ -69,9 +69,9 @@ class DATABASE_CONFIG {
 	public $default = [
 		'datasource' => 'Database/Mysql',
 		'persistent' => false,
-		'host' => 'db',
-		'login' => 'db',
-		'password' => 'db',
+		'host' => 'template_db_host',
+		'login' => 'template_db_user',
+		'password' => 'template_db_password',
 		'database' => 'db',
 		'prefix' => '',
 		'encoding' => 'utf8',
@@ -98,5 +98,4 @@ class DATABASE_CONFIG {
 		'prefix' => '',
 		'encoding' => 'utf8',
 	];
-
 }

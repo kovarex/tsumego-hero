@@ -48,12 +48,15 @@ class ContextPreparator
 	{
 		if (!$user)
 		{
-			CakeSession::destroy();
+			Auth::logout();
+			unset($_COOKIE['hackedLoggedInUserID']);
 			return;
 		}
 		$this->user = $this->prepareUser($user);
-		CakeSession::write('loggedInUserID', $this->user['id']);
-		assert(CakeSession::check('loggedInUserID'));
+
+		// Set hackedLoggedInUserID for test environment auth
+		$_COOKIE['hackedLoggedInUserID'] = $this->user['id'];
+
 		Auth::init();
 		// Achievements popups can get into the way when testing, once we want to test achievements
 		// we can make this command conditional
@@ -69,6 +72,7 @@ class ContextPreparator
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
 		$user['rating'] = Util::extract('rating', $userInput) ?: 1500;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
+		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = 0;
 		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
 		$user['daily_solved'] = Util::extract('daily_solved', $userInput) ?: 0;
