@@ -99,7 +99,7 @@ echo $this->fetch('script');
 <script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
-<script type="text/javascript" src="/js/util.js?v=8"></script>
+<script type="text/javascript" src="/js/util.js?v=9"></script>
 <script type="text/javascript" src="/js/Rating.js?v=1"></script>
 <script type="text/javascript" src="/js/AccountWidget.js?v=1"></script>
 <script src="/js/dark.js?v=<?php echo filemtime(WWW_ROOT . 'js/dark.js'); ?>"></script>
