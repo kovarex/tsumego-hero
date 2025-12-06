@@ -38,8 +38,13 @@
 Configure::write('debug', 0);
 Configure::write('Cache.disable', true);
 
+// Enable debug mode for DDEV development, but NOT for test subdomain
 if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site')) {
-	Configure::write('debug', 2);
+	// test.tsumego.ddev.site should remain in production mode (debug=0)
+	// so AssetCompress serves static files instead of using controller routes
+	if (!str_starts_with($_SERVER['SERVER_NAME'], 'test.')) {
+		Configure::write('debug', 2);
+	}
 }
 
 /**

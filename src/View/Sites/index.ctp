@@ -1,7 +1,6 @@
-<link rel="stylesheet" type="text/css" href="/css/home-themes.css?v=1.0">
 <?php
-	$highestLeft = 19;
-	$highestRight = 17;
+$highestLeft = 19;
+$highestRight = 17;
 ?>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<div class="homeRight">

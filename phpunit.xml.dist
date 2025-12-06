@@ -19,6 +19,7 @@
     <groups>
         <exclude>
             <group>apache-only</group>
+            <group>ci-only</group>
         </exclude>
     </groups>
     <coverage>

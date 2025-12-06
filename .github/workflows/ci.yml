@@ -90,6 +90,18 @@ jobs:
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
           skip_checkout: true
 
+      - name: Setup tmp directories
+        run: |
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
+          mkdir -p webroot/cache_css webroot/cache_js
+          chmod -R 777 tmp webroot/cache_css webroot/cache_js
+
+      - name: Build AssetCompress assets
+        run: |
+          ./bin/cake AssetCompress.AssetCompress build
+          echo "Built AssetCompress assets:"
+          ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
+
       - name: Setup database config
         run: |
           cat > config/database.php << 'EOF'
@@ -124,12 +136,7 @@ jobs:
               ];
           }
           EOF
-          cp config/core.local.example.php config/core.local.php
-
-      - name: Setup tmp directories
-        run: |
-          mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
-          chmod -R 777 tmp
+          cp .github/ci/core.local.php config/core.local.php
 
       - name: Import database schema
         run: |
@@ -138,7 +145,8 @@ jobs:
       - name: Start built-in PHP server
         run: |
           mkdir -p /tmp/coverage
-          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot > server.log 2>&1 &
+          # Use router script to handle AssetCompress dispatcher filter routes
+          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           sleep 3
 
       - name: Start Caddy HTTPS reverse proxy
@@ -160,8 +168,9 @@ jobs:
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
-          mkdir -p coverage
-          ./vendor/bin/phpunit --exclude-group apache-only --coverage-php /tmp/coverage/phpunit.cov
+          mkdir -p /tmp/coverage
+          # Run all tests (excluding apache-only) with coverage in both formats
+          vendor/bin/phpunit --exclude-group apache-only --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php
@@ -178,4 +187,4 @@ jobs:
         run: composer stan -- --error-format=github
 
       - name: Run PHPCS
-        run: composer cs-check
+        run: composer cs-check -- --diff

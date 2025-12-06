@@ -1,4 +1,7 @@
-	<?php $counter = 0; ?>
+	<?php
+
+$counter = 0;
+?>
 	<div align="center">
 	<p class="title">
 		<br>

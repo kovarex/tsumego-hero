@@ -23,6 +23,20 @@
 
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
+
+// AssetCompress routes for dynamically serving built assets
+Router::connect('/cache_css/:name', [
+	'plugin' => 'AssetCompress',
+	'controller' => 'AssetCompress',
+	'action' => 'get'
+], ['name' => '[a-z0-9\-\.]+']);
+
+Router::connect('/cache_js/:name', [
+	'plugin' => 'AssetCompress',
+	'controller' => 'AssetCompress',
+	'action' => 'get'
+], ['name' => '[a-z0-9\-\.]+']);
+
 /**
  * Here, we are connecting '/' (base path) to controller called 'Pages',
  * its action called 'display', and we pass a param to select the view file
