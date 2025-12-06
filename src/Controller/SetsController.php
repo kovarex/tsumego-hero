@@ -787,10 +787,9 @@ ORDER BY total_count DESC, partition_number";
 	{
 		if (empty($tsumegoButtons))
 			return null;
-		if ($firstUnsolvedButton = array_find((array)$tsumegoButtons, function($tsumegoButton)
-			{
-				return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
-			}))
+		if ($firstUnsolvedButton = array_find((array) $tsumegoButtons, function ($tsumegoButton) {
+			return !TsumegoUtil::isSolvedStatus($tsumegoButton->status);
+		}))
 			return $firstUnsolvedButton->setConnectionID;
 		return $tsumegoButtons[0]->setConnectionID;
 	}
