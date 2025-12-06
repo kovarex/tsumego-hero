@@ -148,5 +148,12 @@ class Auth
 		return Auth::isInLevelMode() || Auth::isInRatingMode();
 	}
 
+	public static function getRemainingHealth()
+	{
+		if (!Auth::isLoggedIn())
+			return 1000;
+		return Util::getHealthBasedOnLevel(Auth::getUser()['level']) - Auth::getUser()['damage'];
+	}
+
 	private static $user = null;
 }

@@ -186,4 +186,20 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('function ccIn', $this->view);
 		$this->assertTextContains('showCoordPopup', $this->view);
 	}
+
+	public function testFailingWithLastHeartLocksBoardAndShowsTryAgainTomorrow()
+	{
+		// Create a tsumego with a comment containing coordinates
+		$context = new ContextPreparator([
+			'user' => ['premium' => true, 'health' => 1], // Admin so comments are visible
+			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
+		]);
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->playWithResult('F');
+		$this->assertTextContains("Try again tomorrow", $browser->driver->getPageSource());
+		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
+		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
+		$this->checkPlayNavigationButtons($browser, 1, $context, function($index) { return 0; }, function($index) { return 1;}, 0, 'F');
+	}
 }
