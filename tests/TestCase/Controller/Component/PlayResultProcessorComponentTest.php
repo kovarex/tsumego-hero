@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
+
 App::uses('Constants', 'Utility');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
@@ -509,5 +511,50 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$this->assertSame($context->user['damage'], 2); // damage was applied
 		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
+	}
+
+	/**
+	 * CRITICAL TEST: Simulates the user's bug report scenario.
+	 * User fails a puzzle, then clicks htmx buttons (like issue filter),
+	 * and rating should NOT change from the htmx request.
+	 *
+	 * Without the htmx fix, the htmx request would trigger checkPreviousPlay
+	 * and potentially process the fail result at an unexpected time.
+	 */
+	public function testHtmxActionsAfterFailDoNotTriggerRatingDrop(): void
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'rating' => 1500,
+				'mode' => Constants::$RATING_MODE],
+			'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		$originalRating = $context->user['rating'];
+
+		$browser = Browser::instance();
+
+		// Load the puzzle page
+		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+
+		// Fail the puzzle - this sets cookies but doesn't immediately process
+		$browser->playWithResult('F');
+
+		// At this point, cookies are set but result hasn't been processed yet
+		// because we're still on the same page (no navigation)
+
+		// Make an htmx request using htmx.ajax() API
+		// This is exactly how htmx works internally - sends HX-Request header
+		$browser->driver->executeScript("
+			htmx.ajax('GET', '/tsumego-issues', { target: 'body' });
+		");
+		usleep(1500000); // Wait for htmx request to complete
+
+		// Rating should still be original - htmx shouldn't process the result
+		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);
+
+		// NOW navigate to a different page - THIS should process the result
+		$browser->get('/sets/index');
+
+		// NOW rating should have dropped
+		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
 	}
 }
