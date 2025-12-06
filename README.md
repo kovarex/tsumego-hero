@@ -33,6 +33,35 @@ These changes just had to be done, so the data structure we are working on is cl
 
 	setup/php-install.sh
 
+### Git Hooks Setup (Windows Users)
+
+This project uses git hooks to enforce code quality before commits:
+- **Executable bit check** - Prevents losing +x on shell scripts (Windows issue)
+- **PHP CS Fixer** - Auto-fixes code style on staged files
+- **PHPStan** - Catches type errors and bugs before commit
+
+**Hooks are automatically installed** when you run:
+
+	composer install
+	# or
+	composer update
+
+**Skip checks for WIP commits:**
+
+	git commit --no-verify -m "WIP: work in progress"
+	# or shorthand:
+	git commit -n -m "WIP: work in progress"
+
+**For Windows/WSL users:** To avoid losing executable bits on shell scripts:
+- Edit shell scripts (`.sh` files) via WSL Remote extension in VS Code
+- Or manually fix permissions before commit: `git update-index --chmod=+x <file>`
+
+The pre-commit hook will reject commits if:
+1. Shell scripts lose their executable bit
+2. PHPStan finds type errors (unless `--no-verify`)
+
+PHP CS Fixer auto-fixes code style and re-stages files automatically.
+
 ### ddev install
 - Copy .ddev.example/ folder to .ddev/
 
