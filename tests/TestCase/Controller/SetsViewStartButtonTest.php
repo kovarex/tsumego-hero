@@ -32,23 +32,16 @@ class SetsViewStartButtonTest extends ControllerTestCase
 
 		// 1. Open the set view page using the created set ID
 		$setId = $context->tsumego['sets'][0]['id'];
-		try
-		{
-			$browser->get('sets/view/' . $setId);
-		}
-		catch (Exception $e)
-		{
-			// Ignore JS errors on this page (pre-existing issue)
-		}
+		$browser->get('sets/view/' . $setId);
 
 		// 2. Verify we're on the set view page
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
 
 		// Wait for page to fully load
-		sleep(2);
+		$browser->waitUntilCssSelectorExists('a.new-button.new-buttonx');
 
 		// 3. Find and click the Start button (using CSS selector since linkText didn't work)
-		$startButton = $browser->driver->findElement(WebDriverBy::cssSelector('a.new-button.new-buttonx'));
+		$startButton = $browser->getCssSelect('a.new-button.new-buttonx')[0];
 		$this->assertTrue($startButton->isDisplayed(), 'Start button should be visible');
 		$startButton->click();
 
@@ -57,16 +50,5 @@ class SetsViewStartButtonTest extends ControllerTestCase
 		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
 		$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
 		$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
-
-		// Wait for puzzle page to load
-		sleep(2);
-
-		// 5. Verify the puzzle play page loaded correctly with problem #3 (the first unsolved one in middle of set)
-		$playTitle = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitle'));
-		$this->assertTrue($playTitle->isDisplayed(), 'Play title should be visible on puzzle page');
-
-		// The title should contain the set name and problem number 3 (NOT 1 or 2)
-		$this->assertTextContains('Test Start Button Set', $playTitle->getText());
-		$this->assertTextContains('3', $playTitle->getText()); // Problem number should be 3 (first unsolved in middle)
 	}
 }

@@ -107,13 +107,13 @@
 					if($tsumegoFilters->query == 'topics'){
 						if ($set['Set']['image'][2]!='-') {
 							echo '<td width="195px" style="vertical-align:top;"><div align="center">
-								<a href="/tsumegos/play/'.$set['Set']['t'].'">
+								<a href="/'.$startingSetConnectionID.'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 								</a></div></td>';
 						}else {
 							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center">
-								<a href="/tsumegos/play/'.$set['Set']['t'].'">
+								<a href="/'.$startingSetConnectionID.'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'" width="210">
 								</a></div></td>';
@@ -127,7 +127,7 @@
 							$lightDarkBorder = 'style="border:1px solid black"';
 						}
 						echo '<td width="195px" style="vertical-align:top;"><div '.$lightDarkImageBackground.' align="center">
-							<a href="/tsumegos/play/'.$set['Set']['t'].'">
+							<a href="/'.$startingSetConnectionID.'">
 							<img width="182" '.$lightDarkBorder.' src="/img/'. $set['Set']['image'].'"
 							alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 							</a></div></td>';
@@ -180,7 +180,7 @@
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/'.$set['Set']['t'].'">Start</a>';
+					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/'.$startingSetConnectionID.'">Start</a>';
 					?>
 				</div>
 			</td>
