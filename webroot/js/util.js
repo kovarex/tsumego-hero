@@ -68,7 +68,8 @@ class XPStatus
 			updateSprint(this.sprintRemainingSeconds, true);
 	}
 
-	getProgressDeletionMultiplier() {
+	getProgressDeletionMultiplier()
+	{
 		if (this.progressDeletionCount == 0)
 			return 1;
 		if (this.progressDeletionCount == 1)

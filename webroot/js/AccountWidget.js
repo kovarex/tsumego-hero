@@ -16,12 +16,12 @@ class AccountWidget
 		this.xp = xp;
 		this.level = level;
 		this.show = show;
-		this.bar = document.getElementById('xp-bar-fill')
+		this.bar = document.getElementById('xp-bar-fill');
 		this.barCaption = document.getElementById('account-bar-xp');
 		this.accountBar = document.getElementById('account-bar-user');
-		this.xpIncreaseFx = document.getElementById('xp-increase-fx')
+		this.xpIncreaseFx = document.getElementById('xp-increase-fx');
+		this.textBarInMenu = document.getElementById('textBarInMenu');
 
-		this.bar.style.webkitTransition = "all 1s ease";
 		this.bar.style.boxShadow = "";
 
 		this.setup();
@@ -96,19 +96,22 @@ class AccountWidget
 	{
 		if(this.show == 'level')
 		{
-			$("#textBarInMenu").text("Level Bar");
+			this.textBarInMenu.innerHTML = 'Level Bar';
 			this.show = 'rating';
+			setCookie('levelBar', 2);
 		}
 		else
 		{
-			$("#textBarInMenu").text("Rating Bar");
+			this.textBarInMenu.innerHTML = 'Rating Bar';
 			this.show = 'level';
+			setCookie('levelBar', 1);
 		}
 		this.setup();
 	}
 
 	animate(increase)
 	{
+		this.bar.style.webkitTransition = "all 1s ease";
 		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
 		if  (increase)
 		{
