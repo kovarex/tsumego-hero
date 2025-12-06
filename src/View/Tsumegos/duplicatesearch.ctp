@@ -1,6 +1,4 @@
 	<?php
-// Load preview board library for similar problem previews
-echo $this->AssetCompress->script('preview');
 ?>
 	<div align="center">
 	<p class="title">

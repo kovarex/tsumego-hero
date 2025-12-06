@@ -1,7 +1,4 @@
 <?php
-// Load preview board library for duplicate previews
-echo $this->AssetCompress->script('preview');
-
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';

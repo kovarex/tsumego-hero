@@ -1,6 +1,4 @@
 	<?php
-// Load preview board library for duplicate search results
-echo $this->AssetCompress->script('preview');
 
 $counter = 0;
 ?>
