@@ -1984,15 +1984,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$tsumegoStatusToRestCount++;
 		}
 
-		$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
+		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
 		$ta = $this->TsumegoAttempt->find('all', [
-			'limit' => 1000,
 			'order' => 'created DESC',
-			'conditions' => [
-				'user_id' => $id,
-			],
-		]);
+			'conditions' => ['user_id' => $id, 'created >' => $oldest]]);
 
 		$taBefore = '';
 		$graph = [];
@@ -2012,27 +2008,14 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 			$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
 			$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
-			if ($ta[$i]['TsumegoAttempt']['created'] >= $oldest)
-				if ($taBefore == $ta[$i]['TsumegoAttempt']['created'])
-					if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['s']++;
-					else
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['f']++;
-				else
-				{
-					$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
-					if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
-					{
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 1;
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
-					}
-					else
-					{
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
-						$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 1;
-					}
-					$taBefore = $ta[$i]['TsumegoAttempt']['created'];
-				}
+			if (!$taBefore == $ta[$i]['TsumegoAttempt']['created'])
+			{
+				$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
+				$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
+				$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
+				$taBefore = $ta[$i]['TsumegoAttempt']['created'];
+			}
+			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 's' : 'f']++;
 		}
 
 		$timeGraph = [];
