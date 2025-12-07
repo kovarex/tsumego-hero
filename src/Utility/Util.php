@@ -13,7 +13,6 @@ class Util
 		setcookie($name, $value, [
 			'expires'  => time() + 365 * 24 * 60 * 60,
 			'path'     => '/',
-			'domain'   => Util::getCookieDomain(),
 			'secure'   => true,
 			'httponly' => false,
 			'samesite' => 'Lax'
@@ -30,7 +29,6 @@ class Util
 			[
 				'expires'  => time() - 3600,
 				'path'     => '/',
-				'domain'   => self::getCookieDomain(),
 				'secure'   => true,
 				'httponly' => false,
 				'samesite' => 'Lax'

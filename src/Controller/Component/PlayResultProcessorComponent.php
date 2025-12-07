@@ -46,10 +46,16 @@ class PlayResultProcessorComponent extends Component
 		$previousStatusValue = $previousTsumegoStatus ? $previousTsumegoStatus['TsumegoStatus']['status'] : 'N';
 
 		$this->updateTsumegoAttempt($previousTsumego, $result);
+
+		// I need to save the original tsumego rating I calculated XP change for
+		// this is to avoid that rating gets changed, and the XP change calculation would
+		// be based on the changed rating, and would slightly differ from the promised change
+		$originalTsumegoRating = $previousTsumego['Tsumego']['rating'];
+
 		$this->processRatingChange($previousTsumego, $result, $previousStatusValue);
 		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
-		$this->processXpChange($previousTsumego, $result, $previousStatusValue);
+		$this->processXpChange($previousTsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->processErrorAchievement($result);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
@@ -241,7 +247,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::saveUser();
 	}
 
-	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void
+	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus, $originalTsumegoRating): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -254,7 +260,7 @@ class PlayResultProcessorComponent extends Component
 		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
 
 		$user = & Auth::getUser();
-		Level::addXPAsResultOfTsumegoSolving($user, TsumegoUtil::getXpValue($previousTsumego['Tsumego'], $multiplier));
+		Level::addXPAsResultOfTsumegoSolving($user, Rating::ratingToXP($originalTsumegoRating, $multiplier));
 	}
 
 	private function processErrorAchievement(array $result): void

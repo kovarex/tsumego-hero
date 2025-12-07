@@ -89,7 +89,13 @@ class Rating
 	}
 
 	// changes should be reflected in util.js
-	public static function ratingToXP($rating): float
+	public static function ratingToXP(float $rating, float $multiplier): int
+	{
+		$bla = intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
+		return intval(ceil(Rating::ratingToXPFloat($rating) * $multiplier));
+	}
+
+	public static function ratingToXPFloat(float $rating): float
 	{
 		if ($rating < 0)
 			return 1 + max(0, ($rating / 1000 + 0.9) * 3);

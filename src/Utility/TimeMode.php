@@ -19,9 +19,19 @@ class TimeMode
 			return;
 
 		// is TimeModeUtil::$PROBLEM_COUNT normally, but can be less when not enough problems found
-		$this->overallCount = ClassRegistry::init('TimeModeAttempt')->find('count', [
-			'conditions' => [
-				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id']]]);
+		$attempts =  ClassRegistry::init('TimeModeAttempt')->find('all', [
+			'conditions' => ['time_mode_session_id' => $this->currentSession['TimeModeSession']['id']]]);
+		foreach ($attempts as $attempt)
+		{
+			if ($attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
+				$this->successCount++;
+			elseif (
+				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_FAILED ||
+				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_SKIPPED ||
+				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT)
+				$this->failCount++;
+		}
+		$this->overallCount = count($attempts);
 
 		if ($this->overallCount == 0)
 		{
@@ -263,10 +273,30 @@ class TimeMode
 		return min(100 * (TimeModeUtil::$POINTS_RATIO_FOR_FINISHING + (1 - TimeModeUtil::$POINTS_RATIO_FOR_FINISHING) * $timeRatio), 100.0);
 	}
 
+	public function exportTimeModeInfo(): string
+	{
+		if (!$this->currentSession)
+			return 'null';
+		return 'new TimeModeState({' .
+			'rank: \'' . $this->getCurrentRank() . '\',' .
+			'failCount: ' . $this->failCount . ',' .
+			'successCount: ' . $this->successCount . ',' .
+			'overallCount: ' . $this->overallCount . '})';
+	}
+
+	public function getCurrentRank(): string
+	{
+		if (!$this->rank)
+			return '';
+		return $this->rank['TimeModeRank']['name'];
+	}
+
 	public $currentSession;
 	public $rank;
 	public $secondsToSolve; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
-	public $overallCount;
+	public $successCount = 0;
+	public $failCount = 0;
+	public $overallCount = 0;
 	public $currentOrder;
 }

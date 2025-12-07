@@ -2241,6 +2241,7 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
 		$this->set('hasFavs', $hasFavs);
+		$this->set('timeMode', $timeMode);
 		if (Auth::isLoggedIn())
 			Auth::saveUser();
 	}

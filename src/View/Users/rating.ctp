@@ -3,8 +3,7 @@
 
 <table border="0" width="100%">
 <tr>
-	<td width="23%" valign="top">
-	</td>
+	<td width="23%" valign="top"></td>
 	<td width="53%" valign="top">
 		<div align="center">
 		<br>
@@ -17,20 +16,19 @@
 		</div>
 	</td>
 	<td width="23%" valign="top">
-		<div align="right">	
-		</div>
+		<div align="right"></div>
 	</td>
 </table>
 
-	
+
 <table class="highscoreTable" border="0">
 	<tr>
-		<div align="center">	
+		<div align="center">
 				<p class="title">
 					Rating Highscore
-				<br><br> 
+				<br><br>
 				</p>
-				</div>
+		</div>
 	</tr>
 	<tr>
 		<!--<th width="55px"></th>-->
@@ -41,118 +39,33 @@
 		<th width="150px">Solved in rating mode</th>
 	</tr>
 	<?php
-		$place = 1;
-		for($i=0; $i<count($users); $i++){
-			if($users[$i]['User']['name']!='SaberRider' && $users[$i]['User']['name']!='test11' && $users[$i]['User']['rating']!=100 && $users[$i]['User']['rating']!=900){
-			
-			if(substr($users[$i]['User']['name'],0,3)=='g__' && $users[$i]['User']['external_id']!=null){
-				$users[$i]['User']['name'] = '<img class="google-profile-image" src="/img/google/'.$users[$i]['User']['picture'].'">'.substr($users[$i]['User']['name'],3);
-			}else{
-				if(strlen($users[$i]['User']['name'])>20) $users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
-			}
+		foreach ($users as $index => $user)
+		{
+			$user = $user['User'];
+			if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'])
+				$user['name'] = '<img class="google-profile-image" src="/img/google/' . $user['picture'] . '">' . substr($user['name'], 3);
+			elseif (strlen($user['name']) > 20)
+				$user['name'] = substr($user['name'], 0, 20);
 
-			$bgColor = '#dddddd';
-			$tableRowColor = 'color13';
 			$uType = '';
-			if($users[$i]['User']['premium']==1) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
-			else if($users[$i]['User']['premium']==2) $uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
-			
-			if($users[$i]['User']['rating']>=2900) $td = '9d';
-			elseif($users[$i]['User']['rating']>=2800) $td = '8d';
-			elseif($users[$i]['User']['rating']>=2700) $td = '7d';
-			elseif($users[$i]['User']['rating']>=2600) $td = '6d';
-			elseif($users[$i]['User']['rating']>=2500) $td = '5d';
-			elseif($users[$i]['User']['rating']>=2400) $td = '4d'; 
-			elseif($users[$i]['User']['rating']>=2300) $td = '3d';
-			elseif($users[$i]['User']['rating']>=2200) $td = '2d'; 
-			elseif($users[$i]['User']['rating']>=2100) $td = '1d';
-			elseif($users[$i]['User']['rating']>=2000) $td = '1k'; 
-			elseif($users[$i]['User']['rating']>=1900) $td = '2k';
-			elseif($users[$i]['User']['rating']>=1800) $td = '3k'; 
-			elseif($users[$i]['User']['rating']>=1700) $td = '4k';
-			elseif($users[$i]['User']['rating']>=1600) $td = '5k';
-			elseif($users[$i]['User']['rating']>=1500) $td = '6k';
-			elseif($users[$i]['User']['rating']>=1400) $td = '7k'; 
-			elseif($users[$i]['User']['rating']>=1300) $td = '8k';
-			elseif($users[$i]['User']['rating']>=1200) $td = '9k';
-			elseif($users[$i]['User']['rating']>=1100) $td = '10k';
-			elseif($users[$i]['User']['rating']>=1000) $td = '11k';
-			elseif($users[$i]['User']['rating']>=900) $td = '12k';
-			elseif($users[$i]['User']['rating']>=800) $td = '13k';
-			elseif($users[$i]['User']['rating']>=700) $td = '14k';
-			elseif($users[$i]['User']['rating']>=600) $td = '15k';
-			elseif($users[$i]['User']['rating']>=500) $td = '16k';
-			elseif($users[$i]['User']['rating']>=400) $td = '17k';
-			elseif($users[$i]['User']['rating']>=300) $td = '18k';
-			elseif($users[$i]['User']['rating']>=200) $td = '19k';
-			elseif($users[$i]['User']['rating']>=100) $td = '20k';
-			else $td = '21k';
-			
-			if($td=='9d') $tableRowColor = 'color9d';
-			elseif($td=='8d') $tableRowColor = 'color8d';
-			elseif($td=='7d') $tableRowColor = 'color7d';
-			elseif($td=='6d') $tableRowColor = 'color6d';
-			elseif($td=='5d') $tableRowColor = 'color5d';
-			elseif($td=='4d') $tableRowColor = 'color4d';
-			elseif($td=='3d') $tableRowColor = 'color3d';
-			elseif($td=='2d') $tableRowColor = 'color2d';
-			elseif($td=='1d') $tableRowColor = 'color1d';
-			elseif($td=='1k') $tableRowColor = 'color1k';
-			elseif($td=='2k') $tableRowColor = 'color2k';
-			elseif($td=='3k') $tableRowColor = 'color3k';
-			elseif($td=='4k') $tableRowColor = 'color4k';
-			elseif($td=='5k') $tableRowColor = 'color5k';
-			elseif($td=='6k') $tableRowColor = 'color6k';
-			elseif($td=='7k') $tableRowColor = 'color7k';
-			elseif($td=='8k') $tableRowColor = 'color8k';
-			elseif($td=='9k') $tableRowColor = 'color9k';
-			elseif($td=='10k') $tableRowColor = 'color10k';
-			elseif($td=='11k') $tableRowColor = 'color11k';
-			elseif($td=='12k') $tableRowColor = 'color12k';
-			elseif($td=='13k') $tableRowColor = 'color13k';
-			elseif($td=='14k') $tableRowColor = 'color14k';
-			elseif($td=='15k') $tableRowColor = 'color15k';
-			elseif($td=='16k') $tableRowColor = 'color16k';
-			elseif($td=='17k') $tableRowColor = 'color17k';
-			elseif($td=='18k') $tableRowColor = 'color18k';
-			elseif($td=='19k') $tableRowColor = 'color19k';
-			elseif($td=='20k') $tableRowColor = 'color20k';
-			else $tableRowColor = 'color20k';
-			echo '
-				<tr class="'.$tableRowColor.'">
-					<!--<td align="center"></td>-->
-					
-					<td align="center">
-						#'.$place.'
-					</td>
-					';
-						echo '<td width="225px" align="left">
-							'.$users[$i]['User']['name'].'
-						</td>';
-					echo '
-					<td width="90px">
-						'.$uType.'
-					</td>
-					
-					<td align="center">
-						'.$td.'
-					</td>
-					<td align="center">
-						'.round($users[$i]['User']['rating']).'
-					</td>
-					<td align="center">
-						'.$users[$i]['User']['solved2'].'
-					</td>
-				</tr>
-			';
-			$place++;
-		}
+			if ($user['premium'] == 1)
+				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
+			else if($user['premium'] == 2)
+				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
+
+			$rank = Rating::getRankFromRating($user['rating']);
+			$styleRank = Util::clampOptional($rank, Rating::getRankFromReadableRank('20k'), Rating::getRankFromReadableRank('9d'));
+			$tableRowColor = 'color' . Rating::getReadableRank($styleRank);
+
+			echo '<tr class="'.$tableRowColor.'">';
+			echo '<td align="center">#' . ($index + 1) . '</td>';
+			echo '<td width="225px" align="left">'.$user['name'].'</td>';
+			echo '<td width="90px">'.$uType.'</td>';
+			echo '<td align="center">' . Rating::getReadableRank($rank) . '</td>';
+			echo '<td align="center">'.round($user['rating']).'</td>';
+			echo '<td align="center">'.$user['solved2'].'</td>';
+			echo '</tr>';
 		}
 	?>
-	</table>
-	</div>
-	<br><br><br><br><br><br>
-
-	<script>
-	</script>
-
+</table>
+</div>

@@ -68,7 +68,8 @@ class XPStatus
 			updateSprint(this.sprintRemainingSeconds, true);
 	}
 
-	getProgressDeletionMultiplier() {
+	getProgressDeletionMultiplier()
+	{
 		if (this.progressDeletionCount == 0)
 			return 1;
 		if (this.progressDeletionCount == 1)
@@ -172,7 +173,7 @@ class XPStatus
 
 	getXPInternal(multiplier)
 	{
-		return ratingToXP(this.tsumegoRating) * multiplier;
+		return ratingToXP(this.tsumegoRating, multiplier);
 	}
 }
 
@@ -329,7 +330,13 @@ function calculateRatingChange(rating, opponentRating, result, modifier)
 	return modifier * (con * (result - Se) + bonus);
 }
 
-function ratingToXP(rating)
+// changes should be reflrected in Rating.php
+function ratingToXP(rating, multiplier)
+{
+	return Math.ceil(ratingToXPFloat(rating) * multiplier);
+}
+
+function ratingToXPFloat(rating)
 {
 	if (rating < 0)
 		return 1 + Math.max(0, (rating / 1000 + 0.9) * 3);
@@ -407,4 +414,41 @@ function makeAjaxCall(urlToCall, method)
 				alert("Ajax call returned: " + (xhr.responseText || "Unknown error"));
 		}
 	});
+}
+
+// this needs to be up to date with Level.php
+levelXPsections = [
+	[11, 10],
+	[19, 25],
+	[39, 50],
+	[69, 100],
+	[99, 150],
+	[100, 50000],
+	[101, 1150],
+	[10000, 0]];
+
+class XPForNextCalculator
+{
+	constructor(level)
+	{
+		this.from = 1;
+		this.result = 50;
+
+		for (const section of levelXPsections)
+			if (this.section(level, section[0], section[1]))
+				break;
+	}
+
+	section(level, to, jump)
+	{
+		const steps = Math.min(to, level) - this.from;
+		this.result += steps * jump;
+		this.from = to;
+		return level <= to;
+	}
+}
+
+function getXPForNextLevel(level)
+{
+	return new XPForNextCalculator(level).result;
 }

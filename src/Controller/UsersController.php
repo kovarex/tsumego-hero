@@ -1877,10 +1877,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('activate', $activate);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function rating()
+	public function rating(): void
 	{
 		$this->set('_page', 'ratingHighscore');
 		$this->set('_title', 'Tsumego Hero - Rating');
@@ -1894,14 +1891,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$this->User->save($ux);
 		}
 
-		$users = $this->User->find('all', [
-			'limit' => 1000,
-			'order' => 'rating DESC',
-			'conditions' => [
-				'NOT' => ['id' => [33, 34, 35]],
-			],
-		]);
-
+		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'rating DESC']);
 		$this->set('users', $users);
 	}
 

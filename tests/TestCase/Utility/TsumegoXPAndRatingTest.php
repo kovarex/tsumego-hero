@@ -157,9 +157,9 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 
 	public function testXPForRating()
 	{
-		$this->assertGreaterThan(0, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('30k')));
-		$this->assertGreaterThan(20, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5k')));
-		$this->assertGreaterThan(100, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5d')));
+		$this->assertGreaterThan(0, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('30k'), 1));
+		$this->assertGreaterThan(20, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5k'), 1));
+		$this->assertGreaterThan(100, Rating::ratingToXP(Rating::getRankMinimalRatingFromReadableRank('5d'), 1));
 	}
 
 	public function testXPForNextLevelComparedToPreviousSumCode()
@@ -187,7 +187,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 2300]]]);
-		$this->assertTrue(Rating::ratingToXP($context->otherTsumegos[0]['rating']) > Level::getXPForNext(1));
+		$this->assertTrue(Rating::ratingToXP($context->otherTsumegos[0]['rating'], 1) > Level::getXPForNext(1));
 
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
