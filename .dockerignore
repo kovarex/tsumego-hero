@@ -1,0 +1,27 @@
+# Exclude large directories from Docker build context
+vendor/
+node_modules/
+.git/
+.ddev/
+tmp/
+webroot/cache_css/
+webroot/cache_js/
+webroot/forums/cache/
+webroot/forums/store/
+webroot/img/set_*
+logs/
+*.log
+
+# Exclude IDE files
+.idea/
+.vscode/
+.DS_Store
+
+# Exclude test artifacts
+.phpunit.result.cache
+selenium/
+
+# Exclude local configs
+config/database.php
+config/email.php
+config/core.local.php
