@@ -4,16 +4,16 @@ class AccountWidget
 {
 	// to avoid flickering, I need to setup the original values also directly in the html
 	// as the javascript update is too late and it would "flicker" when the page is begin loaded
-	public static function render()
+	public static function render($timeMode)
 	{
 		if(!Auth::isLoggedIn())
 			return;
 		if (Auth::isInTimeMode())
 		{
 			$barClassname = 'xp-bar-fill-c3';
-			$barRatio = 1;
+			$barRatio = Util::getRatio($timeMode->currentOrder - 1, $timeMode->overallCount);
 			$accountBarClassname = '';
-			$barText = 'Time mode';
+			$barText = 'Time mode ' . $timeMode->getCurrentRank();
 			$textBarInMenu = 'Level bar';
 			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}
@@ -88,7 +88,7 @@ class AccountWidget
 		return 'level';
 	}
 
-	public static function renderJS()
+	public static function renderJS($timeMode)
 	{
 		echo "var accountWidget =";
 		if (Auth::isLoggedIn())
@@ -97,7 +97,8 @@ class AccountWidget
 					rating: " . Auth::getUser()['rating'] . ",
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
-					show: '" . AccountWidget::whatToShow() . "'});";
+					show: '" . AccountWidget::whatToShow() . "',
+					timeMode: " . $timeMode->exportTimeModeInfo() . "});";
 		else
 			echo "null;";
 	}

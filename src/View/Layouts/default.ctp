@@ -340,7 +340,7 @@ echo $this->fetch('script');
 		</div>
 
 		</div>
-			<?php AccountWidget::render(); ?>
+			<?php AccountWidget::render($timeMode); ?>
 	<div width="100%" align="left" class="whitebox2">
 		<?php
 		$setHeight = '';
@@ -420,7 +420,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 	}
 	?>
 <script type="text/javascript">
-	<?php AccountWidget::renderJS(); ?>
+	<?php AccountWidget::renderJS($timeMode); ?>
 	var lifetime = new Date();
 	let boardsUnselectAll = false;
 	let boardsUnselectAllCounter = 0;
