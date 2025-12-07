@@ -340,29 +340,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Answer');
 		$this->loadModel('TsumegoStatus');
 		$a = $this->Answer->findById(1);
-		$u = $this->User->find('all', [
-			'order' => 'id ASC',
-			'conditions' => [
-				'id >' => $a['Answer']['message'],
-				'id <=' => $a['Answer']['dismissed'],
-			],
-		]);
-		$uCount = count($u);
-		for ($i = 0; $i < $uCount; $i++)
-		{
-			$solvedUts = $this->TsumegoStatus->find('all', [
-				'conditions' => [
-					'user_id' => $u[$i]['User']['id'],
-					'OR' => [
-						['status' => 'S'],
-						['status' => 'W'],
-						['status' => 'C'],
-					],
-				],
-			]);
-			$u[$i]['User']['solved'] = count($solvedUts);
-			$this->User->save($u);
-		}
 		$uLast = $this->User->find('first', ['order' => 'id DESC']);
 		if ($uLast['User']['id'] < $a['Answer']['message'])
 		{
@@ -375,7 +352,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$a['Answer']['dismissed'] += 300;
 		}
 		$this->Answer->save($a);
-		$this->set('u', $u);
 	}
 
 	/**
