@@ -18,29 +18,6 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function playerdb5()
-	{
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Answer');
-		$this->loadModel('Purge');
-		$this->loadModel('Set');
-		$this->loadModel('TsumegoRatingAttempt');
-		$this->loadModel('TimeModeAttempt');
-		$this->loadModel('TimeModeSession');
-		$this->loadModel('Comment');
-		$this->loadModel('Schedule');
-		$this->loadModel('Sgf');
-		$this->loadModel('SetConnection');
-		$this->loadModel('Duplicate');
-		$this->loadModel('PublishDate');
-		$this->loadModel('Tag');
-	}
-
-	/**
-	 * @return void
-	 */
 	public function deleteoldattempts()
 	{
 		$this->loadModel('TsumegoAttempt');
