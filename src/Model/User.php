@@ -46,13 +46,13 @@ class User extends AppModel
 		],
 	];
 
-	static function renderPremium($user): void
+	public static function renderPremium($user): void
 	{
 		if ($user['premium'] == 2 || $user['premium'] == 1)
 			echo '<img alt="Account Type" title="Account Type" src="/img/premium' . $user['premium'] . '.png" height="16px">';
 	}
 
-	static function getHeroPowersCount($user): int
+	public static function getHeroPowersCount($user): int
 	{
 		$heroPowers = 0;
 		if($user['level'] >= HeroPowers::$SPRINT_MINIMUM_LEVEL)
@@ -66,7 +66,7 @@ class User extends AppModel
 		return $heroPowers;
 	}
 
-	static function getHighestRating($user): float
+	public static function getHighestRating($user): float
 	{
 		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
 			'conditions' => ['user_id' => $user['id']],
