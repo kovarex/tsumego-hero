@@ -191,7 +191,6 @@ class ContextPreparator
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $tsumegoAttempt['solved'] ?: false;
-		$tsumegoAttempt['TsumegoAttempt']['mode'] = $this->user['mode'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);

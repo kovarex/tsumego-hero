@@ -172,8 +172,7 @@ class PlayResultProcessorComponent extends Component
 			'first',
 			['conditions'
 				=> ['user_id' => Auth::getUserID(),
-					'tsumego_id' => $previousTsumego['Tsumego']['id'],
-					'mode' => Auth::getMode()],
+					'tsumego_id' => $previousTsumego['Tsumego']['id']],
 				'order' => 'id DESC']
 		);
 
@@ -185,7 +184,6 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $previousTsumego['Tsumego']['id'];
 			$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 			$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-			$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
 		}

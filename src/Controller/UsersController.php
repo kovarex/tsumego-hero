@@ -2317,32 +2317,29 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$taCount = count($ta);
 		for ($i = 0; $i < $taCount; $i++)
 		{
-			if ($ta[$i]['TsumegoAttempt']['mode'] == 1 || $ta[$i]['TsumegoAttempt']['mode'] == 0)
-			{
-				$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
-				$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
-				if ($ta[$i]['TsumegoAttempt']['created'] >= $oldest)
-					if ($taBefore == $ta[$i]['TsumegoAttempt']['created'])
-						if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['s']++;
-						else
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['f']++;
+			$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
+			$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
+			if ($ta[$i]['TsumegoAttempt']['created'] >= $oldest)
+				if ($taBefore == $ta[$i]['TsumegoAttempt']['created'])
+					if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['s']++;
+					else
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['f']++;
+				else
+				{
+					$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
+					if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
+					{
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 1;
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
+					}
 					else
 					{
-						$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
-						if ($ta[$i]['TsumegoAttempt']['solved'] == 1)
-						{
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 1;
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
-						}
-						else
-						{
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
-							$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 1;
-						}
-						$taBefore = $ta[$i]['TsumegoAttempt']['created'];
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
+						$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 1;
 					}
-			}
+					$taBefore = $ta[$i]['TsumegoAttempt']['created'];
+				}
 		}
 
 		$timeGraph = [];
