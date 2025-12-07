@@ -293,7 +293,7 @@ class TimeMode
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve; // remaining time
+	public $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
 	public $successCount = 0;
 	public $failCount = 0;
