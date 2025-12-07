@@ -246,53 +246,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine3() //0:04 t_glicko
-	{
-		$this->loadModel('User');
-		$this->loadModel('TsumegoRatingAttempt');
-		$ux = $this->User->find('all', ['limit' => 1000, 'order' => 'created DESC']);
-
-		$trs = [];
-		$activeToday = false;
-		$uxCount = count($ux);
-		for ($i = 0; $i < $uxCount; $i++)
-		{
-			$trs = $this->TsumegoRatingAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $ux[$i]['User']['id']]]);
-			$activeToday = false;
-			$d1 = date('Y-m-d', strtotime('yesterday'));
-
-			$trsCount = count($trs);
-			for ($j = 0; $j < $trsCount; $j++)
-			{
-				$date = new DateTime($trs[$j]['TsumegoRatingAttempt']['created']);
-				$date = $date->format('Y-m-d');
-				$trs[$j]['TsumegoRatingAttempt']['created'] = $date;
-				if ($date == $d1)
-				{
-					$activeToday = true;
-
-					break;
-				}
-			}
-			if ($ux[$i]['User']['rd'] < 90) //125
-			{$ux[$i]['User']['rd'] += 35;
-				$this->User->save($ux[$i]);
-			}
-			/*
-			if (!$activeToday && $ux[$i]['User']['rd']<250) {
-		  $ux[$i]['User']['rd'] += 60;
-		  $this->User->save($ux[$i]);
-			}
-			*/
-		}
-
-		$this->set('activeToday', $activeToday);
-		$this->set('trs', $trs);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine22() //achievement highscore
 	{
 		$aNum = count($this->Achievement->find('all') ?: []);
