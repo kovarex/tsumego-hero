@@ -1,0 +1,422 @@
+<?php
+
+declare(strict_types=1);
+
+use Phinx\Migration\AbstractMigration;
+
+/**
+ * Fix user and tsumego ratings corrupted starting 2025-12-06 00:17:47.
+ *
+ * Rating corruption timeline:
+ * - Started: 2025-12-06 00:17:47 UTC
+ * - Ended: 2025-12-06 14:17:28 UTC (code fix deployed)
+ *
+ * The corruption caused rating changes to be applied incorrectly.
+ * This affected BOTH user ratings AND tsumego ratings.
+ *
+ * Fix strategy:
+ * - Build baseline ratings for all affected users and tsumegos (ratings just before corruption)
+ * - Replay ALL attempts chronologically from corruption start
+ * - For each attempt: update both user AND tsumego ratings together (as the real code does)
+ * - Save corrected ratings to database
+ *
+ * This correctly handles the interdependency where each attempt affects both entities.
+ */
+final class FixRatingCorruptionDecember2025 extends AbstractMigration
+{
+	private const CORRUPTION_START = '2025-12-06 00:17:47';
+
+	// Rating calculation constants (from Constants.php)
+	private const PLAYER_RATING_MODIFIER = 0.5;
+	private const TSUMEGO_RATING_MODIFIER = 0.5;
+
+	public function up(): void
+	{
+		// [TEST] Backup corrupted ratings for comparison (remove after validation)
+		$this->backupCorruptedRatings();
+		
+		// Fix ratings by replaying attempts chronologically
+		$this->fixRatingsByReplayingAttempts();
+	}
+
+	private function backupCorruptedRatings(): void
+	{
+		// Drop backup tables if they exist (for repeatability during testing)
+		$this->execute('DROP TABLE IF EXISTS user_rating_backup_dec2025');
+		$this->execute('DROP TABLE IF EXISTS tsumego_rating_backup_dec2025');
+		
+		// Backup affected user ratings
+		$this->execute(
+			"CREATE TABLE user_rating_backup_dec2025 AS
+			 SELECT u.id, u.name, u.rating, u.rd
+			 FROM user u
+			 WHERE u.id IN (
+				SELECT DISTINCT user_id FROM tsumego_attempt
+				WHERE created >= '" . self::CORRUPTION_START . "'
+			 )"
+		);
+		
+		// Backup affected tsumego ratings
+		$this->execute(
+			"CREATE TABLE tsumego_rating_backup_dec2025 AS
+			 SELECT t.id, t.rating, t.rd, t.minimum_rating, t.maximum_rating
+			 FROM tsumego t
+			 WHERE t.id IN (
+				SELECT DISTINCT tsumego_id FROM tsumego_attempt
+				WHERE created >= '" . self::CORRUPTION_START . "'
+			 )"
+		);
+		
+		$userCount = $this->fetchRow('SELECT COUNT(*) as cnt FROM user_rating_backup_dec2025')['cnt'];
+		$tsumegoCount = $this->fetchRow('SELECT COUNT(*) as cnt FROM tsumego_rating_backup_dec2025')['cnt'];
+		$this->getOutput()->writeln("Backed up $userCount user ratings and $tsumegoCount tsumego ratings");
+	}
+
+	private function fixRatingsByReplayingAttempts(): void
+	{
+		$this->getOutput()->writeln("\n=== Fixing Ratings by Replaying Attempts ===");
+		
+		// Step 1: Build baseline ratings (just before corruption start)
+		$baselineUserRatings = $this->buildUserBaselineRatings();
+		$baselineTsumegoRatings = $this->buildTsumegoBaselineRatings();
+		
+		// Step 2: Get ALL attempts from corruption start onwards, sorted chronologically
+		// This ensures we process attempts in the exact order they happened
+		$attempts = $this->fetchAll(
+			"SELECT 
+				ta.id,
+				ta.user_id,
+				ta.tsumego_id,
+				ta.elo as user_rating_at_start,
+				ta.tsumego_elo as tsumego_rating_at_start,
+				ta.misplays,
+				ta.solved,
+				ta.created
+			 FROM tsumego_attempt ta
+			 WHERE ta.created >= '" . self::CORRUPTION_START . "'
+			 ORDER BY ta.created ASC"
+		);
+		
+		$this->getOutput()->writeln("Found " . count($attempts) . " attempts to replay\n");
+		
+		// Step 3: Replay each attempt chronologically, updating both ratings
+		$userRatings = $baselineUserRatings;
+		$tsumegoRatings = $baselineTsumegoRatings;
+		$attemptCount = 0;
+		
+		foreach ($attempts as $attempt)
+		{
+			$userId = (int) $attempt['user_id'];
+			$tsumegoId = (int) $attempt['tsumego_id'];
+			$misplays = (int) $attempt['misplays'];
+			$solved = (bool) $attempt['solved'];
+			
+			// Get current ratings (or use defaults if not yet seen)
+			$userRating = $userRatings[$userId] ?? 1000.0;
+			$tsumegoRating = $tsumegoRatings[$tsumegoId] ?? 1000.0;
+			
+			// Apply each misplay - both ratings update together
+			for ($i = 0; $i < $misplays; $i++)
+			{
+				$userDelta = $this->calculateRatingChange($userRating, $tsumegoRating, false);
+				$tsumegoDelta = $this->calculateTsumegoRatingChange($tsumegoRating, $userRating, true);
+				$userRating += $userDelta;
+				$tsumegoRating += $tsumegoDelta;
+			}
+			
+			// Apply solve if successful - both ratings update together
+			if ($solved)
+			{
+				$userDelta = $this->calculateRatingChange($userRating, $tsumegoRating, true);
+				$tsumegoDelta = $this->calculateTsumegoRatingChange($tsumegoRating, $userRating, false);
+				$userRating += $userDelta;
+				$tsumegoRating += $tsumegoDelta;
+			}
+			
+			// Update rating arrays for next iteration
+			$userRatings[$userId] = $userRating;
+			$tsumegoRatings[$tsumegoId] = $tsumegoRating;
+			
+			$attemptCount++;
+			if ($attemptCount % 1000 == 0)
+				$this->getOutput()->writeln("Processed $attemptCount attempts...");
+		}
+		
+		$this->getOutput()->writeln("Replayed all $attemptCount attempts");
+		
+		// Step 4: Apply rating constraints and save to database
+		$this->saveFixedRatings($userRatings, $tsumegoRatings, $baselineUserRatings, $baselineTsumegoRatings);
+	}
+
+	private function buildUserBaselineRatings(): array
+	{
+		$this->getOutput()->writeln("Building user baseline ratings...");
+		
+		// For each affected user, find their rating just before corruption started
+		$affectedUsers = $this->fetchAll(
+			"SELECT DISTINCT user_id FROM tsumego_attempt
+			 WHERE created >= '" . self::CORRUPTION_START . "'"
+		);
+		
+		$baselines = [];
+		foreach ($affectedUsers as $row)
+		{
+			$userId = (int) $row['user_id'];
+			
+			// Find last attempt before corruption
+			$lastAttempt = $this->fetchRow(
+				"SELECT elo, tsumego_elo, solved, misplays 
+				 FROM tsumego_attempt
+				 WHERE user_id = $userId AND created < '" . self::CORRUPTION_START . "'
+				 ORDER BY created DESC LIMIT 1"
+			);
+			
+			if (!$lastAttempt)
+			{
+				// User's first attempt was during corruption - use their starting rating
+				$firstAttempt = $this->fetchRow(
+					"SELECT elo FROM tsumego_attempt
+					 WHERE user_id = $userId
+					 ORDER BY created ASC LIMIT 1"
+				);
+				$baselines[$userId] = $firstAttempt ? (float) $firstAttempt['elo'] : 1000.0;
+			}
+			else
+			{
+				// Calculate post-attempt rating (elo is rating AT START of attempt)
+				$rating = (float) $lastAttempt['elo'];
+				$tsumegoRating = (float) $lastAttempt['tsumego_elo'];
+				$misplays = (int) $lastAttempt['misplays'];
+				$solved = (bool) $lastAttempt['solved'];
+				
+				// Apply last pre-corruption attempt's rating changes
+				for ($i = 0; $i < $misplays; $i++)
+					$rating += $this->calculateRatingChange($rating, $tsumegoRating, false);
+				if ($solved)
+					$rating += $this->calculateRatingChange($rating, $tsumegoRating, true);
+				
+				$baselines[$userId] = $rating;
+			}
+		}
+		
+		$this->getOutput()->writeln("Built " . count($baselines) . " user baselines");
+		return $baselines;
+	}
+
+	private function buildTsumegoBaselineRatings(): array
+	{
+		$this->getOutput()->writeln("Building tsumego baseline ratings...");
+		
+		// For each affected tsumego, find its rating just before corruption started
+		$affectedTsumegos = $this->fetchAll(
+			"SELECT DISTINCT tsumego_id FROM tsumego_attempt
+			 WHERE created >= '" . self::CORRUPTION_START . "'"
+		);
+		
+		$baselines = [];
+		foreach ($affectedTsumegos as $row)
+		{
+			$tsumegoId = (int) $row['tsumego_id'];
+			
+			// Find last attempt before corruption
+			$lastAttempt = $this->fetchRow(
+				"SELECT tsumego_elo, elo as user_rating, solved, misplays
+				 FROM tsumego_attempt
+				 WHERE tsumego_id = $tsumegoId AND created < '" . self::CORRUPTION_START . "'
+				 ORDER BY created DESC LIMIT 1"
+			);
+			
+			if (!$lastAttempt)
+			{
+				// Tsumego's first attempt was during corruption - use its starting rating
+				$firstAttempt = $this->fetchRow(
+					"SELECT tsumego_elo FROM tsumego_attempt
+					 WHERE tsumego_id = $tsumegoId
+					 ORDER BY created ASC LIMIT 1"
+				);
+				$baselines[$tsumegoId] = $firstAttempt ? (float) $firstAttempt['tsumego_elo'] : 1000.0;
+			}
+			else
+			{
+				// Calculate post-attempt rating (tsumego_elo is rating AT START of attempt)
+				$rating = (float) $lastAttempt['tsumego_elo'];
+				$userRating = (float) $lastAttempt['user_rating'];
+				$misplays = (int) $lastAttempt['misplays'];
+				$solved = (bool) $lastAttempt['solved'];
+				
+				// Apply last pre-corruption attempt's rating changes
+				// Misplay = tsumego wins, Solve = tsumego loses
+				for ($i = 0; $i < $misplays; $i++)
+					$rating += $this->calculateTsumegoRatingChange($rating, $userRating, true);
+				if ($solved)
+					$rating += $this->calculateTsumegoRatingChange($rating, $userRating, false);
+				
+				$baselines[$tsumegoId] = $rating;
+			}
+		}
+		
+		$this->getOutput()->writeln("Built " . count($baselines) . " tsumego baselines");
+		return $baselines;
+	}
+
+	private function saveFixedRatings(
+		array $userRatings, 
+		array $tsumegoRatings, 
+		array $baselineUserRatings, 
+		array $baselineTsumegoRatings
+	): void
+	{
+		$this->getOutput()->writeln("\n=== Saving Fixed Ratings ===");
+		
+		// Save user ratings
+		$userChanges = 0;
+		foreach ($userRatings as $userId => $newRating)
+		{
+			$user = $this->fetchRow("SELECT rating FROM user WHERE id = $userId");
+			if (!$user)
+				continue;
+			
+			$currentRating = (float) $user['rating'];
+			$newRating = round($newRating, 2);
+			$change = $newRating - $currentRating;
+			
+			if (abs($change) > 0.01)
+			{
+				$this->execute("UPDATE user SET rating = $newRating WHERE id = $userId");
+				$userChanges++;
+				
+				if ($userChanges <= 20) // Show first 20
+				{
+					$this->getOutput()->writeln(sprintf(
+						'User %d: %.2f -> %.2f (%+.2f)',
+						$userId, $currentRating, $newRating, $change
+					));
+				}
+			}
+		}
+		
+		// Save tsumego ratings (with min/max constraints)
+		$tsumegoChanges = 0;
+		foreach ($tsumegoRatings as $tsumegoId => $newRating)
+		{
+			$tsumego = $this->fetchRow(
+				"SELECT rating, minimum_rating, maximum_rating 
+				 FROM tsumego WHERE id = $tsumegoId"
+			);
+			if (!$tsumego)
+				continue;
+			
+			$currentRating = (float) $tsumego['rating'];
+			$minRating = $tsumego['minimum_rating'] !== null ? (float) $tsumego['minimum_rating'] : null;
+			$maxRating = $tsumego['maximum_rating'] !== null ? (float) $tsumego['maximum_rating'] : null;
+			
+			// Apply constraints
+			if ($minRating !== null && $newRating < $minRating)
+				$newRating = $minRating;
+			if ($maxRating !== null && $newRating > $maxRating)
+				$newRating = $maxRating;
+			
+			$newRating = round($newRating, 2);
+			$change = $newRating - $currentRating;
+			
+			if (abs($change) > 0.01)
+			{
+				$this->execute("UPDATE tsumego SET rating = $newRating WHERE id = $tsumegoId");
+				$tsumegoChanges++;
+				
+				if ($tsumegoChanges <= 20) // Show first 20
+				{
+					$this->getOutput()->writeln(sprintf(
+						'Tsumego %d: %.2f -> %.2f (%+.2f)',
+						$tsumegoId, $currentRating, $newRating, $change
+					));
+				}
+			}
+		}
+		
+		$this->getOutput()->writeln("\nUpdated $userChanges user ratings and $tsumegoChanges tsumego ratings");
+	}
+
+	/**
+	 * Calculates rating change using the same formula as Rating::calculateRatingChange
+	 */
+	private function calculateRatingChange(float $rating, float $opponentRating, bool $isWin): float
+	{
+		$result = $isWin ? 1 : 0;
+		$modifier = self::PLAYER_RATING_MODIFIER;
+
+		$Se = 1.0 / (1.0 + exp($this->beta($opponentRating) - $this->beta($rating)));
+		$con = pow(((3300 - $rating) / 200), 1.6);
+		$bonus = log(1 + exp((2300 - $rating) / 80)) / 5;
+
+		return $modifier * ($con * ($result - $Se) + $bonus);
+	}
+
+	/**
+	 * Calculates rating change for tsumego using the same formula
+	 * @param float $tsumegoRating Current tsumego rating
+	 * @param float $userRating User's rating at start of attempt
+	 * @param bool $isWin Whether tsumego won this interaction (misplay = true, solve = false)
+	 */
+	private function calculateTsumegoRatingChange(float $tsumegoRating, float $userRating, bool $isWin): float
+	{
+		$result = $isWin ? 1 : 0;
+		$modifier = self::TSUMEGO_RATING_MODIFIER;
+
+		$Se = 1.0 / (1.0 + exp($this->beta($userRating) - $this->beta($tsumegoRating)));
+		$con = pow(((3300 - $tsumegoRating) / 200), 1.6);
+		$bonus = log(1 + exp((2300 - $tsumegoRating) / 80)) / 5;
+
+		return $modifier * ($con * ($result - $Se) + $bonus);
+	}
+
+	private function beta(float $rating): float
+	{
+		return -7 * log(3300 - $rating);
+	}
+
+	public function down(): void
+	{
+		// Restore ratings from backup tables
+		$this->getOutput()->writeln("\n=== Restoring Ratings from Backup ===");
+		
+		// Check if backup tables exist
+		$userBackupExists = $this->fetchRow("SHOW TABLES LIKE 'user_rating_backup_dec2025'");
+		$tsumegoBackupExists = $this->fetchRow("SHOW TABLES LIKE 'tsumego_rating_backup_dec2025'");
+		
+		if (!$userBackupExists && !$tsumegoBackupExists)
+		{
+			$this->getOutput()->writeln('ERROR: Backup tables not found! Cannot restore ratings.');
+			$this->getOutput()->writeln('You will need to restore from a database backup.');
+			return;
+		}
+		
+		// Restore user ratings
+		if ($userBackupExists)
+		{
+			$this->execute(
+				"UPDATE user u 
+				 JOIN user_rating_backup_dec2025 b ON u.id = b.id
+				 SET u.rating = b.rating, u.rd = b.rd"
+			);
+			$userCount = $this->fetchRow("SELECT COUNT(*) as cnt FROM user_rating_backup_dec2025")['cnt'];
+			$this->getOutput()->writeln("Restored $userCount user ratings from backup");
+		}
+		
+		// Restore tsumego ratings
+		if ($tsumegoBackupExists)
+		{
+			$this->execute(
+				"UPDATE tsumego t
+				 JOIN tsumego_rating_backup_dec2025 b ON t.id = b.id
+				 SET t.rating = b.rating, t.rd = b.rd"
+			);
+			$tsumegoCount = $this->fetchRow("SELECT COUNT(*) as cnt FROM tsumego_rating_backup_dec2025")['cnt'];
+			$this->getOutput()->writeln("Restored $tsumegoCount tsumego ratings from backup");
+		}
+		
+		$this->getOutput()->writeln("\nRatings restored successfully!");
+		$this->getOutput()->writeln("NOTE: Backup tables still exist. Drop them manually if you want.");
+	}
+}
+
