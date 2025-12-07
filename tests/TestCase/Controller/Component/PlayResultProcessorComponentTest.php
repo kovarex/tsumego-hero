@@ -72,8 +72,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				'user' => ['mode' => Constants::$LEVEL_MODE],
 				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-			usleep(1000 * 100);
-			$browser->driver->executeScript("displayResult('S')"); // Fail the problem
+			$browser->playWithResult('S');
 			$browser->get(self::getUrlFromPage($page, $context));
 			$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumego['id']]]);
 			$this->assertSame(count($statuses), 1);
@@ -406,8 +405,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$originalDamage = intval($context->user['damage']);
 
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-			usleep(1000 * 100);
-			$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+			$browser->playWithResult('F');
 			$browser->get(self::getUrlFromPage($page, $context));
 			$this->assertSame($originalDamage + 1, $context->reloadUser()['damage']);
 		}
@@ -420,8 +418,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
 			'user' => ['mode' => Constants::$LEVEL_MODE]]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+		$browser->playWithResult('F');
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$context->checkNewTsumegoStatusCoreValues($this);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'V');
@@ -434,8 +431,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'damage' => Util::getHealthBasedOnLevel(1)]]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('F')"); // Fail the problem
+		$browser->playWithResult('F');
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$context->checkNewTsumegoStatusCoreValues($this);
 		$this->assertSame($context->resultTsumegoStatus['status'], 'F');
@@ -450,8 +446,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $previousStatus],
 				'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 66]]);
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
-			usleep(1000 * 100);
-			$browser->driver->executeScript("displayResult('S')");
+			$browser->playWithResult('S');
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 			$context->checkNewTsumegoStatusCoreValues($this);
 			$this->assertSame($context->reloadUser()['solved'], $previousStatus == 'S' ? 66 : 67);

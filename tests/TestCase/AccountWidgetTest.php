@@ -55,7 +55,7 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2075],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1, 'rating' => 1000]]]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
 		$browser = Browser::instance();
 		$browser->setCookie('showInAccountWidget', 'rating');
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -78,7 +78,7 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 1000],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1, 'rating' => 1000]]]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
 		$browser = Browser::instance();
 		$browser->setCookie('showInAccountWidget', 'rating');
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -101,7 +101,7 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2050],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1, 'rating' => 1000]]]]]);
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
 		$browser = Browser::instance();
 		$browser->setCookie('showInAccountWidget', 'rating');
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);

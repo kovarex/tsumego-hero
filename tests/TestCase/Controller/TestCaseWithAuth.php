@@ -51,8 +51,7 @@ class TestCaseWithAuth extends ControllerTestCase
 	protected function checkNavigationButtonsBeforeAndAfterSolving($browser, int $count, $context, $indexFunction, $orderFunction, int $currentIndex, string $currentStatus): void
 	{
 		$this->checkPlayNavigationButtons($browser, $count, $context, $indexFunction, $orderFunction, $currentIndex, $currentStatus);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$browser->playWithResult('S'); // mark the problem solved
 		$this->checkPlayNavigationButtons($browser, $count, $context, $indexFunction, $orderFunction, $currentIndex, 'S');
 	}
 

@@ -171,8 +171,7 @@ class TagTest extends ControllerTestCase
 		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-no-hint-tag"));
 		$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-hint-tag"));
 		$this->assertTextContains("(1 hidden)", $browser->getCssSelect(".tag-list")[0]->getText());
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-no-hint-tag"));
 		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-hint-tag"));
 		$this->assertTextNotContains("hidden", $browser->getCssSelect(".tag-list")[0]->getText());

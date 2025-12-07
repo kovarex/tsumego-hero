@@ -80,8 +80,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Kovarex solves a problem
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 
 		// now kovarex is there
 		$browser->get('users/leaderboard');
@@ -150,10 +149,8 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertCount(5, $tableRows);
 		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
 		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '12d');
-
 		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player3d');
 		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '3d');
-
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player2d');
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '2d');
 	}

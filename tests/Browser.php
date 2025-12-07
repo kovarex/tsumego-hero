@@ -303,6 +303,7 @@ class Browser
 	{
 		usleep(1000 * 100);
 		$this->driver->executeScript("displayResult('" . $result . "')");
+		usleep(1000 * 50);
 	}
 
 	public function getAlertText()

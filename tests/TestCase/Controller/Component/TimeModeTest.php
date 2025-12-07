@@ -175,9 +175,7 @@ class TimeModeTest extends TestCaseWithAuth
 				$this->assertTrue($solvedAttempt['TimeModeAttempt']['points'] > 20);
 			if ($i == TimeModeUtil::$PROBLEM_COUNT)
 				break;
-			usleep(1000 * 100);
-			$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
-			usleep(1000 * 50);
+			$browser->playWithResult('S');
 			$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
 			$this->assertTrue($nextButton->isEnabled());
 			$this->assertTrue($nextButton->isDisplayed());
@@ -294,8 +292,7 @@ class TimeModeTest extends TestCaseWithAuth
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute("value"), "Skip");
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$browser->playWithResult('S'); // mark the problem solved
 		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->getAttribute("value"), "Next");
 	}
 
@@ -380,8 +377,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/play');
 
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('" . ($conditions['actuallySolvedSession'] ? 'S' : 'F') . "')"); // mark the problem solved
+		$browser->playWithResult($conditions['actuallySolvedSession'] ? 'S' : 'F'); // mark the problem solved
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
@@ -604,8 +600,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		$tsumegoIDNotInTimeMode = array_find($context->otherTsumegos, fn($t) => !$tsumegosInTimeMode[$t['id']])['id'];
 		$setConnectionIDNotInTimeMode = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]])['SetConnection']['id'];
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$browser->playWithResult('S'); // mark the problem solved
 		usleep(1000 * 50);
 
 		// we found the only tsumego NOT in the time mode, and we open it in no-time mode
@@ -613,8 +608,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser->get('/' . $setConnectionIDNotInTimeMode);
 
 		// now se solve the only tsumego not in time mode
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // mark the problem solved
+		$browser->playWithResult('S'); // mark the problem solved
 		usleep(1000 * 50);
 
 		Auth::getUser()['mode'] = Constants::$TIME_MODE; // I force the time mode to be active
