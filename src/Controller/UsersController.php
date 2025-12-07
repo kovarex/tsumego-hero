@@ -183,30 +183,6 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function best_tsumego()
-	{
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('TsumegoRatingAttempt');
-		$this->loadModel('Schedule');
-		$this->loadModel('Tsumego');
-
-		$tsumegoOfTheDay1 = $this->TsumegoRatingAttempt->find('all', ['limit' => 10000, 'order' => 'created DESC', 'conditions' => ['status' => 'S']]);
-		$tsumegoOfTheDay2 = $this->TsumegoAttempt->find('all', ['limit' => 30000, 'order' => 'created DESC', 'conditions' => ['gain >=' => 40]]);
-
-		$date = date('Y-m-d', strtotime('yesterday'));
-		$s = $this->Schedule->find('all', ['conditions' => ['date' => $date]]);
-
-		$t = $this->Tsumego->find('all');
-
-		$this->set('ut', $tsumegoOfTheDay1);
-		$this->set('out', $tsumegoOfTheDay2);
-		$this->set('s', $s);
-		$this->set('t', $t);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function resetpassword()
 	{
 		$this->set('_page', 'user');
