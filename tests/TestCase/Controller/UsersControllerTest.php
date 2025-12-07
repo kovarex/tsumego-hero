@@ -154,4 +154,58 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player2d');
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '2d');
 	}
+
+	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
+	{
+		$context = new ContextPreparator([
+			'user' => ['email' => 'current@example.com'],
+			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$browser->get('users/view/' . $context->otherUsers[0]['id']);
+		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
+	}
+
+	public function testUserProfilePage()
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'email' => 'current@example.com',
+				'level' => 66,
+				'xp' => 57,
+				'rating' => 2065,
+				'solved' => 1],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'attempt' => ['rating' => 2165]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertSame('Level:', $browser->getTableCell('#level-info-table', 0, 0)->getText());
+		$this->assertSame('66', $browser->getTableCell('#level-info-table', 0, 1)->getText());
+		$this->assertSame('Level up:', $browser->getTableCell('#level-info-table', 1, 0)->getText());
+		$this->assertSame('57/4050', $browser->getTableCell('#level-info-table', 1, 1)->getText());
+		$this->assertSame('XP earned:', $browser->getTableCell('#level-info-table', 2, 0)->getText());
+		$this->assertSame(90957 . ' XP', $browser->getTableCell('#level-info-table', 2, 1)->getText());
+		$this->assertSame('Health:', $browser->getTableCell('#level-info-table', 3, 0)->getText());
+		$this->assertSame(Util::getHealthBasedOnLevel(66) . ' HP', $browser->getTableCell('#level-info-table', 3, 1)->getText());
+		$this->assertSame('Hero powers:', $browser->getTableCell('#level-info-table', 4, 0)->getText());
+		$this->assertSame('3', $browser->getTableCell('#level-info-table', 4, 1)->getText());
+
+		$this->assertSame('Rank:', $browser->getTableCell('#rank-info-table', 0, 0)->getText());
+		$this->assertSame('1d', $browser->getTableCell('#rank-info-table', 0, 1)->getText());
+		$this->assertSame('Rating:', $browser->getTableCell('#rank-info-table', 1, 0)->getText());
+		$this->assertSame('2065', $browser->getTableCell('#rank-info-table', 1, 1)->getText());
+		$this->assertSame('Highest rank:', $browser->getTableCell('#rank-info-table', 2, 0)->getText());
+		$this->assertSame('2d', $browser->getTableCell('#rank-info-table', 2, 1)->getText());
+		$this->assertSame('Highest rating:', $browser->getTableCell('#rank-info-table', 3, 0)->getText());
+		$this->assertSame('2165', $browser->getTableCell('#rank-info-table', 3, 1)->getText());
+
+		$this->assertSame('Overall solved:', $browser->getTableCell('#final-info-table', 0, 0)->getText());
+		$this->assertSame('1 of 1', $browser->getTableCell('#final-info-table', 0, 1)->getText());
+		$this->assertSame('Overall %:', $browser->getTableCell('#final-info-table', 1, 0)->getText());
+		$this->assertSame('100%', $browser->getTableCell('#final-info-table', 1, 1)->getText());
+	}
 }

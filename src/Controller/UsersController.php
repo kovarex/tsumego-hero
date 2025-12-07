@@ -94,9 +94,7 @@ class UsersController extends AppController
 			'order' => 'created ASC',
 			'conditions' => [
 				'tsumego_id' => $id,
-				'NOT' => [
-					'tsumego_elo' => 0,
-				],
+				'NOT' => ['tsumego_rating' => 0],
 			],
 		]);
 		$this->set('rating', $t['Tsumego']['rating']);
@@ -121,11 +119,11 @@ class UsersController extends AppController
 			'conditions' => [
 				'tsumego_id' => $id,
 				'NOT' => [
-					'tsumego_elo' => 0,
+					'tsumego_rating' => 0,
 				],
 			],
 		]);
-		$change = $ta[count($ta) - 1]['TsumegoAttempt']['tsumego_elo'] - $ta[0]['TsumegoAttempt']['tsumego_elo'];
+		$change = $ta[count($ta) - 1]['TsumegoAttempt']['tsumego_rating'] - $ta[0]['TsumegoAttempt']['tsumego_rating'];
 		$t = $this->Tsumego->findById($id);
 		$t['Tsumego']['rd'] = $change;
 		$this->Tsumego->save($t);
@@ -2232,7 +2230,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('SetConnection');
 		$this->loadModel('TimeModeSession');
-		$hideEmail = Auth::getUserID() != $id;
 
 		$as = $this->AchievementStatus->find('all', ['limit' => 12, 'order' => 'created DESC', 'conditions' => ['user_id' => $id]]);
 		$ach = $this->Achievement->find('all');
@@ -2299,31 +2296,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
 				$tsumegoStatusToRestCount++;
 		}
-		$toplvl = $user['User']['level'];
-		$startxp = 50;
-		$sumx = 0;
-		$xpJump = 10;
-
-		for ($i = 1; $i < $toplvl; $i++)
-		{
-			if ($i >= 11)
-				$xpJump = 25;
-			if ($i >= 19)
-				$xpJump = 50;
-			if ($i >= 39)
-				$xpJump = 100;
-			if ($i >= 69)
-				$xpJump = 150;
-			if ($i >= 99)
-				$xpJump = 50000;
-			if ($i == 100)
-				$xpJump = 1150;
-			if ($i >= 101)
-				$xpJump = 0;
-			$sumx += $startxp;
-			$startxp += $xpJump;
-		}
-		$sumx += $user['User']['xp'];
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
 		$oldest = $oldest->format('Y-m-d');
@@ -2337,21 +2309,14 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$taBefore = '';
 		$graph = [];
-		$highestElo = 0;
 		$ta2 = [];
+
 		$ta2['date'] = [];
-		$ta2['elo'] = [];
+		$ta2['rating'] = [];
 
 		$taCount = count($ta);
 		for ($i = 0; $i < $taCount; $i++)
 		{
-			if ($ta[$i]['TsumegoAttempt']['elo'] != null)
-			{
-				if ($ta[$i]['TsumegoAttempt']['elo'] > $highestElo)
-					$highestElo = $taBefore = $ta[$i]['TsumegoAttempt']['elo'];
-				array_push($ta2['date'], $ta[$i]['TsumegoAttempt']['created']);
-				array_push($ta2['elo'], $ta[$i]['TsumegoAttempt']['elo']);
-			}
 			if ($ta[$i]['TsumegoAttempt']['mode'] == 1 || $ta[$i]['TsumegoAttempt']['mode'] == 0)
 			{
 				$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
@@ -2380,11 +2345,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			}
 		}
 
-		$highestEloRank = Rating::getReadableRankFromRating($highestElo);
-
-		if ($highestElo < $user['User']['rating'])
-			$highestElo = $user['User']['rating'];
-
 		$timeGraph = [];
 		$ro = $this->TimeModeSession->find('all', [
 			'order' => 'time_mode_rank_id ASC',
@@ -2392,6 +2352,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				'user_id' => $id,
 			],
 		]);
+
 		$highestRo = '15k';
 		$roCount = count($ro);
 		for ($i = 0; $i < $roCount; $i++)
@@ -2466,7 +2427,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$aCount = $this->Achievement->find('all');
 
 		$this->set('ta2', $ta2);
-		$this->set('xpSum', $sumx);
 		$this->set('graph', $graph);
 		$this->set('countGraph', $countGraph);
 		$this->set('timeGraph', $timeGraph);
@@ -2478,11 +2438,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
 		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('allUts', $uts);
-		$this->set('hideEmail', $hideEmail);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('highestElo', $highestElo);
-		$this->set('highestEloRank', $highestEloRank);
 		$this->set('highestRo', $highestRo);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);

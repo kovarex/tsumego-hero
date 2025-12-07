@@ -1,13 +1,13 @@
 
 
 <div align="center">
-<p class="title"><br> 
+<p class="title"><br>
 	Rating Mode History of <?php echo $uname; ?>
-<br><br> 
+<br><br>
 </p>
 
 <table width="85%" border="0" class="userstatstable">
-	
+
 	<tr>
 		<th width="30%"><div align="left">Tsumego</div></th>
 		<th width="12%">User rating</th>
@@ -18,7 +18,7 @@
 	</tr>
 	<?php
 		for($i=0; $i<count($trs); $i++){
-			if($trs[$i]['TsumegoAttempt']['tsumego_elo']!=null){
+			if($trs[$i]['TsumegoAttempt']['tsumego_rating']!=null){
 				echo '<tr>';
 					echo '<td colspan="6">';
 						echo '<div class="sandboxComment" id="comment0"><table class="sandboxTable2" width="100%" border="0">
@@ -27,10 +27,10 @@
 										echo '<div align="left">'.$trs[$i]['TsumegoAttempt']['title'].'</div>';
 									echo '</td>';
 									echo '<td width="12%">';
-										echo '<div align="center">'.$trs[$i]['TsumegoAttempt']['elo'].'</div>';
+										echo '<div align="center">'.$trs[$i]['TsumegoAttempt']['user_rating'].'</div>';
 									echo '</td>';
 									echo '<td width="12%">';
-										echo '<div align="center">'.$trs[$i]['TsumegoAttempt']['tsumego_elo'].'</div>';
+										echo '<div align="center">'.$trs[$i]['TsumegoAttempt']['tsumego_rating'].'</div>';
 									echo '</td>';
 									echo '<td width="12%">';
 										echo '<div align="center">'.$trs[$i]['TsumegoAttempt']['status'].'</div>';
@@ -46,7 +46,7 @@
 						</div>';
 						//echo '<div id="space0"><br></div>';
 					echo '</td>';
-					
+
 				echo '</tr>';
 			}
 		}

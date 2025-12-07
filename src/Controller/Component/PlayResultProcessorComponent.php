@@ -186,17 +186,17 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 			$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 			$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
-			$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
+			$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
 		}
 		else
 			$tsumegoAttempt = $lastTsumegoAttempt;
 
-		$tsumegoAttempt['TsumegoAttempt']['elo'] = Auth::getUser()['rating'];
+		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Auth::getUser()['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] += Decoder::decodeSeconds($previousTsumego);
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $previousTsumego['Tsumego']['rating'];
+		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}

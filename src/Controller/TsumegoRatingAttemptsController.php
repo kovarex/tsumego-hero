@@ -55,7 +55,7 @@ class TsumegoRatingAttemptsController extends AppController
 			if (!$trs)
 				$trs = [];
 
-			$header = ['user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_elo', 'tsumego_set', 'status', 'seconds', 'created'];
+			$header = ['user_id', 'user_elo', 'user_ip', 'user_country', 'user_country_code', 'tsumego_id', 'tsumego_rating', 'tsumego_set', 'status', 'seconds', 'created'];
 
 			$posts = [];
 			$trsCount = count($trs);
@@ -107,7 +107,7 @@ class TsumegoRatingAttemptsController extends AppController
 				$values['user_country'] = 'Germany';
 				$values['user_country_code'] = 'DEU';
 				$values['tsumego_id'] = $trs[$i]['TsumegoRatingAttempt']['tsumego_id'];
-				$values['tsumego_elo'] = $trs[$i]['TsumegoRatingAttempt']['tsumego_elo'];
+				$values['tsumego_rating'] = $trs[$i]['TsumegoRatingAttempt']['tsumego_rating'];
 				$values['tsumego_set'] = $set['Set']['title'];
 				$values['status'] = $trs[$i]['TsumegoRatingAttempt']['status'];
 				$values['seconds'] = $trs[$i]['TsumegoRatingAttempt']['seconds'];
@@ -152,7 +152,7 @@ class TsumegoRatingAttemptsController extends AppController
 				$trs = [];
 
 			$csv = [];
-			$header = ['id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created'];
+			$header = ['id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_rating', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created'];
 			$csv[] = $header;
 			foreach ($trs as $tr)
 				$csv[] = $tr['TsumegoRatingAttempt'];
@@ -171,7 +171,7 @@ class TsumegoRatingAttemptsController extends AppController
 				$trs = [];
 
 			$csv = [];
-			$header = ['id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_elo', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created'];
+			$header = ['id', 'user_id', 'user_elo', 'user_deviation', 'tsumego_id', 'tsumego_rating', 'tsumego_deviation', 'status', 'seconds', 'sequence', 'recent', 'created'];
 			$csv[] = $header;
 			foreach ($trs as $tr)
 				$csv[] = $tr['TsumegoRatingAttempt'];
@@ -294,7 +294,7 @@ class TsumegoRatingAttemptsController extends AppController
 			else
 				$trs[$i]['TsumegoAttempt']['status'] = '<b style="color:#e03c4b;">Failed</b>';
 			$t = $this->Tsumego->findById($trs[$i]['TsumegoAttempt']['tsumego_id']);
-			$trs[$i]['TsumegoAttempt']['tsumego_elo'] = $t['Tsumego']['rating'];
+			$trs[$i]['TsumegoAttempt']['tsumego_rating'] = $t['Tsumego']['rating'];
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			if (!$scT)
 				continue;

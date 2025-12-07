@@ -2,7 +2,7 @@
 	if(Auth::isLoggedIn()){
 		if(Auth::getUserID()!=72 && Auth::getUserID()!=1543){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}	
+		}
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
@@ -17,7 +17,7 @@ CSV Files:<br>
 <div align="center">
 <?php
 	//echo '<pre>';print_r($trs2);echo '</pre>';
-?> 
+?>
 
 
 <table width="85%" border="1" class="userstatsstbale">
@@ -27,7 +27,7 @@ CSV Files:<br>
 			echo $x;
 		?>
 		</td>
-		
+
 	</tr>
 	<tr>
 		<th>#</th>
@@ -42,7 +42,7 @@ CSV Files:<br>
 		<th>date/time</th>
 	</tr>
 	<?php
-	
+
 		for($i=0; $i<count($trs); $i++){
 			if($trs[$i]['TsumegoRatingAttempt']['status']=='F'){
 				$trs[$i]['TsumegoRatingAttempt']['user_deviation'] = '-'.$trs[$i]['TsumegoRatingAttempt']['user_deviation'];
@@ -53,7 +53,7 @@ CSV Files:<br>
 			}
 			if($trs[$i]['TsumegoRatingAttempt']['user_deviation']==null) $trs[$i]['TsumegoRatingAttempt']['user_deviation'] = 0;
 			if($trs[$i]['TsumegoRatingAttempt']['tsumego_deviation']==null) $trs[$i]['TsumegoRatingAttempt']['tsumego_deviation'] = 0;
-			
+
 			echo '<tr>';
 				echo '<td>';
 					echo '<div align="center">'.($i+1).'</div>';
@@ -71,7 +71,7 @@ CSV Files:<br>
 					echo '<div align="center">'.$trs[$i]['TsumegoRatingAttempt']['tsumego_id'].'</div>';
 				echo '</td>';
 				echo '<td>';
-					echo '<div align="center">'.$trs[$i]['TsumegoRatingAttempt']['tsumego_elo'].'</div>';
+					echo '<div align="center">'.$trs[$i]['TsumegoRatingAttempt']['tsumego_rating'].'</div>';
 				echo '</td>';
 				echo '<td>';
 					echo '<div align="center">'.$trs[$i]['TsumegoRatingAttempt']['tsumego_deviation'].'</div>';

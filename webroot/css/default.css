@@ -7693,3 +7693,35 @@ body.dark-theme .btn--warning {
 }
 
 .admin-text { color: var(--admin-text-color); }
+
+.userInfoContainerRow1
+{
+	width:100%;
+	height:138px;
+	margin: 0 4px;
+}
+
+.userInfoContainerRow2
+{
+	width:100%;
+	height:254px;
+	margin: 0 4px;
+}
+
+.userStatsGreen
+{
+	float:left;
+	border: 3px solid #74d14c;
+	margin:2px;
+	width:310px;
+	height:148px;
+}
+
+.userStatsPurple
+{
+	float:left;
+	border: 3px solid #caa8d8;
+	margin:2px;
+	width:310px;
+	height:205px;
+}

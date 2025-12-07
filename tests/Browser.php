@@ -316,5 +316,11 @@ class Browser
 		$this->driver->manage()->addCookie(['name' => $name, 'value' => $value]);
 	}
 
+	public function getTableCell($selector, $row, $column)
+	{
+		$table = $this->find($selector);
+		return $table->findElements(WebDriverBy::tagName("tr"))[$row]->findElements(WebDriverBy::tagName("td"))[$column];
+	}
+
 	public $driver;
 }
