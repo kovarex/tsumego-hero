@@ -45,8 +45,6 @@ class PlayResultProcessorComponent extends Component
 
 		$previousStatusValue = $previousTsumegoStatus ? $previousTsumegoStatus['TsumegoStatus']['status'] : 'N';
 
-		$this->updateTsumegoAttempt($previousTsumego, $result);
-
 		// I need to save the original tsumego rating I calculated XP change for
 		// this is to avoid that rating gets changed, and the XP change calculation would
 		// be based on the changed rating, and would slightly differ from the promised change
@@ -56,6 +54,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processDamage($result);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result, $previousStatusValue, $originalTsumegoRating);
+		$this->updateTsumegoAttempt($previousTsumego, $result);
 		$this->processErrorAchievement($result);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
@@ -191,7 +190,7 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt = $lastTsumegoAttempt;
 
 		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Auth::getUser()['rating'];
-		$tsumegoAttempt['TsumegoAttempt']['gain'] = Util::getCookie('score', 0);
+		$tsumegoAttempt['TsumegoAttempt']['gain'] = $result['xp-gained'] ?: 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] += Decoder::decodeSeconds($previousTsumego);
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
@@ -245,7 +244,7 @@ class PlayResultProcessorComponent extends Component
 		Auth::saveUser();
 	}
 
-	private function processXpChange(array $previousTsumego, array $result, string $previousTsumegoStatus, $originalTsumegoRating): void
+	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, $originalTsumegoRating): void
 	{
 		if (!Auth::XPisGainedInCurrentMode())
 			return;
@@ -258,7 +257,8 @@ class PlayResultProcessorComponent extends Component
 		$multiplier *=  TsumegoXPAndRating::getProgressDeletionMultiplier(TsumegoUtil::getProgressDeletionCount($previousTsumego['Tsumego']));
 
 		$user = & Auth::getUser();
-		Level::addXPAsResultOfTsumegoSolving($user, Rating::ratingToXP($originalTsumegoRating, $multiplier));
+		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
+		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
 	}
 
 	private function processErrorAchievement(array $result): void

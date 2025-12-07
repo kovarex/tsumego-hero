@@ -227,7 +227,7 @@ if($user['User']['solved'] > $tsumegoNum)
 						<div id="chart2"></div>
 					</div>
 					<div align="center">
-						<a href="/tsumego_rating_attempts/user/<?php echo $user['User']['id']; ?>">Show rating mode history</a>
+						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
 					</div>
 				</div>
 				<div id="userShowTime1">
@@ -284,7 +284,7 @@ if($user['User']['solved'] > $tsumegoNum)
 						<div id="chart22"></div>
 					</div>
 					<div align="center">
-						<a href="/tsumego_rating_attempts/user/<?php echo $user['User']['id']; ?>">Show rating mode history</a>
+						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
 					</div>
 				</div>
 				<div id="userShowTime2">

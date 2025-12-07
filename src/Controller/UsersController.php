@@ -1008,7 +1008,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_title', 'Admin Panel');
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('Comment');
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
@@ -1118,15 +1117,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
 				$del1 = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				$del2 = $this->TsumegoAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
-				$del3 = $this->TsumegoRatingAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				if (md5($toDelete['User']['name']) == $this->params['url']['hash'])
 				{
 					foreach ($del1 as $item)
 						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
 					foreach ($del2 as $item)
 						$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
-					foreach ($del3 as $item)
-						$this->TsumegoRatingAttempt->delete($item['TsumegoRatingAttempt']['id']);
 					$this->User->delete($toDelete['User']['id']);
 					echo '<pre>';
 					print_r('Deleted user ' . $toDelete['User']['name']);
@@ -1991,7 +1987,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
 		$oldest = $oldest->format('Y-m-d');
 		$ta = $this->TsumegoAttempt->find('all', [
-			'limit' => 400,
+			'limit' => 1000,
 			'order' => 'created DESC',
 			'conditions' => [
 				'user_id' => $id,
@@ -2008,6 +2004,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$taCount = count($ta);
 		for ($i = 0; $i < $taCount; $i++)
 		{
+			if ($ta[$i]['TsumegoAttempt']['user_rating'] != null)
+			{
+				$ta2['date'][] = $ta[$i]['TsumegoAttempt']['created'];
+				$ta2['rating'][] = $ta[$i]['TsumegoAttempt']['user_rating'];
+			}
+
 			$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
 			$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
 			if ($ta[$i]['TsumegoAttempt']['created'] >= $oldest)
@@ -2691,5 +2693,43 @@ Joschka Zimdars';
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
 		$this->set('u', Auth::getUser());
+	}
+
+	public function solveHistory($userID)
+	{
+		$PAGE_SIZE = 500;
+		$pageIndex = isset($this->params->query['page']) ? max(1, (int) $this->params->query['page']) : 1;
+		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
+		$offset = ($pageIndex - 1) * $PAGE_SIZE;
+
+		$attempts = Util::query("
+SELECT
+	set.title AS set_title,
+	tsumego_attempt.tsumego_id AS tsumego_id,
+	set_connection.id AS set_connection_id,
+	set_connection.num AS num,
+	tsumego_status.status AS status,
+	tsumego_attempt.created AS created,
+	tsumego_attempt.gain AS xp_gain,
+	tsumego_attempt.solved AS solved,
+	tsumego_attempt.misplays AS misplays,
+	tsumego_attempt.user_rating AS user_rating
+FROM
+	tsumego_attempt
+	JOIN set_connection ON set_connection.tsumego_id = tsumego_attempt.tsumego_id
+	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
+	JOIN `set` ON set_connection.set_id = `set`.id
+WHERE
+	tsumego_attempt.user_id=?
+ORDER BY created DESC
+LIMIT " . $PAGE_SIZE . "
+OFFSET " . $offset, [$userID, $userID]);
+
+		$this->set('_page', 'solveHistory');
+		$this->set('_title', 'Solve history');
+		$this->set('count', $count);
+		$this->set('pageIndex', $pageIndex);
+		$this->set('PAGE_SIZE', $PAGE_SIZE);
+		$this->set('attempts', $attempts);
 	}
 }
