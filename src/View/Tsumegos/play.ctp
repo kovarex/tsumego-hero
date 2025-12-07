@@ -1625,8 +1625,10 @@ if (
 	}
 	}
 
-	function reset(){
-		if(!tryAgainTomorrow) locked = false;
+	function reset()
+	{
+		if(!tryAgainTomorrow)
+			locked = false;
 		hoverLocked = false;
 		ko = false, lastMove = false;
 		lastHover = false, lastX = -1, lastY = -1;
@@ -1653,11 +1655,12 @@ if (
 		freePlayMode = false;
 		freePlayMode2 = false;
 		freePlayMode2done = false;
-		if(heartLoss) {
+		if(heartLoss)
+		{
 			misplays++;
-			document.cookie = "misplays="+misplays+";path=/tsumegos/play;SameSite=Lax";
+			setCookie('misplays', 'misplays');
 			updateHealth();
-	}
+		}
 		move = 0;
 
 		document.getElementById("status").innerHTML = "";
@@ -2096,12 +2099,13 @@ if (
 		if(mode==2) heartLoss = false;
 
 		freePlayMode = false;
-		if (heartLoss) {
+		if (heartLoss)
+		{
 			misplays++;
 			setCookie("misplays", misplays);
 			setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 			updateHealth();
-	}
+		}
 	}
 	</script>
 	<?php if($ui==2){ ?>
