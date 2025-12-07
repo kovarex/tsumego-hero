@@ -10,6 +10,10 @@ class AccountWidget
 	hovered = false;
 	xpIncreaseFx;
 	modeSelector;
+	heroProfile;
+	heroBar;
+	heroAchievements;
+	heroLogout;
 
 	constructor({rating, xp, level, show})
 	{
@@ -23,6 +27,10 @@ class AccountWidget
 		this.xpIncreaseFx = document.getElementById('xp-increase-fx');
 		this.textBarInMenu = document.getElementById('textBarInMenu');
 		this.modeSelector = document.getElementById('modeSelector');
+		this.heroProfile = document.getElementById("heroProfile");
+		this.heroBar = document.getElementById("heroBar");
+		this.heroAchievements = document.getElementById("heroAchievements");
+		this.heroLogout = document.getElementById("heroLogout");
 
 		this.bar.style.boxShadow = "";
 
@@ -67,7 +75,7 @@ class AccountWidget
 	{
 		this.bar.className = 'xp-bar-fill-c3';
 		this.setBarRatio(1);
-		this.barCaption.innerHTML = 'TO DO';
+		this.barCaption.innerHTML = 'Time mode';
 	}
 
 	setBarRatio(ratio)
@@ -79,20 +87,22 @@ class AccountWidget
 	{
 		this.hovered = true;
 		this.setup();
-		document.getElementById("heroProfile").style.display = "inline-block";
-		document.getElementById("heroBar").style.display = "inline-block";
-		document.getElementById("heroAchievements").style.display = "inline-block";
-		document.getElementById("heroLogout").style.display = "inline-block";
+		this.heroProfile.style.display = "inline-block";
+		if (this.heroBar)
+			this.heroBar.style.display = "inline-block";
+		this.heroAchievements.style.display = "inline-block";
+		this.heroLogout.style.display = "inline-block";
 	}
 
 	noHover()
 	{
 		this.hovered = false;
 		this.setup();
-		document.getElementById("heroProfile").style.display = "none";
-		document.getElementById("heroBar").style.display = "none";
-		document.getElementById("heroAchievements").style.display = "none";
-		document.getElementById("heroLogout").style.display = "none";
+		this.heroProfile.style.display = "none";
+		if (this.heroBar)
+			this.heroBar.style.display = "none";
+		this.heroAchievements.style.display = "none";
+		this.heroLogout.style.display = "none";
 	}
 
 	switchBarInMenu()
@@ -114,6 +124,8 @@ class AccountWidget
 
 	animate(increase)
 	{
+		if (this.show == 'time')
+			return;
 		this.bar.style.webkitTransition = "all 1s ease";
 		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
 		if  (increase)
