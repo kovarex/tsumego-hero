@@ -335,32 +335,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine5() //0:25 update user solved field
-	{
-		$this->loadModel('TsumegoStatus');
-
-		$users = $this->User->find('all', ['limit' => 100, 'order' => 'created DESC']);
-		$usersCount = count($users);
-		for ($i = 0; $i < $usersCount; $i++)
-		{
-			$uid = $users[$i]['User']['id'];
-			$ux = $this->User->findById($uid);
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $uid]]);
-			$solvedUts = [];
-			$utsCount = count($uts);
-			for ($j = 0; $j < $utsCount; $j++)
-				if ($uts[$j]['TsumegoStatus']['status'] == 'S' || $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C')
-					array_push($solvedUts, $uts[$j]);
-			$ux['User']['solved'] = count($solvedUts);
-			$this->User->save($ux);
-		}
-
-		$this->set('u', $users);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine6() //0:30 update user solved field
 	{
 		$this->loadModel('Answer');
