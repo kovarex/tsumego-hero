@@ -54,7 +54,7 @@
 				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
 
 			$rank = Rating::getRankFromRating($user['rating']);
-			$styleRank = Util::clampOptional($rank, Rating::getRankFromReadableRank('9d'), Rating::getRankFromReadableRank('20k'));
+			$styleRank = Util::clampOptional($rank, Rating::getRankFromReadableRank('20k'), Rating::getRankFromReadableRank('9d'));
 			$tableRowColor = 'color' . Rating::getReadableRank($styleRank);
 
 			echo '<tr class="'.$tableRowColor.'">';
