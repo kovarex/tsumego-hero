@@ -1,3 +1,19 @@
+class TimeModeState
+{
+	rank;
+	failCount;
+	successCount;
+	overallCount;
+
+	constructor({rank, failCount, successCount, overallCount})
+	{
+		this.rank = rank;
+		this.failCount = failCount;
+		this.successCount = successCount;
+		this.overallCount = overallCount;
+	}
+}
+
 class AccountWidget
 {
 	rating;
@@ -14,13 +30,15 @@ class AccountWidget
 	heroBar;
 	heroAchievements;
 	heroLogout;
+	timeMode;
 
-	constructor({rating, xp, level, show})
+	constructor({rating, xp, level, show, timeMode})
 	{
 		this.rating = rating;
 		this.xp = xp;
 		this.level = level;
 		this.show = show;
+		this.timeMode = timeMode;
 		this.bar = document.getElementById('xp-bar-fill');
 		this.barCaption = document.getElementById('account-bar-xp');
 		this.accountBar = document.getElementById('account-bar-user');
@@ -33,8 +51,6 @@ class AccountWidget
 		this.heroLogout = document.getElementById("heroLogout");
 
 		this.bar.style.boxShadow = "";
-
-		this.setup();
 	}
 
 	setup()
@@ -73,9 +89,16 @@ class AccountWidget
 
 	showTimeMode()
 	{
-		this.bar.className = 'xp-bar-fill-c3';
-		this.setBarRatio(1);
-		this.barCaption.innerHTML = 'Time mode';
+		if (this.hovered)
+		{
+			let message = this.timeMode.successCount + ' right';
+			if (this.timeMode.failCount)
+				message += '  ' + this.timeMode.failCount + ' bad';
+			this.barCaption.innerHTML = message;
+		}
+		else
+			this.barCaption.innerHTML = 'Time mode ' + this.timeMode.rank;
+		this.setBarRatio((this.timeMode.failCount + this.timeMode.successCount) / this.timeMode.overallCount);
 	}
 
 	setBarRatio(ratio)
@@ -125,7 +148,14 @@ class AccountWidget
 	animate(increase)
 	{
 		if (this.show == 'time')
+		{
+			if (increase)
+				this.timeSucceeded++;
+			else
+				this.timeFailed++;
+			this.showTimeMode();
 			return;
+		}
 		this.bar.style.webkitTransition = "all 1s ease";
 		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
 		if  (increase)
