@@ -18,24 +18,6 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function deleteoldattempts()
-	{
-		$this->loadModel('TsumegoAttempt');
-		$ta = $this->TsumegoAttempt->find('all', ['limit' => 5000, 'order' => 'created ASC']);
-		echo '<pre>';
-		print_r($ta[0]['TsumegoAttempt']['created']);
-		echo '</pre>';
-
-		foreach ($ta as $item)
-			$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
-
-		$this->set('x', '2023-08-01 00:00:00');
-		$this->set('date', $ta[0]['TsumegoAttempt']['created']);
-	}
-
-	/**
-	 * @return void
-	 */
 	public function adjusttsumego()
 	{
 		$this->loadModel('Tsumego');
