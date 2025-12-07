@@ -10,12 +10,12 @@ class AccountWidget
 			return;
 		if (Auth::isInTimeMode())
 		{
-			$barClassname = '';
+			$barClassname = 'xp-bar-fill-c3';
 			$barRatio = 1;
 			$accountBarClassname = '';
-			$barText = '';
-			$textBarInMenu = '';
-			$modeSelectorClass = '';
+			$barText = 'Time mode';
+			$textBarInMenu = 'Level bar';
+			$modeSelectorClass = 'modeSelectorInLevelBar';
 		}
 		elseif (Util::getCookie('showInAccountWidget') == 'rating')
 		{
@@ -66,19 +66,26 @@ class AccountWidget
 				</div>
 			<div id="heroProfile" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/users/view/' . Auth::getUserID() . '">Profile</a></li>
-			</div>';
-
-		echo '<div id="heroBar" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
-				<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">' . $textBarInMenu . '</a></li>
 			</div>
+			<div id="heroBar" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
+					<li><a id="textBarInMenu" onclick="accountWidget.switchBarInMenu()">' . $textBarInMenu . '</a></li>
+				</div>
 			<div id="heroAchievements" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/achievements">Achievements</a></li>
 			</div>
 			<div id="heroLogout" onmouseover="accountWidget.hover();" onmouseout="accountWidget.noHover();">
 				<li><a href="/users/logout">Sign Out</a></li>
-			</div>';
-		if (!Auth::isInTimeMode())
-			echo '<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
+			</div>
+			<div id="modeSelector" class="' . $modeSelectorClass . '" onclick="accountWidget.switchBarInMenu();"></div>';
+	}
+
+	private static function whatToShow()
+	{
+		if (Auth::isInTimeMode())
+			return 'time';
+		if (Util::getCookie('showInAccountWidget') == 'rating')
+			return 'rating';
+		return 'level';
 	}
 
 	public static function renderJS()
@@ -90,7 +97,7 @@ class AccountWidget
 					rating: " . Auth::getUser()['rating'] . ",
 					xp: " . Auth::getUser()['xp'] . ",
 					level: " . Auth::getUser()['level'] . ",
-					show: '" . (Util::getCookie('showInAccountWidget') == 'rating' ? 'rating' : 'level') . "'});";
+					show: '" . AccountWidget::whatToShow() . "'});";
 		else
 			echo "null;";
 	}
