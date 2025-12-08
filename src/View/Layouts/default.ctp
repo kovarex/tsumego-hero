@@ -231,7 +231,7 @@ echo $this->fetch('script');
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/duplicates">Merge Duplicates</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/publish">Publish Schedule</a></li>';
+									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uservisits">Users Per Day</a></li>';

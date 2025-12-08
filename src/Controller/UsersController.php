@@ -46,7 +46,8 @@ class UsersController extends AppController
 		$this->set('id', $id);
 	}
 
-	public function publish(): void
+	// shows the publish schedule
+	public function showPublishSchedule(): void
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
