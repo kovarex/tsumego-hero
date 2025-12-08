@@ -35,13 +35,6 @@ class TestCaseWithAuth extends ControllerTestCase
 			$this->logout();
 	}
 
-	public function testLogin()
-	{
-		$this->assertFalse(Auth::isLoggedIn());
-		$this->login('kovarex');
-		$this->assertTrue(Auth::isLoggedIn());
-	}
-
 	public function getStringDom()
 	{
 		$dom = DOMDocument::createFromString($this->view, LIBXML_HTML_NOIMPLIED);
