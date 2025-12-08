@@ -30,10 +30,7 @@
 		"post-install-cmd": "@install-hooks",
 		"post-update-cmd": "@install-hooks",
 		"install-hooks": [
-			"@php -r \"if (!file_exists('.git/hooks')) { mkdir('.git/hooks', 0755, true); }\"",
-			"@php -r \"$content = file_get_contents('.githooks/pre-commit'); $content = str_replace(\\\"\\r\\n\\\", \\\"\\n\\\", $content); file_put_contents('.git/hooks/pre-commit', $content);\"",
-			"@php -r \"chmod('.git/hooks/pre-commit', 0755);\"",
-			"echo 'Git hooks installed successfully!'"
+			"@php .githooks/install-hooks.php"
 		],
 		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
 		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
