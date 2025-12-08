@@ -183,4 +183,6 @@ chmod 777 "$ROOT_DIR/webroot/cache_css"
 ./bin/cake asset_compress clear
 ./bin/cake asset_compress build --force
 
+chmod 666 "$ROOT_DIR/tmp/asset_compress_build_time"
+
 echo "=== Deploy complete ==="
