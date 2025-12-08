@@ -56,7 +56,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('users/adminstats');
 
 		// Should redirect to home page
-		$this->assertStringContainsString('/', $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('/', $browser->getCurrentURL());
 	}
 
 	/**

@@ -341,7 +341,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
-		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->getCurrentURL());
 		$this->assertSame($browser->getCssSelect("#playTitle")[0]->getText(), "1 of 10");
 	}
 
@@ -594,7 +594,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser->get('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
 			. '&rankID=' . $context->timeModeRanks[0]['id']);
-		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->getCurrentURL());
 
 		$tsumegosInTimeMode = [];
 		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all');

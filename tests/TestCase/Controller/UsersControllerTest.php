@@ -31,7 +31,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Should be redirected back to highscore page
 		usleep(200 * 1000);
-		$currentUrl = $browser->driver->getCurrentURL();
+		$currentUrl = $browser->getCurrentURL();
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
 

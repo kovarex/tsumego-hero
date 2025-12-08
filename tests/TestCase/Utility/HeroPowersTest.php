@@ -18,7 +18,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
 		$browser->clickId('refinement');
-		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->getCurrentURL());
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
 			'tsumego_id' => $context->otherTsumegos[0]['id'],
 			'user_id' => Auth::getUserID()]]);
@@ -48,7 +48,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->driver->executeScript("displayResult('F')"); // fail the problem
 		// the display result should refresh the page
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($oldBodyElement));
-		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->getCurrentURL());
 
 		// Wait for navigation buttons to load
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::cssSelector('div.tsumegoNavi2 li')));

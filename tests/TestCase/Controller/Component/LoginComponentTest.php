@@ -190,7 +190,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys($newPassword);
 		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserNewpasswordForm input[type="submit"]'));
 		$sumbitButton->click();
-		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->getCurrentURL());
 		$this->assertTextContains("Password changed", $browser->driver->getPageSource());
 
 		$newUser = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'kovarex']])['User'];

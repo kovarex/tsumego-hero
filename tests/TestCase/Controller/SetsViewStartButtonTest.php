@@ -39,7 +39,7 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			$browser->get('sets/view/' . $setId);
 
 			// 2. Verify we're on the set view page
-			$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
+			$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->getCurrentURL());
 
 			// Wait for page to fully load
 			$browser->waitUntilCssSelectorExists('a.new-button.new-buttonx');
@@ -53,7 +53,7 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			// The URL is /{setConnectionId} (short form)
 			$setConnectionId = $context->tsumego['set-connections'][0]['id'];
 			$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
-			$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
+			$this->assertSame($expectedUrl, $browser->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
 		}
 	}
 }

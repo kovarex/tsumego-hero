@@ -21,17 +21,15 @@ class Browser
 		// Set HEADED=1 environment variable to watch tests visually
 		$chromeOptions = new ChromeOptions();
 		$chromeOptions->setExperimentalOption('w3c', true);
-		
+
 		$isHeaded = getenv('HEADED') === '1' || getenv('HEADED') === 'true';
 		if (!$isHeaded)
-		{
 			$chromeOptions->addArguments([
 				'--headless=new',
 				'--no-sandbox',
 				'--disable-dev-shm-usage',
 				'--disable-gpu'
 			]);
-		}
 
 		$desiredCapabilities = DesiredCapabilities::chrome();
 		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
@@ -43,19 +41,21 @@ class Browser
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
-		$this->driver->get(Util::getMyAddress() . '/empty.php');
+			$this->driver->get(Util::getMyAddress() . '/empty.php');
 
-		// CRITICAL: Signal test mode ONCE in constructor (before any real navigation)
-		$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1"]);
+			// CRITICAL: Signal test mode ONCE in constructor (before any real navigation)
+			// Set cookies with explicit path='/' and domain to ensure they apply to all pages
+			// Domain must match the host in getMyAddress()
+			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
 
-		// Xdebug cookies
-		$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug']);
-		$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2"]);
+			// Xdebug cookies
+			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug', 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
 
-		// Pass TEST_TOKEN to browser so it uses the same parallel test database
-		$testToken = getenv('TEST_TOKEN');
-		if ($testToken)
-			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken]);
+			// Pass TEST_TOKEN to browser so it uses the same parallel test database
+			$testToken = getenv('TEST_TOKEN');
+			if ($testToken)
+				$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
 		}
 		catch (Exception $e)
 		{
@@ -68,6 +68,23 @@ class Browser
 	public function __destruct()
 	{
 		$this->driver->quit();
+	}
+
+	/**
+	 * Get current URL without test-specific query parameters
+	 * Strips PHPUNIT_TEST and TEST_TOKEN parameters that are added for test mode
+	 */
+	public function getCurrentURL(): string
+	{
+		$url = $this->driver->getCurrentURL();
+		// Remove test query parameters
+		$url = preg_replace('/([?&])PHPUNIT_TEST=1(&|$)/', '$1', $url);
+		$url = preg_replace('/([?&])TEST_TOKEN=\d+(&|$)/', '$1', $url);
+		// Clean up trailing ? or & if they're the only thing left
+		$url = rtrim($url, '?&');
+		// Clean up double & to single &
+		$url = preg_replace('/&{2,}/', '&', $url);
+		return $url;
 	}
 
 	public function assertNoErrors(): void
@@ -153,12 +170,45 @@ class Browser
 					'name' => "disable-achievements",
 					'value' => "true"
 				]);
+
+			// Re-set test mode cookies after navigation
+			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			$testToken = getenv('TEST_TOKEN');
+			if ($testToken)
+				$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
 		}
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
 		$url = ltrim($url, '/');
 		// Navigate (first time if no auth, or reload with auth cookies)
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
+
+		// Inject TEST_TOKEN into all forms so POST requests include it
+		$testToken = getenv('TEST_TOKEN');
+		if ($testToken)
+			$this->driver->executeScript("
+				document.querySelectorAll('form').forEach(function(form) {
+					// Check if TEST_TOKEN hidden field already exists
+					var existing = form.querySelector('input[name=\"TEST_TOKEN\"]');
+					if (!existing) {
+						var input = document.createElement('input');
+						input.type = 'hidden';
+						input.name = 'TEST_TOKEN';
+						input.value = '{$testToken}';
+						form.appendChild(input);
+					}
+					
+					// Also add PHPUNIT_TEST
+					var existingTest = form.querySelector('input[name=\"PHPUNIT_TEST\"]');
+					if (!existingTest) {
+						var inputTest = document.createElement('input');
+						inputTest.type = 'hidden';
+						inputTest.name = 'PHPUNIT_TEST';
+						inputTest.value = '1';
+						form.appendChild(inputTest);
+					}
+				});
+			");
 
 		// Wait for page to be fully loaded (important in parallel testing)
 		$this->driver->wait(5)->until(function ($driver) {
@@ -171,8 +221,7 @@ class Browser
 	{
 		// Wait for element to be present and clickable
 		$wait = new WebDriverWait($this->driver, $timeout, 500);
-		$element = $wait->until(function () use ($name)
-		{
+		$element = $wait->until(function () use ($name) {
 			try
 			{
 				$el = $this->driver->findElement(WebDriverBy::id($name));
@@ -196,8 +245,7 @@ class Browser
 	public function clickCssSelect($name, $timeout = 10)
 	{
 		$wait = new WebDriverWait($this->driver, $timeout, 500);
-		$element = $wait->until(function () use ($name)
-		{
+		$element = $wait->until(function () use ($name) {
 			try
 			{
 				$el = $this->driver->findElement(WebDriverBy::cssSelector($name));
@@ -433,7 +481,7 @@ class Browser
 	{
 		try
 		{
-			$this->driver->wait($timeoutSeconds)->until(function ($driver) {
+			$this->driver->wait($timeoutSeconds, 100)->until(function ($driver) {
 				try
 				{
 					$driver->switchTo()->alert();
@@ -444,6 +492,8 @@ class Browser
 					return false;
 				}
 			});
+			// Switch to alert again after wait completes to ensure context is correct
+			$this->driver->switchTo()->alert();
 			return true;
 		}
 		catch (\Facebook\WebDriver\Exception\TimeoutException $e)
@@ -456,13 +506,77 @@ class Browser
 	 * Click element and wait for alert (for testing error cases)
 	 * @param string $id Element ID to click
 	 * @param int $timeoutSeconds Maximum time to wait for alert
+	 * @return string Alert text
 	 * @throws Exception if alert doesn't appear
 	 */
-	public function clickIdAndExpectAlert(string $id, int $timeoutSeconds = 3): void
+	public function clickIdAndExpectAlert(string $id, int $timeoutSeconds = 3): string
 	{
 		$this->clickId($id);
-		if (!$this->waitForAlert($timeoutSeconds))
+
+		// Wait for alert and capture text in one atomic operation
+		$alertText = null;
+		try
+		{
+			$this->driver->wait($timeoutSeconds, 100)->until(function ($driver) use (&$alertText) {
+				try
+				{
+					$alert = $driver->switchTo()->alert();
+					$alertText = $alert->getText();
+					$alert->dismiss(); // Dismiss immediately to prevent leaks
+					return true;
+				}
+				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+				{
+					return false;
+				}
+			});
+
+			if ($alertText === null)
+				throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
+
+			return $alertText;
+		}
+		catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+		{
 			throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
+		}
+	}
+
+	/**
+	 * Delete authentication cookies to simulate logged-out state
+	 * Preserves test mode cookies (PHPUNIT_TEST, TEST_TOKEN) for test isolation
+	 */
+	public function deleteAuthCookies(): void
+	{
+		// Delete JWT auth cookie
+		try
+		{
+			$this->driver->manage()->deleteCookieNamed('jwt_token');
+		}
+		catch (Exception $e)
+		{
+			// Cookie might not exist
+		}
+
+		// Delete test environment hack cookie
+		try
+		{
+			$this->driver->manage()->deleteCookieNamed('hackedLoggedInUserID');
+		}
+		catch (Exception $e)
+		{
+			// Cookie might not exist
+		}
+
+		// Delete legacy CAKEPHP session cookie if it exists
+		try
+		{
+			$this->driver->manage()->deleteCookieNamed('CAKEPHP');
+		}
+		catch (Exception $e)
+		{
+			// Cookie might not exist
+		}
 	}
 
 	public $driver;
