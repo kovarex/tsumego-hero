@@ -76,48 +76,60 @@ class AccountWidgetTest extends ControllerTestCase
 
 	public function testUpdateRatingInAccountWidgetOnSolve()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 1000],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
-		$browser = Browser::instance();
-		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		foreach (['V', 'S'] as $initialStatus)
+		{
+			$context = new ContextPreparator([
+				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 1000],
+				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', 'rating');
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame('1000', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame('1000', $browser->find('#account-bar-xp')->getText());
 
-		$browser->playWithResult('S');
+			$browser->playWithResult('S');
 
-		$expectedChange = Rating::calculateRatingChange(1000, 1000, 1, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+			// already solved problem doesn't update rating
+			$expectedChange = $initialStatus == 'S' ? 0 : Rating::calculateRatingChange(1000, 1000, 1, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
 
-		$browser->hover($browser->find('body'));
-		$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame(strval(round(1000 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('body'));
+			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame(strval(round(1000 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
+		}
 	}
 
 	public function testUpdateRankInAccountWidgetOnMisplay()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2050],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
-		$browser = Browser::instance();
-		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		foreach (['V', 'S'] as $initialStatus)
+		{
+			$context = new ContextPreparator([
+				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2050],
+				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', 'rating');
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame('2050', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame('2050', $browser->find('#account-bar-xp')->getText());
 
-		$browser->playWithResult('F');
+			$browser->playWithResult('F');
 
-		$expectedChange = Rating::calculateRatingChange(2050, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+			// already solved problem doesn't update rating
+			$expectedChange = $initialStatus == 'S' ? 0 : Rating::calculateRatingChange(2050, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
 
-		// rank gets demoted from 1d to 1k
-		$browser->hover($browser->find('body'));
-		$this->assertSame('1k', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame(strval(round(2050 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			// rank gets demoted from 1d to 1k
+			$browser->hover($browser->find('body'));
+			$this->assertSame('1k', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame(strval(round(2050 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
+		}
 	}
 }
