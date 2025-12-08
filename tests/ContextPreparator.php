@@ -15,7 +15,7 @@ class ContextPreparator
 		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
 		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
-		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']); // FK to: User, Set
+		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		if (!empty(ClassRegistry::init('User')->find('all')))
 			throw new Exception('Users were deleted and  yet still they are some');
