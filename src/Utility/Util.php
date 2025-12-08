@@ -219,4 +219,14 @@ class Util
 			return null;
 		return strval($input);
 	}
+
+	public static function getGraphColor(): string
+	{
+		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#ddd' : '#3e3e3e';
+	}
+
+	public static function getGraphGridColor(): string
+	{
+		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#000' : '#fff';
+	}
 }

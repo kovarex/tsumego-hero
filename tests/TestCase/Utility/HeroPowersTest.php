@@ -100,8 +100,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->clickId('besogo-next-button');
 		$this->assertSame($context->XPGained(), Constants::$SPRINT_MULTIPLIER * $originalTsumego0XPValue);
 		$this->assertTextContains('Sprint', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 
 		// clicking next after solving again, sprint is applied on xp still
 		$browser->clickId('besogo-next-button');

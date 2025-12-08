@@ -80,8 +80,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Kovarex solves a problem
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 
 		// now kovarex is there
 		$browser->get('users/leaderboard');
@@ -150,11 +149,103 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertCount(5, $tableRows);
 		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
 		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '12d');
-
 		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player3d');
 		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '3d');
-
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player2d');
 		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '2d');
+	}
+
+	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
+	{
+		$context = new ContextPreparator([
+			'user' => ['email' => 'current@example.com'],
+			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$browser->get('users/view/' . $context->otherUsers[0]['id']);
+		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
+	}
+
+	public function testUserProfilePage()
+	{
+		$context = new ContextPreparator([
+			'user' => [
+				'email' => 'current@example.com',
+				'level' => 66,
+				'xp' => 57,
+				'rating' => 2065,
+				'solved' => 1],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'attempt' => ['rating' => 2165]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertSame('Level:', $browser->getTableCell('#level-info-table', 0, 0)->getText());
+		$this->assertSame('66', $browser->getTableCell('#level-info-table', 0, 1)->getText());
+		$this->assertSame('Level up:', $browser->getTableCell('#level-info-table', 1, 0)->getText());
+		$this->assertSame('57/4050', $browser->getTableCell('#level-info-table', 1, 1)->getText());
+		$this->assertSame('XP earned:', $browser->getTableCell('#level-info-table', 2, 0)->getText());
+		$this->assertSame(90957 . ' XP', $browser->getTableCell('#level-info-table', 2, 1)->getText());
+		$this->assertSame('Health:', $browser->getTableCell('#level-info-table', 3, 0)->getText());
+		$this->assertSame(Util::getHealthBasedOnLevel(66) . ' HP', $browser->getTableCell('#level-info-table', 3, 1)->getText());
+		$this->assertSame('Hero powers:', $browser->getTableCell('#level-info-table', 4, 0)->getText());
+		$this->assertSame('3', $browser->getTableCell('#level-info-table', 4, 1)->getText());
+
+		$this->assertSame('Rank:', $browser->getTableCell('#rank-info-table', 0, 0)->getText());
+		$this->assertSame('1d', $browser->getTableCell('#rank-info-table', 0, 1)->getText());
+		$this->assertSame('Rating:', $browser->getTableCell('#rank-info-table', 1, 0)->getText());
+		$this->assertSame('2065', $browser->getTableCell('#rank-info-table', 1, 1)->getText());
+		$this->assertSame('Highest rank:', $browser->getTableCell('#rank-info-table', 2, 0)->getText());
+		$this->assertSame('2d', $browser->getTableCell('#rank-info-table', 2, 1)->getText());
+		$this->assertSame('Highest rating:', $browser->getTableCell('#rank-info-table', 3, 0)->getText());
+		$this->assertSame('2165', $browser->getTableCell('#rank-info-table', 3, 1)->getText());
+
+		$this->assertSame('Overall solved:', $browser->getTableCell('#final-info-table', 0, 0)->getText());
+		$this->assertSame('1 of 1', $browser->getTableCell('#final-info-table', 0, 1)->getText());
+		$this->assertSame('Overall %:', $browser->getTableCell('#final-info-table', 1, 0)->getText());
+		$this->assertSame('100%', $browser->getTableCell('#final-info-table', 1, 1)->getText());
+	}
+
+	public function testTsumegoRatingGraph()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'rating' => '2200',
+				'attempt' => ['rating' => 2165],
+				'status' => 'S']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('showx8');
+		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
+		$this->assertTextContains('set-1', $browser->driver->getPageSource());
+	}
+
+	public function testShowPublishSchedule()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 673]]]]]);
+
+		$tsumegoToPublish = $context->otherTsumegos[0];
+		$publicSetID = $context->otherTsumegos[1]['set-connections'][0]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToPublish['id'];
+		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 0;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		$browser = Browser::instance();
+		$browser->get('/users/showPublishSchedule');
+		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
+		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 	}
 }

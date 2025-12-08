@@ -186,13 +186,12 @@ class ContextPreparator
 			return;
 
 		$tsumegoAttempt['TsumegoAttempt']['user_id'] = $this->user['id'];
-		$tsumegoAttempt['TsumegoAttempt']['elo'] = $this->user['rating'];
+		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Util::extract('rating', $tsumegoAttempt) ?: $this->user['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_id'] = $tsumego['id'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['seconds'] = 0;
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $tsumegoAttempt['solved'] ?: false;
-		$tsumegoAttempt['TsumegoAttempt']['mode'] = $this->user['mode'];
-		$tsumegoAttempt['TsumegoAttempt']['tsumego_elo'] = $tsumego['rating'];
+		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $tsumego['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] = $tsumegoAttempt['misplays'] ?: 0;
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}

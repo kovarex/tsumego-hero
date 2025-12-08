@@ -26,10 +26,10 @@ class TimeMode
 			if ($attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
 				$this->successCount++;
 			elseif (
-				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_FAILED ||
-				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_SKIPPED ||
-				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT)
-				$this->failCount++;
+				$attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_FAILED
+				|| $attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_SKIPPED
+				|| $attempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_STATUS_TIMEOUT)
+					$this->failCount++;
 		}
 		$this->overallCount = count($attempts);
 
@@ -277,11 +277,11 @@ class TimeMode
 	{
 		if (!$this->currentSession)
 			return 'null';
-		return 'new TimeModeState({' .
-			'rank: \'' . $this->getCurrentRank() . '\',' .
-			'failCount: ' . $this->failCount . ',' .
-			'successCount: ' . $this->successCount . ',' .
-			'overallCount: ' . $this->overallCount . '})';
+		return 'new TimeModeState({'
+			. 'rank: \'' . $this->getCurrentRank() . '\','
+			. 'failCount: ' . $this->failCount . ','
+			. 'successCount: ' . $this->successCount . ','
+			. 'overallCount: ' . $this->overallCount . '})';
 	}
 
 	public function getCurrentRank(): string
@@ -293,7 +293,7 @@ class TimeMode
 
 	public $currentSession;
 	public $rank;
-	public $secondsToSolve; // remaining time
+	public $secondsToSolve = 0; // remaining time
 	public $overallSecondsToSolve; // the time to solve the problem
 	public $successCount = 0;
 	public $failCount = 0;

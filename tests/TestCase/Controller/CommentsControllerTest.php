@@ -54,8 +54,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$this->assertFalse($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')");
+		$browser->playWithResult('S');
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 

@@ -156,6 +156,8 @@ class AccountWidget
 			this.showTimeMode();
 			return;
 		}
+		if (xpStatus.solved)
+			return;
 		this.bar.style.webkitTransition = "all 1s ease";
 		this.rating += calculateRatingChange(this.rating, xpStatus.tsumegoRating, increase, 0.5);
 		if  (increase)

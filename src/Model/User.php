@@ -45,4 +45,34 @@ class User extends AppModel
 			],
 		],
 	];
+
+	public static function renderPremium($user): void
+	{
+		if ($user['premium'] == 2 || $user['premium'] == 1)
+			echo '<img alt="Account Type" title="Account Type" src="/img/premium' . $user['premium'] . '.png" height="16px">';
+	}
+
+	public static function getHeroPowersCount($user): int
+	{
+		$heroPowers = 0;
+		if($user['level'] >= HeroPowers::$SPRINT_MINIMUM_LEVEL)
+			$heroPowers++;
+		if($user['level'] >= HeroPowers::$INTUITION_MINIMUM_LEVEL)
+			$heroPowers++;
+		if($user['level'] >= HeroPowers::$REJUVENATION_MINIMUM_LEVEL)
+			$heroPowers++;
+		if($user['premium'] > 0 || $user['level'] >= HeroPowers::$REFINEMENT_MINIMUM_LEVEL)
+			$heroPowers++;
+		return $heroPowers;
+	}
+
+	public static function getHighestRating($user): float
+	{
+		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $user['id']],
+			'order' => 'user_rating DESC']);
+		if ($highestTsumegoAttempt)
+			return max($highestTsumegoAttempt['TsumegoAttempt']['user_rating'], $user['rating']);
+		return $user['rating'];
+	}
 }

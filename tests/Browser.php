@@ -305,6 +305,7 @@ class Browser
 	{
 		usleep(1000 * 100);
 		$this->driver->executeScript("displayResult('" . $result . "')");
+		usleep(1000 * 50);
 	}
 
 	public function getAlertText()
@@ -315,6 +316,12 @@ class Browser
 	public function setCookie($name, $value)
 	{
 		$this->driver->manage()->addCookie(['name' => $name, 'value' => $value]);
+	}
+
+	public function getTableCell($selector, $row, $column)
+	{
+		$table = $this->find($selector);
+		return $table->findElements(WebDriverBy::tagName("tr"))[$row]->findElements(WebDriverBy::tagName("td"))[$column];
 	}
 
 	public $driver;

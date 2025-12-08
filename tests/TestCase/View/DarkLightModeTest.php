@@ -53,7 +53,7 @@ class DarkLightModeTest extends ControllerTestCase
 		// Act: Set cookie to dark and load page
 		$browser = Browser::instance();
 		$browser->get('sites/index'); // Need to be on domain first
-		$browser->driver->manage()->addCookie(new Cookie('lightDark', 'dark'));
+		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index'); // Reload with cookie
 
 		// Assert: Body should have dark-theme class
@@ -81,7 +81,7 @@ class DarkLightModeTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('sites/index'); // Need to be on domain first
-		$browser->driver->manage()->addCookie(new Cookie('lightDark', 'dark'));
+		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index'); // Load with dark mode
 
 		// Verify we're in dark mode

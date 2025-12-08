@@ -1581,7 +1581,7 @@ if (
 		?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.$t['Tsumego']['id']; ?>");
 		<?php } ?>
-		$("#showx8").attr("href", "<?php echo '/users/tsumego_rating/'.$t['Tsumego']['id']; ?>");
+		$("#showx8").attr("href", "<?php echo '/users/tsumego_rating_graph/'.$t['Tsumego']['id']; ?>");
 		$("#showx4").css("display", "inline-block");
 		$("#show4").css("display", "inline-block");
 		$("#show5").css("display", "inline-block");

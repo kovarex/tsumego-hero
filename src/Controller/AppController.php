@@ -1917,7 +1917,6 @@ class AppController extends Controller
 		$this->loadModel('User');
 		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoRatingAttempt');
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeAttempt');
 		$this->loadModel('TsumegoStatus');

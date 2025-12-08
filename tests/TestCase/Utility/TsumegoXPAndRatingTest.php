@@ -38,8 +38,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
 		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
@@ -191,8 +190,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		usleep(1000 * 100);
-		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->playWithResult('S'); // solve the problem
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertGreaterThan(1, $context->reloadUser()['level']);
 	}
