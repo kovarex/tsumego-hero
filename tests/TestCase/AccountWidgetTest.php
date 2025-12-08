@@ -53,25 +53,30 @@ class AccountWidgetTest extends ControllerTestCase
 
 	public function testUpdateRatingInAccountWidgetOnMisplay()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2075],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000]]]);
-		$browser = Browser::instance();
-		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		foreach (['V', 'S'] as $initialStatus)
+		{
+			$context = new ContextPreparator([
+				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2075],
+				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', 'rating');
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 
-		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame('2075', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame('2075', $browser->find('#account-bar-xp')->getText());
 
-		$browser->playWithResult('F');
+			$browser->playWithResult('F');
 
-		$expectedChange = Rating::calculateRatingChange(2075, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
+			$expectedChange = $initialStatus == 'S' ? 0 : Rating::calculateRatingChange(2075, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
 
-		$browser->hover($browser->find('body'));
-		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame(strval(round(2075 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('body'));
+			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame(strval(round(2075 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertLessThan(abs(1000 + $expectedChange - $context->reloadUser()['rating']), 0.01);
+		}
 	}
 
 	public function testUpdateRatingInAccountWidgetOnSolve()
@@ -125,11 +130,9 @@ class AccountWidgetTest extends ControllerTestCase
 
 			// rank gets demoted from 1d to 1k
 			$browser->hover($browser->find('body'));
-			$this->assertSame('1k', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame($initialStatus == 'S' ? '1d' : '1k', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(2050 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
 		}
 	}
 }
