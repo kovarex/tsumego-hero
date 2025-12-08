@@ -38,6 +38,9 @@ class SetsControllerTest extends TestCaseWithAuth
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
 		$contextParams['other-tsumegos'] [] = [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+			'sets' => [['name' => 'sandbox-set', 'num' => '1', 'public' => 0]]];
+		$contextParams['other-tsumegos'] [] = [
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
 		$context = new ContextPreparator($contextParams);
@@ -49,6 +52,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$this->assertCount(1, $collectionMiddleLeft);
+		$this->assertSame($collectionMiddleLeft[0]->textContent, '1 problem'); // the sandbox problem isn't included
 
 		$_COOKIE['filtered_ranks'] = '10k';
 		$this->testAction('sets', ['return' => 'view']);
@@ -65,6 +72,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$contextParams['other-tsumegos'] [] = [
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
 			'sets' => [['name' => 'set 1', 'num' => '1']]];
+
+		// adding sandbox tsumego in the selected rank, to test that it isn't shown
+		$contextParams['other-tsumegos'] [] = [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+			'sets' => [['name' => 'sandbox-set', 'num' => '1', 'public' => 0]]];
+
 		$contextParams['other-tsumegos'] [] = [
 			'rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
 			'sets' => [['name' => 'set 2', 'num' => '1']]];
@@ -96,7 +109,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$problemLinks = $dom->querySelectorAll('.tooltip');
 		$this->assertCount(1, $problemButtons);
-		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
+		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[2]['set-connections'][0]['id']);
 	}
 
 	public function testSetViewSetBased(): void

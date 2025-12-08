@@ -12,6 +12,13 @@ class TsumegoButtonsQueryBuilder
 
 		$this->query .= " FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
 		Util::addSqlCondition($this->condition, 'tsumego.deleted is NULL');
+
+		// when I'm quering by topics (which means sets), and I'm viewing private set
+		// It means I explicitelly want to view that.
+		// In all other cases, private set is not included.
+		if ($tsumegoFilters->query != 'topics')
+			Util::addSqlCondition($this->condition, '`set`.public = 1');
+
 		$this->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())
 			$this->query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
