@@ -16,6 +16,7 @@ class UsersController extends AppController
 	public $helpers = ['Html', 'Form'];
 
 	/**
+	 * Shows graph of the rating evolution of the given tsumego
 	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
@@ -32,7 +33,7 @@ class UsersController extends AppController
 		if (!$s)
 			throw new NotFoundException('Set not found');
 		$name = $s['Set']['title'] . ' - ' . $sc['SetConnection']['num'];
-		$ta = $this->TsumegoAttempt->find('all', [
+		$tsumegoAttempts = $this->TsumegoAttempt->find('all', [
 			'order' => 'created ASC',
 			'conditions' => [
 				'tsumego_id' => $id,
@@ -41,7 +42,7 @@ class UsersController extends AppController
 		]);
 		$this->set('rating', $t['Tsumego']['rating']);
 		$this->set('name', $name);
-		$this->set('ta', $ta);
+		$this->set('tsumegoAttempts', $tsumegoAttempts);
 		$this->set('id', $id);
 	}
 

@@ -155,5 +155,17 @@ class Auth
 		return Util::getHealthBasedOnLevel(Auth::getUser()['level']) - Auth::getUser()['damage'];
 	}
 
+	public static function lightMode()
+	{
+		if (Auth::isLoggedIn())
+			return (Auth::getUser()['lastLight'] == 0 || Auth::getUser()['lastLight'] == 2) ? self::$LIGHT_MODE : self::$DARK_MODE;
+		if  (!empty($_COOKIE['lightDark']))
+			if ($_COOKIE['lightDark'] == 'dark')
+				return self::$DARK_MODE;
+		return self::$LIGHT_MODE;
+	}
+
 	private static $user = null;
+	public static int $LIGHT_MODE = 1;
+	public static int $DARK_MODE = 2;
 }

@@ -208,4 +208,17 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame('Overall %:', $browser->getTableCell('#final-info-table', 1, 0)->getText());
 		$this->assertSame('100%', $browser->getTableCell('#final-info-table', 1, 1)->getText());
 	}
+
+	public function testTsumegoRatingGraph()
+	{
+		$context = new ContextPreparator([
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'rating' => '2200',
+				'attempt' => ['rating' => 2165]]]]);
+		$browser = Browser::instance();
+		$browser->get('users/tsumego_rating/' . $context->otherTsumegos[0]['id']);
+		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
+		$this->assertTextContains('set-1', $browser->driver->getPageSource());
+	}
 }
