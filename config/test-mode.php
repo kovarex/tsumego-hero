@@ -15,6 +15,9 @@ if (isset($_GET['PHPUNIT_TEST']) || isset($_POST['PHPUNIT_TEST']) || isset($_COO
 {
 	putenv('PHPUNIT_TEST=1');
 	$_ENV['PHPUNIT_TEST'] = '1';
+	// Also set PHPUNIT_RUNNING for compatibility with database.php
+	putenv('PHPUNIT_RUNNING=1');
+	$_ENV['PHPUNIT_RUNNING'] = '1';
 }
 
 $testToken = $_GET['TEST_TOKEN'] ?? $_POST['TEST_TOKEN'] ?? $_COOKIE['TEST_TOKEN'] ?? null;

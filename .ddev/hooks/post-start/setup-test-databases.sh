@@ -9,13 +9,11 @@ for i in 1 2 3 4; do
   echo "  - Creating test_$i database..."
   ddev exec mysql -e "CREATE DATABASE IF NOT EXISTS test_$i"
   ddev exec mysql -e "GRANT ALL PRIVILEGES ON test_$i.* TO 'db'@'%'"
-  
-  echo "  - Running migrations on test_$i..."
-  # Pass TEST_TOKEN as environment variable to the command
-  ddev exec bash -c "TEST_TOKEN=$i vendor/bin/phinx migrate -e test"
-done
 
-echo "  - Flushing privileges..."
+  echo "  - Running migrations on test_$i..."
+  # Use the test_N phinx environment (defined in phinx.php)
+  ddev exec vendor/bin/phinx migrate -e test_$i
+doneecho "  - Flushing privileges..."
 ddev exec mysql -e "FLUSH PRIVILEGES"
 
 echo ""

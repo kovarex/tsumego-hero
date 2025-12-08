@@ -156,12 +156,12 @@ class Util
 	{
 		if (Util::isInGithubCI())
 			return $_SERVER['TEST_APP_URL'];
-		
+
 		// When running in DDEV from Selenium containers, use Docker internal hostname
 		// This allows Selenium nodes to reach the web container directly
 		if (getenv('IS_DDEV_PROJECT') === 'true' || !empty($_SERVER['DDEV_SITENAME']))
 			return 'https://ddev-tsumego-web';
-		
+
 		return "https://test.tsumego.ddev.site:33003";
 	}
 
