@@ -20,7 +20,7 @@ class UsersController extends AppController
 	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
-	public function tsumego_rating($id = null)
+	public function tsumego_rating_graph($id = null)
 	{
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoAttempt');
