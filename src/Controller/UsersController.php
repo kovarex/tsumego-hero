@@ -16,23 +16,6 @@ class UsersController extends AppController
 	public $helpers = ['Html', 'Form'];
 
 	/**
-	 * @return void
-	 */
-	public function adjusttsumego()
-	{
-		$this->loadModel('Tsumego');
-		$ts = $this->Tsumego->find('all', ['order' => 'rating ASC']);
-		echo '<pre>';
-		print_r(count($ts));
-		echo '</pre>';
-		echo '<table>';
-		foreach ($ts as $item)
-			echo '<tr><td>' . $item['Tsumego']['id'] . '</td><td>' . $item['Tsumego']['difficulty']
-			. '</td><td>' . $item['Tsumego']['userWin'] . '</td><td>' . $item['Tsumego']['rating'] . '</td></tr>';
-		echo '</table>';
-	}
-
-	/**
 	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
