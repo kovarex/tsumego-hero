@@ -322,5 +322,17 @@ class Browser
 		return $table->findElements(WebDriverBy::tagName("tr"))[$row]->findElements(WebDriverBy::tagName("td"))[$column];
 	}
 
+	public function checkTable($selector, CakeTestCase $test, $data)
+	{
+		$table = $this->find($selector);
+		$tableRows = $table->findElements(WebDriverBy::tagName("tr"));
+		foreach ($data as $rowIndex => $row)
+		{
+			$tableCells = $tableRows[$rowIndex]->findElements(WebDriverBy::tagName("td"));
+			foreach ($row as $cellIndex => $cellValue)
+				$test->assertSame($cellValue, $tableCells[$cellIndex]->getText());
+		}
+	}
+
 	public $driver;
 }

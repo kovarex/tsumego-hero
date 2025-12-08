@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
 if ($lightDark=='dark')
 {
 	$lightDarkChartColor = '#fff';
@@ -156,15 +157,13 @@ if($user['User']['solved'] > $tsumegoNum)
 	</div>
 
 	<div class="userStatsPurple">
-		<table class="userTopTable1" border="0" width="100%">
-			<tr>
-				<td>Time mode rank:</td>
-				<td><?php echo $highestRo; ?></td>
-			</tr>
-			<tr>
-				<td>Time mode runs:</td>
-				<td><?php echo $timeModeRuns; ?></td>
-			</tr>
+		<table class="userTopTable1" id="time-mode-info-table">
+			<?php
+			foreach ($timeModeRanks as $timeModeRank)
+			{
+				echo '<tr><td>' . $timeModeRank['category_name'] . ' mode rank:</td><td>' . ($timeModeRank['best_solved_rank_name'] ?: 'N/A') . '</td></tr>';
+				echo '<tr><td>' . $timeModeRank['category_name'] . ' mode runs:</td><td>' . $timeModeRank['session_count'] . '</td></tr>';
+			}?>
 		</table>
 	</div>
 
@@ -502,85 +501,16 @@ function delUts(){
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-	let graph1Categories = [];
-	let graph1Solves = [];
-	let graph1Fails = [];
-	<?php
-	foreach ($graph as $key => $value){
-		$gDate = new DateTime($key);
-		$gDate = $gDate->format('d.m.y');
-		echo 'graph1Categories.push("'.$gDate.'");';
-		echo 'graph1Solves.push("'.$value['s'].'");';
-		echo 'graph1Fails.push("'.$value['f'].'");';
-	}
+<?php
+	 ValueGraphRenderer::render(
+		'Problems in level mode',
+		'chart1',
+		[
+			['name' => 'Solves', 'color' => '#74d14c'],
+			['name' => 'Fails', 'color' => '#d63a49']
+		],
+		$graph);
 	?>
-	var options = {
-	  series: [
-	{
-	  name: 'Solves',
-	  data: graph1Solves,
-	  color: '#74d14c'
-	}, {
-	  name: 'Fails',
-	  data: graph1Fails,
-	  color: '#d63a49'
-	}],
-	chart: {
-	  type: 'bar',
-	  height: <?php echo $countGraph; ?>,
-	  stacked: true,
-	  foreColor: "<?php echo $lightDarkChartColor; ?>"
-	},
-	plotOptions: {
-	  bar: {
-		horizontal: true,
-		dataLabels: {
-		  total: {
-			enabled: true,
-			offsetX: 0,
-			style: {
-			  fontSize: '13px',
-			  fontWeight: 900,
-			  color: "<?php echo $lightDarkChartColor; ?>"
-			}
-		  }
-		}
-	  },
-	},
-	stroke: {
-	  width: 1,
-	  colors: ['#fff']
-	},
-	title: {
-	  text: 'Problems in level mode'
-	},
-	xaxis: {
-	  categories: graph1Categories,
-	  labels: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	yaxis: {
-	  title: {
-		text: undefined
-	  },
-	},
-	tooltip: {
-	  y: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#74d14c', '#d63a49']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart1"), options);
-	chart.render();
 	let graph2dates = [];
 	let graph2Ranks = [];
 	<?php
@@ -637,172 +567,23 @@ function delUts(){
 	};
 	var chart = new ApexCharts(document.querySelector("#chart2"), options);
 	chart.render();
-</script>
-<script>
-	let graph3Categories = [];
-	let graph3Solves = [];
-	let graph3Fails = [];
 	<?php
-	foreach ($timeGraph as $key => $value){
-		echo 'graph3Categories.push("'.$key.'");';
-		if(!isset($value['s']))
-			$value['s'] = 0;
-		echo 'graph3Solves.push("'.$value['s'].'");';
-		if(!isset($value['f']))
-			$value['f'] = 0;
-		echo 'graph3Fails.push("'.$value['f'].'");';
-	}
-	?>
-	var options = {
-	  series: [
-	{
-	  name: 'Passes',
-	  data: graph3Solves,
-	  color: '#c8723d'
-	}, {
-	  name: 'Fails',
-	  data: graph3Fails,
-	  color: '#888888'
-	}],
-	chart: {
-	  type: 'bar',
-	  height: <?php echo $countTimeGraph; ?>,
-	  foreColor: "<?php echo $lightDarkChartColor; ?>",
-	  stacked: true,
-	},
-	plotOptions: {
-	  bar: {
-		horizontal: true,
-		dataLabels: {
-		  total: {
-			enabled: true,
-			offsetX: 0,
-			style: {
-			  fontSize: '13px',
-			  fontWeight: 900,
-			  color: "<?php echo $lightDarkChartColor; ?>"
-			}
-		  }
-		}
-	  },
-	},
-	stroke: {
-	  width: 1,
-	  colors: ['#fff']
-	},
-	title: {
-	  text: 'Time mode runs'
-	},
-	xaxis: {
-	  categories: graph3Categories,
-	  labels: {
-		formatter: function (val) {
-		  return parseInt(val)
-		}
-	  }
-	},
-	yaxis: {
-	  title: {
-		text: undefined
-	  },
-	},
-	tooltip: {
-	  y: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#c8723d', '#888888']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart3"), options);
-	chart.render();
-</script>
-<script>
-	let graph11Categories = [];
-	let graph11Solves = [];
-	let graph11Fails = [];
-	<?php
-	foreach ($graph as $key => $value){
-		$gDate = new DateTime($key);
-		$gDate = $gDate->format('d.m.y');
-		echo 'graph11Categories.push("'.$gDate.'");';
-		echo 'graph11Solves.push("'.$value['s'].'");';
-		echo 'graph11Fails.push("'.$value['f'].'");';
-	}
-	?>
-	var options = {
-	  series: [
-	{
-	  name: 'Solves',
-	  data: graph11Solves,
-	  color: '#74d14c'
-	}, {
-	  name: 'Fails',
-	  data: graph11Fails,
-	  color: '#d63a49'
-	}],
-	chart: {
-	  type: 'bar',
-	  height: <?php echo $countGraph; ?>,
-	  stacked: true,
-	  foreColor: "<?php echo $lightDarkChartColor; ?>"
-	},
-	plotOptions: {
-	  bar: {
-		horizontal: true,
-		dataLabels: {
-		  total: {
-			enabled: true,
-			offsetX: 0,
-			style: {
-			  fontSize: '13px',
-			  fontWeight: 900,
-			  color: "<?php echo $lightDarkChartColor; ?>"
-			}
-		  }
-		}
-	  },
-	},
-	stroke: {
-	  width: 1,
-	  colors: ['#fff']
-	},
-	title: {
-	  text: 'Problems in level mode'
-	},
-	xaxis: {
-	  categories: graph11Categories,
-	  labels: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	yaxis: {
-	  title: {
-		text: undefined
-	  },
-	},
-	tooltip: {
-	  y: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#74d14c', '#d63a49']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart11"), options);
-	chart.render();
-</script>
-<script>
+		ValueGraphRenderer::render(
+		'Time mode runs',
+		'chart3',
+		[
+			['name' => 'Passes', 'color' => '#c8723d'],
+			['name' => 'Fails', 'color' => '#888888']
+		],
+		$timeGraph);
+	ValueGraphRenderer::render(
+		'Problems in level mode',
+		'chart11',
+		[
+			['name' => 'Solves', 'color' => '#74d14c'],
+			['name' => 'Fails', 'color' => '#d63a49']
+		],
+		$graph);?>
 	let graph22dates = [];
 	let graph22Ranks = [];
 	<?php
@@ -859,89 +640,16 @@ function delUts(){
 	};
 	var chart = new ApexCharts(document.querySelector("#chart22"), options);
 	chart.render();
-</script>
-<script>
-	let graph33Categories = [];
-	let graph33Solves = [];
-	let graph33Fails = [];
 	<?php
-	foreach ($timeGraph as $key => $value){
-		echo 'graph33Categories.push("'.$key.'");';
-		if(!isset($value['s']))
-			$value['s'] = 0;
-		echo 'graph33Solves.push("'.$value['s'].'");';
-		if(!isset($value['f']))
-			$value['f'] = 0;
-		echo 'graph33Fails.push("'.$value['f'].'");';
-	}
+		ValueGraphRenderer::render(
+		'Time mode runs',
+		'chart33',
+		[
+			['name' => 'Passes', 'color' => '#c8723d'],
+			['name' => 'Fails', 'color' => '#888888']
+		],
+		$timeGraph);
 	?>
-	var options = {
-	  series: [
-	{
-	  name: 'Passes',
-	  data: graph3Solves,
-	  color: '#c8723d'
-	}, {
-	  name: 'Fails',
-	  data: graph3Fails,
-	  color: '#888888'
-	}],
-	chart: {
-	  type: 'bar',
-	  height: <?php echo $countTimeGraph; ?>,
-	  foreColor: "<?php echo $lightDarkChartColor; ?>",
-	  stacked: true,
-	},
-	plotOptions: {
-	  bar: {
-		horizontal: true,
-		dataLabels: {
-		  total: {
-			enabled: true,
-			offsetX: 0,
-			style: {
-			  fontSize: '13px',
-			  fontWeight: 900,
-			  color: "<?php echo $lightDarkChartColor; ?>"
-			}
-		  }
-		}
-	  },
-	},
-	stroke: {
-	  width: 1,
-	  colors: ['#fff']
-	},
-	title: {
-	  text: 'Time mode runs'
-	},
-	xaxis: {
-	  categories: graph33Categories,
-	  labels: {
-		formatter: function (val) {
-		  return parseInt(val)
-		}
-	  }
-	},
-	yaxis: {
-	  title: {
-		text: undefined
-	  },
-	},
-	tooltip: {
-	  y: {
-		formatter: function (val) {
-		  return val
-		}
-	  }
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#c8723d', '#888888']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart33"), options);
-	chart.render();
 </script>
 <script>
 </script>
