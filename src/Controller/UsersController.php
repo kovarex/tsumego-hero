@@ -1991,12 +1991,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 			$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
 			$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
-			if (!$taBefore == $ta[$i]['TsumegoAttempt']['created'])
+			if (!isset($graph[$ta[$i]['TsumegoAttempt']['created']]))
 			{
 				$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
 				$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
 				$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
-				$taBefore = $ta[$i]['TsumegoAttempt']['created'];
 			}
 			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 's' : 'f']++;
 		}
