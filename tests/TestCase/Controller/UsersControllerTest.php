@@ -212,12 +212,15 @@ class UsersControllerTest extends ControllerTestCase
 	public function testTsumegoRatingGraph()
 	{
 		$context = new ContextPreparator([
+			'user' => ['admin' => true],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'rating' => '2200',
-				'attempt' => ['rating' => 2165]]]]);
+				'attempt' => ['rating' => 2165],
+				'status' => 'S']]]);
 		$browser = Browser::instance();
-		$browser->get('users/tsumego_rating/' . $context->otherTsumegos[0]['id']);
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->clickId('showx8');
 		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
 		$this->assertTextContains('set-1', $browser->driver->getPageSource());
 	}
