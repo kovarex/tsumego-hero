@@ -125,23 +125,6 @@ class UsersController extends AppController
 	/**
 	 * @return void
 	 */
-	public function empty_uts()
-	{
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('PurgeList');
-		$pl = $this->PurgeList->find('first', ['order' => 'id DESC']);
-		$pl['PurgeList']['empty_uts'] = date('Y-m-d H:i:s');
-		$this->PurgeList->save($pl);
-
-		$ut = $this->TsumegoStatus->find('all', ['limit' => 10000, 'conditions' => ['user_id' => 33]]);
-		foreach ($ut as $item)
-			$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
-		$this->set('ut', count($ut));
-	}
-
-	/**
-	 * @return void
-	 */
 	public function resetpassword()
 	{
 		$this->set('_page', 'user');
