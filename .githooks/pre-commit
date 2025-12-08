@@ -76,11 +76,14 @@ STAGED_PHP_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.php
 
 if [ -n "$STAGED_PHP_FILES" ]; then
     # Run PHP CS Fixer on staged files only
-    # Use ddev if available, otherwise try direct execution
-    if command -v ddev &> /dev/null; then
+    # Try ddev first (for WSL/Linux environments), fall back to direct execution
+    if command -v ddev &> /dev/null && ddev describe &> /dev/null 2>&1; then
         ddev exec vendor/bin/php-cs-fixer fix $STAGED_PHP_FILES --quiet
-    else
+    elif [ -f "./vendor/bin/php-cs-fixer" ]; then
         ./vendor/bin/php-cs-fixer fix $STAGED_PHP_FILES --quiet
+    else
+        echo -e "${YELLOW}⚠️  php-cs-fixer not found, skipping code style check${NC}"
+        echo -e "${YELLOW}   (Run: composer install)${NC}"
     fi
     
     # Re-add files that were fixed
@@ -100,17 +103,20 @@ echo -e "\n${GREEN}🔍 Running PHPStan on staged files...${NC}"
 
 if [ -n "$STAGED_PHP_FILES" ]; then
     # Run PHPStan on staged files
-    # Use ddev if available, otherwise try direct execution
+    # Try ddev first (for WSL/Linux environments), fall back to direct execution
     PHPSTAN_ERRORS=0
     
-    if command -v ddev &> /dev/null; then
+    if command -v ddev &> /dev/null && ddev describe &> /dev/null 2>&1; then
         if ! ddev exec vendor/bin/phpstan analyse $STAGED_PHP_FILES --no-progress 2>&1; then
             PHPSTAN_ERRORS=1
         fi
-    else
+    elif [ -f "./vendor/bin/phpstan" ]; then
         if ! ./vendor/bin/phpstan analyse $STAGED_PHP_FILES --no-progress 2>&1; then
             PHPSTAN_ERRORS=1
         fi
+    else
+        echo -e "${YELLOW}⚠️  phpstan not found, skipping static analysis${NC}"
+        echo -e "${YELLOW}   (Run: composer install)${NC}"
     fi
     
     if [ $PHPSTAN_ERRORS -gt 0 ]; then
