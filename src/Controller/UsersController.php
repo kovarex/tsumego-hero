@@ -46,44 +46,6 @@ class UsersController extends AppController
 		$this->set('id', $id);
 	}
 
-	//scan for glitches
-	/**
-	 * @param string|int|null $x Index value
-	 * @return void
-	 */
-	public function test1a($x = null)
-	{
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-		$ts = $this->Tsumego->find('all', ['order' => 'id ASC']);
-		$id = $ts[$x]['Tsumego']['id'];
-		$ta = $this->TsumegoAttempt->find('all', [
-			'order' => 'created ASC',
-			'conditions' => [
-				'tsumego_id' => $id,
-				'NOT' => [
-					'tsumego_rating' => 0,
-				],
-			],
-		]);
-		$change = $ta[count($ta) - 1]['TsumegoAttempt']['tsumego_rating'] - $ta[0]['TsumegoAttempt']['tsumego_rating'];
-		$t = $this->Tsumego->findById($id);
-		$t['Tsumego']['rd'] = $change;
-		$this->Tsumego->save($t);
-		$p = $x . '/' . count($ts);
-		echo '<pre>';
-		print_r($p);
-		echo '</pre>';
-		echo '<pre>';
-		print_r($id);
-		echo '</pre>';
-		echo '<pre>';
-		print_r($change);
-		echo '</pre>';
-		$this->set('next', $x + 1);
-		$this->set('finish', count($ts) - 1);
-	}
-
 	public function publish(): void
 	{
 		$this->loadModel('Tsumego');
