@@ -13,6 +13,7 @@ services:
     environment:
       - APACHE_RUN_USER=www-data
       - APACHE_RUN_GROUP=www-data
+      - SERVER_NAME=test.tsumego.ddev.site
     depends_on:
       - db
     networks:

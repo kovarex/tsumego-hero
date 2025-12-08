@@ -172,11 +172,13 @@ rm -rf "$ROOT_DIR/tmp/cache/asset_compress"/*
 
 # Pre-build and minify all CSS/JS assets for production (faster page loads)
 # This generates all files in webroot/cache_css/ and webroot/cache_js/
+# Using 'clear' first ensures old build files are removed, then --force guarantees fresh build
 echo "=== Compressing css and js ==="
 mkdir -p "$ROOT_DIR/webroot/cache_js"
 chmod 777 "$ROOT_DIR/webroot/cache_js"
 mkdir -p "$ROOT_DIR/webroot/cache_css"
 chmod 777 "$ROOT_DIR/webroot/cache_css"
-./bin/cake asset_compress build
+./bin/cake asset_compress clear
+./bin/cake asset_compress build --force
 
 echo "=== Deploy complete ==="

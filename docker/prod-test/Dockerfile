@@ -50,10 +50,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
+# Copy and set up entrypoint script
+COPY docker/prod-test/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Don't copy files - use mounted volume for testing
 # COPY . /var/www/html/
 
 # Set permissions (runs as www-data by default)
 # RUN chown -R www-data:www-data /var/www/html
 
-CMD ["apache2-foreground"]
+# Use CMD instead of ENTRYPOINT so it runs AFTER volume mount
+CMD ["docker-entrypoint.sh"]
