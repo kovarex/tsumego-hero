@@ -74,4 +74,25 @@ class RatingModeTest extends ControllerTestCase
 			}
 		}
 	}
+
+	public function testRatingModeResetButton()
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'other-tsumegos' =>	[['rating' => 1000, 'description' => '1000 rating tsumego', 'sets' => [['name' => 'set 2', 'num' => '1']]]]]);
+
+		$browser = Browser::instance();
+		$browser->get('/ratingMode');
+		$this->assertSame('1000 rating tsumego', $browser->find('#descriptionText')->getText());
+		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
+		$browser->playWithResult('F');
+		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
+		$browser->playWithResult('S');
+		$browser->clickId('besogo-next-button');
+		$tsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first')['TsumegoAttempt'];
+		$this->assertSame(1, $tsumegoAttempt['misplays']);
+		$this->assertSame(true, $tsumegoAttempt['solved']);
+	}
 }

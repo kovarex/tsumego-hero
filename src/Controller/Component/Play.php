@@ -542,7 +542,6 @@ class Play
 		// Merge comment coordinates with any existing ones
 		$commentCoordinates = array_merge($commentCoordinates, $commentsData['coordinates']);
 		($this->setFunction)('commentCoordinates', $commentCoordinates);
-
 		return null;
 	}
 

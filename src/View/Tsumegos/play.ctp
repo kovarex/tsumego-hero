@@ -2031,21 +2031,20 @@ if (
 					playedWrong = true;
 					setCookie("transition", 2);
 					hoverLocked = false;
-					tryAgainTomorrow = true;
 					freePlayMode = true;
-					userElo = Math.round(elo2);
 				}
 			}
 			setCookie("misplays", misplays);
 		}
 	}
 
-	function toggleBoardLock(t, multipleChoice=false){
+	function toggleBoardLock(t, multipleChoice=false)
+	{
 		if(tryAgainTomorrow)
 			t = true;
 		if (t)
 			boardLockValue = 1;
-	else
+		else
 			boardLockValue = 0;
 		if(multipleChoice)
 			multipleChoiceEnabled = true;
