@@ -2060,20 +2060,23 @@ if (
 		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
 	}
 
-	function resetParameters(isAtStart){
+	function resetParameters(isAtStart)
+	{
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		if(tStatus=="S"||tStatus=="C") heartLoss = false;
+		if(tStatus=="S" || tStatus=="C")
+			heartLoss = false;
 		else heartLoss = true;
-		if(isAtStart) heartLoss = false;
-		if(noXP==true||freePlayMode==true||locked==true||authorProblem==true) heartLoss = false;
-		if(mode==2) heartLoss = false;
+		if(isAtStart)
+			heartLoss = false;
+		if(noXP==true||freePlayMode==true||locked==true||authorProblem==true)
+			heartLoss = false;
 
 		freePlayMode = false;
 		if (heartLoss)
 		{
 			misplays++;
+			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
-			setCookie("preId", "<?php echo $t['Tsumego']['id']; ?>");
 			updateHealth();
 		}
 	}
