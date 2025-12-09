@@ -45,18 +45,18 @@ class Browser
 			$this->driver->get(Util::getMyAddress() . '/empty.php');
 
 			// CRITICAL: Signal test mode ONCE in constructor (before any real navigation)
-			// Set cookies with explicit path='/' and domain to ensure they apply to all pages
-			// Domain must match the host in getMyAddress()
-			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			// Set cookies WITHOUT explicit domain - let browser infer from current URL
+			// This works for both DDEV (ddev-tsumego-web) and CI (host.docker.internal)
+			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/']);
 
 			// Xdebug cookies
-			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug', 'path' => '/', 'domain' => 'ddev-tsumego-web']);
-			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			$this->driver->manage()->addCookie(['name' => "XDEBUG_MODE", 'value' => 'debug', 'path' => '/']);
+			$this->driver->manage()->addCookie(['name' => "XDEBUG_SESSION", 'value' => "2", 'path' => '/']);
 
 			// Pass TEST_TOKEN to browser so it uses the same parallel test database
 			$testToken = getenv('TEST_TOKEN');
 			if ($testToken)
-				$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+				$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/']);
 		}
 		catch (Exception $e)
 		{
@@ -174,10 +174,10 @@ class Browser
 				]);
 
 			// Re-set test mode cookies after navigation
-			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/']);
 			// Always use test_1 for sequential tests (when TEST_TOKEN not set)
 			$testToken = getenv('TEST_TOKEN') ?: '1';
-			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/']);
 		}
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
