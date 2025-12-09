@@ -59,7 +59,6 @@ WHERE " . $queryCondition;
 		shuffle($relatedTsumegos);
 
 		$this->set('nextLink', '/ratingMode');
-		$this->set('noSkipNextLink', '/ratingMode');
 
 		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
 		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);

@@ -490,24 +490,12 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-reset-button"
         );
 
-        let nextButtonId;
-        nextButtonId = "besogo-next-button";
-        makeHyperlinkText("Next","next problem", nextButtonLink, nextButtonId);
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
           "history of rating mode",
           "/tsumego_rating_attempts/user/" + besogoUserId,
           "history-button"
-        );
-        makeButtonText(
-          "Next",
-          "next problem",
-          function () {
-            if (besogoMode2Solved)
-              window.location.href = nextButtonLink;
-          },
-          "besogo-next-button-inactive"
         );
       } else if (mode == 3) {
         makeButtonText(
@@ -517,6 +505,9 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-next-button"
         );
       }
+
+	  if (mode == 1 || mode == 2)
+	      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";
@@ -731,9 +722,7 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-multipleChoice4"
         );
       }
-      let nextButtonId;
-      nextButtonId = "besogo-next-button";
-      makeHyperlinkText("Next", "next problem", nextButtonLink, nextButtonId);
+      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else if (besogo.multipleChoiceCustom === "score_estimating") {
       toggleBoardLock(true, true);
       let prevButtonId;
@@ -744,7 +733,8 @@ besogo.makeToolPanel = function (container, editor) {
         previousButtonLink,
         prevButtonId
       );
-      if (setID != 262) {
+      if (setID != 262)
+      {
         makeButtonText(
           "Black wins",
           "",
@@ -778,12 +768,10 @@ besogo.makeToolPanel = function (container, editor) {
           },
           "besogo-se-more"
         );
-      } else {
-        makeResultText("", "se-result-text");
       }
-      let nextButtonId;
-      nextButtonId = "besogo-next-button";
-      makeHyperlinkText("Next", "next problem", nextButtonLink, nextButtonId);
+      else
+        makeResultText("", "se-result-text");
+      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
     } else {
       toggleBoardLock(true, true);
       let prevButtonId;

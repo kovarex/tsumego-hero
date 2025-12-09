@@ -467,7 +467,7 @@ class Play
 
 		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
-		if (!Auth::isInTimeMode())
+		if (Auth::isInLevelMode())
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
