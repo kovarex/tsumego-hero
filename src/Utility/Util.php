@@ -229,4 +229,9 @@ class Util
 	{
 		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#000' : '#fff';
 	}
+
+	public static function getValueGraphHeight($input)
+	{
+		return 160 + count($input) * 25;
+	}
 }

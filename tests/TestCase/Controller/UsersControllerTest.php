@@ -179,34 +179,46 @@ class UsersControllerTest extends ControllerTestCase
 				'solved' => 1],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
-				'attempt' => ['rating' => 2165]]]]);
+				'attempt' => ['rating' => 2165]]],
+			'time-mode-ranks' => ['5k', '10k', '1d'],
+			'time-mode-sessions' => [
+				[
+					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'rank' => '5k'
+				],
+				[
+				'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
+				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+				'rank' => '10k'
+				]]]);
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertSame('Level:', $browser->getTableCell('#level-info-table', 0, 0)->getText());
-		$this->assertSame('66', $browser->getTableCell('#level-info-table', 0, 1)->getText());
-		$this->assertSame('Level up:', $browser->getTableCell('#level-info-table', 1, 0)->getText());
-		$this->assertSame('57/4050', $browser->getTableCell('#level-info-table', 1, 1)->getText());
-		$this->assertSame('XP earned:', $browser->getTableCell('#level-info-table', 2, 0)->getText());
-		$this->assertSame(90957 . ' XP', $browser->getTableCell('#level-info-table', 2, 1)->getText());
-		$this->assertSame('Health:', $browser->getTableCell('#level-info-table', 3, 0)->getText());
-		$this->assertSame(Util::getHealthBasedOnLevel(66) . ' HP', $browser->getTableCell('#level-info-table', 3, 1)->getText());
-		$this->assertSame('Hero powers:', $browser->getTableCell('#level-info-table', 4, 0)->getText());
-		$this->assertSame('3', $browser->getTableCell('#level-info-table', 4, 1)->getText());
+		$browser->checkTable('#level-info-table', $this, [
+			['Level:', '66'],
+			['Level up:', '57/4050'],
+			['XP earned:', '90957 XP'],
+			['Health:', Util::getHealthBasedOnLevel(66) . ' HP'],
+			['Hero powers:', '3']]);
 
-		$this->assertSame('Rank:', $browser->getTableCell('#rank-info-table', 0, 0)->getText());
-		$this->assertSame('1d', $browser->getTableCell('#rank-info-table', 0, 1)->getText());
-		$this->assertSame('Rating:', $browser->getTableCell('#rank-info-table', 1, 0)->getText());
-		$this->assertSame('2065', $browser->getTableCell('#rank-info-table', 1, 1)->getText());
-		$this->assertSame('Highest rank:', $browser->getTableCell('#rank-info-table', 2, 0)->getText());
-		$this->assertSame('2d', $browser->getTableCell('#rank-info-table', 2, 1)->getText());
-		$this->assertSame('Highest rating:', $browser->getTableCell('#rank-info-table', 3, 0)->getText());
-		$this->assertSame('2165', $browser->getTableCell('#rank-info-table', 3, 1)->getText());
+		$browser->checkTable('#rank-info-table', $this, [
+			['Rank:', '1d'],
+			['Rating:', '2065'],
+			['Highest rank:', '2d'],
+			['Highest rating:', '2165']]);
 
-		$this->assertSame('Overall solved:', $browser->getTableCell('#final-info-table', 0, 0)->getText());
-		$this->assertSame('1 of 1', $browser->getTableCell('#final-info-table', 0, 1)->getText());
-		$this->assertSame('Overall %:', $browser->getTableCell('#final-info-table', 1, 0)->getText());
-		$this->assertSame('100%', $browser->getTableCell('#final-info-table', 1, 1)->getText());
+		$browser->checkTable('#time-mode-info-table', $this, [
+			['Blitz mode rank:', '5k'],
+			['Blitz mode runs:', '1'],
+			['Fast mode rank:', '10k'],
+			['Fast mode runs:', '1'],
+			['Slow mode rank:', 'N/A'],
+			['Slow mode runs:', '0']]);
+
+		$browser->checkTable('#final-info-table', $this, [
+			['Overall solved:', '1 of 1'],
+			['Overall %:', '100%']]);
 	}
 
 	public function testTsumegoRatingGraph()
