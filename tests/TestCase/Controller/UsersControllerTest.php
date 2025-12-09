@@ -188,9 +188,9 @@ class UsersControllerTest extends ControllerTestCase
 					'rank' => '5k'
 				],
 				[
-				'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
-				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
-				'rank' => '10k'
+					'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
+					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'rank' => '10k'
 				]]]);
 
 		$browser = Browser::instance();
