@@ -8,8 +8,17 @@ WORKER_COUNT="${TEST_WORKERS:-8}"
 
 echo "Setting up $WORKER_COUNT test databases for ParaTest..."
 
-# Use mysql directly (works both inside DDEV container and on host with MySQL)
+# Build MySQL command with credentials from environment
 MYSQL_CMD="mysql"
+if [[ -n "$DB_USER" ]]; then
+    MYSQL_CMD="$MYSQL_CMD -u$DB_USER"
+fi
+if [[ -n "$DB_PASS" ]]; then
+    MYSQL_CMD="$MYSQL_CMD -p$DB_PASS"
+fi
+if [[ -n "$DB_HOST" ]]; then
+    MYSQL_CMD="$MYSQL_CMD -h$DB_HOST"
+fi
 
 # Create each database and grant permissions
 for i in $(seq 1 "$WORKER_COUNT"); do
