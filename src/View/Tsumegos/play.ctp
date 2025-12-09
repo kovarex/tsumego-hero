@@ -2073,7 +2073,7 @@ if (
 				}
 			}
 			setCookie("misplays", misplays);
-
+		}
 		// Zen Mode auto-advance: move to next problem after brief delay
 		if (window.isZenModeActive && window.isZenModeActive()) {
 			setTimeout(function() {
@@ -2081,7 +2081,7 @@ if (
 					window.zenModeNavigateToNext();
 				}
 			}, 800); // Brief delay for glow effect to be visible
-			}
+		}
 	}
 
 	function toggleBoardLock(t, multipleChoice=false)

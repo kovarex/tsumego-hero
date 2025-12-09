@@ -7,7 +7,7 @@
 (function() {
 	'use strict';
 
-	var zenModeActive = document.body.classList.contains('zen-mode');
+	var zenModeActive = document.body && document.body.classList.contains('zen-mode');
 
 	function enableZenMode() {
 		if (zenModeActive) return;
@@ -89,7 +89,7 @@
 
 (function() {
 	// Check if zen mode is active (body class persists since we only swap #content)
-	var zenModeActive = document.body.classList.contains('zen-mode');
+	var zenModeActive = document.body && document.body.classList.contains('zen-mode');
 
 	function enableZenMode() {
 		if (zenModeActive) return;
