@@ -1,4 +1,34 @@
-﻿<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
+﻿<?php
+	// The SGF is stored with JS string concatenation like: (;GM[1]"+"\n"+"...) 
+	// We need to evaluate that to get the actual SGF string
+	$sgfRaw = $sgf['Sgf']['sgf'];
+	// Replace the "+"\n"+" pattern with actual newlines
+	$sgfClean = str_replace(['"+"\n"+"', '"+"\r\n"+"'], "\n", $sgfRaw);
+
+	$initialPl = isset($pl) ? $pl : 0;
+	$initialPlayerColor = $initialPl == 1 ? 'white' : 'black';
+	// Determine final playerColor based on descriptionColor after all swaps
+	$finalPlayerColor = (trim($descriptionColor) === 'Black') ? 'black' : 'white';
+?>
+<!-- Puzzle data JSON output after description is finalized -->
+<script type="application/json" id="puzzle-data">
+<?php
+echo json_encode([
+	'tsumegoID' => $t['Tsumego']['id'],
+	'nextButtonLink' => $nextLink,
+	'previousButtonLink' => $previousLink,
+	'setID' => $set['Set']['id'],
+	'sgf' => $sgfClean,
+	'playerColor' => $finalPlayerColor,
+	'file' => $file ?? '',
+	'author' => $t['Tsumego']['author'] ?? '',
+	'title' => $set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'],
+	'description' => $t['Tsumego']['description'],
+]);
+?>
+</script>
+
+<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
 <script src="/besogo/js/transformation.js"></script>
@@ -164,6 +194,15 @@ if (
 	<table>
 	<tr>
 		<td align="center">
+			<!-- Zen mode metadata (hidden by default, styled by CSS in zen mode) -->
+			<div id="zen-metadata" style="display:none;">
+				<div class="zen-meta-title"><?php echo htmlspecialchars($set['Set']['title'] . ' #' . $setConnection['SetConnection']['num']); ?></div>
+				<div class="zen-meta-info">
+					<span class="zen-meta-rating"><?php echo Rating::getReadableRankFromRatingWhenPossible($t['Tsumego']['rating']); ?></span>
+					<span class="zen-meta-separator">•</span>
+					<span class="zen-meta-author"><?php echo htmlspecialchars($t['Tsumego']['author']); ?></span>
+				</div>
+			</div>
 			<div id="playTitle">
 				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
@@ -400,7 +439,8 @@ if (
 			echo '<a id="openSgfLink" href="/editor?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
 			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
-			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo '<a id="showFilters" style="margin-right:20px;" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo '<a id="zen-mode-toggle" class="selectable-text" title="Zen Mode - distraction-free solving (Z)">Zen Mode</a>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
 				<div id="msgFilters">
@@ -1699,9 +1739,9 @@ if (
 				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(0, 255, 0, 0.2)");
 	else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(80, 255, 0, 0.3)");
 				besogo.editor.setReviewEnabled(true);
 				besogo.editor.setControlButtonLock(false);
 				toggleBoardLock(true);
@@ -1898,9 +1938,9 @@ if (
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
+				$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(0, 255, 0, 0.2)");
 			else
-				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+				$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(67, 255, 40, 0.5), 0 8px 50px 10px rgba(80, 255, 0, 0.3)");
 			besogo.editor.setReviewEnabled(true);
 			besogo.editor.setControlButtonLock(false);
 			noLastMark = true;
@@ -1978,11 +2018,10 @@ if (
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
 				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(mode==3)
-				{
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
+				if(mode==3) {
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
 					toggleBoardLock(true);
@@ -2021,11 +2060,10 @@ if (
 				besogoMode2Solved = true;
 				setCookie("mode", mode);
 				if(light==true)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
 				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(!noXP)
-				{
+					$(".besogo-board").css("box-shadow","0 4px 30px 5px rgba(255, 40, 40, 0.5), 0 8px 50px 10px rgba(255, 0, 0, 0.2)");
+				if(!noXP){
 					sequence += "incorrect|";
 					document.cookie = "sequence="+sequence;
 					playedWrong = true;
@@ -2035,6 +2073,14 @@ if (
 				}
 			}
 			setCookie("misplays", misplays);
+		}
+		// Zen Mode auto-advance: move to next problem after brief delay
+		if (window.isZenModeActive && window.isZenModeActive()) {
+			setTimeout(function() {
+				if (typeof window.zenModeNavigateToNext === 'function') {
+					window.zenModeNavigateToNext();
+				}
+			}, 800); // Brief delay for glow effect to be visible
 		}
 	}
 
@@ -2268,3 +2314,6 @@ if (
 		?>margin: 8px 4px;
 	}
 	</style>
+
+<!-- Zen Mode Exit Button (only visible in zen mode) -->
+<button id="zen-mode-exit" title="Exit Zen Mode (Esc)">ESC</button>

@@ -110,7 +110,7 @@ echo $this->AssetCompress->script('app');
 ?>
 </head>
 
-<body class="<?php echo $lightDark === 'dark' ? 'dark-theme' : 'light-theme'; ?>">
+<body class="<?php echo $lightDark === 'dark' ? 'dark-theme' : 'light-theme'; ?><?php if (isset($zenMode) && $zenMode): ?> zen-mode<?php endif; ?>">
 <div id="container" align="center">
 	<div width="100%" class="whitebox1">
 		<div align="left">
