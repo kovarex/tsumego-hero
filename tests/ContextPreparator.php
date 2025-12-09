@@ -217,7 +217,7 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
-		$sgf['accepted'] = Util::extract('accepted', $tsumegoSgf);
+		$sgf['accepted'] = Util::extract('accepted', $tsumegoSgf) ?: true;
 		$sgf['user_id'] = Auth::getUserID();
 		ClassRegistry::init('Sgf')->save($sgf);
 		$tsumego['sgfs'][] = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC'])['Sgf'];
