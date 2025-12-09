@@ -424,7 +424,6 @@
 	</div>
 	<div style="clear:both;"></div>
 
-	<script src="/js/set-view.js"></script>
 	<script>
 	var t1 = false;
 	var t2 = false;
