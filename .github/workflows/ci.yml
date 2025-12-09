@@ -14,6 +14,14 @@ permissions:
 jobs:
   validation:
     runs-on: ubuntu-24.04
+    
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: test_1
+      TEST_WORKERS: 2
+      
     strategy:
       fail-fast: false
       matrix:
@@ -110,42 +118,9 @@ jobs:
 
       - name: Setup database config
         run: |
-          cat > config/database.php << 'EOF'
-          <?php
-          class DATABASE_CONFIG {
-              public $default = [
-                  'datasource' => 'Database/Mysql',
-                  'persistent' => false,
-                  'host' => '127.0.0.1',
-                  'login' => 'root',
-                  'password' => 'root',
-                  'database' => 'test_1',
-                  'prefix' => '',
-                  'encoding' => 'utf8',
-              ];
-
-              public function __construct() {
-                  if (getenv('TEST_TOKEN')) {
-                      $this->test['database'] = 'test_' . getenv('TEST_TOKEN');
-                  }
-                  if (Configure::read('debug') > 0) {
-                      $this->default['log'] = true;
-                  }
-              }
-
-              public $test = [
-                  'datasource' => 'Database/Mysql',
-                  'persistent' => false,
-                  'host' => '127.0.0.1',
-                  'login' => 'root',
-                  'password' => 'root',
-                  'database' => 'test_1',
-                  'prefix' => '',
-                  'encoding' => 'utf8',
-              ];
-          }
-          EOF
+          cp config/database.example.php config/database.php
           cp .github/ci/core.local.php config/core.local.php
+
 
       - name: Setup tmp directories
         run: |

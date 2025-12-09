@@ -28,74 +28,53 @@ if (!class_exists('Configure')) {
 require_once __DIR__ . '/config/database.php';
 $db = new DATABASE_CONFIG();
 
+// Number of parallel test workers (set TEST_WORKERS env var to override, default 8)
+$testWorkers = (int)getenv('TEST_WORKERS') ?: 8;
+
+// Generate test database environments dynamically (test_1, test_2, ..., test_N)
+$environments = [
+    'default_migration_table' => 'phinxlog',
+    'default_environment' => 'development',
+    'development' => [
+        'adapter' => 'mysql',
+        'host' => $db->default['host'],
+        'name' => $db->default['database'],
+        'user' => $db->default['login'],
+        'pass' => $db->default['password'],
+        'port' => '3306',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+    ],
+    'test' => [
+        'adapter' => 'mysql',
+        'host' => $db->test['host'],
+        'name' => $db->test['database'],
+        'user' => $db->test['login'],
+        'pass' => $db->test['password'],
+        'port' => '3306',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+    ],
+];
+
+// Dynamically generate test_1 through test_N environments
+for ($i = 1; $i <= $testWorkers; $i++) {
+    $environments["test_$i"] = [
+        'adapter' => 'mysql',
+        'host' => $db->test['host'],
+        'name' => "test_$i",
+        'user' => $db->test['login'],
+        'pass' => $db->test['password'],
+        'port' => '3306',
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+    ];
+}
 return [
     'paths' => [
         'migrations' => '%%PHINX_CONFIG_DIR%%/db/migrations',
         'seeds' => '%%PHINX_CONFIG_DIR%%/db/seeds',
     ],
-    'environments' => [
-        'default_migration_table' => 'phinxlog',
-        'default_environment' => 'development',
-        'development' => [
-            'adapter' => 'mysql',
-            'host' => $db->default['host'],
-            'name' => $db->default['database'],
-            'user' => $db->default['login'],
-            'pass' => $db->default['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-        'test' => [
-            'adapter' => 'mysql',
-            'host' => $db->test['host'],
-            'name' => $db->test['database'],
-            'user' => $db->test['login'],
-            'pass' => $db->test['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-        'test_1' => [
-            'adapter' => 'mysql',
-            'host' => $db->test['host'],
-            'name' => 'test_1',
-            'user' => $db->test['login'],
-            'pass' => $db->test['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-        'test_2' => [
-            'adapter' => 'mysql',
-            'host' => $db->test['host'],
-            'name' => 'test_2',
-            'user' => $db->test['login'],
-            'pass' => $db->test['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-        'test_3' => [
-            'adapter' => 'mysql',
-            'host' => $db->test['host'],
-            'name' => 'test_3',
-            'user' => $db->test['login'],
-            'pass' => $db->test['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-        'test_4' => [
-            'adapter' => 'mysql',
-            'host' => $db->test['host'],
-            'name' => 'test_4',
-            'user' => $db->test['login'],
-            'pass' => $db->test['password'],
-            'port' => '3306',
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-        ],
-    ],
+    'environments' => $environments,
     'version_order' => 'creation',
 ];
