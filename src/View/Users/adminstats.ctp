@@ -49,8 +49,7 @@
 	echo '</div>';
 
 	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';
-		if ($SGFProposalsRenderer)
-		$SGFProposalsRenderer->render();
+		$sgfProposalsRenderer->render();
 		if($tagNames!=null){
 			echo '<h3 style="margin:15px 0;">Tag Names (' . $tagNamesTotal . ')</h3>';
 			echo $this->Pagination->render($tagNamesPage, $tagNamesPagesTotal, 'tagnames_page');
@@ -145,26 +144,6 @@
 				$("#tag-reject'.$h.'").hide();
 				tagList = tagList + "-" + "r'.$tags[$h]['TagConnection']['id'].'";
 				setCookie("tagList", tagList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-		}
-		for($h=0; $h<count($approveSgfs); $h++){
-			echo '$("#proposal-accept'.$h.'").click(function() {
-				$("#proposal-submit'.$h.'").show();
-				$("#proposal-accept'.$h.'").hide();
-				$("#proposal-reject'.$h.'").hide();
-				proposalList = proposalList + "-" + "a'.$approveSgfs[$h]['Sgf']['id'].'";
-				setCookie("proposalList", proposalList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-			echo '$("#proposal-reject'.$h.'").click(function() {
-				$("#proposal-submit'.$h.'").show();
-				$("#proposal-accept'.$h.'").hide();
-				$("#proposal-reject'.$h.'").hide();
-				proposalList = proposalList + "-" + "r'.$approveSgfs[$h]['Sgf']['id'].'";
-				setCookie("proposalList", proposalList);
 				submitCount++;
 				$(".tag-submit-button").html("Submit ("+submitCount+")");
 			});';

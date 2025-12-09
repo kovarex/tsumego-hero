@@ -1012,34 +1012,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 							}
 						}
 					}
-
-					$proposalsToApprove = explode('-', $_COOKIE['proposalList']);
-					$proposalsToApproveCount = count($proposalsToApprove);
-					for ($i = 1; $i < $proposalsToApproveCount; $i++)
-					{
-						$proposalToApprove = $this->Sgf->findById(substr($proposalsToApprove[$i], 1));
-						$firstSgf = $this->Sgf->find('first', ['order' => 'id ASC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-						if ($proposalToApprove != null && $proposalToApprove['Sgf']['id'] == $firstSgf['Sgf']['id'])
-						{
-							AppController::handleContribution(Auth::getUserID(), 'reviewed');
-							if (substr($proposalsToApprove[$i], 0, 1) == 'a')
-							{
-								$recentSgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $proposalToApprove['Sgf']['tsumego_id']]]);
-								$this->Sgf->save($proposalToApprove);
-								AppController::handleContribution($proposalToApprove['Sgf']['user_id'], 'made_proposal');
-							}
-							else
-							{
-								$reject = [];
-								$reject['Reject']['user_id'] = $proposalToApprove['Sgf']['user_id'];
-								$reject['Reject']['tsumego_id'] = $proposalToApprove['Sgf']['tsumego_id'];
-								$reject['Reject']['type'] = 'proposal';
-								$this->Reject->create();
-								$this->Reject->save($reject);
-								$this->Sgf->delete($proposalToApprove['Sgf']['id']);
-							}
-						}
-					}
 				}
 
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
@@ -1129,19 +1101,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$utsCount = count($uts);
 		for ($i = 0; $i < $utsCount; $i++)
 			$tsMap[$uts[$i]['TsumegoStatus']['tsumego_id']] = $uts[$i]['TsumegoStatus']['status'];
-
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
-		$tagTsumegosCount = count($tagTsumegos);
-		for ($i = 0; $i < $tagTsumegosCount; $i++)
-			$tagTsumegos[$i]['Tsumego']['status'] = $tsMap[$tagTsumegos[$i]['Tsumego']['id']];
-		$tooltipSgfs2 = [];
-		$tooltipInfo2 = [];
-		$tooltipBoardSize2 = [];
-		$sgfTsumegosCount = count($sgfTsumegos);
-		for ($i = 0; $i < $sgfTsumegosCount; $i++)
-			$sgfTsumegos[$i]['Tsumego']['status'] = $tsMap[$sgfTsumegos[$i]['Tsumego']['id']];
 
 		$u = $this->User->find('all', ['conditions' => ['isAdmin >' => 0]]);
 		$uArray = [];
@@ -1269,9 +1228,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tags', $tagConnections);
 		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
-		$this->set('approveSgfs', $approveSgfs);
-		$this->set('sgfTsumegos', $sgfTsumegos);
-		$this->set('latestVersionTsumegos', $latestVersionTsumegos);
 
 		// Pagination data
 		$this->set('tagsPage', $tagsPage);
@@ -1280,8 +1236,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagNamesPage', $tagNamesPage);
 		$this->set('tagNamesTotal', $tagNamesTotal);
 		$this->set('tagNamesPagesTotal', ceil($tagNamesTotal / $perPage));
-		$this->set('proposalsPage', $proposalsPage);
-		$this->set('sGFProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
 		$this->set('activityPage', $activityPage);
 		$this->set('activityTotal', $activityTotal);
 		$this->set('activityPagesTotal', ceil($activityTotal / $perPage));
@@ -2529,5 +2484,64 @@ OFFSET " . $offset, [$userID, $userID]);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
 		$this->set('attempts', $attempts);
+	}
+
+	public function acceptSGFProposal($sgfID)
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/sets');
+
+		$proposalToApprove = ClassRegistry::init('Sgf')->findById($sgfID);
+		if (!$proposalToApprove)
+		{
+			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$proposalToApprove = $proposalToApprove['Sgf'];
+		if ($proposalToApprove['accepted'] != 0)
+		{
+			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			return;
+		}
+		$proposalToApprove['accepted'] = 1;
+		ClassRegistry::init('Sgf')->save($proposalToApprove);
+
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::handleContribution($proposalToApprove['user_id'], 'made_proposal');
+		CookieFlash::set('Sgf proposal accepted', 'success');
+		return $this->redirect('/users/adminstats');
+	}
+
+	public function rejectSGFProposal($sgfID)
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/sets');
+
+		$proposalToReject = ClassRegistry::init('Sgf')->findById($sgfID);
+		if (!$proposalToReject)
+		{
+			CookieFlash::set('Sgf proposal doesn\'t exist.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$proposalToReject = $proposalToReject['Sgf'];
+
+		if ($proposalToReject['accepted'] != 0)
+		{
+			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
+			return;
+		}
+
+		$reject = [];
+		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
+		$reject['type'] = 'proposal';
+		ClassRegistry::init('Reject')->create();
+		ClassRegistry::init('Reject')->save($reject);
+		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
+
+		CookieFlash::set('Sgf proposal rejected', 'success');
+		return $this->redirect('/users/adminstats');
 	}
 }

@@ -206,17 +206,22 @@ class ContextPreparator
 				$this->prepareTsumegoAttempt($attemptInput, $tsumego);
 	}
 
-	private function prepareTsumegoSgf(?string $tsumegoSgf, &$tsumego): void
+	private function prepareTsumegoSgf(mixed $tsumegoSgf, &$tsumego): void
 	{
 		if (!$tsumegoSgf)
 			return;
+		if (is_string($tsumegoSgf))
+			$tsumegoSgf = ['data' => $tsumegoSgf];
+
 		$sgf = [];
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf['sgf'] = $tsumegoSgf;
-		$sgf['accepted'] = true;
+		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
+		$sgf['accepted'] = Util::extract('accepted', $tsumegoSgf);
+		$sgf['user_id'] = Auth::getUserID();
 		ClassRegistry::init('Sgf')->save($sgf);
 		$tsumego['sgfs'][] = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC'])['Sgf'];
+		$this->checkOptionsConsumed($tsumegoSgf);
 	}
 
 	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void

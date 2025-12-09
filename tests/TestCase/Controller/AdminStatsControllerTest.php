@@ -313,10 +313,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$makeProposalLink->click();
 
 		$this->assertSame(
-			Util::getMyAddress() .
-			'/editor/?setConnectionID=' .
-			$context->otherTsumegos[0]['set-connections'][0]['id'] .
-			'&sgfID=' . $context->otherTsumegos[0]['sgfs'][0]['id'],
+			Util::getMyAddress()
+			. '/editor/?setConnectionID='
+			. $context->otherTsumegos[0]['set-connections'][0]['id']
+			. '&sgfID=' . $context->otherTsumegos[0]['sgfs'][0]['id'],
 			$browser->driver->getCurrentURL());
 		$browser->assertNoErrors();
 
@@ -329,5 +329,62 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
 		$this->assertSame($loadedSgf, $sgfVersion1);
+	}
+
+	public function testAcceptSgfProposal()
+	{
+		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-tsumegos' => [[
+				'sgfs' => [
+					['data' => $sgfVersion1, 'accepted' => true],
+					['data' => $sgfVersion2, 'accepted' => false]],
+				'status' => 'S',
+				'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		$browser->get('/users/adminstats');
+		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
+
+		// click the accept proposal button
+		$browser->clickId('accept-' . $context->otherTsumegos[0]['sgfs'][1]['id']);
+
+		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
+		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->otherTsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
+
+		// checking that the accepted sgf is now used for the problem
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
+		$this->assertSame($loadedSgf, $sgfVersion2);
+	}
+
+	public function testRejectSgfProposal()
+	{
+		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-tsumegos' => [[
+				'sgfs' => [
+					['data' => $sgfVersion1, 'accepted' => true],
+					['data' => $sgfVersion2, 'accepted' => false]],
+				'status' => 'S',
+				'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		$browser->get('/users/adminstats');
+		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
+
+		// click the accept proposal button
+		$browser->clickId('reject-' . $context->otherTsumegos[0]['sgfs'][1]['id']);
+
+		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
+
+		// the sgf is deleted
+		$this->assertNull(ClassRegistry::init('Sgf')->findById($context->otherTsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
 	}
 }

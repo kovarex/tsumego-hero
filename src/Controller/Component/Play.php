@@ -280,10 +280,10 @@ class Play
 
 		$sgf = [];
 		$sgfdb = ClassRegistry::init('Sgf')->find('first', [
-		'order' => 'id DESC',
-		'conditions' => [
-			'tsumego_id' => $id,
-			'accepted' => true]]);
+			'order' => 'id DESC',
+			'conditions' => [
+				'tsumego_id' => $id,
+				'accepted' => true]]);
 		if (!$sgfdb)
 		{
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
