@@ -179,7 +179,7 @@ class UsersControllerTest extends ControllerTestCase
 				'solved' => 1],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
-				'attempt' => ['rating' => 2165]]],
+				'attempt' => ['user_rating' => 2165]]],
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
 				[
@@ -228,7 +228,7 @@ class UsersControllerTest extends ControllerTestCase
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'rating' => '2200',
-				'attempt' => ['rating' => 2165],
+				'attempt' => ['user_rating' => 2165],
 				'status' => 'S']]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);

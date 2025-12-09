@@ -15,7 +15,7 @@
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
 		}
 	} ?>
-</script>;
+</script>
 	<div class="homeRight">
 		<p class="title4">Problems</p>
 		<div class="showFilters">
@@ -106,13 +106,13 @@
 				if (!$noImage && $set['Set']['image']) {
 					if($tsumegoFilters->query == 'topics'){
 						if ($set['Set']['image'][2]!='-') {
-							echo '<td width="195px" style="vertical-align:top;"><div align="center">
+							echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
 								<a href="/'.$startingSetConnectionID.'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
 								</a></div></td>';
 						}else {
-							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center">
+							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
 								<a href="/'.$startingSetConnectionID.'">
 								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
 								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'" width="210">
@@ -126,7 +126,7 @@
 							$lightDarkImageBackground = '';
 							$lightDarkBorder = 'style="border:1px solid black"';
 						}
-						echo '<td width="195px" style="vertical-align:top;"><div '.$lightDarkImageBackground.' align="center">
+						echo '<td width="195px" style="vertical-align:top;"><div '.$lightDarkImageBackground.' align="center" class="set-image-zoom">
 							<a href="/'.$startingSetConnectionID.'">
 							<img width="182" '.$lightDarkBorder.' src="/img/'. $set['Set']['image'].'"
 							alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
