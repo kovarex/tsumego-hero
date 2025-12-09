@@ -25,7 +25,8 @@ SELECT
 	COALESCE(tag_connection.user_id = ?, 0) AS isMine,
 	tag.hint AS isHint
 FROM tag
-LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.tsumego_id = ?", [Auth::getUserID(), $this->tsumegoID]);
+LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.tsumego_id = ?
+ORDER BY name", [Auth::getUserID(), $this->tsumegoID]);
 	}
 
 	public function renderJs()
