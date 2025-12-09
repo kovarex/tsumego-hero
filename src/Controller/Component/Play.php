@@ -312,7 +312,7 @@ class Play
 		else
 		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
-		if (!Auth::isInTimeMode())
+		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
@@ -502,7 +502,6 @@ class Play
 		($this->setFunction)('t', $t);
 		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
 		($this->setFunction)('hash', $hash);
-		($this->setFunction)('nextMode', $nextMode);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
 		($this->setFunction)('eloScore', $eloScore);
 		($this->setFunction)('eloScore2', $eloScore2);
