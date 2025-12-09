@@ -24,7 +24,12 @@ for i in $(seq 1 "$WORKER_COUNT"); do
     DB_NAME="test_$i"
     
     # Use mysql directly (works inside DDEV container and on host)
-    DB_EXISTS=$(mysql -e "SHOW DATABASES LIKE '$DB_NAME';" 2>/dev/null | grep -c "$DB_NAME" || echo "0")
+    # Check if database exists - returns "1" if found, "0" if not
+    if mysql -e "SHOW DATABASES LIKE '$DB_NAME';" 2>/dev/null | grep -q "$DB_NAME"; then
+        DB_EXISTS=1
+    else
+        DB_EXISTS=0
+    fi
     
     if [[ "$DB_EXISTS" -eq 0 ]]; then
         MISSING_DBS="$MISSING_DBS $DB_NAME"
