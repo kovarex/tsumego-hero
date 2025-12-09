@@ -135,7 +135,9 @@ fi
 
 
 echo "=== Setting up permissions ==="
+mkdir -p "$ROOT_DIR/tmp"
 chmod 777 "$ROOT_DIR/tmp"
+mkdir -p "$ROOT_DIR/tmp/logs"
 chmod 777 "$ROOT_DIR/tmp/logs"
 mkdir -p "$ROOT_DIR/tmp/cache"
 chmod 777 "$ROOT_DIR/tmp/cache"
