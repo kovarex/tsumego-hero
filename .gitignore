@@ -8,6 +8,7 @@
 !/tmp/sessions/.gitkeep
 /tmp/tests/*
 !/tmp/tests/.gitkeep
+/tmp/asset_compress_build_time
 /logs/*
 !/logs/.gitkeep
 /app/Plugin/*
@@ -23,6 +24,7 @@ config/database.php
 config/email.php
 config/core.local.php
 config/define.local.php
+src/Config/asset_compress.local.ini
 .php-cs-fixer.cache
 ./.php-cs-fixer.php
 
@@ -33,6 +35,8 @@ config/define.local.php
 /img/google/*.png
 webroot/mainPageAjax.txt
 webroot/userLogger.html
+webroot/cache_css/
+webroot/cache_js/
 webroot/forums/cache
 webroot/forums/store
 webroot/forums/config.php

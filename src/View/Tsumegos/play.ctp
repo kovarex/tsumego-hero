@@ -1,11 +1,4 @@
-﻿<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
-	<script src="/js/multipleChoice.js"></script>
-	<style>.alertBox{height:auto!important;}</style>
-<?php }else if($tv!=null){ ?>
-	<script src="/js/multipleChoiceCustom.js"></script>
-	<script src="/js/scoreEstimatingCustom.js"></script>
-<?php } ?>
-<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
+﻿<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
 <script src="/besogo/js/transformation.js"></script>
@@ -28,8 +21,6 @@
 <script src="/besogo/js/treePanel.js"></script>
 <script src="/besogo/js/diffInfo.js"></script>
 <script src="/besogo/js/scaleParameters.js"></script>
-<script src ="/FileSaver.min.js"></script>
-<script src ="/js/TagConnectionsEdit.js?v=4"></script>
 <?php
 	$choice = array();
 	for($i=1;$i<=count($enabledBoards);$i++){

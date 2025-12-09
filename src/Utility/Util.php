@@ -155,8 +155,8 @@ class Util
 	public static function getInternalAddress()
 	{
 		if (Util::isInGithubCI())
-			return 'https://host.docker.internal:8443./vendor/bin';
-		return 'http://localhost/var/www/html/vendor/bin';
+			return 'https://host.docker.internal:8443';
+		return 'http://localhost';
 	}
 
 	public static function addSqlCondition(&$existingCondition, $condition): void
@@ -228,5 +228,10 @@ class Util
 	public static function getGraphGridColor(): string
 	{
 		return Auth::lightMode() == Auth::$LIGHT_MODE ? '#000' : '#fff';
+	}
+
+	public static function getValueGraphHeight($input)
+	{
+		return 160 + count($input) * 25;
 	}
 }

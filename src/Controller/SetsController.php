@@ -554,6 +554,7 @@ class SetsController extends AppController
 				if (!Auth::hasPremium())
 					Util::addSqlCondition($condition, '`set`.premium = false');
 				Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
+				Util::addSqlCondition($condition, '`set`.public = 1');
 				if (!empty($tsumegoFilters->setIDs))
 					Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
 				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(

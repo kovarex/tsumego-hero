@@ -82,27 +82,32 @@ echo $this->Html->charset();
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
 <meta property="og:title" content="Tsumego Hero">
-<link rel="stylesheet" type="text/css" href="/css/<?php echo $lightDark?>-constants.css?v=3" id="theme-css-constants">
-<link rel="stylesheet" type="text/css" href="/css/default.css?v=6">
-	<?php
-if($lightDark=='dark')
-	echo '<link rel="stylesheet" type="text/css" href="/css/dark.css?v=4.5">';
+<?php
+// Main app CSS bundle
+echo $this->AssetCompress->css('app');
+
+// Load both theme CSS bundles for JavaScript-based theme switching
+// Initial state: one enabled, one disabled based on cookie
+echo '<link rel="stylesheet" id="dark-theme-css" href="' . 
+	$this->AssetCompress->url('dark-theme.css') . '"' . 
+	($lightDark === 'dark' ? '' : ' disabled') . ' />';
+echo '<link rel="stylesheet" id="light-theme-css" href="' . 
+	$this->AssetCompress->url('light-theme.css') . '"' . 
+	($lightDark === 'light' ? '' : ' disabled') . ' />';
 
 echo $this->Html->meta('icon');
 echo $this->fetch('meta');
 echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
-<script src ="/js/previewBoard.js?v=2"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script type="text/javascript" src="/dist/jgoboard-latest.js"></script>
-<script type="text/javascript" src="/js/util.js?v=10"></script>
-<script type="text/javascript" src="/js/Rating.js?v=1"></script>
-<script type="text/javascript" src="/js/AccountWidget.js?v=1"></script>
-<script src="/js/dark.js?v=<?php echo filemtime(WWW_ROOT . 'js/dark.js'); ?>"></script>
+<?php
+echo $this->AssetCompress->script('app');
+?>
 </head>
 
 <body class="<?php echo $lightDark === 'dark' ? 'dark-theme' : 'light-theme'; ?>">

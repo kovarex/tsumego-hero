@@ -277,6 +277,11 @@
 		<?php
 		echo 'function animateNumber(index, start, end, duration) {
 				const element = document.getElementById("number" + index);
+				// Null check: premium locked sets don\'t have number elements
+				if (!element) {
+					console.warn("Element number" + index + " not found.");
+					return;
+				}
 				const range = end - start;
 				const increment = range / (duration * 60);
 				const decimalIndex = end.toString().indexOf(".");

@@ -1894,7 +1894,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']]))
 				array_push($tsumegoDates, $tsumegos[$j]);
 		$tsumegoNum = count($tsumegoDates);
-		$solvedUts = [];
 		$lastYear = date('Y-m-d', strtotime('-1 year'));
 
 		$tsumegoStatusToRestCount = 0;
@@ -1904,12 +1903,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$date = new DateTime($uts[$j]['TsumegoStatus']['created']);
 			$uts[$j]['TsumegoStatus']['created'] = $date->format('Y-m-d');
-			if ($uts[$j]['TsumegoStatus']['status'] == 'S' || $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C')
-			{
-				$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
-				if ($uts[$j]['TsumegoStatus']['created'] > $oldest->format('Y-m-d'))
-					array_push($solvedUts, $uts[$j]);
-			}
 			if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
 				$tsumegoStatusToRestCount++;
 		}
@@ -1920,7 +1913,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			'order' => 'created DESC',
 			'conditions' => ['user_id' => $id, 'created >' => $oldest]]);
 
-		$taBefore = '';
 		$graph = [];
 		$ta2 = [];
 
@@ -1941,31 +1933,47 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (!isset($graph[$ta[$i]['TsumegoAttempt']['created']]))
 			{
 				$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
-				$graph[$ta[$i]['TsumegoAttempt']['created']]['s'] = 0;
-				$graph[$ta[$i]['TsumegoAttempt']['created']]['f'] = 0;
+				$graph[$ta[$i]['TsumegoAttempt']['created']]['category'] = $ta[$i]['TsumegoAttempt']['created'];
+				$graph[$ta[$i]['TsumegoAttempt']['created']]['Solves'] = 0;
+				$graph[$ta[$i]['TsumegoAttempt']['created']]['Fails'] = 0;
 			}
-			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 's' : 'f']++;
+			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 'Solves' : 'Fails']++;
 		}
 
-		$timeGraph = [];
-		$ro = $this->TimeModeSession->find('all', [
-			'order' => 'time_mode_rank_id ASC',
-			'conditions' => [
-				'user_id' => $id,
-			],
-		]);
+		$this->set('timeModeRanks', Util::query("
+SELECT
+    c.name AS category_name,
 
-		$highestRo = '15k';
-		$roCount = count($ro);
-		for ($i = 0; $i < $roCount; $i++)
-		{
-			$highestRo = $this->getHighestRo($ro[$i]['TimeModeSession']['TimeModeAttempt'], $highestRo);
-			if (isset($timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']]))
-				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']]++;
-			else
-				$timeGraph[$ro[$i]['TimeModeSession']['TimeModeAttempt']][$ro[$i]['TimeModeSession']['status']] = 1;
-		}
-		$timeGraph = $this->formatTimegraph($timeGraph);
+    -- 1) Best solved session rank name (highest rank.id)
+    (
+        SELECT time_mode_rank.name
+        FROM time_mode_session s2
+        JOIN time_mode_rank ON time_mode_rank.id = s2.time_mode_rank_id
+        WHERE
+            s2.time_mode_category_id = c.id AND
+            s2.time_mode_session_status_id = " . TimeModeUtil::$SESSION_STATUS_SOLVED . " AND
+            s2.user_id = ?
+        ORDER BY time_mode_rank.id DESC                            -- highest id = best rank
+        LIMIT 1
+    ) AS best_solved_rank_name,
+
+    -- 2) Number of sessions in this category
+    COUNT(s.id) AS session_count
+
+FROM
+	time_mode_category c
+	LEFT JOIN time_mode_session s ON s.user_id = ? AND s.time_mode_category_id = c.id
+GROUP BY c.id, c.name;", [$user['User']['id'], $user['User']['id']]));
+
+		$this->set('timeGraph', Util::query('
+SELECT
+    DATE(time_mode_session.created) AS category,
+    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
+    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_FAILED . ' THEN 1 ELSE 0 END) AS Fails
+FROM time_mode_session
+WHERE time_mode_session.user_id = ?
+GROUP BY DATE(time_mode_session.created)
+ORDER BY category DESC', [$user['User']['id']]));
 
 		$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 
@@ -2021,107 +2029,22 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($asx != null)
 			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
 
-		$countGraph = 160 + count($graph) * 25;
-		$countTimeGraph = 160 + count($timeGraph) * 25;
-
 		$user['User']['name'] = $this->checkPicture($user['User']);
 
 		$aCount = $this->Achievement->find('all');
 
 		$this->set('ta2', $ta2);
 		$this->set('graph', $graph);
-		$this->set('countGraph', $countGraph);
-		$this->set('timeGraph', $timeGraph);
-		$this->set('countTimeGraph', $countTimeGraph);
-		$this->set('timeModeRuns', count($ro));
 		$this->set('user', $user);
 		$this->set('tsumegoNum', $tsumegoNum);
 		$this->set('percentSolved', $percentSolved);
 		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
 		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
-		$this->set('allUts', $uts);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('highestRo', $highestRo);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
-	}
-
-	private function formatTimegraph($graph)
-	{
-		$g = [];
-		$g['15k'] = 0;
-		$g['14k'] = 0;
-		$g['13k'] = 0;
-		$g['12k'] = 0;
-		$g['11k'] = 0;
-		$g['10k'] = 0;
-		$g['9k'] = 0;
-		$g['8k'] = 0;
-		$g['7k'] = 0;
-		$g['6k'] = 0;
-		$g['5k'] = 0;
-		$g['4k'] = 0;
-		$g['3k'] = 0;
-		$g['2k'] = 0;
-		$g['1k'] = 0;
-		$g['1d'] = 0;
-		$g['2d'] = 0;
-		$g['3d'] = 0;
-		$g['4d'] = 0;
-		$g['5d'] = 0;
-		foreach ($graph as $key => $value)
-			$g[$key] = $value;
-		$g2 = [];
-		foreach ($g as $key => $value)
-			if ($g[$key] != 0)
-				$g2[$key] = $value;
-
-		return $g2;
-	}
-
-	private function getHighestRo($new, $old)
-	{
-		$newNum = 23;
-		$oldNum = 23;
-		$a = [];
-		$a[0] = '9d';
-		$a[1] = '8d';
-		$a[2] = '7d';
-		$a[3] = '6d';
-		$a[4] = '5d';
-		$a[5] = '4d';
-		$a[6] = '3d';
-		$a[7] = '2d';
-		$a[8] = '1d';
-		$a[9] = '1k';
-		$a[10] = '2k';
-		$a[11] = '3k';
-		$a[12] = '4k';
-		$a[13] = '5k';
-		$a[14] = '6k';
-		$a[15] = '7k';
-		$a[16] = '8k';
-		$a[17] = '9k';
-		$a[18] = '10k';
-		$a[19] = '11k';
-		$a[20] = '12k';
-		$a[21] = '13k';
-		$a[22] = '14k';
-		$a[23] = '15k';
-		$aCount = count($a);
-		for ($i = 0; $i < $aCount; $i++)
-		{
-			if ($a[$i] == $new)
-				$newNum = $i;
-			if ($a[$i] == $old)
-				$oldNum = $i;
-		}
-		if ($newNum < $oldNum)
-			return $new;
-
-		return $old;
 	}
 
 	/**
