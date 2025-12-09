@@ -2,23 +2,23 @@
 
 class ValueGraphRenderer
 {
-	static public function render($caption, $id, $structure, $input)
+	public static function render($caption, $id, $structure, $input)
 	{
 		$series = [];
 		foreach ($structure as $node)
 		{
-		    $data = [];
+			$data = [];
 			foreach ($input as $item)
 				$data[] = $item[$node['name']];
 			$series[] = "{
 				  name: '" . $node['name'] . "',
-				  data: [" . implode(',', $data) ."],
+				  data: [" . implode(',', $data) . "],
 				  color: '" . $node['color'] . "'}";
 		}
 
 		$categories = [];
 		foreach ($input as $item)
-          $categories[] = $item['category'];
+			$categories[] = $item['category'];
 
 		echo "
 		var options =

@@ -1940,7 +1940,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 'Solves' : 'Fails']++;
 		}
 
-		$this->set('timeModeRanks',Util::query("
+		$this->set('timeModeRanks', Util::query("
 SELECT
     c.name AS category_name,
 
@@ -1969,7 +1969,7 @@ GROUP BY c.id, c.name;", [$user['User']['id'], $user['User']['id']]));
 SELECT
     DATE(time_mode_session.created) AS category,
     SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_SOLVED . ' THEN 1 ELSE 0 END) AS Passes,
-    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_FAILED. ' THEN 1 ELSE 0 END) AS Fails
+    SUM(CASE WHEN time_mode_session.time_mode_session_status_id = ' . TimeModeUtil::$SESSION_STATUS_FAILED . ' THEN 1 ELSE 0 END) AS Fails
 FROM time_mode_session
 WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
