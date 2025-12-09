@@ -1894,7 +1894,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']]))
 				array_push($tsumegoDates, $tsumegos[$j]);
 		$tsumegoNum = count($tsumegoDates);
-		$solvedUts = [];
 		$lastYear = date('Y-m-d', strtotime('-1 year'));
 
 		$tsumegoStatusToRestCount = 0;
@@ -1904,12 +1903,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		{
 			$date = new DateTime($uts[$j]['TsumegoStatus']['created']);
 			$uts[$j]['TsumegoStatus']['created'] = $date->format('Y-m-d');
-			if ($uts[$j]['TsumegoStatus']['status'] == 'S' || $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C')
-			{
-				$oldest = new DateTime(date('Y-m-d', strtotime('-30 days')));
-				if ($uts[$j]['TsumegoStatus']['created'] > $oldest->format('Y-m-d'))
-					array_push($solvedUts, $uts[$j]);
-			}
 			if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
 				$tsumegoStatusToRestCount++;
 		}
@@ -2047,88 +2040,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('percentSolved', $percentSolved);
 		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
 		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
-		$this->set('allUts', $uts);
 		$this->set('as', $as);
 		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
-	}
-
-	private function formatTimegraph($graph)
-	{
-		$g = [];
-		$g['15k'] = 0;
-		$g['14k'] = 0;
-		$g['13k'] = 0;
-		$g['12k'] = 0;
-		$g['11k'] = 0;
-		$g['10k'] = 0;
-		$g['9k'] = 0;
-		$g['8k'] = 0;
-		$g['7k'] = 0;
-		$g['6k'] = 0;
-		$g['5k'] = 0;
-		$g['4k'] = 0;
-		$g['3k'] = 0;
-		$g['2k'] = 0;
-		$g['1k'] = 0;
-		$g['1d'] = 0;
-		$g['2d'] = 0;
-		$g['3d'] = 0;
-		$g['4d'] = 0;
-		$g['5d'] = 0;
-		foreach ($graph as $key => $value)
-			$g[$key] = $value;
-		$g2 = [];
-		foreach ($g as $key => $value)
-			if ($g[$key] != 0)
-				$g2[$key] = $value;
-
-		return $g2;
-	}
-
-	private function getHighestRo($new, $old)
-	{
-		$newNum = 23;
-		$oldNum = 23;
-		$a = [];
-		$a[0] = '9d';
-		$a[1] = '8d';
-		$a[2] = '7d';
-		$a[3] = '6d';
-		$a[4] = '5d';
-		$a[5] = '4d';
-		$a[6] = '3d';
-		$a[7] = '2d';
-		$a[8] = '1d';
-		$a[9] = '1k';
-		$a[10] = '2k';
-		$a[11] = '3k';
-		$a[12] = '4k';
-		$a[13] = '5k';
-		$a[14] = '6k';
-		$a[15] = '7k';
-		$a[16] = '8k';
-		$a[17] = '9k';
-		$a[18] = '10k';
-		$a[19] = '11k';
-		$a[20] = '12k';
-		$a[21] = '13k';
-		$a[22] = '14k';
-		$a[23] = '15k';
-		$aCount = count($a);
-		for ($i = 0; $i < $aCount; $i++)
-		{
-			if ($a[$i] == $new)
-				$newNum = $i;
-			if ($a[$i] == $old)
-				$oldNum = $i;
-		}
-		if ($newNum < $oldNum)
-			return $new;
-
-		return $old;
 	}
 
 	/**
