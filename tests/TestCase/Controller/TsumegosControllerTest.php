@@ -221,33 +221,38 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testResetAddsFailWhenSomethingWasPlayed()
 	{
-		$context = new ContextPreparator([
-			'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-				'rating' => 1000,
-				'sets' => [['name' => 'test set', 'num' => '1']]]]);
-		$browser = Browser::instance();
-		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		foreach ([true, false] as $playBeforeReset) {
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
+				'tsumego' => [
+					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+					'rating' => 1000,
+					'sets' => [['name' => 'test set', 'num' => '1']]]]);
+			$browser = Browser::instance();
+			$browser->setCookie('showInAccountWidget', 'rating');
+			$browser->get($context->tsumego['set-connections'][0]['id']);
 
-		// click one move
-		$browser->clickBoard(1, 1);
-		usleep(500 * 1000);
-		$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+			if ($playBeforeReset)
+			{
+				// click one move
+				$browser->clickBoard(1, 1);
+				usleep(500 * 1000);
+				$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+			}
 
-		// reset without the result being shown
-		$browser->clickId('besogo-reset-button');
+			// reset without the result being shown
+			$browser->clickId('besogo-reset-button');
 
-		// check that rating on account widget was immediatelly updated
-		$expectedRatingChange = Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER);
-		$browser->driver->executeScript("window.scrollTo(0, 0);");
-		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame(strval(round(1000 + $expectedRatingChange)), $browser->find('#account-bar-xp')->getText());
+			// check that rating on account widget was immediatelly updated
+			$expectedRatingChange = $playBeforeReset ? Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER) : 0;
+			$browser->driver->executeScript("window.scrollTo(0, 0);");
+			$browser->hover($browser->find('#account-bar-xp'));
+			$this->assertSame(strval(round(1000 + $expectedRatingChange)), $browser->find('#account-bar-xp')->getText());
 
-		// changes are applied after refresh
-		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$this->assertSame(1, $context->reloadUser()['damage']);
-		$this->assertLessThan(0.1, abs($context->reloadUser()['rating'] - (1000 + $expectedRatingChange)));
+			// changes are applied after refresh
+			$browser->get($context->tsumego['set-connections'][0]['id']);
+			$this->assertSame($playBeforeReset ? 1 : 0, $context->reloadUser()['damage']);
+			$this->assertLessThan(0.1, abs($context->reloadUser()['rating'] - (1000 + $expectedRatingChange)));
+		}
 	}
 }
