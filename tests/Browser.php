@@ -138,9 +138,9 @@ class Browser
 	public function restoreTestModeCookies(): void
 	{
 		$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1"]);
-		$testToken = getenv('TEST_TOKEN');
-		if ($testToken)
-			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken]);
+		// Always use test_1 for sequential tests (when TEST_TOKEN not set)
+		$testToken = getenv('TEST_TOKEN') ?: '1';
+		$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken]);
 	}
 
 	public function get(string $url): void
@@ -151,16 +151,17 @@ class Browser
 		// Append PHPUNIT_TEST=1 and TEST_TOKEN to URL
 		$separator = (strpos($url, '?') !== false) ? '&' : '?';
 		$fullUrl .= $separator . 'PHPUNIT_TEST=1';
-		$testToken = getenv('TEST_TOKEN');
-		if ($testToken)
-			$fullUrl .= '&TEST_TOKEN=' . $testToken;
+		// Always use test_1 for sequential tests (when TEST_TOKEN not set)
+		$testToken = getenv('TEST_TOKEN') ?: '1';
+		$fullUrl .= '&TEST_TOKEN=' . $testToken;
 
 		// Set auth cookies if needed (these still require cookies unfortunately)
 		$needsAuthCookies = ($url != 'empty.php' && Auth::isLoggedIn());
 		if ($needsAuthCookies)
 		{
-			// Must navigate first to set cookies
-			$this->driver->get($fullUrl);
+			// Must navigate to empty.php FIRST to set cookies (can't set cookies without navigating to domain)
+			// This avoids making a request to the real URL without auth cookies
+			$this->driver->get(Util::getMyAddress() . '/empty.php');
 			$this->driver->manage()->addCookie([
 				'name' => "hackedLoggedInUserID",
 				'value' => (string) Auth::getUserID()
@@ -173,14 +174,14 @@ class Browser
 
 			// Re-set test mode cookies after navigation
 			$this->driver->manage()->addCookie(['name' => "PHPUNIT_TEST", 'value' => "1", 'path' => '/', 'domain' => 'ddev-tsumego-web']);
-			$testToken = getenv('TEST_TOKEN');
-			if ($testToken)
-				$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
+			// Always use test_1 for sequential tests (when TEST_TOKEN not set)
+			$testToken = getenv('TEST_TOKEN') ?: '1';
+			$this->driver->manage()->addCookie(['name' => "TEST_TOKEN", 'value' => $testToken, 'path' => '/', 'domain' => 'ddev-tsumego-web']);
 		}
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
 		$url = ltrim($url, '/');
-		// Navigate (first time if no auth, or reload with auth cookies)
+		// Navigate to the target URL (with auth cookies already set if needed)
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 
 		// Inject TEST_TOKEN into all forms so POST requests include it

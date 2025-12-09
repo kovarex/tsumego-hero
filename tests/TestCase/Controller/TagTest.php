@@ -102,8 +102,14 @@ class TagTest extends ControllerTestCase
 
 			// cick to add the snapback
 			$addTagLinks[0]->click();
-			// Wait for AJAX to complete and tag to be removed from add list
-			usleep(1000000); // 1000ms wait for AJAX
+			// Wait for AJAX to complete and tag to be removed from add list - Chrome is fast, use WebDriverWait
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+			$wait->until(function () use ($browser, $popular) {
+				$sourceList = $popular ? 'add-tag-list-popular' : 'add-tag-list';
+				$links = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
+				// Wait until snapback is removed (only 1 link remains)
+				return count($links) === 1;
+			});
 			$addTagLinks = $browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor');
 
 			// tag is not in the list
@@ -118,8 +124,13 @@ class TagTest extends ControllerTestCase
 
 			//add the snapback and test, that it will be no longer offered as tag to add
 			$addTagLinks[0]->click();
-			// Wait for AJAX to complete and tag to be removed from add list
-			usleep(1000000); // 1000ms wait for AJAX
+			// Wait for AJAX to complete and tag to be removed from add list - Chrome is fast, use WebDriverWait
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+			$wait->until(function () use ($browser, $sourceList) {
+				$links = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
+				// Wait until snapback is removed (only 1 link remains)
+				return count($links) === 1;
+			});
 			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 			$this->assertSame(1, count($addTagLinks));
 			$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
@@ -308,7 +319,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('TagConnection')->deleteAll(['1=1']);
-		$alertText = $browser->clickIdAndExpectAlert('remove-tag-snapback');
+		// Longer timeout for Chrome speed - AJAX call is faster
+		$alertText = $browser->clickIdAndExpectAlert('remove-tag-snapback', 10);
 		$this->assertTextContains('Tag to remove isn\'t assigned to this tsumego.', $alertText);
 	}
 

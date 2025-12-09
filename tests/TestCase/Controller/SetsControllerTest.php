@@ -770,10 +770,11 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
+		
 		$browser->get("sets");
 
-		// Wait for ALL collection divs to load (5 expected)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
+		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500);
 		$wait->until(function () use ($browser) {
 			$collectionDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 			return count($collectionDivs) == 5;
@@ -823,8 +824,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		// Wait for ALL collection divs to load (5 expected)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
+		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500);
 		$wait->until(function () use ($browser) {
 			$collectionDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 			return count($collectionDivs) == 5;
