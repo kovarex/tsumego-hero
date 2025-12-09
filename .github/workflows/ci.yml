@@ -147,21 +147,7 @@ jobs:
           echo "Caddy log:"
           cat caddy.log || true
 
-      - name: Run parallel tests
-        env:
-          SELENIUM_URL: http://localhost:4444
-          TEST_APP_URL: https://host.docker.internal:8443
-          TEST_ENVIRONMENT: github-ci
-          DB_HOST: 127.0.0.1
-          DB_USER: root
-          DB_PASS: root
-          DB_NAME: test_1
-          TEST_WORKERS: 2
-        run: |
-          bash scripts/run-parallel-tests.sh --exclude-group=apache-only
-
-      - name: Run tests with coverage (master only)
-        if: github.ref == 'refs/heads/master'
+      - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
           TEST_APP_URL: https://host.docker.internal:8443
@@ -174,10 +160,9 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Run all tests (excluding apache-only) with coverage in both formats
-          vendor/bin/phpunit --exclude-group apache-only --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
+          bash scripts/run-parallel-tests.sh --exclude-group=apache-only --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
 
       - name: Merge coverage files
-        if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
 
       - name: Deploy coverage to GitHub Pages
