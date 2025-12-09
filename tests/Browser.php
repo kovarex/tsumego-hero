@@ -16,7 +16,8 @@ class Browser
 
 	public function __construct()
 	{
-		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-hub:4444';
+		// Allow override via SELENIUM_URL environment variable (for CI flexibility)
+		$serverUrl = getenv('SELENIUM_URL') ?: 'http://selenium-hub:4444';
 
 		// Set HEADED=1 environment variable to watch tests visually
 		$chromeOptions = new ChromeOptions();
