@@ -2,7 +2,7 @@
 
 class RatingModeController extends AppController
 {
-	static function ratingAdjustment($difficultySetting)
+	public static function ratingAdjustment($difficultySetting)
 	{
 		if ($difficultySetting == 1)
 			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_3;

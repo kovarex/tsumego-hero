@@ -50,16 +50,16 @@ class RatingModeTest extends ControllerTestCase
 			$actions = new WebDriverActions($browser->driver);
 			$targetPosition = 0;
 			if ($difficulty == 'easy')
-				$targetPosition = -$width/2 + 1;
+				$targetPosition = -$width / 2 + 1;
 			elseif ($difficulty == 'hard')
-				$targetPosition = $width/2 - 1;
+				$targetPosition = $width / 2 - 1;
 			$actions->moveToElement($slider, $targetPosition, 0)->click()->perform();
 
 			if ($difficulty == 'easy')
 				$expectedDifficultyLabel = 'very easy';
-			else if ($difficulty == 'normal')
+			elseif ($difficulty == 'normal')
 				$expectedDifficultyLabel = 'regular';
-			else if ($difficulty == 'hard')
+			elseif ($difficulty == 'hard')
 				$expectedDifficultyLabel = 'very difficult';
 			else
 				throw new Exception('Unexpected difficulty');
