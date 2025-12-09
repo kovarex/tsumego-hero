@@ -442,54 +442,6 @@ besogo.makeToolPanel = function (container, editor) {
         prevButtonId = "besogo-back-button";
 
         makeHyperlinkText("Back","previous problem", previousButtonLink, prevButtonId);
-
-        makeButtonText(
-          "Reset",
-          "reset the problem",
-          function () {
-            resetParameters(besogo.editor.getCurrent().parent === null);
-            besogo.editor.resetToStart();
-            toggleBoardLock(false);
-            besogo.editor.setReviewMode(false);
-            document.getElementById("status").innerHTML = "";
-            document.getElementById("theComment").style.cssText =
-              "display:none;";
-            $("#customAlerts").fadeOut(500);
-            $(".besogo-panels").css("display", "none");
-            if (besogo.scaleParameters["boardCanvasSize"] === "full board") {
-              $(".besogo-board").css("width", "60%");
-              $(".besogo-board").css("margin", "0 252px");
-            } else if (
-              besogo.scaleParameters["boardCanvasSize"] ===
-              "horizontal half board"
-            ) {
-              $(".besogo-board").css("width", "78%");
-              $(".besogo-board").css("margin", "0 138px");
-              $(".besogo-board").css("height", trueBoardHeight);
-            } else if (
-              besogo.scaleParameters["boardCanvasSize"] ===
-              "vertical half board"
-            ) {
-              $(".besogo-board").css("width", "30%");
-              $(".besogo-board").css("margin", "0 443px");
-            } else {
-              $(".besogo-board").css("width", "50%");
-              $(".besogo-board").css("margin", "0 315px");
-            }
-
-            $(".besogo-board").css(
-              "box-shadow",
-              "0 8px 14px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
-            );
-            besogo.editor.notifyListeners({
-              treeChange: true,
-              navChange: true,
-              stoneChange: true,
-            });
-          },
-          "besogo-reset-button"
-        );
-
       } else if (mode == 2) {
         makeHyperlinkText(
           "History",
@@ -507,7 +459,57 @@ besogo.makeToolPanel = function (container, editor) {
       }
 
 	  if (mode == 1 || mode == 2)
-	      makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+	  {
+		  makeButtonText(
+			"Reset",
+			"reset the problem",
+			function ()
+			{
+				resetParameters(besogo.editor.getCurrent().parent === null);
+				besogo.editor.resetToStart();
+				toggleBoardLock(false);
+				besogo.editor.setReviewMode(false);
+				document.getElementById("status").innerHTML = "";
+				document.getElementById("theComment").style.cssText = "display:none;";
+				$("#customAlerts").fadeOut(500);
+				$(".besogo-panels").css("display", "none");
+				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
+				{
+				  $(".besogo-board").css("width", "60%");
+				  $(".besogo-board").css("margin", "0 252px");
+				}
+				else if (besogo.scaleParameters["boardCanvasSize"] === "horizontal half board")
+				{
+				  $(".besogo-board").css("width", "78%");
+				  $(".besogo-board").css("margin", "0 138px");
+				  $(".besogo-board").css("height", trueBoardHeight);
+				}
+				else if (besogo.scaleParameters["boardCanvasSize"] === "vertical half board")
+				{
+				  $(".besogo-board").css("width", "30%");
+				  $(".besogo-board").css("margin", "0 443px");
+				}
+				else
+				{
+				  $(".besogo-board").css("width", "50%");
+				  $(".besogo-board").css("margin", "0 315px");
+				}
+
+				$(".besogo-board").css(
+				  "box-shadow",
+				  "0 8px 14px 0 rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.2)"
+				);
+				besogo.editor.notifyListeners(
+				{
+				  treeChange: true,
+				  navChange: true,
+				  stoneChange: true,
+				});
+			  },
+			"besogo-reset-button"
+			);
+		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
+	}
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";
