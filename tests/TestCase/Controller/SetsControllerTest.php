@@ -889,6 +889,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		$context = new ContextPreparator($contextParams);
 		$context->addFavorite($context->otherTsumegos[0]);
+		usleep(100000); // 100ms - ensure DB commit before browser query
 
 		$browser = Browser::instance();
 		$browser->get('sets/view/favorites');
