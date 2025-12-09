@@ -180,9 +180,11 @@ mkdir -p "$ROOT_DIR/webroot/cache_js"
 chmod 777 "$ROOT_DIR/webroot/cache_js"
 mkdir -p "$ROOT_DIR/webroot/cache_css"
 chmod 777 "$ROOT_DIR/webroot/cache_css"
+
+touch "$ROOT_DIR/tmp/asset_compress_build_time"
+chmod 777 "$ROOT_DIR/tmp/asset_compress_build_time"
+
 ./bin/cake asset_compress clear
 ./bin/cake asset_compress build --force
-
-chmod 666 "$ROOT_DIR/tmp/asset_compress_build_time"
 
 echo "=== Deploy complete ==="
