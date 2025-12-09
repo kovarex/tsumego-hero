@@ -279,7 +279,11 @@ class Play
 		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
 
 		$sgf = [];
-		$sgfdb = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgfdb = ClassRegistry::init('Sgf')->find('first', [
+			'order' => 'id DESC',
+			'conditions' => [
+				'tsumego_id' => $id,
+				'accepted' => true]]);
 		if (!$sgfdb)
 		{
 			$sgf['Sgf']['sgf'] = Constants::$SGF_PLACEHOLDER;
@@ -426,7 +430,6 @@ class Play
 			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
 		$tagConnectionsEdit = new TagConnectionsEdit($id, TsumegoUtil::hasStateAllowingInspection($t));
 
-		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$isAllowedToContribute = false;
 		$isAllowedToContribute2 = false;
 		if (Auth::isLoggedIn())
@@ -469,7 +472,10 @@ class Play
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('isAllowedToContribute2', $isAllowedToContribute2);
+
+		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
+
 		($this->setFunction)('tagConnectionsEdit', $tagConnectionsEdit);
 		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('idForSignature', $idForSignature);

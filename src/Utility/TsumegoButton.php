@@ -2,14 +2,12 @@
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, bool $passEnabled, bool $alternativeResponse)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
 		$this->order = $order;
 		$this->status = $status;
-		$this->passEnabled = $passEnabled;
-		$this->alternativeResponse = $alternativeResponse;
 	}
 
 	public function render()
@@ -63,8 +61,6 @@ class TsumegoButton
 	public int $setConnectionID;
 	public int $order;
 	public ?string $status;
-	public bool $passEnabled; // used for set view statistics
-	public bool $alternativeResponse ; // used for set view statistics
 	public float $seconds = 0;
 	public string $performance;
 	public bool $isCurrentlyOpened = false;

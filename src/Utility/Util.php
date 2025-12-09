@@ -107,6 +107,15 @@ class Util
 		return $result;
 	}
 
+	public static function extractWithDefault(string $name, array &$inputArray, $default)
+	{
+		$result = $inputArray[$name];
+		unset($inputArray[$name]);
+		if (isset($result))
+			return $result;
+		return $default;
+	}
+
 	public static function getRatio(float|int $amount, float|int $max): float
 	{
 		if ($max == 0)

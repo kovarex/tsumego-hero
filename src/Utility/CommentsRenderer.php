@@ -37,7 +37,7 @@ class CommentsRenderer
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
-			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'], false, false)->render();
+			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'])->render();
 		echo '</div></td></tr>';
 		echo '</table>';
 		echo '</div>';

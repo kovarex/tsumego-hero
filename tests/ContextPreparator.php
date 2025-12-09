@@ -17,6 +17,8 @@ class ContextPreparator
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
 		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
+		if (!empty(ClassRegistry::init('User')->find('all')))
+			throw new Exception('Users were deleted and  yet still they are some');
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
@@ -148,14 +150,8 @@ class ContextPreparator
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempts(Util::extract('attempts', $tsumegoInput), $tsumego);
-		$singleSgf = Util::extract('sgf', $tsumegoInput);
-		$multipleSgfs = Util::extract('sgfs', $tsumegoInput);
-		if ($singleSgf)
-			$this->prepareTsumegoSgf($singleSgf, $tsumego);
-		if ($multipleSgfs)
-			$this->prepareTsumegoSgfs($multipleSgfs, $tsumego);
-		if (!$singleSgf && !$multipleSgfs)
-			$this->prepareTsumegoSgf(self::defaultSgf(), $tsumego);
+		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
 		$this->checkOptionsConsumed($tsumegoInput);
@@ -206,28 +202,30 @@ class ContextPreparator
 				$this->prepareTsumegoAttempt($attemptInput, $tsumego);
 	}
 
-	private function prepareTsumegoSgf(?string $tsumegoSgf, $tsumego): void
+	private function prepareTsumegoSgf(mixed $tsumegoSgf, &$tsumego): void
 	{
 		if (!$tsumegoSgf)
 			return;
+		if (is_string($tsumegoSgf))
+			$tsumegoSgf = ['data' => $tsumegoSgf];
+
 		$sgf = [];
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
-		$sgf['sgf'] = $tsumegoSgf;
+		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
+		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
+		$sgf['user_id'] = Auth::getUserID();
 		ClassRegistry::init('Sgf')->save($sgf);
+		$tsumego['sgfs'][] = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC'])['Sgf'];
+		$this->checkOptionsConsumed($tsumegoSgf);
 	}
 
-	private function prepareTsumegoSgfs(?array $tsumegoSgfs, $tsumego): void
+	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void
 	{
 		if (!$tsumegoSgfs)
 			return;
 		foreach ($tsumegoSgfs as $tsumegoSgf)
 			$this->prepareTsumegoSgf($tsumegoSgf, $tsumego);
-	}
-
-	private static function defaultSgf(): string
-	{
-		return '(;SZ[19])';
 	}
 
 	private function prepareTsumegoComments(?array $tsumegoComments, $tsumego): void

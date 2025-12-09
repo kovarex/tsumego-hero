@@ -566,6 +566,7 @@
 
   // Parses SGF string and loads into editor
   function parseAndLoad(text, editor) {
+  	besogo.sgfLoaded = text;
     var sgf;
     if (!text.includes("+") && !besogo.multipleChoice && besogo.multipleChoiceCustom === false)
       if (!text.includes("G[") && !text.includes("S["))
