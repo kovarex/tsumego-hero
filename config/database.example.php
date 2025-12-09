@@ -66,18 +66,34 @@
  * A key/value array of driver specific connection options.
  */
 class DATABASE_CONFIG {
-	public $default = [
-		'datasource' => 'Database/Mysql',
-		'persistent' => false,
-		'host' => getenv('DB_HOST') ?: 'db',
-		'login' => getenv('DB_USER') ?: 'db',
-		'password' => getenv('DB_PASS') ?: 'db',
-		'database' => getenv('DB_NAME') ?: 'db',
-		'prefix' => '',
-		'encoding' => 'utf8',
-	];
+	public $default;
+	public $test;
 
 	public function __construct() {
+		// Initialize default configuration
+		$this->default = [
+			'datasource' => 'Database/Mysql',
+			'persistent' => false,
+			'host' => getenv('DB_HOST') ?: 'db',
+			'login' => getenv('DB_USER') ?: 'db',
+			'password' => getenv('DB_PASS') ?: 'db',
+			'database' => getenv('DB_NAME') ?: 'db',
+			'prefix' => '',
+			'encoding' => 'utf8',
+		];
+
+		// Initialize test configuration
+		$this->test = [
+			'datasource' => 'Database/Mysql',
+			'persistent' => false,
+			'host' => getenv('DB_HOST') ?: 'db',
+			'login' => getenv('DB_USER') ?: 'db',
+			'password' => getenv('DB_PASS') ?: 'db',
+			'database' => 'test',
+			'prefix' => '',
+			'encoding' => 'utf8',
+		];
+
 		// For parallel testing: route to isolated test database based on TEST_TOKEN
 		$testToken = getenv('TEST_TOKEN') ?: ($_ENV['TEST_TOKEN'] ?? null);
 		if ($testToken) {
@@ -99,15 +115,4 @@ class DATABASE_CONFIG {
 				$this->default = $this->test;
 		}
 	}
-
-	public $test = [
-		'datasource' => 'Database/Mysql',
-		'persistent' => false,
-		'host' => getenv('DB_HOST') ?: 'db',
-		'login' => getenv('DB_USER') ?: 'db',
-		'password' => getenv('DB_PASS') ?: 'db',
-		'database' => 'test',
-		'prefix' => '',
-		'encoding' => 'utf8',
-	];
 }

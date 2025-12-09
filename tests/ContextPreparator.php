@@ -4,8 +4,14 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
+		// Clear browser sessions first to prevent stale auth data (can't use ClassRegistry for cake_sessions)
+		$db = ConnectionManager::getDataSource('default');
+		$db->execute("DELETE FROM cake_sessions WHERE 1=1");
+		
 		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);                // FK to: user
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
+		// NOTE: Tag NOT deleted - has baseline data populated by migrations
+		// NOTE: Some test expects tags to be deleted
 		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User
@@ -15,7 +21,14 @@ class ContextPreparator
 		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
 		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
+		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1']);  // FK to: User, Achievement (must be before AchievementCondition)
 		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);           // FK to: User, Tsumego
+		ClassRegistry::init('UserContribution')->deleteAll(['1 = 1']);   // FK to: User (filter settings)
+		ClassRegistry::init('TsumegoStatus')->deleteAll(['1 = 1']);      // FK to: User, Tsumego (problem progress)
+		ClassRegistry::init('TsumegoAttempt')->deleteAll(['1 = 1']);     // FK to: User, Tsumego (attempt history)
+		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1']);      // FK to: Tsumego, Set (problem-set links)
+		// NOTE: Achievement NOT deleted - has 115 baseline achievements populated by migration 20251128165441
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		if (!empty(ClassRegistry::init('User')->find('all')))
 			throw new Exception('Users were deleted and  yet still they are some');

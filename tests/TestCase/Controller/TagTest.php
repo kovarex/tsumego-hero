@@ -100,13 +100,15 @@ class TagTest extends ControllerTestCase
 				$this->assertSame($addTagLinks[0]->getText(), "snapback");
 				$this->assertSame($addTagLinks[1]->getText(), "[more]");
 
-				// cick to add the snapback
-				$addTagLinks[0]->click();
-				$addTagLinks = $browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor');
+			// cick to add the snapback
+			$addTagLinks[0]->click();
+			// Wait for AJAX to complete and tag to be removed from add list
+			usleep(1000000); // 1000ms wait for AJAX
+			$addTagLinks = $browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor');
 
-				// tag is not in the list
-				$this->assertSame(1, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "[more]");
+			// tag is not in the list
+			$this->assertSame(1, count($addTagLinks));
+			$this->assertSame($addTagLinks[0]->getText(), "[more]");
 			}
 			else
 			{
@@ -114,11 +116,13 @@ class TagTest extends ControllerTestCase
 				$this->assertSame($addTagLinks[0]->getText(), "snapback");
 				$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
 
-				//add the snapback and test, that it will be no longer offered as tag to add
-				$addTagLinks[0]->click();
-				$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
-				$this->assertSame(1, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
+			//add the snapback and test, that it will be no longer offered as tag to add
+			$addTagLinks[0]->click();
+			// Wait for AJAX to complete and tag to be removed from add list
+			usleep(1000000); // 1000ms wait for AJAX
+			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
+			$this->assertSame(1, count($addTagLinks));
+			$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
 			}
 		}
 	}
