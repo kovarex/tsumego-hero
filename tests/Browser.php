@@ -105,6 +105,10 @@ class Browser
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 
+		// If executeScript failed due to alert, these will be null - treat as empty arrays
+		$errors = $errors ?? [];
+		$console = $console ?? [];
+
 		// Filter out ignored error patterns
 		$errors = array_filter($errors, fn($e) => !$this->isIgnoredError($e));
 		$console = array_filter($console, fn($c) => !$this->isIgnoredConsoleError($c));
@@ -525,7 +529,7 @@ class Browser
 				{
 					$alert = $driver->switchTo()->alert();
 					$alertText = $alert->getText();
-					$alert->dismiss(); // Dismiss immediately to prevent leaks
+					$alert->accept(); // Try ACCEPT instead - maybe Chrome 120 responds better
 					return true;
 				}
 				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
@@ -537,8 +541,8 @@ class Browser
 			if ($alertText === null)
 				throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
 
-			// CRITICAL for CI Chrome 120: Alert dismiss() is async/buggy - force-dismiss in loop
-			// Keep trying to dismiss until no alert exists, with aggressive retry
+			// CRITICAL for CI Chrome 120: Alert accept() is async/buggy - force-accept in loop
+			// Keep trying to accept until no alert exists, with aggressive retry
 			$maxAttempts = 20;
 			for ($attempt = 0; $attempt < $maxAttempts; $attempt++)
 			{
@@ -546,7 +550,7 @@ class Browser
 				{
 					usleep(100000); // 100ms between attempts
 					$alert = $this->driver->switchTo()->alert();
-					$alert->dismiss(); // Try dismissing again
+					$alert->accept(); // Try accepting again
 				}
 				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
 				{
