@@ -694,7 +694,7 @@ if (
 	var playedWrong = false;
 	var seconds = 0;
 	var xpInfo = [];
-	var difficulty = <?php echo $difficulty; ?>;
+	<?php if (isset($difficulty))  echo 'var difficulty = ' . $difficulty . ';'; ?>
 	var sequence = "|";
 	var freePlayMode = false;
 	var freePlayMode2 = false;

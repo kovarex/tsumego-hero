@@ -27,12 +27,10 @@ class RatingModeController extends AppController
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInRatingMode())
-		{
 			Auth::getUser()['mode'] = Constants::$RATING_MODE;
-			Auth::saveUser();
-		}
 		if ($difficultyChange = Util::clearCookie('difficulty'))
 			Auth::getUser()['t_glicko'] = $difficultyChange;
+		Auth::saveUser();
 
 		$adjustedRating =  Auth::getUser()['rating'] + self::ratingAdjustment(Auth::getUser()['t_glicko']);
 		$ratingBounds = new RatingBounds(
@@ -62,6 +60,7 @@ WHERE " . $queryCondition;
 		shuffle($relatedTsumegos);
 
 		$this->set('nextLink', '/ratingMode');
+		$this->set('difficulty', Auth::getUser()['t_glicko']);
 
 		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
 		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);

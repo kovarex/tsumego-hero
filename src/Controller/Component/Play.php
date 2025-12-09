@@ -43,7 +43,6 @@ class Play
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$refresh = null;
-		$difficulty = 4;
 		$potion = 0;
 		$potionSuccess = false;
 		$reviewCheat = false;
@@ -422,8 +421,6 @@ class Play
 			$idForSignature2 = $params['url']['idForTheThing'] + 1;
 			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
 		}
-		if (!isset($difficulty))
-			$difficulty = 4;
 
 		if (Auth::isLoggedIn())
 			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
@@ -514,7 +511,6 @@ class Play
 		($this->setFunction)('activate', $activate);
 		($this->setFunction)('tsumegoElo', $t['Tsumego']['rating']);
 		($this->setFunction)('trs', $trs);
-		($this->setFunction)('difficulty', $difficulty);
 		($this->setFunction)('potion', $potion);
 		($this->setFunction)('potionSuccess', $potionSuccess);
 		($this->setFunction)('reviewCheat', $reviewCheat);

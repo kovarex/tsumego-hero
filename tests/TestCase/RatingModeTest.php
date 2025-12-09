@@ -43,10 +43,10 @@ class RatingModeTest extends ControllerTestCase
 			$browser->get('/ratingMode');
 			$this->assertSame('normal tsumego', $browser->find('#descriptionText')->getText());
 
+			// moving the slider either to left, moddle or right based on selected difficulty.
 			$slider = $browser->find('#rangeInput');
 			$size = $slider->getSize();
 			$width = $size->getWidth();
-			// Move to the rightmost pixel inside the slider
 			$actions = new WebDriverActions($browser->driver);
 			$targetPosition = 0;
 			if ($difficulty == 'easy')
@@ -56,16 +56,22 @@ class RatingModeTest extends ControllerTestCase
 			$actions->moveToElement($slider, $targetPosition, 0)->click()->perform();
 
 			if ($difficulty == 'easy')
-				$this->assertSame('very easy', $browser->find("#sliderText")->getText());
+				$expectedDifficultyLabel = 'very easy';
 			else if ($difficulty == 'normal')
-				$this->assertSame('regular', $browser->find("#sliderText")->getText());
+				$expectedDifficultyLabel = 'regular';
 			else if ($difficulty == 'hard')
-				$this->assertSame('very difficult', $browser->find("#sliderText")->getText());
+				$expectedDifficultyLabel = 'very difficult';
 			else
 				throw new Exception('Unexpected difficulty');
 
-			$browser->clickId('besogo-next-button');
-			$this->assertSame($difficulty . ' tsumego', $browser->find('#descriptionText')->getText());
+			$this->assertSame($expectedDifficultyLabel, $browser->find("#sliderText")->getText());
+
+			for ($i = 0; $i < 2; $i++)
+			{
+				$browser->clickId('besogo-next-button');
+				$this->assertSame($difficulty . ' tsumego', $browser->find('#descriptionText')->getText());
+				$this->assertSame($expectedDifficultyLabel, $browser->find("#sliderText")->getText());
+			}
 		}
 	}
 }
