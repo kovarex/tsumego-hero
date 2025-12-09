@@ -299,4 +299,35 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Set Alternative Response → enabled', $pageSource);
 		$this->assertTextContains('Set Pass Mode → enabled', $pageSource);
 	}
+
+	public function testProposeSGF()
+	{
+		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		$context = new ContextPreparator([
+			'user' => ['admin' => false],
+			'other-tsumegos' => [['sgf' => $sgfVersion1, 'status' => 'S', 'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$makeProposalLink = $browser->find('#openSgfLink');
+		$this->assertSame('Make Proposal', $makeProposalLink->getText());
+		$makeProposalLink->click();
+
+		$this->assertSame(
+			Util::getMyAddress() .
+			'/editor/?setConnectionID=' .
+			$context->otherTsumegos[0]['set-connections'][0]['id'] .
+			'&sgfID=' . $context->otherTsumegos[0]['sgfs'][0]['id'],
+			$browser->driver->getCurrentURL());
+		$browser->assertNoErrors();
+
+		usleep(200 * 1000);
+		$browser->clickBoard(4, 4);
+		$browser->clickId('makeCorrectButton');
+		$browser->clickId('saveSGFButton');
+
+		// checking that the non-accepted sgf is not used for the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
+		$this->assertSame($loadedSgf, $sgfVersion1);
+	}
 }

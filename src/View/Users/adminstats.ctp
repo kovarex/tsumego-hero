@@ -49,35 +49,8 @@
 	echo '</div>';
 
 	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';
-		if($approveSgfs!=null){
-			echo '<h3 style="margin:15px 0;">SGF Proposals (' . $proposalsTotal . ')</h3>';
-			echo $this->Pagination->render($proposalsPage, $proposalsPagesTotal, 'proposals_page');
-			echo '<table border="0">';
-			for($i=0; $i<count($approveSgfs); $i++){
-				echo '<tr>';
-					echo '<td class="adminpanel-table-text">'.$approveSgfs[$i]['Sgf']['user'].' made a proposal for <a class="adminpanel-link" href="/tsumegos/play/'
-					.$approveSgfs[$i]['Sgf']['tsumego_id'].'?search=topics">'.$approveSgfs[$i]['Sgf']['tsumego'].'</a>:</td>';
-					echo '<td>
-					<a href="/tsumegos/open/'.$approveSgfs[$i]['Sgf']['tsumego_id'].'/'.$latestVersionTsumegos[$i]['Sgf']['id'].'">current</a> |
-					<a href="/tsumegos/open/'.$approveSgfs[$i]['Sgf']['tsumego_id'].'/'.$approveSgfs[$i]['Sgf']['id'].'">proposal</a> |
-					<a href="/tsumegos/open/'.$approveSgfs[$i]['Sgf']['tsumego_id'].'/'.$approveSgfs[$i]['Sgf']['id'].'/'.$latestVersionTsumegos[$i]['Sgf']['id'].'">diff</a>
-					</td>';
-					if($sgfTsumegos[$i]['Tsumego']['status']=='')
-						$sgfTsumegos[$i]['Tsumego']['status'] = 'N';
-					echo '<td><li class="set'.$sgfTsumegos[$i]['Tsumego']['status'].'1">
-						<a id="tooltip-hover999'.$i.'" class="tooltip" href="/tsumegos/play/'.$sgfTsumegos[$i]['Tsumego']['id'].'?search=topics">'.$sgfTsumegos[$i]['Tsumego']['num'].'
-						<span><div id="tooltipSvg999'.$i.'"></div></span></a>
-					</li></td>';
-					echo '<td><a class="new-button-default2" id="proposal-accept'.$i.'">Accept</a>
-					<a class="new-button-default2 tag-submit-button" id="proposal-submit'.$i.'" href="/users/adminstats?accept=true&tag_id='
-					.$approveSgfs[$i]['Sgf']['id'].'&hash='.md5(Auth::getUserID()).'">Submit (1)</a>
-					<a class="new-button-default2" id="proposal-reject'.$i.'">Reject</a></td>';
-				echo '</tr>';
-			}
-			echo '</table>';
-			echo $this->Pagination->render($proposalsPage, $proposalsPagesTotal, 'proposals_page');
-			echo '<hr>';
-		}
+		if ($SGFProposalsRenderer)
+		$SGFProposalsRenderer->render();
 		if($tagNames!=null){
 			echo '<h3 style="margin:15px 0;">Tag Names (' . $tagNamesTotal . ')</h3>';
 			echo $this->Pagination->render($tagNamesPage, $tagNamesPagesTotal, 'tagnames_page');

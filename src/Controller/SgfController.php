@@ -61,6 +61,7 @@ class SgfController extends AppController
 		$sgf['sgf'] = $sgfData;
 		$sgf['user_id'] = Auth::getUserID();
 		$sgf['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
+		$sgf['accepted'] = Auth::isAdmin();
 		if (!$sgfModel->save($sgf))
 		{
 			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $sgfModel->validationErrors);

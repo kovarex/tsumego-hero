@@ -620,6 +620,7 @@ besogo.makeCommentPanel = function(container, editor)
     button.type = 'button';
     button.value = 'Incorrect';
     button.title = 'Change incorrect state';
+    button.id = "makeCorrectButton";
     button.addEventListener('focus', preventFocus);
 
     button.onclick = function()

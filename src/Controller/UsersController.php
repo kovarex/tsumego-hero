@@ -1065,13 +1065,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$perPage = 100;
 		$tagsPage = isset($this->params['url']['tags_page']) ? max(1, (int) $this->params['url']['tags_page']) : 1;
 		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
-		$proposalsPage = isset($this->params['url']['proposals_page']) ? max(1, (int) $this->params['url']['proposals_page']) : 1;
 		$activityPage = isset($this->params['url']['activity_page']) ? max(1, (int) $this->params['url']['activity_page']) : 1;
 		$commentsPage = isset($this->params['url']['comments_page']) ? max(1, (int) $this->params['url']['comments_page']) : 1;
 
 		$tagsOffset = ($tagsPage - 1) * $perPage;
 		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
-		$proposalsOffset = ($proposalsPage - 1) * $perPage;
 		$activityOffset = ($activityPage - 1) * $perPage;
 		$commentsOffset = ($commentsPage - 1) * $perPage;
 
@@ -1120,40 +1118,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
 
-		// Find first SGF (minimum id) for each tsumego
-		$firstSgfIds = $this->Sgf->query("
-			SELECT MIN(id) as min_id
-			FROM sgf
-			GROUP BY tsumego_id
-			ORDER BY min_id DESC
-			LIMIT $perPage OFFSET $proposalsOffset
-		");
-		$firstIds = [];
-		foreach ($firstSgfIds as $row)
-			$firstIds[] = $row[0]['min_id'];
-
-		// Get total count of proposals
-		$proposalsTotal = $this->Sgf->query("
-			SELECT COUNT(DISTINCT tsumego_id) as total
-			FROM sgf
-		")[0][0]['total'];
-
-		$approveSgfs = $this->Sgf->find('all', ['conditions' => ['id' => $firstIds]]);
-		$sgfTsumegos = [];
-		$latestVersionTsumegos = [];
-		$approveSgfsCount = count($approveSgfs);
-		for ($i = 0; $i < $approveSgfsCount; $i++)
-		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $approveSgfs[$i]['Sgf']['tsumego_id']]]);
-			array_push($latestVersionTsumegos, $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $at['Tsumego']['id']]]));
-			array_push($sgfTsumegos, $at);
-			array_push($tsIds, $at['Tsumego']['id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-			$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-			$au = $this->User->findById($approveSgfs[$i]['Sgf']['user_id']);
-			$approveSgfs[$i]['Sgf']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			$approveSgfs[$i]['Sgf']['user'] = $this->checkPicture($au);
-		}
 		$uts = $this->TsumegoStatus->find('all', [
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
@@ -1317,8 +1281,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('tagNamesTotal', $tagNamesTotal);
 		$this->set('tagNamesPagesTotal', ceil($tagNamesTotal / $perPage));
 		$this->set('proposalsPage', $proposalsPage);
-		$this->set('proposalsTotal', $proposalsTotal);
-		$this->set('proposalsPagesTotal', ceil($proposalsTotal / $perPage));
+		$this->set('sGFProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
 		$this->set('activityPage', $activityPage);
 		$this->set('activityTotal', $activityTotal);
 		$this->set('activityPagesTotal', ceil($activityTotal / $perPage));

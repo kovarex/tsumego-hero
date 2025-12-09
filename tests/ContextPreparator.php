@@ -206,7 +206,7 @@ class ContextPreparator
 				$this->prepareTsumegoAttempt($attemptInput, $tsumego);
 	}
 
-	private function prepareTsumegoSgf(?string $tsumegoSgf, $tsumego): void
+	private function prepareTsumegoSgf(?string $tsumegoSgf, &$tsumego): void
 	{
 		if (!$tsumegoSgf)
 			return;
@@ -214,10 +214,12 @@ class ContextPreparator
 		ClassRegistry::init('Sgf')->create($sgf);
 		$sgf['tsumego_id'] = $tsumego['id'];
 		$sgf['sgf'] = $tsumegoSgf;
+		$sgf['accepted'] = true;
 		ClassRegistry::init('Sgf')->save($sgf);
+		$tsumego['sgfs'][] = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC'])['Sgf'];
 	}
 
-	private function prepareTsumegoSgfs(?array $tsumegoSgfs, $tsumego): void
+	private function prepareTsumegoSgfs(?array $tsumegoSgfs, &$tsumego): void
 	{
 		if (!$tsumegoSgfs)
 			return;
