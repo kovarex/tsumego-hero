@@ -1,4 +1,4 @@
-version: '3.6'
+﻿version: '3.6'
 services:
   selenium-hub:
     container_name: ddev-${DDEV_SITENAME}-selenium-hub
@@ -16,9 +16,9 @@ services:
     container_name: ddev-${DDEV_SITENAME}-selenium-node-1
     image: seleniarm/node-chromium:120.0
     shm_size: '2gb'
-    # VNC access at http://localhost:7901
-    ports:
-      - "7901:7900"
+    # Uncomment for VNC access to watch tests (http://localhost:7901)
+    # ports:
+    #   - "7901:7900"
     environment:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
@@ -60,6 +60,174 @@ services:
 
   selenium-node-4:
     container_name: ddev-${DDEV_SITENAME}-selenium-node-4
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-5:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-5
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-6:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-6
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-7:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-7
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-8:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-8
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-9:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-9
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-10:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-10
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-11:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-11
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-12:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-12
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-13:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-13
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-14:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-14
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-15:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-15
+    image: seleniarm/node-chromium:120.0
+    shm_size: '2gb'
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    depends_on:
+      - selenium-hub
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+
+  selenium-node-16:
+    container_name: ddev-${DDEV_SITENAME}-selenium-node-16
     image: seleniarm/node-chromium:120.0
     shm_size: '2gb'
     environment:

@@ -30,7 +30,7 @@
 	"scripts": {
 		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
 		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
-		"test": "vendor/bin/paratest --processes=4 --runner=WrapperRunner",
+		"test": "bash scripts/run-parallel-tests.sh",
 		"test-sequential": "phpunit",
 		"test-coverage": "phpunit --log-junit webroot/coverage/unitreport.xml --coverage-html webroot/coverage --coverage-clover webroot/coverage/coverage.xml",
 		"cs-modified": "sh cs-modified.sh",
