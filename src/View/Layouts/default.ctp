@@ -234,7 +234,6 @@ echo $this->AssetCompress->script('app');
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uservisits">Users Per Day</a></li>';
 								}
 								echo '</ul>';
 								}
