@@ -12,10 +12,10 @@ class UploadSgfTest extends TestCaseWithAuth
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
 		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]]));
-		$this->assertGreaterThanOrEqual(1, $initialCount);
+		$this->assertSame(0, $initialCount);
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$this->assertSame($initialCount, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])));
+		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])));
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
@@ -33,7 +33,11 @@ class UploadSgfTest extends TestCaseWithAuth
 		$sgf = ClassRegistry::init('Sgf')->find('all', [
 			'conditions' => ['tsumego_id' => $context->tsumego['id']],
 			'order' => 'id DESC']);
-		$this->assertSame($initialCount + 1, count($sgf));
+
+		// After the addition of a new problem, and first edit, there is exactly 1 entry in the sgf database, which
+		// is the first edit.
+		// This is to avoid default first empty sgf in the history for every problem.
+		$this->assertSame(1, count($sgf));
 		$this->assertTextContains('Hello from test', $sgf[0]['Sgf']['sgf']);
 	}
 
