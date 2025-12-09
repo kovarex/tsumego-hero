@@ -267,6 +267,7 @@ class TagTest extends ControllerTestCase
 		$tagConnection['approved'] = 1;
 		ClassRegistry::init('TagConnection')->create();
 		ClassRegistry::init('TagConnection')->save($tagConnection);
+		usleep(100000); // 100ms - ensure DB commit before AJAX request
 		$alertText = $browser->clickIdAndExpectAlert('tag-snapback');
 		$this->assertTextContains('The tsumego already has tag snapback.', $alertText);
 	}
