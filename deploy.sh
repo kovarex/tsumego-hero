@@ -173,6 +173,8 @@ rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 rm -rf "$ROOT_DIR/tmp/cache/views"/*
 rm -rf "$ROOT_DIR/tmp/cache/asset_compress"/*
+rm -rf "$ROOT_DIR/webroot/cache_js"
+rm -rf "$ROOT_DIR/webroot/cache_css"
 
 # Pre-build and minify all CSS/JS assets for production (faster page loads)
 # This generates all files in webroot/cache_css/ and webroot/cache_js/
