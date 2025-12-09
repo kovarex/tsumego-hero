@@ -345,8 +345,8 @@ class Browser
 			$x = $boardSize - $x + 1;
 		if ($corner == 'bottom-left' || $corner == 'bottom-right')
 			$y = $boardSize - $y + 1;
-		if (count($clickableRects) != $boardSize * $boardSize + 1)
-			throw new Exception("Unexpected board coords count");
+		if (count($clickableRects) < $boardSize * $boardSize + 1)
+			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
 	}
 
