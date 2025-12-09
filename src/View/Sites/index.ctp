@@ -639,7 +639,7 @@ $highestRight = 17;
 		$link3 = '';
 		if(Auth::isLoggedIn()){
 			$link1 = '/tsumegos/play/' . ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
-			$link2 = '/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2';
+			$link2 = '/ratingMode';
 			$link3 = '/timeMode/overview';
 		}
 		?>

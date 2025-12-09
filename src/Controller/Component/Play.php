@@ -36,7 +36,6 @@ class Play
 		($this->setFunction)('page', 'play');
 
 		$highestTsumegoOrder = 0;
-		$nextMode = null;
 		$doublexp = null;
 		$dailyMaximum = false;
 		$suspiciousBehavior = false;
@@ -44,7 +43,6 @@ class Play
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$refresh = null;
-		$difficulty = 4;
 		$potion = 0;
 		$potionSuccess = false;
 		$reviewCheat = false;
@@ -89,93 +87,6 @@ class Play
 
 		if (isset($params['url']['refresh']))
 			$refresh = $params['url']['refresh'];
-
-		if (Auth::isLoggedIn())
-		{
-			$difficulty = Auth::getUser()['t_glicko'];
-			if (isset($_COOKIE['difficulty']) && $_COOKIE['difficulty'] != '0')
-			{
-				$difficulty = $_COOKIE['difficulty'];
-				Auth::getUser()['t_glicko'] = $_COOKIE['difficulty'];
-				unset($_COOKIE['difficulty']);
-			}
-			if (Auth::isInRatingMode())
-			{
-				if ($difficulty == 1)
-					$adjustDifficulty = -450;
-				elseif ($difficulty == 2)
-					$adjustDifficulty = -300;
-				elseif ($difficulty == 3)
-					$adjustDifficulty = -150;
-				elseif ($difficulty == 4)
-					$adjustDifficulty = 0;
-				elseif ($difficulty == 5)
-					$adjustDifficulty = 150;
-				elseif ($difficulty == 6)
-					$adjustDifficulty = 300;
-				elseif ($difficulty == 7)
-					$adjustDifficulty = 450;
-				else
-					$adjustDifficulty = 0;
-
-				$eloRange = Auth::getUser()['rating'] + $adjustDifficulty;
-				$eloRangeMin = $eloRange - 240;
-				$eloRangeMax = $eloRange + 240;
-
-				$range = ClassRegistry::init('Tsumego')->find('all', [
-					'conditions' => [
-						'rating >=' => $eloRangeMin,
-						'rating <=' => $eloRangeMax,
-					],
-				]);
-				if (!$range)
-					$range = [];
-				shuffle($range);
-				$ratingFound = false;
-				$nothingInRange = false;
-				$ratingFoundCounter = 0;
-				while (!$ratingFound)
-					if ($ratingFoundCounter < count($range))
-					{
-						$rafSc = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $range[$ratingFoundCounter]['Tsumego']['id']]]);
-						if (!$rafSc)
-						{
-							$ratingFoundCounter++;
-
-							continue;
-						}
-						$raS = ClassRegistry::init('Set')->findById($rafSc['SetConnection']['set_id']);
-						if ($raS['Set']['public'] == 1)
-							if ($raS['Set']['id'] != 210 && $raS['Set']['id'] != 191 && $raS['Set']['id'] != 181 && $raS['Set']['id'] != 207 && $raS['Set']['id'] != 172
-								&& $raS['Set']['id'] != 202 && $raS['Set']['id'] != 237 && $raS['Set']['id'] != 81578 && $raS['Set']['id'] != 74761 && $raS['Set']['id'] != 71790 && $raS['Set']['id'] != 33007
-								&& $raS['Set']['id'] != 31813 && $raS['Set']['id'] != 29156 && $raS['Set']['id'] != 11969 && $raS['Set']['id'] != 6473)
-									if (!in_array($raS['Set']['id'], $setsWithPremium) || $hasPremium)
-										$ratingFound = true;
-						if ($ratingFound == false)
-							$ratingFoundCounter++;
-					}
-					else
-					{
-						$nothingInRange = 'No problem found.';
-
-						break;
-					}
-				$nextMode = $range[$ratingFoundCounter];
-
-				$ratingCookieScore = false;
-				$ratingCookieMisplay = false;
-				if (!empty($_COOKIE['score']))
-					$ratingCookieScore = true;
-				if (!empty($_COOKIE['misplays']))
-					$ratingCookieMisplay = true;
-				if (!empty($_COOKIE['ratingModePreId']) && !$ratingCookieScore && !$ratingCookieMisplay)
-				{
-					$nextMode = ClassRegistry::init('Tsumego')->findById($_COOKIE['ratingModePreId']);
-					unset($_COOKIE['ratingModePreId']);
-				}
-				$id = $nextMode['Tsumego']['id'];
-			}
-		}
 
 		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
@@ -401,7 +312,7 @@ class Play
 		else
 		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
-		if (!Auth::isInTimeMode())
+		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
@@ -510,8 +421,6 @@ class Play
 			$idForSignature2 = $params['url']['idForTheThing'] + 1;
 			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
 		}
-		if (!isset($difficulty))
-			$difficulty = 4;
 
 		if (Auth::isLoggedIn())
 			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
@@ -555,7 +464,7 @@ class Play
 
 		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
 
-		if (!Auth::isInTimeMode())
+		if (Auth::isInLevelMode())
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
@@ -593,7 +502,6 @@ class Play
 		($this->setFunction)('t', $t);
 		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
 		($this->setFunction)('hash', $hash);
-		($this->setFunction)('nextMode', $nextMode);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
 		($this->setFunction)('eloScore', $eloScore);
 		($this->setFunction)('eloScore2', $eloScore2);
@@ -602,7 +510,6 @@ class Play
 		($this->setFunction)('activate', $activate);
 		($this->setFunction)('tsumegoElo', $t['Tsumego']['rating']);
 		($this->setFunction)('trs', $trs);
-		($this->setFunction)('difficulty', $difficulty);
 		($this->setFunction)('potion', $potion);
 		($this->setFunction)('potionSuccess', $potionSuccess);
 		($this->setFunction)('reviewCheat', $reviewCheat);
@@ -635,7 +542,6 @@ class Play
 		// Merge comment coordinates with any existing ones
 		$commentCoordinates = array_merge($commentCoordinates, $commentsData['coordinates']);
 		($this->setFunction)('commentCoordinates', $commentCoordinates);
-
 		return null;
 	}
 
@@ -733,10 +639,10 @@ class Play
 
 		if (Auth::isInRatingMode())
 			return '<div class="slidecontainer">
-									<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
-									<div id="sliderText">regular</div>
-								</div>
-								<a id="playTitleA" href=""></a>';
+						<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
+						<div id="sliderText">regular</div>
+						</div>
+						<a id="playTitleA" href=""></a>';
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')

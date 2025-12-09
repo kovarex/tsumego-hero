@@ -19,4 +19,9 @@ class Constants
 
 	public static float $PLAYER_RATING_CALCULATION_MODIFIER = 0.5;
 	public static float $TSUMEGO_RATING_CALCULATION_MODIFIER = 0.5;
+
+	public static float $RATING_MODE_SELECTION_INTERVAL = 480;
+	public static float $RATING_MODE_DIFFERENCE_SETTING_1 = 150;
+	public static float $RATING_MODE_DIFFERENCE_SETTING_2 = 300;
+	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
 }

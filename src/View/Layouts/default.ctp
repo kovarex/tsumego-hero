@@ -88,11 +88,11 @@ echo $this->AssetCompress->css('app');
 
 // Load both theme CSS bundles for JavaScript-based theme switching
 // Initial state: one enabled, one disabled based on cookie
-echo '<link rel="stylesheet" id="dark-theme-css" href="' . 
-	$this->AssetCompress->url('dark-theme.css') . '"' . 
+echo '<link rel="stylesheet" id="dark-theme-css" href="' .
+	$this->AssetCompress->url('dark-theme.css') . '"' .
 	($lightDark === 'dark' ? '' : ' disabled') . ' />';
-echo '<link rel="stylesheet" id="light-theme-css" href="' . 
-	$this->AssetCompress->url('light-theme.css') . '"' . 
+echo '<link rel="stylesheet" id="light-theme-css" href="' .
+	$this->AssetCompress->url('light-theme.css') . '"' .
 	($lightDark === 'light' ? '' : ' disabled') . ' />';
 
 echo $this->Html->meta('icon');
@@ -191,11 +191,6 @@ echo $this->AssetCompress->script('app');
 			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
 			else if($_page == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
 
-			if(isset($nextMode['Tsumego']['id'])){
-				if($nextMode['Tsumego']['id']==null) $nextMode['Tsumego']['id'] = 15352;
-			}else{
-				$nextMode['Tsumego']['id'] = 15352;
-			}
 			if(Auth::isLoggedIn()){
 				if(!Auth::isAdmin())
 					$discussFilter = '';
@@ -250,7 +245,7 @@ echo $this->AssetCompress->script('app');
 						echo '<ul class="newMenuLi3">';
 						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
 						if(Auth::isLoggedIn()){
-							echo '<li><a href="/tsumegos/play/'.$nextMode['Tsumego']['id'].'?mode=2" '.$ratingModeA.'>Rating</a></li>';
+							echo '<li><a href="/ratingMode" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
 						}
 								echo '</ul>';
