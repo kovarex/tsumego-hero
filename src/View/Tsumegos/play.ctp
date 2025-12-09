@@ -2075,6 +2075,7 @@ if (
 		if (heartLoss)
 		{
 			misplays++;
+			accountWidget.animate(false);
 			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
 			updateHealth();
