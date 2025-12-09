@@ -494,7 +494,7 @@ besogo.makeToolPanel = function (container, editor) {
         makeHyperlinkText(
           "History",
           "history of rating mode",
-          "/tsumego_rating_attempts/user/" + besogoUserId,
+          "/users/solveHistory/" + besogoUserId,
           "history-button"
         );
       } else if (mode == 3) {
