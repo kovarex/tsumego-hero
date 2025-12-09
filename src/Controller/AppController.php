@@ -8,7 +8,7 @@ class AppController extends Controller
 {
 	public $viewClass = 'App';
 
-	public $helpers = ['Pagination'];
+	public $helpers = ['Pagination', 'AssetCompress.AssetCompress'];
 
 	public $components = [
 		//'DebugKit.Toolbar',

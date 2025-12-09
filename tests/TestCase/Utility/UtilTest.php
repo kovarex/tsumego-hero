@@ -108,14 +108,14 @@ class UtilTest extends CakeTestCase
 	public function testGetInternalAddressGithub()
 	{
 		$_SERVER['TEST_ENVIRONMENT'] = 'github-ci';
-		$this->assertSame('https://host.docker.internal:8443./vendor/bin', Util::getInternalAddress());
+		$this->assertSame('https://host.docker.internal:8443', Util::getInternalAddress());
 	}
 
 	public function testGetInternalAddressDefault()
 	{
 		unset($_SERVER['TEST_ENVIRONMENT']);
 		unset($_SERVER['HTTP_HOST']);
-		$this->assertSame('http://localhost/var/www/html/vendor/bin', Util::getInternalAddress());
+		$this->assertSame('http://localhost', Util::getInternalAddress());
 	}
 
 	public function testIsInTestEnvironmentWithDdevUrl()

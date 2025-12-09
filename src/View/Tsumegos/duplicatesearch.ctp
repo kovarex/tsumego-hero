@@ -1,4 +1,5 @@
-	<?php ?>
+	<?php
+?>
 	<div align="center">
 	<p class="title">
 		<br>

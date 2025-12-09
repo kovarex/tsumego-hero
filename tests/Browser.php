@@ -127,6 +127,8 @@ class Browser
 				]);
 		}
 
+		// Strip leading slash from $url to avoid double slashes when concatenating
+		$url = ltrim($url, '/');
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}
