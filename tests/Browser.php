@@ -539,17 +539,25 @@ class Browser
 
 			// CRITICAL for CI: Wait for alert to FULLY close (dismiss() is async in Chrome 120)
 			// Without this, subsequent operations (getPageSource, executeScript) fail with UnexpectedAlertOpenException
-			$this->driver->wait(2, 100)->until(function ($driver) {
-				try
-				{
-					$driver->switchTo()->alert();
-					return false; // Alert still there, keep waiting
-				}
-				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
-				{
-					return true; // Alert gone, we're good
-				}
-			});
+			try
+			{
+				$this->driver->wait(2, 100)->until(function ($driver) {
+					try
+					{
+						$driver->switchTo()->alert();
+						return false; // Alert still there, keep waiting
+					}
+					catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+					{
+						return true; // Alert gone, we're good
+					}
+				});
+			}
+			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+			{
+				// Alert still present after 2s - not fatal, continue anyway
+				// (Locally alerts close instantly, in CI Chrome 120 they might linger)
+			}
 
 			return $alertText;
 		}
