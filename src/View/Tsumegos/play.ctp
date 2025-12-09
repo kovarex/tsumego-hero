@@ -1,5 +1,4 @@
-﻿<!-- Puzzle data for Zen Mode navigation (stays in #content) -->
-<?php
+﻿<?php
 // The SGF is stored with JS string concatenation like: (;GM[1]"+"\n"+"...) 
 // We need to evaluate that to get the actual SGF string
 $sgfRaw = $sgf['Sgf']['sgf'];
@@ -9,10 +8,6 @@ $sgfClean = str_replace(['"+"\n"+"', '"+"\r\n"+"'], "\n", $sgfRaw);
 $initialPl = isset($pl) ? $pl : 0;
 $initialPlayerColor = $initialPl == 1 ? 'white' : 'black';
 ?>
-
-
-<!-- Zen Mode CSS -->
-<link rel="stylesheet" type="text/css" href="/besogo/css/zen-mode.css">
 
 <link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
@@ -2325,5 +2320,3 @@ echo json_encode([
 
 <!-- Zen Mode Exit Button (only visible in zen mode) -->
 <button id="zen-mode-exit" title="Exit Zen Mode (Esc)">ESC</button>
-
-<script src="/js/zen-mode.js"></script>
