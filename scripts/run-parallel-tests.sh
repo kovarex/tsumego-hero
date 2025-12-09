@@ -52,5 +52,5 @@ echo ""
 echo "✓ Test databases ready!"
 echo ""
 
-# Run ParaTest with specified worker count
+# Run ParaTest with specified worker count (ParaTest handles coverage if flags present)
 vendor/bin/paratest --processes="$WORKER_COUNT" --runner=WrapperRunner "$@"
