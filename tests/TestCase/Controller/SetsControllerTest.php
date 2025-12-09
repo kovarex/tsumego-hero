@@ -1073,10 +1073,10 @@ class SetsControllerTest extends TestCaseWithAuth
 				[
 					'sets' => [['name' => 'Test Set', 'num' => 1]],
 					'attempts' => [
-						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'mode' => 1],
-						['solved' => 1, 'seconds' => 15, 'gain' => 5, 'mode' => 1],
-						['solved' => 1, 'seconds' => 12, 'gain' => 5, 'mode' => 1],
-						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'mode' => 1, 'misplays' => 1],
+						['solved' => 1, 'seconds' => 10, 'gain' => 5],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5],
+						['solved' => 1, 'seconds' => 12, 'gain' => 5],
+						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'misplays' => 1],
 					],
 				],
 				['sets' => [['name' => 'Test Set', 'num' => 2]]],  // No attempts
@@ -1123,15 +1123,15 @@ class SetsControllerTest extends TestCaseWithAuth
 				[
 					'sets' => [['name' => 'Test Set', 'num' => 1]],
 					'attempts' => [
-						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'mode' => 1],
-						['solved' => 1, 'seconds' => 20, 'gain' => 5, 'mode' => 1],
-						['solved' => 1, 'seconds' => 30, 'gain' => 5, 'mode' => 1],
+						['solved' => 1, 'seconds' => 10, 'gain' => 5],
+						['solved' => 1, 'seconds' => 20, 'gain' => 5],
+						['solved' => 1, 'seconds' => 30, 'gain' => 5],
 					],
 				],
 				[
 					'sets' => [['name' => 'Test Set', 'num' => 2]],
 					'attempts' => [
-						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'mode' => 1, 'misplays' => 1],
+						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'misplays' => 1],
 					],
 				],
 			],
