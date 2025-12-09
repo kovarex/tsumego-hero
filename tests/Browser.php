@@ -537,27 +537,26 @@ class Browser
 			if ($alertText === null)
 				throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
 
-			// CRITICAL for CI: Wait for alert to FULLY close (dismiss() is async in Chrome 120)
-			// Without this, subsequent operations (getPageSource, executeScript) fail with UnexpectedAlertOpenException
-			try
+			// CRITICAL for CI Chrome 120: Alert dismiss() is async/buggy - force-dismiss in loop
+			// Keep trying to dismiss until no alert exists, with aggressive retry
+			$maxAttempts = 20;
+			for ($attempt = 0; $attempt < $maxAttempts; $attempt++)
 			{
-				$this->driver->wait(2, 100)->until(function ($driver) {
-					try
-					{
-						$driver->switchTo()->alert();
-						return false; // Alert still there, keep waiting
-					}
-					catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
-					{
-						return true; // Alert gone, we're good
-					}
-				});
+				try
+				{
+					usleep(100000); // 100ms between attempts
+					$alert = $this->driver->switchTo()->alert();
+					$alert->dismiss(); // Try dismissing again
+				}
+				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
+				{
+					// Alert finally gone - success!
+					break;
+				}
 			}
-			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
-			{
-				// Alert still present after 2s - not fatal, continue anyway
-				// (Locally alerts close instantly, in CI Chrome 120 they might linger)
-			}
+
+			// Switch back to main content to ensure we're not stuck in alert context
+			$this->driver->switchTo()->defaultContent();
 
 			return $alertText;
 		}
