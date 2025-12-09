@@ -1,13 +1,32 @@
 ﻿<?php
-// The SGF is stored with JS string concatenation like: (;GM[1]"+"\n"+"...) 
-// We need to evaluate that to get the actual SGF string
-$sgfRaw = $sgf['Sgf']['sgf'];
-// Replace the "+"\n"+" pattern with actual newlines
-$sgfClean = str_replace(['"+"\n"+"', '"+"\r\n"+"'], "\n", $sgfRaw);
+	// The SGF is stored with JS string concatenation like: (;GM[1]"+"\n"+"...) 
+	// We need to evaluate that to get the actual SGF string
+	$sgfRaw = $sgf['Sgf']['sgf'];
+	// Replace the "+"\n"+" pattern with actual newlines
+	$sgfClean = str_replace(['"+"\n"+"', '"+"\r\n"+"'], "\n", $sgfRaw);
 
-$initialPl = isset($pl) ? $pl : 0;
-$initialPlayerColor = $initialPl == 1 ? 'white' : 'black';
+	$initialPl = isset($pl) ? $pl : 0;
+	$initialPlayerColor = $initialPl == 1 ? 'white' : 'black';
+	// Determine final playerColor based on descriptionColor after all swaps
+	$finalPlayerColor = (trim($descriptionColor) === 'Black') ? 'black' : 'white';
 ?>
+<!-- Puzzle data JSON output after description is finalized -->
+<script type="application/json" id="puzzle-data">
+<?php
+echo json_encode([
+	'tsumegoID' => $t['Tsumego']['id'],
+	'nextButtonLink' => $nextLink,
+	'previousButtonLink' => $previousLink,
+	'setID' => $set['Set']['id'],
+	'sgf' => $sgfClean,
+	'playerColor' => $finalPlayerColor,
+	'file' => $file ?? '',
+	'author' => $t['Tsumego']['author'] ?? '',
+	'title' => $set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'],
+	'description' => $t['Tsumego']['description'],
+]);
+?>
+</script>
 
 <link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
@@ -148,28 +167,6 @@ if (
 			$descriptionColor = 'Black ';
 	}
 	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
-	
-	// Determine final playerColor based on descriptionColor after all swaps
-	$finalPlayerColor = (trim($descriptionColor) === 'Black') ? 'black' : 'white';
-?>
-<!-- Puzzle data JSON output after description is finalized -->
-<script type="application/json" id="puzzle-data">
-<?php
-echo json_encode([
-	'tsumegoID' => $t['Tsumego']['id'],
-	'nextButtonLink' => $nextLink,
-	'previousButtonLink' => $previousLink,
-	'setID' => $set['Set']['id'],
-	'sgf' => $sgfClean,
-	'playerColor' => $finalPlayerColor,
-	'file' => $file ?? '',
-	'author' => $t['Tsumego']['author'] ?? '',
-	'title' => $set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'],
-	'description' => $t['Tsumego']['description'],
-]);
-?>
-</script>
-<?php
 	if($nothingInRange!=false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
