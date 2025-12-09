@@ -417,6 +417,7 @@ class Browser
 			// No alert present, that's fine
 		}
 		$browser->driver->manage()->deleteAllCookies();
+		$browser->restoreTestModeCookies(); // Restore PHPUNIT_TEST and TEST_TOKEN cookies
 		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		$browser->driver->get('about:blank'); // make sure any work is stopped
 		$browser->driver->get(Util::getMyAddress() . '/empty.php');
