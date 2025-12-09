@@ -874,13 +874,11 @@ if (
 	if($requestSolution)
 		echo 'authorProblem = true;';
 	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
-	if(Auth::isInTimeMode()){
+	if(Auth::isInTimeMode())
+	{
 		echo 'seconds = 0.0;';
 		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
-	}else if(Auth::isInRatingMode())
-		echo 'document.cookie = "ratingModePreId='.$t['Tsumego']['id'].';path=/tsumegos/play;SameSite=Lax";';
-	echo '
-					';
+	}
 	if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 		echo 'set159 = true;';
 	if($t['Tsumego']['set_id']==161)
@@ -928,109 +926,108 @@ if (
 	var rangeInput = document.getElementById("rangeInput");
 	const Slider = document.querySelector('input[name=rangeInput]');
 
-	if(difficulty==1){
-			$('#sliderText').css({
-				"color": "hsl(138, 47%, 50%)"
-	});
+	if (difficulty == 1)
+	{
+		$('#sliderText').css({"color": "hsl(138, 47%, 50%)"});
 		$('#sliderText').text("very easy");
 		Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
-	}else if(difficulty==2){
-			$('#sliderText').css({
-				"color": "hsl(138, 31%, 50%)"
-	});
+	}
+	else if (difficulty == 2)
+	{
+		$('#sliderText').css({"color": "hsl(138, 31%, 50%)"});
 		$('#sliderText').text("easy");
 		Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
-	}else if(difficulty==3){
-			$('#sliderText').css({
-				"color": "hsl(138, 15%, 50%)"
-		});
+	}
+	else if (difficulty == 3)
+	{
+			$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
 			$('#sliderText').text("casual");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
-	}else if(difficulty==4){
-			$('#sliderText').css({
-				"color": "hsl(138, 0%, 47%)"
-		});
+	}
+	else if (difficulty == 4)
+	{
+			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-	}else if(difficulty==5){
-			$('#sliderText').css({
-				"color": "hsl(0, 31%, 50%)"
-		});
+	}
+	else if (difficulty == 5)
+	{
+			$('#sliderText').css({"color": "hsl(0, 31%, 50%)"});
 			$('#sliderText').text("challenging");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 31%, 50%)');
-	}else if(difficulty==6){
-			$('#sliderText').css({
-				"color": "hsl(0, 52%, 50%)"
-		});
+	}
+	else if (difficulty == 6)
+	{
+			$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
 			$('#sliderText').text("difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
-	}else if(difficulty==7){
-			$('#sliderText').css({
-				"color": "hsl(0, 66%, 50%)"
-		});
+	}
+	else if (difficulty == 7)
+	{
+			$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
 			$('#sliderText').text("very difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
-	}else{
-			$('#sliderText').css({
-				"color": "hsl(138, 0%, 47%)"
-		});
+	}
+	else
+	{
+			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 	}
 
-	rangeInput.addEventListener('change', function(){
+	rangeInput.addEventListener('change', function()
+	{
 		const Slider = document.querySelector('input[name=rangeInput]');
 		document.cookie = "difficulty="+this.value;
-		if(this.value==1){
-				$('#sliderText').css({
-					"color": "hsl(138, 47%, 50%)"
-		});
+		if (this.value == 1)
+		{
+			$('#sliderText').css({"color": "hsl(138, 47%, 50%)"});
 			$('#sliderText').text("very easy");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
-		}else if(this.value==2){
-				$('#sliderText').css({
-					"color": "hsl(138, 31%, 50%)"
-		});
+		}
+		else if (this.value == 2)
+		{
+			$('#sliderText').css({"color": "hsl(138, 31%, 50%)"});
 			$('#sliderText').text("easy");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
-		}else if(this.value==3){
-				$('#sliderText').css({
-					"color": "hsl(138, 15%, 50%)"
-		});
+		}
+		else if (this.value == 3)
+		{
+			$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
 			$('#sliderText').text("casual");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
-		}else if(this.value==4){
-				$('#sliderText').css({
-					"color": "hsl(138, 0%, 47%)"
-		});
+		}
+		else if (this.value == 4)
+		{
+			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-		}else if(this.value==5){
-				$('#sliderText').css({
-					"color": "hsl(0, 34%, 50%)"
-	});
+		}
+		else if (this.value == 5)
+		{
+			$('#sliderText').css({"color": "hsl(0, 34%, 50%)"});
 			$('#sliderText').text("challenging");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 34%, 50%)');
-		}else if(this.value==6){
-				$('#sliderText').css({
-					"color": "hsl(0, 52%, 50%)"
-	});
+		}
+		else if (this.value == 6)
+		{
+			$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
 			$('#sliderText').text("difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
-		}else if(this.value==7){
-				$('#sliderText').css({
-					"color": "hsl(0, 66%, 50%)"
-		});
+		}
+		else if (this.value == 7)
+		{
+			$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
 			$('#sliderText').text("very difficult");
 			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
-	}else{
-				$('#sliderText').css({
-					"color": "#616161"
-		});
+		}
+		else
+		{
+			$('#sliderText').css({"color": "#616161"});
 			$('#sliderText').text("regular");
 			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-	}
-		});
+		}
+	});
 	<?php } ?>
 	<?php if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){

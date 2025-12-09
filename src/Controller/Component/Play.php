@@ -36,7 +36,6 @@ class Play
 		($this->setFunction)('page', 'play');
 
 		$highestTsumegoOrder = 0;
-		$nextMode = null;
 		$doublexp = null;
 		$dailyMaximum = false;
 		$suspiciousBehavior = false;
@@ -89,93 +88,6 @@ class Play
 
 		if (isset($params['url']['refresh']))
 			$refresh = $params['url']['refresh'];
-
-		if (Auth::isLoggedIn())
-		{
-			$difficulty = Auth::getUser()['t_glicko'];
-			if (isset($_COOKIE['difficulty']) && $_COOKIE['difficulty'] != '0')
-			{
-				$difficulty = $_COOKIE['difficulty'];
-				Auth::getUser()['t_glicko'] = $_COOKIE['difficulty'];
-				unset($_COOKIE['difficulty']);
-			}
-			if (Auth::isInRatingMode())
-			{
-				if ($difficulty == 1)
-					$adjustDifficulty = -450;
-				elseif ($difficulty == 2)
-					$adjustDifficulty = -300;
-				elseif ($difficulty == 3)
-					$adjustDifficulty = -150;
-				elseif ($difficulty == 4)
-					$adjustDifficulty = 0;
-				elseif ($difficulty == 5)
-					$adjustDifficulty = 150;
-				elseif ($difficulty == 6)
-					$adjustDifficulty = 300;
-				elseif ($difficulty == 7)
-					$adjustDifficulty = 450;
-				else
-					$adjustDifficulty = 0;
-
-				$eloRange = Auth::getUser()['rating'] + $adjustDifficulty;
-				$eloRangeMin = $eloRange - 240;
-				$eloRangeMax = $eloRange + 240;
-
-				$range = ClassRegistry::init('Tsumego')->find('all', [
-					'conditions' => [
-						'rating >=' => $eloRangeMin,
-						'rating <=' => $eloRangeMax,
-					],
-				]);
-				if (!$range)
-					$range = [];
-				shuffle($range);
-				$ratingFound = false;
-				$nothingInRange = false;
-				$ratingFoundCounter = 0;
-				while (!$ratingFound)
-					if ($ratingFoundCounter < count($range))
-					{
-						$rafSc = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $range[$ratingFoundCounter]['Tsumego']['id']]]);
-						if (!$rafSc)
-						{
-							$ratingFoundCounter++;
-
-							continue;
-						}
-						$raS = ClassRegistry::init('Set')->findById($rafSc['SetConnection']['set_id']);
-						if ($raS['Set']['public'] == 1)
-							if ($raS['Set']['id'] != 210 && $raS['Set']['id'] != 191 && $raS['Set']['id'] != 181 && $raS['Set']['id'] != 207 && $raS['Set']['id'] != 172
-								&& $raS['Set']['id'] != 202 && $raS['Set']['id'] != 237 && $raS['Set']['id'] != 81578 && $raS['Set']['id'] != 74761 && $raS['Set']['id'] != 71790 && $raS['Set']['id'] != 33007
-								&& $raS['Set']['id'] != 31813 && $raS['Set']['id'] != 29156 && $raS['Set']['id'] != 11969 && $raS['Set']['id'] != 6473)
-									if (!in_array($raS['Set']['id'], $setsWithPremium) || $hasPremium)
-										$ratingFound = true;
-						if ($ratingFound == false)
-							$ratingFoundCounter++;
-					}
-					else
-					{
-						$nothingInRange = 'No problem found.';
-
-						break;
-					}
-				$nextMode = $range[$ratingFoundCounter];
-
-				$ratingCookieScore = false;
-				$ratingCookieMisplay = false;
-				if (!empty($_COOKIE['score']))
-					$ratingCookieScore = true;
-				if (!empty($_COOKIE['misplays']))
-					$ratingCookieMisplay = true;
-				if (!empty($_COOKIE['ratingModePreId']) && !$ratingCookieScore && !$ratingCookieMisplay)
-				{
-					$nextMode = ClassRegistry::init('Tsumego')->findById($_COOKIE['ratingModePreId']);
-					unset($_COOKIE['ratingModePreId']);
-				}
-				$id = $nextMode['Tsumego']['id'];
-			}
-		}
 
 		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
