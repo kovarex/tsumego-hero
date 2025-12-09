@@ -336,5 +336,19 @@ class Browser
 		}
 	}
 
+	public function clickBoard($x, $y)
+	{
+		$clickableRects = $this->getCssSelect('rect');
+		$boardSize = 19;
+		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
+		if ($corner == 'top-right' || $corner == 'bottom-right')
+			$x = $boardSize - $x + 1;
+		if ($corner == 'bottom-left' || $corner == 'bottom-right')
+			$y = $boardSize - $y + 1;
+		if (count($clickableRects) != $boardSize * $boardSize + 1)
+			throw new Exception("Unexpected board coords count");
+		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
+	}
+
 	public $driver;
 }

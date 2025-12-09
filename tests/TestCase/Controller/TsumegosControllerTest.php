@@ -192,7 +192,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
 			'user' => ['premium' => true, 'health' => 1], // Admin so comments are visible
-			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])', 'sets' => [['name' => 'test set', 'num' => '1']]],
 		]);
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
@@ -201,5 +201,43 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
 		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
 		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return 0; }, function ($index) { return 1;}, 0, 'F');
+	}
+
+	public function testSolveByClicking()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])', 'sets' => [['name' => 'test set', 'num' => '1']]],
+		]);
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->clickBoard(1, 1);
+		usleep(500 * 1000);
+		$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+		$browser->clickBoard(2, 1);
+		usleep(200 * 1000);
+		$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
+	}
+
+	public function testResetAddsFailWhenSomethingWasPlayed()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])', 'sets' => [['name' => 'test set', 'num' => '1']]],
+		]);
+		$browser = Browser::instance();
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+
+		// click one move
+		$browser->clickBoard(1, 1);
+		usleep(500 * 1000);
+		$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+
+		// reset without the result being shown
+		$browser->clickId('besogo-reset-button');
+
+		// heart being removed
+		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 }
