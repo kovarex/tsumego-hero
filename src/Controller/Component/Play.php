@@ -645,10 +645,10 @@ class Play
 
 		if (Auth::isInRatingMode())
 			return '<div class="slidecontainer">
-									<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
-									<div id="sliderText">regular</div>
-								</div>
-								<a id="playTitleA" href=""></a>';
+						<input type="range" min="1" max="7" value="' . $difficulty . '" class="slider" id="rangeInput" name="rangeInput">
+						<div id="sliderText">regular</div>
+						</div>
+						<a id="playTitleA" href=""></a>';
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')

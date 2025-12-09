@@ -940,39 +940,39 @@ if (
 	}
 	else if (difficulty == 3)
 	{
-			$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
-			$('#sliderText').text("casual");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
+		$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
+		$('#sliderText').text("casual");
+		Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
 	}
 	else if (difficulty == 4)
 	{
-			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
-			$('#sliderText').text("regular");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
+		$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
+		$('#sliderText').text("regular");
+		Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 	}
 	else if (difficulty == 5)
 	{
-			$('#sliderText').css({"color": "hsl(0, 31%, 50%)"});
-			$('#sliderText').text("challenging");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 31%, 50%)');
+		$('#sliderText').css({"color": "hsl(0, 31%, 50%)"});
+		$('#sliderText').text("challenging");
+		Slider.style.setProperty('--SliderColor', 'hsl(0, 31%, 50%)');
 	}
 	else if (difficulty == 6)
 	{
-			$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
-			$('#sliderText').text("difficult");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
+		$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
+		$('#sliderText').text("difficult");
+		Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
 	}
 	else if (difficulty == 7)
 	{
-			$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
-			$('#sliderText').text("very difficult");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
+		$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
+		$('#sliderText').text("very difficult");
+		Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
 	}
 	else
 	{
-			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
-			$('#sliderText').text("regular");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
+		$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
+		$('#sliderText').text("regular");
+		Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
 	}
 
 	rangeInput.addEventListener('change', function()

@@ -2,6 +2,25 @@
 
 class RatingModeController extends AppController
 {
+	static function ratingAdjustment($difficultySetting)
+	{
+		if ($difficultySetting == 1)
+			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
+		if ($difficultySetting == 2)
+			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
+		if ($difficultySetting == 3)
+			return -Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
+		if ($difficultySetting == 4)
+			return 0;
+		if ($difficultySetting == 5)
+			return Constants::$RATING_MODE_DIFFERENCE_SETTING_1;
+		if ($difficultySetting == 6)
+			return Constants::$RATING_MODE_DIFFERENCE_SETTING_2;
+		if ($difficultySetting == 7)
+			return Constants::$RATING_MODE_DIFFERENCE_SETTING_3;
+		return 0;
+	}
+
 	public function index(): mixed
 	{
 		if (!Auth::isLoggedIn())
@@ -12,29 +31,13 @@ class RatingModeController extends AppController
 			Auth::getUser()['mode'] = Constants::$RATING_MODE;
 			Auth::saveUser();
 		}
-		$difficulty = Auth::getUser()['t_glicko'];
 		if ($difficultyChange = Util::clearCookie('difficulty'))
 			Auth::getUser()['t_glicko'] = $difficultyChange;
 
-		if ($difficulty == 1)
-			$adjustDifficulty = -450;
-		elseif ($difficulty == 2)
-			$adjustDifficulty = -300;
-		elseif ($difficulty == 3)
-			$adjustDifficulty = -150;
-		elseif ($difficulty == 4)
-			$adjustDifficulty = 0;
-		elseif ($difficulty == 5)
-			$adjustDifficulty = 150;
-		elseif ($difficulty == 6)
-			$adjustDifficulty = 300;
-		elseif ($difficulty == 7)
-			$adjustDifficulty = 450;
-		else
-			$adjustDifficulty = 0;
-
-		$adjustedRating = Auth::getUser()['rating'] + $adjustDifficulty;
-		$ratingBounds = new RatingBounds($adjustedRating - 240, $adjustedRating + 240);
+		$adjustedRating =  Auth::getUser()['rating'] + self::ratingAdjustment(Auth::getUser()['t_glicko']);
+		$ratingBounds = new RatingBounds(
+			$adjustedRating - Constants::$RATING_MODE_SELECTION_INTERVAL / 2,
+			$adjustedRating + Constants::$RATING_MODE_SELECTION_INTERVAL / 2);
 
 		$queryCondition = "";
 		Util::addSqlCondition($queryCondition, "`set`.public = true");
