@@ -562,6 +562,20 @@ class Browser
 			// Switch back to main content to ensure we're not stuck in alert context
 			$this->driver->switchTo()->defaultContent();
 
+			// CRITICAL: Wait until we can execute JavaScript (= alert truly gone)
+			// Chrome 120 CI bug: accept() returns but alert persists briefly
+			$this->driver->wait(3, 100)->until(function ($driver) {
+				try
+				{
+					$driver->executeScript("return true;");
+					return true; // Success - can execute JS, alert is gone
+				}
+				catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
+				{
+					return false; // Alert still there, keep waiting
+				}
+			});
+
 			return $alertText;
 		}
 		catch (\Facebook\WebDriver\Exception\TimeoutException $e)
