@@ -4,7 +4,7 @@ class AdminActivityRenderer
 {
 	public function __construct($urlParams)
 	{
-			// Get total count of proposals
+		// Get total count of proposals
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
 		$this->page = isset($urlParams['activity_page']) ? max(1, (int) $urlParams['activity_page']) : 1;
 		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
@@ -62,7 +62,7 @@ OFFSET $offset", [Auth::getUserID()]);
 			echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($adminActivity) . '</div>
 				</td>
 				<td>
-					<div>'.$dateFormatted.'</div>
+					<div>' . $dateFormatted . '</div>
 					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . $adminActivity['user_name'] . '</div>
 				</td>';
 			echo '</tr>';

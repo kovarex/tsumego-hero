@@ -397,14 +397,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-				'user' => ['admin' => true],
-				'other-tsumegos' => [[
-					'sets' => [['name' => 'set-1', 'num' => 1]],
-					'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
+			'user' => ['admin' => true],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
-				// click the accept proposal button
+		// click the accept proposal button
 		$browser->clickId('tag-accept-' . $context->otherTsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
@@ -424,10 +424,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-				'user' => ['admin' => true],
-				'other-tsumegos' => [[
-					'sets' => [['name' => 'set-1', 'num' => 1]],
-					'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
+			'user' => ['admin' => true],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());

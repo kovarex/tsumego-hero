@@ -2041,7 +2041,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToReject['accepted'] != 0)
 		{
 			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
-			return $this->redirect('/users/adminstats');;
+			return $this->redirect('/users/adminstats');
+			;
 		}
 
 		$reject = [];

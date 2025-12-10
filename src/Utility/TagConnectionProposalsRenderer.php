@@ -5,7 +5,7 @@ class TagConnectionProposalsRenderer
 	public function __construct($urlParams)
 	{
 		$this->count = ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
-		$this->page = isset($this->params['url']['tags_page']) ? max(1, (int) $this->params['url']['tags_page']) : 1;
+		$this->page = isset($urlParams['tags_page']) ? max(1, (int) $urlParams['tags_page']) : 1;
 		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
 		$offset = ($this->page - 1) * self::$PAGE_SIZE;
 
@@ -43,9 +43,9 @@ OFFSET $offset", [Auth::getUserID()]);
 		foreach ($this->toApprove as $index => $toApprove)
 		{
 			echo '<tr>';
-			echo '<td>' . ($index + 1) . '</td><td class="adminpanel-table-text">' . $toApprove['user_name'].' added ';
-			echo '<a class="adminpanel-link" href="/tag_names/view/' .$toApprove['tag_id'].'">' . $toApprove['tag_name'];
-			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">'  . $toApprove['set_title'] . ' - ' . $toApprove['num'] .'</a></td>';
+			echo '<td>' . ($index + 1) . '</td><td class="adminpanel-table-text">' . $toApprove['user_name'] . ' added ';
+			echo '<a class="adminpanel-link" href="/tag_names/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
+			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a></td>';
 			echo '<td>';
 			new TsumegoButton($toApprove['tsumego_id'], $toApprove['set_connection_id'], $toApprove['num'], $toApprove['status'])->render();
 			echo '</td>';
@@ -53,7 +53,7 @@ OFFSET $offset", [Auth::getUserID()]);
 			echo '<a class="new-button-default2" href="/users/acceptTagConnectionProposal/' . $toApprove['tag_connection_id'] . '" id="tag-accept-' . $toApprove['tag_connection_id'] . '">Accept</a>';
 			echo '<a class="new-button-default2" href="/users/rejectTagConnectionProposal/' . $toApprove['tag_connection_id'] . '" id="tag-reject-' . $toApprove['tag_connection_id'] . '">Reject</a>';
 			echo '</td>';
-			echo '<td style="font-size:13px">'. $toApprove['created'].'</td>';
+			echo '<td style="font-size:13px">' . $toApprove['created'] . '</td>';
 			echo '</tr>';
 		}
 		echo '</table>';

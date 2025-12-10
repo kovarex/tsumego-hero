@@ -13,7 +13,7 @@ class AdminActivity extends AppModel
 		]
 	];
 
-	static public function renderChange($adminActivity)
+	public static function renderChange($adminActivity)
 	{
 		switch ($adminActivity['type'])
 		{
@@ -26,6 +26,7 @@ class AdminActivity extends AppModel
 				{
 					if ($adminActivity['new_value'] === '1')
 						return $adminActivity['readable_type'] . ' → enabled';
+					/** @phpstan-ignore-next-line */
 					if ($adminActivity['new_value'] === '0')
 						return $adminActivity['readable_type'] . ' → disabled';
 					return $adminActivity['readable_type'] . ': [Empty]  → ' . $adminActivity['new_value'];
