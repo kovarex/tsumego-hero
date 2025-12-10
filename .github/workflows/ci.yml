@@ -73,8 +73,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl, pcov
-          coverage: pcov
+          extensions: mbstring, intl, xdebug
+          coverage: xdebug
 
       - name: Get composer cache directory
         id: composer-cache
