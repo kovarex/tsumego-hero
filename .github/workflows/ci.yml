@@ -20,7 +20,7 @@ jobs:
       DB_USER: root
       DB_PASS: root
       DB_NAME: test_1
-      TEST_WORKERS: 2
+      TEST_WORKERS: 4
       
     strategy:
       fail-fast: false
@@ -53,6 +53,24 @@ jobs:
           --add-host=host.docker.internal:host-gateway
 
       selenium-node-2:
+        image: seleniarm/node-chromium:120.0
+        env:
+          SE_EVENT_BUS_HOST: selenium-hub
+          SE_EVENT_BUS_PUBLISH_PORT: 4442
+          SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+        options: >-
+          --add-host=host.docker.internal:host-gateway
+
+      selenium-node-3:
+        image: seleniarm/node-chromium:120.0
+        env:
+          SE_EVENT_BUS_HOST: selenium-hub
+          SE_EVENT_BUS_PUBLISH_PORT: 4442
+          SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+        options: >-
+          --add-host=host.docker.internal:host-gateway
+
+      selenium-node-4:
         image: seleniarm/node-chromium:120.0
         env:
           SE_EVENT_BUS_HOST: selenium-hub
@@ -152,11 +170,6 @@ jobs:
           SELENIUM_URL: http://localhost:4444
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
-          DB_HOST: 127.0.0.1
-          DB_USER: root
-          DB_PASS: root
-          DB_NAME: test_1
-          TEST_WORKERS: 2
         run: |
           mkdir -p /tmp/coverage
           # Run all tests (excluding apache-only) with coverage in both formats
