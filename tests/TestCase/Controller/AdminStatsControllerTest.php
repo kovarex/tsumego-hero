@@ -23,11 +23,11 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => [],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
 			'admin-activities' => [
 				[
 					'type' => AdminActivityType::DESCRIPTION_EDIT,
-					'tsumego_id' => true,
+					'tsumego_id' => 'other:0',
 					'old_value' => 'Old desc',
 					'new_value' => 'New desc'
 
@@ -69,9 +69,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Test Set', 'num' => 1]]
-			],
+			'tsumego' => ['sets' => [['name' => 'Test Set', 'num' => 1]]],
 			'admin-activities' => [
 				[
 					'type' => AdminActivityType::SET_TITLE_EDIT,

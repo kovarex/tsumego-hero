@@ -620,16 +620,7 @@ class ContextPreparator
 
 			// Support 'tsumego_id' => true to use the main context tsumego
 			// Support 'tsumego_id' => 'other:0' to use otherTsumegos[0], etc.
-			$tsumegoId = Util::extract('tsumego_id', $activityInput);
-			if ($tsumegoId === true && $this->tsumego)
-				$activity['tsumego_id'] = $this->tsumego['id'];
-			elseif (is_string($tsumegoId) && strpos($tsumegoId, 'other:') === 0)
-			{
-				$index = (int) substr($tsumegoId, 6);
-				$activity['tsumego_id'] = $this->otherTsumegos[$index]['id'] ?? null;
-			}
-			else
-				$activity['tsumego_id'] = $tsumegoId;
+			$activity['tsumego_id'] = $this->loadTsumegoID(Util::extract('tsumego_id', $activityInput));
 
 			// Support 'set_id' => true to use the first set from main tsumego
 			$setId = Util::extract('set_id', $activityInput);
@@ -696,6 +687,15 @@ class ContextPreparator
 		if (!$input)
 			return null;
 		return ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $input]])['User']['id'];
+	}
+
+	public function loadTsumegoID($input): ?int
+	{
+		if ($input === true)
+			return $this->tsumego['id'];
+		if (is_string($input) && strpos($input, 'other:') === 0)
+			return $this->otherTsumegos[intval(substr($input, 6))]['id'];
+		return $input;
 	}
 
 	public ?array $user = null;

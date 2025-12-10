@@ -3,31 +3,7 @@
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 
 	echo '<div class="homeRight" style="width:40%">';
-		echo '<h3>Admin Activity (' . $activityTotal . ')</h3>';
-		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
-		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
-		foreach ($adminActivities as $index => $adminActivity)
-		{
-			// Format date without seconds
-			$timestamp = strtotime($adminActivity['created']);
-			$dateFormatted = date('Y-m-d H:i', $timestamp);
-
-
-			echo '<tr style="border-bottom:1px solid #e0e0e0;">
-				<td>' . ($index + 1 + 100 * ($activityPage - 1)) . '</td>
-				<td>
-					<a href="/tsumegos/play/' . $adminActivity['tsumego_id'] . '?search=topics">' . $adminActivity['tsumego'].'</a>
-					<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($adminActivity) . '</div>
-				</td>
-				<td>
-					<div>'.$dateFormatted.'</div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . $adminActivity['name'] . '</div>
-				</td>
-			</tr>';
-		}
-		echo '</table>';
-		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
-
+	$adminActivityRenderer->render();
 	echo '</div>';
 
 	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';

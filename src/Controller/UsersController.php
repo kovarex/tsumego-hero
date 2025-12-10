@@ -5,6 +5,7 @@ App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('TagConnectionProposalsRenderer', 'Utility');
+App::uses('AdminActivityRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('CookieFlash', 'Utility');
 
@@ -729,28 +730,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('s', $s);
 	}
 
-	/**
-	 * @param string|int|null $p Page parameter
-	 * @return void
-	 */
-	public function adminstats($p = null)
+	public function adminstats(): void
 	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Admin Panel');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('TsumegoAttempt');
-		$this->loadModel('Comment');
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
-		$this->loadModel('AdminActivity');
-		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('TagConnection');
-		$this->loadModel('Sgf');
-		$this->loadModel('UserContribution');
-		$this->loadModel('Reject');
 
 		if (Auth::isAdmin())
 		{
@@ -807,15 +795,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		// Pagination setup
 		$perPage = 100;
 		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
-		$activityPage = isset($this->params['url']['activity_page']) ? max(1, (int) $this->params['url']['activity_page']) : 1;
-		$commentsPage = isset($this->params['url']['comments_page']) ? max(1, (int) $this->params['url']['comments_page']) : 1;
 
 		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
-		$activityOffset = ($activityPage - 1) * $perPage;
-		$commentsOffset = ($commentsPage - 1) * $perPage;
 
 		// Get total counts
-		$tagNamesTotal = $this->Tag->find('count', ['conditions' => ['approved' => 0]]);
+		$this->set('tagNamesTotal', $this->Tag->find('count', ['conditions' => ['approved' => 0]]));
 
 		$tags = $this->Tag->find('all', [
 			'conditions' => ['approved' => 0],
@@ -830,7 +814,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $tagsByKeyCount; $i++)
 			$tKeys[$tagsByKey[$i]['Tag']['id']] = $tagsByKey[$i]['Tag']['name'];
 
-		$tsIds = [];
 		$tagTsumegos = [];
 
 		$tagNamesCount = count($tags);
@@ -840,145 +823,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
 		}
 
-		$uts = $this->TsumegoStatus->find('all', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $tsIds,
-			],
-		]);
-
-		$tsMap = [];
-		$utsCount = count($uts);
-		for ($i = 0; $i < $utsCount; $i++)
-			$tsMap[$uts[$i]['TsumegoStatus']['tsumego_id']] = $uts[$i]['TsumegoStatus']['status'];
-
-		$u = $this->User->find('all', ['conditions' => ['isAdmin >' => 0]]);
-		$uArray = [];
-		$uCount = count($u);
-		for ($i = 0; $i < $uCount; $i++)
-			array_push($uArray, $u[$i]['User']['id']);
-
-		// Get total count of admin activities
-		$activityTotal = $this->AdminActivity->find('count');
-
-		$aa = $this->AdminActivity->find('all', [
-			'limit' => $perPage,
-			'offset' => $activityOffset,
-			'order' => 'AdminActivity.created DESC',
-			'contain' => ['AdminActivityType']
-		]);
-		$aa2 = [];
-
-		// Separate arrays for activities and comments
-		$adminActivities = [];
-
-		$adminComments = [];
-		$adminComments['tsumego_id'] = [];
-		$adminComments['tsumego'] = [];
-		$adminComments['created'] = [];
-		$adminComments['name'] = [];
-		$adminComments['message'] = [];
-
-		$aaCount = count($aa);
-		for ($i = 0; $i < $aaCount; $i++)
-		{
-			// Get user info
-			$au = $this->User->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['user_id']]]);
-			$aa[$i]['AdminActivity']['name'] = $au['User']['name'];
-			$aa[$i]['AdminActivity']['isAdmin'] = $au['User']['isAdmin'];
-
-			// Handle set-level activities (set_id is populated, tsumego_id is NULL)
-			if ($aa[$i]['AdminActivity']['set_id'] !== null && $aa[$i]['AdminActivity']['set_id'] > 0)
-			{
-				$as = $this->Set->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['set_id']]]);
-				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' (Set-wide)';
-				$aa[$i]['AdminActivity']['tsumego_id'] = 0; // Placeholder for display
-			}
-			// Handle problem-level activities (tsumego_id is populated)
-			elseif ($aa[$i]['AdminActivity']['tsumego_id'] !== null && $aa[$i]['AdminActivity']['tsumego_id'] > 0)
-			{
-				$at = $this->Tsumego->find('first', ['conditions' => ['id' => $aa[$i]['AdminActivity']['tsumego_id']]]);
-				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-				$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-				$aa[$i]['AdminActivity']['tsumego'] = $as['Set']['title'] . ' - ' . $scT['SetConnection']['num'];
-			}
-			else
-			{
-				// General admin activity not tied to specific tsumego or set
-				$aa[$i]['AdminActivity']['tsumego'] = 'General Admin Activity';
-				$aa[$i]['AdminActivity']['tsumego_id'] = 0;
-			}
-			// Get readable type name from enum table (names are Title Case: 'Description Edit' etc.)
-			$readableType = $aa[$i]['AdminActivityType']['name'];
-
-			array_push($aa2, $aa[$i]);
-
-			$toInsert = $aa[$i]['AdminActivity'];
-			$toInsert['readable_type'] = $readableType;
-			$adminActivities[] = $toInsert;
-		}
-
-		// Get total count of admin comments
-		$commentsTotal = $this->Comment->find('count', [
-			'conditions' => [
-				'user_id' => $uArray,
-				'NOT' => [
-					'status' => [99],
-				],
-			],
-		]);
-
-		// Find paginated comments from admin users
-		$comments = $this->Comment->find('all', [
-			'order' => 'created DESC',
-			'limit' => $perPage,
-			'offset' => $commentsOffset,
-			'conditions' => [
-				'user_id' => $uArray,
-				'NOT' => [
-					'status' => [99],
-				],
-			],
-		]);
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $comments[$i]['Comment']['tsumego_id']]]);
-			if (empty($at)) continue; // Skip if tsumego doesn't exist
-
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-			$at['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$as = $this->Set->find('first', ['conditions' => ['id' => $at['Tsumego']['set_id']]]);
-			$au = $this->User->find('first', ['conditions' => ['id' => $comments[$i]['Comment']['user_id']]]);
-			array_push($adminComments['tsumego_id'], $comments[$i]['Comment']['tsumego_id']);
-			array_push($adminComments['tsumego'], $as['Set']['title'] . ' - ' . $at['Tsumego']['num']);
-			array_push($adminComments['created'], $comments[$i]['Comment']['created']);
-			array_push($adminComments['name'], $au['User']['name']);
-			array_push($adminComments['message'], $comments[$i]['Comment']['message']);
-		}
-
 		$requestDeletion = $this->User->find('all', ['conditions' => ['dbstorage' => 1111]]);
 
 		$this->set('requestDeletion', $requestDeletion);
-		$this->set('aa', $aa);
-		$this->set('aa2', $aa2);
-		$this->set('adminActivities', $adminActivities);
-		$this->set('adminComments', $adminComments);
 		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
 
 		// Pagination data
-		$this->set('tagNamesPage', $tagNamesPage);
-		$this->set('tagNamesTotal', $tagNamesTotal);
-		$this->set('tagNamesPagesTotal', ceil($tagNamesTotal / $perPage));
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url']));
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
-		$this->set('activityPage', $activityPage);
-		$this->set('activityTotal', $activityTotal);
-		$this->set('activityPagesTotal', ceil($activityTotal / $perPage));
-		$this->set('commentsPage', $commentsPage);
-		$this->set('commentsTotal', $commentsTotal);
-		$this->set('commentsPagesTotal', ceil($commentsTotal / $perPage));
 	}
 
 	private function getUserFromNameOrEmail()
