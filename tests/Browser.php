@@ -298,6 +298,8 @@ class Browser
 		}
 		$browser->driver->manage()->deleteAllCookies();
 		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
+		$browser->driver->get('about:blank'); // make sure any work is stopped
+		$browser->driver->get(Util::getMyAddress() . '/empty.php');
 		return $browser;
 	}
 

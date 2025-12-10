@@ -65,8 +65,7 @@ class PreferencesTest extends CakeTestCase
 	 */
 	public function testLoggedInUserCanSetAndGetPreference()
 	{
-		// Arrange - create and login a test user
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 		$this->assertTrue(Auth::isLoggedIn());
 
 		// Act
@@ -82,8 +81,7 @@ class PreferencesTest extends CakeTestCase
 	 */
 	public function testLoggedInUserPreferencesSavedToDatabase()
 	{
-		// Arrange - create and login a test user
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 		$userId = Auth::getUserID();
 
 		// Act
@@ -182,8 +180,7 @@ class PreferencesTest extends CakeTestCase
 	 */
 	public function testUnprefixedCookieOverrideForLoggedInUser()
 	{
-		// Arrange - create logged-in user with DB preference
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 		Preferences::set('query', 'db_value');
 
 		// Simulate unprefixed cookie override (set by layout.ctp JS)
@@ -210,8 +207,7 @@ class PreferencesTest extends CakeTestCase
 	 */
 	public function testCollectionSizeTypeHandling()
 	{
-		// Arrange - create logged-in user
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 
 		// Act - store as string (simulating cookie or form input)
 		Preferences::set('collection_size', '150');

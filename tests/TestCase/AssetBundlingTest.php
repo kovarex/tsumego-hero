@@ -64,13 +64,9 @@ class AssetBundlingTest extends CakeTestCase
 	 */
 	public function testPlayPageBundlesWork()
 	{
-		// Create a test tsumego
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'tsumego' => ['rating' => 1000],
-		]);
-
 		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => ['rating' => 1000]]);
+
 		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
 		$browser->get('/' . $setConnectionId);  // CakePHP routing uses /{setConnectionId} for puzzles
 

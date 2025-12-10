@@ -3,23 +3,7 @@
 	<a class="new-button new-buttonx" href="/users/purge?p=1">purge</a>
 	<br><br><br>
 	<?php
-		//echo $t;
-		//echo '<pre>'; print_r($pl); echo '</pre>';
-		echo '<table border="1">';
-		echo '<th>start</th><th>empty_uts</th><th>purge</th><th>count</th><th>archive</th><th>tsumego_scores</th><th>set_scores</th>';
-		for($i=0; $i<count($pl); $i++){
-			echo '<tr>';
-			echo '<td>'.$pl[$i]['PurgeList']['start'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['empty_uts'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['purge'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['count'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['archive'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['tsumego_scores'].'</td>';
-			echo '<td>'.$pl[$i]['PurgeList']['set_scores'].'</td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-		
+
 		echo '<h1>Add Problem</h1>';
 		echo $this->Form->create('Schedule');
 		echo $this->Form->input('num', array('label' => 'num: ', 'type' => 'text', 'placeholder' => 'num'));

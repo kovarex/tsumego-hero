@@ -14,8 +14,6 @@ OPTIMIZE TABLE favorite;
 OPTIMIZE TABLE joseki;
 OPTIMIZE TABLE progress_deletion;
 OPTIMIZE TABLE publish_date;
-OPTIMIZE TABLE `purge`;
-OPTIMIZE TABLE purge_list;
 OPTIMIZE TABLE reject;
 OPTIMIZE TABLE schedule;
 OPTIMIZE TABLE `set`;

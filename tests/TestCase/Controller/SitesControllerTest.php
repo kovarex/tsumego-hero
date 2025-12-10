@@ -6,6 +6,7 @@ class SitesControllerTest extends ControllerTestCase
 {
 	public function testIndex()
 	{
+		$browser = Browser::instance();
 		// we init DayRecord, so the main page has something to show:
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex', 'daily_xp' => 5, 'daily_solved' => 1],
@@ -30,7 +31,6 @@ class SitesControllerTest extends ControllerTestCase
 			],
 		]);
 
-		$browser = Browser::instance();
 		try
 		{
 			$browser->get('/');
@@ -43,8 +43,8 @@ class SitesControllerTest extends ControllerTestCase
 
 	public function testShowPublishedTsumego()
 	{
-		$context = new ContextPreparator([
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
 
 		ClassRegistry::init('Schedule')->create();
 		$schedule = [];
@@ -54,7 +54,6 @@ class SitesControllerTest extends ControllerTestCase
 		$schedule['published'] = 1;
 		ClassRegistry::init('Schedule')->save($schedule);
 
-		$browser = Browser::instance();
 		$browser->get('/');
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertSame(count($buttons), 1);
@@ -66,9 +65,9 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testIndexPageLoadsWithDayRecord()
 	{
+		$browser = Browser::instance();
 		// Arrange: Set up test context with user, tsumego, and day_record
 		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
 			'tsumego' => [],
 			'day-records' => [
 				[
@@ -81,7 +80,6 @@ class SitesControllerTest extends ControllerTestCase
 		]);
 
 		// Act: Load the index page
-		$browser = Browser::instance();
 		$browser->get('sites/index');
 
 		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
@@ -93,11 +91,11 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testIndexPageLoadsWithoutDayRecord()
 	{
+		$browser = Browser::instance();
 		// Arrange: Set up context without day_record
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 
 		// Act: Load the index page
-		$browser = Browser::instance();
 		$browser->get('sites/index');
 
 		// Assert: Page should load successfully and display with null values handled gracefully
@@ -109,17 +107,15 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testPlayButtonsWorkWithoutLastVisitSession()
 	{
+		$browser = Browser::instance();
 		// Arrange: Set up minimal context and clear lastVisit session
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-		]);
+		$context = new ContextPreparator();
 
 		// Clear lastVisit cookie to simulate first-time visitor
 		unset($_COOKIE['lastVisit']);
 		$this->assertFalse(isset($_COOKIE['lastVisit']), 'lastVisit should be cleared initially');
 
 		// Act: Load the index page
-		$browser = Browser::instance();
 		$browser->get('sites/index');
 
 		// Assert: Check that the play button links contain the default tsumego ID
@@ -133,9 +129,9 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testQuoteWithImagesUsesOwnImages()
 	{
+		$browser = Browser::instance();
 		// Arrange: Set up context with q01 which has all images
 		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
 			'tsumego' => [],  // Create a tsumego for the day_record to reference
 			'day-records' => [
 				[
@@ -148,7 +144,6 @@ class SitesControllerTest extends ControllerTestCase
 		]);
 
 		// Act: Load the index page
-		$browser = Browser::instance();
 		$browser->get('sites/index');
 
 		// Assert: Page should use q01's own images, not fallback
@@ -168,9 +163,10 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testQuoteFallbackForMissingImages()
 	{
+		$browser = Browser::instance();
+
 		// Arrange: Set up context with a quote that has no images (q44)
 		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
 			'tsumego' => [],
 			'day-records' => [
 				[
@@ -183,7 +179,6 @@ class SitesControllerTest extends ControllerTestCase
 		]);
 
 		// Act: Load the index page
-		$browser = Browser::instance();
 		$browser->get('sites/index');
 
 		// Assert: Page should load without broken images
@@ -213,11 +208,8 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testPageTitleSetViaViewVariable()
 	{
-		// Arrange
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		// Act: Load the index page
 		$browser = Browser::instance();
+		$context = new ContextPreparator();
 		$browser->get('sites/index');
 
 		// Assert: Title should be "Tsumego Hero" for the index page
@@ -232,11 +224,8 @@ class SitesControllerTest extends ControllerTestCase
 	 */
 	public function testNavigationHighlightingForHomePage()
 	{
-		// Arrange
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		// Act: Load the index page
 		$browser = Browser::instance();
+		$context = new ContextPreparator();
 		$browser->get('sites/index');
 
 		// Assert: Home link should have the green highlight color

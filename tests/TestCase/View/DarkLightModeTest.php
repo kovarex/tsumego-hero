@@ -17,12 +17,9 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testDefaultBodyClassIsLightTheme()
 	{
-		// Arrange: Set up context with a user
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
-		// Clear any existing lightDark cookie
 		$browser = Browser::instance();
-		$browser->driver->manage()->deleteCookieNamed('lightDark');
+		// Arrange: Set up context with a user
+		$context = new ContextPreparator();
 
 		// Act: Load a page
 		$browser->get('sites/index');
@@ -47,11 +44,11 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testBodyClassWithDarkCookie()
 	{
+		$browser = Browser::instance();
 		// Arrange: Set up context with a user
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$context = new ContextPreparator();
 
 		// Act: Set cookie to dark and load page
-		$browser = Browser::instance();
 		$browser->get('sites/index'); // Need to be on domain first
 		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index'); // Reload with cookie
@@ -76,10 +73,10 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testJavaScriptToggleDarkToLight()
 	{
-		// Arrange: Set up context with dark mode
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
 		$browser = Browser::instance();
+		// Arrange: Set up context with dark mode
+		$context = new ContextPreparator();
+
 		$browser->get('sites/index'); // Need to be on domain first
 		$browser->setCookie('lightDark', 'dark');
 		$browser->get('sites/index'); // Load with dark mode
@@ -116,10 +113,11 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testJavaScriptToggleLightToDark()
 	{
-		// Arrange: Set up context with light mode
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
 		$browser = Browser::instance();
+
+		// Arrange: Set up context with light mode
+		$context = new ContextPreparator();
+
 		$browser->get('sites/index'); // Load with light mode (default)
 
 		// Verify we're in light mode
@@ -153,10 +151,11 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testToggleSetsCorrectCookie()
 	{
-		// Arrange: Set up context
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
 		$browser = Browser::instance();
+
+		// Arrange: Set up context
+		$context = new ContextPreparator();
+
 		$browser->driver->manage()->deleteCookieNamed('lightDark');
 		$browser->get('sites/index'); // Load with light mode (default)
 
@@ -189,10 +188,11 @@ class DarkLightModeTest extends ControllerTestCase
 	 */
 	public function testPreferencePersistsAfterRefresh()
 	{
-		// Arrange: Set up context
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-
 		$browser = Browser::instance();
+
+		// Arrange: Set up context
+		$context = new ContextPreparator();
+
 		$browser->driver->manage()->deleteCookieNamed('lightDark');
 		$browser->get('sites/index'); // Start with light mode
 

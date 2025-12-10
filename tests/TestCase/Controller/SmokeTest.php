@@ -92,16 +92,16 @@ class SmokeTest extends ControllerTestCase
 
 			// Basic sanity - logo exists
 			// ALL pages have the logo in the header, no exceptions
-			$this->assertLogoExists($page['name']);
+			$this->assertLogoExists($browser, $page['name']);
 
 			// Wait for animations to complete (sets page has percentage counter animation)
-			usleep(1000000); // 1 second
+			usleep(100 * 1000); // 0.1 second
 
 			// Check JS errors
 			$browser->assertNoJsErrors();
 
 			// CSS loaded
-			$this->assertCssLoaded($page['name']);
+			$this->assertCssLoaded($browser, $page['name']);
 		}
 	}
 
@@ -111,9 +111,8 @@ class SmokeTest extends ControllerTestCase
 	 * @param string $pageName Page name for error messages
 	 * @return void
 	 */
-	private function assertLogoExists($pageName)
+	private function assertLogoExists($browser, $pageName)
 	{
-		$browser = Browser::instance();
 		$logoExists = $browser->driver->executeScript(
 			"return document.getElementById('logo1') !== null;"
 		);
@@ -126,10 +125,8 @@ class SmokeTest extends ControllerTestCase
 	 * @param string $pageName Page name for error messages
 	 * @return void
 	 */
-	private function assertCssLoaded($pageName)
+	private function assertCssLoaded($browser, $pageName)
 	{
-		$browser = Browser::instance();
-
 		// Check that body has background style (proves CSS loaded)
 		$bodyBackground = $browser->driver->executeScript(
 			"return window.getComputedStyle(document.body).background;"
