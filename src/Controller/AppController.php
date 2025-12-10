@@ -76,31 +76,6 @@ class AppController extends Controller
 	}
 
 	/**
-	 * @return void
-	 */
-	protected function resetUserElos()
-	{
-		$this->loadModel('User');
-
-		$u = $this->User->find('all', [
-			'conditions' => [
-				'id >=' => 15000,
-				'id <=' => 19000,
-			],
-		]);
-		if (!$u)
-			$u = [];
-
-		$uCount = count($u);
-		for ($i = 0; $i < $uCount; $i++)
-		{
-			$u[$i]['User']['rating'] = 900;
-			$u[$i]['User']['solved2'] = 0;
-			$this->User->save($u[$i]);
-		}
-	}
-
-	/**
 	 * @param int $uid User ID
 	 * @param string $action Action type
 	 *
