@@ -138,6 +138,7 @@ class TsumegoIssue extends AppModel
 				tc.message AS comment_text,
 				tc.created AS comment_created,
 				tc.user_id AS comment_user_id,
+				cu.id AS comment_author_id,
 				cu.name AS comment_author_name,
 				cu.rating AS comment_author_rating,
 				cu.isAdmin AS comment_author_isAdmin,
@@ -204,6 +205,7 @@ class TsumegoIssue extends AppModel
 					'user_id' => $row['tc']['comment_user_id'],
 					'user' => $row['cu']['comment_author_name']
 						? [
+							'id' => $row['cu']['comment_author_id'],
 							'name' => $row['cu']['comment_author_name'],
 							'rating' => $row['cu']['comment_author_rating'],
 							'isAdmin' => $row['cu']['comment_author_isAdmin'],
