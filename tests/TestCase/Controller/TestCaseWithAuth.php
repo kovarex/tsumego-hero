@@ -59,7 +59,7 @@ class TestCaseWithAuth extends ControllerTestCase
 
 	protected function checkNavigationButton($button, $context, int $index, int $order, ?int $currentIndex = null, ?string $currentStatus = null): void
 	{
-		$this->assertSame($button->getText(), strval($order));
+		$this->assertSame(strval($order), $button->getText());
 		if (is_null($currentIndex) || $index != $currentIndex)
 		{
 			$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[$index]['id']]]);
