@@ -7,7 +7,7 @@ class ContextPreparator
 		// Clear browser sessions first to prevent stale auth data (can't use ClassRegistry for cake_sessions)
 		$db = ConnectionManager::getDataSource('default');
 		$db->execute("DELETE FROM cake_sessions WHERE 1=1");
-		
+
 		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		// NOTE: Tag NOT deleted - has baseline data populated by migrations

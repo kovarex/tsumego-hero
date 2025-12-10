@@ -211,12 +211,12 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
-	$browser->clickBoard(1, 1);
-	usleep(1000 * 1000);
-	$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
-	$browser->clickBoard(2, 1);
-	usleep(1000 * 1000); // Increased to 1s - need time for white auto-response + black move + solution check
-	$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
+		$browser->clickBoard(1, 1);
+		usleep(1000 * 1000);
+		$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+		$browser->clickBoard(2, 1);
+		usleep(1000 * 1000); // Increased to 1s - need time for white auto-response + black move + solution check
+		$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
 	}
 
 	public function testResetAddsFailWhenSomethingWasPlayed()
