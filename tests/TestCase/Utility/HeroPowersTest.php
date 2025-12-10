@@ -73,10 +73,13 @@ class HeroPowersTest extends TestCaseWithAuth
 		// Wait for sprint to be applied (check that XP display shows "Sprint")
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500);
 		$wait->until(function () use ($browser) {
-			try {
+			try
+			{
 				$xpText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
 				return str_contains($xpText, 'Sprint');
-			} catch (Exception $e) {
+			}
+			catch (Exception $e)
+			{
 				return false;
 			}
 		});
@@ -105,10 +108,13 @@ class HeroPowersTest extends TestCaseWithAuth
 		// Wait for sprint to be applied (check that XP display shows "Sprint")
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500);
 		$wait->until(function () use ($browser) {
-			try {
+			try
+			{
 				$xpText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
 				return str_contains($xpText, 'Sprint');
-			} catch (Exception $e) {
+			}
+			catch (Exception $e)
+			{
 				return false;
 			}
 		});

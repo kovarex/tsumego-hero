@@ -770,7 +770,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
-		
+
 		$browser->get("sets");
 
 		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
