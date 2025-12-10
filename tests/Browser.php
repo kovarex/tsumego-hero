@@ -518,63 +518,41 @@ class Browser
 	 */
 	public function clickIdAndExpectAlert(string $id, int $timeoutSeconds = 3): string
 	{
+		// NEW APPROACH: Override window.alert() to capture text without native alert dialog
+		// This works around Chrome 120 CI bug where alert.accept() doesn't close the dialog
+		$this->driver->executeScript("
+			window.__lastAlertText = null;
+			window.__originalAlert = window.alert;
+			window.alert = function(text) {
+				window.__lastAlertText = text;
+				// Don't call original alert - just capture the text
+			};
+		");
+
 		$this->clickId($id);
 
-		// Wait for alert and capture text in one atomic operation
+		// Wait for alert to be called
 		$alertText = null;
 		try
 		{
 			$this->driver->wait($timeoutSeconds, 100)->until(function ($driver) use (&$alertText) {
-				try
+				$text = $driver->executeScript("return window.__lastAlertText;");
+				if ($text !== null)
 				{
-					$alert = $driver->switchTo()->alert();
-					$alertText = $alert->getText();
-					$alert->accept(); // Try ACCEPT instead - maybe Chrome 120 responds better
+					$alertText = $text;
 					return true;
 				}
-				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
-				{
-					return false;
-				}
+				return false;
 			});
 
 			if ($alertText === null)
 				throw new \Exception("Expected alert after clicking #$id was not shown within {$timeoutSeconds}s");
 
-			// CRITICAL for CI Chrome 120: Alert accept() is async/buggy - force-accept in loop
-			// Keep trying to accept until no alert exists, with aggressive retry
-			$maxAttempts = 20;
-			for ($attempt = 0; $attempt < $maxAttempts; $attempt++)
-			{
-				try
-				{
-					usleep(100000); // 100ms between attempts
-					$alert = $this->driver->switchTo()->alert();
-					$alert->accept(); // Try accepting again
-				}
-				catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
-				{
-					// Alert finally gone - success!
-					break;
-				}
-			}
-
-			// Switch back to main content to ensure we're not stuck in alert context
-			$this->driver->switchTo()->defaultContent();
-
-			// CRITICAL: Wait until we can execute JavaScript (= alert truly gone)
-			// Chrome 120 CI bug: accept() returns but alert persists briefly
-			$this->driver->wait(3, 100)->until(function ($driver) {
-				try
-				{
-					$driver->executeScript("return true;");
-					return true; // Success - can execute JS, alert is gone
-				}
-				catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-				{
-					return false; // Alert still there, keep waiting
-				}
-			});
+			// Clean up
+			$this->driver->executeScript("
+				window.alert = window.__originalAlert;
+				window.__lastAlertText = null;
+			");
 
 			return $alertText;
 		}
