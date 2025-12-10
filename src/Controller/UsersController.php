@@ -1028,7 +1028,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$this->set('tagContributors', Util::query("
 SELECT
-	user.name as name,
+	user.id as user_id,
+	user.name as user_name,
+	user.rating as user_rating,
 	count(*) AS tag_count
 FROM
 	tag_connection

@@ -75,4 +75,11 @@ class User extends AppModel
 			return max($highestTsumegoAttempt['TsumegoAttempt']['user_rating'], $user['rating']);
 		return $user['rating'];
 	}
+
+	public static function renderLink($id, $name = null, $rating = null)
+	{
+		if (is_array($id))
+			return self::renderLink($id['user_id'], $id['user_name'], $id['user_rating']);
+		return '<a href="/users/view/' . $id . '">' . h($name) . ' ' . Rating::getReadableRankFromRating($rating) . '</a>';
+	}
 }

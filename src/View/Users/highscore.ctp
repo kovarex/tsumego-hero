@@ -39,14 +39,6 @@
 		<th width="90px" align="left">Solved</th>
 	</tr>
 	<?php
-		$statsLink1 = '';
-		$statsLink2 = '';
-		$statsLink3 = '';
-		if(Auth::isLoggedIn()){if(Auth::getUserID()==72){
-			$statsLink1 = '<a style="color:black;text-decoration:none;" target="_blank" href="/users/view';
-			$statsLink2 = '">';
-			$statsLink3 = '</a>';
-		}}
 		$place = 1;
 		foreach ($users as $index => $user)
 		{
@@ -97,7 +89,7 @@
 					</td>
 
 					<td  align="left">
-						'.$statsLink1.$statsLink4.$statsLink2.$user['name'].' '.$statsLink3.'
+						' . User::renderLink($user['id'], $user['name'], $user['rating']) . '
 					</td>
 					<td>
 						'.$uType.'

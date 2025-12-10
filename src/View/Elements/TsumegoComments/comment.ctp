@@ -27,7 +27,7 @@ $isAdmin = !empty($user['admin']) || !empty($user['isAdmin']);
 $commentColorClass = $isAdmin ? 'commentBox2' : 'commentBox1';
 
 // Get author name
-$authorName = $user['name'] ?? '[deleted user]';
+$authorLink = User::renderLink($user['id'], $user['name'], $user['rating']);
 
 // Process position button if comment has a position
 $positionButton = '';
@@ -76,7 +76,7 @@ $canDragComment = Auth::isAdmin() && $showActions;  // Respect showActions to di
 				<?php endif; ?>
 				<td>
 					<div class="<?php echo $commentColorClass; ?>">
-						<span class="tsumego-comment__author"><?php echo h($authorName); ?>:</span><br>
+						<span class="tsumego-comment__author"><?php echo $authorLink; ?>:</span><br>
 						<?php echo $message; ?>
 					</div>
 				</td>

@@ -17,6 +17,7 @@ SELECT
     tsumego.id as tsumego_id,
     user.id AS user_id,
     user.name AS user_name,
+    user.rating AS user_rating,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
     tsumego_status.status AS status,
@@ -43,7 +44,7 @@ OFFSET $offset", [Auth::getUserID()]);
 		foreach ($this->toApprove as $index => $toApprove)
 		{
 			echo '<tr>';
-			echo '<td>' . ($index + 1) . '</td><td class="adminpanel-table-text">' . $toApprove['user_name'] . ' added ';
+			echo '<td>' . ($index + 1) . '</td><td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' added ';
 			echo '<a class="adminpanel-link" href="/tag_names/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
 			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a></td>';
 			echo '<td>';

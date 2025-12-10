@@ -46,7 +46,7 @@
 					<b>' . ($index + 1) . '</b>
 				</td>
 				<td style="padding:10px;" width="200px">';
-				echo '<b>' . $contributor['name'].'</b>';
+				echo '<b>' . User::renderLink($contributor).'</b>';
 				echo '</td>
 				<td align="right" style="padding:10px;">
 					<b>' . $contributor['tag_count'] . '</b>

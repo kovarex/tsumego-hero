@@ -20,6 +20,7 @@ SELECT
     tsumego.id as tsumego_id,
     user.id AS user_id,
     user.name AS user_name,
+    user.rating AS user_rating,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
     tsumego_status.status AS status,
@@ -63,7 +64,7 @@ OFFSET $offset", [Auth::getUserID()]);
 				</td>
 				<td>
 					<div>' . $dateFormatted . '</div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . $adminActivity['user_name'] . '</div>
+					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($adminActivity) . '</div>
 				</td>';
 			echo '</tr>';
 		}
