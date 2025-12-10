@@ -206,7 +206,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('difficulty-button'))->click();
 		$difficulty15kSelector = $browser->driver->findElement(WebDriverBy::id('tile-difficulty0'));
-		$this->assertSame($difficulty15kSelector->getText(), '15k');
+		$this->assertSame('15k', $difficulty15kSelector->getText());
 		$difficulty15kSelector->click();
 		$browser->driver->findElement(WebDriverBy::id('tile-difficulty-submit'))->click();
 
@@ -217,7 +217,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
-		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
+		$this->assertSame('15k', $collectionTopDivs[0]->getText());
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->getCurrentURL());
 
@@ -261,11 +261,18 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
+		// Wait for collection divs to load (needed for parallel testing with higher concurrency)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$divs = $driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+			return count($divs) > 0;
+		});
+
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
-		$this->assertSame($collectionTopDivs[0]->getText(), 'set hello world #1');
-		$this->assertSame($collectionTopDivs[1]->getText(), 'set hello world #2');
+		$this->assertSame('set hello world #1', $collectionTopDivs[0]->getText());
+		$this->assertSame('set hello world #2', $collectionTopDivs[1]->getText());
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1', $browser->getCurrentURL());
 
@@ -465,7 +472,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->getCurrentURL());
 		$browser->driver->getPageSource();
 		$this->assertCount(2, $browser->getCssSelect('.title4'));
-		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), 'set 1');
+		$this->assertSame('set 1', $browser->getCssSelect('.title4')[1]->getText());
 	}
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void

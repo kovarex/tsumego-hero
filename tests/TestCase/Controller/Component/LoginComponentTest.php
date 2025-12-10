@@ -60,7 +60,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys('test');
 		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserLoginForm input[type="submit"]'));
 		$sumbitButton->click();
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector(".account-bar-user-class"))->getText(), 'kovarex');
+		$this->assertSame('kovarex', $browser->driver->findElement(WebDriverBy::cssSelector(".account-bar-user-class"))->getText());
 	}
 
 	public function testLoginWithWrongPassword(): void

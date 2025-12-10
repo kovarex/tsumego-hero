@@ -75,8 +75,8 @@ class UsersControllerTest extends ControllerTestCase
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
 		$this->assertCount(1, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
+		$this->assertSame('Ivan Detkov', $rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('2 solved', $rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText());
 
 		// Kovarex solves a problem
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -87,10 +87,10 @@ class UsersControllerTest extends ControllerTestCase
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
 		$this->assertCount(2, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '1 solved');
-		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
-		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
+		$this->assertSame('kovarex', $rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('1 solved', $rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText());
+		$this->assertSame('Ivan Detkov', $rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('2 solved', $rows[1]->findElements(WebDriverBy::tagName("td"))[2]->getText());
 	}
 
 	public function testLevelHighscore()
@@ -109,9 +109,9 @@ class UsersControllerTest extends ControllerTestCase
 			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
 			$rows = $table->findElements(WebDriverBy::tagName("tr"));
 			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
-			$this->assertSame($rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
+			$this->assertSame('Ivan Detkov', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 			if ($loggedIn)
-				$this->assertSame($rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
+				$this->assertSame('kovarex', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 
 		}
 	}
@@ -147,12 +147,12 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/rating');
 		$tableRows = $browser->getCssSelect(".highscoreTable tr");
 		$this->assertCount(5, $tableRows);
-		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
-		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '12d');
-		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player3d');
-		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '3d');
-		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player2d');
-		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '2d');
+		$this->assertSame('Ivan Detkov', $tableRows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('12d', $tableRows[2]->findElements(WebDriverBy::tagName("td"))[3]->getText());
+		$this->assertSame('player3d', $tableRows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('3d', $tableRows[3]->findElements(WebDriverBy::tagName("td"))[3]->getText());
+		$this->assertSame('player2d', $tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+		$this->assertSame('2d', $tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText());
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()

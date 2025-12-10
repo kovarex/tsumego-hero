@@ -36,8 +36,8 @@ class TagTest extends ControllerTestCase
 		$browser->clickId('open-more-tags');
 		$addTagLinks = $browser->getCssSelect('.add-tag-list .add-tag-list-anchor');
 		$this->assertSame(2, count($addTagLinks));
-		$this->assertSame($addTagLinks[0]->getText(), "snapback");
-		$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
+		$this->assertSame("snapback", $addTagLinks[0]->getText());
+		$this->assertSame("[Create new tag]", $addTagLinks[1]->getText());
 	}
 
 	public function testShowMyUnapprovedTagsInTagListAndNotInTagsToAdd()
@@ -62,13 +62,13 @@ class TagTest extends ControllerTestCase
 			if ($popular)
 			{
 				$this->assertSame(1, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "[more]");
+				$this->assertSame("[more]", $addTagLinks[0]->getText());
 			}
 			else
 			{
 				$this->assertSame(2, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "snapback");
-				$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
+				$this->assertSame("snapback", $addTagLinks[0]->getText());
+				$this->assertSame("[Create new tag]", $addTagLinks[1]->getText());
 			}
 		}
 	}
@@ -97,8 +97,8 @@ class TagTest extends ControllerTestCase
 			if ($popular)
 			{
 				$this->assertSame(2, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "snapback");
-				$this->assertSame($addTagLinks[1]->getText(), "[more]");
+				$this->assertSame("snapback", $addTagLinks[0]->getText());
+				$this->assertSame("[more]", $addTagLinks[1]->getText());
 
 				// cick to add the snapback
 				$addTagLinks[0]->click();
@@ -114,13 +114,13 @@ class TagTest extends ControllerTestCase
 
 				// tag is not in the list
 				$this->assertSame(1, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "[more]");
+				$this->assertSame("[more]", $addTagLinks[0]->getText());
 			}
 			else
 			{
 				$this->assertSame(2, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "snapback");
-				$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
+				$this->assertSame("snapback", $addTagLinks[0]->getText());
+				$this->assertSame("[Create new tag]", $addTagLinks[1]->getText());
 
 				//add the snapback and test, that it will be no longer offered as tag to add
 				$addTagLinks[0]->click();
@@ -133,7 +133,7 @@ class TagTest extends ControllerTestCase
 				});
 				$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 				$this->assertSame(1, count($addTagLinks));
-				$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
+				$this->assertSame("[Create new tag]", $addTagLinks[0]->getText());
 			}
 		}
 	}
@@ -159,12 +159,13 @@ class TagTest extends ControllerTestCase
 			$sourceList = $popular ? 'add-tag-list-popular' : 'add-tag-list';
 			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 
-			$this->assertSame(2, count($addTagLinks));
-			$this->assertSame($addTagLinks[0]->getText(), "snapback");
+			$this->assertSame(3, count($addTagLinks));
+			$this->assertSame("atari", $addTagLinks[0]->getText());
+			$this->assertSame("snapback", $addTagLinks[1]->getText());
 			if ($popular)
-				$this->assertSame($addTagLinks[1]->getText(), "[more]");
+				$this->assertSame("[more]", $addTagLinks[2]->getText());
 			else
-				$this->assertSame($addTagLinks[1]->getText(), "[Create new tag]");
+				$this->assertSame("[Create new tag]", $addTagLinks[2]->getText());
 
 			$addTagSpans = $browser->getCssSelect('.' . $sourceList . ' span[title="Already proposed by someone"]');
 			$this->assertSame(1, count($addTagSpans));
