@@ -1025,28 +1025,18 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
-		$this->loadModel('UserContribution');
 
-		$list = [];
-		$uc = $this->UserContribution->find('all', ['limit' => 100, 'order' => 'score DESC']);
-		$ucCount = count($uc);
-		for ($i = 0; $i < $ucCount; $i++)
-		{
-			$x = [];
-			$x['id'] = $uc[$i]['UserContribution']['user_id'];
-			$user = $this->User->findById($uc[$i]['UserContribution']['user_id']);
-			if ($user && isset($user['User']))
-			{
-				$x['name'] = $this->checkPicture($user);
-				$x['score'] = $uc[$i]['UserContribution']['score'];
-				$x['added_tag'] = $uc[$i]['UserContribution']['added_tag'];
-				$x['created_tag'] = $uc[$i]['UserContribution']['created_tag'];
-				$x['made_proposal'] = $uc[$i]['UserContribution']['made_proposal'];
-				$x['reviewed'] = $uc[$i]['UserContribution']['reviewed'];
-				array_push($list, $x);
-			}
-		}
-		$this->set('a', $list);
+		$this->set('tagContributors', Util::query("
+SELECT
+	user.name as name,
+	count(*) AS tag_count
+FROM
+	tag_connection
+	JOIN user on tag_connection.user_id = user.id
+WHERE tag_connection.approved = true
+GROUP BY user_id
+ORDER BY tag_count DESC
+LIMIT 100"));
 	}
 
 	/**

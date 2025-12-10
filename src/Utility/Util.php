@@ -243,4 +243,73 @@ class Util
 	{
 		return 160 + count($input) * 25;
 	}
+
+	public static function smallScoreTableRowColor(int $index): string
+	{
+		if ($index == 0)
+			return '#ffec85';
+		if ($index == 1)
+			return '#939393';
+		if ($index == 2)
+			return '#c28d47';
+		if ($index == 3)
+			return '#85e35d';
+		if ($index == 4)
+			return '#85e35d';
+		if ($index == 5)
+			return '#85e35d';
+		if ($index == 6)
+			return '#85e35d';
+		if ($index == 7)
+			return '#85e35d';
+		if ($index == 8)
+			return '#85e35d';
+		if ($index == 9)
+			return '#85e35d';
+		if ($index == 10)
+			return '#85e35d';
+		if ($index == 11)
+			return '#85e35d';
+		if ($index == 12)
+			return '#85e35d';
+		if ($index == 13)
+			return '#85e35d';
+		if ($index == 14)
+			return '#85e35d';
+		if ($index == 15)
+			return '#85e35d';
+		if ($index == 16)
+			return '#85e35d';
+		if ($index == 17)
+			return '#85e35d';
+		if ($index == 18)
+			return '#85e35d';
+		if ($index == 19)
+			return '#85e35d';
+		if ($index == 20)
+			return '#9cf974';
+		if ($index == 21)
+			return '#9cf974';
+		if ($index == 22)
+			return '#9cf974';
+		if ($index == 23)
+			return '#9cf974';
+		if ($index == 24)
+			return '#9cf974';
+		if ($index == 25)
+			return '#9cf974';
+		if ($index == 26)
+			return '#9cf974';
+		if ($index == 27)
+			return '#9cf974';
+		if ($index == 28)
+			return '#9cf974';
+		if ($index == 29)
+			return '#9cf974';
+		if ($index < 40)
+			return '#b6f998';
+		if ($index < 50)
+			return '#d3f9c2';
+		return '#e8f9e0';
+	}
 }

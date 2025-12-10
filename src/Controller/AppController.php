@@ -88,7 +88,6 @@ class AppController extends Controller
 		{
 			$uc = [];
 			$uc['UserContribution']['user_id'] = $uid;
-			$uc['UserContribution']['added_tag'] = 0;
 			$uc['UserContribution']['created_tag'] = 0;
 			$uc['UserContribution']['made_proposal'] = 0;
 			$uc['UserContribution']['reviewed'] = 0;
@@ -97,8 +96,7 @@ class AppController extends Controller
 		}
 		$uc['UserContribution'][$action] += 1;
 		$uc['UserContribution']['score']
-		= $uc['UserContribution']['added_tag']
-		+ $uc['UserContribution']['created_tag'] * 3
+		= $uc['UserContribution']['created_tag'] * 3
 		+ $uc['UserContribution']['made_proposal'] * 5
 		+ $uc['UserContribution']['reviewed'] * 2;
 		ClassRegistry::init('UserContribution')->save($uc);
@@ -1866,7 +1864,6 @@ class AppController extends Controller
 		{
 			$uc = [];
 			$uc['UserContribution']['user_id'] = $uid;
-			$uc['UserContribution']['added_tag'] = 0;
 			$uc['UserContribution']['created_tag'] = 0;
 			$uc['UserContribution']['made_proposal'] = 0;
 			$uc['UserContribution']['reviewed'] = 0;
