@@ -4,6 +4,7 @@ App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('TagConnectionProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('CookieFlash', 'Utility');
 
@@ -756,36 +757,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id']))
 				if (md5((string) Auth::getUserID()) == $this->params['url']['hash'])
 				{
-
-					$tagsToApprove = explode('-', $_COOKIE['tagList']);
-					$tagsToApproveCount = count($tagsToApprove);
-					for ($i = 1; $i < $tagsToApproveCount; $i++)
-					{
-						$tagToApprove = $this->TagConnection->findById(substr($tagsToApprove[$i], 1));
-						if ($tagToApprove != null && $tagToApprove['TagConnection']['approved'] != 1)
-						{
-							AppController::handleContribution(Auth::getUserID(), 'reviewed');
-							if (substr($tagsToApprove[$i], 0, 1) == 'a')
-							{
-								$tagToApprove['TagConnection']['approved'] = '1';
-								$this->TagConnection->save($tagToApprove);
-								AppController::handleContribution($tagToApprove['TagConnection']['user_id'], 'added_tag');
-							}
-							else
-							{
-								$reject = [];
-								$reject['Reject']['tsumego_id'] = $tagToApprove['TagConnection']['tsumego_id'];
-								$reject['Reject']['user_id'] = $tagToApprove['TagConnection']['user_id'];
-								$reject['Reject']['type'] = 'tag';
-								$tagNameId = $this->Tag->findById($tagToApprove['TagConnection']['tag_id']);
-								$reject['Reject']['text'] = $tagNameId['Tag']['name'];
-								$this->Reject->create();
-								$this->Reject->save($reject);
-								$this->TagConnection->delete($tagToApprove['TagConnection']['id']);
-							}
-						}
-					}
-
 					$tagNamesToApprove = explode('-', $_COOKIE['tagNameList']);
 					$tagNamesToApproveCount = count($tagNamesToApprove);
 					for ($i = 1; $i < $tagNamesToApproveCount; $i++)
@@ -835,33 +806,24 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		// Pagination setup
 		$perPage = 100;
-		$tagsPage = isset($this->params['url']['tags_page']) ? max(1, (int) $this->params['url']['tags_page']) : 1;
 		$tagNamesPage = isset($this->params['url']['tagnames_page']) ? max(1, (int) $this->params['url']['tagnames_page']) : 1;
 		$activityPage = isset($this->params['url']['activity_page']) ? max(1, (int) $this->params['url']['activity_page']) : 1;
 		$commentsPage = isset($this->params['url']['comments_page']) ? max(1, (int) $this->params['url']['comments_page']) : 1;
 
-		$tagsOffset = ($tagsPage - 1) * $perPage;
 		$tagNamesOffset = ($tagNamesPage - 1) * $perPage;
 		$activityOffset = ($activityPage - 1) * $perPage;
 		$commentsOffset = ($commentsPage - 1) * $perPage;
 
 		// Get total counts
-		$tagsTotal = $this->TagConnection->find('count', ['conditions' => ['approved' => 0]]);
 		$tagNamesTotal = $this->Tag->find('count', ['conditions' => ['approved' => 0]]);
 
-		// Fetch paginated data
-		$tagConnections = $this->TagConnection->find('all', [
-			'conditions' => ['approved' => 0],
-			'limit' => $perPage,
-			'offset' => $tagsOffset,
-			'order' => 'created DESC'
-		]);
 		$tags = $this->Tag->find('all', [
 			'conditions' => ['approved' => 0],
 			'limit' => $perPage,
 			'offset' => $tagNamesOffset,
 			'order' => 'created DESC'
 		]);
+
 		$tagsByKey = $this->Tag->find('all');
 		$tKeys = [];
 		$tagsByKeyCount = count($tagsByKey);
@@ -870,19 +832,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$tsIds = [];
 		$tagTsumegos = [];
-		$tagsCount = count($tagConnections);
-		for ($i = 0; $i < $tagsCount; $i++)
-		{
-			$at = $this->Tsumego->find('first', ['conditions' => ['id' => $tagConnections[$i]['TagConnection']['tsumego_id']]]);
-			array_push($tsIds, $at['Tsumego']['id']);
-			array_push($tagTsumegos, $at);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $at['Tsumego']['id']]]);
-			$as = $this->Set->find('first', ['conditions' => ['id' => $scT['SetConnection']['set_id']]]);
-			$au = $this->User->findById($tagConnections[$i]['TagConnection']['user_id']);
-			$tagConnections[$i]['TagConnection']['name'] = $tKeys[$tagConnections[$i]['TagConnection']['tag_id']];
-			$tagConnections[$i]['TagConnection']['tsumego'] = $as['Set']['title'] . ' - ' . $at['Tsumego']['num'];
-			$tagConnections[$i]['TagConnection']['user'] = $this->checkPicture($au);
-		}
+
 		$tagNamesCount = count($tags);
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
@@ -918,7 +868,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			'contain' => ['AdminActivityType']
 		]);
 		$aa2 = [];
-		$b1 = [];
 
 		// Separate arrays for activities and comments
 		$adminActivities = [];
@@ -1025,18 +974,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('aa2', $aa2);
 		$this->set('adminActivities', $adminActivities);
 		$this->set('adminComments', $adminComments);
-		$this->set('tags', $tagConnections);
 		$this->set('tagNames', $tags);
 		$this->set('tagTsumegos', $tagTsumegos);
 
 		// Pagination data
-		$this->set('tagsPage', $tagsPage);
-		$this->set('tagsTotal', $tagsTotal);
-		$this->set('tagsPagesTotal', ceil($tagsTotal / $perPage));
 		$this->set('tagNamesPage', $tagNamesPage);
 		$this->set('tagNamesTotal', $tagNamesTotal);
 		$this->set('tagNamesPagesTotal', ceil($tagNamesTotal / $perPage));
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
 		$this->set('activityPage', $activityPage);
 		$this->set('activityTotal', $activityTotal);
 		$this->set('activityPagesTotal', ceil($activityTotal / $perPage));
@@ -2223,7 +2169,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToApprove['accepted'] != 0)
 		{
 			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
-			return;
+			return $this->redirect('/users/adminstats');
 		}
 		$proposalToApprove['accepted'] = 1;
 		ClassRegistry::init('Sgf')->save($proposalToApprove);
@@ -2251,7 +2197,7 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToReject['accepted'] != 0)
 		{
 			CookieFlash::set('Sgf proposal was already accepted.', 'fail');
-			return;
+			return $this->redirect('/users/adminstats');;
 		}
 
 		$reject = [];
@@ -2263,6 +2209,66 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
 
 		CookieFlash::set('Sgf proposal rejected', 'success');
+		return $this->redirect('/users/adminstats');
+	}
+
+	public function acceptTagConnectionProposal($tagConnectionID)
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/sets');
+
+		$proposalToApprove = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
+		if (!$proposalToApprove)
+		{
+			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$proposalToApprove = $proposalToApprove['TagConnection'];
+		if ($proposalToApprove['approved'] != 0)
+		{
+			CookieFlash::set('Tag proposal was already accepted.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+		$proposalToApprove['approved'] = 1;
+		ClassRegistry::init('TagConnection')->save($proposalToApprove);
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		AppController::handleContribution($proposalToApprove['user_id'], 'added_tag');
+		return $this->redirect('/users/adminstats');
+	}
+
+	public function rejectTagConnectionProposal($tagConnectionID)
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/sets');
+
+		$proposalToReject = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
+		if (!$proposalToReject)
+		{
+			CookieFlash::set('Tag proposal doesn\'t exist.', 'fail');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$proposalToReject = $proposalToReject['TagConnection'];
+
+		if ($proposalToReject['approved'] != 0)
+		{
+			CookieFlash::set('Tag proposal was already accepted.', 'fail');
+			return $this->redirect('/users/adminstats');;
+		}
+
+		$reject = [];
+		$reject['user_id'] = $proposalToReject['user_id'];
+		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
+		$reject['type'] = 'tag';
+		$tagNameId = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id']);
+		$reject['type'] = $tagNameId['Tag']['name'];
+
+		ClassRegistry::init('Reject')->create();
+		ClassRegistry::init('Reject')->save($reject);
+		ClassRegistry::init('TagConnection')->delete($proposalToReject['id']);
+
+		CookieFlash::set('Tag proposal rejected', 'success');
 		return $this->redirect('/users/adminstats');
 	}
 }

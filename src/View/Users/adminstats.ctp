@@ -83,36 +83,7 @@
 			}
 			echo '</table><hr>';
 		}
-		if($tags!=null){
-			echo '<h3 style="margin:15px 0;">New Tags (' . $tagsTotal . ')</h3>';
-			echo $this->Pagination->render($tagsPage, $tagsPagesTotal, 'tags_page');
-			echo '<table border="0">';
-			for($i=0; $i<count($tags); $i++){
-				echo '<tr>';
-					echo '<td>'.$i.'</td><td class="adminpanel-table-text">'.$tags[$i]['TagConnection']['user'].' added a tag for <a class="adminpanel-link" href="/tsumegos/play/'
-					.$tags[$i]['TagConnection']['tsumego_id'].'?search=topics">'.$tags[$i]['TagConnection']['tsumego'].'</a>: <a class="adminpanel-link" href="/tag_names/view/'
-					.$tags[$i]['TagConnection']['tag_id'].'">'.$tags[$i]['TagConnection']['name'].'</a></td>';
-					if($tagTsumegos[$i]['Tsumego']['status']=='')
-						$tagTsumegos[$i]['Tsumego']['status'] = 'N';
-					echo '<td><li class="set'.$tagTsumegos[$i]['Tsumego']['status'].'1">
-						<a id="tooltip-hover'.$i.'" class="tooltip" href="/tsumegos/play/'.$tagTsumegos[$i]['Tsumego']['id'].'?search=topics">'.$tagTsumegos[$i]['Tsumego']['num'].'
-						<span><div id="tooltipSvg'.$i.'"></div></span></a>
-					</li></td>';
-					echo '<td>';
-					if(Auth::getUserID() != $tags[$i]['TagConnection']['user_id']){
-						echo '<a class="new-button-default2" id="tag-accept'.$i.'">Accept</a>
-						<a class="new-button-default2" id="tag-reject'.$i.'">Reject</a>
-						<a class="new-button-default2 tag-submit-button" id="tag-submit'.$i.'" href="/users/adminstats?accept=true&tag_id='
-						.$tags[$i]['TagConnection']['id'].'&hash='.md5(Auth::getUserID()).'">Submit</a>';
-					}
-					echo '</td>';
-					echo '<td style="font-size:13px">'.$tags[$i]['TagConnection']['created'].'</td>';
-				echo '</tr>';
-			}
-			echo '</table>';
-			echo $this->Pagination->render($tagsPage, $tagsPagesTotal, 'tags_page');
-			echo '<br><br><br><br><br>';
-		}
+		$tagConnectionProposalsRenderer->render();
 
 	echo '</div>';
 	echo '<div style="clear:both;"></div>';
@@ -128,26 +99,6 @@
 	<?php if($refreshView) echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";'; ?>
 
 	<?php
-		for($h=0; $h<count($tags); $h++){
-			echo '$("#tag-accept'.$h.'").click(function() {
-				$("#tag-submit'.$h.'").show();
-				$("#tag-accept'.$h.'").hide();
-				$("#tag-reject'.$h.'").hide();
-				tagList = tagList + "-" + "a'.$tags[$h]['TagConnection']['id'].'";
-				setCookie("tagList", tagList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-			echo '$("#tag-reject'.$h.'").click(function() {
-				$("#tag-submit'.$h.'").show();
-				$("#tag-accept'.$h.'").hide();
-				$("#tag-reject'.$h.'").hide();
-				tagList = tagList + "-" + "r'.$tags[$h]['TagConnection']['id'].'";
-				setCookie("tagList", tagList);
-				submitCount++;
-				$(".tag-submit-button").html("Submit ("+submitCount+")");
-			});';
-		}
 		for($h=0; $h<count($tagNames); $h++){
 			echo '$("#tagname-accept'.$h.'").click(function() {
 				$("#tagname-submit'.$h.'").show();
