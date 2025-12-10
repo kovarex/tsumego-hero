@@ -238,6 +238,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 				// Duplicate management (17-18) - reference other tsumego in old_value
 				['type' => AdminActivityType::DUPLICATE_REMOVE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 				['type' => AdminActivityType::DUPLICATE_GROUP_CREATE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+
+				// tag proposals
+				['type' => AdminActivityType::ACCEPT_TAG, 'tsumego_id' => true, 'new_value' => 'snapback'],
+				['type' => AdminActivityType::REJECT_TAG, 'tsumego_id' => true, 'old_value' => 'atari'],
 			]
 		]);
 
@@ -298,6 +302,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 		// Set-wide settings (toggles)
 		$this->assertTextContains('Set Alternative Response → enabled', $pageSource);
 		$this->assertTextContains('Set Pass Mode → enabled', $pageSource);
+
+		$this->assertTextContains('Accepted tag snapback', $pageSource);
+		$this->assertTextContains('Rejected tag atari', $pageSource);
 	}
 
 	public function testProposeSGF()
@@ -406,6 +413,13 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('New Tags (0)', $browser->find('#tagConnectionProposalsHeader')->getText());
 		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
+
+		// tag approval is saved in admin activities
+		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$this->assertCount(1, $adminActivities);
+		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::ACCEPT_TAG);
+		$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['new_value']);
 	}
 
 	public function testRejectTagProposal()
@@ -429,5 +443,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// the tag is deleted
 		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id']));
+
+		// tag reject is saved in admin activities
+		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$this->assertCount(1, $adminActivities);
+		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::REJECT_TAG);
+		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
 	}
 }

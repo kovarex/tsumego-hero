@@ -566,7 +566,9 @@ class ContextPreparator
 			AdminActivityType::AUTHOR_EDIT => 'Author Edit',
 			AdminActivityType::RATING_EDIT => 'Rating Edit',
 			AdminActivityType::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
-			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit'];
+			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
+			AdminActivityType::ACCEPT_TAG => 'Accept Tag',
+			AdminActivityType::REJECT_TAG => 'Reject Tag'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

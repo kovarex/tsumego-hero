@@ -6,42 +6,24 @@
 		echo '<h3>Admin Activity (' . $activityTotal . ')</h3>';
 		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');
 		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
-		$iCounter = 1;
-		for ($i = 0; $i < count($adminActivities['tsumego_id']); $i++)
+		foreach ($adminActivities as $index => $adminActivity)
 		{
 			// Format date without seconds
-			$timestamp = strtotime($adminActivities['created'][$i]);
+			$timestamp = strtotime($adminActivity['created']);
 			$dateFormatted = date('Y-m-d H:i', $timestamp);
 
-			// Build formatted message from type and old_value/new_value
-			$contentMessage = $adminActivities['type'][$i]; // Start with type name
-			if (!empty($adminActivities['old_value'][$i]) && !empty($adminActivities['new_value'][$i]))
-			{
-				// Show old → new for edits
-				$contentMessage .= ': ' . h($adminActivities['old_value'][$i]) . ' → ' . h($adminActivities['new_value'][$i]);
-			}
-			elseif (!empty($adminActivities['new_value'][$i]))
-			{
-				if ($adminActivities['new_value'][$i] === '1')
-					$contentMessage .= ' → enabled';
-				elseif ($adminActivities['new_value'][$i] === '0')
-					$contentMessage .= ' → disabled';
-				else
-					$contentMessage .= '[Empty]  → ' . $adminActivities['new_value'][$i];
-			}
 
 			echo '<tr style="border-bottom:1px solid #e0e0e0;">
-				<td>'.($iCounter).'</td>
+				<td>' . ($index + 1 + 100 * ($activityPage - 1)) . '</td>
 				<td>
-					<a href="/tsumegos/play/'.$adminActivities['tsumego_id'][$i].'?search=topics">'.$adminActivities['tsumego'][$i].'</a>
-					<div style="color:#666; margin-top:5px;">'.$contentMessage.'</div>
+					<a href="/tsumegos/play/' . $adminActivity['tsumego_id'] . '?search=topics">' . $adminActivity['tsumego'].'</a>
+					<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($adminActivity) . '</div>
 				</td>
 				<td>
 					<div>'.$dateFormatted.'</div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">'.$adminActivities['name'][$i].'</div>
+					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . $adminActivity['name'] . '</div>
 				</td>
 			</tr>';
-			$iCounter++;
 		}
 		echo '</table>';
 		echo $this->Pagination->render($activityPage, $activityPagesTotal, 'activity_page');

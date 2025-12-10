@@ -871,13 +871,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		// Separate arrays for activities and comments
 		$adminActivities = [];
-		$adminActivities['tsumego_id'] = [];
-		$adminActivities['tsumego'] = [];
-		$adminActivities['created'] = [];
-		$adminActivities['name'] = [];
-		$adminActivities['type'] = [];
-		$adminActivities['old_value'] = [];
-		$adminActivities['new_value'] = [];
 
 		$adminComments = [];
 		$adminComments['tsumego_id'] = [];
@@ -919,13 +912,10 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$readableType = $aa[$i]['AdminActivityType']['name'];
 
 			array_push($aa2, $aa[$i]);
-			array_push($adminActivities['tsumego_id'], $aa[$i]['AdminActivity']['tsumego_id']);
-			array_push($adminActivities['tsumego'], $aa[$i]['AdminActivity']['tsumego']);
-			array_push($adminActivities['created'], $aa[$i]['AdminActivity']['created']);
-			array_push($adminActivities['name'], $aa[$i]['AdminActivity']['name']);
-			array_push($adminActivities['type'], $readableType);
-			array_push($adminActivities['old_value'], $aa[$i]['AdminActivity']['old_value']);
-			array_push($adminActivities['new_value'], $aa[$i]['AdminActivity']['new_value']);
+
+			$toInsert = $aa[$i]['AdminActivity'];
+			$toInsert['readable_type'] = $readableType;
+			$adminActivities[] = $toInsert;
 		}
 
 		// Get total count of admin comments
@@ -2231,6 +2221,9 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/users/adminstats');
 		}
 		$proposalToApprove['approved'] = 1;
+
+		$tag = ClassRegistry::init('Tag')->findById($proposalToApprove['tag_id'])['Tag'];
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_TAG, $proposalToApprove['tsumego_id'], null, null, $tag['name']);
 		ClassRegistry::init('TagConnection')->save($proposalToApprove);
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 		AppController::handleContribution($proposalToApprove['user_id'], 'added_tag');
@@ -2254,15 +2247,18 @@ OFFSET " . $offset, [$userID, $userID]);
 		if ($proposalToReject['approved'] != 0)
 		{
 			CookieFlash::set('Tag proposal was already accepted.', 'fail');
-			return $this->redirect('/users/adminstats');;
+			return $this->redirect('/users/adminstats');
 		}
 
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
 		$reject['type'] = 'tag';
-		$tagNameId = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id']);
-		$reject['type'] = $tagNameId['Tag']['name'];
+		$tagName = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
+		$reject['type'] = $tagName['name'];
+
+		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
+		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);

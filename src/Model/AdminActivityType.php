@@ -41,4 +41,8 @@ class AdminActivityType extends AppModel
 	// Duplicate Management
 	public const DUPLICATE_REMOVE = 17;
 	public const DUPLICATE_GROUP_CREATE = 18;
+
+	// Tags
+	public const ACCEPT_TAG = 23;
+	public const REJECT_TAG = 24;
 }
