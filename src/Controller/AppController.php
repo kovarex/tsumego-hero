@@ -2024,155 +2024,21 @@ class AppController extends Controller
 		}
 		$boardNames = [];
 		$enabledBoards = [];
-		$boardPositions = [];
-
-		$boardNames[1] = 'Pine';
-		$boardNames[2] = 'Ash';
-		$boardNames[3] = 'Maple';
-		$boardNames[4] = 'Shin Kaya';
-		$boardNames[5] = 'Birch';
-		$boardNames[6] = 'Wenge';
-		$boardNames[7] = 'Walnut';
-		$boardNames[8] = 'Mahogany';
-		$boardNames[9] = 'Blackwood';
-		$boardNames[10] = 'Marble 1';
-		$boardNames[11] = 'Marble 2';
-		$boardNames[12] = 'Marble 3';
-		$boardNames[13] = 'Tibet Spruce';
-		$boardNames[14] = 'Marble 4';
-		$boardNames[15] = 'Marble 5';
-		$boardNames[16] = 'Quarry 1';
-		$boardNames[17] = 'Flowers';
-		$boardNames[18] = 'Nova';
-		$boardNames[19] = 'Spring';
-		$boardNames[20] = 'Moon';
-		$boardNames[21] = 'Apex';
-		$boardNames[22] = 'Gold 1';
-		$boardNames[23] = 'Amber';
-		$boardNames[24] = 'Marble 6';
-		$boardNames[25] = 'Marble 7';
-		$boardNames[26] = 'Marble 8';
-		$boardNames[27] = 'Marble 9';
-		$boardNames[28] = 'Marble 10';
-		$boardNames[29] = 'Jade';
-		$boardNames[30] = 'Quarry 2';
-		$boardNames[31] = 'Black Bricks';
-		$boardNames[32] = 'Wallpaper 1';
-		$boardNames[33] = 'Wallpaper 2';
-		$boardNames[34] = 'Gold & Gray';
-		$boardNames[35] = 'Gold & Pink';
-		$boardNames[36] = 'Veil';
-		$boardNames[37] = 'Tiles';
-		$boardNames[38] = 'Mars';
-		$boardNames[39] = 'Pink Cloud';
-		$boardNames[40] = 'Reptile';
-		$boardNames[41] = 'Mezmerizing';
-		$boardNames[42] = 'Magenta Sky';
-		$boardNames[43] = 'Tsumego Hero';
-		$boardNames[44] = 'Pretty';
-		$boardNames[45] = 'Hunting';
-		$boardNames[46] = 'Haunted';
-		$boardNames[47] = 'Carnage';
-		$boardNames[48] = 'Blind Spot';
-		$boardNames[49] = 'Giants';
-		$boardNames[50] = 'Gems';
-		$boardNames[51] = 'Grandmaster';
-		$boardPositions[1] = [1, 'texture1', 'black34.png', 'white34.png'];
-		$boardPositions[2] = [2, 'texture2', 'black34.png', 'white34.png'];
-		$boardPositions[3] = [3, 'texture3', 'black34.png', 'white34.png'];
-		$boardPositions[4] = [4, 'texture4', 'black.png', 'white.png'];
-		$boardPositions[5] = [5, 'texture5', 'black34.png', 'white34.png'];
-		$boardPositions[6] = [6, 'texture6', 'black.png', 'white.png'];
-		$boardPositions[7] = [7, 'texture7', 'black34.png', 'white34.png'];
-		$boardPositions[8] = [8, 'texture8', 'black.png', 'white.png'];
-		$boardPositions[9] = [9, 'texture9', 'black.png', 'white.png'];
-		$boardPositions[10] = [10, 'texture10', 'black34.png', 'white34.png'];
-		$boardPositions[11] = [11, 'texture11', 'black34.png', 'white34.png'];
-		$boardPositions[12] = [12, 'texture12', 'black34.png', 'white34.png'];
-		$boardPositions[13] = [13, 'texture13', 'black34.png', 'white34.png'];
-		$boardPositions[14] = [14, 'texture14', 'black34.png', 'white34.png'];
-		$boardPositions[15] = [15, 'texture15', 'black.png', 'white.png'];
-		$boardPositions[16] = [16, 'texture16', 'black34.png', 'white34.png'];
-		$boardPositions[17] = [17, 'texture17', 'black34.png', 'white34.png'];
-		$boardPositions[18] = [18, 'texture18', 'black.png', 'white.png'];
-		$boardPositions[19] = [19, 'texture19', 'black34.png', 'white34.png'];
-		$boardPositions[20] = [20, 'texture20', 'black34.png', 'white34.png'];
-		$boardPositions[21] = [33, 'texture33', 'black34.png', 'white34.png'];
-		$boardPositions[22] = [21, 'texture21', 'black.png', 'whiteKo.png'];
-		$boardPositions[23] = [22, 'texture22', 'black34.png', 'white34.png'];
-		$boardPositions[24] = [34, 'texture34', 'black.png', 'white.png'];
-		$boardPositions[25] = [35, 'texture35', 'black34.png', 'white34.png'];
-		$boardPositions[26] = [36, 'texture36', 'black.png', 'white.png'];
-		$boardPositions[27] = [37, 'texture37', 'black34.png', 'white34.png'];
-		$boardPositions[28] = [38, 'texture38', 'black38.png', 'white34.png'];
-		$boardPositions[29] = [39, 'texture39', 'black.png', 'white.png'];
-		$boardPositions[30] = [40, 'texture40', 'black34.png', 'white34.png'];
-		$boardPositions[31] = [41, 'texture41', 'black34.png', 'white34.png'];
-		$boardPositions[32] = [42, 'texture42', 'black34.png', 'white42.png'];
-		$boardPositions[33] = [43, 'texture43', 'black34.png', 'white42.png'];
-		$boardPositions[34] = [44, 'texture44', 'black34.png', 'white34.png'];
-		$boardPositions[35] = [45, 'texture45', 'black34.png', 'white42.png'];
-		$boardPositions[36] = [47, 'texture47', 'black34.png', 'white34.png'];
-		$boardPositions[37] = [48, 'texture48', 'black34.png', 'white34.png'];
-		$boardPositions[38] = [49, 'texture49', 'black.png', 'white.png'];
-		$boardPositions[39] = [50, 'texture50', 'black34.png', 'white34.png'];
-		$boardPositions[40] = [51, 'texture51', 'black34.png', 'white34.png'];
-		$boardPositions[41] = [52, 'texture52', 'black34.png', 'white34.png'];
-		$boardPositions[42] = [53, 'texture53', 'black34.png', 'white34.png'];
-		$boardPositions[43] = [54, 'texture54', 'black54.png', 'white54.png'];
-		$boardPositions[44] = [23, 'texture23', 'black.png', 'whiteFlower.png'];
-		$boardPositions[45] = [24, 'texture24', 'black24.png', 'white24.png'];
-		$boardPositions[46] = [25, 'texture25', 'blackGhost.png', 'white.png'];
-		$boardPositions[47] = [26, 'texture26', 'blackInvis.png', 'whiteCarnage.png'];
-		$boardPositions[48] = [27, 'texture27', 'black27.png', 'white27.png'];
-		$boardPositions[49] = [28, 'texture28', 'blackGiant.png', 'whiteKo.png'];
-		$boardPositions[50] = [29, 'texture29', 'blackKo.png', 'whiteKo.png'];
-		$boardPositions[51] = [30, 'texture55', 'blackGalaxy.png', 'whiteGalaxy.png'];
-
 		$boardCount = 51;
 
-		$bitmask = 0b11111111; // Default: first 8 boards enabled
-
-		if (!empty($_COOKIE['boards_bitmask']) || (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0'))
+		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
-			if (isset($_COOKIE['texture']) && $_COOKIE['texture'] != '0')
+			if (Auth::isLoggedIn())
 			{
-				// Convert cookie string to bitmask
-				$textureCookie = $_COOKIE['texture'];
-				$bitmask = 0;
-				$length = strlen($textureCookie);
-				$limit = min($length, 63);
-				for ($i = 0; $i < $limit; $i++)
-					if ($textureCookie[$i] == '2')
-						$bitmask |= (1 << $i);
-				if (Auth::isLoggedIn())
-					Auth::getUser()['boards_bitmask'] = $bitmask;
-				Util::setCookie('boards_bitmask', $bitmask);
-				// Pass the cookie back to view to maintain JS compatibility for now
-				$this->set('textureCookies', $textureCookie);
+				Auth::getUser()['boards_bitmask'] = BoardSelector::filterValidBits($boardsBitmask);
+				Auth::saveUser();
 			}
-			elseif (Auth::isLoggedIn())
-			{
-				$bitmask = (int) Auth::getUser()['boards_bitmask'];
-				Util::setCookie('boards_bitmask', $bitmask);
-			}
-			elseif (!empty($_COOKIE['boards_bitmask']))
-				$bitmask = (int) $_COOKIE['boards_bitmask'];
 		}
 		else
-		{
-			// Default state if no session/cookie
-			Util::setCookie('boards_bitmask', $bitmask);
-		}
+			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
 
-		// Populate enabledBoards array based on bitmask
-		for ($i = 0; $i < $boardCount; $i++)
-		{
-			if (($bitmask & (1 << $i)) !== 0)
-				$enabledBoards[$i + 1] = 'checked';
-			else
-				$enabledBoards[$i + 1] = '';
-		}
+		$this->set('boardsBitmask', $boardsBitmask);
+
 		$achievementUpdate = [];
 		if (Util::clearCookie('initialLoading'))
 		{
@@ -2202,7 +2068,6 @@ class AppController extends Controller
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
-		$this->set('enabledBoards', $enabledBoards);
 		$this->set('boardPositions', $boardPositions);
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('achievementUpdate', $achievementUpdate);

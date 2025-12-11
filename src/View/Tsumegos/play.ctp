@@ -22,30 +22,30 @@
 <script src="/besogo/js/diffInfo.js"></script>
 <script src="/besogo/js/scaleParameters.js"></script>
 <?php
-	$choice = array();
-	for($i=1;$i<=count($enabledBoards);$i++){
-		if($enabledBoards[$i]=='checked') array_push($choice, $boardPositions[$i]);
-	}
 	$boardSize = 'large';
-	shuffle($choice);
-
-	if($t['Tsumego']['author']=='Stepan')
+	if ($t['Tsumego']['author'] == 'Stepan')
 		$t['Tsumego']['author'] = 'Stepan Trubitsin';
 	$authorx = $t['Tsumego']['author'];
-	if($authorx=='Joschka Zimdars') $authorx = 'd4rkm4tter';
-	else if($authorx=='Jérôme Hubert') $authorx = 'jhubert';
-	else if($authorx=='Stepan Trubitsin') $authorx = 'Stepan';
+	if ($authorx == 'Joschka Zimdars')
+		$authorx = 'd4rkm4tter';
+	else if ($authorx == 'Jérôme Hubert')
+		$authorx = 'jhubert';
+	else if($authorx=='Stepan Trubitsin')
+		$authorx = 'Stepan';
 
-	if($lightDark=='dark'){
+	if ($lightDark == 'dark')
+	{
 		$playGreenColor = '#0cbb0c';
 		$playBlueColor = '#72a7f2';
-	}else{
+	}
+	else
+	{
 		$playGreenColor = 'green';
 		$playBlueColor = 'blue';
 	}
 
 	if(isset($deleteProblem2))
-	echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
+		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if ($isSandbox)
 	{
 		$sandboxComment = '(Sandbox)';
@@ -54,22 +54,10 @@
 	}
 	else $sandboxComment = '';
 
-	if ($t['Tsumego']['premium']==1)
-	{
+	if ($t['Tsumego']['premium'] == 1)
 		if(!Auth::hasPremium() && !Auth::isAdmin())
 			echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
 
-	if($goldenTsumego)
-		$choice[0] = array(46,'texture46','black34.png','white34.png'); //Golden
-	else if($t['Tsumego']['set_id']==11969) $choice[0] = $boardPositions[44]; //Pretty Area
-	else if($t['Tsumego']['set_id']==29156) $choice[0] = $boardPositions[45]; //Hunting
-	else if($t['Tsumego']['set_id']==31813) $choice[0] = $boardPositions[46]; //The Ghost
-	else if($t['Tsumego']['set_id']==33007) $choice[0] = $boardPositions[47]; //Carnage
-	else if($t['Tsumego']['set_id']==71790) $choice[0] = $boardPositions[48]; //Blind Spot
-	else if($t['Tsumego']['set_id']==74761) $choice[0] = $boardPositions[49]; //Giants
-	else if($t['Tsumego']['set_id']==81578) $choice[0] = $boardPositions[50]; //Moves of Resistance
-	else if($t['Tsumego']['set_id']==88156) $choice[0] = $boardPositions[50]; //Hand of God
 	$lv = $_COOKIE['lastVisit'] ?? '15352';
 	$a1 = '';
 	$b1 = '';
@@ -84,21 +72,23 @@
 		$pl = 0;
 	else if($colorOrientation=='white')
 		$pl = 1;
-	else if($tv!=null){
+	else if ($tv != null)
 		$pl = 0;
-	}else{
+	else
+	{
 		$pl = rand(0,1);
 		$plRand = true;
 	}
-if (
-	$checkBSize != 19 || $t['Tsumego']['set_id'] == 239
-	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253
-)
+if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
+	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253)
 		$pl=0;
-	if($pl==0){
+	if($pl==0)
+	{
 		$playerColor[0] = 'BLACK';
 		$playerColor[1] = 'WHITE';
-	}else{
+	}
+	else
+	{
 		$playerColor[0] = 'WHITE';
 		$playerColor[1] = 'BLACK';
 	}
@@ -107,14 +97,15 @@ if (
 	else
 		$descriptionColor = 'White ';
 
-	if($startingPlayer==1 && $plRand==true){
+	if($startingPlayer==1 && $plRand==true)
+	{
 		if($descriptionColor=='Black ')
 			$descriptionColor = 'White ';
 		else if($descriptionColor=='White ')
 			$descriptionColor = 'Black ';
 	}
 	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
-	if($nothingInRange!=false)
+	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
 	<table width="100%" border="0">
@@ -132,8 +123,8 @@ if (
 				{
 					$h = $health+$i;
 					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
-	}
-	}
+				}
+			}
 			?>
 		</div>
 	</td>
@@ -1932,12 +1923,9 @@ if (
 		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
 		options.corner = shuffledCornerArray[0];
 		options.playerColor = besogoPlayerColor;
-			options.rootPath = '/besogo/';
-		<?php
-		if(!isset($choice[0][1])) $choice[0][1] = 'texture4';
-		?>
-		options.theme = '<?php echo $choice[0][1]; ?>';
-		options.themeParameters = ['<?php echo $choice[0][2]; ?>', '<?php echo $choice[0][3]; ?>'];
+		options.rootPath = '/besogo/';
+		options.theme = '<?php echo $boardSelection['texture']; ?>';
+		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
 		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";

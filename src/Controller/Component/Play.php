@@ -487,6 +487,8 @@ class Play
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
+		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
+		($this->setFunction)('boardSelection', BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set['Set']['board_theme_index']));
 		($this->setFunction)('fullHeart', $fullHeart);
 		($this->setFunction)('emptyHeart', $emptyHeart);
 		($this->setFunction)('libertyCount', $t['Tsumego']['libertyCount']);
