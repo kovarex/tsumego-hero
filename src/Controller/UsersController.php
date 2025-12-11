@@ -324,111 +324,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @param string|int|null $p Page parameter
-	 * @return void
-	 */
-	public function stats($p = null)
-	{
-		$this->set('_page', 'user');
-		$this->set('_title', 'PAGE STATS');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Comment');
-		$this->loadModel('User');
-		$this->loadModel('DayRecord');
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('AdminActivity');
-		$this->loadModel('SetConnection');
-
-		$today = date('Y-m-d', strtotime('today'));
-
-		if (isset($this->params['url']['c']))
-		{
-			$cx = $this->Comment->findById($this->params['url']['c']);
-			$cx['Comment']['status'] = $this->params['url']['s'];
-			$this->Comment->save($cx);
-		}
-
-		$comments = $this->Comment->find('all', ['order' => 'created DESC']);
-		$c1 = [];
-		$c2 = [];
-		$c3 = [];
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-			if (is_numeric($comments[$i]['Comment']['status']))
-				if ($comments[$i]['Comment']['status'] == 0)
-					array_push($c1, $comments[$i]);
-		$comments = $c1;
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			if ($s['Set']['public'] == 1)
-				array_push($c2, $comments[$i]);
-			else
-				array_push($c3, $comments[$i]);
-		}
-		if ($p == 'public')
-			$comments = $c2;
-		elseif ($p == 'sandbox')
-			$comments = $c3;
-		elseif ($p != 0 && is_numeric($p))
-			$comments = $this->Comment->find('all', ['order' => 'created DESC', 'conditions' => ['user_id' => $p]]);
-
-		$todaysUsers = [];
-		$activity = $this->User->find('all', ['order' => ['User.reuse3 DESC']]);
-
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$userID = $comments[$i]['Comment']['user_id'];
-			$activityCount = count($activity);
-			for ($j = 0; $j < $activityCount; $j++)
-				if ($activity[$j]['User']['id'] == $userID)
-				{
-					$comments[$i]['Comment']['user_id'] = $activity[$j]['User']['id'];
-					$comments[$i]['Comment']['user_name'] = $activity[$j]['User']['name'];
-					$comments[$i]['Comment']['email'] = $activity[$j]['User']['email'];
-					$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
-					$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-					$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-					$set = $this->Set->findById($t['Tsumego']['set_id']);
-					$comments[$i]['Comment']['set'] = $set['Set']['title'];
-					$comments[$i]['Comment']['set2'] = $set['Set']['title2'];
-					$comments[$i]['Comment']['num'] = $t['Tsumego']['num'];
-				}
-		}
-		$comments2 = [];
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-			if (is_numeric($comments[$i]['Comment']['status']))
-				if ($comments[$i]['Comment']['status'] == 0)
-					array_push($comments2, $comments[$i]);
-		$comments = $comments2;
-
-		$activityCount = count($activity);
-		for ($i = 0; $i < $activityCount; $i++)
-		{
-			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today)
-				array_push($todaysUsers, $activity[$i]['User']);
-		}
-
-		$aa = $this->AdminActivity->find('all', ['limit' => 100, 'order' => 'created DESC', 'conditions' => ['user_id' => 2781]]);
-
-		$this->set('c1', count($c1));
-		$this->set('c2', count($c2));
-		$this->set('c3', count($c3));
-		$this->set('page', $p);
-		$this->set('u', $todaysUsers);
-		$this->set('comments', $comments);
-		$this->set('aa', $aa);
-	}
-
-	/**
 	 * @return void
 	 */
 	public function duplicates()
@@ -442,7 +337,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('SetConnection');
 		$this->loadModel('Sgf');
 		$this->loadModel('Duplicate');
-		$this->loadModel('Comment');
 
 		$idMap = [];
 		$idMap2 = [];
@@ -538,18 +432,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$newD['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 					if ($newD['Tsumego']['id'] == $this->params['url']['main'])
 					{
-						$newDmain = $newD;
 						$newD['Tsumego']['duplicate'] = $this->params['url']['main'];
 						$this->Tsumego->save($newD);
 					}
 					else
-					{
-						$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
-						$commentsCount = count($comments);
-						for ($j = 0; $j < $commentsCount; $j++)
-							$this->Comment->delete($comments[$j]['Comment']['id']);
 						$this->Tsumego->delete($newD['Tsumego']['id']);
-					}
 					$this->SetConnection->delete($scT['SetConnection']['id']);
 					$setC = [];
 					$setC['SetConnection']['tsumego_id'] = $this->params['url']['main'];
@@ -584,10 +471,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$scTx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
 				$scTx['SetConnection']['tsumego_id'] = $this->data['Mark2']['group_id'];
 				$this->SetConnection->save($scTx);
-				$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
-				$commentsCount = count($comments);
-				for ($j = 0; $j < $commentsCount; $j++)
-					$this->Comment->delete($comments[$j]['Comment']['id']);
 				$this->Tsumego->delete($mark['Tsumego']['id']);
 			}
 		}
@@ -1589,7 +1472,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 */
 	public function authors()
 	{
-		$this->loadModel('Comment');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
@@ -1732,20 +1614,6 @@ Joschka Zimdars';
 		Auth::logout();
 	}
 
-	public function delete($id)
-	{
-		$this->loadModel('Comment');
-		if ($this->request->is('get'))
-			throw new MethodNotAllowedException();
-
-		if ($this->Comment->delete($id))
-			CookieFlash::set(__('The post with id: %s has been deleted.', h($id)), 'success');
-		else
-			CookieFlash::set(__('The post with id: %s could not be deleted.', h($id)), 'error');
-
-		return $this->redirect(['action' => '/stats']);
-	}
-
 	private function validateLogin($data, $user): bool
 	{
 		if (!$user)
@@ -1814,89 +1682,6 @@ Joschka Zimdars';
 				);
 		}
 		return $this->redirect($redirect);
-	}
-
-	/**
-	 * @return void
-	 */
-	public function overview1()
-	{
-		$this->loadModel('Set');
-		$this->loadModel('Tsumego');
-		$this->loadModel('Comment');
-
-		$test = $this->Comment->find('all', [
-			'order' => 'created DESC',
-			'conditions' => [
-				'status' => 0,
-			],
-		]);
-
-		$comments = $this->Comment->find('all', [
-			'order' => 'created DESC',
-			'conditions' => [
-				[
-					['NOT' => ['user_id' => 0]],
-					['NOT' => ['status' => 99]],
-				],
-			],
-		]);
-		$comments2 = [];
-		$monthBack = date('Y-m-d', strtotime('-10 years'));
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$u = $this->User->findById($comments[$i]['Comment']['user_id']);
-			$comments[$i]['Comment']['user'] = $u['User']['name'];
-			$t = $this->Tsumego->findById($comments[$i]['Comment']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$comments[$i]['Comment']['tsumego'] = $s['Set']['title'] . ' ' . $t['Tsumego']['num'];
-
-			$date = new DateTime($comments[$i]['Comment']['created']);
-
-			$comments[$i]['Comment']['created2'] = $date->format('Y-m-d');
-
-			if ($comments[$i]['Comment']['created2'] > $monthBack && $comments[$i]['Comment']['user_id'] != 0)
-				array_push($comments2, $comments[$i]);
-		}
-		$comments = $comments2;
-
-		$users = [];
-		$adminIds = [];
-
-		$commentsCount = count($comments);
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			array_push($users, $comments[$i]['Comment']['user']);
-			array_push($adminIds, $comments[$i]['Comment']['admin_id']);
-		}
-		$adminIds = array_count_values($adminIds);
-
-		$users = array_count_values($users);
-		$uValue = [];
-		$uName = [];
-		foreach ($users as $key => $value)
-		{
-			array_push($uValue, $value);
-			array_push($uName, $key);
-		}
-		array_multisort($uValue, $uName);
-
-		$u2 = [];
-		$u2['name'] = [];
-		$u2['value'] = [];
-		$uNameCount = count($uName);
-		for ($i = $uNameCount - 1; $i >= 0; $i--)
-		{
-			array_push($u2['name'], $uName[$i]);
-			array_push($u2['value'], $uValue[$i]);
-		}
-		$this->set('users', $users);
-		$this->set('u2', $u2);
-		$this->set('comments', $comments);
 	}
 
 	/**

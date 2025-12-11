@@ -162,9 +162,7 @@ class SetsController extends AppController
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Comment');
 		$this->loadModel('Favorite');
-		$this->loadModel('Comment');
 		$this->loadModel('SetConnection');
 
 		$this->set('_page', 'sandbox');

@@ -1638,6 +1638,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$fn1++;
 		?>
 
+	function addTimeForMovePlayed(multiplier = 1)
+	{
+		let timeToAdd = <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
+		tcount += timeToAdd;
+		seconds -= timeToAdd;
+	}
+
 	function displayResult(result)
 	{
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
@@ -1840,10 +1847,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.nokeys = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
-		if (mode!=3)
-			options.alternativeResponse = true;
-		else
-			options.alternativeResponse = false;
+		options.alternativeResponse = true;
 		<?php
 		if ($alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
@@ -1946,6 +1950,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.reviewEnabled = true;
 	besogo.create(div, options);
 	besogo.editor.setAutoPlay(true);
+	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
 	besogo.editor.registerShowComment(function(commentText)
 		{

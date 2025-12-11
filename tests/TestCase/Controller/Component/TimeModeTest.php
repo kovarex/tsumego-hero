@@ -619,4 +619,33 @@ class TimeModeTest extends TestCaseWithAuth
 		$statusOfNoTimeProblemPlay = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]]);
 		$this->assertSame($statusOfNoTimeProblemPlay['TsumegoStatus']['status'], 'S');
 	}
+
+	public function testTimeModeTimeAddedForEachMovePlayed()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['other-tsumegos'] = [];
+		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+			$contextParameters['other-tsumegos'] [] = ['sgf' => $sgf, 'sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		Auth::init();
+		$this->assertTrue(Auth::isInTimeMode());
+
+		usleep(100 * 1000);
+		$browser->assertNoJsErrors();
+		$beforePlayResult = $this->getTimeModeReportedTime($browser);
+		$beforePlayResultSeconds = $beforePlayResult['seconds'] + $beforePlayResult['minutes'] * 60;
+		$browser->clickBoard(4, 4);
+		$afterPlayResult = $this->getTimeModeReportedTime($browser);
+		$afterPlayResultSeconds = $afterPlayResult['seconds'] + $afterPlayResult['minutes'];
+		$this->assertGreaterThan($afterPlayResultSeconds, $beforePlayResultSeconds);
+	}
 }

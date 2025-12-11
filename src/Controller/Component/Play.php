@@ -100,12 +100,7 @@ class Play
 		if (Auth::isLoggedIn())
 			if (!empty($data))
 			{
-				if (isset($data['Comment']['status']) && !isset($data['Study2']))
-				{
-					$statusCode = (int) $data['Comment']['status'];
-					ClassRegistry::init('Comment')->save($data, true);
-				}
-				elseif (isset($data['Study']))
+				if (isset($data['Study']))
 				{
 					$tsumegoVariant['TsumegoVariant']['answer1'] = $data['Study']['study1'];
 					$tsumegoVariant['TsumegoVariant']['answer2'] = $data['Study']['study2'];
@@ -184,70 +179,12 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-				elseif ($data['Comment']['user_id'] != 33)
-				{
-					ClassRegistry::init('Comment')->create();
-					if ($this->checkCommentValid(Auth::getUserID()))
-						ClassRegistry::init('Comment')->save($data, true);
-				}
 				($this->setFunction)('formRedirect', true);
 			}
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
-
-			if (isset($params['url']['deleteComment']))
-			{
-				$deleteComment = ClassRegistry::init('Comment')->findById($params['url']['deleteComment']);
-				if (isset($params['url']['changeComment']))
-				{
-					if ($params['url']['changeComment'] == 1)
-						$deleteComment['Comment']['status'] = 97;
-					elseif ($params['url']['changeComment'] == 2)
-						$deleteComment['Comment']['status'] = 98;
-					elseif ($params['url']['changeComment'] == 3)
-						$deleteComment['Comment']['status'] = 96;
-					elseif ($params['url']['changeComment'] == 4)
-						$deleteComment['Comment']['status'] = 0;
-				}
-				else
-					$deleteComment['Comment']['status'] = 99;
-				ClassRegistry::init('Comment')->save($deleteComment);
-			}
-
-			if (isset($_FILES['game']))
-			{
-				$errors = [];
-				$file_size = $_FILES['game']['size'];
-				$file_tmp = $_FILES['game']['tmp_name'];
-				$array2 = explode('.', $_FILES['game']['name']);
-				$file_ext = strtolower(end($array2));
-				$extensions = ['sgf'];
-				if (in_array($file_ext, $extensions) === false)
-					$errors[] = 'Only SGF files are allowed.';
-				if ($file_size > 2097152)
-					$errors[] = 'The file is too large.';
-				$cox = count(ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
-				if (empty($set['Set']['title2']))
-					$title2 = '';
-				else
-					$title2 = '-';
-				$file_name = $set['Set']['title'] . $title2 . $set['Set']['title2'] . '-' . $currentSetConnection['SetConnection']['num'] . '-' . $cox . '.sgf';
-				$sgfComment = [];
-				ClassRegistry::init('Comment')->create();
-				$sgfComment['user_id'] = Auth::getUserID();
-				$sgfComment['tsumego_id'] = $t['Tsumego']['id'];
-				$file_name = str_replace('#', 'num', $file_name);
-				$sgfComment['message'] = '<a href="/files/ul1/' . $file_name . '">SGF</a>';
-				$sgfComment['created'] = date('Y-m-d H:i:s');
-				ClassRegistry::init('Comment')->save($sgfComment);
-				if (empty($errors) == true)
-				{
-					$uploadfile = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/files/ul1/' . $file_name;
-					move_uploaded_file($file_tmp, $uploadfile);
-				}
-			}
 		}
 
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser())
@@ -610,27 +547,6 @@ class Play
 		$hours += $months;
 
 		return $hours;
-	}
-
-	private function checkCommentValid($uid)
-	{
-		$comments = ClassRegistry::init('Comment')->find('all', ['limit' => 5, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$comments)
-			$comments = [];
-		$limitReachedCounter = 0;
-		$commentsCount = count($comments);
-
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$d = new DateTime($comments[$i]['Comment']['created']);
-			$d = $d->format('Y-m-d');
-			if ($d == date('Y-m-d'))
-				$limitReachedCounter++;
-		}
-		if ($limitReachedCounter >= 50)
-			return false;
-
-		return true;
 	}
 
 	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)

@@ -40,7 +40,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     remainingRequiredNodes = [],
     commentParamList = [],
     displayResult = null,
-    showComment = null;
+    showComment = null,
+    addTimeForMovePlayed = null;
 
   return {
     addListener: addListener,
@@ -85,6 +86,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     isPerformingAutoPlay: isPerformingAutoPlay,
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
+    registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
@@ -496,18 +498,22 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       document.getElementsByTagName("audio")[0].play();
     current = node; // Navigate to child if found
     current.visited = true;
-    if (
-      autoPlay &&
-      !reviewMode &&
-      node.move.color == node.getRoot().firstMove &&
-      node.hasNonLocalChildIncludingVirtual()
-    ) {
-      performingAutoPlay = true;
-      setTimeout(function () {
+	if (autoPlay &&
+    	!reviewMode &&
+		node.move.color == node.getRoot().firstMove &&
+		node.hasNonLocalChildIncludingVirtual())
+	{
+		performingAutoPlay = true;
+		if (addTimeForMovePlayed)
+			addTimeForMovePlayed();
+      setTimeout(function ()
+      {
         // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-        if (!performingAutoPlay) return;
+        if (!performingAutoPlay)
+        	return;
         performingAutoPlay = false;
-        if (!isMutable) return;
+        if (!isMutable)
+        	return;
 
         let selectOpponentMove = 0;
         {
@@ -518,7 +524,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
         }
 
         //if alternative response mode is turned on
-        if (besogo.alternativeResponse) {
+        if (besogo.alternativeResponse)
+        {
           for (let i = 0; i < current.children.length; i++)
             if (i !== selectOpponentMove)
               addToRequired(current.children[i], current);
@@ -776,13 +783,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     return performingAutoPlay;
   }
 
-  function setSoundEnabled(value) {
+  function setSoundEnabled(value)
+  {
     soundEnabled = value;
   }
 
-  function registerDisplayResult(value) {
+  function registerDisplayResult(value)
+  {
     displayResult = value;
   }
+
+	function registerAddTimeForMovePlayed(value)
+	{
+		addTimeForMovePlayed = value;
+	}
 
   function addToRequired(node, cameFrom) {
     if (node.localEdit)
@@ -793,33 +807,33 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     remainingRequiredNodes.push(element);
   }
 
-  function navigateToRemainingRequiredIfNeeded(timer) {
-    // remove visited nodes from the "to-do" list
-    while (
-      remainingRequiredNodes.length > 0 &&
-      remainingRequiredNodes[0].node.visited
-    )
-      remainingRequiredNodes.pop();
-    if (remainingRequiredNodes.length == 0) return false;
-    performingAutoPlay = true;
+	function navigateToRemainingRequiredIfNeeded(timer)
+	{
+		// remove visited nodes from the "to-do" list
+		while (remainingRequiredNodes.length > 0 && remainingRequiredNodes[0].node.visited)
+			remainingRequiredNodes.pop();
+		if (remainingRequiredNodes.length == 0)
+			return false;
+		performingAutoPlay = true;
+		addTimeForMovePlayed(1.5);
 
-    setTimeout(function () {
-      // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-      if (!performingAutoPlay) return;
+		setTimeout(function ()
+		{
+			// when autoplay was cancelled, it was reset in the meantime, so we forget about this
+			if (!performingAutoPlay)
+				return;
 
-      performingAutoPlay = false;
-      let element = remainingRequiredNodes.pop();
+			performingAutoPlay = false;
+			let element = remainingRequiredNodes.pop();
 
-      element.node.cameFrom = element.cameFrom;
-      navigateToNode(element.node);
-      if (showComment)
-        showComment(
-          "Correct, but what about this answer?\n" + element.node.comment
-        );
-    }, timer);
-    notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
-    return true;
-  }
+			element.node.cameFrom = element.cameFrom;
+			navigateToNode(element.node);
+			if (showComment)
+				showComment("Correct, but what about this answer?\n" + element.node.comment);
+		}, timer);
+		notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
+		return true;
+	}
 
   function resetToStart() {
     performingAutoPlay = false;

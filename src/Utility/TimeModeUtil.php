@@ -4,6 +4,7 @@ class TimeModeUtil
 {
 	public static int $PROBLEM_COUNT = 10;
 	public static float $RATIO_OF_SOLVED_TO_SUCCEED = 0.79;
+	public static float $SECONDS_ADDED_PER_MOVE_PLAYED = 3;
 
 	public static int $CATEGORY_BLITZ = 1;
 	public static int $CATEGORY_FAST_SPEED = 2;
