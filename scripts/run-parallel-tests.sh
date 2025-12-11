@@ -1,18 +1,19 @@
 #!/bin/bash
 # Configurable ParaTest wrapper - worker count from TEST_WORKERS env var
 # Usage:
-#   ./scripts/run-parallel-tests.sh          # Uses TEST_WORKERS env var (default 8)
+#   ./scripts/run-parallel-tests.sh          # Uses TEST_WORKERS env var (default 4)
 #   ./scripts/run-parallel-tests.sh 2        # Override to 2 workers (e.g., CI)
 #   TEST_WORKERS=16 ./scripts/run-parallel-tests.sh  # 16 workers via env var
 
-# Get worker count - from first argument or TEST_WORKERS env var (default 8)
+# Get worker count - from first argument or TEST_WORKERS env var (default 4)
+# Default is 4 - conservative value that leaves headroom on the 5 Selenium Chrome nodes
 if [[ -n "$1" && ! "$1" =~ ^- ]]; then
     # First arg is a number (not a flag) - use as override
     WORKER_COUNT="$1"
     shift  # Remove worker count from args
 else
-    # Use TEST_WORKERS env var or default to 8
-    WORKER_COUNT="${TEST_WORKERS:-8}"
+    # Use TEST_WORKERS env var or default to 4
+    WORKER_COUNT="${TEST_WORKERS:-4}"
 fi
 
 echo "Running ParaTest with $WORKER_COUNT workers..."
