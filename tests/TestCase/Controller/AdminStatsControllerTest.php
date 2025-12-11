@@ -38,6 +38,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/adminstats');
 
+		// Wait for page content to load (Chrome is fast, need explicit wait)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
+		$wait->until(function () use ($browser) {
+			return str_contains($browser->driver->getPageSource(), 'Admin Activity');
+		});
+
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Admin Activity', $pageSource);
 		$this->assertTextContains('Description Edit', $pageSource);
@@ -56,7 +62,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('users/adminstats');
 
 		// Should redirect to home page
-		$this->assertStringContainsString('/', $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('/', $browser->getCurrentURL());
 	}
 
 	/**

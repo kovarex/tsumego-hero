@@ -110,6 +110,11 @@ if (!Auth::isAdmin() && !Auth::hasPremium())
 			echo 'animateNumber'.$i.'(0, '.$setsNew[$i]['solved'].', .6);';
 			echo 'function animateNumber'.$i.'(start, end, duration) {
 				const element = document.getElementById("number'.$i.'");
+				if (!element) 
+				{
+					console.warn("Element with ID number" + index + " not found.");
+					return; // Element not found, skip animation
+				}
 				const range = end - start;
 				const increment = range / (duration * 60);
 				const decimalIndex = end.toString().indexOf(".");

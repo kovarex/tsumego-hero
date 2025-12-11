@@ -34,10 +34,10 @@ These changes just had to be done, so the data structure we are working on is cl
 	setup/php-install.sh
 
 ### ddev install
-- Copy .ddev.example/ folder to .ddev/
+- Copy .ddev.example/ folder contents to .ddev/
 
 
-	cp ./ddev.example/* ./ddev/
+	cp -r .ddev.example/* .ddev/
 
 - Modify the php.ini in ./ddev/php/my-php.ini, add your local ipaddress there, which is needed for debugging
 - Then from ROOT of the project run: (project name should be tsumego)
@@ -153,14 +153,30 @@ This creates a file like `20250130123456_add_user_email_column.php`. Edit the mi
 I just implement the method up, as reverse migrations are not realistic or useful now.
 
 ## Code Quality & Testing
-```bash
-composer test        # PHPUnit tests
-composer cs-check   # PHP CodeSniffer
-composer cs-fix     # Auto-fix CS issues
-composer stan       # PHPStan static analysis
 
-### also:
-composer cs-modified # Only run phpcs on modified files
+### Running Tests
+```bash
+# Run all tests (parallel, ~3x faster)
+composer test
+
+# Run specific test file
+ddev exec vendor/bin/phpunit tests/TestCase/Controller/SitesControllerTest.php
+
+# Run specific test method
+ddev exec vendor/bin/phpunit --filter testIndexPageLoadsCorrectly tests/TestCase/Controller/SitesControllerTest.php
+
+# Watch browser tests run (headed mode)
+ddev exec bash -c "HEADED=1 vendor/bin/phpunit tests/TestCase/Utility/CookieFlashBrowserTest.php"
+
+# Watch headless tests via VNC at http://localhost:7901
+
+# Test with coverage report
+composer test-coverage
+
+# Code quality checks
+composer cs-check   # Check code style
+composer cs-fix     # Auto-fix style issues
+composer stan       # Static analysis
 ```
 
 ### Development Commands Quick Reference

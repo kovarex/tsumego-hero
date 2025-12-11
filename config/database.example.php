@@ -66,18 +66,46 @@
  * A key/value array of driver specific connection options.
  */
 class DATABASE_CONFIG {
-	public $default = [
-		'datasource' => 'Database/Mysql',
-		'persistent' => false,
-		'host' => 'template_db_host',
-		'login' => 'template_db_user',
-		'password' => 'template_db_password',
-		'database' => 'db',
-		'prefix' => '',
-		'encoding' => 'utf8',
-	];
+	public $default;
+	public $test;
 
 	public function __construct() {
+		// Initialize default configuration
+		$this->default = [
+			'datasource' => 'Database/Mysql',
+			'persistent' => false,
+			'host' => getenv('DB_HOST') ?: 'db',
+			'login' => getenv('DB_USER') ?: 'db',
+			'password' => getenv('DB_PASS') ?: 'db',
+			'database' => getenv('DB_NAME') ?: 'db',
+			'prefix' => '',
+			'encoding' => 'utf8',
+		];
+
+		// Initialize test configuration
+		$this->test = [
+			'datasource' => 'Database/Mysql',
+			'persistent' => false,
+			'host' => getenv('DB_HOST') ?: 'db',
+			'login' => getenv('DB_USER') ?: 'db',
+			'password' => getenv('DB_PASS') ?: 'db',
+			'database' => 'test',
+			'prefix' => '',
+			'encoding' => 'utf8',
+		];
+
+		// For parallel testing: route to isolated test database based on TEST_TOKEN
+		$testToken = getenv('TEST_TOKEN') ?: ($_ENV['TEST_TOKEN'] ?? null);
+		if ($testToken) {
+			$this->default = $this->test;
+			$this->default['database'] = 'test_' . $testToken;
+			$this->test['database'] = 'test_' . $testToken;
+		}
+		// For sequential PHPUnit tests: use regular test database
+		elseif (getenv('PHPUNIT_RUNNING')) {
+			$this->default = $this->test;
+		}
+		
 		if (Configure::read('debug') > 0) {
 			$this->default['log'] = true;
 
@@ -87,15 +115,4 @@ class DATABASE_CONFIG {
 				$this->default = $this->test;
 		}
 	}
-
-	public $test = [
-		'datasource' => 'Database/Mysql',
-		'persistent' => false,
-		'host' => 'db',
-		'login' => 'db',
-		'password' => 'db',
-		'database' => 'test',
-		'prefix' => '',
-		'encoding' => 'utf8',
-	];
 }
