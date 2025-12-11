@@ -111,7 +111,7 @@ class UsersControllerTest extends ControllerTestCase
 			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
 			$this->assertSame($rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
 			if ($loggedIn)
-				$this->assertSame($rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex');
+				$this->assertSame($rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
 
 		}
 	}
