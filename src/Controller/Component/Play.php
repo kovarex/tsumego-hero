@@ -184,8 +184,7 @@ class Play
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)
-				($this->setFunction)('deleteProblem2', true);
+			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
 		}
 
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser())
