@@ -109,9 +109,9 @@ class UsersControllerTest extends ControllerTestCase
 			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
 			$rows = $table->findElements(WebDriverBy::tagName("tr"));
 			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
-			$this->assertSame('Ivan Detkov', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+			$this->assertSame('Ivan Detkov 6k', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 			if ($loggedIn)
-				$this->assertSame('kovarex', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+				$this->assertSame('kovarex 6k', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 
 		}
 	}
