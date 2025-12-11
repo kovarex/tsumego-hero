@@ -40,7 +40,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     remainingRequiredNodes = [],
     commentParamList = [],
     displayResult = null,
-    showComment = null;
+    showComment = null,
+    movePlayed = null;
 
   return {
     addListener: addListener,
@@ -85,6 +86,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     isPerformingAutoPlay: isPerformingAutoPlay,
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
+    registerMovePlayed: registerMovePlayed,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
@@ -496,18 +498,22 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       document.getElementsByTagName("audio")[0].play();
     current = node; // Navigate to child if found
     current.visited = true;
-    if (
-      autoPlay &&
-      !reviewMode &&
-      node.move.color == node.getRoot().firstMove &&
-      node.hasNonLocalChildIncludingVirtual()
-    ) {
-      performingAutoPlay = true;
-      setTimeout(function () {
+	if (autoPlay &&
+    	!reviewMode &&
+		node.move.color == node.getRoot().firstMove &&
+		node.hasNonLocalChildIncludingVirtual())
+	{
+		performingAutoPlay = true;
+		if (movePlayed)
+			movePlayed();
+      setTimeout(function ()
+      {
         // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-        if (!performingAutoPlay) return;
+        if (!performingAutoPlay)
+        	return;
         performingAutoPlay = false;
-        if (!isMutable) return;
+        if (!isMutable)
+        	return;
 
         let selectOpponentMove = 0;
         {
@@ -518,7 +524,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
         }
 
         //if alternative response mode is turned on
-        if (besogo.alternativeResponse) {
+        if (besogo.alternativeResponse)
+        {
           for (let i = 0; i < current.children.length; i++)
             if (i !== selectOpponentMove)
               addToRequired(current.children[i], current);
@@ -776,13 +783,20 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     return performingAutoPlay;
   }
 
-  function setSoundEnabled(value) {
+  function setSoundEnabled(value)
+  {
     soundEnabled = value;
   }
 
-  function registerDisplayResult(value) {
+  function registerDisplayResult(value)
+  {
     displayResult = value;
   }
+
+	function registerMovePlayed(value)
+	{
+		movePlayed = value;
+	}
 
   function addToRequired(node, cameFrom) {
     if (node.localEdit)

@@ -642,7 +642,7 @@ class TimeModeTest extends TestCaseWithAuth
 		usleep(100 * 1000);
 		$browser->assertNoJsErrors();
 		$beforePlayResult = $this->getTimeModeReportedTime($browser);
-		$beforePlayResultSeconds = $afterPlayResult['seconds'] + $afterPlayResult['minutes'] * 60;
+		$beforePlayResultSeconds = $beforePlayResult['seconds'] + $beforePlayResult['minutes'] * 60;
 		$browser->clickBoard(4, 4);
 		$afterPlayResult = $this->getTimeModeReportedTime($browser);
 		$afterPlayResultSeconds = $afterPlayResult['seconds'] + $afterPlayResult['minutes'];

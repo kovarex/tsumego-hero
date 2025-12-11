@@ -1638,6 +1638,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$fn1++;
 		?>
 
+	function movePlayed()
+	{
+		tcount += 3; // 3 seconds added per each move played
+		seconds -= 3;
+	}
+
 	function displayResult(result)
 	{
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
@@ -1946,6 +1952,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.reviewEnabled = true;
 	besogo.create(div, options);
 	besogo.editor.setAutoPlay(true);
+	besogo.editor.registerMovePlayed(movePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
 	besogo.editor.registerShowComment(function(commentText)
 		{
