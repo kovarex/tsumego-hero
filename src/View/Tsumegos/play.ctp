@@ -1640,8 +1640,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	function movePlayed()
 	{
-		tcount += 3; // 3 seconds added per each move played
-		seconds -= 3;
+		tcount += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?>;
+		seconds -= <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?>;
 	}
 
 	function displayResult(result)
@@ -1846,10 +1846,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.nokeys = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
-		if (mode!=3)
-			options.alternativeResponse = true;
-		else
-			options.alternativeResponse = false;
+		options.alternativeResponse = true;
 		<?php
 		if ($alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
