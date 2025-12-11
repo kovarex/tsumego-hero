@@ -128,7 +128,7 @@ fi
 ### Composer install (host in dev, local in prod)
 echo "Running Composer..."
 if [[ "$IS_DDEV" = true ]]; then
-    ddev composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+    composer install --prefer-dist --optimize-autoloader --no-interaction
 else
     composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
 fi
