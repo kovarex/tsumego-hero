@@ -1892,7 +1892,6 @@ class AppController extends Controller
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeAttempt');
 		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Comment');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('AdminActivity');
 		$this->loadModel('Achievement');

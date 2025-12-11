@@ -100,12 +100,7 @@ class Play
 		if (Auth::isLoggedIn())
 			if (!empty($data))
 			{
-				if (isset($data['Comment']['status']) && !isset($data['Study2']))
-				{
-					$statusCode = (int) $data['Comment']['status'];
-					ClassRegistry::init('Comment')->save($data, true);
-				}
-				elseif (isset($data['Study']))
+				if (isset($data['Study']))
 				{
 					$tsumegoVariant['TsumegoVariant']['answer1'] = $data['Study']['study1'];
 					$tsumegoVariant['TsumegoVariant']['answer2'] = $data['Study']['study2'];
@@ -184,37 +179,13 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-				elseif ($data['Comment']['user_id'] != 33)
-				{
-					ClassRegistry::init('Comment')->create();
-					if ($this->checkCommentValid(Auth::getUserID()))
-						ClassRegistry::init('Comment')->save($data, true);
-				}
 				($this->setFunction)('formRedirect', true);
 			}
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
-			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
-
-			if (isset($params['url']['deleteComment']))
-			{
-				$deleteComment = ClassRegistry::init('Comment')->findById($params['url']['deleteComment']);
-				if (isset($params['url']['changeComment']))
-				{
-					if ($params['url']['changeComment'] == 1)
-						$deleteComment['Comment']['status'] = 97;
-					elseif ($params['url']['changeComment'] == 2)
-						$deleteComment['Comment']['status'] = 98;
-					elseif ($params['url']['changeComment'] == 3)
-						$deleteComment['Comment']['status'] = 96;
-					elseif ($params['url']['changeComment'] == 4)
-						$deleteComment['Comment']['status'] = 0;
-				}
-				else
-					$deleteComment['Comment']['status'] = 99;
-				ClassRegistry::init('Comment')->save($deleteComment);
-			}
+			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)
+				($this->setFunction)('deleteProblem2', true);
 
 			if (isset($_FILES['game']))
 			{
