@@ -42,7 +42,6 @@ class Play
 		$half = '';
 		$isSandbox = false;
 		$goldenTsumego = false;
-		$refresh = null;
 		$potion = 0;
 		$potionSuccess = false;
 		$reviewCheat = false;
@@ -84,9 +83,6 @@ class Play
 			}
 
 		$tsumegoFilters = new TsumegoFilters();
-
-		if (isset($params['url']['refresh']))
-			$refresh = $params['url']['refresh'];
 
 		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
@@ -486,7 +482,6 @@ class Play
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('sgf2', $sgf2);
 		($this->setFunction)('crs', $crs);
-		($this->setFunction)('refresh', $refresh);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);

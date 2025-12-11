@@ -695,7 +695,6 @@ if (
 	var seconds = 0;
 	var xpInfo = [];
 	<?php if (isset($difficulty))  echo 'var difficulty = ' . $difficulty . ';'; ?>
-	var sequence = "|";
 	var freePlayMode = false;
 	var freePlayMode2 = false;
 	var freePlayMode2done = false;
@@ -873,7 +872,6 @@ if (
 		echo 'authorProblem = true;';
 	if($requestSolution)
 		echo 'authorProblem = true;';
-	if($firstRanks!=0) echo 'document.cookie = "mode=3;path=/tsumegos/play;SameSite=Lax";';
 	if(Auth::isInTimeMode())
 	{
 		echo 'seconds = 0.0;';
@@ -1281,22 +1279,15 @@ if (
 
 	$(document).ready(function(){
 	<?php
-		if($t['Tsumego']['set_id']==210){
+		if($t['Tsumego']['set_id']==210)
 			echo '$("#author-notice").hide();';
-	}
-			if($ui==1) echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
-			elseif($ui==2) echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
+		if ($ui==1)
+			echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
+		else if($ui==2)
+			echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
-			if(Auth::isInTimeMode())
-				echo 'notMode3 = false;';
-			if($refresh=='1') echo 'window.location = "/";';
-			if($refresh=='2') echo 'window.location = "/sets";';
-			if($refresh=='3') echo 'window.location = "/sets/view/'.$t['Tsumego']['set_id'].'";';
-			if($refresh=='4') echo 'window.location = "/users/highscore";';
-			if($refresh=='5') echo 'window.location = "/comments";';
-			if($refresh=='6') echo 'window.location = "/sets/sandbox";';
-			if($refresh=='7') echo 'window.location = "/users/leaderboard";';
-			if($refresh=='8') echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'";';
+		if(Auth::isInTimeMode())
+			echo 'notMode3 = false;';
 	?>
 	<?php
 		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
@@ -1693,14 +1684,16 @@ if (
 		});
 	}
 
-	function revelation(){
-		if(revelationEnabled){
+	function revelation()
+	{
+		if(revelationEnabled)
+		{
 			<?php if ($t['Tsumego']['status'] != 'S' && $t['Tsumego']['status'] != 'C') { ?>
 				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-				if(light==true)
+				if (light)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-	else
+				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
 				besogo.editor.setReviewEnabled(true);
 				besogo.editor.setControlButtonLock(false);
@@ -1709,36 +1702,17 @@ if (
 				$("#commentSpace").show();
 			    updateCurrentNavigationButton('S');
 				displaySettings();
-				setCookie("noScore", "<?php echo $solvedCheck; ?>");
-				setCookie("noPreId", "<?php echo $t['Tsumego']['id']; ?>");
 				setCookie("revelation", "1");
 					<?php } ?>
 			document.getElementById("revelation").src = "/img/hp6x.png";
 			document.getElementById("revelation").style = "cursor: context-menu;";
 			$("#revelation").attr("title","Revelation (<?php echo Auth::getWithDefault('revelation', 0) - 1; ?>): Solves a problem, but you don\'t get any reward.");
 			revelationEnabled = false;
-	}
-	}
-
-	function thumbsUpHover(){
-		if(!thumbsUpSelected && !thumbsUpSelected2) document.getElementById("thumbs-up").src = '/img/thumbs-up.png';
+		}
 	}
 
-	function thumbsUpNoHover(){
-		if(!thumbsUpSelected && !thumbsUpSelected2) document.getElementById("thumbs-up").src = '/img/thumbs-up-inactive.png';
-	}
-
-	function thumbsDownHover(){
-		if(!thumbsDownSelected && !thumbsDownSelected2) document.getElementById("thumbs-down").src = '/img/thumbs-down.png';
-	}
-
-	function thumbsDownNoHover(){
-		if(!thumbsDownSelected && !thumbsDownSelected2) document.getElementById("thumbs-down").src = '/img/thumbs-down-inactive.png';
-	}
-
-	function selectFav(){
+	function selectFav()
 		document.getElementById("ans2").innerHTML = "";
-	}
 
 	$(document).keydown(function(event){
 		var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -1947,19 +1921,14 @@ if (
 				besogoMode2Solved = true;
 				if(!noXP)
 				{
-					sequence += "correct|";
 					setCookie("mode", mode);
 					if(goldenTsumego)
 						setCookie("type", "g");
-					document.cookie = "sequence="+sequence;
 					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
 					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
 					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
-					if(xpReward>userNextlvl)
-					{
+					if (xpReward>userNextlvl)
 						xpReward = userNextlvl;
-						ulvl = ulvl + 1;
-					}
 					userXP = xpReward;
 					userElo = Math.round(elo2);
 					noXP = true;
@@ -2026,8 +1995,6 @@ if (
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
 				if(!noXP)
 				{
-					sequence += "incorrect|";
-					document.cookie = "sequence="+sequence;
 					playedWrong = true;
 					setCookie("transition", 2);
 					hoverLocked = false;
