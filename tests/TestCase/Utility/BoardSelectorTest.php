@@ -59,8 +59,8 @@ class BoardSelectorTest extends CakeTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-		'user' => ['boards_bitmask' => 2],
-		'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => '1']]]]]);
+			'user' => ['boards_bitmask' => 2],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => '1']]]]]);
 		$expectedBoardSelection = BoardSelector::getBoardInfo(2);
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));
@@ -72,8 +72,8 @@ class BoardSelectorTest extends CakeTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-		'user' => ['boards_bitmask' => 2],
-		'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
+			'user' => ['boards_bitmask' => 2],
+			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
 		$expectedBoardSelection = BoardSelector::getBoardInfo(BoardSelector::$GOLDEN_TSUMEGO_INDEX);
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));
@@ -85,8 +85,8 @@ class BoardSelectorTest extends CakeTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-		'user' => ['boards_bitmask' => 2],
-		'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1', 'board_theme_index' => 50]]]]]);
+			'user' => ['boards_bitmask' => 2],
+			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1', 'board_theme_index' => 50]]]]]);
 		$expectedBoardSelection = BoardSelector::getBoardInfo(50);
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));

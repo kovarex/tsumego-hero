@@ -2068,7 +2068,6 @@ class AppController extends Controller
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
-		$this->set('boardPositions', $boardPositions);
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('lightDark', $lightDark);
