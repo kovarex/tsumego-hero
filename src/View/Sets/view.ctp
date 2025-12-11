@@ -37,8 +37,8 @@
 			$beta2 = false;
 
 		if(!$beta2)
-			foreach ($tsumegoButtons as $index => $tsumegoButton)
-				$tsumegoButton->render($index);
+			foreach ($tsumegoButtons as $tsumegoButton)
+				$tsumegoButton->render();
 	?>
 	</div>
 	</div>

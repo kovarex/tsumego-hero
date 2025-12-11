@@ -36,15 +36,6 @@
 	else if($authorx=='Jérôme Hubert') $authorx = 'jhubert';
 	else if($authorx=='Stepan Trubitsin') $authorx = 'Stepan';
 
-	if($eloScore2==0)
-		$eloScore2d = '-0';
-	else
-		$eloScore2d = $eloScore2;
-	if($eloScore2Rounded==0)
-		$eloScore2dRounded = '-0';
-	else
-		$eloScore2dRounded = $eloScore2Rounded;
-
 	if($lightDark=='dark'){
 		$playGreenColor = '#0cbb0c';
 		$playBlueColor = '#72a7f2';
@@ -827,13 +818,9 @@ if (
 	}
 	?>
 
-	var eloScore = <?php echo $eloScore; ?>;
-	var eloScore2 = <?php echo $eloScore2; ?>;
-
 <?php
-		if($corner=='t' || $corner=='b' || $corner=='full board'){
+		if($corner=='t' || $corner=='b' || $corner=='full board')
 			echo '$("#plus2").css("left", "340px");';
-	}
 			?>
 
 	<?php if(!Auth::isInTimeMode()){ ?>
@@ -1816,10 +1803,7 @@ if (
 			$("#besogo-review-button-inactive").attr("id","besogo-review-button");
 			$("#commentSpace").show();
 
-			$(".tag-gives-hint").css("display", "inline");
-			elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore;
-			let ulvl;
-			if(mode!=2)
+			if (mode != 2)
 			{//mode 1 and 3 correct
 				if(mode == <?php echo Constants::$TIME_MODE; ?>)
 				{
@@ -1832,35 +1816,17 @@ if (
 				{
 					if (goldenTsumego)
 						setCookie("type", "g");
-					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', 0); ?>;
-					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
-					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
-
-					if(xpReward > userNextlvl)
-					{
-						xpReward = userNextlvl;
-						ulvl = ulvl + 1;
-					}
 					noXP = true;
 				}
-				else if(mode==1)
-				document.cookie = "correctNoPoints=1";
 			}
 			else
 			{//mode 2 correct
 				besogoMode2Solved = true;
-				if(!noXP)
+				if (!noXP)
 				{
 					setCookie("mode", mode);
 					if(goldenTsumego)
 						setCookie("type", "g");
-					xpReward = xpStatus.getXP() + <?php echo Auth::getWithDefault('xp', '0'); ?>;
-					userNextlvl = <?php echo Level::getXPForNext(Auth::getWithDefault('level', 1)); ?>;
-					ulvl = <?php echo Auth::getWithDefault('level', 0); ?>;
-					if (xpReward>userNextlvl)
-						xpReward = userNextlvl;
-					userXP = xpReward;
-					userElo = Math.round(elo2);
 					noXP = true;
 				}
 			}
@@ -1876,27 +1842,27 @@ if (
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
-				if(light==true)
+				if (light)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
 				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(mode==3)
+				if (mode==3)
 				{
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
 					toggleBoardLock(true);
 				}
 				noLastMark = true;
-				if(!noXP)
+				if (!noXP)
 				{
 					if(!freePlayMode)
 					{
 						hoverLocked = false;
-						if(mode==1)
+						if (mode == 1)
 							updateHealth();
 					}
 					freePlayMode = true;
-					if(mode==1)
+					if (mode == 1)
 					{
 						if(<?php echo Auth::getRemainingHealth(); ?> - misplays <= 0)
 						{
@@ -1912,18 +1878,17 @@ if (
 			}
 			else
 			{//mode 2 incorrect
-				elo2 = <?php echo Auth::getWithDefault('rating', 0); ?>+eloScore2;
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				noLastMark = true;
 				besogoMode2Solved = true;
 				setCookie("mode", mode);
-				if(light==true)
+				if (light)
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
 				else
 					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
-				if(!noXP)
+				if (!noXP)
 				{
 					playedWrong = true;
 					setCookie("transition", 2);
@@ -1937,7 +1902,7 @@ if (
 
 	function toggleBoardLock(t, multipleChoice=false)
 	{
-		if(tryAgainTomorrow)
+		if (tryAgainTomorrow)
 			t = true;
 		if (t)
 			boardLockValue = 1;
@@ -1947,12 +1912,13 @@ if (
 			multipleChoiceEnabled = true;
 	}
 
-	function displayMessage(message='text', topic='Message', color='red'){
+	function displayMessage(message='text', topic='Message', color='red')
+	{
 		$('#customText').html(message);
 		$("#customAlerts").fadeIn(500);
-		if(color==='red')
+		if (color==='red')
 			$(".alertBanner").addClass("alertBannerIncorrect");
-	else
+		else
 			$(".alertBanner").addClass("alertBannerCorrect");
 		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
 	}
@@ -1962,10 +1928,11 @@ if (
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 		if(tStatus=="S" || tStatus=="C")
 			heartLoss = false;
-		else heartLoss = true;
+		else
+			heartLoss = true;
 		if(isAtStart)
 			heartLoss = false;
-		if(noXP==true||freePlayMode==true||locked==true||authorProblem==true)
+		if (noXP || freePlayMode || locked || authorProblem)
 			heartLoss = false;
 
 		freePlayMode = false;
@@ -2003,14 +1970,15 @@ if (
 		options.nokeys = true;
 		options.multipleChoice = false;
 		options.multipleChoiceSetup = [];
-		if(mode!=3)
-		options.alternativeResponse = true;
-	else
-		options.alternativeResponse = false;
+		if (mode!=3)
+			options.alternativeResponse = true;
+		else
+			options.alternativeResponse = false;
 		<?php
-		if($alternative_response!=1)
+		if ($alternative_response != 1)
 			echo 'options.alternativeResponse = false;';
-		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0){
+		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
+		{
 			$sStatusB = '';
 			$sStatusW = '';
 			if($t['Tsumego']['semeaiType'] == 1){
@@ -2068,7 +2036,9 @@ if (
 			a5.push(a4);
 			';
 			echo 'options.multipleChoiceSetup = a5;';
-		}else if($tv!=null){
+		}
+		else if($tv!=null)
+		{
 			echo 'options.multipleChoiceCustom = "'.$tv['TsumegoVariant']['type'].'";';
 			echo 'let a5 = [];
 			a5.push("'.$tv['TsumegoVariant']['answer1'].'");
@@ -2077,7 +2047,7 @@ if (
 			a5.push("'.$tv['TsumegoVariant']['answer4'].'");
 			customMultipleChoiceAnswer = '.$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
-	}
+		}
 	?>
 		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
@@ -2094,10 +2064,11 @@ if (
 		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
 		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
-			if (options.height && options.width && options.resize === 'fixed') {
-			div.style.height = options.height + 'px';
-			div.style.width = options.width + 'px';
-	}
+			if (options.height && options.width && options.resize === 'fixed')
+			{
+				div.style.height = options.height + 'px';
+				div.style.width = options.width + 'px';
+			}
 		options.reviewMode = false;
 		options.reviewEnabled = <?php echo $reviewEnabled ? 'true' : 'false'; ?>;
 	<?php
@@ -2109,25 +2080,29 @@ if (
 	besogo.create(div, options);
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerDisplayResult(displayResult);
-			besogo.editor.registerShowComment(function(commentText) {
+	besogo.editor.registerShowComment(function(commentText)
+		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
 			$("#theComment").text(commentText);
-			});
+		});
 
-			function addStyleLink(cssURL) {
-		var element = document.createElement('link');
-		element.href = cssURL;
-		element.type = 'text/css';
-		element.rel = 'stylesheet';
-		document.head.appendChild(element);
-	}
+		function addStyleLink(cssURL)
+		{
+			var element = document.createElement('link');
+			element.href = cssURL;
+			element.type = 'text/css';
+			element.rel = 'stylesheet';
+			document.head.appendChild(element);
+		}
 	})();
-	if(mode==2) $("#targetLockOverlay").css('top', '235px');
+	if (mode == 2)
+		$("#targetLockOverlay").css('top', '235px');
 	<?php
-		for($i=0; $i<count($dynamicCommentCoords[0]); $i++){
+		for($i=0; $i<count($dynamicCommentCoords[0]); $i++)
+		{
 			echo 'besogo.editor.dynamicCommentCoords("'.$dynamicCommentCoords[0][$i].'", "'.$dynamicCommentCoords[1][$i].'");';
 			echo 'besogo.editor.adjustCommentCoords();';
-	}
+		}
 		?>
 	</script>
 <?php } ?>
@@ -2152,7 +2127,7 @@ if (
 	.showFilters {
 				<?php
 			$displayNone = false;
-			if($set['Set']['id']==1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
+			if ($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
 				$displayNone = true;
 			else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
 				$displayNone = true;
