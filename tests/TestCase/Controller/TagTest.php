@@ -159,13 +159,12 @@ class TagTest extends ControllerTestCase
 			$sourceList = $popular ? 'add-tag-list-popular' : 'add-tag-list';
 			$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 
-			$this->assertSame(3, count($addTagLinks));
-			$this->assertSame("atari", $addTagLinks[0]->getText());
-			$this->assertSame("snapback", $addTagLinks[1]->getText());
+			$this->assertSame(2, count($addTagLinks));
+			$this->assertSame("snapback", $addTagLinks[0]->getText());
 			if ($popular)
-				$this->assertSame("[more]", $addTagLinks[2]->getText());
+				$this->assertSame("[more]", $addTagLinks[1]->getText());
 			else
-				$this->assertSame("[Create new tag]", $addTagLinks[2]->getText());
+				$this->assertSame("[Create new tag]", $addTagLinks[1]->getText());
 
 			$addTagSpans = $browser->getCssSelect('.' . $sourceList . ' span[title="Already proposed by someone"]');
 			$this->assertSame(1, count($addTagSpans));
