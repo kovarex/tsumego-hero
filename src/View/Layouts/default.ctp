@@ -281,34 +281,7 @@ echo $this->AssetCompress->script('app');
 								<input class="dropdown-open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
 								<label for="dropdown-1" class="dropdown-overlay"></label>
 								<div class="dropdown-inner" id="dropdown-inner-propagation">
-									<table id="dropdowntable" border="0">
-										<tr>
-											<?php
-											$tr = 1;
-											for($i=1;$i<=51;$i++){
-												if(isset($boardNames[$i])){
-													echo '
-														<td width="19px" align="right" style="position:relative;top:1px;padding:4px;">
-															<input type="checkbox" class="newCheck" id="newCheck'.$i.'" '.$enabledBoards[$i].'>
-														</td>
-														<td width="19px" align="center" style="position:relative;top:3px;padding:2px;">
-
-															<div class="img-'.$boardPositions[$i][0].'small"></div>
-														</td>
-														<td width="115px" style="padding:0px;text-align:left;">
-															'.$boardNames[$i].'
-														</td>
-													';
-												}
-												if($tr%4==0 && $tr>0) echo '</tr><tr>';
-												$tr++;
-												}
-											?>
-											<td colspan="3">
-												<div class="boards-tile tiles-submit-inner-select" id="boards-unselect-all">Unselect all</div>
-														</td>
-										</tr>
-									</table>
+									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
 										<a class="new-button" href="<?php echo $_SERVER['REQUEST_URI']; ?>">Save</a>
@@ -420,17 +393,6 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 <script type="text/javascript">
 	<?php AccountWidget::renderJS($timeMode); ?>
 	var lifetime = new Date();
-	let boardsUnselectAll = false;
-	let boardsUnselectAllCounter = 0;
-		<?php
-	for($i=1;$i<=51;$i++)
-		if($enabledBoards[$i]=='checked')
-			echo 'boardsUnselectAllCounter++;';
-	?>
-	if(boardsUnselectAllCounter==0){
-		boardsUnselectAll = true;
-		$("#boards-unselect-all").html("Select all");
-	}
 
 	lifetime.setTime(lifetime.getTime()+8*24*60*60*1000);
 	lifetime = lifetime.toUTCString()+"";
@@ -615,42 +577,10 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		e.stopPropagation();
 	});
 
-	<?php for($i=1;$i<=51;$i++){ ?>
-	$("#newCheck<?php echo $i; ?>").click(function(e){
-		let boardSettings = [];
-		let boardSettingsString = "";
-		for(let i=1;i<=51;i++){
-			if(document.getElementById("newCheck"+i).checked)
-				boardSettingsString += "2";
-			else
-				boardSettingsString += "1";
-	}
-		//setCookie("texture", boardSettingsString);
-		document.cookie = "texture="+boardSettingsString+";SameSite=Lax;expires="+lifetime+";path=/";
-		e.stopPropagation();
-	});
-	<?php } ?>
-
-	$("#boards-unselect-all").click(function(e){
-		if(!boardsUnselectAll){
-			for(let i=1;i<=51;i++)
-				document.getElementById("newCheck"+i).checked = false;
-			//setCookie("texture", "111111111111111111111111111111111111111111111111111");
-			document.cookie = "texture=111111111111111111111111111111111111111111111111111;SameSite=Lax;expires="+lifetime+";path=/";
-			$("#boards-unselect-all").html("Select all");
-		}else{
-			for(let i=1;i<=51;i++)
-				document.getElementById("newCheck"+i).checked = true;
-			//setCookie("texture", "222222222222222222222222222222222222222222222222222");
-			document.cookie = "texture=222222222222222222222222222222222222222222222222222;SameSite=Lax;expires="+lifetime+";path=/";
-			$("#boards-unselect-all").html("Unselect all");
-	}
-		boardsUnselectAll = !boardsUnselectAll;
-		e.stopPropagation();
-	});
-
-	function changeSound(){
-		if(getCookie("sound")=="off"){
+	function changeSound()
+	{
+		if(getCookie("sound")=="off")
+		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon1.png";
 			document.cookie = "sound=on;path=/";
 			document.cookie = "sound=on;path=/sets/view";
@@ -658,7 +588,9 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			document.cookie = "sound=on;path=/users";
 			document.cookie = "sound=on;path=/users/view";
 			updateSoundValue(true);
-		}else if(getCookie("sound")=="on"){
+		}
+		else if(getCookie("sound")=="on")
+		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
 			document.cookie = "sound=off;path=/";
 			document.cookie = "sound=off;path=/sets/view";
@@ -666,7 +598,9 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			document.cookie = "sound=off;path=/users";
 			document.cookie = "sound=off;path=/users/view";
 			updateSoundValue(false);
-		}else{
+		}
+		else
+		{
 			document.getElementById("soundButtonImage").src="/img/sound-icon2.png";
 			document.cookie = "sound=off;path=/";
 			document.cookie = "sound=off;path=/sets/view";
@@ -674,7 +608,7 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 			document.cookie = "sound=off;path=/users";
 			document.cookie = "sound=off;path=/users/view";
 			updateSoundValue(false);
-	}
+		}
 	}
 
 	function getCookie(cname){
@@ -733,16 +667,20 @@ if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
 		document.getElementById("donateH2").src = "/img/donateButton1.png";
 	}
 
-	function deleteAllCookies() {
+	function deleteAllCookies()
+	{
 		const cookies = document.cookie.split(";");
 
-		for (let i = 0; i < cookies.length; i++) {
+		for (let i = 0; i < cookies.length; i++)
+		{
 			const cookie = cookies[i];
 			const eqPos = cookie.indexOf("=");
 			const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
 			document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+		}
 	}
-	}
+
+	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
 </script>
 		<?php
 if(!Auth::isLoggedIn())

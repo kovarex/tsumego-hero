@@ -79,6 +79,7 @@ class ContextPreparator
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
 		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
 		$user['daily_solved'] = Util::extract('daily_solved', $userInput) ?: 0;
+		$user['boards_bitmask'] = Util::extract('boards_bitmask', $userInput) ?: BoardSelector::$DEFAULT_BOARDS_BITMASK;
 		foreach ([
 			'used_refinement',
 			'used_sprint',
@@ -327,12 +328,13 @@ class ContextPreparator
 				'name' => Util::extract('name', $tsumegoSet),
 				'included_in_time_mode' => Util::extract('included_in_time_mode', $tsumegoSet),
 				'public' => Util::extract('public', $tsumegoSet),
-				'premium' => $tsumegoSet['premium'] ?? 0]);
+				'premium' => $tsumegoSet['premium'] ?? 0,
+				'board_theme_index' => Util::extract('board_theme_index', $tsumegoSet)]);
 			unset($tsumegoSet['premium']);  // Mark as consumed
 			$setConnection = [];
-			$setConnection['SetConnection']['tsumego_id'] = $tsumego['id'];
-			$setConnection['SetConnection']['set_id'] = $set['id'];
-			$setConnection['SetConnection']['num'] = Util::extract('num', $tsumegoSet);
+			$setConnection['tsumego_id'] = $tsumego['id'];
+			$setConnection['set_id'] = $set['id'];
+			$setConnection['num'] = Util::extract('num', $tsumegoSet);
 			ClassRegistry::init('SetConnection')->create($setConnection);
 			ClassRegistry::init('SetConnection')->save($setConnection);
 			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
@@ -377,22 +379,26 @@ class ContextPreparator
 			$includedInTimeMode = false;
 			$public = 1;
 			$premium = 0;
+			$boardThemeIndex = 1;
 		}
 		else
 		{
-			$name = $input['name'];
-			$includedInTimeMode = $input['included_in_time_mode'];
-			$public = $input['public'];
-			$premium = $input['premium'] ?? 0;
+			$name = Util::extract('name', $input);
+			$includedInTimeMode = Util::extract('included_in_time_mode', $input);
+			$public = Util::extractWithDefault('public', $input, true);
+			$premium = Util::extractWithDefault('premium', $input, false) ?: 0;
+			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
+			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 		if (!$set)
 		{
 			$set = [];
-			$set['Set']['title'] = $name;
-			$set['Set']['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
-			$set['Set']['public'] = is_null($public) ? true : $public;
-			$set['Set']['premium'] = $premium;
+			$set['title'] = $name;
+			$set['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
+			$set['public'] = is_null($public) ? true : $public;
+			$set['premium'] = $premium;
+			$set['board_theme_index'] = $boardThemeIndex;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
