@@ -186,39 +186,6 @@ class Play
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
 			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)
 				($this->setFunction)('deleteProblem2', true);
-
-			if (isset($_FILES['game']))
-			{
-				$errors = [];
-				$file_size = $_FILES['game']['size'];
-				$file_tmp = $_FILES['game']['tmp_name'];
-				$array2 = explode('.', $_FILES['game']['name']);
-				$file_ext = strtolower(end($array2));
-				$extensions = ['sgf'];
-				if (in_array($file_ext, $extensions) === false)
-					$errors[] = 'Only SGF files are allowed.';
-				if ($file_size > 2097152)
-					$errors[] = 'The file is too large.';
-				$cox = count(ClassRegistry::init('Comment')->find('all', ['conditions' => (['tsumego_id' => $id])]) ?: []);
-				if (empty($set['Set']['title2']))
-					$title2 = '';
-				else
-					$title2 = '-';
-				$file_name = $set['Set']['title'] . $title2 . $set['Set']['title2'] . '-' . $currentSetConnection['SetConnection']['num'] . '-' . $cox . '.sgf';
-				$sgfComment = [];
-				ClassRegistry::init('Comment')->create();
-				$sgfComment['user_id'] = Auth::getUserID();
-				$sgfComment['tsumego_id'] = $t['Tsumego']['id'];
-				$file_name = str_replace('#', 'num', $file_name);
-				$sgfComment['message'] = '<a href="/files/ul1/' . $file_name . '">SGF</a>';
-				$sgfComment['created'] = date('Y-m-d H:i:s');
-				ClassRegistry::init('Comment')->save($sgfComment);
-				if (empty($errors) == true)
-				{
-					$uploadfile = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/files/ul1/' . $file_name;
-					move_uploaded_file($file_tmp, $uploadfile);
-				}
-			}
 		}
 
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser())
@@ -581,27 +548,6 @@ class Play
 		$hours += $months;
 
 		return $hours;
-	}
-
-	private function checkCommentValid($uid)
-	{
-		$comments = ClassRegistry::init('Comment')->find('all', ['limit' => 5, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$comments)
-			$comments = [];
-		$limitReachedCounter = 0;
-		$commentsCount = count($comments);
-
-		for ($i = 0; $i < $commentsCount; $i++)
-		{
-			$d = new DateTime($comments[$i]['Comment']['created']);
-			$d = $d->format('Y-m-d');
-			if ($d == date('Y-m-d'))
-				$limitReachedCounter++;
-		}
-		if ($limitReachedCounter >= 50)
-			return false;
-
-		return true;
 	}
 
 	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)

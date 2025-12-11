@@ -337,7 +337,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('SetConnection');
 		$this->loadModel('Sgf');
 		$this->loadModel('Duplicate');
-		$this->loadModel('Comment');
 
 		$idMap = [];
 		$idMap2 = [];
@@ -433,18 +432,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					$newD['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 					if ($newD['Tsumego']['id'] == $this->params['url']['main'])
 					{
-						$newDmain = $newD;
 						$newD['Tsumego']['duplicate'] = $this->params['url']['main'];
 						$this->Tsumego->save($newD);
 					}
 					else
-					{
-						$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
-						$commentsCount = count($comments);
-						for ($j = 0; $j < $commentsCount; $j++)
-							$this->Comment->delete($comments[$j]['Comment']['id']);
 						$this->Tsumego->delete($newD['Tsumego']['id']);
-					}
 					$this->SetConnection->delete($scT['SetConnection']['id']);
 					$setC = [];
 					$setC['SetConnection']['tsumego_id'] = $this->params['url']['main'];
@@ -479,10 +471,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 				$scTx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
 				$scTx['SetConnection']['tsumego_id'] = $this->data['Mark2']['group_id'];
 				$this->SetConnection->save($scTx);
-				$comments = $this->Comment->find('all', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
-				$commentsCount = count($comments);
-				for ($j = 0; $j < $commentsCount; $j++)
-					$this->Comment->delete($comments[$j]['Comment']['id']);
 				$this->Tsumego->delete($mark['Tsumego']['id']);
 			}
 		}
@@ -1484,7 +1472,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 */
 	public function authors()
 	{
-		$this->loadModel('Comment');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
@@ -1625,20 +1612,6 @@ Joschka Zimdars';
 	public function logout()
 	{
 		Auth::logout();
-	}
-
-	public function delete($id)
-	{
-		$this->loadModel('Comment');
-		if ($this->request->is('get'))
-			throw new MethodNotAllowedException();
-
-		if ($this->Comment->delete($id))
-			CookieFlash::set(__('The post with id: %s has been deleted.', h($id)), 'success');
-		else
-			CookieFlash::set(__('The post with id: %s could not be deleted.', h($id)), 'error');
-
-		return $this->redirect(['action' => '/stats']);
 	}
 
 	private function validateLogin($data, $user): bool
