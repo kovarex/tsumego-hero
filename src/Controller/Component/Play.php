@@ -259,8 +259,6 @@ class Play
 		foreach ($sandboxSets as $sandboxSet)
 			if ($set['Set']['id'] == $sandboxSet['Set']['id'])
 				$isSandbox = true;
-		if ($t['Tsumego']['set_id'] == 161)
-			$isSandbox = false;
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 

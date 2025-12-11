@@ -899,7 +899,6 @@ ORDER BY total_count DESC, partition_number";
 		$this->loadModel('TsumegoStatus');
 		$this->loadModel('Favorite');
 		$this->loadModel('AdminActivity');
-		$this->loadModel('Joseki');
 		$this->loadModel('TsumegoAttempt');
 		$this->loadModel('ProgressDeletion');
 		$this->loadModel('Achievement');
@@ -919,12 +918,10 @@ ORDER BY total_count DESC, partition_number";
 			$this->set('_page', 'set');
 		else
 			$this->set('_page', 'favs');
-		$josekiOrder = 0;
 		$tsIds = [];
 		$refreshView = false;
 		$avgTime = 0;
 		$accuracy = 0;
-		$formChange = false;
 		$achievementUpdate = [];
 		$tsumegoStatusMap = [];
 		$setDifficulty = 1200;
@@ -978,13 +975,6 @@ ORDER BY total_count DESC, partition_number";
 			$this->Tsumego->save($setCount);
 			$set = $this->Set->findById($id);
 			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
-		}
-		if (isset($this->params['url']['show']))
-		{
-			if ($this->params['url']['show'] == 'order')
-				$josekiOrder = 1;
-			if ($this->params['url']['show'] == 'num')
-				$josekiOrder = 0;
 		}
 
 		Util::setCookie('lastSet', $id);
@@ -1050,56 +1040,8 @@ ORDER BY total_count DESC, partition_number";
 			if ($set['Set']['public'] == 0)
 				$this->set('_page', 'sandbox');
 			$this->set('isFav', false);
-			if (isset($this->params['url']['sort']))
-				if ($this->params['url']['sort'] == 1)
-				{
-					$tsId = [];
-					foreach ($tsumegoButtons as $tsumegoButton)
-						$tsId [] = $tsumegoButton->tsumegoID;
-					$nr = 1;
-					$tsIdCount = count($tsId);
-					for ($i = 0; $i < $tsIdCount; $i++)
-					{
-						$tsu = $this->Tsumego->findById($tsId[$i]);
-						if ($tsu['Tsumego']['num'] != $nr)
-							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . '.sgf', '6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf');
-						$nr++;
-					}
-					$nr = 1;
-					$tsIdCount = count($tsId);
-					for ($i = 0; $i < $tsIdCount; $i++)
-					{
-						$tsu = $this->Tsumego->findById($tsId[$i]);
-						if ($tsu['Tsumego']['num'] != $nr)
-						{
-							rename('6473k339312/joseki/' . $tsu['Tsumego']['num'] . 'x.sgf', '6473k339312/joseki/' . $nr . '.sgf');
-							$tsu['Tsumego']['num'] = $nr;
-							$this->Tsumego->save($tsu);
-						}
-						$nr++;
-					}
-				}
-			if (isset($this->params['url']['rename']))
-				if ($this->params['url']['rename'] == 1)
-				{
-					$tsId = [];
-					foreach ($tsumegoButtons as $tsumegoButton)
-						$tsId [] = $tsumegoButton->tsumegoID;
-					$nr = 1;
-					foreach ($tsId as $id)
-					{
-						$j = $this->Joseki->find('first', ['conditions' => ['tsumego_id' => $id]]);
-						$j['Joseki']['order'] = $nr;
-						$this->Joseki->save($j);
-						$nr++;
-					}
-				}
 			if (isset($this->data['Set']['title']))
 			{
-				if ($set['Set']['title'] != $this->data['Set']['title'])
-					$formChange = true;
-				if ($set['Set']['title2'] != $this->data['Set']['title2'])
-					$formChange = true;
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['title'] = $this->data['Set']['title'];
@@ -1112,8 +1054,6 @@ ORDER BY total_count DESC, partition_number";
 			}
 			if (isset($this->data['Set']['description']))
 			{
-				if ($set['Set']['description'] != $this->data['Set']['description'])
-					$formChange = true;
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['description'] = $this->data['Set']['description'];
@@ -1142,8 +1082,6 @@ ORDER BY total_count DESC, partition_number";
 				}
 			if (isset($this->data['Set']['color']))
 			{
-				if ($set['Set']['color'] != $this->data['Set']['color'])
-					$formChange = true;
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['color'] = $this->data['Set']['color'];
@@ -1155,8 +1093,6 @@ ORDER BY total_count DESC, partition_number";
 			}
 			if (isset($this->data['Set']['order']))
 			{
-				if ($set['Set']['order'] != $this->data['Set']['order'])
-					$formChange = true;
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['order'] = $this->data['Set']['order'];
@@ -1215,8 +1151,9 @@ ORDER BY total_count DESC, partition_number";
 				$this->set('formRedirect', true);
 			}
 		}
-		elseif ($tsumegoFilters->query = 'favorites') // TODO: implement
-		{$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		elseif ($tsumegoFilters->query = 'favorites')
+		{
+			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
 			$statusMap = [];
 			$allUtsCount = count($allUts);
@@ -1225,9 +1162,7 @@ ORDER BY total_count DESC, partition_number";
 				array_push($idMap, $allUts[$i]['TsumegoStatus']['tsumego_id']);
 				array_push($statusMap, $allUts[$i]['TsumegoStatus']['status']);
 			}
-			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$fav)
-				$fav = [];
+			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			if (count($fav) > 0)
 				$achievementUpdate = $this->checkSetAchievements(-1);
 			$ts = [];
@@ -1503,7 +1438,6 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('allTags', $allTags);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);
-		$this->set('josekiOrder', $josekiOrder);
 		$this->set('refreshView', $refreshView);
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);

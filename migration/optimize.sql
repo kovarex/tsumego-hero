@@ -11,7 +11,6 @@ OPTIMIZE TABLE comment;
 OPTIMIZE TABLE day_record;
 OPTIMIZE TABLE duplicate;
 OPTIMIZE TABLE favorite;
-OPTIMIZE TABLE joseki;
 OPTIMIZE TABLE progress_deletion;
 OPTIMIZE TABLE publish_date;
 OPTIMIZE TABLE reject;

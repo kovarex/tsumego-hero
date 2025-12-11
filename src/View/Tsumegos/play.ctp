@@ -711,8 +711,6 @@ if (
 	var theComment = "";
 	var moveHasComment = false;
 	var isIncorrect = false;
-	var josekiHero = false;
-	var josekiLevel = 1;
 	var thumbsUpSelected = false;
 	var thumbsDownSelected = false;
 	var thumbsUpSelected2 = false;
@@ -879,10 +877,6 @@ if (
 	}
 	if($t['Tsumego']['set_id']==159 || $t['Tsumego']['set_id']==161)
 		echo 'set159 = true;';
-	if($t['Tsumego']['set_id']==161)
-		echo 'josekiHero = true;';
-	if ($josekiLevel)
-	  echo 'josekiLevel = '.$josekiLevel.';';
 	?>
 
 	var eloScore = <?php echo $eloScore; ?>;
@@ -1712,7 +1706,9 @@ if (
 	}
 
 	function selectFav()
+	{
 		document.getElementById("ans2").innerHTML = "";
+	}
 
 	$(document).keydown(function(event){
 		var keycode = (event.keyCode ? event.keyCode : event.which);

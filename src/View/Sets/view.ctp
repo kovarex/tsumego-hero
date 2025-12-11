@@ -31,35 +31,15 @@
 		&& $set['Set']['id']!=51 && $set['Set']['id']!=56 && $set['Set']['id']!=57 && $set['Set']['id']!=119
 		&& $set['Set']['id']!=119 && $set['Set']['id']!=126 && $set['Set']['id']!=129 && $set['Set']['id']!=134 && $set['Set']['id']!=135){
 			$beta2 = false;
-		}else $beta2 = true;
-		if(Auth::getUserID()==72) $beta2 = false;
+		}
+		else $beta2 = true;
+		if(Auth::getUserID()==72)
+			$beta2 = false;
 
-		if(!$beta2) {
-			foreach ($tsumegoButtons as $index => $tsumegoButton) {
+		if(!$beta2)
+			foreach ($tsumegoButtons as $index => $tsumegoButton)
 				$tsumegoButton->render($index);
-			}
-		}
-
-		if($set['Set']['public']==0){
-			if(Auth::isLoggedIn()){
-				if(Auth::isAdmin()){
-					echo '<div align="left" width="100%">';
-					echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>';
-					if(Auth::isLoggedIn()){
-						if(Auth::getUserID()==72 && $set['Set']['id']==161){
-							if($josekiOrder==0) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=order">show order</a>';
-							elseif($josekiOrder==1) echo '<a class="new-button new-buttonx" href="/sets/view/161?show=num">show num</a>';
-
-							echo '<a class="new-button new-buttonx" href="/sets/view/161?sort=1">sort</a>';
-							echo '<a class="new-button new-buttonx" href="/sets/view/161?rename=1">rename</a>';
-							echo '<br><br>';
-						}
-					}
-					echo '</div>';
-				}
-			}
-		}
-		?>
+	?>
 	</div>
 	</div>
 	<div class="homeLeft">
@@ -265,7 +245,6 @@
 			</td>
 			</tr>
 			<?php
-			//if($set['Set']['public']==0){
 			if(true){
 				if(Auth::isAdmin()){
 					echo '<tr><td colspan="2">
@@ -282,14 +261,7 @@
 						echo $this->Form->input('num', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Number: ', 'type' => 'text', 'placeholder' => 'number', 'id' => 'orderInput'));
 						echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => $set['Set']['id']));
 						echo $this->Form->input('variance', array('type' => 'hidden', 'value' => 100));
-						//echo $this->Form->input('description', array('type' => 'hidden', 'value' => $tfs['Tsumego']['description']));
-						//echo $this->Form->input('hint', array('type' => 'hidden', 'value' => $tfs['Tsumego']['hint']));
 						echo $this->Form->input('author', array('type' => 'hidden', 'value' => Auth::getUser()['name']));
-						if($set['Set']['id']==161){
-							echo $this->Form->input('order', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Order: ', 'type' => 'text', 'placeholder' => 'order'));
-							echo $this->Form->input('type', array('value' => 1, 'label' => 'Type: ', 'type' => 'text', 'placeholder' => 'type'));
-							echo $this->Form->input('thumb', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Thumb: ', 'type' => 'text', 'placeholder' => 'thumb'));
-						}
 						echo $this->Form->end('Submit');
 					}
 					if($set['Set']['public']==0){
