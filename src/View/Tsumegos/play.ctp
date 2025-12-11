@@ -71,7 +71,6 @@
 	else if($t['Tsumego']['set_id']==81578) echo '<script type="text/javascript" src="/'.$boardSize.'/board29.js"></script>'; //Moves of Resistance
 	else if($t['Tsumego']['set_id']==88156) echo '<script type="text/javascript" src="/'.$boardSize.'/board30.js"></script>'; //Hand of God
 	else if($t['Tsumego']['set_id']==6473) echo '<script type="text/javascript" src="/'.$boardSize.'/board55.js"></script>'; //Tsumego Grandmaster
-	else echo '<script type="text/javascript" src="/'.$boardSize.'/board'.$choice[0][0].'.js"></script>'; // Regular
 
 	if($goldenTsumego)
 		$choice[0] = array(46,'texture46','black34.png','white34.png'); //Golden
@@ -83,7 +82,6 @@
 	else if($t['Tsumego']['set_id']==74761) $choice[0] = $boardPositions[49]; //Giants
 	else if($t['Tsumego']['set_id']==81578) $choice[0] = $boardPositions[50]; //Moves of Resistance
 	else if($t['Tsumego']['set_id']==88156) $choice[0] = $boardPositions[50]; //Hand of God
-	else echo '<script type="text/javascript" src="/'.$boardSize.'/board'.$choice[0][0].'.js"></script>'; // Regular
 	$lv = $_COOKIE['lastVisit'] ?? '15352';
 	$a1 = '';
 	$b1 = '';
@@ -636,7 +634,6 @@ if (
 	var playedWrong = false;
 	var seconds = 0;
 	var xpInfo = [];
-	<?php if (isset($difficulty))  echo 'var difficulty = ' . $difficulty . ';'; ?>
 	var freePlayMode = false;
 	var freePlayMode2 = false;
 	var freePlayMode2done = false;
@@ -843,113 +840,7 @@ if (
 	$("#reviewButton").hide();
 	$("#reviewButton2").hide();
 
-	<?php if(Auth::isInRatingMode()){ ?>
-	var rangeInput = document.getElementById("rangeInput");
-	const Slider = document.querySelector('input[name=rangeInput]');
-
-	if (difficulty == 1)
-	{
-		$('#sliderText').css({"color": "hsl(138, 47%, 50%)"});
-		$('#sliderText').text("very easy");
-		Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
-	}
-	else if (difficulty == 2)
-	{
-		$('#sliderText').css({"color": "hsl(138, 31%, 50%)"});
-		$('#sliderText').text("easy");
-		Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
-	}
-	else if (difficulty == 3)
-	{
-		$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
-		$('#sliderText').text("casual");
-		Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
-	}
-	else if (difficulty == 4)
-	{
-		$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
-		$('#sliderText').text("regular");
-		Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-	}
-	else if (difficulty == 5)
-	{
-		$('#sliderText').css({"color": "hsl(0, 31%, 50%)"});
-		$('#sliderText').text("challenging");
-		Slider.style.setProperty('--SliderColor', 'hsl(0, 31%, 50%)');
-	}
-	else if (difficulty == 6)
-	{
-		$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
-		$('#sliderText').text("difficult");
-		Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
-	}
-	else if (difficulty == 7)
-	{
-		$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
-		$('#sliderText').text("very difficult");
-		Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
-	}
-	else
-	{
-		$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
-		$('#sliderText').text("regular");
-		Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-	}
-
-	rangeInput.addEventListener('change', function()
-	{
-		const Slider = document.querySelector('input[name=rangeInput]');
-		document.cookie = "difficulty="+this.value;
-		if (this.value == 1)
-		{
-			$('#sliderText').css({"color": "hsl(138, 47%, 50%)"});
-			$('#sliderText').text("very easy");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 47%, 50%)');
-		}
-		else if (this.value == 2)
-		{
-			$('#sliderText').css({"color": "hsl(138, 31%, 50%)"});
-			$('#sliderText').text("easy");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 31%, 50%)');
-		}
-		else if (this.value == 3)
-		{
-			$('#sliderText').css({"color": "hsl(138, 15%, 50%)"});
-			$('#sliderText').text("casual");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 15%, 50%)');
-		}
-		else if (this.value == 4)
-		{
-			$('#sliderText').css({"color": "hsl(138, 0%, 47%)"});
-			$('#sliderText').text("regular");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-		}
-		else if (this.value == 5)
-		{
-			$('#sliderText').css({"color": "hsl(0, 34%, 50%)"});
-			$('#sliderText').text("challenging");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 34%, 50%)');
-		}
-		else if (this.value == 6)
-		{
-			$('#sliderText').css({"color": "hsl(0, 52%, 50%)"});
-			$('#sliderText').text("difficult");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 47%, 50%)');
-		}
-		else if (this.value == 7)
-		{
-			$('#sliderText').css({"color": "hsl(0, 66%, 50%)"});
-			$('#sliderText').text("very difficult");
-			Slider.style.setProperty('--SliderColor', 'hsl(0, 63%, 50%)');
-		}
-		else
-		{
-			$('#sliderText').css({"color": "#616161"});
-			$('#sliderText').text("regular");
-			Slider.style.setProperty('--SliderColor', 'hsl(138, 0%, 60%)');
-		}
-	});
-	<?php } ?>
+	<?php if(Auth::isInRatingMode()) echo 'var ratingModeDifficultySelector = new RatingModeDifficultySelector();';	?>
 	<?php if($tv!=null&&$tv['TsumegoVariant']['type']=='score_estimating'){ ?>
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();
