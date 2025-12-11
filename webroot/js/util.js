@@ -33,11 +33,22 @@ function formatMultiplier(value) {
 	return `&times; ${value}`;
 }
 
-function showRatingShort(rating) {
-	return String(Math.round(rating));
+function showRatingShort(rating)
+{
+	const abs = Math.abs(rating);
+
+	if (abs >= 1)
+		return String(Math.round(rating));
+
+	let exponent = Math.floor(Math.log10(abs));
+
+	// exponent is negative, e.g. 0.0011 → exponent = -3
+	const decimals = -exponent;
+	return rating.toFixed(decimals);
 }
 
-function showRatingLong(rating) {
+function showRatingLong(rating)
+{
 	return String(Math.round((rating * 10)) / 10);
 }
 
