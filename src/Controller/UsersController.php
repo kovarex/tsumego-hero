@@ -1204,7 +1204,7 @@ LIMIT 100"));
 				$userYesterdayName = $userYesterday['User']['name'];
 		}
 
-		$users = ClassRegistry::init('User')->query('SELECT user.name, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
+		$users = ClassRegistry::init('User')->query('SELECT user.id, user.name, user.rating, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
 		$exportedUsers = [];
 		foreach ($users as $user)
 			$exportedUsers [] = $user['user'];

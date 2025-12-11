@@ -63,7 +63,7 @@
 						<b>'.($index + 1).'</b>
 					</td>
 					<td style="padding:10px;" width="200px">
-						<b>'.$user['name'].'</b>
+						<b>' . User::renderLink($user['id'], $user['name'], $user['rating']) . '</b>
 					</td>
 					<td align="right" style="padding:10px;font-weight:400;">
 						'.$user['daily_solved'].' solved
