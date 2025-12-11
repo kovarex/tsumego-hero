@@ -41,7 +41,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     commentParamList = [],
     displayResult = null,
     showComment = null,
-    movePlayed = null;
+    addTimeForMovePlayed = null;
 
   return {
     addListener: addListener,
@@ -86,7 +86,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     isPerformingAutoPlay: isPerformingAutoPlay,
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
-    registerMovePlayed: registerMovePlayed,
+    registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
@@ -504,8 +504,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		node.hasNonLocalChildIncludingVirtual())
 	{
 		performingAutoPlay = true;
-		if (movePlayed)
-			movePlayed();
+		if (addTimeForMovePlayed)
+			addTimeForMovePlayed();
       setTimeout(function ()
       {
         // when autoplay was cancelled, it was reset in the meantime, so we forget about this
@@ -793,9 +793,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     displayResult = value;
   }
 
-	function registerMovePlayed(value)
+	function registerAddTimeForMovePlayed(value)
 	{
-		movePlayed = value;
+		addTimeForMovePlayed = value;
 	}
 
   function addToRequired(node, cameFrom) {
@@ -807,33 +807,33 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     remainingRequiredNodes.push(element);
   }
 
-  function navigateToRemainingRequiredIfNeeded(timer) {
-    // remove visited nodes from the "to-do" list
-    while (
-      remainingRequiredNodes.length > 0 &&
-      remainingRequiredNodes[0].node.visited
-    )
-      remainingRequiredNodes.pop();
-    if (remainingRequiredNodes.length == 0) return false;
-    performingAutoPlay = true;
+	function navigateToRemainingRequiredIfNeeded(timer)
+	{
+		// remove visited nodes from the "to-do" list
+		while (remainingRequiredNodes.length > 0 && remainingRequiredNodes[0].node.visited)
+			remainingRequiredNodes.pop();
+		if (remainingRequiredNodes.length == 0)
+			return false;
+		performingAutoPlay = true;
+		addTimeForMovePlayed(1.5);
 
-    setTimeout(function () {
-      // when autoplay was cancelled, it was reset in the meantime, so we forget about this
-      if (!performingAutoPlay) return;
+		setTimeout(function ()
+		{
+			// when autoplay was cancelled, it was reset in the meantime, so we forget about this
+			if (!performingAutoPlay)
+				return;
 
-      performingAutoPlay = false;
-      let element = remainingRequiredNodes.pop();
+			performingAutoPlay = false;
+			let element = remainingRequiredNodes.pop();
 
-      element.node.cameFrom = element.cameFrom;
-      navigateToNode(element.node);
-      if (showComment)
-        showComment(
-          "Correct, but what about this answer?\n" + element.node.comment
-        );
-    }, timer);
-    notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
-    return true;
-  }
+			element.node.cameFrom = element.cameFrom;
+			navigateToNode(element.node);
+			if (showComment)
+				showComment("Correct, but what about this answer?\n" + element.node.comment);
+		}, timer);
+		notifyListeners({ navChange: true }); // Notify navigation (with no tree edits)
+		return true;
+	}
 
   function resetToStart() {
     performingAutoPlay = false;

@@ -1638,10 +1638,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$fn1++;
 		?>
 
-	function movePlayed()
+	function addTimeForMovePlayed(multiplier = 1)
 	{
-		tcount += <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?>;
-		seconds -= <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?>;
+		let timeToAdd = <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
+		tcount += timeToAdd;
+		seconds -= timeToAdd;
 	}
 
 	function displayResult(result)
@@ -1949,7 +1950,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.reviewEnabled = true;
 	besogo.create(div, options);
 	besogo.editor.setAutoPlay(true);
-	besogo.editor.registerMovePlayed(movePlayed);
+	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
 	besogo.editor.registerShowComment(function(commentText)
 		{
