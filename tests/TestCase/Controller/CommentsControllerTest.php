@@ -672,7 +672,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$messageField->sendKeys("New standalone comment");
 		$submitButton = $browser->driver->findElement(WebDriverBy::id('submitBtn-tsumegoCommentForm'));
 		$submitButton->click();
-		usleep(1500 * 1000); // Wait for htmx response and idiomorph
+		usleep(3000 * 1000); // Wait 3s for htmx response and idiomorph
 
 		// After htmx morph: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
