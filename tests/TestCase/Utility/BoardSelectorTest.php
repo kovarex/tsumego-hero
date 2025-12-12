@@ -74,11 +74,10 @@ class BoardSelectorTest extends CakeTestCase
 		$context = new ContextPreparator([
 			'user' => ['boards_bitmask' => 2],
 			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
-		$expectedBoardSelection = BoardSelector::getBoardInfo(BoardSelector::$GOLDEN_TSUMEGO_INDEX);
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));
-		$this->assertSame($expectedBoardSelection['black'], $browser->driver->executeScript('return window.besogo.editor.BLACK_STONES;'));
-		$this->assertSame($expectedBoardSelection['white'], $browser->driver->executeScript('return window.besogo.editor.WHITE_STONES;'));
+		$this->assertSame('textureGolden', $browser->driver->executeScript('return window.besogo.theme;'));
+		$this->assertSame(BoardSelector::$GOLDEN_BOARD['black'], $browser->driver->executeScript('return window.besogo.editor.BLACK_STONES;'));
+		$this->assertSame(BoardSelector::$GOLDEN_BOARD['white'], $browser->driver->executeScript('return window.besogo.editor.WHITE_STONES;'));
 	}
 
 	public function testSetThemeSelection()

@@ -60,6 +60,8 @@ class BoardSelector
 			['name' => 'Grandmaster', 'index' => 30, 'texture' => 'texture55', 'black' => 'blackGalaxy.png', 'white' => 'whiteGalaxy.png']
 		];
 
+	public static $GOLDEN_BOARD = ['name' => 'Golden', 'texture' => 'textureGolden', 'black' => 'black34.png', 'white' => 'white34.png'];
+
 	public static function filterValidBits($boardsSelection)
 	{
 		$allowedBits = 0;
@@ -84,7 +86,7 @@ class BoardSelector
 			return self::getBoardInfo($setPreference);
 
 		if ($goldenTsumego)
-			return self::getBoardInfo(self::$GOLDEN_TSUMEGO_INDEX);
+			return self::$GOLDEN_BOARD;
 		$indexes = [];
 
 		foreach (self::$boards as $board)
@@ -98,5 +100,4 @@ class BoardSelector
 	}
 
 	public static $DEFAULT_BOARDS_BITMASK = 0b11111111;
-	public static $GOLDEN_TSUMEGO_INDEX = 46;
 }
