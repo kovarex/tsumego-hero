@@ -75,7 +75,7 @@ class UsersControllerTest extends ControllerTestCase
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
 		$this->assertCount(1, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
+		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
 		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 
 		// Kovarex solves a problem
@@ -87,9 +87,9 @@ class UsersControllerTest extends ControllerTestCase
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
 		$this->assertCount(2, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex');
+		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
 		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '1 solved');
-		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
+		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
 		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 	}
 
