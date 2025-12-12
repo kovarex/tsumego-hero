@@ -1,5 +1,7 @@
 <?php
 
+App::uses('BoardSelector', 'Utility');
+
 class ContextPreparator
 {
 	public function __construct(?array $options = [])

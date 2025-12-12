@@ -651,6 +651,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
+	var resetButtonLink = "<?php echo $currentLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
@@ -1139,7 +1140,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 		$('#target').click(function(e){
 			if(locked)
-				window.location = nextButtonLink;
+				window.location = resetButtonLink;
 	});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
@@ -1660,7 +1661,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			timeModeTimer.stop();
 
 		let success = result == 'S';
-		accountWidget.animate(success);
+		if (accountWidget)
+			accountWidget.animate(success);
 		if (success)
 		{
 			problemSolved = true;
@@ -1816,7 +1818,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (heartLoss)
 		{
 			misplays++;
-			accountWidget.animate(false);
+			if (accountWidget)
+				accountWidget.animate(false);
 			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
 			updateHealth();

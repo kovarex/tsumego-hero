@@ -258,4 +258,41 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$this->assertLessThan(0.1, abs($context->reloadUser()['rating'] - (1000 + $expectedRatingChange)));
 		}
 	}
+
+	/**
+	 * When user fails a problem in level/rating mode and the board locks,
+	 * clicking the locked board should RESET the current problem (like clicking reset button).
+	 */
+	public function testClickLockedBoardAfterFailResetsInsteadOfAdvancing()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ca]C[+])',
+				'sets' => [['name' => 'Test Set', 'num' => '1']],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$tsumegoUrl = $context->tsumego['set-connections'][0]['id'];
+		$browser->get($tsumegoUrl);
+		usleep(3000 * 1000); // Wait for board init
+
+		$browser->clickBoard(2, 1); // Wrong move (correct is 1,1) → locks board
+		usleep(1500 * 1000); // Wait for failure + lock
+
+		// Verify board shows failure state before clicking
+		$statusBeforeClick = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
+		$this->assertStringContainsString("Incorrect", $statusBeforeClick, "Should show 'Incorrect' after wrong move");
+
+		$browser->clickBoard(1, 1); // Click locked board → should reset
+		usleep(2000 * 1000); // Wait for reset
+
+		// Verify board was actually reset (status cleared, not showing "Incorrect" anymore)
+		$statusAfterClick = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
+		$this->assertStringNotContainsString("Incorrect", $statusAfterClick, "Status should be cleared after reset");
+
+		// Verify still on same problem (didn't advance to next)
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString($tsumegoUrl, $currentUrl, "Should stay on same problem after clicking failed board (reset), not advance to next");
+	}
 }
