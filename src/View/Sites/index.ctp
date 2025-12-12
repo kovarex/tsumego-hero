@@ -399,6 +399,7 @@ $highestRight = 17;
 				I made several changes which should make the new cookies behave properly, but I didn't find a way to remove the old ones, which are breaking stuff.
 			</p>
 			<p>There is a lot of work going on. More details can be found in the forum posts</p>
+			<a href="/forums/viewtopic.php?t=52">Version 0.4 weekly overview</a><br>
 			<a href="/forums/viewtopic.php?t=43">Version 0.3 weekly overview</a><br>
 			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
 			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
