@@ -913,6 +913,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 SELECT
 	user.id as user_id,
 	user.name as user_name,
+	user.external_id as user_external_id,
+	user.picture as user_picture,
 	user.rating as user_rating,
 	count(*) AS tag_count
 FROM

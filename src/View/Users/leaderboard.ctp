@@ -52,18 +52,13 @@
 	<table class="dailyHighscoreTable">
 	<?php
 		foreach ($leaderboard as $index => $user)
-		{
-			if (substr($user['name'],0,3) == 'g__' && $user['external_id'] != null) {
-				$user['name'] = '<img class="google-profile-image" src="/img/google/'.$user['picture'].'">'.substr($user['name'], 3);
-			}
-
 			echo '
 				<tr style="background-color:' . Util::smallScoreTableRowColor($index) . ';">
 					<td align="right" style="padding:10px;">
 						<b>'.($index + 1).'</b>
 					</td>
 					<td style="padding:10px;" width="200px">
-						<b>' . User::renderLink($user['id'], $user['name'], $user['rating']) . '</b>
+						<b>' . User::renderLink($user['id'], $user['name'], $user['external_id'], $user['picture'], $user['rating']) . '</b>
 					</td>
 					<td align="right" style="padding:10px;font-weight:400;">
 						'.$user['daily_solved'].' solved
@@ -71,9 +66,7 @@
 					<td align="right" style="padding:10px;">
 						<b>'.$user['daily_xp'].' XP</b>
 					</td>
-				</tr>
-			';
-		}
+				</tr>';
 	?>
 	</table>
 	<br><br>

@@ -76,10 +76,17 @@ class User extends AppModel
 		return $user['rating'];
 	}
 
-	public static function renderLink($id, $name = null, $rating = null)
+	public static function renderLink($id, $name = null, $externalID = null, $picture = null, $rating = null)
 	{
 		if (is_array($id))
-			return self::renderLink($id['user_id'], $id['user_name'], $id['user_rating']);
-		return '<a href="/users/view/' . $id . '">' . h($name) . ' ' . Rating::getReadableRankFromRating($rating) . '</a>';
+			return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
+
+		$image = '';
+		if (str_starts_with($name, 'g__') && $externalID != null)
+		{
+			$image = '<img class="google-profile-image" src="/img/google/' . $picture . '">';
+			$name = substr($name, 3);
+		}
+		return '<a href="/users/view/' . $id . '">' . $image . h($name) . ' ' . Rating::getReadableRankFromRating($rating) . '</a>';
 	}
 }

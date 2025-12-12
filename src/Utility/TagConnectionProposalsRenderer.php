@@ -17,6 +17,8 @@ SELECT
     tsumego.id as tsumego_id,
     user.id AS user_id,
     user.name AS user_name,
+    user.picture AS user_picture,
+    user.external_id AS user_external_id,
     user.rating AS user_rating,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
