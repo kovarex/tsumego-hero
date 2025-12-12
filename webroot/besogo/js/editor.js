@@ -424,7 +424,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
       }
     } else if (boardLockValue == 1) {
       if (!multipleChoiceEnabled) {
-          window.location.href = nextButtonLink;
+          window.location.href = resetButtonLink;
       }
     }
   }
