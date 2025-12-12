@@ -1,6 +1,7 @@
 <?php
 
 App::uses('Auth', 'Utility');
+App::uses('BoardSelector', 'Utility');
 App::uses('TsumegoFilters', 'Utility');
 App::uses('TimeMode', 'Utility');
 
