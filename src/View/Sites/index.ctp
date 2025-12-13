@@ -28,22 +28,9 @@ $highestRight = 17;
 		</div>
 
 		<div class="quote-pick-wrapper">
-			<?php
-			    // This code is necessary only if there are gaps in the quote images or missing achievement and user of the day backgrounds CronController::deduceQuoteToUse generates q01 to q46
-				static $quotesWithBase = ['q01','q02','q03','q04','q05','q06','q07','q08','q09','q10','q11','q12','q13','q16','q17','q18','q19','q20','q23','q24','q25','q26','q27','q28','q29','q30','q31','q32','q33','q34','q35','q36','q37','q38','q39','q40','q41','q42','q43','q45','q96','q97','q98','q99'];
-				static $quotesWithU = ['q01','q02','q03','q04','q05','q06','q07','q08','q09','q10','q11','q12','q13','q96','q97','q99'];
-				static $quotesWithE = ['q01','q02','q03','q04','q05','q06','q07','q08','q09','q10','q11','q12','q13','q18','q19','q20','q24','q26','q29','q32','q96','q97','q98','q99'];
-
-				$fallback = 'q' . str_pad(((int) substr($quote, 1) % 13) + 1, 2, '0', STR_PAD_LEFT);
-
-				$quoteImage = in_array($quote, $quotesWithBase) ? $quote : $fallback;
-				$userImage = in_array($quote, $quotesWithU) ? $quote : $fallback;
-				$achievementImage = in_array($quote, $quotesWithE) ? $quote : $fallback;
-				$cssQuote = in_array($quote, $quotesWithU) ? $quote : $fallback;
-			?>
-			<img src="/img/new_startpage/<?php echo $quoteImage; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
-			<img src="/img/new_startpage/<?php echo $userImage; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
-			<div class="user-pick-all user-pick-<?php echo $cssQuote; ?>" align="center">
+			<img src="/img/new_startpage/<?php echo $quote; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
+			<img src="/img/new_startpage/<?php echo $quote; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
+			<div class="user-pick-all user-pick-<?php echo $quote; ?>" align="center">
 					<?php echo $userOfTheDay; ?>
 			</div>
 		</div>
@@ -349,11 +336,7 @@ $highestRight = 17;
 		?>
 		</div>
 		<?php
-
 			$quotePick = substr($quote, 1);
-
-			//echo '<pre>';print_r($quotePick);echo '</pre>';
-
 			$modeActions = '';
 			$modeActions2 = 'class="modeboxes"';
 			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
@@ -388,7 +371,7 @@ $highestRight = 17;
 		</a>
 		<?php } ?>
 
-		<img src="/img/new_startpage/<?php echo $achievementImage; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
+		<img src="/img/new_startpage/<?php echo $quote; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
 
 		<p class="title4">Update 30.11.2025</p>
 		<div class="new1">

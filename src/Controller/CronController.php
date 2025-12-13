@@ -81,7 +81,7 @@ WHERE
 			$usedQuotes[$latestDayRecord['DayRecord']['quote']] = true;
 
 		$allQuotes = [];
-		for ($i = 1; $i < 46; $i++)
+		for ($i = 1; $i < 13; $i++)
 			$allQuotes[] = sprintf('q%02d', $i);
 		shuffle($allQuotes);
 		foreach ($allQuotes as $quote)
