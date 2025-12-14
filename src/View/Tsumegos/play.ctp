@@ -1955,7 +1955,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	besogo.editor.registerShowComment(function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
+			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
 			$("#theComment").text(commentText);
+
 		});
 
 		function addStyleLink(cssURL)
