@@ -225,16 +225,17 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingAddsXP(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator([
-				'user' => [
-					'rating' => 1000,
-					'mode' => Constants::$RATING_MODE],
-				'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
-			$this->performSolve($context, $page);
-			$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumego));
-		}
+		foreach (['V', 'W'] as $status)
+			foreach ($this->PAGES as $page)
+			{
+				$context = new ContextPreparator([
+					'user' => [
+						'rating' => 1000,
+						'mode' => Constants::$RATING_MODE],
+					'tsumego' => ['status' => $status, 'rating' => 1000, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
+				$this->performSolve($context, $page);
+				$this->assertSame($context->XPGained(), intval(ceil(($status == 'W' ? Constants::$SECOND_SOLVE_XP_MULTIPLIER : 1) *  TsumegoUtil::getXpValue($context->tsumego))));
+			}
 	}
 
 	public function testSolvingSolvedDoesntAddXP(): void
