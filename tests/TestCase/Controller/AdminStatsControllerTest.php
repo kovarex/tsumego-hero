@@ -267,7 +267,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Problem Add', $pageSource);
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
-		$this->assertTextContains('Tsumego Merge', $pageSource);
+		$this->assertTextContains('Merged tsumego', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 

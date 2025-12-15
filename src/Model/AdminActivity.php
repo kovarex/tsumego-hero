@@ -19,6 +19,7 @@ class AdminActivity extends AppModel
 		{
 			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . $adminActivity['new_value'];
 			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . $adminActivity['old_value'];
+			case AdminActivityType::TSUMEGO_MERGE: return 'Merged tsumego ' . $adminActivity['old_value'];
 			default:
 				if (!empty($adminActivity['old_value']) && !empty($adminActivity['new_value']))
 					return $adminActivity['readable_type'] . ': ' . h($adminActivity['old_value']) . ' → ' . h($adminActivity['new_value']);
