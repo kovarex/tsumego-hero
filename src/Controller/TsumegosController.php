@@ -1003,8 +1003,8 @@ class TsumegosController extends AppController
 
 	public function performMerge()
 	{
-		$masterTsumegoID = $this->request->data['master-id'];
-		$slaveTsumegoID = $this->request->data['slave-id'];
+		$masterTsumegoID = $this->request->data['master-tsumego-id'];
+		$slaveTsumegoID = $this->request->data['slave-tsumego-id'];
 
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterTsumegoID);
 		if (!$masterTsumego)
@@ -1014,7 +1014,7 @@ class TsumegosController extends AppController
 		}
 		$masterTsumego = $masterTsumego['Tsumego'];
 
-		$slaveTsumego = ClassRegistry::init('SetConnection')->findById($slaveTsumegoID);
+		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveTsumegoID);
 		if (!$slaveTsumego)
 		{
 			CookieFlash::set('Slave tsumego does not exist.', 'error');
@@ -1031,12 +1031,47 @@ class TsumegosController extends AppController
 
 		$db = ClassRegistry::init('Tsumego')->getDataSource();
 		$db->begin();
-		$slaveSetConnectionBrothers = ClassRegistry::find('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveTsumegoID]]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveTsumegoID]]);
 		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
 		{
 			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $masterTsumegoID;
 			ClassRegistry::init('SetConnection')->save($slaveTsumegoBrother);
 		}
+		$statusMergeSources = Util::query("
+SELECT
+    user_id,
+
+    MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS tsumego_status_id_1,
+    MAX(CASE WHEN tsumego_id = :id1 THEN status END) AS tsumego_status_1,
+
+    MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS tsumego_status_id_2,
+    MAX(CASE WHEN tsumego_id = :id2 THEN status END) AS tsumego_status_2
+
+FROM tsumego_status
+WHERE tsumego_id IN (:id1, :id2)
+GROUP BY user_id
+HAVING
+    COUNT(*) BETWEEN 1 AND 2", [':id1' => $masterTsumegoID, ':id2' => $slaveTsumegoID]);
+		foreach ($statusMergeSources as $statusMergeSource)
+		{
+			if (!$statusMergeSource['tsumego_status_id_1'])
+			{
+				$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->findById($statusMergeSource['tsumego_status_id_2'])['TsumegoStatus'];
+				$tsumegoStatus['TsumegoStatus']['tsumego_id'] = $masterTsumegoID;
+				ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
+			}
+
+			// second status doesn't exist, so we just keep the master one
+			if (!$statusMergeSource['tsumego_status_id_2'])
+				continue;
+
+			$masterStatus = ClassRegistry::init('TsumegoStatus')->findById($statusMergeSource['tsumego_status_id_1'])['TsumegoStatus'];
+			$slaveStatus = ClassRegistry::init('TsumegoStatus')->findById($statusMergeSource['tsumego_status_id_2'])['TsumegoStatus'];
+			$masterStatus['status'] = TsumegoStatus::less($masterStatus['status'], $slaveStatus['status']) ? $slaveStatus['status'] : $masterStatus['status'];
+			ClassRegistry::init('TsumegoStatus')->save($masterStatus);
+		}
 		$db->commit();
+		CookieFlash::set('Tsumegos merged.', 'success');
+		return $this->redirect('/tsumegos/mergeForm');
 	}
 }

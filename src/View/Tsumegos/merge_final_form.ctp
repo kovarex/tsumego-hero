@@ -9,9 +9,9 @@
 		foreach ($slaveTsumegoButtons as $slaveTsumegoButton)
 			$slaveTsumegoButton->render();
 	?>
-	<form action="/tsumegos/performMerge">
-		<input type="hidden" id="masterTsumegoID" value="<?php echo $masterTsumegoID; ?>">
-		<input type="hidden" id="slaveTsumegoID" value="<?php echo $slaveTsumegoID; ?>">
+	<form action="/tsumegos/performMerge" method="post">
+		<input type="hidden" name="master-tsumego-id" value="<?php echo $masterTsumegoID; ?>">
+		<input type="hidden" name="slave-tsumego-id" value="<?php echo $slaveTsumegoID; ?>">
 		<input type="submit" value="PERFORM!" id="submit">
 	</form>
 </div>
