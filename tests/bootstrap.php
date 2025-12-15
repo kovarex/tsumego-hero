@@ -21,7 +21,6 @@ if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['arg
 	$_SERVER['SCRIPT_NAME'] = '/index.php';
 	$_SERVER['PHP_SELF'] = '/index.php';
 	$_SERVER['REQUEST_URI'] = '/';
-	$_SERVER['SERVER_NAME'] = 'test.tsumego.ddev.site'; // Force test database
 	Configure::write('App.base', '');
 	Configure::write('App.baseUrl', '');
 }
