@@ -570,8 +570,6 @@ class ContextPreparator
 			AdminActivityType::PROBLEM_ADD => 'Problem Add',
 			AdminActivityType::SET_ALTERNATIVE_RESPONSE => 'Set Alternative Response',
 			AdminActivityType::SET_PASS_MODE => 'Set Pass Mode',
-			AdminActivityType::DUPLICATE_REMOVE => 'Duplicate Remove',
-			AdminActivityType::DUPLICATE_GROUP_CREATE => 'Duplicate Group Create',
 			AdminActivityType::AUTHOR_EDIT => 'Author Edit',
 			AdminActivityType::RATING_EDIT => 'Rating Edit',
 			AdminActivityType::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
