@@ -272,15 +272,18 @@ showStatistics('Right', $as); ?>
 	</tr></table>
 	<div width="100%" align="right">
 		<?php
-			if($user['User']['dbstorage'] != 1111){
+		if (Auth::getUserID() == $user['User']['id'])
+		{
+			if($user['User']['dbstorage'] != 1111)
 				echo '<div><a style="color:gray;" href="/users/delete_account">Request account deletion</a></div><br>';
-			}else{
+			else
+			{
 				echo '<p style="color:#d63a49;">You have requested account deletion.&nbsp;';
 				echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
 			}
-			if(Auth::isAdmin()){
+			if(Auth::isAdmin())
 				echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
-			}
+		}
 		?>
 	</div>
 </div>
