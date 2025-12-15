@@ -171,19 +171,27 @@ HAVING
 			return $result;
 
 		$db = ClassRegistry::init('Tsumego')->getDataSource();
-		$db->begin();
-		$this->mergeSlaveSetConnections();
-		$this->mergeStatuses();
-		$this->mergeTsumegoAttempts();
-		$this->mergeComments();
-		$this->mergeFavorites();
-		$this->mergeTagConnections();
-		$this->mergeTimeModeAttempts();
-		$this->mergeIssues();
-		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
-		AdminActivityLogger::log(AdminActivityType::TSUMEGO_MERGE, $this->masterTsumegoID, null, strval($this->slaveTsumegoID));
-		$db->commit();
-		return ['message' => 'Tsumegos merged.', 'type' => 'success'];
+		try
+		{
+			$db->begin();
+			$this->mergeSlaveSetConnections();
+			$this->mergeStatuses();
+			$this->mergeTsumegoAttempts();
+			$this->mergeComments();
+			$this->mergeFavorites();
+			$this->mergeTagConnections();
+			$this->mergeTimeModeAttempts();
+			$this->mergeIssues();
+			ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
+			AdminActivityLogger::log(AdminActivityType::TSUMEGO_MERGE, $this->masterTsumegoID, null, strval($this->slaveTsumegoID));
+			$db->commit();
+			return ['message' => 'Tsumegos merged.', 'type' => 'success'];
+		}
+		catch (Exception $e)
+		{
+			$db->rollback();
+			return ['message' => $e->getMessage(), 'type' => 'error'];
+		}
 	}
 
 	private $masterTsumegoID;
