@@ -147,7 +147,7 @@ class PlayResultProcessorComponent extends Component
 		$favorite = [];
 		$favorite['user_id'] = Auth::getUserID();
 		$favorite['tsumego_id'] = $tsumegoID;
-		ClassRegistry::init('Favorite')->create($favorite);
+		ClassRegistry::init('Favorite')->create();
 		ClassRegistry::init('Favorite')->save($favorite);
 	}
 
