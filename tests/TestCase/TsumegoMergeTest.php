@@ -11,6 +11,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			$version2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[be]C[+])';
 			$context = new ContextPreparator([
 				'user' => ['admin' => ($testCase != 'notAdmin')],
+				'time-mode-ranks' => ['5k'],
 				'other-tsumegos' =>	[
 					[
 						'status' => 'V',
@@ -33,7 +34,12 @@ class TsumegoMergeTest extends ControllerTestCase
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
 						'comments' => [['message' => 'slave comment']],
 						'tags' => [['name' => 'snapback'], ['name' => 'atari']]
-					]]]);
+					]],
+				'time-mode-sessions' => [[
+					'category' => TimeModeUtil::$CATEGORY_BLITZ,
+					'rank' => '5k',
+					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
 			if ($testCase == 'mergeWithDoubleFavorite')
 				$context->addFavorite($context->otherTsumegos[0]);
@@ -106,6 +112,11 @@ class TsumegoMergeTest extends ControllerTestCase
 			// tags got merged
 			$tagConnections = ClassRegistry::init('TagConnection')->find('all');
 			$this->assertSame(3, count($tagConnections));
+
+			// time mode attempts got merged
+			$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all');
+			$this->assertSame(1, count($timeModeAttempts));
+			$this->assertSame($context->otherTsumegos[0]['id'], $timeModeAttempts[0]['TimeModeAttempt']['tsumego_id']);
 		}
 	}
 }

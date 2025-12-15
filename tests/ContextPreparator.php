@@ -465,6 +465,8 @@ class ContextPreparator
 			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
 			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
 			$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
+			if (!$rank)
+				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
 			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
 			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
@@ -481,9 +483,10 @@ class ContextPreparator
 		$attempt['time_mode_session_id'] = $timeModeSessionID;
 		if (empty($this->allTsumegos))
 			throw new Exception("No tsumego assign to the time mode attempt");
-		$attempt['tsumego_id'] = $this->allTsumegos[0]['id'];
-		$attempt['order'] = $attemptsInput['order'];
-		$attempt['time_mode_attempt_status_id'] = $attemptsInput['status'];
+		$attempt['tsumego_id'] = ContextPreparator::loadTsumegoID(Util::extractWithDefault('tsumego_id', $attemptsInput, $this->allTsumegos[0]['id']));
+		$attempt['order'] = Util::extract('order', $attemptsInput);
+		$attempt['time_mode_attempt_status_id'] = Util::extract('status', $attemptsInput);
+		$this->checkOptionsConsumed($attemptsInput);
 		ClassRegistry::init('TimeModeAttempt')->create($attempt);
 		ClassRegistry::init('TimeModeAttempt')->save($attempt);
 	}
