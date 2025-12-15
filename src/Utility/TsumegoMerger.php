@@ -103,7 +103,7 @@ WHERE tsumego_id IN (:id1, :id2)
 GROUP BY user_id
 HAVING
     COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
-	    foreach ($favoritesMergeSource as $favoriteMergeSource)
+		foreach ($favoritesMergeSource as $favoriteMergeSource)
 		{
 			// slave is empty, nothing to do
 			if (!$favoriteMergeSource['favorite_id_2'])
