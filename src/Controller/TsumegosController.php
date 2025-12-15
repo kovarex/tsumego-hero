@@ -107,13 +107,13 @@ class TsumegosController extends AppController
 	 * @param string|int|null $id Tsumego ID
 	 * @return void
 	 */
-	public function duplicatesearchx($id = null)
+	public function duplicatesearchx($setConnectionID = null)
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
 		$this->loadModel('SetConnection');
 
-		$maxDifference = 1;
+		$maxDifference = 5;
 		$includeSandbox = 'false';
 		$includeColorSwitch = 'false';
 		$hideSandbox = false;
@@ -135,13 +135,14 @@ class TsumegosController extends AppController
 		$similarDiff = [];
 		$similarDiffType = [];
 		$similarOrder = [];
-		$t = $this->Tsumego->findById($id);
-		$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id]]);
+		$sc = $this->SetConnection->findById($setConnectionID);
 		if (!$sc)
 			throw new NotFoundException('Set connection not found');
+		$tsumegoID = $sc['SetConnection']['tsumego_id'];
+		$t = $this->Tsumego->findById($tsumegoID);
 		$s = $this->Set->findById($sc['SetConnection']['set_id']);
 		$title = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
-		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
 		$tBoard = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
@@ -196,7 +197,7 @@ class TsumegosController extends AppController
 			$tsCount = count($ts);
 
 			for ($i = 0; $i < $tsCount; $i++)
-				if ($ts[$i]['Tsumego']['id'] != $id)
+				if ($ts[$i]['Tsumego']['id'] != $tsumegoID)
 				{
 					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 					$board = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
@@ -257,10 +258,10 @@ class TsumegosController extends AppController
 	}
 
 	/**
-	 * @param string|int|null $id Tsumego ID
+	 * @param string|int|null $id setConnectionID
 	 * @return void
 	 */
-	public function duplicatesearch($id = null)
+	public function duplicatesearch($setConnectionID)
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
@@ -277,13 +278,14 @@ class TsumegosController extends AppController
 		$similarDiffType = [];
 		$similarOrder = [];
 
-		$t = $this->Tsumego->findById($id);
-		$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id]]);
+		$sc = $this->SetConnection->findById($setConnectionID);
 		if (!$sc)
 			throw new NotFoundException('Set connection not found');
+		$t = $this->Tsumego->findById($sc['SetConnection']['tsumego_id']);
+		$tsumegoID = $t['Tsumego']['id'];
 		$s = $this->Set->findById($sc['SetConnection']['set_id']);
 		$title = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
-		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $id]]);
+		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
 		$tBoard = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
@@ -291,10 +293,7 @@ class TsumegosController extends AppController
 
 		$this->set('_title', $s['Set']['title'] . ' ' . $t['Tsumego']['num'] . ' on Tsumego Hero');
 
-		$t = $this->Tsumego->findById($id);
-		$sig = $this->Signature->find('all', ['conditions' => ['tsumego_id' => $id]]);
-		if (!$sig)
-			$sig = [];
+		$sig = $this->Signature->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]) ?: [];
 		$ts = [];
 		$sigCount = count($sig);
 
@@ -312,7 +311,7 @@ class TsumegosController extends AppController
 		$tsCount = count($ts);
 
 		for ($i = 0; $i < $tsCount; $i++)
-			if ($ts[$i]['Tsumego']['id'] != $id)
+			if ($ts[$i]['Tsumego']['id'] != $tsumegoID)
 			{
 				$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
 				if (!$sgf)
