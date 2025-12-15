@@ -4,7 +4,7 @@ class TsumegoMergeTest extends ControllerTestCase
 {
 	public function testMergeTwoTsumegos()
 	{
-		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge', 'mergeWithDoubleFavorite'] as $testCase)
+		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge', 'mergeWithDoubleFavorite', 'masterWithoutStatus'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$version1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
@@ -14,7 +14,7 @@ class TsumegoMergeTest extends ControllerTestCase
 				'time-mode-ranks' => ['5k'],
 				'other-tsumegos' =>	[
 					[
-						'status' => 'V',
+						'status' => ($testCase == 'masterWithoutStatus' ? null : 'V'),
 						'rating' => 850,
 						'sgf' => $version1,
 						'description' => 'Master tsumego',

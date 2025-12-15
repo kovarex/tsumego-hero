@@ -38,7 +38,7 @@ class TsumegoMerger
 		if (!$statusID1)
 		{
 			$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->findById($statusID2)['TsumegoStatus'];
-			$tsumegoStatus['TsumegoStatus']['tsumego_id'] = $this->masterTsumegoID;
+			$tsumegoStatus['tsumego_id'] = $this->masterTsumegoID;
 			ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
 			return;
 		}
