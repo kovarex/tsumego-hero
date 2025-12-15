@@ -1070,6 +1070,7 @@ HAVING
 			$masterStatus['status'] = TsumegoStatus::less($masterStatus['status'], $slaveStatus['status']) ? $slaveStatus['status'] : $masterStatus['status'];
 			ClassRegistry::init('TsumegoStatus')->save($masterStatus);
 		}
+		ClassRegistry::init('Tsumego')->delete($slaveTsumegoID);
 		$db->commit();
 		CookieFlash::set('Tsumegos merged.', 'success');
 		return $this->redirect('/tsumegos/mergeForm');

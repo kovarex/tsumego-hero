@@ -72,6 +72,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame($context->otherTsumegos[0]['set-connections'][0]['tsumego_id'], $context->otherTsumegos[0]['set-connections'][1]['tsumego_id']);
 			$masterStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]);
 			$this->assertSame('S', $masterStatus['TsumegoStatus']['status']);
+			$this->assertSame(1, ClassRegistry::init('Tsumego')->find('count'));
 		}
 	}
 }
