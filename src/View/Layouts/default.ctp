@@ -228,7 +228,7 @@ echo $this->AssetCompress->script('app');
 										echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
 									echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/duplicates">Merge Duplicates</a></li>';
+									echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
 									echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';

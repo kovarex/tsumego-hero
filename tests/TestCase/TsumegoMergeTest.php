@@ -28,7 +28,7 @@ class TsumegoMergeTest extends ControllerTestCase
 						'description' => 'Slave tsumego',
 						'sets' => [['name' => 'set 2', 'num' => '1']]
 					]]]);
-			$browser->get('/users/duplicates');
+			$browser->get('/tsumegos/mergeForm');
 			if ($testCase != 'masterNotSpecified')
 			{
 				$browser->clickId('master-id');

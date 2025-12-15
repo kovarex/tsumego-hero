@@ -323,42 +323,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		//$this->set('uid', $uid);
 	}
 
-	public function duplicates(): mixed
-	{
-		if (!Auth::isAdmin())
-		{
-			CookieFlash::set('error', 'You are not authorized to access this page.');
-			return $this->redirect('/');
-		}
-		$this->set('_page', 'sandbox');
-		$this->set('_title', 'Merge Duplicates');
-		return null;
-	}
-
-	public function tsumegoMergeForm(): mixed
-	{
-		$masterSetConnectionID = $this->request->data['master-id'];
-		$slaveSetConnectionID = $this->request->data['slave-id'];
-		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
-		if (!$masterSetConnection)
-		{
-			CookieFlash::set('Master set connection does not exist.', 'error');
-			$this->redirect('/users/duplicates');
-		}
-		$slaveSetConnection = ClassRegistry::init('SetConnection')->findById($slaveSetConnectionID);
-		if (!$slaveSetConnection)
-		{
-			CookieFlash::set('Slave set connection does not exist.', 'error');
-			$this->redirect('/users/duplicates');
-		}
-		if ($slaveSetConnection['SetConnection']['tsumego_id'] == $masterSetConnection['SetConnection']['tsumego_id'])
-		{
-			CookieFlash::set('These are already merged.', 'error');
-			$this->redirect('/users/duplicates');
-		}
-		return null;
-	}
-
 	/**
 	 * @return void
 	 */
