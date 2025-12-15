@@ -1,5 +1,7 @@
 <?php
 
+App::uses('BoardSelector', 'Utility');
+
 class ContextPreparator
 {
 	public function __construct(?array $options = [])
@@ -416,6 +418,16 @@ class ContextPreparator
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+		}
+		else
+		{
+			// Update existing set to ensure fields match test expectations
+			$set['Set']['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
+			$set['Set']['public'] = is_null($public) ? true : $public;
+			$set['Set']['premium'] = $premium;
+			if ($boardThemeIndex !== null)
+				$set['Set']['board_theme_index'] = $boardThemeIndex;
+			ClassRegistry::init('Set')->save($set);
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
