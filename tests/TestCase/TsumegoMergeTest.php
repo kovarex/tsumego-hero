@@ -19,14 +19,16 @@ class TsumegoMergeTest extends ControllerTestCase
 						'description' => 'Master tsumego',
 						'sets' => [
 							['name' => 'set 1', 'num' => '1'],
-							['name' => 'set 3', 'num' => '1']]
+							['name' => 'set 3', 'num' => '1']],
+						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]]
 					],
 					[
 						'status' => 'S',
 						'rating' => 100,
 						'sgf' => $version2,
 						'description' => 'Slave tsumego',
-						'sets' => [['name' => 'set 2', 'num' => '1']]
+						'sets' => [['name' => 'set 2', 'num' => '1']],
+						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]]
 					]]]);
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
@@ -71,8 +73,15 @@ class TsumegoMergeTest extends ControllerTestCase
 			// the tsumegos were merged
 			$this->assertSame($context->otherTsumegos[0]['set-connections'][0]['tsumego_id'], $context->otherTsumegos[0]['set-connections'][1]['tsumego_id']);
 			$masterStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]);
+
+			// slave status is better than master, so it was merged
 			$this->assertSame('S', $masterStatus['TsumegoStatus']['status']);
+
+			// slave tsumego got actually deleted
 			$this->assertSame(1, ClassRegistry::init('Tsumego')->find('count'));
+
+			// tsumego attempts got merged
+			$this->assertSame(2, ClassRegistry::init('TsumegoAttempt')->find('count'));
 		}
 	}
 }
