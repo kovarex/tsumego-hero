@@ -3699,6 +3699,13 @@ ALTER TABLE `time_mode_attempt_status`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
 
+ INSERT INTO `time_mode_attempt_status` (`id`, `name`) VALUES
+(1, 'queued'),
+(2, 'solved'),
+(3, 'failed'),
+(4, 'timeout'),
+(5, 'skipped');
+
 ALTER TABLE `time_mode_category`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`),
@@ -3718,6 +3725,11 @@ ALTER TABLE `time_mode_session`
 ALTER TABLE `time_mode_session_status`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `name` (`name`);
+
+INSERT INTO `time_mode_session_status` (`id`, `name`) VALUES
+(1, 'in progress'),
+(2, 'failed'),
+(3, 'solved');
 
 ALTER TABLE `tsumego`
   ADD PRIMARY KEY (`id`),
