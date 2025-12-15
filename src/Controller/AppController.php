@@ -853,7 +853,7 @@ class AppController extends Controller
 		}
 	}
 
-	protected function checkTimeModeAchievements()
+	public function checkTimeModeAchievements()
 	{
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
@@ -869,6 +869,9 @@ class AppController extends Controller
 		$as = [];
 		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
+
+		// Set recursive to load associations (TimeModeCategory, TimeModeSessionStatus, TimeModeRank)
+		$this->TimeModeSession->recursive = 1;
 
 		$rBlitz = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_BLITZ, 'user_id' => Auth::getUserID()]]);
 		if (!$rBlitz)
@@ -889,80 +892,88 @@ class AppController extends Controller
 		$rCount = count($r);
 		for ($i = 0; $i < $rCount; $i++)
 		{
-			if ($r[$i]['TimeModeSession']['status'] == 's')
-				if ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '5k')
+			// Check if session was solved (status name = 'solved')
+			$status = isset($r[$i]['TimeModeSessionStatus']['name']) ? $r[$i]['TimeModeSessionStatus']['name'] : '';
+			$rank = isset($r[$i]['TimeModeRank']['name']) ? $r[$i]['TimeModeRank']['name'] : '';
+			$categoryId = isset($r[$i]['TimeModeSession']['time_mode_category_id']) ? $r[$i]['TimeModeSession']['time_mode_category_id'] : 0;
+
+			if ($status == 'solved')
+				if ($rank == '5k')
 				{
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[70] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[76] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[82] = true;
 				}
-				elseif ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '4k')
+				elseif ($rank == '4k')
 				{
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[71] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[77] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[83] = true;
 				}
-				elseif ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '3k')
+				elseif ($rank == '3k')
 				{
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[72] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[78] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[84] = true;
 				}
-				elseif ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '2k')
+				elseif ($rank == '2k')
 				{
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[73] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[79] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[85] = true;
 				}
-				elseif ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '1k')
+				elseif ($rank == '1k')
 				{
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[74] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[80] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[86] = true;
 				}
-				elseif ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '1d')
-					if ($r[$i]['TimeModeSession']['mode'] == 2)
+				elseif ($rank == '1d')
+					if ($categoryId == 3) // Slow
 						$timeModeAchievements[75] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 1)
+					elseif ($categoryId == 2) // Fast
 						$timeModeAchievements[81] = true;
-					elseif ($r[$i]['TimeModeSession']['mode'] == 0)
+					elseif ($categoryId == 1) // Blitz
 						$timeModeAchievements[87] = true;
-			if ($r[$i]['TimeModeSession']['points'] >= 850
-			&& ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '4d'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5d'))
+
+			// Precision achievements based on points and rank
+			$points = isset($r[$i]['TimeModeSession']['points']) ? $r[$i]['TimeModeSession']['points'] : 0;
+			if ($points >= 850
+			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
+			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
+			|| $rank == '5d'))
 				$timeModeAchievements[91] = true;
-			if ($r[$i]['TimeModeSession']['points'] >= 875
-			&& ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '4d'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '6k'))
+			if ($points >= 875
+			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
+			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
+			|| $rank == '5d' || $rank == '5k' || $rank == '6k'))
 				$timeModeAchievements[90] = true;
-			if ($r[$i]['TimeModeSession']['points'] >= 900
-			&& ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '4d'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '6k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '7k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '8k'))
+			if ($points >= 900
+			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
+			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
+			|| $rank == '5d' || $rank == '5k' || $rank == '6k' || $rank == '7k'
+			|| $rank == '8k'))
 				$timeModeAchievements[89] = true;
-			if ($r[$i]['TimeModeSession']['points'] >= 950
-			&& ($r[$i]['TimeModeSession']['TimeModeAttempt'] == '4k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '1d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '2d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '3d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '4d'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5d' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '5k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '6k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '7k'
-			|| $r[$i]['TimeModeSession']['TimeModeAttempt'] == '8k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '9k' || $r[$i]['TimeModeSession']['TimeModeAttempt'] == '10k'))
+			if ($points >= 950
+			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
+			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
+			|| $rank == '5d' || $rank == '5k' || $rank == '6k' || $rank == '7k'
+			|| $rank == '8k' || $rank == '9k' || $rank == '10k'))
 				$timeModeAchievements[88] = true;
 		}
 		for ($i = 70; $i <= 91; $i++)
@@ -1233,7 +1244,7 @@ class AppController extends Controller
 		return $updated;
 	}
 
-	protected function checkSetCompletedAchievements()
+	public function checkSetCompletedAchievements()
 	{
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
@@ -1327,7 +1338,7 @@ class AppController extends Controller
 		return $updated;
 	}
 
-	protected function setAchievementSpecial($s = null)
+	public function setAchievementSpecial($s = null)
 	{
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
@@ -1541,13 +1552,50 @@ class AppController extends Controller
 		return $updated;
 	}
 
-	protected function checkSetAchievements($sid = null)
+	public function checkSetAchievements($sid = null)
 	{
 		$this->loadModel('Set');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Achievement');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('AchievementCondition');
+
+		// Check Achievement 99 (Favorites) FIRST - doesn't need achievement_condition
+		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+		if (!$buffer)
+			$buffer = [];
+		$existingAs = [];
+		$bufferCount = count($buffer);
+		for ($i = 0; $i < $bufferCount; $i++)
+			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
+
+		$as = [];
+		$as['AchievementStatus']['user_id'] = Auth::getUserID();
+		$updated = [];
+
+		$achievementId = 99;
+		if ($sid == -1 && !isset($existingAs[$achievementId]))
+		{
+			$as['AchievementStatus']['achievement_id'] = $achievementId;
+			ClassRegistry::init('AchievementStatus')->create();
+			ClassRegistry::init('AchievementStatus')->save($as);
+			array_push($updated, $achievementId);
+
+			// Format and return early - favorites don't have other set-based achievements
+			$updatedCount = count($updated);
+			for ($i = 0; $i < $updatedCount; $i++)
+			{
+				$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
+				$updated[$i] = [];
+				$updated[$i][0] = $a['Achievement']['name'];
+				$updated[$i][1] = $a['Achievement']['description'];
+				$updated[$i][2] = $a['Achievement']['image'];
+				$updated[$i][3] = $a['Achievement']['color'];
+				$updated[$i][4] = $a['Achievement']['xp'];
+				$updated[$i][5] = $a['Achievement']['id'];
+			}
+			return $updated;
+		}
 
 		//$tNum = count($this->Tsumego->find('all', array('conditions' => array('set_id' => $sid))));
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
@@ -1570,25 +1618,7 @@ class AppController extends Controller
 				'category' => 's',
 			],
 		]);
-		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$buffer)
-			$buffer = [];
-		$existingAs = [];
-		$bufferCount = count($buffer);
-		for ($i = 0; $i < $bufferCount; $i++)
-			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-		$as = [];
-		$as['AchievementStatus']['user_id'] = Auth::getUserID();
-		$updated = [];
 
-		$achievementId = 99;
-		if ($sid == -1 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
 		if ($tNum >= 100)
 		{
 			if ($s['Set']['difficulty'] < 1300)
@@ -1848,7 +1878,7 @@ class AppController extends Controller
 		if ($xpBonus == 0)
 			return;
 		$user = ClassRegistry::init('User')->findById($userID);
-		$user['User']['xp'] = $xpBonus;
+		$user['User']['xp'] += $xpBonus;
 		Level::checkLevelUp($user['User']);
 		ClassRegistry::init('User')->save($user);
 	}

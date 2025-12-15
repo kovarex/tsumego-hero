@@ -1,5 +1,7 @@
 <?php
 
+App::uses('BoardSelector', 'Utility');
+
 class ContextPreparator
 {
 	public function __construct(?array $options = [])
@@ -16,10 +18,12 @@ class ContextPreparator
 		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
 		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
 		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
+		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1']);  // FK to: User, Achievement
+		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1']);      // FK to: Tsumego, Set
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		if (!empty(ClassRegistry::init('User')->find('all')))
 			throw new Exception('Users were deleted and  yet still they are some');
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
+		// ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // DON'T DELETE: Static reference data!
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
 
@@ -34,6 +38,8 @@ class ContextPreparator
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
+		$this->prepareAchievementConditions(Util::extract('achievement-conditions', $options));
+		$this->prepareAchievementStatuses(Util::extract('achievement-statuses', $options));
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
@@ -97,8 +103,13 @@ class ContextPreparator
 		$user['mode'] = Util::extract('mode', $userInput) ?: Constants::$LEVEL_MODE;
 		if ($lastTimeModeCategoryID = Util::extract('last-time-mode-category-id', $userInput))
 			$user['last_time_mode_category_id'] = $lastTimeModeCategoryID;
-		ClassRegistry::init('User')->create($user);
-		ClassRegistry::init('User')->save($user);
+
+		// Save user
+		$Model = ClassRegistry::init('User');
+		$Model->create();
+		$saveResult = $Model->save($user);
+		if (!$saveResult)
+			throw new Exception("Failed to save user: " . print_r($Model->validationErrors, true));
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
 
 		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
@@ -470,7 +481,7 @@ class ContextPreparator
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
 			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
 			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
-			$newSession = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'id DESC'])['TimeModeSession'];
+			$newSession = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'TimeModeSession.id DESC'])['TimeModeSession'];
 			$this->timeModeSessions [] = $newSession;
 			foreach ($timeModeSessionInput['attempts'] as $attemptInput)
 				$this->prepareTimeModeAttempts($attemptInput, $newSession['id']);
@@ -540,6 +551,77 @@ class ContextPreparator
 			ClassRegistry::init('DayRecord')->create($dayRecord);
 			ClassRegistry::init('DayRecord')->save($dayRecord);
 			$this->checkOptionsConsumed($dayRecordInput);
+		}
+	}
+
+	/**
+	 * Prepares achievement conditions for the test context.
+	 * Each condition is associated with the user created in this context.
+	 *
+	 * @param array|null $conditions Array of achievement condition definitions
+	 *   Each condition should have:
+	 *   - 'category' (required): The achievement category (e.g., 'accuracy', 'speed', 'uotd')
+	 *   - 'value' (required): The condition value (e.g., 100 for percentage, 1 for boolean)
+	 *   - 'set_id' (optional): The set_id for set-specific conditions (defaults to null)
+	 *   - 'user_id' (optional): Override the user_id (defaults to $this->user['id'])
+	 */
+	public function prepareAchievementConditions(?array $conditions): void
+	{
+		if (!$conditions)
+			return;
+
+		$AchievementCondition = ClassRegistry::init('AchievementCondition');
+		foreach ($conditions as $conditionInput)
+		{
+			$condition = [];
+			$condition['AchievementCondition']['user_id'] = Util::extract('user_id', $conditionInput) ?: $this->user['id'];
+			$condition['AchievementCondition']['category'] = Util::extract('category', $conditionInput);
+			$condition['AchievementCondition']['value'] = Util::extract('value', $conditionInput);
+			$condition['AchievementCondition']['set_id'] = Util::extract('set_id', $conditionInput);
+
+			$AchievementCondition->create();
+			$AchievementCondition->save($condition);
+			$this->checkOptionsConsumed($conditionInput);
+		}
+	}
+
+	public function prepareAchievementStatuses(?array $statuses): void
+	{
+		if (!$statuses)
+			return;
+
+		$AchievementStatus = ClassRegistry::init('AchievementStatus');
+		foreach ($statuses as $statusInput)
+		{
+			$status = [];
+
+			// Support 'user_id' => true to use main context user
+			// Support 'user_id' => string to use user by name from otherUsers
+			$userId = Util::extract('user_id', $statusInput);
+			if ($userId === true)
+				$status['user_id'] = $this->user['id'];
+			elseif (is_string($userId))
+			{
+				// Find user by name from otherUsers
+				$foundUser = null;
+				foreach ($this->otherUsers as $otherUser)
+					if ($otherUser['name'] === $userId)
+					{
+						$foundUser = $otherUser;
+						break;
+					}
+				$status['user_id'] = $foundUser ? $foundUser['id'] : $this->user['id'];
+			}
+			else
+				$status['user_id'] = $userId ?: $this->user['id'];
+
+			$status['achievement_id'] = Util::extract('achievement_id', $statusInput);
+			$status['value'] = Util::extract('value', $statusInput) ?? 1;
+			$status['created'] = Util::extract('created', $statusInput) ?: date('Y-m-d H:i:s');
+
+			$AchievementStatus->create();
+			$AchievementStatus->save($status);
+			$this->checkOptionsConsumed($statusInput);
 		}
 	}
 
