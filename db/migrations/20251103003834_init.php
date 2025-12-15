@@ -3479,7 +3479,9 @@ CREATE TABLE `tsumego_issue` (
   `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+INSERT INTO `tsumego_issue_status` (`id`, `name`) VALUES
+(1, 'opened'),
+(2, 'closed');
 
 CREATE TABLE `tsumego_issue_status` (
   `id` int(10) UNSIGNED NOT NULL,
