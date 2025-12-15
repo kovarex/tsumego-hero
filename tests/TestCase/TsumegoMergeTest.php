@@ -20,7 +20,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'sets' => [
 							['name' => 'set 1', 'num' => '1'],
 							['name' => 'set 3', 'num' => '1']],
-						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]]
+						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]],
+						'comments' => [['message' => 'master comment']]
 					],
 					[
 						'status' => 'S',
@@ -28,7 +29,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'sgf' => $version2,
 						'description' => 'Slave tsumego',
 						'sets' => [['name' => 'set 2', 'num' => '1']],
-						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]]
+						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
+						'comments' => [['message' => 'slave comment']]
 					]]]);
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
@@ -82,6 +84,12 @@ class TsumegoMergeTest extends ControllerTestCase
 
 			// tsumego attempts got merged
 			$this->assertSame(2, ClassRegistry::init('TsumegoAttempt')->find('count'));
+
+			// tsumego comments got merged
+			$comments = ClassRegistry::init('TsumegoComment')->find('all');
+			$this->assertSame(2, count($comments));
+			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
+			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
 		}
 	}
 }

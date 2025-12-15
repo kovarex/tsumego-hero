@@ -84,6 +84,16 @@ HAVING
 		}
 	}
 
+	private function mergeComments()
+	{
+		$slaveComments = ClassRegistry::init('TsumegoComment')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
+		foreach ($slaveComments as $slaveComment)
+		{
+			$slaveComment['TsumegoComment']['tsumego_id'] = $this->masterTsumegoID;
+			ClassRegistry::init('TsumegoComment')->save($slaveComment);
+		}
+	}
+
 	public function execute(): array
 	{
 		if ($result = $this->checkInput())
@@ -94,6 +104,7 @@ HAVING
 		$this->mergeSlaveSetConnections();
 		$this->mergeStatuses();
 		$this->mergeTsumegoAttempts();
+		$this->mergeComments();
 		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
 		$db->commit();
 		return ['message' => 'Tsumegos merged.', 'type' => 'success'];
