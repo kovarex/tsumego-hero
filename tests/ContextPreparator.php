@@ -10,6 +10,11 @@ class ContextPreparator
 		$db = ConnectionManager::getDataSource('default');
 		$db->execute("DELETE FROM cake_sessions WHERE 1=1");
 
+		$testCookies = ['PHPUNIT_TEST' => true, 'TEST_TOKEN' => true];
+		foreach (array_keys($_COOKIE) as $cookieName)
+			if (!isset($testCookies[$cookieName]))
+				unset($_COOKIE[$cookieName]);
+
 		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);
 		// NOTE: Tag NOT deleted - has baseline data populated by migrations
