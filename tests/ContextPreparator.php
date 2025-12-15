@@ -455,14 +455,17 @@ class ContextPreparator
 
 	private function prepareTimeModeRanks($timeModeRanks): void
 	{
+		// TimeModeRank is static reference data (from migration), so we look up existing ranks instead of creating them
 		foreach ($timeModeRanks as $timeModeRankInput)
 		{
-			$timeModeRank = [];
-			$timeModeRank['name'] = $timeModeRankInput;
-			ClassRegistry::init('TimeModeRank')->create($timeModeRank);
-			ClassRegistry::init('TimeModeRank')->save($timeModeRank);
-			$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', ['order' => 'id DESC'])['TimeModeRank'];
-			$this->timeModeRanks [] = $timeModeRank;
+			$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', [
+				'conditions' => ['name' => $timeModeRankInput]
+			])['TimeModeRank'];
+
+			if (!$timeModeRank)
+				throw new Exception("TimeModeRank '{$timeModeRankInput}' not found. Ranks are static data created by migration.");
+
+			$this->timeModeRanks[] = $timeModeRank;
 		}
 	}
 
