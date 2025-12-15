@@ -99,7 +99,7 @@ class TagConnectionsEdit
 				(!tag.isAdded || !tag.isMine && !tag.isApproved))
 			.map(tag =>
 				tag.isAdded ?
-					`<span class="add-tag-list-anchor">${tag.name}</span>` :
+					`<span style="color:red" title="Already proposed by someone">${tag.name}</span>` :
 					`<a class="add-tag-list-anchor" id="${makeIdValidName(tag.name)}" onclick="tagConnectionsEdit.add('${tag.name}');">${tag.name}</a>`
 			).join(', ');
 		$("." + id).append(html);
