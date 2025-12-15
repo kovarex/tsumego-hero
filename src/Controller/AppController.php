@@ -870,8 +870,6 @@ class AppController extends Controller
 		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
-		// Set recursive to load associations (TimeModeCategory, TimeModeSessionStatus, TimeModeRank)
-		$this->TimeModeSession->recursive = 1;
 
 		$rBlitz = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_BLITZ, 'user_id' => Auth::getUserID()]]);
 		if (!$rBlitz)
@@ -892,88 +890,88 @@ class AppController extends Controller
 		$rCount = count($r);
 		for ($i = 0; $i < $rCount; $i++)
 		{
-			// Check if session was solved (status name = 'solved')
-			$status = isset($r[$i]['TimeModeSessionStatus']['name']) ? $r[$i]['TimeModeSessionStatus']['name'] : '';
-			$rank = isset($r[$i]['TimeModeRank']['name']) ? $r[$i]['TimeModeRank']['name'] : '';
+			// Compare IDs directly - no need for recursive loading
+			$statusId = isset($r[$i]['TimeModeSession']['time_mode_session_status_id']) ? $r[$i]['TimeModeSession']['time_mode_session_status_id'] : 0;
+			$rankId = isset($r[$i]['TimeModeSession']['time_mode_rank_id']) ? $r[$i]['TimeModeSession']['time_mode_rank_id'] : 0;
 			$categoryId = isset($r[$i]['TimeModeSession']['time_mode_category_id']) ? $r[$i]['TimeModeSession']['time_mode_category_id'] : 0;
 
-			if ($status == 'solved')
-				if ($rank == '5k')
+			if ($statusId == TimeModeSessionStatus::SOLVED)
+				if ($rankId == TimeModeRank::RANK_5K)
 				{
-					if ($categoryId == 3) // Slow
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[70] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[76] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[82] = true;
 				}
-				elseif ($rank == '4k')
+				elseif ($rankId == TimeModeRank::RANK_4K)
 				{
-					if ($categoryId == 3) // Slow
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[71] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[77] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[83] = true;
 				}
-				elseif ($rank == '3k')
+				elseif ($rankId == TimeModeRank::RANK_3K)
 				{
-					if ($categoryId == 3) // Slow
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[72] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[78] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[84] = true;
 				}
-				elseif ($rank == '2k')
+				elseif ($rankId == TimeModeRank::RANK_2K)
 				{
-					if ($categoryId == 3) // Slow
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[73] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[79] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[85] = true;
 				}
-				elseif ($rank == '1k')
+				elseif ($rankId == TimeModeRank::RANK_1K)
 				{
-					if ($categoryId == 3) // Slow
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[74] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[80] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[86] = true;
 				}
-				elseif ($rank == '1d')
-					if ($categoryId == 3) // Slow
+				elseif ($rankId == TimeModeRank::RANK_1D)
+					if ($categoryId == TimeModeCategory::SLOW)
 						$timeModeAchievements[75] = true;
-					elseif ($categoryId == 2) // Fast
+					elseif ($categoryId == TimeModeCategory::FAST)
 						$timeModeAchievements[81] = true;
-					elseif ($categoryId == 1) // Blitz
+					elseif ($categoryId == TimeModeCategory::BLITZ)
 						$timeModeAchievements[87] = true;
 
 			// Precision achievements based on points and rank
 			$points = isset($r[$i]['TimeModeSession']['points']) ? $r[$i]['TimeModeSession']['points'] : 0;
 			if ($points >= 850
-			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
-			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
-			|| $rank == '5d'))
+			&& ($rankId == TimeModeRank::RANK_4K || $rankId == TimeModeRank::RANK_3K || $rankId == TimeModeRank::RANK_2K || $rankId == TimeModeRank::RANK_1K
+			|| $rankId == TimeModeRank::RANK_1D || $rankId == TimeModeRank::RANK_2D || $rankId == TimeModeRank::RANK_3D || $rankId == TimeModeRank::RANK_4D
+			|| $rankId == TimeModeRank::RANK_5D))
 				$timeModeAchievements[91] = true;
 			if ($points >= 875
-			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
-			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
-			|| $rank == '5d' || $rank == '5k' || $rank == '6k'))
+			&& ($rankId == TimeModeRank::RANK_4K || $rankId == TimeModeRank::RANK_3K || $rankId == TimeModeRank::RANK_2K || $rankId == TimeModeRank::RANK_1K
+			|| $rankId == TimeModeRank::RANK_1D || $rankId == TimeModeRank::RANK_2D || $rankId == TimeModeRank::RANK_3D || $rankId == TimeModeRank::RANK_4D
+			|| $rankId == TimeModeRank::RANK_5D || $rankId == TimeModeRank::RANK_5K || $rankId == TimeModeRank::RANK_6K))
 				$timeModeAchievements[90] = true;
 			if ($points >= 900
-			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
-			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
-			|| $rank == '5d' || $rank == '5k' || $rank == '6k' || $rank == '7k'
-			|| $rank == '8k'))
+			&& ($rankId == TimeModeRank::RANK_4K || $rankId == TimeModeRank::RANK_3K || $rankId == TimeModeRank::RANK_2K || $rankId == TimeModeRank::RANK_1K
+			|| $rankId == TimeModeRank::RANK_1D || $rankId == TimeModeRank::RANK_2D || $rankId == TimeModeRank::RANK_3D || $rankId == TimeModeRank::RANK_4D
+			|| $rankId == TimeModeRank::RANK_5D || $rankId == TimeModeRank::RANK_5K || $rankId == TimeModeRank::RANK_6K || $rankId == TimeModeRank::RANK_7K
+			|| $rankId == TimeModeRank::RANK_8K))
 				$timeModeAchievements[89] = true;
 			if ($points >= 950
-			&& ($rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k'
-			|| $rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d'
-			|| $rank == '5d' || $rank == '5k' || $rank == '6k' || $rank == '7k'
-			|| $rank == '8k' || $rank == '9k' || $rank == '10k'))
+			&& ($rankId == TimeModeRank::RANK_4K || $rankId == TimeModeRank::RANK_3K || $rankId == TimeModeRank::RANK_2K || $rankId == TimeModeRank::RANK_1K
+			|| $rankId == TimeModeRank::RANK_1D || $rankId == TimeModeRank::RANK_2D || $rankId == TimeModeRank::RANK_3D || $rankId == TimeModeRank::RANK_4D
+			|| $rankId == TimeModeRank::RANK_5D || $rankId == TimeModeRank::RANK_5K || $rankId == TimeModeRank::RANK_6K || $rankId == TimeModeRank::RANK_7K
+			|| $rankId == TimeModeRank::RANK_8K || $rankId == TimeModeRank::RANK_9K || $rankId == TimeModeRank::RANK_10K))
 				$timeModeAchievements[88] = true;
 		}
 		for ($i = 70; $i <= 91; $i++)
