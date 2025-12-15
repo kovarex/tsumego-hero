@@ -15,5 +15,6 @@ final class DuplicateTableRemoval extends AbstractMigration
 		$this->execute('DELETE FROM admin_activit_type WHERE id=' . 17);
 		$this->execute('DELETE FROM admin_activit_type WHERE id=' . 18);
 		$this->execute('DROP TABLE admin_activity_old');
+		$this->execute('DROP TABLE comment_backup');
     }
 }
