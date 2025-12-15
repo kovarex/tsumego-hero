@@ -78,8 +78,7 @@ class PlayResultProcessorComponent extends Component
 		if ($solved)
 		{
 			if ($currentStatus == 'W') // half xp state
-			{
-				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
+			{$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
 				return 'C'; // double solved
 			}
 			if ($currentStatus == 'G')
