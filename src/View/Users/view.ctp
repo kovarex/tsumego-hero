@@ -208,7 +208,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<?php
-function showStatistics($side, $as)
+function showStatistics($side, $as, $user)
 {
 	echo '
 		<td width="50%">
@@ -267,8 +267,8 @@ function showStatistics($side, $as)
 	</td>
 <?php
 }
-showStatistics('Left', $as);
-showStatistics('Right', $as); ?>
+showStatistics('Left', $as, $user);
+showStatistics('Right', $as, $user); ?>
 	</tr></table>
 	<div width="100%" align="right">
 		<?php
