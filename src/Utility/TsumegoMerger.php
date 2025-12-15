@@ -122,6 +122,37 @@ HAVING
 		}
 	}
 
+	private function mergeTagConnections()
+	{
+		$tagMergeSources = Util::query("
+SELECT
+    tag_id,
+    MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS tag_connection_id_1,
+    MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS tag_connection_id_2
+FROM tag_connection
+WHERE tsumego_id IN (:id1, :id2)
+GROUP BY tag_id
+HAVING
+    COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
+		foreach ($tagMergeSources as $tagMergeSource)
+		{
+			// slave is empty, nothing to do
+			if (!$tagMergeSource['tag_connection_id_2'])
+				continue;
+
+			// master is empty, we change the slave to master
+			if (!$tagMergeSource['tag_connection_id_1'])
+			{
+				$tagConnection = ClassRegistry::init('TagConnection')->findById($tagMergeSource['tag_connection_id_2'])['TagConnection'];
+				$tagConnection['tsumego_id'] = $this->masterTsumegoID;
+				ClassRegistry::init('TagConnection')->save($tagConnection);
+				continue;
+			}
+			// when both master and slave is present, we don't have to do anything, the slave one will be removed by
+			// foreign key cascade
+		}
+	}
+
 	public function execute(): array
 	{
 		if ($result = $this->checkInput())
@@ -134,6 +165,7 @@ HAVING
 		$this->mergeTsumegoAttempts();
 		$this->mergeComments();
 		$this->mergeFavorites();
+		$this->mergeTagConnections();
 		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
 		$db->commit();
 		return ['message' => 'Tsumegos merged.', 'type' => 'success'];

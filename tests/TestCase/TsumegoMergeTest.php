@@ -21,7 +21,8 @@ class TsumegoMergeTest extends ControllerTestCase
 							['name' => 'set 1', 'num' => '1'],
 							['name' => 'set 3', 'num' => '1']],
 						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]],
-						'comments' => [['message' => 'master comment']]
+						'comments' => [['message' => 'master comment']],
+						'tags' => [['name' => 'atari'], ['name' => 'tenuki']]
 					],
 					[
 						'status' => 'S',
@@ -30,7 +31,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'description' => 'Slave tsumego',
 						'sets' => [['name' => 'set 2', 'num' => '1']],
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
-						'comments' => [['message' => 'slave comment']]
+						'comments' => [['message' => 'slave comment']],
+						'tags' => [['name' => 'snapback'], ['name' => 'atari']]
 					]]]);
 
 			if ($testCase == 'mergeWithDoubleFavorite')
@@ -96,9 +98,14 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
 			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
 
+			// favorites got merged
 			$favorites = ClassRegistry::init('Favorite')->find('all');
 			$this->assertSame(1, count($favorites));
 			$this->assertSame($favorites[0]['Favorite']['tsumego_id'], $context->otherTsumegos[0]['id']);
+
+			// tags got merged
+			$tagConnections = ClassRegistry::init('TagConnection')->find('all');
+			$this->assertSame(3, count($tagConnections));
 		}
 	}
 }
