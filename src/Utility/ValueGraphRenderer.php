@@ -2,7 +2,7 @@
 
 class ValueGraphRenderer
 {
-	public static function render($caption, $id, $structure, $input)
+	public static function render($caption, $id, $structure, $input, $categoryName, $reverseOrder = false)
 	{
 		$series = [];
 		foreach ($structure as $node)
@@ -12,18 +12,18 @@ class ValueGraphRenderer
 				$data[] = $item[$node['name']];
 			$series[] = "{
 				  name: '" . $node['name'] . "',
-				  data: [" . implode(',', $data) . "],
+				  data: [" . implode(',', $reverseOrder ? array_reverse($data) : $data) . "],
 				  color: '" . $node['color'] . "'}";
 		}
 
 		$categories = [];
 		foreach ($input as $item)
-			$categories[] = $item['category'];
+			$categories[] = $item[$categoryName];
 
 		echo "
 		var options =
 		{
-			series: [" . implode(",", $series) . "],
+			series: [" . $result = implode(',', $series) . "],
 			chart:
 			{
 				type: 'bar',
@@ -60,7 +60,7 @@ class ValueGraphRenderer
 			title: { text: '" . $caption . "' },
 			xaxis:
 			{
-				categories: [" . implode(',', array_map(fn($c) => "'$c'", $categories)) . "],
+				categories: [" . implode(',', array_map(fn($c) => "'$c'", $reverseOrder ? array_reverse($categories) : $categories)) . "],
 				labels: {formatter: function (val) { return val; }}
 			},
 			yaxis: { title: { text: undefined }},

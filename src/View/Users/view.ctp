@@ -1,18 +1,6 @@
 <?php
 require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
-if ($lightDark=='dark')
-{
-	$lightDarkChartColor = '#fff';
-	$lightDarkChartColor2 = '#3e3e3e';
-}
-else
-{
-	$lightDarkChartColor = '#000';
-	$lightDarkChartColor2 = '#ddd';
-}
-
-if($user['User']['solved'] > $tsumegoNum)
-	$solved = $tsumegoNum;
+require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 ?>
 
 <div class="homeCenter2">
@@ -72,7 +60,7 @@ if($user['User']['solved'] > $tsumegoNum)
 	<?php
 		$levelBarDisplayChecked1 = '';
 		$levelBarDisplayChecked2 = '';
-		if($levelBar==1)
+		if ($levelBar == 1)
 			$levelBarDisplayChecked1 = 'checked="checked"';
 		else
 			$levelBarDisplayChecked2 = 'checked="checked"';
@@ -185,11 +173,15 @@ if($user['User']['solved'] > $tsumegoNum)
 	</div>
 </div>
 <?php
-	$size = count($graph);
-	if($size<10) $height = '400';
-	else if($size<30) $height = '600';
-	else if($size<50) $height = '900';
-	else $height = '1200';
+	$size = count($dailyResults);
+	if ($size < 10)
+		$height = '400';
+	else if($size < 30)
+		$height = '600';
+	else if ($size < 50)
+		$height = '900';
+	else
+		$height = '1200';
 ?>
 <div class="userBottom1">
 	<table class="profileTable" width="100%" border="0">
@@ -303,8 +295,9 @@ if($user['User']['solved'] > $tsumegoNum)
 					</tr>
 					</table>
 					<?php
-					for($i=0; $i<count($as); $i++){
-					if(strlen($as[$i]['AchievementStatus']['a_title'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
+					for ($i=0; $i<count($as); $i++)
+					{
+						if(strlen($as[$i]['AchievementStatus']['a_title'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
 					else $adjust = '';
 					?>
 					<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
@@ -509,73 +502,19 @@ function delUts(){
 			['name' => 'Solves', 'color' => '#74d14c'],
 			['name' => 'Fails', 'color' => '#d63a49']
 		],
-		$graph);
-	?>
-	let graph2dates = [];
-	let graph2Ranks = [];
-	<?php
-	$currentGdate = 0;
-	for($i=count($ta2['date'])-1;$i>=0;$i--){
-		$gDate = new DateTime($ta2['date'][$i]);
-		$gDate = $gDate->format('d.m.y');
-		if($gDate!=$currentGdate){
-			$currentGdate = $gDate;
-			echo 'graph2dates.push("'.$currentGdate.'");';
-		}else
-			echo 'graph2dates.push("");';
-		echo 'graph2Ranks.push("'.$ta2['rating'][$i].'");';
-	}
-	?>
-	var options = {
-	  series: [{
-		name: "Rating",
-		data: graph2Ranks,
-		color: '#74d14c'
-	}],
-	chart: {
-	  height: 520,
-	  type: 'line',
-	  foreColor: "<?php echo $lightDarkChartColor; ?>",
-	  zoom: {
-		enabled: false
-	  }
-	},
-	dataLabels: {
-	  enabled: false
-	},
-	stroke: {
-	  curve: 'straight',
-	  colors: ['#74d14c']
-	},
-	title: {
-	  text: 'Overall rating',
-	  align: 'left'
-	},
-	grid: {
-	  row: {
-		colors: ["<?php echo $lightDarkChartColor2; ?>", 'transparent'],
-		opacity: 0.5
-	  },
-	},
-	xaxis: {
-	  categories: graph2dates
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#74d14c', '#d63a49']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart2"), options);
-	chart.render();
-	<?php
-		ValueGraphRenderer::render(
+		$dailyResults,
+		'day',
+		true /* reverseOrder*/);
+	TimeGraphRenderer::render('Overall rating', 'chart2', $dailyResults, 'Rating');
+	ValueGraphRenderer::render(
 		'Time mode runs',
 		'chart3',
 		[
 			['name' => 'Passes', 'color' => '#c8723d'],
 			['name' => 'Fails', 'color' => '#888888']
 		],
-		$timeGraph);
+		$timeGraph,
+		'category');
 	ValueGraphRenderer::render(
 		'Problems in level mode',
 		'chart11',
@@ -583,72 +522,19 @@ function delUts(){
 			['name' => 'Solves', 'color' => '#74d14c'],
 			['name' => 'Fails', 'color' => '#d63a49']
 		],
-		$graph);?>
-	let graph22dates = [];
-	let graph22Ranks = [];
-	<?php
-	$currentGdate = 0;
-	for($i=count($ta2['date'])-1;$i>=0;$i--){
-		$gDate = new DateTime($ta2['date'][$i]);
-		$gDate = $gDate->format('d.m.y');
-		if($gDate!=$currentGdate){
-			$currentGdate = $gDate;
-			echo 'graph22dates.push("'.$currentGdate.'");';
-		}else
-			echo 'graph22dates.push("");';
-		echo 'graph22Ranks.push("'.$ta2['rating'][$i].'");';
-	}
-	?>
-	var options = {
-	  series: [{
-		name: "Rating",
-		data: graph22Ranks,
-		color: '#74d14c'
-	}],
-	chart: {
-	  height: 520,
-	  type: 'line',
-	  foreColor: "<?php echo $lightDarkChartColor; ?>",
-	  zoom: {
-		enabled: false
-	  }
-	},
-	dataLabels: {
-	  enabled: false
-	},
-	stroke: {
-	  curve: 'straight',
-	  colors: ['#74d14c']
-	},
-	title: {
-	  text: 'Overall rating',
-	  align: 'left'
-	},
-	grid: {
-	  row: {
-		colors: ["<?php echo $lightDarkChartColor2; ?>", 'transparent'],
-		opacity: 0.5
-	  },
-	},
-	xaxis: {
-	  categories: graph22dates
-	},
-	fill: {
-	  opacity: 1,
-	  colors: ['#74d14c', '#d63a49']
-	}
-	};
-	var chart = new ApexCharts(document.querySelector("#chart22"), options);
-	chart.render();
-	<?php
-		ValueGraphRenderer::render(
+		$dailyResults,
+		'day',
+		true /* reverseOrder*/);
+	TimeGraphRenderer::render('Overall rating', 'chart22', $dailyResults, 'Rating');
+	ValueGraphRenderer::render(
 		'Time mode runs',
 		'chart33',
 		[
 			['name' => 'Passes', 'color' => '#c8723d'],
 			['name' => 'Fails', 'color' => '#888888']
 		],
-		$timeGraph);
+		$timeGraph,
+		'category');
 	?>
 </script>
 <script>

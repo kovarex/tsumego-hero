@@ -1043,36 +1043,19 @@ LIMIT 100"));
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
-		$ta = $this->TsumegoAttempt->find('all', [
-			'order' => 'created DESC',
-			'conditions' => ['user_id' => $id, 'created >' => $oldest]]);
 
-		$graph = [];
-		$ta2 = [];
-
-		$ta2['date'] = [];
-		$ta2['rating'] = [];
-
-		$taCount = count($ta);
-		for ($i = 0; $i < $taCount; $i++)
-		{
-			if ($ta[$i]['TsumegoAttempt']['user_rating'] != null)
-			{
-				$ta2['date'][] = $ta[$i]['TsumegoAttempt']['created'];
-				$ta2['rating'][] = $ta[$i]['TsumegoAttempt']['user_rating'];
-			}
-
-			$ta[$i]['TsumegoAttempt']['created'] = new DateTime(date($ta[$i]['TsumegoAttempt']['created']));
-			$ta[$i]['TsumegoAttempt']['created'] = $ta[$i]['TsumegoAttempt']['created']->format('Y-m-d');
-			if (!isset($graph[$ta[$i]['TsumegoAttempt']['created']]))
-			{
-				$graph[$ta[$i]['TsumegoAttempt']['created']] = [];
-				$graph[$ta[$i]['TsumegoAttempt']['created']]['category'] = $ta[$i]['TsumegoAttempt']['created'];
-				$graph[$ta[$i]['TsumegoAttempt']['created']]['Solves'] = 0;
-				$graph[$ta[$i]['TsumegoAttempt']['created']]['Fails'] = 0;
-			}
-			$graph[$ta[$i]['TsumegoAttempt']['created']][$ta[$i]['TsumegoAttempt']['solved'] == 1 ? 'Solves' : 'Fails']++;
-		}
+		$dailyResults = Util::query("
+			SELECT
+				DATE(created) AS day,
+				SUM(CASE WHEN solved = 1 THEN 1 ELSE 0 END) AS Solves,
+				SUM(CASE WHEN solved = 0 THEN 1 ELSE 0 END) AS Fails,
+				MAX(user_rating) AS Rating
+			FROM tsumego_attempt
+			WHERE user_id = :user_id
+			  AND created > :oldest
+			GROUP BY DATE(created)
+			ORDER BY day ASC
+		", ['user_id' => $id, 'oldest'  => $oldest]);
 
 		$this->set('timeModeRanks', Util::query("
 SELECT
@@ -1167,8 +1150,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$aCount = $this->Achievement->find('all');
 
-		$this->set('ta2', $ta2);
-		$this->set('graph', $graph);
+		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
 		$this->set('tsumegoNum', $tsumegoNum);
 		$this->set('percentSolved', $percentSolved);
