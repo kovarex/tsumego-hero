@@ -957,6 +957,8 @@ class TsumegosController extends AppController
 
 	public function mergeFinalForm(): mixed
 	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
 		$masterSetConnectionID = $this->request->data['master-id'];
 		$slaveSetConnectionID = $this->request->data['slave-id'];
 		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
@@ -965,22 +967,76 @@ class TsumegosController extends AppController
 			CookieFlash::set('Master set connection does not exist.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
+		$masterSetConnection = $masterSetConnection['SetConnection'];
+
 		$slaveSetConnection = ClassRegistry::init('SetConnection')->findById($slaveSetConnectionID);
 		if (!$slaveSetConnection)
 		{
 			CookieFlash::set('Slave set connection does not exist.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		if ($slaveSetConnection['SetConnection']['tsumego_id'] == $masterSetConnection['SetConnection']['tsumego_id'])
+		$slaveSetConnection = $slaveSetConnection['SetConnection'];
+
+		if ($slaveSetConnection['tsumego_id'] == $masterSetConnection['tsumego_id'])
 		{
 			CookieFlash::set('These are already merged.', 'error');
 			$this->redirect('/tsumegos/mergeForm');
 		}
-		$masterSetConnectionBrothers = ClassRegistry::find('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $masterSetConnection['SetConnection']['tsumego_id']]]);
-		$slaveSetConnectionBrothers = ClassRegistry::find('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveSetConnection['SetConnection']['tsumego_id']]]);
-		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['SetConnection']['tsumego_id']);
-		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['SetConnection']['tsumego_id']);
+		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $masterSetConnection['tsumego_id']]]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveSetConnection['tsumego_id']]]);
+		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
+		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
 
+		$masterSetConnectionBrothersButtons = [];
+		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
+			$masterSetConnectionBrothersButtons []= TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
+		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
+		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
+
+		$slaveSetConnectionBrothersButtons = [];
+		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
+			$slaveSetConnectionBrothersButtons []= TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
+		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
+		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
 		return null;
+	}
+
+	public function performMerge()
+	{
+		$masterTsumegoID = $this->request->data['master-id'];
+		$slaveTsumegoID = $this->request->data['slave-id'];
+
+		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterTsumegoID);
+		if (!$masterTsumego)
+		{
+			CookieFlash::set('Master tsumego does not exist.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+		$masterTsumego = $masterTsumego['Tsumego'];
+
+		$slaveTsumego = ClassRegistry::init('SetConnection')->findById($slaveTsumegoID);
+		if (!$slaveTsumego)
+		{
+			CookieFlash::set('Slave tsumego does not exist.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+		$slaveTsumego = $slaveTsumego['Tsumego'];
+
+		if ($masterTsumegoID == $slaveTsumegoID)
+		{
+			CookieFlash::set('Tsumegos already merged.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+
+
+		$db = ClassRegistry::init('Tsumego')->getDataSource();
+		$db->begin();
+		$slaveSetConnectionBrothers = ClassRegistry::find('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveTsumegoID]]);
+		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
+		{
+			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $masterTsumegoID;
+			ClassRegistry::init('SetConnection')->save($slaveTsumegoBrother);
+		}
+		$db->commit();
 	}
 }

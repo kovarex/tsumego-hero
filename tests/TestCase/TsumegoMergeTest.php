@@ -4,13 +4,13 @@ class TsumegoMergeTest extends ControllerTestCase
 {
 	public function testMergeTwoTsumegos()
 	{
-		foreach (['masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged'] as $testCase)
+		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$version1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
 			$version2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[be]C[+])';
 			$context = new ContextPreparator([
-				'user' => ['admin' => true],
+				'user' => ['admin' => ($testCase != 'notAdmin')],
 				'other-tsumegos' =>	[
 					[
 						'status' => 'V',
@@ -29,6 +29,11 @@ class TsumegoMergeTest extends ControllerTestCase
 						'sets' => [['name' => 'set 2', 'num' => '1']]
 					]]]);
 			$browser->get('/tsumegos/mergeForm');
+			if ($testCase == 'notAdmin')
+			{
+				$this->assertSame(Util::getMyAddress() . '/', $browser->driver->getCurrentURL());
+				continue;
+			}
 			if ($testCase != 'masterNotSpecified')
 			{
 				$browser->clickId('master-id');
@@ -60,6 +65,11 @@ class TsumegoMergeTest extends ControllerTestCase
 				$this->assertTextContains('These are already merged.', $browser->driver->getPageSource());
 				continue;
 			}
+			$this->assertSame(Util::getMyAddress() . '/tsumegos/mergeFinalForm', $browser->driver->getCurrentURL());
+			$browser->clickId('submit');
+
+			// the tsumegos were merged
+			$this->assertSame($context->otherTsumegos[0]['set-connections'][0]['tsumego_id'], $context->otherTsumegos[0]['set-connections'][1]['tsumego_id']);
 		}
 	}
 }

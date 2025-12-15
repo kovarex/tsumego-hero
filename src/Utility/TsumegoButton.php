@@ -10,6 +10,18 @@ class TsumegoButton
 		$this->status = $status;
 	}
 
+	static public function createFromSetConnection($setConnection): TsumegoButton
+	{
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
+			'tsumego_id' => $setConnection['tsumego_id'],
+			'user_id' => Auth::getUserID()]]);
+		return new TsumegoButton(
+			$setConnection['tsumego_id'],
+			$setConnection['id'],
+			$setConnection['num'],
+			$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : null);
+	}
+
 	public function render()
 	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
