@@ -172,10 +172,6 @@ class Play
 						$t['Tsumego']['pass'] = 1;
 					else
 						$t['Tsumego']['pass'] = 0;
-					if ($data['Settings']['r40'] == 'on')
-						$t['Tsumego']['duplicate'] = -1;
-					else
-						$t['Tsumego']['duplicate'] = 0;
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
@@ -459,7 +455,6 @@ class Play
 		($this->setFunction)('requestProblem', $requestProblem);
 		($this->setFunction)('alternative_response', $t['Tsumego']['alternative_response']);
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
-		($this->setFunction)('set_duplicate', $t['Tsumego']['duplicate']);
 		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);

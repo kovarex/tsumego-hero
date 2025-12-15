@@ -6,6 +6,7 @@ App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('AppException', 'Utility');
 App::uses('CookieFlash', 'Utility');
+App::uses('TsumegoMerger', 'Utility');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -941,5 +942,72 @@ class TsumegosController extends AppController
 
 		ClassRegistry::init('Tsumego')->save($tsumego);
 		return $this->redirect($this->data['redirect']);
+	}
+
+	public function mergeForm(): mixed
+	{
+		if (!Auth::isAdmin())
+		{
+			CookieFlash::set('error', 'You are not authorized to access this page.');
+			return $this->redirect('/');
+		}
+		$this->set('_page', 'sandbox');
+		$this->set('_title', 'Merge Duplicates');
+		return null;
+	}
+
+	public function mergeFinalForm(): mixed
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+		$masterSetConnectionID = $this->request->data['master-id'];
+		$slaveSetConnectionID = $this->request->data['slave-id'];
+		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
+		if (!$masterSetConnection)
+		{
+			CookieFlash::set('Master set connection does not exist.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+		$masterSetConnection = $masterSetConnection['SetConnection'];
+
+		$slaveSetConnection = ClassRegistry::init('SetConnection')->findById($slaveSetConnectionID);
+		if (!$slaveSetConnection)
+		{
+			CookieFlash::set('Slave set connection does not exist.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+		$slaveSetConnection = $slaveSetConnection['SetConnection'];
+
+		if ($slaveSetConnection['tsumego_id'] == $masterSetConnection['tsumego_id'])
+		{
+			CookieFlash::set('These are already merged.', 'error');
+			$this->redirect('/tsumegos/mergeForm');
+		}
+		$masterSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $masterSetConnection['tsumego_id']]]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveSetConnection['tsumego_id']]]);
+		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
+		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
+
+		$masterSetConnectionBrothersButtons = [];
+		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
+			$masterSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
+		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
+		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
+
+		$slaveSetConnectionBrothersButtons = [];
+		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
+			$slaveSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
+		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
+		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
+		return null;
+	}
+
+	public function performMerge()
+	{
+		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
+		$flash = $merger->execute();
+		if ($flash)
+			CookieFlash::set($flash['message'], $flash['type']);
+		$this->redirect('/tsumegos/mergeForm');
 	}
 }

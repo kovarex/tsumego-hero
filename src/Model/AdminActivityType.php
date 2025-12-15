@@ -38,11 +38,10 @@ class AdminActivityType extends AppModel
 	public const SET_ALTERNATIVE_RESPONSE = 15;
 	public const SET_PASS_MODE = 16;
 
-	// Duplicate Management
-	public const DUPLICATE_REMOVE = 17;
-	public const DUPLICATE_GROUP_CREATE = 18;
-
 	// Tags
 	public const ACCEPT_TAG = 23;
 	public const REJECT_TAG = 24;
+
+	// Tsumego merge
+	public const TSUMEGO_MERGE = 25;
 }

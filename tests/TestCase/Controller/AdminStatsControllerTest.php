@@ -233,13 +233,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 				['type' => AdminActivityType::SET_ALTERNATIVE_RESPONSE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 				['type' => AdminActivityType::SET_PASS_MODE, 'set_id' => true, 'old_value' => '0', 'new_value' => '1'],
 
-				// Duplicate management (17-18) - reference other tsumego in old_value
-				['type' => AdminActivityType::DUPLICATE_REMOVE, 'tsumego_id' => true, 'old_value' => 'other:0'],
-				['type' => AdminActivityType::DUPLICATE_GROUP_CREATE, 'tsumego_id' => true, 'old_value' => 'other:0'],
-
 				// tag proposals
 				['type' => AdminActivityType::ACCEPT_TAG, 'tsumego_id' => true, 'new_value' => 'snapback'],
 				['type' => AdminActivityType::REJECT_TAG, 'tsumego_id' => true, 'old_value' => 'atari'],
+
+				// tsumego merge
+				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 			]
 		]);
 
@@ -268,8 +267,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Problem Add', $pageSource);
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
-		$this->assertTextContains('Duplicate Remove', $pageSource);
-		$this->assertTextContains('Duplicate Group Create', $pageSource);
+		$this->assertTextContains('Merged tsumego', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 

@@ -74,8 +74,8 @@ class CompleteAdminActivityRefactor extends AbstractMigration
 			(" . AdminActivityType::PROBLEM_ADD . ", 'Problem Add'),
 			(" . AdminActivityType::SET_ALTERNATIVE_RESPONSE . ", 'Set Alternative Response'),
 			(" . AdminActivityType::SET_PASS_MODE . ", 'Set Pass Mode'),
-			(" . AdminActivityType::DUPLICATE_REMOVE . ", 'Duplicate Remove'),
-			(" . AdminActivityType::DUPLICATE_GROUP_CREATE . ", 'Duplicate Group Create');
+			(17, 'Duplicate Remove'),
+			(18, 'Duplicate Group Create');
 		");
 
 		// STEP 3: Create new admin_activity table with final schema
