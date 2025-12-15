@@ -58,13 +58,10 @@ class TsumegoMerger
 		$statusMergeSources = Util::query("
 SELECT
     user_id,
-
     MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS tsumego_status_id_1,
     MAX(CASE WHEN tsumego_id = :id1 THEN status END) AS tsumego_status_1,
-
     MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS tsumego_status_id_2,
     MAX(CASE WHEN tsumego_id = :id2 THEN status END) AS tsumego_status_2
-
 FROM tsumego_status
 WHERE tsumego_id IN (:id1, :id2)
 GROUP BY user_id
@@ -94,6 +91,37 @@ HAVING
 		}
 	}
 
+	private function mergeFavorites()
+	{
+		$favoritesMergeSource = Util::query("
+SELECT
+    user_id,
+    MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS favorite_id_1,
+    MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS favorite_id_2
+FROM favorite
+WHERE tsumego_id IN (:id1, :id2)
+GROUP BY user_id
+HAVING
+    COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
+	    foreach ($favoritesMergeSource as $favoriteMergeSource)
+		{
+			// slave is empty, nothing to do
+			if (!$favoriteMergeSource['favorite_id_2'])
+				continue;
+
+			// master is empty, we change the slave to master
+			if (!$favoriteMergeSource['favorite_id_1'])
+			{
+				$favorite = ClassRegistry::init('Favorite')->findById($favoriteMergeSource['favorite_id_2'])['Favorite'];
+				$favorite['tsumego_id'] = $this->masterTsumegoID;
+				ClassRegistry::init('Favorite')->save($favorite);
+				continue;
+			}
+			// when both master and slave is present, we don't have to do anything, the slave one will be removed by
+			// foreign key cascade
+		}
+	}
+
 	public function execute(): array
 	{
 		if ($result = $this->checkInput())
@@ -105,6 +133,7 @@ HAVING
 		$this->mergeStatuses();
 		$this->mergeTsumegoAttempts();
 		$this->mergeComments();
+		$this->mergeFavorites();
 		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
 		$db->commit();
 		return ['message' => 'Tsumegos merged.', 'type' => 'success'];

@@ -4,7 +4,7 @@ class TsumegoMergeTest extends ControllerTestCase
 {
 	public function testMergeTwoTsumegos()
 	{
-		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge'] as $testCase)
+		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge', 'mergeWithDoubleFavorite'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$version1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
@@ -32,6 +32,11 @@ class TsumegoMergeTest extends ControllerTestCase
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
 						'comments' => [['message' => 'slave comment']]
 					]]]);
+
+			if ($testCase == 'mergeWithDoubleFavorite')
+				$context->addFavorite($context->otherTsumegos[0]);
+			$context->addFavorite($context->otherTsumegos[1]);
+
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
 			{
@@ -90,6 +95,10 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame(2, count($comments));
 			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
 			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
+
+			$favorites = ClassRegistry::init('Favorite')->find('all');
+			$this->assertSame(1, count($favorites));
+			$this->assertSame($favorites[0]['Favorite']['tsumego_id'], $context->otherTsumegos[0]['id']);
 		}
 	}
 }
