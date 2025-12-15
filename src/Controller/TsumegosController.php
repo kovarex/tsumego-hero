@@ -103,11 +103,7 @@ class TsumegosController extends AppController
 		$this->set('s2', $s2);
 	}
 
-	/**
-	 * @param string|int|null $id Tsumego ID
-	 * @return void
-	 */
-	public function duplicatesearchx($setConnectionID = null)
+	public function duplicatesearchx($setConnectionID): void
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
@@ -257,11 +253,7 @@ class TsumegosController extends AppController
 		$this->set('hideSandbox', $hideSandbox);
 	}
 
-	/**
-	 * @param string|int|null $id setConnectionID
-	 * @return void
-	 */
-	public function duplicatesearch($setConnectionID)
+	public function duplicatesearch($setConnectionID): void
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
