@@ -9,12 +9,12 @@ class TsumegoStatus extends AppModel
 	}
 
 	// when two statuses are to be merged, we need to decide which one is more valuable to keep for the user
-	static public function less($status1, $status2)
+	public static function less($status1, $status2)
 	{
 		return self::value($status1) < self::value($status2);
 	}
 
-	static private function value($status): int
+	private static function value($status): int
 	{
 		switch ($status)
 		{

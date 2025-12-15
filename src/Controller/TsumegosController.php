@@ -990,13 +990,13 @@ class TsumegosController extends AppController
 
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
-			$masterSetConnectionBrothersButtons []= TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
+			$masterSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
 		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
 		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
 
 		$slaveSetConnectionBrothersButtons = [];
 		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
-			$slaveSetConnectionBrothersButtons []= TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
+			$slaveSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
 		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
 		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
 		return null;

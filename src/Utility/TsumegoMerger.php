@@ -2,11 +2,11 @@
 
 class TsumegoMerger
 {
-	 public function __construct($masterTsumegoID, $slaveTsumegoID)
-	 {
-		 $this->masterTsumegoID = $masterTsumegoID;
-		 $this->slaveTsumegoID = $slaveTsumegoID;
-	 }
+	public function __construct($masterTsumegoID, $slaveTsumegoID)
+	{
+		$this->masterTsumegoID = $masterTsumegoID;
+		$this->slaveTsumegoID = $slaveTsumegoID;
+	}
 
 	private function checkInput(): ?array
 	{
@@ -25,7 +25,7 @@ class TsumegoMerger
 
 	private function mergeSlaveSetConnections()
 	{
-		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $slaveTsumegoID]]);
+		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
 		{
 			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $this->masterTsumegoID;

@@ -10,7 +10,7 @@ class TsumegoButton
 		$this->status = $status;
 	}
 
-	static public function createFromSetConnection($setConnection): TsumegoButton
+	public static function createFromSetConnection($setConnection): TsumegoButton
 	{
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
 			'tsumego_id' => $setConnection['tsumego_id'],
