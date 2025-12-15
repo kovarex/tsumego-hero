@@ -207,123 +207,69 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<br>
 	<table class="profileTable" width="100%" border="0">
 		<tr>
-			<td width="50%">
-				<div id="userShowLevelLeft">
-					<div id="chartContainer">
-						<div id="chart1"></div>
-					</div>
+			<?php
+function showStatistics($side, $as)
+{
+	echo '
+		<td width="50%">
+			<div id="userShowLevel' . $side . '">
+				<div id="chartContainer">
+					<div id="chart-level-' . $side . '"></div>
 				</div>
-				<div id="userShowRatingLeft">
-					<div id="chartContainer">
-						<div id="chart2"></div>
-					</div>
-					<div align="center">
-						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
-					</div>
+			</div>
+			<div id="userShowRating' . $side . '">
+				<div id="chartContainer">
+					<div id="chart-rating-' . $side . '"></div>
 				</div>
-				<div id="userShowTimeLeft">
-					<div id="chartContainer">
-						<div id="chart3"></div>
-					</div>
+				<div align="center">
+					<a href="/users/solveHistory/' .$user['User']['id'] . '">Show solve history</a>
 				</div>
-				<div id="userShowAchievementsLeft">
-					<table width="95%" border="0">
+			</div>
+			<div id="userShowTime' . $side . '">
+				<div id="chartContainer">
+					<div id="chart-time-' . $side . '"></div>
+				</div>
+			</div>
+			<div id="userShowAchievements' . $side . '">
+				<table width="95%" border="0">
 					<tr>
-						<td class="h1profile">
-							<h1 class="h1">Achievements</h1>
-						</td>
-						<td style="text-align:right;">
-							<b class="profileTable2"><a href="/achievements">View Achievements</a></b>
-						</td>
+						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
+						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements">View Achievements</a></b></td>
 					</tr>
-					</table>
-					<?php
-					for($i=0; $i<count($as); $i++){
-					if(strlen($as[$i]['AchievementStatus']['a_title'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
-					else $adjust = '';
-					?>
-					<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
-					<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
-						<div class="acTitle2">
-							<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
-						</div>
-						<div class="acImg">
-							<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
-							<div class="acImgXp">
-							<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
-							</div>
-						</div>
-						<div class="acDate2">
-							<?php
-							$date = date_create($as[$i]['AchievementStatus']['created']);
-							echo date_format($date,"d.m.Y H:i");
-							?>
-						</div>
-					</div>
-					</a>
-					<?php } ?>
+				</table>';
+	for($i=0; $i<count($as); $i++)
+	{
+		if (strlen($as[$i]['AchievementStatus']['a_title']) > 30)
+			$adjust = 'style="font-weight:normal;font-size:17px;"';
+		else $adjust = '';
+	?>
+		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
+		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
+			<div class="acTitle2">
+				<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
+			</div>
+			<div class="acImg">
+				<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
+				<div class="acImgXp">
+				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
-			</td>
-			<td width="50%">
-				<div id="userShowLevelRight">
-					<div id="chartContainer">
-						<div id="chart11"></div>
-					</div>
-				</div>
-				<div id="userShowRatingRight">
-					<div id="chartContainer">
-						<div id="chart22"></div>
-					</div>
-					<div align="center">
-						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
-					</div>
-				</div>
-				<div id="userShowTimeRight">
-					<div id="chartContainer">
-						<div id="chart33"></div>
-					</div>
-				</div>
-				<div id="userShowAchievementsRight">
-					<table width="95%" border="0">
-					<tr>
-						<td class="h1profile">
-							<h1 class="h1">Achievements</h1>
-						</td>
-						<td style="text-align:right;">
-							<b class="profileTable2"><a href="/achievements">View Achievements</a></b>
-						</td>
-					</tr>
-					</table>
-					<?php
-					for ($i=0; $i<count($as); $i++)
-					{
-						if(strlen($as[$i]['AchievementStatus']['a_title'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
-					else $adjust = '';
-					?>
-					<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
-					<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
-						<div class="acTitle2">
-							<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
-						</div>
-						<div class="acImg">
-							<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
-							<div class="acImgXp">
-							<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
-							</div>
-						</div>
-						<div class="acDate2">
-							<?php
-							$date = date_create($as[$i]['AchievementStatus']['created']);
-							echo date_format($date,"d.m.Y H:i");
-							?>
-						</div>
-					</div>
-					</a>
-					<?php } ?>
-				</div>
-			</td>
-		</tr>
-	</table>
+			</div>
+			<div class="acDate2">
+				<?php
+				$date = date_create($as[$i]['AchievementStatus']['created']);
+				echo date_format($date,"d.m.Y H:i");
+				?>
+			</div>
+		</div>
+		</a>
+		<?php } ?>
+	</div>
+	</td>
+<?php
+}
+showStatistics('Left', $as);
+showStatistics('Right', $as); ?>
+	</tr></table>
 	<div width="100%" align="right">
 		<?php
 			if($user['User']['dbstorage'] != 1111){
@@ -399,46 +345,29 @@ function delUts(){
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
 <?php
-	 ValueGraphRenderer::render(
-		'Problems in level mode',
-		'chart1',
-		[
-			['name' => 'Solves', 'color' => '#74d14c'],
-			['name' => 'Fails', 'color' => '#d63a49']
-		],
-		$dailyResults,
-		'day',
-		true /* reverseOrder*/);
-	TimeGraphRenderer::render('Overall rating', 'chart2', $dailyResults, 'Rating');
-	ValueGraphRenderer::render(
-		'Time mode runs',
-		'chart3',
-		[
-			['name' => 'Passes', 'color' => '#c8723d'],
-			['name' => 'Fails', 'color' => '#888888']
-		],
-		$timeGraph,
-		'category');
-	ValueGraphRenderer::render(
-		'Problems in level mode',
-		'chart11',
-		[
-			['name' => 'Solves', 'color' => '#74d14c'],
-			['name' => 'Fails', 'color' => '#d63a49']
-		],
-		$dailyResults,
-		'day',
-		true /* reverseOrder*/);
-	TimeGraphRenderer::render('Overall rating', 'chart22', $dailyResults, 'Rating');
-	ValueGraphRenderer::render(
-		'Time mode runs',
-		'chart33',
-		[
-			['name' => 'Passes', 'color' => '#c8723d'],
-			['name' => 'Fails', 'color' => '#888888']
-		],
-		$timeGraph,
-		'category');
+	foreach (['Left', 'Right'] as $side)
+	{
+		 ValueGraphRenderer::render(
+			'Problems in level mode',
+			'chart-level-' . $side,
+			[
+				['name' => 'Solves', 'color' => '#74d14c'],
+				['name' => 'Fails', 'color' => '#d63a49']
+			],
+			$dailyResults,
+			'day',
+			true /* reverseOrder*/);
+		TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
+		ValueGraphRenderer::render(
+			'Time mode runs',
+			'chart-time-' . $side,
+			[
+				['name' => 'Passes', 'color' => '#c8723d'],
+				['name' => 'Fails', 'color' => '#888888']
+			],
+			$timeGraph,
+			'category');
+	}
 	?>
 </script>
 <script>
