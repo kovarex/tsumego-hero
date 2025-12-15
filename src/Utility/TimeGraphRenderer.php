@@ -2,14 +2,14 @@
 
 class TimeGraphRenderer
 {
-	static public function render($caption, $id, $input, $value)
+	public static function render($caption, $id, $input, $value)
 	{
 		$values = [];
 		foreach ($input as $item)
 		{
-          $timeStamp = new DateTime($item['day'])->getTimestamp() * 1000; // ms
-          $values []= '[' . $timeStamp . ', ' . $item[$value] . ']';
-      }
+			$timeStamp = new DateTime($item['day'])->getTimestamp() * 1000; // ms
+			$values [] = '[' . $timeStamp . ', ' . $item[$value] . ']';
+		}
 
 		echo "
 var options =
