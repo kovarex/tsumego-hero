@@ -870,6 +870,7 @@ class AppController extends Controller
 		$as['AchievementStatus']['user_id'] = Auth::getUserID();
 		$updated = [];
 
+		$this->TimeModeSession->recursive = -1;
 
 		$rBlitz = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_BLITZ, 'user_id' => Auth::getUserID()]]);
 		if (!$rBlitz)

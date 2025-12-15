@@ -23,7 +23,7 @@ class ContextPreparator
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		if (!empty(ClassRegistry::init('User')->find('all')))
 			throw new Exception('Users were deleted and  yet still they are some');
-		// ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // DON'T DELETE: Static reference data!
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Reference data, created on-demand by ensureSpecificTimeModeRanks()
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
 
@@ -455,32 +455,79 @@ class ContextPreparator
 
 	private function prepareTimeModeRanks($timeModeRanks): void
 	{
-		// TimeModeRank is static reference data (from migration), so we look up existing ranks instead of creating them
-		foreach ($timeModeRanks as $timeModeRankInput)
+		if (!$timeModeRanks)
+			return;
+
+		// Create only the specific ranks requested (for tests that need specific rank configurations)
+		$this->ensureSpecificTimeModeRanks($timeModeRanks);
+	}
+
+	private function ensureSpecificTimeModeRanks(array $rankNames): void
+	{
+		App::uses('TimeModeRank', 'Model');
+
+		// Map of rank names to IDs
+		$rankNameToId = [
+			'15k' => TimeModeRank::RANK_15K, '14k' => TimeModeRank::RANK_14K, '13k' => TimeModeRank::RANK_13K,
+			'12k' => TimeModeRank::RANK_12K, '11k' => TimeModeRank::RANK_11K, '10k' => TimeModeRank::RANK_10K,
+			'9k' => TimeModeRank::RANK_9K, '8k' => TimeModeRank::RANK_8K, '7k' => TimeModeRank::RANK_7K,
+			'6k' => TimeModeRank::RANK_6K, '5k' => TimeModeRank::RANK_5K, '4k' => TimeModeRank::RANK_4K,
+			'3k' => TimeModeRank::RANK_3K, '2k' => TimeModeRank::RANK_2K, '1k' => TimeModeRank::RANK_1K,
+			'1d' => TimeModeRank::RANK_1D, '2d' => TimeModeRank::RANK_2D, '3d' => TimeModeRank::RANK_3D,
+			'4d' => TimeModeRank::RANK_4D, '5d' => TimeModeRank::RANK_5D
+		];
+
+		$timeModeRank = ClassRegistry::init('TimeModeRank');
+
+		// Create only the requested ranks
+		foreach ($rankNames as $name)
 		{
-			$timeModeRank = ClassRegistry::init('TimeModeRank')->find('first', [
-				'conditions' => ['name' => $timeModeRankInput]
-			])['TimeModeRank'];
+			$id = $rankNameToId[$name] ?? null;
+			if (!$id)
+				throw new Exception("Unknown rank name: {$name}");
 
-			if (!$timeModeRank)
-				throw new Exception("TimeModeRank '{$timeModeRankInput}' not found. Ranks are static data created by migration.");
+			$timeModeRank->create();
+			$timeModeRank->save([
+				'TimeModeRank' => [
+					'id' => $id,
+					'name' => $name,
+				]
+			], false);
+		}
 
-			$this->timeModeRanks[] = $timeModeRank;
+		// Populate timeModeRanks property for tests that need it
+		$this->timeModeRanks = $timeModeRank->find('all', ['order' => 'id']);
+		if ($this->timeModeRanks)
+		{
+			$temp = [];
+			foreach ($this->timeModeRanks as $rank)
+				$temp[] = $rank['TimeModeRank'];
+			$this->timeModeRanks = $temp;
 		}
 	}
 
 	private function prepareTimeModeSessions($timeModeSessions): void
 	{
+		if (!$timeModeSessions)
+			return;
+
+		// Extract unique rank names from sessions and ensure they exist
+		$rankNames = [];
+		foreach ($timeModeSessions as $session)
+			$rankNames[$session['rank']] = true;
+		$this->ensureSpecificTimeModeRanks(array_keys($rankNames));
+
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
 			$timeModeSession = [];
 			$timeModeSession['user_id'] = Auth::getUserID();
 			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
 			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
-			$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
-			if (!$rank)
-				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
+		$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
+		if (!$rank)
+			throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
 			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
 			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
