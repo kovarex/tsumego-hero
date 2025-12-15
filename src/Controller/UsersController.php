@@ -323,255 +323,40 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		//$this->set('uid', $uid);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function duplicates()
+	public function duplicates(): mixed
 	{
+		if (!Auth::isAdmin())
+		{
+			CookieFlash::set('error', 'You are not authorized to access this page.');
+			return $this->redirect('/');
+		}
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Merge Duplicates');
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Set');
-		$this->loadModel('AdminActivity');
-		$this->loadModel('SetConnection');
-		$this->loadModel('Sgf');
-		$this->loadModel('Duplicate');
+		return null;
+	}
 
-		$idMap = [];
-		$idMap2 = [];
-		$marks = [];
-		$aMessage = null;
-		$errSet = '';
-		$errNotNull = '';
-		$tooltipSgfs = [];
-		$tooltipInfo = [];
-		$tooltipBoardSize = [];
-		//$sc1 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => 3537, 'set_id' => 71790)));
-		//$sc2 = $this->SetConnection->find('first', array('conditions' => array('tsumego_id' => 25984, 'set_id' => 190)));
-		//$sc2['SetConnection']['tsumego_id'] = 25984;
-		//$this->SetConnection->save($sc2);
-
-		if (isset($this->params['url']['remove']))
+	public function tsumegoMergeForm(): mixed
+	{
+		$masterSetConnectionID = $this->request->data['master-id'];
+		$slaveSetConnectionID = $this->request->data['slave-id'];
+		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
+		if (!$masterSetConnection)
 		{
-			$remove = $this->Tsumego->findById($this->params['url']['remove']);
-			if ($remove)
-			{
-				$remove['Tsumego']['duplicate'] = 0;
-				$this->Tsumego->save($remove);
-			}
+			CookieFlash::set('Master set connection does not exist.', 'error');
+			$this->redirect('/users/duplicates');
 		}
-		if (isset($this->params['url']['removeDuplicate']))
+		$slaveSetConnection = ClassRegistry::init('SetConnection')->findById($slaveSetConnectionID);
+		if (!$slaveSetConnection)
 		{
-			$remove = $this->Tsumego->findById($this->params['url']['removeDuplicate']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $remove['Tsumego']['id']]]);
-			$remove['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			if (!empty($remove) && $remove['Tsumego']['duplicate'] > 9)
-			{
-				$r1 = $this->Tsumego->findById($remove['Tsumego']['duplicate']);
-				$r2 = $this->Tsumego->find('all', ['conditions' => ['duplicate' => $remove['Tsumego']['duplicate']]]);
-				array_push($r2, $r1);
-				if (count($r2) == 2)
-				{
-					$r2Count = count($r2);
-					for ($i = 0; $i < $r2Count; $i++)
-					{
-						$r2[$i]['Tsumego']['duplicate'] = 0;
-						$this->Tsumego->save($r2[$i]);
-					}
-				}
-				elseif (count($r2) > 2)
-				{
-					$remove['Tsumego']['duplicate'] = 0;
-					$this->Tsumego->save($remove);
-				}
-				AdminActivityLogger::log(AdminActivityType::DUPLICATE_REMOVE, $this->params['url']['removeDuplicate']);
-			}
-			else
-				$aMessage = 'You can\'t remove the main duplicate.';
+			CookieFlash::set('Slave set connection does not exist.', 'error');
+			$this->redirect('/users/duplicates');
 		}
-		if (isset($this->params['url']['main']) && isset($this->params['url']['duplicates']))
+		if ($slaveSetConnection['SetConnection']['tsumego_id'] == $masterSetConnection['SetConnection']['tsumego_id'])
 		{
-			$newDuplicates = explode('-', $this->params['url']['duplicates']);
-			$newD = [];
-			$newDmain = [];
-			$checkSc = $this->SetConnection->find('all', ['conditions' => ['tsumego_id' => $this->params['url']['main']]]);
-			$errSet = '';
-			$errNotNull = '';
-			if (count($checkSc) <= 1)
-				$validSc = true;
-			else
-			{
-				$validSc = false;
-				$errNotNull = 'Already set as duplicate.';
-			}
-			$newD0check = [];
-			$newDuplicatesCount = count($newDuplicates);
-			for ($i = 0; $i < $newDuplicatesCount; $i++)
-			{
-				$newD0 = $this->Tsumego->findById($newDuplicates[$i]);
-				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newD0['Tsumego']['id']]]);
-				$newD0['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-				array_push($newD0check, $newD0['Tsumego']['set_id']);
-			}
-			$newD0check = array_count_values($newD0check);
-			foreach ($newD0check as $key => $value)
-				if ($value > 1)
-				{
-					$validSc = false;
-					$errSet = 'You can\'t link duplicates in the same collection.';
-				}
-
-			if ($validSc)
-			{
-				$newDuplicatesCount = count($newDuplicates);
-				for ($i = 0; $i < $newDuplicatesCount; $i++)
-				{
-					$newD = $this->Tsumego->findById($newDuplicates[$i]);
-					$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $newD['Tsumego']['id']]]);
-					$newD['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-					if ($newD['Tsumego']['id'] == $this->params['url']['main'])
-					{
-						$newD['Tsumego']['duplicate'] = $this->params['url']['main'];
-						$this->Tsumego->save($newD);
-					}
-					else
-						$this->Tsumego->delete($newD['Tsumego']['id']);
-					$this->SetConnection->delete($scT['SetConnection']['id']);
-					$setC = [];
-					$setC['SetConnection']['tsumego_id'] = $this->params['url']['main'];
-					$setC['SetConnection']['set_id'] = $newD['Tsumego']['set_id'];
-					$setC['SetConnection']['num'] = $newD['Tsumego']['num'];
-					$this->SetConnection->create();
-					$this->SetConnection->save($setC);
-					$dupDel = $this->Duplicate->find('all', ['conditions' => ['tsumego_id' => $newDuplicates[$i]]]);
-					$dupDelCount = count($dupDel);
-					for ($j = 0; $j < $dupDelCount; $j++)
-						$this->Duplicate->delete($dupDel[$j]['Duplicate']['id']);
-				}
-				AdminActivityLogger::log(AdminActivityType::DUPLICATE_GROUP_CREATE, $this->params['url']['main']);
-			}
+			CookieFlash::set('These are already merged.', 'error');
+			$this->redirect('/users/duplicates');
 		}
-		if (!empty($this->data['Mark']))
-		{
-			$mark = $this->Tsumego->findById($this->data['Mark']['tsumego_id']);
-			if (!empty($mark) && $mark['Tsumego']['duplicate'] == 0)
-			{
-				$mark['Tsumego']['duplicate'] = -1;
-				$this->Tsumego->save($mark);
-			}
-		}
-		if (!empty($this->data['Mark2']))
-		{
-			$mark = $this->Tsumego->findById($this->data['Mark2']['tsumego_id']);
-			$group = $this->Tsumego->findById($this->data['Mark2']['group_id']);
-
-			if ($mark != null && $mark['Tsumego']['duplicate'] == 0 && $group != null)
-			{
-				$scTx = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $mark['Tsumego']['id']]]);
-				$scTx['SetConnection']['tsumego_id'] = $this->data['Mark2']['group_id'];
-				$this->SetConnection->save($scTx);
-				$this->Tsumego->delete($mark['Tsumego']['id']);
-			}
-		}
-
-		$marks = $this->Tsumego->find('all', ['conditions' => ['duplicate' => -1]]);
-		$marksCount = count($marks);
-		for ($i = 0; $i < $marksCount; $i++)
-			array_push($idMap2, $marks[$i]['Tsumego']['id']);
-		$uts2 = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap2, 'user_id' => Auth::getUserID()]]);
-		$counter2 = 0;
-		$markTooltipSgfs = [];
-		$markTooltipInfo = [];
-		$markTooltipBoardSize = [];
-		$marksCount = count($marks);
-		for ($i = 0; $i < $marksCount; $i++)
-		{
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $marks[$i]['Tsumego']['id']]]);
-			$marks[$i]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($marks[$i]['Tsumego']['set_id']);
-			$marks[$i]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $marks[$i]['Tsumego']['num'];
-			$marks[$i]['Tsumego']['status'] = $uts2[$counter2]['TsumegoStatus']['status'];
-			$counter2++;
-		}
-
-		$setConnections = $this->SetConnection->find('all');
-		$scCount = [];
-		$scCount2 = [];
-		foreach ($setConnections as $setConnection)
-			$scCount[] = $setConnection['SetConnection']['tsumego_id'];
-		$scCount = array_count_values($scCount);
-		foreach ($scCount as $key => $value)
-			if ($value > 1)
-				$scCount2[] = $key;
-
-		$duplicates1 = [];
-
-		$showAll = false;
-
-		if (isset($this->params['url']['load']))
-		{
-			$showAll = true;
-			$counter = 0;
-			$scCount2Count = count($scCount2);
-			for ($i = 0; $i < $scCount2Count; $i++)
-			{
-				$duplicates1[$i] = [];
-				foreach ($setConnections as $setConnection)
-					if ($setConnection['SetConnection']['tsumego_id'] == $scCount2[$i])
-					{
-						$scT1 = $this->Tsumego->findById($setConnection['SetConnection']['tsumego_id']);
-						$scT1['Tsumego']['num'] = $setConnection['SetConnection']['num'];
-						$scT1['Tsumego']['set_id'] = $setConnection['SetConnection']['set_id'];
-						$scT1['Tsumego']['status'] = 'N';
-						array_push($duplicates1[$i], $scT1);
-						array_push($idMap, $scT1['Tsumego']['id']);
-					}
-			}
-
-			$uts = $this->TsumegoStatus->find('all', ['conditions' => ['tsumego_id' => $idMap, 'user_id' => Auth::getUserID()]]);
-			$tooltipSgfs = [];
-			$tooltipInfo = [];
-			$tooltipBoardSize = [];
-			$duplicates1Count = count($duplicates1);
-			for ($i = 0; $i < $duplicates1Count; $i++)
-			{
-				$tooltipSgfs[$i] = [];
-				$tooltipInfo[$i] = [];
-				$tooltipBoardSize[$i] = [];
-				$duplicates1Count = count($duplicates1[$i]);
-				for ($j = 0; $j < $duplicates1Count; $j++)
-				{
-					$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $duplicates1[$i][$j]['Tsumego']['id'], 'set_id' => $duplicates1[$i][$j]['Tsumego']['set_id']]]);
-					$duplicates1[$i][$j]['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-					$s = $this->Set->findById($duplicates1[$i][$j]['Tsumego']['set_id']);
-					if ($s != null)
-					{
-						$duplicates1[$i][$j]['Tsumego']['title'] = $s['Set']['title'] . ' - ' . $duplicates1[$i][$j]['Tsumego']['num'];
-						$duplicates1[$i][$j]['Tsumego']['duplicateLink'] = '?sid=' . $duplicates1[$i][$j]['Tsumego']['set_id'];
-						$utsCount = count($uts);
-						for ($k = 0; $k < $utsCount; $k++)
-							if ($uts[$k]['TsumegoStatus']['tsumego_id'] == $duplicates1[$i][$j]['Tsumego']['id'])
-								$duplicates1[$i][$j]['Tsumego']['status'] = $uts[$k]['TsumegoStatus']['status'];
-					}
-				}
-			}
-
-		}
-
-		$this->set('showAll', $showAll);
-		$this->set('d', $duplicates1);
-		$this->set('d', $duplicates1);
-		$this->set('marks', $marks);
-		$this->set('aMessage', $aMessage);
-		$this->set('tooltipSgfs', $tooltipSgfs);
-		$this->set('tooltipInfo', $tooltipInfo);
-		$this->set('tooltipBoardSize', $tooltipBoardSize);
-		$this->set('markTooltipSgfs', $markTooltipSgfs);
-		$this->set('markTooltipInfo', $markTooltipInfo);
-		$this->set('markTooltipBoardSize', $markTooltipBoardSize);
-		$this->set('errSet', $errSet);
-		$this->set('errNotNull', $errNotNull);
+		return null;
 	}
 
 	/**

@@ -335,116 +335,130 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}, $setConnections));
         echo '</div><br>';
 	}
-	if (Auth::isLoggedIn()) {
-		if ($firstRanks==0) {
+	if (Auth::isLoggedIn())
+	{
+		if ($firstRanks==0)
+		{
 			if($sgf['Sgf']['user_id']!=33)
 				$adHighlight = 'historyLink';
-	else
+			else
 				$adHighlight = '';
 
-			if(Auth::isAdmin()){
-					echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
-					echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
-					echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
-					echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
-					echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
-					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-					if($alternative_response==1){
-						$arOn = 'checked="checked"';
-						$arOff = '';
-	}else{
-						$arOn = '';
-						$arOff = 'checked="checked"';
-	}
-					if($passEnabled==1){
-						$passOn = 'checked="checked"';
-						$passOff = '';
-	}else{
-						$passOn = '';
-						$passOff = 'checked="checked"';
-	}
-					if($set_duplicate==-1){
-						$duOn = 'checked="checked"';
-						$duOff = '';
-	}else{
-						$duOn = '';
-						$duOff = 'checked="checked"';
-	}
-					if($tv==null){
-						$multipleNo = 'checked="checked"';
-						$multipleYes = '';
+			if(Auth::isAdmin())
+			{
+				echo '<a id="showx99" style="margin-right:20px;" class="selectable-text">Admin-Request Solution</a>';
+				echo '<a id="showx4" style="margin-right:20px;" class="selectable-text">Admin-Download</a>';
+				echo '<a id="show4" style="margin-right:20px;" class="selectable-text">Admin-Upload<img id="greyArrow4" src="/img/greyArrow1.png"></a>';
+				echo '<a id="showx6" style="margin-right:20px;" class="selectable-text '.$adHighlight.'">History</a>';
+				echo '<a id="showx8" style="margin-right:20px;" class="selectable-text">Rating</a>';
+				echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
+				if($alternative_response==1)
+				{
+					$arOn = 'checked="checked"';
+					$arOff = '';
+				}
+				else
+				{
+					$arOn = '';
+					$arOff = 'checked="checked"';
+				}
+				if($passEnabled==1)
+				{
+					$passOn = 'checked="checked"';
+					$passOff = '';
+				}
+				else
+				{
+					$passOn = '';
+					$passOff = 'checked="checked"';
+				}
+				if ($set_duplicate==-1)
+				{
+					$duOn = 'checked="checked"';
+					$duOff = '';
+				}
+				else
+				{
+					$duOn = '';
+					$duOff = 'checked="checked"';
+				}
+				if ($tv==null)
+				{
+					$multipleNo = 'checked="checked"';
+					$multipleYes = '';
+					$scoreEstNo = 'checked="checked"';
+					$scoreEstYes = '';
+				}
+				else
+				{
+					if($tv['TsumegoVariant']['type'] == 'multiple_choice')
+					{
+						$multipleNo = '';
+						$multipleYes = 'checked="checked"';
 						$scoreEstNo = 'checked="checked"';
 						$scoreEstYes = '';
-	}else{
-						if($tv['TsumegoVariant']['type'] == 'multiple_choice'){
-							$multipleNo = '';
-							$multipleYes = 'checked="checked"';
-							$scoreEstNo = 'checked="checked"';
-							$scoreEstYes = '';
-	}else{
-							$multipleNo = 'checked="checked"';
-							$multipleYes = '';
-							$scoreEstNo = '';
-							$scoreEstYes = 'checked="checked"';
-	}
-	}
-					if(Auth::isAdmin()){
-					echo '<div id="msg4">
-							<br>
-							<form action="" method="POST" enctype="multipart/form-data">
-								<input type="file" name="adminUpload" />
-								<input value="Submit" type="submit"/>
-							</form>
-						</div>
-						<div id="msg5">
-							<br>
-							<form action="" method="POST" enctype="multipart/form-data">
-								<table>
-									<tr>
-										<td>Alternative Response Mode</td>
-										<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" '.$arOn.'><label for="r39">on</label></td>
-										<td><input type="radio" id="r39" name="data[Settings][r39]" value="off" '.$arOff.'><label for="r39">off</label></td>
-									</tr>
-									<tr>';
-										if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){
-											echo '<td>Mark as duplicate</td>';
-											echo '<td><input type="radio" id="r40" name="data[Settings][r40]" value="off" '.$duOff.'><label for="r40">no</label></td>
-											<td><input type="radio" id="r40" name="data[Settings][r40]" value="on" '.$duOn.'><label for="r40">yes</label></td>';
-	}else{
-	}
-									echo '</tr>';
-									echo '<tr>
-										<td>Enable passing</td>
-										<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" '.$passOff.'><label for="r43">no</label></td>
-										<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" '.$passOn.'><label for="r43">yes</label></td>
+					}
+					else
+					{
+						$multipleNo = 'checked="checked"';
+						$multipleYes = '';
+						$scoreEstNo = '';
+						$scoreEstYes = 'checked="checked"';
+					}
+			}
+			if(Auth::isAdmin())
+			{
+				echo '<div id="msg4">
+						<br>
+						<form action="" method="POST" enctype="multipart/form-data">
+							<input type="file" name="adminUpload" />
+							<input value="Submit" type="submit"/>
+						</form>
+					</div>
+					<div id="msg5">
+						<br>
+						<form action="" method="POST" enctype="multipart/form-data">
+							<table>
+								<tr>
+									<td>Alternative Response Mode</td>
+									<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" '.$arOn.'><label for="r39">on</label></td>
+									<td><input type="radio" id="r39" name="data[Settings][r39]" value="off" '.$arOff.'><label for="r39">off</label></td>
+								</tr>
+								<tr>
+									<td>Enable passing</td>
+									<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" '.$passOff.'><label for="r43">no</label></td>
+									<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" '.$passOn.'><label for="r43">yes</label></td>
+								</tr>';
+				if($isSandbox)
+				{
+					echo '<tr>
+										<td>Multiple choice problem</td>
+										<td><input type="radio" id="r41" name="data[Settings][r41]" value="no" '.$multipleNo.'><label for="r41">no</label></td>
+										<td><input type="radio" id="r41" name="data[Settings][r41]" value="yes" '.$multipleYes.'><label for="r41">yes</label></td>
 									</tr>';
-	if($isSandbox){
-										echo '<tr>
-											<td>Multiple choice problem</td>
-											<td><input type="radio" id="r41" name="data[Settings][r41]" value="no" '.$multipleNo.'><label for="r41">no</label></td>
-											<td><input type="radio" id="r41" name="data[Settings][r41]" value="yes" '.$multipleYes.'><label for="r41">yes</label></td>
-										</tr>';
-										echo '<tr>
-											<td>Score estimating problem</td>
-											<td><input type="radio" id="r42" name="data[Settings][r42]" value="no" '.$scoreEstNo.'><label for="r42">no</label></td>
-											<td><input type="radio" id="r42" name="data[Settings][r42]" value="yes" '.$scoreEstYes.'><label for="r42">yes</label></td>
-										</tr>';
-	}
-								echo '</table>
-								<br>
-								<input value="Submit" type="submit"/>
-							</form>
-						</div>
-						<br><br>';
-	}
-				if($isSandbox && $tv!=null){
-					if($tv['TsumegoVariant']['type']=='multiple_choice'){
-						$studyCorrectOptions = array(
-							'1'=>'1',
-							'2'=>'2',
-							'3'=>'3',
-							'4'=>'4'
-						);
+					echo '<tr>
+										<td>Score estimating problem</td>
+										<td><input type="radio" id="r42" name="data[Settings][r42]" value="no" '.$scoreEstNo.'><label for="r42">no</label></td>
+										<td><input type="radio" id="r42" name="data[Settings][r42]" value="yes" '.$scoreEstYes.'><label for="r42">yes</label></td>
+									</tr>';
+				}
+				echo '</table>
+							<br>
+							<input value="Submit" type="submit"/>
+						</form>
+					</div>
+					<br><br>';
+			}
+			if($isSandbox && $tv!=null)
+			{
+				if($tv['TsumegoVariant']['type']=='multiple_choice')
+				{
+					$studyCorrectOptions = array(
+						'1'=>'1',
+						'2'=>'2',
+						'3'=>'3',
+						'4'=>'4'
+					);
 						$studyCorrectAttributes = array(
 							'legend'=>false,
 							'value'=>$tv['TsumegoVariant']['numAnswer']
