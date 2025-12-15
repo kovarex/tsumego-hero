@@ -14,7 +14,7 @@ final class DuplicateTableRemoval extends AbstractMigration
 		$this->execute('DELETE FROM admin_activity WHERE type=' . 18); // DUPLICATE_GROUP_CREATE
 		$this->execute('DELETE FROM admin_activity_type WHERE id=' . 17);
 		$this->execute('DELETE FROM admin_activity_type WHERE id=' . 18);
-		$this->execute('DROP TABLE admin_activity_old');
+		$this->execute('DROP TABLE IF EXISTS admin_activity_old');
 		$this->execute('DROP TABLE IF EXISTS comment_backup');
 		$this->execute("
 			INSERT INTO admin_activity_type (id, name) VALUES
