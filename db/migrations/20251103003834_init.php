@@ -3641,9 +3641,6 @@ ALTER TABLE `favorite`
   ADD KEY `tsumego_id_index` (`tsumego_id`),
   ADD KEY `user_id_and_tsumego_id_index` (`user_id`,`tsumego_id`);
 
-ALTER TABLE `phinxlog`
-  ADD PRIMARY KEY (`version`);
-
 ALTER TABLE `phpbb_acl_groups`
   ADD KEY `group_id` (`group_id`),
   ADD KEY `auth_opt_id` (`auth_option_id`),
