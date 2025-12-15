@@ -6,12 +6,11 @@ class TimeModeControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
-			'time-mode-ranks' => ['5k']]);
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]]]);
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(AppException::class);
 		$this->expectExceptionMessage('Time mode category not specified.');
-		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
+		$this->testAction('/timeMode/start?rankID=' . TimeModeRank::RANK_5K, ['return' => 'view']);
 	}
 
 	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException()
@@ -44,7 +43,6 @@ class TimeModeControllerTest extends ControllerTestCase
 		$contextParameters = [];
 		$contextParameters['tsumego'] = [];
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
-		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [
 			'category' => TimeModeUtil::$CATEGORY_BLITZ,
 			'rank' => '5k',
@@ -62,7 +60,6 @@ class TimeModeControllerTest extends ControllerTestCase
 		$contextParameters = [];
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [
 			'category' => TimeModeUtil::$CATEGORY_BLITZ,
 			'rank' => '5k',
@@ -79,7 +76,6 @@ class TimeModeControllerTest extends ControllerTestCase
 		$contextParameters = [];
 		$contextParameters['tsumego'] = ['rating' => 1000];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['time-mode-sessions'] [] = [
 			'category' => TimeModeUtil::$CATEGORY_BLITZ,
 			'rank' => '5k',

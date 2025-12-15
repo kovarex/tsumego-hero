@@ -23,9 +23,12 @@ class ContextPreparator
 		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
 		if (!empty(ClassRegistry::init('User')->find('all')))
 			throw new Exception('Users were deleted and  yet still they are some');
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Reference data, created on-demand by ensureSpecificTimeModeRanks()
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Reference data, created by ensureAllTimeModeRanks()
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
+
+		// Ensure all time mode ranks exist (like ensureAdminActivityTypes)
+		self::ensureAllTimeModeRanks();
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
@@ -34,7 +37,6 @@ class ContextPreparator
 		$this->prepareOtherUsers(Util::extract('other-users', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
-		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
@@ -453,39 +455,47 @@ class ContextPreparator
 		$this->setsCleared[$setID] = true;
 	}
 
-	private function prepareTimeModeRanks($timeModeRanks): void
-	{
-		if (!$timeModeRanks)
-			return;
-
-		// Create only the specific ranks requested (for tests that need specific rank configurations)
-		$this->ensureSpecificTimeModeRanks($timeModeRanks);
-	}
-
-	private function ensureSpecificTimeModeRanks(array $rankNames): void
+	private static function ensureAllTimeModeRanks(): void
 	{
 		App::uses('TimeModeRank', 'Model');
 
-		// Map of rank names to IDs
-		$rankNameToId = [
-			'15k' => TimeModeRank::RANK_15K, '14k' => TimeModeRank::RANK_14K, '13k' => TimeModeRank::RANK_13K,
-			'12k' => TimeModeRank::RANK_12K, '11k' => TimeModeRank::RANK_11K, '10k' => TimeModeRank::RANK_10K,
-			'9k' => TimeModeRank::RANK_9K, '8k' => TimeModeRank::RANK_8K, '7k' => TimeModeRank::RANK_7K,
-			'6k' => TimeModeRank::RANK_6K, '5k' => TimeModeRank::RANK_5K, '4k' => TimeModeRank::RANK_4K,
-			'3k' => TimeModeRank::RANK_3K, '2k' => TimeModeRank::RANK_2K, '1k' => TimeModeRank::RANK_1K,
-			'1d' => TimeModeRank::RANK_1D, '2d' => TimeModeRank::RANK_2D, '3d' => TimeModeRank::RANK_3D,
-			'4d' => TimeModeRank::RANK_4D, '5d' => TimeModeRank::RANK_5D
-		];
-
 		$timeModeRank = ClassRegistry::init('TimeModeRank');
 
-		// Create only the requested ranks
-		foreach ($rankNames as $name)
-		{
-			$id = $rankNameToId[$name] ?? null;
-			if (!$id)
-				throw new Exception("Unknown rank name: {$name}");
+		// Check if ranks already exist (avoid re-creating)
+		$existingCount = $timeModeRank->find('count');
+		if ($existingCount === 20)
+			return;
 
+		// Define all 20 ranks with their production IDs
+		$allRanks = [
+			TimeModeRank::RANK_15K => '15k',
+			TimeModeRank::RANK_14K => '14k',
+			TimeModeRank::RANK_13K => '13k',
+			TimeModeRank::RANK_12K => '12k',
+			TimeModeRank::RANK_11K => '11k',
+			TimeModeRank::RANK_10K => '10k',
+			TimeModeRank::RANK_9K => '9k',
+			TimeModeRank::RANK_8K => '8k',
+			TimeModeRank::RANK_7K => '7k',
+			TimeModeRank::RANK_6K => '6k',
+			TimeModeRank::RANK_5K => '5k',
+			TimeModeRank::RANK_4K => '4k',
+			TimeModeRank::RANK_3K => '3k',
+			TimeModeRank::RANK_2K => '2k',
+			TimeModeRank::RANK_1K => '1k',
+			TimeModeRank::RANK_1D => '1d',
+			TimeModeRank::RANK_2D => '2d',
+			TimeModeRank::RANK_3D => '3d',
+			TimeModeRank::RANK_4D => '4d',
+			TimeModeRank::RANK_5D => '5d'
+		];
+
+		// Delete all existing ranks first (like ensureAdminActivityTypes)
+		$timeModeRank->deleteAll(['1 = 1']);
+
+		// Create all 20 ranks to match production structure (TimeMode::getRatingBounds depends on it)
+		foreach ($allRanks as $id => $name)
+		{
 			$timeModeRank->create();
 			$timeModeRank->save([
 				'TimeModeRank' => [
@@ -494,28 +504,12 @@ class ContextPreparator
 				]
 			], false);
 		}
-
-		// Populate timeModeRanks property for tests that need it
-		$this->timeModeRanks = $timeModeRank->find('all', ['order' => 'id']);
-		if ($this->timeModeRanks)
-		{
-			$temp = [];
-			foreach ($this->timeModeRanks as $rank)
-				$temp[] = $rank['TimeModeRank'];
-			$this->timeModeRanks = $temp;
-		}
 	}
 
 	private function prepareTimeModeSessions($timeModeSessions): void
 	{
 		if (!$timeModeSessions)
 			return;
-
-		// Extract unique rank names from sessions and ensure they exist
-		$rankNames = [];
-		foreach ($timeModeSessions as $session)
-			$rankNames[$session['rank']] = true;
-		$this->ensureSpecificTimeModeRanks(array_keys($rankNames));
 
 		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
 
