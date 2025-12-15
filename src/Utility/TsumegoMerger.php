@@ -159,6 +159,12 @@ HAVING
 			[':master_tsumego_id' => $this->masterTsumegoID, ':slave_tsumego_id' => $this->slaveTsumegoID]);
 	}
 
+	public function mergeIssues()
+	{
+		Util::query('UPDATE tsumego_issue SET tsumego_id = :master_tsumego_id WHERE tsumego_id = :slave_tsumego_id',
+			[':master_tsumego_id' => $this->masterTsumegoID, ':slave_tsumego_id' => $this->slaveTsumegoID]);
+	}
+
 	public function execute(): array
 	{
 		if ($result = $this->checkInput())
@@ -172,7 +178,8 @@ HAVING
 		$this->mergeComments();
 		$this->mergeFavorites();
 		$this->mergeTagConnections();
-		//$this->mergeTimeModeAttempts();
+		$this->mergeTimeModeAttempts();
+		$this->mergeIssues();
 		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
 		$db->commit();
 		return ['message' => 'Tsumegos merged.', 'type' => 'success'];

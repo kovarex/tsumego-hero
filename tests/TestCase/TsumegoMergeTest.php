@@ -33,7 +33,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'sets' => [['name' => 'set 2', 'num' => '1']],
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
 						'comments' => [['message' => 'slave comment']],
-						'tags' => [['name' => 'snapback'], ['name' => 'atari']]
+						'tags' => [['name' => 'snapback'], ['name' => 'atari']],
+						'issues' => [['message' => 'Slave issue message']],
 					]],
 				'time-mode-sessions' => [[
 					'category' => TimeModeUtil::$CATEGORY_BLITZ,
@@ -98,11 +99,12 @@ class TsumegoMergeTest extends ControllerTestCase
 			// tsumego attempts got merged
 			$this->assertSame(2, ClassRegistry::init('TsumegoAttempt')->find('count'));
 
-			// tsumego comments got merged
+			// tsumego comments got merged: 1 from master, 1 from slave, one from the slave issue
 			$comments = ClassRegistry::init('TsumegoComment')->find('all');
-			$this->assertSame(2, count($comments));
+			$this->assertSame(3, count($comments));
 			$this->assertSame($comments[0]['TsumegoComment']['message'], 'master comment');
 			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
+			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
 
 			// favorites got merged
 			$favorites = ClassRegistry::init('Favorite')->find('all');
@@ -117,6 +119,11 @@ class TsumegoMergeTest extends ControllerTestCase
 			$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all');
 			$this->assertSame(1, count($timeModeAttempts));
 			$this->assertSame($context->otherTsumegos[0]['id'], $timeModeAttempts[0]['TimeModeAttempt']['tsumego_id']);
+
+			// issues got merged
+			$issues = ClassRegistry::init('TsumegoIssue')->find('all');
+			$this->assertSame(1, count($issues));
+			$this->assertSame($context->otherTsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
 		}
 	}
 }
