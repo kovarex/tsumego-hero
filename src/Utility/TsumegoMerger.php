@@ -181,6 +181,7 @@ HAVING
 		$this->mergeTimeModeAttempts();
 		$this->mergeIssues();
 		ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
+		AdminActivityLogger::log(AdminActivityType::TSUMEGO_MERGE, $this->masterTsumegoID, null, strval($this->slaveTsumegoID));
 		$db->commit();
 		return ['message' => 'Tsumegos merged.', 'type' => 'success'];
 	}

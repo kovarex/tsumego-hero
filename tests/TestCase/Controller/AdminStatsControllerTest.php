@@ -236,6 +236,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 				// tag proposals
 				['type' => AdminActivityType::ACCEPT_TAG, 'tsumego_id' => true, 'new_value' => 'snapback'],
 				['type' => AdminActivityType::REJECT_TAG, 'tsumego_id' => true, 'old_value' => 'atari'],
+
+				// tsumego merge
+				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 			]
 		]);
 
@@ -264,6 +267,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Problem Add', $pageSource);
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
+		$this->assertTextContains('Tsumego Merge', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 

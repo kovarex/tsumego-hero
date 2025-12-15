@@ -12,9 +12,12 @@ final class DuplicateTableRemoval extends AbstractMigration
 		$this->execute('ALTER TABLE tsumego DROP COLUMN duplicate');
 		$this->execute('DELETE FROM admin_activity WHERE type=' . 17); // DUPLICATE_REMOVE
 		$this->execute('DELETE FROM admin_activity WHERE type=' . 18); // DUPLICATE_GROUP_CREATE
-		$this->execute('DELETE FROM admin_activit_type WHERE id=' . 17);
-		$this->execute('DELETE FROM admin_activit_type WHERE id=' . 18);
+		$this->execute('DELETE FROM admin_activity_type WHERE id=' . 17);
+		$this->execute('DELETE FROM admin_activity_type WHERE id=' . 18);
 		$this->execute('DROP TABLE admin_activity_old');
-		$this->execute('DROP TABLE comment_backup');
+		$this->execute('DROP TABLE IF EXISTS comment_backup');
+		$this->execute("
+			INSERT INTO admin_activity_type (id, name) VALUES
+			(" . AdminActivityType::TSUMEGO_MERGE . ", 'Tsumego Merge')");
     }
 }

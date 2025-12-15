@@ -575,7 +575,8 @@ class ContextPreparator
 			AdminActivityType::MINIMUM_RATING_EDIT => 'Minimum Rating Edit',
 			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
 			AdminActivityType::ACCEPT_TAG => 'Accept Tag',
-			AdminActivityType::REJECT_TAG => 'Reject Tag'];
+			AdminActivityType::REJECT_TAG => 'Reject Tag',
+			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

@@ -41,4 +41,7 @@ class AdminActivityType extends AppModel
 	// Tags
 	public const ACCEPT_TAG = 23;
 	public const REJECT_TAG = 24;
+
+	// Tsumego merge
+	public const TSUMEGO_MERGE = 25;
 }

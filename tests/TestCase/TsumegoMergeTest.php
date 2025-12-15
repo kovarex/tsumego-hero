@@ -124,6 +124,11 @@ class TsumegoMergeTest extends ControllerTestCase
 			$issues = ClassRegistry::init('TsumegoIssue')->find('all');
 			$this->assertSame(1, count($issues));
 			$this->assertSame($context->otherTsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
+
+			// admin activity log was created
+			$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+			$this->assertSame(1, count($adminActivities));
+			$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::TSUMEGO_MERGE);
 		}
 	}
 }
