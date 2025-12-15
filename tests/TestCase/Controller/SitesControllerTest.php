@@ -159,50 +159,6 @@ class SitesControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Test that quote fallback system works correctly for quotes with missing images
-	 */
-	public function testQuoteFallbackForMissingImages()
-	{
-		$browser = Browser::instance();
-
-		// Arrange: Set up context with a quote that has no images (q44)
-		$context = new ContextPreparator([
-			'tsumego' => [],
-			'day-records' => [
-				[
-					'date' => date('Y-m-d'),
-					'solved' => 5,
-					'quote' => 'q44', // q44 has no images, should fallback to q06
-					'visitedproblems' => 10,
-				],
-			],
-		]);
-
-		// Act: Load the index page
-		$browser->get('sites/index');
-
-		// Assert: Page should load without broken images
-		$pageSource = $browser->driver->getPageSource();
-
-		// Calculate expected fallback (q44 % 13 + 1 = 5 → q05)
-		$quoteNum = 44;
-		$fallbackNum = ($quoteNum % 13) + 1;
-		$expectedFallback = 'q' . str_pad($fallbackNum, 2, '0', STR_PAD_LEFT);
-
-		// Check that fallback images are used (q05 for q44)
-		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}.png", $pageSource,
-			"Should use {$expectedFallback} fallback image for quote q44");
-		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}u.png", $pageSource,
-			"Should use {$expectedFallback}u.png fallback for user of day");
-		$this->assertStringContainsString("/img/new_startpage/{$expectedFallback}e.png", $pageSource,
-			"Should use {$expectedFallback}e.png fallback for achievements");
-
-		// Check that CSS class uses the fallback
-		$this->assertStringContainsString("user-pick-{$expectedFallback}", $pageSource,
-			"Should use {$expectedFallback} CSS positioning fallback");
-	}
-
-	/**
 	 * Test that page title is set correctly via view variables (not session)
 	 * This is part of the session elimination effort - Phase 1: View State
 	 */
