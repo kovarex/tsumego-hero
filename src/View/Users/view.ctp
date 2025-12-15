@@ -44,7 +44,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<td>
 	<div align="center">
 		Your rank:<br>
-		<a style="cursor:pointer;" onclick="userShow1(2);">
+		<a style="cursor:pointer;" onclick="activateSelection('rating', 'Left');">
 			<img id="profileRankImage" src="/img/<?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?>Rank.png" width="76px">
 		</a>
 	</div>
@@ -188,18 +188,18 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevel1Button" class="new-button-time" onclick="userShow1(1);">Level</a>
-			<a id="userShowRating1Button" class="new-button-time" onclick="userShow1(2);">Rating</a>
-			<a id="userShowTime1Button" class="new-button-time" onclick="userShow1(3);">Time</a>
-			<a id="userShowAchievement1Button" class="new-button-time" onclick="userShow1(4);">Achievements</a>
+			<a id="userShowLevelButtonLeft" class="new-button-time" onclick="activateSelection('level', 'Left');">Level</a>
+			<a id="userShowRatingButtonLeft" class="new-button-time" onclick="activateSelection('rating', 'Left');">Rating</a>
+			<a id="userShowTimeButtonLeft" class="new-button-time" onclick="activateSelection('time', 'Left');">Time</a>
+			<a id="userShowAchievementsButtonLeft" class="new-button-time" onclick="activateSelection('achievement', 'Left');">Achievements</a>
 		</div>
 	</td>
 	<td width="50%">
 		<div align="center">
-			<a id="userShowLevel2Button" class="new-button-time" onclick="userShow2(1);">Level</a>
-			<a id="userShowRating2Button" class="new-button-time" onclick="userShow2(2);">Rating</a>
-			<a id="userShowTime2Button" class="new-button-time" onclick="userShow2(3);">Time</a>
-			<a id="userShowAchievement2Button" class="new-button-time" onclick="userShow2(4);">Achievements</a>
+			<a id="userShowLevelButtonRight" class="new-button-time" onclick="activateSelection('level', 'Right');">Level</a>
+			<a id="userShowRatingButtonRight" class="new-button-time" onclick="activateSelection('rating', 'Right');">Rating</a>
+			<a id="userShowTimeButtonRight" class="new-button-time" onclick="activateSelection('time', 'Right');">Time</a>
+			<a id="userShowAchievementsButtonRight" class="new-button-time" onclick="activateSelection('achievement', 'Right');">Achievements</a>
 		</div>
 	</td>
 	</tr>
@@ -208,12 +208,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<td width="50%">
-				<div id="userShowLevel1">
+				<div id="userShowLevelLeft">
 					<div id="chartContainer">
 						<div id="chart1"></div>
 					</div>
 				</div>
-				<div id="userShowRating1">
+				<div id="userShowRatingLeft">
 					<div id="chartContainer">
 						<div id="chart2"></div>
 					</div>
@@ -221,12 +221,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
 					</div>
 				</div>
-				<div id="userShowTime1">
+				<div id="userShowTimeLeft">
 					<div id="chartContainer">
 						<div id="chart3"></div>
 					</div>
 				</div>
-				<div id="userShowAchievements1">
+				<div id="userShowAchievementsLeft">
 					<table width="95%" border="0">
 					<tr>
 						<td class="h1profile">
@@ -265,12 +265,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 				</div>
 			</td>
 			<td width="50%">
-				<div id="userShowLevel2">
+				<div id="userShowLevelRight">
 					<div id="chartContainer">
 						<div id="chart11"></div>
 					</div>
 				</div>
-				<div id="userShowRating2">
+				<div id="userShowRatingRight">
 					<div id="chartContainer">
 						<div id="chart22"></div>
 					</div>
@@ -278,12 +278,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 						<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>">Show solve history</a>
 					</div>
 				</div>
-				<div id="userShowTime2">
+				<div id="userShowTimeRight">
 					<div id="chartContainer">
 						<div id="chart33"></div>
 					</div>
 				</div>
-				<div id="userShowAchievements2">
+				<div id="userShowAchievementsRight">
 					<table width="95%" border="0">
 					<tr>
 						<td class="h1profile">
@@ -340,135 +340,39 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 </div>
 
 <script>
-userShow1(<?php echo $lastProfileLeft; ?>);
-userShow2(<?php echo $lastProfileRight; ?>);
+activateSelection(getCookie('lastProfileLeft'), 'Left');
+activateSelection(getCookie('lastProfileRight'), 'Right');
 
 $("#msg2").hide();
 $("#show").click(function(){
 	$("#msg2").show();
 });
-function userShow1(num){
-	document.cookie = "lastProfileLeft="+num+";path=/;SameSite=Lax";
-	document.cookie = "lastProfileLeft="+num+";path=/sets;SameSite=Lax";
-	document.cookie = "lastProfileLeft="+num+";path=/sets/view;SameSite=Lax";
-	document.cookie = "lastProfileLeft="+num+";path=/tsumegos/play;SameSite=Lax";
-	document.cookie = "lastProfileLeft="+num+";path=/users;SameSite=Lax";
-	document.cookie = "lastProfileLeft="+num+";path=/users/view;SameSite=Lax";
-	if(num==1){
-		$("#userShowLevel1Button").addClass("new-button-time");
-		$("#userShowLevel1Button").removeClass("new-button-time-inactive");
-		$("#userShowRating1Button").addClass("new-button-time-inactive");
-		$("#userShowRating1Button").removeClass("new-button-time");
-		$("#userShowTime1Button").addClass("new-button-time-inactive");
-		$("#userShowTime1Button").removeClass("new-button-time");
-		$("#userShowAchievement1Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement1Button").removeClass("new-button-time");
-		$("#userShowLevel1").fadeIn(250);
-		$("#userShowRating1").hide();
-		$("#userShowTime1").hide();
-		$("#userShowAchievements1").hide();
-	}else if(num==2){
-		$("#userShowLevel1Button").addClass("new-button-time-inactive");
-		$("#userShowLevel1Button").removeClass("new-button-time");
-		$("#userShowRating1Button").addClass("new-button-time");
-		$("#userShowRating1Button").removeClass("new-button-time-inactive");
-		$("#userShowTime1Button").addClass("new-button-time-inactive");
-		$("#userShowTime1Button").removeClass("new-button-time");
-		$("#userShowAchievement1Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement1Button").removeClass("new-button-time");
-		$("#userShowLevel1").hide();
-		$("#userShowRating1").fadeIn(250);
-		$("#userShowTime1").hide();
-		$("#userShowAchievements1").hide();
-	}else if(num==3){
-		$("#userShowLevel1Button").addClass("new-button-time-inactive");
-		$("#userShowLevel1Button").removeClass("new-button-time");
-		$("#userShowRating1Button").addClass("new-button-time-inactive");
-		$("#userShowRating1Button").removeClass("new-button-time");
-		$("#userShowTime1Button").addClass("new-button-time");
-		$("#userShowTime1Button").removeClass("new-button-time-inactive");
-		$("#userShowAchievement1Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement1Button").removeClass("new-button-time");
-		$("#userShowLevel1").hide();
-		$("#userShowRating1").hide();
-		$("#userShowTime1").fadeIn(250);
-		$("#userShowAchievements1").hide();
-	}else{
-		$("#userShowLevel1Button").addClass("new-button-time-inactive");
-		$("#userShowLevel1Button").removeClass("new-button-time");
-		$("#userShowRating1Button").addClass("new-button-time-inactive");
-		$("#userShowRating1Button").removeClass("new-button-time");
-		$("#userShowTime1Button").addClass("new-button-time-inactive");
-		$("#userShowTime1Button").removeClass("new-button-time");
-		$("#userShowAchievement1Button").addClass("new-button-time");
-		$("#userShowAchievement1Button").removeClass("new-button-time-inactive");
-		$("#userShowLevel1").hide();
-		$("#userShowRating1").hide();
-		$("#userShowTime1").hide();
-		$("#userShowAchievements1").fadeIn(250);
-	}
+
+function updateButtonActivity(id, side, active)
+{
+	$("#" + id + 'Button' + side).addClass("new-button-time-" + (!active ? 'inactive' : ''));
+	$("#" + id + 'Button' + side).removeClass("new-button-time-" + (active ? 'inactive' : ''));
+	if (active)
+		$("#" + id + side).fadeIn(250);
+	else
+		$("#" + id + side).hide();
 }
 
-function userShow2(num){
-	document.cookie = "lastProfileRight="+num+";path=/;SameSite=Lax";
-	document.cookie = "lastProfileRight="+num+";path=/sets;SameSite=Lax";
-	document.cookie = "lastProfileRight="+num+";path=/sets/view;SameSite=Lax";
-	document.cookie = "lastProfileRight="+num+";path=/tsumegos/play;SameSite=Lax";
-	document.cookie = "lastProfileRight="+num+";path=/users;SameSite=Lax";
-	document.cookie = "lastProfileRight="+num+";path=/users/view;SameSite=Lax";
-	if(num==1){
-		$("#userShowLevel2Button").addClass("new-button-time");
-		$("#userShowLevel2Button").removeClass("new-button-time-inactive");
-		$("#userShowRating2Button").addClass("new-button-time-inactive");
-		$("#userShowRating2Button").removeClass("new-button-time");
-		$("#userShowTime2Button").addClass("new-button-time-inactive");
-		$("#userShowTime2Button").removeClass("new-button-time");
-		$("#userShowAchievement2Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement2Button").removeClass("new-button-time");
-		$("#userShowLevel2").fadeIn(250);
-		$("#userShowRating2").hide();
-		$("#userShowTime2").hide();
-		$("#userShowAchievements2").hide();
-	}else if(num==2){
-		$("#userShowLevel2Button").addClass("new-button-time-inactive");
-		$("#userShowLevel2Button").removeClass("new-button-time");
-		$("#userShowRating2Button").addClass("new-button-time");
-		$("#userShowRating2Button").removeClass("new-button-time-inactive");
-		$("#userShowTime2Button").addClass("new-button-time-inactive");
-		$("#userShowTime2Button").removeClass("new-button-time");
-		$("#userShowAchievement2Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement2Button").removeClass("new-button-time");
-		$("#userShowLevel2").hide();
-		$("#userShowRating2").fadeIn(250);
-		$("#userShowTime2").hide();
-		$("#userShowAchievements2").hide();
-	}else if(num==3){
-		$("#userShowLevel2Button").addClass("new-button-time-inactive");
-		$("#userShowLevel2Button").removeClass("new-button-time");
-		$("#userShowRating2Button").addClass("new-button-time-inactive");
-		$("#userShowRating2Button").removeClass("new-button-time");
-		$("#userShowTime2Button").addClass("new-button-time");
-		$("#userShowTime2Button").removeClass("new-button-time-inactive");
-		$("#userShowAchievement2Button").addClass("new-button-time-inactive");
-		$("#userShowAchievement2Button").removeClass("new-button-time");
-		$("#userShowLevel2").hide();
-		$("#userShowRating2").hide();
-		$("#userShowTime2").fadeIn(250);
-		$("#userShowAchievements2").hide();
-	}else{
-		$("#userShowLevel2Button").addClass("new-button-time-inactive");
-		$("#userShowLevel2Button").removeClass("new-button-time");
-		$("#userShowRating2Button").addClass("new-button-time-inactive");
-		$("#userShowRating2Button").removeClass("new-button-time");
-		$("#userShowTime2Button").addClass("new-button-time-inactive");
-		$("#userShowTime2Button").removeClass("new-button-time");
-		$("#userShowAchievement2Button").addClass("new-button-time");
-		$("#userShowAchievement2Button").removeClass("new-button-time-inactive");
-		$("#userShowLevel2").hide();
-		$("#userShowRating2").hide();
-		$("#userShowTime2").hide();
-		$("#userShowAchievements2").fadeIn(250);
-	}
+function activateSelection(selection, side)
+{
+	if (selection != 'level' &&
+		selection != 'rating' &&
+		selection != 'time' &&
+		selection != 'achievement')
+		if (side == 'Left')
+			selection = 'level';
+		else
+			selection = 'rating';
+	setCookie('lastProfile' + side, selection);
+	updateButtonActivity('userShowLevel', side, selection == 'level');
+	updateButtonActivity('userShowRating', side, selection == 'rating');
+	updateButtonActivity('userShowTime', side, selection == 'time');
+	updateButtonActivity('userShowAchievements', side, selection == 'achievement');
 }
 
 function delUts(){
