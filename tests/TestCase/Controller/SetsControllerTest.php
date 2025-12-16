@@ -1051,7 +1051,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets/view/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
-		$listItems = $browser->getCssSelect('li[class*="status"]');
+		$listItems = $browser->getCssSelectSafe('li[class*="status"]', 3);
 		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
 
 		// Problem 1: Not attempted - should have statusN class
