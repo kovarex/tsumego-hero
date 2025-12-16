@@ -93,6 +93,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testSprintPersistsToNextTsumego()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [
@@ -100,13 +101,12 @@ class HeroPowersTest extends TestCaseWithAuth
 				['sets' => [['name' => 'set 1', 'num' => 2]]]]]);
 		$originalTsumego0XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
 		$originalTsumego1XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']);
-		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
 		// Wait for sprint to be applied (check that XP display shows "Sprint")
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 50);
 		$wait->until(function () use ($browser) {
 			try
 			{
