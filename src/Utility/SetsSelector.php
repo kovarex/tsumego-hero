@@ -17,22 +17,16 @@ class SetsSelector
 
 	private function selectByTags()
 	{
-		$tagIDCondition = '';
-		if (!empty($this->tsumegoFilters->tagIDs))
-			$tagIDCondition = ' AND tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
+		$innerQuery = new Query('FROM tsumego');
+		$innerQuery->selects[]= 'tag.id AS tag_id';
+		$innerQuery->selects[]= 'tag.name AS tag_name';
+		$innerQuery->selects[]= 'tag.color AS tag_color';
+		$innerQuery->selects[]= 'COUNT(tsumego.id) AS total_count';
+		$innerQuery->groupBy[]= 'tag.id';
+		$this->addConditionsToCountQuery($innerQuery);
 
 		$query = "
-WITH tag_counts AS (
-  SELECT
-    tag.id AS tag_id,
-    tag.name AS tag_name,
-    tag.color AS tag_color,
-    COUNT(tsumego.id) AS total_count
-  FROM tsumego
-  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
-  JOIN tag ON tag.id = tag_connection.tag_id" . $tagIDCondition . "
-  GROUP BY tag.id
-),
+WITH tag_counts AS (" . $innerQuery->str() . "),
 numbered AS (
   SELECT
     tag.id AS tag_id,
@@ -84,9 +78,6 @@ ORDER BY total_count DESC, partition_number";
 
 		$countQuery = new Query('FROM tsumego');
 		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
-		$countQuery->query .= ' JOIN tag_connection ON tsumego.id = tag_connection.tsumego_id';
-		if (!empty($this->tsumegoFilters->tagIDs))
-			$countQuery->conditions[]= 'tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
 		$this->addConditionsToCountQuery($countQuery);
 		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
@@ -128,8 +119,6 @@ ORDER BY total_count DESC, partition_number";
 		$filteredTsumego = new Query('FROM tsumego');
 		$filteredTsumego->selects []= 'DISTINCT tsumego.id';
 		$filteredTsumego->selects []= 'tsumego.rating';
-		if (!empty($this->tsumegoFilters->tagIDs))
-			$filteredTsumego->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
 		$this->addConditionsToCountQuery($filteredTsumego);
 
 	$query = "
@@ -360,6 +349,8 @@ ORDER BY order_value, total_count DESC, partition_number
 		$query->conditions[]= '`set`.public = 1';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+		if (!empty($this->tsumegoFilters->tagIDs))
+			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
 	}
 
 	public $tsumegoFilters;

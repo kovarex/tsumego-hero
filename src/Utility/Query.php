@@ -15,6 +15,8 @@ class Query
 		$result .= $this->query;
 		if (!empty($this->conditions))
 			$result .= ' WHERE ' . implode(' AND ', $this->conditions);
+		if (!empty($this->groupBy))
+			$result .= ' GROUP BY ' . implode(', ', $this->groupBy);
 		if (!empty($this->orderBy))
 			$result .= ' ORDER BY ' . implode(', ', $this->orderBy);
 		return $result;
@@ -24,4 +26,5 @@ class Query
 	public $query = '';
 	public $conditions = [];
 	public $orderBy = [];
+	public $groupBy = [];
 }
