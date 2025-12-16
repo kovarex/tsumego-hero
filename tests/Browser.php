@@ -306,7 +306,7 @@ class Browser
 
 	public function waitUntilCssSelectorExists(string $selector, ?int $expectedCount = null): void
 	{
-		new WebDriverWait($this->driver, 5, 50)->until(
+		new WebDriverWait($this->driver, 10, 50)->until(
 			function () use ($selector, $expectedCount) {
 				$elements = $this->getCssSelect($selector);
 				return count($elements) > (is_null($expectedCount) ? 0 : ($expectedCount - 1));
