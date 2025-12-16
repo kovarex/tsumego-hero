@@ -71,15 +71,6 @@ class TsumegoUtil
 		return $status == 'S' || $status == 'C' || $status == 'W';
 	}
 
-	public static function getJavascriptMethodisStatusAllowingInspection()
-	{
-		$result = '\tfunction isStatusAllowingInspection(status)\n';
-		$result .= '\t{\n';
-		$result .= '\t\treturn status == \'S\' || status == \'C\';\n';
-		$result .= '\t}\n';
-		return $result;
-	}
-
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
 	{
 		return Rating::ratingToXP($tsumego['rating'], $multiplier);

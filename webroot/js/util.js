@@ -20,7 +20,13 @@ function getCookie(name)
         ?.split('=')[1] || null;
 }
 
-function formatMultiplier(value) {
+function isStatusAllowingInspection(status)
+{
+	return status == 'S' || status == 'C';
+}
+
+function formatMultiplier(value)
+{
 	if (value >= 1)
 		return `&times;${value}`;
 
@@ -113,6 +119,44 @@ function intuition()
 				disableIntuition();
 				besogo.editor.intuitionHeroPower();
 			}
+		});
+}
+
+function disableRevelation()
+{
+	let revelationElement = document.getElementById("revelation");
+	revelationElement.src = "/img/hp6x.png";
+	revelationElement.onmouseover = null;
+	revelationElement.onmouseout = null;
+	revelationElement.onclick = null;
+	revelationElement.style.cursor = 'auto';
+	revelationElement.title = 'Revelation (' + revelationUseCount + '): Solves a problem, but you don\'t get any reward.';
+}
+
+function revelation()
+{
+	if (isStatusAllowingInspection(tStatus))
+		return;
+
+	makeAjaxCall('/hero/revelation/' + this.tsumegoID,
+		(response) =>
+		{
+			document.getElementById("status").style.color = playGreenColor;
+			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
+			if (light)
+				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
+			else
+				$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
+			besogo.editor.setReviewEnabled(true);
+			besogo.editor.setControlButtonLock(false);
+			toggleBoardLock(true);
+			$("#besogo-review-button-inactive").attr("id","besogo-review-button");
+			$("#commentSpace").show();
+			updateCurrentNavigationButton('S');
+			displaySettings();
+			setCookie("revelation", "1");
+			revelationUseCount--;
+			disableRevelation();
 		});
 }
 

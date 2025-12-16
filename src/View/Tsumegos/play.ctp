@@ -614,7 +614,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var tryAgainTomorrow = false;
 	var doubleXP = false;
 	var countDownDate = new Date();
-	var revelationEnabled = false;
+	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
 	var multipleChoiceSelected = false;
 	var safetyLock = false;
 	var msg2selected = false;
@@ -652,6 +652,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var moveTimeout = 360;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
+	var playGreenColor = '<?php echo $playGreenColor; ?>';
+	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 
 	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
 	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
@@ -704,7 +706,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	let passEnabled = <?php echo $t['Tsumego']['pass']; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
-	let revelationCounter = <?php echo Auth::getWithDefault('revelation', 0); ?>+"";
 	let hasPremium = "<?php echo Auth::hasPremium(); ?>";
 	const activeTopicTiles = [];
 	const activeDifficultyTiles = [];
@@ -719,14 +720,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		current.parentElement.parentElement.className = 'status' + status + ' statusCurrent';
 	}
 
-<?php
-		if($hasRevelation)
-			echo 'let hasRevelation = true;';
-	else
-			echo 'let hasRevelation = false;';
+	<?php
 		$tsumegoXPAndRating->renderJavascript();
 		HeroPowers::renderJavascript();
-		?>
+	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
 			$("#msgFilters").fadeIn(250);
@@ -1132,7 +1129,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'reviewEnabled = true;';
 	}
 	?>
-<?php TsumegoUtil::getJavascriptMethodisStatusAllowingInspection(); ?>
 
 	<?php if($firstRanks==0)
 		echo "tagConnectionsEdit.draw();"; ?>
@@ -1488,33 +1484,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		});
 	}
 
-	function revelation()
-	{
-		if(revelationEnabled)
-		{
-			<?php if ($t['Tsumego']['status'] != 'S' && $t['Tsumego']['status'] != 'C') { ?>
-				document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
-				document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
-				if (light)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(0, 0, 0, 0.2)");
-				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(67, 255, 40, 0.7), 0 6px 20px 0 rgba(80, 255, 0, 0.2)");
-				besogo.editor.setReviewEnabled(true);
-				besogo.editor.setControlButtonLock(false);
-				toggleBoardLock(true);
-				$("#besogo-review-button-inactive").attr("id","besogo-review-button");
-				$("#commentSpace").show();
-			    updateCurrentNavigationButton('S');
-				displaySettings();
-				setCookie("revelation", "1");
-					<?php } ?>
-			document.getElementById("revelation").src = "/img/hp6x.png";
-			document.getElementById("revelation").style = "cursor: context-menu;";
-			$("#revelation").attr("title","Revelation (<?php echo Auth::getWithDefault('revelation', 0) - 1; ?>): Solves a problem, but you don\'t get any reward.");
-			revelationEnabled = false;
-		}
-	}
-
 	function selectFav()
 	{
 		document.getElementById("ans2").innerHTML = "";
@@ -1663,12 +1632,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	{
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
-		if (hasRevelation && revelationCounter > 0)
-		{
-			revelationEnabled = true;
-			$(".revelation-anchor").css("cursor", "pointer");
-			$("#revelation").attr("src", "/img/hp6.png");
-		}
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();

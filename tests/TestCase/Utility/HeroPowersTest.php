@@ -136,6 +136,34 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->checkPowerIsInactive($browser, 'sprint');
 	}
 
+	public function testUseRevelation()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		HeroPowers::changeUserSoRevelationCanBeUsed();
+		$context->xpgained(); // to reload the current xp to be able to tell the gained later
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
+		$this->checkPowerIsActive($browser, 'revelation');
+		$browser->clickId('revelation');
+		$browser->driver->wait(10, 50)->until(function () use ($browser) { return $browser->driver->executeScript("return window.revelationUseCount;") == 0; });
+		$this->checkPowerIsInactive($browser, 'revelation');
+		$this->assertSame($context->reloadUser()['used_revelation'], 1);
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame($context->reloadUser()['used_revelation'], 1);
+
+		// status was change to 'S' (solved)
+		$tsumegoStatuses = ClassRegistry::init('TsumegoStatus')->find('all');
+		$this->assertSame(1, count($tsumegoStatuses));
+		$this->assertSame('S', $tsumegoStatuses[0]['TsumegoStatus']['status']);
+
+		$this->assertSame($context->xpgained(), 0); // no xp was gained
+		$this->assertSame($context->reloadUser()['rating'], 1000.0); // xp wasn't changed
+		$this->assertSame(0 , count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+	}
+
 	public function testUseIntuition()
 	{
 		$context = new ContextPreparator([

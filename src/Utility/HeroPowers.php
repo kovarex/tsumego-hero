@@ -5,6 +5,7 @@ class HeroPowers
 	public static $SPRINT_MINIMUM_LEVEL = 20;
 	public static $INTUITION_MINIMUM_LEVEL = 30;
 	public static $REJUVENATION_MINIMUM_LEVEL = 40;
+	public static $REVELATION_MINIMUM_LEVEL = 80;
 	public static $REFINEMENT_MINIMUM_LEVEL = 100;
 
 	public static function render(): void
@@ -65,20 +66,52 @@ class HeroPowers
 		echo '<img id="intuition" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
 	}
 
-	public static function canUseRevelation()
+	public static function changeUserSoRevelationCanBeUsed()
 	{
-		if (Auth::getUser()['used_revelation'])
-			return false;
+		Auth::getUser()['level'] = self::$REVELATION_MINIMUM_LEVEL;
+		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
+		Auth::saveUser();
+	}
+
+	public static function getRevelationUseCount(): int
+	{
+		$result = 0;
+		if (Auth::hasPremium())
+			$result++;
+		if (Auth::isAdmin())
+			$result++;
+		if (Auth::getUser()['level'] >= self::$REVELATION_MINIMUM_LEVEL)
+			$result++;
 		if ($userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]))
 			if ($userContribution['UserContribution']['reward3'])
-				return true;
-		return Auth::hasPremium() && Auth::getUser()['level'] >= 100;
+				$result++;
+		return $result;
+	}
+
+	public static function canUseRevelation(): bool
+	{
+		return self::remainingRevelationUseCount() > 0;
+	}
+
+	public static function remainingRevelationUseCount(): int
+	{
+		return self::getRevelationUseCount() - Auth::getUser()['used_revelation'];
 	}
 
 	public static function renderRevelation()
 	{
-		if (self::canUseRevelation())
-			echo '<img id="revelation" title="Revelation: Solves a problem, but you don\'t get any reward." src="/img/hp6x.png" onmouseover="this.src = \'/img/hp6h.png\';" onmouseout="this.src = \'/img/hp6.png\';" onclick="revelation(); return false;"></a>';
+		if (self::getRevelationUseCount() == 0)
+			return;
+
+		$image = self::canUseRevelation() ? '/img/hp6.png' : '/img/hp6x.png';
+		$hoveredImage = self::canUseRevelation() ? '/img/hp6h.png' : '/img/hp6x.png';
+		echo '<img '.
+		'id="revelation" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward." ' .
+		'src="' . $image . '" ' .
+		'onmouseover="this.src = \'' . $hoveredImage . '\';" ' .
+		'onmouseout="this.src = \'' . $image . '\';" ' .
+		'onclick="revelation(); return false;"' .
+		'style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
 	}
 
 	public static function changeUserSoSprintCanBeUsed()

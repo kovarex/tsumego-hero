@@ -84,4 +84,37 @@ class HeroController extends AppController
 		$this->response->statusCode(200);
 		return $this->response;
 	}
+
+	public function revelation($tsumegoID)
+	{
+		if (!HeroPowers::canUseRevelation())
+		{
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		if (!$tsumego)
+		{
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+
+		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
+		if (!$previousTsumegoStatus)
+		{
+			$previousTsumegoStatus = [];
+			$previousTsumegoStatus['user_id'] = Auth::getUserID();
+			$previousTsumegoStatus['tsumego_id'] = $tsumegoID;
+			ClassRegistry::init('TsumegoStatus')->create();
+		}
+		else
+			$previousTsumegoStatus = $previousTsumegoStatus['TsumegoStatus'];
+
+		$previousTsumegoStatus['created'] = date('Y-m-d H:i:s');
+		$previousTsumegoStatus['status'] = 'S';
+		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
+
+		Auth::getUser()['used_revelation']++;
+		Auth::saveUser();
+	}
 }
