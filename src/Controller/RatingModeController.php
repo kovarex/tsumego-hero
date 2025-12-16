@@ -62,7 +62,9 @@ WHERE " . $queryCondition;
 		$this->set('nextLink', '/ratingMode');
 		$this->set('difficulty', Auth::getUser()['t_glicko']);
 
-		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
+		$play  = new Play(
+			function ($name, $value) { $this->set($name, $value); },
+			function ($url) { return $this->redirect($url); });
 		$play->play($relatedTsumegos[0]['id'], $this->params, $this->data);
 		$this->render('/Tsumegos/play');
 		return null;

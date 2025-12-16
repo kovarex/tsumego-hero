@@ -54,10 +54,6 @@
 	}
 	else $sandboxComment = '';
 
-	if ($t['Tsumego']['premium'] == 1)
-		if(!Auth::hasPremium() && !Auth::isAdmin())
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-
 	$lv = $_COOKIE['lastVisit'] ?? '15352';
 	$a1 = '';
 	$b1 = '';
