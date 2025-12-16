@@ -233,7 +233,7 @@ ORDER BY order_value, total_count DESC, partition_number
 			Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
 			Util::addSqlCondition($condition, '`set`.public = 1');
 			if (!empty($this->tsumegoFilters->setIDs))
-				Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')');
+				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')');
 			$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
 				"SELECT tsumego.id "
 				. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"

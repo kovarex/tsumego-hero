@@ -127,13 +127,13 @@ class TsumegoFilters
 
 	public function filterSets(Query $query): void
 	{
-		if (empty($this->tsumegoFilters->setIDs))
+		if (empty($this->setIDs))
 			return;
 		if (!str_contains($query->query, 'JOIN set_connection'))
 			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
 		if (!str_contains($query->query, 'JOIN `set`'))
 			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
-		$this->query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+		$query->conditions[]= '`set`.id IN (' . implode(',', $this->setIDs) . ')';
 	}
 
 	public string $query;
