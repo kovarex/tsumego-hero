@@ -116,6 +116,23 @@ class TsumegoFilters
 		$query->conditions[] = $rankConditions;
 	}
 
+	public function filterTags(Query $query): void
+	{
+		if (!empty($this->tagIDs))
+			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+	}
+
+	public function filterSets(Query $query): void
+	{
+		if (empty($this->tsumegoFilters->setIDs))
+			return;
+		if (!str_contains('JOIN set_connection', $query->query))
+			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
+		if (!str_contains('JOIN `set`', $query->query))
+			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
+		$this->query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+	}
+
 	public string $query;
 	public int $collectionSize = 0;
 	public array $sets = [];

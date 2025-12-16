@@ -51,21 +51,14 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query == 'topics') // we filter by sets unless we query a specific set
 			return;
-
-		if (!empty($this->tsumegoFilters->setIDs))
-			$this->query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+		$this->tsumegoFilters->filterSets($this->query);
 	}
 
 	private function filterTags()
 	{
 		if ($this->tsumegoFilters->query == 'tags') // we filter by tags unless we query a specific tag
 			return;
-
-		if (empty($this->tsumegoFilters->tagIDs))
-			return;
-
-		$this->query->conditions[]= '`tag_connection`.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
-		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
+		$this->tsumegoFilters->filterTags($this->query);
 	}
 
 	private function queryRank()

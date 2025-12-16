@@ -349,9 +349,9 @@ ORDER BY order_value, total_count DESC, partition_number
 		$query->conditions[]= '`set`.public = 1';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
-		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
+		$this->tsumegoFilters->filterTags($query);
 		$this->tsumegoFilters->filterRanks($query);
+		$this->tsumegoFilters->filterSets($query);
 	}
 
 	public TsumegoFilters $tsumegoFilters;
