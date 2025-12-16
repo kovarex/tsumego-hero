@@ -19,11 +19,11 @@ class SetsSelector
 	private function selectByTags()
 	{
 		$innerQuery = new Query('FROM tsumego');
-		$innerQuery->selects[]= 'tag.id AS tag_id';
-		$innerQuery->selects[]= 'tag.name AS tag_name';
-		$innerQuery->selects[]= 'tag.color AS tag_color';
-		$innerQuery->selects[]= 'COUNT(tsumego.id) AS total_count';
-		$innerQuery->groupBy[]= 'tag.id';
+		$innerQuery->selects[] = 'tag.id AS tag_id';
+		$innerQuery->selects[] = 'tag.name AS tag_name';
+		$innerQuery->selects[] = 'tag.color AS tag_color';
+		$innerQuery->selects[] = 'COUNT(tsumego.id) AS total_count';
+		$innerQuery->groupBy[] = 'tag.id';
 		$innerQuery->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
 		$innerQuery->query .= ' JOIN tag ON tag_connection.tag_id = tag.id';
 		$this->addConditionsToCountQuery($innerQuery);
@@ -115,11 +115,11 @@ ORDER BY total_count DESC, partition_number";
 	private function selectByTopics()
 	{
 		$filteredTsumego = new Query('FROM tsumego');
-		$filteredTsumego->selects []= 'DISTINCT tsumego.id';
-		$filteredTsumego->selects []= 'tsumego.rating';
+		$filteredTsumego->selects [] = 'DISTINCT tsumego.id';
+		$filteredTsumego->selects [] = 'tsumego.rating';
 		$this->addConditionsToCountQuery($filteredTsumego);
 
-	$query = "
+		$query = "
 WITH filtered_tsumego AS (" . $filteredTsumego->str() . "),
 
 set_counts AS (
@@ -336,9 +336,9 @@ ORDER BY order_value, total_count DESC, partition_number
 	{
 		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
 		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
-		$query->conditions[]= '`set`.public = 1';
+		$query->conditions[] = '`set`.public = 1';
 		if (!empty($this->tsumegoFilters->setIDs))
-			$query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+			$query->conditions[] = '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		$this->tsumegoFilters->filterTags($query);
 		$this->tsumegoFilters->filterRanks($query);
 		$this->tsumegoFilters->filterSets($query);
@@ -347,7 +347,7 @@ ORDER BY order_value, total_count DESC, partition_number
 	private function calculateCount()
 	{
 		$countQuery = new Query('FROM tsumego');
-		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
+		$countQuery->selects[] = 'COUNT(DISTINCT tsumego.id) AS total';
 		$this->addConditionsToCountQuery($countQuery);
 		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
@@ -355,5 +355,4 @@ ORDER BY order_value, total_count DESC, partition_number
 	public TsumegoFilters $tsumegoFilters;
 	public $sets = [];
 	public int $problemsFound = 0;
-	private Query $query;
 }

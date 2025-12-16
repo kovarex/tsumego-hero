@@ -122,7 +122,7 @@ class TsumegoFilters
 			return;
 		if (!str_contains($query->query, 'JOIN tag_connection'))
 			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
-		$query->conditions[]= 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+		$query->conditions[] = 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
 	}
 
 	public function filterSets(Query $query): void
@@ -133,7 +133,7 @@ class TsumegoFilters
 			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
 		if (!str_contains($query->query, 'JOIN `set`'))
 			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
-		$query->conditions[]= '`set`.id IN (' . implode(',', $this->setIDs) . ')';
+		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
 	}
 
 	public string $query;

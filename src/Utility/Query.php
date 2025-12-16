@@ -2,7 +2,7 @@
 
 class Query
 {
-	function __construct($query)
+	public function __construct($query)
 	{
 		$this->query = $query;
 	}
@@ -15,7 +15,7 @@ class Query
 		$result .= $this->query;
 
 		if (!empty($this->conditions))
-			$result .= ' WHERE ' . implode(' AND ',array_map(fn($c) => stripos($c, ' OR ') !== false ? "($c)" : $c, $this->conditions));
+			$result .= ' WHERE ' . implode(' AND ', array_map(fn($c) => stripos($c, ' OR ') !== false ? "($c)" : $c, $this->conditions));
 		if (!empty($this->groupBy))
 			$result .= ' GROUP BY ' . implode(', ', $this->groupBy);
 		if (!empty($this->orderBy))
