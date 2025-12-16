@@ -763,8 +763,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
 		$browser->waitUntilCssSelectorExists('.collection-top', 5);
-		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser)
-		{
+		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser) {
 			try
 			{
 				return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
@@ -808,8 +807,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets");
 		$browser->waitUntilCssSelectorExists('.collection-top', 5);
 
-		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser)
-		{
+		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser) {
 			try
 			{
 				return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
@@ -1053,7 +1051,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets/view/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
-		$listItems = $browser->getCssSelect('li[class*="status"]'));
+		$listItems = $browser->getCssSelect('li[class*="status"]');
 		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
 
 		// Problem 1: Not attempted - should have statusN class
@@ -1149,10 +1147,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Click Time tab - use specific selector to avoid Time Mode menu link
 		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
 		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
-		sleep(1);
 
 		// Check time buttons are visible
-		$timeButtons = $browser->getCssSelect('.setViewButtons3');
+		$timeButtons = $browser->getCssSelectSafe('.setViewButtons3', 2);
 		$this->assertCount(2, $timeButtons);
 
 		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)

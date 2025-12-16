@@ -82,7 +82,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('S'); // solve the problem
 
-			// now kovarex is there
+		// now kovarex is there
 		$browser->get('users/leaderboard');
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
