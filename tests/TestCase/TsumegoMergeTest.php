@@ -11,7 +11,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			$version2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[be]C[+])';
 			$context = new ContextPreparator([
 				'user' => ['admin' => ($testCase != 'notAdmin')],
-
+				'time-mode-ranks' => ['5k'],
 				'other-tsumegos' =>	[
 					[
 						'status' => ($testCase == 'masterWithoutStatus' ? null : 'V'),

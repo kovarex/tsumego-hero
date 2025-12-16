@@ -4,8 +4,6 @@ App::uses('Auth', 'Utility');
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
 App::uses('TimeMode', 'Utility');
-App::uses('TimeModeRank', 'Model');
-App::uses('Rating', 'Utility');
 
 use Facebook\WebDriver\WebDriverBy;
 
@@ -20,7 +18,8 @@ class TimeModeTest extends TestCaseWithAuth
 
 	public function testTimeModeRankContentsIntegrity()
 	{
-		new ContextPreparator();  // Ensures all ranks exist
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d', '2d']]);
+		// The ranks in the time_mode_rank table should be always ascending when ordered by id.
 		// This fact is used to conveniently deduce the rating range of the current rank
 		$allTimeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id']) ?: [];
 		$this->assertNotEmpty($allTimeModeRanks);
@@ -40,65 +39,60 @@ class TimeModeTest extends TestCaseWithAuth
 
 	public function testRatingBoundsOneRank()
 	{
-		new ContextPreparator();  // Ensures all ranks exist
-		$ratingBounds = TimeMode::getRatingBounds(TimeModeRank::RANK_5D);
-		// 5d is the highest rank, so it has a min bound (4d max) but no max
-		$this->assertSame($ratingBounds->min, Rating::getRankMinimalRatingFromReadableRank('5d'));
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k']]);
+		$ratingBounds = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
+
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds->min));
 		$this->assertTrue(is_null($ratingBounds->max));
 	}
 
 	public function testRatingBoundsTwoRanks()
 	{
-		new ContextPreparator();  // Ensures all ranks exist
+		$context = new ContextPreparator(['time-mode-ranks' => ['1k', '1d']]);
 
-		// Test two adjacent ranks (1k and 1d)
-		$ratingBounds1k = TimeMode::getRatingBounds(TimeModeRank::RANK_1K);
-		// 1k (id=15) has 2k below it, so it has a min
-		$this->assertSame($ratingBounds1k->min, Rating::getRankMinimalRatingFromReadableRank('1k'));
-		// 1k has 1d above it, so it has a max at 1d
+		$ratingBounds1k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds1k->min));
 		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
 
-		$ratingBounds1d = TimeMode::getRatingBounds(TimeModeRank::RANK_1D);
-		// 1d (id=16) has 1k below it
+		$ratingBounds1d = TimeMode::getRatingBounds($context->timeModeRanks[1]['id']);
+		// with just one rank, everything belongs to it
 		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
-		// 1d has 2d above it, so it has a max at 2d
-		$this->assertSame($ratingBounds1d->max, Rating::getRankMinimalRatingFromReadableRank('2d'));
+		$this->assertNull($ratingBounds1d->max);
 	}
 
 	public function testRatingBoundsThreeRanks()
 	{
-		new ContextPreparator();  // Ensures all ranks exist
+		$context = new ContextPreparator(['time-mode-ranks' => ['10k', '1k', '1d']]);
 
-		// Test three non-adjacent ranks (10k, 1k, 1d) - all 20 ranks exist now
-		$ratingBounds10k = TimeMode::getRatingBounds(TimeModeRank::RANK_10K);
-		// 10k (id=6) has 11k below it (id=5)
-		$this->assertSame($ratingBounds10k->min, Rating::getRankMinimalRatingFromReadableRank('10k'));
-		// 10k has 9k above it (id=7)
+		$ratingBounds10k = TimeMode::getRatingBounds($context->timeModeRanks[0]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertTrue(is_null($ratingBounds10k->min));
 		$this->assertSame($ratingBounds10k->max, Rating::getRankMinimalRatingFromReadableRank('9k'));
 
-		$ratingBounds1k = TimeMode::getRatingBounds(TimeModeRank::RANK_1K);
-		// 1k (id=15) has 2k below it (id=14)
-		$this->assertSame($ratingBounds1k->min, Rating::getRankMinimalRatingFromReadableRank('1k'));
-		// 1k has 1d above it (id=16)
+		$ratingBounds1k = TimeMode::getRatingBounds($context->timeModeRanks[1]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertSame($ratingBounds1k->min, $ratingBounds10k->max);
 		$this->assertSame($ratingBounds1k->max, Rating::getRankMinimalRatingFromReadableRank('1d'));
 
-		$ratingBounds1d = TimeMode::getRatingBounds(TimeModeRank::RANK_1D);
-		// 1d (id=16) has 1k below it (id=15)
-		$this->assertSame($ratingBounds1d->min, Rating::getRankMinimalRatingFromReadableRank('1d'));
-		// 1d has 2d above it (id=17)
-		$this->assertSame($ratingBounds1d->max, Rating::getRankMinimalRatingFromReadableRank('2d'));
+		$ratingBounds1d = TimeMode::getRatingBounds($context->timeModeRanks[2]['id']);
+		// with just one rank, everything belongs to it
+		$this->assertSame($ratingBounds1d->min, $ratingBounds1k->max);
+		$this->assertNull($ratingBounds1d->max);
 	}
 
 	public function testStartTimeMode()
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'tsumego set 1', 'num' => 1]]]]);
+			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
+			'time-mode-ranks' => ['5k']]);
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->testAction('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertTrue(Auth::isInTimeMode());
 		$sessions = ClassRegistry::init('TimeModeSession')->find('all', [
 			'user_id' => Auth::getUserID(),
@@ -106,7 +100,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame(count($sessions), 1);
 		$this->assertSame($sessions[0]['TimeModeSession']['user_id'], Auth::getUserID());
 		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_category_id'], TimeModeUtil::$CATEGORY_SLOW_SPEED);
-		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], TimeModeRank::RANK_5K);
+		$this->assertSame($sessions[0]['TimeModeSession']['time_mode_rank_id'], $context->timeModeRanks[0]['id']);
 
 		$attempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 			'user_id' => Auth::getUserID(),
@@ -127,10 +121,11 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
 
 		$context = new ContextPreparator($contextParameters);
 
@@ -143,7 +138,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),
@@ -202,6 +197,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
@@ -210,7 +206,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -247,6 +243,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
@@ -255,7 +252,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -281,6 +278,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
@@ -289,7 +287,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -302,6 +300,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
@@ -310,7 +309,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -326,6 +325,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
 			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
@@ -334,7 +334,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -346,6 +346,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		if ($conditions['alreadySolved'])
 		{
 			$contextParameters['time-mode-sessions'] [] = [
@@ -354,6 +355,8 @@ class TimeModeTest extends TestCaseWithAuth
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
 		}
+		if ($conditions['higherRankPresent'])
+			$contextParameters['time-mode-ranks'] [] = '1d';
 		$contextParameters['tsumego'] = ['sets' => [['name' => 'set 1', 'num' => 1]]];
 		$contextParameters['time-mode-sessions'] [] = [
 			'category' => TimeModeUtil::$CATEGORY_BLITZ,
@@ -428,21 +431,18 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$rankNames = ['5k', '1d'];
-		foreach ($rankNames as $rank)
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
+		foreach ($contextParameters['time-mode-ranks'] as $rank)
 			$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => $rank, 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
 		$context = new ContextPreparator($contextParameters);
 
 		foreach ([0, 1] as $indexToShow)
 		{
 			$browser->get('timeMode/result/' . $context->timeModeSessions[$indexToShow]['id']);
-			foreach ($rankNames as $rank)
+			foreach ($contextParameters['time-mode-ranks'] as $rank)
 			{
 				$relatedDiv = $browser->driver->findElement(WebDriverBy::cssSelector('#results_Blitz_' . $rank));
-				// Get the rank name from the session
-				$sessionRankId = $context->timeModeSessions[$indexToShow]['time_mode_rank_id'];
-				$sessionRank = ClassRegistry::init('TimeModeRank')->findById($sessionRankId)['TimeModeRank']['name'];
-				$this->assertSame($relatedDiv->isDisplayed(), $rank == $sessionRank);
+				$this->assertSame($relatedDiv->isDisplayed(), $rank == $context->timeModeRanks[$indexToShow]['name']);
 			}
 		}
 	}
@@ -455,6 +455,7 @@ class TimeModeTest extends TestCaseWithAuth
 		{
 			$contextParameters = [];
 			$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+			$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 			if ($testCase === 'solve-all' || $testCase === 'solve-5k')
 				$contextParameters['time-mode-sessions'] [] = ['category' => TimeModeUtil::$CATEGORY_BLITZ, 'rank' => '5k', 'status' => TimeModeUtil::$SESSION_STATUS_SOLVED];
 			if ($testCase === 'solve-all')
@@ -462,10 +463,10 @@ class TimeModeTest extends TestCaseWithAuth
 			$context = new ContextPreparator($contextParameters);
 			$browser->get('timeMode/overview');
 
-			$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_5K));
+			$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
 			$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 
-			$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_1D));
+			$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
 			$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 
 			// lowest rank is always unlocked
@@ -479,6 +480,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['10k', '5k', '1d', '5d'];
 		// empty 10k
 		// one tsumego in 5k category
 		$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
@@ -499,13 +501,11 @@ class TimeModeTest extends TestCaseWithAuth
 		$renderedCounts = $browser->driver->findElements(WebDriverBy::cssSelector(".imageContainerText2"));
 		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) { return $el->isDisplayed(); }));
 
-		// All 20 ranks exist now, so check specific rank counts instead
-		$this->assertSame(count($visibleCounts), 20);  // All ranks shown
-		// Find specific rank counts - indices depend on rank order (15k=0, ..., 10k=5, 5k=10, 1d=15, 5d=19)
-		$this->assertSame($visibleCounts[5]->getText(), "0");  // 10k: empty
-		$this->assertSame($visibleCounts[10]->getText(), "1"); // 5k: one tsumego
-		$this->assertSame($visibleCounts[15]->getText(), "2"); // 1d: two tsumegos
-		$this->assertSame($visibleCounts[19]->getText(), "3"); // 5d: three tsumegos
+		$this->assertSame(count($visibleCounts), count($contextParameters['time-mode-ranks']));
+		$this->assertSame($visibleCounts[0]->getText(), "0");
+		$this->assertSame($visibleCounts[1]->getText(), "1");
+		$this->assertSame($visibleCounts[2]->getText(), "2");
+		$this->assertSame($visibleCounts[3]->getText(), "3");
 	}
 
 	public function testTimeModeButtonsHover(): void
@@ -515,14 +515,15 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['user'] = [
 			'mode' => Constants::$LEVEL_MODE,
 			'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_5K));
+		$div5k = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
 		$links5k = $div5k->findElements(WebDriverBy::tagName('a'));
 		$imgs5k = $div5k->findElements(WebDriverBy::tagName('img'));
 
-		$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_1D));
+		$div1d = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
 		$links1d = $div1d->findElements(WebDriverBy::tagName('a'));
 		$imgs1d = $div1d->findElements(WebDriverBy::tagName('img'));
 
@@ -551,13 +552,14 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
+		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
 
-		$div5kBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_5K));
-		$div1dBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . TimeModeRank::RANK_1D));
-		$div5kFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . TimeModeRank::RANK_5K));
-		$div1dFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . TimeModeRank::RANK_1D));
+		$div5kBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[0]['id']));
+		$div1dBlitz = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_BLITZ . '-' . $context->timeModeRanks[1]['id']));
+		$div5kFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[0]['id']));
+		$div1dFast = $browser->driver->findElement(WebDriverBy::cssSelector('#rank-selector-' . TimeModeUtil::$CATEGORY_FAST_SPEED . '-' . $context->timeModeRanks[1]['id']));
 
 		// blirz buttons are visible at start
 		$this->assertTrue($div5kBlitz->isDisplayed());
@@ -576,18 +578,19 @@ class TimeModeTest extends TestCaseWithAuth
 	public function testTimeModeSessionWithNothingQueued(): void
 	{
 		$contextParameters = [
-			'user' => ['mode' => Constants::$LEVEL_MODE]];
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'time-mode-ranks' => ['5k']];
 
 		// I prepare tsumegos in a way that one will be always left from the time mode selection
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['other-tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
+			$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
 		$browser->get('/timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 		$this->assertSame(Util::getMyAddress() . '/timeMode/play', $browser->driver->getCurrentURL());
 
 		$tsumegosInTimeMode = [];
@@ -621,16 +624,17 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$contextParameters = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['other-tsumegos'] = [];
 		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['other-tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sgf' => $sgf, 'sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['other-tsumegos'] [] = ['sgf' => $sgf, 'sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
 		$browser->get('timeMode/start'
 			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
-			. '&rankID=' . TimeModeRank::RANK_5K);
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());

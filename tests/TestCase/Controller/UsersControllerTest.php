@@ -180,6 +180,7 @@ class UsersControllerTest extends ControllerTestCase
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'attempt' => ['user_rating' => 2165]]],
+			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
 				[
 					'category' => TimeModeUtil::$CATEGORY_BLITZ,
