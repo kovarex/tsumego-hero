@@ -58,7 +58,7 @@ class TsumegoButtons extends ArrayObject
 				$row['tsumego_id'],
 				$row['set_connection_id'],
 				$row['num'],
-				Auth::isLoggedIn() ? ($row['tsumego_status']['status'] ?: 'N') : 'N');
+				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N');
 		$this->updateHighestTsumegoOrder();
 	}
 

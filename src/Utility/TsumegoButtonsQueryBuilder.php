@@ -8,7 +8,7 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = "SELECT tsumego.id as tsumego_id, set_connection.id as set_connection_id, set_connection.num as num";
 		if (Auth::isLoggedIn())
-			$this->query .= ', tsumego_status.status';
+			$this->query .= ', tsumego_status.status as status';
 
 		$this->query .= " FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
 		Util::addSqlCondition($this->condition, 'tsumego.deleted is NULL');
