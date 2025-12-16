@@ -27,7 +27,7 @@ class RatingBounds
 		return $condition;
 	}
 
-	public function addQueryConditions(Query $query): string
+	public function addQueryConditions(Query $query): void
 	{
 		if ($this->min)
 			$query->conditions[] = 'tsumego.rating >= ' . $this->min;
