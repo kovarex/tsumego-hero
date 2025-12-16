@@ -19,6 +19,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Arrange: User who passed 5k in Slow mode (category=3, status=3=solved)
 		$context = new ContextPreparator([
 			'user' => ['name' => 'slowtester'],
+			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => 3, // Slow
 				'status' => 3, // solved
@@ -47,6 +48,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Arrange: User who passed 4k in Fast mode (category=2, status=3=solved)
 		$context = new ContextPreparator([
 			'user' => ['name' => 'fasttester'],
+			'time-mode-ranks' => ['4k'],
 			'time-mode-sessions' => [[
 				'category' => 2, // Fast
 				'status' => 3, // solved
@@ -75,6 +77,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Arrange: User who passed 1d in Blitz mode (category=1, status=3=solved)
 		$context = new ContextPreparator([
 			'user' => ['name' => 'blitztester'],
+			'time-mode-ranks' => ['1d'],
 			'time-mode-sessions' => [[
 				'category' => 1, // Blitz
 				'status' => 3, // solved
@@ -115,6 +118,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 			// Test Slow mode
 			$context = new ContextPreparator([
 				'user' => ['name' => "slow_$rank"],
+				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => 3, // Slow
 					'status' => 3, // solved
@@ -132,6 +136,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 			// Test Fast mode
 			$context = new ContextPreparator([
 				'user' => ['name' => "fast_$rank"],
+				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => 2, // Fast
 					'status' => 3, // solved
@@ -149,6 +154,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 			// Test Blitz mode
 			$context = new ContextPreparator([
 				'user' => ['name' => "blitz_$rank"],
+				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => 1, // Blitz
 					'status' => 3, // solved
@@ -173,6 +179,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Arrange: User who failed 5k in Slow mode (status=2=failed)
 		$context = new ContextPreparator([
 			'user' => ['name' => 'failedtester'],
+			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => 3, // Slow
 				'status' => 2, // failed
@@ -202,6 +209,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Test 88: 950 points at 10k or stronger
 		$context = new ContextPreparator([
 			'user' => ['name' => 'precision88'],
+			'time-mode-ranks' => ['10k'],
 			'time-mode-sessions' => [[
 				'category' => 3, // Slow
 				'status' => 3, // solved
@@ -227,6 +235,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Test 89: 900 points at 8k or stronger
 		$context = new ContextPreparator([
 			'user' => ['name' => 'precision89'],
+			'time-mode-ranks' => ['8k'],
 			'time-mode-sessions' => [[
 				'category' => 3,
 				'status' => 3,
@@ -248,6 +257,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Test 90: 875 points at 6k or stronger
 		$context = new ContextPreparator([
 			'user' => ['name' => 'precision90'],
+			'time-mode-ranks' => ['6k'],
 			'time-mode-sessions' => [[
 				'category' => 3,
 				'status' => 3,
@@ -269,6 +279,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Test 91: 850 points at 4k or stronger
 		$context = new ContextPreparator([
 			'user' => ['name' => 'precision91'],
+			'time-mode-ranks' => ['4k'],
 			'time-mode-sessions' => [[
 				'category' => 3,
 				'status' => 3,
