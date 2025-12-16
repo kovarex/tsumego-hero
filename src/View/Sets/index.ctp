@@ -75,7 +75,7 @@
 			</div>
 		</div>
 		<div class="set-buttons">
-			Problems found: <?php echo $searchCounter; ?>
+			Problems found: <?php echo $setsSelector->problemsFound; ?>
 		</div>
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
@@ -95,7 +95,7 @@
 		$lightDarkBoxes = '4';
 	else
 		$lightDarkBoxes = '3';
-	foreach ($sets as $i => $set) {
+	foreach ($setsSelector->sets as $i => $set) {
 		if($set['amount'] == 1) {
 			$problems = 'problem';
 			$tilde = '';
@@ -115,45 +115,53 @@
 		else
 			$isZero = 'display:none;';
 
-		if($lightDark=='light'){
+		if($lightDark=='light')
+		{
 			$lightDarkBoxes = '3';
-			if($sets[$i]['partition']>=4)
+			if ($set['partition'] >= 4)
 				$lightDarkBoxes = '6';
 		}
 		$makeLink = true;
-		if ($set['premium'] !=1 ) {
+		if ($set['premium'] != 1)
+		{
 			$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
 			$box1unlocked = 'box1default';
-		}else{
-			if($hasPremium) {
+		}
+		else
+		{
+			if ($hasPremium)
+			{
 				$backgroundImage = 'url(/img/setButtonUnlocked.png);';
 				$box1unlocked = 'box1unlocked';
-			} else {
+			}
+			else
+			{
 				$backgroundImage = 'url(/img/setButtonLocked.png);';
 				$box1unlocked = '';
 				$makeLink = false;
 			}
 		}
-		if ($makeLink) {
-			echo '<a href="/sets/view/'.$set['id'].$partitionLink.'" class="box1link">
-				<div class="box1 box1topic '.$box1unlocked.' topic-box'.$set['id'].'"
-					style="background-color:'.$set['color'].';background-image: '.$backgroundImage.'">';
+		if ($makeLink)
+		{
+			echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">
+				<div class="box1 box1topic ' . $box1unlocked.' topic-box' . $set['id'] . '"
+					style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
 				if ($set['solved_percent'] >= 100)
 					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top">'.$set['name'].$partition.'</div>';
-				echo '<div class="collection-middle-left">'.$set['amount'].' '.$problems.'</div>';
+				echo '<div class="collection-top">' . $set['name'] . $partition . '</div>';
+				echo '<div class="collection-middle-left">' . $set['amount'] . ' ' . $problems . '</div>';
 				if ($set['difficulty'])
-					echo '<div class="collection-middle-right">'.$tilde.$set['difficulty'].'</div>';
+					echo '<div class="collection-middle-right">' . $tilde . $set['difficulty'] . '</div>';
 				echo '<div class="collection-bottom">
-					<div class="number" id="number'.$i.'">0</div>
+					<div class="number" id="number' . $i . '">0</div>
 						<div align="left" class="reward-bar-container">
 							<div id="account-bar-wrapper2">
 								<div id="account-bar2">
 									<div id="xp-bar2">
 										<div class="xp-bar-empty"></div>
-										<div id="xp-bar-fill2'.$i.'" class="xp-bar-fill-c4" style="width: 5%; transition: 0.6s;'.$isZero.'">
-											<div id="xp-increase-fx2'.$i.'">
-												<div id="xp-increase-fx-flicker2'.$i.'">
+										<div id="xp-bar-fill2' . $i . '" class="xp-bar-fill-c4" style="width: 5%; transition: 0.6s;'.$isZero.'">
+											<div id="xp-increase-fx2' . $i . '">
+												<div id="xp-increase-fx-flicker2' . $i . '">
 												</div>
 											</div>
 										</div>
@@ -164,13 +172,15 @@
 					</div>
 				</div>
 			</a>';
-		} else {
+		}
+		else
+		{
 			echo '<a href="/users/donate" class="box1link">';
-			echo '<div class="box1 box1topic '.$box1unlocked.' topic-box'.$sets[$i]['id'].'"
-				style="background-color:'.$sets[$i]['color'].';background-image: '.$backgroundImage.'">';
-			if($sets[$i]['solved_percent']>=100)
+			echo '<div class="box1 box1topic '.$box1unlocked.' topic-box' . $set['id'] . '"
+				style="background-color:' . $set['color'] . ';background-image: '.$backgroundImage.'">';
+			if ($set['solved_percent'] >= 100)
 				echo '<div class="collection-completed">completed</div>';
-			echo '<div class="collection-top top-inactive">'.$sets[$i]['name'].$partition.'</div>';
+			echo '<div class="collection-top top-inactive">' . $set['name'] . $partition.'</div>';
 			echo '<div class="collection-middle-left"></div>';
 			echo '<div class="collection-middle-right"></div>';
 			echo '<div class="collection-bottom">
@@ -322,9 +332,9 @@
 				},600);
 			}';
 
-		foreach ($sets as $i => $set) {
-			echo 'animateNumber('.$i.', 0, '.$set['solved_percent'].', .6);';
-			echo 'animateBar('.$i.', '.$set['solved_percent'].');';
+		foreach ($setsSelector->sets as $i => $set) {
+			echo 'animateNumber(' . $i . ', 0, ' . $set['solved_percent'] . ', .6);';
+			echo 'animateBar(' . $i . ', ' . $set['solved_percent'] . ');';
 		}
 		?>
 		let query = "<?php echo $tsumegoFilters->query; ?>";
@@ -361,9 +371,10 @@
 		let allTagIds = [];
 		let allTagNames = [];
 		<?php
-			for($i=0; $i<count($sets); $i++){
-				echo 'allTopicIds.push("'.$sets[$i]['id'].'");';
-				echo 'allTopicNames.push("'.$sets[$i]['name'].'");';
+			foreach ($setsSelector->sets as $set)
+			{
+				echo 'allTopicIds.push("' . $set['id'] . '");';
+				echo 'allTopicNames.push("' . $set['name'] . '");';
 			}
 
 		echo 'function toggleTopic(index, name, e) {

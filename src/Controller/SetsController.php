@@ -5,6 +5,7 @@ App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
+App::uses('SetsSelector', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
@@ -251,18 +252,14 @@ class SetsController extends AppController
 		$difficultyTiles = [];
 		$sets = [];
 		$tagList = [];
-		$setsWithPremium = [];
+
 		$overallCounter = 0;
-		$searchCounter = 0;
+		$problemsCount = 0;
 		$achievementUpdate = [];
 
 		$tsumegoFilters = new TsumegoFilters();
 		if ($tsumegoFilters->query == 'favorites')
 			$tsumegoFilters->setQuery('topics');
-
-		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]) ?: [];
-		foreach ($swp as $item)
-			$setsWithPremium[] = $item['Set']['id'];
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
@@ -274,7 +271,7 @@ class SetsController extends AppController
 				$setTiles [] = $set['Set']['title'];
 
 		//difficultyTiles
-		$dt = $this->getExistingRanksArray();
+		$dt = SetsController::getExistingRanksArray();
 		foreach ($dt as $item)
 			$difficultyTiles[] = $item['rank'];
 
@@ -290,241 +287,36 @@ class SetsController extends AppController
 		foreach ($tags as $tag)
 			$tagTiles[] = $tag['Tag']['name'];
 
-		$tsumegoStatusMap = Auth::isLoggedIn() ? TsumegoUtil::getMapForCurrentUser() : [];
+		$setsSelector = new SetsSelector($tsumegoFilters);
 
-		//sets
-		if ($tsumegoFilters->query == 'topics')
-		{
-			$rankConditions = [];
-			if (!empty($tsumegoFilters->ranks))
-			{
-				$fromTo = [];
-				foreach ($tsumegoFilters->ranks as $rank)
-					$fromTo [] = RatingBounds::coverRank($rank, '15k')->getConditions();
-				$rankConditions['OR'] = $fromTo;
-			}
-			$setsRaw = $this->Set->find('all', ['order' => 'order ASC',
-				'conditions' => [
-					empty($tsumegoFilters->setIDs) ? null : ['id' => $tsumegoFilters->setIDs],
-					'public' => 1]]) ?: [];
-
-			$achievementUpdate = [];
-			$setsRawCount = count($setsRaw);
-			for ($i = 0; $i < $setsRawCount; $i++)
-			{
-				$ts = TsumegoUtil::collectTsumegosFromSet($setsRaw[$i]['Set']['id'], $rankConditions);
-				$currentIds = [];
-				$tsCount2 = count($ts);
-				for ($j = 0; $j < $tsCount2; $j++)
-					array_push($currentIds, $ts[$j]['Tsumego']['id']);
-				$setAmount = count($ts);
-				if (count($tsumegoFilters->tags) > 0)
-				{
-					$idsTemp = [];
-					$tsTagsFiltered = ClassRegistry::init('TagConnection')->find('all', [
-						'conditions' => [
-							'tsumego_id' => $currentIds,
-							'tag_id' => $tsumegoFilters->tagIDs,
-						]]) ?: [];
-					$tsTagsFilteredCount2 = count($tsTagsFiltered);
-					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
-					$currentIds = array_unique($idsTemp);
-					$setAmount = count($currentIds);
-				}
-				if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || Auth::hasPremium())
-					$searchCounter += $setAmount;
-
-				$s = [];
-				$s['id'] = $setsRaw[$i]['Set']['id'];
-				$s['name'] = $setsRaw[$i]['Set']['title'];
-				$s['amount'] = $setAmount;
-				$s['color'] = $setsRaw[$i]['Set']['color'];
-				$s['premium'] = $setsRaw[$i]['Set']['premium'];
-				$s['currentIds'] = $currentIds;
-				if (count($currentIds) > 0)
-					array_push($sets, $s);
-			}
-
-			$sets = $this->partitionCollections($sets, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
-			if ($tsumegoFilters->collectionSize >= 200)
-			{
-				$setsCount = count($sets);
-				for ($i = 0; $i < $setsCount; $i++)
-					if ($sets[$i]['solved_percent'] >= 100)
-						$overallCounter++;
-			}
-		}
 		if (Auth::isLoggedIn())
 		{
-			if ($overallCounter >= 10)
-			{
-				$aCondition = $this->AchievementCondition->find('first', [
-					'order' => 'value DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'category' => 'set',
-					],
-				]);
-				if ($aCondition == null)
-					$aCondition = [];
-				$aCondition['AchievementCondition']['category'] = 'set';
-				$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-				$aCondition['AchievementCondition']['value'] = $overallCounter;
-				$this->AchievementCondition->save($aCondition);
-			}
+			$aCondition = $this->AchievementCondition->find('first', [
+				'order' => 'value DESC',
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'category' => 'set',
+				],
+			]);
+			if ($aCondition == null)
+				$aCondition = [];
+			$aCondition['AchievementCondition']['category'] = 'set';
+			$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
+			$aCondition['AchievementCondition']['value'] = $overallCounter;
+			$this->AchievementCondition->save($aCondition);
 			Auth::saveUser();
 			$achievementUpdate = $this->checkSetCompletedAchievements();
 			if (count($achievementUpdate) > 0)
 				$this->updateXP(Auth::getUserID(), $achievementUpdate);
 		}
-		//difficulty
-		if ($tsumegoFilters->query == 'difficulty')
-		{
-			$ranksArray = $this->getExistingRanksArray();
-			$newRanksArray = [];
-			$setConditions = [];
-			if (!empty($tsumegoFilters->setIDs))
-				$setConditions['set_id'] = $tsumegoFilters->setIDs;
-			if (!empty($tsumegoFilters->ranks))
-			{
-				$ranksArray2 = [];
-				$ranksCounter = 0;
-				foreach ($tsumegoFilters->ranks as $rank)
-				{
-					$ranksArrayCount2 = count($ranksArray);
-					for ($j = 0; $j < $ranksArrayCount2; $j++)
-						if ($rank == $ranksArray[$j]['rank'])
-						{
-							$ranksArray2[$ranksCounter]['rank'] = $ranksArray[$j]['rank'];
-							$ranksArray2[$ranksCounter]['color'] = $ranksArray[$j]['color'];
-							$ranksCounter++;
-						}
-				}
-				$ranksArray = $ranksArray2;
-			}
-			foreach ($ranksArray as $rank)
-			{
-				$condition = "";
-				RatingBounds::coverRank($rank['rank'], '15k')->addSqlConditions($condition);
-				if (!Auth::hasPremium())
-					Util::addSqlCondition($condition, '`set`.premium = false');
-				Util::addSqlCondition($condition, 'tsumego.deleted is NULL');
-				Util::addSqlCondition($condition, '`set`.public = 1');
-				if (!empty($tsumegoFilters->setIDs))
-					Util::addSqlCondition($condition, 'set.id IN (' . implode(',', $tsumegoFilters->setIDs) . ')');
-				$tsumegoIDs = ClassRegistry::init('Tsumego')->query(
-					"SELECT tsumego.id "
-					. "FROM tsumego JOIN set_connection ON set_connection.tsumego_id = tsumego.id"
-					. " JOIN `set` ON `set`.id=set_connection.set_id WHERE " . $condition
-				) ?: [];
-				$currentIds = [];
-				foreach ($tsumegoIDs as $tsumegoID)
-					$currentIds [] = $tsumegoID['tsumego']['id'];
-				$setAmount = count($tsumegoIDs);
 
-				if (count($tsumegoFilters->tags) > 0)
-				{
-					$idsTemp = [];
-					$tsTagsFiltered = $this->TagConnection->find('all', [
-						'conditions' => [
-							'tsumego_id' => $currentIds,
-							'tag_id' => $tsumegoFilters->tagIDs,
-						],
-					]) ?: [];
-					$tsTagsFilteredCount2 = count($tsTagsFiltered);
-					for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-						array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
-
-					$currentIds = array_unique($idsTemp);
-					$setAmount = count($currentIds);
-				}
-
-				$searchCounter += $setAmount;
-
-				$rTemp = [];
-				$rTemp['id'] = $rank['rank'];
-				$rTemp['name'] = $rank['rank'];
-				$rTemp['amount'] = $setAmount;
-				$rTemp['currentIds'] = $currentIds;
-				$rTemp['color'] = $rank['color'];
-				if (!empty($currentIds))
-					$newRanksArray [] = $rTemp;
-			}
-			$sets = $this->partitionCollections($newRanksArray, $tsumegoFilters->collectionSize, $tsumegoStatusMap);
-		}
-
-		$ranksArray = $this->getExistingRanksArray();
+		$ranksArray = SetsController::getExistingRanksArray();
 		foreach ($ranksArray as &$rank)
 		{
 			$rank['id'] = $rank['rank'];
 			$rank['name'] = $rank['rank'];
 		}
-		//tags
-		if ($tsumegoFilters->query == 'tags')
-		{
-			$query = "
-WITH tag_counts AS (
-  SELECT
-    tag.id AS tag_id,
-    tag.name AS tag_name,
-    tag.color AS tag_color,
-    COUNT(tsumego.id) AS total_count
-  FROM tsumego
-  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
-  JOIN tag ON tag.id = tag_connection.tag_id" . (empty($tsumegoFilters->tagIDs) ? '' : ' AND tag.id IN (' . implode(',', $tsumegoFilters->tagIDs) . ')') . "
-  GROUP BY tag.id
-),
-numbered AS (
-  SELECT
-    tag.id AS tag_id,
-    tag.name AS tag_name,
-    tag.color AS tag_color,
-    tsumego.id AS tsumego_id,
-    ROW_NUMBER() OVER (PARTITION BY tag.id ORDER BY tsumego.id) AS rn,
-    tsumego_status.status
-  FROM tsumego
-  JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
-  JOIN tag ON tag.id = tag_connection.tag_id
-  LEFT JOIN tsumego_status
-      ON tsumego_status.user_id = " . Auth::getUserID() . "
-      AND tsumego_status.tsumego_id = tsumego.id
-),
-partitioned AS (
-  SELECT
-    n.tag_name AS name,
-    n.tag_color AS color,
-    t.total_count,
-    CASE
-      WHEN t.total_count <= " . $tsumegoFilters->collectionSize . " THEN -1
-      ELSE FLOOR(n.rn / " . $tsumegoFilters->collectionSize . ")
-    END AS partition_number,
-    COUNT(*) AS usage_count,
-    COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
-  FROM numbered n
-  JOIN tag_counts t ON t.tag_id = n.tag_id
-  GROUP BY n.tag_name, n.tag_color, t.total_count, partition_number
-)
-SELECT *
-FROM partitioned
-ORDER BY total_count DESC, partition_number";
 
-			$tagsRaw = ClassRegistry::init('Tsumego')->query($query);
-			foreach ($tagsRaw as $key => $tagRaw)
-			{
-				$tagRaw = $tagRaw['partitioned'];
-				$tag = [];
-				$tag['id'] = $tagRaw['name'];
-				$tag['amount'] = $tagRaw['usage_count'];
-				$tag['name'] = $tagRaw['name'];
-				$partition = $tagRaw['partition_number'];
-				$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
-				$tag['color'] = str_replace('[o]', (string) $colorValue, $this->getTagColor($tagRaw['color']));
-				$tag['solved_percent'] = round(Util::getPercent($tagRaw['solved_count'], $tagRaw['usage_count']));
-				$tag['partition'] = $partition;
-				$sets [] = $tag;
-			}
-		}
 		if ($tsumegoFilters->query == 'topics' && empty($tsumegoFilters->sets))
 			$queryRefresh = false;
 		elseif ($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->ranks))
@@ -534,7 +326,7 @@ ORDER BY total_count DESC, partition_number";
 		else
 			$queryRefresh = true;
 
-		$this->set('sets', $sets);
+		$this->set('setsSelector', $setsSelector);
 		$this->set('ranksArray', $ranksArray);
 		$this->set('tagList', $tagList);
 		$this->set('setTiles', $setTiles);
@@ -542,70 +334,13 @@ ORDER BY total_count DESC, partition_number";
 		$this->set('tagTiles', $tagTiles);
 		$this->set('tsumegoFilters', $tsumegoFilters);
 		$this->set('achievementUpdate', $achievementUpdate);
-		$this->set('searchCounter', $searchCounter);
 		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('queryRefresh', $queryRefresh);
 	}
 
-	private function partitionCollections($list, $size, $tsumegoStatusMap)
+	public static function getDifficultyAndSolved($currentTagIds, $tsumegoStatusMap)
 	{
-		$newList = [];
-		$listCount = count($list);
-		for ($i = 0; $i < $listCount; $i++)
-		{
-			$amountTags = $list[$i]['amount'];
-			$amountCounter = 0;
-			$amountFrom = 0;
-			$amountTo = $size - 1;
-			while ($amountTags > $size)
-			{
-				$newList = $this->partitionCollection($newList, $list[$i], $size, $tsumegoStatusMap, $amountFrom, $amountTo + 1, $amountCounter, true);
-				$amountTags -= $size;
-				$amountCounter++;
-				$amountFrom += $size;
-				$amountTo += $size;
-			}
-			$amountTo = $amountFrom + $amountTags;
-			$newList = $this->partitionCollection($newList, $list[$i], $amountTags, $tsumegoStatusMap, $amountFrom, $amountTo, $amountCounter, false);
-		}
-
-		return $newList;
-	}
-
-	private function partitionCollection($newList, $list, $size, $tsumegoStatusMap, $from, $to, $amountCounter, $inLoop)
-	{
-		$tl = [];
-		$tl['id'] = $list['id'];
-		$colorValue = 1;
-		if (!$inLoop && $amountCounter == 0)
-			$tl['partition'] = -1;
-		else
-		{
-			$tl['partition'] = $amountCounter;
-			$step = 1.5;
-			$colorValue = 1 - ($amountCounter * 0.1 * $step);
-		}
-		$tl['name'] = $list['name'];
-		$tl['amount'] = $size;
-		$tl['color'] = str_replace('[o]', (string) $colorValue, $list['color']);
-		if (isset($list['premium']))
-			$tl['premium'] = $list['premium'];
-		else
-			$tl['premium'] = 0;
-		$currentIds = [];
-		for ($i = $from; $i < $to; $i++)
-			array_push($currentIds, $list['currentIds'][$i]);
-		$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-		$tl['difficulty'] = $difficultyAndSolved['difficulty'];
-		$tl['solved_percent'] = $difficultyAndSolved['solved'];
-		array_push($newList, $tl);
-
-		return $newList;
-	}
-
-	private function getDifficultyAndSolved($currentTagIds, $tsumegoStatusMap)
-	{
-		$tagTsumegoDifficulty = $this->Tsumego->find('all', ['conditions' => ['id' => $currentTagIds]]);
+		$tagTsumegoDifficulty = ClassRegistry::init('Tsumego')->find('all', ['conditions' => ['id' => $currentTagIds]]);
 		if (!$tagTsumegoDifficulty)
 			$tagTsumegoDifficulty = [];
 		$tagDifficultyResult = 0;
@@ -1675,9 +1410,8 @@ ORDER BY total_count DESC, partition_number";
 		return '#333333';
 	}
 
-	private function getExistingRanksArray()
+	public static function getExistingRanksArray()
 	{
-		$this->loadModel('Tsumego');
 		$ranksArray = [];
 		$ranksArray[0]['rank'] = '15k';
 		$ranksArray[1]['rank'] = '14k';
@@ -1702,6 +1436,7 @@ ORDER BY total_count DESC, partition_number";
 		$ranksArray[20]['rank'] = '6d';
 		$ranksArray[21]['rank'] = '7d';
 		$ranksArray[22]['rank'] = '8d';
+		$ranksArray[23]['rank'] = '9d';
 		$ranksArray[0]['color'] = 'rgba(63,  201, 196, [o])';
 		$ranksArray[1]['color'] = 'rgba(63, 190, 201, [o])';
 		$ranksArray[2]['color'] = 'rgba(63, 173, 201, [o])';
@@ -1725,45 +1460,9 @@ ORDER BY total_count DESC, partition_number";
 		$ranksArray[20]['color'] = 'rgba(244, 88, 145, [o])';
 		$ranksArray[21]['color'] = 'rgba(244, 88, 127, [o])';
 		$ranksArray[22]['color'] = 'rgba(244, 88, 101, [o])';
-		$nine = $this->Tsumego->find('first', ['conditions' => ['rating >=' => Rating::getRankMinimalRatingFromReadableRank('9d'),]]);
-		if ($nine)
-		{
-			$ranksArray[23]['rank'] = '9d';
-			$ranksArray[23]['color'] = 'rgba(244, 88, 88, [o])';
-		}
+		$ranksArray[23]['color'] = 'rgba(244, 88, 88, [o])';
 
 		return $ranksArray;
-	}
-	private function getTagColor($pos)
-	{
-		$c = [];
-		$c[0] = 'rgba(217, 135, 135, [o])';
-		$c[1] = 'rgba(135, 149, 101, [o])';
-		$c[2] = 'rgba(190, 151, 131, [o])';
-		$c[3] = 'rgba(188, 116, 45, [o])';
-		$c[4] = 'rgba(153, 111, 31, [o])';
-		$c[5] = 'rgba(159, 54, 0, [o])';
-		$c[6] = 'rgba(153, 151, 31, [o])';
-		$c[7] = 'rgba(114, 9, 183, [o])';
-		$c[8] = 'rgba(149, 77, 63, [o])';
-		$c[9] = 'rgba(179, 181, 37, [o])';
-		$c[10] = 'rgba(137, 153, 31, [o])';
-		$c[11] = 'rgba(145, 61, 91, [o])';
-		$c[12] = 'rgba(79, 68, 68, [o])';
-		$c[13] = 'rgba(182, 137, 199, [o])';
-		$c[14] = 'rgba(166, 88, 125, [o])';
-		$c[15] = 'rgba(45, 37, 79, [o])';
-		$c[16] = 'rgba(154, 50, 138, [o])';
-		$c[17] = 'rgba(102, 51, 122, [o])';
-		$c[18] = 'rgba(184, 46, 126, [o])';
-		$c[19] = 'rgba(119, 50, 154, [o])';
-		$c[20] = 'rgba(187, 70, 196, [o])';
-		$c[21] = 'rgba(125, 8, 8, [o])';
-		$c[22] = 'rgba(136, 67, 56, [o])';
-		$c[23] = 'rgba(190, 165, 136, [o])';
-		$c[24] = 'rgba(128, 118, 123, [o])';
-
-		return $c[$pos];
 	}
 
 }
