@@ -296,16 +296,22 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testSolvingAddsNewTsumegoAttempt(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]]]);
+		foreach (['V', 'W', 'S', 'C'] as $status)
+			foreach ($this->PAGES as $page)
+			{
+				$context = new ContextPreparator(['tsumego' => ['status' => $status, 'sets' => [['name' => 'set 1', 'num' => 1]]]]);
 
-			$this->performSolve($context, $page);
-			$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
-			$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
-			$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
-			$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 0);
-		}
+				$this->performSolve($context, $page);
+				$newTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id'], 'user_id' => $context->user['id']]]);
+				if ($status == 'S' || $status == 'C')
+					$this->assertSame(count($newTsumegoAttempt), 0); // exactly one should be created
+				else
+				{
+					$this->assertSame(count($newTsumegoAttempt), 1); // exactly one should be created
+					$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['solved'], true);
+					$this->assertSame($newTsumegoAttempt[0]['TsumegoAttempt']['misplays'], 0);
+				}
+			}
 	}
 
 	public function testSolvingUpdatesExistingNotSolvedTsumegoAttempt(): void

@@ -54,7 +54,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processDamage($result, $previousStatusValue);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result, $previousStatusValue, $originalTsumegoRating);
-		$this->updateTsumegoAttempt($previousTsumego, $result);
+		$this->updateTsumegoAttempt($previousTsumego, $result, $previousStatusValue);
 		$this->processErrorAchievement($result);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
@@ -165,9 +165,11 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('Favorite')->delete($favorite['Favorite']['id']);
 	}
 
-	private function updateTsumegoAttempt(array $previousTsumego, array $result): void
+	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus): void
 	{
 		if (Auth::isInTimeMode())
+			return;
+		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
 		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find(
 			'first',
