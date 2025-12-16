@@ -6,6 +6,7 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
+		$_COOKIE = [];
 		Preferences::clearTestStorage();
 		// Clear browser sessions first to prevent stale auth data (can't use ClassRegistry for cake_sessions)
 		$db = ConnectionManager::getDataSource('default');
