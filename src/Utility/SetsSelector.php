@@ -214,9 +214,6 @@ ORDER BY order_value, total_count DESC, partition_number
 	{
 		$ranksArray = SetsController::getExistingRanksArray();
 		$newRanksArray = [];
-		$setConditions = [];
-		if (!empty($this->tsumegoFilters->setIDs))
-			$setConditions['set_id'] = $this->tsumegoFilters->setIDs;
 		if (!empty($this->tsumegoFilters->ranks))
 		{
 			$ranksArray2 = [];
