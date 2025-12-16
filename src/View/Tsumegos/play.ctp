@@ -1143,6 +1143,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$(".add-tag-list-popular").hide();
 		});
 
+		$('#target').click(function(e){
+			if(locked)
+				window.location = nextButtonLink;
 	});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
