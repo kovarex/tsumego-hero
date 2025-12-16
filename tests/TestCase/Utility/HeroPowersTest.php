@@ -161,7 +161,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 		$this->assertSame($context->xpgained(), 0); // no xp was gained
 		$this->assertSame($context->reloadUser()['rating'], 1000.0); // xp wasn't changed
-		$this->assertSame(0 , count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+		$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
 	}
 
 	public function testUseIntuition()
