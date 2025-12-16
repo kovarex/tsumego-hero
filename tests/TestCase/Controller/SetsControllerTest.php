@@ -404,7 +404,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void
 	{
-
+		$browser = Browser::instance();
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
@@ -425,8 +425,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
 
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
 
@@ -996,10 +994,10 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testAddingProblemInSandbox(): void
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]]]);
-		$browser = Browser::instance();
 		$browser->get('/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id']);
 
 		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
@@ -1060,6 +1058,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	 */
 	public function testSetViewButtonStatusClasses()
 	{
+		$browser = Browser::instance();
 		// Create set with 3 problems: not attempted, solved, failed
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -1079,7 +1078,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$browser = Browser::instance();
 		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
 		$browser->get("sets/view/{$setId}");
 
@@ -1153,6 +1151,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	 */
 	public function testSetViewTimeTabShowsMinimumSolveTime()
 	{
+		$browser = Browser::instance();
 		// Create ONE set with TWO tsumegos
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -1174,7 +1173,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$browser = Browser::instance();
 		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
 		$browser->get("sets/view/{$setId}");
 
