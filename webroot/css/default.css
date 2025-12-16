@@ -7662,6 +7662,7 @@ body.dark-theme .btn--warning {
 	left: 100%;
 	top: 0;
 	z-index: 1000;
+	pointer-events: none;
 }
 
 .paginator-link
