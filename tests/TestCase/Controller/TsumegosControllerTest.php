@@ -263,9 +263,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE],
-				'tsumego' => [
-					'sets' => [['name' => 'test set', 'num' => '1', 'premium' => true]]]]);
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sets' => [['name' => 'test set', 'num' => '1', 'premium' => true]]]]);
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
 		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());

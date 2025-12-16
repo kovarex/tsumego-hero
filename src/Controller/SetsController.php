@@ -249,10 +249,7 @@ class SetsController extends AppController
 
 		$setTiles = [];
 		$difficultyTiles = [];
-		$tagTiles = [];
-		$tsumegoStatusMap = [];
 		$sets = [];
-		$ranksArray = [];
 		$tagList = [];
 		$setsWithPremium = [];
 		$overallCounter = 0;
