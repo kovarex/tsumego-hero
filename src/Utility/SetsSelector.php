@@ -55,7 +55,7 @@ partitioned AS (
     t.total_count,
     CASE
       WHEN t.total_count <= " . $this->tsumegoFilters->collectionSize . " THEN -1
-      ELSE FLOOR(n.rn / " . $this->tsumegoFilters->collectionSize . ")
+      ELSE FLOOR((n.rn - 1) / " . $this->tsumegoFilters->collectionSize . ")
     END AS partition_number,
     COUNT(*) AS usage_count,
     COUNT(CASE WHEN n.status IN ('S', 'W', 'C') THEN 1 END) AS solved_count
