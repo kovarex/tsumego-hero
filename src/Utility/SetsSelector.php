@@ -24,6 +24,8 @@ class SetsSelector
 		$innerQuery->selects[]= 'tag.color AS tag_color';
 		$innerQuery->selects[]= 'COUNT(tsumego.id) AS total_count';
 		$innerQuery->groupBy[]= 'tag.id';
+		$innerQuery->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
+		$innerQuery->query .= ' JOIN tag ON tag_connection.tag_id = tag.id';
 		$this->addConditionsToCountQuery($innerQuery);
 
 		$query = "
