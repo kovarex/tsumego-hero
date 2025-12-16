@@ -309,7 +309,7 @@ class Browser
 		new WebDriverWait($this->driver, 5, 50)->until(
 			function () use ($selector, $expectedCount) {
 				$elements = $this->getCssSelect($selector);
-				return count($elements) > is_null($expectedCount) ? 0 : ($expectedCount - 1);
+				return count($elements) > (is_null($expectedCount) ? 0 : ($expectedCount - 1));
 			}
 		);
 	}
