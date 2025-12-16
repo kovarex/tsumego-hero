@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Query', 'Utility');
+
 class SetsSelector
 {
 	public function __construct($tsumegoFilters)
@@ -56,7 +58,7 @@ partitioned AS (
       ELSE FLOOR(n.rn / " . $this->tsumegoFilters->collectionSize . ")
     END AS partition_number,
     COUNT(*) AS usage_count,
-    COUNT(CASE WHEN n.status IN ('S', 'W') THEN 1 END) AS solved_count
+    COUNT(CASE WHEN n.status IN ('S', 'W', 'C') THEN 1 END) AS solved_count
   FROM numbered n
   JOIN tag_counts t ON t.tag_id = n.tag_id
   GROUP BY n.tag_name, n.tag_color, t.total_count, partition_number
@@ -79,10 +81,14 @@ ORDER BY total_count DESC, partition_number";
 			$tag['partition'] = $partition;
 			$this->sets [] = $tag;
 		}
-		$this->problemsFound = (int) Util::query('SELECT COUNT(DISTINCT tsumego.id) AS total
-FROM tag_connection
-JOIN tsumego ON tsumego.id = tag_connection.tsumego_id
-WHERE 1=1 ' . $tagIDCondition)[0]['total'];
+
+		$countQuery = new Query('FROM tsumego');
+		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
+		$countQuery->query .= ' JOIN tag_connection ON tsumego.id = tag_connection.tsumego_id';
+		if (!empty($this->tsumegoFilters->tagIDs))
+			$countQuery->conditions[]= 'tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
+		$this->addConditionsToCountQuery($countQuery);
+		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	private static function getTagColor($pos)
@@ -119,63 +125,100 @@ WHERE 1=1 ' . $tagIDCondition)[0]['total'];
 
 	private function selectByTopics()
 	{
-		$setsWithPremium = [];
-		$swp = ClassRegistry::init('Set')->find('all', ['conditions' => ['premium' => 1]]) ?: [];
-		foreach ($swp as $item)
-			$setsWithPremium[] = $item['Set']['id'];
+		$filteredTsumego = new Query('FROM tsumego');
+		$filteredTsumego->selects []= 'DISTINCT tsumego.id';
+		$filteredTsumego->selects []= 'tsumego.rating';
+		if ($this->tsumegoFilters->tagIDs)
+			$filteredTsumego->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.id IN (' . $this->tsumegoFilters->tagIDs . ')';
+		$this->addConditionsToCountQuery($filteredTsumego);
 
-		$rankConditions = [];
-		if (!empty($this->tsumegoFilters->ranks))
+	$query = "
+WITH filtered_tsumego AS (" . $filteredTsumego->str() . "),
+
+set_counts AS (
+  SELECT
+    s.id AS set_id,
+    s.title AS set_title,
+    s.color AS set_color,
+    COUNT(sc.tsumego_id) AS total_count
+  FROM filtered_tsumego ft
+  JOIN set_connection sc ON sc.tsumego_id = ft.id
+  JOIN `set` s ON s.id = sc.set_id
+  WHERE s.public = 1
+  GROUP BY s.id
+),
+
+numbered AS (
+  SELECT
+  	s.`order` AS set_order,
+    s.id AS set_id,
+    s.title AS set_title,
+    s.color AS set_color,
+    ft.rating AS rating,
+    ft.id AS tsumego_id,
+    ROW_NUMBER() OVER (
+      PARTITION BY s.id
+      ORDER BY ft.id
+    ) AS rn,
+    ts.status as status
+  FROM filtered_tsumego ft
+  JOIN set_connection sc ON sc.tsumego_id = ft.id
+  JOIN `set` s ON s.id = sc.set_id
+  LEFT JOIN tsumego_status ts
+    ON ts.user_id = " . Auth::getUserID() . "
+    AND ts.tsumego_id = ft.id
+  " . (empty($this->tsumegoFilters->setIDs) ? '' : (' WHERE s.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')')) . "
+),
+
+partitioned AS (
+  SELECT
+  	numbered.set_order as order_value,
+  	numbered.set_id as id,
+    numbered.set_title AS title,
+    numbered.set_color AS color,
+    sc.total_count,
+    CASE
+      WHEN sc.total_count <= " . $this->tsumegoFilters->collectionSize . " THEN -1
+      ELSE FLOOR((numbered.rn - 1) / " . $this->tsumegoFilters->collectionSize . ")
+    END AS partition_number,
+    COUNT(*) AS usage_count,
+    COUNT(CASE WHEN numbered.status IN ('S', 'W', 'C') THEN 1 END) AS solved_count,
+    SUM(numbered.rating) AS rating_sum
+  FROM numbered
+  JOIN set_counts sc ON sc.set_id = numbered.set_id
+  GROUP BY
+  	numbered.set_order,
+  	numbered.set_id,
+    numbered.set_title,
+    numbered.set_color,
+    sc.total_count,
+    partition_number
+)
+
+SELECT *
+FROM partitioned
+ORDER BY order_value, total_count DESC, partition_number
+";
+		$rows = Util::query($query);
+		foreach ($rows as $row)
 		{
-			$fromTo = [];
-			foreach ($this->tsumegoFilters->ranks as $rank)
-				$fromTo [] = RatingBounds::coverRank($rank, '15k')->getConditions();
-			$rankConditions['OR'] = $fromTo;
-		}
-		$setsRaw = ClassRegistry::init('Set')->find('all', ['order' => 'order ASC',
-			'conditions' => [
-				empty($this->tsumegoFilters->setIDs) ? null : ['id' => $this->tsumegoFilters->setIDs],
-				'public' => 1]]) ?: [];
-
-		$setsRawCount = count($setsRaw);
-		for ($i = 0; $i < $setsRawCount; $i++)
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($setsRaw[$i]['Set']['id'], $rankConditions);
-			$currentIds = [];
-			$tsCount2 = count($ts);
-			for ($j = 0; $j < $tsCount2; $j++)
-				array_push($currentIds, $ts[$j]['Tsumego']['id']);
-			$setAmount = count($ts);
-			if (count($this->tsumegoFilters->tags) > 0)
-			{
-				$idsTemp = [];
-				$tsTagsFiltered = ClassRegistry::init('TagConnection')->find('all', [
-					'conditions' => [
-						'tsumego_id' => $currentIds,
-						'tag_id' => $this->tsumegoFilters->tagIDs,
-					]]) ?: [];
-				$tsTagsFilteredCount2 = count($tsTagsFiltered);
-				for ($j = 0; $j < $tsTagsFilteredCount2; $j++)
-					array_push($idsTemp, $tsTagsFiltered[$j]['TagConnection']['tsumego_id']);
-				$currentIds = array_unique($idsTemp);
-				$setAmount = count($currentIds);
-			}
-			if (!in_array($setsRaw[$i]['Set']['id'], $setsWithPremium) || Auth::hasPremium())
-				$this->problemsFound += $setAmount;
-
-			$s = [];
-			$s['id'] = $setsRaw[$i]['Set']['id'];
-			$s['name'] = $setsRaw[$i]['Set']['title'];
-			$s['amount'] = $setAmount;
-			$s['color'] = $setsRaw[$i]['Set']['color'];
-			$s['premium'] = $setsRaw[$i]['Set']['premium'];
-			$s['currentIds'] = $currentIds;
-			if (count($currentIds) > 0)
-				array_push($this->sets, $s);
+			$set = [];
+			$set['id'] = $row['id'];
+			$set['name'] = $row['title'];
+			$set['amount'] = $row['usage_count'];
+			$partition = $row['partition_number'];
+			$set['color'] = $row['color'];
+			$set['premium'] = $row['premium'];
+			$set['solved_percent'] = round(Util::getPercent($row['solved_count'], $row['usage_count']));
+			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
+			$set['partition'] = $partition;
+			$this->sets[] = $set;
 		}
 
-		$tsumegoStatusMap = Auth::isLoggedIn() ? TsumegoUtil::getMapForCurrentUser() : [];
-		$this->sets = $this->partitionCollections($this->sets, $this->tsumegoFilters->collectionSize, $tsumegoStatusMap);
+		$countQuery = new Query('FROM tsumego');
+		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
+		$this->addConditionsToCountQuery($countQuery);
+		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	private function selectByDifficulty()
@@ -310,7 +353,17 @@ WHERE 1=1 ' . $tagIDCondition)[0]['total'];
 		return $newList;
 	}
 
+	private function addConditionsToCountQuery(Query $query)
+	{
+		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
+		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
+		$query->conditions[]= '`set`.public = 1';
+		if (!empty($this->tsumegoFilters->setIDs))
+			$query->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+	}
+
 	public $tsumegoFilters;
 	public $sets = [];
 	public int $problemsFound = 0;
+	private Query $query;
 }

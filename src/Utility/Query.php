@@ -1,0 +1,27 @@
+<?php
+
+class Query
+{
+	function __construct($query)
+	{
+		$this->query = $query;
+	}
+
+	public function str()
+	{
+		$result = 'SELECT ';
+		$result .= implode(', ', $this->selects);
+		$result .= ' ';
+		$result .= $this->query;
+		if (!empty($this->conditions))
+			$result .= ' WHERE ' . implode(' AND ', $this->conditions);
+		if (!empty($this->orderBy))
+			$result .= ' ORDER BY ' . implode(', ', $this->orderBy);
+		return $result;
+	}
+
+	public $selects = [];
+	public $query = '';
+	public $conditions = [];
+	public $orderBy = [];
+}
