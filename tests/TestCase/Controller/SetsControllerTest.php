@@ -171,6 +171,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testFullProcessOfDifficultyBasedSelectionAndSolving(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
@@ -202,7 +203,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('difficulty-button'))->click();
 		$difficulty15kSelector = $browser->driver->findElement(WebDriverBy::id('tile-difficulty0'));
@@ -241,6 +241,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'collection_size' => 2]];
@@ -258,7 +259,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = Browser::instance();
 		$browser->get("sets");
 
 		// Wait for collection divs to load (needed for parallel testing with higher concurrency)
@@ -314,6 +314,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testOfVisiting2RankBasedSetsBothInTheFilters(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'difficulty',
@@ -346,8 +347,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		}
 
 		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
 
 		// we open sets, and since we filtered 15k and 1d, this is the sets we should see
 		$browser->get("sets");
@@ -475,7 +474,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testQueringSetsByRanksButLimitedByTopics(): void
 	{
-
+		$browser = Browser::instance();
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
@@ -496,11 +495,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
-
 		// we open sets, we filtered set 2 and set 3, but query by ranks, so we should see:
-
 		// all 3 ranks with
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
@@ -546,6 +541,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testSelectingTagFilters(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
 		$contextParams['other-tsumegos'] = [];
 
@@ -557,7 +553,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 
 		// first we select the difficulty of 15k
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
 		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
@@ -575,6 +570,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTagBasedSets(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags']];
@@ -591,7 +587,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(3, $collectionTopDivs);
@@ -602,6 +597,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTagBasedSetsRespectsTagFilters(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags',
@@ -619,7 +615,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs);
@@ -654,6 +649,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'topics',
@@ -671,7 +667,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs);
@@ -719,6 +714,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testTopicBasedSetViewShowsSolvedPercentProperly(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'topics']];
@@ -736,7 +732,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 
 		$wait = new WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
@@ -756,6 +751,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags']];
@@ -774,8 +770,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
-
 		$browser->get("sets");
 
 		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
@@ -808,6 +802,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testRankBasedSetViewShowsSolvedPercentProperly(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'difficulty']];
@@ -826,7 +821,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 
 		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
@@ -859,6 +853,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testAddingToFavoritesAndViewingIt(): void
 	{
+		$browser = Browser::instance();
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -866,7 +861,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		$context = new ContextPreparator($contextParams);
 
-		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
 		$browser->get('/sets/view/favorites');
@@ -887,6 +881,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testRemovingFavorites(): void
 	{
+		$browser = Browser::instance();
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
@@ -894,9 +889,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		$context = new ContextPreparator($contextParams);
 		$context->addFavorite($context->otherTsumegos[0]);
-		usleep(100000); // 100ms - ensure DB commit before browser query
 
-		$browser = Browser::instance();
 		$browser->get('sets/view/favorites');
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 
@@ -914,6 +907,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
 	{
+		$browser = Browser::instance();
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
@@ -921,7 +915,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			$contextParams ['other-tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		$context = new ContextPreparator($contextParams);
 
-		$browser = Browser::instance();
 		$browser->get('sets');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(3, $collectionTopDivs); // the 3 sets are visible even when not in favorites, as top index ignores favorites
@@ -931,6 +924,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testBrowsingFavoritesByNextButton(): void
 	{
+		$browser = Browser::instance();
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
@@ -942,7 +936,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		for ($i = 0; $i < 3; $i++)
 			$context->addFavorite($context->otherTsumegos[$i]);
 
-		$browser = Browser::instance();
 		$browser->get('sets/view/favorites');
 		// now we are viewing the 'favorites' insides and checking the buttons
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
@@ -961,11 +954,11 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testOnlyPublicSetsAreVisible(): void
 	{
+		$browser = Browser::instance();
 		new ContextPreparator(['tsumego' => ['sets' => [
 			['name' => 'public set', 'public' => 1, 'num' => '666'],
 			['name' => 'private set', 'public' => 0, 'num' => '777']]]]);
 
-		$browser = Browser::instance();
 		$browser->get('sets');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
@@ -974,12 +967,12 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testOnlyPrivateSetsAreVisibleInSandbox(): void
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [
 				['sets' => [['name' => 'public set', 'public' => 1, 'num' => '666']]],
 				['sets' => [['name' => 'private set', 'public' => 0, 'num' => '777']]]]]);
-		$browser = Browser::instance();
 		$browser->get('sets/sandbox');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
@@ -1017,6 +1010,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	 */
 	public function testSetViewCompletedTabShowsOrderNumbers()
 	{
+		$browser = Browser::instance();
 		// Create ONE set with THREE tsumegos
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -1027,7 +1021,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$browser = Browser::instance();
 		// Get set ID from first other-tsumego
 		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
 
@@ -1101,6 +1094,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	 */
 	public function testSetViewAccuracyTabShowsSuccessFailureRatio()
 	{
+		$browser = Browser::instance();
 		// Create ONE set with TWO tsumegos, first has multiple attempts
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -1118,7 +1112,6 @@ class SetsControllerTest extends TestCaseWithAuth
 			],
 		]);
 
-		$browser = Browser::instance();
 		$setId = $context->otherTsumegos[0]['sets'][0]['id'];
 		$browser->get("sets/view/{$setId}");
 
