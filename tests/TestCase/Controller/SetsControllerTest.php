@@ -1014,11 +1014,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('3', trim($buttons[2]->getText()));
 
 		// setViewButtons2 (accuracy) and setViewButtons3 (time) should be hidden
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->getCssSelect('.setViewButtons2');
 		foreach ($accuracyButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Accuracy buttons should be hidden on Completed tab');
 
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->getCssSelect('.setViewButtons3');
 		foreach ($timeButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Time buttons should be hidden on Completed tab');
 	}
@@ -1053,7 +1053,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets/view/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
-		$listItems = $browser->driver->findElements(WebDriverBy::cssSelector('li[class*="status"]'));
+		$listItems = $browser->getCssSelect('li[class*="status"]');
 		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
 
 		// Problem 1: Not attempted - should have statusN class
