@@ -417,7 +417,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->expandComments($browser);
 
 		// Wait for comments section to be visible
-		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment', 5);
+		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment');
 
 		// Check DOM elements directly - drag handles should be present for admin
 		$dragHandles = $browser->getCssSelect('.tsumego-comment__drag-handle');
@@ -451,7 +451,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->expandComments($browser);
 
 		// Wait for comments section to be visible
-		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment', 5);
+		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment');
 
 		// Check DOM elements directly - not page source text which includes JS code
 		$dragHandles = $browser->getCssSelect('.tsumego-comment__drag-handle');
@@ -487,7 +487,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->expandComments($browser);
 
 		// Wait for comments
-		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment', 5);
+		$browser->waitUntilCssSelectorExists('#commentSpace .tsumego-comment');
 
 		// Check that drag handles are present for admin
 		$dragHandles = $browser->getCssSelect('.tsumego-comment__drag-handle');
@@ -518,7 +518,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$this->expandComments($browser);
-		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
+		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone');
 
 		// Verify initial state
 		$this->assertCount(0, $browser->getCssSelect('.tsumego-issue'), 'Should have 0 issues initially');
@@ -533,7 +533,7 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Wait for htmx update
 		usleep(500000);
-		$browser->waitUntilCssSelectorExists('.tsumego-issue', 5);
+		$browser->waitUntilCssSelectorExists('.tsumego-issue');
 
 		// Verify comment is now in an issue
 		$this->assertCount(1, $browser->getCssSelect('.tsumego-issue'), 'Should have 1 issue now');
@@ -565,7 +565,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 		$this->expandComments($browser);
-		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
+		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone');
 
 		// Make Issue button should exist on standalone comments
 		$standaloneButtons = $browser->getCssSelect('.tsumego-comment--standalone .tsumego-comment__make-issue-btn');
@@ -885,7 +885,7 @@ class CommentsControllerTest extends ControllerTestCase
 		usleep(2000 * 1000); // Wait for htmx response and idiomorph
 
 		// Verify the comment was added
-		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
+		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone');
 		$standaloneComments = $browser->getCssSelect('.tsumego-comment--standalone');
 		$this->assertCount(1, $standaloneComments, 'Should have 1 standalone comment');
 
@@ -897,7 +897,7 @@ class CommentsControllerTest extends ControllerTestCase
 
 		// Wait for htmx update
 		usleep(1500 * 1000);
-		$browser->waitUntilCssSelectorExists('.tsumego-issue', 5);
+		$browser->waitUntilCssSelectorExists('.tsumego-issue');
 
 		// Verify comment is now in an issue
 		$issues = $browser->getCssSelect('.tsumego-issue');
