@@ -676,6 +676,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[3]['set-connections'][0]['set_id'], $browser->getCurrentURL());
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 
+		$this->assertSame('atari@empty triangle', ClassRegistry::init('UserContribution')->findById($context->user['id'])['filtered_tags']);
+		$this->assertSame('topics', ClassRegistry::init('UserContribution')->findById($context->user['id'])['query']);
 		// now we are viewing the 'set 1' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; });
 
