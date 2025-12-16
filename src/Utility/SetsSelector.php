@@ -128,8 +128,8 @@ ORDER BY total_count DESC, partition_number";
 		$filteredTsumego = new Query('FROM tsumego');
 		$filteredTsumego->selects []= 'DISTINCT tsumego.id';
 		$filteredTsumego->selects []= 'tsumego.rating';
-		if ($this->tsumegoFilters->tagIDs)
-			$filteredTsumego->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.id IN (' . $this->tsumegoFilters->tagIDs . ')';
+		if (!empty($this->tsumegoFilters->tagIDs))
+			$filteredTsumego->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id AND tag_connection.id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
 		$this->addConditionsToCountQuery($filteredTsumego);
 
 	$query = "
