@@ -397,7 +397,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void
 	{
-
+		$browser = Browser::instance();
 		// filter by topics, but limit by ranks
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
@@ -411,18 +411,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		// of 2 and 3 when 1 is filtered one.
 		foreach (['5d', '15k', '1d'] as $rankIndex => $rank)
 			for ($i = 0; $i < 3; $i++)
-			{
 				$contextParams['other-tsumegos'] [] = [
 					'rating' => Rating::getRankMiddleRatingFromReadableRank($rank),
 					'sets' => [['name' => 'set ' . ($i + 1), 'num' => ($rankIndex + 1)]]];
-			}
 
 		$context = new ContextPreparator($contextParams);
 
-		$browser = Browser::instance();
-
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
-
 		// all 3 sets with
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));

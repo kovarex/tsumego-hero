@@ -44,17 +44,7 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query == 'difficulty') // we filter by ranks unless we query a specific difficulty
 			return;
-		if (empty($this->tsumegoFilters->ranks))
-			return;
-
-		$rankConditions = '';
-		foreach ($this->tsumegoFilters->ranks as $rankFilter)
-		{
-			$rankCondition = '';
-			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
-			Util::addSqlOrCondition($rankConditions, $rankCondition);
-		}
-		$this->query->conditions[] = $rankConditions;
+		$this->tsumegoFilters->filterRanks($this->query);
 	}
 
 	private function filterSets()

@@ -101,6 +101,21 @@ class TsumegoFilters
 		$this->query = self::processItem('query', 'topics', null, $query);
 	}
 
+	public function filterRanks(Query $query): void
+	{
+		if (empty($this->ranks))
+			return;
+
+		$rankConditions = '';
+		foreach ($this->ranks as $rankFilter)
+		{
+			$rankCondition = '';
+			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			Util::addSqlOrCondition($rankConditions, $rankCondition);
+		}
+		$query->conditions[] = $rankConditions;
+	}
+
 	public string $query;
 	public int $collectionSize = 0;
 	public array $sets = [];
