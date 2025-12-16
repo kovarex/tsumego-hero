@@ -13,6 +13,7 @@ class SetsSelector
 			$this->selectByTopics();
 		elseif ($this->tsumegoFilters->query == 'difficulty')
 			$this->selectByDifficulty();
+		$this->calculateCount();
 	}
 
 	private function selectByTags()
@@ -75,11 +76,6 @@ ORDER BY total_count DESC, partition_number";
 			$tag['partition'] = $partition;
 			$this->sets [] = $tag;
 		}
-
-		$countQuery = new Query('FROM tsumego');
-		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
-		$this->addConditionsToCountQuery($countQuery);
-		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	private static function getTagColor($pos)
@@ -203,11 +199,6 @@ ORDER BY order_value, total_count DESC, partition_number
 			$set['partition'] = $partition;
 			$this->sets[] = $set;
 		}
-
-		$countQuery = new Query('FROM tsumego');
-		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
-		$this->addConditionsToCountQuery($countQuery);
-		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	private function selectByDifficulty()
@@ -349,6 +340,14 @@ ORDER BY order_value, total_count DESC, partition_number
 		$this->tsumegoFilters->filterTags($query);
 		$this->tsumegoFilters->filterRanks($query);
 		$this->tsumegoFilters->filterSets($query);
+	}
+
+	private function calculateCount()
+	{
+		$countQuery = new Query('FROM tsumego');
+		$countQuery->selects[]= 'COUNT(DISTINCT tsumego.id) AS total';
+		$this->addConditionsToCountQuery($countQuery);
+		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	public TsumegoFilters $tsumegoFilters;
