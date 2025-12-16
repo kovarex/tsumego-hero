@@ -153,10 +153,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
 	}
 
-	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
+	private function checkSetNavigationButtons(Browser $browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
-		$buttons = $browser->getCssSelectSafe('div.set-view-main li');
-		$this->assertCount($count, $buttons);
+		$buttons = $browser->getCssSelectSafe('div.set-view-main li', $count);
 		foreach ($buttons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key));
 		return $buttons;
