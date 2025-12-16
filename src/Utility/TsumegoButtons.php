@@ -137,8 +137,6 @@ class TsumegoButtons extends ArrayObject
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) { return $tsumegoButton->setConnectionID == $setConnectionID; });
 
-		$setFunction('currentLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, $setConnectionID, $tsumegoFilters->getSetID($set)));
-
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
 		$setFunction('previousLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set)));

@@ -663,7 +663,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
 	var noSkipNextButtonLink = "<?php echo $noSkipNextLink; ?>";
-	var resetButtonLink = "<?php echo $currentLink; ?>";
 	var timeModeTimer = (mode == 3 ? new TimeModeTimer() : null);
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
@@ -1144,9 +1143,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$(".add-tag-list-popular").hide();
 		});
 
-		$('#target').click(function(e){
-			if(locked)
-				window.location = resetButtonLink;
 	});
 
 		if(!showCommentSpace) $("#commentSpace").hide();
