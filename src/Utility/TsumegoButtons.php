@@ -50,14 +50,14 @@ class TsumegoButtons extends ArrayObject
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
-		$result = ClassRegistry::init('Tsumego')->query($queryBuilder->query);
+		$result = Util::query($queryBuilder->query);
 		$this->description = $queryBuilder->description;
 
 		foreach ($result as $index => $row)
 			$this [] = new TsumegoButton(
-				$row['tsumego']['id'],
-				$row['set_connection']['id'],
-				$row['set_connection']['num'],
+				$row['tsumego_id'],
+				$row['set_connection_id'],
+				$row['num'],
 				Auth::isLoggedIn() ? ($row['tsumego_status']['status'] ?: 'N') : 'N');
 		$this->updateHighestTsumegoOrder();
 	}
