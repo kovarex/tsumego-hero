@@ -144,6 +144,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, 'set 2');
 
+		$this->assertSame(null, ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $context->user['id']]])['UserContribution']['filtered_tags']);
+		$this->assertSame(null, ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $context->user['id']]])['UserContribution']['query']);
 		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
