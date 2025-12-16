@@ -20,14 +20,12 @@ class UploadSgfTest extends TestCaseWithAuth
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame("Open", $openLink->getText());
 		$openLink->click();
-		$commentEditButton = $browser->getCssSelectSafe('#sgfCommentButton');
-		$commentEditButton->click();
+		$browser->clickId('sgfCommentButton');
 		$commentEditField = $browser->driver->findElement(WebDriverBy::cssSelector('#commentEditField'));
 		$commentEditField->click();
 		$browser->driver->getKeyboard()->sendKeys("Hello from test");
-		$commentEditButton->click();
-		$saveButton = $browser->driver->findElement(WebDriverBy::cssSelector('#saveSGFButton'));
-		$saveButton->click();
+		$browser->clickId('sgfCommentButton');
+		$browser->clickId('saveSGFButton');
 
 		$sgf = ClassRegistry::init('Sgf')->find('all', [
 			'conditions' => ['tsumego_id' => $context->tsumego['id']],
