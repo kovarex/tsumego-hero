@@ -679,6 +679,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '1 problem');
+		$this->assertSame('Problems found: 3', $browser->find('#problems-found')->getText());
 
 		// going into the 'set 1'
 		$collectionTopDivs[0]->click();
@@ -738,7 +739,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			$bla = $browser->driver->getPageSource();
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
 
@@ -749,6 +749,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkSetFinishedPercent($browser, 2, 'set 3', '50%');
 		$this->checkSetFinishedPercent($browser, 3, 'set 4', '75%');
 		$this->checkSetFinishedPercent($browser, 4, 'set 5', '100%');
+		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
 	}
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
@@ -823,6 +824,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkSetFinishedPercent($browser, 2, '5k', '50%');
 		$this->checkSetFinishedPercent($browser, 3, '1d', '75%');
 		$this->checkSetFinishedPercent($browser, 4, '5d', '100%');
+		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
 	}
 
 	public function testAddingToFavoritesAndViewingIt(): void
@@ -845,7 +847,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$buttons[0]->click();
 
 		// opening the favorites problem
-		$buttons = $this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// next will get us back to favorites
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -937,6 +939,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
+		$this->assertSame('Problems found: 1', $browser->find('#problems-found')->getText());
 	}
 
 	public function testOnlyPrivateSetsAreVisibleInSandbox(): void

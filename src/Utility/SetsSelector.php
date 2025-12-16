@@ -137,7 +137,6 @@ WHERE 1=1 ' . $tagIDCondition)[0]['total'];
 				empty($this->tsumegoFilters->setIDs) ? null : ['id' => $this->tsumegoFilters->setIDs],
 				'public' => 1]]) ?: [];
 
-		$achievementUpdate = [];
 		$setsRawCount = count($setsRaw);
 		for ($i = 0; $i < $setsRawCount; $i++)
 		{

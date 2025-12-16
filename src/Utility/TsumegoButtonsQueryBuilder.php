@@ -41,8 +41,7 @@ class TsumegoButtonsQueryBuilder
 	private function filterRanks()
 	{
 		if ($this->tsumegoFilters->query == 'difficulty') // we filter by ranks unless we query a specific difficulty
-		{return;
-		}
+			return;
 
 		$rankConditions = '';
 		foreach ($this->tsumegoFilters->ranks as $rankFilter)
@@ -57,8 +56,7 @@ class TsumegoButtonsQueryBuilder
 	private function filterSets()
 	{
 		if ($this->tsumegoFilters->query == 'topics') // we filter by sets unless we query a specific set
-		{return;
-		}
+			return;
 
 		if (!empty($this->tsumegoFilters->setIDs))
 			Util::addSqlCondition($this->condition, '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')');
@@ -67,8 +65,7 @@ class TsumegoButtonsQueryBuilder
 	private function filterTags()
 	{
 		if ($this->tsumegoFilters->query == 'tags') // we filter by tags unless we query a specific tag
-		{return;
-		}
+			return;
 
 		if (empty($this->tsumegoFilters->tagIDs))
 			return;
