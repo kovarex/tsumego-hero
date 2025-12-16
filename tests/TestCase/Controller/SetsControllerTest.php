@@ -156,6 +156,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	private function checkSetNavigationButtons(Browser $browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
 		$buttons = $browser->getCssSelectSafe('div.set-view-main li', $count);
+		$this->assertCount($count, $buttons);
 		foreach ($buttons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key));
 		return $buttons;
