@@ -91,22 +91,6 @@ $highestRight = 17;
 			</div>
 		</div>
 
-		<div id="news-right-12">
-			<p class="title4">New Collection: Fuseki Hero | 19.02.2025</p>
-			<div class="new1">
-			Fuseki is the whole board opening in the game of Go. It is the phase where both players make their initial claims to the territory on the board. Typically,
-			an opening can last 30-60 moves, after which the board has been divided into several zones where each player hopes to make territory.
-			This collection teaches the most common principles about the early phase of the game. The focus is on common principles, but AI answers are also considered correct. <br><br>
-				<div align="center"><img width="60%" src="/img/fuseki-hero-promo.png" alt="New Collection: Fuseki Hero" title="New Collection: Fuseki Hero"><br><br>
-					<?php if($hasPremium){ ?>
-						<a class="new-button main-page" style="font-size:14px;" href="/sets/view/251">Play</a><br><br>
-					<?php }else{ ?>
-						<a class="new-button-inactive main-page" style="font-size:14px;">Play</a><br><br>
-					<?php } ?>
-				</div>
-			</div>
-		</div>
-
 		<div id="news-right-11">
 			<p class="title4">New Collection: Weiqi Life&Death Drills | 05.02.2025</p>
 			<div class="new1">
@@ -459,20 +443,6 @@ $highestRight = 17;
 		</div>
 
 		<!-- LEFT NEWS -->
-		<div id="news-left-19">
-			<p class="title4">Update 17.05.2025</p>
-			<div class="new1"><br>
-				<div align="center">
-					<?php
-						for($i=0;$i<7;$i++){
-							?><img title="Empty Heart" src="/img/heart2small.png"><?php
-						}
-					?>
-				</div><br>
-				On failed attempts, while the hearts are empty, there are no board locks and "Try again tomorrow" messages, but instead you can continue to try solving the problems (reverted later).
-				Currently this is only enabled on <a href="/users/donate">premium</a> accounts.<br><br>
-			</div>
-		</div>
 		<div id="news-left-18">
 			<p class="title4">Update 29.11.2024</p>
 			<div class="new1">
