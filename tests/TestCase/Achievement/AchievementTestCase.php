@@ -158,32 +158,30 @@ abstract class AchievementTestCase extends ControllerTestCase
 		$Tsumego = ClassRegistry::init('Tsumego');
 		$SetConnection = ClassRegistry::init('SetConnection');
 
-		// Create Set with unique ID
-		$setId = 10000 + rand(1, 50000);
+		// Create Set (use auto-increment ID to avoid collisions)
+		$Set->create();
 		$Set->save([
 			'Set' => [
-				'id' => $setId,
 				'difficulty' => $difficulty,
 				'public' => 0,
 				'title' => "Test Set (difficulty $difficulty)",
 			],
 		]);
+		$setId = $Set->getInsertID();
 
 		// Create Tsumegos + SetConnection records (BOTH required!)
 		for ($i = 0; $i < $count; $i++)
 		{
-			$tsumegoId = 100000 + rand(1, 900000);
-
 			$Tsumego->create();
 			$Tsumego->save([
 				'Tsumego' => [
-					'id' => $tsumegoId,
 					'set_id' => $setId,
 					'num' => $i + 1,
 					'rating' => $difficulty,
 					'sgf' => '(;GM[1]FF[4])',
 				],
 			]);
+			$tsumegoId = $Tsumego->getInsertID();
 
 			// CRITICAL: SetConnection required for collectTsumegosFromSet()
 			$SetConnection->create();
