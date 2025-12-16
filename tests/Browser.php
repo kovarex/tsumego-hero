@@ -226,7 +226,7 @@ class Browser
 	public function clickId($name, $timeout = 10)
 	{
 		// Wait for element to be present and clickable
-		$wait = new WebDriverWait($this->driver, $timeout, 500);
+		$wait = new WebDriverWait($this->driver, $timeout, 50);
 		$element = $wait->until(function () use ($name) {
 			try
 			{

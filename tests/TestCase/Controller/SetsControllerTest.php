@@ -204,7 +204,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first we select the difficulty of 15k
 		$browser->get("sets");
-		$browser->clickCssSelect('difficulty-button');
+		$browser->clickId('difficulty-button');
 		$difficulty15kSelector = $browser->find('#tile-difficulty0');
 		$this->assertSame('15k', $difficulty15kSelector->getText());
 		$difficulty15kSelector->click();
