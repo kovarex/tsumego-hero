@@ -112,7 +112,7 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query != 'favorites')
 			return;
-		$this->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
+		$this->query->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
 		$this->query->orderBy = ['favorite.id ASC'];
 	}
 
