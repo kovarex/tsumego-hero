@@ -155,7 +155,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));
+		$buttons = $browser->getCssSelectSafe('div.set-view-main li');
 		$this->assertCount($count, $buttons);
 		foreach ($buttons as $key => $button)
 			$this->checkNavigationButton($button, $context, $indexFunction($key), $orderFunction($key));
@@ -261,15 +261,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we select the difficulty of 15k
 		$browser->get("sets");
 
-		// Wait for collection divs to load (needed for parallel testing with higher concurrency)
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			$divs = $driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-			return count($divs) > 0;
-		});
-
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
 		$this->assertSame('set hello world #1', $collectionTopDivs[0]->getText());
 		$this->assertSame('set hello world #2', $collectionTopDivs[1]->getText());
@@ -734,13 +727,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
-		$wait->until(function () use ($browser) {
-			$bla = $browser->driver->getPageSource();
+		new WebDriverWait($browser->driver, 5, 500)->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelect('.collection-top'));
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'set 1', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'set 2', '25%');
@@ -771,16 +762,9 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-
-		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500);
-		$wait->until(function () use ($browser) {
-			$collectionDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-			return count($collectionDivs) == 5;
-		});
-
-		// Now wait for the completion percentage of last item to render
-		$wait->until(function () use ($browser) {
+		$browser->waitUntilCssSelectorExists('.collection-top', 5);
+		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser)
+		{
 			try
 			{
 				return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
@@ -822,16 +806,10 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
+		$browser->waitUntilCssSelectorExists('.collection-top', 5);
 
-		// Wait for ALL collection divs to load (5 expected) - Chrome is fast, needs longer timeout
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500);
-		$wait->until(function () use ($browser) {
-			$collectionDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-			return count($collectionDivs) == 5;
-		});
-
-		// Now wait for the completion percentage of last item to render
-		$wait->until(function () use ($browser) {
+		new \Facebook\WebDriver\WebDriverWait($browser->driver, 20, 500)->until(function () use ($browser)
+		{
 			try
 			{
 				return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';

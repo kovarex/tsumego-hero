@@ -203,7 +203,7 @@ class Browser
 						input.value = '{$testToken}';
 						form.appendChild(input);
 					}
-					
+
 					// Also add PHPUNIT_TEST
 					var existingTest = form.querySelector('input[name=\"PHPUNIT_TEST\"]');
 					if (!existingTest) {
@@ -276,6 +276,14 @@ class Browser
 		return $this->driver->findElements(WebDriverBy::cssSelector($name));
 	}
 
+	// waits for the element to start existing and then returns it
+	public function getCssSelectSafe($name, $expectedCount = null)
+	{
+		$this->waitUntilCssSelectorExists($name, $expectedCount);
+		return $this->driver->findElements(WebDriverBy::cssSelector($name));
+	}
+
+
 	public function find($name)
 	{
 		return $this->driver->findElement(WebDriverBy::cssSelector($name));
@@ -296,12 +304,12 @@ class Browser
 		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
-	public function waitUntilCssSelectorExists(string $selector, int $timeout = 5): void
+	public function waitUntilCssSelectorExists(string $selector, ?int $expectedCount = null): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
-			function () use ($selector) {
+		new WebDriverWait($this->driver, 5, 500)->until(
+			function () use ($selector, $expectedCount) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
-				return count($elements) > 0;
+				return count($elements) > is_null($expectedCount) ? 0 : ($expectedCount - 1);
 			}
 		);
 	}
