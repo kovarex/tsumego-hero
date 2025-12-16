@@ -84,7 +84,7 @@ class TsumegoButtonsQueryBuilder
 			return;
 		$currentRank = $_COOKIE['lastSet'] ?? '15k';
 		$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
-		$ratingBounds->addSqlConditions($this->condition);
+		$ratingBounds->addQueryConditions($this->query);
 		$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 	}
 
