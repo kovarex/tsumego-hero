@@ -570,6 +570,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testVisitingTagBasedSets(): void
 	{
+		$browser = Browser::instance();
 		$contextParams = ['user' => [
 			'mode' => Constants::$LEVEL_MODE,
 			'query' => 'tags']];
@@ -586,13 +587,13 @@ class SetsControllerTest extends TestCaseWithAuth
 			}
 
 		$context = new ContextPreparator($contextParams);
-		$browser = Browser::instance();
 		$browser->get("sets");
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'empty triangle');
+		$this->assertSame('Problems found: 6', $browser->find('#problems-found')->getText());
 	}
 
 	public function testVisitingTagBasedSetsRespectsTagFilters(): void

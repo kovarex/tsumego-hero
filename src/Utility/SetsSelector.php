@@ -15,6 +15,10 @@ class SetsSelector
 
 	private function selectByTags()
 	{
+		$tagIDCondition = '';
+		if (!empty($this->tsumegoFilters->tagIDs))
+			$tagIDCondition = ' AND tag_connection.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')';
+
 		$query = "
 WITH tag_counts AS (
   SELECT
@@ -24,7 +28,7 @@ WITH tag_counts AS (
     COUNT(tsumego.id) AS total_count
   FROM tsumego
   JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id
-  JOIN tag ON tag.id = tag_connection.tag_id" . (empty($this->tsumegoFilters->tagIDs) ? '' : ' AND tag.id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')') . "
+  JOIN tag ON tag.id = tag_connection.tag_id" . $tagIDCondition . "
   GROUP BY tag.id
 ),
 numbered AS (
@@ -75,6 +79,10 @@ ORDER BY total_count DESC, partition_number";
 			$tag['partition'] = $partition;
 			$this->sets [] = $tag;
 		}
+		$this->problemsFound = (int) Util::query('SELECT COUNT(DISTINCT tsumego.id) AS total
+FROM tag_connection
+JOIN tsumego ON tsumego.id = tag_connection.tsumego_id
+WHERE 1=1 ' . $tagIDCondition)[0]['total'];
 	}
 
 	private static function getTagColor($pos)

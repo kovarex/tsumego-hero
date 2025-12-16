@@ -74,7 +74,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="set-buttons">
+		<div class="set-buttons" id="problems-found">
 			Problems found: <?php echo $setsSelector->problemsFound; ?>
 		</div>
 		<div class="set-buttons-right">
