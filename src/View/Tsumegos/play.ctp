@@ -1688,7 +1688,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		else //incorrect
 		{
 			misplays++;
-			toggleBoardLock(true);
+			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
 				branch = "no";
