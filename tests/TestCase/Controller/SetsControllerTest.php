@@ -621,6 +621,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
+		$this->assertSame('Problems found: 3', $browser->find('#problems-found')->getText());
 
 		// going into the 'atari' set
 		$collectionTopDivs[0]->click();
