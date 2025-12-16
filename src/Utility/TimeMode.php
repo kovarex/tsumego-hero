@@ -120,7 +120,7 @@ class TimeMode
 			$query .= " AND rating >= " . $ratingBounds->min;
 		if ($ratingBounds->max)
 			$query .= " AND rating < " . $ratingBounds->max;
-		return ClassRegistry::init('Tsumego')->query($query);
+		return Util::query($query);
 	}
 
 	private function createSessionAttempts(array $currentTimeSession, $relevantTsumegos): void
@@ -132,7 +132,7 @@ class TimeMode
 			$newTimeAttempt = [];
 			$newTimeAttempt['time_mode_session_id'] = $currentTimeSession['id'];
 			$newTimeAttempt['order'] = $i + 1;
-			$newTimeAttempt['tsumego_id'] = $relevantTsumegos[$i]['tsumego']['id'];
+			$newTimeAttempt['tsumego_id'] = $relevantTsumegos[$i]['id'];
 			$newTimeAttempt['time_mode_attempt_status_id'] = TimeModeUtil::$ATTEMPT_RESULT_QUEUED;
 			ClassRegistry::init('TimeModeAttempt')->create($newTimeAttempt);
 			ClassRegistry::init('TimeModeAttempt')->save($newTimeAttempt);
