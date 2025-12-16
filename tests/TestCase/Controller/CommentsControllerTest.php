@@ -435,6 +435,7 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testDragHandlesDoNotAppearForNonAdmin()
 	{
+		$browser = Browser::instance();
 		// Create tsumego with a comment - NON-admin user
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => false],
@@ -444,8 +445,6 @@ class CommentsControllerTest extends ControllerTestCase
 				'status' => 'S', // Already solved
 			],
 		]);
-
-		$browser = Browser::instance();
 
 		// Go to play page
 		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);

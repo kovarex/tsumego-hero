@@ -205,7 +205,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we select the difficulty of 15k
 		$browser->get("sets");
 		$browser->clickCssSelect('difficulty-button');
-		$difficulty15kSelector = $browser->driver->findElement(WebDriverBy::id('tile-difficulty0'));
+		$difficulty15kSelector = $browser->find('#tile-difficulty0');
 		$this->assertSame('15k', $difficulty15kSelector->getText());
 		$difficulty15kSelector->click();
 		$browser->clickId('tile-difficulty-submit');
@@ -372,7 +372,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 2);
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
@@ -380,7 +380,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first we visit the 1d one
 		$collectionTopDivs[1]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/1d', $browser->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '1d');
+		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
@@ -422,14 +422,14 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// all 3 sets with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 3);
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'set 3');
 
 		// with 2 problems each as the 5d problems should be already filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getCssSelectSafe('.collection-middle-left', 3);
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -438,7 +438,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// first visit the 'set 1'
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
+		$this->assertSame($browser->getCssSelectSafe('.title4', 2)[1]->getText(), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; });
@@ -452,13 +452,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[6]['set-connections'][0]['id'], $browser->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->otherTsumegos[0]['set-connections'][0]['set_id'], $browser->getCurrentURL());
 		$browser->driver->getPageSource();
 		$this->assertCount(2, $browser->getCssSelect('.title4'));
@@ -491,14 +491,14 @@ class SetsControllerTest extends TestCaseWithAuth
 		// we open sets, we filtered set 2 and set 3, but query by ranks, so we should see:
 		// all 3 ranks with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 3);
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 		$this->assertSame($collectionTopDivs[2]->getText(), '5d');
 
 		// with 2 problems each as the set 1 problems should already be filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->getCssSelectSafe('.collection-middle-left', 3);
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -521,15 +521,15 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// clicking on next problem
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[5]['set-connections'][0]['id'], $browser->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/2');
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
+		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), '15k');
 	}
 
 	public function testSelectingTagFilters(): void
@@ -547,14 +547,14 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// first we select the difficulty of 15k
 		$browser->get("sets");
-		$browser->driver->findElement(WebDriverBy::id('tags-button'))->click();
-		$tagSelectors = $browser->driver->findElements(WebDriverBy::cssSelector('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])'));
+		$browser->clickId('tags-button');
+		$tagSelectors = $browser->getCssSelectSafe('[id^="tile-tags"]:not([id*="select-all"]):not([id*="submit"])', 3);
 		$this->assertCount(3, $tagSelectors);
 		$this->assertSame($tagSelectors[0]->getText(), 'snapback');
 		$this->assertSame($tagSelectors[1]->getText(), 'atari');
 		$this->assertSame($tagSelectors[2]->getText(), 'empty triangle');
 		$tagSelectors[0]->click();
-		$browser->driver->findElement(WebDriverBy::id('tile-tags-submit'))->click();
+		$browser->clickId('tile-tags-submit');
 
 		// difficulty selected
 		$this->assertSame($browser->driver->manage()->getCookieNamed('query')->getValue(), 'tags');
@@ -581,7 +581,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 3);
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
@@ -609,7 +609,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 2);
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
@@ -617,7 +617,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// going into the 'atari' set
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
+		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), 'atari');
 
 		// now we are viewing the 'atari' insides and checking the buttons
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
@@ -629,15 +629,15 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
 
 		// clicking next to get to the second one
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[4]['set-connections'][0]['id'], $browser->getCurrentURL());
 		$this->checkPlayTitle($browser, 'atari 2/2');
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 1, 'V');
 
 		// clicking on next problem should get us back to the set
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->clickId('besogo-next-button');
 		$this->assertSame(Util::getMyAddress() . '/sets/view/atari', $browser->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
+		$this->assertSame($browser->getCssSelect('.title4')[1]->getText(), 'atari');
 	}
 
 	public function testVisitingTopicBasedSetsRespectsTagFilters(): void
@@ -661,7 +661,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->getCssSelectSafe('.collection-top', 2);
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
@@ -1096,10 +1096,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Click Accuracy tab
 		$accuracyTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
 		$accuracyTab->click();
-		sleep(1);
 
 		// Check accuracy buttons are visible
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->getCssSelectSafe('.setViewButtons2', 2);
 		$this->assertCount(2, $accuracyButtons);
 
 		// Problem 1 should show "3/1" (3 solved, 1 failed)
@@ -1111,7 +1110,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('-', trim($accuracyButtons[1]->getText()), 'Problem 2 accuracy should be - (no attempts)');
 
 		// Order numbers and time should be hidden
-		$orderButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$orderButtons = $browser->getCssSelect('.setViewButtons1');
 		foreach ($orderButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Order numbers should be hidden on Accuracy tab');
 	}
@@ -1153,7 +1152,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		sleep(1);
 
 		// Check time buttons are visible
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->getCssSelect('.setViewButtons3');
 		$this->assertCount(2, $timeButtons);
 
 		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)

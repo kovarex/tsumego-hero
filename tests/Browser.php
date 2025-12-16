@@ -306,9 +306,9 @@ class Browser
 
 	public function waitUntilCssSelectorExists(string $selector, ?int $expectedCount = null): void
 	{
-		new WebDriverWait($this->driver, 5, 500)->until(
+		new WebDriverWait($this->driver, 5, 50)->until(
 			function () use ($selector, $expectedCount) {
-				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				$elements = $this->getCssSelect($selector);
 				return count($elements) > is_null($expectedCount) ? 0 : ($expectedCount - 1);
 			}
 		);
@@ -316,7 +316,7 @@ class Browser
 
 	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 5): void
 	{
-		new WebDriverWait($this->driver, $timeout, 500)->until(
+		new WebDriverWait($this->driver, $timeout, 50)->until(
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) == 0;
