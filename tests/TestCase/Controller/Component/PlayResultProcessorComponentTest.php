@@ -395,20 +395,20 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testFailAddsDamageUsingWebDriver(): void
+	public function testFailAddsDamageInNonSolvedProblem(): void
 	{
 		$browser = Browser::instance();
-		foreach ($this->PAGES as $page)
+		foreach (['V', 'S', 'C'] as $status)
 		{
 			$context = new ContextPreparator([
-				'tsumego' => ['sets' => [['name' => 'set 1', 'num' => 1]]],
+				'tsumego' => ['status' => $status, 'sets' => [['name' => 'set 1', 'num' => 1]]],
 				'user' => ['mode' => Constants::$LEVEL_MODE]]);
 			$originalDamage = intval($context->user['damage']);
 
 			$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
 			$browser->playWithResult('F');
-			$browser->get(self::getUrlFromPage($page, $context));
-			$this->assertSame($originalDamage + 1, $context->reloadUser()['damage']);
+			$browser->get('sets');
+			$this->assertSame($originalDamage + (($status == 'S' || $status == 'C') ? 0 : 1), $context->reloadUser()['damage']);
 		}
 	}
 

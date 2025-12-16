@@ -51,7 +51,7 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $previousTsumego['Tsumego']['rating'];
 
 		$this->processRatingChange($previousTsumego, $result, $previousStatusValue);
-		$this->processDamage($result);
+		$this->processDamage($result, $previousStatusValue);
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($previousTsumego, $result);
@@ -236,11 +236,13 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('Tsumego')->save($previousTsumego);
 	}
 
-	private function processDamage(array $result): void
+	private function processDamage(array $result, $previousStatusValue): void
 	{
 		if (!$result['misplays'])
 			return;
 		if (!Auth::isInLevelMode())
+			return;
+		if (TsumegoUtil::isRecentlySolved($previousStatusValue))
 			return;
 		Auth::getUser()['damage'] += $result['misplays'];
 		Auth::saveUser();
