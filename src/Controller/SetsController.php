@@ -750,8 +750,8 @@ class SetsController extends AppController
 				array_push($statusMap, $allUts[$i]['TsumegoStatus']['status']);
 			}
 			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-			if (count($fav) > 0)
-				$achievementUpdate = $this->checkSetAchievements(-1);
+			if (!empty($fav))
+				$this->set('achievementUpdate', new AchievementChecker()->checkSetAchievements(-1)->finalize()->updated);
 			$ts = [];
 			$difficultyCount = 0;
 			$solvedCount = 0;
@@ -947,29 +947,27 @@ class SetsController extends AppController
 			else
 				$accuracy = round($pSsum / ($pSsum + $pFsum) * 100, 2);
 			$avgTime2 = $avgTime;
-			$achievementUpdate2 = [];
-			$achievementUpdate1 = [];
 			if ($set['Set']['solved'] >= 100)
 			{
+				$achievementChecker = new AchievementChecker();
 				if ($set['Set']['id'] != 210)
 				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
-					$achievementUpdate1 = $this->checkSetAchievements($set['Set']['id']);
+					$achievementChecker->checkSetAchievements($set['Set']['id']);
 				}
 				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
-					$achievementUpdate2 = $this->setAchievementSpecial('cc1');
+					$achievementChecker->setAchievementSpecial('cc1');
 				elseif ($id == 41 || $id == 49 || $id == 65 || $id == 66)
-					$achievementUpdate2 = $this->setAchievementSpecial('cc2');
+					$achievementChecker->setAchievementSpecial('cc2');
 				elseif ($id == 186 || $id == 187 || $id == 196 || $id == 203)
-					$achievementUpdate2 = $this->setAchievementSpecial('cc3');
+					$achievementChecker->setAchievementSpecial('cc3');
 				elseif ($id == 190 || $id == 193 || $id == 198)
-					$achievementUpdate2 = $this->setAchievementSpecial('1000w1');
+					$achievementChecker->setAchievementSpecial('1000w1');
 				elseif ($id == 216)
-					$achievementUpdate2 = $this->setAchievementSpecial('1000w2');
-				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
+					$achievementChecker->setAchievementSpecial('1000w2');
+				$achievementChecker->finalize();
+				$this->set('achievementUpdate', $achievementChecker->updated);
 			}
-			if (count($achievementUpdate) > 0)
-				User::updateXP(Auth::getUserID(), $achievementUpdate);
 
 			$acS = $this->AchievementCondition->find('first', [
 				'order' => 'value ASC',
@@ -1029,7 +1027,6 @@ class SetsController extends AppController
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
-		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('setDifficulty', $setDifficulty);
 	}
 

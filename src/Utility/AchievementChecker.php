@@ -327,10 +327,262 @@ class AchievementChecker
 		return $this;
 	}
 
-	public function finalize()
+	public function setAchievementSpecial($s = null): AchievementChecker
+	{
+		$tsIds = [];
+		$completed = '';
+		if ($s == 'cc1')
+		{
+			$ts1 = TsumegoUtil::collectTsumegosFromSet(50);
+			$ts2 = TsumegoUtil::collectTsumegosFromSet(52);
+			$ts3 = TsumegoUtil::collectTsumegosFromSet(53);
+			$ts4 = TsumegoUtil::collectTsumegosFromSet(54);
+			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($tsIds, $ts[$i]['Tsumego']['id']);
+			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $tsIds]]) ?: [];
+			$counter = 0;
+			$utsCount = count($uts);
+			for ($j = 0; $j < $utsCount; $j++)
+				for ($k = 0; $k < $tsCount; $k++)
+					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
+					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+						$counter++;
+			if ($counter == count($ts))
+				$completed = $s;
+		}
+		elseif ($s == 'cc2')
+		{
+			$ts1 = TsumegoUtil::collectTsumegosFromSet(41);
+			$ts2 = TsumegoUtil::collectTsumegosFromSet(49);
+			$ts3 = TsumegoUtil::collectTsumegosFromSet(65);
+			$ts4 = TsumegoUtil::collectTsumegosFromSet(66);
+			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($tsIds, $ts[$i]['Tsumego']['id']);
+			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $tsIds]]) ?: [];
+			$counter = 0;
+			$utsCount = count($uts);
+			for ($j = 0; $j < $utsCount; $j++)
+				for ($k = 0; $k < $tsCount; $k++)
+					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
+					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+						$counter++;
+			if ($counter == count($ts))
+				$completed = $s;
+		}
+		elseif ($s == 'cc3')
+		{
+			$ts1 = TsumegoUtil::collectTsumegosFromSet(186);
+			$ts2 = TsumegoUtil::collectTsumegosFromSet(187);
+			$ts3 = TsumegoUtil::collectTsumegosFromSet(196);
+			$ts4 = TsumegoUtil::collectTsumegosFromSet(203);
+			$ts = array_merge($ts1, $ts2, $ts3, $ts4);
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($tsIds, $ts[$i]['Tsumego']['id']);
+			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $tsIds,
+				],
+			]) ?: [];
+			$counter = 0;
+			$utsCount = count($uts);
+			for ($j = 0; $j < $utsCount; $j++)
+				for ($k = 0; $k < $tsCount; $k++)
+					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
+					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+						$counter++;
+			if ($counter == count($ts))
+				$completed = $s;
+		}
+		elseif ($s == '1000w1')
+		{
+			$ts1 = TsumegoUtil::collectTsumegosFromSet(190);
+			$ts2 = TsumegoUtil::collectTsumegosFromSet(193);
+			$ts3 = TsumegoUtil::collectTsumegosFromSet(198);
+			$ts = array_merge($ts1, $ts2, $ts3);
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($tsIds, $ts[$i]['Tsumego']['id']);
+			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $tsIds]]) ?: [];
+			$counter = 0;
+			$utsCount = count($uts);
+			for ($j = 0; $j < $utsCount; $j++)
+				for ($k = 0; $k < $tsCount; $k++)
+					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
+					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+						$counter++;
+			if ($counter == count($ts))
+				$completed = $s;
+		}
+		elseif ($s == '1000w2')
+		{
+			$ts = TsumegoUtil::collectTsumegosFromSet(216);
+			$tsCount = count($ts);
+			for ($i = 0; $i < $tsCount; $i++)
+				array_push($tsIds, $ts[$i]['Tsumego']['id']);
+			$uts = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $tsIds]]) ?: [];
+			$counter = 0;
+			$utsCount = count($uts);
+			for ($j = 0; $j < $utsCount; $j++)
+				for ($k = 0; $k < $tsCount; $k++)
+					if ($uts[$j]['TsumegoStatus']['tsumego_id'] == $ts[$k]['Tsumego']['id'] && ($uts[$j]['TsumegoStatus']['status'] == 'S'
+					|| $uts[$j]['TsumegoStatus']['status'] == 'W' || $uts[$j]['TsumegoStatus']['status'] == 'C'))
+						$counter++;
+			if ($counter == count($ts))
+				$completed = $s;
+		}
+
+		if ($completed == 'cc1')
+			$this->gained(Achievement::LIFE_DEATH_ELEMENTARY);
+		if ($completed == 'cc2')
+			$this->gained(Achievement::LIFE_DEATH_INTERMEDIATE);
+		if ($completed == 'cc3')
+			$this->gained(Achievement::LIFE_DEATH_ADVANCED);
+		if ($completed == '1000w1')
+			$this->gained(Achievement::WEIQI_1000_FIRST_HALF);
+		if ($completed == '1000w2')
+			$this->gained(Achievement::WEIQI_1000_SECOND_HALF);
+		return $this;
+	}
+
+	public function checkSetAchievements($sid = null): AchievementChecker
+	{
+		if ($sid == -1)
+		{
+			$this->gained(Achievement::FAVORITES);
+			return $this;
+		}
+
+		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
+		$s = ClassRegistry::init('Set')->findById($sid);
+		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
+			'order' => 'value DESC',
+			'conditions' => [
+				'set_id' => $sid,
+				'user_id' => Auth::getUserID(),
+				'category' => '%']]);
+		if (!$acA)
+			return $this;
+		$acS = ClassRegistry::init('AchievementCondition')->find('first', [
+			'order' => 'value ASC',
+			'conditions' => [
+				'set_id' => $sid,
+				'user_id' => Auth::getUserID(),
+				'category' => 's']]);
+
+		if ($tNum < 100)
+			return $this;
+
+		if ($s['Set']['difficulty'] < 1300)
+		{
+			if ($acA['AchievementCondition']['value'] >= 75)
+				$this->gained(Achievement::ACCURACY_I);
+			if  ($acA['AchievementCondition']['value'] >= 85)
+				$this->gained(Achievement::ACCURACY_II);
+			if ($acA['AchievementCondition']['value'] >= 95)
+				$this->gained(Achievement::ACCURACY_III);
+			if ($acS['AchievementCondition']['value'] < 15)
+				$this->gained(Achievement::SPEED_I);
+			if ($acS['AchievementCondition']['value'] < 10)
+				$this->gained(Achievement::SPEED_II);
+			if ($acS['AchievementCondition']['value'] < 5)
+				$this->gained(Achievement::SPEED_III);
+		}
+		elseif ($s['Set']['difficulty'] >= 1300 && $s['Set']['difficulty'] < 1500)
+		{
+			if ($acA['AchievementCondition']['value'] >= 75)
+				$this->gained(Achievement::ACCURACY_IV);
+			if ($acA['AchievementCondition']['value'] >= 85)
+				$this->gained(Achievement::ACCURACY_V);
+			if ($acA['AchievementCondition']['value'] >= 95)
+				$this->gained(Achievement::ACCURACY_VI);
+			if ($acS['AchievementCondition']['value'] < 18)
+				$this->gained(Achievement::SPEED_IV);
+			if ($acS['AchievementCondition']['value'] < 13)
+				$this->gained(Achievement::SPEED_V);
+			if ($acS['AchievementCondition']['value'] < 8)
+				$this->gained(Achievement::SPEED_VI);
+		}
+		elseif ($s['Set']['difficulty'] >= 1500 && $s['Set']['difficulty'] < 1700)
+		{
+			if ($acA['AchievementCondition']['value'] >= 75)
+				$this->gained(Achievement::ACCURACY_VII);
+			if ($acA['AchievementCondition']['value'] >= 85)
+				$this->gained(Achievement::ACCURACY_VIII);
+			if ($acA['AchievementCondition']['value'] >= 95)
+				$this->gained(Achievement::ACCURACY_IX);
+			if ($acS['AchievementCondition']['value'] < 30)
+				$this->gained(Achievement::SPEED_VII);
+			if ($acS['AchievementCondition']['value'] < 20)
+				$this->gained(Achievement::SPEED_VIII);
+			if ($acS['AchievementCondition']['value'] < 10)
+				$this->gained(Achievement::SPEED_IX);
+		}
+		else
+		{
+			if ($acA['AchievementCondition']['value'] >= 75)
+				$this->gained(Achievement::ACCURACY_X);
+			if ($acA['AchievementCondition']['value'] >= 85)
+				$this->gained(Achievement::ACCURACY_XI);
+			if ($acA['AchievementCondition']['value'] >= 95)
+				$this->gained(Achievement::ACCURACY_XII);
+			if ($acS['AchievementCondition']['value'] < 30)
+				$this->gained(Achievement::SPEED_X);
+			if ($acS['AchievementCondition']['value'] < 20)
+				$this->gained(Achievement::SPEED_XI);
+			if ($acS['AchievementCondition']['value'] < 10)
+				$this->gained(Achievement::SPEED_XII);
+		}
+
+		$achievementId = 46;
+		if ($acA['AchievementCondition']['value'] >= 100)
+		{
+			$ac100 = ClassRegistry::init('AchievementCondition')->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => '%', 'value >=' => 100]]) ?: [];
+			$ac100counter = 0;
+			$ac100Count = count($ac100);
+			for ($j = 0; $j < $ac100Count; $j++)
+				if (count(TsumegoUtil::collectTsumegosFromSet($ac100[$j]['AchievementCondition']['set_id'])) >= 100)
+					$ac100counter++;
+			$as100 = ClassRegistry::init('AchievementStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
+			if ($as100 == null)
+			{
+				$as100 = [];
+				$as100['AchievementStatus']['user_id'] = Auth::getUserID();
+				$as100['AchievementStatus']['achievement_id'] = $achievementId;
+				$as100['AchievementStatus']['value'] = 0;
+				ClassRegistry::init('AchievementStatus')->create();
+			}
+			if ($as100['AchievementStatus']['value'] != $ac100counter)
+			{
+				$as100['AchievementStatus']['value'] = $ac100counter;
+				ClassRegistry::init('AchievementStatus')->save($as100);
+			}
+		}
+		return $this;
+	}
+
+	public function finalize(): AchievementChecker
 	{
 		if (!empty($this->updated))
 			User::updateXP(Auth::getUserID(), $this->updated);
+		return $this;
 	}
 
 	private array $existingStatuses = [];
