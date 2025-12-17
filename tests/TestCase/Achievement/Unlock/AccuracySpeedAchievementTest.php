@@ -1,4 +1,5 @@
 <?php
+
 App::uses('Achievement', 'Model');
 
 /**
@@ -56,9 +57,9 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 		$Set = ClassRegistry::init('Set');
 		$Set->create();
 		$Set->save([
-				'title' => 'Test Set 11k',
-				'difficulty' => 1200,
-				'public' => 0]);
+			'title' => 'Test Set 11k',
+			'difficulty' => 1200,
+			'public' => 0]);
 		$setId = $Set->getLastInsertID();
 
 		$AchievementCondition = ClassRegistry::init('AchievementCondition');

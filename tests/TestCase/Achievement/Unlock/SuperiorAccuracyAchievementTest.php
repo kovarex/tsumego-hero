@@ -1,4 +1,5 @@
 <?php
+
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
@@ -40,10 +41,10 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		$AchievementCondition->create();
 		$AchievementCondition->save([
-				'user_id' => $context->user['id'],
-				'set_id' => $setId,
-				'category' => '%',
-				'value' => 99]);
+			'user_id' => $context->user['id'],
+			'set_id' => $setId,
+			'category' => '%',
+			'value' => 99]);
 
 		new AchievementChecker()->checkSetAchievements($setId);
 		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);

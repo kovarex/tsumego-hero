@@ -1,4 +1,5 @@
 <?php
+
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
@@ -54,18 +55,18 @@ class SpeedAchievementTest extends AchievementTestCase
 			// CRITICAL: Create accuracy condition first (required to prevent early return)
 			$AchievementCondition->create();
 			$AchievementCondition->save([
-					'user_id' => $context->user['id'],
-					'set_id' => $setId,
-					'category' => '%',
-					'value' => 50]); // Dummy value, we're testing speed
+				'user_id' => $context->user['id'],
+				'set_id' => $setId,
+				'category' => '%',
+				'value' => 50]); // Dummy value, we're testing speed
 
 			// Create speed condition
 			$AchievementCondition->create();
 			$AchievementCondition->save([
-					'user_id' => $context->user['id'],
-					'set_id' => $setId,
-					'category' => 's',
-					'value' => $speed]);
+				'user_id' => $context->user['id'],
+				'set_id' => $setId,
+				'category' => 's',
+				'value' => $speed]);
 
 			new AchievementChecker()->checkSetAchievements($setId);
 			$this->assertAchievementUnlocked($achievementId, "Speed $achievementId (<{$speed}s at $rank) should unlock");

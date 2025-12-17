@@ -1,4 +1,5 @@
 <?php
+
 App::uses('Achievement', 'Model');
 
 class SolvedCountAchievementTest extends AchievementTestCase
