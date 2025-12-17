@@ -95,6 +95,8 @@ class HeroPowers
 
 	public static function remainingRevelationUseCount(): int
 	{
+		if (!Auth::isLoggedIn())
+			return 0;
 		return self::getRevelationUseCount() - Auth::getUser()['used_revelation'];
 	}
 
