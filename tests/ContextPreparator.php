@@ -515,24 +515,24 @@ class ContextPreparator
 			$rank = $timeModeRank->find('first', ['conditions' => ['id' => $rankID]]);
 			$this->timeModeRanks[] = $rank['TimeModeRank'];
 		}
-}
+	}
 
-private function prepareTimeModeSessions($timeModeSessions): void
-{
-	if (!$timeModeSessions)
-		return;
+	private function prepareTimeModeSessions($timeModeSessions): void
+	{
+		if (!$timeModeSessions)
+			return;
 
-	ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
 
-foreach ($timeModeSessions as $timeModeSessionInput)
-{
-	$timeModeSession = [];
-	$timeModeSession['user_id'] = Auth::getUserID();
-	$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
-	$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
-		$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
-		if (!$rank)
-			throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
+		foreach ($timeModeSessions as $timeModeSessionInput)
+		{
+			$timeModeSession = [];
+			$timeModeSession['user_id'] = Auth::getUserID();
+			$timeModeSession['time_mode_category_id'] = $timeModeSessionInput['category'];
+			$timeModeSession['time_mode_session_status_id'] = $timeModeSessionInput['status'];
+			$rank = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => $timeModeSessionInput['rank']]]);
+			if (!$rank)
+				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
 			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
 			ClassRegistry::init('TimeModeSession')->save($timeModeSession);

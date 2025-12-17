@@ -122,26 +122,26 @@ abstract class AchievementTestCase extends ControllerTestCase
 		$condition['AchievementCondition']['value'] = $completedSetsCount;
 		$AchievementCondition->save($condition);
 
-	// Login as this user
-	$_COOKIE['hackedLoggedInUserID'] = $userId;
-	Auth::init();
+		// Login as this user
+		$_COOKIE['hackedLoggedInUserID'] = $userId;
+		Auth::init();
 
-	$controller = new SetsController();
-	$controller->constructClasses();
-	$controller->checkSetCompletedAchievements();
-}
+		$controller = new SetsController();
+		$controller->constructClasses();
+		$controller->checkSetCompletedAchievements();
+	}
 
-/**
- * Create a set with multiple tsumegos + SetConnection records
- *
- * KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
- * Without them, the method returns empty array and achievements don't unlock.
- *
- * @param int $difficulty Set difficulty rating
- * @param int $count Number of tsumegos to create
- * @return int Created set ID
- */
-protected function createSetWithTsumegosAndConnections($difficulty, $count)
+	/**
+	 * Create a set with multiple tsumegos + SetConnection records
+	 *
+	 * KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
+	 * Without them, the method returns empty array and achievements don't unlock.
+	 *
+	 * @param int $difficulty Set difficulty rating
+	 * @param int $count Number of tsumegos to create
+	 * @return int Created set ID
+	 */
+	protected function createSetWithTsumegosAndConnections($difficulty, $count)
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
