@@ -10,23 +10,12 @@ App::uses('Achievement', 'Model');
  */
 class NoErrorStreakAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test single No Error Streak achievements
-	 */
 	public function testSingleNoErrorStreakAchievements()
 	{
-		// Arrange: Create user and set err=10 (just meets threshold for achievement 53)
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'achievement-conditions' => [
-				['category' => 'err', 'value' => 10]
-			]
-		]);
+		// Arrange: Create user and set err=10 (just meets threshold for Achievement::NO_ERROR_STREAK_I)
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 10]]]);
+		AppController::checkNoErrorAchievements(new AchievementChecker());
 
-		// Act: Trigger achievement check
-		AppController::checkNoErrorAchievements();
-
-		// Assert: Achievement 53 should be unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
 
 		// Assert: Higher achievements should NOT be unlocked yet
@@ -36,21 +25,10 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_V);
 	}
 
-	/**
-	 * Test 200 streak unlocks all achievements
-	 */
 	public function testTwoHundredStreakUnlocksAll()
 	{
-		// Arrange: Create user and set err=200 (meets all thresholds)
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'achievement-conditions' => [
-				['category' => 'err', 'value' => 200]
-			]
-		]);
-
-		// Act: Trigger achievement check
-		AppController::checkNoErrorAchievements();
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 200]]]);
+		AppController::checkNoErrorAchievements(new AchievementChecker());
 
 		// Assert: All 6 achievements should be unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_I, "No Error Streak I");
@@ -61,9 +39,6 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_VI, "No Error Streak VI");
 	}
 
-	/**
-	 * Test all No Error Streak thresholds
-	 */
 	public function testAllNoErrorStreakAchievements()
 	{
 		$thresholds = [
@@ -77,23 +52,9 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 		foreach ($thresholds as $achievementId => $errValue)
 		{
-			// Arrange: Fresh context for each test
-			$context = new ContextPreparator([
-				'user' => ['name' => "testuser_$achievementId"],
-				'achievement-conditions' => [
-					['category' => 'err', 'value' => $errValue]
-				]
-			]);
-
-			// Act: Trigger achievement check
-			AppController::checkNoErrorAchievements();
-
-			// Assert: This achievement should be unlocked
-			$this->assertAchievementUnlocked(
-				$context->user['id'],
-				$achievementId,
-				"Achievement $achievementId should unlock at err=$errValue"
-			);
+			$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => $errValue]]]);
+			AppController::checkNoErrorAchievements(new AchievementChecker());
+			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at err=$errValue");
 		}
 	}
 }

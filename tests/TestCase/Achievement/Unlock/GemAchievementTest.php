@@ -7,48 +7,24 @@ App::uses('ContextPreparator', 'Test');
 
 class GemAchievementTest extends AchievementTestCase
 {
-	public function testEmeraldAchievement()
+	public function testEmeraldAchievement(): void
 	{
-		$context = new ContextPreparator([
-			'achievement-conditions' => [
-				['category' => 'emerald', 'value' => 1]
-			]
-		]);
-
-		// Trigger check
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'emerald', 'value' => 1]]]);
 		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert emerald (111) unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::EMERALD, 'Emerald achievement should unlock when emerald condition = 1');
 	}
 
-	public function testSapphireAchievement()
+	public function testSapphireAchievement(): void
 	{
-		$context = new ContextPreparator([
-			'achievement-conditions' => [
-				['category' => 'sapphire', 'value' => 1]
-			]
-		]);
-
-		// Trigger check
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sapphire', 'value' => 1]]]);
 		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert sapphire (112) unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::SAPPHIRE, 'Sapphire achievement should unlock when sapphire condition = 1');
 	}
 
-	public function testRubyAchievement()
+	public function testRubyAchievement(): void
 	{
-		$context = new ContextPreparator([
-			'achievement-conditions' => [
-				['category' => 'ruby', 'value' => 1]
-			]
-		]);
-
-		// Trigger check
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'ruby', 'value' => 1]]]);
 		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert ruby (113) unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::RUBY, 'Ruby achievement should unlock when ruby condition = 1');
 	}
 

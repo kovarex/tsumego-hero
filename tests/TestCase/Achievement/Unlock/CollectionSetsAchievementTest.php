@@ -13,47 +13,23 @@ App::uses('ContextPreparator', 'TestCase');
  * - Achievement 49: 30 collections
  * - Achievement 50: 40 collections
  * - Achievement 51: 50 collections
- * - Achievement 52: 60 collections
- */
+ * - Achievement 52: 60 collections */
 class CollectionSetsAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test that achievement 47 unlocks at 10 completed sets
-	 */
-	public function testAchievement47UnlocksAt10Sets()
+	public function testAchievementCompleteSets1UnlocksAt10Sets()
 	{
-		// Arrange: Create user with default settings
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'], // Need at least one field
-		]);
-
-		// Act: Trigger set completion achievement check with 10 sets
+		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck($context->user['id'], 10);
-
-		// Assert: Achievement 47 should be unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
 	}
 
-	/**
-	 * Test that achievement 47 does NOT unlock below 10 sets
-	 */
-	public function testAchievement47DoesNotUnlockBelow10Sets()
+	public function testAchievementCompleteSets1DoesNotUnlockBelow10Sets()
 	{
-		// Arrange: Create user with default settings
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser2'],
-		]);
-
-		// Act: Trigger set completion achievement check with 9 sets
+		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck($context->user['id'], 9);
-
-		// Assert: Achievement 47 should NOT be unlocked
 		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
 	}
 
-	/**
-	 * Test all collection sets achievements unlock at correct thresholds
-	 */
 	public function testAllCollectionSetsAchievements()
 	{
 		$achievementSets = [
@@ -67,20 +43,9 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 
 		foreach ($achievementSets as $achievementId => $requiredSets)
 		{
-			// Arrange: Create user with default settings
-			$context = new ContextPreparator([
-				'user' => ['name' => "user_$achievementId"],  // Unique name per iteration
-			]);
-
-			// Act: Trigger set completion achievement check
+			$context = new ContextPreparator();
 			$this->triggerSetCompletionAchievementCheck($context->user['id'], $requiredSets);
-
-			// Assert: Achievement should be unlocked
-			$this->assertAchievementUnlocked(
-				$context->user['id'],
-				$achievementId,
-				"Achievement $achievementId should unlock at $requiredSets completed sets"
-			);
+			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at $requiredSets completed sets");
 		}
 	}
 }

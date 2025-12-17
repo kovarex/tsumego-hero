@@ -1113,15 +1113,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 			$as[$i]['AchievementStatus']['a_xp'] = $ach[$as[$i]['AchievementStatus']['achievement_id'] - 1]['Achievement']['xp'];
 		}
 
-		$achievementUpdate1 = $this->checkLevelAchievements();
-		$achievementUpdate2 = $this->checkProblemNumberAchievements();
-		$achievementUpdate = array_merge(
-			$achievementUpdate1 ?: [],
-			$achievementUpdate2 ?: []
-		);
-
-		if (count($achievementUpdate) > 0)
-			$this->updateXP($id, $achievementUpdate);
 		$aNum = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $id]]);
 		$asx = $this->AchievementStatus->find('first', ['conditions' => ['user_id' => $id, 'achievement_id' => 46]]);
 		$aNumx = count($aNum);
@@ -1138,7 +1129,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
 		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('as', $as);
-		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);

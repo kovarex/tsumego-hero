@@ -289,24 +289,6 @@ class Play
 		$hash = AppController::encrypt($currentSetConnection['SetConnection']['num'] . 'number' . $set['Set']['id']);
 
 		$activate = true;
-		if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'])
-		{
-			$achievementUpdate1 = AppController::checkLevelAchievements();
-			$achievementUpdate2 = AppController::checkProblemNumberAchievements();
-			$achievementUpdate3 = AppController::checkNoErrorAchievements();
-			$achievementUpdate4 = AppController::checkRatingAchievements();
-			$achievementUpdate5 = AppController::checkDanSolveAchievements();
-			$achievementUpdate = array_merge(
-				$achievementUpdate1 ?: [],
-				$achievementUpdate2 ?: [],
-				$achievementUpdate3 ?: [],
-				$achievementUpdate4 ?: [],
-				$achievementUpdate5 ?: []
-			);
-			if (count($achievementUpdate) > 0)
-				AppController::updateXP(Auth::getUserID(), $achievementUpdate);
-		}
-
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;

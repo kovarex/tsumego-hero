@@ -3,6 +3,7 @@
 App::uses('Auth', 'Utility');
 App::uses('BoardSelector', 'Utility');
 App::uses('TsumegoFilters', 'Utility');
+App::uses('AchievementChecker', 'Utility');
 App::uses('TimeMode', 'Utility');
 
 class AppController extends Controller
@@ -410,348 +411,117 @@ class AppController extends Controller
 		ClassRegistry::init('DayRecord')->save($dateGem);
 	}
 
-	public static function checkProblemNumberAchievements()
+	public static function checkProblemNumberAchievements(AchievementChecker $achievementChecker)
 	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$buffer)
-			$buffer = [];
-		$existingAs = [];
-		$bufferCount = count($buffer);
-		for ($i = 0; $i < $bufferCount; $i++)
-			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-		$as = [];
-		$as['AchievementStatus']['user_id'] = Auth::getUserID();
-		$updated = [];
-
-		$achievementId = 1;
 		$solvedCount = Auth::getUser()['solved'];
-		if ($solvedCount >= 1000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 2;
-		if ($solvedCount >= 2000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 3;
-		if ($solvedCount >= 3000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 4;
-		if ($solvedCount >= 4000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 5;
-		if ($solvedCount >= 5000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 6;
-		if ($solvedCount >= 6000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 7;
-		if ($solvedCount >= 7000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 8;
-		if ($solvedCount >= 8000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 9;
-		if ($solvedCount >= 9000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 10;
-		if ($solvedCount >= 10000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		//uotd achievement
-		$achievementId = 11;
-		if (!isset($existingAs[$achievementId]))
-		{
-			$condition = ClassRegistry::init('AchievementCondition')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]);
-			if ($condition != null)
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-		}
+		if ($solvedCount >= 1000)
+			$achievementChecker->gained(Achievement::PROBLEMS_1000);
+		if ($solvedCount >= 2000)
+			$achievementChecker->gained(Achievement::PROBLEMS_2000);
+		if ($solvedCount >= 3000)
+			$achievementChecker->gained(Achievement::PROBLEMS_3000);
+		if ($solvedCount >= 4000)
+			$achievementChecker->gained(Achievement::PROBLEMS_4000);
+		if ($solvedCount >= 5000)
+			$achievementChecker->gained(Achievement::PROBLEMS_5000);
+		if ($solvedCount >= 6000)
+			$achievementChecker->gained(Achievement::PROBLEMS_6000);
+		if ($solvedCount >= 7000)
+			$achievementChecker->gained(Achievement::PROBLEMS_7000);
+		if ($solvedCount >= 8000)
+			$achievementChecker->gained(Achievement::PROBLEMS_8000);
+		if ($solvedCount >= 9000)
+			$achievementChecker->gained(Achievement::PROBLEMS_9000);
+		if ($solvedCount >= 10000)
+			$achievementChecker->gained(Achievement::PROBLEMS_10000);
 
-		$updatedCount = count($updated);
-		for ($i = 0; $i < $updatedCount; $i++)
-		{
-			$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-			$updated[$i] = [];
-			$updated[$i][0] = $a['Achievement']['name'];
-			$updated[$i][1] = $a['Achievement']['description'];
-			$updated[$i][2] = $a['Achievement']['image'];
-			$updated[$i][3] = $a['Achievement']['color'];
-			$updated[$i][4] = $a['Achievement']['xp'];
-			$updated[$i][5] = $a['Achievement']['id'];
-		}
-
-		return $updated;
+		if (ClassRegistry::init('AchievementCondition')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'uotd']]))
+			$achievementChecker->gained(Achievement::USER_OF_THE_DAY);
 	}
 
-	public static function checkDanSolveAchievements()
+	public static function checkDanSolveAchievements(AchievementChecker $achivementChecker)
 	{
-		if (Auth::isLoggedIn())
-		{
-			$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$buffer)
-				$buffer = [];
-			$ac = ClassRegistry::init('AchievementCondition')->find('all', [
-				'order' => 'category ASC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'OR' => [
-						['category' => 'danSolve1d'],
-						['category' => 'danSolve2d'],
-						['category' => 'danSolve3d'],
-						['category' => 'danSolve4d'],
-						['category' => 'danSolve5d'],
-						['category' => 'emerald'],
-						['category' => 'sapphire'],
-						['category' => 'ruby'],
-						['category' => 'sprint'],
-						['category' => 'golden'],
-						['category' => 'potion'],
-					],
+		$achievementConditions = ClassRegistry::init('AchievementCondition')->find('all', [
+			'order' => 'category ASC',
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'OR' => [
+					['category' => 'danSolve1d'],
+					['category' => 'danSolve2d'],
+					['category' => 'danSolve3d'],
+					['category' => 'danSolve4d'],
+					['category' => 'danSolve5d'],
+					['category' => 'emerald'],
+					['category' => 'sapphire'],
+					['category' => 'ruby'],
+					['category' => 'sprint'],
+					['category' => 'golden'],
+					['category' => 'potion'],
 				],
-			]);
-			if (!$ac)
-				$ac = [];
-			$ac1 = [];
-			$acCount = count($ac);
-			for ($i = 0; $i < $acCount; $i++)
-				if ($ac[$i]['AchievementCondition']['category'] == 'danSolve1d')
-					$ac1['1d'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve2d')
-					$ac1['2d'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve3d')
-					$ac1['3d'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve4d')
-					$ac1['4d'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'danSolve5d')
-					$ac1['5d'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'emerald')
-					$ac1['emerald'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'sapphire')
-					$ac1['sapphire'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'ruby')
-					$ac1['ruby'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'sprint')
-					$ac1['sprint'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'golden')
-					$ac1['golden'] = $ac[$i]['AchievementCondition']['value'];
-				elseif ($ac[$i]['AchievementCondition']['category'] == 'potion')
-					$ac1['potion'] = $ac[$i]['AchievementCondition']['value'];
+			],
+		]) ?: [];
+		$ac1 = [];
+		foreach ($achievementConditions as $achievementCondition)
+			if ($achievementCondition['AchievementCondition']['category'] == 'danSolve1d')
+				$ac1['1d'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve2d')
+				$ac1['2d'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve3d')
+				$ac1['3d'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve4d')
+				$ac1['4d'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'danSolve5d')
+				$ac1['5d'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'emerald')
+				$ac1['emerald'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'sapphire')
+				$ac1['sapphire'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'ruby')
+				$ac1['ruby'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'sprint')
+				$ac1['sprint'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'golden')
+				$ac1['golden'] = $achievementCondition['AchievementCondition']['value'];
+			elseif ($achievementCondition['AchievementCondition']['category'] == 'potion')
+				$ac1['potion'] = $achievementCondition['AchievementCondition']['value'];
 
-			$existingAs = [];
-			$bufferCount = count($buffer);
-			for ($i = 0; $i < $bufferCount; $i++)
-				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-			$as = [];
-			$as['AchievementStatus']['user_id'] = Auth::getUserID();
-			$updated = [];
-			$achievementId = 101;
-			if ($ac1['1d'] > 0 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 102;
-			if ($ac1['2d'] > 0 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 103;
-			if ($ac1['3d'] > 0 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 104;
-			if ($ac1['4d'] > 0 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 105;
-			if ($ac1['5d'] > 0 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 106;
-			if ($ac1['1d'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 107;
-			if ($ac1['2d'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 108;
-			if ($ac1['3d'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 109;
-			if ($ac1['4d'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 110;
-			if ($ac1['5d'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 111;
-			if (isset($ac1['emerald']))
-				if ($ac1['emerald'] == 1 && !isset($existingAs[$achievementId]))
-				{
-					$as['AchievementStatus']['achievement_id'] = $achievementId;
-					ClassRegistry::init('AchievementStatus')->create();
-					ClassRegistry::init('AchievementStatus')->save($as);
-					array_push($updated, $achievementId);
-				}
-			$achievementId = 112;
-			if (isset($ac1['sapphire']))
-				if ($ac1['sapphire'] == 1 && !isset($existingAs[$achievementId]))
-				{
-					$as['AchievementStatus']['achievement_id'] = $achievementId;
-					ClassRegistry::init('AchievementStatus')->create();
-					ClassRegistry::init('AchievementStatus')->save($as);
-					array_push($updated, $achievementId);
-				}
-			$achievementId = 113;
-			if (isset($ac1['ruby']))
-				if ($ac1['ruby'] == 1 && !isset($existingAs[$achievementId]))
-				{
-					$as['AchievementStatus']['achievement_id'] = $achievementId;
-					ClassRegistry::init('AchievementStatus')->create();
-					ClassRegistry::init('AchievementStatus')->save($as);
-					array_push($updated, $achievementId);
-				}
-			$achievementId = 114;
-			if (!isset($existingAs[$achievementId]) && isset($existingAs[111]) && isset($existingAs[112]) && isset($existingAs[113]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 96;
-			if (!isset($existingAs[$achievementId]) && $ac1['sprint'] >= 30)
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 97;
-			if (!isset($existingAs[$achievementId]) && $ac1['golden'] >= 10)
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 98;
-			if (!isset($existingAs[$achievementId]) && $ac1['potion'] >= 1)
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$updatedCount = count($updated);
-			for ($i = 0; $i < $updatedCount; $i++)
-			{
-				$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-				$updated[$i] = [];
-				$updated[$i][0] = $a['Achievement']['name'];
-				$updated[$i][1] = $a['Achievement']['description'];
-				$updated[$i][2] = $a['Achievement']['image'];
-				$updated[$i][3] = $a['Achievement']['color'];
-				$updated[$i][4] = $a['Achievement']['xp'];
-				$updated[$i][5] = $a['Achievement']['id'];
-			}
+		if ($ac1['1d'] > 0)
+			$achivementChecker->gained(Achievement::SOLVE_1D);
+		if ($ac1['2d'] > 0)
+			$achivementChecker->gained(Achievement::SOLVE_2D);
+		if ($ac1['3d'] > 0)
+			$achivementChecker->gained(Achievement::SOLVE_3D);
+		if ($ac1['4d'] > 0)
+			$achivementChecker->gained(Achievement::SOLVE_4D);
+		if ($ac1['5d'] > 0)
+			$achivementChecker->gained(Achievement::SOLVE_5D);
+		if ($ac1['1d'] >= 10)
+			$achivementChecker->gained(Achievement::SOLVE_10_1D);
+		if ($ac1['2d'] >= 10)
+			$achivementChecker->gained(Achievement::SOLVE_10_2D);
+		if ($ac1['3d'] >= 10)
+			$achivementChecker->gained(Achievement::SOLVE_10_3D);
+		if ($ac1['4d'] >= 10)
+			$achivementChecker->gained(Achievement::SOLVE_10_4D);
+		if ($ac1['5d'] >= 10)
+			$achivementChecker->gained(Achievement::SOLVE_10_5D);
+		if (isset($ac1['emerald']) && $ac1['emerald'] == 1)
+			$achivementChecker->gained(Achievement::EMERALD);
+		if (isset($ac1['sapphire']) && $ac1['sapphire'] == 1)
+			$achivementChecker->gained(Achievement::SAPPHIRE);
+		if (isset($ac1['ruby']) && $ac1['ruby'] == 1)
+			$achivementChecker->gained(Achievement::RUBY);
 
-			return $updated;
-		}
+		if ($achivementChecker->unlocked(Achievement::EMERALD)
+			&& $achivementChecker->unlocked(Achievement::SAPPHIRE)
+			&& $achivementChecker->unlocked(Achievement::RUBY))
+				$achivementChecker->gained(Achievement::DIAMOND);
+		if ($ac1['sprint'] >= 30)
+			$achivementChecker->gained(Achievement::SPRINT);
+		if ($ac1['golden'] >= 10)
+			$achivementChecker->gained(Achievement::GOLD_DIGGER);
+		if ($ac1['potion'] >= 1)
+			$achivementChecker->gained(Achievement::BAD_POTION);
 	}
 
 	protected function checkForLocked($t, $setsWithPremium)
@@ -764,119 +534,29 @@ class AppController extends Controller
 
 		return $t;
 	}
-	public static function checkNoErrorAchievements()
+
+	public static function checkNoErrorAchievements(AchievementChecker $achievementChecker)
 	{
-		if (Auth::isLoggedIn())
-		{
-
-			$ac = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => [
-					'user_id' => Auth::getUserID(),
-					'category' => 'err',
-				],
-			]);
-
-			$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-			if (!$buffer)
-				$buffer = [];
-			$existingAs = [];
-			$bufferCount = count($buffer);
-			for ($i = 0; $i < $bufferCount; $i++)
-				$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-			$as = [];
-			$as['AchievementStatus']['user_id'] = Auth::getUserID();
-			$updated = [];
-
-			$achievementId = 53;
-			if ($ac['AchievementCondition']['value'] >= 10 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 54;
-			if ($ac['AchievementCondition']['value'] >= 20 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 55;
-			if ($ac['AchievementCondition']['value'] >= 30 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 56;
-			if ($ac['AchievementCondition']['value'] >= 50 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 57;
-			if ($ac['AchievementCondition']['value'] >= 100 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$achievementId = 58;
-			if ($ac['AchievementCondition']['value'] >= 200 && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-			$updatedCount = count($updated);
-			for ($i = 0; $i < $updatedCount; $i++)
-			{
-				$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-				$updated[$i] = [];
-				$updated[$i][0] = $a['Achievement']['name'];
-				$updated[$i][1] = $a['Achievement']['description'];
-				$updated[$i][2] = $a['Achievement']['image'];
-				$updated[$i][3] = $a['Achievement']['color'];
-				$updated[$i][4] = $a['Achievement']['xp'];
-				$updated[$i][5] = $a['Achievement']['id'];
-			}
-
-			return $updated;
-		}
+		$ac = ClassRegistry::init('AchievementCondition')->find('first', [
+			'order' => 'value DESC',
+			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
+		if ($ac['AchievementCondition']['value'] >= 10)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_I);
+		if ($ac['AchievementCondition']['value'] >= 20)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_II);
+		if ($ac['AchievementCondition']['value'] >= 30)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_III);
+		if ($ac['AchievementCondition']['value'] >= 50)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_IV);
+		if ($ac['AchievementCondition']['value'] >= 100)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_V);
+		if ($ac['AchievementCondition']['value'] >= 200)
+			$achievementChecker->gained(Achievement::NO_ERROR_STREAK_VI);
 	}
 
-	public function checkTimeModeAchievements()
+	public static function checkTimeModeAchievements(AchievementChecker $achievementChecker): void
 	{
-		$this->loadModel('Achievement');
-		$this->loadModel('AchievementStatus');
-		$this->loadModel('TimeModeSession');
-
-		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$buffer)
-			$buffer = [];
-		$existingAs = [];
-		$bufferCount = count($buffer);
-		for ($i = 0; $i < $bufferCount; $i++)
-			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-		$as = [];
-		$as['AchievementStatus']['user_id'] = Auth::getUserID();
-		$updated = [];
-
-		$this->TimeModeSession->recursive = -1;
-
-		$timeModeSessions = $this->TimeModeSession->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-
-		$timeModeAchievements = [];
-		for ($i = 70; $i <= 91; $i++)
-			$timeModeAchievements[$i] = false;
+		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 		foreach ($timeModeSessions as $timeModeSession)
 		{
 			$timeModeSession = $timeModeSession['TimeModeSession'];
@@ -889,333 +569,123 @@ class AppController extends Controller
 				if ($rankId == TimeModeRank::RANK_5K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_APPRENTICE_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_APPRENTICE_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_APPRENTICE_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_APPRENTICE_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_APPRENTICE_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_APPRENTICE_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_4K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_SCHOLAR_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_SCHOLAR_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_SCHOLAR_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_SCHOLAR_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_SCHOLAR_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_SCHOLAR_BLITZ);
+
 				}
 				elseif ($rankId == TimeModeRank::RANK_3K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_LABOURER_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_LABOURER_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_LABOURER_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_LABOURER_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_LABOURER_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_LABOURER_BLITZ);
+
 				}
 				elseif ($rankId == TimeModeRank::RANK_2K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_ADEPT_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_ADEPT_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_ADEPT_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_ADEPT_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_ADEPT_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_ADEPT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1K)
 				{
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_EXPERT_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_EXPERT_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_EXPERT_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_EXPERT_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_EXPERT_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_EXPERT_BLITZ);
 				}
 				elseif ($rankId == TimeModeRank::RANK_1D)
 					if ($categoryId == TimeModeCategory::SLOW)
-						$timeModeAchievements[Achievement::TIME_MODE_MASTER_SLOW] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_MASTER_SLOW);
 					elseif ($categoryId == TimeModeCategory::FAST)
-						$timeModeAchievements[Achievement::TIME_MODE_MASTER_FAST] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_MASTER_FAST);
 					elseif ($categoryId == TimeModeCategory::BLITZ)
-						$timeModeAchievements[Achievement::TIME_MODE_MASTER_BLITZ] = true;
+						$achievementChecker->gained(Achievement::TIME_MODE_MASTER_BLITZ);
 
 			// Precision achievements based on points and rank
 			$points = isset($timeModeSession['points']) ? $timeModeSession['points'] : 0;
 			if ($points >= 850 && $rankId >= TimeModeRank::RANK_4K)
-				$timeModeAchievements[Achievement::TIME_MODE_PRECISION_IV] = true;
+				$achievementChecker->gained(Achievement::TIME_MODE_PRECISION_IV);
 			if ($points >= 875 && $rankId >= TimeModeRank::RANK_6K)
-				$timeModeAchievements[Achievement::TIME_MODE_PRECISION_III] = true;
+				$achievementChecker->gained(Achievement::TIME_MODE_PRECISION_III);
 			if ($points >= 900 && $rankId >= TimeModeRank::RANK_8K)
-				$timeModeAchievements[Achievement::TIME_MODE_PRECISION_II] = true;
+				$achievementChecker->gained(Achievement::TIME_MODE_PRECISION_II);
 			if ($points >= 950 && $rankId >= TimeModeRank::RANK_10K)
-				$timeModeAchievements[Achievement::TIME_MODE_PRECISION_I] = true;
+				$achievementChecker->gained(Achievement::TIME_MODE_PRECISION_I);
 		}
-		for ($i = 70; $i <= 91; $i++)
-		{
-			$achievementId = $i;
-			if ($timeModeAchievements[$achievementId] == true && !isset($existingAs[$achievementId]))
-			{
-				$as['AchievementStatus']['achievement_id'] = $achievementId;
-				ClassRegistry::init('AchievementStatus')->create();
-				ClassRegistry::init('AchievementStatus')->save($as);
-				array_push($updated, $achievementId);
-			}
-		}
-		$updatedCount = count($updated);
-		for ($i = 0; $i < $updatedCount; $i++)
-		{
-			$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-			$updated[$i] = [];
-			$updated[$i][0] = $a['Achievement']['name'];
-			$updated[$i][1] = $a['Achievement']['description'];
-			$updated[$i][2] = $a['Achievement']['image'];
-			$updated[$i][3] = $a['Achievement']['color'];
-			$updated[$i][4] = $a['Achievement']['xp'];
-			$updated[$i][5] = $a['Achievement']['id'];
-		}
-
-		return $updated;
 	}
 
-	public static function checkRatingAchievements()
+	public static function checkRatingAchievements(AchievementChecker $achievementChecker)
 	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$buffer)
-			$buffer = [];
-		$existingAs = [];
-		$bufferCount = count($buffer);
-		for ($i = 0; $i < $bufferCount; $i++)
-			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-		$as = [];
-		$as['AchievementStatus']['user_id'] = Auth::getUserID();
-		$updated = [];
-
-		$achievementId = 59;
-		$currentElo = Auth::getUser()['rating'];
-		if ($currentElo >= 1500 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 60;
-		if ($currentElo >= 1600 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 61;
-		if ($currentElo >= 1700 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 62;
-		if ($currentElo >= 1800 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 63;
-		if ($currentElo >= 1900 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 64;
-		if ($currentElo >= 2000 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 65;
-		if ($currentElo >= 2100 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 66;
-		if ($currentElo >= 2200 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 67;
-		if ($currentElo >= 2300 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 68;
-		if ($currentElo >= 2400 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 69;
-		if ($currentElo >= 2500 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$updatedCount = count($updated);
-		for ($i = 0; $i < $updatedCount; $i++)
-		{
-			$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-			$updated[$i] = [];
-			$updated[$i][0] = $a['Achievement']['name'];
-			$updated[$i][1] = $a['Achievement']['description'];
-			$updated[$i][2] = $a['Achievement']['image'];
-			$updated[$i][3] = $a['Achievement']['color'];
-			$updated[$i][4] = $a['Achievement']['xp'];
-			$updated[$i][5] = $a['Achievement']['id'];
-		}
-
-		return $updated;
+		$rating = Auth::getUser()['rating'];
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('6k'))
+			$achievementChecker->gained(Achievement::RATING_6_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('5k'))
+			$achievementChecker->gained(Achievement::RATING_5_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('4k'))
+			$achievementChecker->gained(Achievement::RATING_4_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('3k'))
+			$achievementChecker->gained(Achievement::RATING_3_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('2k'))
+			$achievementChecker->gained(Achievement::RATING_2_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('1k'))
+			$achievementChecker->gained(Achievement::RATING_1_KYU);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('1d'))
+			$achievementChecker->gained(Achievement::RATING_1_DAN);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('2d'))
+			$achievementChecker->gained(Achievement::RATING_2_DAN);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('3d'))
+			$achievementChecker->gained(Achievement::RATING_3_DAN);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('4d'))
+			$achievementChecker->gained(Achievement::RATING_4_DAN);
+		if ($rating >= Rating::getRankMinimalRatingFromReadableRank('5d'))
+			$achievementChecker->gained(Achievement::RATING_5_DAN);
 	}
 
-	public static function checkLevelAchievements()
+	public static function checkLevelAchievements(AchievementChecker $achievementChecker)
 	{
-		if (!Auth::isLoggedIn())
-			return;
-		$buffer = ClassRegistry::init('AchievementStatus')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$buffer)
-			$buffer = [];
-		$existingAs = [];
-		$bufferCount = count($buffer);
-		for ($i = 0; $i < $bufferCount; $i++)
-			$existingAs[$buffer[$i]['AchievementStatus']['achievement_id']] = $buffer[$i];
-		$as = [];
-		$as['AchievementStatus']['user_id'] = Auth::getUserID();
-		$updated = [];
-
-		$achievementId = 36;
 		$userLevel = Auth::getUser()['level'];
-		if ($userLevel >= 10 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 37;
-		if ($userLevel >= 20 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 38;
-		if ($userLevel >= 30 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 39;
-		if ($userLevel >= 40 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 40;
-		if ($userLevel >= 50 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 41;
-		if ($userLevel >= 60 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 42;
-		if ($userLevel >= 70 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 43;
-		if ($userLevel >= 80 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 44;
-		if ($userLevel >= 90 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 45;
-		if ($userLevel >= 100 && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$achievementId = 100;
-		if (Auth::hasPremium() && !isset($existingAs[$achievementId]))
-		{
-			$as['AchievementStatus']['achievement_id'] = $achievementId;
-			ClassRegistry::init('AchievementStatus')->create();
-			ClassRegistry::init('AchievementStatus')->save($as);
-			array_push($updated, $achievementId);
-		}
-		$updatedCount = count($updated);
-		for ($i = 0; $i < $updatedCount; $i++)
-		{
-			$a = ClassRegistry::init('Achievement')->findById($updated[$i]);
-			$updated[$i] = [];
-			$updated[$i][0] = $a['Achievement']['name'];
-			$updated[$i][1] = $a['Achievement']['description'];
-			$updated[$i][2] = $a['Achievement']['image'];
-			$updated[$i][3] = $a['Achievement']['color'];
-			$updated[$i][4] = $a['Achievement']['xp'];
-			$updated[$i][5] = $a['Achievement']['id'];
-		}
-
-		return $updated;
+		if ($userLevel >= 10)
+			$achievementChecker->gained(Achievement::LEVEL_UP);
+		if ($userLevel >= 20)
+			$achievementChecker->gained(Achievement::FIRST_HERO_POWER);
+		if ($userLevel >= 30)
+			$achievementChecker->gained(Achievement::UPGRADED_INTUITION);
+		if ($userLevel >= 40)
+			$achievementChecker->gained(Achievement::MORE_POWER);
+		if ($userLevel >= 50)
+			$achievementChecker->gained(Achievement::HALF_WAY_TO_TOP);
+		if ($userLevel >= 60)
+			$achievementChecker->gained(Achievement::CONGRATS_MORE_PROBLEMS);
+		if ($userLevel >= 70)
+			$achievementChecker->gained(Achievement::NICE_LEVEL);
+		if ($userLevel >= 80)
+			$achievementChecker->gained(Achievement::DID_LOT_OF_TSUMEGO);
+		if ($userLevel >= 90)
+			$achievementChecker->gained(Achievement::STILL_DOING_TSUMEGO);
+		if ($userLevel >= 100)
+			$achievementChecker->gained(Achievement::THE_TOP);
+		if (Auth::hasPremium())
+			$achievementChecker->gained(Achievement::PREMIUM);
 	}
 
 	public function checkSetCompletedAchievements()
@@ -1846,9 +1316,8 @@ class AppController extends Controller
 	public static function updateXP($userID, $achievementData): void
 	{
 		$xpBonus = 0;
-		$aCount = count($achievementData);
-		for ($i = 0; $i < $aCount; $i++)
-			$xpBonus += $achievementData[$i][4];
+		foreach ($achievementData as $achievement)
+			$xpBonus += $achievement['xp'];
 		if ($xpBonus == 0)
 			return;
 		$user = ClassRegistry::init('User')->findById($userID);
@@ -2043,25 +1512,19 @@ class AppController extends Controller
 
 		$this->set('boardsBitmask', $boardsBitmask);
 
-		$achievementUpdate = [];
-		if (Util::clearCookie('initialLoading'))
+		$achievementChecker = new AchievementChecker();
+		if (Auth::isLoggedIn() && Util::clearCookie('initialLoading'))
 		{
-			$achievementUpdate1 = $this->checkLevelAchievements();
-			$achievementUpdate2 = $this->checkProblemNumberAchievements();
-			$achievementUpdate3 = $this->checkRatingAchievements();
-			$achievementUpdate4 = $this->checkTimeModeAchievements();
-			$achievementUpdate5 = $this->checkDanSolveAchievements();
-			$achievementUpdate = array_merge(
-				$achievementUpdate1 ?: [],
-				$achievementUpdate2 ?: [],
-				$achievementUpdate3 ?: [],
-				$achievementUpdate4 ?: [],
-				$achievementUpdate5 ?: []
-			);
+			self::checkLevelAchievements($achievementChecker);
+			self::checkProblemNumberAchievements($achievementChecker);
+			self::checkRatingAchievements($achievementChecker);
+			self::checkTimeModeAchievements($achievementChecker);
+			self::checkDanSolveAchievements($achievementChecker);
+			self::checkNoErrorAchievements($achievementChecker);
 		}
 
-		if (count($achievementUpdate) > 0)
-			$this->updateXP(Auth::getUserID(), $achievementUpdate);
+		if (count($achievementChecker->updated) > 0)
+			$this->updateXP(Auth::getUserID(), $achievementChecker->updated);
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
@@ -2073,7 +1536,7 @@ class AppController extends Controller
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
 		$this->set('highscoreLink', $highscoreLink);
-		$this->set('achievementUpdate', $achievementUpdate);
+		$this->set('achievementUpdates', $achievementChecker->updated);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);
 		$this->set('lastProfileLeft', $lastProfileLeft);

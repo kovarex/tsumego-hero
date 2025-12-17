@@ -2,6 +2,7 @@
 
 App::uses('Achievement', 'Model');
 App::uses('Level', 'Utility');
+App::uses('AchievementChecker', 'Utility');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
 
 /**
@@ -11,26 +12,18 @@ App::uses('AchievementTestCase', 'TestCase/Achievement');
  */
 class LevelUpTriggerTest extends AchievementTestCase
 {
-	/**
-	 * Test that user levels up when XP reaches threshold
-	 */
 	public function testUserLevelsUpWhenXPReachesThreshold()
 	{
 		// Arrange: User at level 1 with 45 XP (needs 50 to reach level 2)
-		$context = new ContextPreparator([
-			'user' => ['xp' => 45, 'level' => 1],
-		]);
+		$context = new ContextPreparator(['user' => ['xp' => 45, 'level' => 1]]);
 
 		// Act: Grant 10 XP (total 55, threshold 50)
-		$user = Auth::getUser();
-		$user['xp'] = 45;
-		$user['level'] = 1;
-		$user['xp'] += 10; // Now 55
-		Level::checkLevelUp($user);
+		$context->user['xp'] += 10; // Now 55
+		Level::checkLevelUp($context->user);
 
 		// Assert: User is now level 2 with 5 XP remaining (55 - 50)
-		$this->assertEquals(2, $user['level'], 'User should level up to 2');
-		$this->assertEquals(5, $user['xp'], 'User should have 5 XP remaining after level-up');
+		$this->assertEquals(2, $context->user['level'], 'User should level up to 2');
+		$this->assertEquals(5, $context->user['xp'], 'User should have 5 XP remaining after level-up');
 	}
 
 	/**
@@ -39,9 +32,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 	public function testUserDoesNotLevelUpBelowThreshold()
 	{
 		// Arrange: User at level 1 with 45 XP (needs 50 to reach level 2)
-		$context = new ContextPreparator([
-			'user' => ['xp' => 45, 'level' => 1],
-		]);
+		$context = new ContextPreparator(['user' => ['xp' => 45, 'level' => 1]]);
 
 		// Act: Grant 4 XP (total 49, below threshold of 50)
 		$user = Auth::getUser();
@@ -61,21 +52,16 @@ class LevelUpTriggerTest extends AchievementTestCase
 	public function testMultipleLevelUpsFromSingleXPGrant()
 	{
 		// Arrange: User at level 1 with 0 XP
-		$context = new ContextPreparator([
-			'user' => ['xp' => 0, 'level' => 1],
-		]);
+		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 1]]);
 
 		// Act: Grant 500 XP (enough for multiple levels)
 		// Level 1→2: 50 XP, Level 2→3: 60 XP, Level 3→4: 70 XP, etc.
-		$user = Auth::getUser();
-		$user['xp'] = 0;
-		$user['level'] = 1;
-		$user['xp'] += 500;
-		Level::checkLevelUp($user);
+		$context->user['xp'] += 500;
+		Level::checkLevelUp($context->user);
 
 		// Assert: User leveled up multiple times
-		$this->assertGreaterThan(1, $user['level'], 'User should level up multiple times from 500 XP');
-		$this->assertLessThan(500, $user['xp'], 'Remaining XP should be less than original grant');
+		$this->assertGreaterThan(1, $context->user['level'], 'User should level up multiple times from 500 XP');
+		$this->assertLessThan(500, $context->user['xp'], 'Remaining XP should be less than original grant');
 	}
 
 	/**
@@ -85,17 +71,15 @@ class LevelUpTriggerTest extends AchievementTestCase
 	{
 		// Arrange: User at level 10 with 165 XP (needs 175 to reach level 11)
 		// Achievement will grant 100 XP (total 265), enough to level up
-		$context = new ContextPreparator([
-			'user' => ['xp' => 165, 'level' => 10, 'solved' => 1000],
-		]);
+		$context = new ContextPreparator(['user' => ['xp' => 165, 'level' => 10, 'solved' => 1000]]);
 
 		// Act: Unlock achievement granting 1000 XP (way more than needed)
-		$achievementData = AppController::checkProblemNumberAchievements();
-		AppController::updateXP($context->user['id'], $achievementData);
+		$achievementChecker = new AchievementChecker();
+		AppController::checkProblemNumberAchievements($achievementChecker);
+		AppController::updateXP($context->user['id'], $achievementChecker->updated);
 
 		// Assert: User leveled up past level 10
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertGreaterThan(10, $user['User']['level'], 'User should level up past 10 from achievement XP');
+		$this->assertGreaterThan(10, $context->reloadUser()['level'], 'User should level up past 10 from achievement XP');
 	}
 
 	/**
