@@ -1,5 +1,4 @@
 <?php
-
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
@@ -7,14 +6,11 @@ App::uses('ContextPreparator', 'Test');
 
 class SpecialSetAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test Life & Death Elementary (ID 92)
-	 * Requires completing all tsumegos in sets: 50, 52, 53, 54
-	 */
+	/* Test Achievement::LIFE_DEATH_ELEMENTARY
+	 * Requires completing all tsumegos in sets: 50, 52, 53, 54 */
 	public function testLifeAndDeathElementary()
 	{
-		// Create user
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 
 		// Create the required sets with tsumegos
 		$Set = ClassRegistry::init('Set');
@@ -27,111 +23,68 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		{
 			// Create set
 			$Set->create();
-			$Set->save(['Set' => ['id' => $setId, 'title' => "Test Set $setId"]]);
+			$Set->save(['id' => $setId, 'title' => "Test Set $setId"]);
 
 			// Create a few tsumegos in this set
 			for ($i = 0; $i < 3; $i++)
 			{
 				$Tsumego->create();
-				$tsumegoData = [
-					'Tsumego' => [
-						'set_id' => $setId,
-						'num' => $i + 1,
-						'sgf' => '(;GM[1]FF[4])',
-						'rating' => 1000,
-					],
-				];
-				$Tsumego->save($tsumegoData);
+				$Tsumego->save(['rating' => 1000]);
 				$tsumegoId = $Tsumego->id;
 
 				// Mark as solved
 				$TsumegoStatus->create();
-				$TsumegoStatus->save([
-					'TsumegoStatus' => [
-						'user_id' => $context->user['id'],
-						'tsumego_id' => $tsumegoId,
-						'status' => 'S', // Solved
-					],
-				]);
+				$TsumegoStatus->save(['user_id' => $context->user['id'], 'tsumego_id' => $tsumegoId, 'status' => 'S']); // solved
 			}
 		}
 
-		// Trigger check
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->setAchievementSpecial('cc1');
-
-		// Assert achievement 92 unlocked
+		new AchievementChecker()->setAchievementSpecial('cc1');
 		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
 	}
 
 	/**
-	 * Test Life & Death Intermediate (ID 93)
+	 * Test Achievement::LIFE_DEATH_INTERMEDIATE
 	 * Requires completing all tsumegos in sets: 41, 49, 65, 66
 	 */
 	public function testLifeAndDeathIntermediate()
 	{
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [41, 49, 65, 66]);
-
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->setAchievementSpecial('cc2');
-
+		new AchievementChecker()->setAchievementSpecial('cc2');
 		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_INTERMEDIATE, 'Life & Death Intermediate should unlock');
 	}
 
-	/**
-	 * Test Life & Death Advanced (ID 94)
-	 * Requires completing all tsumegos in sets: 186, 187, 196, 203
-	 */
+	/* Test Achievement::LIFE_DEATH_ADVANCED
+	 * Requires completing all tsumegos in sets: 186, 187, 196, 203 */
 	public function testLifeAndDeathAdvanced()
 	{
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [186, 187, 196, 203]);
-
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->setAchievementSpecial('cc3');
-
+		new AchievementChecker()->setAchievementSpecial('cc3');
 		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ADVANCED, 'Life & Death Advanced should unlock');
 	}
 
-	/**
-	 * Test 1000 Weiqi 1st half (ID 95)
-	 * Requires completing all tsumegos in sets: 190, 193, 198
-	 */
+	/* Test Achievement::WEIQI_1000_FIRST_HALF
+	 * Requires completing all tsumegos in sets: 190, 193, 198 */
 	public function test1000WeiqiFirstHalf()
 	{
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 		$this->createAndSolveSets($context->user['id'], [190, 193, 198]);
-
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->setAchievementSpecial('1000w1');
-
+		new AchievementChecker()->setAchievementSpecial('1000w1');
 		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_FIRST_HALF, '1000 Weiqi 1st half should unlock');
 	}
 
-	/**
-	 * Test 1000 Weiqi 2nd half (ID 115)
-	 * Requires completing all tsumegos in set: 216
-	 */
+	/* Test Achievement::WEIQI_1000_SECOND_HALF
+	 * Requires completing all tsumegos in set: 216 */
 	public function test1000WeiqiSecondHalf()
 	{
 		$context = new ContextPreparator([]);
 		$this->createAndSolveSets($context->user['id'], [216]);
-
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->setAchievementSpecial('1000w2');
-
+		new AchievementChecker()->setAchievementSpecial('1000w2');
 		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
 	}
 
-	/**
-	 * Helper: Create sets with tsumegos and mark them all as solved
-	 */
+	// Helper: Create sets with tsumegos and mark them all as solved
 	private function createAndSolveSets($userId, $setIds)
 	{
 		$Set = ClassRegistry::init('Set');
@@ -141,29 +94,16 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		foreach ($setIds as $setId)
 		{
 			$Set->create();
-			$Set->save(['Set' => ['id' => $setId, 'title' => "Test Set $setId"]]);
+			$Set->save(['id' => $setId, 'title' => "Test Set $setId"]);
 
 			for ($i = 0; $i < 3; $i++)
 			{
 				$Tsumego->create();
-				$Tsumego->save([
-					'Tsumego' => [
-						'set_id' => $setId,
-						'num' => $i + 1,
-						'sgf' => '(;GM[1]FF[4])',
-						'rating' => 1000,
-					],
-				]);
+				$Tsumego->save(['rating' => 1000]);
 				$tsumegoId = $Tsumego->id;
 
 				$TsumegoStatus->create();
-				$TsumegoStatus->save([
-					'TsumegoStatus' => [
-						'user_id' => $userId,
-						'tsumego_id' => $tsumegoId,
-						'status' => 'S',
-					],
-				]);
+				$TsumegoStatus->save(['user_id' => $userId, 'tsumego_id' => $tsumegoId, 'status' => 'S']);
 			}
 		}
 	}

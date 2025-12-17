@@ -1,5 +1,4 @@
 <?php
-
 App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');

@@ -1,5 +1,4 @@
 <?php
-
 App::uses('Achievement', 'Model');
 App::uses('Level', 'Utility');
 

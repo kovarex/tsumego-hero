@@ -59,6 +59,6 @@ class DanSolveAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'danSolve1d', 'value' => 9]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementNotUnlocked( Achievement::SOLVE_10_1D);
+		$this->assertAchievementNotUnlocked(Achievement::SOLVE_10_1D);
 	}
 }

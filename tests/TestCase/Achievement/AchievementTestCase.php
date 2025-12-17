@@ -113,11 +113,7 @@ abstract class AchievementTestCase extends ControllerTestCase
 		for ($i = 0; $i < $count; $i++)
 		{
 			$Tsumego->create();
-			$Tsumego->save([
-				'set_id' => $setId,
-				'num' => $i + 1,
-				'rating' => $difficulty,
-				'sgf' => '(;GM[1]FF[4])']);
+			$Tsumego->save(['rating' => $difficulty]);
 			$tsumegoId = $Tsumego->getInsertID();
 
 			// CRITICAL: SetConnection required for collectTsumegosFromSet()

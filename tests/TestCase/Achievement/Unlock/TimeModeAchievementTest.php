@@ -103,7 +103,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'status' => TimeModeUtil::$SESSION_STATUS_FAILED,
 				'rank' => '5k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementNotUnlocked( Achievement::TIME_MODE_APPRENTICE_SLOW);
+		$this->assertAchievementNotUnlocked(Achievement::TIME_MODE_APPRENTICE_SLOW);
 	}
 
 	/**

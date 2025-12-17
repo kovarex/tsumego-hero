@@ -1,5 +1,4 @@
 <?php
-
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');

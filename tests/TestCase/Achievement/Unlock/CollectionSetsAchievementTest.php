@@ -27,7 +27,7 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT - 1);
-		$this->assertAchievementNotUnlocked( Achievement::COMPLETE_SETS_I);
+		$this->assertAchievementNotUnlocked(Achievement::COMPLETE_SETS_I);
 	}
 
 	public function testAllCollectionSetsAchievements()

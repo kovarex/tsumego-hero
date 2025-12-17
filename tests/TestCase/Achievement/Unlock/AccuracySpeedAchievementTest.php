@@ -1,5 +1,4 @@
 <?php
-
 App::uses('Achievement', 'Model');
 
 /**
@@ -71,6 +70,6 @@ class AccuracySpeedAchievementTest extends AchievementTestCase
 			'value' => 74]); // Just below 75%
 
 		new AchievementChecker()->checkSetAchievements($setId);
-		$this->assertAchievementNotUnlocked( Achievement::ACCURACY_I);
+		$this->assertAchievementNotUnlocked(Achievement::ACCURACY_I);
 	}
 }

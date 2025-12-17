@@ -1,24 +1,17 @@
 <?php
-
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
 App::uses('ContextPreparator', 'Test');
 
-/**
- * Test Superior Accuracy achievement (ID 46)
- *
+/* Test Achievement::SUPERIOR_ACCURACY
  * "Finish a collection with 100% accuracy"
- * Requires: set with 100+ tsumegos, 100% accuracy (acA.value >= 100)
- */
+ * Requires: set with 100+ tsumegos, 100% accuracy (acA.value >= 100) */
 class SuperiorAccuracyAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test that Superior Accuracy unlocks at 100% accuracy on 100+ tsumego set
-	 */
 	public function testSuperiorAccuracyAchievement()
 	{
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 
 		// Create set with 100 tsumegos + SetConnection records
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
@@ -27,33 +20,18 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		$AchievementCondition->create();
 		$AchievementCondition->save([
-			'AchievementCondition' => [
-				'user_id' => $context->user['id'],
-				'set_id' => $setId,
-				'category' => '%',
-				'value' => 100
-			]
-		]);
+			'user_id' => $context->user['id'],
+			'set_id' => $setId,
+			'category' => '%',
+			'value' => 100]);
 
-		// Trigger check
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->checkSetAchievements($setId);
-
-		// Assert achievement unlocked
-		$this->assertAchievementUnlocked(
-			$context->user['id'],
-			Achievement::SUPERIOR_ACCURACY,
-			'Superior Accuracy (100%) should unlock'
-		);
+		new AchievementChecker()->checkSetAchievements($setId);
+		$this->assertAchievementUnlocked(Achievement::SUPERIOR_ACCURACY, 'Superior Accuracy (100%) should unlock');
 	}
 
-	/**
-	 * Test that Superior Accuracy does NOT unlock below 100% accuracy
-	 */
 	public function testSuperiorAccuracyDoesNotUnlockBelow100Percent()
 	{
-		$context = new ContextPreparator([]);
+		$context = new ContextPreparator();
 
 		// Create set with 100 tsumegos
 		$setId = $this->createSetWithTsumegosAndConnections(1200, 100);
@@ -62,20 +40,12 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$AchievementCondition = ClassRegistry::init('AchievementCondition');
 		$AchievementCondition->create();
 		$AchievementCondition->save([
-			'AchievementCondition' => [
 				'user_id' => $context->user['id'],
 				'set_id' => $setId,
 				'category' => '%',
-				'value' => 99
-			]
-		]);
+				'value' => 99]);
 
-		// Trigger check
-		$controller = new AppController();
-		$controller->constructClasses();
-		$controller->checkSetAchievements($setId);
-
-		// Assert achievement NOT unlocked
-		$this->assertAchievementNotUnlocked( Achievement::SUPERIOR_ACCURACY);
+		new AchievementChecker()->checkSetAchievements($setId);
+		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
 	}
 }

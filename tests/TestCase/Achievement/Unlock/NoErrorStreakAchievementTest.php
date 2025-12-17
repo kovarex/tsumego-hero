@@ -19,10 +19,10 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
 
 		// Assert: Higher achievements should NOT be unlocked yet
-		$this->assertAchievementNotUnlocked( Achievement::NO_ERROR_STREAK_II);
-		$this->assertAchievementNotUnlocked( Achievement::NO_ERROR_STREAK_III);
-		$this->assertAchievementNotUnlocked( Achievement::NO_ERROR_STREAK_IV);
-		$this->assertAchievementNotUnlocked( Achievement::NO_ERROR_STREAK_V);
+		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_II);
+		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_III);
+		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_IV);
+		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_V);
 	}
 
 	public function testTwoHundredStreakUnlocksAll()

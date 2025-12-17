@@ -25,7 +25,7 @@ class RatingAchievementTest extends AchievementTestCase
 			$context = new ContextPreparator(['user' => ['rating' => (Rating::getRankMinimalRatingFromReadableRank('6k') - $ratingDefitient)]]);
 			$this->triggerAchievementCheck();
 			if ($ratingDefitient > 0)
-				$this->assertAchievementNotUnlocked( Achievement::RATING_6_KYU);
+				$this->assertAchievementNotUnlocked(Achievement::RATING_6_KYU);
 			else
 				$this->assertAchievementUnlocked(Achievement::RATING_6_KYU);
 		}

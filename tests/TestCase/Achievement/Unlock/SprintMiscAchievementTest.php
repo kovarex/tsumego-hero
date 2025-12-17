@@ -22,7 +22,7 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 29]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementNotUnlocked( Achievement::SPRINT);
+		$this->assertAchievementNotUnlocked(Achievement::SPRINT);
 	}
 
 	/**

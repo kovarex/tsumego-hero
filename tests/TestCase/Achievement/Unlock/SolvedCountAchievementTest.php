@@ -1,67 +1,22 @@
 <?php
-
 App::uses('Achievement', 'Model');
 
-/**
- * Test solved count achievements (IDs 1-10)
- *
- * Achievement mapping:
- * - ID 1: 1000 problems solved
- * - ID 2: 2000 problems solved
- * - ID 3: 3000 problems solved
- * - ID 4: 4000 problems solved
- * - ID 5: 5000 problems solved
- * - ID 6: 6000 problems solved
- * - ID 7: 7000 problems solved
- * - ID 8: 8000 problems solved
- * - ID 9: 9000 problems solved
- * - ID 10: 10000 problems solved
- *
- * TESTING APPROACH:
- * - Setup: Create user with specific 'solved' count using ContextPreparator
- * - Exercise: Trigger achievement check
- * - Verify: Check achievement_status table for unlocked achievement
- *
- */
 class SolvedCountAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test that achievement 1 unlocks at 1000 solved problems
-	 */
 	public function testAchievement1UnlocksAt1000Solved()
 	{
-		// Setup: Create user with 1000 solved problems
-		$context = new ContextPreparator([
-			'user' => ['solved' => 1000]
-		]);
-
-		// Exercise: Trigger achievement check
+		new ContextPreparator(['user' => ['solved' => 1000]]);
 		$this->triggerAchievementCheck();
-
-		// Verify: Achievement 1 should be unlocked
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
 	}
 
-	/**
-	 * Test boundary: 999 solved should NOT unlock achievement 1
-	 */
 	public function testAchievement1DoesNotUnlockBelow1000()
 	{
-		// Setup: Create user with 999 solved problems
-		$context = new ContextPreparator([
-			'user' => ['solved' => 999]
-		]);
-
-		// Exercise: Trigger achievement check
+		new ContextPreparator(['user' => ['solved' => 999]]);
 		$this->triggerAchievementCheck();
-
-		// Verify: Achievement 1 should NOT be unlocked
-		$this->assertAchievementNotUnlocked( Achievement::PROBLEMS_1000);
+		$this->assertAchievementNotUnlocked(Achievement::PROBLEMS_1000);
 	}
 
-	/**
-	 * Test all solved count achievements unlock at correct thresholds
-	 */
 	public function testAllSolvedCountAchievements()
 	{
 		$thresholds = [
@@ -79,19 +34,9 @@ class SolvedCountAchievementTest extends AchievementTestCase
 
 		foreach ($thresholds as $achievementId => $solvedCount)
 		{
-			// Setup: Create user with specific solved count
-			$context = new ContextPreparator([
-				'user' => ['solved' => $solvedCount]
-			]);
-
-			// Exercise: Trigger achievement check
+			new ContextPreparator(['user' => ['solved' => $solvedCount]]);
 			$this->triggerAchievementCheck();
-
-			// Verify: Achievement should be unlocked
-			$this->assertAchievementUnlocked(
-				$context->user['id'],
-				$achievementId
-			);
+			$this->assertAchievementUnlocked($achievementId);
 		}
 	}
 }
