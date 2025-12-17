@@ -456,25 +456,43 @@ class SetsController extends AppController
 		if (!isset($this->data['Tsumego']))
 			return;
 
-		ClassRegistry::init('Tsumego')->getDataSource()->begin();
-		$tsumego = [];
-		$tsumego['num'] = $this->data['Tsumego']['num'];
-		$tsumego['difficulty'] = 40;
-		$tsumego['variance'] = $this->data['Tsumego']['variance'];
-		$tsumego['description'] = $this->data['Tsumego']['description'];
-		$tsumego['hint'] = $this->data['Tsumego']['hint'];
-		$tsumego['author'] = $this->data['Tsumego']['author'];
-		ClassRegistry::init('Tsumego')->create();
-		ClassRegistry::init('Tsumego')->save($tsumego);
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego'];
-		$setConnection = [];
-		$setConnection['set_id'] = $setID;
-		$setConnection['tsumego_id'] = $tsumego['id'];
-		$setConnection['num'] = $this->data['Tsumego']['num'];
-		ClassRegistry::init('SetConnection')->create();
-		ClassRegistry::init('SetConnection')->save($setConnection);
+		$tsumegoModel = ClassRegistry::init('Tsumego');
 
-		ClassRegistry::init('Tsumego')->getDataSource()->commit();
+		$tsumegoModel->getDataSource()->begin();
+
+		try
+		{
+			$tsumego = [];
+			$tsumego['num'] = $this->data['Tsumego']['num'];
+			$tsumego['difficulty'] = 40;
+			$tsumego['variance'] = $this->data['Tsumego']['variance'];
+			$tsumego['description'] = $this->data['Tsumego']['description'];
+			$tsumego['hint'] = $this->data['Tsumego']['hint'];
+			$tsumego['author'] = $this->data['Tsumego']['author'];
+			$tsumegoModel->create();
+			$tsumegoModel->save($tsumego);
+
+			$tsumego['id'] = $tsumegoModel->id;
+			$setConnection = [];
+			$setConnection['set_id'] = $setID;
+			$setConnection['tsumego_id'] = $tsumego['id'];
+			$setConnection['num'] = $this->data['Tsumego']['num'];
+			ClassRegistry::init('SetConnection')->create();
+			ClassRegistry::init('SetConnection')->save($setConnection);
+
+			// Save SGF if provided (either from textarea or file upload)
+			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+			$sgfDataOrFile = $this->data['Tsumego']['sgf'] ?? $fileUpload;
+
+			if ($sgfDataOrFile)
+				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
+			$tsumegoModel->getDataSource()->commit();
+		}
+		catch (Exception $e)
+		{
+			$tsumegoModel->getDataSource()->rollback();
+			throw $e;
+		}
 		return $this->redirect('/sets/view/' . $setID);
 	}
 

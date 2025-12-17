@@ -41,34 +41,14 @@ class SgfController extends AppController
 		if (!$setConnection)
 			throw new AppException("Specified set connection does not exist.");
 
-		if ($this->data['sgfForBesogo'])
-			$sgfData = $this->data['sgfForBesogo'];
-		else
-		{
-			$fileSize = $_FILES['adminUpload']['size'];
-			$array1 = explode('.', $_FILES['adminUpload']['name']);
-			$fileExtension = strtolower(end($array1));
-			if ($fileExtension != 'sgf')
-				throw new AppException('Only SGF files are allowed, the file name is:' . $_FILES['adminUpload']['name']);
-			if ($fileSize > 2097152)
-				throw new AppException('The file is too large.');
-			$sgfData = file_get_contents($_FILES['adminUpload']['tmp_name']);
-		}
+		// Use besogo textarea if provided, otherwise use file upload
+		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? $fileUpload;
 
-		$sgfModel = ClassRegistry::init('Sgf');
-		$sgfModel->create();
-		$sgf = [];
-		$sgf['sgf'] = $sgfData;
-		$sgf['user_id'] = Auth::getUserID();
-		$sgf['tsumego_id'] = $setConnection['SetConnection']['tsumego_id'];
-		$sgf['accepted'] = Auth::isAdmin();
-		if (!$sgfModel->save($sgf))
-		{
-			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $sgfModel->validationErrors);
-			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
-			throw new AppException('Failed to upload SGF: ' . $errorMessage);
-		}
+		if (!$sgfDataOrFile)
+			throw new AppException('No SGF data provided.');
 
+		ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $setConnection['SetConnection']['tsumego_id'], Auth::getUserID(), Auth::isAdmin());
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
 		return $this->redirect('/' . $setConnectionID);
 	}
