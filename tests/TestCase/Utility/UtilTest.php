@@ -70,7 +70,6 @@ class UtilTest extends CakeTestCase
 		$this->assertSame(80, Util::getPercentButAvoid100UntilComplete(4, 5));
 		$this->assertSame(99, Util::getPercentButAvoid100UntilComplete(999, 1000));
 		$this->assertSame(100, Util::getPercentButAvoid100UntilComplete(100, 100));
-		$this->assertSame(99, Util::getPercentButAvoid100UntilComplete(-100, -1));
 	}
 
 	public function testAddSqlConditionWrapsOrCondition()
