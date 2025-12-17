@@ -103,32 +103,18 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 * @param int $userId User ID
 	 * @param int $completedSetsCount Number of completed sets
 	 */
-	protected function triggerSetCompletionAchievementCheck($userId, $completedSetsCount)
+	protected function triggerSetCompletionAchievementCheck($completedSetsCount)
 	{
 		// Save set completion count to achievement_condition (simulates completing sets)
-		$AchievementCondition = ClassRegistry::init('AchievementCondition');
-		$condition = $AchievementCondition->find('first', [
-			'conditions' => [
-				'user_id' => $userId,
-				'category' => 'set',
-			]
-		]);
-
-		if (!$condition)
-			$condition = [];
+		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'set']]) ?: [];
 
 		$condition['AchievementCondition']['category'] = 'set';
-		$condition['AchievementCondition']['user_id'] = $userId;
+		$condition['AchievementCondition']['user_id'] = Auth::getUserID();
 		$condition['AchievementCondition']['value'] = $completedSetsCount;
-		$AchievementCondition->save($condition);
+		ClassRegistry::init('AchievementCondition')->save($condition);
 
-		// Login as this user
-		$_COOKIE['hackedLoggedInUserID'] = $userId;
-		Auth::init();
-
-		$controller = new SetsController();
-		$controller->constructClasses();
-		$controller->checkSetCompletedAchievements();
+		new AchievementChecker()->checkSetCompletedAchievements()->finalize();
 	}
 
 	/**
@@ -150,12 +136,9 @@ abstract class AchievementTestCase extends ControllerTestCase
 		// Create Set (use auto-increment ID to avoid collisions)
 		$Set->create();
 		$Set->save([
-			'Set' => [
-				'difficulty' => $difficulty,
-				'public' => 0,
-				'title' => "Test Set (difficulty $difficulty)",
-			],
-		]);
+			'difficulty' => $difficulty,
+			'public' => 0,
+			'title' => "Test Set (difficulty $difficulty)"]);
 		$setId = $Set->getInsertID();
 
 		// Create Tsumegos + SetConnection records (BOTH required!)
@@ -163,24 +146,18 @@ abstract class AchievementTestCase extends ControllerTestCase
 		{
 			$Tsumego->create();
 			$Tsumego->save([
-				'Tsumego' => [
-					'set_id' => $setId,
-					'num' => $i + 1,
-					'rating' => $difficulty,
-					'sgf' => '(;GM[1]FF[4])',
-				],
-			]);
+				'set_id' => $setId,
+				'num' => $i + 1,
+				'rating' => $difficulty,
+				'sgf' => '(;GM[1]FF[4])']);
 			$tsumegoId = $Tsumego->getInsertID();
 
 			// CRITICAL: SetConnection required for collectTsumegosFromSet()
 			$SetConnection->create();
 			$SetConnection->save([
-				'SetConnection' => [
-					'set_id' => $setId,
-					'tsumego_id' => $tsumegoId,
-					'num' => $i + 1,
-				],
-			]);
+				'set_id' => $setId,
+				'tsumego_id' => $tsumegoId,
+				'num' => $i + 1]);
 		}
 
 		return $setId;

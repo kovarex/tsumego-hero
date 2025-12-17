@@ -14,7 +14,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	{
 		// Arrange: Create user and set err=10 (just meets threshold for Achievement::NO_ERROR_STREAK_I)
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 10]]]);
-		AppController::checkNoErrorAchievements(new AchievementChecker());
+		new AchievementChecker()->checkNoErrorAchievements();
 
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
 
@@ -28,7 +28,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testTwoHundredStreakUnlocksAll()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 200]]]);
-		AppController::checkNoErrorAchievements(new AchievementChecker());
+		new AchievementChecker()->checkNoErrorAchievements();
 
 		// Assert: All 6 achievements should be unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_I, "No Error Streak I");
@@ -53,7 +53,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		foreach ($thresholds as $achievementId => $errValue)
 		{
 			$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => $errValue]]]);
-			AppController::checkNoErrorAchievements(new AchievementChecker());
+			new AchievementChecker()->checkNoErrorAchievements();
 			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at err=$errValue");
 		}
 	}

@@ -14,14 +14,14 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	public function testSprintAchievement()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 30]]]);
-		AppController::checkDanSolveAchievements(new AchievementChecker());
+		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::SPRINT, 'Sprint achievement should unlock when sprint condition >= 30');
 	}
 
 	public function testSprintDoesNotUnlockBelow30()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'sprint', 'value' => 29]]]);
-		AppController::checkDanSolveAchievements(new AchievementChecker());
+		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::SPRINT);
 	}
 
@@ -32,7 +32,7 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	public function testGoldDiggerAchievement()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'golden', 'value' => 10]]]);
-		AppController::checkDanSolveAchievements(new AchievementChecker());
+		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::GOLD_DIGGER, 'Gold Digger achievement should unlock when golden condition >= 10');
 	}
 
@@ -44,7 +44,7 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	public function testBadPotionAchievement()
 	{
 		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => 1]]]);
-		AppController::checkDanSolveAchievements(new AchievementChecker());
+		new AchievementChecker()->checkDanSolveAchievements();
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::BAD_POTION, 'Bad Potion achievement should unlock when potion condition >= 1');
 	}
 }

@@ -67,12 +67,18 @@ class Achievement extends AppModel
 	public const int SUPERIOR_ACCURACY = 46; // 100% accuracy on 100+ tsumegos
 
 	// Complete Sets Achievements
-	public const int COMPLETE_SETS_I = 47;   // 1 set
-	public const int COMPLETE_SETS_II = 48;  // 3 sets
-	public const int COMPLETE_SETS_III = 49; // 10 sets
-	public const int COMPLETE_SETS_IV = 50;  // 30 sets
-	public const int COMPLETE_SETS_V = 51;   // 100 sets
-	public const int COMPLETE_SETS_VI = 52;  // 300 sets
+	public const int COMPLETE_SETS_I = 47;
+	public const int COMPLETE_SETS_I_SETS_COUNT = 10;
+	public const int COMPLETE_SETS_II = 48;
+	public const int COMPLETE_SETS_II_SETS_COUNT = 20;
+	public const int COMPLETE_SETS_III = 49;
+	public const int COMPLETE_SETS_III_SETS_COUNT = 30;
+	public const int COMPLETE_SETS_IV = 50;
+	public const int COMPLETE_SETS_IV_SETS_COUNT = 40;
+	public const int COMPLETE_SETS_V = 51;
+	public const int COMPLETE_SETS_V_SETS_COUNT = 50;
+	public const int COMPLETE_SETS_VI = 52;
+	public const int COMPLETE_SETS_VI_SETS_COUNT = 60;
 
 	// No Error Streak Achievements
 	public const int NO_ERROR_STREAK_I = 53;   // 10 streak

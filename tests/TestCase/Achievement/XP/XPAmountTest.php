@@ -16,9 +16,7 @@ class XPAmountTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 500, 'level' => 69, 'solved' => 1000]]);
 
 		// Act: Trigger achievement check
-		$achievementChecker = new AchievementChecker();
-		AppController::checkProblemNumberAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Achievement unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::PROBLEMS_1000, 'Achievement #1 should unlock at 1000 solved');
@@ -38,9 +36,7 @@ class XPAmountTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 69, 'solved' => 2000]]);
 
 		// Act: Trigger achievement check
-		$achievementChecker = new AchievementChecker();
-		AppController::checkProblemNumberAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Both achievements #1 and #2 unlock (1000 solved + 2000 solved)
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::PROBLEMS_1000);
@@ -59,9 +55,7 @@ class XPAmountTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 10]]);
 
 		// Act: Trigger achievement check
-		$achievementChecker = new AchievementChecker();
-		AppController::checkLevelAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkLevelAchievements()->finalize();
 
 		// Assert: Achievement unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::LEVEL_UP);
@@ -82,9 +76,7 @@ class XPAmountTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 100, 'level' => 69, 'solved' => 2000]]);
 
 		// Act: Trigger achievement check (should unlock both #1 and #2)
-		$achievementChecker = new AchievementChecker();
-		AppController::checkProblemNumberAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Both achievements unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::PROBLEMS_1000);
@@ -106,9 +98,7 @@ class XPAmountTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 3000, 'level' => 69, 'solved' => 1000]]);
 
 		// Act: Unlock achievement
-		$achievementChecker = new AchievementChecker();
-		AppController::checkProblemNumberAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: Achievement unlocked
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::PROBLEMS_1000);

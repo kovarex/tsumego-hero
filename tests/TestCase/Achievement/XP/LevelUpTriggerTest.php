@@ -74,9 +74,7 @@ class LevelUpTriggerTest extends AchievementTestCase
 		$context = new ContextPreparator(['user' => ['xp' => 165, 'level' => 10, 'solved' => 1000]]);
 
 		// Act: Unlock achievement granting 1000 XP (way more than needed)
-		$achievementChecker = new AchievementChecker();
-		AppController::checkProblemNumberAchievements($achievementChecker);
-		AppController::updateXP($context->user['id'], $achievementChecker->updated);
+		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
 
 		// Assert: User leveled up past level 10
 		$this->assertGreaterThan(10, $context->reloadUser()['level'], 'User should level up past 10 from achievement XP');

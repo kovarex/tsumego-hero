@@ -366,7 +366,7 @@ echo $this->AssetCompress->script('app');
 	<br><br><br>
 	</div>
 <?php
-if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'])
+if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievementUpdates))
 {
 	$xpBonus = 0;
 	foreach ($achievementUpdates as $i => $achievementUpdate)
@@ -379,14 +379,14 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'])
 			Achievement Completed
 			<span class="alertClose">x</span>
 			</div>
-			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate[$i][2].'.png">
+			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate['image'].'.png">
 			<b>'.$achievementUpdate['name'].' - ' . $achievementUpdate['description'] . '</b>&nbsp; ('.$achievementUpdate['xp'].' XP)&nbsp; <a href="/achievements/view/'.$achievementUpdate['id'].'">view</a>
 			<br>
 			<br class="clear1"/></span>
 			</div>
 			</label>
 			';
-		$xpBonus += $achievementUpdate[$i]['xp'];
+		$xpBonus += $achievementUpdate['xp'];
 	}
 }
 ?>

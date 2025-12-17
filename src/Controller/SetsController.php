@@ -295,19 +295,16 @@ class SetsController extends AppController
 				'order' => 'value DESC',
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
-					'category' => 'set',
-				],
-			]);
-			if ($aCondition == null)
-				$aCondition = [];
+					'category' => 'set']]) ?: [];
 			$aCondition['AchievementCondition']['category'] = 'set';
 			$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			$aCondition['AchievementCondition']['value'] = $overallCounter;
-			$this->AchievementCondition->save($aCondition);
+			ClassRegistry::init('AchievementCondition')->save($aCondition);
+			$achievementChecker = new AchievementChecker();
+			$achievementChecker->checkSetCompletedAchievements();
+			$achievementChecker->finalize();
+			$this->set('achievementUpdate', $achievementChecker->updated);
 			Auth::saveUser();
-			$achievementUpdate = $this->checkSetCompletedAchievements();
-			if (count($achievementUpdate) > 0)
-				$this->updateXP(Auth::getUserID(), $achievementUpdate);
 		}
 
 		$ranksArray = SetsController::getExistingRanksArray();
@@ -333,7 +330,6 @@ class SetsController extends AppController
 		$this->set('difficultyTiles', $difficultyTiles);
 		$this->set('tagTiles', $tagTiles);
 		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('achievementUpdate', $achievementUpdate);
 		$this->set('hasPremium', Auth::hasPremium());
 		$this->set('queryRefresh', $queryRefresh);
 	}
@@ -973,7 +969,7 @@ class SetsController extends AppController
 				$achievementUpdate = array_merge($achievementUpdate1, $achievementUpdate2);
 			}
 			if (count($achievementUpdate) > 0)
-				$this->updateXP(Auth::getUserID(), $achievementUpdate);
+				User::updateXP(Auth::getUserID(), $achievementUpdate);
 
 			$acS = $this->AchievementCondition->find('first', [
 				'order' => 'value ASC',

@@ -19,32 +19,32 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 	public function testAchievementCompleteSets1UnlocksAt10Sets()
 	{
 		$context = new ContextPreparator();
-		$this->triggerSetCompletionAchievementCheck($context->user['id'], 10);
+		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT);
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
 	}
 
 	public function testAchievementCompleteSets1DoesNotUnlockBelow10Sets()
 	{
 		$context = new ContextPreparator();
-		$this->triggerSetCompletionAchievementCheck($context->user['id'], 9);
+		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT - 1);
 		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
 	}
 
 	public function testAllCollectionSetsAchievements()
 	{
 		$achievementSets = [
-			Achievement::COMPLETE_SETS_I => 10,
-			Achievement::COMPLETE_SETS_II => 20,
-			Achievement::COMPLETE_SETS_III => 30,
-			Achievement::COMPLETE_SETS_IV => 40,
-			Achievement::COMPLETE_SETS_V => 50,
-			Achievement::COMPLETE_SETS_VI => 60,
+			Achievement::COMPLETE_SETS_I => Achievement::COMPLETE_SETS_I_SETS_COUNT,
+			Achievement::COMPLETE_SETS_II => Achievement::COMPLETE_SETS_II_SETS_COUNT,
+			Achievement::COMPLETE_SETS_III => Achievement::COMPLETE_SETS_III_SETS_COUNT,
+			Achievement::COMPLETE_SETS_IV => Achievement::COMPLETE_SETS_IV_SETS_COUNT,
+			Achievement::COMPLETE_SETS_V => Achievement::COMPLETE_SETS_V_SETS_COUNT,
+			Achievement::COMPLETE_SETS_VI => Achievement::COMPLETE_SETS_VI_SETS_COUNT,
 		];
 
 		foreach ($achievementSets as $achievementId => $requiredSets)
 		{
 			$context = new ContextPreparator();
-			$this->triggerSetCompletionAchievementCheck($context->user['id'], $requiredSets);
+			$this->triggerSetCompletionAchievementCheck($requiredSets);
 			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at $requiredSets completed sets");
 		}
 	}
