@@ -270,4 +270,59 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
 		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
 	}
+
+	/**
+	 * When user fails a problem, the board should NOT lock.
+	 * User should be able to continue clicking (though they won't solve it after first failure).
+	 */
+	public function testBoardDoesntLockAfterFailAllowsContinuedAttempts()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ca]C[+])',
+				'sets' => [['name' => 'Test Set', 'num' => '1']],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$tsumegoUrl = $context->tsumego['set-connections'][0]['id'];
+		$browser->get($tsumegoUrl);
+
+		// Wait for board to initialize (window.besogo exists)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';");
+		});
+
+		// Make wrong move (correct is 1,1)
+		$browser->clickBoard(2, 1);
+
+		// Wait for status to show "Incorrect"
+		$wait->until(function () use ($browser) {
+			$status = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
+			return str_contains($status, "Incorrect");
+		});
+
+		// Verify board shows failure state
+		$statusAfterWrong = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
+		$this->assertStringContainsString("Incorrect", $statusAfterWrong, "Should show 'Incorrect' after wrong move");
+
+		// Verify board is NOT locked (boardLockValue should be 0)
+		$boardLockValue = $browser->driver->executeScript("return window.boardLockValue;");
+		$this->assertEquals(0, $boardLockValue, "Board should NOT be locked after wrong move");
+
+		// Verify user can still click (board stays interactive)
+		// We don't expect to solve the puzzle after failure, just verify clicks still work
+		$browser->clickBoard(1, 1);
+
+		// Brief wait to ensure click was processed
+		$wait->until(function () use ($browser) {
+			// Just verify page is still responsive
+			return $browser->driver->executeScript("return document.readyState === 'complete';");
+		});
+
+		// Verify still on same problem (didn't reset or advance)
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString($tsumegoUrl, $currentUrl, "Should stay on same problem");
+	}
 }

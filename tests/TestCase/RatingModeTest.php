@@ -86,7 +86,7 @@ class RatingModeTest extends ControllerTestCase
 		$this->assertSame('1000 rating tsumego', $browser->find('#descriptionText')->getText());
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$browser->playWithResult('F');
-		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
+		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;')); // #107 we're not locking failed problems
 		$browser->clickId('besogo-reset-button');
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$browser->playWithResult('S');

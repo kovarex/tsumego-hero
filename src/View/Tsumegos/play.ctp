@@ -1633,7 +1633,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			timeModeTimer.stop();
 
 		let success = result == 'S';
-		accountWidget.animate(success);
+		if (accountWidget)
+			accountWidget.animate(success);
 		if (success)
 		{
 			problemSolved = true;
@@ -1686,7 +1687,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		else //incorrect
 		{
 			misplays++;
-			toggleBoardLock(true);
+			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
 				branch = "no";
@@ -1789,7 +1790,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (heartLoss)
 		{
 			misplays++;
-			accountWidget.animate(false);
+			if (accountWidget)
+				accountWidget.animate(false);
 			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
 			updateHealth();
