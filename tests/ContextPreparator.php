@@ -1,5 +1,7 @@
 <?php
 
+App::uses('BoardSelector', 'Utility');
+
 class ContextPreparator
 {
 	public function __construct(?array $options = [])
@@ -28,6 +30,7 @@ class ContextPreparator
 		else
 			$this->prepareThisUser(Util::extract('user', $options));
 		$this->prepareOtherUsers(Util::extract('other-users', $options));
+		$this->prepareSet(Util::extract('set', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
 		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
@@ -129,6 +132,21 @@ class ContextPreparator
 			return;
 		foreach ($usersInput as $userInput)
 			$this->otherUsers [] = $this->prepareUser($userInput);
+	}
+
+	private function prepareSet(?array $setInput): void
+	{
+		if (!$setInput)
+			return;
+
+		$set = [];
+		$set['title'] = Util::extract('title', $setInput) ?: 'Test Set';
+		$set['public'] = Util::extract('public', $setInput) ?? 0;
+		$set['order'] = Util::extract('order', $setInput) ?: 999;
+		ClassRegistry::init('Set')->create();
+		ClassRegistry::init('Set')->save($set);
+		$this->set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC'])['Set'];
+		$this->checkOptionsConsumed($setInput);
 	}
 
 	private function prepareTsumego(?array $tsumegoInput): array
@@ -708,6 +726,7 @@ class ContextPreparator
 
 	public ?array $user = null;
 	public array $otherUsers = [];
+	public ?array $set = null;
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
 	public array $allTsumegos = [];

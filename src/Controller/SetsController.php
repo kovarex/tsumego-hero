@@ -9,6 +9,7 @@ App::uses('SetsSelector', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
+App::uses('SgfUploadHelper', 'Utility');
 
 class SetsController extends AppController
 {
@@ -461,24 +462,40 @@ class SetsController extends AppController
 			return;
 
 		ClassRegistry::init('Tsumego')->getDataSource()->begin();
-		$tsumego = [];
-		$tsumego['num'] = $this->data['Tsumego']['num'];
-		$tsumego['difficulty'] = 40;
-		$tsumego['variance'] = $this->data['Tsumego']['variance'];
-		$tsumego['description'] = $this->data['Tsumego']['description'];
-		$tsumego['hint'] = $this->data['Tsumego']['hint'];
-		$tsumego['author'] = $this->data['Tsumego']['author'];
-		ClassRegistry::init('Tsumego')->create();
-		ClassRegistry::init('Tsumego')->save($tsumego);
-		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego'];
-		$setConnection = [];
-		$setConnection['set_id'] = $setID;
-		$setConnection['tsumego_id'] = $tsumego['id'];
-		$setConnection['num'] = $this->data['Tsumego']['num'];
-		ClassRegistry::init('SetConnection')->create();
-		ClassRegistry::init('SetConnection')->save($setConnection);
+		try
+		{
+			$tsumego = [];
+			$tsumego['num'] = $this->data['Tsumego']['num'];
+			$tsumego['difficulty'] = 40;
+			$tsumego['variance'] = $this->data['Tsumego']['variance'];
+			$tsumego['description'] = $this->data['Tsumego']['description'];
+			$tsumego['hint'] = $this->data['Tsumego']['hint'];
+			$tsumego['author'] = $this->data['Tsumego']['author'];
+			ClassRegistry::init('Tsumego')->create();
+			ClassRegistry::init('Tsumego')->save($tsumego);
+			$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego'];
+			$setConnection = [];
+			$setConnection['set_id'] = $setID;
+			$setConnection['tsumego_id'] = $tsumego['id'];
+			$setConnection['num'] = $this->data['Tsumego']['num'];
+			ClassRegistry::init('SetConnection')->create();
+			ClassRegistry::init('SetConnection')->save($setConnection);
 
-		ClassRegistry::init('Tsumego')->getDataSource()->commit();
+			// Save SGF if provided (either from textarea or file upload)
+			$sgfDataOrFile = !empty($this->data['Tsumego']['sgf'])
+				? $this->data['Tsumego']['sgf']
+				: (isset($_FILES['adminUpload']) ? $_FILES['adminUpload'] : null);
+
+			if ($sgfDataOrFile)
+				SgfUploadHelper::saveSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
+
+			ClassRegistry::init('Tsumego')->getDataSource()->commit();
+		}
+		catch (Exception $e)
+		{
+			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
+			throw $e;
+		}
 		return $this->redirect('/sets/view/' . $setID);
 	}
 

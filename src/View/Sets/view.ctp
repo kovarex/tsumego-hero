@@ -257,11 +257,17 @@
 
 					if ($set['Set']['public'] == 0) {
 						echo '<h1>Add Problem</h1>';
-						echo $this->Form->create('Tsumego', ['url' => '/sets/addTsumego/'.$set['Set']['id']]);
+						echo $this->Form->create('Tsumego', ['url' => '/sets/addTsumego/'.$set['Set']['id'], 'type' => 'file']);
 						echo $this->Form->input('num', array('value' => $tsumegoButtons->highestTsumegoOrder + 1, 'label' => 'Number: ', 'type' => 'text', 'placeholder' => 'number', 'id' => 'orderInput'));
 						echo $this->Form->input('set_id', array('type' => 'hidden', 'value' => $set['Set']['id']));
 						echo $this->Form->input('variance', array('type' => 'hidden', 'value' => 100));
 						echo $this->Form->input('author', array('type' => 'hidden', 'value' => Auth::getUser()['name']));
+						echo '<div style="margin-top: 10px;">';
+						echo '<label>SGF (choose one):</label><br>';
+						echo '<input type="file" name="adminUpload" accept=".sgf" style="margin-bottom: 10px;"><br>';
+						echo '<label style="font-weight: normal;">or paste SGF:</label><br>';
+						echo $this->Form->input('sgf', array('label' => false, 'type' => 'textarea', 'placeholder' => '(;GM[1]FF[4]...)', 'rows' => 3));
+						echo '</div>';
 						echo $this->Form->end('Submit');
 					}
 					if($set['Set']['public']==0){
