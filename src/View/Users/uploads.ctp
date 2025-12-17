@@ -52,7 +52,7 @@
 
 <script>
 	<?php for($i=0; $i<count($s); $i++){ ?>
-		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/tsumegos/open/'.$s[$i]['Sgf']['tsumego_id'].'/'.$s[$i]['Sgf']['id']; ?>");
+		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID=' . $s[$i]['Sgf']['id']; ?>");
 		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
 			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
 				type: "sgf",

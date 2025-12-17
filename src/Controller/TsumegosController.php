@@ -76,37 +76,6 @@ class TsumegosController extends AppController
 		return false;
 	}
 
-	/**
-	 * @param string|int|null $id Tsumego ID
-	 * @param string|int|null $sgf1 First SGF ID
-	 * @param string|int|null $sgf2 Second SGF ID
-	 * @return void
-	 */
-	public function open($id = null, $sgf1 = null, $sgf2 = null)
-	{
-		$this->loadModel('Sgf');
-		$s2 = null;
-		$t = $this->Tsumego->findById($id);
-		$s1 = $this->Sgf->findById($sgf1);
-		$s1['Sgf']['sgf'] = str_replace('ß', 'ss', $s1['Sgf']['sgf']);
-		$s1['Sgf']['sgf'] = str_replace(';', '@', $s1['Sgf']['sgf']);
-		$s1['Sgf']['sgf'] = str_replace("\r", '', $s1['Sgf']['sgf']);
-		$s1['Sgf']['sgf'] = str_replace("\n", '€', $s1['Sgf']['sgf']);
-		$s1['Sgf']['sgf'] = str_replace('+', '%2B', $s1['Sgf']['sgf']);
-		if ($sgf2 != null)
-		{
-			$s2 = $this->Sgf->findById($sgf2);
-			$s2['Sgf']['sgf'] = str_replace('ß', 'ss', $s2['Sgf']['sgf']);
-			$s2['Sgf']['sgf'] = str_replace(';', '@', $s2['Sgf']['sgf']);
-			$s2['Sgf']['sgf'] = str_replace("\r", '', $s2['Sgf']['sgf']);
-			$s2['Sgf']['sgf'] = str_replace("\n", '€', $s2['Sgf']['sgf']);
-			$s2['Sgf']['sgf'] = str_replace('+', '%2B', $s2['Sgf']['sgf']);
-		}
-		$this->set('t', $t);
-		$this->set('s1', $s1);
-		$this->set('s2', $s2);
-	}
-
 	public function duplicatesearchx($setConnectionID): void
 	{
 		$this->loadModel('Sgf');
