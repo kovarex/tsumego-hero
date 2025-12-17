@@ -61,10 +61,7 @@ class AccuracyAchievementTest extends AchievementTestCase
 				'category' => '%',
 				'value' => $accuracy]);
 
-			// Trigger check
 			new AchievementChecker()->checkSetAchievements($setId)->finalize();
-
-			// Assert achievement unlocked
 			$this->assertAchievementUnlocked($achievementId, "Accuracy $achievementId ($accuracy% at $rank) should unlock");
 		}
 	}
