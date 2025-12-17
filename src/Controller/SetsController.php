@@ -974,17 +974,13 @@ class SetsController extends AppController
 				'conditions' => [
 					'set_id' => $id,
 					'user_id' => Auth::getUserID(),
-					'category' => 's',
-				],
-			]);
+					'category' => 's']]);
 			$acA = $this->AchievementCondition->find('first', [
 				'order' => 'value DESC',
 				'conditions' => [
 					'set_id' => $id,
 					'user_id' => Auth::getUserID(),
-					'category' => '%',
-				],
-			]);
+					'category' => '%']]);
 		}
 		else
 			$scoring = false;
