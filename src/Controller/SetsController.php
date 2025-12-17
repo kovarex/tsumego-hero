@@ -460,7 +460,10 @@ class SetsController extends AppController
 		if (!isset($this->data['Tsumego']))
 			return;
 
-		ClassRegistry::init('Tsumego')->getDataSource()->begin();
+		$tsumegoModel = ClassRegistry::init('Tsumego');
+
+		$tsumegoModel->getDataSource()->begin();
+
 		try
 		{
 			$tsumego = [];
@@ -470,9 +473,10 @@ class SetsController extends AppController
 			$tsumego['description'] = $this->data['Tsumego']['description'];
 			$tsumego['hint'] = $this->data['Tsumego']['hint'];
 			$tsumego['author'] = $this->data['Tsumego']['author'];
-			ClassRegistry::init('Tsumego')->create();
-			ClassRegistry::init('Tsumego')->save($tsumego);
-			$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego'];
+			$tsumegoModel->create();
+			$tsumegoModel->save($tsumego);
+
+			$tsumego['id'] = $tsumegoModel->id;
 			$setConnection = [];
 			$setConnection['set_id'] = $setID;
 			$setConnection['tsumego_id'] = $tsumego['id'];
@@ -486,11 +490,11 @@ class SetsController extends AppController
 
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
-			ClassRegistry::init('Tsumego')->getDataSource()->commit();
+			$tsumegoModel->getDataSource()->commit();
 		}
 		catch (Exception $e)
 		{
-			ClassRegistry::init('Tsumego')->getDataSource()->rollback();
+			$tsumegoModel->getDataSource()->rollback();
 			throw $e;
 		}
 		return $this->redirect('/sets/view/' . $setID);
