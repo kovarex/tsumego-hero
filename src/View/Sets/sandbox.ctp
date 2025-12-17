@@ -20,19 +20,8 @@ if (!Auth::isAdmin() && !Auth::hasPremium())
 			<br><br>
 			<table width="100%">
 			<tr>
-			<td>
-				<a href="/sets/create">Create Set</a>
-			</td>
-			<td>
-				<a href="/sets/remove">Delete Set</a>
-			</td>
-			</tr>
-			<tr>
-			<td>
-				<a href="/sets/beta2">Show Removed Sets</a>
-			</td>
-			<td>
-			</td>
+			<td><a href="/sets/create">Create Set</a></td>
+			<td><a href="/sets/remove">Delete Set</a></td>
 			</tr>
 			</table>
 
