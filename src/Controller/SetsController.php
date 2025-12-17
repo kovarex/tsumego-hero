@@ -482,9 +482,8 @@ class SetsController extends AppController
 			ClassRegistry::init('SetConnection')->save($setConnection);
 
 			// Save SGF if provided (either from textarea or file upload)
-			$sgfDataOrFile = !empty($this->data['Tsumego']['sgf'])
-				? $this->data['Tsumego']['sgf']
-				: (isset($_FILES['adminUpload']) ? $_FILES['adminUpload'] : null);
+			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+			$sgfDataOrFile = $this->data['Tsumego']['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
 				SgfUploadHelper::saveSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());

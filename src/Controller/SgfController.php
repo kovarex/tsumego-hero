@@ -43,7 +43,11 @@ class SgfController extends AppController
 			throw new AppException("Specified set connection does not exist.");
 
 		// Use besogo textarea if provided, otherwise use file upload
-		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? $_FILES['adminUpload'];
+		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
+		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? $fileUpload;
+
+		if (!$sgfDataOrFile)
+			throw new AppException('No SGF data provided.');
 
 		SgfUploadHelper::saveSgf($sgfDataOrFile, $setConnection['SetConnection']['tsumego_id'], Auth::getUserID(), Auth::isAdmin());
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
