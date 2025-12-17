@@ -26,7 +26,7 @@ class UserOfTheDayAchievementTest extends AchievementTestCase
 		]);
 
 		// Trigger achievement check (happens on login/page load)
-		$this->triggerAchievementCheck($context->user['id']);
+		$this->triggerAchievementCheck();
 
 		// Assert achievement 11 unlocked
 		$this->assertAchievementUnlocked(
@@ -44,9 +44,9 @@ class UserOfTheDayAchievementTest extends AchievementTestCase
 		$context = new ContextPreparator([]);
 
 		// Trigger achievement check WITHOUT creating uotd condition
-		$this->triggerAchievementCheck($context->user['id']);
+		$this->triggerAchievementCheck();
 
 		// Assert achievement 11 NOT unlocked
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::USER_OF_THE_DAY);
+		$this->assertAchievementNotUnlocked( Achievement::USER_OF_THE_DAY);
 	}
 }

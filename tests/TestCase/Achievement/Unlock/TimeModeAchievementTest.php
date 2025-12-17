@@ -20,7 +20,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '5k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
 	}
 
 	public function testFastTimeModeAchievements()
@@ -32,7 +32,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '4k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_SCHOLAR_FAST, "Fast 4k achievement should unlock");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_SCHOLAR_FAST, "Fast 4k achievement should unlock");
 	}
 
 	public function testBlitzTimeModeAchievements()
@@ -44,7 +44,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '1d']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_MASTER_BLITZ, "Blitz 1d achievement should unlock");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_MASTER_BLITZ, "Blitz 1d achievement should unlock");
 	}
 
 	public function testAllRankAchievements()
@@ -69,7 +69,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 					'rank' => $rank]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
-			$this->assertAchievementUnlocked($context->user['id'], $achievementIds[$index], "Slow $rank achievement");
+			$this->assertAchievementUnlocked($achievementIds[$index], "Slow $rank achievement");
 
 			// Test Fast mode
 			$context = new ContextPreparator([
@@ -80,7 +80,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 					'rank' => $rank,
 					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
-			$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_APPRENTICE_FAST + $index, "Fast $rank achievement");
+			$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_FAST + $index, "Fast $rank achievement");
 
 			// Test Blitz mode
 			$context = new ContextPreparator([
@@ -90,7 +90,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 					'rank' => $rank]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
-			$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_APPRENTICE_BLITZ + $index, "Blitz $rank achievement");
+			$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_BLITZ + $index, "Blitz $rank achievement");
 		}
 	}
 
@@ -103,7 +103,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'status' => TimeModeUtil::$SESSION_STATUS_FAILED,
 				'rank' => '5k']]]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::TIME_MODE_APPRENTICE_SLOW);
+		$this->assertAchievementNotUnlocked( Achievement::TIME_MODE_APPRENTICE_SLOW);
 	}
 
 	/**
@@ -123,7 +123,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 		// Manually set points (ContextPreparator doesn't support 'points' field yet)
 		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 950], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_PRECISION_I, "Precision I: 950+ at 10k");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_PRECISION_I, "Precision I: 950+ at 10k");
 
 		// Test 89: 900 points at 8k or stronger
 		$context = new ContextPreparator([
@@ -134,7 +134,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'rank' => '8k']]]);
 		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 900], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_PRECISION_II, "Precision II: 900+ at 8k");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_PRECISION_II, "Precision II: 900+ at 8k");
 
 		// Test 90: 875 points at 6k or stronger
 		$context = new ContextPreparator([
@@ -145,7 +145,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'rank' => '6k']]]);
 		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 875], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_PRECISION_III, "Precision III: 875+ at 6k");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_PRECISION_III, "Precision III: 875+ at 6k");
 
 		// Test 91: 850 points at 4k or stronger
 		$context = new ContextPreparator([
@@ -156,6 +156,6 @@ class TimeModeAchievementTest extends AchievementTestCase
 				'rank' => '4k']]]);
 		ClassRegistry::init('TimeModeSession')->updateAll(['points' => 850], ['user_id' => $context->user['id']]);
 		new AchievementChecker()->checkTimeModeAchievements();
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::TIME_MODE_PRECISION_IV, "Precision IV: 850+ at 4k");
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_PRECISION_IV, "Precision IV: 850+ at 4k");
 	}
 }

@@ -21,38 +21,18 @@ App::uses('ContextPreparator', 'TestCase');
  */
 class LevelAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test that achievement 36 unlocks at level 10
-	 */
-	public function testAchievement36UnlocksAtLevel10()
+	// Test that Achievement::LEVEL_UP unlocks at level 10
+	public function testAchievement_LEVEL_UP_UnlocksAtLevel10()
 	{
-		// Arrange: Create user with level 10
-		$context = new ContextPreparator([
-			'user' => ['level' => 10],
-		]);
-
-		// Act: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert: Achievement 36 should be unlocked
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::LEVEL_UP);
-	}
-
-	/**
-	 * Test that achievement 36 does NOT unlock below level 10
-	 */
-	public function testAchievement36DoesNotUnlockBelowLevel10()
-	{
-		// Arrange: Create user with level 9
-		$context = new ContextPreparator([
-			'user' => ['level' => 9],
-		]);
-
-		// Act: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert: Achievement 36 should NOT be unlocked
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::LEVEL_UP);
+		foreach ([10, 9] as $level)
+		{
+			$context = new ContextPreparator(['user' => ['level' => $level]]);
+			$this->triggerAchievementCheck();
+			if ($level >= 10)
+				$this->assertAchievementUnlocked(Achievement::LEVEL_UP);
+			else
+				$this->assertAchievementNotUnlocked(Achievement::LEVEL_UP);
+		}
 	}
 
 	/**
@@ -81,7 +61,7 @@ class LevelAchievementTest extends AchievementTestCase
 			]);
 
 			// Act: Trigger achievement check
-			$this->triggerAchievementCheck($context->user['id']);
+			$this->triggerAchievementCheck();
 
 			// Assert: Achievement should be unlocked
 			$this->assertAchievementUnlocked(
@@ -92,21 +72,12 @@ class LevelAchievementTest extends AchievementTestCase
 		}
 	}
 
-	/**
-	 * Test premium achievement (ID 100)
-	 */
+	// Test premium Achievement::PREMIUM
 	public function testPremiumAchievementUnlocksForPremiumUser()
 	{
-		// Arrange: Create premium user
-		$context = new ContextPreparator([
-			'user' => ['premium' => 1, 'level' => 1],
-		]);
-
-		// Act: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
-
-		// Assert: Achievement 100 should be unlocked
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::PREMIUM, "Premium achievement should unlock for premium users");
+		$context = new ContextPreparator(['user' => ['premium' => 1, 'level' => 1]]);
+		$this->triggerAchievementCheck();
+		$this->assertAchievementUnlocked(Achievement::PREMIUM, "Premium achievement should unlock for premium users");
 	}
 
 	/**
@@ -120,9 +91,9 @@ class LevelAchievementTest extends AchievementTestCase
 		]);
 
 		// Act: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
+		$this->triggerAchievementCheck();
 
 		// Assert: Achievement 100 should NOT be unlocked
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::PREMIUM);
+		$this->assertAchievementNotUnlocked( Achievement::PREMIUM);
 	}
 }

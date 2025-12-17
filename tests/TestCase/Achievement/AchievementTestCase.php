@@ -1,55 +1,23 @@
 <?php
 
-/**
- * Base class for all achievement tests
- */
+// Base class for all achievement tests
 abstract class AchievementTestCase extends ControllerTestCase
 {
-	/**
-	 * Assert that an achievement is unlocked for a user
-	 *
-	 * @param int $userId User ID
-	 * @param int $achievementId Achievement ID
-	 * @param string|null $message Optional custom assertion message
-	 */
-	protected function assertAchievementUnlocked($userId, $achievementId, $message = null)
+	protected function assertAchievementUnlocked($achievementId, $message = null)
 	{
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
 		$exists = $AchievementStatus->find('count', [
-			'conditions' => [
-				'user_id' => $userId,
-				'achievement_id' => $achievementId
-			]
-		]);
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
 
-		$this->assertGreaterThan(
-			0,
-			$exists,
-			$message ?: "Achievement {$achievementId} should be unlocked for user {$userId}"
-		);
+		$this->assertGreaterThan(0, $exists, $message ?: "Achievement {$achievementId} should be unlocked");
 	}
 
-	/**
-	 * Assert that an achievement is NOT unlocked for a user
-	 *
-	 * @param int $userId User ID
-	 * @param int $achievementId Achievement ID
-	 */
-	protected function assertAchievementNotUnlocked($userId, $achievementId)
+	protected function assertAchievementNotUnlocked($achievementId)
 	{
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
 		$exists = $AchievementStatus->find('count', [
-			'conditions' => [
-				'user_id' => $userId,
-				'achievement_id' => $achievementId
-			]
-		]);
-
-		$this->assertEquals(
-			0,
-			$exists,
-			"Achievement {$achievementId} should NOT be unlocked for user {$userId}"
-		);
+			'conditions' => ['user_id' => Auth::getUserID(), 'achievement_id' => $achievementId]]);
+		$this->assertEquals(0, $exists, "Achievement {$achievementId} should NOT be unlocked");
 	}
 
 	/**
@@ -77,13 +45,13 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 *
 	 * @param int $userId User ID
 	 */
-	protected function triggerAchievementCheck($userId)
+	protected function triggerAchievementCheck()
 	{
 		// Set the cookie that triggers achievement checking
 		$_COOKIE['initialLoading'] = 'true';
 
 		// Login as this user (AppController requires it)
-		$_COOKIE['hackedLoggedInUserID'] = $userId;
+		$_COOKIE['hackedLoggedInUserID'] = Auth::getUserID();
 
 		// Make a simple request - achievements checked in AppController::beforeFilter
 		// beforeFilter will call Auth::init() which loads fresh user data from DB

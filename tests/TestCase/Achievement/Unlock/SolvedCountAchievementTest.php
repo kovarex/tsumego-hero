@@ -36,10 +36,10 @@ class SolvedCountAchievementTest extends AchievementTestCase
 		]);
 
 		// Exercise: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
+		$this->triggerAchievementCheck();
 
 		// Verify: Achievement 1 should be unlocked
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::PROBLEMS_1000);
+		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
 	}
 
 	/**
@@ -53,10 +53,10 @@ class SolvedCountAchievementTest extends AchievementTestCase
 		]);
 
 		// Exercise: Trigger achievement check
-		$this->triggerAchievementCheck($context->user['id']);
+		$this->triggerAchievementCheck();
 
 		// Verify: Achievement 1 should NOT be unlocked
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::PROBLEMS_1000);
+		$this->assertAchievementNotUnlocked( Achievement::PROBLEMS_1000);
 	}
 
 	/**
@@ -85,7 +85,7 @@ class SolvedCountAchievementTest extends AchievementTestCase
 			]);
 
 			// Exercise: Trigger achievement check
-			$this->triggerAchievementCheck($context->user['id']);
+			$this->triggerAchievementCheck();
 
 			// Verify: Achievement should be unlocked
 			$this->assertAchievementUnlocked(

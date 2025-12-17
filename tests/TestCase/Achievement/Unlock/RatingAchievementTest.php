@@ -23,11 +23,11 @@ class RatingAchievementTest extends AchievementTestCase
 		foreach ([0, -1] as $ratingDefitient)
 		{
 			$context = new ContextPreparator(['user' => ['rating' => (Rating::getRankMinimalRatingFromReadableRank('6k') - $ratingDefitient)]]);
-			$this->triggerAchievementCheck($context->user['id']);
+			$this->triggerAchievementCheck();
 			if ($ratingDefitient > 0)
-				$this->assertAchievementNotUnlocked($context->user['id'], Achievement::RATING_6_KYU);
+				$this->assertAchievementNotUnlocked( Achievement::RATING_6_KYU);
 			else
-				$this->assertAchievementUnlocked($context->user['id'], Achievement::RATING_6_KYU);
+				$this->assertAchievementUnlocked(Achievement::RATING_6_KYU);
 		}
 	}
 
@@ -50,8 +50,8 @@ class RatingAchievementTest extends AchievementTestCase
 		foreach ($achievementRatings as $achievementId => $requiredRating)
 		{
 			$context = new ContextPreparator(['user' => ['rating' => $requiredRating]]);
-			$this->triggerAchievementCheck($context->user['id']);
-			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at rating $requiredRating");
+			$this->triggerAchievementCheck();
+			$this->assertAchievementUnlocked($achievementId, "Achievement $achievementId should unlock at rating $requiredRating");
 		}
 	}
 }

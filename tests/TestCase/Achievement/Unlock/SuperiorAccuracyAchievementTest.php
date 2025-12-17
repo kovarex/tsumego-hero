@@ -76,6 +76,6 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 		$controller->checkSetAchievements($setId);
 
 		// Assert achievement NOT unlocked
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::SUPERIOR_ACCURACY);
+		$this->assertAchievementNotUnlocked( Achievement::SUPERIOR_ACCURACY);
 	}
 }

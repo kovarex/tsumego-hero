@@ -20,14 +20,14 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 	{
 		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT);
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
+		$this->assertAchievementUnlocked(Achievement::COMPLETE_SETS_I);
 	}
 
 	public function testAchievementCompleteSets1DoesNotUnlockBelow10Sets()
 	{
 		$context = new ContextPreparator();
 		$this->triggerSetCompletionAchievementCheck(Achievement::COMPLETE_SETS_I_SETS_COUNT - 1);
-		$this->assertAchievementNotUnlocked($context->user['id'], Achievement::COMPLETE_SETS_I);
+		$this->assertAchievementNotUnlocked( Achievement::COMPLETE_SETS_I);
 	}
 
 	public function testAllCollectionSetsAchievements()
@@ -45,7 +45,7 @@ class CollectionSetsAchievementTest extends AchievementTestCase
 		{
 			$context = new ContextPreparator();
 			$this->triggerSetCompletionAchievementCheck($requiredSets);
-			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Achievement $achievementId should unlock at $requiredSets completed sets");
+			$this->assertAchievementUnlocked($achievementId, "Achievement $achievementId should unlock at $requiredSets completed sets");
 		}
 	}
 }

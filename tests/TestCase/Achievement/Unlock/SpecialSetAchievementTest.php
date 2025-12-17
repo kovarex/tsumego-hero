@@ -62,7 +62,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$controller->setAchievementSpecial('cc1');
 
 		// Assert achievement 92 unlocked
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
+		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ELEMENTARY, 'Life & Death Elementary should unlock when all sets 50,52,53,54 are completed');
 	}
 
 	/**
@@ -78,7 +78,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$controller->constructClasses();
 		$controller->setAchievementSpecial('cc2');
 
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::LIFE_DEATH_INTERMEDIATE, 'Life & Death Intermediate should unlock');
+		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_INTERMEDIATE, 'Life & Death Intermediate should unlock');
 	}
 
 	/**
@@ -94,7 +94,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$controller->constructClasses();
 		$controller->setAchievementSpecial('cc3');
 
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::LIFE_DEATH_ADVANCED, 'Life & Death Advanced should unlock');
+		$this->assertAchievementUnlocked(Achievement::LIFE_DEATH_ADVANCED, 'Life & Death Advanced should unlock');
 	}
 
 	/**
@@ -110,7 +110,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$controller->constructClasses();
 		$controller->setAchievementSpecial('1000w1');
 
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::WEIQI_1000_FIRST_HALF, '1000 Weiqi 1st half should unlock');
+		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_FIRST_HALF, '1000 Weiqi 1st half should unlock');
 	}
 
 	/**
@@ -126,7 +126,7 @@ class SpecialSetAchievementTest extends AchievementTestCase
 		$controller->constructClasses();
 		$controller->setAchievementSpecial('1000w2');
 
-		$this->assertAchievementUnlocked($context->user['id'], Achievement::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
+		$this->assertAchievementUnlocked(Achievement::WEIQI_1000_SECOND_HALF, '1000 Weiqi 2nd half should unlock');
 	}
 
 	/**
