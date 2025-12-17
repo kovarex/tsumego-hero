@@ -67,8 +67,9 @@ class UtilTest extends CakeTestCase
 	public function testGetPercentButAvoid100UntilComplete()
 	{
 		$this->assertSame(0, Util::getPercentButAvoid100UntilComplete(0, 5));
-		$this->assertSame(1, Util::getPercentButAvoid100UntilComplete(4, 5));
-		$this->assertSame(1, Util::getPercentButAvoid100UntilComplete(100, 100));
+		$this->assertSame(80, Util::getPercentButAvoid100UntilComplete(4, 5));
+		$this->assertSame(99, Util::getPercentButAvoid100UntilComplete(999, 1000));
+		$this->assertSame(100, Util::getPercentButAvoid100UntilComplete(100, 100));
 		$this->assertSame(99, Util::getPercentButAvoid100UntilComplete(-100, -1));
 	}
 

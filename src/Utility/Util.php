@@ -76,7 +76,7 @@ class Util
 	public static function getPercentButAvoid100UntilComplete(int $value, int $max): int
 	{
 		assert($value <= $max);
-		$result = (int) round(Util::getRatio($value, $max));
+		$result = (int) round(Util::getRatio($value, $max)) * 100;
 		if ($result == 100 && $value < $max)
 			return 99;
 		return $result;

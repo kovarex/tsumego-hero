@@ -76,7 +76,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td>
 		<?php
-		echo '<font style="font-weight:800;color:#74d14c" >' . round(Util::getPercent($user['User']['solved'], $tsumegoNum), 1) . '%. completed</font><br>';
+		echo '<font style="font-weight:800;color:#74d14c" >' . round(Util::getPercent($user['User']['solved'], $tsumegoCount), 1) . '%. completed</font><br>';
 		if (Auth::getUserID() == $user['User']['id'])
 		{
 			if ($canResetTsumegoStatuses)
@@ -159,11 +159,11 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<table class="userTopTable1" id="final-info-table">
 			<tr>
 				<td>Overall solved:</td>
-				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoNum; ?></td>
+				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
 				<td>Overall %:</td>
-				<td><?php echo round(Util::getPercent($user['User']['solved'], $tsumegoNum), 1).'%'; ?></td>
+				<td><?php echo Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount) . '%'; ?></td>
 			</tr>
 			<tr>
 				<td>Achievements:</td>

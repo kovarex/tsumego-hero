@@ -50,7 +50,7 @@ class TsumegoButtons extends ArrayObject
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
-		$result = Util::query($queryBuilder->query);
+		$result = Util::query($queryBuilder->query->str());
 		$this->description = $queryBuilder->description;
 
 		foreach ($result as $index => $row)
