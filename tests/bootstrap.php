@@ -29,3 +29,4 @@ if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['arg
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 require_once ROOT . '/tests/TestCase/Controller/TestCaseWithAuth.php';
+require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';

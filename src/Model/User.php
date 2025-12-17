@@ -89,4 +89,17 @@ class User extends AppModel
 		}
 		return '<a href="/users/view/' . $id . '">' . $image . h($name) . ' ' . Rating::getReadableRankFromRating($rating) . '</a>';
 	}
+
+	public static function updateXP($userID, $achievementData): void
+	{
+		$xpBonus = 0;
+		foreach ($achievementData as $achievement)
+			$xpBonus += $achievement['xp'];
+		if ($xpBonus == 0)
+			return;
+		$user = ClassRegistry::init('User')->findById($userID);
+		$user['User']['xp'] += $xpBonus;
+		Level::checkLevelUp($user['User']);
+		ClassRegistry::init('User')->save($user);
+	}
 }

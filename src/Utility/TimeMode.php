@@ -93,19 +93,20 @@ class TimeMode
 
 	public static function getRatingBounds(?int $timeModeRankID): RatingBounds
 	{
-		$result = new RatingBounds();
+		$timeModeRankModel = ClassRegistry::init('TimeModeRank');
 
 		// I'm assuming, that the entries in the time_mode_rank tables have primary id ordered in the same order as the ranks, so the next entry
 		// is the higher rank, and the previous is the lower (checked in testTimeModeRankContentsIntegrity)
 		// This allows me to figure out what range should I cover by the current rank, which is
 		// <max_of_smaller_rank or 0 if it doesn't exit, max_of_current_rank if next rank exists or infinity]
 		// this should put every tsumego in some of the rank intervals regardless of the ranks configuration
-		if ($smallerRankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $timeModeRankID - 1]]))
+		$result = new RatingBounds();
+		if ($smallerRankRow = $timeModeRankModel->find('first', ['conditions' => ['id <' => $timeModeRankID], 'order' => 'id DESC']))
 			$result->min = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($smallerRankRow['TimeModeRank']['name']) + 1);
 
-		if (ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $timeModeRankID + 1]]))
+		if ($timeModeRankModel->find('first', ['conditions' => ['id >' => $timeModeRankID], 'order' => 'id ASC']))
 		{
-			$currentRankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['id' => $timeModeRankID]]);
+			$currentRankRow = $timeModeRankModel->find('first', ['conditions' => ['id' => $timeModeRankID]]);
 			$result->max = Rating::getRankMinimalRating(Rating::GetRankFromReadableRank($currentRankRow['TimeModeRank']['name']) + 1);
 		}
 

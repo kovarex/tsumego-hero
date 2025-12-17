@@ -157,10 +157,6 @@ ORDER BY MIN(rating);");
 				$category['best-solved-rank'] = $timeModeRankID;
 		}
 
-		$achievementUpdate = $this->checkTimeModeAchievements();
-		if (count($achievementUpdate) > 0)
-			$this->updateXP(Auth::getUserID(), $achievementUpdate);
-
 		$this->set('lastTimeModeCategoryID', $lastTimeModeCategoryID);
 		$this->set('timeModeCategories', ClassRegistry::init('TimeModeCategory')->find('all', ['order' => 'id']));
 		$this->set('timeModeRanks', $this->getRanksWithTsumegoCount());
@@ -169,7 +165,6 @@ ORDER BY MIN(rating);");
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id !=' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
 		$this->set('hasFinishedSesssion', $finishedSessionCount > 0);
-		$this->set('achievementUpdate', $achievementUpdate);
 		return null;
 	}
 

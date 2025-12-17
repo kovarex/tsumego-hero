@@ -366,30 +366,30 @@ echo $this->AssetCompress->script('app');
 	<br><br><br>
 	</div>
 <?php
-$achievementUpdate = $achievementUpdate ?? [];
-if(Auth::isLoggedIn() && !$_COOKIE['disable-achievements']) {
+if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievementUpdates))
+{
 	$xpBonus = 0;
-	$count = count($achievementUpdate);
-	for($i=0;$i<$count;$i++){
+	foreach ($achievementUpdates as $i => $achievementUpdate)
+	{
 		echo '
 			<label>
-		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox'.$i.'" autocomplete="off" />
-		    <div class="alertBox alertInfo '.$achievementUpdate[$i][3].'3" id="achievementAlerts'.$i.'">
+		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox' . $i . '" autocomplete="off" />
+		    <div class="alertBox alertInfo '.$achievementUpdate['color'].'3" id="achievementAlerts' . $i . '">
 			<div class="alertBanner" align="center">
 			Achievement Completed
 			<span class="alertClose">x</span>
-	</div>
-			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate[$i][2].'.png">
-			<b>'.$achievementUpdate[$i][0].' - '.$achievementUpdate[$i][1].'</b>&nbsp; ('.$achievementUpdate[$i][4].' XP)&nbsp; <a href="/achievements/view/'.$achievementUpdate[$i][5].'">view</a>
+			</div>
+			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate['image'].'.png">
+			<b>'.$achievementUpdate['name'].' - ' . $achievementUpdate['description'] . '</b>&nbsp; ('.$achievementUpdate['xp'].' XP)&nbsp; <a href="/achievements/view/'.$achievementUpdate['id'].'">view</a>
 			<br>
 			<br class="clear1"/></span>
-	</div>
+			</div>
 			</label>
 			';
-		$xpBonus += $achievementUpdate[$i][4];
-		}
+		$xpBonus += $achievementUpdate['xp'];
 	}
-	?>
+}
+?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS($timeMode); ?>
 	var lifetime = new Date();
