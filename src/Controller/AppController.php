@@ -872,18 +872,7 @@ class AppController extends Controller
 
 		$this->TimeModeSession->recursive = -1;
 
-		$rBlitz = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_BLITZ, 'user_id' => Auth::getUserID()]]);
-		if (!$rBlitz)
-			$rBlitz = [];
-		$rFast = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_FAST_SPEED, 'user_id' => Auth::getUserID()]]);
-		if (!$rFast)
-			$rFast = [];
-		$rSlow = $this->TimeModeSession->find('all', ['conditions' => ['time_mode_category_id' => TimeModeUtil::$CATEGORY_SLOW_SPEED, 'user_id' => Auth::getUserID()]]);
-		if (!$rSlow)
-			$rSlow = [];
-		$r = $this->TimeModeSession->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$r)
-			$r = [];
+		$r = $this->TimeModeSession->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 
 		$timeModeAchievements = [];
 		for ($i = 70; $i <= 91; $i++)
