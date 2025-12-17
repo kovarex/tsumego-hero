@@ -2,7 +2,6 @@
 
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
-App::uses('SgfUploadHelper', 'Utility');
 
 class SgfController extends AppController
 {
@@ -49,7 +48,7 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new AppException('No SGF data provided.');
 
-		SgfUploadHelper::saveSgf($sgfDataOrFile, $setConnection['SetConnection']['tsumego_id'], Auth::getUserID(), Auth::isAdmin());
+		ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $setConnection['SetConnection']['tsumego_id'], Auth::getUserID(), Auth::isAdmin());
 		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
 		return $this->redirect('/' . $setConnectionID);
 	}

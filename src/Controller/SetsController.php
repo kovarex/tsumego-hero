@@ -9,7 +9,6 @@ App::uses('SetsSelector', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
-App::uses('SgfUploadHelper', 'Utility');
 
 class SetsController extends AppController
 {
@@ -486,8 +485,7 @@ class SetsController extends AppController
 			$sgfDataOrFile = $this->data['Tsumego']['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
-				SgfUploadHelper::saveSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
-
+				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
 			ClassRegistry::init('Tsumego')->getDataSource()->commit();
 		}
 		catch (Exception $e)
