@@ -151,7 +151,6 @@ class SetsController extends AppController
 			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
 
 			$set = [];
-			$set['Set']['id'] = $ss[0]['Set']['id'] + 1;
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
 			$set['Set']['image'] = 'b1.png';
@@ -162,10 +161,7 @@ class SetsController extends AppController
 			$this->Set->create();
 			$this->Set->save($set);
 
-			$tMax = $this->Tsumego->find('first', ['order' => 'id DESC']);
-
 			$t = [];
-			$t['Tsumego']['id'] = $tMax['Tsumego']['id'] + 1;
 			$t['Tsumego']['difficulty'] = 4;
 			$t['Tsumego']['variance'] = 100;
 			$t['Tsumego']['description'] = 'b to kill';
@@ -174,15 +170,14 @@ class SetsController extends AppController
 			$this->Tsumego->save($t);
 
 			$sc = [];
-			$sc['SetConnection']['set_id'] = $ss[0]['Set']['id'] + 1;
-			$sc['SetConnection']['tsumego_id'] = $tMax['Tsumego']['id'] + 1;
+			$sc['SetConnection']['set_id'] = $this->Set->id;
+			$sc['SetConnection']['tsumego_id'] = $this->Tsumego->id;
 			$sc['SetConnection']['num'] = 1;
 			$this->SetConnection->create();
 			$this->SetConnection->save($sc);
 
 			mkdir($hashName, 0777);
 			copy('6473k339312/__new/1.sgf', $hashName . '/1.sgf');
-
 			$redirect = true;
 		}
 		$this->set('t', $t);
@@ -561,12 +556,10 @@ class SetsController extends AppController
 		}
 		if (isset($this->params['url']['add']))
 		{
-			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
 			$scTcount = $this->SetConnection->find('first', ['conditions' => ['set_id' => $id, 'num' => 1]]);
 			$setCount = $this->Tsumego->findById($scTcount['SetConnection']['tsumego_id']);
-			$setCount['Tsumego']['id'] = $overallCount['Tsumego']['id'] + 1;
-			$setCount['Tsumego']['set_id'] = $scTcount['SetConnection']['set_id'];
-			$setCount['Tsumego']['num'] += 1;
+			// Create new tsumego based on the found one
+			unset($setCount['Tsumego']['id']);
 			$setCount['Tsumego']['variance'] = 100;
 			if (Auth::getUserID() == 72)
 				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
@@ -578,6 +571,22 @@ class SetsController extends AppController
 				$setCount['Tsumego']['author'] = Auth::getUser()['name'];
 			$this->Tsumego->create();
 			$this->Tsumego->save($setCount);
+
+			// Create SetConnection for the new tsumego
+			// Find the maximum num for this set
+			$maxNumConnection = $this->SetConnection->find('first', [
+				'conditions' => ['set_id' => $id],
+				'order' => 'num DESC'
+			]);
+			$nextNum = isset($maxNumConnection['SetConnection']['num']) ? $maxNumConnection['SetConnection']['num'] + 1 : 1;
+
+			$this->SetConnection->create();
+			$this->SetConnection->save([
+				'set_id' => $id,
+				'tsumego_id' => $this->Tsumego->id,
+				'num' => $nextNum
+			]);
+
 			$set = $this->Set->findById($id);
 			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
 		}

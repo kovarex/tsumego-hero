@@ -243,8 +243,9 @@ class ContextPreparator
 		$sgf['sgf'] = Util::extract('data', $tsumegoSgf);
 		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
 		$sgf['user_id'] = Auth::getUserID();
-		ClassRegistry::init('Sgf')->save($sgf);
-		$tsumego['sgfs'][] = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC'])['Sgf'];
+		$sgfModel = ClassRegistry::init('Sgf');
+		$sgfModel->save($sgf);
+		$tsumego['sgfs'][] = $sgfModel->data['Sgf'];
 		$this->checkOptionsConsumed($tsumegoSgf);
 	}
 
@@ -295,11 +296,11 @@ class ContextPreparator
 		$issue['tsumego_id'] = $tsumego['id'];
 		$issue['user_id'] = $this->user['id'];
 		$issue['tsumego_issue_status_id'] = Util::extract('status', $issueInput) ?: TsumegoIssue::$OPENED_STATUS;
-		ClassRegistry::init('TsumegoIssue')->save($issue);
+		$issueModel = ClassRegistry::init('TsumegoIssue');
+		$issueModel->save($issue);
 
 		// Get the created issue ID
-		$createdIssue = ClassRegistry::init('TsumegoIssue')->find('first', ['order' => 'id DESC']);
-		$issueId = $createdIssue['TsumegoIssue']['id'];
+		$issueId = $issueModel->id;
 
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);
@@ -348,7 +349,6 @@ class ContextPreparator
 	{
 		if (!$setsInput)
 			return;
-
 		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		$this->tsumegoSets = [];
 		foreach ($setsInput as $tsumegoSet)
@@ -552,9 +552,10 @@ class ContextPreparator
 			if (!$rank)
 				throw new Exception('Rank ' . $timeModeSessionInput['rank'] . ' not found');
 			$timeModeSession['time_mode_rank_id'] = $rank['TimeModeRank']['id'];
-			ClassRegistry::init('TimeModeSession')->create($timeModeSession);
-			ClassRegistry::init('TimeModeSession')->save($timeModeSession);
-			$newSession = ClassRegistry::init('TimeModeSession')->find('first', ['order' => 'TimeModeSession.id DESC'])['TimeModeSession'];
+			$timeModeSessionModel = ClassRegistry::init('TimeModeSession');
+			$timeModeSessionModel->create($timeModeSession);
+			$timeModeSessionModel->save($timeModeSession);
+			$newSession = $timeModeSessionModel->data['TimeModeSession'];
 			$this->timeModeSessions [] = $newSession;
 			foreach ($timeModeSessionInput['attempts'] as $attemptInput)
 				$this->prepareTimeModeAttempts($attemptInput, $newSession['id']);
