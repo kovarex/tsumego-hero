@@ -47,12 +47,8 @@ class AccuracyAchievementTest extends AchievementTestCase
 		foreach ($testCases as [$achievementId, $difficulty, $accuracy, $rank])
 		{
 			// Clean only achievement records from previous iteration (preserve sets/user)
-			ClassRegistry::init('AchievementCondition')->deleteAll([
-				'user_id' => $context->user['id']
-			]);
-			ClassRegistry::init('AchievementStatus')->deleteAll([
-				'user_id' => $context->user['id']
-			]);
+			ClassRegistry::init('AchievementCondition')->deleteAll(['user_id' => $context->user['id']]);
+			ClassRegistry::init('AchievementStatus')->deleteAll(['user_id' => $context->user['id']]);
 
 			// Create set with 100 tsumegos + SetConnection records
 			$setId = $this->createSetWithTsumegosAndConnections($difficulty, 100);
@@ -61,25 +57,16 @@ class AccuracyAchievementTest extends AchievementTestCase
 			$AchievementCondition = ClassRegistry::init('AchievementCondition');
 			$AchievementCondition->create();
 			$AchievementCondition->save([
-				'AchievementCondition' => [
-					'user_id' => $context->user['id'],
-					'set_id' => $setId,
-					'category' => '%',
-					'value' => $accuracy
-				]
-			]);
+				'user_id' => $context->user['id'],
+				'set_id' => $setId,
+				'category' => '%',
+				'value' => $accuracy]);
 
 			// Trigger check
-			$controller = new AppController();
-			$controller->constructClasses();
-			$controller->checkSetAchievements($setId);
+			new achivementChecker()->checkSetAchievements($setId)->finalize();
 
 			// Assert achievement unlocked
-			$this->assertAchievementUnlocked(
-				$context->user['id'],
-				$achievementId,
-				"Accuracy $achievementId ($accuracy% at $rank) should unlock"
-			);
+			$this->assertAchievementUnlocked($context->user['id'], $achievementId, "Accuracy $achievementId ($accuracy% at $rank) should unlock");
 		}
 	}
 }
