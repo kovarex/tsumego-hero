@@ -101,6 +101,41 @@ class TsumegoFilters
 		$this->query = self::processItem('query', 'topics', null, $query);
 	}
 
+	public function filterRanks(Query $query): void
+	{
+		if (empty($this->ranks))
+			return;
+
+		$rankConditions = '';
+		foreach ($this->ranks as $rankFilter)
+		{
+			$rankCondition = '';
+			RatingBounds::coverRank($rankFilter, '15k')->addSqlConditions($rankCondition);
+			Util::addSqlOrCondition($rankConditions, $rankCondition);
+		}
+		$query->conditions[] = $rankConditions;
+	}
+
+	public function filterTags(Query $query): void
+	{
+		if (empty($this->tagIDs))
+			return;
+		if (!str_contains($query->query, 'JOIN tag_connection'))
+			$query->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
+		$query->conditions[] = 'tag_connection.tag_id IN (' . implode(',', $this->tagIDs) . ')';
+	}
+
+	public function filterSets(Query $query): void
+	{
+		if (empty($this->setIDs))
+			return;
+		if (!str_contains($query->query, 'JOIN set_connection'))
+			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
+		if (!str_contains($query->query, 'JOIN `set`'))
+			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
+		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
+	}
+
 	public string $query;
 	public int $collectionSize = 0;
 	public array $sets = [];
