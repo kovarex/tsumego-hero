@@ -13,7 +13,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testSingleNoErrorStreakAchievements()
 	{
 		// Arrange: Create user and set err=10 (just meets threshold for Achievement::NO_ERROR_STREAK_I)
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 10]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => Achievement::NO_ERROR_STREAK_I_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		$this->assertAchievementUnlocked($context->user['id'], Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
@@ -27,7 +27,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	public function testTwoHundredStreakUnlocksAll()
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => 200]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'err', 'value' => Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT]]]);
 		new AchievementChecker()->checkNoErrorAchievements();
 
 		// Assert: All 6 achievements should be unlocked
@@ -42,12 +42,12 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 	public function testAllNoErrorStreakAchievements()
 	{
 		$thresholds = [
-			Achievement::NO_ERROR_STREAK_I => 10,
-			Achievement::NO_ERROR_STREAK_II => 20,
-			Achievement::NO_ERROR_STREAK_III => 30,
-			Achievement::NO_ERROR_STREAK_IV => 50,
-			Achievement::NO_ERROR_STREAK_V => 100,
-			Achievement::NO_ERROR_STREAK_VI => 200,
+			Achievement::NO_ERROR_STREAK_I => Achievement::NO_ERROR_STREAK_I_STREAK_COUNT,
+			Achievement::NO_ERROR_STREAK_II => Achievement::NO_ERROR_STREAK_II_STREAK_COUNT,
+			Achievement::NO_ERROR_STREAK_III => Achievement::NO_ERROR_STREAK_III_STREAK_COUNT,
+			Achievement::NO_ERROR_STREAK_IV => Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT,
+			Achievement::NO_ERROR_STREAK_V => Achievement::NO_ERROR_STREAK_V_STREAK_COUNT,
+			Achievement::NO_ERROR_STREAK_VI => Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT,
 		];
 
 		foreach ($thresholds as $achievementId => $errValue)

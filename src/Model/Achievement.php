@@ -81,12 +81,18 @@ class Achievement extends AppModel
 	public const int COMPLETE_SETS_VI_SETS_COUNT = 60;
 
 	// No Error Streak Achievements
-	public const int NO_ERROR_STREAK_I = 53;   // 10 streak
-	public const int NO_ERROR_STREAK_II = 54;  // 20 streak
-	public const int NO_ERROR_STREAK_III = 55; // 30 streak
-	public const int NO_ERROR_STREAK_IV = 56;  // 50 streak
-	public const int NO_ERROR_STREAK_V = 57;   // 100 streak
-	public const int NO_ERROR_STREAK_VI = 58;  // 200 streak
+	public const int NO_ERROR_STREAK_I = 53;
+	public const int NO_ERROR_STREAK_I_STREAK_COUNT = 10;
+	public const int NO_ERROR_STREAK_II = 54;
+	public const int NO_ERROR_STREAK_II_STREAK_COUNT = 20;
+	public const int NO_ERROR_STREAK_III = 55;
+	public const int NO_ERROR_STREAK_III_STREAK_COUNT = 30;
+	public const int NO_ERROR_STREAK_IV = 56;
+	public const int NO_ERROR_STREAK_IV_STREAK_COUNT = 50;
+	public const int NO_ERROR_STREAK_V = 57;
+	public const int NO_ERROR_STREAK_V_STREAK_COUNT = 100;
+	public const int NO_ERROR_STREAK_VI = 58;
+	public const int NO_ERROR_STREAK_VI_STREAK_COUNT = 200;
 
 	// Rating Achievements
 	public const int RATING_6_KYU = 59;

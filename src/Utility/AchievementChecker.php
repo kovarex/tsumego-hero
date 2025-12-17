@@ -152,17 +152,17 @@ class AchievementChecker
 		$ac = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
-		if ($ac['AchievementCondition']['value'] >= 10)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_I_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_I);
-		if ($ac['AchievementCondition']['value'] >= 20)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_II_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_II);
-		if ($ac['AchievementCondition']['value'] >= 30)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_III_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_III);
-		if ($ac['AchievementCondition']['value'] >= 50)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_IV_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_IV);
-		if ($ac['AchievementCondition']['value'] >= 100)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_V_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_V);
-		if ($ac['AchievementCondition']['value'] >= 200)
+		if ($ac['AchievementCondition']['value'] >= Achievement::NO_ERROR_STREAK_VI_STREAK_COUNT)
 			$this->gained(Achievement::NO_ERROR_STREAK_VI);
 	}
 
