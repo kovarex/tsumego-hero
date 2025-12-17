@@ -178,7 +178,7 @@ class UsersControllerTest extends ControllerTestCase
 				'rating' => 2065,
 				'solved' => 1],
 			'other-tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
 				'attempt' => ['user_rating' => 2165]]],
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
@@ -217,7 +217,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
-			['Overall solved:', '1 of 1'],
+			['Overall solved:', '1 of 1'], // one problem in two sets still counted as one
 			['Overall %:', '100%']]);
 	}
 

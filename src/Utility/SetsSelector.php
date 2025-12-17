@@ -13,7 +13,7 @@ class SetsSelector
 			$this->selectByTopics();
 		elseif ($this->tsumegoFilters->query == 'difficulty')
 			$this->selectByDifficulty();
-		$this->calculateCount();
+		$this->problemsFound = $this->tsumegoFilters->calculateCount();
 	}
 
 	private function selectByTags()
@@ -330,26 +330,6 @@ ORDER BY order_value, total_count DESC, partition_number
 		array_push($newList, $tl);
 
 		return $newList;
-	}
-
-	private function addConditionsToCountQuery(Query $query)
-	{
-		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
-		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
-		$query->conditions[] = '`set`.public = 1';
-		if (!empty($this->tsumegoFilters->setIDs))
-			$query->conditions[] = '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
-		$this->tsumegoFilters->filterTags($query);
-		$this->tsumegoFilters->filterRanks($query);
-		$this->tsumegoFilters->filterSets($query);
-	}
-
-	private function calculateCount()
-	{
-		$countQuery = new Query('FROM tsumego');
-		$countQuery->selects[] = 'COUNT(DISTINCT tsumego.id) AS total';
-		$this->addConditionsToCountQuery($countQuery);
-		$this->problemsFound = Util::query($countQuery->str())[0]['total'];
 	}
 
 	public TsumegoFilters $tsumegoFilters;

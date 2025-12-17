@@ -1007,37 +1007,22 @@ LIMIT 100"));
 				}
 		}
 
-		$tsumegos = $this->SetConnection->find('all');
-		if (!$tsumegos)
-			$tsumegos = [];
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $id]]);
-		if (!$uts)
-			$uts = [];
-		$tsumegoDates = [];
+		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $id]]) ?: [];
 
 		$setKeys = [];
-		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]);
-		if (!$setArray)
-			$setArray = [];
+		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]) ?: [];
 		$setArrayCount = count($setArray);
 		for ($i = 0; $i < $setArrayCount; $i++)
 			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
 
-		$tsumegosCount = count($tsumegos);
-		for ($j = 0; $j < $tsumegosCount; $j++)
-			if (isset($setKeys[$tsumegos[$j]['SetConnection']['set_id']]))
-				array_push($tsumegoDates, $tsumegos[$j]);
-		$tsumegoNum = count($tsumegoDates);
 		$lastYear = date('Y-m-d', strtotime('-1 year'));
-
 		$tsumegoStatusToRestCount = 0;
 
-		$utsCount = count($uts);
-		for ($j = 0; $j < $utsCount; $j++)
+		foreach ($uts as $tsumegoStatus)
 		{
-			$date = new DateTime($uts[$j]['TsumegoStatus']['created']);
-			$uts[$j]['TsumegoStatus']['created'] = $date->format('Y-m-d');
-			if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
+			$date = new DateTime($tsumegoStatus['TsumegoStatus']['created']);
+			$tsumegoStatus['TsumegoStatus']['created'] = $date->format('Y-m-d');
+			if ($tsumegoStatus['TsumegoStatus']['created'] < $lastYear)
 				$tsumegoStatusToRestCount++;
 		}
 
@@ -1092,10 +1077,9 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
-
 		$deletedTsumegoStatusCount = 0;
-		$canResetOldTsumegoStatuses = $percentSolved >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
+		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
+		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 		if (isset($this->params['url']['delete-uts']))
 			if ($this->params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses)
 			{
@@ -1116,8 +1100,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 				$user['User']['solved'] = $correctCounter;
 				$user['User']['dbstorage'] = 99;
 				$this->User->save($user);
-
-				$percentSolved = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoNum);
 			}
 
 		$asCount = count($as);
@@ -1152,8 +1134,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
-		$this->set('tsumegoNum', $tsumegoNum);
-		$this->set('percentSolved', $percentSolved);
+		$this->set('tsumegoCount', $tsumegoCount);
 		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
 		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('as', $as);
