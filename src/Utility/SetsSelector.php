@@ -26,7 +26,7 @@ class SetsSelector
 		$innerQuery->groupBy[] = 'tag.id';
 		$innerQuery->query .= ' JOIN tag_connection ON tag_connection.tsumego_id = tsumego.id';
 		$innerQuery->query .= ' JOIN tag ON tag_connection.tag_id = tag.id';
-		$this->addConditionsToCountQuery($innerQuery);
+		$this->tsumegoFilters->addConditionsToQuery($innerQuery);
 
 		$query = "
 WITH tag_counts AS (" . $innerQuery->str() . "),
@@ -117,7 +117,7 @@ ORDER BY total_count DESC, partition_number";
 		$filteredTsumego = new Query('FROM tsumego');
 		$filteredTsumego->selects [] = 'DISTINCT tsumego.id';
 		$filteredTsumego->selects [] = 'tsumego.rating';
-		$this->addConditionsToCountQuery($filteredTsumego);
+		$this->tsumegoFilters->addConditionsToQuery($filteredTsumego);
 
 		$query = "
 WITH filtered_tsumego AS (" . $filteredTsumego->str() . "),
