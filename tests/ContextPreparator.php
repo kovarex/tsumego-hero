@@ -325,7 +325,7 @@ class ContextPreparator
 		$userID = $tsumegoStatus ?
 			(is_string($tsumegoStatus) ?
 				$this->user['id'] :
-				self::getUserIdFromName(Util::extract('user', $tsumegoStatus))) :
+				self::getUserIdFromName(Util::extract('user', $tsumegoStatus) ?: $this->user['name'])) :
 			null;
 
 		$statusCondition = [

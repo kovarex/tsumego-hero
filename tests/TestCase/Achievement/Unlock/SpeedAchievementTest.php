@@ -5,22 +5,13 @@ App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
 App::uses('ContextPreparator', 'Test');
 
-/**
- * Test all 12 Speed achievements (IDs 24-35)
+/* Test all 12 Speed achievements (IDs 24-35)
  *
  * Structure: 3 tiers (speed) × 4 difficulty ranges (11k, 5k, 10k, 1d)
  * Difficulty ranges: <1300, 1300-1499, 1500-1699, >=1700
- * Values are AVERAGE seconds per tsumego
- *
- * CRITICAL: Speed achievements require BOTH accuracy AND speed conditions!
- * checkSetAchievements() returns early if no accuracy condition exists.
- */
+ * Values are AVERAGE seconds per tsumego */
 class SpeedAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test all 12 Speed achievements in a loop
-	 * Creates both accuracy (dummy) and speed conditions for each test
-	 */
 	public function testAllSpeedAchievements()
 	{
 		$testCases = [
