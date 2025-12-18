@@ -5,26 +5,15 @@ App::uses('AppController', 'Controller');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
 App::uses('ContextPreparator', 'Test');
 
-/**
- * Test all 12 Speed achievements (IDs 24-35)
+/* Test all 12 Speed achievements (IDs 24-35)
  *
  * Structure: 3 tiers (speed) × 4 difficulty ranges (11k, 5k, 10k, 1d)
  * Difficulty ranges: <1300, 1300-1499, 1500-1699, >=1700
- * Values are AVERAGE seconds per tsumego
- *
- * CRITICAL: Speed achievements require BOTH accuracy AND speed conditions!
- * checkSetAchievements() returns early if no accuracy condition exists.
- */
+ * Values are AVERAGE seconds per tsumego */
 class SpeedAchievementTest extends AchievementTestCase
 {
-	/**
-	 * Test all 12 Speed achievements in a loop
-	 * Creates both accuracy (dummy) and speed conditions for each test
-	 */
 	public function testAllSpeedAchievements()
 	{
-		$context = new ContextPreparator([]);
-
 		$testCases = [
 			// Tier 1: fastest tier
 			[Achievement::SPEED_I, 1200, 14, '11k'], // Speed I - <15s
@@ -47,28 +36,22 @@ class SpeedAchievementTest extends AchievementTestCase
 
 		foreach ($testCases as [$achievementId, $difficulty, $speed, $rank])
 		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator();
 			// Create set with 100 tsumegos + SetConnection records
-			$setId = $this->createSetWithTsumegosAndConnections($difficulty, 100);
+			$setID = $this->createSetWithTsumegosAndConnections($difficulty, 100);
 
 			$AchievementCondition = ClassRegistry::init('AchievementCondition');
-
-			// CRITICAL: Create accuracy condition first (required to prevent early return)
-			$AchievementCondition->create();
-			$AchievementCondition->save([
-				'user_id' => $context->user['id'],
-				'set_id' => $setId,
-				'category' => '%',
-				'value' => 50]); // Dummy value, we're testing speed
 
 			// Create speed condition
 			$AchievementCondition->create();
 			$AchievementCondition->save([
 				'user_id' => $context->user['id'],
-				'set_id' => $setId,
+				'set_id' => $setID,
 				'category' => 's',
 				'value' => $speed]);
 
-			new AchievementChecker()->checkSetAchievements($setId);
+			$browser->get('/sets/view/' . $setID);
 			$this->assertAchievementUnlocked($achievementId, "Speed $achievementId (<{$speed}s at $rank) should unlock");
 		}
 	}

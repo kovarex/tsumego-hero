@@ -176,6 +176,7 @@ class ContextPreparator
 		$this->prepareTsumegoSets(Util::extract('sets', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoStatuses(Util::extract('statuses', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempts(Util::extract('attempts', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
@@ -309,14 +310,29 @@ class ContextPreparator
 		$this->checkOptionsConsumed($issueInput);
 	}
 
+	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
+	{
+		if (!$tsumegoStatuses)
+			return;
+		foreach ($tsumegoStatuses as $tsumegoStatus)
+			$this->prepareTsumegoStatus($tsumegoStatus, $tsumego);
+	}
+
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void
 	{
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $this->user['id'],
-				['tsumego_id' => $tsumego['id']]]];
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
 		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
+		$userID = $tsumegoStatus
+			? (is_string($tsumegoStatus)
+				? $this->user['id']
+				: (self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id']))
+			: null;
+
+		$statusCondition = [
+			'conditions' => [
+				'user_id' => $userID,
+				['tsumego_id' => $tsumego['id']]]];
+
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
 		if ($originalTsumegoStatus)
 			if (!$tsumegoStatus)
@@ -335,7 +351,7 @@ class ContextPreparator
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
-			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $this->user['id'];
+			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
@@ -433,6 +449,7 @@ class ContextPreparator
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+			$this->sets [] = $set['Set'];
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
@@ -845,6 +862,7 @@ class ContextPreparator
 	public ?array $user = null;
 	public array $otherUsers = [];
 	public ?array $set = null;
+	public array $sets = [];
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
 	public array $allTsumegos = [];

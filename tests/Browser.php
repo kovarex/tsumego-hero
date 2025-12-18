@@ -352,5 +352,26 @@ class Browser
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
 	}
 
+	public function getWithPostData($url, $postData)
+	{
+		$this->driver->executeScript("
+			var form = document.createElement('form');
+			form.method = 'POST';
+			form.action = '" . $url . "';
+
+			var data = " . json_encode($postData) . ";
+			for (var key in data)
+			{
+				var input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = key;
+				input.value = data[key];
+				form.appendChild(input);
+			}
+			document.body.appendChild(form);
+			form.submit();");
+		usleep(500 * 1000);
+	}
+
 	public $driver;
 }
