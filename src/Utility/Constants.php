@@ -8,6 +8,8 @@ class Constants
 	// Default tsumego ID for first-time visitors
 	public static int $DEFAULT_TSUMEGO_ID = 15352;
 
+	public static int $DEFAULT_SET_ORDER = 999;
+
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;

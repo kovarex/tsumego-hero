@@ -157,7 +157,7 @@ class SetsController extends AppController
 			$set['Set']['image'] = 'b1.png';
 			$set['Set']['difficulty'] = 4;
 			$set['Set']['author'] = 'various creators';
-			$set['Set']['order'] = 999;
+			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 
 			$this->Set->create();
 			$this->Set->save($set);
@@ -263,7 +263,7 @@ class SetsController extends AppController
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			'order' => ['Set.order'],
+			'order' => ['Set.order', 'Set.id'],
 			'conditions' => ['public' => 1],
 		]) ?: [];
 		foreach ($setsRaw as $set)
