@@ -1299,7 +1299,8 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testSetProgressDeletionOfPartitionedSet()
 	{
-		foreach ([1, 2] as $partition) {
+		foreach ([1, 2] as $partition)
+		{
 			$browser = Browser::instance();
 			$contextParameters = [];
 			for ($i = 0; $i < 400; $i++)
@@ -1319,5 +1320,20 @@ class SetsControllerTest extends TestCaseWithAuth
 			for ($i = 0; $i < 200; $i++)
 				$this->assertSame($context->otherTsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
 		}
+	}
+
+	public function testSetProgressDeletionNotOfferedWithNonStandardPartitionSize()
+	{
+		$browser = Browser::instance();
+		$contextParameters = [];
+		for ($i = 0; $i < 400; $i++)
+			$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
+		$contextParameters['user'] = ['collection_size' => 150];
+		$context = new ContextPreparator($contextParameters);
+
+		// we open partition of the set
+		$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1');
+		$this->assertEmpty($browser->getCssSelect("showx")); // no reset offered
+		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
 	}
 }
