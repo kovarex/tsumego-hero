@@ -151,7 +151,7 @@ class ContextPreparator
 		$set = [];
 		$set['title'] = Util::extract('title', $setInput) ?: 'Test Set';
 		$set['public'] = Util::extract('public', $setInput) ?? 0;
-		$set['order'] = Util::extract('order', $setInput) ?: 999;
+		$set['order'] = Util::extract('order', $setInput) ?: Constants::$DEFAULT_SET_ORDER;
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save($set);
 		$this->set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC'])['Set'];
@@ -426,6 +426,7 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['premium'] = $premium;
 			$set['board_theme_index'] = $boardThemeIndex;
+			$set['order'] = Constants::$DEFAULT_SET_ORDER;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
