@@ -147,9 +147,32 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/rating');
 		$browser->checkTable('.highscoreTable', $this, [
 			['Place', 'Name', 'Rank', 'Rating'],
-			['#1', 'Ivan Detkov 12d', '', '12d', '2887'],
-			['#2', 'player3d 3d', '', '3d', '2251'],
-			['#3', 'player2d 2d', '', '2d', '2249']]);
+			['#1', 'Ivan Detkov', '', '12d', '2887'],
+			['#2', 'player3d', '', '3d', '2251'],
+			['#3', 'player2d', '', '2d', '2249']]);
+	}
+
+	public function testAchievementsLadder()
+	{
+		new ContextPreparator([
+			'other-users' => [[
+				'name' => 'Ivan Detkov',
+				'rating' => 2887,
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]],
+				[
+					'name' => 'player3d',
+					'rating' => 2251,
+					'achievement-statuses' => [
+						['id' => Achievement::PROBLEMS_1000],
+						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 7]]]]]);
+		$browser = Browser::instance();
+		$browser->get('users/achievements');
+		$browser->checkTable('.highscoreTable', $this, [
+			['Place', 'Name', 'Completed'],
+			['#1', 'player3d 3d', '8/115'],
+			['#2', 'Ivan Detkov 12d', '6/115']]);
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()

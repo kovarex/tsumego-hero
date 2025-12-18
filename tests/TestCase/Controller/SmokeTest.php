@@ -71,8 +71,7 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'users/authors', 'name' => 'About/Authors'],
 			['url' => 'users/highscore', 'name' => 'Level highscore'],
 			['url' => 'users/rating', 'name' => 'Rating highscore'],
-			// NOTE: /users/achievements requires json/achievement_highscore.json which is generated externally
-			// ['url' => 'users/achievements', 'name' => 'Achievement highscore'],
+			['url' => 'users/achievements', 'name' => 'Achievement highscore'],
 			['url' => 'users/added_tags', 'name' => 'Tag highscore'],
 			['url' => 'users/leaderboard', 'name' => 'Daily leaderboard'],
 
