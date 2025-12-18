@@ -20,6 +20,7 @@ class TsumegoButtonsQueryBuilder
 		$this->tsumegoFilters = $tsumegoFilters;
 
 		$this->query->selects[] = 'tsumego.id as tsumego_id';
+		$this->query->selects[] = 'tsumego.rating as rating';
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
 		if (Auth::isLoggedIn())

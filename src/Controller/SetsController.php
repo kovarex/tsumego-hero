@@ -527,7 +527,6 @@ class SetsController extends AppController
 		$refreshView = false;
 		$avgTime = 0;
 		$accuracy = 0;
-		$setDifficulty = 1200;
 		$allVcActive = false;
 		$allVcInactive = false;
 		$allArActive = false;
@@ -770,17 +769,6 @@ class SetsController extends AppController
 					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id'])
 						$ts[$j]['Tsumego']['status'] = $allUts[$i]['TsumegoStatus']['status'];
 			}
-			$difficultyCount = Util::getRatio($difficultyCount, count($tsumegoButtons));
-			if ($difficultyCount <= 2)
-				$difficultyCount = 1;
-			elseif ($difficultyCount > 2 && $difficultyCount <= 3)
-				$difficultyCount = 2;
-			elseif ($difficultyCount > 3 && $difficultyCount <= 4)
-				$difficultyCount = 3;
-			elseif ($difficultyCount > 4 && $difficultyCount <= 6)
-				$difficultyCount = 4;
-			elseif ($difficultyCount > 6)
-				$difficultyCount = 5;
 			$percent = Util::getPercent($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
@@ -788,7 +776,6 @@ class SetsController extends AppController
 			$set['Set']['title2'] = null;
 			$set['Set']['author'] = Auth::getUser()['name'];
 			$set['Set']['description'] = '';
-			$set['Set']['difficulty'] = $difficultyCount;
 			$set['Set']['image'] = 'fav';
 			$set['Set']['order'] = 0;
 			$set['Set']['public'] = 1;
@@ -853,14 +840,10 @@ class SetsController extends AppController
 			}
 		}
 
-		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
-		{
-			$problemCount = Set::getProblemCount($id);
-			$this->set('problemsSolvedPercent', Util::getPercentButAvoid100UntilComplete(TsumegoStatus::getProblemsSolvedInSet($id), $problemCount));
-			$this->set('problemCount', $problemCount);
-		}
-		else
-			$this->set('problemsSolvedPercent', $tsumegoButtons->getProblemsSolvedPercent());
+		$problemSolvedPercent = $tsumegoButtons->getProblemsSolvedPercent();
+		$setRating = $tsumegoButtons->getProblemsRating();
+
+		$this->set('problemsSolvedPercent', $problemSolvedPercent);
 
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
@@ -915,13 +898,13 @@ class SetsController extends AppController
 			else
 				$accuracy = round($pSsum / ($pSsum + $pFsum) * 100, 2);
 			$avgTime2 = $avgTime;
-			if ($set['Set']['solved'] >= 100)
+			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
 				if ($set['Set']['id'] != 210)
 				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
-					$achievementChecker->checkSetAchievements($set['Set']['id']);
+					$achievementChecker->checkSetAchievements($set['Set']['id'], $setRating);
 				}
 				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
 					$achievementChecker->setAchievementSpecial('cc1');

@@ -91,11 +91,11 @@ abstract class AchievementTestCase extends ControllerTestCase
 	 * KEY DISCOVERY: TsumegoUtil::collectTsumegosFromSet() requires SetConnection records!
 	 * Without them, the method returns empty array and achievements don't unlock.
 	 *
-	 * @param int $difficulty Set difficulty rating
+	 * @param int $rating Set difficulty rating
 	 * @param int $count Number of tsumegos to create
 	 * @return int Created set ID
 	 */
-	protected function createSetWithTsumegosAndConnections($difficulty, $count)
+	protected function createSetWithTsumegosAndConnections($rating, $count)
 	{
 		$Set = ClassRegistry::init('Set');
 		$Tsumego = ClassRegistry::init('Tsumego');
@@ -104,24 +104,22 @@ abstract class AchievementTestCase extends ControllerTestCase
 		// Create Set (use auto-increment ID to avoid collisions)
 		$Set->create();
 		$Set->save([
-			'difficulty' => $difficulty,
-			'public' => 0,
-			'title' => "Test Set (difficulty $difficulty)"]);
+			'public' => 1,
+			'title' => "Test Set (rating $rating)"]);
 		$setId = $Set->getInsertID();
 
 		// Create Tsumegos + SetConnection records (BOTH required!)
 		for ($i = 0; $i < $count; $i++)
 		{
 			$Tsumego->create();
-			$Tsumego->save(['rating' => $difficulty]);
+			$Tsumego->save(['rating' => $rating]);
 			$tsumegoId = $Tsumego->getInsertID();
 
-			// CRITICAL: SetConnection required for collectTsumegosFromSet()
 			$SetConnection->create();
-			$SetConnection->save([
-				'set_id' => $setId,
-				'tsumego_id' => $tsumegoId,
-				'num' => $i + 1]);
+			$SetConnection->save(['set_id' => $setId, 'tsumego_id' => $tsumegoId, 'num' => $i + 1]);
+
+			ClassRegistry::init('TsumegoStatus')->create();
+			ClassRegistry::init('TsumegoStatus')->save(['tsumego_id' => $tsumegoId, 'status' => 'S', 'user_id' => Auth::getUserID()]);
 		}
 
 		return $setId;

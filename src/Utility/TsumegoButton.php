@@ -2,12 +2,13 @@
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, ?float $rating = 0)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
 		$this->order = $order;
 		$this->status = $status;
+		$this->rating = $rating;
 	}
 
 	public static function createFromSetConnection($setConnection): TsumegoButton
@@ -73,6 +74,7 @@ class TsumegoButton
 	public int $setConnectionID;
 	public int $order;
 	public ?string $status;
+	public ?float $rating;
 	public float $seconds = 0;
 	public string $performance;
 	public bool $isCurrentlyOpened = false;

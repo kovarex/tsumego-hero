@@ -60,7 +60,8 @@ class TsumegoButtons extends ArrayObject
 				$row['tsumego_id'],
 				$row['set_connection_id'],
 				$row['num'],
-				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N');
+				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
+				$row['rating']);
 		$this->updateHighestTsumegoOrder();
 	}
 
@@ -152,9 +153,19 @@ class TsumegoButtons extends ArrayObject
 	{
 		$solvedCount = 0;
 		foreach ($this as $tsumegoButton)
-			if ($tsumegoButton->solved)
+			if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 				$solvedCount++;
 		return Util::getPercentButAvoid100UntilComplete($solvedCount, count($this));
+	}
+
+	public function getProblemsRating(): float
+	{
+		if (count($this) == 0)
+			return 0;
+		$ratingSum = 0;
+		foreach ($this as $tsumegoButton)
+			$ratingSum += $tsumegoButton->rating;
+		return $ratingSum / count($this);
 	}
 
 	public int $partition = 0;
