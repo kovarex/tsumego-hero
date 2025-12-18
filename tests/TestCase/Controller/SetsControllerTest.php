@@ -1299,24 +1299,25 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testSetProgressDeletionOfPartitionedSet()
 	{
-		$browser = Browser::instance();
-		$contextParameters = [];
-		for ($i = 0; $i < 400; $i++)
-			$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
-		$context = new ContextPreparator($contextParameters);
+		foreach ([1, 2] as $partition) {
+			$browser = Browser::instance();
+			$contextParameters = [];
+			for ($i = 0; $i < 400; $i++)
+				$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
+			$context = new ContextPreparator($contextParameters);
 
-		// we open first partition of the set
-		$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1');
-		$browser->clickId("showx");
-		$browser->clickId("reset-textfield");
-		$browser->driver->getKeyboard()->sendKeys('reset');
-		$browser->clickId("reset-submit");
-		$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id']);
+			// we open partition of the set
+			$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/' . $partition);
+			$browser->clickId("showx");
+			$browser->clickId("reset-textfield");
+			$browser->driver->getKeyboard()->sendKeys('reset');
+			$browser->clickId("reset-submit");
+			$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id']);
 
-		// 200 statuses left
-		$this->assertSame(200, count($statuses));
-		// check that the latter 200 tsumego statuses were kept
-		for ($i = 0; $i < 200; $i++)
-			$this->assertSame($context->otherTsumegos[$i + 200]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
+			// 200 statuses left
+			$this->assertSame(200, count($statuses));
+			for ($i = 0; $i < 200; $i++)
+				$this->assertSame($context->otherTsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
+		}
 	}
 }
