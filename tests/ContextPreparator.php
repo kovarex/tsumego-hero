@@ -449,6 +449,7 @@ class ContextPreparator
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+			$this->sets [] = $set['Set'];
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
@@ -861,6 +862,7 @@ class ContextPreparator
 	public ?array $user = null;
 	public array $otherUsers = [];
 	public ?array $set = null;
+	public array $sets = [];
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
 	public array $allTsumegos = [];

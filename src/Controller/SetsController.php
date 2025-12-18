@@ -1220,6 +1220,11 @@ class SetsController extends AppController
 		$partition = $partition - 1;
 
 		$tsumegoFilters = new TsumegoFilters();
+		if ($tsumegoFilters->collectionSize != 200)
+		{
+			CookieFlash::set('Reset is only possible for collection size 200', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
 		$tsumegoFilters->query = 'topics';
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $setID);
 		$tsumegoIDToClear = [];

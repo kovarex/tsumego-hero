@@ -1335,5 +1335,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1');
 		$this->assertEmpty($browser->getCssSelect("showx")); // no reset offered
 		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
+
+		// we try to force it on the server anyway
+		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
 	}
 }
