@@ -5,7 +5,7 @@ App::uses('TsumegoButtonsQueryBuilder', 'Utility');
 
 class TsumegoButtons extends ArrayObject
 {
-	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null)
+	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, null|string|int $id = null)
 	{
 		if (!$tsumegoFilters)
 			return; // Temporary until also the favorites are covered
