@@ -1280,11 +1280,13 @@ class SetsControllerTest extends TestCaseWithAuth
 			{
 				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
 				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertSame(1, ClassRegistry::init('ProgressDeletion')->find('count'));
 			}
 			else
 			{
 				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
 				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertSame(0, ClassRegistry::init('ProgressDeletion')->find('count'));
 			}
 
 			// other set tsumego progress not touched
