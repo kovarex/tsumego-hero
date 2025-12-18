@@ -975,6 +975,7 @@ class SetsController extends AppController
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
+		$this->set('partition', $partition);
 	}
 
 	/**
@@ -1205,7 +1206,7 @@ class SetsController extends AppController
 		return $ranksArray;
 	}
 
-	public function resetProgress($setID): mixed
+	public function resetProgress(int $setID, int $partition): mixed
 	{
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets/view/' . $setID);
@@ -1215,6 +1216,15 @@ class SetsController extends AppController
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect('/sets/view/' . $setID);
 		}
+
+		$partition = $partition - 1;
+
+		$tsumegoFilters = new TsumegoFilters();
+		$tsumegoFilters->query = 'topics';
+		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $setID);
+		$tsumegoIDToClear = [];
+		foreach ($tsumegoButtons as $tsumegoButton)
+			$tsumegoIDToClear[]= $tsumegoButton->tsumegoID;
 
 		$problemsInSet = Util::query("
 SELECT
@@ -1226,10 +1236,7 @@ FROM tsumego
 
 		Util::query("
 DELETE tsumego_status FROM tsumego_status
-	JOIN set_connection ON
-		tsumego_status.tsumego_id = set_connection.tsumego_id AND
-		set_connection.set_id = ? AND
-		tsumego_status.user_id = ?", [$setID, Auth::getUserID()]);
+WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" .implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
 		$progresDeletion = [];
 		$progresDeletion['user_id'] = Auth::getUserID();
 		$progresDeletion['set_id'] = $setID;

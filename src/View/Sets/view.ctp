@@ -241,7 +241,7 @@
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
-				echo '<form action="/sets/resetProgress/' . $set['Set']['id'] . '" method="post">';
+				echo '<form action="/sets/resetProgress/' . $set['Set']['id'] . '/' . ($partition + 1) . '" method="post">';
 				echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
 				echo '<input type="submit" value="submit" id="reset-submit">';
 				echo '</form>';
