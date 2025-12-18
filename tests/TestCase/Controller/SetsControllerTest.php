@@ -572,7 +572,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
 
-		// the problem is in 2 sets, but it shouldn't matter in this view
+		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
 		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
 		$this->assertCount(1, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
