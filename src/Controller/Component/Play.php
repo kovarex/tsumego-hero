@@ -550,7 +550,7 @@ class Play
 			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set['Set']['id']) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
 											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">
-												(' . $set['Set']['title'] . ' ' .$order . '/' . $amountOfOtherCollection . ')
+												(' . $set['Set']['title'] . ' ' . $order . '/' . $amountOfOtherCollection . ')
 											</a>
 										</font>';
 		return '<a id="playTitleA" href="/sets/view/' . $set['Set']['id'] . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $set['Set']['title'] . ' ' . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $order . '/' . $tsumegoButtons->highestTsumegoOrder . '</a>';

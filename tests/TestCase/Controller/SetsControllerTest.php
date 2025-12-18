@@ -566,8 +566,8 @@ class SetsControllerTest extends TestCaseWithAuth
 				'query' => 'topics',
 				'filtered_ranks' => ['10k']],
 			'other-tsumegos' => [
-			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]],
-			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 
 		// we filtered to 10k, but we are opening the 5k problem
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
