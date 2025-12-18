@@ -557,6 +557,40 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'set 1 1/1');
 	}
 
+	public function testClickingOnSetViewSwitchesTsumegoFiltersToSetViewAndShowsCorrectTsumego(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set 1', 'num' => 2], ['name' => 'set 3', 'num' => 4]],
+				'rating' => Rating::getRankMiddleRatingFromReadableRank('10k')]]]);
+
+		$browser->get('sets');
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
+
+		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$this->assertCount(1, $collectionMiddleLeftDivs);
+		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
+
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/10k', $browser->driver->getCurrentURL());
+
+		// now we are viewing the 10k set insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, '10k 1/1');
+	}
+
 	public function testOpeningProblemOutsideCurrentFilters(): void
 	{
 		$browser = Browser::instance();
