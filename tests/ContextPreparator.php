@@ -322,11 +322,11 @@ class ContextPreparator
 	{
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
 		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
-		$userID = $tsumegoStatus ?
-			(is_string($tsumegoStatus) ?
-				$this->user['id'] :
-				(self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id'])) :
-			null;
+		$userID = $tsumegoStatus
+			? (is_string($tsumegoStatus)
+				? $this->user['id']
+				: (self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id']))
+			: null;
 
 		$statusCondition = [
 			'conditions' => [

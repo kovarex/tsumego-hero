@@ -843,7 +843,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		for ($i = 299; $i >= 20; $i--)
 			$contextParams['other-tsumegos'] [] = [
 				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]],
-				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];;
+				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];
+		;
 
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
@@ -1287,8 +1288,8 @@ class SetsControllerTest extends TestCaseWithAuth
 				'other-tsumegos' => [
 					[
 						'sets' => [['name' => 'Test Set', 'num' => 1]],
-						'statuses' =>
-						[
+						'statuses'
+						=> [
 							['name' => 'S', 'user' => 'testuser'], // tsumego from this test, progress should be deleted
 							['name' => 'S', 'user' => 'otheruser'] // tsumego from this test of other user, should be preserved
 						]

@@ -539,7 +539,6 @@ class SetsController extends AppController
 
 		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
 		if (Auth::isLoggedIn())
-		{
 			if (Auth::isAdmin())
 			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
@@ -551,7 +550,6 @@ class SetsController extends AppController
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
 				}
 			}
-		}
 		if (isset($this->params['url']['add']))
 		{
 			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
@@ -1229,7 +1227,7 @@ class SetsController extends AppController
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $setID);
 		$tsumegoIDToClear = [];
 		foreach ($tsumegoButtons as $tsumegoButton)
-			$tsumegoIDToClear[]= $tsumegoButton->tsumegoID;
+			$tsumegoIDToClear[] = $tsumegoButton->tsumegoID;
 
 		$problemsInSet = Util::query("
 SELECT
@@ -1241,7 +1239,7 @@ FROM tsumego
 
 		Util::query("
 DELETE tsumego_status FROM tsumego_status
-WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" .implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
+WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
 		$progresDeletion = [];
 		$progresDeletion['user_id'] = Auth::getUserID();
 		$progresDeletion['set_id'] = $setID;
