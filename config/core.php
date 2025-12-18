@@ -38,14 +38,9 @@
 Configure::write('debug', 0);
 Configure::write('Cache.disable', true);
 
-// Enable debug mode for DDEV development, but NOT for test subdomain
-if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site')) {
-	// test.tsumego.ddev.site should remain in production mode (debug=0)
-	// so AssetCompress serves static files instead of using controller routes
-	if (!str_starts_with($_SERVER['SERVER_NAME'], 'test.')) {
-		Configure::write('debug', 2);
-	}
-}
+// Enable debug mode for DDEV development (including test subdomain for JS error tracking in Selenium tests)
+if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], '.ddev.site'))
+	Configure::write('debug', 2);
 
 /**
  * Configure the Error handler used to handle errors for your application. By default
@@ -91,11 +86,11 @@ Configure::write('Error', [
  * @see ErrorHandler for more information on exception handling and configuration.
  */
 
-Configure::write('Exception', array(
-    'handler' => 'ErrorHandler::handleException',
-    'renderer' => 'AppErrorHandler',
-    'log' => false
-));
+Configure::write('Exception', [
+	'handler' => 'ErrorHandler::handleException',
+	'renderer' => 'AppErrorHandler',
+	'log' => false
+]);
 
 /**
  * Application wide charset encoding
@@ -382,9 +377,8 @@ $engine = 'File';
 
 // In development mode, caches should expire quickly.
 $duration = '+999 days';
-if (Configure::read('debug') > 0) {
+if (Configure::read('debug') > 0)
 	$duration = '+10 seconds';
-}
 
 // Prefix each application on the same server with a different string, to avoid Memcache and APC conflicts.
 $prefix = 'myapp_';
@@ -418,6 +412,5 @@ Cache::config('_cake_model_', [
  * Create Config/core.local.php to override settings for local development
  * Add this file to .gitignore to keep local settings out of version control
  */
-if (file_exists(__DIR__ . '/core.local.php')) {
+if (file_exists(__DIR__ . '/core.local.php'))
 	require __DIR__ . '/core.local.php';
-}

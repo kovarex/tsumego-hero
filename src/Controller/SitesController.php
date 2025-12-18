@@ -39,7 +39,7 @@ class SitesController extends AppController
 		if (!$dayRecord)
 			$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => date('Y-m-d', strtotime('yesterday'))]]);
 
-		$currentQuote = 'q13';
+		$currentQuote = 'q01';
 
 		$tsumegoFilters = new TsumegoFilters('published');
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
