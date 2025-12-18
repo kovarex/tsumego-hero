@@ -204,7 +204,7 @@
 				}
 				if ($tsumegoFilters->collectionSize != 200)
 					echo 'Reset is only possible when collection size is set to 200';
-				else if ($problemsSolvedPercent < 50)
+				else if ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
 				else
 					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
@@ -238,7 +238,7 @@
 			</td>
 			<td>
 			<?php
-			if ($problemsSolvedPercent >= 50)
+			if ($problemSolvedPercent >= 50)
 			{
 				echo '<div id="msg2x">';
 				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
