@@ -1287,6 +1287,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
 				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
 				$this->assertSame(0, ClassRegistry::init('ProgressDeletion')->find('count'));
+				$this->assertTextContains('Reset check wasn\'t correctly typed', $browser->driver->getPageSource());
 			}
 
 			// other set tsumego progress not touched

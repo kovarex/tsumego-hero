@@ -1228,7 +1228,10 @@ class SetsController extends AppController
 			return $this->redirect('/sets/view/' . $setID);
 
 		if ($this->params->data['reset-check'] != 'reset')
+		{
+			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect('/sets/view/' . $setID);
+		}
 
 		$problemsInSet = Util::query("
 SELECT
