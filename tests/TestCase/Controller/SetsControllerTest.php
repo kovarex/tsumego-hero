@@ -545,6 +545,22 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'Tsumego 1/1');
 	}
 
+	public function testOpeningProblemOutsideCurrentFilters(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => [
+				'mode' => Constants::$LEVEL_MODE,
+				'query' => 'topics',
+				'filtered_ranks' => ['10k']],
+			'other-tsumegos' => [
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]],
+			['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		// we filtered to 10k, but we are opening the 5k problem
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertEmpty($browser->getCssSelect('#currentNavigationButton')); // no tsumego button is marked as current
+	}
 
 	public function testSelectingTagFilters(): void
 	{

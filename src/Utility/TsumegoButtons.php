@@ -27,10 +27,12 @@ class TsumegoButtons extends ArrayObject
 					$this->fill($condition, $tsumegoFilters, $id);
 					$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
 				}
-
-			// mark the problem we are going to visit as the currently opened one
-			$this[$currentIndex]->isCurrentlyOpened = true;
-			$this->currentOrder = $this[$currentIndex]->order;
+			if (!is_null($currentIndex))
+			{
+				// mark the problem we are going to visit as the currently opened one
+				$this[$currentIndex]->isCurrentlyOpened = true;
+				$this->currentOrder = $this[$currentIndex]->order;
+			}
 			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
 		}
 		elseif (!is_null($partition))
