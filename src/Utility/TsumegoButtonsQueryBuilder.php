@@ -67,10 +67,17 @@ class TsumegoButtonsQueryBuilder
 			return;
 		if (empty($_COOKIE['lastSet']))
 			return;
-
-		$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
-		$ratingBounds->addQueryConditions($this->query);
-		$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		try
+		{
+			$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
+			$ratingBounds->addQueryConditions($this->query);
+			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		}
+		catch (RatingParseException $e)
+		{
+			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
+			$this->tsumegoFilters->query = 'topics';
+		}
 	}
 
 	private function queryTag()

@@ -545,6 +545,18 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'Tsumego 1/1');
 	}
 
+	public function testQueringSetsByRanksButWithWrongLastSetCookie(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		$browser->setCookie('lastSet', 'Hello world');
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'set 1 1/1');
+	}
+
 	public function testOpeningProblemOutsideCurrentFilters(): void
 	{
 		$browser = Browser::instance();
