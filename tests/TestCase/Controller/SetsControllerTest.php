@@ -821,6 +821,45 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
 	}
 
+	public function testPartitionedTopicBasedSetViewShowsSolvedPercentProperly(): void
+	{
+		$browser = Browser::instance();
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'topics']];
+		$contextParams['other-tsumegos'] = [];
+
+		// first 40 problems are 20 duplications
+		for ($i = 0; $i < 10; $i++)
+			$contextParams['other-tsumegos'] [] = [
+				'sets' => [
+					['name' => 'partitioned set', 'num' => $i * 2 + 1],
+					['name' => 'partitioned set', 'num' => $i * 2 + 2]],
+				'status' => 'S'];
+
+		// The reversed direction of filling is important here
+		// this means that the ids of tsumegos are not sequential in the set and the sql logic needs to make sure
+		// to sort primarily by set connection num
+		for ($i = 299; $i >= 20; $i--)
+			$contextParams['other-tsumegos'] [] = [
+				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]],
+				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];;
+
+		new ContextPreparator($contextParams);
+		$browser->get("sets");
+
+		$wait = new WebDriverWait($browser->driver, 5, 50); // (driver, timeout, polling interval)
+		$wait->until(function () use ($browser) {
+			return $browser->driver->findElement(WebDriverBy::cssSelector('#number0'))->getText() == '33%';
+		});
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(2, $collectionTopDivs);
+		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
+		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
+		$this->assertSame('Problems found: 290', $browser->find('#problems-found')->getText());
+	}
+
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
 	{
 		$contextParams = ['user' => [
