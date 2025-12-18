@@ -65,10 +65,12 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
-		$currentRank = $_COOKIE['lastSet'] ?? '15k';
-		$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
+		if (empty($_COOKIE['lastSet']))
+			return;
+
+		$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
 		$ratingBounds->addQueryConditions($this->query);
-		$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
 	}
 
 	private function queryTag()

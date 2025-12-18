@@ -534,6 +534,18 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 	}
 
+	public function testQueringSetsByRanksButVisitingFromTopic(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'Tsumego 1/1');
+	}
+
+
 	public function testSelectingTagFilters(): void
 	{
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
