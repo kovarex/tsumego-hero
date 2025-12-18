@@ -137,6 +137,7 @@ jobs:
           }
           EOF
           cp .github/ci/core.local.php config/core.local.php
+          cp .github/ci/asset_compress.local.ini src/Config/asset_compress.local.ini
 
       - name: Import database schema
         run: |

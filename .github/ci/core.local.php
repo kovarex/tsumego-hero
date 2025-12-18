@@ -4,8 +4,11 @@
  * Local configuration overrides for CI environment
  */
 
-// Enable debug mode (required for JavaScript error tracking in Selenium tests)
+// Disable debug mode for production-like environment
 Configure::write('debug', 2);
+
+// Disable cache
+Configure::write('Cache.disable', true);
 
 // Dummy cron secret for tests
 define('CRON_SECRET', 'ci-test-secret');
