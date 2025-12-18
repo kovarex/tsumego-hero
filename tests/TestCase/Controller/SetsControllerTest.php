@@ -1319,6 +1319,10 @@ class SetsControllerTest extends TestCaseWithAuth
 			$this->assertSame(200, count($statuses));
 			for ($i = 0; $i < 200; $i++)
 				$this->assertSame($context->otherTsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
+
+			$progresDeletion = ClassRegistry::init('ProgressDeletion')->find('all');
+			$this->assertSame(1, count($progresDeletion));
+			$this->assertSame($partition, $progresDeletion[0]['ProgressDeletion']['partition']);
 		}
 	}
 
