@@ -66,19 +66,6 @@ $highestRight = 17;
 				</div>
 			</div>
 		</div>
-		<div id="news-right-14">
-			<p class="title4">New Collection: Invasion Hero | 24.03.2025</p>
-			<div class="new1">
-			An invasion is a play made inside an enemy extension or framework with the intention of living, escaping, or sacrificing. By living or escaping, the invader denies the opponent of large territory and may create weak groups for the opponent. Invasions occur throughout the game. In the opening they are probably part of a joseki. In the middle game, they may be joseki, follow-ups or just as likely occur as one player exerts the power of influence built up in an earlier fight. In the endgame they can be considered as gouging tactics. This collection teaches the best ways to start and continue invasions in the early- and middle game.    <br><br>
-				<div align="center"><img width="90%" src="/img/invasion-hero-promo.png" alt="New Collection: Invasion Hero" title="New Collection: Invasion Hero"><br><br>
-				<?php if($hasPremium){ ?>
-					<a class="new-button main-page" style="font-size:14px;" href="/sets/view/253">Play</a><br><br>
-					<?php }else{ ?>
-						<a class="new-button-inactive main-page" style="font-size:14px;">Play</a><br><br>
-					<?php } ?>
-				</div>
-			</div>
-		</div>
 
 		<div id="news-right-13">
 			<p class="title4">New Collection: The L Group | 12.03.2025</p>
