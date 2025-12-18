@@ -46,10 +46,11 @@ class User extends AppModel
 		],
 	];
 
-	public static function renderPremium($user): void
+	public static function renderPremium($user): string
 	{
 		if ($user['premium'] == 2 || $user['premium'] == 1)
-			echo '<img alt="Account Type" title="Account Type" src="/img/premium' . $user['premium'] . '.png" height="16px">';
+			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $user['premium'] . '.png" height="16px">';
+		return '';
 	}
 
 	public static function getHeroPowersCount($user): int
@@ -79,7 +80,11 @@ class User extends AppModel
 	public static function renderLink($id, $name = null, $externalID = null, $picture = null, $rating = null)
 	{
 		if (is_array($id))
-			return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
+		{
+			if (isset($id['user_id']))
+				return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
+			return self::renderLink($id['id'], $id['name'], $id['external_id'], $id['picture'], $id['rating']);
+		}
 
 		$image = '';
 		if (str_starts_with($name, 'g__') && $externalID != null)

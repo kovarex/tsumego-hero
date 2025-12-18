@@ -22,48 +22,26 @@
 
 
 <table class="highscoreTable" border="0">
+	<caption><p class="title">Rating Highscore<br><br></p></caption>
 	<tr>
-		<div align="center">
-				<p class="title">
-					Rating Highscore
-				<br><br>
-				</p>
-		</div>
-	</tr>
-	<tr>
-		<!--<th width="55px"></th>-->
-		<th width="60px">Place</th>
-		<th width="220px" colspan="2" align="left">&nbsp;Name</th>
-		<th width="150px">Rank</th>
-		<th width="150px">Rating</th>
-		<th width="150px">Solved in rating mode</th>
+		<th style="width:60px">Place</th>
+		<th style="with:340px;text-align: left;" colspan="2">Name</th>
+		<th style="width:150px;">Rank</th>
+		<th style="width=150px;">Rating</th>
 	</tr>
 	<?php
 		foreach ($users as $index => $user)
 		{
 			$user = $user['User'];
-			if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'])
-				$user['name'] = '<img class="google-profile-image" src="/img/google/' . $user['picture'] . '">' . substr($user['name'], 3);
-			elseif (strlen($user['name']) > 20)
-				$user['name'] = substr($user['name'], 0, 20);
-
-			$uType = '';
-			if ($user['premium'] == 1)
-				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium1.png" height="16px">';
-			else if($user['premium'] == 2)
-				$uType = '<img alt="Account Type" title="Account Type" src="/img/premium2.png" height="16px">';
-
 			$rank = Rating::getRankFromRating($user['rating']);
 			$styleRank = Util::clampOptional($rank, Rating::getRankFromReadableRank('20k'), Rating::getRankFromReadableRank('9d'));
 			$tableRowColor = 'color' . Rating::getReadableRank($styleRank);
-
-			echo '<tr class="'.$tableRowColor.'">';
-			echo '<td align="center">#' . ($index + 1) . '</td>';
-			echo '<td width="225px" align="left">'.$user['name'].'</td>';
-			echo '<td width="90px">'.$uType.'</td>';
-			echo '<td align="center">' . Rating::getReadableRank($rank) . '</td>';
-			echo '<td align="center">'.round($user['rating']).'</td>';
-			echo '<td align="center">'.$user['solved2'].'</td>';
+			echo '<tr class="' . $tableRowColor . '">';
+			echo '<td style="text-align:center;">#' . ($index + 1) . '</td>';
+			echo '<td style="width:260px;align: left;">' . User::renderLink($user, false) . '</td>';
+			echo '<td style="width:90px;">' . User::renderPremium($user) . '</td>';
+			echo '<td style="text-align:center;">' . Rating::getReadableRank($rank) . '</td>';
+			echo '<td style="text-align:center;">' . round($user['rating']) . '</td>';
 			echo '</tr>';
 		}
 	?>

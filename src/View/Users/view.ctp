@@ -17,7 +17,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<table class="userTopTable1" id="name-and-email-table">
 		<tr>
 			<td><?php echo $user['User']['name']; ?></td>
-			<td><?php echo User::renderPremium($user['User']); ?></td>
+			<td><?php User::renderPremium($user['User']); ?></td>
 		</tr>
 		<?php
 		if (Auth::getUserID() == $user['User']['id'])

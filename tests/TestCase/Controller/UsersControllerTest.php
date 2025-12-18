@@ -138,7 +138,7 @@ class UsersControllerTest extends ControllerTestCase
 
 	public function testUsersRatingLadder()
 	{
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'other-users' => [
 				['name' => 'Ivan Detkov', 'rating' => 2887],
 				['name' => 'player3d', 'rating' => 2251],
@@ -146,13 +146,11 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/rating');
 		$tableRows = $browser->getCssSelect(".highscoreTable tr");
-		$this->assertCount(5, $tableRows);
-		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov');
-		$this->assertSame($tableRows[2]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '12d');
-		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player3d');
-		$this->assertSame($tableRows[3]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '3d');
-		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'player2d');
-		$this->assertSame($tableRows[4]->findElements(WebDriverBy::tagName("td"))[3]->getText(), '2d');
+		$browser->checkTable('.highscoreTable', $this, [
+			['Place', 'Name', 'Rank', 'Rating'],
+			['#1', 'Ivan Detkov 12d', '', '12d', '2887'],
+			['#2', 'player3d 3d', '', '3d', '2251'],
+			['#3', 'player2d 2d', '', '2d', '2249']]);
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()

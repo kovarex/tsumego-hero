@@ -332,7 +332,7 @@ class Browser
 		$tableRows = $table->findElements(WebDriverBy::tagName("tr"));
 		foreach ($data as $rowIndex => $row)
 		{
-			$tableCells = $tableRows[$rowIndex]->findElements(WebDriverBy::tagName("td"));
+			$tableCells = $tableRows[$rowIndex]->findElements(WebDriverBy::cssSelector("td, th"));
 			foreach ($row as $cellIndex => $cellValue)
 				$test->assertSame($cellValue, $tableCells[$cellIndex]->getText());
 		}
