@@ -218,49 +218,37 @@ ORDER BY order_value, total_count DESC, partition_number
 
 		foreach ($ranks as $rank)
 		{
-			$condition = "1=1";
-
-			RatingBounds::coverRank($rank['rank'], '15k')->addSqlConditions($condition);
-
+			$rankQuery = new Query('FROM tsumego');
+			RatingBounds::coverRank($rank['rank'], '15k')->addQueryConditions($rankQuery);
 			if (!Auth::hasPremium())
-				Util::addSqlCondition($condition, '`set`.premium = 0');
-
-			Util::addSqlCondition($condition, 'tsumego.deleted IS NULL');
-			Util::addSqlCondition($condition, '`set`.public = 1');
-
+				$rankQuery->conditions[] = '`set`.premium = 0';
+			$rankQuery->conditions[] = 'tsumego.deleted IS NULL';
+			$rankQuery->conditions[] = '`set`.public = 1';
 			if (!empty($this->tsumegoFilters->setIDs))
-				Util::addSqlCondition($condition, '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')');
+				$rankQuery->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 
 			if (!empty($this->tsumegoFilters->tagIDs))
-				Util::addSqlCondition(
-					$condition,
-					'EXISTS (
+				$rankQuery->conditions[]=
+				'EXISTS (
 						SELECT 1 FROM tag_connection tc
 						WHERE tc.tsumego_id = tsumego.id
 						AND tc.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')
-					)');
-
-			$rankSelects[] = "
-				SELECT DISTINCT
-					tsumego.id AS tsumego_id,
-					tsumego.rating,
-					'{$rank['rank']}' AS rank_label,
-					{$rankOrder} AS rank_order,
-					'{$rank['color']}' AS rank_color
-				FROM tsumego
-				JOIN set_connection sc ON sc.tsumego_id = tsumego.id
-				JOIN `set` ON `set`.id = sc.set_id
-				WHERE {$condition}";
-
+					)';
+			$rankQuery->selects[]= 'DISTINCT tsumego.id AS tsumego_id';
+			$rankQuery->selects[]= 'tsumego.rating';
+			$rankQuery->selects[]= "'{$rank['rank']}' AS rank_label";
+			$rankQuery->selects[]= "{$rankOrder} AS rank_order";
+			$rankQuery->selects[]= "'{$rank['color']}' AS rank_color";
+			$rankQuery->query .= " JOIN set_connection sc ON sc.tsumego_id = tsumego.id
+				JOIN `set` ON `set`.id = sc.set_id";
+			$rankSelects[] = $rankQuery->str();
 			$rankOrder++;
     	}
 
 		$rankUnion = implode("\nUNION ALL\n", $rankSelects);
 
 		$query = "
-	WITH ranked_tsumego AS (
-		{$rankUnion}
-	),
+	WITH ranked_tsumego AS ({$rankUnion}),
 
 	rank_counts AS (
     SELECT
