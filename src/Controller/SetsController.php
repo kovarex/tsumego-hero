@@ -1244,7 +1244,6 @@ DELETE tsumego_status FROM tsumego_status
 WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" .implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
 		$progresDeletion = [];
 		$progresDeletion['user_id'] = Auth::getUserID();
-		$progresDeletion['partition'] = $partition + 1;
 		$progresDeletion['set_id'] = $setID;
 		ClassRegistry::init('ProgressDeletion')->create();
 		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
