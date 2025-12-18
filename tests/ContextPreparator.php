@@ -555,10 +555,12 @@ class ContextPreparator
 			$timeModeSessionModel = ClassRegistry::init('TimeModeSession');
 			$timeModeSessionModel->create($timeModeSession);
 			$timeModeSessionModel->save($timeModeSession);
-			$newSession = $timeModeSessionModel->data['TimeModeSession'];
-			$this->timeModeSessions [] = $newSession;
+			$newSessionId = $timeModeSessionModel->id;
+			$savedSession = $timeModeSessionModel->data['TimeModeSession'];
+			$savedSession['id'] = $newSessionId; // Ensure ID is present
+			$this->timeModeSessions [] = $savedSession;
 			foreach ($timeModeSessionInput['attempts'] as $attemptInput)
-				$this->prepareTimeModeAttempts($attemptInput, $newSession['id']);
+				$this->prepareTimeModeAttempts($attemptInput, $newSessionId);
 		}
 	}
 
