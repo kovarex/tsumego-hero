@@ -422,10 +422,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           setMarkup(i, j, label);
           break;
       }
-    } else if (boardLockValue == 1) {
-      // Board locked but don't interfere with clicks
-      // (e.g., when problem is solved, still allow review)
     }
+	else if (boardLockValue == 1 && window.problemSolved)
+        window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
   }
 
   function transformTextColors(root, text) {
