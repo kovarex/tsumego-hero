@@ -143,13 +143,9 @@
 							<br>
 							Difficulty:
 							<?php
-							echo '<b>'.$set['Set']['difficultyRank'].'</b>';
-							if($tsumegoFilters->query != 'topics'){
-								?>
-								<br><br>
-								Solved:
-								<?php echo '<b>' . $set['Set']['solved'] . '%</b>';
-							}
+							echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
+							if ($tsumegoFilters->query != 'topics')
+								echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';
 							?>
 						</div>
 						</td>

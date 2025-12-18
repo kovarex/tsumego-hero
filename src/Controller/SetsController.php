@@ -842,6 +842,7 @@ class SetsController extends AppController
 
 		$problemSolvedPercent = $tsumegoButtons->getProblemsSolvedPercent();
 		$setRating = $tsumegoButtons->getProblemsRating();
+		$this->set('setRating', $setRating);
 
 		$this->set('problemsSolvedPercent', $problemSolvedPercent);
 
@@ -974,7 +975,6 @@ class SetsController extends AppController
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
-		$this->set('setDifficulty', $setDifficulty);
 	}
 
 	/**
@@ -1210,7 +1210,7 @@ class SetsController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets/view/' . $setID);
 
-		if ($this->params->data['reset-check'] != 'reset')
+		if ($this->data['reset-check'] != 'reset')
 		{
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
 			return $this->redirect('/sets/view/' . $setID);
