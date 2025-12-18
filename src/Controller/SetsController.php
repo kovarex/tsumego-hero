@@ -258,7 +258,7 @@ class SetsController extends AppController
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			'order' => ['Set.order', 'Set.id'],
+			'order' => ['Set.order'],
 			'conditions' => ['public' => 1],
 		]) ?: [];
 		foreach ($setsRaw as $set)

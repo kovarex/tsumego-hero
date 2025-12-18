@@ -430,7 +430,6 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['premium'] = $premium;
 			$set['board_theme_index'] = $boardThemeIndex;
-			$set['order'] = 999; // Match real application default
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
