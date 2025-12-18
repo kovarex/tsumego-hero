@@ -423,8 +423,12 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           break;
       }
     } else if (boardLockValue == 1) {
-      // Board locked but don't interfere with clicks
-      // (e.g., when problem is solved, still allow review)
+      // Board locked - check if we should navigate or allow interaction
+      if (window.problemSolved && !multipleChoiceEnabled) {
+        // Problem is solved, clicking navigates to next puzzle
+        window.location.href = nextButtonLink;
+      }
+      // Otherwise, board is locked but allow interaction (e.g., after fail, for review)
     }
   }
 
