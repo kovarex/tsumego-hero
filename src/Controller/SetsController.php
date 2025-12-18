@@ -554,43 +554,6 @@ class SetsController extends AppController
 				}
 			}
 		}
-		if (isset($this->params['url']['add']))
-		{
-			$scTcount = $this->SetConnection->find('first', ['conditions' => ['set_id' => $id, 'num' => 1]]);
-			$setCount = $this->Tsumego->findById($scTcount['SetConnection']['tsumego_id']);
-			// Create new tsumego based on the found one
-			unset($setCount['Tsumego']['id']);
-			$setCount['Tsumego']['variance'] = 100;
-			if (Auth::getUserID() == 72)
-				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
-			elseif (Auth::getUserID() == 1206)
-				$setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
-			elseif (Auth::getUserID() == 3745)
-				$setCount['Tsumego']['author'] = 'Dennis Olevanov';
-			else
-				$setCount['Tsumego']['author'] = Auth::getUser()['name'];
-			$this->Tsumego->create();
-			$this->Tsumego->save($setCount);
-
-			// Create SetConnection for the new tsumego
-			// Find the maximum num for this set
-			$maxNumConnection = $this->SetConnection->find('first', [
-				'conditions' => ['set_id' => $id],
-				'order' => 'num DESC'
-			]);
-			$nextNum = isset($maxNumConnection['SetConnection']['num']) ? $maxNumConnection['SetConnection']['num'] + 1 : 1;
-
-			$this->SetConnection->create();
-			$this->SetConnection->save([
-				'set_id' => $id,
-				'tsumego_id' => $this->Tsumego->id,
-				'num' => $nextNum
-			]);
-
-			$set = $this->Set->findById($id);
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
-		}
-
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
