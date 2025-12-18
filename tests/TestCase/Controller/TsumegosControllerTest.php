@@ -326,21 +326,17 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString($tsumegoUrl, $currentUrl, "Should stay on same problem");
 	}
 
-	/**
-	 * When user solves a problem, clicking the board should navigate to next problem.
-	 */
+	// When user solves a problem, clicking the board should navigate to next problem.
 	public function testClickingBoardAfterSuccessNavigatesToNextPuzzle()
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-				'sets' => [['name' => 'Test Set', 'num' => '1']],
-			],
-			'other-tsumegos' => [
-				['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa]C[+])', 'sets' => [['name' => 'Test Set', 'num' => '2']]],
-			],
-		]);
+				'sets' => [['name' => 'Test Set', 'num' => '1']]],
+			'other-tsumegos' => [[
+				'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])',
+				'sets' => [['name' => 'Test Set', 'num' => '2']]]]]);
 
 		$browser = Browser::instance();
 		$firstTsumegoUrl = $context->tsumego['set-connections'][0]['id'];

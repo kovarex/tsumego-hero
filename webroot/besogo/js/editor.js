@@ -422,14 +422,9 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
           setMarkup(i, j, label);
           break;
       }
-    } else if (boardLockValue == 1) {
-      // Board locked - check if we should navigate or allow interaction
-      if (window.problemSolved && !multipleChoiceEnabled) {
-        // Problem is solved, clicking navigates to next puzzle
-        window.location.href = nextButtonLink;
-      }
-      // Otherwise, board is locked but allow interaction (e.g., after fail, for review)
     }
+	else if (boardLockValue == 1 && window.problemSolved)
+        window.location.href = nextButtonLink; // Problem is solved, clicking navigates to next puzzle
   }
 
   function transformTextColors(root, text) {
