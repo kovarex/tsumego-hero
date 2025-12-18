@@ -141,8 +141,7 @@
 						<td style="vertical-align:bottom;" width="50%">
 						<div align="center">
 							<br>
-							Difficulty:
-							<?php
+							Difficulty: <?php
 							echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
 							if ($tsumegoFilters->query != 'topics')
 								echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';

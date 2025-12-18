@@ -844,7 +844,7 @@ class SetsController extends AppController
 		$setRating = $tsumegoButtons->getProblemsRating();
 		$this->set('setRating', $setRating);
 
-		$this->set('problemsSolvedPercent', $problemSolvedPercent);
+		$this->set('problemSolvedPercent', $problemSolvedPercent);
 
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')

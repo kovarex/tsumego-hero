@@ -933,6 +933,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkSetFinishedPercent($browser, 3, '1d', '75%');
 		$this->checkSetFinishedPercent($browser, 4, '5d', '100%');
 		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
+
+		$collectionTopDivs[1]->click();
+		$this->assertTextContains('Difficulty: <b>10k</b>', $browser->driver->getPageSource());
+		$this->assertTextContains('Solved: <b>25%</b>', $browser->driver->getPageSource());
 	}
 
 	public function testAddingToFavoritesAndViewingIt(): void
