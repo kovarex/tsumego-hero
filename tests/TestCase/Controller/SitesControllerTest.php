@@ -20,7 +20,7 @@ class SitesControllerTest extends ControllerTestCase
 				'user_id' => $context->user['id'],
 				'date' => date('Y-m-d'),
 				'solved' => 5,
-				'quote' => 'q13',
+				'quote' => 'q01',
 				'tsumego_count' => TsumegoUtil::currentTsumegoCount(),
 				'usercount' => 1,
 				'visitedproblems' => 1,
@@ -73,7 +73,7 @@ class SitesControllerTest extends ControllerTestCase
 				[
 					'date' => date('Y-m-d'), // Today
 					'solved' => 5,
-					'quote' => 'q13',
+					'quote' => 'q01',
 					'visitedproblems' => 10,
 				],
 			],
