@@ -960,24 +960,14 @@ LIMIT 100;"));
 				}
 		}
 
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $id]]) ?: [];
-
-		$setKeys = [];
-		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]) ?: [];
-		$setArrayCount = count($setArray);
-		for ($i = 0; $i < $setArrayCount; $i++)
-			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
-
-		$lastYear = date('Y-m-d', strtotime('-1 year'));
-		$tsumegoStatusToRestCount = 0;
-
-		foreach ($uts as $tsumegoStatus)
-		{
-			$date = new DateTime($tsumegoStatus['TsumegoStatus']['created']);
-			$tsumegoStatus['TsumegoStatus']['created'] = $date->format('Y-m-d');
-			if ($tsumegoStatus['TsumegoStatus']['created'] < $lastYear)
-				$tsumegoStatusToRestCount++;
-		}
+		$tsumegoStatusToRestCount = Util::query("
+SELECT
+	COUNT(*) AS total
+FROM tsumego_status
+WHERE
+	user_id = ? AND
+	tsumego_status.status IN ('S', 'C', 'W') AND
+	tsumego_status.updated <= NOW() - INTERVAL 1 YEAR;", [$id])[0]['total'];
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');

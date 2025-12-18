@@ -196,10 +196,18 @@ class UsersControllerTest extends ControllerTestCase
 				'level' => 66,
 				'xp' => 57,
 				'rating' => 2065,
-				'solved' => 1],
-			'other-tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
-				'attempt' => ['user_rating' => 2165]]],
+				'solved' => 3],
+			'other-tsumegos' => [
+				[
+					'status' => 'S',
+					'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
+					'attempt' => ['user_rating' => 2165]],
+				[
+					'status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'],  // old status
+					'sets' => [['name' => 'set-3', 'num' => 1], ['name' => 'set-4', 'num' => 1]]],
+				[
+					'status' => ['name' => 'V', 'updated' => '2000-01-01 00:00:00'],  // old status not solved
+					'sets' => [['name' => 'set-3', 'num' => 1], ['name' => 'set-4', 'num' => 1]]]],
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
 				[
@@ -237,8 +245,10 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
-			['Overall solved:', '1 of 1'], // one problem in two sets still counted as one
+			['Overall solved:', '3 of 3'], // one problem in two sets still counted as one
 			['Overall %:', '100%']]);
+
+		$this->assertSame('RESET (1)', $browser->find('#reset-statuses-button')->getText());
 	}
 
 	public function testTsumegoRatingGraph()

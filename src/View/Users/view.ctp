@@ -80,10 +80,10 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		if (Auth::getUserID() == $user['User']['id'])
 		{
 			if ($canResetTsumegoStatuses)
-				echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
+				echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
 			else
 			{
-				echo '<br><br><a class="new-button-inactive" href="#" >Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
+				echo '<br><br><a class="new-button-inactive" href="#" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
 				echo 'If you have completed at least '.Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED.'%, you can reset progress older than 1 year.<br>';
 			}
 		}
