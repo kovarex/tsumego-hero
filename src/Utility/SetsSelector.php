@@ -184,7 +184,7 @@ partitioned AS (
 
 SELECT *
 FROM partitioned
-ORDER BY order_value, total_count DESC, partition_number
+ORDER BY order_value, id, total_count DESC, partition_number
 ";
 		$rows = Util::query($query);
 		foreach ($rows as $row)
