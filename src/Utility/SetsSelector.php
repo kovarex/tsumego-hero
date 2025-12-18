@@ -205,13 +205,10 @@ ORDER BY order_value, total_count DESC, partition_number
 
 	private function selectByDifficulty()
 	{
-	    $ranks = SetsController::getExistingRanksArray();
+		$ranks = SetsController::getExistingRanksArray();
 
 		if (!empty($this->tsumegoFilters->ranks))
-		{
-			$ranks = array_values(array_filter($ranks, function ($r)
-			{ return in_array($r['rank'], $this->tsumegoFilters->ranks); }));
-		}
+			$ranks = array_values(array_filter($ranks, function ($r) { return in_array($r['rank'], $this->tsumegoFilters->ranks); }));
 
 		$rankSelects = [];
 		$rankOrder = 0;
@@ -225,25 +222,25 @@ ORDER BY order_value, total_count DESC, partition_number
 			$rankQuery->conditions[] = 'tsumego.deleted IS NULL';
 			$rankQuery->conditions[] = '`set`.public = 1';
 			if (!empty($this->tsumegoFilters->setIDs))
-				$rankQuery->conditions[]= '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
+				$rankQuery->conditions[] = '`set`.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 
 			if (!empty($this->tsumegoFilters->tagIDs))
-				$rankQuery->conditions[]=
-				'EXISTS (
+				$rankQuery->conditions[]
+				= 'EXISTS (
 						SELECT 1 FROM tag_connection tc
 						WHERE tc.tsumego_id = tsumego.id
 						AND tc.tag_id IN (' . implode(',', $this->tsumegoFilters->tagIDs) . ')
 					)';
-			$rankQuery->selects[]= 'DISTINCT tsumego.id AS tsumego_id';
-			$rankQuery->selects[]= 'tsumego.rating';
-			$rankQuery->selects[]= "'{$rank['rank']}' AS rank_label";
-			$rankQuery->selects[]= "{$rankOrder} AS rank_order";
-			$rankQuery->selects[]= "'{$rank['color']}' AS rank_color";
+			$rankQuery->selects[] = 'DISTINCT tsumego.id AS tsumego_id';
+			$rankQuery->selects[] = 'tsumego.rating';
+			$rankQuery->selects[] = "'{$rank['rank']}' AS rank_label";
+			$rankQuery->selects[] = "{$rankOrder} AS rank_order";
+			$rankQuery->selects[] = "'{$rank['color']}' AS rank_color";
 			$rankQuery->query .= " JOIN set_connection sc ON sc.tsumego_id = tsumego.id
 				JOIN `set` ON `set`.id = sc.set_id";
 			$rankSelects[] = $rankQuery->str();
 			$rankOrder++;
-    	}
+		}
 
 		$rankUnion = implode("\nUNION ALL\n", $rankSelects);
 
@@ -318,7 +315,7 @@ ORDER BY order_value, total_count DESC, partition_number
 				? 1
 				: 1 - ($row['partition_number'] * 0.15);
 
-			$set['color'] = str_replace('[o]', (string)$opacity, $row['color']);
+			$set['color'] = str_replace('[o]', (string) $opacity, $row['color']);
 			$set['solved_percent'] = round(Util::getPercent($row['solved_count'], $row['usage_count']));
 			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
 
