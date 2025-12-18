@@ -3,6 +3,14 @@
 // Base class for all achievement tests
 abstract class AchievementTestCase extends ControllerTestCase
 {
+	protected function assertAchievementUnlockedWhen($when, $achievementId, $message = null)
+	{
+		if ($when)
+			$this->assertAchievementUnlocked($achievementId, $message);
+		else
+			$this->assertAchievementNotUnlocked($achievementId);
+	}
+
 	protected function assertAchievementUnlocked($achievementId, $message = null)
 	{
 		$AchievementStatus = ClassRegistry::init('AchievementStatus');
