@@ -170,8 +170,8 @@ jobs:
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p /tmp/coverage
-          # Run all tests (excluding apache-only) with coverage in both formats
-          vendor/bin/phpunit --exclude-group apache-only --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
+          # Run all tests (excluding apache-only and disabled groups) with coverage in both formats
+          vendor/bin/phpunit --exclude-group apache-only,disabled --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
 
       - name: Merge coverage files
         run: php .github/ci/merge-coverage.php
