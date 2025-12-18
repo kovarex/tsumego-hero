@@ -1225,7 +1225,10 @@ class SetsController extends AppController
 	public function resetProgress($setID): mixed
 	{
 		if (!Auth::isLoggedIn())
-			return $this->redirect('sets/' . $setID);
+			return $this->redirect('/sets/view/' . $setID);
+
+		if ($this->params->data['reset-check'] != 'reset')
+			return $this->redirect('/sets/view/' . $setID);
 
 		$problemsInSet = Util::query("
 SELECT

@@ -1235,50 +1235,62 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testSetProgressDeletion()
 	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['name' => 'testuser'],
-			'other-users' => [['name' => 'otheruser']],
-			'other-tsumegos' => [
-				[
-					'sets' => [['name' => 'Test Set', 'num' => 1]],
-					'statuses' =>
+		foreach (['reset', 'hello'] as $resetInput)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['name' => 'testuser'],
+				'other-users' => [['name' => 'otheruser']],
+				'other-tsumegos' => [
 					[
-						['name' => 'S', 'user' => 'testuser'], // tsumego from this test, progress should be deleted
-						['name' => 'S', 'user' => 'otheruser'] // tsumego from this test of other user, should be preserved
-					]
-				],
-				[ // second tsumego from this test, progress should be deleted
-					'sets' => [['name' => 'Test Set', 'num' => 2]],
-					'status' => 'S'
-				],
-				[ // tsumego from a different set, progress shouldn't be delted
-					'sets' => [['name' => 'Test Set 2', 'num' => 2]],
-					'status' => 'S'
-				]]]);
-		$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id']);
-		$browser->clickId("showx");
-		$browser->clickId("reset-textfield");
-		$browser->driver->getKeyboard()->sendKeys('reset');
+						'sets' => [['name' => 'Test Set', 'num' => 1]],
+						'statuses' =>
+						[
+							['name' => 'S', 'user' => 'testuser'], // tsumego from this test, progress should be deleted
+							['name' => 'S', 'user' => 'otheruser'] // tsumego from this test of other user, should be preserved
+						]
+					],
+					[ // second tsumego from this test, progress should be deleted
+						'sets' => [['name' => 'Test Set', 'num' => 2]],
+						'status' => 'S'
+					],
+					[ // tsumego from a different set, progress shouldn't be delted
+						'sets' => [['name' => 'Test Set 2', 'num' => 2]],
+						'status' => 'S'
+					]]]);
+			$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id']);
+			$browser->clickId("showx");
+			$browser->clickId("reset-textfield");
+			$browser->driver->getKeyboard()->sendKeys($resetInput);
 
-		$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+			$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
 
-		$statusCurrentUserThisSet1 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
-		$statusCurrentUserThisSet2 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[1]['id']]];
-		$statusCurrentUserOtherSet = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[2]['id']]];
-		$statusOtherUserThisSet = ['conditions' => ['user_id' => $context->otherUsers[0]['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
+			$statusCurrentUserThisSet1 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
+			$statusCurrentUserThisSet2 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[1]['id']]];
+			$statusCurrentUserOtherSet = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[2]['id']]];
+			$statusOtherUserThisSet = ['conditions' => ['user_id' => $context->otherUsers[0]['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
 
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
-		$browser->clickId("reset-submit");
-		$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
-		$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
 
-		// other set tsumego progress not touched
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
-		// this set but other user tsumego status untouched
-		$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+			$browser->clickId("reset-submit");
+			if ($resetInput == "reset")
+			{
+				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+			}
+			else
+			{
+				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+			}
+
+			// other set tsumego progress not touched
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
+			// this set but other user tsumego status untouched
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+		}
 	}
 }
