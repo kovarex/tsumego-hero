@@ -29,4 +29,17 @@ class TsumegoStatus extends AppModel
 			default: throw new Exception("Unknown status: $status");
 		}
 	}
+
+	public static function getProblemsSolvedInSet($setID)
+	{
+		return Util::query("
+SELECT
+	COUNT(DISTINCT tsumego_status.id) AS total
+FROM
+	tsumego_status
+	JOIN set_connection ON tsumego_status.tsumego_id = set_connection.tsumego_id AND set_connection.set_id = ?
+WHERE
+	tsumego_status.user_id = ? AND
+	tsumego_status.status IN ('S', 'C', 'W')", [$setID, Auth::getUserID()])[0]["total"];
+	}
 }

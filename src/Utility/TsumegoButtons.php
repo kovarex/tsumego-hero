@@ -148,6 +148,15 @@ class TsumegoButtons extends ArrayObject
 		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
 	}
 
+	public function getProblemsSolvedPercent(): float
+	{
+		$solvedCount = 0;
+		foreach ($this as $tsumegoButton)
+			if ($tsumegoButton->solved)
+				$solvedCount++;
+		return Util::getPercentButAvoid100UntilComplete($solvedCount, count($this));
+	}
+
 	public int $partition = 0;
 	public bool $isPartitioned = false;
 	public int $highestTsumegoOrder = -1;

@@ -527,10 +527,7 @@ class SetsController extends AppController
 		$refreshView = false;
 		$avgTime = 0;
 		$accuracy = 0;
-		$achievementUpdate = [];
-		$tsumegoStatusMap = [];
 		$setDifficulty = 1200;
-		$currentIds = [];
 		$allVcActive = false;
 		$allVcInactive = false;
 		$allArActive = false;
@@ -544,9 +541,6 @@ class SetsController extends AppController
 		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
 		if (Auth::isLoggedIn())
 		{
-
-			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-
 			if (Auth::isAdmin())
 			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
@@ -596,10 +590,6 @@ class SetsController extends AppController
 			$set['Set']['public'] = 1;
 			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
 			$set['Set']['difficulty'] = $elo;
-
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 		}
 		elseif ($tsumegoFilters->query == 'tags')
 		{
@@ -610,24 +600,11 @@ class SetsController extends AppController
 			$tagName = $this->Tag->findByName($id);
 			if ($tagName && isset($tagName['Tag']['description']))
 				$set['Set']['description'] = $tagName['Tag']['description'];
-
-			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$currentIds[] = $tsumegoButton->tsumegoID;
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 		}
 		elseif ($tsumegoFilters->query == 'topics')
 		{
-			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$currentIds [] =  $tsumegoButton->tsumegoID;
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set = ClassRegistry::init('Set')->findById($id);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 			$allArActive = true;
 			$allArInactive = true;
@@ -875,47 +852,23 @@ class SetsController extends AppController
 				$tsumegoButton->performance = $urSum;
 			}
 		}
+
+		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
+		{
+			$problemCount = Set::getProblemCount($id);
+			$this->set('problemsSolvedPercent', Util::getPercentButAvoid100UntilComplete(TsumegoStatus::getProblemsSolvedInSet($id), $problemCount));
+			$this->set('problemCount', $problemCount);
+		}
+		else
+			$this->set('problemsSolvedPercent', $tsumegoButtons->getProblemsSolvedPercent());
+
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			if (isset($this->data['Comment']['reset']))
-				if ($this->data['Comment']['reset'] == 'reset')
-				{
-					$uts = $this->TsumegoStatus->find('all', [
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'tsumego_id' => $currentIds,
-						],
-					]);
-					if (!$uts)
-						$uts = [];
-					$ur = $this->TsumegoAttempt->find('all', [
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'tsumego_id' => $currentIds,
-						],
-					]);
-					if (!$ur)
-						$ur = [];
-					$urCount = count($ur);
-					for ($i = 0; $i < $urCount; $i++)
-						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
-					$utsCount = count($uts);
-					for ($i = 0; $i < $utsCount; $i++)
-						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
-					$pr = [];
-					$pr['ProgressDeletion']['user_id'] = Auth::getUserID();
-					$pr['ProgressDeletion']['set_id'] = $id;
-					$this->ProgressDeletion->create();
-					$this->ProgressDeletion->save($pr);
-					$refreshView = true;
-				}
 			$pd = $this->ProgressDeletion->find('all', [
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
-					'set_id' => $id,
-				],
-			]) ?: [];
+					'set_id' => $id]]) ?: [];
 			$pdCounter = 0;
 			$pdCount = count($pd);
 			for ($i = 0; $i < $pdCount; $i++)
@@ -929,10 +882,8 @@ class SetsController extends AppController
 			$urSecAvg = 0;
 			$pSsum = 0;
 			$pFsum = 0;
-			$tsCount = count($tsumegoButtons);
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
-				$tss = 0;
 				if ($tsumegoButton->seconds == 0)
 					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss = 60;
@@ -943,7 +894,6 @@ class SetsController extends AppController
 				$urSecAvg += $tss;
 				$urSecCounter++;
 
-				$tss2 = 'F';
 				if ($tsumegoButton->performance == '')
 					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss2 = 'F';
@@ -1272,4 +1222,30 @@ class SetsController extends AppController
 		return $ranksArray;
 	}
 
+	public function resetProgress($setID): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('sets/' . $setID);
+
+		$problemsInSet = Util::query("
+SELECT
+	COUNT(DISTINCT tsumego.id) AS total
+FROM tsumego
+	JOIN set_connection ON set_connection.tsumego_id = tsumego.id AND set_connection.set_id = ?", [$setID])[0]["total"];
+		if (TsumegoStatus::getProblemsSolvedInSet($setID) < $problemsInSet * 0.5)
+			return $this->redirect('sets/' . $setID);
+
+		Util::query("
+DELETE tsumego_status FROM tsumego_status
+	JOIN set_connection ON
+		tsumego_status.tsumego_id = set_connection.tsumego_id AND
+		set_connection.set_id = ? AND
+		tsumego_status.user_id = ?", [$setID, Auth::getUserID()]);
+		$progresDeletion = [];
+		$progresDeletion['user_id'] = Auth::getUserID();
+		$progresDeletion['set_id'] = $setID;
+		ClassRegistry::init('ProgressDeletion')->create();
+		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
+		return $this->redirect('/sets/view/' . $setID);
+	}
 }
