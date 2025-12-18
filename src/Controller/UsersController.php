@@ -919,11 +919,7 @@ LIMIT 100;"));
 		$this->set('dayRecord', $userYesterdayName);
 	}
 
-	/**
-	 * @param string|int|null $id
-	 * @return void
-	 */
-	public function view($id = null)
+	public function view($id = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
@@ -939,6 +935,8 @@ LIMIT 100;"));
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
+		if (!$user)
+			return $this->redirect('/sets');
 		$this->set('_title', 'Profile of ' . $user['User']['name']);
 
 		// user edit
@@ -968,6 +966,7 @@ WHERE
 	user_id = ? AND
 	tsumego_status.status IN ('S', 'C', 'W') AND
 	tsumego_status.updated <= NOW() - INTERVAL 1 YEAR;", [$id])[0]['total'];
+		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
@@ -1020,30 +1019,8 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$deletedTsumegoStatusCount = 0;
 		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
 		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
-		if (isset($this->params['url']['delete-uts']))
-			if ($this->params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses)
-			{
-				$utsCount = count($uts);
-				for ($j = 0; $j < $utsCount; $j++)
-					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
-					{
-						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
-						$deletedTsumegoStatusCount++;
-					}
-				$utx = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
-				$correctCounter = 0;
-				$utxCount = count($utx);
-				for ($j = 0; $j < $utxCount; $j++)
-					if ($utx[$j]['TsumegoStatus']['status'] == 'S' || $utx[$j]['TsumegoStatus']['status'] == 'W' || $utx[$j]['TsumegoStatus']['status'] == 'C')
-						$correctCounter++;
-
-				$user['User']['solved'] = $correctCounter;
-				$user['User']['dbstorage'] = 99;
-				$this->User->save($user);
-			}
 
 		$asCount = count($as);
 		for ($i = 0; $i < $asCount; $i++)
@@ -1069,12 +1046,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
 		$this->set('tsumegoCount', $tsumegoCount);
-		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
-		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
+		return null;
 	}
 
 	/**
@@ -1545,5 +1521,31 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		CookieFlash::set('Tag proposal rejected', 'success');
 		return $this->redirect('/users/adminstats');
+	}
+
+	public function deleteOldTsumegoStatuses($id): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/sets');
+
+		// extra check of id, to make sure random link from someone doesn't just delete the progress
+		if ($id != Auth::getUserID())
+			return $this->redirect('/sets');
+		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
+		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
+			return $this->redirect('/users/view/' . Auth::getUserID());
+
+		$deleted = Util::query("SELECT COUNT(*) AS total FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()])[0]['total'];
+		Util::query("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()]);
+		Util::query("UPDATE user
+LEFT JOIN (
+    SELECT user_id, COUNT(*) AS cnt
+    FROM tsumego_status
+    WHERE status IN ('S', 'W', 'C', 'X')
+    GROUP BY user_id
+) ts ON ts.user_id = user.id
+SET user.solved = COALESCE(ts.cnt, 0)");
+		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
+		return $this->redirect('/users/view/' . Auth::getUserID());
 	}
 }

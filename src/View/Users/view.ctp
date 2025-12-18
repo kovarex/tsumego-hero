@@ -79,7 +79,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		echo '<font style="font-weight:800;color:#74d14c" >' . round(Util::getPercent($user['User']['solved'], $tsumegoCount), 1) . '%. completed</font><br>';
 		if (Auth::getUserID() == $user['User']['id'])
 		{
-			if ($canResetTsumegoStatuses)
+			if ($canResetOldTsumegoStatuses)
 				echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
 			else
 			{
@@ -325,10 +325,10 @@ function activateSelection(selection, side)
 }
 
 function delUts(){
-	var dNum = "<?php echo $dNum; ?>";
-	var suid = "<?php echo Auth::getUserID(); ?>";
+	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
 	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
-	if(confirmed) window.location.href = "/users/view/"+suid+"?delete-uts=true";
+	if (confirmed)
+		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
 }
 </script>
 <script>

@@ -196,7 +196,7 @@ class UsersControllerTest extends ControllerTestCase
 				'level' => 66,
 				'xp' => 57,
 				'rating' => 2065,
-				'solved' => 3],
+				'solved' => 2],
 			'other-tsumegos' => [
 				[
 					'status' => 'S',
@@ -204,9 +204,6 @@ class UsersControllerTest extends ControllerTestCase
 					'attempt' => ['user_rating' => 2165]],
 				[
 					'status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'],  // old status
-					'sets' => [['name' => 'set-3', 'num' => 1], ['name' => 'set-4', 'num' => 1]]],
-				[
-					'status' => ['name' => 'V', 'updated' => '2000-01-01 00:00:00'],  // old status not solved
 					'sets' => [['name' => 'set-3', 'num' => 1], ['name' => 'set-4', 'num' => 1]]]],
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
@@ -245,10 +242,20 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
-			['Overall solved:', '3 of 3'], // one problem in two sets still counted as one
+			['Overall solved:', '2 of 2'], // one problem in two sets still counted as one
 			['Overall %:', '100%']]);
 
 		$this->assertSame('RESET (1)', $browser->find('#reset-statuses-button')->getText());
+
+		// clicking reset removes the status
+		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertSame($context->reloadUser()['solved'], 2);
+
+		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
+		$browser->clickId('reset-statuses-button');
+
+		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
 	public function testTsumegoRatingGraph()
