@@ -169,7 +169,7 @@
 					<?php
 					if ($set['Set']['solved'] > 100)
 						$set['Set']['solved'] = 100;
-					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemsSolvedPercent . '%</b></div></td><td></td></tr></table>
+					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
 					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: '.$accuracy.'%</b></div></td><td>';
 					if($acA!=null) echo '<font class="setViewAccuracy">Best completion: '.$acA['AchievementCondition']['value'].'%</font>';
 					echo '</td></tr></table>
