@@ -85,6 +85,17 @@ class User extends AppModel
 				return self::renderLink($id['user_id'], $id['user_name'], $id['user_external_id'], $id['user_picture'], $id['user_rating']);
 			return self::renderLink($id['id'], $id['name'], $id['external_id'], $id['picture'], $id['rating']);
 		}
+		return User::renderLinkWithOptionalRank($id, Rating::getReadableRankFromRating($rating), $name, $externalID, $picture);
+	}
+
+	public static function renderLinkWithOptionalRank($id, $rank = '', $name = null, $externalID = null, $picture = null)
+	{
+		if (is_array($id))
+		{
+			if (isset($id['user_id']))
+				return self::renderLinkWithOptionalRank($id['user_id'], $rank, $id['user_name'], $id['user_external_id'], $id['user_picture']);
+			return self::renderLinkWithOptionalRank($id['id'], $rank, $id['name'], $id['external_id'], $id['picture']);
+		}
 
 		$image = '';
 		if (str_starts_with($name, 'g__') && $externalID != null)
@@ -92,7 +103,7 @@ class User extends AppModel
 			$image = '<img class="google-profile-image" src="/img/google/' . $picture . '">';
 			$name = substr($name, 3);
 		}
-		return '<a href="/users/view/' . $id . '">' . $image . h($name) . ' ' . Rating::getReadableRankFromRating($rating) . '</a>';
+		return '<a href="/users/view/' . $id . '">' . $image . h($name) . (empty($rank) ? '' : ' ' . $rank) . '</a>';
 	}
 
 	public static function updateXP($userID, $achievementData): void

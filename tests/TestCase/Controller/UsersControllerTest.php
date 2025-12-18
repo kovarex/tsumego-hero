@@ -145,7 +145,6 @@ class UsersControllerTest extends ControllerTestCase
 				['name' => 'player2d', 'rating' => 2249]]]);
 		$browser = Browser::instance();
 		$browser->get('users/rating');
-		$tableRows = $browser->getCssSelect(".highscoreTable tr");
 		$browser->checkTable('.highscoreTable', $this, [
 			['Place', 'Name', 'Rank', 'Rating'],
 			['#1', 'Ivan Detkov 12d', '', '12d', '2887'],
