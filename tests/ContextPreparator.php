@@ -245,7 +245,9 @@ class ContextPreparator
 		$sgf['user_id'] = Auth::getUserID();
 		$sgfModel = ClassRegistry::init('Sgf');
 		$sgfModel->save($sgf);
-		$tsumego['sgfs'][] = $sgfModel->data['Sgf'];
+		$savedSgf = $sgfModel->data['Sgf'];
+		$savedSgf['id'] = $sgfModel->id;
+		$tsumego['sgfs'][] = $savedSgf;
 		$this->checkOptionsConsumed($tsumegoSgf);
 	}
 
