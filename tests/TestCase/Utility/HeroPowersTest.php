@@ -155,7 +155,7 @@ class HeroPowersTest extends TestCaseWithAuth
 				Auth::getUser()['level'] = 1;
 				Auth::saveUser();
 			}
-			else if ($testCase == 'used-up')
+			elseif ($testCase == 'used-up')
 				Auth::getUser()['used_revelation'] = 10;
 
 			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
@@ -163,7 +163,7 @@ class HeroPowersTest extends TestCaseWithAuth
 			$message =  $browser->driver->executeScript("return window.alertMessage;");
 			if ($testCase == 'not-available')
 				$this->assertSame($message, 'Revelation is not available to this account.');
-			else if ($testCase == 'user-up')
+			elseif ($testCase == 'user-up')
 				$this->assertSame($message, 'Revelation is used up today.');
 			if ($testCase == 'normal')
 			{
@@ -172,7 +172,7 @@ class HeroPowersTest extends TestCaseWithAuth
 				});
 				$this->checkPowerIsInactive($browser, 'revelation');
 			}
-			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 :  1);
+			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 : 1);
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 			$this->checkPowerIsInactive($browser, 'revelation');
