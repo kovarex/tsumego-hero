@@ -11,15 +11,17 @@ App::uses('Achievement', 'Model');
  */
 class TimeModeAchievementTest extends AchievementTestCase
 {
+	// this one also tests the end to end, so the achievementCheck is actually called on the timeMode/result page
 	public function testSlowTimeModeAchievements()
 	{
-		$context = new ContextPreparator([
+		$browser = new Browser();
+		new ContextPreparator([
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '5k']]]);
-		new AchievementChecker()->checkTimeModeAchievements();
+		$browser->get('timeMode/result');
 		$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
 	}
 

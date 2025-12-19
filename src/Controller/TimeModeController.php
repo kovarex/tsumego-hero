@@ -255,6 +255,8 @@ ORDER BY MIN(rating);");
 		if (!Auth::isLoggedIn())
 			return $this->redirect("/users/login");
 
+		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);
+
 		$timeMode = new TimeMode();
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
 
