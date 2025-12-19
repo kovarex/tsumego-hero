@@ -207,13 +207,12 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		foreach ([false, true] as $isGuest)
 		{
+			$browser = Browser::instance();
 			$contextConfig = [
 				'user' => $isGuest ? ['name' => 'testuser'] : ['mode' => Constants::$LEVEL_MODE],
 				'tsumego' => [
 					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-					'sets' => [['name' => 'test set', 'num' => '1']]
-				],
-			];
+					'sets' => [['name' => 'test set', 'num' => '1']]]];
 
 			$context = new ContextPreparator($contextConfig);
 
@@ -222,8 +221,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				$this->logout();
 				$this->assertFalse(Auth::isLoggedIn(), 'Should not be logged in for guest test');
 			}
-
-			$browser = Browser::instance();
 			$browser->get($context->tsumego['set-connections'][0]['id']);
 			$browser->clickBoard(1, 1);
 			usleep(500 * 1000);
