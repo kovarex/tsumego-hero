@@ -138,30 +138,68 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testUseRevelation()
 	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
-		HeroPowers::changeUserSoRevelationCanBeUsed();
-		$context->xpgained(); // to reload the current xp to be able to tell the gained later
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
-		$this->checkPowerIsActive($browser, 'revelation');
-		$browser->clickId('revelation');
-		$browser->driver->wait(10, 50)->until(function () use ($browser) { return $browser->driver->executeScript("return window.revelationUseCount;") == 0; });
-		$this->checkPowerIsInactive($browser, 'revelation');
-		$this->assertSame($context->reloadUser()['used_revelation'], 1);
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame($context->reloadUser()['used_revelation'], 1);
+		foreach (['logged-off', 'not-available', 'used-up', 'normal'] as $testCase)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
+				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			HeroPowers::changeUserSoRevelationCanBeUsed();
+			$context->xpgained(); // to reload the current xp to be able to tell the gained later
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
+			$this->checkPowerIsActive($browser, 'revelation');
 
-		// status was change to 'S' (solved)
-		$tsumegoStatuses = ClassRegistry::init('TsumegoStatus')->find('all');
-		$this->assertSame(1, count($tsumegoStatuses));
-		$this->assertSame('S', $tsumegoStatuses[0]['TsumegoStatus']['status']);
+			if ($testCase == 'logged-off')
+				$browser->logoff();
+			elseif ($testCase == 'not-available')
+			{
+				Auth::getUser()['level'] = 1;
+				Auth::saveUser();
+				$context->xpgained(); // to reload the current xp to be able to tell the gained later
+			}
+			elseif ($testCase == 'used-up')
+			{
+				Auth::getUser()['used_revelation'] = 10;
+				Auth::saveUser();
+			}
 
-		$this->assertSame($context->xpgained(), 0); // no xp was gained
-		$this->assertSame($context->reloadUser()['rating'], 1000.0); // xp wasn't changed
-		$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
+			$browser->clickId('revelation');
+			$message =  $browser->driver->executeScript("return window.alertMessage;");
+			if ($testCase == 'logged-off')
+			{
+				$this->assertSame($message, 'Not logged in.');
+				Auth::init();
+				continue;
+			}
+			elseif ($testCase == 'not-available')
+				$this->assertSame($message, 'Revelation is not available to this account.');
+			elseif ($testCase == 'user-up')
+				$this->assertSame($message, 'Revelation is used up today.');
+			if ($testCase == 'normal')
+			{
+				$browser->driver->wait(10, 50)->until(function () use ($browser) {
+					return $browser->driver->executeScript("return window.revelationUseCount;") == 0;
+				});
+				$this->checkPowerIsInactive($browser, 'revelation');
+			}
+			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 : 1);
+			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
+			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			if ($testCase != 'not-available')
+				$this->checkPowerIsInactive($browser, 'revelation');
+			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
+
+			// status was changed to 'S' (solved)
+			$tsumegoStatuses = ClassRegistry::init('TsumegoStatus')->find('all');
+			$this->assertSame(1, count($tsumegoStatuses));
+			$this->assertSame($testCase == 'normal' ? 'S' : 'V', $tsumegoStatuses[0]['TsumegoStatus']['status']);
+
+			$this->assertSame($context->xpgained(), 0); // no xp was gained
+			$this->assertSame($context->reloadUser()['rating'], 1000.0); // xp wasn't changed
+			$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
+		}
 	}
 
 	public function testUseIntuition()

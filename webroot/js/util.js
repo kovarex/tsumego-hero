@@ -287,7 +287,7 @@ function makeAjaxCall(urlToCall, method)
 			if (xhr.status >= 200 && xhr.status < 300)
 				method(xhr.responseText);
 			else
-				alert("Ajax call returned: " + (xhr.responseText || "Unknown error"));
+				alert(xhr.responseText || "Unknown ajax call error!");
 		}
 	});
 }

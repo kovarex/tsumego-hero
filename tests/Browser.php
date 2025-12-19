@@ -116,15 +116,9 @@ class Browser
 	{
 		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
-			$this->driver->manage()->addCookie([
-				'name' => "hackedLoggedInUserID",
-				'value' => (string) Auth::getUserID()
-			]);
+			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => (string) Auth::getUserID()]);
 			if (!empty($_COOKIE['disable-achievements']))
-				$this->driver->manage()->addCookie([
-					'name' => "disable-achievements",
-					'value' => "true"
-				]);
+				$this->driver->manage()->addCookie(['name' => "disable-achievements", 'value' => "true"]);
 		}
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
@@ -371,6 +365,12 @@ class Browser
 			document.body.appendChild(form);
 			form.submit();");
 		usleep(500 * 1000);
+	}
+
+	public function logoff()
+	{
+		$this->setCookie('hackedLoggedInUserID', '');
+		Auth::logout();
 	}
 
 	public $driver;
