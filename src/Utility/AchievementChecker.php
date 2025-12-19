@@ -581,7 +581,10 @@ class AchievementChecker
 	public function finalize(): AchievementChecker
 	{
 		if (!empty($this->updated))
-			User::updateXP(Auth::getUserID(), $this->updated);
+		{
+			User::updateXP(Auth::getUser(), $this->updated);
+			Auth::saveUser();
+		}
 		return $this;
 	}
 

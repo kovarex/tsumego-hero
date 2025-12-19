@@ -48,23 +48,14 @@ class XPAmountTest extends AchievementTestCase
 		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69');
 	}
 
-	public function testLevelAchievement_LEVEL_UP_Grants100XP()
+	public function testLevelAchievement_LEVEL_UP_Grants100XP(): void
 	{
-		// Arrange: User at level 10 with 0 existing XP (clean slate)
-		// Use level 10 specifically to test this achievement
-		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 10]]);
-
-		// Act: Trigger achievement check
-		new AchievementChecker()->checkLevelAchievements()->finalize();
-
-		// Assert: Achievement unlocked
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 100, 'xp' => 0, 'level' => 10]]);
+		$browser->get('/');
 		$this->assertAchievementUnlocked(Achievement::LEVEL_UP);
-
-		// Assert: User XP is 100 (0 existing + 100 from achievement)
-		// Level will be 11 because 100 XP is enough to level up from 10 (needs 175 total, had 0, now has 100)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(100, $user['User']['xp'], 'User should have 100 XP from level achievement');
-		$this->assertEquals(10, $user['User']['level'], 'User should stay at level 10 (needs 175 to reach 11, only has 100)');
+		$this->assertEquals(100, $context->XPGained(), 'User should have 100 XP from level achievement');
+		$this->assertEquals(10, $context->reloadUser()['level'], 'User should stay at level 10 (needs 175 to reach 11, only has 100)');
 	}
 
 	/**

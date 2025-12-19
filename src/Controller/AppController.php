@@ -608,7 +608,7 @@ class AppController extends Controller
 
 		$this->set('boardsBitmask', $boardsBitmask);
 
-		if (Auth::isLoggedIn() && Util::clearCookie('initialLoading'))
+		if (Auth::isLoggedIn())
 		{
 			$achievementChecker = new AchievementChecker();
 			$achievementChecker->checkLevelAchievements();

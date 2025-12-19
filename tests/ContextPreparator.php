@@ -43,6 +43,8 @@ class ContextPreparator
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
+		if ($this->user)
+			$this->lastXp = Level::getOverallXPGained($this->user);
 	}
 
 	private function checkOptionsConsumed(?array $options)
@@ -79,7 +81,7 @@ class ContextPreparator
 		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
 		$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
-		$user['rating'] = Util::extract('rating', $userInput) ?: 1500;
+		$user['rating'] = Util::extract('rating', $userInput) ?: 100;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
