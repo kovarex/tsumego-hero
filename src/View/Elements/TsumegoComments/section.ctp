@@ -52,35 +52,34 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 
 	// Tab switching - use event delegation to handle dynamically replaced content
 	// Clicking a tab both expands/toggles the content AND filters to that view
-	document.addEventListener('click', function(e) {
-		if (e.target.classList.contains('tsumego-comments__tab')) {
+	document.addEventListener('click', function(e)
+	{
+		if (e.target.classList.contains('tsumego-comments__tab'))
+		{
 			var clickedTab = e.target;
 			var wasActive = clickedTab.classList.contains('active');
 			var filter = clickedTab.dataset.filter;
 			var content = document.getElementById('msg2x');
-			
+
 			// If clicking an already-active tab, collapse (deselect all)
-			if (wasActive) {
+			if (wasActive)
+			{
 				clickedTab.classList.remove('active');
 				currentCommentsFilter = null;
-				if (content) {
+				if (content)
 					content.style.display = 'none';
-				}
 				return;
 			}
-			
+
 			// Otherwise, switch to this tab
 			var tabs = document.querySelectorAll('.tsumego-comments__tab');
-			tabs.forEach(function(t) {
-				t.classList.remove('active');
-			});
+			tabs.forEach(function(t) { t.classList.remove('active'); });
 			clickedTab.classList.add('active');
 			currentCommentsFilter = filter;
-			
+
 			// Show the content
-			if (content) {
+			if (content)
 				content.style.display = '';
-			}
 
 			// Apply filter to items
 			applyCommentsFilter(filter);
@@ -88,76 +87,78 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 	});
 
 	// Apply filter to show/hide items based on selected tab
-	function applyCommentsFilter(filter) {
+	function applyCommentsFilter(filter)
+	{
 		var items = document.querySelectorAll('.tsumego-issue, .tsumego-comment--standalone');
-		items.forEach(function(item) {
-			if (filter === 'open') {
+		items.forEach(function(item)
+		{
+			if (filter === 'open')
 				// Show standalone comments and open issues
-				if (item.classList.contains('tsumego-comment--standalone') || item.classList.contains('tsumego-issue--opened')) {
+				if (item.classList.contains('tsumego-comment--standalone') || item.classList.contains('tsumego-issue--opened'))
 					item.style.display = '';
-				} else {
+				else
 					item.style.display = 'none';
-				}
-			} else if (filter === 'closed') {
+			else if (filter === 'closed')
 				// Show only closed issues
-				if (item.classList.contains('tsumego-issue--closed')) {
+				if (item.classList.contains('tsumego-issue--closed'))
 					item.style.display = '';
-				} else {
+				else
 					item.style.display = 'none';
-				}
-			}
 		});
 
 		// Show/hide main comment form based on filter
 		// Main form should only show on "open" tab, not "closed"
 		var mainForm = document.getElementById('tsumegoCommentForm');
-		if (mainForm) {
+		if (mainForm)
+		{
 			var formWrapper = mainForm.closest('.tsumego-comments__form');
-			if (formWrapper) {
+			if (formWrapper)
 				formWrapper.style.display = (filter === 'open') ? '' : 'none';
-			}
 		}
 		// Also handle login prompt for non-logged-in users
 		var loginPrompt = document.querySelector('.tsumego-comments__login-prompt');
-		if (loginPrompt) {
+		if (loginPrompt)
 			loginPrompt.style.display = (filter === 'open') ? '' : 'none';
-		}
 	}
 
 	// Re-apply current filter after htmx morph (preserves filter state)
 	// Use htmx:afterSettle which fires after all content is settled
-	document.body.addEventListener('htmx:afterSettle', function(e) {
+	document.body.addEventListener('htmx:afterSettle', function(e)
+	{
 		// Only handle comments section morphs
-		if (e.detail.target && e.detail.target.id && e.detail.target.id.startsWith('comments-section-')) {
+		if (e.detail.target && e.detail.target.id && e.detail.target.id.startsWith('comments-section-'))
 			// Restore filter state from variable (idiomorph replaces the tabs)
-			if (currentCommentsFilter) {
+			if (currentCommentsFilter)
 				// Use setTimeout to ensure DOM is fully updated after morph
-				setTimeout(function() {
+				setTimeout(function()
+				{
 					// Re-apply active class to the correct tab
 					var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + currentCommentsFilter + '"]');
-					if (targetTab) {
+					if (targetTab)
 						targetTab.classList.add('active');
-					}
+					// Show the content container (morphed HTML has display:none)
+					var content = document.getElementById('msg2x');
+					if (content)
+						content.style.display = '';
 					// Re-apply filter to items
 					applyCommentsFilter(currentCommentsFilter);
 				}, 50);
-			}
-		}
 	});
 
 	// Reply to Issue functionality
-	function toggleIssueReply(issueId) {
+	function toggleIssueReply(issueId)
+	{
 		var form = document.getElementById('reply-form-' + issueId);
-		if (form.style.display === 'none') {
+		if (form.style.display === 'none')
+		{
 			// Hide all other reply forms first
 			document.querySelectorAll('.tsumego-issue__reply-form').forEach(function(f) {
-				f.style.display = 'none';
-			});
+				f.style.display = 'none'; });
 			form.style.display = 'block';
 			form.querySelector('textarea').focus();
-		} else {
-			form.style.display = 'none';
 		}
+		else
+			form.style.display = 'none';
 	}
 
 	// ==========================================================================
@@ -368,15 +369,15 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 						console.log('[Comment DnD] onAdd ignored - drag was cancelled');
 						return;
 					}
-					
+
 					// Comment dropped into main area (making it standalone)
 					var comment = evt.item.querySelector('.tsumego-comment') || evt.item;
 					var commentId = comment.dataset.commentId;
 					console.log('[Comment DnD] Comment', commentId, 'dropped to standalone (main area)');
-					
+
 					// Clear drag state before server call
 					currentDragState = null;
-					
+
 					// Optimistic: SortableJS already moved the element, leave it there
 					// The server response + idiomorph will handle the final state
 					moveComment(commentId, 'standalone');
@@ -384,7 +385,7 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 			});
 			activeSortables.push(mainSortable);
 			console.log('[Comment DnD] Main sortable created');
-			
+
 			// Create sortable for each issue's comment container
 			// IMPORTANT: Use a DIFFERENT group name so issue sortables don't interact with each other
 			// This prevents flickering when dragging over same issue's comments
@@ -435,11 +436,11 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					}
 				});
 				activeSortables.push(issueSortable);
-				
+
 				// Add drop target overlay to the issue header
 				setupIssueDropTarget(issueEl, issueId);
 			});
-			
+
 			// Setup issue drop target (for receiving drops)
 			function setupIssueDropTarget(issueEl, issueId)
 			{
@@ -453,29 +454,29 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					overlay.style.display = 'none';
 					issueEl.appendChild(overlay);
 				}
-				
+
 				// Native drag events on the overlay
 				overlay.addEventListener('dragover', function(e) {
 					e.preventDefault();
 					overlay.classList.add('tsumego-issue__drop-overlay--active');
 				});
-				
+
 				overlay.addEventListener('dragleave', function(e) {
 					overlay.classList.remove('tsumego-issue__drop-overlay--active');
 				});
-				
+
 				overlay.addEventListener('drop', function(e) {
 					e.preventDefault();
 					e.stopPropagation();
 					overlay.classList.remove('tsumego-issue__drop-overlay--active');
-					
+
 					if (!currentDraggedComment) return;
-					
-					var comment = currentDraggedComment.querySelector ? 
+
+					var comment = currentDraggedComment.querySelector ?
 						(currentDraggedComment.querySelector('.tsumego-comment') || currentDraggedComment) :
 						currentDraggedComment;
 					var commentId = comment.dataset.commentId;
-					
+
 					// Check if this is a return to source issue
 					if (currentDragState && currentDragState.sourceIssueId === issueId)
 					{
@@ -491,16 +492,16 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 						currentDragState = null;
 						return;
 					}
-					
+
 					console.log('[Comment DnD] Drop on overlay - Comment', commentId, 'dropped into issue', issueId);
-					
+
 					// Optimistic: Move element into target issue's dropzone
 					var targetDropzone = issueEl.querySelector('.tsumego-dnd__issue-dropzone');
 					if (targetDropzone && currentDraggedComment)
 					{
 						targetDropzone.appendChild(currentDraggedComment);
 					}
-					
+
 					moveComment(commentId, issueId);
 				});
 			}
@@ -534,7 +535,7 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 
 			var issueId = hash.substring(1); // Remove leading #
 			var issueElement = document.getElementById(issueId);
-			
+
 			if (!issueElement) {
 				console.log('[Hash Scroll] Issue element not found:', issueId);
 				return;
@@ -551,11 +552,11 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 			// Activate the appropriate tab based on issue status
 			var isOpened = issueElement.classList.contains('tsumego-issue--opened');
 			var filterToActivate = isOpened ? 'open' : 'closed';
-			
+
 			// Activate tab
 			var tabs = document.querySelectorAll('.tsumego-comments__tab');
 			tabs.forEach(function(t) { t.classList.remove('active'); });
-			
+
 			var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + filterToActivate + '"]');
 			if (targetTab) {
 				targetTab.classList.add('active');
