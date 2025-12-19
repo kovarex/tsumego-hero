@@ -8,7 +8,10 @@ use Facebook\WebDriver\WebDriverBy;
  * Verifies that CSS and JS assets are properly bundled via AssetCompress,
  * that styles are applied, and that JavaScript functions are loaded and working.
  *
- * @group ci-only
+ * DISABLED: CI now uses alwaysEnableController=true (serves assets on-the-fly)
+ * TODO: Re-enable when we have production-like CI with pre-built assets
+ *
+ * @group disabled
  *
  * This test is excluded from local runs (see phpunit.xml.dist).
  * It only runs in CI where assets are pre-built via .github/workflows/ci.yml

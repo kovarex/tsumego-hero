@@ -1,5 +1,7 @@
 <?php
 
+use function PHPUnit\Framework\isNull;
+
 App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');
@@ -1246,5 +1248,17 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		ClassRegistry::init('ProgressDeletion')->create();
 		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
 		return $this->redirect('/sets/view/' . $setID);
+	}
+
+	public function changeCollectionSize(): mixed
+	{
+		$collectionSize = $this->data['collection_size'];
+		if (is_null($collectionSize))
+		{
+			CookieFlash::set('Collection size to change not provided', 'error');
+			return $this->redirect('/sets');
+		}
+		Preferences::set('collection_size', $this->data['collection_size']);
+		return $this->redirect('/sets');
 	}
 }

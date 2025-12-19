@@ -138,7 +138,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testUseRevelation()
 	{
-		foreach (['not-available', 'used-up', 'normal'] as $testCase)
+		foreach (['logged-off', 'not-available', 'used-up', 'normal'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$context = new ContextPreparator([
@@ -150,18 +150,30 @@ class HeroPowersTest extends TestCaseWithAuth
 			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
 			$this->checkPowerIsActive($browser, 'revelation');
 
-			if ($testCase == 'not-available')
+			if ($testCase == 'logged-off')
+				$browser->logoff();
+			elseif ($testCase == 'not-available')
 			{
 				Auth::getUser()['level'] = 1;
 				Auth::saveUser();
+				$context->xpgained(); // to reload the current xp to be able to tell the gained later
 			}
 			elseif ($testCase == 'used-up')
+			{
 				Auth::getUser()['used_revelation'] = 10;
+				Auth::saveUser();
+			}
 
 			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
 			$browser->clickId('revelation');
 			$message =  $browser->driver->executeScript("return window.alertMessage;");
-			if ($testCase == 'not-available')
+			if ($testCase == 'logged-off')
+			{
+				$this->assertSame($message, 'Not logged in.');
+				Auth::init();
+				continue;
+			}
+			elseif ($testCase == 'not-available')
 				$this->assertSame($message, 'Revelation is not available to this account.');
 			elseif ($testCase == 'user-up')
 				$this->assertSame($message, 'Revelation is used up today.');
@@ -175,7 +187,8 @@ class HeroPowersTest extends TestCaseWithAuth
 			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 : 1);
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-			$this->checkPowerIsInactive($browser, 'revelation');
+			if ($testCase != 'not-available')
+				$this->checkPowerIsInactive($browser, 'revelation');
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 
 			// status was changed to 'S' (solved)

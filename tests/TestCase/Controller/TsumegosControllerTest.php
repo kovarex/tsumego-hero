@@ -205,18 +205,30 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testSolveByClicking()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])', 'sets' => [['name' => 'test set', 'num' => '1']]],
-		]);
-		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$browser->clickBoard(1, 1);
-		usleep(500 * 1000);
-		$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
-		$browser->clickBoard(2, 1);
-		usleep(200 * 1000);
-		$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
+		foreach ([false, true] as $isGuest)
+		{
+			$browser = Browser::instance();
+			$contextConfig = [
+				'user' => $isGuest ? ['name' => 'testuser'] : ['mode' => Constants::$LEVEL_MODE],
+				'tsumego' => [
+					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+					'sets' => [['name' => 'test set', 'num' => '1']]]];
+
+			$context = new ContextPreparator($contextConfig);
+
+			if ($isGuest)
+			{
+				$this->logout();
+				$this->assertFalse(Auth::isLoggedIn(), 'Should not be logged in for guest test');
+			}
+			$browser->get($context->tsumego['set-connections'][0]['id']);
+			$browser->clickBoard(1, 1);
+			usleep(500 * 1000);
+			$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
+			$browser->clickBoard(2, 1);
+			usleep(200 * 1000);
+			$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
+		}
 	}
 
 	public function testResetAddsFailWhenSomethingWasPlayed()

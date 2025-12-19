@@ -116,15 +116,9 @@ class Browser
 	{
 		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
-			$this->driver->manage()->addCookie([
-				'name' => "hackedLoggedInUserID",
-				'value' => (string) Auth::getUserID()
-			]);
+			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => (string) Auth::getUserID()]);
 			if (!empty($_COOKIE['disable-achievements']))
-				$this->driver->manage()->addCookie([
-					'name' => "disable-achievements",
-					'value' => "true"
-				]);
+				$this->driver->manage()->addCookie(['name' => "disable-achievements", 'value' => "true"]);
 		}
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
@@ -252,6 +246,7 @@ class Browser
 			});
 			document.dispatchEvent(event);
 		");
+		$this->assertNoErrors();
 	}
 
 	public function ignoreJsErrorPattern(string $pattern): void
@@ -308,6 +303,7 @@ class Browser
 		usleep(1000 * 100);
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		usleep(1000 * 50);
+		$this->assertNoErrors();
 	}
 
 	public function getAlertText()
@@ -350,6 +346,7 @@ class Browser
 		if (count($clickableRects) < $boardSize * $boardSize + 1)
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
+		$this->assertNoErrors();
 	}
 
 	public function getWithPostData($url, $postData)
@@ -371,6 +368,12 @@ class Browser
 			document.body.appendChild(form);
 			form.submit();");
 		usleep(500 * 1000);
+	}
+
+	public function logoff()
+	{
+		$this->setCookie('hackedLoggedInUserID', '');
+		Auth::logout();
 	}
 
 	public $driver;

@@ -220,10 +220,6 @@
   border: 1px solid #1b1b1b;
   background: #2a2a2a;
 }
-#submit-size-button:disabled {
-  background: #2a2a2a;
-  color: #2f2f2f;
-}
 .tile-color4 {
   background: #ffffff1a;
 }
