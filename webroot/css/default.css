@@ -7726,3 +7726,7 @@ body.dark-theme .btn--warning {
 	width:310px;
 	height:205px;
 }
+
+#target {
+    min-height: 400px;
+}
