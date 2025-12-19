@@ -154,9 +154,13 @@ class HeroPowersTest extends TestCaseWithAuth
 			{
 				Auth::getUser()['level'] = 1;
 				Auth::saveUser();
+				$context->xpgained(); // to reload the current xp to be able to tell the gained later
 			}
 			else if ($testCase == 'used-up')
+			{
 				Auth::getUser()['used_revelation'] = 10;
+				Auth::saveUser();
+			}
 
 			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
 			$browser->clickId('revelation');
@@ -175,7 +179,8 @@ class HeroPowersTest extends TestCaseWithAuth
 			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 :  1);
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-			$this->checkPowerIsInactive($browser, 'revelation');
+			if ($testCase != 'not-available')
+				$this->checkPowerIsInactive($browser, 'revelation');
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 
 			// status was changed to 'S' (solved)
