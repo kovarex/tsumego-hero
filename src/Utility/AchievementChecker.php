@@ -462,7 +462,7 @@ class AchievementChecker
 		return $this;
 	}
 
-	public function checkSetAchievements($sid = null): AchievementChecker
+	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
 	{
 		if ($sid == -1)
 		{
@@ -471,7 +471,6 @@ class AchievementChecker
 		}
 
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
-		$s = ClassRegistry::init('Set')->findById($sid);
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -490,7 +489,7 @@ class AchievementChecker
 		if ($tNum < 100)
 			return $this;
 
-		if ($s['Set']['difficulty'] < 1300)
+		if ($setRating < 1300)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_I);
@@ -505,7 +504,7 @@ class AchievementChecker
 			if ($acS['AchievementCondition']['value'] < 5)
 				$this->gained(Achievement::SPEED_III);
 		}
-		elseif ($s['Set']['difficulty'] >= 1300 && $s['Set']['difficulty'] < 1500)
+		elseif ($setRating >= 1300 && $setRating < 1500)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_IV);
@@ -520,7 +519,7 @@ class AchievementChecker
 			if ($acS['AchievementCondition']['value'] < 8)
 				$this->gained(Achievement::SPEED_VI);
 		}
-		elseif ($s['Set']['difficulty'] >= 1500 && $s['Set']['difficulty'] < 1700)
+		elseif ($setRating >= 1500 && $setRating < 1700)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_VII);

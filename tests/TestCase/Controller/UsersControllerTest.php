@@ -145,12 +145,34 @@ class UsersControllerTest extends ControllerTestCase
 				['name' => 'player2d', 'rating' => 2249]]]);
 		$browser = Browser::instance();
 		$browser->get('users/rating');
-		$tableRows = $browser->getCssSelect(".highscoreTable tr");
 		$browser->checkTable('.highscoreTable', $this, [
 			['Place', 'Name', 'Rank', 'Rating'],
-			['#1', 'Ivan Detkov 12d', '', '12d', '2887'],
-			['#2', 'player3d 3d', '', '3d', '2251'],
-			['#3', 'player2d 2d', '', '2d', '2249']]);
+			['#1', 'Ivan Detkov', '', '12d', '2887'],
+			['#2', 'player3d', '', '3d', '2251'],
+			['#3', 'player2d', '', '2d', '2249']]);
+	}
+
+	public function testAchievementsLadder()
+	{
+		new ContextPreparator([
+			'other-users' => [[
+				'name' => 'Ivan Detkov',
+				'rating' => 2887,
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]],
+				[
+					'name' => 'player3d',
+					'rating' => 2251,
+					'achievement-statuses' => [
+						['id' => Achievement::PROBLEMS_1000],
+						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 7]]]]]);
+		$browser = Browser::instance();
+		$browser->get('users/achievements');
+		$browser->checkTable('.highscoreTable', $this, [
+			['Place', 'Name', 'Completed'],
+			['#1', 'player3d 3d', '8/115'],
+			['#2', 'Ivan Detkov 12d', '6/115']]);
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
@@ -174,10 +196,15 @@ class UsersControllerTest extends ControllerTestCase
 				'level' => 66,
 				'xp' => 57,
 				'rating' => 2065,
-				'solved' => 1],
-			'other-tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
-				'attempt' => ['user_rating' => 2165]]],
+				'solved' => 2],
+			'other-tsumegos' => [
+				[
+					'status' => 'S',
+					'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
+					'attempt' => ['user_rating' => 2165]],
+				[
+					'status' => ['name' => 'S', 'updated' => '2000-01-01 00:00:00'],  // old status
+					'sets' => [['name' => 'set-3', 'num' => 1], ['name' => 'set-4', 'num' => 1]]]],
 			'time-mode-ranks' => ['5k', '10k', '1d'],
 			'time-mode-sessions' => [
 				[
@@ -215,8 +242,20 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
-			['Overall solved:', '1 of 1'], // one problem in two sets still counted as one
+			['Overall solved:', '2 of 2'], // one problem in two sets still counted as one
 			['Overall %:', '100%']]);
+
+		$this->assertSame('RESET (1)', $browser->find('#reset-statuses-button')->getText());
+
+		// clicking reset removes the status
+		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertSame($context->reloadUser()['solved'], 2);
+
+		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
+		$browser->clickId('reset-statuses-button');
+
+		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
 	public function testTsumegoRatingGraph()

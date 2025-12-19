@@ -4,7 +4,7 @@
 <script src="/besogo/js/transformation.js"></script>
 <script src="/besogo/js/treeProblemUpdater.js?v=2"></script>
 <script src="/besogo/js/nodeHashTable.js"></script>
-<script src="/besogo/js/editor.js"></script>
+<script src="/besogo/js/editor.js?v=2"></script>
 <script src="/besogo/js/gameRoot.js?v=2"></script>
 <script src="/besogo/js/status.js"></script>
 <script src="/besogo/js/svgUtil.js"></script>
@@ -160,7 +160,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		if(Auth::isAdmin()) { ?>
 		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
-		<div class="modify-description-panel">
+		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
@@ -775,9 +775,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 
 			if(Auth::isLoggedIn()){
-					if(Auth::isAdmin()){
-			echo '$(".modify-description-panel").hide();';
-	}
 		echo 'var besogoUserId = '.Auth::getUserID().';';
 						}else{
 		echo 'besogoNoLogin = true;';
@@ -1148,7 +1145,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				window.location = nextButtonLink;
 	});
 
-		if(!showCommentSpace) $("#commentSpace").hide();
 		$("#show").click(function(){
 			if(!msg2selected){
 				$("#msg2").fadeIn(250);

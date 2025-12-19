@@ -169,8 +169,10 @@ class Achievement extends AppModel
 	public const int SOLVE_10_5D = 110;
 
 	// Gem Achievements
-	public const EMERALD = 111;
-	public const SAPPHIRE = 112;
-	public const RUBY = 113;
-	public const DIAMOND = 114;
+	public const int EMERALD = 111;
+	public const int SAPPHIRE = 112;
+	public const int RUBY = 113;
+	public const int DIAMOND = 114;
+
+	public const int COUNT = 115;
 }

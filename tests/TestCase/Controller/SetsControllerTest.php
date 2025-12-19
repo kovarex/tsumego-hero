@@ -534,6 +534,80 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 	}
 
+	public function testQueringSetsByRanksButVisitingFromTopic(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'Tsumego 1/1');
+	}
+
+	public function testQueringSetsByRanksButWithWrongLastSetCookie(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		$browser->setCookie('lastSet', 'Hello world');
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'set 1 1/1');
+	}
+
+	public function testClickingOnSetViewSwitchesTsumegoFiltersToSetViewAndShowsCorrectTsumego(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'other-tsumegos' => [[
+				'sets' => [['name' => 'set 1', 'num' => 2], ['name' => 'set 3', 'num' => 4]],
+				'rating' => Rating::getRankMiddleRatingFromReadableRank('10k')]]]);
+
+		$browser->get('sets');
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
+
+		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$this->assertCount(1, $collectionMiddleLeftDivs);
+		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
+
+		$collectionTopDivs[0]->click();
+		$this->assertSame(Util::getMyAddress() . '/sets/view/10k', $browser->driver->getCurrentURL());
+
+		// now we are viewing the 10k set insides and checking the buttons
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+
+		// clicking to get inside the set to play it
+		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
+
+		// now we are in the problem
+		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, '10k 1/1');
+	}
+
+	public function testOpeningProblemOutsideCurrentFilters(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => [
+				'mode' => Constants::$LEVEL_MODE,
+				'query' => 'topics',
+				'filtered_ranks' => ['10k']],
+			'other-tsumegos' => [
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'), 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+
+		// we filtered to 10k, but we are opening the 5k problem
+		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertEmpty($browser->getCssSelect('#currentNavigationButton')); // no tsumego button is marked as current
+	}
+
 	public function testSelectingTagFilters(): void
 	{
 		$contextParams = ['user' => ['mode' => Constants::$LEVEL_MODE]];
@@ -747,6 +821,46 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
 	}
 
+	public function testPartitionedTopicBasedSetViewShowsSolvedPercentProperly(): void
+	{
+		$browser = Browser::instance();
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'topics']];
+		$contextParams['other-tsumegos'] = [];
+
+		// first 40 problems are 20 duplications
+		for ($i = 0; $i < 10; $i++)
+			$contextParams['other-tsumegos'] [] = [
+				'sets' => [
+					['name' => 'partitioned set', 'num' => $i * 2 + 1],
+					['name' => 'partitioned set', 'num' => $i * 2 + 2]],
+				'status' => 'S'];
+
+		// The reversed direction of filling is important here
+		// this means that the ids of tsumegos are not sequential in the set and the sql logic needs to make sure
+		// to sort primarily by set connection num
+		for ($i = 299; $i >= 20; $i--)
+			$contextParams['other-tsumegos'] [] = [
+				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]],
+				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];
+		;
+
+		new ContextPreparator($contextParams);
+		$browser->get("sets");
+
+		$wait = new WebDriverWait($browser->driver, 5, 50); // (driver, timeout, polling interval)
+		$wait->until(function () use ($browser) {
+			return $browser->driver->findElement(WebDriverBy::cssSelector('#number0'))->getText() == '33%';
+		});
+
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$this->assertCount(2, $collectionTopDivs);
+		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
+		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
+		$this->assertSame('Problems found: 290', $browser->find('#problems-found')->getText());
+	}
+
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
 	{
 		$contextParams = ['user' => [
@@ -820,6 +934,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkSetFinishedPercent($browser, 3, '1d', '75%');
 		$this->checkSetFinishedPercent($browser, 4, '5d', '100%');
 		$this->assertSame('Problems found: 20', $browser->find('#problems-found')->getText());
+
+		$collectionTopDivs[1]->click();
+		$this->assertTextContains('Difficulty: <b>10k</b>', $browser->driver->getPageSource());
+		$this->assertTextContains('Solved: <b>25%</b>', $browser->driver->getPageSource());
 	}
 
 	public function testAddingToFavoritesAndViewingIt(): void
@@ -1159,4 +1277,112 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2 time should be - (no successful solves)');
 	}
 
+	public function testSetProgressDeletion()
+	{
+		foreach (['reset', 'hello'] as $resetInput)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['name' => 'testuser'],
+				'other-users' => [['name' => 'otheruser']],
+				'other-tsumegos' => [
+					[
+						'sets' => [['name' => 'Test Set', 'num' => 1]],
+						'statuses'
+						=> [
+							['name' => 'S', 'user' => 'testuser'], // tsumego from this test, progress should be deleted
+							['name' => 'S', 'user' => 'otheruser'] // tsumego from this test of other user, should be preserved
+						]
+					],
+					[ // second tsumego from this test, progress should be deleted
+						'sets' => [['name' => 'Test Set', 'num' => 2]],
+						'status' => 'S'
+					],
+					[ // tsumego from a different set, progress shouldn't be delted
+						'sets' => [['name' => 'Test Set 2', 'num' => 2]],
+						'status' => 'S'
+					]]]);
+			$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id']);
+			$browser->clickId("showx");
+			$browser->clickId("reset-textfield");
+			$browser->driver->getKeyboard()->sendKeys($resetInput);
+
+			$TsumegoStatus = ClassRegistry::init('TsumegoStatus');
+
+			$statusCurrentUserThisSet1 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
+			$statusCurrentUserThisSet2 = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[1]['id']]];
+			$statusCurrentUserOtherSet = ['conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->otherTsumegos[2]['id']]];
+			$statusOtherUserThisSet = ['conditions' => ['user_id' => $context->otherUsers[0]['id'], 'tsumego_id' => $context->otherTsumegos[0]['id']]];
+
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+
+			$browser->clickId("reset-submit");
+			if ($resetInput == "reset")
+			{
+				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+				$this->assertEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertSame(1, ClassRegistry::init('ProgressDeletion')->find('count'));
+			}
+			else
+			{
+				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet1));
+				$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserThisSet2));
+				$this->assertSame(0, ClassRegistry::init('ProgressDeletion')->find('count'));
+				$this->assertTextContains('Reset check wasn\'t correctly typed', $browser->driver->getPageSource());
+			}
+
+			// other set tsumego progress not touched
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusCurrentUserOtherSet));
+			// this set but other user tsumego status untouched
+			$this->assertNotEmpty($TsumegoStatus->find('all', $statusOtherUserThisSet));
+		}
+	}
+
+	public function testSetProgressDeletionOfPartitionedSet()
+	{
+		foreach ([1, 2] as $partition)
+		{
+			$browser = Browser::instance();
+			$contextParameters = [];
+			for ($i = 0; $i < 400; $i++)
+				$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
+			$context = new ContextPreparator($contextParameters);
+
+			// we open partition of the set
+			$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/' . $partition);
+			$browser->clickId("showx");
+			$browser->clickId("reset-textfield");
+			$browser->driver->getKeyboard()->sendKeys('reset');
+			$browser->clickId("reset-submit");
+			$statuses = ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id']);
+
+			// 200 statuses left
+			$this->assertSame(200, count($statuses));
+			for ($i = 0; $i < 200; $i++)
+				$this->assertSame($context->otherTsumegos[$i + ($partition == 1 ? 200 : 0)]['id'], $statuses[$i]['TsumegoStatus']['tsumego_id']);
+		}
+	}
+
+	public function testSetProgressDeletionNotOfferedWithNonStandardPartitionSize()
+	{
+		$browser = Browser::instance();
+		$contextParameters = [];
+		for ($i = 0; $i < 400; $i++)
+			$contextParameters['other-tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
+		$contextParameters['user'] = ['collection_size' => 150];
+		$context = new ContextPreparator($contextParameters);
+
+		// we open partition of the set
+		$browser->get('sets/view/' . $context->otherTsumegos[0]['sets'][0]['id'] . '/1');
+		$this->assertEmpty($browser->getCssSelect("showx")); // no reset offered
+		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
+
+		// we try to force it on the server anyway
+		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
+	}
 }

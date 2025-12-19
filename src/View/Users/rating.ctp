@@ -1,6 +1,4 @@
-
 <div align="center" class="highscore">
-
 <table border="0" width="100%">
 <tr>
 	<td width="23%" valign="top"></td>
@@ -25,9 +23,9 @@
 	<caption><p class="title">Rating Highscore<br><br></p></caption>
 	<tr>
 		<th style="width:60px">Place</th>
-		<th style="with:340px;text-align: left;" colspan="2">Name</th>
+		<th style="with:440px;text-align: left;" colspan="2">Name</th>
 		<th style="width:150px;">Rank</th>
-		<th style="width=150px;">Rating</th>
+		<th style="width=90px;">Rating</th>
 	</tr>
 	<?php
 		foreach ($users as $index => $user)
@@ -38,7 +36,7 @@
 			$tableRowColor = 'color' . Rating::getReadableRank($styleRank);
 			echo '<tr class="' . $tableRowColor . '">';
 			echo '<td style="text-align:center;">#' . ($index + 1) . '</td>';
-			echo '<td style="width:260px;align: left;">' . User::renderLink($user, false) . '</td>';
+			echo '<td style="width:350px;align: left;">' . User::renderLinkWithOptionalRank($user) . '</td>';
 			echo '<td style="width:90px;">' . User::renderPremium($user) . '</td>';
 			echo '<td style="text-align:center;">' . Rating::getReadableRank($rank) . '</td>';
 			echo '<td style="text-align:center;">' . round($user['rating']) . '</td>';

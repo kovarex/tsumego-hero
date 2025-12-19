@@ -9,7 +9,8 @@ class Query
 
 	public function str()
 	{
-		$result = 'SELECT ';
+		$result = $this->prefix;
+		$result .= 'SELECT ';
 		$result .= implode(', ', $this->selects);
 		$result .= ' ';
 		$result .= $this->query;
@@ -20,6 +21,7 @@ class Query
 			$result .= ' GROUP BY ' . implode(', ', $this->groupBy);
 		if (!empty($this->orderBy))
 			$result .= ' ORDER BY ' . implode(', ', $this->orderBy);
+		$result .= $this->suffix;
 		return $result;
 	}
 
@@ -28,4 +30,6 @@ class Query
 	public $conditions = [];
 	public $orderBy = [];
 	public $groupBy = [];
+	public $prefix;
+	public $suffix;
 }

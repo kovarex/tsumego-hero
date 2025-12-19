@@ -157,7 +157,7 @@ class SetsController extends AppController
 			$set['Set']['image'] = 'b1.png';
 			$set['Set']['difficulty'] = 4;
 			$set['Set']['author'] = 'various creators';
-			$set['Set']['order'] = 999;
+			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 
 			$this->Set->create();
 			$this->Set->save($set);
@@ -263,7 +263,7 @@ class SetsController extends AppController
 
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			'order' => ['Set.order'],
+			'order' => ['Set.order', 'Set.id'],
 			'conditions' => ['public' => 1],
 		]) ?: [];
 		foreach ($setsRaw as $set)
@@ -527,10 +527,6 @@ class SetsController extends AppController
 		$refreshView = false;
 		$avgTime = 0;
 		$accuracy = 0;
-		$achievementUpdate = [];
-		$tsumegoStatusMap = [];
-		$setDifficulty = 1200;
-		$currentIds = [];
 		$allVcActive = false;
 		$allVcInactive = false;
 		$allArActive = false;
@@ -543,10 +539,6 @@ class SetsController extends AppController
 
 		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
 		if (Auth::isLoggedIn())
-		{
-
-			$tsumegoStatusMap = TsumegoUtil::getMapForCurrentUser();
-
 			if (Auth::isAdmin())
 			{
 				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
@@ -558,7 +550,6 @@ class SetsController extends AppController
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
 				}
 			}
-		}
 		if (isset($this->params['url']['add']))
 		{
 			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
@@ -596,10 +587,6 @@ class SetsController extends AppController
 			$set['Set']['public'] = 1;
 			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
 			$set['Set']['difficulty'] = $elo;
-
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 		}
 		elseif ($tsumegoFilters->query == 'tags')
 		{
@@ -610,24 +597,11 @@ class SetsController extends AppController
 			$tagName = $this->Tag->findByName($id);
 			if ($tagName && isset($tagName['Tag']['description']))
 				$set['Set']['description'] = $tagName['Tag']['description'];
-
-			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$currentIds[] = $tsumegoButton->tsumegoID;
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
 		}
 		elseif ($tsumegoFilters->query == 'topics')
 		{
-			$currentIds = [];
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$currentIds [] =  $tsumegoButton->tsumegoID;
-			$difficultyAndSolved = $this->getDifficultyAndSolved($currentIds, $tsumegoStatusMap);
 			$set = ClassRegistry::init('Set')->findById($id);
-			$set['Set']['difficultyRank'] = $difficultyAndSolved['difficulty'];
-			$set['Set']['solved'] = $difficultyAndSolved['solved'];
 			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 			$allArActive = true;
 			$allArInactive = true;
@@ -793,17 +767,6 @@ class SetsController extends AppController
 					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id'])
 						$ts[$j]['Tsumego']['status'] = $allUts[$i]['TsumegoStatus']['status'];
 			}
-			$difficultyCount = Util::getRatio($difficultyCount, count($tsumegoButtons));
-			if ($difficultyCount <= 2)
-				$difficultyCount = 1;
-			elseif ($difficultyCount > 2 && $difficultyCount <= 3)
-				$difficultyCount = 2;
-			elseif ($difficultyCount > 3 && $difficultyCount <= 4)
-				$difficultyCount = 3;
-			elseif ($difficultyCount > 4 && $difficultyCount <= 6)
-				$difficultyCount = 4;
-			elseif ($difficultyCount > 6)
-				$difficultyCount = 5;
 			$percent = Util::getPercent($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
@@ -811,7 +774,6 @@ class SetsController extends AppController
 			$set['Set']['title2'] = null;
 			$set['Set']['author'] = Auth::getUser()['name'];
 			$set['Set']['description'] = '';
-			$set['Set']['difficulty'] = $difficultyCount;
 			$set['Set']['image'] = 'fav';
 			$set['Set']['order'] = 0;
 			$set['Set']['public'] = 1;
@@ -875,47 +837,20 @@ class SetsController extends AppController
 				$tsumegoButton->performance = $urSum;
 			}
 		}
+
+		$problemSolvedPercent = $tsumegoButtons->getProblemsSolvedPercent();
+		$setRating = $tsumegoButtons->getProblemsRating();
+		$this->set('setRating', $setRating);
+
+		$this->set('problemSolvedPercent', $problemSolvedPercent);
+
 		$scoring = true;
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
-			if (isset($this->data['Comment']['reset']))
-				if ($this->data['Comment']['reset'] == 'reset')
-				{
-					$uts = $this->TsumegoStatus->find('all', [
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'tsumego_id' => $currentIds,
-						],
-					]);
-					if (!$uts)
-						$uts = [];
-					$ur = $this->TsumegoAttempt->find('all', [
-						'conditions' => [
-							'user_id' => Auth::getUserID(),
-							'tsumego_id' => $currentIds,
-						],
-					]);
-					if (!$ur)
-						$ur = [];
-					$urCount = count($ur);
-					for ($i = 0; $i < $urCount; $i++)
-						$this->TsumegoAttempt->delete($ur[$i]['TsumegoAttempt']['id']);
-					$utsCount = count($uts);
-					for ($i = 0; $i < $utsCount; $i++)
-						$this->TsumegoStatus->delete($uts[$i]['TsumegoStatus']['id']);
-					$pr = [];
-					$pr['ProgressDeletion']['user_id'] = Auth::getUserID();
-					$pr['ProgressDeletion']['set_id'] = $id;
-					$this->ProgressDeletion->create();
-					$this->ProgressDeletion->save($pr);
-					$refreshView = true;
-				}
 			$pd = $this->ProgressDeletion->find('all', [
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
-					'set_id' => $id,
-				],
-			]) ?: [];
+					'set_id' => $id]]) ?: [];
 			$pdCounter = 0;
 			$pdCount = count($pd);
 			for ($i = 0; $i < $pdCount; $i++)
@@ -929,10 +864,8 @@ class SetsController extends AppController
 			$urSecAvg = 0;
 			$pSsum = 0;
 			$pFsum = 0;
-			$tsCount = count($tsumegoButtons);
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
-				$tss = 0;
 				if ($tsumegoButton->seconds == 0)
 					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss = 60;
@@ -943,7 +876,6 @@ class SetsController extends AppController
 				$urSecAvg += $tss;
 				$urSecCounter++;
 
-				$tss2 = 'F';
 				if ($tsumegoButton->performance == '')
 					if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
 						$tss2 = 'F';
@@ -965,13 +897,13 @@ class SetsController extends AppController
 			else
 				$accuracy = round($pSsum / ($pSsum + $pFsum) * 100, 2);
 			$avgTime2 = $avgTime;
-			if ($set['Set']['solved'] >= 100)
+			if ($problemSolvedPercent >= 100)
 			{
 				$achievementChecker = new AchievementChecker();
 				if ($set['Set']['id'] != 210)
 				{
 					$this->updateAchievementConditions($set['Set']['id'], $avgTime2, $accuracy);
-					$achievementChecker->checkSetAchievements($set['Set']['id']);
+					$achievementChecker->checkSetAchievements($set['Set']['id'], $setRating);
 				}
 				if ($id == 50 || $id == 52 || $id == 53 || $id == 54)
 					$achievementChecker->setAchievementSpecial('cc1');
@@ -1041,7 +973,7 @@ class SetsController extends AppController
 		$this->set('avgTime', $avgTime);
 		$this->set('accuracy', $accuracy);
 		$this->set('scoring', $scoring);
-		$this->set('setDifficulty', $setDifficulty);
+		$this->set('partition', $partition);
 	}
 
 	/**
@@ -1272,4 +1204,47 @@ class SetsController extends AppController
 		return $ranksArray;
 	}
 
+	public function resetProgress(int $setID, int $partition): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/sets/view/' . $setID);
+
+		if ($this->data['reset-check'] != 'reset')
+		{
+			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+
+		$partition = $partition - 1;
+
+		$tsumegoFilters = new TsumegoFilters();
+		if ($tsumegoFilters->collectionSize != 200)
+		{
+			CookieFlash::set('Reset is only possible for collection size 200', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+		$tsumegoFilters->query = 'topics';
+		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $setID);
+		$tsumegoIDToClear = [];
+		foreach ($tsumegoButtons as $tsumegoButton)
+			$tsumegoIDToClear[] = $tsumegoButton->tsumegoID;
+
+		$problemsInSet = Util::query("
+SELECT
+	COUNT(DISTINCT tsumego.id) AS total
+FROM tsumego
+	JOIN set_connection ON set_connection.tsumego_id = tsumego.id AND set_connection.set_id = ?", [$setID])[0]["total"];
+		if (TsumegoStatus::getProblemsSolvedInSet($setID) < $problemsInSet * 0.5)
+			return $this->redirect('sets/' . $setID);
+
+		Util::query("
+DELETE tsumego_status FROM tsumego_status
+WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',', $tsumegoIDToClear) . ")", [Auth::getUserID()]);
+		$progresDeletion = [];
+		$progresDeletion['user_id'] = Auth::getUserID();
+		$progresDeletion['set_id'] = $setID;
+		ClassRegistry::init('ProgressDeletion')->create();
+		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
+		return $this->redirect('/sets/view/' . $setID);
+	}
 }

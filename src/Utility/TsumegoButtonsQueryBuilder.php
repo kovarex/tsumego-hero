@@ -7,9 +7,22 @@ class TsumegoButtonsQueryBuilder
 	public function __construct($tsumegoFilters, $id)
 	{
 		$this->query = new Query('FROM tsumego');
-		$this->query->orderBy[] = 'set_connection.num, set_connection.id';
+		if ($tsumegoFilters->query != 'topics')
+		{
+			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY tsumego.id) AS rn";
+			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
+			if (Auth::isLoggedIn())
+				$this->query->prefix .= ", status";
+			$this->query->prefix .= " FROM (";
+			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
+			$this->query->orderBy[] = 'tsumego.id';
+		}
+		else
+			$this->query->orderBy[] = 'set_connection.num, set_connection.id';
 		$this->tsumegoFilters = $tsumegoFilters;
+
 		$this->query->selects[] = 'tsumego.id as tsumego_id';
+		$this->query->selects[] = 'tsumego.rating as rating';
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
 		if (Auth::isLoggedIn())
@@ -65,10 +78,19 @@ class TsumegoButtonsQueryBuilder
 	{
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
-		$currentRank = $_COOKIE['lastSet'] ?? '15k';
-		$ratingBounds = RatingBounds::coverRank($currentRank, '15k');
-		$ratingBounds->addQueryConditions($this->query);
-		$this->description = $currentRank . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		if (empty($_COOKIE['lastSet']))
+			return;
+		try
+		{
+			$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
+			$ratingBounds->addQueryConditions($this->query);
+			$this->description = $_COOKIE['lastSet'] . ' are problems that have a rating ' . $ratingBounds->textualDescription() . '.';
+		}
+		catch (RatingParseException $e)
+		{
+			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
+			$this->tsumegoFilters->query = 'topics';
+		}
 	}
 
 	private function queryTag()

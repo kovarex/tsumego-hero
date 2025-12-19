@@ -161,48 +161,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	/**
 	 * @return void
 	 */
-	public function routine22() //achievement highscore
-	{
-		$aNum = count($this->Achievement->find('all') ?: []);
-		$as = $this->AchievementStatus->find('all');
-		$as2 = [];
-
-		$asCount = count($as);
-		for ($i = 0; $i < $asCount; $i++)
-			if ($as[$i]['AchievementStatus']['achievement_id'] != 46)
-				array_push($as2, $as[$i]['AchievementStatus']['user_id']);
-			else
-			{
-				$as46counter = $as[$i]['AchievementStatus']['value'];
-				while ($as46counter > 0)
-				{
-					array_push($as2, $as[$i]['AchievementStatus']['user_id']);
-					$as46counter--;
-				}
-			}
-		$as3 = array_count_values($as2);
-		$uaNum = [];
-		$uaId = [];
-		foreach ($as3 as $key => $value)
-		{
-			$u = $this->User->findById($key);
-			$u['User']['name'] = $this->checkPicture($u);
-			array_push($uaNum, $value);
-			array_push($uaId, $u['User']['id']);
-		}
-		array_multisort($uaNum, $uaId);
-
-		$toJson = [];
-		$toJson['uaNum'] = $uaNum;
-		$toJson['uaId'] = $uaId;
-		$toJson['aNum'] = $aNum;
-
-		file_put_contents('json/achievement_highscore.json', json_encode($toJson));
-	}
-
-	/**
-	 * @return void
-	 */
 	public function routine6() //0:30 update user solved field
 	{
 		$this->loadModel('Answer');
@@ -741,18 +699,10 @@ LIMIT 100"));
 		$this->set('uc', $uc);
 	}
 
-	/**
-	 * @return void
-	 */
-	public function achievements()
+	public function achievements(): void
 	{
 		$this->set('_page', 'achievementHighscore');
 		$this->set('_title', 'Tsumego Hero - Achievements Highscore');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Tsumego');
-		$this->loadModel('AchievementStatus');
-		$this->loadModel('Achievement');
-		$this->loadModel('User');
 
 		if (Auth::isLoggedIn())
 		{
@@ -760,18 +710,21 @@ LIMIT 100"));
 			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
-		$json = json_decode(file_get_contents('json/achievement_highscore.json'), true);
-		$jsonUaIdCount = count($json['uaId']);
-		for ($i = $jsonUaIdCount - 1; $i >= $jsonUaIdCount - 100; $i--)
-		{
-			$u = $this->User->findById($json['uaId'][$i]);
-			if ($u && isset($u['User']['name']))
-				$json['uaId'][$i] = $u['User']['name'];
-		}
 
-		$this->set('uaNum', $json['uaNum']);
-		$this->set('uName', $json['uaId']);
-		$this->set('aNum', $json['aNum']);
+		$this->set('users', Util::query("
+SELECT
+    user.id AS id,
+    user.name AS name,
+    user.rating AS rating,
+    user.picture AS picture,
+    user.external_id AS external_id,
+    SUM(achievement_status.value) AS achievement_score
+FROM user
+JOIN achievement_status
+    ON achievement_status.user_id = user.id
+GROUP BY user.id
+ORDER BY achievement_score DESC
+LIMIT 100;"));
 	}
 
 	/**
@@ -967,11 +920,7 @@ LIMIT 100"));
 		$this->set('dayRecord', $userYesterdayName);
 	}
 
-	/**
-	 * @param string|int|null $id
-	 * @return void
-	 */
-	public function view($id = null)
+	public function view($id = null): mixed
 	{
 		$this->set('_page', 'user');
 		$this->loadModel('TsumegoStatus');
@@ -987,6 +936,8 @@ LIMIT 100"));
 		$ach = $this->Achievement->find('all');
 
 		$user = $this->User->findById($id);
+		if (!$user)
+			return $this->redirect('/sets');
 		$this->set('_title', 'Profile of ' . $user['User']['name']);
 
 		// user edit
@@ -1008,24 +959,15 @@ LIMIT 100"));
 				}
 		}
 
-		$uts = $this->TsumegoStatus->find('all', ['order' => 'updated DESC', 'conditions' => ['user_id' => $id]]) ?: [];
-
-		$setKeys = [];
-		$setArray = $this->Set->find('all', ['conditions' => ['public' => 1]]) ?: [];
-		$setArrayCount = count($setArray);
-		for ($i = 0; $i < $setArrayCount; $i++)
-			$setKeys[$setArray[$i]['Set']['id']] = $setArray[$i]['Set']['id'];
-
-		$lastYear = date('Y-m-d', strtotime('-1 year'));
-		$tsumegoStatusToRestCount = 0;
-
-		foreach ($uts as $tsumegoStatus)
-		{
-			$date = new DateTime($tsumegoStatus['TsumegoStatus']['created']);
-			$tsumegoStatus['TsumegoStatus']['created'] = $date->format('Y-m-d');
-			if ($tsumegoStatus['TsumegoStatus']['created'] < $lastYear)
-				$tsumegoStatusToRestCount++;
-		}
+		$tsumegoStatusToRestCount = Util::query("
+SELECT
+	COUNT(*) AS total
+FROM tsumego_status
+WHERE
+	user_id = ? AND
+	tsumego_status.status IN ('S', 'C', 'W') AND
+	tsumego_status.updated <= NOW() - INTERVAL 1 YEAR;", [$id])[0]['total'];
+		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 
 		$oldest = new DateTime(date('Y-m-d', strtotime('-183 days')));
 		$oldest = $oldest->format('Y-m-d');
@@ -1078,30 +1020,8 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$deletedTsumegoStatusCount = 0;
 		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
 		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
-		if (isset($this->params['url']['delete-uts']))
-			if ($this->params['url']['delete-uts'] == 'true' && $canResetOldTsumegoStatuses)
-			{
-				$utsCount = count($uts);
-				for ($j = 0; $j < $utsCount; $j++)
-					if ($uts[$j]['TsumegoStatus']['created'] < $lastYear)
-					{
-						$this->TsumegoStatus->delete($uts[$j]['TsumegoStatus']['id']);
-						$deletedTsumegoStatusCount++;
-					}
-				$utx = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $id]]);
-				$correctCounter = 0;
-				$utxCount = count($utx);
-				for ($j = 0; $j < $utxCount; $j++)
-					if ($utx[$j]['TsumegoStatus']['status'] == 'S' || $utx[$j]['TsumegoStatus']['status'] == 'W' || $utx[$j]['TsumegoStatus']['status'] == 'C')
-						$correctCounter++;
-
-				$user['User']['solved'] = $correctCounter;
-				$user['User']['dbstorage'] = 99;
-				$this->User->save($user);
-			}
 
 		$asCount = count($as);
 		for ($i = 0; $i < $asCount; $i++)
@@ -1127,12 +1047,11 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$this->set('dailyResults', $dailyResults);
 		$this->set('user', $user);
 		$this->set('tsumegoCount', $tsumegoCount);
-		$this->set('deletedTsumegoStatusCount', $deletedTsumegoStatusCount);
-		$this->set('tsumegoStatusToRestCount', $tsumegoStatusToRestCount);
 		$this->set('as', $as);
 		$this->set('aNum', $aNumx);
 		$this->set('aCount', $aCount);
 		$this->set('canResetOldTsumegoStatuses', $canResetOldTsumegoStatuses);
+		return null;
 	}
 
 	/**
@@ -1603,5 +1522,31 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		CookieFlash::set('Tag proposal rejected', 'success');
 		return $this->redirect('/users/adminstats');
+	}
+
+	public function deleteOldTsumegoStatuses($id): mixed
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/sets');
+
+		// extra check of id, to make sure random link from someone doesn't just delete the progress
+		if ($id != Auth::getUserID())
+			return $this->redirect('/sets');
+		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
+		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
+			return $this->redirect('/users/view/' . Auth::getUserID());
+
+		$deleted = Util::query("SELECT COUNT(*) AS total FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()])[0]['total'];
+		Util::query("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()]);
+		Util::query("UPDATE user
+LEFT JOIN (
+    SELECT user_id, COUNT(*) AS cnt
+    FROM tsumego_status
+    WHERE status IN ('S', 'W', 'C', 'X')
+    GROUP BY user_id
+) ts ON ts.user_id = user.id
+SET user.solved = COALESCE(ts.cnt, 0)");
+		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
+		return $this->redirect('/users/view/' . Auth::getUserID());
 	}
 }

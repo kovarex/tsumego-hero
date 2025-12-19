@@ -5,7 +5,7 @@ App::uses('TsumegoButtonsQueryBuilder', 'Utility');
 
 class TsumegoButtons extends ArrayObject
 {
-	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, ?string $id = null)
+	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, string|int|null $id = null)
 	{
 		if (!$tsumegoFilters)
 			return; // Temporary until also the favorites are covered
@@ -27,10 +27,12 @@ class TsumegoButtons extends ArrayObject
 					$this->fill($condition, $tsumegoFilters, $id);
 					$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
 				}
-
-			// mark the problem we are going to visit as the currently opened one
-			$this[$currentIndex]->isCurrentlyOpened = true;
-			$this->currentOrder = $this[$currentIndex]->order;
+			if (!is_null($currentIndex))
+			{
+				// mark the problem we are going to visit as the currently opened one
+				$this[$currentIndex]->isCurrentlyOpened = true;
+				$this->currentOrder = $this[$currentIndex]->order;
+			}
 			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
 		}
 		elseif (!is_null($partition))
@@ -58,7 +60,8 @@ class TsumegoButtons extends ArrayObject
 				$row['tsumego_id'],
 				$row['set_connection_id'],
 				$row['num'],
-				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N');
+				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
+				$row['rating']);
 		$this->updateHighestTsumegoOrder();
 	}
 
@@ -144,6 +147,25 @@ class TsumegoButtons extends ArrayObject
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
 		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+	}
+
+	public function getProblemsSolvedPercent(): float
+	{
+		$solvedCount = 0;
+		foreach ($this as $tsumegoButton)
+			if (TsumegoUtil::isSolvedStatus($tsumegoButton->status))
+				$solvedCount++;
+		return Util::getPercentButAvoid100UntilComplete($solvedCount, count($this));
+	}
+
+	public function getProblemsRating(): float
+	{
+		if (count($this) == 0)
+			return 0;
+		$ratingSum = 0;
+		foreach ($this as $tsumegoButton)
+			$ratingSum += $tsumegoButton->rating;
+		return $ratingSum / count($this);
 	}
 
 	public int $partition = 0;

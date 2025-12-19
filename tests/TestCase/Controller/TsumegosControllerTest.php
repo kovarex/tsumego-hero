@@ -340,4 +340,44 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString($tsumegoUrl, $currentUrl, "Should stay on same problem");
 	}
+
+	// When user solves a problem, clicking the board should navigate to next problem.
+	public function testClickingBoardAfterSuccessNavigatesToNextPuzzle()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+				'sets' => [['name' => 'Test Set', 'num' => '1']]],
+			'other-tsumegos' => [[
+				'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])',
+				'sets' => [['name' => 'Test Set', 'num' => '2']]]]]);
+
+		$browser = Browser::instance();
+		$firstTsumegoUrl = $context->tsumego['set-connections'][0]['id'];
+		$secondTsumegoUrl = $context->otherTsumegos[0]['set-connections'][0]['id'];
+		$browser->get($firstTsumegoUrl);
+
+		// Solve the puzzle by making correct moves (this SGF requires 2 clicks)
+		$browser->clickBoard(1, 1); // First move
+		usleep(500 * 1000);
+		$browser->clickBoard(2, 1); // Second move that solves it
+		usleep(200 * 1000);
+
+		// Verify puzzle is solved
+		$problemSolved = $browser->driver->executeScript("return window.problemSolved;");
+		$this->assertTrue($problemSolved, "problemSolved should be true");
+
+		// Verify boardLockValue is set
+		$boardLockValue = $browser->driver->executeScript("return window.boardLockValue;");
+		$this->assertEquals(1, $boardLockValue, "Board should be locked after success");
+
+		// Click on board to navigate to next puzzle (use position near existing stones)
+		$browser->clickBoard(1, 2); // Click near the solved area
+		usleep(500 * 1000); // Wait for navigation
+
+		// Verify we navigated to the next puzzle
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
+	}
 }

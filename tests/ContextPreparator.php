@@ -40,7 +40,6 @@ class ContextPreparator
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->prepareAchievementConditions(Util::extract('achievement-conditions', $options));
-		$this->prepareAchievementStatuses(Util::extract('achievement-statuses', $options));
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
@@ -131,6 +130,7 @@ class ContextPreparator
 			ClassRegistry::init('UserContribution')->create($userContribution);
 			ClassRegistry::init('UserContribution')->save($userContribution);
 		}
+		$this->prepareAchievementStatuses($user, Util::extract('achievement-statuses', $userInput));
 		$this->checkOptionsConsumed($userInput);
 		return $user;
 	}
@@ -151,7 +151,7 @@ class ContextPreparator
 		$set = [];
 		$set['title'] = Util::extract('title', $setInput) ?: 'Test Set';
 		$set['public'] = Util::extract('public', $setInput) ?? 0;
-		$set['order'] = Util::extract('order', $setInput) ?: 999;
+		$set['order'] = Util::extract('order', $setInput) ?: Constants::$DEFAULT_SET_ORDER;
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save($set);
 		$this->set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC'])['Set'];
@@ -176,6 +176,7 @@ class ContextPreparator
 		$this->prepareTsumegoSets(Util::extract('sets', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
+		$this->prepareTsumegoStatuses(Util::extract('statuses', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempt(Util::extract('attempt', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoAttempts(Util::extract('attempts', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
@@ -309,14 +310,29 @@ class ContextPreparator
 		$this->checkOptionsConsumed($issueInput);
 	}
 
+	private function prepareTsumegoStatuses($tsumegoStatuses, $tsumego): void
+	{
+		if (!$tsumegoStatuses)
+			return;
+		foreach ($tsumegoStatuses as $tsumegoStatus)
+			$this->prepareTsumegoStatus($tsumegoStatus, $tsumego);
+	}
+
 	private function prepareTsumegoStatus($tsumegoStatus, $tsumego): void
 	{
-		$statusCondition = [
-			'conditions' => [
-				'user_id' => $this->user['id'],
-				['tsumego_id' => $tsumego['id']]]];
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
 		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
+		$userID = $tsumegoStatus
+			? (is_string($tsumegoStatus)
+				? $this->user['id']
+				: (self::getUserIdFromName(Util::extract('user', $tsumegoStatus)) ?: $this->user['id']))
+			: null;
+
+		$statusCondition = [
+			'conditions' => [
+				'user_id' => $userID,
+				['tsumego_id' => $tsumego['id']]]];
+
 		$originalTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition);
 		if ($originalTsumegoStatus)
 			if (!$tsumegoStatus)
@@ -335,8 +351,10 @@ class ContextPreparator
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
-			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $this->user['id'];
+			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
+			if ($updated)
+				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
 			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
 			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 		}
@@ -426,10 +444,12 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['premium'] = $premium;
 			$set['board_theme_index'] = $boardThemeIndex;
+			$set['order'] = Constants::$DEFAULT_SET_ORDER;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
+			$this->sets [] = $set['Set'];
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
@@ -656,7 +676,7 @@ class ContextPreparator
 		}
 	}
 
-	public function prepareAchievementStatuses(?array $statuses): void
+	public function prepareAchievementStatuses($user, ?array $statuses): void
 	{
 		if (!$statuses)
 			return;
@@ -665,28 +685,8 @@ class ContextPreparator
 		foreach ($statuses as $statusInput)
 		{
 			$status = [];
-
-			// Support 'user_id' => true to use main context user
-			// Support 'user_id' => string to use user by name from otherUsers
-			$userId = Util::extract('user_id', $statusInput);
-			if ($userId === true)
-				$status['user_id'] = $this->user['id'];
-			elseif (is_string($userId))
-			{
-				// Find user by name from otherUsers
-				$foundUser = null;
-				foreach ($this->otherUsers as $otherUser)
-					if ($otherUser['name'] === $userId)
-					{
-						$foundUser = $otherUser;
-						break;
-					}
-				$status['user_id'] = $foundUser ? $foundUser['id'] : $this->user['id'];
-			}
-			else
-				$status['user_id'] = $userId ?: $this->user['id'];
-
-			$status['achievement_id'] = Util::extract('achievement_id', $statusInput);
+			$status['user_id'] = $user['id'];
+			$status['achievement_id'] = Util::extract('id', $statusInput);
 			$status['value'] = Util::extract('value', $statusInput) ?? 1;
 			$status['created'] = Util::extract('created', $statusInput) ?: date('Y-m-d H:i:s');
 
@@ -862,6 +862,7 @@ class ContextPreparator
 	public ?array $user = null;
 	public array $otherUsers = [];
 	public ?array $set = null;
+	public array $sets = [];
 	public ?array $tsumego = null;
 	public array $otherTsumegos = [];
 	public array $allTsumegos = [];
