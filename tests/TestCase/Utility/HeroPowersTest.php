@@ -138,7 +138,7 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testUseRevelation()
 	{
-		foreach (['not-available', 'used-up', 'normal'] as $testCase)
+		foreach (['logged-off', 'not-available', 'used-up', 'normal'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$context = new ContextPreparator([
@@ -150,7 +150,9 @@ class HeroPowersTest extends TestCaseWithAuth
 			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
 			$this->checkPowerIsActive($browser, 'revelation');
 
-			if ($testCase == 'not-available')
+			if ($testCase == 'logged-off')
+				$browser->logoff();
+			else if ($testCase == 'not-available')
 			{
 				Auth::getUser()['level'] = 1;
 				Auth::saveUser();
@@ -165,7 +167,13 @@ class HeroPowersTest extends TestCaseWithAuth
 			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
 			$browser->clickId('revelation');
 			$message =  $browser->driver->executeScript("return window.alertMessage;");
-			if ($testCase == 'not-available')
+			if ($testCase == 'logged-off')
+			{
+				$this->assertSame($message, 'Not logged in.');
+				Auth::init();
+				continue;
+			}
+			else if ($testCase == 'not-available')
 				$this->assertSame($message, 'Revelation is not available to this account.');
 			else if ($testCase == 'user-up')
 				$this->assertSame($message, 'Revelation is used up today.');
