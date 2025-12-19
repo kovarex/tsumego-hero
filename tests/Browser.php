@@ -246,6 +246,7 @@ class Browser
 			});
 			document.dispatchEvent(event);
 		");
+		$this->assertNoErrors();
 	}
 
 	public function ignoreJsErrorPattern(string $pattern): void
@@ -302,6 +303,7 @@ class Browser
 		usleep(1000 * 100);
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		usleep(1000 * 50);
+		$this->assertNoErrors();
 	}
 
 	public function getAlertText()
@@ -344,6 +346,7 @@ class Browser
 		if (count($clickableRects) < $boardSize * $boardSize + 1)
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
+		$this->assertNoErrors();
 	}
 
 	public function getWithPostData($url, $postData)
