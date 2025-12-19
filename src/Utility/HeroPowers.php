@@ -112,7 +112,7 @@ class HeroPowers
 		. 'src="' . $image . '" '
 		. 'onmouseover="this.src = \'' . $hoveredImage . '\';" '
 		. 'onmouseout="this.src = \'' . $image . '\';" '
-		. 'onclick="revelation(); return false;"'
+		. (self::canUseRevelation() ? 'onclick="revelation(); return false;"' : '')
 		. 'style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
 	}
 
