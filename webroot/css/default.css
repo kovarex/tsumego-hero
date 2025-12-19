@@ -5498,10 +5498,6 @@ select.flat-select:hover {
   border: 1px solid #1b1b1b;
   background: #555555;
 }
-#submit-size-button:disabled {
-  background: #fff;
-  color: #fff;
-}
 #set-size-input {
   background: #555555;
   width: 90px;

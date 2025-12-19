@@ -168,9 +168,7 @@ class Preferences
 	private static function setInDatabase(string $key, $value): void
 	{
 		$userId = Auth::getUserID();
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', [
-			'conditions' => ['user_id' => $userId],
-		]);
+		$userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]]);
 
 		if ($userContribution)
 		{

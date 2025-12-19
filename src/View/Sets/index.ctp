@@ -77,16 +77,16 @@
 		<div class="set-buttons" id="problems-found">
 			Problems found: <?php echo $setsSelector->problemsFound; ?>
 		</div>
+		<form method="post" action="/sets/changeCollectionSize">
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
-				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10">
+				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10" name="collection_size">
 			</div>
 			<div class="set-buttons">
-				<button disabled="true" id="submit-size-button" onclick="submitSize()" class="btn btn-link collapsed set-search">
-					Submit
-				</button>
+			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search" style="width:70px;" value="Submit">
 			</div>
 		</div>
+		</form>
 	</div>
 	<div class="active-tiles-container"></div>
 	<div align="center" class="set-index display1">
@@ -900,20 +900,6 @@
 				$("#dropdown-tags").fadeOut(250);
 			}
 		});
-
-		$("#set-size-input").on("input", function(){
-				let isNum = /^\d+$/.test($("#set-size-input").val());
-				if(isNum && $("#set-size-input").val()>=5)
-					$("#submit-size-button").removeAttr("disabled");
-				else
-					$("#submit-size-button").attr("disabled","disabled");
-		});
-
-		function submitSize(){
-			const size = $("#set-size-input").val();
-			setCookie("collectionSize", size);
-			window.location.href = "/sets";
-		}
 
 		$("#tile-topics-submit").click(function(e){
 			setCookie("query", "topics");

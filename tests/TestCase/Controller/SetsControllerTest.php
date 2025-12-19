@@ -2,6 +2,7 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
+use Facebook\WebDriver\WebDriverKeys;
 
 App::uses('TsumegoFilters', 'Utility');
 
@@ -1384,5 +1385,20 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
 		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
+	}
+
+	public function testChangeCollectionSize()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['collection_size' => 200]]);
+
+		// we open partition of the set
+		$browser->get('sets');
+		$browser->clickId('set-size-input');
+		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
+		$browser->driver->getKeyboard()->sendKeys('60');
+		$browser->clickId("submit-size-button");
+		$tsumegoFilters = new TsumegoFilters();
+		$this->assertSame(60, $tsumegoFilters->collectionSize);
 	}
 }
