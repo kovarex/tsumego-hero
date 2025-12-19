@@ -138,6 +138,11 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					if (targetTab) {
 						targetTab.classList.add('active');
 					}
+					// Show the content container (morphed HTML has display:none)
+					var content = document.getElementById('msg2x');
+					if (content) {
+						content.style.display = '';
+					}
 					// Re-apply filter to items
 					applyCommentsFilter(currentCommentsFilter);
 				}, 50);

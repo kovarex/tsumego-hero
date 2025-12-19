@@ -803,6 +803,9 @@ class CommentsControllerTest extends ControllerTestCase
 						setTimeout(function() {
 							var targetTab = document.querySelector('.tsumego-comments__tab[data-filter=\"' + currentCommentsFilter + '\"]');
 							if (targetTab) targetTab.classList.add('active');
+							// Show the content container (morphed HTML has display:none)
+							var content = document.getElementById('msg2x');
+							if (content) content.style.display = '';
 							applyCommentsFilter(currentCommentsFilter);
 						}, 50);
 					}
@@ -927,7 +930,15 @@ class CommentsControllerTest extends ControllerTestCase
 			// Click the COMMENTS tab to expand
 			$commentsTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
 			$commentsTab->click();
-			usleep(350 * 1000); // Wait for any animation
+
+			// Wait for the content to become visible (handles the display: none -> display: '' transition)
+			$browser->driver->wait(5)->until(
+				WebDriverExpectedCondition::visibilityOf($commentsContent)
+			);
+
+			// Wait a bit for filter logic to run (applies display rules to items)
+			// Don't wait for specific items as section might be empty
+			usleep(300 * 1000);
 		}
 	}
 }
