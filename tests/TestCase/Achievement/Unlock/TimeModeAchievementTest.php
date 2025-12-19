@@ -27,7 +27,7 @@ class TimeModeAchievementTest extends AchievementTestCase
 
 	public function testFastTimeModeAchievements()
 	{
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'time-mode-ranks' => ['4k'],
 			'time-mode-sessions' => [[
 				'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,

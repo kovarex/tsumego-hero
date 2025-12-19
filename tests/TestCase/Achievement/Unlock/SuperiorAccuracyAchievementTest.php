@@ -12,6 +12,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 {
 	public function testSuperiorAccuracyAchievement()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator();
 
 		// Create set with 100 tsumegos + SetConnection records
@@ -26,12 +27,13 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'category' => '%',
 			'value' => 100]);
 
-		new AchievementChecker()->checkSetAchievements($setId);
+		$browser->get('/sets/view/' . $setId);
 		$this->assertAchievementUnlocked(Achievement::SUPERIOR_ACCURACY, 'Superior Accuracy (100%) should unlock');
 	}
 
 	public function testSuperiorAccuracyDoesNotUnlockBelow100Percent()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator();
 
 		// Create set with 100 tsumegos
@@ -46,7 +48,7 @@ class SuperiorAccuracyAchievementTest extends AchievementTestCase
 			'category' => '%',
 			'value' => 99]);
 
-		new AchievementChecker()->checkSetAchievements($setId);
+		$browser->get('/sets/view/' . $setId);
 		$this->assertAchievementNotUnlocked(Achievement::SUPERIOR_ACCURACY);
 	}
 }
