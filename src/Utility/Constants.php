@@ -27,4 +27,6 @@ class Constants
 	public static float $RATING_MODE_DIFFERENCE_SETTING_1 = 150;
 	public static float $RATING_MODE_DIFFERENCE_SETTING_2 = 300;
 	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
+
+	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
 }

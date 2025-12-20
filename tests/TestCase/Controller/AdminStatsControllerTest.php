@@ -307,7 +307,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
-			'user' => ['admin' => false],
+			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [['sgf' => $sgfVersion1, 'status' => 'S', 'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);

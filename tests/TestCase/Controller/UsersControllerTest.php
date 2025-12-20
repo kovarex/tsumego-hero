@@ -75,7 +75,7 @@ class UsersControllerTest extends ControllerTestCase
 		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
 		$rows = $table->findElements(WebDriverBy::tagName("tr"));
 		$this->assertCount(1, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
+		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING));
 		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 
 		// Kovarex solves a problem
@@ -84,13 +84,11 @@ class UsersControllerTest extends ControllerTestCase
 
 		// now kovarex is there
 		$browser->get('users/leaderboard');
-		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
-		$rows = $table->findElements(WebDriverBy::tagName("tr"));
-		$this->assertCount(2, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '1 solved');
-		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
-		$this->assertSame($rows[1]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
+		$browser->checkTable('.dailyHighscoreTable', $this,
+			[
+				['1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '1 solved'],
+				['2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '2 solved']
+			]);
 	}
 
 	public function testLevelHighscore()
@@ -109,9 +107,9 @@ class UsersControllerTest extends ControllerTestCase
 			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
 			$rows = $table->findElements(WebDriverBy::tagName("tr"));
 			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
-			$this->assertSame($rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov 6k');
+			$this->assertTextStartsWith('Ivan Detkov', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 			if ($loggedIn)
-				$this->assertSame($rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'kovarex 6k');
+				$this->assertTextStartsWith('kovarex', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
 
 		}
 	}

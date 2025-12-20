@@ -7,7 +7,7 @@ class TagTest extends ControllerTestCase
 		foreach ([false, true] as $isAdmin)
 		{
 			$context = new ContextPreparator([
-				'user' => ['admin' => $isAdmin],
+				'user' => ['admin' => $isAdmin, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 				'tags' => [['name' => 'snapback']]]);
 			$browser = Browser::instance();
@@ -26,6 +26,7 @@ class TagTest extends ControllerTestCase
 	public function testAddTagDoesntOfferAlreadyExistingTag()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'atari']]]],
@@ -45,6 +46,7 @@ class TagTest extends ControllerTestCase
 		foreach ([false, true] as $popular)
 		{
 			$context = new ContextPreparator([
+				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'popular' => $popular]]]],
@@ -78,7 +80,7 @@ class TagTest extends ControllerTestCase
 		foreach ([false, true] as $popular)
 		{
 			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE],
+				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-users' => [['name' => 'Ivan detkov']],
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
@@ -128,7 +130,7 @@ class TagTest extends ControllerTestCase
 		foreach ([false, true] as $popular)
 		{
 			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE],
+				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-users' => [['name' => 'Ivan detkov']],
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
@@ -160,6 +162,7 @@ class TagTest extends ControllerTestCase
 	public function testShowTagWhichIsHintAfterProblemGetsSolved()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [
@@ -182,6 +185,7 @@ class TagTest extends ControllerTestCase
 		foreach ([false, true] as $popular)
 		{
 			$context = new ContextPreparator([
+				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'popular' => $popular]]]]]);
@@ -200,6 +204,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToAddTagWhenNotLoggedIn()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
@@ -220,6 +225,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToAddNonExistingTag()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
@@ -240,6 +246,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToAddTagToNonExistingTsumego()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
@@ -260,6 +267,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToAddDupliciteTag()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
@@ -287,6 +295,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveTagWhenNotLoggedIn()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
@@ -307,6 +316,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveNonExistingTag()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
@@ -327,6 +337,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveFromNonExistingTsumego()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
@@ -347,6 +358,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveTagConnectionWhichDoesntExist()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
@@ -367,6 +379,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveApprovedTagAsNonAdmin()
 	{
 		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
@@ -392,7 +405,7 @@ class TagTest extends ControllerTestCase
 	public function testTryToRemoveTagProposedBySomeoneElse()
 	{
 		$context = new ContextPreparator([
-			'user' => ['name' => 'kovarex'],
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan Detkov']],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],

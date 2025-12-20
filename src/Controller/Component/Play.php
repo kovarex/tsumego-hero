@@ -352,7 +352,7 @@ class Play
 		{
 			if (Auth::getUser()['level'] >= 40)
 				$isAllowedToContribute = true;
-			elseif (Auth::getUser()['rating'] >= 1500)
+			elseif (Auth::getUser()['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE)
 				$isAllowedToContribute = true;
 
 			if (Auth::isAdmin())

@@ -79,7 +79,7 @@ class ContextPreparator
 		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
 		$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
-		$user['rating'] = Util::extract('rating', $userInput) ?: 1500;
+		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
@@ -875,4 +875,6 @@ class ContextPreparator
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 	private int $lastXp = 0;
+
+	public static float $DEFAULT_USER_RATING = 100;
 }

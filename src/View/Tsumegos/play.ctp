@@ -277,20 +277,25 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<div align="center">
 	<?php
 
-		if($firstRanks==0) {
+		if ($firstRanks == 0)
+		{
 			$makeProposal = '';
 			$proposalSentColor = '';
 			if(Auth::isAdmin())
 				$makeProposal = 'Open';
-			else {
-				if(!$hasSgfProposal) {
+			else
+			{
+				if (!$hasSgfProposal)
+				{
 					if($isAllowedToContribute)
 						$makeProposal = 'Make Proposal';
-	}else{
+				}
+				else
+				{
 					$makeProposal = 'Proposal sent';
 					$proposalSentColor = 'color:#717171;';
-	}
-	}
+				}
+			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
 		?>
