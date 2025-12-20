@@ -166,7 +166,7 @@ class AchievementChecker
 			$this->gained(Achievement::NO_ERROR_STREAK_VI);
 	}
 
-	public function checkTimeModeAchievements(): void
+	public function checkTimeModeAchievements(): AchievementChecker
 	{
 		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 		foreach ($timeModeSessions as $timeModeSession)
@@ -243,6 +243,7 @@ class AchievementChecker
 			if ($points >= 950 && $rankId >= TimeModeRank::RANK_10K)
 				$this->gained(Achievement::TIME_MODE_PRECISION_I);
 		}
+		return $this;
 	}
 
 	public function checkRatingAchievements(): AchievementChecker

@@ -294,6 +294,8 @@ ORDER BY MIN(rating);");
 		$this->set('rankArrowClosed', '/img/greyArrow1.png');
 		$this->set('rankArrowOpened', '/img/greyArrow2.png');
 		$this->set('unlock', self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
+		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);
+
 		return null;
 	}
 }

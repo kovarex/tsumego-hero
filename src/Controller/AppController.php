@@ -614,7 +614,6 @@ class AppController extends Controller
 			$achievementChecker->checkLevelAchievements();
 			$achievementChecker->checkProblemNumberAchievements();
 			$achievementChecker->checkRatingAchievements();
-			$achievementChecker->checkTimeModeAchievements();
 			$achievementChecker->checkDanSolveAchievements();
 			$achievementChecker->checkNoErrorAchievements();
 			$achievementChecker->finalize();
