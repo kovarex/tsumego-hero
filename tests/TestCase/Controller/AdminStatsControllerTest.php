@@ -23,7 +23,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
+			'tsumego' => 1,
 			'admin-activities' => [
 				[
 					'type' => AdminActivityType::DESCRIPTION_EDIT,
@@ -43,20 +43,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Description Edit', $pageSource);
 	}
 
-	/**
-	 * Test non-admin users cannot access adminstats page
-	 */
 	public function testAdminStatsRedirectsNonAdmin()
 	{
-		$context = new ContextPreparator([
-			'user' => []
-		]);
-
 		$browser = Browser::instance();
+		new ContextPreparator();
 		$browser->get('users/adminstats');
-
-		// Should redirect to home page
-		$this->assertStringContainsString('/', $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('/', $browser->driver->getCurrentURL()); // Should redirect to home page
 	}
 
 	/**
@@ -69,7 +61,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => ['sets' => [['name' => 'Test Set', 'num' => 1]]],
+			'tsumego' => 1,
 			'admin-activities' => [
 				[
 					'type' => AdminActivityType::SET_TITLE_EDIT,
@@ -134,9 +126,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('« Previous', $pageSource);
 	}
 
-	/**
-	 * Test multiple paginations work independently
-	 */
 	public function testMultiplePaginationsIndependent()
 	{
 		App::uses('AdminActivityLogger', 'Utility');
@@ -194,12 +183,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Test Set', 'num' => 1]]
-			],
-			'tsumegos' => [
-				['sets' => [['name' => 'Test Set', 'num' => 2]]]
-			],
+			'tsumegos' => [1, 2],
 			'admin-activities' => [
 				// Problem edits (1-3)
 				['type' => AdminActivityType::DESCRIPTION_EDIT, 'tsumego_id' => true, 'old_value' => 'old desc', 'new_value' => 'new desc'],
@@ -308,7 +292,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumegos' => [['sgf' => $sgfVersion1, 'status' => 'S', 'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+			'tsumego' => ['sgf' => $sgfVersion1, 'status' => 'S', 'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$makeProposalLink = $browser->find('#openSgfLink');
@@ -340,12 +324,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumegos' => [[
+			'tsumego' => [
 				'sgfs' => [
 					['data' => $sgfVersion1, 'accepted' => true],
 					['data' => $sgfVersion2, 'accepted' => false]],
 				'status' => 'S',
-				'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+				'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
@@ -370,12 +354,12 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumegos' => [[
+			'tsumego' => [
 				'sgfs' => [
 					['data' => $sgfVersion1, 'accepted' => true],
 					['data' => $sgfVersion2, 'accepted' => false]],
 				'status' => 'S',
-				'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+				'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
@@ -396,9 +380,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1]],
-				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
@@ -423,9 +405,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1]],
-				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());

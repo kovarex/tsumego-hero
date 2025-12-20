@@ -160,8 +160,11 @@ class ContextPreparator
 		$this->checkOptionsConsumed($setInput);
 	}
 
-	private function prepareTsumego(?array $tsumegoInput): array
+	private function prepareTsumego(null|array|int $tsumegoInput): array
 	{
+		if (is_int($tsumegoInput))
+			return $this->prepareTsumego(['set_order' => $tsumegoInput]);
+
 		$tsumego = [];
 		$tsumego['description'] = Util::extract('description', $tsumegoInput) ?: 'test-tsumego';
 		$tsumego['hint'] = Util::extract('hint', $tsumegoInput) ?: '';
@@ -175,6 +178,7 @@ class ContextPreparator
 		$tsumego = ClassRegistry::init('Tsumego')->find('first', ['order' => ['id' => 'DESC']])['Tsumego'];
 		assert($tsumego['id']);
 
+		$this->prepareTsumegoSetsFromJustNum(Util::extract('set_order', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSets(Util::extract('sets', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoTags(Util::extract('tags', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoStatus(Util::extract('status', $tsumegoInput), $tsumego);
@@ -189,7 +193,7 @@ class ContextPreparator
 		return $tsumego;
 	}
 
-	private function prepareThisTsumego(?array $tsumego): void
+	private function prepareThisTsumego(null|int|array $tsumego): void
 	{
 		if (is_null($tsumego))
 			return;
@@ -360,6 +364,13 @@ class ContextPreparator
 		}
 	}
 
+	private function prepareTsumegoSetsFromJustNum(?int $num, &$tsumego): void
+	{
+		if (is_null($num))
+			return;
+		$this->prepareTsumegoSet(['name' => 'test set', 'num' => $num], $tsumego);
+	}
+
 	private function prepareTsumegoSets($setsInput, &$tsumego): void
 	{
 		if (!$setsInput)
@@ -368,25 +379,31 @@ class ContextPreparator
 		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		$this->tsumegoSets = [];
 		foreach ($setsInput as $tsumegoSet)
-		{
-			$set = $this->getOrCreateTsumegoSet([
-				'name' => Util::extract('name', $tsumegoSet),
-				'included_in_time_mode' => Util::extract('included_in_time_mode', $tsumegoSet),
-				'public' => Util::extract('public', $tsumegoSet),
-				'premium' => $tsumegoSet['premium'] ?? 0,
-				'board_theme_index' => Util::extract('board_theme_index', $tsumegoSet)]);
-			unset($tsumegoSet['premium']);  // Mark as consumed
-			$setConnection = [];
-			$setConnection['tsumego_id'] = $tsumego['id'];
-			$setConnection['set_id'] = $set['id'];
-			$setConnection['num'] = Util::extract('num', $tsumegoSet);
-			ClassRegistry::init('SetConnection')->create($setConnection);
-			ClassRegistry::init('SetConnection')->save($setConnection);
-			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
-			$tsumego['sets'] [] = $set;
-			$tsumego['set-connections'] [] = $setConnection;
-			$this->checkOptionsConsumed($tsumegoSet);
-		}
+			$this->prepareTsumegoSet($tsumegoSet, $tsumego);
+	}
+
+	private function prepareTsumegoSet($setInput, &$tsumego): void
+	{
+		if (!$setInput)
+			return;
+
+		$set = $this->getOrCreateTsumegoSet([
+				'name' => Util::extractWithDefault('name', $setInput, 'test set'),
+				'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
+				'public' => Util::extract('public', $setInput),
+				'premium' => $setInput['premium'] ?? 0,
+				'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
+		unset($setInput['premium']);  // Mark as consumed
+		$setConnection = [];
+		$setConnection['tsumego_id'] = $tsumego['id'];
+		$setConnection['set_id'] = $set['id'];
+		$setConnection['num'] = Util::extract('num', $setInput);
+		ClassRegistry::init('SetConnection')->create($setConnection);
+		ClassRegistry::init('SetConnection')->save($setConnection);
+		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
+		$tsumego['sets'] [] = $set;
+		$tsumego['set-connections'] [] = $setConnection;
+		$this->checkOptionsConsumed($setInput);
 	}
 
 	private function prepareTsumegoTags($tagsInput, &$tsumego): void

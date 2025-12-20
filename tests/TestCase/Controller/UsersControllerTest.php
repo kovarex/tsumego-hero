@@ -67,7 +67,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex'],
 			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]],
-			'tsumegos' => [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumego' => ['rating' => 2600, 'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('users/leaderboard');
 
@@ -98,7 +98,7 @@ class UsersControllerTest extends ControllerTestCase
 			$contextParameters = [];
 			$contextParameters['user'] = $loggedIn ? ['name' => 'kovarex'] : null;
 			$contextParameters['other-users'] = [['name' => 'Ivan Detkov', 'level' => 10]];
-			$contextParameters['tsumegos'] = [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]];
+			$contextParameters['tsumego'] = ['rating' => 2600, 'set_order' => 1];
 			$context = new ContextPreparator($contextParameters);
 			$browser = Browser::instance();
 			$browser->get('users/highscore');
@@ -116,10 +116,7 @@ class UsersControllerTest extends ControllerTestCase
 
 	public function testUserContributionsShowsTagAdded()
 	{
-		$context = new ContextPreparator([
-			'tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1]],
-				'tags' => [['name' => 'atari', 'user' => 'kovarex']]]]]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'tags' => [['name' => 'atari', 'user' => 'kovarex']]]]);
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 		$browser->clickId("navigate-to-contributions");

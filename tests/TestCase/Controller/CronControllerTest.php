@@ -45,8 +45,8 @@ class CronControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
 			'tsumegos' => [
-				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'F'],
-				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'X']]]);
+				['set_order' => 1, 'status' => 'F'],
+				['set_order' => 2, 'status' => 'X']]]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
 		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
@@ -61,8 +61,8 @@ class CronControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
 			'tsumegos' => [
-				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
-				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
+				['set_order' => 2, 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
 		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'W');
@@ -149,8 +149,8 @@ class CronControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'tsumegos' => [
-				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S'],
-				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'S']],
+				['set_order' => 1, 'status' => 'S'],
+				['set_order' => 2, 'status' => 'S']],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
 		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);

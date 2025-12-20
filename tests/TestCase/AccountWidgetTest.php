@@ -19,7 +19,7 @@ class AccountWidgetTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['xp' => 13, 'level' => 5],
-				'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $status]]]);
+				'tsumego' => ['set_order' => 1, 'status' => $status]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 

@@ -9,17 +9,17 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		foreach ([false, true] as $openBySetConnectionID)
 		{
-			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
+			$context = new ContextPreparator(['tsumego' => ['set_order' =>666]]);
 			$this->testAction(
 				$openBySetConnectionID
 				? ('/' . $context->tsumegos[0]['set-connections'][0]['id'])
 				: ('tsumegos/play/' . $context->tsumegos[0]['id']),
 				['return' => 'view']);
-			$this->assertTextContains("tsumego set 1", $this->view);
+			$this->assertTextContains("test set", $this->view);
 
 			$dom = $this->getStringDom();
 			$href = $dom->querySelector('#playTitleA');
-			$this->assertTextContains('tsumego set 1', $href->textContent);
+			$this->assertTextContains('test set', $href->textContent);
 			$this->assertTextContains('666', $href->textContent);
 		}
 	}
@@ -76,14 +76,13 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testViewingTsumegoWithoutAnySGF()
 	{
-		$context = new ContextPreparator(
-			['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 
 		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
-		$this->assertTextContains('tsumego set 1', $href->textContent);
+		$this->assertTextContains('test set', $href->textContent);
 		$this->assertTextContains('666', $href->textContent);
 	}
 
@@ -91,11 +90,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	// if this test fails, it probably means something is wrong with the web driver configuration
 	public function testViewingTsumegoInMoreSetsUsingWebDriver()
 	{
-		$context = new ContextPreparator(
-			['tsumego' => [
-				'sets' => [
-					['name' => 'tsumego set 1', 'num' => '666'],
-					['name' => 'tsumego set 2', 'num' => '777']]]]);
+		$context = new ContextPreparator(['tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '666'], ['name' => 'tsumego set 2', 'num' => '777']]]]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
@@ -104,13 +100,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('666', $href->getText());
 	}
 
-	public function testTheNextAndBackButtonLinsWhenBothPointToOtherTsumegos()
+	public function testTheNextAndBackButtonLinksWhenBothPointToOtherTsumegos()
 	{
-		$context = new ContextPreparator([
-			'tsumegos' => [
-				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
-				['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
-				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]]]);
+		$context = new ContextPreparator(['tsumegos' => [1, 2, 3]]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[1]['set-connections'][0]['id']);
@@ -123,7 +115,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testShowFullHearts()
 	{
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+		$context = new ContextPreparator(['tsumego' => 1]);
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
@@ -134,9 +126,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testShowFullPartialHearts()
 	{
-		$context = new ContextPreparator([
-			'user' => ['damage' => '1'],
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+		$context = new ContextPreparator(['user' => ['damage' => '1'], 'tsumego' => 1]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
@@ -148,9 +138,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	public function testShowHeartsWithDamageHigherThanHealth()
 	{
-		$context = new ContextPreparator([
-			'user' => ['damage' => '10000'],
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
+		$context = new ContextPreparator(['user' => ['damage' => '10000'], 'tsumego' => 1]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
@@ -163,10 +151,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testCommentCoordinatesHaveHoverSpans()
 	{
 		// Create a tsumego with a comment containing coordinates
-		$context = new ContextPreparator([
-			'user' => ['admin' => true], // Admin so comments are visible
-			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
-		]);
+		 // Admin so comments are visible
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
 
 		// Add a comment with coordinates
 		$comment = ClassRegistry::init('TsumegoComment');
@@ -192,9 +178,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
 			'user' => ['premium' => true, 'health' => 1], // Admin so comments are visible
-			'tsumego' => [
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
-				'sets' => [['name' => 'test set', 'num' => '1']]]]);
+			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])']]);
 		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
@@ -210,13 +194,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		foreach ([false, true] as $isGuest)
 		{
 			$browser = Browser::instance();
-			$contextConfig = [
+			$context = new ContextPreparator([
 				'user' => $isGuest ? ['name' => 'testuser'] : ['mode' => Constants::$LEVEL_MODE],
-				'tsumego' => [
-					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-					'sets' => [['name' => 'test set', 'num' => '1']]]];
-
-			$context = new ContextPreparator($contextConfig);
+				'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])']]);
 
 			if ($isGuest)
 			{
@@ -242,7 +222,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'tsumego' => [
 					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
 					'rating' => 1000,
-					'sets' => [['name' => 'test set', 'num' => '1']],
+					'set_order' => 1,
 					'status' => ($testCase == 'already-solved' ? 'S' : 'V')]]);
 			$browser = Browser::instance();
 			$browser->setCookie('showInAccountWidget', 'rating');
@@ -276,10 +256,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testOpenPremiumProblemWithNonPremiumAccount()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sets' => [['name' => 'test set', 'num' => '1', 'premium' => true]]]]);
+		$context = new ContextPreparator(['tsumego' => ['sets' => [['num' => '1', 'premium' => true]]]]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
 		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
@@ -291,12 +268,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	 */
 	public function testBoardDoesntLockAfterFailAllowsContinuedAttempts()
 	{
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ca]C[+])',
-				'sets' => [['name' => 'Test Set', 'num' => '1']],
-			],
-		]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa];W[ab];B[ca]C[+])']]);
 
 		$browser = Browser::instance();
 		$tsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
@@ -344,16 +316,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testClickingBoardAfterSuccessNavigatesToNextPuzzle()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumegos' => [
-				[
-					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-					'sets' => [['name' => 'Test Set', 'num' => '1']],
-				],
-				[
-					'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])',
-					'sets' => [['name' => 'Test Set', 'num' => '2']]
-				]]]);
+				['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])'],
+				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])']]]);
 
 		$browser = Browser::instance();
 		$firstTsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];

@@ -125,7 +125,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['tsumegos'] = [];
 
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 
 		$context = new ContextPreparator($contextParameters);
 
@@ -200,7 +200,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -246,7 +246,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -281,7 +281,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -303,7 +303,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -328,7 +328,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['5k'];
 		$contextParameters['tsumegos'] = [];
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -483,15 +483,15 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['time-mode-ranks'] = ['10k', '5k', '1d', '5d'];
 		// empty 10k
 		// one tsumego in 5k category
-		$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+		$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5k'), 'set_order' => 1];
 
 		// two in 1d category
 		for ($i = 1; $i <= 2; $i++)
-			$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('1d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+			$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('1d'), 'set_order' => 1];
 
 		// 3 in 5d category
 		for ($i = 1; $i <= 3; $i++)
-			$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set 1', 'num' => 1]]];
+			$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'set_order' => 1];
 		// one in 5d category, but in a set not included in time mode
 		$contextParameters['tsumegos'] [] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('5d'), 'sets' => [['name' => 'set weird', 'num' => 1, 'included_in_time_mode' => false]]];
 
@@ -551,7 +551,7 @@ class TimeModeTest extends TestCaseWithAuth
 	{
 		$browser = Browser::instance();
 		$contextParameters = [];
-		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
+		$contextParameters['user'] = ['last-time-mode-category-id' => TimeModeUtil::$CATEGORY_BLITZ];
 		$contextParameters['time-mode-ranks'] = ['5k', '1d'];
 		$context = new ContextPreparator($contextParameters);
 		$browser->get('timeMode/overview');
@@ -583,7 +583,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// I prepare tsumegos in a way that one will be always left from the time mode selection
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'][] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
+			$contextParameters['tsumegos'][] = $i;
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
@@ -628,7 +628,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$contextParameters['tsumegos'] = [];
 		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
-			$contextParameters['tsumegos'] [] = ['sgf' => $sgf, 'sets' => [['name' => 'tsumego set 1', 'num' => $i]]];
+			$contextParameters['tsumegos'] [] = ['sgf' => $sgf, 'set_order' => $i];
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();

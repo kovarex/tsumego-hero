@@ -751,7 +751,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can drag-and-drop
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [
 					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
 					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
@@ -831,10 +831,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'issues' => [
-					['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS],
-				],
+				'set_order' => 1,
+				'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -870,10 +868,8 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testNewlyAddedCommentCanBeDragged()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can drag
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'status' => 'S']]);
+			'user' => ['admin' => true], // Admin can drag
+			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
