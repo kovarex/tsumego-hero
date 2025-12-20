@@ -338,6 +338,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString("", $browser->find('#status')->getText());
 		$browser->clickBoard(2, 1);
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->get($tsumegoUrl);
+		$this->assertSame(2, $context->reloadUser()['damage']); // 2 errors done
 	}
 
 	// When user solves a problem, clicking the board should navigate to next problem.
