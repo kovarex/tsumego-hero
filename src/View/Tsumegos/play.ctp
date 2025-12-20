@@ -319,7 +319,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<?php
 			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
-			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
+			echo '<a id="findSimilarProblems" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
@@ -328,14 +328,16 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				</div>
 			</div>';
 	}
-		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
-        echo '<div class="duplicateTable">Is duplicate group:<br>';
-		echo implode(', ', array_map(function ($setConnection) {
-			return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
+		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
+		{
+			echo '<div class="duplicateTable">Is duplicate group:<br>';
+			echo implode(', ', array_map(function ($setConnection)
+			{
+				return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
 				. $setConnection['SetConnection']['title'] . '</a>';
-		}, $setConnections));
-        echo '</div><br>';
-	}
+			}, $setConnections));
+			echo '</div><br>';
+		}
 	if (Auth::isLoggedIn())
 	{
 		if ($firstRanks==0)
@@ -1318,11 +1320,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$("#showx4").click(function(){
 			jsCreateDownloadFile("<?php echo $setConnection['SetConnection']['num']; ?>");
 		});
-		$("#showx7x").click(function(){
-			$('.loader-container').css({
-				"display": "flex"
-			});
-			window.location.href="/tsumegos/duplicatesearch/<?php echo $t['Tsumego']['id']; ?>";
+		$("#findSimilarProblems").click(function(){
+			$('.loader-container').css({"display": "flex"});
+			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection['SetConnection']['id']; ?>";
 		});
 
 		var mouseX;
@@ -1342,7 +1342,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$("#showx99").css("display", "none");
 		enableDownloads = true;
 		$("#showx3").css("display", "inline-block");
-		$("#showx7x").css("display", "inline-block");
+		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
 		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>

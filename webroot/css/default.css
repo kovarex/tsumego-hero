@@ -264,7 +264,7 @@ body
 #show5,
 #showx6,
 #showx7,
-#showx7x,
+#findSimilarProblems,
 #showx8,
 #showx99 {
   display: none;
@@ -5498,6 +5498,10 @@ select.flat-select:hover {
   border: 1px solid #1b1b1b;
   background: #555555;
 }
+#submit-size-button:disabled {
+  background: #fff;
+  color: #fff;
+}
 #set-size-input {
   background: #555555;
   width: 90px;
@@ -7721,8 +7725,4 @@ body.dark-theme .btn--warning {
 	margin:2px;
 	width:310px;
 	height:205px;
-}
-
-#target {
-    min-height: 400px;
 }
