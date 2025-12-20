@@ -302,14 +302,14 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser->clickBoard(1, 1);
 
 		// Brief wait to ensure click was processed
-		$wait->until(function () use ($browser) {
-			// Just verify page is still responsive
-			return $browser->driver->executeScript("return document.readyState === 'complete';");
-		});
+		$wait->until(function () use ($browser) { return $browser->driver->executeScript("return document.readyState === 'complete';"); });
 
 		// Verify still on same problem (didn't reset or advance)
-		$currentUrl = $browser->driver->getCurrentURL();
-		$this->assertStringContainsString($tsumegoUrl, $currentUrl, "Should stay on same problem");
+		$this->assertStringContainsString($tsumegoUrl, $browser->driver->getCurrentURL(), "Should stay on same problem");
+
+		// refresh on the tsumego and check just one health was removed
+		$browser->get($tsumegoUrl);
+		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
 	// When user solves a problem, clicking the board should navigate to next problem.
