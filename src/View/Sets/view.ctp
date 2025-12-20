@@ -315,7 +315,6 @@
 						echo '<a href="/sets/ui/'.$set['Set']['id'].'">Upload Image</a><br>';
 						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
 					}
-					echo '<a href="/sets/duplicates/'.$set['Set']['id'].'">Show duplicate search</a><br><br>';
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 						$vcOn = '';
 						$vcOff = '';

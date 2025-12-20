@@ -375,4 +375,17 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
 	}
+
+	public function testSimilarSearch()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumegos' => [
+			['set_order' => 1, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd]AB[df]AB[fd]AB[ff];B[aa];W[ab];B[ba]C[+])'],
+			['set_order' => 2, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[de]AB[ed]AB[df]AB[fd];B[aa];W[ab];B[ba]C[+])'],
+			['set_order' => 3, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd]AB[df]AB[fd]AB[ff];B[aa];W[ab];B[ba]C[+])']]]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->clickId('findSimilarProblems');
+		$tsumegoButtons = $browser->getCssSelect('.setViewButtons1');
+		$browser->assertSame(2, count($tsumegoButtons));
+	}
 }
