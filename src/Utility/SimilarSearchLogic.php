@@ -90,9 +90,9 @@ class SimilarSearchLogic
 					if ($stoneNumberDiff <= $maxDifference)
 					{
 						if ($includeColorSwitch == 'true')
-							$comparisonResult = BoardComparator::compare($tBoard->data, $board->data, true);
+							$comparisonResult = BoardComparator::compare($tBoard, $board, true);
 						else
-							$comparisonResult = BoardComparator::compare($tBoard->data, $board->data, false);
+							$comparisonResult = BoardComparator::compare($tBoard, $board, false);
 						if ($comparisonResult->difference <= $maxDifference)
 						{
 							if ($comparisonResult->transformType == 0)
