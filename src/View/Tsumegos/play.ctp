@@ -1797,6 +1797,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			heartLoss = false;
 		if (noXP || freePlayMode || locked || authorProblem)
 			heartLoss = false;
+		if (failAlreadyReported)
+			heartLoss = false;
 
 		freePlayMode = false;
 		if (heartLoss)
@@ -1808,6 +1810,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			setCookie("misplays", misplays);
 			updateHealth();
 		}
+		failAlreadyReported = false;
 	}
 	</script>
 	<?php if($ui==2){ ?>

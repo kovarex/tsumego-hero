@@ -312,6 +312,34 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertSame(1, $context->reloadUser()['damage']);
 	}
 
+	public function testBoardStatusIsProperlyUpdatedAfterFailResetAndFail()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa];W[ab];B[ca]C[+])']]);
+
+		$tsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
+		$browser->get($tsumegoUrl);
+
+		// Wait for board to initialize (window.besogo exists)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';"); });
+
+		// Make wrong move (correct is 1,1)
+		$browser->clickBoard(2, 1);
+
+		// Wait for status to show "Incorrect"
+		$wait->until(function () use ($browser) {
+			$status = $browser->driver->executeScript("return document.getElementById('status').innerHTML;");
+			return str_contains($status, "Incorrect");
+		});
+
+		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->clickId('besogo-reset-button');
+		$this->assertStringContainsString("", $browser->find('#status')->getText());
+		$browser->clickBoard(2, 1);
+		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+	}
+
 	// When user solves a problem, clicking the board should navigate to next problem.
 	public function testClickingBoardAfterSuccessNavigatesToNextPuzzle()
 	{
