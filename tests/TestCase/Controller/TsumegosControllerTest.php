@@ -12,8 +12,8 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 			$this->testAction(
 				$openBySetConnectionID
-				? ('/' . $context->tsumego['set-connections'][0]['id'])
-				: ('tsumegos/play/' . $context->tsumego['id']),
+				? ('/' . $context->tsumegos[0]['set-connections'][0]['id'])
+				: ('tsumegos/play/' . $context->tsumegos[0]['id']),
 				['return' => 'view']);
 			$this->assertTextContains("tsumego set 1", $this->view);
 
@@ -31,7 +31,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'sets' => [
 					['name' => 'tsumego set 1', 'num' => '666'],
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
-		$tsumegoID = $context->tsumego['id'];
+		$tsumegoID = $context->tsumegos[0]['id'];
 		$this->testAction('tsumegos/play/' . $tsumegoID, ['return' => 'view']);
 
 		// The first one was selected into the title
@@ -43,10 +43,10 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$duplicateTable = $dom->querySelector('.duplicateTable');
 		$links = $duplicateTable->getElementsByTagName('a');
 		$this->assertSame(count($links), 2);
-		$this->assertTextContains('/' . $context->tsumego['set-connections'][0]['id'], $links[0]->getAttribute('href'));
+		$this->assertTextContains('/' . $context->tsumegos[0]['set-connections'][0]['id'], $links[0]->getAttribute('href'));
 		$this->assertTextContains('tsumego set 1', $links[0]->textContent);
 		$this->assertTextContains('666', $links[0]->textContent);
-		$this->assertTextContains('/' . $context->tsumego['set-connections'][1]['id'], $links[1]->getAttribute('href'));
+		$this->assertTextContains('/' . $context->tsumegos[0]['set-connections'][1]['id'], $links[1]->getAttribute('href'));
 		$this->assertTextContains('tsumego set 2', $links[1]->textContent);
 		$this->assertTextContains('777', $links[1]->textContent);
 	}
@@ -59,7 +59,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					['name' => 'tsumego set 1', 'num' => '666'],
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumego['id'] . '?sid=' . $context->tsumego['sets'][1]['id'], ['return' => 'view']);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id'], ['return' => 'view']);
 
 		// The second one was selected by the sid parameter
 		$dom = $this->getStringDom();
@@ -79,7 +79,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator(
 			['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '666']]]]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumego['id'], ['return' => 'view']);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
 
 		$dom = $this->getStringDom();
 		$href = $dom->querySelector('#playTitleA');
@@ -98,7 +98,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					['name' => 'tsumego set 2', 'num' => '777']]]]);
 
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$href = $browser->driver->findElement(WebDriverBy::cssSelector('#playTitleA'));
 		$this->assertTextContains('set 1', $href->getText());
 		$this->assertTextContains('666', $href->getText());
@@ -107,25 +107,25 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testTheNextAndBackButtonLinsWhenBothPointToOtherTsumegos()
 	{
 		$context = new ContextPreparator([
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'tsumego set 1', 'num' => '1']]],
+				['sets' => [['name' => 'tsumego set 1', 'num' => '2']]],
 				['sets' => [['name' => 'tsumego set 1', 'num' => '3']]]]]);
 
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[1]['set-connections'][0]['id']);
 		$backButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'));
-		$this->assertSame($backButton->getAttribute('href'), '/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame($backButton->getAttribute('href'), '/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$nextButton = $browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'));
-		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->otherTsumegos[1]['set-connections'][0]['id']);
+		$this->assertSame($nextButton->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
 	}
 
 	public function testShowFullHearts()
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
 		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
 		$this->assertCount(0, $emptyHearts);
@@ -139,7 +139,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
 
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
 		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
 		$this->assertCount(1, $emptyHearts);
@@ -153,7 +153,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']]]]);
 
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$fullHearts = $browser->getCssSelect('img[title="Heart"]');
 		$emptyHearts = $browser->getCssSelect('img[title="Empty Heart"]');
 		$this->assertCount(Util::getHealthBasedOnLevel(Auth::getUser()['level']), $emptyHearts);
@@ -171,12 +171,12 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// Add a comment with coordinates
 		$comment = ClassRegistry::init('TsumegoComment');
 		$comment->save([
-			'tsumego_id' => $context->tsumego['id'],
+			'tsumego_id' => $context->tsumegos[0]['id'],
 			'user_id' => $context->user['id'],
 			'message' => 'Try playing at R19 or S18, they both work.',
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumego['id'], ['return' => 'view']);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
 
 		// Check that coordinate spans exist in the HTML
 		$this->assertTextContains('go-coord', $this->view);
@@ -197,7 +197,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				'sets' => [['name' => 'test set', 'num' => '1']]]]);
 		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('F');
 		$this->assertTextContains("Try again tomorrow", $browser->driver->getPageSource());
 		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
@@ -223,7 +223,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				$this->logout();
 				$this->assertFalse(Auth::isLoggedIn(), 'Should not be logged in for guest test');
 			}
-			$browser->get($context->tsumego['set-connections'][0]['id']);
+			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 			$browser->clickBoard(1, 1);
 			usleep(500 * 1000);
 			$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
@@ -246,7 +246,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 					'status' => ($testCase == 'already-solved' ? 'S' : 'V')]]);
 			$browser = Browser::instance();
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get($context->tsumego['set-connections'][0]['id']);
+			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 
 			if ($testCase != 'no-move')
 			{
@@ -267,7 +267,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			$this->assertSame(strval(round(1000 + $expectedRatingChange)), $browser->find('#account-bar-xp')->getText());
 
 			// changes are applied after refresh
-			$browser->get($context->tsumego['set-connections'][0]['id']);
+			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertSame(($testCase == '') ? 1 : 0, $context->reloadUser()['damage']);
 			$this->assertLessThan(0.1, abs($context->reloadUser()['rating'] - (1000 + $expectedRatingChange)));
 		}
@@ -280,7 +280,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
 				'sets' => [['name' => 'test set', 'num' => '1', 'premium' => true]]]]);
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
 		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
 	}
@@ -299,7 +299,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		]);
 
 		$browser = Browser::instance();
-		$tsumegoUrl = $context->tsumego['set-connections'][0]['id'];
+		$tsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
 		$browser->get($tsumegoUrl);
 
 		// Wait for board to initialize (window.besogo exists)
@@ -345,16 +345,19 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
-				'sets' => [['name' => 'Test Set', 'num' => '1']]],
-			'other-tsumegos' => [[
-				'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])',
-				'sets' => [['name' => 'Test Set', 'num' => '2']]]]]);
+			'tsumegos' => [
+				[
+					'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])',
+					'sets' => [['name' => 'Test Set', 'num' => '1']],
+				],
+				[
+					'sgf' => '(;GM[1]FF[4]ST[2]SZ[19];B[aa]C[+])',
+					'sets' => [['name' => 'Test Set', 'num' => '2']]
+				]]]);
 
 		$browser = Browser::instance();
-		$firstTsumegoUrl = $context->tsumego['set-connections'][0]['id'];
-		$secondTsumegoUrl = $context->otherTsumegos[0]['set-connections'][0]['id'];
+		$firstTsumegoUrl = $context->tsumegos[0]['set-connections'][0]['id'];
+		$secondTsumegoUrl = $context->tsumegos[1]['set-connections'][0]['id'];
 		$browser->get($firstTsumegoUrl);
 
 		// Solve the puzzle by making correct moves (this SGF requires 2 clicks)

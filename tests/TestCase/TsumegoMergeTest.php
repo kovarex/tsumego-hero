@@ -12,7 +12,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			$context = new ContextPreparator([
 				'user' => ['admin' => ($testCase != 'notAdmin')],
 				'time-mode-ranks' => ['5k'],
-				'other-tsumegos' =>	[
+				'tsumegos' =>	[
 					[
 						'status' => ($testCase == 'masterWithoutStatus' ? null : 'V'),
 						'rating' => 850,
@@ -43,8 +43,8 @@ class TsumegoMergeTest extends ControllerTestCase
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
 			if ($testCase == 'mergeWithDoubleFavorite')
-				$context->addFavorite($context->otherTsumegos[0]);
-			$context->addFavorite($context->otherTsumegos[1]);
+				$context->addFavorite($context->tsumegos[0]);
+			$context->addFavorite($context->tsumegos[1]);
 
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
@@ -55,15 +55,15 @@ class TsumegoMergeTest extends ControllerTestCase
 			if ($testCase != 'masterNotSpecified')
 			{
 				$browser->clickId('master-id');
-				$browser->driver->getKeyboard()->sendKeys($context->otherTsumegos[0]['set-connections'][0]['id']);
+				$browser->driver->getKeyboard()->sendKeys($context->tsumegos[0]['set-connections'][0]['id']);
 			}
 			if ($testCase != 'slaveNotSpecified')
 			{
 				$browser->clickId('slave-id');
 				if ($testCase != 'slaveAndMasterAlreadyMarged')
-					$browser->driver->getKeyboard()->sendKeys($context->otherTsumegos[1]['set-connections'][0]['id']);
+					$browser->driver->getKeyboard()->sendKeys($context->tsumegos[1]['set-connections'][0]['id']);
 				else
-					$browser->driver->getKeyboard()->sendKeys($context->otherTsumegos[0]['set-connections'][1]['id']);
+					$browser->driver->getKeyboard()->sendKeys($context->tsumegos[0]['set-connections'][1]['id']);
 			}
 			$browser->clickId('submit');
 			if ($testCase == 'masterNotSpecified')
@@ -87,8 +87,8 @@ class TsumegoMergeTest extends ControllerTestCase
 			$browser->clickId('submit');
 
 			// the tsumegos were merged
-			$this->assertSame($context->otherTsumegos[0]['set-connections'][0]['tsumego_id'], $context->otherTsumegos[0]['set-connections'][1]['tsumego_id']);
-			$masterStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]);
+			$this->assertSame($context->tsumegos[0]['set-connections'][0]['tsumego_id'], $context->tsumegos[0]['set-connections'][1]['tsumego_id']);
+			$masterStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]);
 
 			// slave status is better than master, so it was merged
 			$this->assertSame('S', $masterStatus['TsumegoStatus']['status']);
@@ -109,7 +109,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			// favorites got merged
 			$favorites = ClassRegistry::init('Favorite')->find('all');
 			$this->assertSame(1, count($favorites));
-			$this->assertSame($favorites[0]['Favorite']['tsumego_id'], $context->otherTsumegos[0]['id']);
+			$this->assertSame($favorites[0]['Favorite']['tsumego_id'], $context->tsumegos[0]['id']);
 
 			// tags got merged
 			$tagConnections = ClassRegistry::init('TagConnection')->find('all');
@@ -118,12 +118,12 @@ class TsumegoMergeTest extends ControllerTestCase
 			// time mode attempts got merged
 			$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all');
 			$this->assertSame(1, count($timeModeAttempts));
-			$this->assertSame($context->otherTsumegos[0]['id'], $timeModeAttempts[0]['TimeModeAttempt']['tsumego_id']);
+			$this->assertSame($context->tsumegos[0]['id'], $timeModeAttempts[0]['TimeModeAttempt']['tsumego_id']);
 
 			// issues got merged
 			$issues = ClassRegistry::init('TsumegoIssue')->find('all');
 			$this->assertSame(1, count($issues));
-			$this->assertSame($context->otherTsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
+			$this->assertSame($context->tsumegos[0]['id'], $issues[0]['TsumegoIssue']['tsumego_id']);
 
 			// admin activity log was created
 			$adminActivities = ClassRegistry::init('AdminActivity')->find('all');

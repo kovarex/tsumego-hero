@@ -34,7 +34,7 @@ class ContextPreparator
 		$this->prepareOtherUsers(Util::extract('other-users', $options));
 		$this->prepareSet(Util::extract('set', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
-		$this->prepareOtherTsumegos(Util::extract('other-tsumegos', $options));
+		$this->prepareOtherTsumegos(Util::extract('tsumegos', $options));
 		$this->prepareTimeModeRanks(Util::extract('time-mode-ranks', $options));
 		$this->prepareTimeModeSessions(Util::extract('time-mode-sessions', $options));
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
@@ -193,8 +193,7 @@ class ContextPreparator
 	{
 		if (is_null($tsumego))
 			return;
-		$this->tsumego = $this->prepareTsumego($tsumego);
-		$this->allTsumegos [] = $this->tsumego;
+		$this->tsumegos[] = $this->prepareTsumego($tsumego);
 	}
 
 	private function prepareOtherTsumegos(?array $tsumegos): void
@@ -202,8 +201,7 @@ class ContextPreparator
 		foreach ($tsumegos as $tsumego)
 		{
 			$tsumego = $this->prepareTsumego($tsumego);
-			$this->otherTsumegos [] = $tsumego;
-			$this->allTsumegos [] = $tsumego;
+			$this->tsumegos [] = $tsumego;
 		}
 	}
 
@@ -585,9 +583,9 @@ class ContextPreparator
 	{
 		$attempt = [];
 		$attempt['time_mode_session_id'] = $timeModeSessionID;
-		if (empty($this->allTsumegos))
+		if (empty($this->tsumegos))
 			throw new Exception("No tsumego assign to the time mode attempt");
-		$attempt['tsumego_id'] = ContextPreparator::loadTsumegoID(Util::extractWithDefault('tsumego_id', $attemptsInput, $this->allTsumegos[0]['id']));
+		$attempt['tsumego_id'] = ContextPreparator::loadTsumegoID(Util::extractWithDefault('tsumego_id', $attemptsInput, $this->tsumegos[0]['id']));
 		$attempt['order'] = Util::extract('order', $attemptsInput);
 		$attempt['time_mode_attempt_status_id'] = Util::extract('status', $attemptsInput);
 		$this->checkOptionsConsumed($attemptsInput);
@@ -600,11 +598,11 @@ class ContextPreparator
 		$statusCondition = [
 			'conditions' => [
 				'user_id' => $this->user['id'],
-				'tsumego_id' => $this->tsumego['id']]];
+				'tsumego_id' => $this->tsumegos[0]['id']]];
 		$this->resultTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', $statusCondition)['TsumegoStatus'];
 		$testCase->assertNotEmpty($this->resultTsumegoStatus);
 		$testCase->assertSame($this->resultTsumegoStatus['user_id'], $this->user['id']);
-		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumego['id']);
+		$testCase->assertSame($this->resultTsumegoStatus['tsumego_id'], $this->tsumegos[0]['id']);
 	}
 
 	public function prepareProgressDeletion($progressDeletions)
@@ -787,8 +785,8 @@ class ContextPreparator
 
 			// Support 'set_id' => true to use the first set from main tsumego
 			$setId = Util::extract('set_id', $activityInput);
-			if ($setId === true && $this->tsumego && isset($this->tsumego['set-connections'][0]))
-				$activity['set_id'] = $this->tsumego['set-connections'][0]['set_id'];
+			if ($setId === true && !empty($this->tsumegos) && isset($this->tsumegos[0]['set-connections'][0]))
+				$activity['set_id'] = $this->tsumegos[0]['set-connections'][0]['set_id'];
 			else
 				$activity['set_id'] = $setId;
 
@@ -799,12 +797,12 @@ class ContextPreparator
 			if (is_string($activity['old_value']) && strpos($activity['old_value'], 'other:') === 0)
 			{
 				$index = (int) substr($activity['old_value'], 6);
-				$activity['old_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+				$activity['old_value'] = (string) ($this->tsumegos[$index]['id'] ?? null);
 			}
 			if (is_string($activity['new_value']) && strpos($activity['new_value'], 'other:') === 0)
 			{
 				$index = (int) substr($activity['new_value'], 6);
-				$activity['new_value'] = (string) ($this->otherTsumegos[$index]['id'] ?? null);
+				$activity['new_value'] = (string) ($this->tsumegos[$index]['id'] ?? null);
 			}
 
 			ClassRegistry::init('AdminActivity')->create();
@@ -855,9 +853,9 @@ class ContextPreparator
 	public function loadTsumegoID($input): ?int
 	{
 		if ($input === true)
-			return $this->tsumego['id'];
+			return $this->tsumegos[0]['id'];
 		if (is_string($input) && strpos($input, 'other:') === 0)
-			return $this->otherTsumegos[intval(substr($input, 6))]['id'];
+			return $this->tsumegos[intval(substr($input, 6))]['id'];
 		return $input;
 	}
 
@@ -870,9 +868,7 @@ class ContextPreparator
 	public array $otherUsers = [];
 	public ?array $set = null;
 	public array $sets = [];
-	public ?array $tsumego = null;
-	public array $otherTsumegos = [];
-	public array $allTsumegos = [];
+	public array $tsumegos = [];
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;

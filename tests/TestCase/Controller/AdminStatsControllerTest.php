@@ -23,7 +23,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
 			'admin-activities' => [
 				[
 					'type' => AdminActivityType::DESCRIPTION_EDIT,
@@ -197,7 +197,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'tsumego' => [
 				'sets' => [['name' => 'Test Set', 'num' => 1]]
 			],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'Test Set', 'num' => 2]]]
 			],
 			'admin-activities' => [
@@ -308,9 +308,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [['sgf' => $sgfVersion1, 'status' => 'S', 'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
+			'tsumegos' => [['sgf' => $sgfVersion1, 'status' => 'S', 'sets' => [['name' => 'set-1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$makeProposalLink = $browser->find('#openSgfLink');
 		$this->assertSame('Make Proposal', $makeProposalLink->getText());
 		$makeProposalLink->click();
@@ -318,8 +318,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame(
 			Util::getMyAddress()
 			. '/editor/?setConnectionID='
-			. $context->otherTsumegos[0]['set-connections'][0]['id']
-			. '&sgfID=' . $context->otherTsumegos[0]['sgfs'][0]['id'],
+			. $context->tsumegos[0]['set-connections'][0]['id']
+			. '&sgfID=' . $context->tsumegos[0]['sgfs'][0]['id'],
 			$browser->driver->getCurrentURL());
 		$browser->assertNoErrors();
 
@@ -329,7 +329,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->clickId('saveSGFButton');
 
 		// checking that the non-accepted sgf is not used for the problem
-		$this->assertSame(Util::getMyAddress() . '/' . $context->otherTsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
 		$this->assertSame($loadedSgf, $sgfVersion1);
 	}
@@ -340,7 +340,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sgfs' => [
 					['data' => $sgfVersion1, 'accepted' => true],
 					['data' => $sgfVersion2, 'accepted' => false]],
@@ -351,15 +351,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('accept-' . $context->otherTsumegos[0]['sgfs'][1]['id']);
+		$browser->clickId('accept-' . $context->tsumegos[0]['sgfs'][1]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
-		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->otherTsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
+		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
 
 		// checking that the accepted sgf is now used for the problem
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$loadedSgf = $browser->driver->executeScript('return besogo.sgfLoaded;');
 		$this->assertSame($loadedSgf, $sgfVersion2);
 	}
@@ -370,7 +370,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$sgfVersion2 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AB[dd];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sgfs' => [
 					['data' => $sgfVersion1, 'accepted' => true],
 					['data' => $sgfVersion2, 'accepted' => false]],
@@ -381,14 +381,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('reject-' . $context->otherTsumegos[0]['sgfs'][1]['id']);
+		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
 
 		// the sgf is deleted
-		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($context->otherTsumegos[0]['sgfs'][1]['id']));
+		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id']));
 	}
 
 	public function testApproveTag()
@@ -396,19 +396,19 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('tag-accept-' . $context->otherTsumegos[0]['tag-connections'][0]['id']);
+		$browser->clickId('tag-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('New Tags (0)', $browser->find('#tagConnectionProposalsHeader')->getText());
-		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
+		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
 
 		// tag approval is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
@@ -423,7 +423,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
@@ -431,14 +431,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('tag-reject-' . $context->otherTsumegos[0]['tag-connections'][0]['id']);
+		$browser->clickId('tag-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
 		$this->assertSame('New Tags (0)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
 		// the tag is deleted
-		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id']));
+		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']));
 
 		// tag reject is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');

@@ -19,9 +19,9 @@ class AccountWidgetTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['xp' => 13, 'level' => 5],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $status]]]);
+				'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $status]]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
@@ -54,9 +54,9 @@ class AccountWidgetTest extends ControllerTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator([
 				'user' => ['rating' => 2075],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+				'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
@@ -70,7 +70,7 @@ class AccountWidgetTest extends ControllerTestCase
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(2075 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertLessThan(abs(1000 + $expectedChange - $context->reloadUser()['rating']), 0.01);
 		}
 	}
@@ -82,9 +82,9 @@ class AccountWidgetTest extends ControllerTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator([
 				'user' => ['rating' => 1000],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+				'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
@@ -99,7 +99,7 @@ class AccountWidgetTest extends ControllerTestCase
 			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(1000 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
 		}
 	}
@@ -111,9 +111,9 @@ class AccountWidgetTest extends ControllerTestCase
 			$browser = Browser::instance();
 			$context = new ContextPreparator([
 				'user' => ['rating' => 2050],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
+				'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));

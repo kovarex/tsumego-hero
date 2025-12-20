@@ -30,7 +30,7 @@ class SmokeTest extends ControllerTestCase
 					['name' => 'Free Set', 'num' => '1'],
 				],
 			],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['rating' => 1100],
 				['rating' => 1200],
 			],
@@ -39,8 +39,8 @@ class SmokeTest extends ControllerTestCase
 			],
 		]);
 		$browser = Browser::instance();
-		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
-		$setId = $context->tsumego['sets'][0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
 		$userId = $context->user['id'];
 
 		$pages = [

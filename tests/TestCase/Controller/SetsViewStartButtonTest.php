@@ -24,7 +24,7 @@ class SetsViewStartButtonTest extends ControllerTestCase
 					'sets' => [['name' => 'Test Start Button Set', 'num' => '3']],
 					'status' => $statusToPick // Not solved - this should be where Start button links to
 				],
-				'other-tsumegos' => [
+				'tsumegos' => [
 					['sets' => [['name' => 'Test Start Button Set', 'num' => '1']], 'status' => 'S'], // Solved
 					['sets' => [['name' => 'Test Start Button Set', 'num' => '2']], 'status' => 'S'], // Solved
 					['sets' => [['name' => 'Test Start Button Set', 'num' => '4']], 'status' => $statusToPick], // Also unsolved
@@ -35,7 +35,7 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			$browser = Browser::instance();
 
 			// 1. Open the set view page using the created set ID
-			$setId = $context->tsumego['sets'][0]['id'];
+			$setId = $context->tsumegos[0]['sets'][0]['id'];
 			$browser->get('sets/view/' . $setId);
 
 			// 2. Verify we're on the set view page
@@ -51,7 +51,7 @@ class SetsViewStartButtonTest extends ControllerTestCase
 
 			// 4. Verify we navigated to the FIRST UNSOLVED puzzle (problem #3, not #1)
 			// The URL is /{setConnectionId} (short form)
-			$setConnectionId = $context->tsumego['set-connections'][0]['id'];
+			$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 			$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
 			$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
 		}

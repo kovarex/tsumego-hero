@@ -18,7 +18,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default)
 
 		// The comment form is now directly in the comments section
@@ -52,7 +52,7 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']], 'comments' => [['message' => 'spoiler']]]]);
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertFalse($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 		$browser->playWithResult('S');
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
@@ -65,7 +65,7 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']], 'comments' => [['message' => 'spoiler']], 'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 
@@ -81,7 +81,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'comments' => [['message' => 'test comment']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Content should be HIDDEN by default (no tab selected)
 		$content = $browser->driver->findElement(WebDriverBy::id('msg2x'));
@@ -112,7 +112,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'issues' => [['message' => 'Test issue to display']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$pageSource = $browser->driver->getPageSource();
 
@@ -133,7 +133,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'comments' => [['message' => 'Play at C3 for the solution']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default)
 
 		// Find the coordinate span
@@ -154,7 +154,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'issues' => [['message' => 'Original issue']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Click Reply button to show the reply form
@@ -174,7 +174,7 @@ class CommentsControllerTest extends ControllerTestCase
 		usleep(1500 * 1000);
 
 		// Verify reply appears on the page after reload
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('My reply to this issue', $pageSource);
 	}
@@ -191,7 +191,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'comments' => [['message' => 'Comment to delete']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify comment is visible
@@ -209,7 +209,7 @@ class CommentsControllerTest extends ControllerTestCase
 		usleep(1500 * 1000);
 
 		// Verify comment is no longer visible (reload to confirm it's deleted)
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextNotContains('Comment to delete', $pageSource);
 	}
@@ -229,7 +229,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'issues' => [['message' => 'This is the only comment in this issue']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify issue and comment are visible
@@ -271,7 +271,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'comments' => [['message' => 'Standalone comment 1']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify comments section is visible
@@ -316,7 +316,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'issues' => [['message' => 'Open issue comment']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Verify comments section is visible
@@ -359,7 +359,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'sets' => [['name' => 'test set', 'num' => '1']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
 
 		// Initially there should be no issue DOM elements
@@ -413,7 +413,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 
 		// Go to play page via set connection ID (how the app routes)
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 
 		// Wait for comments section to be visible
@@ -448,7 +448,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 
 		// Go to play page
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 
 		// Wait for comments section to be visible
@@ -481,10 +481,10 @@ class CommentsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$tsumegoId = $context->tsumego['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
 
 		// Go to play page
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 
 		// Wait for comments
@@ -512,12 +512,10 @@ class CommentsControllerTest extends ControllerTestCase
 			'tsumego' => [
 				'sets' => [['name' => 'Make Issue Button Test', 'num' => '1']],
 				'comments' => [['message' => 'Comment to become issue']],
-				'status' => 'S',
-			],
-		]);
+				'status' => 'S']]);
 
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
 
@@ -564,7 +562,7 @@ class CommentsControllerTest extends ControllerTestCase
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
 
@@ -598,7 +596,7 @@ class CommentsControllerTest extends ControllerTestCase
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Click COMMENTS tab (shows open issues + comments)
 
 		// Verify: Open issue is visible
@@ -653,7 +651,7 @@ class CommentsControllerTest extends ControllerTestCase
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
 
 		// Verify: Standalone comment is visible
@@ -703,7 +701,7 @@ class CommentsControllerTest extends ControllerTestCase
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
 
 		// Add a second comment to the open issue so we can delete one
@@ -760,7 +758,7 @@ class CommentsControllerTest extends ControllerTestCase
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Click COMMENTS tab (shows comments, hides closed issues)
 
 		// Add a second comment to the open issue so we can move one
@@ -795,7 +793,7 @@ class CommentsControllerTest extends ControllerTestCase
 			}).then(function(response) {
 				return response.text();
 			}).then(function(html) {
-				var target = document.getElementById('comments-section-" . $context->tsumego['id'] . "');
+				var target = document.getElementById('comments-section-" . $context->tsumegos[0]['id'] . "');
 				if (target && html) {
 					Idiomorph.morph(target, html, {morphStyle: 'outerHTML'});
 					// Re-apply filter state after morph
@@ -839,7 +837,7 @@ class CommentsControllerTest extends ControllerTestCase
 				],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// Click COMMENTS tab - form should be visible
 		$commentsTab = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
@@ -877,7 +875,7 @@ class CommentsControllerTest extends ControllerTestCase
 				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumego['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser);
 
 		// Add a new comment

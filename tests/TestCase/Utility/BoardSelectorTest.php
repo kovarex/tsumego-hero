@@ -60,9 +60,9 @@ class BoardSelectorTest extends CakeTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['boards_bitmask' => 2],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => '1']]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => '1']]]]]);
 		$expectedBoardSelection = BoardSelector::getBoardInfo(2);
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));
 		$this->assertSame($expectedBoardSelection['black'], $browser->driver->executeScript('return window.besogo.editor.BLACK_STONES;'));
 		$this->assertSame($expectedBoardSelection['white'], $browser->driver->executeScript('return window.besogo.editor.WHITE_STONES;'));
@@ -73,8 +73,8 @@ class BoardSelectorTest extends CakeTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['boards_bitmask' => 2],
-			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			'tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1']]]]]);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame('textureGolden', $browser->driver->executeScript('return window.besogo.theme;'));
 		$this->assertSame(BoardSelector::$GOLDEN_BOARD['black'], $browser->driver->executeScript('return window.besogo.editor.BLACK_STONES;'));
 		$this->assertSame(BoardSelector::$GOLDEN_BOARD['white'], $browser->driver->executeScript('return window.besogo.editor.WHITE_STONES;'));
@@ -85,9 +85,9 @@ class BoardSelectorTest extends CakeTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['boards_bitmask' => 2],
-			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1', 'board_theme_index' => 50]]]]]);
+			'tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => '1', 'board_theme_index' => 50]]]]]);
 		$expectedBoardSelection = BoardSelector::getBoardInfo(50);
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($expectedBoardSelection['texture'], $browser->driver->executeScript('return window.besogo.theme;'));
 		$this->assertSame($expectedBoardSelection['black'], $browser->driver->executeScript('return window.besogo.editor.BLACK_STONES;'));
 		$this->assertSame($expectedBoardSelection['white'], $browser->driver->executeScript('return window.besogo.editor.WHITE_STONES;'));

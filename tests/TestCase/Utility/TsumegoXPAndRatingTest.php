@@ -10,22 +10,22 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
 	public function testShowingGoldenXP(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'G']]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'G']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is golden
-		$this->assertTextContains(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->assertTextContains('Golden', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
@@ -33,13 +33,13 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$browser->playWithResult('S'); // solve the problem
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
@@ -47,10 +47,10 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->assertTextContains('Solved', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
@@ -58,10 +58,10 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['rating' => Rating::getRankMiddleRatingFromReadableRank('30k'), 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
+			'tsumegos' => [['rating' => Rating::getRankMiddleRatingFromReadableRank('30k'), 'sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 
 		$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
 		$this->assertTextContains('Solved', $xpDisplayText);
@@ -80,16 +80,16 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		HeroPowers::changeUserSoSprintCanBeUsed();
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
-		$this->assertTextStartsNotWith($browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText(), strval(TsumegoUtil::getXpValue($context->otherTsumegos[0])) . ' XP');
+		$this->assertTextStartsNotWith($browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText(), strval(TsumegoUtil::getXpValue($context->tsumegos[0])) . ' XP');
 		$browser->clickId('sprint');
 		$browser->driver->wait(10, 500)->until(function () use ($browser, $context) {
 			$xpDisplayText = $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
-			$xpText = strval(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
+			$xpText = strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP';
 			return str_contains($xpDisplayText, $xpText);
 		});
 		$this->checkSprintInXpAndTimeInStatus2($browser);
@@ -102,11 +102,11 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 				'mode' => Constants::$LEVEL_MODE,
 				'premium' => 1,
 				'sprint_start' => date('Y-m-d H:i:s')],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the sprint is active from the start
-		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->otherTsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+		$this->assertTextContains(strval(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$SPRINT_MULTIPLIER)) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 		$this->checkSprintInXpAndTimeInStatus2($browser);
 	}
 
@@ -115,17 +115,17 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-users' => [['mode' => Constants::$LEVEL_MODE, 'name' => 'Ivan Detkov']],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]],
 			'progress-deletions' => [
 				['set' => 'set 1', 'created' => date('Y-m-d H:i:s')],
 				['set' => 'set 1', 'created' => date('Y-m-d H:i:s', strtotime('-2 months'))],
 				['set' => 'set 1', 'created' => date('Y-m-d H:i:s'), 'user' => 'Ivan Detkov']]]);
 
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// only one progress deletion affects this, one is too old, and one is from other user
-		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->otherTsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
+		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
 		usleep(1000 * 100);
 		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 
@@ -185,13 +185,13 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 2300]]]);
-		$this->assertTrue(Rating::ratingToXP($context->otherTsumegos[0]['rating'], 1) > Level::getXPForNext(1));
+			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 2300]]]);
+		$this->assertTrue(Rating::ratingToXP($context->tsumegos[0]['rating'], 1) > Level::getXPForNext(1));
 
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('S'); // solve the problem
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertGreaterThan(1, $context->reloadUser()['level']);
 	}
 }

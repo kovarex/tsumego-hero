@@ -44,13 +44,13 @@ class CronControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'F'],
 				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'X']]]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
+		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'V');
-		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[1]['id']]]);
+		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
 		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
 	}
 
@@ -60,13 +60,13 @@ class CronControllerTest extends TestCaseWithAuth
 		$newEnoughToTransfer = date('Y-m-d H:i:s', strtotime('-6 days'));
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => ['name' => 'S', 'updated' => $oldEnoughToTransfer]],
 				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => ['name' => 'S', 'updated' => $newEnoughToTransfer]]]]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[0]['id']]]);
+		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status1['TsumegoStatus']['status'], 'W');
-		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[1]['id']]]);
+		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
 		$this->assertSame($status2['TsumegoStatus']['status'], 'S');
 	}
 
@@ -90,13 +90,13 @@ class CronControllerTest extends TestCaseWithAuth
 	public function testPublish()
 	{
 		$context = new ContextPreparator([
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
 				['sets' => [['name' => 'set 1', 'num' => 3]]]]]);
 
 		// we are testing that the publish just correctly updates the SetConnection to the new set
-		$tsumegoToMigrate = $context->otherTsumegos[0];
-		$publicSetID = $context->otherTsumegos[1]['set-connections'][0]['set_id'];
+		$tsumegoToMigrate = $context->tsumegos[0];
+		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
 		ClassRegistry::init('Schedule')->create();
 		$scheduleItem = [];
@@ -117,7 +117,7 @@ class CronControllerTest extends TestCaseWithAuth
 	public function testTsumegoStatisticsInDayRecord()
 	{
 		new ContextPreparator([
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]], // in sandbox
 				['sets' => [['name' => 'set 1', 'num' => 3]]], // normal
 				['sets' => [['name' => 'set 1', 'num' => 4], ['name' => 'set 2', 'num' => 5]]], // two set occurances counted as one
@@ -133,9 +133,9 @@ class CronControllerTest extends TestCaseWithAuth
 	public function testPopularTagsUpdate()
 	{
 		$contextInput = [];
-		$contextInput['other-tsumegos'] = [];
+		$contextInput['tsumegos'] = [];
 		for ($i = 0; $i < Tag::$POPULAR_COUNT; $i++)
-			$contextInput['other-tsumegos'][] = ['tags' => [['name' => 'tag-' . $i]]];
+			$contextInput['tsumegos'][] = ['tags' => [['name' => 'tag-' . $i]]];
 		$contextInput['tags'][] = ['name' => 'unpopular-tag'];
 		$context = new ContextPreparator($contextInput);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
@@ -148,11 +148,11 @@ class CronControllerTest extends TestCaseWithAuth
 	public function testUpdateSolved()
 	{
 		$context = new ContextPreparator([
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'S'],
 				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'S']],
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'solved' => 2]]);
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->otherTsumegos[0]['id']]);
+		ClassRegistry::init('TsumegoStatus')->deleteAll(['tsumego_id' => $context->tsumegos[0]['id']]);
 		$this->testAction('/cron/daily/' . CRON_SECRET);
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}

@@ -62,7 +62,7 @@ class TestCaseWithAuth extends ControllerTestCase
 		$this->assertSame($button->getText(), strval($order));
 		if (is_null($currentIndex) || $index != $currentIndex)
 		{
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->otherTsumegos[$index]['id']]]);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[$index]['id']]]);
 			$statusValue = $status ? $status['TsumegoStatus']['status'] : 'N';
 		}
 		else
@@ -70,6 +70,6 @@ class TestCaseWithAuth extends ControllerTestCase
 
 		$this->assertSame(explode(" ", $button->getAttribute('class'))[0], 'status' . $statusValue);
 		$link = $button->findElement(WebDriverBy::tagName('a'));
-		$this->assertTextStartsWith('/' . $context->otherTsumegos[$index]['set-connections'][0]['id'], $link->getAttribute('href'));
+		$this->assertTextStartsWith('/' . $context->tsumegos[$index]['set-connections'][0]['id'], $link->getAttribute('href'));
 	}
 }

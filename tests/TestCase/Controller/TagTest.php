@@ -8,14 +8,14 @@ class TagTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['admin' => $isAdmin, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-				'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+				'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 				'tags' => [['name' => 'snapback']]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$browser->clickId('open-add-tag-menu');
 			$browser->clickId('open-more-tags');
 			$browser->clickId('tag-snapback');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$tagConnection = ClassRegistry::init('TagConnection')->find('first', []);
 			$this->assertNotNull($tagConnection);
 			$this->assertSame($tagConnection['TagConnection']['approved'], $isAdmin ? 1 : 0);
@@ -27,12 +27,12 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'atari']]]],
 			'tags' => [['name' => 'snapback']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		$browser->clickId('open-more-tags');
 		$addTagLinks = $browser->getCssSelect('.add-tag-list .add-tag-list-anchor');
@@ -47,12 +47,12 @@ class TagTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-				'other-tsumegos' => [[
+				'tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'popular' => $popular]]]],
 				'tags' => [['name' => 'snapback']]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari")); // tag is in the list
 			$browser->clickId('open-add-tag-menu');
 			if (!$popular)
@@ -82,12 +82,12 @@ class TagTest extends ControllerTestCase
 			$context = new ContextPreparator([
 				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-users' => [['name' => 'Ivan detkov']],
-				'other-tsumegos' => [[
+				'tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 1, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
 				'tags' => [['name' => 'snapback', 'popular' => $popular]]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari")); // tag is in the list
 			$browser->clickId('open-add-tag-menu');
 			if (!$popular)
@@ -132,12 +132,12 @@ class TagTest extends ControllerTestCase
 			$context = new ContextPreparator([
 				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 				'other-users' => [['name' => 'Ivan detkov']],
-				'other-tsumegos' => [[
+				'tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov', 'popular' => $popular]]]],
 				'tags' => [['name' => 'snapback', 'popular' => $popular]]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-atari")); // tag is not in the list
 			$browser->clickId('open-add-tag-menu');
 			if (!$popular)
@@ -163,14 +163,14 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [
 					['name' => 'no-hint-tag'],
 					['name' => 'hint-tag', 'is_hint' => 1]]]]]);
 
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-no-hint-tag"));
 		$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-hint-tag"));
 		$this->assertTextContains("(1 hidden)", $browser->getCssSelect(".tag-list")[0]->getText());
@@ -186,18 +186,18 @@ class TagTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-				'other-tsumegos' => [[
+				'tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1]],
 					'tags' => [['name' => 'atari', 'approved' => 0, 'popular' => $popular]]]]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-atari"));
-			$this->assertNotEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]));
+			$this->assertNotEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 
 			$browser->clickId("remove-tag-atari");
 			$browser->waitUntilCssSelectorDoesntExist(".tag-list #tag-atari");
 			$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-atari"));
-			$this->assertEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[0]['id']]]));
+			$this->assertEmpty(ClassRegistry::init('TagConnection')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		}
 	}
 
@@ -205,10 +205,10 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		$browser->driver->manage()->deleteAllCookies(); // we suddenly get logged off
 		try
@@ -226,10 +226,10 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
 		try
@@ -247,12 +247,12 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
-		ClassRegistry::init('Tsumego')->delete($context->otherTsumegos[0]['id']);
+		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 		try
 		{
 			$browser->clickId('tag-snapback');
@@ -260,7 +260,7 @@ class TagTest extends ControllerTestCase
 		}
 		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
 		{
-			$this->assertTextContains('Tsumego with id="' . $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
+			$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
 		}
 	}
 
@@ -268,15 +268,15 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 
 		$tagConnection = [];
 		$tagConnection['tag_id'] = $context->tags[0]['id'];
-		$tagConnection['tsumego_id'] = $context->otherTsumegos[0]['id'];
+		$tagConnection['tsumego_id'] = $context->tsumegos[0]['id'];
 		$tagConnection['user_id'] = $context->user['id'];
 		$tagConnection['approved'] = 1;
 		ClassRegistry::init('TagConnection')->create();
@@ -296,11 +296,11 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->manage()->deleteAllCookies(); // we suddenly get logged off
 		try
 		{
@@ -317,11 +317,11 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
 		try
 		{
@@ -338,12 +338,12 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
-		ClassRegistry::init('Tsumego')->delete($context->otherTsumegos[0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 		try
 		{
 			$browser->clickId('remove-tag-snapback');
@@ -351,7 +351,7 @@ class TagTest extends ControllerTestCase
 		}
 		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
 		{
-			$this->assertTextContains('Tsumego with id="' . $context->otherTsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
+			$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
 		}
 	}
 
@@ -359,11 +359,11 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('TagConnection')->deleteAll(['1=1']);
 		try
 		{
@@ -380,14 +380,14 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// the tag gets approved in the meantime
-		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id']);
+		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']);
 		$tagConnection['TagConnection']['approved'] = true;
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 
@@ -407,14 +407,14 @@ class TagTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan Detkov']],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'snapback', 'approved' => 0]]]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		// the tag is changed to be created by Ivan Detkov
-		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->otherTsumegos[0]['tag-connections'][0]['id']);
+		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']);
 		$tagConnection['TagConnection']['user_id'] = $context->otherUsers[0]['id'];
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 

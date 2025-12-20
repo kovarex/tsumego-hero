@@ -70,7 +70,7 @@ class AssetBundlingTest extends CakeTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => ['rating' => 1000]]);
 
-		$setConnectionId = $context->tsumego['set-connections'][0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 		$browser->get('/' . $setConnectionId);  // CakePHP routing uses /{setConnectionId} for puzzles
 
 		// Verify JS bundle is loaded, not individual files

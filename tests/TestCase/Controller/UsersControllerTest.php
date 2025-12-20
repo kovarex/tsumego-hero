@@ -67,7 +67,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['name' => 'kovarex'],
 			'other-users' => [['name' => 'Ivan Detkov', 'daily_xp' => 10, 'daily_solved' => 2]],
-			'other-tsumegos' => [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'tsumegos' => [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('users/leaderboard');
 
@@ -79,7 +79,7 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 
 		// Kovarex solves a problem
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('S'); // solve the problem
 
 		// now kovarex is there
@@ -98,7 +98,7 @@ class UsersControllerTest extends ControllerTestCase
 			$contextParameters = [];
 			$contextParameters['user'] = $loggedIn ? ['name' => 'kovarex'] : null;
 			$contextParameters['other-users'] = [['name' => 'Ivan Detkov', 'level' => 10]];
-			$contextParameters['other-tsumegos'] = [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]];
+			$contextParameters['tsumegos'] = [['rating' => 2600, 'sets' => [['name' => 'set 1', 'num' => 1]]]];
 			$context = new ContextPreparator($contextParameters);
 			$browser = Browser::instance();
 			$browser->get('users/highscore');
@@ -117,7 +117,7 @@ class UsersControllerTest extends ControllerTestCase
 	public function testUserContributionsShowsTagAdded()
 	{
 		$context = new ContextPreparator([
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'tags' => [['name' => 'atari', 'user' => 'kovarex']]]]]);
 		$browser = Browser::instance();
@@ -196,7 +196,7 @@ class UsersControllerTest extends ControllerTestCase
 				'xp' => 57,
 				'rating' => 2065,
 				'solved' => 2],
-			'other-tsumegos' => [
+			'tsumegos' => [
 				[
 					'status' => 'S',
 					'sets' => [['name' => 'set-1', 'num' => 1], ['name' => 'set-2', 'num' => 1]],
@@ -246,13 +246,13 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame('RESET (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
-		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 		$this->assertSame($context->reloadUser()['solved'], 2);
 
 		$browser->driver->executeScript("window.confirm = function(msg) {return true;};");
 		$browser->clickId('reset-statuses-button');
 
-		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->otherTsumegos[1]['id']]]));
+		$this->assertEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
@@ -260,13 +260,13 @@ class UsersControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'rating' => '2200',
 				'attempt' => ['user_rating' => 2165],
 				'status' => 'S']]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('showx8');
 		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
 		$this->assertTextContains('set-1', $browser->driver->getPageSource());
@@ -275,12 +275,12 @@ class UsersControllerTest extends ControllerTestCase
 	public function testShowPublishSchedule()
 	{
 		$context = new ContextPreparator([
-			'other-tsumegos' => [
+			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
 				['sets' => [['name' => 'set 1', 'num' => 673]]]]]);
 
-		$tsumegoToPublish = $context->otherTsumegos[0];
-		$publicSetID = $context->otherTsumegos[1]['set-connections'][0]['set_id'];
+		$tsumegoToPublish = $context->tsumegos[0];
+		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
 
 		ClassRegistry::init('Schedule')->create();
 		$scheduleItem = [];

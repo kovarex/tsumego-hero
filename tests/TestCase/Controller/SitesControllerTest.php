@@ -44,12 +44,12 @@ class SitesControllerTest extends ControllerTestCase
 	public function testShowPublishedTsumego()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
+		$context = new ContextPreparator(['tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
 
 		ClassRegistry::init('Schedule')->create();
 		$schedule = [];
-		$schedule['tsumego_id'] = $context->otherTsumegos[0]['id'];
-		$schedule['set_id'] = $context->otherTsumegos[0]['set-connections'][0]['set_id'];
+		$schedule['tsumego_id'] = $context->tsumegos[0]['id'];
+		$schedule['set_id'] = $context->tsumegos[0]['set-connections'][0]['set_id'];
 		$schedule['date'] = date('Y-m-d');
 		$schedule['published'] = 1;
 		ClassRegistry::init('Schedule')->save($schedule);
