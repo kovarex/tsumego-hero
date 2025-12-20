@@ -583,17 +583,22 @@ class AppController extends Controller
 		if ($_COOKIE['sprint'] != 1)
 			$this->updateSprintCondition();
 
-		if (Auth::isLoggedIn())
+		if (Auth::isLoggedIn() && !$this->request->is('ajax') && !$this->isHtmxRequest())
 		{
-			if (isset($_COOKIE['revelation']) && $_COOKIE['revelation'] != 0)
-				Auth::getUser()['revelation'] -= 1;
-
-			if (!$this->request->is('ajax') && !$this->isHtmxRequest())
-				$this->PlayResultProcessor->checkPreviousPlay($timeMode);
+			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
+			if (Auth::isLoggedIn())
+			{
+				$achievementChecker = new AchievementChecker();
+				$achievementChecker->checkLevelAchievements();
+				$achievementChecker->checkProblemNumberAchievements();
+				$achievementChecker->checkRatingAchievements();
+				$achievementChecker->checkDanSolveAchievements();
+				$achievementChecker->checkNoErrorAchievements();
+				$achievementChecker->finalize();
+				$this->set('achievementUpdates', $achievementChecker->updated);
+			}
 		}
 		$boardNames = [];
-		$enabledBoards = [];
-		$boardCount = 51;
 
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
@@ -607,18 +612,6 @@ class AppController extends Controller
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
 
 		$this->set('boardsBitmask', $boardsBitmask);
-
-		if (Auth::isLoggedIn())
-		{
-			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkLevelAchievements();
-			$achievementChecker->checkProblemNumberAchievements();
-			$achievementChecker->checkRatingAchievements();
-			$achievementChecker->checkDanSolveAchievements();
-			$achievementChecker->checkNoErrorAchievements();
-			$achievementChecker->finalize();
-			$this->set('achievementUpdates', $achievementChecker->updated);
-		}
 
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())

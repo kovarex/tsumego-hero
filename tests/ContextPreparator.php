@@ -403,6 +403,7 @@ class ContextPreparator
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
 		$tsumego['sets'] [] = $set;
 		$tsumego['set-connections'] [] = $setConnection;
+		$this->setConnections []= $setConnection;
 		$this->checkOptionsConsumed($setInput);
 	}
 
@@ -892,6 +893,7 @@ class ContextPreparator
 	public array $timeModeRanks = [];
 	public array $timeModeSessions = [];
 	public array $tags = [];
+	public array $setConnections = [];
 
 	private array $setsCleared = []; // map of IDs of sets already cleared this run. Exists to avoid sets having leftovers from previous runs
 	private int $lastXp = 0;
