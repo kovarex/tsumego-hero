@@ -24,7 +24,6 @@ class SimilarSearchLogic
 			$includeColorSwitch = $this->params['url']['colorSwitch'];
 		}
 		$similarDiffType = [];
-		$similarOrder = [];
 		$tsumegoID = $this->setConnection['tsumego_id'];
 		$this->sourceTsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID)['Tsumego'];
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
@@ -122,7 +121,7 @@ class SimilarSearchLogic
 								$setConnection['SetConnection']['num'],
 								$tsumegoStatus['TsumegoStatus']['status'],
 								$ts[$i]['Tsumego']['rating']);
-							$this->result->items[]= $item;
+							$this->result->items[] = $item;
 						}
 					}
 				}

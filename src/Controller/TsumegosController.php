@@ -94,7 +94,10 @@ class TsumegosController extends AppController
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]])['TsumegoStatus'];
+		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]])['TsumegoStatus'];
 		$this->set(
 			'sourceTsumegoButton',
 			new TsumegoButton(

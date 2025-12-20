@@ -383,9 +383,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// problem 2 has different stones, it shouldn't be found
 		// problem 3 is same as the source
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumegos' => [
-			['set_order' => 1, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])'],
-			['set_order' => 2, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[de][ed][df][fd][ha][hb][hc][hd];B[aa];W[ab];B[ba]C[+])'],
-			['set_order' => 3, 'status' => 'S', 'sgf'=> '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])']]]);
+			['set_order' => 1, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])'],
+			['set_order' => 2, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[de][ed][df][fd][ha][hb][hc][hd];B[aa];W[ab];B[ba]C[+])'],
+			['set_order' => 3, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])']]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
 		$tsumegoButtons = $browser->getCssSelect('.setViewButtons1');

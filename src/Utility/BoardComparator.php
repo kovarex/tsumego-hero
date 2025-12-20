@@ -66,7 +66,7 @@ class BoardComparator
 		//return [$lowestCompareNum, $lowestCompare, $order];
 	}
 
-	static private function compareSingle($a, $b)
+	private static function compareSingle($a, $b)
 	{
 		$diff = 0;
 		$bCount = count($b);
@@ -88,7 +88,7 @@ class BoardComparator
 	 * @param bool $trigger Trigger flag
 	 * @return void
 	 */
-	static private function displayArray($b, $trigger = false)
+	private static function displayArray($b, $trigger = false)
 	{
 		$bCount = 0;
 		if ($trigger)
@@ -104,7 +104,7 @@ class BoardComparator
 		}
 	}
 
-	static private function colorSwitch($b)
+	private static function colorSwitch($b)
 	{
 		$bCount = count($b);
 
@@ -122,7 +122,7 @@ class BoardComparator
 		return $b;
 	}
 
-	static private function mirror($a)
+	private static function mirror($a)
 	{
 		$a1 = [];
 		$black = [];
@@ -141,7 +141,7 @@ class BoardComparator
 		return $a1;
 	}
 
-	static private function getLowest($a)
+	private static function getLowest($a)
 	{
 		$lowestX = 19;
 		$lowestY = 19;
@@ -166,7 +166,7 @@ class BoardComparator
 		return $arr;
 	}
 
-	static private function shiftToCorner($a, $lowestX, $lowestY)
+	private static function shiftToCorner($a, $lowestX, $lowestY)
 	{
 		if ($lowestX != 0)
 		{
