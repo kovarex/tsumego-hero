@@ -10,7 +10,7 @@
 <table>
 	<thead><th>Difference</th><th>Problem</th></thead>
 	<?php
-		foreach ($result as $item)
+		foreach ($result->items as $item)
 		{
 			echo '<tr>';
 			echo '<td>' . $item->difference . '</td>';

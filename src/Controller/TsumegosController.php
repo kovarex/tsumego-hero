@@ -7,7 +7,8 @@ App::uses('TsumegoButton', 'Utility');
 App::uses('AppException', 'Utility');
 App::uses('CookieFlash', 'Utility');
 App::uses('TsumegoMerger', 'Utility');
-App::uses('SimilarSearchResult', 'Utility');
+App::uses('SimilarSearchResultItem', 'Utility');
+App::uses('SimilarSearchLogic', 'Utility');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -77,161 +78,32 @@ class TsumegosController extends AppController
 		return false;
 	}
 
-	public function duplicatesearch($setConnectionID): void
+	public function duplicatesearch($setConnectionID): mixed
 	{
 		$this->loadModel('Sgf');
 		$this->loadModel('Set');
-		$this->loadModel('SetConnection');
 
-		$maxDifference = 5;
-		$includeSandbox = 'false';
-		$includeColorSwitch = 'false';
-		$hideSandbox = false;
-
-		if (isset($this->params['url']['diff']))
+		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+		if (!$setConnection)
 		{
-			$maxDifference = $this->params['url']['diff'];
-			$includeSandbox = $this->params['url']['sandbox'];
-			$includeColorSwitch = $this->params['url']['colorSwitch'];
-		}
-		else
-		$similarId = [];
-		$similarArr = [];
-		$similarArrInfo = [];
-		$similarArrBoardSize = [];
-		$similarTitle = [];
-		$similarDiff = [];
-		$similarDiffType = [];
-		$similarOrder = [];
-		$sc = $this->SetConnection->findById($setConnectionID);
-		if (!$sc)
-			throw new NotFoundException('Set connection not found');
-		$tsumegoID = $sc['SetConnection']['tsumego_id'];
-		$t = $this->Tsumego->findById($tsumegoID);
-		$s = $this->Set->findById($sc['SetConnection']['set_id']);
-		$title = $s['Set']['title'] . ' - ' . $t['Tsumego']['num'];
-		$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $tsumegoID]]);
-		if (!$sgf)
-			throw new NotFoundException('SGF not found');
-		$tBoard = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
-		$tBoardStoneCount = $tBoard->input->getStoneCount();
-
-		$sets2 = [];
-		$sets3 = [];
-		$sets3content = [];
-		$sets1 = $this->Set->find('all', [
-			'conditions' => [
-				'public' => '1',
-				'NOT' => [
-					'id' => [6473, 11969, 29156, 31813, 33007, 71790, 74761, 81578],
-				],
-			],
-		]);
-
-		if (Auth::isLoggedIn())
-		{
-			if (!Auth::hasPremium())
-			{
-				$includeSandbox = 'false';
-				$hideSandbox = true;
-			}
-			else
-			{
-				array_push($sets3content, 6473);
-				array_push($sets3content, 11969);
-				array_push($sets3content, 29156);
-				array_push($sets3content, 31813);
-				array_push($sets3content, 33007);
-				array_push($sets3content, 71790);
-				array_push($sets3content, 74761);
-				array_push($sets3content, 81578);
-			}
-			$sets3 = $this->Set->find('all', ['conditions' => ['id' => $sets3content]]);
-		}
-		else
-		{
-			$includeSandbox = 'false';
-			$hideSandbox = true;
-		}
-		if ($includeSandbox == 'true')
-			$sets2 = $this->Set->find('all', ['conditions' => ['public' => '0']]);
-		$sets = array_merge($sets1, $sets2, $sets3);
-
-		$setsCount = count($sets);
-
-		$result = [];
-
-		for ($h = 0; $h < $setsCount; $h++)
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$h]['Set']['id']);
-			$tsCount = count($ts);
-			for ($i = 0; $i < $tsCount; $i++)
-				if ($ts[$i]['Tsumego']['id'] != $tsumegoID)
-				{
-					$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-					if (!$setConnection)
-						continue;
-					$sgf = $this->Sgf->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-					$board = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
-					$numStones = $board->input->getStoneCount();
-					$stoneNumberDiff = abs($numStones - $tBoardStoneCount);
-					if ($stoneNumberDiff <= $maxDifference)
-					{
-						if ($includeColorSwitch == 'true')
-							$compare = $this->compare($tBoard->data, $board->data, true);
-						else
-							$compare = $this->compare($tBoard->data, $board->data, false);
-						if ($compare[0] <= $maxDifference)
-						{
-							array_push($similarId, $ts[$i]['Tsumego']['id']);
-							array_push($similarArr, $board->data);
-							array_push($similarArrInfo, $board->input->info);
-							array_push($similarArrBoardSize, $board->input->size);
-							array_push($similarDiff, $compare[0]);
-							if ($compare[1] == 0)
-								array_push($similarDiffType, '');
-							elseif ($compare[1] == 1)
-								array_push($similarDiffType, 'Shifted position.');
-							elseif ($compare[1] == 2)
-								array_push($similarDiffType, 'Shifted and rotated.');
-							elseif ($compare[1] == 3)
-								array_push($similarDiffType, 'Switched colors.');
-							elseif ($compare[1] == 4)
-								array_push($similarDiffType, 'Switched colors and shifted position.');
-							elseif ($compare[1] == 5)
-								array_push($similarDiffType, 'Switched colors, shifted and rotated.');
-							array_push($similarOrder, $compare[2]);
-							$set = $this->Set->findById($ts[$i]['Tsumego']['set_id']);
-
-							$item = new SimilarSearchResult();
-							$item->difference = $compare[0];
-							$item->title = $set['Set']['title'];
-
-							$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $ts[$i]['Tsumego']['id']]]);
-
-							$item->tsumegoButton = new TsumegoButton(
-								$ts[$i]['Tsumego']['id'],
-								$setConnection['SetConnection']['id'],
-								$setConnection['SetConnection']['num'],
-								$tsumegoStatus['TsumegoStatus']['status'],
-								$ts[$i]['Tsumego']['rating']);
-							$result []= $item;
-						}
-					}
-				}
+			CookieFlash::set('Problem not found', 'error');
+			return $this->redirect('/sets');
 		}
 
-		usort($result, [SimilarSearchResult::class, 'compare']);
+		$similarSearchLogic = new SimilarSearchLogic($setConnection['SetConnection']);
+		$similarSearchLogic->execute();
 
-		$this->set('result', $result);
-		$this->set('title', $title);
-		$this->set('t', $t);
+		$this->set('result', $similarSearchLogic->result);
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]])['TsumegoStatus'];
-		$this->set('sourceTsumegoButton', new TsumegoButton($tsumegoID, $setConnectionID, $sc['SetConnection']['num'], $tsumegoStatus['status'], $t['rating']));
-		$this->set('maxDifference', $maxDifference);
-		$this->set('includeSandbox', $includeSandbox);
-		$this->set('includeColorSwitch', $includeColorSwitch);
-		$this->set('hideSandbox', $hideSandbox);
+		$this->set(
+			'sourceTsumegoButton',
+			new TsumegoButton(
+				$similarSearchLogic->sourceTsumego['id'],
+				$setConnectionID,
+				$similarSearchLogic->setConnection['num'],
+				$tsumegoStatus['status'],
+				$similarSearchLogic->sourceTsumego['rating']));
+		return null;
 	}
 
 	public static function getTheIdForTheThing($num)
@@ -266,203 +138,6 @@ class TsumegosController extends AppController
 			return 0;
 
 		return 1;
-	}
-
-	private function getLowest($a)
-	{
-		$lowestX = 19;
-		$lowestY = 19;
-		$aCount = count($a);
-
-		for ($y = 0; $y < $aCount; $y++)
-		{
-			$aYCount = count($a[$y]);
-			for ($x = 0; $x < $aYCount; $x++)
-				if ($a[$x][$y] == 'x' || $a[$x][$y] == 'o')
-				{
-					if ($x < $lowestX)
-						$lowestX = $x;
-					if ($y < $lowestY)
-						$lowestY = $y;
-				}
-		}
-		$arr = [];
-		array_push($arr, $lowestX);
-		array_push($arr, $lowestY);
-
-		return $arr;
-	}
-	private function shiftToCorner($a, $lowestX, $lowestY)
-	{
-		if ($lowestX != 0)
-		{
-			$aCount = count($a);
-
-			for ($y = 0; $y < $aCount; $y++)
-			{
-				$aYCount = count($a[$y]);
-
-				for ($x = 0; $x < $aYCount; $x++)
-					if ($a[$x][$y] == 'x' || $a[$x][$y] == 'o')
-					{
-						$c = $a[$x][$y];
-						$a[$x - $lowestX][$y] = $c;
-						$a[$x][$y] = '-';
-					}
-			}
-		}
-		if ($lowestY != 0)
-		{
-			$aCount = count($a);
-
-			for ($y = 0; $y < $aCount; $y++)
-			{
-				$aYCount = count($a[$y]);
-
-				for ($x = 0; $x < $aYCount; $x++)
-					if ($a[$x][$y] == 'x' || $a[$x][$y] == 'o')
-					{
-						$c = $a[$x][$y];
-						$a[$x][$y - $lowestY] = $c;
-						$a[$x][$y] = '-';
-					}
-			}
-		}
-
-		return $a;
-	}
-
-	/**
-	 * @param array $b Board array
-	 * @param bool $trigger Trigger flag
-	 * @return void
-	 */
-	private function displayArray($b, $trigger = false)
-	{
-		$bCount = 0;
-		if ($trigger)
-			$bCount = count($b);
-
-		for ($y = 0; $y < $bCount; $y++)
-		{
-			$bYCount = count($b[$y]);
-
-			for ($x = 0; $x < $bYCount; $x++)
-				echo '&nbsp;&nbsp;' . $b[$x][$y] . ' ';
-			if ($y != 18)
-				echo '<br>';
-		}
-	}
-	private function compare($a, $b, $switch = false)
-	{
-		$compare = [];
-		$this->displayArray($a);
-		$diff1 = $this->compareSingle($a, $b);
-		array_push($compare, $diff1);
-		$this->displayArray($b);
-		if ($switch)
-			$d = $this->colorSwitch($b);
-		$arr = $this->getLowest($a);
-		$a = $this->shiftToCorner($a, $arr[0], $arr[1]);
-		$arr = $this->getLowest($b);
-		$b = $this->shiftToCorner($b, $arr[0], $arr[1]);
-		if ($switch)
-			$c = $this->colorSwitch($b);
-		$diff2 = $this->compareSingle($a, $b);
-		array_push($compare, $diff2);
-		$this->displayArray($b);
-
-		$b = $this->mirror($b);
-		$diff3 = $this->compareSingle($a, $b);
-		array_push($compare, $diff3);
-		$this->displayArray($b);
-
-		if ($switch)
-		{
-			$diff4 = $this->compareSingle($a, $d);
-			array_push($compare, $diff4);
-			$this->displayArray($d);
-
-			$this->displayArray($c);
-			$diff5 = $this->compareSingle($a, $c);
-			array_push($compare, $diff5);
-
-			$c = $this->mirror($c);
-			$diff6 = $this->compareSingle($a, $c);
-			array_push($compare, $diff6);
-			$this->displayArray($c);
-		}
-		$lowestCompare = 6;
-		$lowestCompareNum = 100;
-		$compareCount = count($compare);
-
-		for ($i = 0; $i < $compareCount; $i++)
-			if ($compare[$i] < $lowestCompareNum)
-			{
-				$lowestCompareNum = $compare[$i];
-				$lowestCompare = $i;
-			}
-		if ($lowestCompareNum < 10)
-			$lowestCompareNum = '0' . $lowestCompareNum;
-		elseif ($lowestCompareNum > 99)
-			$lowestCompareNum = 99;
-		$order = $lowestCompareNum . '-' . $lowestCompare;
-
-		return [$lowestCompareNum, $lowestCompare, $order];
-	}
-
-	private function colorSwitch($b)
-	{
-		$bCount = count($b);
-
-		for ($y = 0; $y < $bCount; $y++)
-		{
-			$bYCount = count($b[$y]);
-
-			for ($x = 0; $x < $bYCount; $x++)
-				if ($b[$x][$y] == 'x')
-					$b[$x][$y] = 'o';
-				elseif ($b[$x][$y] == 'o')
-					$b[$x][$y] = 'x';
-		}
-
-		return $b;
-	}
-
-	private function compareSingle($a, $b)
-	{
-		$diff = 0;
-		$bCount = count($b);
-
-		for ($y = 0; $y < $bCount; $y++)
-		{
-			$bYCount = count($b[$y]);
-
-			for ($x = 0; $x < $bYCount; $x++)
-				if ($a[$x][$y] != $b[$x][$y])
-					$diff++;
-		}
-
-		return $diff;
-	}
-
-	private function mirror($a)
-	{
-		$a1 = [];
-		$black = [];
-		$white = [];
-		$aCount = count($a);
-
-		for ($y = 0; $y < $aCount; $y++)
-		{
-			$a1[$y] = [];
-			$aYCount = count($a[$y]);
-
-			for ($x = 0; $x < $aYCount; $x++)
-				$a1[$y][$x] = $a[$x][$y];
-		}
-
-		return $a1;
 	}
 
 	public static function findUt($id = null, $utsMap = null)
