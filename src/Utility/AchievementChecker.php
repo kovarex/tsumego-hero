@@ -168,10 +168,23 @@ class AchievementChecker
 
 	public function checkTimeModeAchievements(): AchievementChecker
 	{
-		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		// select always just one session per each rank and category combination, and the best one
+		$timeModeSessions = Util::query("
+SELECT *
+FROM (
+    SELECT
+        time_mode_session.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY time_mode_rank_id, time_mode_category_id
+            ORDER BY points DESC, created DESC
+        ) AS rn
+    FROM time_mode_session
+    WHERE time_mode_session.user_id = ?
+      AND time_mode_session.time_mode_session_status_id = ?
+) ranked
+WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		foreach ($timeModeSessions as $timeModeSession)
 		{
-			$timeModeSession = $timeModeSession['TimeModeSession'];
 			// Compare IDs directly - no need for recursive loading
 			$statusId = isset($timeModeSession['time_mode_session_status_id']) ? $timeModeSession['time_mode_session_status_id'] : 0;
 			$rankId = isset($timeModeSession['time_mode_rank_id']) ? $timeModeSession['time_mode_rank_id'] : 0;

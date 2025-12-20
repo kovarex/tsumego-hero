@@ -403,7 +403,7 @@ class ContextPreparator
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['order' => ['id' => 'DESC']])['SetConnection'];
 		$tsumego['sets'] [] = $set;
 		$tsumego['set-connections'] [] = $setConnection;
-		$this->setConnections []= $setConnection;
+		$this->setConnections [] = $setConnection;
 		$this->checkOptionsConsumed($setInput);
 	}
 

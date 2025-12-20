@@ -586,17 +586,14 @@ class AppController extends Controller
 		if (Auth::isLoggedIn() && !$this->request->is('ajax') && !$this->isHtmxRequest())
 		{
 			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
-			if (Auth::isLoggedIn())
-			{
-				$achievementChecker = new AchievementChecker();
-				$achievementChecker->checkLevelAchievements();
-				$achievementChecker->checkProblemNumberAchievements();
-				$achievementChecker->checkRatingAchievements();
-				$achievementChecker->checkDanSolveAchievements();
-				$achievementChecker->checkNoErrorAchievements();
-				$achievementChecker->finalize();
-				$this->set('achievementUpdates', $achievementChecker->updated);
-			}
+			$achievementChecker = new AchievementChecker();
+			$achievementChecker->checkLevelAchievements();
+			$achievementChecker->checkProblemNumberAchievements();
+			$achievementChecker->checkRatingAchievements();
+			$achievementChecker->checkDanSolveAchievements();
+			$achievementChecker->checkNoErrorAchievements();
+			$achievementChecker->finalize();
+			$this->set('achievementUpdates', $achievementChecker->updated);
 		}
 		$boardNames = [];
 
