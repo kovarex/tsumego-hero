@@ -192,8 +192,10 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
 			'user' => ['premium' => true, 'health' => 1], // Admin so comments are visible
-			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])', 'sets' => [['name' => 'test set', 'num' => '1']]],
-		]);
+			'tsumego' => [
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+				'sets' => [['name' => 'test set', 'num' => '1']]]]);
+		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
 		$browser = Browser::instance();
 		$browser->get($context->tsumego['set-connections'][0]['id']);
 		$browser->playWithResult('F');

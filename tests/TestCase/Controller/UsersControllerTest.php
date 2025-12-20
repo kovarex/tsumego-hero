@@ -188,6 +188,7 @@ class UsersControllerTest extends ControllerTestCase
 
 	public function testUserProfilePage()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => [
 				'email' => 'current@example.com',
@@ -215,8 +216,7 @@ class UsersControllerTest extends ControllerTestCase
 					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 					'rank' => '10k'
 				]]]);
-
-		$browser = Browser::instance();
+		$context->unlockAchievementsWithoutEffect();
 		$browser->get('users/view/' . $context->user['id']);
 		$browser->checkTable('#level-info-table', $this, [
 			['Level:', '66'],

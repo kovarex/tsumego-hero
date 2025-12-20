@@ -10,8 +10,9 @@ class HeroPowersTest extends TestCaseWithAuth
 	public function testRefinementGoldenTsumego()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'user' => ['premium' => 1],
 			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$context->unlockAchievementsWithoutEffect();
 
 		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
 		$browser = Browser::instance();
@@ -36,7 +37,7 @@ class HeroPowersTest extends TestCaseWithAuth
 	public function testGoldenTsumegoFail()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'user' => ['premium' => 1],
 			'other-tsumegos' => [['status' => 'G', 'sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
@@ -60,14 +61,13 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testSprint()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->unlockAchievementsWithoutEffect();
+		$context->XPGained(); // to reset the lastXPgained for the final test
 		$tsumego = ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego'];
 		$originalTsumegoXPValue = TsumegoUtil::getXpValue($tsumego);
-		$browser = Browser::instance();
-		HeroPowers::changeUserSoSprintCanBeUsed();
-		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
 		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
@@ -81,15 +81,15 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testSprintPersistsToNextTsumego()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'premium' => 1],
 			'other-tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]]],
 				['sets' => [['name' => 'set 1', 'num' => 2]]]]]);
 		$originalTsumego0XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[0]['id'])['Tsumego']);
 		$originalTsumego1XPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->otherTsumegos[1]['id'])['Tsumego']);
-		$browser = Browser::instance();
 		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->unlockAchievementsWithoutEffect();
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
@@ -141,11 +141,10 @@ class HeroPowersTest extends TestCaseWithAuth
 		foreach (['logged-off', 'not-available', 'used-up', 'normal'] as $testCase)
 		{
 			$browser = Browser::instance();
-			$context = new ContextPreparator([
-				'user' => ['rating' => 1000, 'mode' => Constants::$LEVEL_MODE],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 			HeroPowers::changeUserSoRevelationCanBeUsed();
-			$context->xpgained(); // to reload the current xp to be able to tell the gained later
+			$context->unlockAchievementsWithoutEffect();
+			$context->XPGained(); // to reload the current xp to be able to tell the gained later
 			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
 			$this->checkPowerIsActive($browser, 'revelation');
@@ -156,7 +155,7 @@ class HeroPowersTest extends TestCaseWithAuth
 			{
 				Auth::getUser()['level'] = 1;
 				Auth::saveUser();
-				$context->xpgained(); // to reload the current xp to be able to tell the gained later
+				$context->XPGained(); // to reload the current xp to be able to tell the gained later
 			}
 			elseif ($testCase == 'used-up')
 			{
@@ -197,17 +196,15 @@ class HeroPowersTest extends TestCaseWithAuth
 			$this->assertSame($testCase == 'normal' ? 'S' : 'V', $tsumegoStatuses[0]['TsumegoStatus']['status']);
 
 			$this->assertSame($context->xpgained(), 0); // no xp was gained
-			$this->assertSame($context->reloadUser()['rating'], 1000.0); // xp wasn't changed
+			$this->assertSame($context->reloadUser()['rating'], ContextPreparator::$DEFAULT_USER_RATING); // xp wasn't changed
 			$this->assertSame(0, count(ClassRegistry::init('TsumegoAttempt')->find('all'))); // no attempt was recorded
 		}
 	}
 
 	public function testUseIntuition()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
+		$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		HeroPowers::changeUserSoIntuitionCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertFalse($browser->driver->executeScript("return window.besogo.intuitionActive;"));
@@ -220,12 +217,11 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testIntuitionShowsCorrectSolution()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'other-tsumegos' => [[
 				'sets' => [['name' => 'set 1', 'num' => 1]],
 				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]RU[Japanese]SZ[19]AW[jb][cc][dc][kc][ed][gd][jd][fe][ie][df][gf]AB[bc][fc][gc][hc][ic][cd][fd][be][cg](;B[ee];W[de](;B[dd];W[ec];B[cb];W[eb])(;B[cb];W[db];B[dd];W[ec];B[da];W[ef];B[eb]C[+]))(;B[cb];W[db];B[ee];W[bb];B[ca];W[ac];B[bd];W[ba](;B[de];W[ab])(;B[ab];W[de]))(;B[dd];W[ec])(;B[ec];W[dd]))']]]);
-		$browser = Browser::instance();
 		HeroPowers::changeUserSoIntuitionCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'intuition');
@@ -245,10 +241,10 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testIntuitionPowerIsInactiveWhenIntuitionIsUsedUp()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1],
-			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['used_intuition' => 1],
+			'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
 		HeroPowers::changeUserSoIntuitionCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsInactive($browser, 'intuition');
@@ -256,12 +252,12 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testRejuvenationRestoresHealthIntuitionAndFailedTsumegos()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'used_intuition' => 1, 'damage' => 7],
+			'user' => ['used_intuition' => 1, 'damage' => 7],
 			'other-tsumegos' => [
 				['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => 'F'],
 				['sets' => [['name' => 'set 1', 'num' => 2]], 'status' => 'X']]]);
-		$browser = Browser::instance();
 		HeroPowers::changeUserSoRejuvenationCanBeUsed();
 		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
 		$this->assertSame($context->user['damage'], 7);

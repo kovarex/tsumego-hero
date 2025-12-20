@@ -43,6 +43,8 @@ class ContextPreparator
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
+		if ($this->user)
+			$this->lastXp = Level::getOverallXPGained($this->user);
 	}
 
 	private function checkOptionsConsumed(?array $options)
@@ -857,6 +859,11 @@ class ContextPreparator
 		if (is_string($input) && strpos($input, 'other:') === 0)
 			return $this->otherTsumegos[intval(substr($input, 6))]['id'];
 		return $input;
+	}
+
+	public function unlockAchievementsWithoutEffect()
+	{
+		new AchievementChecker()->checkAll();
 	}
 
 	public ?array $user = null;

@@ -578,10 +578,30 @@ class AchievementChecker
 		return $this;
 	}
 
+	public function checkAll(): void
+	{
+		$this->checkLevelAchievements();
+		$this->checkProblemNumberAchievements();
+		$this->checkRatingAchievements();
+		$this->checkDanSolveAchievements();
+		$this->checkNoErrorAchievements();
+		$this->checkTimeModeAchievements();
+	}
+
 	public function finalize(): AchievementChecker
 	{
-		if (!empty($this->updated))
-			User::updateXP(Auth::getUserID(), $this->updated);
+		if (empty($this->updated))
+			return $this;
+
+		$xpBonus = 0;
+		foreach ($this->updated as $achievement)
+			$xpBonus += $achievement['xp'];
+		if ($xpBonus == 0)
+			return $this;
+
+		$user = &Auth::getUser();
+		Level::addXP($user, $xpBonus);
+		Auth::saveUser();
 		return $this;
 	}
 
