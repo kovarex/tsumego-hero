@@ -183,7 +183,6 @@ class TsumegosController extends AppController
 							$compare = $this->compare($tBoard->data, $board->data, false);
 						if ($compare[0] <= $maxDifference)
 						{
-							$item = [];
 							array_push($similarId, $ts[$i]['Tsumego']['id']);
 							array_push($similarArr, $board->data);
 							array_push($similarArrInfo, $board->input->info);
@@ -222,17 +221,9 @@ class TsumegosController extends AppController
 				}
 		}
 
-		array_multisort($similarOrder, $similarArr, $similarArrInfo, $similarTitle, $similarDiff, $similarDiffType, $similarId);
+		usort($result, [SimilarSearchResult::class, 'compare']);
 
-		$this->set('tSgfArr', $tBoard->data);
-		$this->set('tSgfArrInfo', $tBoard->input->info);
-		$this->set('tSgfArrBoardSize', $tBoard->input->size);
-		$this->set('similarId', $similarId);
 		$this->set('result', $result);
-		$this->set('similarArrInfo', $similarArrInfo);
-		$this->set('similarArrBoardSize', $similarArrBoardSize);
-		$this->set('similarDiff', $similarDiff);
-		$this->set('similarDiffType', $similarDiffType);
 		$this->set('title', $title);
 		$this->set('t', $t);
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]])['TsumegoStatus'];

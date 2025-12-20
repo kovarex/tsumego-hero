@@ -1,38 +1,25 @@
-	<?php
-?>
-	<div align="center">
+<div style="text-align:center;">
 	<p class="title">
 		<br>
-		Similar problem search for <?php echo $title; ?>
-		<br>
-	</p>
-	</div>
-	<table width="100%" border="0" class="duplicateSearchTable">
-		<tr>
-		<td width="50%">
-			<div align="right">
+		<div style="display:flex;">
+			Similar problem search for <?php echo $title; ?>
 			<?php $sourceTsumegoButton->render(); ?>
-			<div id="tooltipSvg-1"></div>
-			</div>
-		</td>
-		<td width="50%">
-		<?php
-			foreach ($result as $item)
-			{
-				if ($similarDiff[$i]==0)
-					$description1 = 'No difference. ';
-				elseif ($similarDiff[$i]==1)
-					$description1 = $similarDiff[$i].' stone different. ';
-				else
-					$description1 = $similarDiff[$i].' stones different. ';
-				echo $item->title;
-				$item->tsumegoButton->render();
-				echo '<br>';
-			}
-			if (empty($result))
-				echo 'No problems found.';
-		?>
-		</td>
-		</tr>
-	</table>
-	<style>.duplicateSearchTable td{vertical-align: top;padding:14px;}</style>
+		</div>
+	</p>
+</div>
+<table>
+	<thead><th>Difference</th><th>Problem</th></thead>
+	<?php
+		foreach ($result as $item)
+		{
+			echo '<tr>';
+			echo '<td>' . $item->difference . '</td>';
+			echo '<td><div style="display:flex;">';
+			$item->tsumegoButton->render();
+			echo $item->title . '</div></td>';
+			echo '</tr>' . PHP_EOL;
+		}
+		if (empty($result))
+			echo 'No problems found.';
+	?>
+</table>
