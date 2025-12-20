@@ -27,9 +27,9 @@ class SgfResult
 	{
 		$result = new SgfResult([], [], $this->info, $this->size);
 		foreach ($this->blackStones as $blackStone)
-			$result->blackStones[]= $blackStone->getMirrored();
+			$result->blackStones[] = $blackStone->getMirrored();
 		foreach ($this->whiteStones as $whiteStone)
-			$result->whiteStones[]= $whiteStone->getMirrored();
+			$result->whiteStones[] = $whiteStone->getMirrored();
 		return $result;
 	}
 
@@ -37,13 +37,13 @@ class SgfResult
 	{
 		$result = new SgfResult([], [], $this->info, $this->size);
 		foreach ($this->blackStones as $blackStone)
-			$result->blackStones[]= $blackStone->getShifted($shift);
+			$result->blackStones[] = $blackStone->getShifted($shift);
 		foreach ($this->whiteStones as $whiteStone)
-			$result->whiteStones[]= $whiteStone->getShifted($shift);
+			$result->whiteStones[] = $whiteStone->getShifted($shift);
 		return $result;
 	}
 
-	function getLowest(): BoardPosition
+	public function getLowest(): BoardPosition
 	{
 		$result = new BoardPosition($this->size, $this->size);
 		foreach ($this->blackStones as $blackStone)

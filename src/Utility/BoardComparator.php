@@ -8,21 +8,21 @@ class BoardComparator
 	{
 		$result = new BoardComparisonResult();
 		$compare = [];
-		$compare []= self::compareSingle($a, $b);
+		$compare [] = self::compareSingle($a, $b);
 		if ($switch)
 			$d = self::colorSwitch($b);
 		$a = $a->getShifted($a->getLowest());
 		$b = $b->getShifted($b->getLowest());
 		if ($switch)
 			$c = self::colorSwitch($b);
-		$compare[]= self::compareSingle($a, $b);
-		$compare[]= self::compareSingle($a, $b->getMirrored());
+		$compare[] = self::compareSingle($a, $b);
+		$compare[] = self::compareSingle($a, $b->getMirrored());
 
 		if ($switch)
 		{
-			$compare []= self::compareSingle($a, $d);
+			$compare [] = self::compareSingle($a, $d);
 			$compare [] = self::compareSingle($a, $c);
-			$compare []= self::compareSingle($a, $c->getMirrored());
+			$compare [] = self::compareSingle($a, $c->getMirrored());
 		}
 		$lowestCompare = 6;
 		$lowestCompareNum = 100;
