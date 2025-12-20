@@ -36,6 +36,28 @@ class SgfResultBoard
 		return $this->data[$stone->x][$stone->y];
 	}
 
+	public function getSafe(BoardPosition $stone): string
+	{
+		if ($stone->x >= $this->input->size || $stone->y >= $this->input->size)
+			return '-';
+		return $this->get($stone);
+	}
+
+	public function getMirrored(): SgfResultBoard
+	{
+		return new SgfResultBoard($this->input->getMirrored());
+	}
+
+	public function getShifted(BoardPosition $shift): SgfResultBoard
+	{
+		return new SgfResultBoard($this->input->getShifted($shift));
+	}
+
+	public function getLowest(): BoardPosition
+	{
+		return $this->input->getLowest();
+	}
+
 	public array $data = [];
 	public $input;
 }

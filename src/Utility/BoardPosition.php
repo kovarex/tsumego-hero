@@ -28,6 +28,22 @@ class BoardPosition
 		$this->y = $size - 1 - $this->y;
 	}
 
+	public function getMirrored(): BoardPosition
+	{
+		return new BoardPosition($this->y, $this->x);
+	}
+
+	public function getShifted(BoardPosition $shift): BoardPosition
+	{
+		return new BoardPosition($this->x - $shift->x, $this->y - $shift->y);
+	}
+
+	public function minEqual(BoardPosition $other): void
+	{
+		$this->x = min($this->x, $other->x);
+		$this->y = min($this->y, $other->y);
+	}
+
 	public $x;
 	public $y;
 }
