@@ -9,7 +9,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		foreach ([false, true] as $openBySetConnectionID)
 		{
-			$context = new ContextPreparator(['tsumego' => ['set_order' =>666]]);
+			$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
 			$this->testAction(
 				$openBySetConnectionID
 				? ('/' . $context->tsumegos[0]['set-connections'][0]['id'])
@@ -91,7 +91,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testViewingTsumegoInMoreSetsUsingWebDriver()
 	{
 		$context = new ContextPreparator(['tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '666'], ['name' => 'tsumego set 2', 'num' => '777']]]]);
+			'sets' => [['name' => 'tsumego set 1', 'num' => '666'], ['name' => 'tsumego set 2', 'num' => '777']]]]);
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
@@ -151,7 +151,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testCommentCoordinatesHaveHoverSpans()
 	{
 		// Create a tsumego with a comment containing coordinates
-		 // Admin so comments are visible
+		// Admin so comments are visible
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
 
 		// Add a comment with coordinates

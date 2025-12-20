@@ -160,7 +160,7 @@ class ContextPreparator
 		$this->checkOptionsConsumed($setInput);
 	}
 
-	private function prepareTsumego(null|array|int $tsumegoInput): array
+	private function prepareTsumego(array|int|null $tsumegoInput): array
 	{
 		if (is_int($tsumegoInput))
 			return $this->prepareTsumego(['set_order' => $tsumegoInput]);
@@ -193,7 +193,7 @@ class ContextPreparator
 		return $tsumego;
 	}
 
-	private function prepareThisTsumego(null|int|array $tsumego): void
+	private function prepareThisTsumego(int|array|null $tsumego): void
 	{
 		if (is_null($tsumego))
 			return;
@@ -388,11 +388,11 @@ class ContextPreparator
 			return;
 
 		$set = $this->getOrCreateTsumegoSet([
-				'name' => Util::extractWithDefault('name', $setInput, 'test set'),
-				'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
-				'public' => Util::extract('public', $setInput),
-				'premium' => $setInput['premium'] ?? 0,
-				'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
+			'name' => Util::extractWithDefault('name', $setInput, 'test set'),
+			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
+			'public' => Util::extract('public', $setInput),
+			'premium' => $setInput['premium'] ?? 0,
+			'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
 		unset($setInput['premium']);  // Mark as consumed
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
