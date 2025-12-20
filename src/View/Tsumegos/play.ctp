@@ -1,14 +1,7 @@
-﻿<?php
+<?php
 // Open Graph meta tags for social sharing
 echo $this->element('open_graph_meta');
 ?>
-<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0) { ?>
-	<script src="/js/multipleChoice.js"></script>
-	<style>.alertBox{height:auto!important;}</style>
-<?php }else if($tv!=null){ ?>
-	<script src="/js/multipleChoiceCustom.js"></script>
-	<script src="/js/scoreEstimatingCustom.js"></script>
-<?php } ?>
 <link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
