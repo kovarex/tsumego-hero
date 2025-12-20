@@ -645,7 +645,7 @@
 				isNewTag = 'class="is-new-tag"';
 			}
 			let tagLink = 'href="/tag_names/view/'+idTags[i]+'"';
-			let tagLinkId = 'id="tag-'+tags[i].replaceAll(' ', '-')+'"';
+			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
 			if(typeof idTags[i] === "undefined"){
 				tagLink = '';
 				tagLinkId = '';
@@ -663,8 +663,7 @@
 
 		$(".add-tag-list").append("Add tag to ALL problems in this collection: ");
 		for(let i=0;i<allTags.length;i++){
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="tag-'
-			+allTags[i].replaceAll(' ', '-')+'">'
+			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
 			+allTags[i]+'</a>');
 			if(i<allTags.length-1)
 				$(".add-tag-list").append(', ');
@@ -673,7 +672,7 @@
 	}
 
 	for(let i=0;i<allTags.length;i++){
-		let currentIdValue = "#tag-"+allTags[i].replaceAll(' ', '-');
+		let currentIdValue = "#" + makeIdValidName(allTags[i]);
 		$('.tag-container').on('click', currentIdValue, function(e) {
 			e.preventDefault();
 			setCookie("addTag", "<?php echo $set['Set']['id']; ?>-"+allTags[i]);
