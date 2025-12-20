@@ -37,6 +37,12 @@ Router::connect('/cache_js/:name', [
 	'action' => 'get'
 ], ['name' => '[a-z0-9\-\.]+']);
 
+// XML Sitemap for search engines
+Router::connect('/sitemap.xml', [
+	'controller' => 'Sitemaps',
+	'action' => 'index'
+]);
+
 /**
  * Here, we are connecting '/' (base path) to controller called 'Pages',
  * its action called 'display', and we pass a param to select the view file
