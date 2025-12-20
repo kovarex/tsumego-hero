@@ -41,4 +41,12 @@ class BoardComparatorTest extends CakeTestCase
 		$result = BoardComparator::compare($oneStoneBoardA, $oneStoneBoardB);
 		$this->assertSame(2, $result->difference);
 	}
+
+	public function testCompareStoneWithBoardWhichIsTooSmallToContainIt()
+	{
+		$oneStoneBoardA = new SgfResultBoard(SgfParser::process('(;GM[1]FF[4]SZ[2]AB[aa])'));
+		$oneStoneBoardB = new SgfResultBoard(SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][cc])'));
+		$result = BoardComparator::compare($oneStoneBoardA, $oneStoneBoardB);
+		$this->assertSame(1, $result->difference);
+	}
 }
