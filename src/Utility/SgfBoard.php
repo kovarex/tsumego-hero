@@ -33,16 +33,16 @@ class SgfBoard
 	public function getMirrored(): SgfBoard
 	{
 		$result = new SgfBoard([], $this->info, $this->size);
-		foreach ($this->stones as $stone)
-			$result->stones[] = BoardPosition::mirror($stone);
+		foreach ($this->stones as $position => $color)
+			$result->stones[BoardPosition::mirror($position)] = $color;
 		return $result;
 	}
 
 	public function getColorSwitched(): SgfBoard
 	{
 		$stones = [];
-		foreach ($this->stones as $stone)
-			$stones[] = 1 - $stone;
+		foreach ($this->stones as $position => $color)
+			$stones[$position] = 1 - $color;
 		return new SgfBoard($stones, $this->info, $this->size);
 	}
 
@@ -57,8 +57,8 @@ class SgfBoard
 	public function getLowest(): int
 	{
 		$result = BoardPosition::pack($this->size, $this->size);
-		foreach ($this->stones as $stone)
-			$result = BoardPosition::min($result, $stone);
+		foreach ($this->stones as $position => $stone)
+			$result = BoardPosition::min($result, $position);
 		return $result;
 	}
 
