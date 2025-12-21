@@ -33,6 +33,11 @@ class SgfResult
 		return $result;
 	}
 
+	public function getColorSwitched(): SgfResult
+	{
+		return new SgfResult($this->whiteStones, $this->blackStones, $this->info, $this->size);
+	}
+
 	public function getShifted(BoardPosition $shift): SgfResult
 	{
 		$result = new SgfResult([], [], $this->info, $this->size);

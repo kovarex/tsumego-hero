@@ -47,6 +47,11 @@ class SgfResultBoard
 	{
 		return new SgfResultBoard($this->input->getMirrored());
 	}
+	public function getColorSwitched(): SgfResultBoard
+	{
+		return new SgfResultBoard($this->input->getColorSwitched());
+	}
+
 
 	public function getShifted(BoardPosition $shift): SgfResultBoard
 	{

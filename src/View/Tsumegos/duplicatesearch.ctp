@@ -6,6 +6,7 @@
 			<?php $sourceTsumegoButton->render(); ?>
 		</div>
 	</p>
+	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
 </div>
 <table>
 	<thead><th>Difference</th><th>Problem</th></thead>
