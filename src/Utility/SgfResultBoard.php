@@ -43,7 +43,7 @@ class SgfResultBoard
 	public array $data = [];
 	public $input;
 
-    public const int EMPTY = 0;
-    public const int BLACK = 1;
-    public const int WHITE = 2;
+	public const int EMPTY = 0;
+	public const int BLACK = 1;
+	public const int WHITE = 2;
 }

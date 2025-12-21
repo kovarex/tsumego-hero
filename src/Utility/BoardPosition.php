@@ -2,7 +2,7 @@
 
 class BoardPosition
 {
-	static public function pack($x, $y): int
+	public static function pack($x, $y): int
 	{
 		return $x << 5 | $y;
 	}
@@ -12,8 +12,14 @@ class BoardPosition
 		return BoardPosition::pack(ord($x) - ord('a'), ord($y) - ord('a'));
 	}
 
-	public static function unpackX(int $packed): int { return $packed >> 5; }
-	public static function unpackY(int $packed): int { return $packed & 31; }
+	public static function unpackX(int $packed): int
+	{
+		return $packed >> 5;
+	}
+	public static function unpackY(int $packed): int
+	{
+		return $packed & 31;
+	}
 
 	public static function toLetters(int $packed): string
 	{
