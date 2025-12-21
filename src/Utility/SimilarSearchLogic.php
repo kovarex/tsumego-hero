@@ -15,8 +15,8 @@ class SimilarSearchLogic
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->sourceTsumegoID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$this->sourceBoard = new SgfResultBoard(SgfParser::process($sgf['Sgf']['sgf']));
-		$this->sourceStoneCount = $this->sourceBoard->input->getStoneCount();
+		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf']);
+		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
 		$this->result->title = $set['title'];
 	}
@@ -62,8 +62,8 @@ LEFT JOIN sgf
 
 	private function checkCandidate($candidate): void
 	{
-		$board = new SgfResultBoard(SgfParser::process($candidate['sgf']));
-		$numStones = $board->input->getStoneCount();
+		$board = SgfParser::process($candidate['sgf']);
+		$numStones = $board->getStoneCount();
 		$stoneNumberDiff = abs($numStones - $this->sourceStoneCount);
 		if ($stoneNumberDiff > $this->maxDifference)
 			return;
