@@ -44,6 +44,11 @@ class BoardPosition
 		$this->y = min($this->y, $other->y);
 	}
 
+	public function pack(): int
+	{
+		return ($this->x << 5) | $this->y;
+	}
+
 	public $x;
 	public $y;
 }

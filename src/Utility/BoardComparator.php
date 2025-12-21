@@ -39,12 +39,9 @@ class BoardComparator
 	private static function compareSingle(SgfResultBoard $a, SgfResultBoard $b)
 	{
 		$diff = 0;
-		$size = max($a->input->size, $b->input->size);
-		$position = new BoardPosition(0, 0);
-		for ($position->y = 0; $position->y < $size; $position->y++)
-			for ($position->x = 0; $position->x < $size; $position->x++)
-				if ($a->getSafe($position) != $b->getSafe($position))
-					$diff++;
+		foreach ($a->data as $position => $color)
+			if ($b->get($position) != $color)
+				$diff++;
 		return $diff;
 	}
 }

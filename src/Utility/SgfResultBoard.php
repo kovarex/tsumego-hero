@@ -5,53 +5,30 @@ class SgfResultBoard
 	public function __construct(SgfResult $input)
 	{
 		$this->input = $input;
-		$this->createEmpty();
-		$this->fillStones($this->input->blackStones, 'x');
-		$this->fillStones($this->input->whiteStones, 'x');
+		$this->fillStones($this->input->blackStones, self::BLACK);
+		$this->fillStones($this->input->whiteStones, self::WHITE);
 	}
 
-	private function createEmpty(): void
-	{
-		for ($i = 0; $i < $this->input->size; $i++)
-		{
-			$this->data[$i] = [];
-			for ($j = 0; $j < $this->input->size; $j++)
-				$this->data[$i][$j] = '-';
-		}
-	}
-
-	private function fillStones($stones, $color): void
+	private function fillStones($stones, int $color): void
 	{
 		foreach ($stones as $stone)
-			$this->set($stone, $color);
+			$this->data[$stone->pack()] = $color;
 	}
 
-	public function &set(BoardPosition $stone, $value): void
+	public function get(int $packed): int
 	{
-		$this->data[$stone->x][$stone->y] = $value;
-	}
-
-	public function get(BoardPosition $stone): string
-	{
-		return $this->data[$stone->x][$stone->y];
-	}
-
-	public function getSafe(BoardPosition $stone): string
-	{
-		if ($stone->x >= $this->input->size || $stone->y >= $this->input->size)
-			return '-';
-		return $this->get($stone);
+		return $this->data[$packed] ?: self::EMPTY;
 	}
 
 	public function getMirrored(): SgfResultBoard
 	{
 		return new SgfResultBoard($this->input->getMirrored());
 	}
+
 	public function getColorSwitched(): SgfResultBoard
 	{
 		return new SgfResultBoard($this->input->getColorSwitched());
 	}
-
 
 	public function getShifted(BoardPosition $shift): SgfResultBoard
 	{
@@ -65,4 +42,8 @@ class SgfResultBoard
 
 	public array $data = [];
 	public $input;
+
+    public const int EMPTY = 0;
+    public const int BLACK = 1;
+    public const int WHITE = 2;
 }
