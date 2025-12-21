@@ -10,10 +10,10 @@ class BoardBounds
 		$this->y = new IntegerBounds();
 	}
 
-	public function add(BoardPosition $position)
+	public function add(int $packed)
 	{
-		$this->x->add($position->x);
-		$this->y->add($position->y);
+		$this->x->add(BoardPosition::unpackX($packed));
+		$this->y->add(BoardPosition::unpackY($packed));
 	}
 
 	public IntegerBounds $x;

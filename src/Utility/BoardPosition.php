@@ -2,53 +2,46 @@
 
 class BoardPosition
 {
-	public function __construct($x, $y)
+	static public function pack($x, $y): int
 	{
-		$this->x = $x;
-		$this->y = $y;
+		return $x << 5 | $y;
 	}
 
-	public static function fromLetters($x, $y): BoardPosition
+	public static function fromLetters($x, $y): int
 	{
-		return new BoardPosition(ord($x) - ord('a'), ord($y) - ord('a'));
+		return BoardPosition::pack(ord($x) - ord('a'), ord($y) - ord('a'));
 	}
 
-	public function toLetters(): string
+	public static function unpackX(int $packed): int { return $packed >> 5; }
+	public static function unpackY(int $packed): int { return $packed & 31; }
+
+	public static function toLetters(int $packed): string
 	{
-		return chr($this->x + ord('a')) . chr($this->y + ord('a'));
+		return chr(self::unpackX($packed) + ord('a')) . chr(self::unpackY($packed) + ord('a'));
 	}
 
-	public function flipX($size): void
+	public static function flipX(int $packed, int $size): int
 	{
-		$this->x = $size - 1 - $this->x;
+		return self::pack($size - 1 - self::unpackX($packed), self::unpackY($packed));
 	}
 
-	public function flipY($size): void
+	public static function flipY(int $packed, int $size): int
 	{
-		$this->y = $size - 1 - $this->y;
+		return self::pack(self::unpackX($packed), $size - 1 - self::unpackY($packed));
 	}
 
-	public function getMirrored(): BoardPosition
+	public static function mirror(int $packed): int
 	{
-		return new BoardPosition($this->y, $this->x);
+		return self::pack(self::unpackY($packed), self::unpackX($packed));
 	}
 
-	public function getShifted(BoardPosition $shift): BoardPosition
+	public static function shift(int $packed, int $shift): int
 	{
-		return new BoardPosition($this->x - $shift->x, $this->y - $shift->y);
+		return self::pack(self::unpackX($packed) - self::unpackX($shift), self::unpackY($packed) - self::unpackY($shift));
 	}
 
-	public function minEqual(BoardPosition $other): void
+	public static function min(int $packed, int $other): int
 	{
-		$this->x = min($this->x, $other->x);
-		$this->y = min($this->y, $other->y);
+		return self::pack(min(self::unpackX($packed), self::unpackX($other)), min(self::unpackY($packed), self::unpackY($other)));
 	}
-
-	public function pack(): int
-	{
-		return ($this->x << 5) | $this->y;
-	}
-
-	public $x;
-	public $y;
 }

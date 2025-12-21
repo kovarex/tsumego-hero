@@ -64,8 +64,8 @@ class TsumegoButton
 		$result = '';
 		$result .= 'if (this.querySelector(\'svg\')) return;';
 		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
-		$result .= 'black = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->blackStones)) . '\';';
-		$result .= 'white = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->whiteStones)) . '\';';
+		$result .= 'black = \'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->blackStones)) . '\';';
+		$result .= 'white = \'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->whiteStones)) . '\';';
 		$result .= 'createPreviewBoard(this, black, white,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
 		return $result;
 	}
