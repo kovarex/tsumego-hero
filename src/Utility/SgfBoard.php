@@ -49,8 +49,8 @@ class SgfBoard
 	public function getShifted(int $shift): SgfBoard
 	{
 		$result = new SgfBoard([], $this->info, $this->size);
-		foreach ($this->stones as $stone)
-			$result->stones[] = BoardPosition::shift($stone, $shift);
+		foreach ($this->stones as $position => $color)
+			$result->stones[BoardPosition::shift($position, $shift)] = $color;
 		return $result;
 	}
 
@@ -64,7 +64,7 @@ class SgfBoard
 
 	public function get(int $packed): int
 	{
-		return $this->stones[$packed] ?: self::EMPTY;
+		return $this->stones[$packed] ?? self::EMPTY;
 	}
 
 	public array $stones = [];
