@@ -861,16 +861,10 @@ class CommentsControllerTest extends ControllerTestCase
 		}
 	}
 
-	/**
-	 * Test that comments longer than 2048 characters are rejected with proper validation message.
-	 */
+	// Test that comments longer than 2048 characters are rejected with proper validation message.
 	public function testCommentLengthValidation()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'status' => 'S']]);
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 
@@ -880,8 +874,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$result = $TsumegoComment->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'message' => $validComment,
-			'user_id' => $context->user['id'],
-		]);
+			'user_id' => $context->user['id']]);
 		$this->assertTrue($result !== false, 'Valid comment (2048 chars) should save successfully');
 
 		// Test: comment over limit (2049 chars) should fail
@@ -890,8 +883,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$result = $TsumegoComment->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'message' => $invalidComment,
-			'user_id' => $context->user['id'],
-		]);
+			'user_id' => $context->user['id']]);
 		$this->assertFalse($result, 'Invalid comment (2049 chars) should fail validation');
 
 		// Verify the validation error message

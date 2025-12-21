@@ -31,14 +31,6 @@ class TsumegoComment extends AppModel
 
 	public $validate = [
 		'message' => [
-			'notBlank' => [
-				'rule' => 'notBlank',
-				'message' => 'Comment message is required',
-			],
-			'maxLength' => [
-				'rule' => ['maxLength', 2048],
-				'message' => 'Comment is too long (maximum 2048 characters)',
-			],
-		],
-	];
+			'notBlank' => ['rule' => 'notBlank', 'message' => 'Comment message is required'],
+			'maxLength' => ['rule' => ['maxLength', 2048], 'message' => 'Comment is too long (maximum 2048 characters)']]];
 }
