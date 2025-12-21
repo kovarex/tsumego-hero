@@ -6657,6 +6657,14 @@ ul ul {
   box-sizing: border-box;
 }
 
+.tsumego-comments__char-counter {
+  text-align: right;
+  font-size: 11px;
+  color: #777;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
 .tsumego-comments__form-actions {
   margin-top: 10px;
   display: flex;

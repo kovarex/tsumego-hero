@@ -16,7 +16,7 @@ $formId = $issueId ? 'replyForm-' . $issueId : 'tsumegoCommentForm';
 $isReplyToIssue = !empty($issueId);
 ?>
 
-<div class="tsumego-comments__form">
+<div class="tsumego-comments__form" x-data="{ message: '', maxLength: 2000 }">
 	<?php if (!$isReplyToIssue): ?>
 		<h4>Add Comment</h4>
 	<?php endif; ?>
@@ -25,8 +25,9 @@ $isReplyToIssue = !empty($issueId);
 		  hx-post="/tsumego-comments/add"
 		  hx-target="#comments-section-<?php echo $tsumegoId; ?>"
 		  hx-swap="morph:outerHTML"
+		  hx-ext="morph"
 		  hx-disabled-elt="find button[type='submit']"
-		  hx-on::after-request="if(event.detail.successful) { this.reset(); var indicator = document.getElementById('positionIndicator-<?php echo $formId; ?>'); if(indicator) indicator.style.display='none'; }">
+		  hx-on::after-request="if(event.detail.successful) { this.reset(); message = ''; var indicator = document.getElementById('positionIndicator-<?php echo $formId; ?>'); if(indicator) indicator.style.display='none'; }">
 		<input type="hidden" name="data[Comment][tsumego_id]" value="<?php echo $tsumegoId; ?>">
 		<input type="hidden" name="data[Comment][redirect]" value="<?php echo $this->request->here; ?>">
 		<?php if ($isReplyToIssue): ?>
@@ -39,7 +40,14 @@ $isReplyToIssue = !empty($issueId);
 			id="commentMessage-<?php echo $formId; ?>"
 			rows="3"
 			placeholder="<?php echo $isReplyToIssue ? 'Write your reply...' : 'Write your comment here...'; ?>"
+			:maxlength="maxLength"
+			x-model="message"
 			required></textarea>
+
+		<div class="tsumego-comments__char-counter"
+			 :style="{ color: message.length > 1950 ? '#d9534f' : message.length > 1800 ? '#f0ad4e' : '#777' }">
+			<span x-text="message.length"></span> / <span x-text="maxLength"></span> characters
+		</div>
 
 		<div class="tsumego-comments__form-actions">
 			<?php if (!$isReplyToIssue): ?>
@@ -161,7 +169,18 @@ $isReplyToIssue = !empty($issueId);
 		if (commentContent.includes("[current position]")) {
 			commentContent = commentContent.replace('[current position]', '');
 		}
-		messageField.value = commentContent + "[current position]" + additionalCoords;
+		var newMessage = commentContent + "[current position]" + additionalCoords;
+		
+		// Check if adding position would exceed character limit
+		var maxLength = parseInt(messageField.getAttribute('maxlength') || 2000);
+		if (newMessage.length > maxLength) {
+			alert('Cannot add board position: comment would exceed ' + maxLength + ' character limit. Please shorten your message first.');
+			return; // Don't add position
+		}
+		
+		messageField.value = newMessage;
+		// Trigger Alpine.js reactivity
+		messageField.dispatchEvent(new Event('input'));
 
 		// Set hidden position field - use originalCurrent if current is invalid
 		var positionCurrent = (current && current.move) ? current : originalCurrent;
@@ -210,6 +229,8 @@ $isReplyToIssue = !empty($issueId);
 		// Also remove [current position] marker from message
 		if (messageField && messageField.value.includes('[current position]')) {
 			messageField.value = messageField.value.replace(/\[current position\].*$/, '').trim();
+			// Trigger Alpine.js reactivity to update character counter
+			messageField.dispatchEvent(new Event('input'));
 		}
 	}
 </script>

@@ -860,4 +860,49 @@ class CommentsControllerTest extends ControllerTestCase
 			usleep(300 * 1000);
 		}
 	}
+
+	// Test that comments longer than 2048 characters are rejected with proper validation message.
+	public function testCommentLengthValidation()
+	{
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+
+		$TsumegoComment = ClassRegistry::init('TsumegoComment');
+
+		// Test: comment within limit (2048 chars) should succeed
+		$validComment = str_repeat('a', 2048);
+		$TsumegoComment->create();
+		$result = $TsumegoComment->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'message' => $validComment,
+			'user_id' => $context->user['id']]);
+		$this->assertTrue($result !== false, 'Valid comment (2048 chars) should save successfully');
+
+		// Test: comment over limit (2049 chars) should fail
+		$invalidComment = str_repeat('b', 2049);
+		$TsumegoComment->create();
+		$result = $TsumegoComment->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'message' => $invalidComment,
+			'user_id' => $context->user['id']]);
+		$this->assertFalse($result, 'Invalid comment (2049 chars) should fail validation');
+
+		// Verify the validation error message
+		$validationErrors = $TsumegoComment->validationErrors;
+		$this->assertArrayHasKey('message', $validationErrors);
+		// Check for the error message substring (it might be an array with multiple errors)
+		$messageErrors = $validationErrors['message'];
+		if (is_array($messageErrors))
+		{
+			$errorFound = false;
+			foreach ($messageErrors as $error)
+				if (strpos($error, 'too long') !== false)
+				{
+					$errorFound = true;
+					break;
+				}
+			$this->assertTrue($errorFound, 'Expected "too long" error message in validation errors: ' . print_r($messageErrors, true));
+		}
+		else
+			$this->assertStringContainsString('too long', $messageErrors);
+	}
 }
