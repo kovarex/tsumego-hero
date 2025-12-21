@@ -74,7 +74,7 @@ class SgfParser
 			$stone = BoardPosition::flipX($stone, $boardSize);
 	}
 
-	private static function yFlip(array $stones, int $boardSize): void
+	private static function yFlip(array &$stones, int $boardSize): void
 	{
 		foreach ($stones as &$stone)
 			$stone = BoardPosition::flipY($stone, $boardSize);
