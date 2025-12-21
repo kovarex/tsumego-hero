@@ -242,9 +242,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void
 	{
-		$contextParams = ['user' => [
-			'mode' => Constants::$LEVEL_MODE,
-			'collection_size' => 2]];
+		$contextParams = ['user' => ['collection_size' => 2]];
 		$contextParams['tsumegos'] = [];
 		$statuses = ['N', 'N', 'V', 'V'];
 
@@ -252,7 +250,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		for ($i = 0; $i < 4; $i++)
 		{
 			$contextParams['tsumegos'] [] = [
-				'sets' => [['name' => 'set hello world', 'num' => $i + 1]],
+				'set_order' => ($i + 1),
 				'status' => $statuses[$i]];
 		}
 
@@ -265,12 +263,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
-		$this->assertSame($collectionTopDivs[0]->getText(), 'set hello world #1');
-		$this->assertSame($collectionTopDivs[1]->getText(), 'set hello world #2');
+		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
+		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/1', $browser->driver->getCurrentURL());
 
-		// now we are viewing the 'set hello world' and checking the buttons
+		// now we are viewing the 'test set' and checking the buttons
 
 		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
 		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
@@ -285,7 +283,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkPlayTitle($browser, 'set hello world #1 2/4');
+		$this->checkPlayTitle($browser, 'test set #1 2/4');
 		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
 
 		// now we go back to the sets selection and we visit the second partition of the set
@@ -302,7 +300,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
-		$this->checkPlayTitle($browser, 'set hello world #2 3/4');
+		$this->checkPlayTitle($browser, 'test set #2 3/4');
 	}
 
 
@@ -945,7 +943,6 @@ class SetsControllerTest extends TestCaseWithAuth
 	{
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
 		for ($i = 0; $i < 3; $i++)
 			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
 		$context = new ContextPreparator($contextParams);
@@ -1372,7 +1369,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$contextParameters = [];
 		for ($i = 0; $i < 400; $i++)
-			$contextParameters['tsumegos'][] = ['sets' => [['name' => 'Big set', 'num' => ($i + 1)]], 'status' => 'S'];
+			$contextParameters['tsumegos'][] = ['set_order' =>($i + 1), 'status' => 'S'];
 		$contextParameters['user'] = ['collection_size' => 150];
 		$context = new ContextPreparator($contextParameters);
 

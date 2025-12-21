@@ -6,11 +6,7 @@ class UploadSgfTest extends TestCaseWithAuth
 {
 	public function testUploadSgf()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'status' => 'S']]);
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S']]);
 		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		$this->assertSame(0, $initialCount);
 		$browser = Browser::instance();
@@ -44,9 +40,9 @@ class UploadSgfTest extends TestCaseWithAuth
 	public function testOpeningSgfFromHistory()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'status' => 'S',
 				'sgfs' => ['(;GM[1]FF[4]SZ[19]C[Version 1])', '(;GM[1]FF[4]SZ[19]C[Version 2])']]]);
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);
@@ -75,7 +71,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'status' => 'S',
 				'sgfs' => ['(;GM[1]FF[4]SZ[19]C[Version 1])', '(;GM[1]FF[4]SZ[19]C[Version 2];B[aa])']]]);
 		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);

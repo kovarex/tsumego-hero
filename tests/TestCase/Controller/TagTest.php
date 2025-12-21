@@ -8,7 +8,7 @@ class TagTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['admin' => $isAdmin, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-				'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+				'tsumego' => 1,
 				'tags' => [['name' => 'snapback']]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -220,7 +220,7 @@ class TagTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumegos' => [['sets' => [['name' => 'set-1', 'num' => 1]]]],
+			'tsumego' => 1,
 			'tags' => [['name' => 'snapback', 'popular' => true]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);

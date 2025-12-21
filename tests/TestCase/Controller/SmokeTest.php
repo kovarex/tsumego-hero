@@ -10,11 +10,6 @@ use Selenium\Keys;
  */
 class SmokeTest extends ControllerTestCase
 {
-	/**
-	 * Test that all major pages load without JS errors and have CSS loaded
-	 *
-	 * @return void
-	 */
 	public function testAllMajorPagesLoadWithoutErrors()
 	{
 		// Create realistic production-like test data
@@ -24,20 +19,9 @@ class SmokeTest extends ControllerTestCase
 				['name' => 'opponent1', 'rating' => 1600],
 				['name' => 'opponent2', 'rating' => 1400],
 			],
-			'tsumego' => [
-				'rating' => 1000,
-				'sets' => [
-					['name' => 'Free Set', 'num' => '1'],
-				],
-			],
-			'tsumegos' => [
-				['rating' => 1100],
-				['rating' => 1200],
-			],
-			'day-records' => [
-				['date' => date('Y-m-d'), 'solved' => 10, 'visitedproblems' => 20],
-			],
-		]);
+			'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'Free Set', 'num' => '1']]],
+			'tsumegos' => [['rating' => 1100], ['rating' => 1200]],
+			'day-records' => [['date' => date('Y-m-d'), 'solved' => 10, 'visitedproblems' => 20]]]);
 		$browser = Browser::instance();
 		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
