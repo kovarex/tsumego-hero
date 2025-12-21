@@ -84,10 +84,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 	public function testStartTimeMode()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
-			'time-mode-ranks' => ['5k']]);
+		$context = new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->testAction('/timeMode/start'

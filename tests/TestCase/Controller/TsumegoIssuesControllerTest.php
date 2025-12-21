@@ -4,28 +4,16 @@ use Facebook\WebDriver\WebDriverBy;
 
 App::uses('TsumegoIssue', 'Model');
 
-/**
- * Tests for TsumegoIssuesController - specifically the global issues index page.
- */
+// Tests for TsumegoIssuesController - specifically the global issues index page.
 class TsumegoIssuesControllerTest extends ControllerTestCase
 {
-	/**
-	 * Test that the issues index page loads and displays issues.
-	 */
 	public function testIssuesIndexPageLoads()
 	{
-		// Create a tsumego with an issue
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Test Set', 'num' => '1']],
-				'issues' => [['message' => 'Test issue for index page']],
-			],
-		]);
-
 		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Test issue for index page']]]]);
 		$browser->get('tsumego-issues');
-
 		$pageSource = $browser->driver->getPageSource();
 
 		// Verify page loads with correct title
@@ -39,38 +27,20 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Closed', $pageSource);
 	}
 
-	/**
-	 * Test that filtering by opened issues works.
-	 */
 	public function testIssuesFilterOpened()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Test Set', 'num' => '1']],
-				'issues' => [['message' => 'Open issue']],
-			],
-		]);
-
 		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Open issue']]]]);
 		$browser->get('tsumego-issues?status=opened');
-
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertTextContains('Open issue', $pageSource);
 	}
 
-	/**
-	 * Test that filtering by closed issues works.
-	 */
 	public function testIssuesFilterClosed()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Test Set', 'num' => '1']],
-				'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]],
-			],
-		]);
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]]]]);
 
 		$browser = Browser::instance();
 		$browser->get('tsumego-issues?status=closed');
@@ -79,42 +49,26 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Closed issue', $pageSource);
 	}
 
-	/**
-	 * Test that issue links to the correct tsumego.
-	 */
 	public function testIssueLinksToTsumego()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Link Test Set', 'num' => '42']],
-				'issues' => [['message' => 'Issue with link']],
-			],
-		]);
-
 		$browser = Browser::instance();
+		 new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with link']]]]);
 		$browser->get('tsumego-issues');
-
 		$pageSource = $browser->driver->getPageSource();
 
 		// Should show the issue with its comment
 		$this->assertTextContains('Issue with link', $pageSource);
 		// Check there's a link to the problem set
-		$this->assertTextContains('Link Test Set', $pageSource);
+		$this->assertTextContains('test set', $pageSource);
 	}
 
-	/**
-	 * Test that empty issues list shows appropriate message.
-	 */
-	public function testEmptyIssuesList()
+	public function testEmptyIssuesListShowsAppropriateMessage()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-		]);
-
 		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['admin' => true]]);
 		$browser->get('tsumego-issues');
-
 		$pageSource = $browser->driver->getPageSource();
 
 		// Should show some indication that there are no issues
@@ -122,9 +76,6 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Issues', $pageSource);
 	}
 
-	/**
-	 * Test that pagination appears when there are more than 20 issues.
-	 */
 	public function testPaginationAppearsWhenNeeded()
 	{
 		// Create many issues (25 to trigger pagination with 20 per page)
@@ -132,13 +83,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		for ($i = 1; $i <= 25; $i++)
 			$issues[] = ['message' => "Issue number $i"];
 
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Pagination Test Set', 'num' => '1']],
-				'issues' => $issues,
-			],
-		]);
+		new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'issues' => $issues]]);
 
 		$browser = Browser::instance();
 		$browser->get('tsumego-issues?status=opened');
@@ -158,27 +103,16 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextNotContains('Issue number 5<', $pageSource);
 	}
 
-	/**
-	 * Test that pagination page 2 shows correct issues.
-	 */
-	public function testPaginationPage2()
+	public function testPaginationPage2ShowsCorrectIssues()
 	{
+		$browser = Browser::instance();
 		// Create 25 issues
 		$issues = [];
 		for ($i = 1; $i <= 25; $i++)
 			$issues[] = ['message' => "Paged Issue $i"];
 
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Page 2 Test Set', 'num' => '1']],
-				'issues' => $issues,
-			],
-		]);
-
-		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'issues' => $issues]]);
 		$browser->get('tsumego-issues?status=opened&page=2');
-
 		$pageSource = $browser->driver->getPageSource();
 
 		// Issues are sorted by created DESC (newest first)
@@ -194,25 +128,16 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Prev', $pageSource);
 	}
 
-	/**
-	 * Test that moveComment returns HTML for htmx requests.
-	 */
 	public function testMoveCommentReturnsHtmlForHtmxRequest()
 	{
 		// Create tsumego with a standalone comment
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Move Test Set', 'num' => '1']],
-				'comments' => [['message' => 'Comment to move into issue']],
-			],
-		]);
+		 new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'Comment to move into issue']]]]);
 
 		// Get the comment ID
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->find('first', [
-			'conditions' => ['message' => 'Comment to move into issue'],
-		]);
+		$comment = $TsumegoComment->find('first', ['conditions' => ['message' => 'Comment to move into issue']]);
 		$commentId = $comment['TsumegoComment']['id'];
 		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 
@@ -241,25 +166,15 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 		$this->assertTextContains('Issue #', $response);
 	}
 
-	/**
-	 * Test that moveComment to standalone returns HTML for htmx.
-	 */
 	public function testMoveCommentToStandaloneReturnsHtmlForHtmx()
 	{
-		// Create tsumego with an issue containing a comment
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'Standalone Test Set', 'num' => '1']],
-				'issues' => [['message' => 'Comment inside issue']],
-			],
-		]);
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Comment inside issue']]]]);
 
 		// Get the comment ID
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
-		$comment = $TsumegoComment->find('first', [
-			'conditions' => ['message' => 'Comment inside issue'],
-		]);
+		$comment = $TsumegoComment->find('first', ['conditions' => ['message' => 'Comment inside issue']]);
 		$commentId = $comment['TsumegoComment']['id'];
 		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 

@@ -2,6 +2,7 @@
 
 App::uses('BoardComparator', 'Utility');
 require_once __DIR__ . '/BoardComparator.php';
+require_once __DIR__ . '/SimilarSearchResult.php';
 
 class SimilarSearchLogic
 {

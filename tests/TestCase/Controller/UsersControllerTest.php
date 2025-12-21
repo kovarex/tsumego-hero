@@ -258,7 +258,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumegos' => [[
-				'sets' => [['name' => 'set-1', 'num' => 1]],
+				'set_order' => 1,
 				'rating' => '2200',
 				'attempt' => ['user_rating' => 2165],
 				'status' => 'S']]]);
@@ -266,7 +266,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('showx8');
 		$this->assertTextContains('Rating history', $browser->driver->getPageSource());
-		$this->assertTextContains('set-1', $browser->driver->getPageSource());
+		$this->assertTextContains('test set', $browser->driver->getPageSource());
 	}
 
 	public function testShowPublishSchedule()

@@ -9,12 +9,12 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth
 		$contextParameters = [];
 		$index = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => $currentNum]]];
+		$contextParameters['tsumego'] = $currentNum;
 		$index[$currentNum] = 0;
 		$contextParameters['tsumegos'] = [];
 		foreach ($otherNums as $i => $num)
 		{
-			$contextParameters['tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $num]]];
+			$contextParameters['tsumegos'] [] = $num;
 			$index[$otherNums[$i]] = $i + 1;
 		}
 		$context = new ContextPreparator($contextParameters);

@@ -7,17 +7,10 @@ App::uses('TsumegoIssue', 'Model');
 
 class CommentsControllerTest extends ControllerTestCase
 {
-	/**
-	 * Test that a logged-in user can add a comment to a solved tsumego.
-	 */
-	public function testAddComment()
+	public function testAddCommentToSolvedTsumego()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'status' => 'S']]);
 		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default)
 
@@ -45,12 +38,9 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTextNotContains('My first comment', $browser->driver->getPageSource());
 	}
 
-	/**
-	 * Test that comments are hidden until the problem is solved.
-	 */
 	public function testDontShowCommentsUntilProblemIsSolved()
 	{
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']], 'comments' => [['message' => 'spoiler']]]]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'spoiler']]]]);
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertFalse($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
@@ -58,28 +48,17 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 
-	/**
-	 * Test that comments are shown immediately on already-solved tsumegos.
-	 */
 	public function testShowCommentOnVisitingAlreadySolvedTsumego()
 	{
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => '2']], 'comments' => [['message' => 'spoiler']], 'status' => 'S']]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'spoiler']], 'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 
-	/**
-	 * Test that the comments section can be collapsed/expanded via tabs.
-	 */
 	public function testCommentsToggle()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'comments' => [['message' => 'test comment']],
-				'status' => 'S']]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'test comment']], 'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
@@ -100,15 +79,12 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertFalse($content->isDisplayed(), 'Comments should be hidden after clicking COMMENTS tab again');
 	}
 
-	/**
-	 * Test that issues are displayed correctly when prepopulated via ContextPreparator.
-	 */
 	public function testIssueDisplayed()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [['message' => 'Test issue to display']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -121,15 +97,12 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Test issue to display', $pageSource);
 	}
 
-	/**
-	 * Test that coordinate links in comments are styled and have proper class.
-	 */
-	public function testCoordinateHighlight()
+	public function testCoordinateHighlightAreStyledAndHaveProperClass()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Play at C3 for the solution']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -142,17 +115,9 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertEquals('C3', $coordSpan->getText());
 	}
 
-	/**
-	 * Test that a user can reply to an issue.
-	 */
 	public function testReplyToIssue()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'issues' => [['message' => 'Original issue']],
-				'status' => 'S']]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Original issue']], 'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
@@ -179,15 +144,11 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTextContains('My reply to this issue', $pageSource);
 	}
 
-	/**
-	 * Test that a user can delete their own comment.
-	 */
 	public function testDeleteOwnComment()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Comment to delete']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -223,9 +184,8 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testDeleteLastCommentInIssueRemovesIssue()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [['message' => 'This is the only comment in this issue']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -264,9 +224,8 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testDeleteCommentUpdatesCountsViaHtmx()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [['message' => 'Issue comment 1']],
 				'comments' => [['message' => 'Standalone comment 1']],
 				'status' => 'S']]);
@@ -310,9 +269,8 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testCloseIssueUpdatesOpenCountBadge()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'test set', 'num' => '1']],
+				'set_order' => 1,
 				'issues' => [['message' => 'Open issue comment']],
 				'status' => 'S']]);
 		$browser = Browser::instance();
@@ -353,11 +311,7 @@ class CommentsControllerTest extends ControllerTestCase
 	 */
 	public function testCreateIssueViaCheckbox()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sets' => [['name' => 'test set', 'num' => '1']],
-				'status' => 'S']]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->expandComments($browser); // Expand comments section (hidden by default for non-admins)
@@ -395,20 +349,15 @@ class CommentsControllerTest extends ControllerTestCase
 		// CLOSED ISSUES tab shows just "CLOSED ISSUES" when empty (no number prefix)
 	}
 
-	/**
-	 * Test that drag handles appear for admin users on play page.
-	 */
 	public function testDragHandlesAppearForAdminOnPlayPage()
 	{
 		// Create tsumego with a comment, already solved
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'Drag Handle Test Set', 'num' => '1']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Comment with drag handle']],
-				'status' => 'S', // Already solved
-			],
-		]);
+				'status' => 'S']]);
 
 		$browser = Browser::instance();
 
@@ -430,16 +379,13 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 	}
 
-	/**
-	 * Test that drag handles do NOT appear for non-admin users.
-	 */
 	public function testDragHandlesDoNotAppearForNonAdmin()
 	{
 		// Create tsumego with a comment - NON-admin user
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => false],
+			'user' => ['admin' => false],
 			'tsumego' => [
-				'sets' => [['name' => 'No Drag Handle Test Set', 'num' => '1']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Comment without drag handle']],
 				'status' => 'S', // Already solved
 			],
@@ -465,23 +411,19 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 	}
 
-	/**
-	 * Test that comments have drag handles for admin.
-	 */
 	public function testCommentsHaveDragHandlesForAdmin()
 	{
 		// Create tsumego with a comment
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'Draggable Test Set', 'num' => '1']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Draggable comment']],
 				'status' => 'S',
 			],
 		]);
 
 		$browser = Browser::instance();
-		$tsumegoId = $context->tsumegos[0]['id'];
 
 		// Go to play page
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -501,16 +443,13 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 	}
 
-	/**
-	 * Test "Make Issue" button converts standalone comment to issue.
-	 */
 	public function testMakeIssueButton()
 	{
 		// Create tsumego with only standalone comments (no issues)
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'Make Issue Button Test', 'num' => '1']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Comment to become issue']],
 				'status' => 'S']]);
 
@@ -524,9 +463,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertCount(1, $browser->getCssSelect('.tsumego-comment--standalone'), 'Should have 1 standalone');
 
 		// Find and click the Make Issue button
-		$makeIssueBtn = $browser->driver->findElement(
-			WebDriverBy::cssSelector('.tsumego-comment__make-issue-btn')
-		);
+		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comment__make-issue-btn'));
 		$this->assertNotNull($makeIssueBtn, 'Make Issue button should exist');
 		$makeIssueBtn->click();
 
@@ -546,15 +483,12 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->assertNoErrors();
 	}
 
-	/**
-	 * Test that Make Issue button only appears for standalone comments, not issue comments.
-	 */
 	public function testMakeIssueButtonOnlyOnStandalone()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'Make Issue Visibility Test', 'num' => '1']],
+				'set_order' => 1,
 				'issues' => [['message' => 'Comment in issue']],
 				'comments' => [['message' => 'Standalone comment']],
 				'status' => 'S',
@@ -587,9 +521,8 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		// Setup: Create tsumego with one open issue AND one closed issue
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [
 					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
 					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
@@ -642,13 +575,10 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		// Setup: Create tsumego with a standalone comment AND a closed issue
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'comments' => [['message' => 'Existing standalone comment']],
-				'issues' => [
-					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
-				],
+				'issues' => [['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -692,13 +622,12 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can delete any comment
+			'user' => ['admin' => true], // Admin can delete any comment
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'issues' => [
 					['message' => 'Closed issue message', 'status' => TsumegoIssue::$CLOSED_STATUS],
-					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS],
-				],
+					['message' => 'Open issue message', 'status' => TsumegoIssue::$OPENED_STATUS]],
 				'status' => 'S']]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -749,7 +678,7 @@ class CommentsControllerTest extends ControllerTestCase
 	{
 		// Setup: Create tsumego with an open issue with 2 comments AND a closed issue
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true], // Admin can drag-and-drop
+			'user' => ['admin' => true], // Admin can drag-and-drop
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [
@@ -823,13 +752,9 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after move');
 	}
 
-	/**
-	 * Test that the comment form is hidden when viewing the CLOSED ISSUES tab.
-	 */
 	public function testCommentFormHiddenOnClosedIssuesTab()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [['message' => 'Closed issue', 'status' => TsumegoIssue::$CLOSED_STATUS]],
