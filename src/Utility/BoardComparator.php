@@ -42,6 +42,9 @@ class BoardComparator
 		foreach ($a->data as $position => $color)
 			if ($b->get($position) != $color)
 				$diff++;
+		foreach ($b->data as $position => $color)
+        	if ($a->get($position) == SgfResultBoard::EMPTY)
+            	$diff++;
 		return $diff;
 	}
 }
