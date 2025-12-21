@@ -66,13 +66,13 @@ class SgfParser
 	private static function xFlip(array &$stones, int $boardSize): void
 	{
 		foreach ($stones as &$stone)
-			$stone->flipX($boardSize);
+			$stone = BoardPosition::flipY($stone, $boardSize);
 	}
 
 	private static function yFlip(array $stones, int $boardSize): void
 	{
 		foreach ($stones as &$stone)
-			$stone->flipY($boardSize);
+			$stone = BoardPosition::flipX($stone, $boardSize);
 	}
 
 	private static function getInitialPosition(int|bool $pos, array $sgfArr): array

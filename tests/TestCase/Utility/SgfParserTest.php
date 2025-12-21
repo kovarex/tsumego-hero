@@ -32,19 +32,12 @@ class SgfParserTest extends CakeTestCase
 		// But let's check if we have stones.
 		$this->assertNotEmpty($result->input->blackStones);
 		$this->assertNotEmpty($result->input->whiteStones);
-
-		// Check board array structure
-		$this->assertCount(19, $result->data);
-		$this->assertCount(19, $result->data[0]);
 	}
 
 	public function testProcessSupportsSmallerBoard()
 	{
 		$sgf = '(;SZ[9]AB[aa][bb]AW[cc])';
 		$result = new SgfResultBoard(SgfParser::process($sgf));
-
 		$this->assertEquals(9, $result->input->size);
-		$this->assertCount(9, $result->data);
-		$this->assertCount(9, $result->data[0]);
 	}
 }

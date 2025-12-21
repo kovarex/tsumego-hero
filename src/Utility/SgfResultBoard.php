@@ -12,7 +12,7 @@ class SgfResultBoard
 	private function fillStones($stones, int $color): void
 	{
 		foreach ($stones as $stone)
-			$this->data[$stone->pack()] = $color;
+			$this->data[$stone] = $color;
 	}
 
 	public function get(int $packed): int
@@ -30,12 +30,12 @@ class SgfResultBoard
 		return new SgfResultBoard($this->input->getColorSwitched());
 	}
 
-	public function getShifted(BoardPosition $shift): SgfResultBoard
+	public function getShifted(int $shift): SgfResultBoard
 	{
 		return new SgfResultBoard($this->input->getShifted($shift));
 	}
 
-	public function getLowest(): BoardPosition
+	public function getLowest(): int
 	{
 		return $this->input->getLowest();
 	}
@@ -43,7 +43,7 @@ class SgfResultBoard
 	public array $data = [];
 	public $input;
 
-    public const int EMPTY = 0;
-    public const int BLACK = 1;
-    public const int WHITE = 2;
+	public const int EMPTY = 0;
+	public const int BLACK = 1;
+	public const int WHITE = 2;
 }

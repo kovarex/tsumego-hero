@@ -52,7 +52,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	public function testIssueLinksToTsumego()
 	{
 		$browser = Browser::instance();
-		 new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with link']]]]);
 		$browser->get('tsumego-issues');
@@ -131,7 +131,7 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	public function testMoveCommentReturnsHtmlForHtmxRequest()
 	{
 		// Create tsumego with a standalone comment
-		 new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'comments' => [['message' => 'Comment to move into issue']]]]);
 

@@ -1369,7 +1369,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$contextParameters = [];
 		for ($i = 0; $i < 400; $i++)
-			$contextParameters['tsumegos'][] = ['set_order' =>($i + 1), 'status' => 'S'];
+			$contextParameters['tsumegos'][] = ['set_order' => ($i + 1), 'status' => 'S'];
 		$contextParameters['user'] = ['collection_size' => 150];
 		$context = new ContextPreparator($contextParameters);
 

@@ -27,9 +27,9 @@ class SgfResult
 	{
 		$result = new SgfResult([], [], $this->info, $this->size);
 		foreach ($this->blackStones as $blackStone)
-			$result->blackStones[] = $blackStone->getMirrored();
+			$result->blackStones[] = BoardPosition::mirror($blackStone);
 		foreach ($this->whiteStones as $whiteStone)
-			$result->whiteStones[] = $whiteStone->getMirrored();
+			$result->whiteStones[] = BoardPosition::mirror($whiteStone);
 		return $result;
 	}
 
@@ -38,23 +38,23 @@ class SgfResult
 		return new SgfResult($this->whiteStones, $this->blackStones, $this->info, $this->size);
 	}
 
-	public function getShifted(BoardPosition $shift): SgfResult
+	public function getShifted(int $shift): SgfResult
 	{
 		$result = new SgfResult([], [], $this->info, $this->size);
 		foreach ($this->blackStones as $blackStone)
-			$result->blackStones[] = $blackStone->getShifted($shift);
+			$result->blackStones[] = BoardPosition::shift($blackStone, $shift);
 		foreach ($this->whiteStones as $whiteStone)
-			$result->whiteStones[] = $whiteStone->getShifted($shift);
+			$result->whiteStones[] = BoardPosition::shift($whiteStone, $shift);
 		return $result;
 	}
 
-	public function getLowest(): BoardPosition
+	public function getLowest(): int
 	{
-		$result = new BoardPosition($this->size, $this->size);
+		$result = BoardPosition::pack($this->size, $this->size);
 		foreach ($this->blackStones as $blackStone)
-			$result->minEqual($blackStone);
+			$result = BoardPosition::min($result, $blackStone);
 		foreach ($this->whiteStones as $whiteStone)
-			$result->minEqual($whiteStone);
+			$result = BoardPosition::min($result, $whiteStone);
 		return $result;
 	}
 
