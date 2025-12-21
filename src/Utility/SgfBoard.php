@@ -21,7 +21,7 @@ class SgfBoard
 		$result = [];
 		foreach ($this->stones as $position => $stone)
 			if ($stone == $color)
-				$result[]= $position;
+				$result[] = $position;
 		return $result;
 	}
 
