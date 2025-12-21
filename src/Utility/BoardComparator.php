@@ -4,7 +4,7 @@ require_once __DIR__ . '/BoardComparisonResult.php';
 
 class BoardComparator
 {
-	public static function compare(SgfResultBoard $a, SgfResultBoard $b): BoardComparisonResult
+	public static function compare(SgfBoard $a, SgfBoard $b): BoardComparisonResult
 	{
 		$result = new BoardComparisonResult();
 		$compare = [];
@@ -36,14 +36,14 @@ class BoardComparator
 		return $result;
 	}
 
-	private static function compareSingle(SgfResultBoard $a, SgfResultBoard $b)
+	private static function compareSingle(SgfBoard $a, SgfBoard $b): int
 	{
 		$diff = 0;
-		foreach ($a->data as $position => $color)
+		foreach ($a->stones as $position => $color)
 			if ($b->get($position) != $color)
 				$diff++;
-		foreach ($b->data as $position => $color)
-			if ($a->get($position) == SgfResultBoard::EMPTY)
+		foreach ($b->stones as $position => $color)
+			if ($a->get($position) == SgfBoard::EMPTY)
 				$diff++;
 		return $diff;
 	}

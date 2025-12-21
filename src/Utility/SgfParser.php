@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-App::uses('SgfResult', 'Utility');
 require_once(__DIR__ . "/BoardBounds.php");
 require_once(__DIR__ . "/BoardPosition.php");
+require_once(__DIR__ . "/SgfBoard.php");
 
 class SgfParser
 {
@@ -12,9 +12,9 @@ class SgfParser
 	 * Parse SGF and return board, stones and info array.
 	 *
 	 * @param string $sgf
-	 * @return SgfResult
+	 * @return SgfBoard
 	 */
-	public static function process(string $sgf): SgfResult
+	public static function process(string $sgf): SgfBoard
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);
@@ -30,7 +30,12 @@ class SgfParser
 
 		self::normalizeOrientation($blackStones, $whiteStones, $boardBounds, $boardSize);
 		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
-		return new SgfResult($blackStones, $whiteStones, $tInfo, $boardSize);
+		$stones = [];
+		foreach ($blackStones as $blackStone)
+			$stones[$blackStone] = SgfBoard::BLACK;
+		foreach ($whiteStones as $whiteStone)
+			$stones[$whiteStone] = SgfBoard::WHITE;
+		return new SgfBoard($stones, $tInfo, $boardSize);
 	}
 
 	private static function detectBoardSize(string $sgf): int
@@ -66,13 +71,13 @@ class SgfParser
 	private static function xFlip(array &$stones, int $boardSize): void
 	{
 		foreach ($stones as &$stone)
-			$stone = BoardPosition::flipY($stone, $boardSize);
+			$stone = BoardPosition::flipX($stone, $boardSize);
 	}
 
-	private static function yFlip(array $stones, int $boardSize): void
+	private static function yFlip(array &$stones, int $boardSize): void
 	{
 		foreach ($stones as &$stone)
-			$stone = BoardPosition::flipX($stone, $boardSize);
+			$stone = BoardPosition::flipY($stone, $boardSize);
 	}
 
 	private static function getInitialPosition(int|bool $pos, array $sgfArr): array
