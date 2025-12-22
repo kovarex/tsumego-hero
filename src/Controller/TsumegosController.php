@@ -556,7 +556,13 @@ class TsumegosController extends AppController
 		if (!Auth::isAdmin())
 			return;
 
-		$tsumegoID = $this->data["tsumegoID"];
+		$setConnectionID = $this->data["setConnectionID"];
+
+		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
+		if (!$setConnection)
+			return;
+		$tsumegoID = $setConnection['SetConnection']['tsumego_id'];
+
 		$sgfData = $this->data['sgf'];
 		$firstMoveColor = $this->data['firstMoveColor'];
 		$correctMoves = $this->data['correctMoves'];
@@ -575,6 +581,6 @@ class TsumegosController extends AppController
 		$sgf['correct_moves'] = $correctMoves;
 		ClassRegistry::init("Sgf")->create();
 		ClassRegistry::init("Sgf")->save($sgf);
-		return $this->redirect('/tsumegos/setupSgf');
+		return $this->redirect('/' . $setConnectionID);
 	}
 }

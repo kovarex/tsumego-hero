@@ -10,7 +10,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S']]);
 		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		$this->assertSame(0, $initialCount);
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->get($context->setConnections[0]['id']);
 		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])));
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
 		$this->assertTrue($openLink->isDisplayed());

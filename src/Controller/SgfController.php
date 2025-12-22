@@ -43,13 +43,13 @@ class SgfController extends AppController
 
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? $fileUpload;
+		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
 
 		if (!$sgfDataOrFile)
 			throw new AppException('No SGF data provided.');
 
 		$this->set('sgf', $sgfDataOrFile);
-		$this->set('tsumegoID', $setConnection['SetConnection']['tsumego_id']);
-		$this->render('/Tsumegos/setupNewSgf');
+		$this->set('setConnectionID', $setConnectionID);
+		$this->render('/Tsumegos/setup_new_sgf');
 	}
 }

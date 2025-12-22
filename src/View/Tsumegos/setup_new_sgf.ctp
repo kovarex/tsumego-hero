@@ -47,9 +47,9 @@
     form.action = '/tsumegos/setupNewSgfStep2';
 
 	addInput(form, 'sgf', "<?php echo $sgf; ?>");
-	addInput(form, 'firstColor', firstColor);
+	addInput(form, 'firstMoveColor', firstColor);
 	addInput(form, 'correctMoves', correctMoves);
-	addInput(form, 'tsumegoID', <?php echo $tsumegoID; ?>);
+	addInput(form, 'setConnectionID', <?php echo $setConnectionID; ?>);
 
     document.body.appendChild(form);
     form.submit();
