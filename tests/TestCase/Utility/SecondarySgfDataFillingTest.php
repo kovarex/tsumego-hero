@@ -33,12 +33,12 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 		$browser = new Browser();
 		new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' =>
-				['set_order' => 1, 'sgf' => [
+			'tsumego'
+				=> ['set_order' => 1, 'sgf' => [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19](;W[cd])(;W[gg];B[ba]C[+])(;W[hh]C[+]))',
 					'first_move_color' => 'W',
 					'correct_moves' => 'gghh']],
-				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19](;W[cd])(;W[jj];B[ba]C[+])(;W[kk]C[+]))']]);
+			['set_order' => 2, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19](;W[cd])(;W[jj];B[ba]C[+])(;W[kk]C[+]))']]);
 		$browser->get('tsumegos/setupSgf');
 		$sgfs = ClassRegistry::init('sgf')->find('all');
 		$this->assertSame(2, count($sgfs));

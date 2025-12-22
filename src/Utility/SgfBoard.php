@@ -56,9 +56,15 @@ class SgfBoard
 
 	public function getLowest(): int
 	{
-		$result = BoardPosition::pack($this->size, $this->size);
-		foreach ($this->stones as $position => $stone)
-			$result = BoardPosition::min($result, $position);
+		return self::getLowestPosition($this->stones);
+	}
+
+	public static function getLowestPosition(array $positions): int
+	{
+		$result = $positions[0];
+		$count = count($positions);
+		for ($i = 0; $i < $count; $i++)
+			$result = BoardPosition::min($result, $positions[$i]);
 		return $result;
 	}
 
@@ -76,6 +82,15 @@ class SgfBoard
 		foreach ($other->stones as $position => $color)
 			if ($this->get($position) == SgfBoard::EMPTY)
 				$result .= BoardPosition::toLetters($position);
+		return $result;
+	}
+
+	public static function decodePositionString($input): array
+	{
+		$result = [];
+		$steps = (int)strlen($input) / 2;
+		for ($i = 0; $i < $steps; $i++)
+			$result []= BoardPosition::fromLetters($input[$i * 2], $input[$i * 2 + 1]);
 		return $result;
 	}
 

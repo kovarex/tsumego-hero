@@ -4,8 +4,21 @@ require_once __DIR__ . '/BoardComparisonResult.php';
 
 class BoardComparator
 {
-	public static function compareSimple(SgfBoard $a, SgfBoard $b): int
+	public static function compareSimple(
+		SgfBoard $a,
+		$aFirstMoveColor,
+		$aCorrectMoves,
+		SgfBoard $b,
+		$bFirstMoveColor,
+		$bCorrectMoves): int
 	{
+		$aCorrectLowest = SgfBoard::getLowestPosition($aCorrectMoves);
+		$bCorrectLowest = SgfBoard::getLowestPosition($bCorrectMoves);
+		$aShifted = SgfBoard::getShiftedPositions($aLowest);
+		$bShifted = SgfBoard::
+
+		$bShiftedCorrectMoves = SgfBoard::getShiftedPositions($aCorrectMoves);
+
 		$diff = self::compareSingle($a, $b);
 		$d = $b->getColorSwitched();
 		$a = $a->getShifted($a->getLowest());
@@ -70,5 +83,15 @@ class BoardComparator
 			if ($a->get($position) == SgfBoard::EMPTY)
 				$diff++;
 		return $diff;
+	}
+
+	// I'm assuming $a and $b are arrays of packed positions, and they have
+	// already been checked to have the same size and are unique
+	private static function positionArraysMatch(array $a, array $b): int
+	{
+		foreach ($a as $position => $x)
+			if (is_null($b[$position]))
+				return false;
+		return true;
 	}
 }

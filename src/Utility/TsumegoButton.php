@@ -79,7 +79,7 @@ class TsumegoButton
 		$diff = '';
 		if ($diffSgfSource)
 			$diff = SgfParser::process($diffSgfSource)->getDifferentPositions($sgf);
-		return $functionName .  '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ', \'' . $diff . '\');' . PHP_EOL;
+		return $functionName . '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ', \'' . $diff . '\');' . PHP_EOL;
 	}
 
 	public int $tsumegoID;
