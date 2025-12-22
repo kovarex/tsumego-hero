@@ -6,9 +6,12 @@ parameters:
 	level: 5
 	paths:
 		- src/
+	scanDirectories:
+		- tests/
 	bootstrapFiles:
 		- config/define.php
 		- config/core.local.php
+		- tests/bootstrap.php
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
 		- '#Call to an undefined method .*\:\:findBy.+\(#'
