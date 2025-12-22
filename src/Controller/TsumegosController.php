@@ -516,4 +516,30 @@ class TsumegosController extends AppController
 			CookieFlash::set($flash['message'], $flash['type']);
 		$this->redirect('/tsumegos/mergeForm');
 	}
+
+	public function setupSgf($tsumegoID): mixed
+	{
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
+		if (!$tsumego)
+			return null;
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID, 'accepted' => 1], 'order' => 'id DESC']);
+		if (!$sgf)
+			return null;
+		$sgf = $sgf['Sgf'];
+		$this->set('sgf', $sgf['sgf']);
+		$this->set('sgfID', $sgf['id']);
+		return null;
+	}
+
+	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves)
+	{
+		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
+		if (!$sgf)
+			return;
+		$sgf= $sgf['Sgf'];
+		$sgf['first_move_color'] = $firstMoveColor;
+		$sgf['correct_moves'] = $correctMoves;
+		ClassRegistry::init("Sgf")->save($sgf);
+
+	}
 }

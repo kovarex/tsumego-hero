@@ -884,5 +884,24 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     }
   }
 
+	root.exportCorrectMoves = function()
+	{
+		let result = '';
+		for (let i = 0; i < this.children.length; ++i)
+			if (this.children[i].correct == CORRECT_GOOD)
+			{
+				result += String.fromCharCode(96 + this.children[i].move.x);
+				result += String.fromCharCode(96 + this.children[i].move.y);
+			}
+
+		for (let i = 0; i < this.virtualChildren.length; ++i)
+			if (this.virtualChildren[i].target.correct == CORRECT_GOOD)
+			{
+				result += String.fromCharCode(96 + this.virtualChildren[i].move.x);
+				result += String.fromCharCode(96 + this.virtualChildren[i].move.y);
+			}
+		return result;
+	}
+
   return root;
 };
