@@ -517,14 +517,20 @@ class TsumegosController extends AppController
 		$this->redirect('/tsumegos/mergeForm');
 	}
 
-	public function setupSgf($tsumegoID): mixed
+	public function setupSgf(): mixed
 	{
-		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
-		if (!$tsumego)
-			return null;
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID, 'accepted' => 1], 'order' => 'id DESC']);
+		if (!Auth::isAdmin())
+		{
+			CookieFlash::set('No rights to call this', 'error');
+			return $this->redirect('/sets');
+		}
+
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['OR' => ['first_move_color' => null, 'correct_moves' => null]]]);
 		if (!$sgf)
-			return null;
+		{
+			CookieFlash::set('All sgfs converted', 'success');
+			return $this->redirect('/sets');
+		}
 		$sgf = $sgf['Sgf'];
 		$this->set('sgf', $sgf['sgf']);
 		$this->set('sgfID', $sgf['id']);
@@ -533,6 +539,8 @@ class TsumegosController extends AppController
 
 	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves)
 	{
+		if (!Auth::isAdmin())
+			return;
 		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
 		if (!$sgf)
 			return;
@@ -540,5 +548,6 @@ class TsumegosController extends AppController
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		ClassRegistry::init("Sgf")->save($sgf);
+		return $this->redirect('/tsumegos/setupSgf');
 	}
 }
