@@ -106,6 +106,7 @@ class TsumegosController extends AppController
 				$similarSearchLogic->setConnection['num'],
 				$tsumegoStatus['status'],
 				$similarSearchLogic->sourceTsumego['rating']));
+		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
 		return null;
 	}
 
