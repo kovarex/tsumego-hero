@@ -68,20 +68,20 @@ LEFT JOIN sgf
 		if ($stoneNumberDiff > $this->maxDifference)
 			return;
 
-		$comparisonResult = BoardComparator::compare($this->sourceBoard, $board);
-		if ($comparisonResult->difference > $this->maxDifference)
+		$comparisonResult = BoardComparator::compareSimple($this->sourceBoard, $board);
+		if ($comparisonResult > $this->maxDifference)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
 	}
 
-	private function addCandidateToResult($candidate, BoardComparisonResult $comparisonResult): void
+	private function addCandidateToResult($candidate, int $comparisonResult): void
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($candidate['set_connection_id'])['SetConnection'];
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
 		$set = ClassRegistry::init('Set')->findById($setConnection['set_id']);
 
 		$item = new SimilarSearchResultItem();
-		$item->difference = $comparisonResult->difference;
+		$item->difference = $comparisonResult;
 		$item->title = $set['Set']['title'];
 
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $candidate['tsumego_id']]]);

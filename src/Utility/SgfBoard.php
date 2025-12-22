@@ -67,6 +67,18 @@ class SgfBoard
 		return $this->stones[$packed] ?? self::EMPTY;
 	}
 
+	public function getDifferentPositions(SgfBoard $other): string
+	{
+		$result = '';
+		foreach ($this->stones as $position => $color)
+			if ($other->get($position) != $color)
+				$result .= BoardPosition::toLetters($position);
+		foreach ($other->stones as $position => $color)
+			if ($this->get($position) == SgfBoard::EMPTY)
+				$result .= BoardPosition::toLetters($position);
+		return $result;
+	}
+
 	public array $stones = [];
 	public array $info;
 	public int $size;

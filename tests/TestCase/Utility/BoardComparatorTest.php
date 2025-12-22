@@ -7,7 +7,7 @@ class BoardComparatorTest extends CakeTestCase
 	public function testCompareEmptyWithEmpty()
 	{
 		$emptyBoard = SgfParser::process('(;GM[1]FF[4]SZ[19])');
-		$result = BoardComparator::compare($emptyBoard, $emptyBoard);
+		$result = BoardComparator::compareSimple($emptyBoard, $emptyBoard);
 		$this->assertSame(0, $result->difference);
 	}
 
@@ -15,14 +15,14 @@ class BoardComparatorTest extends CakeTestCase
 	{
 		$emptyBoard = SgfParser::process('(;GM[1]FF[4]SZ[19])');
 		$oneStoneBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
-		$result = BoardComparator::compare($emptyBoard, $oneStoneBoard);
+		$result = BoardComparator::compareSimple($emptyBoard, $oneStoneBoard);
 		$this->assertSame(1, $result->difference);
 	}
 
 	public function testCompareOneStoneWithSameOneStone()
 	{
 		$oneStoneBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
-		$result = BoardComparator::compare($oneStoneBoard, $oneStoneBoard);
+		$result = BoardComparator::compareSimple($oneStoneBoard, $oneStoneBoard);
 		$this->assertSame(0, $result->difference);
 	}
 
@@ -30,7 +30,7 @@ class BoardComparatorTest extends CakeTestCase
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[bb])');
-		$result = BoardComparator::compare($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
 		$this->assertSame(0, $result->difference);
 	}
 
@@ -38,7 +38,7 @@ class BoardComparatorTest extends CakeTestCase
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][bb])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][cc])');
-		$result = BoardComparator::compare($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
 		$this->assertSame(2, $result->difference);
 	}
 
@@ -46,7 +46,7 @@ class BoardComparatorTest extends CakeTestCase
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[2]AB[aa])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][cc])');
-		$result = BoardComparator::compare($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
 		$this->assertSame(1, $result->difference);
 	}
 }

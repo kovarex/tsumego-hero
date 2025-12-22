@@ -46,6 +46,11 @@ class BoardPosition
 		return self::pack(self::unpackX($packed) - self::unpackX($shift), self::unpackY($packed) - self::unpackY($shift));
 	}
 
+	public static function diff(int $a, int $b): int
+	{
+		return self::pack(self::unpackX($a) - self::unpackX($b), self::unpackY($a) - self::unpackY($b));
+	}
+
 	public static function min(int $packed, int $other): int
 	{
 		return self::pack(min(self::unpackX($packed), self::unpackX($other)), min(self::unpackY($packed), self::unpackY($other)));

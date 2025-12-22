@@ -4,14 +4,33 @@ require_once __DIR__ . '/BoardComparisonResult.php';
 
 class BoardComparator
 {
-	public static function compare(SgfBoard $a, SgfBoard $b): BoardComparisonResult
+	public static function compareSimple(SgfBoard $a, SgfBoard $b): int
+	{
+		$diff = self::compareSingle($a, $b);
+		$d = $b->getColorSwitched();
+		$a = $a->getShifted($a->getLowest());
+		$b = $b->getShifted($b->getLowest());
+		$c = $b->getColorSwitched();
+		$diff = min($diff, self::compareSingle($a, $b));
+		$diff = min($diff, self::compareSingle($a, $b->getMirrored()));
+
+		$diff = min($diff, self::compareSingle($a, $d));
+		$diff = min($diff, self::compareSingle($a, $c));
+		$diff = min($diff, self::compareSingle($a, $c->getMirrored()));
+		return $diff;
+	}
+
+	public static function getDiff(SgfBoard $a, SgfBoard $b): string
 	{
 		$result = new BoardComparisonResult();
 		$compare = [];
 		$compare [] = self::compareSingle($a, $b);
 		$d = $b->getColorSwitched();
-		$a = $a->getShifted($a->getLowest());
-		$b = $b->getShifted($b->getLowest());
+		$shiftA = $a->getLowest();
+		$shiftB = $b->getLowest();
+		$relativeDiff = BoardPosition::diff($shiftA, $shiftB);
+		$a = $a->getShifted($shiftA);
+		$b = $b->getShifted($shiftB);
 		$c = $b->getColorSwitched();
 		$compare[] = self::compareSingle($a, $b);
 		$compare[] = self::compareSingle($a, $b->getMirrored());
@@ -20,19 +39,24 @@ class BoardComparator
 		$compare [] = self::compareSingle($a, $c);
 		$compare [] = self::compareSingle($a, $c->getMirrored());
 
-		$lowestCompare = 6;
-		$lowestCompareNum = 100;
+		$lowestCompare = $compare[0];
 		$compareCount = count($compare);
-
-		for ($i = 0; $i < $compareCount; $i++)
-			if ($compare[$i] < $lowestCompareNum)
-			{
-				$lowestCompareNum = $compare[$i];
+		for ($i = 1; $i < $compareCount; $i++)
+			if ($compare[$i] < $lowestCompare)
 				$lowestCompare = $i;
-			}
 
-		$result->difference = $lowestCompareNum;
+		switch ($lowestCompare)
+		{
+			case 0:
+		}
+
+		$result->difference = $compare[$i];
 		$result->transformType = $lowestCompare;
+		if ($lowestCompare > 0)
+		{
+			$result->shiftA = $shiftA;
+			$result->shiftB = $shiftB;
+		}
 		return $result;
 	}
 
