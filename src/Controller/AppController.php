@@ -265,7 +265,8 @@ class AppController extends Controller
 	public static function updateGems(string $rank): void
 	{
 		$datex = new DateTime('today');
-		$dateGem = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => $datex->format('Y-m-d')]]);
+		$today = $datex->format('Y-m-d');
+		$dateGem = ClassRegistry::init('DayRecord')->find('first', ['conditions' => ['date' => $today]]);
 		if ($dateGem != null)
 		{
 			$gems = explode('-', $dateGem['DayRecord']['gems']);
@@ -275,9 +276,10 @@ class AppController extends Controller
 			$condition1 = 500;
 			$condition2 = 200;
 			$condition3 = 5;
-			$found1 = false;
-			$found2 = false;
-			$found3 = false;
+			$counterField = null; // Which counter to increment (gemCounter1, gemCounter2, or gemCounter3)
+			$achievementCategory = null;
+			$conditionMet = false;
+
 			if ($rank == '15k' || $rank == '14k' || $rank == '13k' || $rank == '12k' || $rank == '11k' || $rank == '10k')
 			{
 				if ($gems[0] == 0)
@@ -288,9 +290,10 @@ class AppController extends Controller
 					$gemValue = '10k';
 				if ($rank == $gemValue)
 				{
-					$dateGem['DayRecord']['gemCounter1']++;
-					if ($dateGem['DayRecord']['gemCounter1'] == $condition1)
-						$found1 = true;
+					$counterField = 'gemCounter1';
+					$achievementCategory = 'emerald';
+					if ($dateGem['DayRecord']['gemCounter1'] + 1 == $condition1)
+						$conditionMet = true;
 				}
 			}
 			elseif ($rank == '9k' || $rank == '8k' || $rank == '7k' || $rank == '6k' || $rank == '5k' || $rank == '4k' || $rank == '3k' || $rank == '2k' || $rank == '1k')
@@ -315,9 +318,10 @@ class AppController extends Controller
 				}
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
-					$dateGem['DayRecord']['gemCounter2']++;
-					if ($dateGem['DayRecord']['gemCounter2'] == $condition2)
-						$found2 = true;
+					$counterField = 'gemCounter2';
+					$achievementCategory = 'sapphire';
+					if ($dateGem['DayRecord']['gemCounter2'] + 1 == $condition2)
+						$conditionMet = true;
 				}
 			}
 			elseif ($rank == '1d' || $rank == '2d' || $rank == '3d' || $rank == '4d' || $rank == '5d' || $rank == '6d' || $rank == '7d')
@@ -342,73 +346,54 @@ class AppController extends Controller
 				}
 				if ($rank == $gemValue || $rank == $gemValue2 || $rank == $gemValue3)
 				{
-					$dateGem['DayRecord']['gemCounter3']++;
-					if ($dateGem['DayRecord']['gemCounter3'] == $condition3)
-						$found3 = true;
+					$counterField = 'gemCounter3';
+					$achievementCategory = 'ruby';
+					if ($dateGem['DayRecord']['gemCounter3'] + 1 == $condition3)
+						$conditionMet = true;
 				}
 			}
-			if ($found1)
+
+			// If we matched a gem rank, update the counter atomically
+			if ($counterField !== null)
 			{
-				$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+				// Check if user already has achievement (to preserve "stuck at threshold" behavior)
+				$userHasAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
 					'order' => 'value DESC',
 					'conditions' => [
 						'user_id' => Auth::getUserID(),
-						'category' => 'emerald',
+						'category' => $achievementCategory,
 					],
 				]);
-				if ($aCondition == null)
+
+				// Determine if we should increment
+				$increment = 1; // Default: increment counter
+				if ($conditionMet)
 				{
-					$aCondition = [];
-					$aCondition['AchievementCondition']['category'] = 'emerald';
-					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-					$aCondition['AchievementCondition']['value'] = 1;
-					ClassRegistry::init('AchievementCondition')->save($aCondition);
+					// At threshold - check if user already has achievement
+					if ($userHasAchievement == null)
+					{
+						// Achievement doesn't exist yet - create it and INCREMENT counter
+						// (counter goes from 499 to 500)
+						$aCondition = [];
+						$aCondition['AchievementCondition']['category'] = $achievementCategory;
+						$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
+						$aCondition['AchievementCondition']['value'] = 1;
+						ClassRegistry::init('AchievementCondition')->save($aCondition);
+						// Keep $increment = 1 (default)
+					}
+					else
+					{
+						// User already has achievement - don't increment to keep threshold accessible
+						// This preserves old behavior: increment then decrement = net zero
+						$increment = 0;
+					}
 				}
-				else
-					$dateGem['DayRecord']['gemCounter1']--;
-			}
-			elseif ($found2)
-			{
-				$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-					'order' => 'value DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'category' => 'sapphire',
-					],
-				]);
-				if ($aCondition == null)
-				{
-					$aCondition = [];
-					$aCondition['AchievementCondition']['category'] = 'sapphire';
-					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-					$aCondition['AchievementCondition']['value'] = 1;
-					ClassRegistry::init('AchievementCondition')->save($aCondition);
-				}
-				else
-					$dateGem['DayRecord']['gemCounter2']--;
-			}
-			elseif ($found3)
-			{
-				$aCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-					'order' => 'value DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'category' => 'ruby',
-					],
-				]);
-				if ($aCondition == null)
-				{
-					$aCondition = [];
-					$aCondition['AchievementCondition']['category'] = 'ruby';
-					$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-					$aCondition['AchievementCondition']['value'] = 1;
-					ClassRegistry::init('AchievementCondition')->save($aCondition);
-				}
-				else
-					$dateGem['DayRecord']['gemCounter3']--;
+
+				// Atomic UPDATE query (prevents race conditions)
+				if ($increment > 0)
+					ClassRegistry::init('DayRecord')->updateAll([$counterField => $counterField . ' + ' . $increment], ['date' => $today]);
 			}
 		}
-		ClassRegistry::init('DayRecord')->save($dateGem);
 	}
 
 	protected function checkForLocked($t, $setsWithPremium)
