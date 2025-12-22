@@ -28,9 +28,8 @@
 	besogo.create(document.getElementById('something'), options);
 	let root = besogo.editor.getRoot();
 	let correctMoves = root.exportCorrectMoves();
-	let firstPlayColor = root.firstPlayColor();
 	let firstColor = 'N';
 	if (root.nextMove())
 		firstColor = root.nextMove() == BLACK ? 'B' : 'W';
-	window.href = '/tsumegos/setupSgfStep2/<?php echo $sgfID ?>/' + firstColor + '/' + correctMoves;
+	window.location.href = '/tsumegos/setupSgfStep2/<?php echo $sgfID ?>/' + firstColor + '/' + correctMoves;
 </script>

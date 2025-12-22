@@ -798,7 +798,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     for (let i = 0; i < this.children.length; ++i)
       if (this.children[i].move && this.children[i].move.color)
       {
-        this.firstMove =  this.children[i].move.color
+        this.firstMove =  this.children[i].move.color;
         return;
       }
   }

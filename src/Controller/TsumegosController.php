@@ -540,6 +540,5 @@ class TsumegosController extends AppController
 		$sgf['first_move_color'] = $firstMoveColor;
 		$sgf['correct_moves'] = $correctMoves;
 		ClassRegistry::init("Sgf")->save($sgf);
-
 	}
 }
