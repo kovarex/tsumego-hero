@@ -553,7 +553,7 @@ class TsumegosController extends AppController
 
 	public function setupNewSgfStep2()
 	{
-		if (!Auth::isAdmin())
+		if (!Auth::isLoggedIn())
 			return;
 
 		$setConnectionID = $this->data["setConnectionID"];
