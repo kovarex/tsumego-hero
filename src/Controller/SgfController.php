@@ -48,8 +48,8 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new AppException('No SGF data provided.');
 
-		ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $setConnection['SetConnection']['tsumego_id'], Auth::getUserID(), Auth::isAdmin());
-		AppController::handleContribution(Auth::getUserID(), 'made_proposal');
-		return $this->redirect('/' . $setConnectionID);
+		$this->set('sgf', $sgfDataOrFile);
+		$this->set('tsumegoID', $setConnection['SetConnection']['tsumego_id']);
+		$this->render('/Tsumegos/setupNewSgf');
 	}
 }

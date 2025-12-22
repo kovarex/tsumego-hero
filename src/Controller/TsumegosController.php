@@ -550,4 +550,31 @@ class TsumegosController extends AppController
 		ClassRegistry::init("Sgf")->save($sgf);
 		return $this->redirect('/tsumegos/setupSgf');
 	}
+
+	public function setupNewSgfStep2()
+	{
+		if (!Auth::isAdmin())
+			return;
+
+		$tsumegoID = $this->data["tsumegoID"];
+		$sgfData = $this->data['sgf'];
+		$firstMoveColor = $this->data['firstMoveColor'];
+		$correctMoves = $this->data['correctMoves'];
+
+		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
+		if (!$tsumego)
+			return;
+
+		$tsumego = $tsumego['Tsumego'];
+		$sgf = [];
+		$sgf['sgf'] = $sgfData;
+		$sgf['user_id'] = Auth::getUserId();
+		$sgf['tsumego_id'] = $tsumego['id'];
+		$sgf['accepted'] = Auth::isAdmin() ? true : false;
+		$sgf['first_move_color'] = $firstMoveColor;
+		$sgf['correct_moves'] = $correctMoves;
+		ClassRegistry::init("Sgf")->create();
+		ClassRegistry::init("Sgf")->save($sgf);
+		return $this->redirect('/tsumegos/setupSgf');
+	}
 }

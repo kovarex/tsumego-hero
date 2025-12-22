@@ -4,6 +4,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 {
 	public function testUploadSgfViaBesogoEditor()
 	{
+		$browser = new Browser();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => [

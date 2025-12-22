@@ -31,7 +31,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 	public function testSearchSgfsToFillSecondaryDataInto()
 	{
 		$browser = new Browser();
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' =>
 				['set_order' => 1, 'sgf' => [
