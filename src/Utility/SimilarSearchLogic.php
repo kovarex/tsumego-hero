@@ -66,7 +66,8 @@ LEFT JOIN sgf
 
 	private function checkCandidate($candidate): void
 	{
-		if (strlen($candidate['correctMoves']) != strlen($this->sourceCorrectMoves))
+		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
+		if (count($correctMoves) != count($correctMoves))
 			return;
 		$board = SgfParser::process($candidate['sgf']);
 		$numStones = $board->getStoneCount();
@@ -80,7 +81,7 @@ LEFT JOIN sgf
 			$this->sourceCorrectMoves,
 			$board->stones,
 			$candidate['first_move_color'] ?? 'N',
-			SgfBoard::decodePositionString($candidate['correct_moves'] ?? ''));
+			$correctMoves);
 		if (!$comparisonResult)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
