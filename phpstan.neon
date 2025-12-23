@@ -19,4 +19,24 @@ parameters:
 		# PHPUnit mock methods on Controller (expects, method, will, etc.)
 		- '#Call to an undefined method Controller::expects\(\)\.#'
 		# PHPStan doesn't track cookie modifications through testAction() - tests verify these work
-		- '#Call to method PHPUnit\\Framework\\Assert::assertEmpty\(\) with .* will always evaluate to false\.#'	# EditTsumegoTest was refactored to use typed EditTestCase objects instead of sparse arrays
+		- '#Call to method PHPUnit\\Framework\\Assert::assertEmpty\(\) with .* will always evaluate to false\.#'
+		# CakePHP 2.x $this->params is both array and object with magic properties
+		-
+			message: '#Cannot access property \$query on array#'
+			identifier: property.nonObject
+			paths:
+				- src/Controller/
+		# CakePHP 2.x $this->headers can be string or array depending on context  
+		-
+			message: '#Offset .* does not exist on string#'
+			identifier: offsetAccess.notFound
+			path: tests/TestCase/Controller/TimeModeControllerTest.php
+		# Some tests intentionally use || true to verify page loads without DOM checks
+		-
+			message: '#Right side of \|\| is always true#'
+			identifier: booleanOr.rightAlwaysTrue
+			path: tests/TestCase/Controller/SitesControllerTest.php
+		-
+			message: '#Call to method PHPUnit\\Framework\\Assert::assertTrue\(\) with true will always evaluate to true#'
+			identifier: method.alreadyNarrowedType
+			path: tests/TestCase/Controller/SitesControllerTest.php

@@ -80,7 +80,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('sites/index');
 
 		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully  // @phpstan-ignore-line method.alreadyNarrowedType, booleanOr.rightAlwaysTrue
+		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
 	}
 
 	public function testIndexPageLoadsWithoutDayRecord()
@@ -88,7 +88,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator();
 		$browser->get('sites/index');
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully  // @phpstan-ignore-line method.alreadyNarrowedType, booleanOr.rightAlwaysTrue
+		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
 	}
 
 	public function testPlayButtonsWorkWithoutLastVisitSession()
