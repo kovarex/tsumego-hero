@@ -25,6 +25,7 @@ class Util
 	public static function clearCookie(string $name): ?string
 	{
 		$previous = $_COOKIE[$name] ?? null;
+
 		setcookie($name, '',
 			[
 				'expires'  => time() - 3600,
@@ -35,6 +36,8 @@ class Util
 			]);
 
 		unset($_COOKIE[$name]);
+		if ($previous == 'deleted')
+			return null;
 		return $previous;
 	}
 
