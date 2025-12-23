@@ -62,11 +62,6 @@ class SgfBoard
 		return $result;
 	}
 
-	public function get(int $packed): int
-	{
-		return $this->stones[$packed] ?? self::EMPTY;
-	}
-
 	public static function getDifferentStones($stonesA, $stonesB): string
 	{
 		$result = '';
