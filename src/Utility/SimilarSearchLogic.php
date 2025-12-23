@@ -74,7 +74,7 @@ LEFT JOIN sgf
 		if ($stoneNumberDiff > $this->maxDifference)
 			return;
 
-		$comparisonResult = BoardComparator::compareSimple(
+		$comparisonResult = BoardComparator::compare(
 			$this->sourceBoard,
 			$this->sourceFirstMoveColor,
 			$this->sourceCorrectMoves,

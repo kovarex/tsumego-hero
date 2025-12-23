@@ -5,12 +5,12 @@ require_once __DIR__ . '/BoardComparisonResult.php';
 class BoardComparator
 {
 	public static function compare(
-		$aStones,
-		$aFirstMoveColor,
-		$aCorrectMoves,
-		$bStones,
-		$bFirstMoveColor,
-		$bCorrectMoves): ?BoardComparisonResult
+		array $aStones,
+		string $aFirstMoveColor,
+		array $aCorrectMoves,
+		array $bStones,
+		string $bFirstMoveColor,
+		array $bCorrectMoves): ?BoardComparisonResult
 	{
 		if (empty($aStones) || empty($bStones))
 			return null;
@@ -29,6 +29,10 @@ class BoardComparator
 		$aCorrectMovesShifted = SgfBoard::getShiftedPositions($aCorrectMoves, $shift);
 
 		$aShifted = SgfBoard::getShiftedPositions($aStones, $shift);
+		$diff = null;
+		$diffColorSwitched = null;
+		$diffMirrored = null;
+		$diffMirroredColorSwitched = null;
 
 		if (BoardComparator::positionArraysMatch($aCorrectMovesShifted, $bCorrectMoves))
 		{
@@ -37,14 +41,14 @@ class BoardComparator
 			{
 				$diff = BoardComparator::compareSingle($aShifted, $bStones);
 				$aShiftedColorSwitched = SgfBoard::getColorSwitchedStones($aShifted);
-				$diffColorSwitch = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
+				$diffColorSwitched = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
 			}
 			else if ($aFirstMoveColor == $bFirstMoveColor)
 				$diff = BoardComparator::compareSingle($aShifted, $bStones);
 			else
 			{
 				$aShiftedColorSwitched = SgfBoard::getColorSwitchedStones($aShifted);
-				$diffColorSwitch = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
+				$diffColorSwitched = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
 			}
 		}
 
@@ -57,7 +61,7 @@ class BoardComparator
 			{
 				$diffMirrored = BoardComparator::compareSingle($aShiftedMirrored, $bStones);
 				$aShiftedMirroredColorSwitched = SgfBoard::getColorSwitchedStones($aShiftedMirrored);
-				$diffMirroredColorSwitch = BoardComparator::compareSingle($aShiftedMirroredColorSwitched, $bStones);
+				$diffMirroredColorSwitched = BoardComparator::compareSingle($aShiftedMirroredColorSwitched, $bStones);
 			}
 			else if ($aFirstMoveColor == $bFirstMoveColor)
 				$diffMirrored = BoardComparator::compareSingle($aShiftedMirrored, $bStones);
@@ -71,9 +75,9 @@ class BoardComparator
 		return self::processDiffResult(
 			$bStones,
 			$diff, $aShifted,
-			$diffColorSwitch, $aShiftedColorSwitched,
+			$diffColorSwitched, $aShiftedColorSwitched,
 			$diffMirrored, $aShiftedMirrored,
-			$diffMirroredColorSwitch, $aShiftedMirroredColorSwitched);
+			$diffMirroredColorSwitched, $aShiftedMirroredColorSwitched);
 	}
 
 	public static function processDiffResult(
@@ -83,25 +87,33 @@ class BoardComparator
 		$diffMirrored, $aShiftedMirrored,
 		$diffMirroredColorSwitch, $aShiftedMirroredColorSwitched): ?BoardComparisonResult
 	{
-		$indexOfSmallestDiff = 0;
-		$smallestDiff = $diff;
-		if ($diffColorSwitch < $smallestDiff)
+		$indexOfSmallestDiff = -1;
+		$smallestDiff = 1000;
+		if (!is_null($diff))
+		{
+			$smallestDiff = $diff;
+			$indexOfSmallestDiff = 0;
+		}
+		if (!is_null($diffColorSwitch) && $diffColorSwitch < $smallestDiff)
 		{
 			$indexOfSmallestDiff = 1;
 			$smallestDiff = $diffColorSwitch;
 		}
 
-		if ($diffMirrored < $smallestDiff)
+		if (!is_null($diffMirrored) && $diffMirrored < $smallestDiff)
 		{
 			$indexOfSmallestDiff = 2;
 			$smallestDiff = $diffMirrored;
 		}
 
-		if ($diffMirroredColorSwitch < $smallestDiff)
+		if (!is_null($diffMirroredColorSwitch) && $diffMirroredColorSwitch < $smallestDiff)
 		{
 			$indexOfSmallestDiff = 3;
 			$smallestDiff = $diffMirroredColorSwitch;
 		}
+
+		if ($indexOfSmallestDiff == -1)
+			return null;
 
 		if ($smallestDiff > 5)
 			return null;
@@ -128,18 +140,18 @@ class BoardComparator
 
 		$diff = BoardComparator::compareSingle($aShifted, $bStones);
 		$aShiftedColorSwitched = SgfBoard::getColorSwitchedStones($aShifted);
-		$diffColorSwitch = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
+		$diffColorSwitched = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
 
 		$aShiftedMirrored = SgfBoard::getPositionsMirroredAround($aShifted, $bLowest);
 		$diffMirrored = BoardComparator::compareSingle($aShiftedMirrored, $bStones);
 		$aShiftedMirroredColorSwitched = SgfBoard::getColorSwitchedStones($aShiftedMirrored);
-		$diffMirroredColorSwitch = BoardComparator::compareSingle($aShiftedMirroredColorSwitched, $bStones);
+		$diffMirroredColorSwitched = BoardComparator::compareSingle($aShiftedMirroredColorSwitched, $bStones);
 		return self::processDiffResult(
 			$bStones,
 			$diff, $aShifted,
-			$diffColorSwitch, $aShiftedColorSwitched,
+			$diffColorSwitched, $aShiftedColorSwitched,
 			$diffMirrored, $aShiftedMirrored,
-			$diffMirroredColorSwitch, $aShiftedMirroredColorSwitched);
+			$diffMirroredColorSwitched, $aShiftedMirroredColorSwitched);
 	}
 
 	public static function compareSingle(array $stonesA, array $stonesB): int
