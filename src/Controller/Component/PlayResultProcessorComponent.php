@@ -143,11 +143,18 @@ class PlayResultProcessorComponent extends Component
 		if ($favorite)
 			return;
 
-		$favorite = [];
-		$favorite['user_id'] = Auth::getUserID();
-		$favorite['tsumego_id'] = $tsumegoID;
-		ClassRegistry::init('Favorite')->create();
-		ClassRegistry::init('Favorite')->save($favorite);
+		try
+		{
+			$favorite = [];
+			$favorite['user_id'] = Auth::getUserID();
+			$favorite['tsumego_id'] = $tsumegoID;
+			ClassRegistry::init('Favorite')->create();
+			ClassRegistry::init('Favorite')->save($favorite);
+		}
+		catch (Exception $e)
+		{
+			throw new Exception('Tsumego id = ' . $tsumegoID, 0, $e);
+		}
 	}
 
 	private function checkRemoveFavorite(): void
