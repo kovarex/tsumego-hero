@@ -4,6 +4,7 @@ App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
+App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('TagConnectionProposalsRenderer', 'Utility');
 App::uses('AdminActivityRenderer', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
