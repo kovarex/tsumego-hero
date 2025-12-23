@@ -99,6 +99,9 @@ class SitesControllerTest extends ControllerTestCase
 		// Clear lastVisit cookie to simulate first-time visitor
 		unset($_COOKIE['lastVisit']);
 
+		// Act: Load the index page
+		$browser->get('sites/index');
+
 		// Assert: Check that the play button links contain the default tsumego ID
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('/tsumegos/play/' . Constants::$DEFAULT_TSUMEGO_ID, $pageSource,
