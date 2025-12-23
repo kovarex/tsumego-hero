@@ -8,6 +8,8 @@ class Constants
 	// Default tsumego ID for first-time visitors
 	public static int $DEFAULT_TSUMEGO_ID = 15352;
 
+	public static int $DEFAULT_SET_ORDER = 999;
+
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
@@ -25,4 +27,6 @@ class Constants
 	public static float $RATING_MODE_DIFFERENCE_SETTING_1 = 150;
 	public static float $RATING_MODE_DIFFERENCE_SETTING_2 = 300;
 	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
+
+	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
 }

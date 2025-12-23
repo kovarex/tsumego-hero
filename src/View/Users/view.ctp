@@ -44,9 +44,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<td>
 	<div align="center">
 		Your rank:<br>
-		<a style="cursor:pointer;" onclick="activateSelection('rating', 'Left');">
-			<img id="profileRankImage" src="/img/<?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?>Rank.png" width="76px">
-		</a>
+		<?php
+			if (RatingBounds::fromRanks('15k', '9d')->containsRating($user['User']['rating']))
+				echo '<img id="profileRankImage" src="/img/' . Rating::getReadableRankFromRating($user['User']['rating']) . 'Rank.png" width="76px">';
+			else
+				echo Rating::getReadableRankFromRating($user['User']['rating']);
+		?>
 	</div>
 	</td>
 	</tr>

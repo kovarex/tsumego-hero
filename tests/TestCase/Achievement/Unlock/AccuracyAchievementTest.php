@@ -19,10 +19,6 @@ class AccuracyAchievementTest extends AchievementTestCase
 	 */
 	public function testAllAccuracyAchievements()
 	{
-		// Create context ONCE outside loop - ContextPreparator cleans entire DB
-		// Creating it inside the loop would delete all previously-created sets!
-		$context = new ContextPreparator();
-
 		// Define all 12 accuracy achievements
 		$testCases = [
 			// Tier 1: 75% accuracy
@@ -44,14 +40,16 @@ class AccuracyAchievementTest extends AchievementTestCase
 			[Achievement::ACCURACY_XII, 1750, 95, '1d'],  // Accuracy XII - >=1700
 		];
 
-		foreach ($testCases as [$achievementId, $difficulty, $accuracy, $rank])
+		foreach ($testCases as [$achievementId, $rating, $accuracy, $rank])
 		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator();
 			// Clean only achievement records from previous iteration (preserve sets/user)
 			ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);
 			ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1']);
 
 			// Create set with 100 tsumegos + SetConnection records
-			$setId = $this->createSetWithTsumegosAndConnections($difficulty, 100);
+			$setId = $this->createSetWithTsumegosAndConnections($rating, 100);
 
 			// Create accuracy condition
 			ClassRegistry::init('AchievementCondition')->create();
@@ -61,7 +59,7 @@ class AccuracyAchievementTest extends AchievementTestCase
 				'category' => '%',
 				'value' => $accuracy]);
 
-			new AchievementChecker()->checkSetAchievements($setId)->finalize();
+			$browser->get('/sets/view/' . $setId);
 			$this->assertAchievementUnlocked($achievementId, "Accuracy $achievementId ($accuracy% at $rank) should unlock");
 		}
 	}

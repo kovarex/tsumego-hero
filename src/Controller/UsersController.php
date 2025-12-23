@@ -7,6 +7,7 @@ App::uses('AdminActivityLogger', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('TagConnectionProposalsRenderer', 'Utility');
 App::uses('AdminActivityRenderer', 'Utility');
+App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('CookieFlash', 'Utility');
 

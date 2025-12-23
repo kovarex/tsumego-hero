@@ -69,4 +69,27 @@ class LevelAchievementTest extends AchievementTestCase
 		$this->triggerAchievementCheck();
 		$this->assertAchievementNotUnlocked(Achievement::PREMIUM);
 	}
+
+	public function testAjaxRequestDoesntTriggerAchievementCheck()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => 1]);
+		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->XPGained(); // to reset the lastXPgained for the final test
+		$browser->get('/' . $context->setConnections[0]['id']);
+
+		Auth::getUser()['rating'] = Rating::getRankMiddleRatingFromReadableRank('1d');
+		Auth::saveUser();
+
+		$browser->clickId('sprint');
+		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
+		$this->assertTrue($browser->driver->executeScript('return window.xpStatus.isSprintActive();'));
+
+		// 1d achievement wasn't unlocked by the ajax event
+		$this->assertAchievementNotUnlocked(Achievement::RATING_1_DAN);
+
+		// it gets unlocked on refresh
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$this->assertAchievementUnlocked(Achievement::RATING_1_DAN);
+	}
 }

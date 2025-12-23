@@ -107,13 +107,16 @@ class HeroPowers
 
 		$image = self::canUseRevelation() ? '/img/hp6.png' : '/img/hp6x.png';
 		$hoveredImage = self::canUseRevelation() ? '/img/hp6h.png' : '/img/hp6x.png';
-		echo '<img '
-		. 'id="revelation" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward." '
-		. 'src="' . $image . '" '
-		. 'onmouseover="this.src = \'' . $hoveredImage . '\';" '
-		. 'onmouseout="this.src = \'' . $image . '\';" '
-		. 'onclick="revelation(); return false;"'
-		. 'style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
+		echo '<img';
+		echo ' id="revelation" title="Revelation (' . self::remainingRevelationUseCount() . '): Solves a problem, but you don\'t get any reward."';
+		echo ' src="' . $image . '" ';
+		if (self::canUseRevelation())
+		{
+			echo ' onmouseover="this.src = \'' . $hoveredImage . '\';"';
+			echo ' onmouseout="this.src = \'' . $image . '\';"';
+			echo ' onclick="revelation(); return false;"';
+		}
+		echo ' style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
 	}
 
 	public static function changeUserSoSprintCanBeUsed()

@@ -166,12 +166,25 @@ class AchievementChecker
 			$this->gained(Achievement::NO_ERROR_STREAK_VI);
 	}
 
-	public function checkTimeModeAchievements(): void
+	public function checkTimeModeAchievements(): AchievementChecker
 	{
-		$timeModeSessions = ClassRegistry::init('TimeModeSession')->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
+		// select always just one session per each rank and category combination, and the best one
+		$timeModeSessions = Util::query("
+SELECT *
+FROM (
+    SELECT
+        time_mode_session.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY time_mode_rank_id, time_mode_category_id
+            ORDER BY points DESC, created DESC
+        ) AS rn
+    FROM time_mode_session
+    WHERE time_mode_session.user_id = ?
+      AND time_mode_session.time_mode_session_status_id = ?
+) ranked
+WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		foreach ($timeModeSessions as $timeModeSession)
 		{
-			$timeModeSession = $timeModeSession['TimeModeSession'];
 			// Compare IDs directly - no need for recursive loading
 			$statusId = isset($timeModeSession['time_mode_session_status_id']) ? $timeModeSession['time_mode_session_status_id'] : 0;
 			$rankId = isset($timeModeSession['time_mode_rank_id']) ? $timeModeSession['time_mode_rank_id'] : 0;
@@ -243,6 +256,7 @@ class AchievementChecker
 			if ($points >= 950 && $rankId >= TimeModeRank::RANK_10K)
 				$this->gained(Achievement::TIME_MODE_PRECISION_I);
 		}
+		return $this;
 	}
 
 	public function checkRatingAchievements(): AchievementChecker
@@ -462,7 +476,7 @@ class AchievementChecker
 		return $this;
 	}
 
-	public function checkSetAchievements($sid = null): AchievementChecker
+	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
 	{
 		if ($sid == -1)
 		{
@@ -471,7 +485,6 @@ class AchievementChecker
 		}
 
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
-		$s = ClassRegistry::init('Set')->findById($sid);
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
 			'conditions' => [
@@ -490,7 +503,7 @@ class AchievementChecker
 		if ($tNum < 100)
 			return $this;
 
-		if ($s['Set']['difficulty'] < 1300)
+		if ($setRating < 1300)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_I);
@@ -505,7 +518,7 @@ class AchievementChecker
 			if ($acS['AchievementCondition']['value'] < 5)
 				$this->gained(Achievement::SPEED_III);
 		}
-		elseif ($s['Set']['difficulty'] >= 1300 && $s['Set']['difficulty'] < 1500)
+		elseif ($setRating >= 1300 && $setRating < 1500)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_IV);
@@ -520,7 +533,7 @@ class AchievementChecker
 			if ($acS['AchievementCondition']['value'] < 8)
 				$this->gained(Achievement::SPEED_VI);
 		}
-		elseif ($s['Set']['difficulty'] >= 1500 && $s['Set']['difficulty'] < 1700)
+		elseif ($setRating >= 1500 && $setRating < 1700)
 		{
 			if ($acA['AchievementCondition']['value'] >= 75)
 				$this->gained(Achievement::ACCURACY_VII);
@@ -578,10 +591,30 @@ class AchievementChecker
 		return $this;
 	}
 
+	public function checkAll(): void
+	{
+		$this->checkLevelAchievements();
+		$this->checkProblemNumberAchievements();
+		$this->checkRatingAchievements();
+		$this->checkDanSolveAchievements();
+		$this->checkNoErrorAchievements();
+		$this->checkTimeModeAchievements();
+	}
+
 	public function finalize(): AchievementChecker
 	{
-		if (!empty($this->updated))
-			User::updateXP(Auth::getUserID(), $this->updated);
+		if (empty($this->updated))
+			return $this;
+
+		$xpBonus = 0;
+		foreach ($this->updated as $achievement)
+			$xpBonus += $achievement['xp'];
+		if ($xpBonus == 0)
+			return $this;
+
+		$user = &Auth::getUser();
+		Level::addXP($user, $xpBonus);
+		Auth::saveUser();
 		return $this;
 	}
 

@@ -9,19 +9,18 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth
 		$contextParameters = [];
 		$index = [];
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => $currentNum]]];
+		$contextParameters['tsumego'] = $currentNum;
 		$index[$currentNum] = 0;
-		$contextParameters['other-tsumegos'] = [];
-		$otherNumsCount = count($otherNums);
-		for ($i = 0; $i < $otherNumsCount; $i++)
+		$contextParameters['tsumegos'] = [];
+		foreach ($otherNums as $i => $num)
 		{
-			$contextParameters['other-tsumegos'] [] = ['sets' => [['name' => 'tsumego set 1', 'num' => $otherNums[$i]]]];
+			$contextParameters['tsumegos'] [] = $num;
 			$index[$otherNums[$i]] = $i + 1;
 		}
 		$context = new ContextPreparator($contextParameters);
 
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumegoNavi2'));
 		$links = $div->findElements(WebDriverBy::tagName('a'));
 
@@ -29,8 +28,8 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth
 		$this->assertSame(count($links), count($expectedNums));
 		for ($i = 0; $i < count($links); $i++)
 		{
-			$this->assertSame($links[$i]->getText(), strval($context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
-			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->allTsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
+			$this->assertSame($links[$i]->getText(), strval($context->tsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['num']));
+			$this->assertSame($links[$i]->getAttribute('href'), '/' . $context->tsumegos[$index[$expectedNums[$i]]]['set-connections'][0]['id']);
 		}
 	}
 

@@ -141,15 +141,10 @@
 						<td style="vertical-align:bottom;" width="50%">
 						<div align="center">
 							<br>
-							Difficulty:
-							<?php
-							echo '<b>'.$set['Set']['difficultyRank'].'</b>';
-							if($tsumegoFilters->query != 'topics'){
-								?>
-								<br><br>
-								Solved:
-								<?php echo '<b>'.$set['Set']['solved'].'%</b>';
-							}
+							Difficulty: <?php
+							echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
+							if ($tsumegoFilters->query != 'topics')
+								echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';
 							?>
 						</div>
 						</td>
@@ -172,8 +167,9 @@
 			<div align="center">
 				<?php if(Auth::isLoggedIn()){ ?>
 					<?php
-					if($set['Set']['solved']>100) $set['Set']['solved'] = 100;
-					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: '.$set['Set']['solved'].'%</b></div></td><td></td></tr></table>
+					if ($set['Set']['solved'] > 100)
+						$set['Set']['solved'] = 100;
+					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
 					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: '.$accuracy.'%</b></div></td><td>';
 					if($acA!=null) echo '<font class="setViewAccuracy">Best completion: '.$acA['AchievementCondition']['value'].'%</font>';
 					echo '</td></tr></table>
@@ -187,22 +183,31 @@
 
 			<td>
 			<?php
-			if(Auth::isLoggedIn()){
-				if($pdCounter>0){
+			if (Auth::isLoggedIn())
+			{
+				if ($pdCounter > 0)
+				{
 					$plural = 's';
-					if($pdCounter==1){ $pdCounterValue = 50; $plural = '';
-					}else if($pdCounter==2) $pdCounterValue = 80;
-					else if($pdCounter==3) $pdCounterValue = 90;
-					else $pdCounterValue = 99;
+					if ($pdCounter==1)
+					{
+						$pdCounterValue = 50;
+						$plural = '';
+					}
+					else if ($pdCounter==2)
+						$pdCounterValue = 80;
+					else if ($pdCounter==3)
+						$pdCounterValue = 90;
+					else
+						$pdCounterValue = 99;
 
 					echo '<font color="gray">XP reduced by '.$pdCounterValue.'%. ('.$pdCounter.' reset'.$plural.' this month.)</font>';
 				}
-				if($set['Set']['solved']>=50){ ?>
-				<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div>
-				<br>
-				<?php }else{
+				if ($tsumegoFilters->collectionSize != 200)
+					echo 'Reset is only possible when collection size is set to 200';
+				else if ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
-				}
+				else
+					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
 			}
 			?>
 			</td>
@@ -232,16 +237,17 @@
 			<?php } ?>
 			</td>
 			<td>
-			<?php if($set['Set']['solved']>=50){ ?>
-			<div id="msg2x">
-			Type "reset" to remove all your progress on this collection.<br><br>
 			<?php
-				echo $this->Form->create('Comment');
-				echo $this->Form->input('reset', array('label' => '', 'type' => 'text', 'placeholder' => 'reset'));
-				echo $this->Form->end('Submit');
-			?>
-			</div>
-			<?php } ?>
+			if ($problemSolvedPercent >= 50)
+			{
+				echo '<div id="msg2x">';
+				echo 'Type "reset" to remove all your progress on this collection.<br><br>';
+				echo '<form action="/sets/resetProgress/' . $set['Set']['id'] . '/' . ($partition + 1) . '" method="post">';
+				echo '<input type="text" name="reset-check" id="reset-textfield" placeholder="reset">';
+				echo '<input type="submit" value="submit" id="reset-submit">';
+				echo '</form>';
+				echo '</div>';
+			} ?>
 			</td>
 			</tr>
 			<?php
@@ -309,7 +315,6 @@
 						echo '<a href="/sets/ui/'.$set['Set']['id'].'">Upload Image</a><br>';
 						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
 					}
-					echo '<a href="/sets/duplicates/'.$set['Set']['id'].'">Show duplicate search</a><br><br>';
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 						$vcOn = '';
 						$vcOff = '';
@@ -639,7 +644,7 @@
 				isNewTag = 'class="is-new-tag"';
 			}
 			let tagLink = 'href="/tag_names/view/'+idTags[i]+'"';
-			let tagLinkId = 'id="tag-'+tags[i].replaceAll(' ', '-')+'"';
+			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
 			if(typeof idTags[i] === "undefined"){
 				tagLink = '';
 				tagLinkId = '';
@@ -657,8 +662,7 @@
 
 		$(".add-tag-list").append("Add tag to ALL problems in this collection: ");
 		for(let i=0;i<allTags.length;i++){
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="tag-'
-			+allTags[i].replaceAll(' ', '-')+'">'
+			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
 			+allTags[i]+'</a>');
 			if(i<allTags.length-1)
 				$(".add-tag-list").append(', ');
@@ -667,7 +671,7 @@
 	}
 
 	for(let i=0;i<allTags.length;i++){
-		let currentIdValue = "#tag-"+allTags[i].replaceAll(' ', '-');
+		let currentIdValue = "#" + makeIdValidName(allTags[i]);
 		$('.tag-container').on('click', currentIdValue, function(e) {
 			e.preventDefault();
 			setCookie("addTag", "<?php echo $set['Set']['id']; ?>-"+allTags[i]);

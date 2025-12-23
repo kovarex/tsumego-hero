@@ -140,7 +140,7 @@ else
 	</div>
 
 	<!-- Collapsible wrapper (toggled by tab clicks) -->
-	<div id="msg2x">
+	<div id="msg2x" style="display: none;">
 		<?php if (!$isEmpty): ?>
 			<!-- All items view -->
 			<div class="tsumego-comments__content" data-view="all" id="tsumego-comments-content">

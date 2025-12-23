@@ -5,7 +5,7 @@
  */
 
 // Disable debug mode for production-like environment
-Configure::write('debug', 0);
+Configure::write('debug', 2);
 
 // Disable cache
 Configure::write('Cache.disable', true);

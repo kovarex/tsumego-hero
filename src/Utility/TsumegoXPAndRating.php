@@ -52,7 +52,7 @@ class TsumegoXPAndRating
 		if (!Auth::XPisGainedInCurrentMode() && !Auth::ratingisGainedInCurrentMode())
 			return;
 		echo '
-	let xpStatus = new XPStatus(
+	var xpStatus = new XPStatus(
 	{
 		solved: ' . Util::boolString($this->solved) . ',
 		sprintRemainingSeconds: ' . HeroPowers::getSprintRemainingSeconds() . ',

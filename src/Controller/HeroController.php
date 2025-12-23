@@ -87,8 +87,23 @@ class HeroController extends AppController
 
 	public function revelation($tsumegoID)
 	{
+		if (!Auth::isLoggedIn())
+		{
+			$this->response->body('Not logged in.');
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+
+		if (!HeroPowers::getRevelationUseCount())
+		{
+			$this->response->body('Revelation is not available to this account.');
+			$this->response->statusCode(403);
+			return $this->response;
+		}
+
 		if (!HeroPowers::canUseRevelation())
 		{
+			$this->response->body('Revelation is used up today.');
 			$this->response->statusCode(403);
 			return $this->response;
 		}

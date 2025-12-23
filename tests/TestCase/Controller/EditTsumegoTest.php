@@ -32,14 +32,14 @@ class EditTsumegoTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['admin' => true],
-				'other-tsumegos' => [[
+				'tsumegos' => [[
 					'sets' => [['name' => 'set-1', 'num' => 1, 'public' => !is_null($testCase['public']) ? $testCase['public'] : 1]],
 					'description' => 'foo',
 					'hint' => 'think',
 					'author' => 'Ivan Detkov',
 					'rating' => 666]]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$browser->clickId("modify-description");
 
 			$browser->clickCssSelect("#" . $testCase['field']);
@@ -54,7 +54,7 @@ class EditTsumegoTest extends ControllerTestCase
 			}
 
 			if ($testCase['invalid-tsumego'])
-				ClassRegistry::init('Tsumego')->delete($context->otherTsumegos[0]['id']);
+				ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
 			if (!is_null($testCase['admin']) && !$testCase['admin'])
 			{
@@ -70,7 +70,7 @@ class EditTsumegoTest extends ControllerTestCase
 				continue;
 			}
 
-			$tsumego = ClassRegistry::init('Tsumego')->findById($context->otherTsumegos[0]['id']);
+			$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
 
 			if ($testCase['field'] == 'delete')
 			{
@@ -147,7 +147,7 @@ class EditTsumegoTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-tsumegos' => [[
+			'tsumegos' => [[
 				'sets' => [['name' => 'set-1', 'num' => 1]],
 				'description' => 'foo',
 				'hint' => 'think',
@@ -156,7 +156,7 @@ class EditTsumegoTest extends ControllerTestCase
 				'minimum_rating' => Rating::getRankMiddleRatingFromReadableRank("5k"),
 				'maximum_rating' => Rating::getRankMiddleRatingFromReadableRank("15k")]]]);
 		$browser = Browser::instance();
-		$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId("modify-description");
 		$this->assertSame($browser->getCssSelect("#rating")[0]->getAttribute("value"), "10k");
 		$this->assertSame($browser->getCssSelect("#minimum-rating")[0]->getAttribute("value"), "5k");

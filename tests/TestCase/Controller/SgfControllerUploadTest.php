@@ -11,8 +11,8 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 				'sets' => [['name' => 'Test Set', 'num' => 1]],
 				'status' => 'S']]);
 
-		$setConnectionID = $context->tsumego['set-connections'][0]['id'];
-		$tsumegoID = $context->tsumego['id'];
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$tsumegoID = $context->tsumegos[0]['id'];
 
 		// Verify initial SGF count
 		$initialSgfCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]));
@@ -45,8 +45,8 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 				'sets' => [['name' => 'Test Set', 'num' => 1]],
 				'status' => 'S']]);
 
-		$setConnectionID = $context->tsumego['set-connections'][0]['id'];
-		$tsumegoID = $context->tsumego['id'];
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$tsumegoID = $context->tsumegos[0]['id'];
 
 		// Create temporary SGF file
 		$newSgfContent = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][pd][dp]AW[dc][oc][oq];B[cd];W[cc]C[From file])';
@@ -83,8 +83,8 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 				'sets' => [['name' => 'Test Set', 'num' => 1]],
 				'status' => 'S']]);
 
-		$setConnectionID = $context->tsumego['set-connections'][0]['id'];
-		$tsumegoID = $context->tsumego['id'];
+		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
+		$tsumegoID = $context->tsumegos[0]['id'];
 
 		// Upload SGF as non-admin
 		$newSgfContent = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd]AW[dc];B[cd];W[cc]C[Non-admin upload])';

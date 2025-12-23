@@ -9,8 +9,8 @@ xdebug_enabled: true
 additional_hostnames: [test.tsumego]
 additional_fqdns: []
 database:
-    type: mysql
-    version: "8.0"
+    type: mariadb
+    version: "11.4"
 use_dns_when_possible: true
 composer_version: "2"
 web_environment: []

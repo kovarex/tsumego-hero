@@ -12,19 +12,12 @@ class XPAmountTest extends AchievementTestCase
 {
 	public function testAchievement_PROBLEMS_1000_Grants1000XP()
 	{
+		$browser = Browser::instance();
 		// Arrange: User with 500 existing XP at level 69 (won't level up from 1000 XP - needs 4350 for next level)
-		$context = new ContextPreparator(['user' => ['xp' => 500, 'level' => 69, 'solved' => 1000]]);
-
-		// Act: Trigger achievement check
-		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
-
-		// Assert: Achievement unlocked
+		$context = new ContextPreparator(['user' => ['solved' => 1000]]);
+		$browser->get('/');
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000, 'Achievement #1 should unlock at 1000 solved');
-
-		// Assert: User XP is now 1500 (500 existing + 1000 from achievement)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(1500, $user['User']['xp'], 'User should have 1500 XP (500 existing + 1000 from achievement)');
-		$this->assertEquals(69, $user['User']['level'], 'User should remain at level 69 (not enough XP to level up)');
+		$this->assertEquals(1000, $context->XPGained());
 	}
 
 	/**
@@ -50,21 +43,13 @@ class XPAmountTest extends AchievementTestCase
 
 	public function testLevelAchievement_LEVEL_UP_Grants100XP()
 	{
-		// Arrange: User at level 10 with 0 existing XP (clean slate)
-		// Use level 10 specifically to test this achievement
+		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 10]]);
-
-		// Act: Trigger achievement check
-		new AchievementChecker()->checkLevelAchievements()->finalize();
-
-		// Assert: Achievement unlocked
+		$browser->get('/');
 		$this->assertAchievementUnlocked(Achievement::LEVEL_UP);
 
-		// Assert: User XP is 100 (0 existing + 100 from achievement)
-		// Level will be 11 because 100 XP is enough to level up from 10 (needs 175 total, had 0, now has 100)
-		$user = ClassRegistry::init('User')->findById($context->user['id']);
-		$this->assertEquals(100, $user['User']['xp'], 'User should have 100 XP from level achievement');
-		$this->assertEquals(10, $user['User']['level'], 'User should stay at level 10 (needs 175 to reach 11, only has 100)');
+		$this->assertEquals(100, $context->XPGained(), '100 XP from level achievement');
+		$this->assertEquals(10, $context->reloadUser()['level'], 'Level 10 (needs 175 to reach 11, only has 100)');
 	}
 
 	/**

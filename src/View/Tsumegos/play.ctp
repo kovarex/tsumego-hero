@@ -4,7 +4,7 @@
 <script src="/besogo/js/transformation.js"></script>
 <script src="/besogo/js/treeProblemUpdater.js?v=2"></script>
 <script src="/besogo/js/nodeHashTable.js"></script>
-<script src="/besogo/js/editor.js"></script>
+<script src="/besogo/js/editor.js?v=2"></script>
 <script src="/besogo/js/gameRoot.js?v=2"></script>
 <script src="/besogo/js/status.js"></script>
 <script src="/besogo/js/svgUtil.js"></script>
@@ -160,7 +160,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		if(Auth::isAdmin()) { ?>
 		<a class="grey-link" id="modify-description" href="#" onclick="adminCommentOpened = !adminCommentOpened; $('.modify-description-panel').toggle(0);">(Edit)</a>
-		<div class="modify-description-panel">
+		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
@@ -277,20 +277,25 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<div align="center">
 	<?php
 
-		if($firstRanks==0) {
+		if ($firstRanks == 0)
+		{
 			$makeProposal = '';
 			$proposalSentColor = '';
 			if(Auth::isAdmin())
 				$makeProposal = 'Open';
-			else {
-				if(!$hasSgfProposal) {
+			else
+			{
+				if (!$hasSgfProposal)
+				{
 					if($isAllowedToContribute)
 						$makeProposal = 'Make Proposal';
-	}else{
+				}
+				else
+				{
 					$makeProposal = 'Proposal sent';
 					$proposalSentColor = 'color:#717171;';
-	}
-	}
+				}
+			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
 		?>
@@ -314,7 +319,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<?php
 			echo '<a id="openSgfLink" href="/editor/?setConnectionID='.$setConnection['SetConnection']['id'].'&sgfID='.$sgf['Sgf']['id'].'" style="margin-right:20px;'.$proposalSentColor.'" class="selectable-text">'.$makeProposal.'</a>';
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
-			echo '<a id="showx7x" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
+			echo '<a id="findSimilarProblems" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
@@ -323,14 +328,16 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				</div>
 			</div>';
 	}
-		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE) {
-        echo '<div class="duplicateTable">Is duplicate group:<br>';
-		echo implode(', ', array_map(function ($setConnection) {
-			return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
+		if (count($setConnections) > 1 && Auth::getMode() != Constants::$TIME_MODE)
+		{
+			echo '<div class="duplicateTable">Is duplicate group:<br>';
+			echo implode(', ', array_map(function ($setConnection)
+			{
+				return '<a href="/' . $setConnection['SetConnection']['id'] . '">'
 				. $setConnection['SetConnection']['title'] . '</a>';
-		}, $setConnections));
-        echo '</div><br>';
-	}
+			}, $setConnections));
+			echo '</div><br>';
+		}
 	if (Auth::isLoggedIn())
 	{
 		if ($firstRanks==0)
@@ -650,6 +657,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
+	var failAlreadyReported = false;
 
 	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
 	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
@@ -775,9 +783,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 
 			if(Auth::isLoggedIn()){
-					if(Auth::isAdmin()){
-			echo '$(".modify-description-panel").hide();';
-	}
 		echo 'var besogoUserId = '.Auth::getUserID().';';
 						}else{
 		echo 'besogoNoLogin = true;';
@@ -1148,7 +1153,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				window.location = nextButtonLink;
 	});
 
-		if(!showCommentSpace) $("#commentSpace").hide();
 		$("#show").click(function(){
 			if(!msg2selected){
 				$("#msg2").fadeIn(250);
@@ -1316,11 +1320,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$("#showx4").click(function(){
 			jsCreateDownloadFile("<?php echo $setConnection['SetConnection']['num']; ?>");
 		});
-		$("#showx7x").click(function(){
-			$('.loader-container').css({
-				"display": "flex"
-			});
-			window.location.href="/tsumegos/duplicatesearch/<?php echo $t['Tsumego']['id']; ?>";
+		$("#findSimilarProblems").click(function(){
+			$('.loader-container').css({"display": "flex"});
+			window.location.href="/tsumegos/duplicatesearch/<?php echo $setConnection['SetConnection']['id']; ?>";
 		});
 
 		var mouseX;
@@ -1340,7 +1342,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$("#showx99").css("display", "none");
 		enableDownloads = true;
 		$("#showx3").css("display", "inline-block");
-		$("#showx7x").css("display", "inline-block");
+		$("#findSimilarProblems").css("display", "inline-block");
 		$("#openSgfLink").css("display", "inline-block");
 		<?php if(Auth::isAdmin()){ ?>
 		<?php if($t['Tsumego']['duplicate']==0 || $t['Tsumego']['duplicate']==-1){ ?>
@@ -1404,16 +1406,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'boardSize = '.$checkBSize.';'; ?>
 		var i, j;
 		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		heartLoss = !isStatusAllowingInspection(tStatus);
+		let heartLoss = !isStatusAllowingInspection(tStatus);
 
-		if(move==0) heartLoss = false;
-		if (noXP||freePlayMode||locked ||authorProblem)
+		if (move==0)
 			heartLoss = false;
-		if(mode==2) heartLoss = false;
+		if (noXP || freePlayMode || locked || authorProblem)
+			heartLoss = false;
+		if (mode==2)
+			heartLoss = false;
+		if (failAlreadyReported)
+			heartLoss = false;
 		freePlayMode = false;
 		freePlayMode2 = false;
 		freePlayMode2done = false;
-		if(heartLoss)
+		if (heartLoss)
 		{
 			misplays++;
 			setCookie('misplays', 'misplays');
@@ -1423,17 +1429,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 		document.getElementById("status").innerHTML = "";
 		document.getElementById("theComment").style.cssText = "display:none;";
+		failAlreadyReported = false;
 	}
 
-	function updateHealth(){
+	function updateHealth()
+	{
 		<?php
 			$m = 1;
-			while($health>0){
+			while($health>0)
+			{
 				$h = $health-1;
 				echo 'if(misplays=='.$m.')document.getElementById("heart'.$h.'").src = "/img/'.$emptyHeart.'.png"; ';
 				$health--;
 				$m++;
-	}
+			}
 			?>
 	}
 
@@ -1626,13 +1635,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	function displayResult(result)
 	{
+		let success = result == 'S';
+		if (!success && failAlreadyReported)
+			return;
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		let success = result == 'S';
 		if (accountWidget)
 			accountWidget.animate(success);
 		if (success)
@@ -1686,6 +1697,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		else //incorrect
 		{
+			failAlreadyReported = true;
 			misplays++;
 			// Don't lock board - let user keep trying
 			if (mode != 2)
@@ -1785,6 +1797,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			heartLoss = false;
 		if (noXP || freePlayMode || locked || authorProblem)
 			heartLoss = false;
+		if (failAlreadyReported)
+			heartLoss = false;
 
 		freePlayMode = false;
 		if (heartLoss)
@@ -1796,6 +1810,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			setCookie("misplays", misplays);
 			updateHealth();
 		}
+		failAlreadyReported = false;
 	}
 	</script>
 	<?php if($ui==2){ ?>

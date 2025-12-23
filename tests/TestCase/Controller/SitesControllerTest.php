@@ -20,7 +20,7 @@ class SitesControllerTest extends ControllerTestCase
 				'user_id' => $context->user['id'],
 				'date' => date('Y-m-d'),
 				'solved' => 5,
-				'quote' => 'q13',
+				'quote' => 'q01',
 				'tsumego_count' => TsumegoUtil::currentTsumegoCount(),
 				'usercount' => 1,
 				'visitedproblems' => 1,
@@ -44,12 +44,12 @@ class SitesControllerTest extends ControllerTestCase
 	public function testShowPublishedTsumego()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 564]]]]]);
+		$context = new ContextPreparator(['tsumego' => 564]);
 
 		ClassRegistry::init('Schedule')->create();
 		$schedule = [];
-		$schedule['tsumego_id'] = $context->otherTsumegos[0]['id'];
-		$schedule['set_id'] = $context->otherTsumegos[0]['set-connections'][0]['set_id'];
+		$schedule['tsumego_id'] = $context->tsumegos[0]['id'];
+		$schedule['set_id'] = $context->tsumegos[0]['set-connections'][0]['set_id'];
 		$schedule['date'] = date('Y-m-d');
 		$schedule['published'] = 1;
 		ClassRegistry::init('Schedule')->save($schedule);
@@ -67,17 +67,13 @@ class SitesControllerTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		// Arrange: Set up test context with user, tsumego, and day_record
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'tsumego' => [],
-			'day-records' => [
-				[
-					'date' => date('Y-m-d'), // Today
-					'solved' => 5,
-					'quote' => 'q13',
-					'visitedproblems' => 10,
-				],
-			],
-		]);
+			'day-records' => [[
+				'date' => date('Y-m-d'), // Today
+				'solved' => 5,
+				'quote' => 'q01',
+				'visitedproblems' => 10]]]);
 
 		// Act: Load the index page
 		$browser->get('sites/index');
@@ -86,30 +82,18 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
 	}
 
-	/**
-	 * Test that index page loads successfully even without day_record data
-	 */
 	public function testIndexPageLoadsWithoutDayRecord()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up context without day_record
-		$context = new ContextPreparator();
-
-		// Act: Load the index page
+		new ContextPreparator();
 		$browser->get('sites/index');
-
-		// Assert: Page should load successfully and display with null values handled gracefully
 		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
 	}
 
-	/**
-	 * Test that play buttons work correctly when user has no lastVisit session
-	 */
 	public function testPlayButtonsWorkWithoutLastVisitSession()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up minimal context and clear lastVisit session
-		$context = new ContextPreparator();
+		new ContextPreparator();
 
 		// Clear lastVisit cookie to simulate first-time visitor
 		unset($_COOKIE['lastVisit']);
@@ -181,7 +165,7 @@ class SitesControllerTest extends ControllerTestCase
 	public function testNavigationHighlightingForHomePage()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator();
+		new ContextPreparator();
 		$browser->get('sites/index');
 
 		// Assert: Home link should have the green highlight color

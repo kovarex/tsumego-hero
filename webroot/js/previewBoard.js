@@ -15,7 +15,7 @@
 		}
 	}
 
-	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
+	function createBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
 	{
 		const w3 = "http://www.w3.org/2000/svg";
 		const w32 = "http://www.w3.org/1999/xlink";
@@ -51,6 +51,11 @@
 		svg.style.height = yMax + "px";
 		let targetContainer = target.querySelector('span');
 		targetContainer.appendChild(svg);
+	}
+
+	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
+	{
+		createBoard(target, black, white, xMax, yMax, boardSize);
 		hoverForPreviewBoard(target);
 	}
 

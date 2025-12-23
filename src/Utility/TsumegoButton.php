@@ -2,12 +2,13 @@
 
 class TsumegoButton
 {
-	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status)
+	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, ?float $rating = 0)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->setConnectionID = $setConnectionID;
 		$this->order = $order;
 		$this->status = $status;
+		$this->rating = $rating;
 	}
 
 	public static function createFromSetConnection($setConnection): TsumegoButton
@@ -57,23 +58,34 @@ class TsumegoButton
 
 	private function generateTooltip(): string
 	{
-		$sgf = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
-		if (!$sgf)
-			return '';
+		if (!$this->sgf)
+		{
+			$sgfObject = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
+			if (!$sgfObject)
+				return '';
+			$this->sgf = $sgfObject['Sgf']['sgf'];
+		}
 		$result = '';
 		$result .= 'if (this.querySelector(\'svg\')) return;';
-		$sgf = SgfParser::process($sgf['Sgf']['sgf']);
-		$result .= 'black = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->blackStones)) . '\';';
-		$result .= 'white = \'' . implode("", array_map(fn($stone) => $stone->toLetters(), $sgf->whiteStones)) . '\';';
-		$result .= 'createPreviewBoard(this, black, white,' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
+		$result .= $this->createBoard('this', 'createPreviewBoard');
 		return $result;
+	}
+
+	public function createBoard($target, $functionName)
+	{
+		$sgf = SgfParser::process($this->sgf);
+		$black = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::BLACK))) . '\'';
+		$white = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::WHITE))) . '\'';
+		return $functionName . '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
 	}
 
 	public int $tsumegoID;
 	public int $setConnectionID;
 	public int $order;
 	public ?string $status;
+	public ?float $rating;
 	public float $seconds = 0;
 	public string $performance;
 	public bool $isCurrentlyOpened = false;
+	public $sgf = null;
 }

@@ -6,16 +6,12 @@ class UploadSgfTest extends TestCaseWithAuth
 {
 	public function testUploadSgf()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
-			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
-				'status' => 'S']]);
-		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]]));
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S']]);
+		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		$this->assertSame(0, $initialCount);
 		$browser = Browser::instance();
-		$browser->get($context->tsumego['set-connections'][0]['id']);
-		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])));
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])));
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
 		$this->assertTrue($openLink->isDisplayed());
 		$this->assertSame($openLink->getText(), "Open");
@@ -31,7 +27,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$saveButton->click();
 
 		$sgf = ClassRegistry::init('Sgf')->find('all', [
-			'conditions' => ['tsumego_id' => $context->tsumego['id']],
+			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
 			'order' => 'id DESC']);
 
 		// After the addition of a new problem, and first edit, there is exactly 1 entry in the sgf database, which
@@ -44,14 +40,14 @@ class UploadSgfTest extends TestCaseWithAuth
 	public function testOpeningSgfFromHistory()
 	{
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
+			'user' => ['admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'status' => 'S',
 				'sgfs' => ['(;GM[1]FF[4]SZ[19]C[Version 1])', '(;GM[1]FF[4]SZ[19]C[Version 2])']]]);
-		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 2);
+		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);
 		$browser = Browser::instance();
-		$browser->get('/sgfs/view/' . $context->tsumego['id']);
+		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
 		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openHistoryPointLink'));
 		$this->assertCount(2, $links);
 
@@ -61,7 +57,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		$commentBox = $browser->driver->findElement(WebDriverBy::cssSelector('#commentBox'));
 		$this->assertSame($commentBox->getText(), 'Version 2');
 
-		$browser->get('/sgfs/view/' . $context->tsumego['id']);
+		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
 		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openHistoryPointLink'));
 		$this->assertCount(2, $links);
 		$links[1]->click();
@@ -75,12 +71,12 @@ class UploadSgfTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => true],
 			'tsumego' => [
-				'sets' => [['name' => 'tsumego set 1', 'num' => '2']],
+				'set_order' => 1,
 				'status' => 'S',
 				'sgfs' => ['(;GM[1]FF[4]SZ[19]C[Version 1])', '(;GM[1]FF[4]SZ[19]C[Version 2];B[aa])']]]);
-		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumego['id']]])), 2);
+		$this->assertEquals(count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])), 2);
 		$browser = Browser::instance();
-		$browser->get('/sgfs/view/' . $context->tsumego['id']);
+		$browser->get('/sgfs/view/' . $context->tsumegos[0]['id']);
 		$links = $browser->driver->findElements(WebDriverBy::cssSelector('.openDiff'));
 		$this->assertCount(1, $links);
 		$links[0]->click();

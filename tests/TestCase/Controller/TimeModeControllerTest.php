@@ -4,10 +4,7 @@ class TimeModeControllerTest extends ControllerTestCase
 {
 	public function testStartTimeModeWithoutSpecifyingCategoryIDThrowsException()
 	{
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]],
-			'time-mode-ranks' => ['5k']]);
+		$context = new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(AppException::class);
 		$this->expectExceptionMessage('Time mode category not specified.');
@@ -34,41 +31,37 @@ class TimeModeControllerTest extends ControllerTestCase
 
 	public function testTimeModePlayWithoutSessionBeingInProgress()
 	{
-		new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE]]);
+		new ContextPreparator();
 		$this->testAction('/timeMode/play');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/overview', $this->headers['Location']);
 	}
 
 	public function testTimeModePlayWithSessionToBeFinished()
 	{
-		$contextParameters = [];
-		$contextParameters['tsumego'] = [];
-		$contextParameters['user'] = ['mode' => Constants::$TIME_MODE];
-		$contextParameters['time-mode-ranks'] = ['5k'];
-		$contextParameters['time-mode-sessions'] [] = [
-			'category' => TimeModeUtil::$CATEGORY_BLITZ,
-			'rank' => '5k',
-			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
-			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]];
-		$context = new ContextPreparator($contextParameters);
-		// session in progress with just one attempt which is solved
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]]]]);
 
+		// session in progress with just one attempt which is solved
 		$this->testAction('/timeMode/play');
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
 
 	public function testTimeModePlaySwitchesToTimeMode()
 	{
-		$contextParameters = [];
-		$contextParameters['tsumego'] = ['sets' => [['name' => 'tsumego set 1', 'num' => 1]]];
-		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
-		$contextParameters['time-mode-ranks'] = ['5k'];
-		$contextParameters['time-mode-sessions'] [] = [
-			'category' => TimeModeUtil::$CATEGORY_BLITZ,
-			'rank' => '5k',
-			'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
-			'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]];
-		$context = new ContextPreparator($contextParameters);
+		new ContextPreparator([
+			'tsumego' => 1,
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [[
+				'category' => TimeModeUtil::$CATEGORY_BLITZ,
+				'rank' => '5k',
+				'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
+				'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]]]]);
 
 		$this->testAction('/timeMode/play');
 		$this->assertTrue(Auth::isInTimeMode());

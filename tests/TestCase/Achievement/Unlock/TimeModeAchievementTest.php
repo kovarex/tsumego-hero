@@ -11,15 +11,39 @@ App::uses('Achievement', 'Model');
  */
 class TimeModeAchievementTest extends AchievementTestCase
 {
+	// I need just one of time tests to use browser based test to check the integration
 	public function testSlowTimeModeAchievements()
 	{
-		$context = new ContextPreparator([
+		$browser = Browser::instance();
+		new ContextPreparator([
 			'time-mode-ranks' => ['5k'],
 			'time-mode-sessions' => [[
 				'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 				'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
 				'rank' => '5k']]]);
-		new AchievementChecker()->checkTimeModeAchievements();
+		$browser->get('timeMode/result');
+		$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
+	}
+
+	public function testSlowTimeModeAchievementWithTwoSessionsFinished()
+	{
+		$browser = Browser::instance();
+		// I have two sessions finished, which is testing the unlock logic not being broken and trying to unlock the
+		// achievement twice in a row
+		new ContextPreparator([
+			'time-mode-ranks' => ['5k'],
+			'time-mode-sessions' => [
+				[
+					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'rank' => '5k'
+				],
+				[
+					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
+					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
+					'rank' => '5k'
+				]]]);
+		$browser->get('timeMode/result');
 		$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_SLOW, "Slow 5k achievement should unlock");
 	}
 

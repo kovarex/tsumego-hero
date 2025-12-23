@@ -145,12 +145,12 @@ numbered AS (
     ft.id AS tsumego_id,
     ROW_NUMBER() OVER (
       PARTITION BY s.id
-      ORDER BY ft.id
+      ORDER BY sc.num, ft.id
     ) AS rn,
     ts.status as status
   FROM filtered_tsumego ft
   JOIN set_connection sc ON sc.tsumego_id = ft.id
-  JOIN `set` s ON s.id = sc.set_id
+  JOIN `set` s ON s.id = sc.set_id AND s.public = 1
   LEFT JOIN tsumego_status ts
     ON ts.user_id = " . Auth::getUserID() . "
     AND ts.tsumego_id = ft.id
@@ -184,7 +184,7 @@ partitioned AS (
 
 SELECT *
 FROM partitioned
-ORDER BY order_value, total_count DESC, partition_number
+ORDER BY order_value, total_count DESC, partition_number, id
 ";
 		$rows = Util::query($query);
 		foreach ($rows as $row)

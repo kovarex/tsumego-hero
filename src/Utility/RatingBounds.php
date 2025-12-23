@@ -54,6 +54,18 @@ class RatingBounds
 		return $result;
 	}
 
+	public static function fromRanks(string $readableMin, string $readableMax): RatingBounds
+	{
+		return new RatingBounds(
+			Rating::getRankMinimalRatingFromReadableRank($readableMin),
+			Rating::getRankMinimalRatingFromReadableRank($readableMax));
+	}
+
+	public function containsRating(float $rating)
+	{
+		return $rating >= $this->min && $rating < $this->max;
+	}
+
 	public ?float $min = null;
 	public ?float $max = null;
 }

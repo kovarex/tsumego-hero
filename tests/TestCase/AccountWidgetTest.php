@@ -5,12 +5,12 @@ class AccountWidgetTest extends ControllerTestCase
 	// by default we show level
 	public function testShowLevelInAccountWidget()
 	{
-		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14]]);
 		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['xp' => 13, 'level' => 5]]);
 		$browser->get('/');
-		$this->assertSame('Level 14', $browser->find('#account-bar-xp')->getText());
+		$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
-		$this->assertSame('13/225', $browser->find('#account-bar-xp')->getText());
+		$this->assertSame('13/90', $browser->find('#account-bar-xp')->getText());
 	}
 
 	public function testUpdateXPOnSolve()
@@ -18,32 +18,28 @@ class AccountWidgetTest extends ControllerTestCase
 		foreach (['V', 'W'] as $status)
 		{
 			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 1000],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'status' => $status]]]);
+				'user' => ['xp' => 13, 'level' => 5],
+				'tsumego' => ['set_order' => 1, 'status' => $status]]);
 			$browser = Browser::instance();
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-			$this->assertSame('Level 14', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
-			$this->assertSame('13/225', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('13/90', $browser->find('#account-bar-xp')->getText());
 
 			$browser->playWithResult('S');
 
 			$browser->hover($browser->find('body'));
-			$this->assertSame('Level 14', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
-			$this->assertSame(strval(13 + Rating::ratingToXP(1000, $status == 'V' ? 1 : Constants::$RESOLVING_MULTIPLIER)) . '/225', $browser->find('#account-bar-xp')->getText());
+			$this->assertSame(strval(13 + Rating::ratingToXP(1000, $status == 'V' ? 1 : Constants::$RESOLVING_MULTIPLIER)) . '/90', $browser->find('#account-bar-xp')->getText());
 		}
 	}
 
 	public function testShowRankInAccountWidget()
 	{
-		$context = new ContextPreparator(['user' => [
-			'mode' => Constants::$LEVEL_MODE,
-			'xp' => 13,
-			'level' => 14,
-			'rating' => 2075]]);
 		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['rating' => 2075]]);
 		$browser->setCookie('showInAccountWidget', 'rating');
 		$browser->get('/');
 		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
@@ -55,12 +51,12 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		foreach (['V', 'S'] as $initialStatus)
 		{
-			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2075],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['rating' => 2075],
+				'tsumego' => ['set_order' => 1, 'rating' => 1000, 'status' => $initialStatus]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
@@ -74,7 +70,7 @@ class AccountWidgetTest extends ControllerTestCase
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(2075 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertLessThan(abs(1000 + $expectedChange - $context->reloadUser()['rating']), 0.01);
 		}
 	}
@@ -83,12 +79,12 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		foreach (['V', 'S'] as $initialStatus)
 		{
-			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 1000],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000],
+				'tsumego' => ['set_order' => 1, 'rating' => 1000, 'status' => $initialStatus]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
@@ -103,7 +99,7 @@ class AccountWidgetTest extends ControllerTestCase
 			$this->assertSame('11k', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
 			$this->assertSame(strval(round(1000 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 			$this->assertWithinMargin(1000 + $expectedChange, $context->reloadUser()['rating'], 0.01);
 		}
 	}
@@ -112,12 +108,12 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		foreach (['V', 'S'] as $initialStatus)
 		{
-			$context = new ContextPreparator([
-				'user' => ['mode' => Constants::$LEVEL_MODE, 'xp' => 13, 'level' => 14, 'rating' => 2050],
-				'other-tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]], 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser = Browser::instance();
+			$context = new ContextPreparator([
+				'user' => ['rating' => 2050],
+				'tsumegos' => [['set_order' => 1, 'rating' => 1000, 'status' => $initialStatus]]]);
 			$browser->setCookie('showInAccountWidget', 'rating');
-			$browser->get('/' . $context->otherTsumegos[0]['set-connections'][0]['id']);
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 			$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 			$browser->hover($browser->find('#account-bar-xp'));
