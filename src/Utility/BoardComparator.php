@@ -160,11 +160,8 @@ class BoardComparator
 	{
 		$diff = 0;
 		foreach ($stonesA as $position => $color)
-		{
-			$bValue = $stonesB[$position];
-			if (!isset($bValue) || $bValue != $color)
+			if (!isset($stonesB[$position]) || $stonesB[$position] != $color)
 				$diff++;
-		}
 		foreach ($stonesB as $position => $color)
 			if (!isset($stonesA[$position]))
 				$diff++;
@@ -176,7 +173,7 @@ class BoardComparator
 	private static function positionArraysMatch(array $a, array $b): bool
 	{
 		foreach ($a as $position => $x)
-			if (is_null($b[$position]))
+			if (!isset($b[$position]))
 				return false;
 		return true;
 	}

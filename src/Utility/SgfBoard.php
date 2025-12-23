@@ -66,11 +66,8 @@ class SgfBoard
 	{
 		$result = '';
 		foreach ($stonesA as $position => $color)
-		{
-			$bValue = $stonesB[$position];
-			if (!isset($bValue) ||  $bValue != $color)
+			if (!isset($stonesB[$position]) || $stonesB[$position] != $color)
 				$result .= BoardPosition::toLetters($position);
-		}
 		foreach ($stonesB as $position => $color)
 			if (!isset($stonesA[$position]))
 				$result .= BoardPosition::toLetters($position);
