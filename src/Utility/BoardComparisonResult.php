@@ -2,9 +2,12 @@
 
 class BoardComparisonResult
 {
-	public $difference = 0;
-	public $transformType = 0;
-	public $shiftA = 0;
-	public $shiftB = 0;
-	public $aColorSwitched = false;
+	public function __construct(int $difference, string $diff)
+	{
+		$this->difference = $difference;
+		$this->diff = $diff;
+	}
+
+	public int $difference;
+	public string $diff;
 }

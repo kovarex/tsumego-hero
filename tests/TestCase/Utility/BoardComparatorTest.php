@@ -7,46 +7,51 @@ class BoardComparatorTest extends CakeTestCase
 	public function testCompareEmptyWithEmpty()
 	{
 		$emptyBoard = SgfParser::process('(;GM[1]FF[4]SZ[19])');
-		$result = BoardComparator::compareSimple($emptyBoard, $emptyBoard);
-		$this->assertSame(0, $result->difference);
+		$result = BoardComparator::compare($emptyBoard->stones, 'N', '', $emptyBoard->stones, 'N', '');
+		$this->assertNull($result); // empty board doesn't match
 	}
 
 	public function testCompareOneStoneWithEmpty()
 	{
 		$emptyBoard = SgfParser::process('(;GM[1]FF[4]SZ[19])');
 		$oneStoneBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
-		$result = BoardComparator::compareSimple($emptyBoard, $oneStoneBoard);
-		$this->assertSame(1, $result->difference);
+		$result = BoardComparator::compare($emptyBoard->stones, 'N', '', $oneStoneBoard->stones, 'N', '');
+		$this->assertNull($result); // empty board doesn't match
 	}
 
 	public function testCompareOneStoneWithSameOneStone()
 	{
 		$oneStoneBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
-		$result = BoardComparator::compareSimple($oneStoneBoard, $oneStoneBoard);
+		$result = BoardComparator::compare($oneStoneBoard->stones, 'N', '', $oneStoneBoard->stones, 'N', '');
 		$this->assertSame(0, $result->difference);
+		$this->assertSame('', $result->diff);
 	}
 
 	public function testCompareOneStoneWithStoneOnDifferentPosition()
 	{
+		// just one stone will be shifted to the same position and the result diff will be empty again
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[bb])');
-		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compare($oneStoneBoardA->stones, 'N', '', $oneStoneBoardB->stones, 'N', '');
 		$this->assertSame(0, $result->difference);
+		$this->assertSame('', $result->diff);
 	}
 
 	public function testCompareAnchoredTwoStonesAtDifferentPositions()
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][bb])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][cc])');
-		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compare($oneStoneBoardA->stones, 'N', '', $oneStoneBoardB->stones, 'N', '');
 		$this->assertSame(2, $result->difference);
+		$this->assertSame('bbcc', $result->diff);
 	}
 
 	public function testCompareStoneWithBoardWhichIsTooSmallToContainIt()
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[2]AB[aa])');
 		$oneStoneBoardB = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[aa][cc])');
-		$result = BoardComparator::compareSimple($oneStoneBoardA, $oneStoneBoardB);
+		$result = BoardComparator::compare($oneStoneBoardA->stones, 'N', '', $oneStoneBoardB->stones, 'N', '');
 		$this->assertSame(1, $result->difference);
+		$this->assertSame('cc', $result->diff);
 	}
 }

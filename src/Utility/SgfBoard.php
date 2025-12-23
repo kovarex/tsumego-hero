@@ -38,12 +38,25 @@ class SgfBoard
 		return $result;
 	}
 
+	public static function getPositionsMirroredAround($positions, $pivot): array
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::mirror($position, $pivot)] = $color;
+		return $result;
+	}
+
 	public function getColorSwitched(): SgfBoard
 	{
-		$stones = [];
-		foreach ($this->stones as $position => $color)
-			$stones[$position] = 1 - $color;
-		return new SgfBoard($stones, $this->info, $this->size);
+		return new SgfBoard(SgfBoard::getColorSwitchedStones($this->stones), $this->info, $this->size);
+	}
+
+	public static function getColorSwitchedStones(array $stones): array
+	{
+		$result = [];
+		foreach ($stones as $position => $color)
+			$result[$position] = 1 - $color;
+		return $result;
 	}
 
 	public function getShifted(int $shift): SgfBoard
@@ -54,6 +67,14 @@ class SgfBoard
 		return $result;
 	}
 
+	public static function getShiftedPositions($positions, $shift): array
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::shift($position, $shift)] = $color;
+		return $result;
+	}
+
 	public function getLowest(): int
 	{
 		return self::getLowestPosition($this->stones);
@@ -61,10 +82,9 @@ class SgfBoard
 
 	public static function getLowestPosition(array $positions): int
 	{
-		$result = $positions[0];
-		$count = count($positions);
-		for ($i = 0; $i < $count; $i++)
-			$result = BoardPosition::min($result, $positions[$i]);
+		$result = BoardPosition::pack(31, 31);
+		foreach ($positions as $position => $color)
+			$result = BoardPosition::min($result, $position);
 		return $result;
 	}
 
@@ -81,6 +101,21 @@ class SgfBoard
 				$result .= BoardPosition::toLetters($position);
 		foreach ($other->stones as $position => $color)
 			if ($this->get($position) == SgfBoard::EMPTY)
+				$result .= BoardPosition::toLetters($position);
+		return $result;
+	}
+
+	public static function getDifferentStones($stonesA, $stonesB): string
+	{
+		$result = '';
+		foreach ($stonesA as $position => $color)
+		{
+			$bValue = $stonesB[$position];
+			if (!isset($bValue) ||  $bValue != $color)
+				$result .= BoardPosition::toLetters($position);
+		}
+		foreach ($stonesB as $position => $color)
+			if (!isset($stonesA[$position]))
 				$result .= BoardPosition::toLetters($position);
 		return $result;
 	}
