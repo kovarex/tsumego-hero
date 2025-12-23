@@ -17,10 +17,10 @@ class TsumegosController extends AppController
 
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
-		if (!isset($this->params['query']['sid']))
+		if (!isset($this->params->query['sid']))  // @phpstan-ignore-line property.nonObject
 			return $setConnections[0];
 		foreach ($setConnections as $setConnection)
-			if ($setConnection['SetConnection']['set_id'] == $this->params['query']['sid'])
+			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid'])
 				return $setConnection;
 		throw new AppException("Problem doesn't exist in the specified set");
 	}

@@ -1363,7 +1363,7 @@ Joschka Zimdars';
 	public function solveHistory($userID)
 	{
 		$PAGE_SIZE = 500;
-		$pageIndex = isset($this->params['query']['page']) ? max(1, (int) $this->params['query']['page']) : 1;
+		$pageIndex = isset($this->params->query['page']) ? max(1, (int) $this->params->query['page']) : 1;  // @phpstan-ignore-line property.nonObject
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
 		$offset = ($pageIndex - 1) * $PAGE_SIZE;
 
