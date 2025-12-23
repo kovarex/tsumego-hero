@@ -547,7 +547,6 @@ class SetsController extends AppController
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
 				}
 			}
-		}
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
