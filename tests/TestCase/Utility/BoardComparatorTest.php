@@ -104,4 +104,28 @@ class BoardComparatorTest extends CakeTestCase
 		$this->assertSame(1, $result->difference);
 		$this->assertSame('ba', $result->diff);
 	}
+
+	// the shape is the same, but the position of the correct move makes it compatibile or not
+	public function testDifferentCorrectMovesMakesSameShapeDifferent()
+	{
+		foreach (['aa', 'ab', 'ba', 'bb'] as $otherCorrectMove)
+		{
+			$fenceShape = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ca][cb][cc][bc][ac])');
+			$result = BoardComparator::compare(
+				$fenceShape->stones,
+				'B',
+				SgfBoard::decodePositionString('aa'),
+				$fenceShape->stones,
+				'B',
+				SgfBoard::decodePositionString($otherCorrectMove));
+			if ($otherCorrectMove === 'aa')
+			{
+				$this->assertNotNull($result);
+				$this->assertSame(0, $result->difference);
+				$this->assertSame('', $result->diff);
+			}
+			else
+				$this->assertNull($result);
+		}
+	}
 }
