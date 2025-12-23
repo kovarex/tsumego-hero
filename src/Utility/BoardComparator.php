@@ -47,7 +47,7 @@ class BoardComparator
 				$aShiftedColorSwitched = SgfBoard::getColorSwitchedStones($aShifted);
 				$diffColorSwitched = BoardComparator::compareSingle($aShiftedColorSwitched, $bStones);
 			}
-			else if ($aFirstMoveColor == $bFirstMoveColor)
+			elseif ($aFirstMoveColor == $bFirstMoveColor)
 				$diff = BoardComparator::compareSingle($aShifted, $bStones);
 			else
 			{
@@ -67,7 +67,7 @@ class BoardComparator
 				$aShiftedMirroredColorSwitched = SgfBoard::getColorSwitchedStones($aShiftedMirrored);
 				$diffMirroredColorSwitched = BoardComparator::compareSingle($aShiftedMirroredColorSwitched, $bStones);
 			}
-			else if ($aFirstMoveColor == $bFirstMoveColor)
+			elseif ($aFirstMoveColor == $bFirstMoveColor)
 				$diffMirrored = BoardComparator::compareSingle($aShiftedMirrored, $bStones);
 			else
 			{

@@ -80,9 +80,9 @@ class SgfBoard
 	public static function decodePositionString($input): array
 	{
 		$result = [];
-		$steps = (int)strlen($input) / 2;
+		$steps = (int) strlen($input) / 2;
 		for ($i = 0; $i < $steps; $i++)
-			$result []= BoardPosition::fromLetters($input[$i * 2], $input[$i * 2 + 1]);
+			$result [] = BoardPosition::fromLetters($input[$i * 2], $input[$i * 2 + 1]);
 		return $result;
 	}
 
