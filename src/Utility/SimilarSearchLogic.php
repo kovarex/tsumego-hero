@@ -16,6 +16,8 @@ class SimilarSearchLogic
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
 		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf']);
+		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'] ?? 'N';
+		$this->sourceCorrectMoves = SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? '');
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
 		$this->result->title = $set['title'];
@@ -28,7 +30,9 @@ class SimilarSearchLogic
 SELECT
     tsumego.id AS tsumego_id,
     set_connection_latest.id AS set_connection_id,
-    sgf.sgf AS sgf
+    sgf.sgf AS sgf,
+    sgf.first_move_color AS first_move_color,
+    sgf.correct_moves AS correct_moves
 FROM tsumego
 JOIN (
     SELECT
@@ -62,14 +66,23 @@ LEFT JOIN sgf
 
 	private function checkCandidate($candidate): void
 	{
+		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
+		if (count($correctMoves) != count($correctMoves))
+			return;
 		$board = SgfParser::process($candidate['sgf']);
 		$numStones = $board->getStoneCount();
 		$stoneNumberDiff = abs($numStones - $this->sourceStoneCount);
 		if ($stoneNumberDiff > $this->maxDifference)
 			return;
 
-		$comparisonResult = BoardComparator::compare($this->sourceBoard, $board);
-		if ($comparisonResult->difference > $this->maxDifference)
+		$comparisonResult = BoardComparator::compare(
+			$this->sourceBoard->stones,
+			$this->sourceFirstMoveColor,
+			$this->sourceCorrectMoves,
+			$board->stones,
+			$candidate['first_move_color'] ?? 'N',
+			$correctMoves);
+		if (!$comparisonResult)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
 	}
@@ -82,6 +95,7 @@ LEFT JOIN sgf
 
 		$item = new SimilarSearchResultItem();
 		$item->difference = $comparisonResult->difference;
+		$item->diff = $comparisonResult->diff;
 		$item->title = $set['Set']['title'];
 
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $candidate['tsumego_id']]]);
@@ -99,6 +113,8 @@ LEFT JOIN sgf
 	public $setConnection;
 	public $maxDifference = 5;
 	public $sourceBoard;
+	public $sourceFirstMoveColor;
+	public $sourceCorrectMoves;
 	public $sourceStoneCount;
 	public SimilarSearchResult $result;
 }

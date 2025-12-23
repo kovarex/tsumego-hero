@@ -36,7 +36,7 @@ besogo.composeSgf = function(editor, expand = false)
   // Composes root specific properties
   function composeRootProps(tree)
   {
-    var string = 'FF[4]GM[1]CA[UTF-8]AP[besogo:' + besogo.VERSION + ']',
+    var string = 'FF[4]GM[1]',
         x = tree.getSize().x,
         y = tree.getSize().y,
         gameInfo = editor.getGameInfo(), // Game info structure

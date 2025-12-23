@@ -2,7 +2,8 @@
 
 class SimilarSearchResultItem
 {
-	public $difference;
+	public int $difference;
+	public string $diff;
 	public string $title;
 	public TsumegoButton $tsumegoButton;
 

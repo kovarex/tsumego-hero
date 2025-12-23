@@ -43,4 +43,35 @@ class BoardPositionTest extends CakeTestCase
 		$this->assertSame(5, BoardPosition::unpackX(BoardPosition::shift(BoardPosition::pack(7, 8), BoardPosition::pack(2, 1))));
 		$this->assertSame(7, BoardPosition::unpackY(BoardPosition::shift(BoardPosition::pack(7, 8), BoardPosition::pack(2, 1))));
 	}
+
+	public function testShiftAround()
+	{
+		// . . . .
+		// . . X .
+		// . . X .
+		// . . X .
+		// with shape like this, we want to mirror around the left top corner, so we get a shape like this
+		// . . . . .
+		// . . X X X
+		// . . . . .
+		// . . . . .
+		$position1 = BoardPosition::pack(3, 2);
+		$position2 = BoardPosition::pack(3, 3);
+		$position3 = BoardPosition::pack(3, 4);
+
+		// we simulate searching left top corner of the shape to mirror around
+		$min = $position3;
+		$min = BoardPosition::min($min, $position2);
+		$min = BoardPosition::min($min, $position1);
+		$this->assertSame($min, $position1);
+
+
+		$position1Mirrored = BoardPosition::mirrorAround($position1, $min);
+		$position2Mirrored = BoardPosition::mirrorAround($position2, $min);
+		$position3Mirrored = BoardPosition::mirrorAround($position3, $min);
+		$this->assertSame($position1, $position1Mirrored); // first should be the same
+		$this->assertSame(BoardPosition::pack(4, 2), $position2Mirrored);
+		$this->assertSame(BoardPosition::pack(5, 2), $position3Mirrored);
+
+	}
 }

@@ -6,11 +6,11 @@ class UploadSgfTest extends TestCaseWithAuth
 {
 	public function testUploadSgf()
 	{
+		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S']]);
 		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		$this->assertSame(0, $initialCount);
-		$browser = Browser::instance();
-		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->get($context->setConnections[0]['id']);
 		$this->assertSame(0, count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]])));
 		$openLink = $browser->driver->findElement(WebDriverBy::cssSelector('#openSgfLink'));
 		$this->assertTrue($openLink->isDisplayed());
@@ -35,6 +35,8 @@ class UploadSgfTest extends TestCaseWithAuth
 		// This is to avoid default first empty sgf in the history for every problem.
 		$this->assertSame(1, count($sgf));
 		$this->assertTextContains('Hello from test', $sgf[0]['Sgf']['sgf']);
+		$this->assertSame('N', $sgf[0]['Sgf']['first_move']);
+		$this->assertSame('', $sgf[0]['Sgf']['correct_moves']);
 	}
 
 	public function testOpeningSgfFromHistory()

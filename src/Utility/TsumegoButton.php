@@ -71,12 +71,12 @@ class TsumegoButton
 		return $result;
 	}
 
-	public function createBoard($target, $functionName)
+	public function createBoard($target, $functionName, $diff = '')
 	{
 		$sgf = SgfParser::process($this->sgf);
 		$black = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::BLACK))) . '\'';
 		$white = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::WHITE))) . '\'';
-		return $functionName . '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ');' . PHP_EOL;
+		return $functionName . '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ', \'' . $diff . '\');' . PHP_EOL;
 	}
 
 	public int $tsumegoID;

@@ -41,9 +41,19 @@ class BoardPosition
 		return self::pack(self::unpackY($packed), self::unpackX($packed));
 	}
 
+	public static function mirrorAround(int $packed, $pivot): int
+	{
+		return BoardPosition::mirror($packed - $pivot) + $pivot;
+	}
+
 	public static function shift(int $packed, int $shift): int
 	{
-		return self::pack(self::unpackX($packed) - self::unpackX($shift), self::unpackY($packed) - self::unpackY($shift));
+		return $packed - $shift;
+	}
+
+	public static function diff(int $a, int $b): int
+	{
+		return $a - $b;
 	}
 
 	public static function min(int $packed, int $other): int

@@ -34,7 +34,7 @@
 			echo 'No problems found.';
 echo '</table>';
 echo '<script>';
-foreach ($result->items as $item)
-	echo $item->tsumegoButton->createBoard('document.getElementById(\'preview' . $item->tsumegoButton->setConnectionID . '\')', 'createBoard');
 echo $sourceTsumegoButton->createBoard('document.getElementById(\'previewMaster\')', 'createBoard');
+foreach ($result->items as $item)
+	echo $item->tsumegoButton->createBoard('document.getElementById(\'preview' . $item->tsumegoButton->setConnectionID . '\')', 'createBoard', $item->diff);
 echo '</script>';

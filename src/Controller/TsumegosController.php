@@ -516,4 +516,76 @@ class TsumegosController extends AppController
 			CookieFlash::set($flash['message'], $flash['type']);
 		$this->redirect('/tsumegos/mergeForm');
 	}
+
+	public function setupSgf(): mixed
+	{
+		if (!Auth::isAdmin())
+		{
+			CookieFlash::set('No rights to call this', 'error');
+			return $this->redirect('/sets');
+		}
+
+		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['OR' => ['first_move_color' => null, 'correct_moves' => null]]]);
+		if (!$sgf)
+		{
+			CookieFlash::set('All sgfs converted', 'success');
+			return $this->redirect('/sets');
+		}
+		$sgf = $sgf['Sgf'];
+		$this->set('sgf', $sgf['sgf']);
+		$this->set('sgfID', $sgf['id']);
+		return null;
+	}
+
+	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves = null)
+	{
+		if (!Auth::isAdmin())
+			return;
+		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
+		if (!$sgf)
+			return;
+		$sgf = $sgf['Sgf'];
+		if (empty($sgf['sgf']))
+		{
+			ClassRegistry::init("Sgf")->delete($sgfID);
+			return $this->redirect('/tsumegos/setupSgf');
+		}
+		$sgf['first_move_color'] = $firstMoveColor;
+		$sgf['correct_moves'] = $correctMoves ?? '';
+		ClassRegistry::init('Sgf')->save($sgf);
+		return $this->redirect('/tsumegos/setupSgf');
+	}
+
+	public function setupNewSgfStep2()
+	{
+		if (!Auth::isLoggedIn())
+			return;
+
+		$setConnectionID = $this->data["setConnectionID"];
+
+		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
+		if (!$setConnection)
+			return;
+		$tsumegoID = $setConnection['SetConnection']['tsumego_id'];
+
+		$sgfData = $this->data['sgf'];
+		$firstMoveColor = $this->data['firstMoveColor'];
+		$correctMoves = $this->data['correctMoves'];
+
+		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
+		if (!$tsumego)
+			return;
+
+		$tsumego = $tsumego['Tsumego'];
+		$sgf = [];
+		$sgf['sgf'] = $sgfData;
+		$sgf['user_id'] = Auth::getUserId();
+		$sgf['tsumego_id'] = $tsumego['id'];
+		$sgf['accepted'] = Auth::isAdmin() ? true : false;
+		$sgf['first_move_color'] = $firstMoveColor;
+		$sgf['correct_moves'] = $correctMoves;
+		ClassRegistry::init("Sgf")->create();
+		ClassRegistry::init("Sgf")->save($sgf);
+		return $this->redirect('/' . $setConnectionID);
+	}
 }

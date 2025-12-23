@@ -413,9 +413,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			{
 				echo '<div id="msg4">
 						<br>
-						<form action="" method="POST" enctype="multipart/form-data">
-							<input type="file" name="adminUpload" />
-							<input value="Submit" type="submit"/>
+						<form action="/sgf/upload/' . $setConnection['SetConnection']['id'] . '" method="POST" enctype="multipart/form-data">
+							<input id="admin-upload-button" type="file" name="adminUpload" />
+							<input id="admin-upload-submit" value="Submit" type="submit"/>
 						</form>
 					</div>
 					<div id="msg5">

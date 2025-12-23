@@ -289,11 +289,11 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 	public function testProposeSGF()
 	{
+		$browser = Browser::instance();
 		$sgfVersion1 = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
 		$context = new ContextPreparator([
 			'user' => ['admin' => false, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'tsumego' => ['sgf' => $sgfVersion1, 'status' => 'S', 'set_order' => 1]]);
-		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$makeProposalLink = $browser->find('#openSgfLink');
 		$this->assertSame('Make Proposal', $makeProposalLink->getText());
