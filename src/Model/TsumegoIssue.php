@@ -268,7 +268,7 @@ class TsumegoIssue extends AppModel
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 
 		// Count standalone comments (not in any issue)
-		$commentCount = $TsumegoComment->find('count', [
+		$commentCount = (int) $TsumegoComment->find('count', [
 			'conditions' => [
 				'TsumegoComment.tsumego_id' => $tsumegoId,
 				'TsumegoComment.tsumego_issue_id IS NULL',
@@ -277,14 +277,14 @@ class TsumegoIssue extends AppModel
 		]);
 
 		// Count issues for this tsumego
-		$issueCount = $this->find('count', [
+		$issueCount = (int) $this->find('count', [
 			'conditions' => [
 				'TsumegoIssue.tsumego_id' => $tsumegoId,
 			],
 		]);
 
 		// Count open issues for this tsumego
-		$openIssueCount = $this->find('count', [
+		$openIssueCount = (int) $this->find('count', [
 			'conditions' => [
 				'TsumegoIssue.tsumego_id' => $tsumegoId,
 				'TsumegoIssue.tsumego_issue_status_id' => self::$OPENED_STATUS,

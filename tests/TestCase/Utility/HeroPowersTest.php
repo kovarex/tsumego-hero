@@ -165,7 +165,7 @@ class HeroPowersTest extends TestCaseWithAuth
 			}
 			elseif ($testCase == 'not-available')
 				$this->assertSame($message, 'Revelation is not available to this account.');
-			elseif ($testCase == 'user-up')
+			elseif ($testCase == 'used-up')
 				$this->assertSame($message, 'Revelation is used up today.');
 			if ($testCase == 'normal')
 			{

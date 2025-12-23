@@ -57,6 +57,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('/');
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertSame(count($buttons), 1);
+		$this->assertNotEmpty($buttons);
 		$this->assertSame($buttons[0]->getText(), "564");
 	}
 
@@ -97,7 +98,6 @@ class SitesControllerTest extends ControllerTestCase
 
 		// Clear lastVisit cookie to simulate first-time visitor
 		unset($_COOKIE['lastVisit']);
-		$this->assertFalse(isset($_COOKIE['lastVisit']), 'lastVisit should be cleared initially');
 
 		// Act: Load the index page
 		$browser->get('sites/index');

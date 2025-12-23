@@ -20,7 +20,7 @@ class RatingAchievementTest extends AchievementTestCase
 {
 	public function testAchievementRating6KyuDoesUnlockBasedOnRating()
 	{
-		foreach ([0, -1] as $ratingDefitient)
+		foreach ([0, 1] as $ratingDefitient)
 		{
 			$context = new ContextPreparator(['user' => ['rating' => (Rating::getRankMinimalRatingFromReadableRank('6k') - $ratingDefitient)]]);
 			$this->triggerAchievementCheck();

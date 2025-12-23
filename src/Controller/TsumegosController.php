@@ -214,7 +214,7 @@ class TsumegosController extends AppController
 					$b = '<span class=\"go-coord\" title="Hover to highlight on board" id="ccIn' . $counter . $fn . '" onmouseover=\"ccIn' . $counter . $fn . '(event)\" onmouseout=\"ccOut' . $counter . $fn . '()\">';
 
 				$d = '</span>';
-				$e = substr($c, $n2xx[1] + 1, strlen($c) - 1);
+				$e = substr($c, (int) $n2xx[1] + 1, strlen($c) - 1);
 				$coordForBesogo[$i] = $cx;
 				$c = $a . $b . $cx . $d . $e;
 				$fn++;
