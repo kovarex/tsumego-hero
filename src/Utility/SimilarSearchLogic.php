@@ -75,25 +75,26 @@ LEFT JOIN sgf
 			return;
 
 		$comparisonResult = BoardComparator::compare(
-			$this->sourceBoard,
+			$this->sourceBoard->stones,
 			$this->sourceFirstMoveColor,
 			$this->sourceCorrectMoves,
-			$board,
-			SgfBoard::decodePositionString($candidate['first_move_color']),
-			$candidate['correct_moves']);
-		if ($comparisonResult > $this->maxDifference)
+			$board->stones,
+			$candidate['first_move_color'],
+			SgfBoard::decodePositionString($candidate['correct_moves']));
+		if (!$comparisonResult)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
 	}
 
-	private function addCandidateToResult($candidate, int $comparisonResult): void
+	private function addCandidateToResult($candidate, BoardComparisonResult $comparisonResult): void
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($candidate['set_connection_id'])['SetConnection'];
 		// not so many should match, so I get the sql additional data manually instead in the original select, which is big
 		$set = ClassRegistry::init('Set')->findById($setConnection['set_id']);
 
 		$item = new SimilarSearchResultItem();
-		$item->difference = $comparisonResult;
+		$item->difference = $comparisonResult->difference;
+		$item->diff = $comparisonResult->diff;
 		$item->title = $set['Set']['title'];
 
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $candidate['tsumego_id']]]);

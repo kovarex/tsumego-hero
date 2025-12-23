@@ -42,7 +42,7 @@ class SgfBoard
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
-			$result[BoardPosition::mirror($position, $pivot)] = $color;
+			$result[BoardPosition::mirrorAround($position, $pivot)] = $color;
 		return $result;
 	}
 

@@ -34,6 +34,10 @@ class BoardComparator
 		$diffMirrored = null;
 		$diffMirroredColorSwitched = null;
 
+		$aShiftedColorSwitched = null;
+		$aShiftedMirrored = null;
+		$aShiftedMirroredColorSwitched = null;
+
 		if (BoardComparator::positionArraysMatch($aCorrectMovesShifted, $bCorrectMoves))
 		{
 
@@ -124,10 +128,8 @@ class BoardComparator
 			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedColorSwitched, $bStones));
 		if ($indexOfSmallestDiff == 2)
 			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirrored, $bStones));
-		if ($indexOfSmallestDiff == 3)
-			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirroredColorSwitched, $bStones));
-
-		throw new Exception("Logic error");
+		//if ($indexOfSmallestDiff == 3)
+		return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirroredColorSwitched, $bStones));
 	}
 
 	public static function compareWithoutCorrectMoves($aStones, $bStones): ?BoardComparisonResult
@@ -171,7 +173,7 @@ class BoardComparator
 
 	// I'm assuming $a and $b are arrays of packed positions, and they have
 	// already been checked to have the same size and are unique
-	private static function positionArraysMatch(array $a, array $b): int
+	private static function positionArraysMatch(array $a, array $b): bool
 	{
 		foreach ($a as $position => $x)
 			if (is_null($b[$position]))

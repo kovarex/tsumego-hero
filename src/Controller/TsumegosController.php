@@ -537,7 +537,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
-	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves)
+	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves = null)
 	{
 		if (!Auth::isAdmin())
 			return;
@@ -545,9 +545,14 @@ class TsumegosController extends AppController
 		if (!$sgf)
 			return;
 		$sgf = $sgf['Sgf'];
+		if (empty($sgf['sgf']))
+		{
+			ClassRegistry::init("Sgf")->delete($sgfID);
+			return $this->redirect('/tsumegos/setupSgf');
+		}
 		$sgf['first_move_color'] = $firstMoveColor;
-		$sgf['correct_moves'] = $correctMoves;
-		ClassRegistry::init("Sgf")->save($sgf);
+		$sgf['correct_moves'] = $correctMoves ?? '';
+		ClassRegistry::init('Sgf')->save($sgf);
 		return $this->redirect('/tsumegos/setupSgf');
 	}
 

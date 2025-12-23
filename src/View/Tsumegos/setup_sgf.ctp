@@ -22,7 +22,7 @@
 <div id="something"></div>
 <script>
 	let options = {};
-	options.sgf2 = "<?php echo $sgf; ?>";
+	options.sgf2 = <?php echo json_encode($sgf, JSON_UNESCAPED_UNICODE); ?>;
 	options.panels = [];
 	options.rootPath = '/besogo/';
 	besogo.create(document.getElementById('something'), options);
