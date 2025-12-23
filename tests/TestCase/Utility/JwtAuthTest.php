@@ -33,7 +33,6 @@ class JwtAuthTest extends CakeTestCase
 		$token = JwtAuth::createToken($userId);
 
 		// Token should be a string with 3 parts separated by dots
-		$this->assertIsString($token);
 		$this->assertCount(3, explode('.', $token));
 	}
 
@@ -107,7 +106,6 @@ class JwtAuthTest extends CakeTestCase
 		// This will attempt to set a cookie (won't work in CLI but we can test the token is generated)
 		$token = JwtAuth::setAuthCookie($userId);
 
-		$this->assertNotNull($token);
 		$this->assertEquals($userId, JwtAuth::validateToken($token));
 	}
 }

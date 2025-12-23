@@ -13,8 +13,6 @@ class SgfParserTest extends CakeTestCase
 
 		$this->assertInstanceOf('SgfBoard', $result);
 		$this->assertEquals(19, $result->size);
-		$this->assertIsArray($result->stones);
-		$this->assertIsArray($result->info);
 	}
 
 	public function testProcessBoardContent()

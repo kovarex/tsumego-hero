@@ -85,6 +85,7 @@ class TimeModeTest extends TestCaseWithAuth
 	public function testStartTimeMode()
 	{
 		$context = new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
+		$this->assertNotEmpty($context->timeModeRanks);
 
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->testAction('/timeMode/start'
@@ -140,6 +141,10 @@ class TimeModeTest extends TestCaseWithAuth
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]);
+		$this->assertIsArray($session);
+		$this->assertArrayHasKey('TimeModeSession', $session);
+		// Safe: assertArrayHasKey guarantees key exists, but PHPStan doesn't track this
+		$sessionId = $session['TimeModeSession']['id'];  // @phpstan-ignore-line offsetAccess.notFound
 
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
@@ -154,18 +159,18 @@ class TimeModeTest extends TestCaseWithAuth
 			}
 			$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 				'conditions' => [
-					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_session_id' => $sessionId,
 					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED]]) ?: [];
 			$failedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 				'conditions' => [
-					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_session_id' => $sessionId,
 					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_FAILED]]) ?: [];
 			$this->assertSame(count($failedAttempts), 0);
 			$this->assertSame(count($solvedAttempts), $i);
 
 			$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 				'conditions' => [
-					'time_mode_session_id' => $session['TimeModeSession']['id'],
+					'time_mode_session_id' => $sessionId,
 					'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) ?: [];
 			$this->assertSame(count($queuedAttempts), TimeModeUtil::$PROBLEM_COUNT - $i);
 			foreach ($solvedAttempts as $solvedAttempt)
@@ -186,7 +191,7 @@ class TimeModeTest extends TestCaseWithAuth
 			'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]]));
 		Auth::init();
 		$this->assertFalse(Auth::isInTimeMode());
-		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $session['TimeModeSession']['id']]]);
+		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $sessionId]]);
 		$this->assertTrue($session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED);
 	}
 
@@ -595,7 +600,7 @@ class TimeModeTest extends TestCaseWithAuth
 		foreach ($attempts as $attempt)
 			$tsumegosInTimeMode[$attempt['TimeModeAttempt']['tsumego_id']] = true;
 
-		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($t) => !$tsumegosInTimeMode[$t['id']])['id'];
+		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($t) => !isset($tsumegosInTimeMode[$t['id']]))['id'];
 		$setConnectionIDNotInTimeMode = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]])['SetConnection']['id'];
 		$browser->playWithResult('S'); // mark the problem solved
 		usleep(1000 * 50);

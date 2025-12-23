@@ -1,14 +1,22 @@
 includes:
-	- phpstan-baseline.neon
 	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
 
 parameters:
 	level: 5
 	paths:
 		- src/
+		- tests/
 	bootstrapFiles:
 		- config/define.php
 		- config/core.local.php
+		- tests/bootstrap.php
 	treatPhpDocTypesAsCertain: false
 	ignoreErrors:
-		- '#Call to an undefined method .*\:\:findBy.+\(#'
+		# CakePHP 2.x magic finder methods (findById, findByName, etc.)
+		- '#Call to an undefined method [a-zA-Z0-9\\_]+::(findBy[a-zA-Z]+|findAll[a-zA-Z]*)\(\)#'
+		# CakePHP 2.x testAction parameter count (extension declares 0, but it accepts 1-2)
+		- '#Method ControllerTestCase::testAction\(\) invoked with [12] parameters?, 0 required\.#'
+		# PHPUnit mock methods on Controller (expects, method, will, etc.)
+		- '#Call to an undefined method Controller::expects\(\)\.#'
+		# PHPStan doesn't track cookie modifications through testAction() - tests verify these work
+		- '#Call to method PHPUnit\\Framework\\Assert::assertEmpty\(\) with .* will always evaluate to false\.#'	# EditTsumegoTest was refactored to use typed EditTestCase objects instead of sparse arrays

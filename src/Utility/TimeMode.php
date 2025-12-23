@@ -39,7 +39,7 @@ class TimeMode
 			return;
 		}
 
-		$this->currentOrder = ClassRegistry::init('TimeModeAttempt')->find('count', [
+		$this->currentOrder = (int) ClassRegistry::init('TimeModeAttempt')->find('count', [
 			'conditions' => [
 				'time_mode_session_id' => $this->currentSession['TimeModeSession']['id'],
 				'time_mode_attempt_status_id !=' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]) + 1;

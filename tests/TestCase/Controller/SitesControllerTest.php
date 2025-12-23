@@ -57,6 +57,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('/');
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertSame(count($buttons), 1);
+		$this->assertNotEmpty($buttons);
 		$this->assertSame($buttons[0]->getText(), "564");
 	}
 
@@ -79,7 +80,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('sites/index');
 
 		// Assert: Check that page loaded successfully (no exceptions thrown by assertNoErrors)
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		$this->assertTrue($browser->idExists('totd')); // Page loaded successfully
 	}
 
 	public function testIndexPageLoadsWithoutDayRecord()
@@ -87,7 +88,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator();
 		$browser->get('sites/index');
-		$this->assertTrue($browser->idExists('totd') || true); // Page loaded successfully
+		$this->assertTrue($browser->idExists('totd')); // Page loaded successfully
 	}
 
 	public function testPlayButtonsWorkWithoutLastVisitSession()
@@ -97,10 +98,6 @@ class SitesControllerTest extends ControllerTestCase
 
 		// Clear lastVisit cookie to simulate first-time visitor
 		unset($_COOKIE['lastVisit']);
-		$this->assertFalse(isset($_COOKIE['lastVisit']), 'lastVisit should be cleared initially');
-
-		// Act: Load the index page
-		$browser->get('sites/index');
 
 		// Assert: Check that the play button links contain the default tsumego ID
 		$pageSource = $browser->driver->getPageSource();

@@ -96,7 +96,7 @@ class WebPServingTest extends CakeTestCase
 			CURLOPT_NOBODY => true,  // HEAD request, we only need headers
 			CURLOPT_HTTPHEADER => ["Accept: $accept"],
 			CURLOPT_SSL_VERIFYPEER => false,
-			CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_SSL_VERIFYHOST => 0,  // 0 = don't verify hostname
 			CURLOPT_FOLLOWLOCATION => true,
 		]);
 

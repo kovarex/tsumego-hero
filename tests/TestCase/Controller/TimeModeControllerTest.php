@@ -25,6 +25,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		{
 			new ContextPreparator(['user' => null]);
 			$this->testAction($page);
+			$this->assertIsArray($this->headers);
 			$this->assertSame(Util::getInternalAddress() . '/users/login', $this->headers['Location']);
 		}
 	}
@@ -33,6 +34,7 @@ class TimeModeControllerTest extends ControllerTestCase
 	{
 		new ContextPreparator();
 		$this->testAction('/timeMode/play');
+		$this->assertIsArray($this->headers);
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/overview', $this->headers['Location']);
 	}
 
@@ -49,6 +51,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 		// session in progress with just one attempt which is solved
 		$this->testAction('/timeMode/play');
+		$this->assertIsArray($this->headers);
 		$this->assertSame(Util::getInternalAddress() . '/timeMode/result/' . $context->timeModeSessions[0]['id'], $this->headers['Location']);
 	}
 
@@ -93,6 +96,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 		$this->testAction('/timeMode/result');
 		// no redirect
+		$this->assertIsArray($this->headers);
 		$this->assertSame(null, $this->headers['Location']);
 	}
 
