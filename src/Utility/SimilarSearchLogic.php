@@ -16,8 +16,8 @@ class SimilarSearchLogic
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
 		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf']);
-		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'];
-		$this->sourceCorrectMoves = SgfBoard::decodePositionString($sgf['Sgf']['correct_moves']);
+		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'] ?? 'N';
+		$this->sourceCorrectMoves = SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? '');
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
 		$this->result->title = $set['title'];
@@ -79,8 +79,8 @@ LEFT JOIN sgf
 			$this->sourceFirstMoveColor,
 			$this->sourceCorrectMoves,
 			$board->stones,
-			$candidate['first_move_color'],
-			SgfBoard::decodePositionString($candidate['correct_moves']));
+			$candidate['first_move_color'] ?? 'N',
+			SgfBoard::decodePositionString($candidate['correct_moves'] ?? ''));
 		if (!$comparisonResult)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
