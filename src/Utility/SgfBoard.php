@@ -30,25 +30,12 @@ class SgfBoard
 		return count($this->stones);
 	}
 
-	public function getMirrored(): SgfBoard
-	{
-		$result = new SgfBoard([], $this->info, $this->size);
-		foreach ($this->stones as $position => $color)
-			$result->stones[BoardPosition::mirror($position)] = $color;
-		return $result;
-	}
-
 	public static function getPositionsMirroredAround($positions, $pivot): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
 			$result[BoardPosition::mirrorAround($position, $pivot)] = $color;
 		return $result;
-	}
-
-	public function getColorSwitched(): SgfBoard
-	{
-		return new SgfBoard(SgfBoard::getColorSwitchedStones($this->stones), $this->info, $this->size);
 	}
 
 	public static function getColorSwitchedStones(array $stones): array
@@ -59,25 +46,12 @@ class SgfBoard
 		return $result;
 	}
 
-	public function getShifted(int $shift): SgfBoard
-	{
-		$result = new SgfBoard([], $this->info, $this->size);
-		foreach ($this->stones as $position => $color)
-			$result->stones[BoardPosition::shift($position, $shift)] = $color;
-		return $result;
-	}
-
 	public static function getShiftedPositions($positions, $shift): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
 			$result[BoardPosition::shift($position, $shift)] = $color;
 		return $result;
-	}
-
-	public function getLowest(): int
-	{
-		return self::getLowestPosition($this->stones);
 	}
 
 	public static function getLowestPosition(array $positions): int
@@ -91,18 +65,6 @@ class SgfBoard
 	public function get(int $packed): int
 	{
 		return $this->stones[$packed] ?? self::EMPTY;
-	}
-
-	public function getDifferentPositions(SgfBoard $other): string
-	{
-		$result = '';
-		foreach ($this->stones as $position => $color)
-			if ($other->get($position) != $color)
-				$result .= BoardPosition::toLetters($position);
-		foreach ($other->stones as $position => $color)
-			if ($this->get($position) == SgfBoard::EMPTY)
-				$result .= BoardPosition::toLetters($position);
-		return $result;
 	}
 
 	public static function getDifferentStones($stonesA, $stonesB): string
