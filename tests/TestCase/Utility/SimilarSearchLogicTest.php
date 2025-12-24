@@ -36,8 +36,8 @@ class SimilarSearchLogicTest extends CakeTestCase
 			[
 				'set_order' => 1,
 				'status' => 'S',
-				'sgf' =>
-				[
+				'sgf'
+				=> [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ba][bb][ab];B[aa]C[+])',
 					'correct_moves' => 'aa', // correct is in top left
 					'first_move_color' => 'B'
@@ -53,8 +53,8 @@ class SimilarSearchLogicTest extends CakeTestCase
 			[
 				'set_order' => 3,
 				'status' => 'S',
-				'sgf' =>
-				[
+				'sgf'
+				=> [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[sa][sb][tb];B[tt]C[+])',
 					'correct_moves' => 'tt', // correct is in top right
 					'first_move_color' => 'B'

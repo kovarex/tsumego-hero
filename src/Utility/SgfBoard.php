@@ -9,9 +9,10 @@ class SgfBoard
 	 * @param array{int,int} $info
 	 * @param int $size
 	 */
-	public function __construct(array $stones, array $info, int $size)
+	public function __construct(array $stones, array $info, int $size, $correctMoves = [])
 	{
 		$this->stones = $stones;
+		$this->correctMoves = $correctMoves;
 		$this->info = $info;
 		$this->size = $size;
 	}
@@ -84,6 +85,7 @@ class SgfBoard
 	}
 
 	public array $stones = [];
+	public array $correctMoves = [];
 	public array $info;
 	public int $size;
 

@@ -15,9 +15,8 @@ class SimilarSearchLogic
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->sourceTsumegoID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf']);
+		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf'], SgfBoard::decodePositionString($candidate['correct_moves'] ?? ''));
 		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'] ?? 'N';
-		$this->sourceCorrectMoves = SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? '');
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
 		$this->result->title = $set['title'];
@@ -67,9 +66,9 @@ LEFT JOIN sgf
 	private function checkCandidate($candidate): void
 	{
 		$correctMoves = SgfBoard::decodePositionString($candidate['correct_moves'] ?? '');
-		if (count($correctMoves) != count($correctMoves))
+		if (count($this->sourceBoard->correctMoves) != count($correctMoves))
 			return;
-		$board = SgfParser::process($candidate['sgf']);
+		$board = SgfParser::process($candidate['sgf'], $correctMoves);
 		$numStones = $board->getStoneCount();
 		$stoneNumberDiff = abs($numStones - $this->sourceStoneCount);
 		if ($stoneNumberDiff > $this->maxDifference)
@@ -78,10 +77,10 @@ LEFT JOIN sgf
 		$comparisonResult = BoardComparator::compare(
 			$this->sourceBoard->stones,
 			$this->sourceFirstMoveColor,
-			$this->sourceCorrectMoves,
+			$this->sourceBoard->correctMoves,
 			$board->stones,
 			$candidate['first_move_color'] ?? 'N',
-			$correctMoves);
+			$board->correctMoves);
 		if (!$comparisonResult)
 			return;
 		$this->addCandidateToResult($candidate, $comparisonResult);
@@ -114,7 +113,6 @@ LEFT JOIN sgf
 	public $maxDifference = 5;
 	public $sourceBoard;
 	public $sourceFirstMoveColor;
-	public $sourceCorrectMoves;
 	public $sourceStoneCount;
 	public SimilarSearchResult $result;
 }

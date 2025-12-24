@@ -14,7 +14,7 @@ class SgfParser
 	 * @param string $sgf
 	 * @return SgfBoard
 	 */
-	public static function process(string $sgf): SgfBoard
+	public static function process(string $sgf, $correctMoves = []): SgfBoard
 	{
 		$boardSize = self::detectBoardSize($sgf);
 		$sgfArr = str_split($sgf);
@@ -28,14 +28,14 @@ class SgfParser
 		foreach ($whiteStones as $stone)
 			$boardBounds->add($stone);
 
-		self::normalizeOrientation($blackStones, $whiteStones, $boardBounds, $boardSize);
+		self::normalizeOrientation($blackStones, $whiteStones, $correctMoves, $boardBounds, $boardSize);
 		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
 		$stones = [];
 		foreach ($blackStones as $blackStone)
 			$stones[$blackStone] = SgfBoard::BLACK;
 		foreach ($whiteStones as $whiteStone)
 			$stones[$whiteStone] = SgfBoard::WHITE;
-		return new SgfBoard($stones, $tInfo, $boardSize);
+		return new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
 	}
 
 	private static function detectBoardSize(string $sgf): int
@@ -52,18 +52,20 @@ class SgfParser
 		return (int) $size;
 	}
 
-	private static function normalizeOrientation(array &$blackStones, array &$whiteStones, BoardBounds $boardBounds, int $boardSize): void
+	private static function normalizeOrientation(array &$blackStones, array &$whiteStones, array&$correctMoves, BoardBounds $boardBounds, int $boardSize): void
 	{
 		if ($boardBounds->x->isCloserToEnd($boardSize))
 		{
 			self::xFlip($blackStones, $boardSize);
 			self::xFlip($whiteStones, $boardSize);
+			self::xFlip($correctMoves, $boardSize);
 			$boardBounds->x->flip($boardSize);
 		}
 		if ($boardBounds->y->isCloserToEnd($boardSize))
 		{
 			self::yFlip($blackStones, $boardSize);
 			self::yFlip($whiteStones, $boardSize);
+			self::yFlip($correctMoves, $boardSize);
 			$boardBounds->y->flip($boardSize);
 		}
 	}
