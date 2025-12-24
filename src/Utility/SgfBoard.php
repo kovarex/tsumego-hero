@@ -63,6 +63,22 @@ class SgfBoard
 		return $result;
 	}
 
+	public static function getStonesFlipedX($positions, $size)
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::flipX($position, $size)] = $color;
+		return $result;
+	}
+
+	public static function getStonesFlipedY($positions, $size)
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::flipY($position, $size)] = $color;
+		return $result;
+	}
+
 	public static function getDifferentStones($stonesA, $stonesB): string
 	{
 		$result = '';

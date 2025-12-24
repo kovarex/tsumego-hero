@@ -55,8 +55,8 @@ class SimilarSearchLogicTest extends CakeTestCase
 				'status' => 'S',
 				'sgf'
 				=> [
-					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[sa][sb][tb];B[tt]C[+])',
-					'correct_moves' => 'tt', // correct is in top right
+					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ra][rb][sb];B[ss]C[+])',
+					'correct_moves' => 'sa', // correct is in top right
 					'first_move_color' => 'B'
 				],
 			]]]);

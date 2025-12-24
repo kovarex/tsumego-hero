@@ -15,7 +15,7 @@ class SimilarSearchLogic
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->sourceTsumegoID]]);
 		if (!$sgf)
 			throw new NotFoundException('SGF not found');
-		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf'], SgfBoard::decodePositionString($candidate['correct_moves'] ?? ''));
+		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf'], SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? ''));
 		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'] ?? 'N';
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
