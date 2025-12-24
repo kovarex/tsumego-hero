@@ -173,14 +173,20 @@ HAVING
 		$db = ClassRegistry::init('Tsumego')->getDataSource();
 		try
 		{
-			$sgf = ClassRegistry::init('Sgf')->find('first', [
+			$masterSgf = ClassRegistry::init('Sgf')->find('first', [
+				'conditions' => ['tsumego_id' => $this->masterTsumegoID, 'accepted' => true],
+				'order' => 'id DESC'])['Sgf'];
+			$slaveSgf = ClassRegistry::init('Sgf')->find('first', [
 				'conditions' => ['tsumego_id' => $this->slaveTsumegoID, 'accepted' => true],
 				'order' => 'id DESC'])['Sgf'];
 			$oldData = [
 				'tsumego_old' => $this->slaveTsumegoID,
-				'sgf' => $sgf['sgf'],
-				'correct_moves' => $sgf['correct_moves'],
-				'first_move_color' => $sgf['first_move_color']];
+				'master_sgf' => $masterSgf['sgf'],
+				'master_correct_moves' => $masterSgf['correct_moves'],
+				'master_first_move_color' => $masterSgf['first_move_color'],
+				'slave_sgf' => $slaveSgf['sgf'],
+				'slave_correct_moves' => $slaveSgf['correct_moves'],
+				'slave_first_move_color' => $slaveSgf['first_move_color']];
 
 			$db->begin();
 			$this->mergeSlaveSetConnections();

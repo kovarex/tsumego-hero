@@ -23,10 +23,24 @@ class AdminActivity extends AppModel
 			{
 				$decoded = json_decode($adminActivity['old_value'], true);
 				if (json_last_error() !== JSON_ERROR_NONE ||
-					!is_array($decoded))
+					!is_array($decoded) ||
+					!isset($decoded['master_sgf']))
 					return 'Merged tsumego ' . $adminActivity['old_value'];
+
+				$masterCorrectMoves = SgfBoard::decodePositionString($decoded['master_correct_moves']);
+				$masterSgf = SgfParser::process($decoded['master_sgf'], $masterCorrectMoves);
+				$slaveCorrectMoves = SgfBoard::decodePositionString($decoded['slave_correct_moves']);
+				$slaveSgf = SgfParser::process($decoded['slave_sgf'], $slaveCorrectMoves);
+				$comparisonResult = BoardComparator::compare(
+					$masterSgf->stones,
+					$decoded['master_first_move_color'],
+					$masterCorrectMoves,
+					$slaveSgf->stones,
+					$decoded['slave_first_move_color'],
+					$slaveCorrectMoves);
+
 				$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
-				$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['sgf'], 'this', 'createPreviewBoard');
+				$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['slave_sgf'], 'this', 'createPreviewBoard', $comparisonResult->diff);
 				$result = 'Merged ';
 				$result .= '<a style="position: relative;" onmouseover="' . $onMouseOver . '">tsumego<span class="tooltip-box"></span></a>';
 				return $result;

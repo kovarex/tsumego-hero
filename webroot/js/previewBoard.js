@@ -54,9 +54,9 @@
 		targetContainer.appendChild(svg);
 	}
 
-	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19)
+	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff = '')
 	{
-		createBoard(target, black, white, xMax, yMax, boardSize);
+		createBoard(target, black, white, xMax, yMax, boardSize, diff);
 		hoverForPreviewBoard(target);
 	}
 
