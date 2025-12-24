@@ -34,9 +34,8 @@ class SgfParser
 		foreach ($correctMoves as $position => $color)
 			$boardBounds->add($position);
 
-		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
-
 		self::normalizeOrientation($stones, $correctMoves, $boardBounds, $boardSize);
+		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
 		return new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
 	}
 
