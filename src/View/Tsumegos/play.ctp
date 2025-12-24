@@ -304,7 +304,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<?php if($isAllowedToContribute2){ ?>
 			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
 			<?php if($isAllowedToContribute){ ?>
-			<?php if($t['Tsumego']['set_id']!=181 && $t['Tsumego']['set_id']!=191){ ?>
+			<?php if(false){ ?>
 				Edit tags
 			<?php } ?>
 			<?php } ?>
