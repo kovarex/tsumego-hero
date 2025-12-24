@@ -4,10 +4,11 @@
 	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
 </div>
 <table>
-	<thead><th>Difference</th><th>Preview</th><th>Problem</th></thead>
+	<thead><th>Difference</th><th>Preview</th><th>Merge</th></th><th>Problem</th></thead>
 	<tr>
 		<td><b>Source</b></td>
 		<td id="previewMaster"><span></span></td>
+		<td></td>
 		<td>
 			<div style="display:flex;align-items: center">
 			<?php
@@ -24,6 +25,13 @@
 			echo '<tr>';
 			echo '<td>' . $item->difference . '</td>';
 			echo '<td id="preview' . $item->tsumegoButton->setConnectionID . '"><span></span></td>';
+			echo '<td>';
+			echo '  <form action="/tsumegos/mergeFinalForm" method="post">';
+			echo '    <input type="hidden" name="master-id" id="master-id" value="' . $sourceTsumegoButton->setConnectionID . '">';
+			echo '    <input type="hidden" name="slave-id" id="slave-id" value="' . $item->tsumegoButton->setConnectionID . '">';
+			echo '    <input type="submit" value="Start merge" id="submit">';
+			echo '  </form>';
+			echo '</td>';
 			echo '<td><div style="display:flex;align-items: center">';
 			$item->tsumegoButton->render();
 			echo '&nbsp;&nbsp;';
