@@ -73,7 +73,12 @@ class TsumegoButton
 
 	public function createBoard($target, $functionName, $diff = '')
 	{
-		$sgf = SgfParser::process($this->sgf);
+		return self::createBoardFromSgf($this->sgf, $target, $functionName, $diff);
+	}
+
+	public static function createBoardFromSgf($sgf, $target, $functionName, $diff = '')
+	{
+		$sgf = SgfParser::process($sgf);
 		$black = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::BLACK))) . '\'';
 		$white = '\'' . implode("", array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::WHITE))) . '\'';
 		return $functionName . '(' . $target . ', ' . $black . ', ' . $white . ',' . $sgf->info[0] . ', ' . $sgf->info[1] . ', ' . $sgf->size . ', \'' . $diff . '\');' . PHP_EOL;
