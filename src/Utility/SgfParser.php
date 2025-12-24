@@ -31,8 +31,6 @@ class SgfParser
 		$boardBounds = new BoardBounds();
 		foreach ($stones as $position => $color)
 			$boardBounds->add($position);
-		foreach ($correctMoves as $position => $color)
-			$boardBounds->add($position);
 
 		self::normalizeOrientation($stones, $correctMoves, $boardBounds, $boardSize);
 		$tInfo = [$boardBounds->x->max, $boardBounds->y->max];
@@ -58,13 +56,15 @@ class SgfParser
 		if ($boardBounds->x->isCloserToEnd($boardSize))
 		{
 			$stones = SgfBoard::getStonesFlipedX($stones, $boardSize);
-			$correctMoves = SgfBoard::getStonesFlipedX($correctMoves, $boardSize);
+			// the correct moves are currently as after the normalisation, so
+			// they shouldn't be transferred together with the stones
+			//$correctMoves = SgfBoard::getStonesFlipedX($correctMoves, $boardSize);
 			$boardBounds->x->flip($boardSize);
 		}
 		if ($boardBounds->y->isCloserToEnd($boardSize))
 		{
 			$stones = SgfBoard::getStonesFlipedY($stones, $boardSize);
-			$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
+			//$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
 			$boardBounds->y->flip($boardSize);
 		}
 	}

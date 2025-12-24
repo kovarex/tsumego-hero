@@ -56,7 +56,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 				'sgf'
 				=> [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ra][rb][sb];B[ss]C[+])',
-					'correct_moves' => 'sa', // correct is in top right
+					'correct_moves' => 'aa', // correct moves are currently saved normalized already
 					'first_move_color' => 'B'
 				],
 			]]]);
@@ -105,7 +105,7 @@ class SimilarSearchLogicTest extends CakeTestCase
 				'sgf'
 				=> [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[bq][cq][dq][br][dr][bs][cs][ds];B[cr]C[+])',
-					'correct_moves' => 'cr', // correct is in the middle of the shape
+					'correct_moves' => 'cb', // correct is in the middle of the shape (but normalized already)
 					'first_move_color' => 'B'
 				],
 			]]]);
