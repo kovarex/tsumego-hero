@@ -1,8 +1,6 @@
 <?php
 
-namespace TestCase\Utility;
-
-class SimilarSearchLogicTest
+class SimilarSearchLogicTest extends CakeTestCase
 {
 	public function testSimilarSearchSameProblem()
 	{
@@ -41,13 +39,27 @@ class SimilarSearchLogicTest
 				'sgf' =>
 				[
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ba][bb][ab];B[aa]C[+])',
-					'correct_moves' => 'aa',
+					'correct_moves' => 'aa', // correct is in top left
 					'first_move_color' => 'B'
 				],
+			],
 			// second sgf is completely different
 			['set_order' => 2, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[de][ed][df][fd][ha][hb][hc][hd];B[aa];W[ab];B[ba]C[+])'],
-			
-			['set_order' => 3, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])']]]);
+			// third sgf is in top right corner
+			//  -+-+-+-+
+			//     X C +
+			//     X X +
+			//
+			[
+				'set_order' => 3,
+				'status' => 'S',
+				'sgf' =>
+				[
+					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[sa][sb][tb];B[tt]C[+])',
+					'correct_moves' => 'tt', // correct is in top right
+					'first_move_color' => 'B'
+				],
+			]]]);
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('findSimilarProblems');
 		$tsumegoButtons = $browser->getCssSelect('.setViewButtons1');
