@@ -9,9 +9,10 @@ class SgfBoard
 	 * @param array{int,int} $info
 	 * @param int $size
 	 */
-	public function __construct(array $stones, array $info, int $size)
+	public function __construct(array $stones, array $info, int $size, $correctMoves = [])
 	{
 		$this->stones = $stones;
+		$this->correctMoves = $correctMoves;
 		$this->info = $info;
 		$this->size = $size;
 	}
@@ -62,6 +63,22 @@ class SgfBoard
 		return $result;
 	}
 
+	public static function getStonesFlipedX($positions, $size)
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::flipX($position, $size)] = $color;
+		return $result;
+	}
+
+	public static function getStonesFlipedY($positions, $size)
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::flipY($position, $size)] = $color;
+		return $result;
+	}
+
 	public static function getDifferentStones($stonesA, $stonesB): string
 	{
 		$result = '';
@@ -84,6 +101,7 @@ class SgfBoard
 	}
 
 	public array $stones = [];
+	public array $correctMoves = [];
 	public array $info;
 	public int $size;
 
