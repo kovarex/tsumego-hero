@@ -40,6 +40,7 @@ class AdminActivity extends AppModel
 					$slaveCorrectMoves);
 
 				$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
+				$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['master_sgf'], 'this', 'createPreviewBoard');
 				$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['slave_sgf'], 'this', 'createPreviewBoard', $comparisonResult->diff);
 				$result = 'Merged ';
 				$result .= '<a style="position: relative;" onmouseover="' . $onMouseOver . '">tsumego<span class="tooltip-box"></span></a>';
