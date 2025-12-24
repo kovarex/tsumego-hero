@@ -19,7 +19,18 @@ class AdminActivity extends AppModel
 		{
 			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . $adminActivity['new_value'];
 			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . $adminActivity['old_value'];
-			case AdminActivityType::TSUMEGO_MERGE: return 'Merged tsumego ' . $adminActivity['old_value'];
+			case AdminActivityType::TSUMEGO_MERGE:
+			{
+				$decoded = json_decode($adminActivity['old_value'], true);
+				if (json_last_error() !== JSON_ERROR_NONE ||
+					!is_array($decoded))
+					return 'Merged tsumego ' . $adminActivity['old_value'];
+				$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
+				$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['sgf'], 'this', 'createPreviewBoard');
+				$result = 'Merged ';
+				$result .= '<a onmouseover="' . $onMouseOver . '">tsumego<span class="tooltip-box"></span></a>';
+				return $result;
+			}
 			default:
 				if (!empty($adminActivity['old_value']) && !empty($adminActivity['new_value']))
 					return $adminActivity['readable_type'] . ': ' . h($adminActivity['old_value']) . ' → ' . h($adminActivity['new_value']);

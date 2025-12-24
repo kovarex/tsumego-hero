@@ -173,6 +173,15 @@ HAVING
 		$db = ClassRegistry::init('Tsumego')->getDataSource();
 		try
 		{
+			$sgf = ClassRegistry::init('Sgf')->find('first', [
+				'conditions' => ['tsumego_id' => $this->slaveTsumegoID, 'accepted' => true],
+				'order' => 'id DESC'])['Sgf'];
+			$oldData = [
+				'tsumego_old' => $this->slaveTsumegoID,
+				'sgf' => $sgf['sgf'],
+				'correct_moves' => $sgf['correct_moves'],
+				'first_move_color' => $sgf['first_move_color']];
+
 			$db->begin();
 			$this->mergeSlaveSetConnections();
 			$this->mergeStatuses();
@@ -183,7 +192,11 @@ HAVING
 			$this->mergeTimeModeAttempts();
 			$this->mergeIssues();
 			ClassRegistry::init('Tsumego')->delete($this->slaveTsumegoID);
-			AdminActivityLogger::log(AdminActivityType::TSUMEGO_MERGE, $this->masterTsumegoID, null, strval($this->slaveTsumegoID));
+			AdminActivityLogger::log(
+				AdminActivityType::TSUMEGO_MERGE,
+				$this->masterTsumegoID,
+				null,
+				json_encode($oldData, JSON_UNESCAPED_UNICODE));
 			$db->commit();
 			return ['message' => 'Tsumegos merged.', 'type' => 'success'];
 		}
