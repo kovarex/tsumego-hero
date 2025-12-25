@@ -18,6 +18,7 @@ class SimilarSearchLogic
 		$this->sourceBoard = SgfParser::process($sgf['Sgf']['sgf'], SgfBoard::decodePositionString($sgf['Sgf']['correct_moves'] ?? ''));
 		$this->sourceFirstMoveColor = $sgf['Sgf']['first_move_color'] ?? 'N';
 		$this->sourceStoneCount = $this->sourceBoard->getStoneCount();
+		$this->sourceMoveCount = substr_count($sgf['Sgf']['sgf'], ';');
 		$set = ClassRegistry::init('Set')->findById($this->setConnection['set_id'])['Set'];
 		$this->result->title = $set['title'];
 	}
@@ -96,6 +97,7 @@ LEFT JOIN sgf
 		$item->difference = $comparisonResult->difference;
 		$item->diff = $comparisonResult->diff;
 		$item->title = $set['Set']['title'];
+		$item->moveCount = substr_count($candidate['sgf'], ';');
 
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $candidate['tsumego_id']]]);
 
@@ -113,6 +115,7 @@ LEFT JOIN sgf
 	public $maxDifference = 5;
 	public $sourceBoard;
 	public $sourceFirstMoveColor;
+	public int $sourceMoveCount;
 	public $sourceStoneCount;
 	public SimilarSearchResult $result;
 }

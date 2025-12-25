@@ -5,6 +5,7 @@ class SimilarSearchResultItem
 	public int $difference;
 	public string $diff;
 	public string $title;
+	public int $moveCount;
 	public TsumegoButton $tsumegoButton;
 
 	public static function compare(self $a, self $b): int

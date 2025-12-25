@@ -4,10 +4,11 @@
 	<p>Search took: <?php echo round($result->elapsed, 1); ?> seconds</p>
 </div>
 <table>
-	<thead><th>Difference</th><th>Preview</th><th>Merge</th></th><th>Problem</th></thead>
+	<thead><th>Difference</th><th>Preview</th><th>Moves</th><th>Merge</th></th><th>Problem</th></thead>
 	<tr>
 		<td><b>Source</b></td>
 		<td id="previewMaster"><span></span></td>
+		<td style="text-align:right"><?php $sourceMoveCount ?></td>
 		<td></td>
 		<td>
 			<div style="display:flex;align-items: center">
@@ -25,6 +26,7 @@
 			echo '<tr>';
 			echo '<td>' . $item->difference . '</td>';
 			echo '<td id="preview' . $item->tsumegoButton->setConnectionID . '"><span></span></td>';
+			echo '<td style="text-align:right">' . $item->moveCount . '</td>';
 			echo '<td>';
 			if (Auth::isAdmin())
 			{
