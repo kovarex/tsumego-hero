@@ -30,3 +30,4 @@ require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 require_once ROOT . '/tests/TestCase/Controller/TestCaseWithAuth.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
+register_shutdown_function(fn() => Browser::shutdown());

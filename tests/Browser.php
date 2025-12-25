@@ -63,9 +63,10 @@ class Browser
 		}
 	}
 
-	public function __destruct()
+	public static function shutdown(): void
 	{
-		$this->driver->quit();
+		if (self::$browser)
+			self::$browser->driver->quit();
 	}
 
 	public function assertNoErrors(): void
@@ -289,23 +290,22 @@ class Browser
 
 	public static function instance()
 	{
-		static $browser = null;
-		if ($browser == null)
-			$browser = new Browser();
+		if (self::$browser == null)
+			self::$browser = new Browser();
 		// Dismiss any lingering alerts from previous tests
 		try
 		{
-			$browser->driver->switchTo()->alert()->dismiss();
+			self::$browser->driver->switchTo()->alert()->dismiss();
 		}
 		catch (\Facebook\WebDriver\Exception\NoSuchAlertException $e)
 		{
 			// No alert present, that's fine
 		}
-		$browser->driver->manage()->deleteAllCookies();
-		$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
-		$browser->driver->get('about:blank'); // make sure any work is stopped
-		$browser->driver->get(Util::getMyAddress() . '/empty.php');
-		return $browser;
+		self::$browser->driver->manage()->deleteAllCookies();
+		self::$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
+		self::$browser->driver->get('about:blank'); // make sure any work is stopped
+		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
+		return self::$browser;
 	}
 
 	public function playWithResult(string $result): void
@@ -387,4 +387,5 @@ class Browser
 	}
 
 	public $driver;
+	private static ?Browser $browser = null;
 }

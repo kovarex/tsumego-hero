@@ -407,7 +407,6 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
-		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
