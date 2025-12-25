@@ -8,7 +8,7 @@
 	<tr>
 		<td><b>Source</b></td>
 		<td id="previewMaster"><span></span></td>
-		<td style="text-align:right"><?php $sourceMoveCount ?></td>
+		<td style="text-align:right"><?php echo $sourceMoveCount ?></td>
 		<td></td>
 		<td>
 			<div style="display:flex;align-items: center">
