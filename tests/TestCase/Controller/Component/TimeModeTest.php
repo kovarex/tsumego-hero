@@ -6,6 +6,7 @@ App::uses('RatingBounds', 'Utility');
 App::uses('TimeMode', 'Utility');
 
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 
 class TimeModeTest extends TestCaseWithAuth
 {
@@ -179,6 +180,7 @@ class TimeModeTest extends TestCaseWithAuth
 			$this->assertSame($nextButton->getTagName(), "input");
 			$this->assertSame($nextButton->getAttribute('value'), 'Next');
 			$nextButton->click();
+			$browser->driver->wait(10)->until(WebDriverExpectedCondition::stalenessOf($nextButton));
 		}
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
