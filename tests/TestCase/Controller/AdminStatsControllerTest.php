@@ -336,6 +336,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		// click the accept proposal button
 		$browser->clickId('accept-' . $context->tsumegos[0]['sgfs'][1]['id']);
+		$browser->waitUntilCssSelectorExistsWithText('#sgfProposalsHeader', 'SGF Proposals (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
