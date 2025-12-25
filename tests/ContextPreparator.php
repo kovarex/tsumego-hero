@@ -31,6 +31,8 @@ class ContextPreparator
 			$this->prepareThisUser(['name' => 'kovarex']);
 		else
 			$this->prepareThisUser(Util::extract('user', $options));
+
+
 		$this->prepareOtherUsers(Util::extract('other-users', $options));
 		$this->prepareSet(Util::extract('set', $options));
 		$this->prepareThisTsumego(Util::extract('tsumego', $options));
