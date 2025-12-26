@@ -16,23 +16,18 @@ class SetsViewStartButtonTest extends ControllerTestCase
 		// I'm testing the case when everything is solved, so I want to pick first 'W' problem
 		foreach (['V', 'W'] as $statusToPick)
 		{
+			$browser = Browser::instance();
 			// Create test context with multiple tsumegos in a test set
 			// First 2 are solved, 3rd is unsolved (target), 4th-5th are also unsolved
 			// Start button should link to #3 (first unsolved in middle of set)
 			$context = new ContextPreparator([
-				'tsumego' => [
-					'sets' => [['name' => 'Test Start Button Set', 'num' => '3']],
-					'status' => $statusToPick // Not solved - this should be where Start button links to
-				],
 				'tsumegos' => [
-					['sets' => [['name' => 'Test Start Button Set', 'num' => '1']], 'status' => 'S'], // Solved
-					['sets' => [['name' => 'Test Start Button Set', 'num' => '2']], 'status' => 'S'], // Solved
-					['sets' => [['name' => 'Test Start Button Set', 'num' => '4']], 'status' => $statusToPick], // Also unsolved
-					['sets' => [['name' => 'Test Start Button Set', 'num' => '5']], 'status' => $statusToPick], // Also unsolved
-				]
-			]);
-
-			$browser = Browser::instance();
+					['set_order' => 1, 'status' => 'S'], // Solved
+					['set_order' => 2, 'status' => 'S'], // Solved
+					['set_order' => 3, 'status' => $statusToPick], // Not solved - this should be where Start button links to
+					['set_order' => 4, 'status' => $statusToPick], // Also unsolved
+					['set_order' => 5, 'status' => $statusToPick], // Also unsolved
+				]]);
 
 			// 1. Open the set view page using the created set ID
 			$setId = $context->tsumegos[0]['sets'][0]['id'];
@@ -51,9 +46,13 @@ class SetsViewStartButtonTest extends ControllerTestCase
 
 			// 4. Verify we navigated to the FIRST UNSOLVED puzzle (problem #3, not #1)
 			// The URL is /{setConnectionId} (short form)
-			$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+			$setConnectionId = $context->tsumegos[2]['set-connections'][0]['id'];
 			$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
 			$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
 		}
+
+		// I have no idea why, but this test, for some reason makes test coming after this test hang on Browser::init
+		// I tried different things, but nothing worked, but completely shutting down the browser
+		Browser::shutdown();
 	}
 }
