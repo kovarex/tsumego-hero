@@ -80,6 +80,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertEquals('cd', $sgfs[0]['Sgf']['correct_moves']);
 		unlink($tmpFile);
+		Browser::shutdown();
 	}
 
 	public function testNonAdminUploadNotAccepted()
