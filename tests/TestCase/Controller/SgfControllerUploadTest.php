@@ -53,12 +53,8 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'tsumego' => [
-				'sgf' => '(;FF[4]GM[1]SZ[19]ST[2]AB[dd]AW[dc];B[cd];W[cc])',
-				'sets' => [['name' => 'Test Set', 'num' => 1]],
-				'status' => 'S']]);
+			'tsumego' => ['status' => 'S', 'set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]ST[2]AB[dd]AW[dc];B[cd];W[cc])']]);
 
-		$tsumegoID = $context->tsumegos[0]['id'];
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->clickId('show4');
 
@@ -74,7 +70,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 
 		// Verify new SGF was added
 		$sgfs = ClassRegistry::init('Sgf')->find('all', [
-			'conditions' => ['tsumego_id' => $tsumegoID],
+			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
 			'order' => 'id DESC']);
 		$this->assertEquals(2, count($sgfs), 'Should have 2 SGFs after file upload');
 		$this->assertEquals($newSgfContent, $sgfs[0]['Sgf']['sgf']);

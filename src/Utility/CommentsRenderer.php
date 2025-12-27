@@ -27,10 +27,11 @@ class CommentsRenderer
 		echo '<div class="' . $commentColor . '">';
 		echo $comment['from_name'] . ':<br>';
 		echo '</div>';
+		echo '<div id="comment_' . $comment['id'] . '"';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
-			echo $comment['message'];
+			echo '>' . $comment['message'] . '</div>';
 		else
-			echo '<div class="grey-text">[You need to solve this problem to see the comment]</div>';
+			echo ' class="grey-text">[You need to solve this problem to see the comment]</div>';
 		$date = new DateTime($comment['created']);
 		echo '</td><td class="sandboxTable2time" align="right">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</td>';
 		echo '</tr>';
@@ -60,6 +61,7 @@ SELECT
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
 	user.name as from_name,
+	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
 	set_connection.num as set_num";
