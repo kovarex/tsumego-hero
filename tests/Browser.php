@@ -66,7 +66,10 @@ class Browser
 	public static function shutdown(): void
 	{
 		if (self::$browser)
+		{
 			self::$browser->driver->quit();
+			self::$browser = null;
+		}
 	}
 
 	public function assertNoErrors(): void
