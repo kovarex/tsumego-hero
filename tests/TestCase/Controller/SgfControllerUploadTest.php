@@ -55,7 +55,7 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 			'user' => ['admin' => true],
 			'tsumego' => ['status' => 'S', 'set_order' => 1, 'sgf' => '(;FF[4]GM[1]SZ[19]ST[2]AB[dd]AW[dc];B[cd];W[cc])']]);
 
-		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('show4');
 
 		// Create temporary SGF file
