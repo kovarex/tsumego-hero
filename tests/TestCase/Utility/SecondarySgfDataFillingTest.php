@@ -4,7 +4,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 {
 	public function testFillFirstAndCorrectMoves()
 	{
-		$browser = new Browser();
+		$browser = Browser::instance();
 		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])']]);
@@ -17,7 +17,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 
 	public function testFillWhiteFirstAndMoreCorrectMoves()
 	{
-		$browser = new Browser();
+		$browser = Browser::instance();
 		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19](;W[cd])(;W[gg];B[ba]C[+])(;W[hh]C[+]))']]);
@@ -30,7 +30,7 @@ class SecondarySgfDataFillingTest extends CakeTestCase
 
 	public function testSearchSgfsToFillSecondaryDataInto()
 	{
-		$browser = new Browser();
+		$browser = Browser::instance();
 		new ContextPreparator([
 			'user' => ['admin' => true],
 			'tsumegos' => [[
