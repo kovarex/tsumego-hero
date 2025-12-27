@@ -342,7 +342,7 @@ $highestRight = 17;
 		</a>
 		<?php } ?>
 
-		<img src="/img/new_startpage/<?php echo $quote; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
+		<img src="/img/free-premium.png" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
 
 		<p class="title4">Update 30.11.2025</p>
 		<div class="new1">

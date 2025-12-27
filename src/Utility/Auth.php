@@ -79,7 +79,7 @@ class Auth
 
 	public static function hasPremium(): bool
 	{
-		return Auth::isLoggedIn() && Auth::getUser()['premium'];
+		return Auth::isLoggedIn();
 	}
 
 	public static function premiumLevel(): int
