@@ -86,6 +86,10 @@ class Browser
 		$errors = $this->driver->executeScript("return window.__jsErrors || [];");
 		$console = $this->driver->executeScript("return window.__consoleErrors || [];");
 
+		// on some special pages, like editor, we don't have the included special error reporting
+		if (is_null($errors))
+			return;
+
 		// Filter out ignored error patterns
 		$errors = array_filter($errors, fn($e) => !$this->isIgnoredError($e));
 		$console = array_filter($console, fn($c) => !$this->isIgnoredConsoleError($c));
