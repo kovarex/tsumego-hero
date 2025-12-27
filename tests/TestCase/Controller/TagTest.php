@@ -8,7 +8,7 @@ class TagTest extends ControllerTestCase
 		{
 			$context = new ContextPreparator([
 				'user' => ['admin' => $isAdmin, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-				'tsumego' => 1,
+				'tsumego' => ['set_order' => 1, 'status' => 'S'],
 				'tags' => [['name' => 'snapback']]]);
 			$browser = Browser::instance();
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
