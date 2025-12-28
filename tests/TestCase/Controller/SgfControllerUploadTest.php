@@ -45,7 +45,6 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals(1, $sgfs[0]['Sgf']['accepted'], 'Admin uploads should be auto-accepted');
 		$this->assertSame('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertSame('cd', $sgfs[0]['Sgf']['correct_moves']);
-		Browser::shutdown();
 	}
 
 	public function testUploadSgfViaFileUpload()
@@ -77,6 +76,5 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertEquals('cd', $sgfs[0]['Sgf']['correct_moves']);
 		unlink($tmpFile);
-		Browser::shutdown();
 	}
 }
