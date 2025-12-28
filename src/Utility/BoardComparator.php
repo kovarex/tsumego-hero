@@ -247,6 +247,8 @@ class BoardComparator
 			$diffColorSwitched, $aShiftedColorSwitched,
 			null, null,
 			null, null,
+			null, null,
+			null, null,
 			$diffMirrored, $aShiftedMirrored,
 			$diffMirroredColorSwitched, $aShiftedMirroredColorSwitched);
 	}
