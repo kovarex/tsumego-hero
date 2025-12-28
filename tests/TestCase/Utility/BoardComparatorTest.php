@@ -72,6 +72,7 @@ class BoardComparatorTest extends CakeTestCase
 	}
 
 	// the correct move anchors the diff, so the one stone boards will start to be different
+	// but in this case, it should be just mirror around diagonal axis
 	public function testMatchTwoPositionsWithSameRelativePositionToCorrectMove()
 	{
 		$oneStoneBoardA = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ab])');

@@ -74,4 +74,17 @@ class BoardPositionTest extends CakeTestCase
 		$this->assertSame(BoardPosition::pack(5, 2), $position3Mirrored);
 
 	}
+
+	// in some of the transformations, it is useful to support negative positions, as shifted and mirrored/transformed positions for comparisons can get out of the board
+	public function testNegativePosition()
+	{
+		$this->assertSame(3, BoardPosition::unpackX(BoardPosition::pack(3, -7)));
+		$this->assertSame(-7, BoardPosition::unpackY(BoardPosition::pack(3, -7)));
+
+		$this->assertSame(-3, BoardPosition::unpackX(BoardPosition::pack(-3, 7)));
+		$this->assertSame(7, BoardPosition::unpackY(BoardPosition::pack(-3, 7)));
+
+		$this->assertSame(-19, BoardPosition::unpackX(BoardPosition::pack(-19, -18)));
+		$this->assertSame(-18, BoardPosition::unpackY(BoardPosition::pack(-19, -18)));
+	}
 }
