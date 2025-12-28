@@ -31,11 +31,19 @@ class SgfBoard
 		return count($this->stones);
 	}
 
-	public static function getPositionsMirroredAround($positions, $pivot): array
+	public static function getPositionsMirroredAround(array $positions, int $pivot): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
 			$result[BoardPosition::mirrorAround($position, $pivot)] = $color;
+		return $result;
+	}
+
+	public static function getPositionsHorizontallyMirroredAround(array $positions, int $pivot): array
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::horizontallyMirroredAround($position, $pivot)] = $color;
 		return $result;
 	}
 
@@ -47,7 +55,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getShiftedPositions($positions, $shift): array
+	public static function getShiftedPositions(array $positions, int $shift): array
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
@@ -63,7 +71,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedX($positions, $size)
+	public static function getStonesFlipedX(array $positions, int $size)
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
@@ -71,7 +79,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getStonesFlipedY($positions, $size)
+	public static function getStonesFlipedY(array $positions, int $size)
 	{
 		$result = [];
 		foreach ($positions as $position => $color)
@@ -79,7 +87,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function getDifferentStones($stonesA, $stonesB): string
+	public static function getDifferentStones(array $stonesA, array $stonesB): string
 	{
 		$result = '';
 		foreach ($stonesA as $position => $color)
@@ -91,7 +99,7 @@ class SgfBoard
 		return $result;
 	}
 
-	public static function decodePositionString($input): array
+	public static function decodePositionString(string $input): array
 	{
 		$result = [];
 		$steps = (int) strlen($input) / 2;

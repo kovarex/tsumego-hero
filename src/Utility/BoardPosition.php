@@ -52,6 +52,13 @@ class BoardPosition
 		return BoardPosition::pack($y, $x);
 	}
 
+	public static function horizontallyMirroredAround(int $packed, $pivot): int
+	{
+		$pivotX = self::unpackX($pivot);
+		$x = $pivotX + $pivotX - BoardPosition::unpackX($packed);
+		return BoardPosition::pack($x, BoardPosition::unpackY($packed));
+	}
+
 	public static function shift(int $packed, int $shift): int
 	{
 		return $packed - $shift;
