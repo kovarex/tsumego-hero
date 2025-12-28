@@ -50,9 +50,5 @@ class SetsViewStartButtonTest extends ControllerTestCase
 			$expectedUrl = Util::getMyAddress() . '/' . $setConnectionId;
 			$this->assertSame($expectedUrl, $browser->driver->getCurrentURL(), 'Should navigate to first UNSOLVED puzzle (#3 in middle of set), not first puzzle (#1)');
 		}
-
-		// I have no idea why, but this test, for some reason makes test coming after this test hang on Browser::init
-		// I tried different things, but nothing worked, but completely shutting down the browser
-		Browser::shutdown();
 	}
 }
