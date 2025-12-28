@@ -47,6 +47,14 @@ class SgfBoard
 		return $result;
 	}
 
+	public static function getPositionsVerticallyMirroredAround(array $positions, int $pivot): array
+	{
+		$result = [];
+		foreach ($positions as $position => $color)
+			$result[BoardPosition::verticallyMirroredAround($position, $pivot)] = $color;
+		return $result;
+	}
+
 	public static function getColorSwitchedStones(array $stones): array
 	{
 		$result = [];

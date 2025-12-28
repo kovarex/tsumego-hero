@@ -35,12 +35,20 @@ class BoardComparator
 		$diffHorizontallyMirrored = null;
 		$diffHorizontallyMirroredColorSwitched = null;
 
+		$diffVerticallyMirrored = null;
+		$diffVerticallyMirroredColorSwitched = null;
+
 		$diffMirrored = null;
 		$diffMirroredColorSwitched = null;
 
 		$aShiftedColorSwitched = null;
+
 		$aShiftedHorizontallyMirrored = null;
 		$aShiftedHorizontallyMirroredColorSwitched = null;
+
+		$aShiftedVerticallyMirrored = null;
+		$aShiftedVerticallyMirroredColorSwitched = null;
+
 		$aShiftedMirrored = null;
 		$aShiftedMirroredColorSwitched = null;
 
@@ -81,6 +89,26 @@ class BoardComparator
 			}
 		}
 
+		$aCorrectMovesShiftedVerticallyMirrored = SgfBoard::getPositionsVerticallyMirroredAround($aCorrectMovesShifted, $bCorrectLowest);
+
+		if (BoardComparator::positionArraysMatch($aCorrectMovesShiftedVerticallyMirrored, $bCorrectMoves))
+		{
+			$aShiftedVerticallyMirrored = SgfBoard::getPositionsVerticallyMirroredAround($aShifted, $bCorrectLowest);
+			if ($aFirstMoveColor == 'N')
+			{
+				$diffVerticallyMirrored = BoardComparator::compareSingle($aShiftedVerticallyMirrored, $bStones);
+				$aShiftedVerticallyMirroredColorSwitched = SgfBoard::getColorSwitchedStones($aShiftedVerticallyMirrored);
+				$diffVerticallyMirroredColorSwitched = BoardComparator::compareSingle($aShiftedVerticallyMirroredColorSwitched, $bStones);
+			}
+			elseif ($aFirstMoveColor == $bFirstMoveColor)
+				$diffVerticallyMirrored = BoardComparator::compareSingle($aShiftedVerticallyMirrored, $bStones);
+			else
+			{
+				$aShiftedVerticallyMirroredColorSwitched = SgfBoard::getColorSwitchedStones($aShiftedVerticallyMirrored);
+				$diffVerticallyMirroredColorSwitched = BoardComparator::compareSingle($aShiftedVerticallyMirroredColorSwitched, $bStones);
+			}
+		}
+
 		$aCorrectMovesShiftedMirrored = SgfBoard::getPositionsMirroredAround($aCorrectMovesShifted, $bCorrectLowest);
 
 		if (BoardComparator::positionArraysMatch($aCorrectMovesShiftedMirrored, $bCorrectMoves))
@@ -107,6 +135,8 @@ class BoardComparator
 			$diffColorSwitched, $aShiftedColorSwitched,
 			$diffHorizontallyMirrored, $aShiftedHorizontallyMirrored,
 			$diffHorizontallyMirroredColorSwitched, $aShiftedHorizontallyMirroredColorSwitched,
+			$diffVerticallyMirrored, $aShiftedVerticallyMirrored,
+			$diffVerticallyMirroredColorSwitched, $aShiftedVerticallyMirroredColorSwitched,
 			$diffMirrored, $aShiftedMirrored,
 			$diffMirroredColorSwitched, $aShiftedMirroredColorSwitched);
 	}
@@ -117,6 +147,8 @@ class BoardComparator
 		?int $diffColorSwitch, ?array $aShiftedColorSwitched,
 		?int $diffHorizontallyMirrored, ?array $aShiftedHorizontallyMirrored,
 		?int $diffHorizontallyMirroredColorSwitched, ?array $aShiftedHorizontallyMirroredColorSwitched,
+		?int $diffVerticallyMirrored, ?array $aShiftedVerticallyMirrored,
+		?int $diffVerticallyMirroredColorSwitched, ?array $aShiftedVerticallyMirroredColorSwitched,
 		?int $diffMirrored, ?array $aShiftedMirrored,
 		?int $diffMirroredColorSwitch, ?array $aShiftedMirroredColorSwitched): ?BoardComparisonResult
 	{
@@ -145,15 +177,27 @@ class BoardComparator
 			$smallestDiff = $diffHorizontallyMirroredColorSwitched;
 		}
 
-		if (!is_null($diffMirrored) && $diffMirrored < $smallestDiff)
+		if (!is_null($diffVerticallyMirrored) && $diffVerticallyMirrored < $smallestDiff)
 		{
 			$indexOfSmallestDiff = 4;
+			$smallestDiff = $diffVerticallyMirrored;
+		}
+
+		if (!is_null($diffVerticallyMirroredColorSwitched) && $diffVerticallyMirroredColorSwitched < $smallestDiff)
+		{
+			$indexOfSmallestDiff = 5;
+			$smallestDiff = $diffVerticallyMirroredColorSwitched;
+		}
+
+		if (!is_null($diffMirrored) && $diffMirrored < $smallestDiff)
+		{
+			$indexOfSmallestDiff = 6;
 			$smallestDiff = $diffMirrored;
 		}
 
 		if (!is_null($diffMirroredColorSwitch) && $diffMirroredColorSwitch < $smallestDiff)
 		{
-			$indexOfSmallestDiff = 5;
+			$indexOfSmallestDiff = 7;
 			$smallestDiff = $diffMirroredColorSwitch;
 		}
 
@@ -172,8 +216,12 @@ class BoardComparator
 		if ($indexOfSmallestDiff == 3)
 			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedHorizontallyMirroredColorSwitched, $bStones));
 		if ($indexOfSmallestDiff == 4)
+			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedVerticallyMirrored, $bStones));
+		if ($indexOfSmallestDiff == 5)
+			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedVerticallyMirroredColorSwitched, $bStones));
+		if ($indexOfSmallestDiff == 6)
 			return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirrored, $bStones));
-		//if ($indexOfSmallestDiff == 5)
+		//if ($indexOfSmallestDiff == 7)
 		return new BoardComparisonResult($smallestDiff, SgfBoard::getDifferentStones($aShiftedMirroredColorSwitched, $bStones));
 	}
 
