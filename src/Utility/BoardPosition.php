@@ -4,6 +4,8 @@
 // the negative values is to support different transformations related to board comparisons
 class BoardPosition
 {
+	const ZERO = (32 << 6) + 32;
+
 	public static function pack($x, $y): int
 	{
 		return ($x + 32) << 6 | ($y + 32);
@@ -61,12 +63,12 @@ class BoardPosition
 
 	public static function shift(int $packed, int $shift): int
 	{
-		return $packed - $shift;
+		return $packed - $shift + BoardPosition::ZERO;
 	}
 
 	public static function diff(int $a, int $b): int
 	{
-		return $a - $b;
+		return $a - $b + BoardPosition::ZERO;
 	}
 
 	public static function min(int $packed, int $other): int

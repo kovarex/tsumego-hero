@@ -38,10 +38,18 @@ class BoardPositionTest extends CakeTestCase
 		$this->assertSame(15, BoardPosition::unpackY(BoardPosition::min(BoardPosition::pack(0, 15), BoardPosition::pack(1, 16))));
 	}
 
-	public function testShift()
+	public function testBoardPositionShift()
 	{
 		$this->assertSame(5, BoardPosition::unpackX(BoardPosition::shift(BoardPosition::pack(7, 8), BoardPosition::pack(2, 1))));
 		$this->assertSame(7, BoardPosition::unpackY(BoardPosition::shift(BoardPosition::pack(7, 8), BoardPosition::pack(2, 1))));
+	}
+
+	public function testBoardPositionDiff()
+	{
+		$this->assertSame(BoardPosition::pack(0, 0), BoardPosition::diff(BoardPosition::pack(7, 8), BoardPosition::pack(7, 8)));
+		$this->assertSame(BoardPosition::pack(0, -1), BoardPosition::diff(BoardPosition::pack(7, 8), BoardPosition::pack(7, 9)));
+		$this->assertSame(BoardPosition::pack(-1, 0), BoardPosition::diff(BoardPosition::pack(7, 8), BoardPosition::pack(8, 8)));
+		$this->assertSame(BoardPosition::pack(1, 1), BoardPosition::diff(BoardPosition::pack(7, 8), BoardPosition::pack(6, 7)));
 	}
 
 	public function testShiftAround()
