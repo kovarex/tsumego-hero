@@ -5,7 +5,7 @@ class TagConnectionProposalsRenderer
 	public function __construct($urlParams)
 	{
 		$this->count = ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
-		$this->page = isset($urlParams['tags_page']) ? max(1, (int) $urlParams['tags_page']) : 1;
+		$this->page = isset($urlParams['proposals_page']) ? max(1, (int) $urlParams['proposals_page']) : 1;
 		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
 		$offset = ($this->page - 1) * self::$PAGE_SIZE;
 
@@ -47,7 +47,7 @@ OFFSET $offset", [Auth::getUserID()]);
 		foreach ($this->toApprove as $index => $toApprove)
 		{
 			echo '<tr>';
-			echo '<td>' . ($index + 1) . '</td><td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' added ';
+			echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' added ';
 			echo '<a class="adminpanel-link" href="/tag_names/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
 			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a></td>';
 			echo '<td>';
