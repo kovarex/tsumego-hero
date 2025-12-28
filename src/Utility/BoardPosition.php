@@ -4,7 +4,7 @@
 // the negative values is to support different transformations related to board comparisons
 class BoardPosition
 {
-	const ZERO = (32 << 6) + 32;
+	public const ZERO = (32 << 6) + 32;
 
 	public static function pack($x, $y): int
 	{
