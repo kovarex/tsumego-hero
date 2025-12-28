@@ -34,6 +34,7 @@ FROM
 	JOIN `set` ON `set`.id = set_connection.set_id
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego.id
 WHERE tag_connection.approved = FALSE
+ORDER BY tag_connection.created, tag.id
 LIMIT " . self::$PAGE_SIZE . "
 OFFSET $offset", [Auth::getUserID()]);
 	}
