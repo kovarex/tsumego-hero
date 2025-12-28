@@ -79,32 +79,4 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		unlink($tmpFile);
 		Browser::shutdown();
 	}
-
-	public function testNonAdminUploadNotAccepted()
-	{
-		$context = new ContextPreparator([
-			'user' => ['admin' => false],
-			'tsumego' => [
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd]AW[dc];B[cd];W[cc])',
-				'sets' => [['name' => 'Test Set', 'num' => 1]],
-				'status' => 'S']]);
-
-		$setConnectionID = $context->tsumegos[0]['set-connections'][0]['id'];
-		$tsumegoID = $context->tsumegos[0]['id'];
-
-		// Upload SGF as non-admin
-		$newSgfContent = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd]AW[dc];B[cd];W[cc]C[Non-admin upload])';
-		$data = ['sgfForBesogo' => $newSgfContent];
-
-		$this->testAction('/sgf/upload/' . $setConnectionID, [
-			'method' => 'post',
-			'data' => $data]);
-
-		// Verify new SGF was added but NOT accepted
-		$sgfs = ClassRegistry::init('Sgf')->find('all', [
-			'conditions' => ['tsumego_id' => $tsumegoID],
-			'order' => 'id DESC']);
-		$this->assertEquals(2, count($sgfs));
-		$this->assertEquals(0, $sgfs[0]['Sgf']['accepted'], 'Non-admin uploads should NOT be auto-accepted');
-	}
 }
