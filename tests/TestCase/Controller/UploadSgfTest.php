@@ -35,7 +35,7 @@ class UploadSgfTest extends TestCaseWithAuth
 		// This is to avoid default first empty sgf in the history for every problem.
 		$this->assertSame(1, count($sgf));
 		$this->assertTextContains('Hello from test', $sgf[0]['Sgf']['sgf']);
-		$this->assertSame('N', $sgf[0]['Sgf']['first_move']);
+		$this->assertSame('B', $sgf[0]['Sgf']['first_move_color']);
 		$this->assertSame('', $sgf[0]['Sgf']['correct_moves']);
 	}
 
