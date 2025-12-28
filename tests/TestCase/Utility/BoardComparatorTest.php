@@ -161,4 +161,20 @@ class BoardComparatorTest extends CakeTestCase
 		$this->assertSame(0, $result->difference);
 		$this->assertSame('', $result->diff);
 	}
+
+	// the position is the same relative to the correct move, just horizontally switched
+	public function testMatch2VerticallyMirroredPositionsShowsCorrectDiff()
+	{
+		$blackIsOnTheLeftBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ac]AW[ae])');
+		$blackIsOnTheRightBoard = SgfParser::process('(;GM[1]FF[4]SZ[19]AB[ae]AW[ac][af])');
+		$result = BoardComparator::compare(
+			$blackIsOnTheLeftBoard->stones,
+			'B',
+			SgfBoard::decodePositionString('bd'),
+			$blackIsOnTheRightBoard->stones,
+			'B',
+			SgfBoard::decodePositionString('bd'));
+		$this->assertSame(1, $result->difference);
+		$this->assertSame('af', $result->diff);
+	}
 }
