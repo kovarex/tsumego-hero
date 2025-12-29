@@ -1,15 +1,14 @@
 <?php
 
-class TagConnectionProposalsRenderer
+App::uses('DataTableRenderer', 'Utility');
+
+class TagConnectionProposalsRenderer extends DataTableRenderer
 {
 	public function __construct($urlParams)
 	{
 		$this->count = ClassRegistry::init('TagConnection')->find('count', ['conditions' => ['approved' => 0]]);
-		$this->page = isset($urlParams['proposals_page']) ? max(1, (int) $urlParams['proposals_page']) : 1;
-		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
-		$offset = ($this->page - 1) * self::$PAGE_SIZE;
-
-		$this->toApprove = Util::query("
+		parent::__construct($urlParams, 'tag_connection_proposals_page', 'New Tags');
+		$this->data = Util::query("
 SELECT
 	tag_connection.id as tag_connection_id,
 	tag.id as tag_id,
@@ -36,38 +35,21 @@ FROM
 WHERE tag_connection.approved = FALSE
 ORDER BY tag_connection.created, tag.id
 LIMIT " . self::$PAGE_SIZE . "
-OFFSET $offset", [Auth::getUserID()]);
+OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function render()
+	public function renderItem($index, $item)
 	{
-		echo '<h3 style="margin:15px 0;" id="tagConnectionProposalsHeader">New Tags (' . $this->count . ')</h3>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'proposals_page');
-		echo '<table border="0">';
-		foreach ($this->toApprove as $index => $toApprove)
-		{
-			echo '<tr>';
-			echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' added ';
-			echo '<a class="adminpanel-link" href="/tags/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
-			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a></td>';
-			echo '<td>';
-			new TsumegoButton($toApprove['tsumego_id'], $toApprove['set_connection_id'], $toApprove['num'], $toApprove['status'])->render();
-			echo '</td>';
-			echo '<td>';
-			echo '<a class="new-button-default2" href="/users/acceptTagConnectionProposal/' . $toApprove['tag_connection_id'] . '" id="tag-connection-accept-' . $toApprove['tag_connection_id'] . '">Accept</a>';
-			echo '<a class="new-button-default2" href="/users/rejectTagConnectionProposal/' . $toApprove['tag_connection_id'] . '" id="tag-connection-reject-' . $toApprove['tag_connection_id'] . '">Reject</a>';
-			echo '</td>';
-			echo '<td style="font-size:13px">' . $toApprove['created'] . '</td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'proposals_page');
-		echo '<br><br><br><br><br>';
+		echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($item) . ' added ';
+		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . $item['tag_name'];
+		echo '</a> for <a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a></td>';
+		echo '<td>';
+		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+		echo '</td>';
+		echo '<td>';
+		echo '<a class="new-button-default2" href="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</a>';
+		echo '<a class="new-button-default2" href="/users/rejectTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-reject-' . $item['tag_connection_id'] . '">Reject</a>';
+		echo '</td>';
+		echo '<td style="font-size:13px">' . $item['created'] . '</td>';
 	}
-	private static $PAGE_SIZE = 100;
-
-	private $toApprove;
-	private $page;
-	private $pageCount;
-	private $count;
 }

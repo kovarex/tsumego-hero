@@ -66,7 +66,6 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		$timestamp = strtotime($item['created']);
 		$dateFormatted = date('Y-m-d H:i', $timestamp);
 
-		echo '<tr style="border-bottom:1px solid #e0e0e0;">';
 		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
@@ -83,6 +82,5 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 					<div>' . $dateFormatted . '</div>
 					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($item) . '</div>
 				</td>';
-		echo '</tr>';
 	}
 }

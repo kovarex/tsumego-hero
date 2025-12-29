@@ -13,11 +13,15 @@ class DataTableRenderer
 
 	public function render()
 	{
-		echo '<h3>' . $this->caption . ' (' . $this->count . ')</h3>';
+		echo '<h3 id="' . $this->page . '-header">' . $this->caption . ' (' . $this->count . ')</h3>';
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
 		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
 		foreach ($this->data as $index => $item)
+		{
+			echo '<tr>';
 			$this->renderItem($index, $item);
+			echo '</tr>';
+		}
 		echo '</table>';
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
 	}
