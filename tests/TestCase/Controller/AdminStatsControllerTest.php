@@ -332,15 +332,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 				'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
-		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
+		$this->assertSame('SGF Proposals (1)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('accept-' . $context->tsumegos[0]['sgfs'][1]['id']);
-		$browser->waitUntilCssSelectorExistsWithText('#sgfProposalsHeader', 'SGF Proposals (0)');
+		$browser->waitUntilCssSelectorExistsWithText('#sgf_proposals_page_header', 'SGF Proposals (0)');
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
+		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 		$this->assertSame(true, ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id'])['Sgf']['accepted']);
 
 		// checking that the accepted sgf is now used for the problem
@@ -363,14 +363,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 				'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/users/adminstats');
-		$this->assertSame('SGF Proposals (1)', $browser->find('#sgfProposalsHeader')->getText());
+		$this->assertSame('SGF Proposals (1)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('reject-' . $context->tsumegos[0]['sgfs'][1]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('SGF Proposals (0)', $browser->find('#sgfProposalsHeader')->getText());
+		$this->assertSame('SGF Proposals (0)', $browser->find('#sgf_proposals_page_header')->getText());
 
 		// the sgf is deleted
 		$this->assertEmpty(ClassRegistry::init('Sgf')->findById($context->tsumegos[0]['sgfs'][1]['id']));
@@ -383,14 +383,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser->get('/users/adminstats');
-		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
+		$this->assertSame('New Tags (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-accept-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('New Tags (0)', $browser->find('#tagConnectionProposalsHeader')->getText());
+		$this->assertSame('New Tags (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
 		$this->assertSame(1, ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id'])['TagConnection']['approved']);
 
 		// tag approval is saved in admin activities
@@ -408,14 +408,14 @@ class AdminStatsControllerTest extends ControllerTestCase
 			'user' => ['admin' => true],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
 		$browser->get('/users/adminstats');
-		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
+		$this->assertSame('New Tags (1)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// click the accept proposal button
 		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
-		$this->assertSame('New Tags (0)', $browser->find('#tagConnectionProposalsHeader')->getText());
+		$this->assertSame('New Tags (0)', $browser->find('#tag_connection_proposals_page_header')->getText());
 
 		// the tag is deleted
 		$this->assertEmpty(ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']));

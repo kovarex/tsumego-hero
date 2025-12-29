@@ -1365,7 +1365,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		?>
 			$("#showx6").attr("href", "<?php echo '/sgfs/view/'.$t['Tsumego']['id']; ?>");
 		<?php } ?>
-		$("#showx8").attr("href", "<?php echo '/users/tsumego_rating_graph/'.$t['Tsumego']['id']; ?>");
+		$("#showx8").attr("href", "<?php echo '/tsumegos/history/'.$setConnection['SetConnection']['id']; ?>");
 		$("#showx4").css("display", "inline-block");
 		$("#show4").css("display", "inline-block");
 		$("#show5").css("display", "inline-block");

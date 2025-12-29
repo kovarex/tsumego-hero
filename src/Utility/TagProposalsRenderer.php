@@ -1,15 +1,14 @@
 <?php
 
-class TagProposalsRenderer
+App::uses('DataTableRenderer', 'Utility');
+
+class TagProposalsRenderer extends DataTableRenderer
 {
 	public function __construct($urlParams)
 	{
-		// Get total count of proposals
 		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
-		$this->page = isset($urlParams['tag_proposals_page']) ? max(1, (int) $urlParams['tag_proposals_page']) : 1;
-		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
-		$offset = ($this->page - 1) * self::$PAGE_SIZE;
-		$this->toApprove = Util::query("
+		parent::__construct($urlParams, 'tag_proposals_page', 'Tag proposals');
+		$this->data = Util::query("
 SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
@@ -21,32 +20,15 @@ FROM
 	JOIN user ON user.id = tag.user_id
 WHERE approved = 0
 LIMIT " . self::$PAGE_SIZE . "
-OFFSET " . $offset);
+OFFSET " . $this->offset);
 	}
 
-	public function render()
+	public function renderItem(int $index, array $item): void
 	{
-		echo '<h3 style="margin:15px 0;" id="sgfProposalsHeader">Tag names (' . $this->count . ')</h3>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'tag_proposals_page');
-		echo '<table border="0">';
-		foreach ($this->toApprove as $toApprove)
-		{
-			echo '<tr>';
-			echo '<td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' made a proposal for <a href="/tags/view' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'] . '</a>:</td>';
-			echo '<a class="new-button-default2" href="/tags/acceptTagProposal/' . $toApprove['tag_id'] . '" id="tag-accept-' . $toApprove['tag_id'] . '">Accept</a>';
-			echo '<a class="new-button-default2" href="/tags/rejectTagProposal/' . $toApprove['tag_id'] . '" id="tag-reject-' . $toApprove['tag_id'] . '">Reject</a>';
-			echo '</td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'proposals_page');
-		echo '<hr>';
+		echo '<td class="adminpanel-table-text">' . User::renderLink($item) . ' made a proposal for <a href="/tags/view' . $item['tag_id'] . '">' . $item['tag_name'] . '</a>:</td>';
+		echo '<td>';
+		echo '<a class="new-button-default2" href="/tags/acceptTagProposal/' . $item['tag_id'] . '" id="tag-accept-' . $item['tag_id'] . '">Accept</a>';
+		echo '<a class="new-button-default2" href="/tags/rejectTagProposal/' . $item['tag_id'] . '" id="tag-reject-' . $item['tag_id'] . '">Reject</a>';
+		echo '</td>';
 	}
-
-	private static $PAGE_SIZE = 100;
-
-	private $toApprove;
-	private $page;
-	private $pageCount;
-	private $count;
 }

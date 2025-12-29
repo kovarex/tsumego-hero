@@ -589,4 +589,30 @@ class TsumegosController extends AppController
 		ClassRegistry::init("Sgf")->save($sgf);
 		return $this->redirect('/' . $setConnectionID);
 	}
+
+	public function history($setConnectionID)
+	{
+		$setConnection = ClassRegistry::init("SetConnection")->findById($setConnectionID);
+		if (!$setConnection)
+		{
+			CookieFlash::set('Specified set connection not found', 'error');
+			return $this->redirect('/sets');
+		}
+
+		$setConnection = $setConnection['SetConnection'];
+		$tsumegoID = $setConnection['tsumego_id'];
+
+		$dailyResults = Util::query("
+			SELECT
+				DATE(created) AS day,
+				MAX(user_rating) AS Rating
+			FROM tsumego_attempt
+			WHERE tsumego_id = :tsumego_id
+			GROUP BY DATE(created)
+			ORDER BY day ASC
+		", ['tsumego_id' => $tsumegoID]);
+		$this->set('dailyResults', $dailyResults);
+		$this->set('setConnection', $setConnection);
+		$this->set('set', ClassRegistry::init("Set")->findById($setConnection['set_id'])['Set']);
+	}
 }

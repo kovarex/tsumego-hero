@@ -1,16 +1,14 @@
 <?php
 
-class SGFProposalsRenderer
+App::uses('DataTableRenderer', 'Utility');
+
+class SGFProposalsRenderer extends DataTableRenderer
 {
 	public function __construct($urlParams)
 	{
-		// Get total count of proposals
 		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
-		$this->page = isset($urlParams['proposals_page']) ? max(1, (int) $urlParams['proposals_page']) : 1;
-		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
-		$offset = ($this->page - 1) * self::$PAGE_SIZE;
-
-		$this->toApprove = Util::query("
+		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
+		$this->data = Util::query("
 SELECT
     p.tsumego_id as tsumego_id,
     a.latest_accepted_id AS latest_accepted_id,
@@ -34,40 +32,22 @@ JOIN `set` ON `set`.id = set_connection.set_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
 WHERE p.accepted = FALSE
 LIMIT " . self::$PAGE_SIZE . "
-OFFSET $offset", [Auth::getUserID()]);
+OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function render()
+	public function renderItem(int $index, array $item): void
 	{
-		echo '<h3 style="margin:15px 0;" id="sgfProposalsHeader">SGF Proposals (' . $this->count . ')</h3>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'proposals_page');
-		echo '<table border="0">';
-		foreach ($this->toApprove as $toApprove)
-		{
-			echo '<tr>';
-			echo '<td class="adminpanel-table-text">' . $toApprove['user_name'] . ' made a proposal for <a class="adminpanel-link" href="/'
-			. $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a>:</td>';
-			echo '<td>';
-			echo '<a href="/editor/?sgfID=' . $toApprove['latest_accepted_id'] . '">current</a> |
-				<a href="/editor/?sgfID=' . $toApprove['proposed_id'] . '">proposal</a> |
-				<a href="/editor/?sgfID=' . $toApprove['proposed_id'] . '&diffID=' . $toApprove['latest_accepted_id'] . '">diff</a>';
-			echo '</td>';
-			echo '<td>';
-			new TsumegoButton($toApprove['tsumego_id'], $toApprove['set_connection_id'], $toApprove['num'], $toApprove['status'])->render();
-			echo '<td><a class="new-button-default2" href="/users/acceptSGFProposal/'
-				. $toApprove['proposed_id'] . '" id="accept-' . $toApprove['proposed_id'] . '">Accept</a>
-				<a class="new-button-default2" href="/users/rejectSGFProposal/' . $toApprove['proposed_id'] . '" id="reject-' . $toApprove['proposed_id'] . '">Reject</a></td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'proposals_page');
-		echo '<hr>';
+		echo '<td class="adminpanel-table-text">' . $item['user_name'] . ' made a proposal for <a class="adminpanel-link" href="/'
+		. $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a>:</td>';
+		echo '<td>';
+		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> |
+			<a href="/editor/?sgfID=' . $item['proposed_id'] . '">proposal</a> |
+			<a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
+		echo '</td>';
+		echo '<td>';
+		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+		echo '<td><a class="new-button-default2" href="/users/acceptSGFProposal/'
+			. $item['proposed_id'] . '" id="accept-' . $item['proposed_id'] . '">Accept</a>
+			<a class="new-button-default2" href="/users/rejectSGFProposal/' . $item['proposed_id'] . '" id="reject-' . $item['proposed_id'] . '">Reject</a></td>';
 	}
-
-	private static $PAGE_SIZE = 100;
-
-	private $toApprove;
-	private $page;
-	private $pageCount;
-	private $count;
 }

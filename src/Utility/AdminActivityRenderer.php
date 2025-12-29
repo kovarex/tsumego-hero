@@ -1,15 +1,13 @@
 <?php
 
-class AdminActivityRenderer
+App::uses('DataTableRenderer', 'Utility');
+
+class AdminActivityRenderer extends DataTableRenderer
 {
 	public function __construct($urlParams)
 	{
-		// Get total count of proposals
 		$this->count = Util::query("SELECT COUNT(*) as total FROM admin_activity")[0]['total'];
-		$this->page = isset($urlParams['activity_page']) ? max(1, (int) $urlParams['activity_page']) : 1;
-		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
-		$offset = ($this->page - 1) * self::$PAGE_SIZE;
-
+		parent::__construct($urlParams, 'activity_page', 'Admin Activity');
 		$this->data = Util::query("
 SELECT
 	admin_activity.created AS created,
@@ -59,47 +57,30 @@ FROM
 	   AND tsumego_status.tsumego_id = tsumego.id
 ORDER BY admin_activity.id DESC
 LIMIT " . self::$PAGE_SIZE . "
-OFFSET $offset", [Auth::getUserID()]);
+OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function render()
+	public function renderItem(int $index, array $item): void
 	{
-		echo '<h3>Admin Activity (' . $this->count . ')</h3>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'activity_page');
-		echo '<table border="0" class="statsTable" style="border-collapse:collapse;">';
-		foreach ($this->data as $index => $adminActivity)
-		{
-			// Format date without seconds
-			$timestamp = strtotime($adminActivity['created']);
-			$dateFormatted = date('Y-m-d H:i', $timestamp);
+		// Format date without seconds
+		$timestamp = strtotime($item['created']);
+		$dateFormatted = date('Y-m-d H:i', $timestamp);
 
-			echo '<tr style="border-bottom:1px solid #e0e0e0;">';
-			echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
-			echo '<td>';
-			if ($adminActivity['set_connection_id'])
-				new TsumegoButton($adminActivity['tsumego_id'], $adminActivity['set_connection_id'], $adminActivity['num'], $adminActivity['status'])->render();
-			echo '</td>';
-			echo '<td>';
-			if ($adminActivity['set_connection_id'])
-				echo '<a href="/' . $adminActivity['set_connection_id'] . '">' . $adminActivity['set_title'] . ' - ' . $adminActivity['num'] . '</a>';
-			else
-				echo '(Set-wide)';
-			echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($adminActivity) . '</div>
+		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
+		echo '<td>';
+		if ($item['set_connection_id'])
+			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+		echo '</td>';
+		echo '<td>';
+		if ($item['set_connection_id'])
+			echo '<a href="/' . $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a>';
+		else
+			echo '(Set-wide)';
+		echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($item) . '</div>
 				</td>
 				<td>
 					<div>' . $dateFormatted . '</div>
-					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($adminActivity) . '</div>
+					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($item) . '</div>
 				</td>';
-			echo '</tr>';
-		}
-		echo '</table>';
-		echo PaginationHelper::render($this->page, $this->pageCount, 'activity_page');
 	}
-
-	private static $PAGE_SIZE = 100;
-
-	private $data;
-	private $page;
-	private $pageCount;
-	private $count;
 }
