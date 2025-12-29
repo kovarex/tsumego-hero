@@ -3,6 +3,8 @@ require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
 require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 ?>
 
+<?php TimeGraphRenderer::renderScriptInclude(); ?>
+
 <div class="homeCenter2">
 	<div class="user-header-container">
 		<div class="user-header1">
@@ -211,7 +213,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<?php
-function showStatistics($side, $as, $user)
+function showStatistics($side, $as, $user, $dailyResults)
 {
 	echo '
 		<td width="50%">
@@ -221,9 +223,9 @@ function showStatistics($side, $as, $user)
 				</div>
 			</div>
 			<div id="userShowRating' . $side . '">
-				<div id="chartContainer">
-					<div id="chart-rating-' . $side . '"></div>
-				</div>
+				<div id="chartContainer">';
+	TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
+	echo '</div>
 				<div align="center">
 					<a href="/users/solveHistory/' .$user['User']['id'] . '">Show solve history</a>
 				</div>
@@ -270,8 +272,8 @@ function showStatistics($side, $as, $user)
 	</td>
 <?php
 }
-showStatistics('Left', $as, $user);
-showStatistics('Right', $as, $user); ?>
+showStatistics('Left', $as, $user, $dailyResults);
+showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>
 	<div width="100%" align="right">
 		<?php
@@ -334,7 +336,6 @@ function delUts(){
 		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
 }
 </script>
-TimeGraphRenderer::renderScriptInclude();
 <script>
 <?php
 	foreach (['Left', 'Right'] as $side)
@@ -349,7 +350,6 @@ TimeGraphRenderer::renderScriptInclude();
 			$dailyResults,
 			'day',
 			true /* reverseOrder*/);
-		TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
 		ValueGraphRenderer::render(
 			'Time mode runs',
 			'chart-time-' . $side,
