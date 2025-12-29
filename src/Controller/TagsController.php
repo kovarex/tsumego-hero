@@ -242,38 +242,36 @@ class TagsController extends AppController
 		$this->set('list', $list);
 	}
 
-	/**
-	 * @param string|int|null $id Tag name ID
-	 * @return void
-	 */
-	public function edit($id = null)
+	public function edit($tagID): ?CakeResponse
 	{
-		$tn = $this->Tag->findById($id);
-		if (isset($this->data['Tag']))
+		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tag)
 		{
-			$tn['Tag']['description'] = $this->data['Tag']['description'];
-			$tn['Tag']['hint'] = $this->data['Tag']['hint'];
-			$tn['Tag']['link'] = $this->data['Tag']['link'];
-			$this->Tag->save($tn);
-			$this->set('saved', $tn['Tag']['id']);
-		}
-		$setHint = [];
-		if ($tn['Tag']['hint'] == 1)
-		{
-			$setHint[0] = 'checked="checked"';
-			$setHint[1] = '';
-		}
-		else
-		{
-			$setHint[0] = '';
-			$setHint[1] = 'checked="checked"';
+			CookieFlash::set('Tag to edit not found.', 'error');
+			return $this->redirect('/users/adminstats');
 		}
 
-		$allTags = $this->getAllTags();
+		$this->set('allTags', $this->getAllTags());
+		$this->set('tag', $tag['Tag']);
+		return null;
+	}
 
-		$this->set('allTags', $allTags);
-		$this->set('setHint', $setHint);
-		$this->set('tn', $tn);
+	public function editAction($tagID)
+	{
+		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tag)
+		{
+			CookieFlash::set('Tag to edit not found.');
+			$this->redirect('/users/adminstats');
+		}
+
+		$tag = $tag['Tag'];
+
+		$tag['description'] = $this->data['tag_description'];
+		$tag['hint'] = $this->data['tag_hint'];
+		$tag['link'] = $this->data['tag_link'];
+		ClassRegistry::init('Tag')->save($tag);
+		return $this->redirect('/tags/view/' . $tagID);
 	}
 
 	/**

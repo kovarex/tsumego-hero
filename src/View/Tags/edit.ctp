@@ -1,43 +1,40 @@
-<?php if(!Auth::isLoggedIn() || !Auth::isAdmin())
-		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
-<?php if(isset($saved)) echo '<script type="text/javascript">window.location.href = "/tags/view/'.$saved.'";</script>'; ?>
-
 <div class="tags-container">
 <div class="tags-content">
 
-<h1>Edit Tag: <?php echo $tn['Tag']['name'] ?></h1>
+<h1>Edit Tag: <?php echo $tag['name'] ?></h1>
 
-<?php echo $this->Form->create('Tag'); ?>
-
-<table>
-	<tr>
-		<td><label for="TagNameName">Name:</label></td>
-		<td><input name="data[TagName][name]" value="<?php echo $tn['Tag']['name'] ?>" placeholder="Name" maxlength="50" type="text" id="TagNameName" disabled="true"></td>
-	</tr>
-	<tr>
-		<td><label for="tag_description">Description:</label></td>
-		<td><textarea name="tag_description" rows="3" placeholder="Description" maxlength="3000" cols="30" id="tag_description"><?php echo $tn['Tag']['description'] ?></textarea></td>
-	</tr>
-	<tr>
-		<td><label for="TagNameLink">Reference:</label></td>
-		<td><input name="data[TagName][link]" value="<?php echo $tn['Tag']['link'] ?>" placeholder="Reference" maxlength="500" type="text" id="TagNameLink"></td>
-	</tr>
-</table>
+<form method="post" action="/tags/editAction/<?php echo $tag['id'] ?>">
+	<table>
+		<tr>
+			<td><label for="tag_name">Name:</label></td>
+			<td><input name="tag_name" value="<?php echo $tag['name'] ?>" placeholder="Name" maxlength="50" type="text" id="tag_name" disabled="true"></td>
+		</tr>
+		<tr>
+			<td><label for="tag_description">Description:</label></td>
+			<td><textarea name="tag_description" rows="3" placeholder="Description" maxlength="3000" cols="30" id="tag_description"><?php echo $tag['description'] ?></textarea></td>
+		</tr>
+		<tr>
+			<td><label for="tag_link">Reference:</label></td>
+			<td><input name="tag_link" value="<?php echo $tag['link'] ?>" placeholder="Reference" maxlength="500" type="text" id="tag_link"></td>
+		</tr>
+	</table>
 	<br>
-Does the tag give a hint on the solution?<br>
-<input type="radio" id="r38" name="data[TagName][hint]" value="1" <?php echo $setHint[0] ?>><label for="r38">yes</label>
-<input type="radio" id="r38" name="data[TagName][hint]" value="0" <?php echo $setHint[1] ?>><label for="r38">no</label><br><br>
-
-<?php echo $this->Form->end('Save'); ?>
+	Does the tag give a hint on the solution?<br>
+	<input type="radio" id="tag_hint_true" name="tag_hint" value="1"<?php echo $tag['hint'] ? ' checked="checked"' : ''; ?>><label for="tag_hint_true">yes</label>
+	<input type="radio" id="tag_hint_false" name="tag_hint" value="0"<?php echo $tag['hint'] ? '' : ' checked="checked"'; ?>><label for="tag_hint_false">no</label><br><br>
+	<br><br>
+	<input type="submit" value="submit" id="submit_tag">
+</form>
 
 <br> <br><br> <br><br> <br>
 </div>
 	<div class="existing-tags-list">
 		Other tags:
 		<?php
-			for($i=0;$i<count($allTags)-1;$i++){
-				echo '<a href="/tags/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
-				if($i<count($allTags)-2)
+			foreach ($tags as $index => $tag)
+			{
+				echo '<a href="/tags/view/' . $tag['id'] . '">' . $tag['name'] . '</a>';
+				if ($index < count($tags) - 2)
 					echo ', ';
 			}
 		?> <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>

@@ -489,6 +489,7 @@ class ContextPreparator
 			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
 			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
 			$tag['user_id'] = $this->user['id'];
+			$tag['description'] = Util::extract('description', $tagInput);
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);

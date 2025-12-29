@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverKeys;
+
 class TagTest extends ControllerTestCase
 {
 	public function testAddTagConnection()
@@ -492,9 +494,50 @@ class TagTest extends ControllerTestCase
 	public function testEditTag()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback']]]);
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
 		$browser->get('/tags/view/' . $context->tags[0]['id']);
 		$browser->clickId('tag-edit');
+		$browser->clickId('tag_description');
+		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
+		$browser->driver->getKeyboard()->sendKeys('World');
 
+		$browser->clickId('tag_link');
+		$browser->driver->getKeyboard()->sendKeys('bla.example.com');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame('World', $tag['description']);
+		$this->assertSame('bla.example.com', $tag['link']);
+		$this->assertSame(0, $tag['hint']); // hint value was not touched
+	}
+
+	public function testEditTagEnableHint()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$browser->clickId('tag_hint_true');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(1, $tag['hint']); // hint value was not touched
+	}
+
+	public function testEditTagDisableHint()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello', 'is_hint' => true]]]);
+		$this->assertSame(1, $context->tags[0]['hint']);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$browser->clickId('tag_hint_false');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(0, $tag['hint']); // hint value was not touched
 	}
 }
