@@ -498,6 +498,8 @@ class ContextPreparator
 		}
 		else
 		{
+			Util::extract('description', $tagInput);
+			Util::extract('approved', $tagInput);
 			Util::extract('popular', $tagInput);
 			Util::extract('is_hint', $tagInput);
 		}
