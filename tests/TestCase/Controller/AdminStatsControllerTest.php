@@ -411,7 +411,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertSame('New Tags (1)', $browser->find('#tagConnectionProposalsHeader')->getText());
 
 		// click the accept proposal button
-		$browser->clickId('tag-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
+		$browser->clickId('tag-connection-reject-' . $context->tsumegos[0]['tag-connections'][0]['id']);
 
 		// we got redirected back to adminstats, the proposal shouldn't be visible anymore
 		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
