@@ -53,8 +53,7 @@ class ContextPreparator
 	{
 		if (!count($options))
 			return;
-		debug_print_backtrace();
-		die("Option " . implode(",", array_keys($options)) . " not recognized\n.");
+		throw new Exception("Option " . implode(",", array_keys($options)) . " not recognized.");
 	}
 
 	private function prepareThisUser(?array $user): void
