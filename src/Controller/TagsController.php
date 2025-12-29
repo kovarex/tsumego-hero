@@ -30,7 +30,7 @@ class TagsController extends AppController
 		$tag['hint'] = $this->data['tag_hint'];
 		$tag['link'] = $this->data['tag_reference'];
 		$tag['user_id'] = Auth::getUserID();
-		$tag['approved'] = Auth::isAdmin();
+		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('Tag')->save($tag);
 		$saved = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]])['Tag'];
 

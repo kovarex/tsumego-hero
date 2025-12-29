@@ -445,4 +445,26 @@ class TagTest extends ControllerTestCase
 			$this->assertSame($tagAdded['approved'], 1);
 		}
 	}
+
+	public function testAddNewTagAsNonAdmin()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+
+		$browser->clickId('open-add-tag-menu');
+		$browser->clickId('open-more-tags');
+		$browser->clickId('create-new-tag');
+
+		$browser->clickId('tag_name');
+		$browser->driver->getKeyboard()->sendKeys('self atari');
+		$browser->clickId('submit_tag');
+
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
+		$this->assertSame($tagAdded['name'], 'self atari');
+		$this->assertSame($tagAdded['approved'], 0);
+	}
 }
