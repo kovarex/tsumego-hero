@@ -7,7 +7,7 @@ class SGFProposalsRenderer extends DataTableRenderer
 	public function __construct($urlParams)
 	{
 		$this->count = Util::query("SELECT COUNT(DISTINCT tsumego_id) as total FROM sgf WHERE accepted = false")[0]['total'];
-		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF proposals');
+		parent::__construct($urlParams, 'sgf_proposals_page', 'SGF Proposals');
 		$this->data = Util::query("
 SELECT
     p.tsumego_id as tsumego_id,
