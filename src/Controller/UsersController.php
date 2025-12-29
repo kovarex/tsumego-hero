@@ -333,7 +333,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tag');
 
 		if (Auth::isAdmin())
-		{
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{
 				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
@@ -351,7 +350,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					echo '</pre>';
 				}
 			}
-		}
 
 		// Pagination setup
 		$perPage = 100;

@@ -549,7 +549,7 @@ class TagTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback', 'approved' => 1]]]);
 		$browser->get('tags/user/' . $context->user['id']);
 		$browser->checkTable('.highscoreTable', $this, [
-		['Action', 'Status', 'Timestamp'],
-		[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
+			['Action', 'Status', 'Timestamp'],
+			[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
 	}
 }
