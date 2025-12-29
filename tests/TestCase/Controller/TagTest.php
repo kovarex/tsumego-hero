@@ -413,20 +413,34 @@ class TagTest extends ControllerTestCase
 
 	public function testAddNewTagAsAdmin()
 	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
-		$browser->get('/' . $context->setConnections[0]['id']);
+		foreach ([false, true] as $isHint)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+			$browser->get('/' . $context->setConnections[0]['id']);
 
-		$browser->clickId('open-add-tag-menu');
-		$browser->clickId('open-more-tags');
-		$browser->clickId('create-new-tag');
+			$browser->clickId('open-add-tag-menu');
+			$browser->clickId('open-more-tags');
+			$browser->clickId('create-new-tag');
 
-		$browser->clickId('tag_name');
-		$browser->driver->getKeyboard()->sendKeys('atari');
-		$browser->clickId('submit_tag');
+			$browser->clickId('tag_name');
+			$browser->driver->getKeyboard()->sendKeys('atari');
+			$browser->clickId('tag_description');
+			$browser->driver->getKeyboard()->sendKeys('Not the console, which is named by this by the way.');
+			$browser->clickId('tag_reference');
+			$browser->driver->getKeyboard()->sendKeys('tag.example.com');
+			if ($isHint)
+				$browser->clickId('tag_hint_true');
+			else
+				$browser->clickId('tag_hint_false');
+			$browser->clickId('submit_tag');
 
-		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
-		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
-		$this->assertSame($tagAdded['name'], 'atari');
+			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
+			$this->assertSame($tagAdded['name'], 'atari');
+			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
+			$this->assertSame($tagAdded['link'], 'tag.example.com');
+			$this->assertSame($tagAdded['hint'], $isHint ? 1 : 0);
+		}
 	}
 }
