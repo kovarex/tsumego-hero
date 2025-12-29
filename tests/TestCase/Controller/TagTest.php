@@ -540,4 +540,16 @@ class TagTest extends ControllerTestCase
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame(0, $tag['hint']); // hint value was not touched
 	}
+
+	public function testTagContributionsView()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'approved' => 1]]]);
+		$browser->get('tags/user/' . $context->user['id']);
+		$browser->checkTable('.highscoreTable', $this, [
+		['Action', 'Status', 'Timestamp'],
+		[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
+	}
 }
