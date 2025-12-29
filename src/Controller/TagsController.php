@@ -300,9 +300,61 @@ class TagsController extends AppController
 		$this->set('tn', $tn);
 	}
 
-	/**
-	 * @return void
-	 */
 	public function index() {}
 
+	public function acceptTagProposal($tagID): CakeResponse
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
+		$tagToApprove = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tagToApprove)
+		{
+			CookieFlash::set('Tag to approve not found', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$tagToApprove = $tagToApprove['Tag'];
+
+		if ($tagToApprove['Tag']['approved'] == 1)
+		{
+			CookieFlash::set('Tag to approve was already approved', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		$tagToApprove['approved'] = '1';
+		ClassRegistry::init('Tag')->save($tagToApprove);
+		AppController::handleContribution($tagToApprove['user_id'], 'created_tag');
+		CookieFlash::set('Tag ' . $tagToApprove['name'] . ' was approved', 'success');
+		return $this->redirect('/users/adminstats');
+	}
+
+	public function rejectTagProposal($tagID): CakeResponse
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
+		$tagToReject = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tagToReject)
+		{
+			CookieFlash::set('Tag to approve not found', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$tagToReject = $tagToReject['Tag'];
+
+		if ($tagToReject['Tag']['approved'] == 1)
+		{
+			CookieFlash::set('Tag to reject was already approved', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+
+		ClassRegistry::init('Tag')->delete($tagToReject);
+
+		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
+		return $this->redirect('/users/adminstats');
+	}
 }

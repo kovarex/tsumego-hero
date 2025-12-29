@@ -467,4 +467,24 @@ class TagTest extends ControllerTestCase
 		$this->assertSame($tagAdded['name'], 'self atari');
 		$this->assertSame($tagAdded['approved'], 0);
 	}
+
+	public function testApproveNewTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
+		$browser->get('users/adminstats');
+		$browser->clickId('tag-accept-' . $context->tags[0]['id']);
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame($tagAdded['approved'], 1);
+	}
+
+	public function testRejectNewTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
+		$browser->get('users/adminstats');
+		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertNull($tagAdded);
+	}
 }
