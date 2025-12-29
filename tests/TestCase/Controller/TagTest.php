@@ -441,6 +441,8 @@ class TagTest extends ControllerTestCase
 			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
 			$this->assertSame($tagAdded['link'], 'tag.example.com');
 			$this->assertSame($tagAdded['hint'], $isHint ? 1 : 0);
+			$this->assertSame($tagAdded['user_id'], Auth::getUserID());
+			$this->assertSame($tagAdded['approved'], 1);
 		}
 	}
 }
