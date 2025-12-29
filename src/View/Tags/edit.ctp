@@ -30,13 +30,7 @@
 </div>
 	<div class="existing-tags-list">
 		Other tags:
-		<?php
-			foreach ($tags as $index => $tag)
-			{
-				echo '<a href="/tags/view/' . $tag['id'] . '">' . $tag['name'] . '</a>';
-				if ($index < count($tags) - 2)
-					echo ', ';
-			}
-		?> <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
+		<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['id'] . '">' . $tag['name'] . '</a>', $allTags)); ?>
+		<a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
 	</div>
 </div>
