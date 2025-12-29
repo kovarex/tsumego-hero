@@ -35,7 +35,7 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function renderItem($index, $item)
+	public function renderItem(int $index, array $item): void
 	{
 		echo '<td class="adminpanel-table-text">' . $item['user_name'] . ' made a proposal for <a class="adminpanel-link" href="/'
 		. $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a>:</td>';

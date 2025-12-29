@@ -23,7 +23,7 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset);
 	}
 
-	public function renderItem($index, $item)
+	public function renderItem(int $index, array $item): void
 	{
 		echo '<td class="adminpanel-table-text">' . User::renderLink($item) . ' made a proposal for <a href="/tags/view' . $item['tag_id'] . '">' . $item['tag_name'] . '</a>:</td>';
 		echo '<td>';

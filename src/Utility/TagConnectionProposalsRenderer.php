@@ -38,7 +38,7 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function renderItem($index, $item)
+	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($item) . ' added ';
 		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . $item['tag_name'];

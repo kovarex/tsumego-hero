@@ -62,7 +62,7 @@ chart.render();";
 
 	// this is weird, why do we include 3rd party js, we should just put the js on our site
 	// instead of depending on availability of theirs
-	static public function renderScriptInclude()
+	public static function renderScriptInclude()
 	{
 		echo '
 <script>
@@ -80,5 +80,5 @@ document.write(
 )
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>';
-		}
+	}
 }

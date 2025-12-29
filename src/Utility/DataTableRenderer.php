@@ -1,13 +1,13 @@
 <?php
 
-class DataTableRenderer
+abstract class DataTableRenderer
 {
 	public function __construct($urlParams, $name, $caption)
 	{
 		$this->name = $name;
 		$this->caption = $caption;
 		$this->page = isset($urlParams[$this->name]) ? max(1, (int) $urlParams[$this->name]) : 1;
-		$this->pageCount = ceil($this->count / self::$PAGE_SIZE);
+		$this->pageCount = intval(ceil($this->count / self::$PAGE_SIZE));
 		$this->offset = ($this->page - 1) * self::$PAGE_SIZE;
 	}
 
@@ -25,6 +25,8 @@ class DataTableRenderer
 		echo '</table>';
 		echo PaginationHelper::render($this->page, $this->pageCount, $this->name);
 	}
+
+	abstract protected function renderItem(int $index, array $item): void;
 
 	protected string $name;
 	protected string $caption;

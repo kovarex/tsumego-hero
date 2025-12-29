@@ -60,7 +60,7 @@ LIMIT " . self::$PAGE_SIZE . "
 OFFSET " . $this->offset, [Auth::getUserID()]);
 	}
 
-	public function renderItem($index, $item)
+	public function renderItem(int $index, array $item): void
 	{
 		// Format date without seconds
 		$timestamp = strtotime($item['created']);
