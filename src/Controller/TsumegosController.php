@@ -612,5 +612,7 @@ class TsumegosController extends AppController
 			ORDER BY day ASC
 		", ['tsumego_id' => $tsumegoID]);
 		$this->set('dailyResults', $dailyResults);
+		$this->set('setConnection', $setConnection);
+		$this->set('set', ClassRegistry::init("Set")->findById($setConnection['set_id'])['Set']);
 	}
 }
