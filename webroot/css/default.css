@@ -7734,3 +7734,14 @@ body.dark-theme .btn--warning {
 	width:310px;
 	height:205px;
 }
+
+.timeGraph
+{
+	max-width: 650px;
+	margin: 12px auto;
+	padding-top: 20px;
+	padding-left: 10px;
+	background: #fff;
+	border: 1px solid #ddd;
+	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
+}

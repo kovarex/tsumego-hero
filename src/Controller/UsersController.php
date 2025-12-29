@@ -19,37 +19,6 @@ class UsersController extends AppController
 
 	public $helpers = ['Html', 'Form'];
 
-	/**
-	 * Shows graph of the rating evolution of the given tsumego
-	 * @param string|int|null $id Tsumego ID
-	 * @return void
-	 */
-	public function tsumego_rating_graph($id = null)
-	{
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoAttempt');
-
-		$t = $this->Tsumego->findById($id);
-		$sc = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $id]]);
-		if (!$sc)
-			throw new NotFoundException('SetConnection not found');
-		$s = $this->Set->findById($sc['SetConnection']['set_id']);
-		if (!$s)
-			throw new NotFoundException('Set not found');
-		$name = $s['Set']['title'] . ' - ' . $sc['SetConnection']['num'];
-		$tsumegoAttempts = $this->TsumegoAttempt->find('all', [
-			'order' => 'created ASC',
-			'conditions' => [
-				'tsumego_id' => $id,
-				'NOT' => ['tsumego_rating' => 0],
-			],
-		]);
-		$this->set('rating', $t['Tsumego']['rating']);
-		$this->set('name', $name);
-		$this->set('tsumegoAttempts', $tsumegoAttempts);
-		$this->set('id', $id);
-	}
-
 	// shows the publish schedule
 	public function showPublishSchedule(): void
 	{

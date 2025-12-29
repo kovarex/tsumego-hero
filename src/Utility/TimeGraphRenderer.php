@@ -4,6 +4,8 @@ class TimeGraphRenderer
 {
 	public static function render($caption, $id, $input, $value)
 	{
+		echo '<div id="' . $id . '" class="timeGraph"></div>';
+		echo '<script>';
 		$values = [];
 		foreach ($input as $item)
 		{
@@ -55,5 +57,28 @@ var options =
 };
 var chart = new ApexCharts(document.querySelector('#" . $id . "'), options);
 chart.render();";
+		echo '</script>';
 	}
+
+	// this is weird, why do we include 3rd party js, we should just put the js on our site
+	// instead of depending on availability of theirs
+	static public function renderScriptInclude()
+	{
+		echo '
+<script>
+window.Promise ||
+document.write(
+\' < script src = "https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js" ><\/script > \'
+)
+window.Promise ||
+document.write(
+\'<script src = "https://cdn.jsdelivr.net/npm/eligrey-classlist-js-polyfill@1.2.20171210/classList.min.js" ><\/script > \'
+)
+window.Promise ||
+document.write(
+\'<script src = "https://cdn.jsdelivr.net/npm/findindex_polyfill_mdn" ><\/script > \'
+)
+</script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>';
+		}
 }

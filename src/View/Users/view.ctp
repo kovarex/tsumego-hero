@@ -334,21 +334,7 @@ function delUts(){
 		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
 }
 </script>
-<script>
-  window.Promise ||
-	document.write(
-	  '<script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"><\/script>'
-	)
-  window.Promise ||
-	document.write(
-	  '<script src="https://cdn.jsdelivr.net/npm/eligrey-classlist-js-polyfill@1.2.20171210/classList.min.js"><\/script>'
-	)
-  window.Promise ||
-	document.write(
-	  '<script src="https://cdn.jsdelivr.net/npm/findindex_polyfill_mdn"><\/script>'
-	)
-</script>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+TimeGraphRenderer::renderScriptInclude();
 <script>
 <?php
 	foreach (['Left', 'Right'] as $side)
