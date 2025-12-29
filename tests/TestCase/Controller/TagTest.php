@@ -410,4 +410,23 @@ class TagTest extends ControllerTestCase
 			$this->assertTextContains('You can\'t remove tag proposed by someone else.', $e->getMessage());
 		}
 	}
+
+	public function testAddNewTagAsAdmin()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+
+		$browser->clickId('open-add-tag-menu');
+		$browser->clickId('open-more-tags');
+		$browser->clickId('create-new-tag');
+
+		$browser->clickId('tag_name');
+		$browser->driver->getKeyboard()->sendKeys('atari');
+		$browser->clickId('submit_tag');
+
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(Util::getMyAddress() . '/tags/view/', $tagAdded['id']);
+		$this->assertSame($tagAdded['name'], 'atari');
+	}
 }

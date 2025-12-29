@@ -106,7 +106,7 @@ class TagConnectionsEdit
 		if (popular)
 			$("." + id).append(' <a class="add-tag-list-anchor" id="open-more-tags">[more]</a>');
 		else
-			$("." + id).append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
+			$("." + id).append(' <a class="add-tag-list-anchor" id="create-new-tag" href="/tag_names/add">[Create new tag]</a>');
 	}
 
 	draw()

@@ -1,37 +1,41 @@
 <?php
 
-class TagNamesController extends AppController
+class TagsController extends AppController
 {
-	/**
-	 * @return void
-	 */
 	public function add()
 	{
-		$alreadyExists = false;
-		if (isset($this->data['Tag']))
-		{
-			$exists = $this->Tag->find('first', ['conditions' => ['name' => $this->data['Tag']['name']]]);
-			if ($exists == null)
-			{
-				$tn = [];
-				$tn['Tag']['name'] = $this->data['Tag']['name'];
-				$tn['Tag']['description'] = $this->data['Tag']['description'];
-				$tn['Tag']['hint'] = $this->data['Tag']['hint'];
-				$tn['Tag']['link'] = $this->data['Tag']['link'];
-				$tn['Tag']['user_id'] = Auth::getUserID();
-				$tn['Tag']['approved'] = 0;
-				$this->Tag->save($tn);
-				$saved = $this->Tag->find('first', ['conditions' => ['name' => $this->data['Tag']['name']]]);
-				if ($saved)
-					$this->set('saved', $saved['Tag']['id']);
-			}
-			else
-				$alreadyExists = true;
-		}
-		$allTags = $this->getAllTags([]);
-
+		$allTags = $this->getAllTags();
 		$this->set('allTags', $allTags);
-		$this->set('alreadyExists', $alreadyExists);
+	}
+
+	public function addAction()
+	{
+		$tagName = $this->data['tag_name'];
+		if (empty($tagName))
+		{
+			CookieFlash::set('Tag name not provided', 'error');
+			return $this->redirect('/tags/add');
+		}
+
+		$existingTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]]);
+		if ($existingTag)
+		{
+			CookieFlash::set('Tag "' . $tagName . '" already exists.', 'error');
+			return $this->redirect('/tags/add');
+		}
+
+		$tag = [];
+		$tag['name'] = $tagName;
+		$tag['description'] = $this->data['tag_description'];
+		$tag['hint'] = $this->data['tag_hint'];
+		$tag['link'] = $this->data['tag_reference'];
+		$tag['user_id'] = Auth::getUserID();
+		$tag['approved'] = Auth::isAdmin();
+		ClassRegistry::init('Tag')->save($tag);
+		$saved = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]])['Tag'];
+
+		CookieFlash::set('Tag "' . $tagName . '" has been added.', 'success');
+		return $this->redirect('/tags/view/' . $saved['id']);
 	}
 
 	/**
