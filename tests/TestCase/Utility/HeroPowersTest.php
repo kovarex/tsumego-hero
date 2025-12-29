@@ -9,27 +9,62 @@ class HeroPowersTest extends TestCaseWithAuth
 {
 	public function testRefinementGoldenTsumego()
 	{
-		$context = new ContextPreparator(['user' => ['premium' => 1], 'tsumego' => 1]);
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['premium' => 1, 'rating' => Rating::getRankMiddleRatingFromReadableRank('10k')],
+			'tsumegos' => [
+				['set_order' => 1, 'rating' => Rating::getRankMiddleRatingFromReadableRank('12k')],
+				['set_order' => 2, 'rating' => Rating::getRankMiddleRatingFromReadableRank('10k')],
+				['set_order' => 3, 'rating' => Rating::getRankMiddleRatingFromReadableRank('8k')]]]);
 		$context->unlockAchievementsWithoutEffect();
 
-		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->tsumegos[0]['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
-		$browser = Browser::instance();
+		$goldenTsumego = $context->tsumegos[1];
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($goldenTsumego['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
+
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal
 		$browser->clickId('refinement');
-		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+
+		// the tsumego with index '1' was selected, as it is the one with my rank
+		$this->assertSame(Util::getMyAddress() . '/' . $goldenTsumego['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
-			'tsumego_id' => $context->tsumegos[0]['id'],
+			'tsumego_id' => $goldenTsumego['id'],
 			'user_id' => Auth::getUserID()]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'G');
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 
 		// the reported xp is normal golden
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'G');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'G');
 		$browser->get('sets');
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $goldenTsumego['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
 		$this->assertSame($context->XPGained(), $originalTsumegoXPValue);
+	}
+
+	public function testRefinementGoldenTsumegoSelectsRandomProblemWhenCloseToRatingDoesntExist()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['premium' => 1, 'rating' => Rating::getRankMiddleRatingFromReadableRank('9d')],
+			'tsumegos' => [
+				['set_order' => 1, 'rating' => Rating::getRankMiddleRatingFromReadableRank('20k')]]]);
+		$context->unlockAchievementsWithoutEffect();
+
+		$originalTsumegoXPValue = TsumegoUtil::getXpValue(ClassRegistry::init("Tsumego")->findById($context->tsumegos[0]['id'])['Tsumego'], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER);
+
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		// the reported xp is normal
+		$browser->clickId('refinement');
+
+		$goldenTsumego = $context->tsumegos[0];
+
+		// the tsumego with index '1' was selected, as it is the one with my rank
+		$this->assertSame(Util::getMyAddress() . '/' . $goldenTsumego['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
+			'tsumego_id' => $goldenTsumego['id'],
+			'user_id' => Auth::getUserID()]]);
+		$this->assertSame($status['TsumegoStatus']['status'], 'G');
+		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 	}
 
 	public function testGoldenTsumegoFail()

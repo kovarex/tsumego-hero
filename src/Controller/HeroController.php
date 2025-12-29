@@ -9,25 +9,35 @@ class HeroController extends AppController
 		if (Auth::getUser()['used_refinement'])
 			throw new AppException("Refinment is already used up.");
 
-		$setConnectionIDs = ClassRegistry::init('Tsumego')->query(
-			"SELECT "
-					. "set_connection.id, tsumego.id "
+		$queryWithoutRankLimit = "SELECT "
+				. "set_connection.id as set_connection_id, tsumego.id as tsumego_id "
 				. " FROM tsumego"
 				. " JOIN set_connection ON set_connection.tsumego_id=tsumego.id"
 				. " JOIN `set` ON `set`.id=set_connection.set_id"
-				. " WHERE tsumego.deleted is null AND set.public = 1");
+				. " WHERE tsumego.deleted is null AND set.public = 1";
+
+		// first we try to select golden tsumego with proper rating relative to user
+		$setConnectionIDs = Util::query($queryWithoutRankLimit . " AND tsumego.rating >= ? AND tsumego.rating <= ?",
+			[
+				Auth::getUser()['rating'] - Constants::$GOLDEN_TSUMEGO_LOWER_RELATIVE_RATING_LIMIT,
+				Auth::getUser()['rating'] + Constants::$GOLDEN_TSUMEGO_UPPER_RELATIVE_RATING_LIMIT
+			]);
+
+		// if it fails, we try to select "some" tsumego
+		if (empty($setConnectionIDs))
+			$setConnectionIDs = Util::query($queryWithoutRankLimit);
 		if (empty($setConnectionIDs))
 			throw new Exception("No valid tsumego to choose from.");
 		$setConnection = $setConnectionIDs[rand(0, count($setConnectionIDs) - 1)];
 		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
-			'tsumego_id' => $setConnection['tsumego']['id'],
+			'tsumego_id' => $setConnection['tsumego_id'],
 			'user_id' => Auth::getUserID()]]);
 		if (!$tsumegoStatus)
 		{
 			ClassRegistry::init('TsumegoStatus')->create();
 			$tsumegoStatus = [];
 			$tsumegoStatus['user_id'] = Auth::getUserID();
-			$tsumegoStatus['tsumego_id'] = $setConnection['tsumego']['id'];
+			$tsumegoStatus['tsumego_id'] = $setConnection['tsumego_id'];
 		}
 		else
 			$tsumegoStatus = $tsumegoStatus['TsumegoStatus'];
@@ -36,7 +46,7 @@ class HeroController extends AppController
 		ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
 		Auth::getUser()['used_refinement'] = 1;
 		Auth::saveUser();
-		return $this->redirect('/' . $setConnection['set_connection']['id']);
+		return $this->redirect('/' . $setConnection['set_connection_id']);
 	}
 
 	public function sprint()

@@ -15,6 +15,8 @@ class Constants
 	public static int $TIME_MODE = 3;
 
 	public static int $GOLDEN_TSUMEGO_XP_MULTIPLIER = 8;
+	public static int $GOLDEN_TSUMEGO_LOWER_RELATIVE_RATING_LIMIT = 0;
+	public static int $GOLDEN_TSUMEGO_UPPER_RELATIVE_RATING_LIMIT = 100;
 	public static float $SECOND_SOLVE_XP_MULTIPLIER = 0.5;
 	public static int $SPRINT_MULTIPLIER = 2;
 	public static int $SPRINT_SECONDS = 120;
@@ -29,4 +31,5 @@ class Constants
 	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
 
 	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
+
 }
