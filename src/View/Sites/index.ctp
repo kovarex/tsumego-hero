@@ -456,8 +456,8 @@ $highestRight = 17;
 			The goal is to assign matching tags to every problem. All users that have passed level 40 or 6k
 			are welcome to help with this meaningful task. There are amazing <a href="/users/rewards">rewards</a> for those who
 			help with adding and creating tags and/or proposals. So the next time you see a problem, for example,
-			with a <a href="/tag_names/view/8">Seki</a>, a <a href="/tag_names/view/6">Snapback</a> or an
-			<a href="/tag_names/view/7">Under the Stones</a> tesuji, leave a tag.
+			with a <a href="/tags/view/8">Seki</a>, a <a href="/tags/view/6">Snapback</a> or an
+			<a href="/tags/view/7">Under the Stones</a> tesuji, leave a tag.
 			<br>
 			<div align="center">
 				<img style="margin:5px" src="/img/example-tags-proposals.png" title="Example for tags and proposals" width="72%">

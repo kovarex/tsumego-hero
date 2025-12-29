@@ -104,39 +104,9 @@ class AppController extends Controller
 		ClassRegistry::init('UserContribution')->save($uc);
 	}
 
-	public static function getAllTags($not)
+	public static function getAllTags()
 	{
-		$a = [];
-		$notApproved = ClassRegistry::init('Tag')->find('all', ['conditions' => ['approved' => 0]]);
-		if (!$notApproved)
-			$notApproved = [];
-		foreach ($not as $item)
-			$a[] = $item['tag_id'];
-		$notApprovedCount = count($notApproved);
-		for ($i = 0; $i < $notApprovedCount; $i++)
-			array_push($a, $notApproved[$i]['Tag']['id']);
-		$tn = ClassRegistry::init('Tag')->find('all', [
-			'conditions' => [
-				'NOT' => ['id' => $a],
-			],
-		]);
-		if (!$tn)
-			$tn = [];
-		$sorted = [];
-		$keys = [];
-		$tnCount = count($tn);
-		for ($i = 0; $i < $tnCount; $i++)
-		{
-			array_push($sorted, $tn[$i]['Tag']['name']);
-			$keys[$tn[$i]['Tag']['name']] = $tn[$i];
-		}
-		sort($sorted);
-		$s2 = [];
-		$sortedCount = count($sorted);
-		for ($i = 0; $i < $sortedCount; $i++)
-			array_push($s2, $keys[$sorted[$i]]);
-
-		return $s2;
+		return Util::query("SELECT * from tag WHERE approved = 1 ORDER BY tag.name");
 	}
 
 	public static function encrypt($str = null)

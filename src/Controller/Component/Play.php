@@ -356,7 +356,10 @@ class Play
 				$isAllowedToContribute = true;
 
 			if (Auth::isAdmin())
+			{
+				$isAllowedToContribute = true;
 				$isAllowedToContribute2 = true;
+			}
 			else
 			{
 				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];

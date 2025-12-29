@@ -9,7 +9,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<p class="title6">Profile</p>
 		</div>
 	<div class="user-header2">
-		<a href="/tag_names/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
+		<a href="/tags/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
 	</div>
 </div>
 <div class="userInfoContainerRow1">

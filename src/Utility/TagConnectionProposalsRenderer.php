@@ -48,7 +48,7 @@ OFFSET $offset", [Auth::getUserID()]);
 		{
 			echo '<tr>';
 			echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($toApprove) . ' added ';
-			echo '<a class="adminpanel-link" href="/tag_names/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
+			echo '<a class="adminpanel-link" href="/tags/view/' . $toApprove['tag_id'] . '">' . $toApprove['tag_name'];
 			echo '</a> for <a class="adminpanel-link" href="/' . $toApprove['set_connection_id'] . '">' . $toApprove['set_title'] . ' - ' . $toApprove['num'] . '</a></td>';
 			echo '<td>';
 			new TsumegoButton($toApprove['tsumego_id'], $toApprove['set_connection_id'], $toApprove['num'], $toApprove['status'])->render();

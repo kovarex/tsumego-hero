@@ -1,6 +1,6 @@
 <?php if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
-<?php if(isset($saved)) echo '<script type="text/javascript">window.location.href = "/tag_names/view/'.$saved.'";</script>'; ?>
+<?php if(isset($saved)) echo '<script type="text/javascript">window.location.href = "/tags/view/'.$saved.'";</script>'; ?>
 
 <div class="tags-container">
 <div class="tags-content">
@@ -36,10 +36,10 @@ Does the tag give a hint on the solution?<br>
 		Other tags:
 		<?php
 			for($i=0;$i<count($allTags)-1;$i++){
-				echo '<a href="/tag_names/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
+				echo '<a href="/tags/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
 				if($i<count($allTags)-2)
 					echo ', ';
 			}
-		?> <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>
+		?> <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
 	</div>
 </div>

@@ -14,7 +14,7 @@
 			echo '<table border="0" class="tagnames-adminpanel">';
 			for($i=0; $i<count($tagNames); $i++){
 				echo '<tr>';
-					echo '<td>'.$tagNames[$i]['Tag']['user'].' created a new tag: <a href="/tag_names/view/'.$tagNames[$i]['Tag']['id'].'">'
+					echo '<td>'.$tagNames[$i]['Tag']['user'].' created a new tag: <a href="/tags/view/' . $tagNames[$i]['Tag']['id'] . '">'
 					.$tagNames[$i]['Tag']['name'].'</a></td>';
 					echo '<td>';
 					if(Auth::getUserID() != $tags[$i]['TagConnection']['user_id']){

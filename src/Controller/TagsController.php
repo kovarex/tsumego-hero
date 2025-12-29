@@ -8,7 +8,7 @@ class TagsController extends AppController
 		$this->set('allTags', $allTags);
 	}
 
-	public function addAction()
+	public function addAction(): CakeResponse
 	{
 		$tagName = $this->data['tag_name'];
 		if (empty($tagName))
@@ -45,7 +45,7 @@ class TagsController extends AppController
 	public function view($id = null)
 	{
 		$tn = $this->Tag->findById($id);
-		$allTags = $this->getAllTags([]);
+		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
 		$tn['Tag']['user'] = $user['User']['name'];
 		$this->set('allTags', $allTags);
@@ -269,7 +269,7 @@ class TagsController extends AppController
 			$setHint[1] = 'checked="checked"';
 		}
 
-		$allTags = $this->getAllTags([]);
+		$allTags = $this->getAllTags();
 
 		$this->set('allTags', $allTags);
 		$this->set('setHint', $setHint);
