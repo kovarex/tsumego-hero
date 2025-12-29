@@ -607,7 +607,7 @@ class TsumegosController extends AppController
 				DATE(created) AS day,
 				MAX(tsumego_rating) AS Rating
 			FROM tsumego_attempt
-			WHERE tsumego_id = :tsumego_id
+			WHERE tsumego_id = :tsumego_id AND tsumego_rating != 0
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['tsumego_id' => $tsumegoID]);
