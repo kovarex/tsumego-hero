@@ -206,6 +206,7 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplays'] ?: 0;
+		$tsumegoAttempt['TsumegoAttempt']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}
 
@@ -217,7 +218,7 @@ class PlayResultProcessorComponent extends Component
 		$tsumegoRating += $tsumegoRatingDelta;
 	}
 
-	private function processRatingChange(array $previousTsumego, array $result, string $previousTsumegoStatus): void
+	private function processRatingChange(array &$previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
 		if (!Auth::ratingisGainedInCurrentMode())
 			return;

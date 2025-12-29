@@ -605,7 +605,7 @@ class TsumegosController extends AppController
 		$dailyResults = Util::query("
 			SELECT
 				DATE(created) AS day,
-				MAX(user_rating) AS Rating
+				MAX(tsumego_rating) AS Rating
 			FROM tsumego_attempt
 			WHERE tsumego_id = :tsumego_id
 			GROUP BY DATE(created)
@@ -613,6 +613,7 @@ class TsumegosController extends AppController
 		", ['tsumego_id' => $tsumegoID]);
 		$this->set('dailyResults', $dailyResults);
 		$this->set('setConnection', $setConnection);
+		$this->set('urlParams', $this->params['url']);
 		$this->set('set', ClassRegistry::init("Set")->findById($setConnection['set_id'])['Set']);
 	}
 }
