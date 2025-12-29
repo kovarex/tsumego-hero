@@ -7,6 +7,7 @@ App::uses('AdminActivityLogger', 'Utility');
 App::uses('TagConnectionProposalsRenderer', 'Utility');
 App::uses('AdminActivityRenderer', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
+App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('CookieFlash', 'Utility');
 
@@ -332,38 +333,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tag');
 
 		if (Auth::isAdmin())
-		{
-			if (isset($this->params['url']['accept']) && isset($this->params['url']['tag_id']))
-				if (md5((string) Auth::getUserID()) == $this->params['url']['hash'])
-				{
-					$tagNamesToApprove = explode('-', $_COOKIE['tagNameList']);
-					$tagNamesToApproveCount = count($tagNamesToApprove);
-					for ($i = 1; $i < $tagNamesToApproveCount; $i++)
-					{
-						$tagNameToApprove = $this->Tag->findById(substr($tagNamesToApprove[$i], 1));
-						if ($tagNameToApprove != null && $tagNameToApprove['Tag']['approved'] != 1)
-						{
-							AppController::handleContribution(Auth::getUserID(), 'reviewed');
-							if (substr($tagNamesToApprove[$i], 0, 1) == 'a')
-							{
-								$tagNameToApprove['Tag']['approved'] = '1';
-								$this->Tag->save($tagNameToApprove);
-								AppController::handleContribution($tagNameToApprove['Tag']['user_id'], 'created_tag');
-							}
-							else
-							{
-								$reject = [];
-								$reject['Reject']['user_id'] = $tagNameToApprove['Tag']['user_id'];
-								$reject['Reject']['type'] = 'tag name';
-								$reject['Reject']['text'] = $tagNameToApprove['Tag']['name'];
-								$this->Reject->create();
-								$this->Reject->save($reject);
-								$this->Tag->delete($tagNameToApprove['Tag']['id']);
-							}
-						}
-					}
-				}
-
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{
 				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
@@ -381,7 +350,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					echo '</pre>';
 				}
 			}
-		}
 
 		// Pagination setup
 		$perPage = 100;
@@ -422,6 +390,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		// Pagination data
 		$this->set('sgfProposalsRenderer', new SGFProposalsRenderer($this->params['url']));
+		$this->set('tagProposalsRenderer', new TagProposalsRenderer($this->params['url']));
 		$this->set('adminActivityRenderer', new AdminActivityRenderer($this->params['url']));
 		$this->set('tagConnectionProposalsRenderer', new TagConnectionProposalsRenderer($this->params['url']));
 	}

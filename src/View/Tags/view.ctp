@@ -9,10 +9,10 @@
 	<?php } ?>
 	<p>Created by <?php echo $tn['Tag']['user'] ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
-		<a href="/tag_names/edit/<?php echo $tn['Tag']['id']; ?>">Edit</a>
+		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>" id="tag-edit">Edit</a>
 		<?php if(Auth::getUserID()==72){ ?>
 			|
-			<a href="/tag_names/delete/<?php echo $tn['Tag']['id']; ?>">Delete</a>
+			<a href="/tags/delete/<?php echo $tn['Tag']['id']; ?>">Delete</a>
 		<?php } ?>
 	<?php } ?>
 				</div>
@@ -20,10 +20,10 @@
 				Other tags:
 		<?php
 			for($i=0;$i<count($allTags);$i++){
-				echo '<a href="/tag_names/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
+				echo '<a href="/tags/view/'.$allTags[$i]['Tag']['id'].'">'.$allTags[$i]['Tag']['name'].'</a>';
 				if($i<count($allTags)-1)
 					echo ', ';
 			}
-		?> <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>
+		?> <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
 		</div>
   </div>

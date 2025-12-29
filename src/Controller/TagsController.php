@@ -1,37 +1,41 @@
 <?php
 
-class TagNamesController extends AppController
+class TagsController extends AppController
 {
-	/**
-	 * @return void
-	 */
 	public function add()
 	{
-		$alreadyExists = false;
-		if (isset($this->data['Tag']))
-		{
-			$exists = $this->Tag->find('first', ['conditions' => ['name' => $this->data['Tag']['name']]]);
-			if ($exists == null)
-			{
-				$tn = [];
-				$tn['Tag']['name'] = $this->data['Tag']['name'];
-				$tn['Tag']['description'] = $this->data['Tag']['description'];
-				$tn['Tag']['hint'] = $this->data['Tag']['hint'];
-				$tn['Tag']['link'] = $this->data['Tag']['link'];
-				$tn['Tag']['user_id'] = Auth::getUserID();
-				$tn['Tag']['approved'] = 0;
-				$this->Tag->save($tn);
-				$saved = $this->Tag->find('first', ['conditions' => ['name' => $this->data['Tag']['name']]]);
-				if ($saved)
-					$this->set('saved', $saved['Tag']['id']);
-			}
-			else
-				$alreadyExists = true;
-		}
-		$allTags = $this->getAllTags([]);
-
+		$allTags = $this->getAllTags();
 		$this->set('allTags', $allTags);
-		$this->set('alreadyExists', $alreadyExists);
+	}
+
+	public function addAction(): CakeResponse
+	{
+		$tagName = $this->data['tag_name'];
+		if (empty($tagName))
+		{
+			CookieFlash::set('Tag name not provided', 'error');
+			return $this->redirect('/tags/add');
+		}
+
+		$existingTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]]);
+		if ($existingTag)
+		{
+			CookieFlash::set('Tag "' . $tagName . '" already exists.', 'error');
+			return $this->redirect('/tags/add');
+		}
+
+		$tag = [];
+		$tag['name'] = $tagName;
+		$tag['description'] = $this->data['tag_description'];
+		$tag['hint'] = $this->data['tag_hint'];
+		$tag['link'] = $this->data['tag_reference'];
+		$tag['user_id'] = Auth::getUserID();
+		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
+		ClassRegistry::init('Tag')->save($tag);
+		$saved = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $tagName]])['Tag'];
+
+		CookieFlash::set('Tag "' . $tagName . '" has been added.', 'success');
+		return $this->redirect('/tags/view/' . $saved['id']);
 	}
 
 	/**
@@ -41,7 +45,7 @@ class TagNamesController extends AppController
 	public function view($id = null)
 	{
 		$tn = $this->Tag->findById($id);
-		$allTags = $this->getAllTags([]);
+		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
 		$tn['Tag']['user'] = $user['User']['name'];
 		$this->set('allTags', $allTags);
@@ -238,38 +242,36 @@ class TagNamesController extends AppController
 		$this->set('list', $list);
 	}
 
-	/**
-	 * @param string|int|null $id Tag name ID
-	 * @return void
-	 */
-	public function edit($id = null)
+	public function edit($tagID): ?CakeResponse
 	{
-		$tn = $this->Tag->findById($id);
-		if (isset($this->data['Tag']))
+		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tag)
 		{
-			$tn['Tag']['description'] = $this->data['Tag']['description'];
-			$tn['Tag']['hint'] = $this->data['Tag']['hint'];
-			$tn['Tag']['link'] = $this->data['Tag']['link'];
-			$this->Tag->save($tn);
-			$this->set('saved', $tn['Tag']['id']);
-		}
-		$setHint = [];
-		if ($tn['Tag']['hint'] == 1)
-		{
-			$setHint[0] = 'checked="checked"';
-			$setHint[1] = '';
-		}
-		else
-		{
-			$setHint[0] = '';
-			$setHint[1] = 'checked="checked"';
+			CookieFlash::set('Tag to edit not found.', 'error');
+			return $this->redirect('/users/adminstats');
 		}
 
-		$allTags = $this->getAllTags([]);
+		$this->set('allTags', $this->getAllTags());
+		$this->set('tag', $tag['Tag']);
+		return null;
+	}
 
-		$this->set('allTags', $allTags);
-		$this->set('setHint', $setHint);
-		$this->set('tn', $tn);
+	public function editAction($tagID)
+	{
+		$tag = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tag)
+		{
+			CookieFlash::set('Tag to edit not found.');
+			$this->redirect('/users/adminstats');
+		}
+
+		$tag = $tag['Tag'];
+
+		$tag['description'] = $this->data['tag_description'];
+		$tag['hint'] = $this->data['tag_hint'];
+		$tag['link'] = $this->data['tag_link'];
+		ClassRegistry::init('Tag')->save($tag);
+		return $this->redirect('/tags/view/' . $tagID);
 	}
 
 	/**
@@ -296,9 +298,61 @@ class TagNamesController extends AppController
 		$this->set('tn', $tn);
 	}
 
-	/**
-	 * @return void
-	 */
 	public function index() {}
 
+	public function acceptTagProposal($tagID): CakeResponse
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
+		$tagToApprove = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tagToApprove)
+		{
+			CookieFlash::set('Tag to approve not found', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$tagToApprove = $tagToApprove['Tag'];
+
+		if ($tagToApprove['Tag']['approved'] == 1)
+		{
+			CookieFlash::set('Tag to approve was already approved', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+		$tagToApprove['approved'] = '1';
+		ClassRegistry::init('Tag')->save($tagToApprove);
+		AppController::handleContribution($tagToApprove['user_id'], 'created_tag');
+		CookieFlash::set('Tag ' . $tagToApprove['name'] . ' was approved', 'success');
+		return $this->redirect('/users/adminstats');
+	}
+
+	public function rejectTagProposal($tagID): CakeResponse
+	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
+		$tagToReject = ClassRegistry::init('Tag')->findById($tagID);
+		if (!$tagToReject)
+		{
+			CookieFlash::set('Tag to approve not found', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		$tagToReject = $tagToReject['Tag'];
+
+		if ($tagToReject['Tag']['approved'] == 1)
+		{
+			CookieFlash::set('Tag to reject was already approved', 'error');
+			return $this->redirect('/users/adminstats');
+		}
+
+		AppController::handleContribution(Auth::getUserID(), 'reviewed');
+
+		ClassRegistry::init('Tag')->delete($tagToReject);
+
+		CookieFlash::set('Tag ' . $tagToReject['name'] . ' was rejected', 'success');
+		return $this->redirect('/users/adminstats');
+	}
 }

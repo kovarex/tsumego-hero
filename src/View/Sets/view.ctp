@@ -643,7 +643,7 @@
 			if(unapprovedTags[i]==0){
 				isNewTag = 'class="is-new-tag"';
 			}
-			let tagLink = 'href="/tag_names/view/'+idTags[i]+'"';
+			let tagLink = 'href="/tags/view/'+idTags[i]+'"';
 			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
 			if(typeof idTags[i] === "undefined"){
 				tagLink = '';
@@ -667,7 +667,7 @@
 			if(i<allTags.length-1)
 				$(".add-tag-list").append(', ');
 		}
-		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
+		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>');
 	}
 
 	for(let i=0;i<allTags.length;i++){

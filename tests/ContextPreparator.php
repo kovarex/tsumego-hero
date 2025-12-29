@@ -53,8 +53,7 @@ class ContextPreparator
 	{
 		if (!count($options))
 			return;
-		debug_print_backtrace();
-		die("Option " . implode(",", array_keys($options)) . " not recognized\n.");
+		throw new Exception("Option " . implode(",", array_keys($options)) . " not recognized.");
 	}
 
 	private function prepareThisUser(?array $user): void
@@ -422,6 +421,7 @@ class ContextPreparator
 			$tag = $this->getOrCreateTag([
 				'name' => Util::extract('name', $tagInput),
 				'popular' => Util::extract('popular', $tagInput) ?: false,
+				'approved' => Util::extract('tag_approved', $tagInput) ?: true,
 				'is_hint' => Util::extract('is_hint', $tagInput) ?: 0]);
 			$tagConnection = [];
 			$tagConnection['TagConnection']['tsumego_id'] = $tsumego['id'];
@@ -486,6 +486,9 @@ class ContextPreparator
 			$tag = [];
 			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
 			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
+			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
+			$tag['user_id'] = $this->user['id'];
+			$tag['description'] = Util::extract('description', $tagInput);
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
@@ -494,6 +497,8 @@ class ContextPreparator
 		}
 		else
 		{
+			Util::extract('description', $tagInput);
+			Util::extract('approved', $tagInput);
 			Util::extract('popular', $tagInput);
 			Util::extract('is_hint', $tagInput);
 		}

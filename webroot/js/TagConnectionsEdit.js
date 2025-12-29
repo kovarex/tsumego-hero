@@ -63,7 +63,7 @@ class TagConnectionsEdit
 				(tag.isApproved || tag.isMine) &&
 				(this.problemSolved || !tag.isHint))
 			.map((tag, i) => {
-				const tagLink = `href="/tag_names/view/${tag.id}"`;
+				const tagLink = `href="/tags/view/${tag.id}"`;
 				const tagLinkId = `id="${makeIdValidName(tag.name)}"`;
 				let part = `<a ${tagLink} ${tagLinkId}>${tag.name}</a>`;
 				if ((tag.isMine && !tag.isApproved) || (this.editActivated && this.isAdmin))
@@ -106,7 +106,7 @@ class TagConnectionsEdit
 		if (popular)
 			$("." + id).append(' <a class="add-tag-list-anchor" id="open-more-tags">[more]</a>');
 		else
-			$("." + id).append(' <a class="add-tag-list-anchor" href="/tag_names/add">[Create new tag]</a>');
+			$("." + id).append(' <a class="add-tag-list-anchor" id="create-new-tag" href="/tags/add">[Create new tag]</a>');
 	}
 
 	draw()

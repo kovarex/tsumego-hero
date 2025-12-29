@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverKeys;
+
 class TagTest extends ControllerTestCase
 {
 	public function testAddTagConnection()
@@ -409,5 +411,145 @@ class TagTest extends ControllerTestCase
 		{
 			$this->assertTextContains('You can\'t remove tag proposed by someone else.', $e->getMessage());
 		}
+	}
+
+	public function testAddNewTagAsAdmin()
+	{
+		foreach ([false, true] as $isHint)
+		{
+			$browser = Browser::instance();
+			$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+			$browser->get('/' . $context->setConnections[0]['id']);
+
+			$browser->clickId('open-add-tag-menu');
+			$browser->clickId('open-more-tags');
+			$browser->clickId('create-new-tag');
+
+			$browser->clickId('tag_name');
+			$browser->driver->getKeyboard()->sendKeys('atari');
+			$browser->clickId('tag_description');
+			$browser->driver->getKeyboard()->sendKeys('Not the console, which is named by this by the way.');
+			$browser->clickId('tag_reference');
+			$browser->driver->getKeyboard()->sendKeys('tag.example.com');
+			if ($isHint)
+				$browser->clickId('tag_hint_true');
+			else
+				$browser->clickId('tag_hint_false');
+			$browser->clickId('submit_tag');
+
+			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
+			$this->assertSame($tagAdded['name'], 'atari');
+			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
+			$this->assertSame($tagAdded['link'], 'tag.example.com');
+			$this->assertSame($tagAdded['hint'], $isHint ? 1 : 0);
+			$this->assertSame($tagAdded['user_id'], Auth::getUserID());
+			$this->assertSame($tagAdded['approved'], 1);
+		}
+	}
+
+	public function testAddNewTagAsNonAdmin()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1, 'status' => 'S']]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+
+		$browser->clickId('open-add-tag-menu');
+		$browser->clickId('open-more-tags');
+		$browser->clickId('create-new-tag');
+
+		$browser->clickId('tag_name');
+		$browser->driver->getKeyboard()->sendKeys('self atari');
+		$browser->clickId('submit_tag');
+
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
+		$this->assertSame($tagAdded['name'], 'self atari');
+		$this->assertSame($tagAdded['approved'], 0);
+	}
+
+	public function testApproveNewTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
+		$browser->get('users/adminstats');
+
+		$this->assertSame(ClassRegistry::init('Tag')->find('first')['Tag']['approved'], 0);
+		$browser->clickId('tag-accept-' . $context->tags[0]['id']);
+		$this->assertSame(ClassRegistry::init('Tag')->find('first')['Tag']['approved'], 1);
+	}
+
+	public function testRejectNewTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback', 'approved' => 0]]]);
+		$browser->get('users/adminstats');
+		$browser->clickId('tag-reject-' . $context->tags[0]['id']);
+		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertNull($tagAdded);
+	}
+
+	public function testEditTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$browser->clickId('tag_description');
+		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
+		$browser->driver->getKeyboard()->sendKeys('World');
+
+		$browser->clickId('tag_link');
+		$browser->driver->getKeyboard()->sendKeys('bla.example.com');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame('World', $tag['description']);
+		$this->assertSame('bla.example.com', $tag['link']);
+		$this->assertSame(0, $tag['hint']); // hint value was not touched
+	}
+
+	public function testEditTagEnableHint()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$browser->clickId('tag_hint_true');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(1, $tag['hint']); // hint value was not touched
+	}
+
+	public function testEditTagDisableHint()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello', 'is_hint' => true]]]);
+		$this->assertSame(1, $context->tags[0]['hint']);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$browser->clickId('tag_hint_false');
+		$browser->clickId('submit_tag');
+		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
+		$this->assertSame(0, $tag['hint']); // hint value was not touched
+	}
+
+	public function testTagContributionsView()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'approved' => 1]]]);
+		$browser->get('tags/user/' . $context->user['id']);
+		$browser->checkTable('.highscoreTable', $this, [
+			['Action', 'Status', 'Timestamp'],
+			[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
 	}
 }
