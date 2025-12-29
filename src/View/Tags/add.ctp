@@ -26,6 +26,6 @@
 	</div>
 	<div class="existing-tags-list">
 		Other tags:
-		<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['Tag']['id'] . '">' . $tag['Tag']['name'] . '</a>', $allTags)); ?>
+		<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['id'] . '">' . $tag['name'] . '</a>', $allTags)); ?>
 	</div>
 </div>
