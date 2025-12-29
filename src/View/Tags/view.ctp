@@ -9,7 +9,7 @@
 	<?php } ?>
 	<p>Created by <?php echo $tn['Tag']['user'] ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
-		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>">Edit</a>
+		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?> id="tag-edit">Edit</a>
 		<?php if(Auth::getUserID()==72){ ?>
 			|
 			<a href="/tags/delete/<?php echo $tn['Tag']['id']; ?>">Delete</a>

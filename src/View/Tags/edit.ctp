@@ -15,8 +15,8 @@
 		<td><input name="data[TagName][name]" value="<?php echo $tn['Tag']['name'] ?>" placeholder="Name" maxlength="50" type="text" id="TagNameName" disabled="true"></td>
 	</tr>
 	<tr>
-		<td><label for="TagNameDescription">Description:</label></td>
-		<td><textarea name="data[TagName][description]" rows="3" placeholder="Description" maxlength="3000" cols="30" id="TagNameDescription"><?php echo $tn['Tag']['description'] ?></textarea></td>
+		<td><label for="tag_description">Description:</label></td>
+		<td><textarea name="tag_description" rows="3" placeholder="Description" maxlength="3000" cols="30" id="tag_description"><?php echo $tn['Tag']['description'] ?></textarea></td>
 	</tr>
 	<tr>
 		<td><label for="TagNameLink">Reference:</label></td>

@@ -488,4 +488,13 @@ class TagTest extends ControllerTestCase
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertNull($tagAdded);
 	}
+
+	public function testEditTag()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tags' => [['name' => 'snapback']]]);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+
+	}
 }
