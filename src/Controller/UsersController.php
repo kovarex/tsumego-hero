@@ -1119,7 +1119,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		Auth::saveUser();
 
 		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
+		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
 		if (Auth::isLoggedIn())
@@ -1130,7 +1130,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if (Auth::isLoggedIn())
 		{
 			$Email = new CakeEmail();
-			$Email->from(['me@joschkazimdars.com' => 'https://tsumego-hero.com']);
+			$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
 			$Email->to(Auth::getUser()['email']);
 			$Email->subject('Tsumego Hero');
 			$ans = '

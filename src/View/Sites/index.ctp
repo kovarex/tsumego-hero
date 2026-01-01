@@ -361,8 +361,7 @@ $highestRight = 17;
 		</div>
 
 		<?php if(
-			!Auth::isLoggedIn()
-			|| Auth::isLoggedIn() && !Auth::hasPremium()
+			false
 		){ ?>
 			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
 			<div class="new1">
@@ -374,15 +373,6 @@ $highestRight = 17;
 			</div>
 		<?php } ?>
 
-		<p class="title4"<?php if(Auth::isLoggedIn()) echo ' style="margin-top:2px;"'; ?>>Recent Upgrades</p>
-		<div class="new1">
-			<table class="newx">
-				<?php
-					for($i=0;$i<count($urNames);$i++)
-						echo '<tr><td><img width="40px" src="/img/hpP.png"></td><td><h1 style="margin:2px">'.$urNames[$i].'</h1></td></tr>';
-				?>
-			</table>
-		</div>
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
 		<script>

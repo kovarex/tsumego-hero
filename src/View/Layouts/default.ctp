@@ -329,19 +329,7 @@ echo $this->AssetCompress->script('app');
 	</div>
 <div id="footer" class="footerLinks">
 	<div class="footer-space"></div>
-	<?php if(!Auth::hasPremium()){ ?>
-		<div class="footer-element">
-			<a href="/users/donate">
-				<img id="donateH2" onmouseover="upgradeHover2()" onmouseout="upgradeNoHover2()" width="180px" src="/img/upgradeButton1.png">
-			</a>
-	</div>
-	<?php }else{ ?>
-		<div class="footer-element">
-			<a href="/users/donate">
-				<img id="donateH2" onmouseover="donateHover2()" onmouseout="donateNoHover2()" width="180px" src="/img/donateButton1.png">
-			</a>
-	</div>
-	<?php } ?>
+
 	<div class="footer-space"></div>
 		<div class="footer-element">
 		Supported by Wube Software
