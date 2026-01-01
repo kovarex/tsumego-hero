@@ -18,66 +18,10 @@
 			<table>
 				<tr>
 					<td>
-						<img src="/img/hero powers.png" alt="Secret Area: Ko Gems" title="Secret Area: Ko Gems"><br>
-					</td>
-					<td>
-						<b>Premium collections (<?php echo $premiumTsumegos; ?> problems)</b><br> 
-						<?php
-							for($i=0;$i<count($premiumSets);$i++){
-								echo $premiumSets[$i]['Set']['title'];
-								if($i<count($premiumSets)-1)
-									echo ', ';
-							}
-						?>
-						<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
 						<img src="/img/hero power sandbox.png" alt="Sandbox" title="Sandbox"><br>
 					</td>
 					<td>
 						<b>Sandbox</b><br>Contains <?php echo $overallCounter; ?> unpublished problems.<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<img src="/img/hp4.png" alt="Hero Power: Refinement" title="Hero Power: Refinement"><br>
-					</td>
-					<td>
-						<b>Hero Power: Refinement</b><br>Creates a golden Tsumego.<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<img src="/img/hp6.png" alt="Hero Power: Revelation" title="Hero Power: Revelation"><br>
-					</td>
-					<td>
-						<b>Hero Power: Revelation (Level 100)</b><br> Solves a problem, but you don't get any reward.<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<img src="/img/hp5.png" alt="Hero Power: Potion" title="Hero Power: Potion"><br>
-					</td>
-					<td>
-						<b>Hero Power: Potion</b><br>Might refill hearts.<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<img src="/img/Unbenannt7.png" alt="no daily limit" title="no daily limit"><br>
-					</td>
-					<td>
-						<b>No daily limit</b><br>Removes the current limit of 12000 XP.<br>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<img src="/img/hpEmptyHeart.png" alt="no board locks" title="no board locks"><br>
-					</td>
-					<td>
-						<b>No board locks</b><br>Removes the board locks on failed attempts while hearts are empty.<br>
 					</td>
 				</tr>
 			</table>

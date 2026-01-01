@@ -129,17 +129,8 @@
 		}
 		else
 		{
-			if ($hasPremium)
-			{
-				$backgroundImage = 'url(/img/setButtonUnlocked.png);';
-				$box1unlocked = 'box1unlocked';
-			}
-			else
-			{
-				$backgroundImage = 'url(/img/setButtonLocked.png);';
-				$box1unlocked = '';
-				$makeLink = false;
-			}
+			$backgroundImage = 'url(/img/setButtonUnlocked.png);';
+			$box1unlocked = 'box1unlocked';
 		}
 		if ($makeLink)
 		{

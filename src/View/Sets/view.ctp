@@ -5,10 +5,6 @@
 	|| $set['Set']['id']==71790 || $set['Set']['id']==74761 || $set['Set']['id']==81578 || $set['Set']['id']==88156)
 		$noImage = true;
 
-	if($set['Set']['premium']==1){
-		if(!Auth::hasPremium())
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
 	if($set['Set']['public']==0){
 		if(Auth::isLoggedIn()){
 		}else{

@@ -76,7 +76,7 @@ class HeroPowers
 	public static function getRevelationUseCount(): int
 	{
 		$result = 0;
-		if (Auth::hasPremium())
+		if (Auth::isLoggedIn())
 			$result++;
 		if (Auth::isAdmin())
 			$result++;
@@ -156,7 +156,7 @@ class HeroPowers
 
 	public static function isPotionActive()
 	{
-		if (!Auth::hasPremium() && Auth::getUser()['level'] < 50)
+		if (Auth::getUser()['level'] < 50)
 			return false;
 		if (!Auth::getUser()['used_potion'])
 			return false;
@@ -165,14 +165,14 @@ class HeroPowers
 
 	public static function canUseRefinement()
 	{
-		if (!Auth::hasPremium() && Auth::getWithDefault('level', 0) < 100)
+		if (Auth::getWithDefault('level', 0) < 100)
 			return false;
 		return !Auth::getUser()['used_refinement'];
 	}
 
 	private static function renderRefinement()
 	{
-		echo '<img id="refinement" title="Refinement (Level ' . self::$REFINEMENT_MINIMUM_LEVEL . ' or premum): Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
+		echo '<img id="refinement" title="Refinement: Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
 	}
 
 	private static function renderPotion()

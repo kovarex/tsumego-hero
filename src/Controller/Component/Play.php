@@ -71,12 +71,6 @@ class Play
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
-		if (!Auth::hasPremium() && $set['Set']['premium'] == 1)
-		{
-			CookieFlash::set('This is premium only problem.', 'error');
-			return ($this->redirectFunction)('/sets');
-		}
-
 		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $id]]);
 
 		if (isset($params['url']['potionAlert']))

@@ -108,11 +108,7 @@ $highestRight = 17;
 				Instead of that a group can be attacked to gain influence, gain territory, stabilize their own group, create thickness or many other reasons.
 				This collection teaches the best ways to attack groups to get an advantage on the board.<br><br>
 				<div align="center"><img width="60%" src="/img/attack-hero-promo.png" alt="New Collection: Attack Hero" title="New Collection: Attack Hero"><br><br>
-					<?php if($hasPremium){ ?>
-						<a class="new-button main-page" style="font-size:14px;" href="/sets/view/246">Play</a><br><br>
-					<?php }else{ ?>
-						<a class="new-button-inactive main-page" style="font-size:14px;">Play</a><br><br>
-					<?php } ?>
+					<a class="new-button main-page" style="font-size:14px;" href="/sets/view/246">Play</a><br><br>
 				</div>
 			</div>
 		</div>

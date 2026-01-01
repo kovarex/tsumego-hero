@@ -217,8 +217,7 @@ ORDER BY order_value, total_count DESC, partition_number, id
 		{
 			$rankQuery = new Query('FROM tsumego');
 			RatingBounds::coverRank($rank['rank'], '15k')->addQueryConditions($rankQuery);
-			if (!Auth::hasPremium())
-				$rankQuery->conditions[] = '`set`.premium = 0';
+			
 			$rankQuery->conditions[] = 'tsumego.deleted IS NULL';
 			$rankQuery->conditions[] = '`set`.public = 1';
 			if (!empty($this->tsumegoFilters->setIDs))

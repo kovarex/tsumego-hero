@@ -269,8 +269,7 @@ class SetsController extends AppController
 			'conditions' => ['public' => 1],
 		]) ?: [];
 		foreach ($setsRaw as $set)
-			if (Auth::hasPremium() || !$set['Set']['premium'])
-				$setTiles [] = $set['Set']['title'];
+			$setTiles [] = $set['Set']['title'];
 
 		//difficultyTiles
 		$dt = SetsController::getExistingRanksArray();
