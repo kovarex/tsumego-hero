@@ -195,7 +195,6 @@ ORDER BY order_value, total_count DESC, partition_number, id
 			$set['amount'] = $row['usage_count'];
 			$partition = $row['partition_number'];
 			$set['color'] = $row['color'];
-			$set['premium'] = $row['premium'];
 			$set['solved_percent'] = round(Util::getPercent($row['solved_count'], $row['usage_count']));
 			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
 			$set['partition'] = $partition;
@@ -217,7 +216,7 @@ ORDER BY order_value, total_count DESC, partition_number, id
 		{
 			$rankQuery = new Query('FROM tsumego');
 			RatingBounds::coverRank($rank['rank'], '15k')->addQueryConditions($rankQuery);
-			
+
 			$rankQuery->conditions[] = 'tsumego.deleted IS NULL';
 			$rankQuery->conditions[] = '`set`.public = 1';
 			if (!empty($this->tsumegoFilters->setIDs))

@@ -253,15 +253,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
-	public function testOpenPremiumProblemWithNonPremiumAccount()
-	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator(['tsumego' => ['sets' => [['num' => '1', 'premium' => true]]]]);
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
-		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
-	}
-
 	/**
 	 * When user fails a problem, the board should NOT lock.
 	 * User should be able to continue clicking (though they won't solve it after first failure).
