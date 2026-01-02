@@ -1,0 +1,26 @@
+{
+  "name": "html",
+  "version": "1.0.0",
+  "description": "To improve the source code of tsumego hero so: - The page can be moved to a modern server with php 8.4 functionality - The code is better structured, readable and easily modifiable. - The functionality of the site is fully covered by automated tests, so it doesn't just \"randomly break\" - Current test coverage status can be checked here: https://kovarex.github.io/tsumego-hero/coverage/",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kovarex/tsumego-hero.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kovarex/tsumego-hero/issues"
+  },
+  "homepage": "https://github.com/kovarex/tsumego-hero#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

@@ -45,6 +45,8 @@ webroot/forums/vendor
 .idea/
 mainPageAjax.txt
 
+node_modules
+
 # IDE and editor specific files #
 #################################
 /nbproject
