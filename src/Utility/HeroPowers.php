@@ -67,13 +67,6 @@ class HeroPowers
 		echo '<img id="intuition" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
 	}
 
-	public static function changeUserSoRevelationCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$REVELATION_MINIMUM_LEVEL;
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
-	}
-
 	public static function getRevelationUseCount(): int
 	{
 		$result = 0;

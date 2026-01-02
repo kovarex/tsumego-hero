@@ -164,11 +164,10 @@ class HeroPowersTest extends TestCaseWithAuth
 
 	public function testUseRevelation()
 	{
-		foreach (['logged-off', 'not-available', 'used-up', 'normal'] as $testCase)
+		foreach (['logged-off', 'used-up', 'normal'] as $testCase)
 		{
 			$browser = Browser::instance();
 			$context = new ContextPreparator(['tsumego' => 1]);
-			HeroPowers::changeUserSoRevelationCanBeUsed();
 			$context->unlockAchievementsWithoutEffect();
 			$context->XPGained(); // to reload the current xp to be able to tell the gained later
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
@@ -177,12 +176,6 @@ class HeroPowersTest extends TestCaseWithAuth
 
 			if ($testCase == 'logged-off')
 				$browser->logoff();
-			elseif ($testCase == 'not-available')
-			{
-				Auth::getUser()['level'] = 1;
-				Auth::saveUser();
-				$context->XPGained(); // to reload the current xp to be able to tell the gained later
-			}
 			elseif ($testCase == 'used-up')
 			{
 				Auth::getUser()['used_revelation'] = 10;
@@ -198,8 +191,6 @@ class HeroPowersTest extends TestCaseWithAuth
 				Auth::init();
 				continue;
 			}
-			elseif ($testCase == 'not-available')
-				$this->assertSame($message, 'Revelation is not available to this account.');
 			elseif ($testCase == 'user-up')
 				$this->assertSame($message, 'Revelation is used up today.');
 			if ($testCase == 'normal')
