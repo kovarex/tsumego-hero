@@ -12,10 +12,9 @@ App::uses('TagConnectionsEdit', 'Utility');
 
 class Play
 {
-	public function __construct($setFunction, $redirectFunction)
+	public function __construct($setFunction)
 	{
 		$this->setFunction = $setFunction;
-		$this->redirectFunction = $redirectFunction;
 	}
 
 	public function getTsumegoStatus(array $tsumego): string
@@ -541,5 +540,4 @@ class Play
 	}
 
 	private $setFunction;
-	private $redirectFunction;
 }
