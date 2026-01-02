@@ -39,8 +39,6 @@ class RatingModeController extends AppController
 
 		$queryCondition = "";
 		Util::addSqlCondition($queryCondition, "`set`.public = true");
-		if (!Auth::hasPremium())
-			Util::addSqlCondition($queryCondition, "`set`.premium = false");
 		$ratingBounds->addSqlConditions($queryCondition);
 		$query = "
 SELECT

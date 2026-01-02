@@ -214,10 +214,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
-	<?php if($dailyMaximum) echo '<style>.upgradeLink{display:block;}</style>'; ?>
-	<div class="upgradeLink" align="center">
-		<a href="/users/donate">Upgrade to Premium</a>
-	</div>
 
 	<!-- BOARD -->
 	<?php if($ui==2){ ?>
@@ -708,7 +704,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	let passEnabled = <?php echo $t['Tsumego']['pass']; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
-	let hasPremium = "<?php echo Auth::hasPremium(); ?>";
 	const activeTopicTiles = [];
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
@@ -1056,12 +1051,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'toggleBoardLock(true);';
 	} else echo 'var locked=false;';
 
-	if ($dailyMaximum)
-	{
-		echo 'var locked=true; tryAgainTomorrow = true;';
-		echo 'document.getElementById("status").innerHTML = "<h3><b>You reached the daily maximum for non-premium users.</b></h3>";
-			document.getElementById("status").style.color = "#000";';
-	}
 	if ($suspiciousBehavior)
 	{
 		echo 'var locked=true; tryAgainTomorrow = true;';

@@ -381,17 +381,6 @@ class AppController extends Controller
 		ClassRegistry::init('DayRecord')->save($dateGem);
 	}
 
-	protected function checkForLocked($t, $setsWithPremium)
-	{
-		$scCheck = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-		if ($scCheck && in_array($scCheck['SetConnection']['set_id'], $setsWithPremium) && !Auth::hasPremium())
-			$t['Tsumego']['locked'] = true;
-		else
-			$t['Tsumego']['locked'] = false;
-
-		return $t;
-	}
-
 	/**
 	 * @param int $uid User ID
 	 * @return void

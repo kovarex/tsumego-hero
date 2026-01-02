@@ -38,7 +38,6 @@ class Play
 
 		$highestTsumegoOrder = 0;
 		$doublexp = null;
-		$dailyMaximum = false;
 		$suspiciousBehavior = false;
 		$half = '';
 		$isSandbox = false;
@@ -55,18 +54,12 @@ class Play
 		$achievementUpdate = [];
 		$tRank = '15k';
 		$nothingInRange = false;
-		$setsWithPremium = [];
 		$queryTitle = '';
 
 		$currentSetConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$currentSetConnection)
 			throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$id = $currentSetConnection['SetConnection']['tsumego_id'];
-
-		$hasPremium = Auth::hasPremium();
-		$swp = ClassRegistry::init('Set')->find('all', ['conditions' => ['premium' => 1]]) ?: [];
-		foreach ($swp as $item)
-			$setsWithPremium[] = $item['Set']['id'];
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
@@ -371,10 +364,6 @@ class Play
 					$isAllowedToContribute2 = true;
 			}
 		}
-		if (in_array($t['Tsumego']['set_id'], $setsWithPremium))
-			$t['Tsumego']['premium'] = 1;
-		else
-			$t['Tsumego']['premium'] = 0;
 
 		$checkNotInSearch = false;
 
@@ -402,7 +391,6 @@ class Play
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
-		($this->setFunction)('dailyMaximum', $dailyMaximum);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
@@ -451,7 +439,6 @@ class Play
 		($this->setFunction)('queryTitle', $queryTitle);
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
-		($this->setFunction)('hasPremium', $hasPremium);
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 
 		// Load comments and issues data for the view

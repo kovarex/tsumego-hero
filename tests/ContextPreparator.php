@@ -394,9 +394,7 @@ class ContextPreparator
 			'name' => Util::extractWithDefault('name', $setInput, 'test set'),
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
-			'premium' => $setInput['premium'] ?? 0,
 			'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
-		unset($setInput['premium']);  // Mark as consumed
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];

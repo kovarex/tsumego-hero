@@ -151,9 +151,6 @@ class Achievement extends AppModel
 	// Favorites
 	public const int FAVORITES = 99;
 
-	// Premium
-	public const int PREMIUM = 100;
-
 	// Dan Solve Achievements
 	// Single solve
 	public const int SOLVE_1D = 101;

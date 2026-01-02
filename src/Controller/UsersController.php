@@ -928,43 +928,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	/**
-	 * @param string|int|null $id Donation ID
-	 * @return void
-	 */
-	public function donate($id = null)
-	{
-		$this->set('_page', 'home');
-		$this->set('_title', 'Tsumego Hero - Upgrade');
-
-		$overallCounter = 0;
-		$sandboxSets = $this->Set->find('all', ['conditions' => ['public' => 0]]);
-		$sandboxSetsCount = count($sandboxSets);
-		for ($i = 0; $i < $sandboxSetsCount; $i++)
-		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sandboxSets[$i]['Set']['id']);
-			$overallCounter += count($ts);
-		}
-
-		$setsWithPremium = [];
-		$tsumegosWithPremium = [];
-		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
-		$swpCount = count($swp);
-		for ($i = 0; $i < $swpCount; $i++)
-		{
-			array_push($setsWithPremium, $swp[$i]['Set']['id']);
-			$twp = TsumegoUtil::collectTsumegosFromSet($swp[$i]['Set']['id']);
-			$twpCount = count($twp);
-			for ($j = 0; $j < $twpCount; $j++)
-				array_push($tsumegosWithPremium, $twp[$j]);
-		}
-
-		$this->set('id', $id);
-		$this->set('overallCounter', $overallCounter);
-		$this->set('premiumSets', $swp);
-		$this->set('premiumTsumegos', count($tsumegosWithPremium));
-	}
-
-	/**
 	 * @return void
 	 */
 	public function authors()
