@@ -47,7 +47,6 @@ class SmokeTest extends ControllerTestCase
 
 			// Achievements & rewards (work without specific data)
 			['url' => 'achievements', 'name' => 'Achievements'],
-			['url' => 'users/rewards', 'name' => 'Rewards'],
 			// ['url' => 'achievements/view/1', 'name' => 'Achievement view'], // TODO: Test with real achievement ID
 
 			// User pages

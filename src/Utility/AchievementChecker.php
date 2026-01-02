@@ -310,8 +310,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			$this->gained(Achievement::STILL_DOING_TSUMEGO);
 		if ($userLevel >= 100)
 			$this->gained(Achievement::THE_TOP);
-		if (Auth::hasPremium())
-			$this->gained(Achievement::PREMIUM);
 		return $this;
 	}
 

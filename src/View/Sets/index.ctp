@@ -122,16 +122,8 @@
 				$lightDarkBoxes = '6';
 		}
 		$makeLink = true;
-		if ($set['premium'] != 1)
-		{
-			$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
-			$box1unlocked = 'box1default';
-		}
-		else
-		{
-			$backgroundImage = 'url(/img/setButtonUnlocked.png);';
-			$box1unlocked = 'box1unlocked';
-		}
+		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
+		$box1unlocked = 'box1default';
 		if ($makeLink)
 		{
 			echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">

@@ -5,6 +5,7 @@ class HeroPowers
 	public static $SPRINT_MINIMUM_LEVEL = 20;
 	public static $INTUITION_MINIMUM_LEVEL = 30;
 	public static $REJUVENATION_MINIMUM_LEVEL = 40;
+	public static $POTION_MINIMUM_LEVEL = 50;
 	public static $REVELATION_MINIMUM_LEVEL = 80;
 	public static $REFINEMENT_MINIMUM_LEVEL = 100;
 
@@ -64,13 +65,6 @@ class HeroPowers
 	public static function renderIntuition()
 	{
 		echo '<img id="intuition" title="Intuition (Level ' . self::$INTUITION_MINIMUM_LEVEL . ') : Shows the first correct move." alt="Intuition">';
-	}
-
-	public static function changeUserSoRevelationCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$REVELATION_MINIMUM_LEVEL;
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
 	}
 
 	public static function getRevelationUseCount(): int
@@ -156,7 +150,7 @@ class HeroPowers
 
 	public static function isPotionActive()
 	{
-		if (Auth::getUser()['level'] < 50)
+		if (!Auth::hasPremium() && Auth::getUser()['level'] < self::$POTION_MINIMUM_LEVEL)
 			return false;
 		if (!Auth::getUser()['used_potion'])
 			return false;
@@ -165,14 +159,14 @@ class HeroPowers
 
 	public static function canUseRefinement()
 	{
-		if (Auth::getWithDefault('level', 0) < 100)
+		if (!Auth::hasPremium() && Auth::getWithDefault('level', 0) < self::$REFINEMENT_MINIMUM_LEVEL)
 			return false;
 		return !Auth::getUser()['used_refinement'];
 	}
 
 	private static function renderRefinement()
 	{
-		echo '<img id="refinement" title="Refinement: Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
+		echo '<img id="refinement" title="Refinement (Level ' . self::$REFINEMENT_MINIMUM_LEVEL . '): Gives you a chance to solve a golden tsumego. If you fail, it disappears.">';
 	}
 
 	private static function renderPotion()

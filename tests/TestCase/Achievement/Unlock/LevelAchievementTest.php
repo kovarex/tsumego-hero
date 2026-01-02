@@ -56,20 +56,6 @@ class LevelAchievementTest extends AchievementTestCase
 		}
 	}
 
-	public function testPremiumAchievementUnlocksForPremiumUser()
-	{
-		new ContextPreparator(['user' => ['premium' => 1, 'level' => 1]]);
-		$this->triggerAchievementCheck();
-		$this->assertAchievementUnlocked(Achievement::PREMIUM, "Premium achievement should unlock for premium users");
-	}
-
-	public function testPremiumAchievementDoesNotUnlockForNonPremiumUser()
-	{
-		new ContextPreparator(['user' => ['premium' => 0, 'level' => 1]]);
-		$this->triggerAchievementCheck();
-		$this->assertAchievementNotUnlocked(Achievement::PREMIUM);
-	}
-
 	public function testAjaxRequestDoesntTriggerAchievementCheck()
 	{
 		$browser = Browser::instance();
