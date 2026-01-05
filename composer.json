@@ -27,6 +27,11 @@
         "classmap": ["src/"]
     },
 	"scripts": {
+		"post-install-cmd": "@install-hooks",
+		"post-update-cmd": "@install-hooks",
+		"install-hooks": [
+			"@php .githooks/install-hooks.php"
+		],
 		"setup": "bin/cake generate code_completion && bin/cake generate phpstorm",
 		"annotate": "bin/cake annotate all -r && bin/cake annotate all -r -p Sandbox && bin/cake annotate all -r -p AuthSandbox && bin/cake annotate all -r -p StateMachineSandbox",
 		"test": "phpunit",
