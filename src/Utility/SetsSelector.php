@@ -74,7 +74,7 @@ ORDER BY total_count DESC, partition_number";
 			$partition = $tagRaw['partition_number'];
 			$colorValue =  1 - (($partition == -1) ? 0 : -($partition * 0.15));
 			$tag['color'] = str_replace('[o]', (string) $colorValue, SetsSelector::getTagColor($tagRaw['color']));
-			$tag['solved_percent'] = round(Util::getPercent($tagRaw['solved_count'], $tagRaw['usage_count']));
+			$tag['solved_percent'] = Util::getPercentButAvoid100UntilComplete($tagRaw['solved_count'], $tagRaw['usage_count']);
 			$tag['partition'] = $partition;
 			$this->sets [] = $tag;
 		}
@@ -195,7 +195,7 @@ ORDER BY order_value, total_count DESC, partition_number, id
 			$set['amount'] = $row['usage_count'];
 			$partition = $row['partition_number'];
 			$set['color'] = $row['color'];
-			$set['solved_percent'] = round(Util::getPercent($row['solved_count'], $row['usage_count']));
+			$set['solved_percent'] = Util::getPercentButAvoid100UntilComplete($row['solved_count'], $row['usage_count']);
 			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
 			$set['partition'] = $partition;
 			$this->sets[] = $set;
@@ -314,7 +314,7 @@ ORDER BY order_value, total_count DESC, partition_number, id
 				: 1 - ($row['partition_number'] * 0.15);
 
 			$set['color'] = str_replace('[o]', (string) $opacity, $row['color']);
-			$set['solved_percent'] = round(Util::getPercent($row['solved_count'], $row['usage_count']));
+			$set['solved_percent'] = Util::getPercentButAvoid100UntilComplete($row['solved_count'], $row['usage_count']);
 			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
 
 			$this->sets[] = $set;
