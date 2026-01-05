@@ -92,10 +92,10 @@ class SetsController extends AppController
 			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
 			$percent = 0;
 			if (count($ts) > 0)
-				$percent = $counter / count($ts) * 100;
+				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
 			$overallCounter += count($ts);
 			$sets[$i]['Set']['solvedNum'] = $counter;
-			$sets[$i]['Set']['solved'] = round($percent, 1);
+			$sets[$i]['Set']['solved'] = $percent;
 			$sets[$i]['Set']['solvedColor'] = $this->getSolvedColor($sets[$i]['Set']['solved']);
 			$sets[$i]['Set']['topicColor'] = $sets[$i]['Set']['color'];
 			$sets[$i]['Set']['difficultyColor'] = $this->getDifficultyColor($sets[$i]['Set']['difficulty']);
@@ -108,7 +108,7 @@ class SetsController extends AppController
 			$sn['amount'] = count($ts);
 			$sn['color'] = $sets[$i]['Set']['color'];
 			$sn['difficulty'] = Rating::getReadableRankFromRating($elo);
-			$sn['solved'] = round($percent, 1);
+			$sn['solved'] = $percent;
 			array_push($setsNew, $sn);
 		}
 
@@ -358,7 +358,7 @@ class SetsController extends AppController
 		$return = [];
 		$return['difficulty'] = $tagDifficultyResult;
 		if (count($currentTagIds) > 0)
-			$return['solved'] = round($statusCounter / count($currentTagIds) * 100, 2);
+			$return['solved'] = Util::getPercentButAvoid100UntilComplete($statusCounter, count($currentTagIds));
 		else
 			$return['solved'] = 0;
 
@@ -768,7 +768,7 @@ class SetsController extends AppController
 					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id'])
 						$ts[$j]['Tsumego']['status'] = $allUts[$i]['TsumegoStatus']['status'];
 			}
-			$percent = Util::getPercent($solvedCount, $sizeCount);
+			$percent = Util::getPercentButAvoid100UntilComplete($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
 			$set['Set']['title'] = 'Favorites';
@@ -781,7 +781,7 @@ class SetsController extends AppController
 			$set['Set']['created'] = 20180322;
 			$set['Set']['createdDisplay'] = '22. March 2018';
 			$set['Set']['solvedNum'] = $sizeCount;
-			$set['Set']['solved'] = round($percent, 1);
+			$set['Set']['solved'] = $percent;
 			$set['Set']['solvedColor'] = '#eee';
 			$set['Set']['topicColor'] = '#eee';
 			$set['Set']['difficultyColor'] = '#eee';
