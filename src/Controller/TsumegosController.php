@@ -9,6 +9,7 @@ App::uses('CookieFlash', 'Utility');
 App::uses('TsumegoMerger', 'Utility');
 App::uses('SimilarSearchResultItem', 'Utility');
 App::uses('SimilarSearchLogic', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -54,11 +55,15 @@ class TsumegosController extends AppController
 			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
 
 		if (!$id)
-			throw new AppException("Tsumego id not provided");
+			throw new NotFoundException("Tsumego id not provided");
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
+		if (!$tsumego)
+			throw new NotFoundException("Tsumego not found");
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections)
-			throw new AppException("Problem without any set connection"); // some redirect/nicer message ?
+			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}

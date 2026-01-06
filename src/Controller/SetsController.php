@@ -5,6 +5,7 @@ use function PHPUnit\Framework\isNull;
 App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AppException', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('SetsSelector', 'Utility');
@@ -518,7 +519,7 @@ class SetsController extends AppController
 		$this->loadModel('UserContribution');
 
 		if (is_null($id))
-			throw new AppException("Set to view not specified");
+			throw new NotFoundException("Set to view not specified");
 
 		if ($id != '1')
 			$this->set('_page', 'set');
@@ -538,7 +539,23 @@ class SetsController extends AppController
 		$acS = null;
 		$acA = null;
 
-		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
+		$queryType = self::decodeQueryType($id);
+
+		if ($queryType == 'topics' && is_numeric($id))
+		{
+			$set = $this->Set->findById($id);
+			if (!$set)
+				throw new NotFoundException("Set not found");
+		}
+
+		if ($queryType == 'tags')
+		{
+			$tag = $this->Tag->findByName($id);
+			if (!$tag)
+				throw new NotFoundException("Tag not found");
+		}
+
+		$tsumegoFilters = new TsumegoFilters($queryType);
 		if (Auth::isLoggedIn())
 			if (Auth::isAdmin())
 			{

@@ -35,6 +35,9 @@ if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL'])) {
  */
 require 'functions.php';
 
+// Load custom error handler
+App::uses('AppErrorHandler', 'Lib/Error');
+
 // Load custom AppView class
 App::uses('AppView', 'View');
 
