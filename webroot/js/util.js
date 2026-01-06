@@ -139,7 +139,7 @@ function revelation()
 	if (isStatusAllowingInspection(tStatus))
 		return;
 
-	makeAjaxCall('/hero/revelation/' + this.tsumegoID,
+	makeAjaxCall('/hero/revelation/' + tsumegoID,
 		(response) =>
 		{
 			document.getElementById("status").style.color = playGreenColor;
