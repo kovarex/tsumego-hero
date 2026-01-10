@@ -1,0 +1,143 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { post, del } from '../shared/api';
+import type { Comment, Issue, AddCommentRequest, CommentCounts } from './commentTypes';
+
+interface AddCommentVariables {
+	data: AddCommentRequest;
+}
+
+interface DeleteCommentVariables {
+	commentId: number;
+}
+
+interface ReplyToIssueVariables {
+	issueId: number;
+	text: string;
+	tsumegoId: number;
+	position?: string;
+}
+
+interface MakeIssueVariables {
+	commentId: number;
+}
+
+interface CloseIssueVariables {
+	issueId: number;
+	newStatus: 'open' | 'closed';
+}
+
+export function useAddComment() {
+	return useMutation({
+		mutationFn: async ({ data }: AddCommentVariables) => {
+			// If reporting as issue, create issue instead
+			if (data.report_as_issue) {
+				return post<{success: boolean, issue: Issue}>('/tsumego-issues/create', {
+					tsumego_id: data.tsumego_id,
+					text: data.text,
+					position: data.position,
+				});
+			}
+			
+			// Regular comment
+			return post<Comment>('/tsumego-comments/add', data);
+		},
+	});
+}
+
+export function useDeleteComment() {
+	return useMutation({
+		mutationFn: ({ commentId }: DeleteCommentVariables) => {
+			console.log('[useDeleteComment] Starting delete for comment:', commentId);
+			return del<{ success: boolean }>(`/tsumego-comments/delete/${commentId}`);
+		},
+		onSuccess: (data) => {
+			console.log('[useDeleteComment] Delete successful, response:', data);
+			// Parent component handles state update - no reload needed
+		},
+		onError: (error) => {
+			console.error('[useDeleteComment] Delete failed:', error);
+		},
+	});
+}
+
+export function useReplyToIssue() {
+	return useMutation({
+		mutationFn: ({ issueId, text, tsumegoId, position }: ReplyToIssueVariables) =>
+			post<Comment>('/tsumego-comments/add', {
+				text,
+				tsumego_id: tsumegoId,
+				issue_id: issueId,
+				...(position && { position }),
+			}),
+	});
+}
+
+export function useCloseReopenIssue() {
+	return useMutation({
+		mutationFn: ({ issueId, newStatus }: CloseIssueVariables) => {
+			const endpoint = newStatus === 'closed' 
+				? `/tsumego-issues/close/${issueId}`
+				: `/tsumego-issues/reopen/${issueId}`;
+			console.log('[useCloseReopenIssue] Calling:', endpoint, 'with status:', newStatus);
+			return post<{ success: boolean }>(endpoint, { source: 'play' });
+		},
+		onSuccess: (data) => {
+			console.log('[useCloseReopenIssue] Success:', data);
+			// No reload - parent component updates state directly
+			// This matches htmx morph behavior (update in place)
+		},
+		onError: (error) => {
+			console.error('[useCloseReopenIssue] Error:', error);
+		},
+	});
+}
+
+export function useMakeIssue() {
+	return useMutation({
+		mutationFn: async ({ commentId }: MakeIssueVariables) => {
+			// CakePHP expects form data in format: data[Model][field]
+			const formData = new FormData();
+			formData.append('data[Comment][tsumego_issue_id]', 'new');
+			
+			const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
+				method: 'POST',
+				body: formData,
+			});
+			
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			}
+			
+			return response.json() as Promise<{ success: boolean; issue: Issue; comment_id: number }>;
+		},
+	});
+}
+
+/**
+ * Query hook for fetching comments data with automatic refetching.
+ * 
+ * Uses TanStack Query "Via UI" pattern - server is source of truth.
+ * After mutations, call queryClient.invalidateQueries() to refetch.
+ * 
+ * @param tsumegoId - The tsumego ID
+ * @param initialData - SSR data from PHP (avoids first fetch)
+ */
+export function useCommentsQuery(
+	tsumegoId: number,
+	enabled: boolean = true  // Only fetch when tab is clicked
+) {
+	return useQuery({
+		queryKey: ['comments', tsumegoId],
+		queryFn: async () => {
+			const response = await fetch(`/tsumego-comments/index/${tsumegoId}`);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch comments: ${response.status}`);
+			}
+			const data = await response.json();
+			return data as { issues: Issue[]; standalone: Comment[]; counts: CommentCounts };
+		},
+		enabled,  // Don't fetch until tab clicked
+		staleTime: 0,
+		refetchOnWindowFocus: true,
+	});
+}

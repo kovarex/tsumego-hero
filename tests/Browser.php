@@ -5,6 +5,7 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 
@@ -391,6 +392,31 @@ class Browser
 	{
 		$this->setCookie('hackedLoggedInUserID', '');
 		Auth::logout();
+	}
+
+	/**
+	 * Helper to expand comments section and wait for React to render.
+	 * Comments are hidden by default for non-admins, so this clicks the COMMENTS tab
+	 * and waits for the content to load.
+	 */
+	public function expandComments()
+	{
+		// Check if #msg2x (comments content) is visible
+		$commentsContent = $this->driver->findElement(WebDriverBy::id('msg2x'));
+		if (!$commentsContent->isDisplayed())
+		{
+			// Click the COMMENTS tab to expand
+			$commentsTab = $this->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'));
+			$commentsTab->click();
+
+			// Wait for the content to become visible (handles the display: none -> display: '' transition)
+			$this->driver->wait(5)->until(
+				WebDriverExpectedCondition::visibilityOf($commentsContent)
+			);
+
+			// Wait for React Query to fetch data and render (includes issues with replies)
+			usleep(1000 * 1000);
+		}
 	}
 
 	public $driver;

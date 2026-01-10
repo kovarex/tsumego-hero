@@ -671,6 +671,9 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
 </script>
+
+<script src="/js/dist/app.js?v=<?= filemtime(WWW_ROOT . 'js' . DS . 'dist' . DS . 'app.js') ?>" type="module"></script>
+
 		<?php
 if(!Auth::isLoggedIn())
 	echo '<style>.outerMenu1{left: 224px;}</style>';

@@ -82,6 +82,14 @@ These changes just had to be done, so the data structure we are working on is cl
   
   **Production note**: Production uses `src/Config/asset_compress.ini` (no `.local`) with minification + gzip enabled. The deploy script runs `asset_compress build` to pre-build all bundles.
 
+- **React development setup**: 
+During development:
+
+	pnpm install
+	pnpm run dev
+
+  This starts Vite in watch mode - it rebuilds the React bundle automatically when you edit files in `app/`. The bundle is written to `webroot/js/dist/app.js` and loaded by the site with cache-busting timestamps.
+
 - Open to browse your project now.
 
     https://tsumego.ddev.site:33003/
