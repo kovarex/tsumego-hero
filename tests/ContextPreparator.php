@@ -316,6 +316,9 @@ class ContextPreparator
 		// Get the created issue ID
 		$issueId = $issueModel->id;
 
+		// Store issue in array for test access
+		$this->issues[] = $createdIssue['TsumegoIssue'];
+
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);
 		if ($message)
@@ -905,6 +908,7 @@ class ContextPreparator
 	public ?array $set = null;
 	public array $sets = [];
 	public array $tsumegos = [];
+	public array $issues = [];
 	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
 	public ?array $tsumegoSets = null;

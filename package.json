@@ -1,0 +1,26 @@
+{
+  "name": "tsumego-hero-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.16",
+    "dayjs": "^1.11.19",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sortablejs": "^1.15.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/sortablejs": "^1.15.9",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^5.0.11"
+  }
+}

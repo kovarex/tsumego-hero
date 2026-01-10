@@ -4,18 +4,15 @@
  * Global issues list view.
  *
  * Shows all issues across all tsumegos with filtering options.
+ * React fetches all data from API - no SSR needed.
  *
  * Variables:
- * @var array $issues Array of issues with enriched data
  * @var string $statusFilter Current filter ('opened', 'closed', 'all')
- * @var int $openCount Number of open issues
- * @var int $closedCount Number of closed issues
+ * @var int $currentPage Current page number (for initial state only)
  */
 
 $statusFilter = $statusFilter ?? 'opened';
-$openCount = $openCount ?? 0;
-$closedCount = $closedCount ?? 0;
-$totalCount = $openCount + $closedCount;
+$currentPage = $currentPage ?? 1;
 ?>
 
 <div class="issues-page">
@@ -25,15 +22,9 @@ $totalCount = $openCount + $closedCount;
 		Issues are reports about problems with tsumego solutions - missing moves, wrong answers, or other corrections needed.
 	</p>
 
-	<!-- Issues section with idiomorph for automatic DOM diffing -->
-	<?php echo $this->element('TsumegoIssues/issues-section', compact('issues', 'statusFilter', 'openCount', 'closedCount')); ?>
-
-	<!-- Pagination -->
-	<?php if (!empty($this->Paginator)): ?>
-		<div class="issues-page__pagination">
-			<?php echo $this->Paginator->prev('« Previous'); ?>
-			<?php echo $this->Paginator->numbers(); ?>
-			<?php echo $this->Paginator->next('Next »'); ?>
-		</div>
-	<?php endif; ?>
+	<!-- React-based issues list with filters and pagination -->
+	<?php echo $this->element('TsumegoIssues/react-section', compact(
+		'statusFilter',
+		'currentPage'
+	)); ?>
 </div>
