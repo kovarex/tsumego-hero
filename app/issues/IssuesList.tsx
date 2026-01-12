@@ -153,8 +153,9 @@ export function IssuesList({
 								onCloseReopen={handleCloseReopen}
 								showReplyForm={false}  // Hide reply form on list page
 								comments={item.comments}
-								author={item.author}
-							/>
+							author={item.author}
+							isDraggingEnabled={false}  // Disable dragging on issues list page
+						/>
 						</div>
 					))
 				)}

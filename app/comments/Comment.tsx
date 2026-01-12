@@ -1,4 +1,4 @@
-import { renderUserLink } from '../shared/rating';
+import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
 import dayjs from 'dayjs';
 
@@ -85,15 +85,6 @@ export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue
 	// User styling - admin comments use different class
 	const commentColorClass = comment.isAdmin ? 'commentBox2' : 'commentBox1';
 	
-	// Render user link with avatar and rank
-	const authorLink = renderUserLink(
-		comment.user_id,
-		comment.user_name,
-		comment.user_external_id,
-		comment.user_picture,
-		comment.user_rating
-	);
-	
 	// Parse comment text with coordinate highlighting
 	const commentContent = renderCommentText(comment.text);
 	
@@ -114,7 +105,15 @@ export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue
 						)}
 						<td>
 							<div className={commentColorClass}>
-								<span className="tsumego-comment__author" dangerouslySetInnerHTML={{ __html: authorLink + ':' }} />
+								<span className="tsumego-comment__author">
+									<UserLink 
+										userId={comment.user_id}
+										name={comment.user_name}
+										rating={comment.user_rating}
+										externalId={comment.user_external_id}
+										picture={comment.user_picture}
+									/>:
+								</span>
 								<br />
 								<span className="comment__text">{commentContent}</span>
 							</div>
