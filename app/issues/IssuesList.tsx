@@ -3,7 +3,8 @@ import { Issue } from './Issue';
 import { useIssuesQuery, useInvalidateIssuesList } from './useIssues';
 import { useCloseReopenIssue } from '../comments/useComments';
 import { useDeleteComment } from '../comments/useComments';
-import type { IssuesListResponse, IssueStatusFilter, IssueWithContext } from './issueTypes';
+import type { IssueStatusFilter, IssueWithContext } from './issueTypes';
+import { type IssueStatusId } from './issueTypes';
 import { IssuesListSkeleton } from './IssueSkeleton';
 import { ErrorMessage } from '../shared/ErrorMessage';
 
@@ -57,7 +58,7 @@ export function IssuesList({
 		window.scrollTo(0, 0);  // Scroll to top on page change
 	};
 	
-	const handleCloseReopen = async (issueId: number, newStatus: 'open' | 'closed') => {
+	const handleCloseReopen = async (issueId: number, newStatus: IssueStatusId) => {
 		try {
 			await closeReopenMutation.mutateAsync({ issueId, newStatus });
 			await invalidateList();

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Comment } from '../comments/Comment';
 import { CommentForm } from '../comments/CommentForm';
 import { UserLink } from '../shared/UserLink';
-import type { Issue as IssueType, Comment as CommentType } from '../comments/commentTypes';
+import type { Comment as CommentType } from '../comments/commentTypes';
+import { IssueStatus, type IssueStatusId, type Issue as IssueType } from './issueTypes';
 
 interface IssueProps {
     issue: IssueType;
@@ -11,7 +12,7 @@ interface IssueProps {
     isAdmin: boolean;
     onDelete: (id: number) => void;
     onReply: (issueId: number, text: string, position?: string) => Promise<void>;
-    onCloseReopen: (issueId: number, status: 'open' | 'closed') => Promise<void>;
+    onCloseReopen: (issueId: number, newStatus: IssueStatusId) => Promise<void>;
     // Optional props for list context
     showReplyForm?: boolean;  // Default: true (show reply form)
     comments?: CommentType[];  // If provided, use these instead of issue.comments
@@ -33,6 +34,7 @@ export function Issue({
     isDraggingEnabled = true  // Default to enabling dragging    
 }: IssueProps) {
     const [reply, setReply] = useState({ show: false, submitting: false });
+    const isOpen = issue.tsumego_issue_status_id === IssueStatus.OPEN;
     const canCloseReopen = isAdmin || currentUserId === issue.user_id;
     
     // Use provided comments/author or fall back to issue data
@@ -42,7 +44,7 @@ export function Issue({
     const handleCloseReopen = async () => {
         setReply(r => ({ ...r, submitting: true }));
         try {
-            await onCloseReopen(issue.id, issue.status === 'open' ? 'closed' : 'open');
+            await onCloseReopen(issue.id, isOpen ? IssueStatus.CLOSED : IssueStatus.OPEN);
         } finally {
             setReply(r => ({ ...r, submitting: false }));
         }
@@ -59,11 +61,11 @@ export function Issue({
     };
 
     return (
-        <div className={`tsumego-issue tsumego-issue--${issue.status === 'open' ? 'opened' : 'closed'}`} data-issue-id={issue.id}>
+        <div className={`tsumego-issue tsumego-issue--${isOpen ? 'opened' : 'closed'}`} data-issue-id={issue.id}>
             <div className="tsumego-issue__header">
                 <span className="tsumego-issue__title">Issue #{issueNumber}</span>
-                <span className={`tsumego-issue__badge status--${issue.status === 'open' ? 'opened' : 'closed'}`}>
-                    {issue.status === 'open' ? '🔴' : '✅'} {issue.status === 'open' ? 'Opened' : 'Closed'}
+                <span className={`tsumego-issue__badge status--${isOpen ? 'opened' : 'closed'}`}>
+                    {isOpen ? '🔴' : '✅'} {isOpen ? 'Opened' : 'Closed'}
                 </span>
                 <span className="tsumego-issue__meta">
                     by <UserLink 
@@ -77,7 +79,7 @@ export function Issue({
                 </span>
                 {canCloseReopen && (
                     <span className="tsumego-issue__actions">
-                        {issue.status === 'open' ? (
+                        {isOpen ? (
                             <button type="button" className="btn btn--success btn--small" onClick={handleCloseReopen} disabled={reply.submitting}>
                                 ✓ Close Issue
                             </button>
@@ -93,7 +95,7 @@ export function Issue({
             <div className="tsumego-dnd__issue-dropzone" data-issue-id={issue.id}>
                 {displayComments.map(c => (
                     <Comment key={c.id} comment={c} currentUserId={currentUserId} isAdmin={isAdmin}
-                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} issueStatus={issue.status} 
+                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} issueStatus={issue.tsumego_issue_status_id as IssueStatusId} 
                         isDraggingEnabled={isDraggingEnabled} />
                 ))}
             </div>

@@ -176,15 +176,12 @@ class TsumegoIssue extends AppModel
 
 			if (!isset($issuesMap[$issueId]))
 			{
-				// Map status_id to string for React frontend
 				$statusId = $row['ti']['tsumego_issue_status_id'];
-				$statusString = $statusId == 1 ? 'open' : 'closed';
 
 				$issuesMap[$issueId] = [
 					'issue' => [
 						'id' => $issueId,
 						'tsumego_issue_status_id' => $statusId,
-						'status' => $statusString, // Computed field for React
 						'tsumego_id' => $row['ti']['tsumego_id'],
 						'user_id' => $row['ti']['issue_user_id'],
 						'created' => $row['ti']['issue_created'],
@@ -207,7 +204,7 @@ class TsumegoIssue extends AppModel
 			{
 				$issuesMap[$issueId]['comments'][] = [
 					'id' => $row['tc']['comment_id'],
-					'text' => $row['tc']['comment_text'], // Use 'text' for React consistency
+					'text' => $row['tc']['comment_text'],
 					'created' => $row['tc']['comment_created'],
 					'user_id' => $row['tc']['comment_user_id'],
 					'user_name' => $row['cu']['comment_author_name'] ?? '[deleted user]',
@@ -215,17 +212,6 @@ class TsumegoIssue extends AppModel
 					'user_picture' => $row['cu']['comment_author_picture'],
 					'user_rating' => $row['cu']['comment_author_rating'],
 					'isAdmin' => (bool) ($row['cu']['comment_author_isAdmin'] ?? false),
-					// Legacy nested 'user' object for backwards compatibility with old templates
-					'user' => $row['cu']['comment_author_name']
-						? [
-							'id' => $row['cu']['comment_author_id'],
-							'name' => $row['cu']['comment_author_name'],
-							'external_id' => $row['cu']['comment_author_external_id'],
-							'picture' => $row['cu']['comment_author_picture'],
-							'rating' => $row['cu']['comment_author_rating'],
-							'isAdmin' => $row['cu']['comment_author_isAdmin'],
-						]
-						: ['name' => '[deleted user]', 'isAdmin' => 0],
 				];
 			}
 		}

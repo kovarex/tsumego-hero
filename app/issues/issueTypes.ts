@@ -1,10 +1,36 @@
 /**
- * Types for Issues List page.
- * 
- * Extends types from comments.ts since issues contain comments.
+ * Types for Issues.
  */
 
-import type { Issue, Comment } from '../comments/commentTypes';
+import type { Comment } from '../comments/commentTypes';
+
+/**
+ * Issue status IDs from database (tsumego_issue_status table).
+ * 
+ * Maps to: 1 = open, 2 = closed
+ */
+export const IssueStatus = {
+	OPEN: 1,
+	CLOSED: 2,
+} as const;
+
+export type IssueStatusId = typeof IssueStatus[keyof typeof IssueStatus];
+
+/**
+ * Issue entity from database.
+ */
+export interface Issue {
+	id: number;
+	tsumego_issue_status_id: IssueStatusId;
+	created: string;
+	user_id: number;
+	user_name: string | null;
+	user_picture: string | null;
+	user_rating: number | null;
+	user_external_id: string | null;
+	isAdmin: boolean;
+	comments: Comment[];
+}
 
 /**
  * Issue with context for global issues list display.

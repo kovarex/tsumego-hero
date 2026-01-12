@@ -159,7 +159,7 @@ class TsumegoIssuesController extends AppController
 
 		$issueData = [
 			'id' => $issueId,
-			'status' => 'open',
+			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
 			'created' => date('Y-m-d H:i:s'),
 			'user_id' => Auth::getUserID(),
 			'user_name' => $user['User']['name'],
