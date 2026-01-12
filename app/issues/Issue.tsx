@@ -94,7 +94,7 @@ export function Issue({
             <div className="tsumego-dnd__issue-dropzone" data-issue-id={issue.id}>
                 {displayComments.map(c => (
                     <Comment key={c.id} comment={c} currentUserId={currentUserId} isAdmin={isAdmin}
-                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} />
+                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} issueStatus={issue.status} isDraggingEnabled={false} />
                 ))}
             </div>
 

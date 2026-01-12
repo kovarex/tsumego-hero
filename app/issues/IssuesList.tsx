@@ -4,6 +4,8 @@ import { useIssuesQuery, useInvalidateIssuesList } from './useIssues';
 import { useCloseReopenIssue } from '../comments/useComments';
 import { useDeleteComment } from '../comments/useComments';
 import type { IssuesListResponse, IssueStatusFilter, IssueWithContext } from './issueTypes';
+import { IssuesListSkeleton } from './IssueSkeleton';
+import { ErrorMessage } from '../shared/ErrorMessage';
 
 interface IssuesListProps {
 	initialFilter: IssueStatusFilter;
@@ -115,13 +117,17 @@ export function IssuesList({
 				>
 					All ({counts.open + counts.closed})
 				</a>
-				{issuesQuery.isFetching && <span className="htmx-indicator">Loading...</span>}
 			</div>
 			
 			{/* Issues list */}
 			<div className="issues-list">
 				{issuesQuery.isLoading ? (
-					<p className="issues-list__empty">Loading...</p>
+					<IssuesListSkeleton />
+				) : issuesQuery.isError ? (
+					<ErrorMessage 
+						message="Failed to load issues. Please try again."
+						onRetry={() => issuesQuery.refetch()}
+					/>
 				) : issues.length === 0 ? (
 					<p className="issues-list__empty">
 						{statusFilter === 'opened' && 'No open issues! 🎉'}

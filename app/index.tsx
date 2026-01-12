@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorBoundary } from './shared/ErrorBoundary';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
-import type { Issue, Comment, CommentCounts } from './comments/commentTypes';
-import type { IssueWithContext } from './issues/issueTypes';
+import type { CommentCounts } from './comments/commentTypes';
 
 // Wait for DOM to be fully loaded
 if (document.readyState === 'loading') {
@@ -43,14 +43,16 @@ function initializeComments() {
 		// Render CommentSection
 		const reactRoot = createRoot(root);
 		reactRoot.render(
-			<QueryClientProvider client={queryClient}>
-				<CommentSection
-					tsumegoId={tsumegoId}
-					userId={userId}
-					isAdmin={isAdmin}
-					initialCounts={initialCounts}
-				/>
-			</QueryClientProvider>
+			<ErrorBoundary>
+				<QueryClientProvider client={queryClient}>
+					<CommentSection
+						tsumegoId={tsumegoId}
+						userId={userId}
+						isAdmin={isAdmin}
+						initialCounts={initialCounts}
+					/>
+				</QueryClientProvider>
+			</ErrorBoundary>
 		);
 	});
 }
@@ -82,13 +84,15 @@ function initializeIssuesList() {
 	// Render IssuesList
 	const reactRoot = createRoot(root);
 	reactRoot.render(
-		<QueryClientProvider client={queryClient}>
-			<IssuesList
-				initialFilter={statusFilter}
-				initialPage={currentPage}
-				userId={userId}
-				isAdmin={isAdmin}
-			/>
-		</QueryClientProvider>
+		<ErrorBoundary>
+			<QueryClientProvider client={queryClient}>
+				<IssuesList
+					initialFilter={statusFilter}
+					initialPage={currentPage}
+					userId={userId}
+					isAdmin={isAdmin}
+				/>
+			</QueryClientProvider>
+		</ErrorBoundary>
 	);
 }
