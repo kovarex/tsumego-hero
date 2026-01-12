@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import Sortable from 'sortablejs';
 import { Issue } from '../issues/Issue';
 import { Comment } from './Comment';
 import { CommentForm } from './CommentForm';
 import type { Issue as IssueType, Comment as CommentType, CommentCounts } from './commentTypes';
 import { useCommentsQuery, useAddComment, useDeleteComment, useReplyToIssue, useCloseReopenIssue, useMakeIssue } from './useComments';
 import { moveComment } from '../shared/api';
+import { useSortableDnD } from './useSortableDnD';
+import { CommentsListSkeleton } from './CommentSkeleton';
+import { ErrorMessage } from '../shared/ErrorMessage';
 
 interface CommentSectionProps {
     tsumegoId: number;
@@ -17,8 +19,6 @@ interface CommentSectionProps {
 
 export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: CommentSectionProps) {
     const contentRef = useRef<HTMLDivElement>(null);
-    const sortablesRef = useRef<Sortable[]>([]);
-    const dragStateRef = useRef<{ commentId: number; sourceIssueId: number | null } | null>(null);
     
     // Local UI state (tabs and visibility)
     const [activeTab, setActiveTab] = useState<'open' | 'closed' | null>(null);
@@ -90,205 +90,8 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
         setHasEverOpened(false);  // Require user to click tab again
     }, [tsumegoId]);
     
-    // Initialize SortableJS drag-and-drop
-    useEffect(() => {
-        if (!isAdmin || !contentRef.current) return;
-
-        // Cleanup previous sortables
-        sortablesRef.current.forEach(s => s.destroy());
-        sortablesRef.current = [];
-
-        console.log('[Comment DnD] Initializing SortableJS for tsumego:', tsumegoId);
-
-        const showIssueDropTargets = (show: boolean, sourceIssueId: number | null) => {
-            document.querySelectorAll('.tsumego-issue').forEach((issueEl: Element) => {
-                const htmlIssueEl = issueEl as HTMLElement;
-                const issueId = parseInt(htmlIssueEl.dataset.issueId || '0');
-                const overlay = issueEl.querySelector('.tsumego-issue__drop-overlay') as HTMLElement;
-                if (overlay) {
-                    if (show) {
-                        overlay.style.display = 'flex';
-                        const span = overlay.querySelector('span');
-                        if (issueId === sourceIssueId) {
-                            overlay.classList.add('tsumego-issue__drop-overlay--source');
-                            if (span) span.textContent = 'Drop to return comment';
-                        } else {
-                            overlay.classList.remove('tsumego-issue__drop-overlay--source');
-                            if (span) span.textContent = 'Drop here to add to this issue';
-                        }
-                    } else {
-                        overlay.style.display = 'none';
-                        overlay.classList.remove('tsumego-issue__drop-overlay--source');
-                    }
-                }
-            });
-        };
-
-        // Create main sortable for standalone comments
-        const mainSortable = new Sortable(contentRef.current, {
-            group: { name: 'comments', pull: true, put: true } as any,
-            sort: false,
-            animation: 150,
-            scroll: true,
-            scrollSensitivity: 80,
-            scrollSpeed: 15,
-            bubbleScroll: true,
-            handle: '.tsumego-comment__drag-handle',
-            draggable: '.tsumego-comment--standalone',
-            ghostClass: 'tsumego-comment--ghost',
-            chosenClass: 'tsumego-comment--dragging',
-            filter: '.tsumego-issue',
-            onStart: (evt) => {
-                const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
-                const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
-                dragStateRef.current = { commentId, sourceIssueId: null };
-                console.log('[Comment DnD] Dragging standalone comment:', commentId);
-                showIssueDropTargets(true, null);
-            },
-            onEnd: () => {
-                console.log('[Comment DnD] onEnd (main)');
-                showIssueDropTargets(false, null);
-                dragStateRef.current = null;
-            },
-            onAdd: async (evt) => {
-                // Revert SortableJS DOM change - prevent React conflict
-                // SortableJS already moved the DOM node, but React will handle the move
-                if (evt.from && evt.item.parentNode !== evt.from) {
-                    evt.from.appendChild(evt.item);
-                }
-                
-                // Now update React state, which will properly re-render the element
-                const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
-                const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
-                console.log('[Comment DnD] Comment', commentId, 'dropped to standalone');
-                await handleMoveComment(commentId, 'standalone');
-            }
-        });
-        sortablesRef.current.push(mainSortable);
-
-        // Create sortable for each issue
-        contentRef.current.querySelectorAll('.tsumego-dnd__issue-dropzone').forEach((container: Element) => {
-            const htmlContainer = container as HTMLElement;
-            const issueId = parseInt(htmlContainer.dataset.issueId || '0');
-            const issueEl = container.closest('.tsumego-issue') as HTMLElement;
-            
-            const issueSortable = new Sortable(htmlContainer, {
-                group: { name: `issue-${issueId}`, pull: 'comments', put: false } as any,
-                sort: false,
-                animation: 0,
-                scroll: true,
-                scrollSensitivity: 80,
-                scrollSpeed: 15,
-                bubbleScroll: true,
-                handle: '.tsumego-comment__drag-handle',
-                draggable: '.tsumego-comment',
-                ghostClass: 'tsumego-comment--ghost',
-                chosenClass: 'tsumego-comment--dragging',
-                onStart: (evt) => {
-                    const commentId = parseInt((evt.item as HTMLElement).dataset.commentId || '0');
-                    dragStateRef.current = { commentId, sourceIssueId: issueId };
-                    console.log('[Comment DnD] Dragging from issue:', issueId);
-                    issueEl.classList.add('tsumego-issue--drag-source');
-                    showIssueDropTargets(true, issueId);
-                },
-                onEnd: () => {
-                    console.log('[Comment DnD] onEnd (issue)');
-                    issueEl.classList.remove('tsumego-issue--drag-source');
-                    showIssueDropTargets(false, null);
-                    dragStateRef.current = null;
-                }
-            });
-            sortablesRef.current.push(issueSortable);
-
-            // Setup drop overlay on issue header
-            setupIssueDropTarget(issueEl, issueId);
-        });
-
-        // ESC key handler to cancel drag
-        const handleEscKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && dragStateRef.current) {
-                console.log('[Comment DnD] ESC pressed - cancelling drag');
-                // Hide all overlays
-                showIssueDropTargets(false, null);
-                // Cancel all sortables
-                sortablesRef.current.forEach(s => {
-                    if ((s as any).el) {
-                        (s as any).el.classList.remove('tsumego-issue--drag-source');
-                    }
-                });
-                dragStateRef.current = null;
-            }
-        };
-        document.addEventListener('keydown', handleEscKey);
-
-        // Cleanup on unmount
-        return () => {
-            sortablesRef.current.forEach(s => s.destroy());
-            sortablesRef.current = [];
-            document.removeEventListener('keydown', handleEscKey);
-        };
-    }, [isAdmin, tsumegoId, issues.length]); // Reinit when issue count changes (new issue added/removed)
-    
-    const setupIssueDropTarget = (issueEl: HTMLElement, issueId: number) => {
-        let overlay = issueEl.querySelector('.tsumego-issue__drop-overlay') as HTMLElement;
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'tsumego-issue__drop-overlay';
-            overlay.innerHTML = '<span>Drop here to add to this issue</span>';
-            overlay.style.display = 'none';
-            issueEl.appendChild(overlay);
-        }
-
-        const handleDragOver = (e: DragEvent) => {
-            e.preventDefault();
-            overlay.classList.add('tsumego-issue__drop-overlay--active');
-        };
-
-        const handleDragLeave = () => {
-            overlay.classList.remove('tsumego-issue__drop-overlay--active');
-        };
-
-        const handleDrop = async (e: DragEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            overlay.classList.remove('tsumego-issue__drop-overlay--active');
-
-            if (!dragStateRef.current) return;
-
-            const { commentId, sourceIssueId } = dragStateRef.current;
-
-            // Check if this is a return to source issue
-            if (sourceIssueId === issueId) {
-                console.log('[Comment DnD] Comment returned to source issue');
-                return;
-            }
-
-            console.log('[Comment DnD] Comment', commentId, 'dropped into issue', issueId);
-            
-            // Find the dragged element and revert any SortableJS DOM changes
-            const draggedElement = document.querySelector(`[data-comment-id="${commentId}"]`)?.closest('.tsumego-comment--standalone, .tsumego-comment') as HTMLElement;
-            if (draggedElement) {
-                const originalParent = draggedElement.parentElement;
-                // Store reference to revert later if needed
-                const revertMove = () => {
-                    if (originalParent && draggedElement.parentElement !== originalParent) {
-                        originalParent.appendChild(draggedElement);
-                    }
-                };
-                
-                // Revert SortableJS move before React updates
-                setTimeout(revertMove, 0);
-            }
-            
-            await handleMoveComment(commentId, issueId);
-        };
-
-        overlay.addEventListener('dragover', handleDragOver);
-        overlay.addEventListener('dragleave', handleDragLeave);
-        overlay.addEventListener('drop', handleDrop);
-    };
-
-    const handleMoveComment = async (commentId: number, targetIssueId: number | 'standalone') => {
+    // Move comment handler (passed to SortableJS hook)
+    const handleMoveComment = useCallback(async (commentId: number, targetIssueId: number | 'standalone') => {
         try {
             console.log('[Comment DnD] Moving comment:', commentId, 'to:', targetIssueId);
             const result = await moveComment(commentId, targetIssueId);
@@ -301,7 +104,16 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             console.error('[Comment DnD] Move failed:', error);
             alert('Failed to move comment. Please try again.');
         }
-    };
+    }, [queryClient, tsumegoId]);
+    
+    // Initialize SortableJS drag-and-drop (extracted to custom hook)
+    useSortableDnD({
+        containerRef: contentRef,
+        isAdmin,
+        tsumegoId,
+        issues,
+        onMoveComment: handleMoveComment
+    });
     
     // Handlers
     const handleAdd = async (text: string, position?: string, reportAsIssue?: boolean) => {
@@ -420,35 +232,53 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             </div>
 
             <div className="tsumego-comments__content" id="msg2x" ref={contentRef} style={{ display: showContent ? '' : 'none' }}>
-                {allItems.map(item => {
-                    if (item.type === 'issue') {
-                        const issue = item.data as IssueType;
-                        return (
-                            <div key={`issue-${issue.id}`} style={{ display: shouldShowItem(issue, 'issue') ? '' : 'none' }}>
-                                <Issue issue={issue} issueNumber={item.issueNumber!} currentUserId={userId} isAdmin={isAdmin}
-                                    onDelete={handleDelete} onReply={handleReply} onCloseReopen={handleCloseReopen} />
-                            </div>
-                        );
-                    } else {
-                        const comment = item.data as CommentType;
-                        return (
-                            <div className="tsumego-comment--standalone" key={`comment-${comment.id}`} style={{ display: shouldShowItem(comment, 'standalone') ? '' : 'none' }}>
-                                <Comment comment={comment} currentUserId={userId} isAdmin={isAdmin}
-                                    onDelete={handleDelete} onMakeIssue={handleMakeIssue} showIssueContext={true} />
-                            </div>
-                        );
-                    }
-                })}
+                {/* Skeleton loading on initial load */}
+                {commentsQuery.isLoading && hasEverOpened && (
+                    <CommentsListSkeleton />
+                )}
+                
+                {/* Error state */}
+                {commentsQuery.isError && (
+                    <ErrorMessage 
+                        message="Failed to load comments. Please try again."
+                        onRetry={() => queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] })}
+                    />
+                )}
+                
+                {/* Content (shows even during background refetch) */}
+                {!commentsQuery.isLoading && commentsQuery.isSuccess && (
+                    <>
+                        {allItems.map(item => {
+                            if (item.type === 'issue') {
+                                const issue = item.data as IssueType;
+                                return (
+                                    <div key={`issue-${issue.id}`} style={{ display: shouldShowItem(issue, 'issue') ? '' : 'none' }}>
+                                        <Issue issue={issue} issueNumber={item.issueNumber!} currentUserId={userId} isAdmin={isAdmin}
+                                            onDelete={handleDelete} onReply={handleReply} onCloseReopen={handleCloseReopen} />
+                                    </div>
+                                );
+                            } else {
+                                const comment = item.data as CommentType;
+                                return (
+                                    <div className="tsumego-comment--standalone" key={`comment-${comment.id}`} style={{ display: shouldShowItem(comment, 'standalone') ? '' : 'none' }}>
+                                        <Comment comment={comment} currentUserId={userId} isAdmin={isAdmin}
+                                            onDelete={handleDelete} onMakeIssue={handleMakeIssue} showIssueContext={true} />
+                                    </div>
+                                );
+                            }
+                        })}
 
-                {userId ? (
-                    <div className="tsumego-comments__form" style={{ display: showForm ? '' : 'none' }}>
-                        <h4>Add Comment</h4>
-                        <CommentForm onSubmit={handleAdd} isSubmitting={addMutation.isPending} />
-                    </div>
-                ) : (
-                    <div className="tsumego-comments__login-prompt" style={{ display: showForm ? '' : 'none' }}>
-                        <p><a href="/users/login">Log in</a> to leave a comment.</p>
-                    </div>
+                        {userId ? (
+                            <div className="tsumego-comments__form" style={{ display: showForm ? '' : 'none' }}>
+                                <h4>Add Comment</h4>
+                                <CommentForm onSubmit={handleAdd} isSubmitting={addMutation.isPending} />
+                            </div>
+                        ) : (
+                            <div className="tsumego-comments__login-prompt" style={{ display: showForm ? '' : 'none' }}>
+                                <p><a href="/users/login">Log in</a> to leave a comment.</p>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </>

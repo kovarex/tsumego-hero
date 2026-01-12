@@ -29,20 +29,16 @@ function initializeComments() {
 		const userId = root.dataset.userId ? parseInt(root.dataset.userId, 10) : null;
 		const isAdmin = root.dataset.isAdmin === 'true';  // Changed from === '1' to === 'true'
 	
-	// Parse initial data from PHP (passed in data attributes)
-	let initialIssues: Issue[] = [];
-	let initialStandalone: Comment[] = [];
+	// Parse initial counts from PHP (passed in data attributes)
 	let initialCounts: CommentCounts = { 
 		total: 0, comments: 0, issues: 0, openIssues: 0 
 	};
 	
 	try {
-		initialIssues = root.dataset.initialIssues ? JSON.parse(root.dataset.initialIssues) : [];
-		initialStandalone = root.dataset.initialStandalone ? JSON.parse(root.dataset.initialStandalone) : [];
 		initialCounts = root.dataset.initialCounts ? JSON.parse(root.dataset.initialCounts) : initialCounts;
-		console.log('Parsed comment data:', { initialIssues, initialStandalone, initialCounts, tsumegoId, userId, isAdmin });
+		console.log('Parsed comment counts:', { initialCounts, tsumegoId, userId, isAdmin });
 	} catch (e) {
-		console.error('Failed to parse initial comment data:', e);
+		console.error('Failed to parse initial comment counts:', e);
 	}
 	
 	const reactRoot = createRoot(root);
@@ -52,8 +48,6 @@ function initializeComments() {
 				tsumegoId={tsumegoId}
 				userId={userId}
 				isAdmin={isAdmin}
-				initialIssues={initialIssues}
-				initialStandalone={initialStandalone}
 				initialCounts={initialCounts}
 			/>
 		</QueryClientProvider>

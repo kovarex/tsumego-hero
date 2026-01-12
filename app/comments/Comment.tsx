@@ -14,6 +14,8 @@ interface CommentProps {
 	onDelete: (id: number) => void;
 	onMakeIssue: (id: number) => void;
 	showIssueContext: boolean;
+	issueStatus?: 'open' | 'closed'; // If comment is in an issue, pass its status
+	isDraggingEnabled?: boolean; // If false, hide drag handles entirely (e.g., on read-only pages)
 }
 
 // Component for a single Go coordinate span with hover handlers
@@ -75,7 +77,7 @@ function renderCommentText(text: string | null | undefined): React.ReactNode[] {
 	return parts.length > 0 ? parts : [text];
 }
 
-export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue, showIssueContext }: CommentProps) {
+export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue, showIssueContext, issueStatus, isDraggingEnabled = true }: CommentProps) {
 	const canDelete = isAdmin || currentUserId === comment.user_id;
 	// Make Issue button shows for admins on standalone comments (showIssueContext=true) that aren't already in an issue
 	const canMakeIssue = isAdmin && showIssueContext;
@@ -96,9 +98,9 @@ export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue
 	const commentContent = renderCommentText(comment.text);
 	
 	// Determine if draggable
-	// Admin can drag: standalone comments (showIssueContext=true) OR comments inside issues (showIssueContext=false)
-	// Basically: always draggable for admins
-	const canDrag = isAdmin;
+	// Dragging must be explicitly enabled (isDraggingEnabled=true, default on play page)
+	// Admin can drag: standalone comments OR comments inside open issues (not closed)
+	const canDrag = isDraggingEnabled && isAdmin && issueStatus !== 'closed';
 	
 	return (
 		<div className={`tsumego-comment${canDrag ? ' tsumego-comment--draggable' : ''}`} data-comment-id={comment.id}>
