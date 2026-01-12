@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Comment } from '../comments/Comment';
 import { CommentForm } from '../comments/CommentForm';
-import { renderUserLink } from '../shared/rating';
+import { UserLink } from '../shared/UserLink';
 import type { Issue as IssueType, Comment as CommentType } from '../comments/commentTypes';
 
 interface IssueProps {
@@ -16,6 +16,7 @@ interface IssueProps {
     showReplyForm?: boolean;  // Default: true (show reply form)
     comments?: CommentType[];  // If provided, use these instead of issue.comments
     author?: { name: string };  // If provided, use this instead of issue.user_name
+    isDraggingEnabled?: boolean;  // Default: true (enable dragging on play page)
 }
 
 export function Issue({ 
@@ -28,7 +29,8 @@ export function Issue({
     onCloseReopen,
     showReplyForm = true,  // Default to showing reply form
     comments,  // Optional override
-    author  // Optional override
+    author,  // Optional override
+    isDraggingEnabled = true  // Default to enabling dragging    
 }: IssueProps) {
     const [reply, setReply] = useState({ show: false, submitting: false });
     const canCloseReopen = isAdmin || currentUserId === issue.user_id;
@@ -56,15 +58,6 @@ export function Issue({
         }
     };
 
-    // Render user link with avatar and rank
-    const authorLink = renderUserLink(
-        issue.user_id,
-        authorName,
-        issue.user_external_id,
-        issue.user_picture,
-        issue.user_rating
-    );
-
     return (
         <div className={`tsumego-issue tsumego-issue--${issue.status === 'open' ? 'opened' : 'closed'}`} data-issue-id={issue.id}>
             <div className="tsumego-issue__header">
@@ -73,7 +66,13 @@ export function Issue({
                     {issue.status === 'open' ? '🔴' : '✅'} {issue.status === 'open' ? 'Opened' : 'Closed'}
                 </span>
                 <span className="tsumego-issue__meta">
-                    by <span dangerouslySetInnerHTML={{ __html: authorLink }} /> •
+                    by <UserLink 
+                        userId={issue.user_id}
+                        name={authorName}
+                        externalId={issue.user_external_id}
+                        picture={issue.user_picture}
+                        rating={issue.user_rating}
+                    /> •
                     <span className="tsumego-issue__date">{new Date(issue.created).toLocaleDateString()}</span>
                 </span>
                 {canCloseReopen && (
@@ -94,7 +93,8 @@ export function Issue({
             <div className="tsumego-dnd__issue-dropzone" data-issue-id={issue.id}>
                 {displayComments.map(c => (
                     <Comment key={c.id} comment={c} currentUserId={currentUserId} isAdmin={isAdmin}
-                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} issueStatus={issue.status} isDraggingEnabled={false} />
+                        onDelete={onDelete} onMakeIssue={() => { }} showIssueContext={false} issueStatus={issue.status} 
+                        isDraggingEnabled={isDraggingEnabled} />
                 ))}
             </div>
 

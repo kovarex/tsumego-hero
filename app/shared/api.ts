@@ -41,6 +41,7 @@ export async function get<T>(url: string): Promise<T> {
 		method: 'GET',
 		headers: {
 			'Accept': 'application/json',
+			'X-Requested-With': 'XMLHttpRequest',
 		},
 	});
 	return handleResponse<T>(response);
@@ -53,6 +54,7 @@ export async function post<T>(url: string, data: unknown): Promise<T> {
 		headers: {
 			'Accept': 'application/json',
 			'Content-Type': 'application/json',
+			'X-Requested-With': 'XMLHttpRequest',
 		},
 		body: JSON.stringify(data),
 	}); 
@@ -66,6 +68,7 @@ export async function del<T>(url: string): Promise<T> {
 		headers: {
 			'Accept': 'application/json',
 			'Content-Type': 'application/json',
+			'X-Requested-With': 'XMLHttpRequest',
 		},
 		body: JSON.stringify({}), // Empty body for POST
 	});
@@ -79,6 +82,9 @@ export async function moveComment(commentId: number, targetIssueId: number | 'st
 	
 	const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
 		method: 'POST',
+		headers: {
+			'X-Requested-With': 'XMLHttpRequest', // Mark as AJAX to prevent rating processing
+		},
 		body: formData
 	});
 	

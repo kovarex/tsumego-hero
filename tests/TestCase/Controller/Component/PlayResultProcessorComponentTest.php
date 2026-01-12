@@ -486,7 +486,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	 * Without the htmx fix, the htmx request would trigger checkPreviousPlay
 	 * and potentially process the fail result at an unexpected time.
 	 */
-	public function testHtmxActionsAfterFailDoNotTriggerRatingDrop(): void
+	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => 1500],
@@ -504,14 +504,15 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// At this point, cookies are set but result hasn't been processed yet
 		// because we're still on the same page (no navigation)
 
-		// Make an htmx request using htmx.ajax() API
-		// This is exactly how htmx works internally - sends HX-Request header
+		// Make an AJAX request (same as React fetch with X-Requested-With header)
 		$browser->driver->executeScript("
-			htmx.ajax('GET', '/tsumego-issues', { target: 'body' });
+			fetch('/tsumego-issues', {
+				headers: { 'X-Requested-With': 'XMLHttpRequest' }
+			});
 		");
-		usleep(1500000); // Wait for htmx request to complete
+		usleep(1500000); // Wait for AJAX request to complete
 
-		// Rating should still be original - htmx shouldn't process the result
+		// Rating should still be original - AJAX shouldn't process the result
 		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);
 
 		// NOW navigate to a different page - THIS should process the result
