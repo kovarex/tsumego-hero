@@ -218,13 +218,10 @@ class TsumegoCommentsController extends AppController
 					'position' => $comment['position'],
 				];
 
-			// Convert status ID to string name
-			$statusId = $issue['TsumegoIssue']['tsumego_issue_status_id'] ?? 1;
-			$statusName = ($statusId === 1) ? 'open' : 'closed';
 
 			$issuesJson[] = [
 				'id' => $issue['TsumegoIssue']['id'],
-				'status' => $statusName,
+				'tsumego_issue_status_id' => $issue['TsumegoIssue']['tsumego_issue_status_id'],
 				'created' => $issue['TsumegoIssue']['created'],
 				'user_id' => $issue['TsumegoIssue']['user_id'],
 				'user_name' => $issue['User']['name'] ?? null,

@@ -1,5 +1,6 @@
 import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
+import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import dayjs from 'dayjs';
 
 // Inline time formatting to avoid module dependencies
@@ -14,7 +15,7 @@ interface CommentProps {
 	onDelete: (id: number) => void;
 	onMakeIssue: (id: number) => void;
 	showIssueContext: boolean;
-	issueStatus?: 'open' | 'closed'; // If comment is in an issue, pass its status
+	issueStatus?: IssueStatusId; // tsumego_issue_status_id if comment is in an issue
 	isDraggingEnabled?: boolean; // If false, hide drag handles entirely (e.g., on read-only pages)
 }
 
@@ -91,7 +92,7 @@ export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue
 	// Determine if draggable
 	// Dragging must be explicitly enabled (isDraggingEnabled=true, default on play page)
 	// Admin can drag: standalone comments OR comments inside open issues (not closed)
-	const canDrag = isDraggingEnabled && isAdmin && issueStatus !== 'closed';
+	const canDrag = isDraggingEnabled && isAdmin && issueStatus !== IssueStatus.CLOSED;
 	
 	return (
 		<div className={`tsumego-comment${canDrag ? ' tsumego-comment--draggable' : ''}`} data-comment-id={comment.id}>

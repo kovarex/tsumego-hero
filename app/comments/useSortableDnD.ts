@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Sortable from 'sortablejs';
-import type { Issue } from './commentTypes';
+import type { Issue } from '../issues/issueTypes';
 
 interface UseSortableDnDProps {
 	containerRef: React.RefObject<HTMLDivElement | null>;

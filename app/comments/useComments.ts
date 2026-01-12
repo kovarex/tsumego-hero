@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { post, del } from '../shared/api';
-import type { Comment, Issue, AddCommentRequest, CommentCounts } from './commentTypes';
+import type { Comment, AddCommentRequest, CommentCounts } from './commentTypes';
+import { IssueStatus, type IssueStatusId, type Issue } from '../issues/issueTypes';
 
 interface AddCommentVariables {
 	data: AddCommentRequest;
@@ -23,7 +24,7 @@ interface MakeIssueVariables {
 
 interface CloseIssueVariables {
 	issueId: number;
-	newStatus: 'open' | 'closed';
+	newStatus: IssueStatusId;
 }
 
 export function useAddComment() {
@@ -75,7 +76,7 @@ export function useReplyToIssue() {
 export function useCloseReopenIssue() {
 	return useMutation({
 		mutationFn: ({ issueId, newStatus }: CloseIssueVariables) => {
-			const endpoint = newStatus === 'closed' 
+			const endpoint = newStatus === IssueStatus.CLOSED 
 				? `/tsumego-issues/close/${issueId}`
 				: `/tsumego-issues/reopen/${issueId}`;
 			console.log('[useCloseReopenIssue] Calling:', endpoint, 'with status:', newStatus);

@@ -3,7 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Issue } from '../issues/Issue';
 import { Comment } from './Comment';
 import { CommentForm } from './CommentForm';
-import type { Issue as IssueType, Comment as CommentType, CommentCounts } from './commentTypes';
+import type { Comment as CommentType, CommentCounts } from './commentTypes';
+import { IssueStatus, type IssueStatusId, type Issue as IssueType } from '../issues/issueTypes';
 import { useCommentsQuery, useAddComment, useDeleteComment, useReplyToIssue, useCloseReopenIssue, useMakeIssue } from './useComments';
 import { moveComment } from '../shared/api';
 import { useSortableDnD } from './useSortableDnD';
@@ -153,7 +154,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
         });
     };
 
-    const handleCloseReopen = async (issueId: number, newStatus: 'open' | 'closed') => {
+    const handleCloseReopen = async (issueId: number, newStatus: IssueStatusId) => {
         return new Promise<void>((resolve, reject) => {
             closeReopenMutation.mutate(
                 { issueId, newStatus },
@@ -197,8 +198,8 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
     // Filtering
     const shouldShowItem = (item: IssueType | CommentType, type: 'issue' | 'standalone') => {
         if (!activeTab) return false;
-        if (activeTab === 'open') return type === 'standalone' || (item as IssueType).status === 'open';
-        return type === 'issue' && (item as IssueType).status === 'closed';
+        if (activeTab === 'open') return type === 'standalone' || (item as IssueType).tsumego_issue_status_id === IssueStatus.OPEN;
+        return type === 'issue' && (item as IssueType).tsumego_issue_status_id === IssueStatus.CLOSED;
     };
 
     const showContent = activeTab !== null;
