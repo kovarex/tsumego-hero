@@ -795,7 +795,12 @@ class session
 		$_SID = $this->session_id;
 		$this->data = array_merge($this->data, $sql_ary);
 
-		if (!$bot)
+		// Modification: do not create sessions for anonymous users unless required for page functionality
+		if (!$bot && ($this->data['user_id'] != ANONYMOUS
+					  || in_array($this->page['page_name'], array(
+						  "ucp.php",
+						  "app.php/user/forgot_password",
+						  "app.php/user/reset_password" ))))
 		{
 			$cookie_expire = $this->time_now + (($config['max_autologin_time']) ? 86400 * (int) $config['max_autologin_time'] : 31536000);
 
