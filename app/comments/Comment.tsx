@@ -3,11 +3,6 @@ import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
 import dayjs from 'dayjs';
 
-// Inline time formatting to avoid module dependencies
-function formatDate(dateString: string): string {
-	return dayjs(dateString).format('MMM. D, YYYY HH:mm');
-}
-
 interface CommentProps {
 	comment: CommentType;
 	currentUserId: number | null;
@@ -120,7 +115,7 @@ export function Comment({ comment, currentUserId, isAdmin, onDelete, onMakeIssue
 							</div>
 						</td>
 						<td align="right" className="sandboxTable2time">
-							<span className="tsumego-comment__date">{formatDate(comment.created)}</span>
+							<span className="tsumego-comment__date">{dayjs(comment.created).format('MMM. D, YYYY HH:mm')}</span>
 							{comment.position && (
 								<img 
 									src="/img/positionIcon1.png" 
