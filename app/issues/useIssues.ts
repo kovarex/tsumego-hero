@@ -21,7 +21,11 @@ export function useIssuesQuery(
 		queryKey: ['issues-list', statusFilter, page],
 		queryFn: async () => {
 			// Use dedicated API endpoint (cleaner than AJAX detection)
-			const response = await fetch(`/tsumego-issues/api?status=${statusFilter}&page=${page}`);
+			const response = await fetch(`/tsumego-issues/api?status=${statusFilter}&page=${page}`, {
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				},
+			});
 			if (!response.ok) {
 				throw new Error(`Failed to fetch issues: ${response.status}`);
 			}

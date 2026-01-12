@@ -518,7 +518,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 		<table class="sandboxTable" width="62%">
 		<tr>
-				<td><?php echo $this->element('TsumegoComments/react-section', [
+				<td><?php echo $this->element('TsumegoComments/section', [
 						'tsumegoId' => $t['Tsumego']['id'],
 						't' => $t,
 					]); ?></td>
