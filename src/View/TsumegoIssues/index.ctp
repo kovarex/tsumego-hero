@@ -23,7 +23,7 @@ $currentPage = $currentPage ?? 1;
 	</p>
 
 	<!-- React-based issues list with filters and pagination -->
-	<?php echo $this->element('TsumegoIssues/react-section', compact(
+	<?php echo $this->element('TsumegoIssues/section', compact(
 		'statusFilter',
 		'currentPage'
 	)); ?>

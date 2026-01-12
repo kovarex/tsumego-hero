@@ -101,6 +101,9 @@ export function useMakeIssue() {
 			
 			const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
 				method: 'POST',
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				},
 				body: formData,
 			});
 			
@@ -129,7 +132,11 @@ export function useCommentsQuery(
 	return useQuery({
 		queryKey: ['comments', tsumegoId],
 		queryFn: async () => {
-			const response = await fetch(`/tsumego-comments/index/${tsumegoId}`);
+			const response = await fetch(`/tsumego-comments/index/${tsumegoId}`, {
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				},
+			});
 			if (!response.ok) {
 				throw new Error(`Failed to fetch comments: ${response.status}`);
 			}

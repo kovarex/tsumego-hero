@@ -176,6 +176,9 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             
             const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
                 body: formData
             });
             
