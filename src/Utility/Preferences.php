@@ -168,21 +168,21 @@ class Preferences
 	private static function setInDatabase(string $key, $value): void
 	{
 		$userId = Auth::getUserID();
-		$userContribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]]);
+		$db = ClassRegistry::init('UserContribution')->getDataSource();
 
-		if ($userContribution)
-		{
-			// Update existing record
-			$userContribution['UserContribution'][$key] = $value;
-			ClassRegistry::init('UserContribution')->save($userContribution);
-		}
-		else
-		{
-			// Create new record
-			$newContribution = ['user_id' => $userId, $key => $value];
-			ClassRegistry::init('UserContribution')->create();
-			ClassRegistry::init('UserContribution')->save($newContribution);
-		}
+		$quotedKey = '`' . $key . '`';
+
+		/** @phpstan-ignore-next-line */
+		$escapedValue = $db->value($value);
+		/** @phpstan-ignore-next-line */
+		$escapedUserId = $db->value($userId, 'integer');
+
+		$sql = "INSERT INTO user_contribution (user_id, $quotedKey, created) 
+		        VALUES ($escapedUserId, $escapedValue, NOW())
+		        ON DUPLICATE KEY UPDATE $quotedKey = $escapedValue";
+
+		/** @phpstan-ignore-next-line */
+		$db->execute($sql);
 	}
 
 	/**
