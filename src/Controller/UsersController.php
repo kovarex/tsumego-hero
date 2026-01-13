@@ -102,55 +102,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
-	 * @return void
-	 */
-	public function routine0() //23:55 signed in users today
-	{
-		$this->loadModel('Answer');
-
-		$activity = $this->User->find('all', ['order' => ['User.reuse3 DESC']]);
-		$todaysUsers = [];
-		$today = date('Y-m-d', strtotime('today'));
-		$activityCount = count($activity);
-		for ($i = 0; $i < $activityCount; $i++)
-		{
-			$a = new DateTime($activity[$i]['User']['created']);
-			if ($a->format('Y-m-d') == $today)
-				array_push($todaysUsers, $activity[$i]['User']);
-		}
-
-		$token = [];
-		$this->Answer->create();
-		$token['Answer']['dismissed'] = count($todaysUsers);
-		$token['Answer']['created'] = date('Y-m-d H:i:s');
-		$this->Answer->save($token);
-
-		$this->set('u', count($todaysUsers));
-	}
-
-	/**
-	 * @return void
-	 */
-	public function routine6() //0:30 update user solved field
-	{
-		$this->loadModel('Answer');
-		$this->loadModel('TsumegoStatus');
-		$a = $this->Answer->findById(1);
-		$uLast = $this->User->find('first', ['order' => 'id DESC']);
-		if ($uLast['User']['id'] < $a['Answer']['message'])
-		{
-			$a['Answer']['message'] = 0;
-			$a['Answer']['dismissed'] = 300;
-		}
-		else
-		{
-			$a['Answer']['message'] += 300;
-			$a['Answer']['dismissed'] += 300;
-		}
-		$this->Answer->save($a);
-	}
-
-	/**
 	 * @param string|int|null $uid User ID
 	 * @return void
 	 */

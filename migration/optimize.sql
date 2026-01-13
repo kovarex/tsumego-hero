@@ -6,7 +6,6 @@ OPTIMIZE TABLE achievement_condition;
 OPTIMIZE TABLE achievement_status;
 OPTIMIZE TABLE activate;
 OPTIMIZE TABLE admin_activity;
-OPTIMIZE TABLE answer;
 OPTIMIZE TABLE comment;
 OPTIMIZE TABLE day_record;
 OPTIMIZE TABLE duplicate;

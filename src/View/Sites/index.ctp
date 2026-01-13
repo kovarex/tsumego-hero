@@ -356,19 +356,6 @@ $highestRight = 17;
 			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
 		</div>
 
-		<?php if(
-			false
-		){ ?>
-			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
-			<div class="new1">
-			<div align="center">
-				<br>
-				<a href="/users/donate"><img id="donateH" onmouseover="donateHover()" onmouseout="donateNoHover()" width="180px" src="/img/upgradeButton1.png"></a>
-				<br><br>
-			</div>
-			</div>
-		<?php } ?>
-
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
 		<script>
