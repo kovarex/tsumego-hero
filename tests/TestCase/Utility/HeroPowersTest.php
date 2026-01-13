@@ -170,36 +170,40 @@ class HeroPowersTest extends TestCaseWithAuth
 			$context = new ContextPreparator(['tsumego' => 1]);
 			$context->unlockAchievementsWithoutEffect();
 			$context->XPGained(); // to reload the current xp to be able to tell the gained later
-			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
-			$this->checkPowerIsActive($browser, 'revelation');
 
 			if ($testCase == 'logged-off')
+			{
+				// When logged off, hero power buttons don't render at all
 				$browser->logoff();
-			elseif ($testCase == 'used-up')
-			{
-				Auth::getUser()['used_revelation'] = 10;
-				Auth::saveUser();
-			}
-
-			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
-			$browser->clickId('revelation');
-			$message =  $browser->driver->executeScript("return window.alertMessage;");
-			if ($testCase == 'logged-off')
-			{
-				$this->assertSame($message, 'Not logged in.');
+				$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+				$this->assertFalse($browser->idExists('revelation'));
 				Auth::init();
 				continue;
 			}
-			elseif ($testCase == 'user-up')
-				$this->assertSame($message, 'Revelation is used up today.');
-			if ($testCase == 'normal')
+
+			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+			$this->assertSame(1, $browser->driver->executeScript("return window.revelationUseCount;"));
+
+			if ($testCase == 'used-up')
 			{
-				$browser->driver->wait(10, 50)->until(function () use ($browser) {
-					return $browser->driver->executeScript("return window.revelationUseCount;") == 0;
-				});
+				ClassRegistry::init('User')->updateAll(
+					['used_revelation' => 10],
+					['id' => $context->user['id']]
+				);
+
+				$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
 				$this->checkPowerIsInactive($browser, 'revelation');
+				continue;
 			}
+
+			$this->checkPowerIsActive($browser, 'revelation');
+
+			$browser->clickId('revelation');
+			$browser->driver->wait(10, 50)->until(function () use ($browser) {
+				return $browser->driver->executeScript("return window.revelationUseCount;") == 0;
+			});
+			$this->checkPowerIsInactive($browser, 'revelation');
 			$expectedUsedCount = $testCase == 'used-up' ? 10 : ($testCase == 'not-available' ? 0 : 1);
 			$this->assertSame($context->reloadUser()['used_revelation'], $expectedUsedCount);
 			$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);

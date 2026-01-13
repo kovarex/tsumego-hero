@@ -134,5 +134,8 @@ class HeroController extends AppController
 
 		Auth::getUser()['used_revelation']++;
 		Auth::saveUser();
+
+		$this->response->statusCode(200);
+		return $this->response;
 	}
 }

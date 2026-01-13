@@ -1,37 +1,43 @@
 <?php
 
 App::uses('AppException', 'Utility');
+App::uses('ExceptionRenderer', 'Error');
 
-class AppErrorHandler
+class AppErrorHandler extends ExceptionRenderer
 {
-	public $exception;
-
-	public function __construct($exception)
+	private function renderError($code, $title, $error)
 	{
-		$this->exception = $exception;
+		$this->controller->response->statusCode($code);
+		$this->controller->set('title_for_layout', $title);
+		$this->controller->set([
+			'url' => $this->controller->request->here,
+			'error' => $error
+		]);
+		$this->_outputMessage('error');
 	}
 
-	public function render()
+	public function error404($error)
 	{
-		if ($this->exception instanceof MissingControllerException)
-		{
-			header('HTTP/1.1 404 Page not found	');
-			echo "404 Error - Page not found";
-			exit;
-		}
+		$this->renderError(404, 'Page Not Found', $error);
+	}
 
-		// Build the exception message
-		$message = $this->exception->getMessage() . "<br>\n";
-		$message .= "#-1 " . $this->exception->getFile() . "(" . $this->exception->getLine() . ")<br>\n";
+	public function notFound($error)
+	{
+		return $this->error404($error);
+	}
 
-		if (!($this->exception instanceof AppException))
-		{
-			$message = "<h2>Exception</h2><br>\n" . $message;
-			$message .= nl2br(htmlspecialchars($this->exception->getTraceAsString()));
-		}
+	public function missingController($error)
+	{
+		return $this->error404($error);
+	}
 
-		// Output and terminate
-		echo $message;
-		exit;
+	public function missingAction($error)
+	{
+		return $this->error404($error);
+	}
+
+	public function error500($error)
+	{
+		$this->renderError(500, 'Internal Server Error', $error);
 	}
 }
