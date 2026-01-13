@@ -44,6 +44,11 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 		'issueCount' => $issueCount,
 		'openIssueCount' => $openIssueCount ?? null,
 	]); ?>
+
+	<!-- Hide msg2x immediately to prevent FOUC (only runs on initial page load, not during morphs) -->
+	<script>
+		document.getElementById('msg2x').style.display = 'none';
+	</script>
 </div>
 
 <script>
@@ -136,10 +141,6 @@ $shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth:
 					var targetTab = document.querySelector('.tsumego-comments__tab[data-filter="' + currentCommentsFilter + '"]');
 					if (targetTab)
 						targetTab.classList.add('active');
-					// Show the content container (morphed HTML has display:none)
-					var content = document.getElementById('msg2x');
-					if (content)
-						content.style.display = '';
 					// Re-apply filter to items
 					applyCommentsFilter(currentCommentsFilter);
 				}, 50);
