@@ -5,11 +5,7 @@
  *
  * Handles adding and deleting comments on tsumego problems.
  * Comments can be standalone or associated with a TsumegoIssue.
- *
- * Uses idiomorph for React-like DOM diffing - htmx responses return the full
- * comments section and idiomorph handles efficient DOM updates.
- *
- * This controller is htmx-only - all responses return HTML fragments for htmx.
+
  */
 class TsumegoCommentsController extends AppController
 {
@@ -38,7 +34,6 @@ class TsumegoCommentsController extends AppController
 			return $this->response;
 		}
 
-		// Parse JSON request body from Preact
 		$input = json_decode($this->request->input(), true);
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
@@ -157,10 +152,9 @@ class TsumegoCommentsController extends AppController
 	}
 
 	/**
-	 * Get comments data for a tsumego (for React Query refetching).
+	 * Get comments data for a tsumego
 	 *
 	 * Returns issues and standalone comments in the same format as initial SSR data.
-	 * Used by React Query to refetch after mutations.
 	 *
 	 * @param int $tsumegoId The tsumego ID
 	 * @return CakeResponse
@@ -170,8 +164,6 @@ class TsumegoCommentsController extends AppController
 		if (!$this->request->is('get'))
 			throw new MethodNotAllowedException();
 
-		// Load comments data (same as Tsumego::loadCommentsData)
-		$Tsumego = ClassRegistry::init('Tsumego');
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
 		// Load issues with comments
@@ -199,7 +191,6 @@ class TsumegoCommentsController extends AppController
 			'order' => 'TsumegoComment.created DESC'
 		]);
 
-		// Format issues data for React
 		$issuesJson = [];
 		foreach ($issues as $issue)
 		{
@@ -233,7 +224,7 @@ class TsumegoCommentsController extends AppController
 			];
 		}
 
-		// Format standalone comments for React
+		// Format standalone comments
 		$standaloneJson = [];
 		foreach ($plainComments as $comment)
 			$standaloneJson[] = [

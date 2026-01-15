@@ -7603,41 +7603,6 @@ body.dark-theme .pagination-ellipsis {
   color: #777;
 }
 
-/* ==========================================================================
-   HTMX Loading Indicators
-   ========================================================================== */
-
-.htmx-indicator {
-  display: none;
-  opacity: 0;
-  transition: opacity 200ms ease-in;
-}
-
-.htmx-request .htmx-indicator,
-.htmx-request.htmx-indicator {
-  display: inline;
-  opacity: 1;
-}
-
-/* Disable buttons/links during htmx request */
-.htmx-request [hx-post],
-.htmx-request [hx-get],
-[disabled].btn {
-  pointer-events: none;
-  opacity: 0.6;
-  cursor: wait;
-}
-
-/* Subtle loading state for swapped content */
-.htmx-swapping {
-  opacity: 0.5;
-}
-
-.htmx-settling {
-  opacity: 1;
-  transition: opacity 200ms ease-out;
-}
-
 /* Ensure button colors work in dark mode */
 body.dark-theme .btn--success,
 body.dark-theme .btn--warning {

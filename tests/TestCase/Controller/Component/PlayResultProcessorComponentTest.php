@@ -480,10 +480,10 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	/**
 	 * CRITICAL TEST: Simulates the user's bug report scenario.
-	 * User fails a puzzle, then clicks htmx buttons (like issue filter),
-	 * and rating should NOT change from the htmx request.
+	 * User fails a puzzle, then clicks React buttons (like issue filter),
+	 * and rating should NOT change from the AJAX request.
 	 *
-	 * Without the htmx fix, the htmx request would trigger checkPreviousPlay
+	 * Without the X-Requested-With header check, AJAX requests would trigger checkPreviousPlay
 	 * and potentially process the fail result at an unexpected time.
 	 */
 	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void

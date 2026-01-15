@@ -255,7 +255,7 @@ class TsumegoIssue extends AppModel
 	/**
 	 * Get comment section counts for a specific tsumego.
 	 *
-	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES) via htmx OOB.
+	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
 	 *
 	 * @param int $tsumegoId The tsumego ID
 	 * @return array{total: int, comments: int, issues: int, openIssues: int}
