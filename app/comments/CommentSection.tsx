@@ -5,7 +5,7 @@ import { Comment } from './Comment';
 import { CommentForm } from './CommentForm';
 import type { Comment as CommentType, CommentCounts } from './commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue as IssueType } from '../issues/issueTypes';
-import { useCommentsQuery, useAddComment, useDeleteComment, useReplyToIssue, useCloseReopenIssue, useMakeIssue } from './useComments';
+import { useCommentsQuery, useAddComment, useDeleteComment, useReplyToIssue, useCloseReopenIssue } from './useComments';
 import { moveComment } from '../shared/api';
 import { useSortableDnD } from './useSortableDnD';
 import { CommentsListSkeleton } from './CommentSkeleton';
@@ -30,12 +30,13 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
     const commentsQuery = useCommentsQuery(tsumegoId, hasEverOpened);
     
     // Use query data as source of truth (empty until first fetch)
-    const issues = commentsQuery.data?.issues ?? [];
-    const standalone = commentsQuery.data?.standalone ?? [];
     const counts = commentsQuery.data?.counts ?? initialCounts;
     
     // Merge and sort issues + standalone comments chronologically (oldest first)
     const allItems = useMemo(() => {
+        // Extract inside memo to avoid stale dependencies
+        const issues = commentsQuery.data?.issues ?? [];
+        const standalone = commentsQuery.data?.standalone ?? [];
         const items: Array<{type: 'issue' | 'comment', created: string, data: IssueType | CommentType, issueNumber?: number}> = [];
         
         // Add issues - use EARLIEST comment date for sorting (not issue creation)
@@ -65,11 +66,11 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             });
         });
         
-        // Sort by date (oldest first - matches old PHP)
+        // Sort by date (oldest first)
         items.sort((a, b) => new Date(a.created).getTime() - new Date(b.created).getTime());
         
         return items;
-    }, [issues, standalone]);
+    }, [commentsQuery.data]);
     
     // Toggle tab helper - fetch on first click
     const toggleTab = (tab: 'open' | 'closed') => {
@@ -112,13 +113,13 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
         containerRef: contentRef,
         isAdmin,
         tsumegoId,
-        issues,
+        issues: commentsQuery.data?.issues ?? [],
         onMoveComment: handleMoveComment
     });
     
     // Handlers
     const handleAdd = async (text: string, position?: string, reportAsIssue?: boolean) => {
-        return new Promise<void>((resolve) => {
+        return new Promise<void>((resolve, reject) => {
             addMutation.mutate(
                 { data: { text, tsumego_id: tsumegoId, position, report_as_issue: reportAsIssue } },
                 { 
@@ -126,7 +127,11 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
                         console.log('[handleAdd] Comment added, refetching from server');
                         await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
                         resolve(); 
-                    } 
+                    },
+                    onError: (error) => {
+                        console.error('[handleAdd] Comment add failed:', error);
+                        reject(error);
+                    }
                 }
             );
         });
@@ -140,7 +145,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
     };
 
     const handleReply = async (issueId: number, text: string, position?: string) => {
-        return new Promise<void>((resolve) => {
+        return new Promise<void>((resolve, reject) => {
             replyMutation.mutate(
                 { issueId, text, tsumegoId, position },
                 { 
@@ -148,7 +153,11 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
                         console.log('[handleReply] Reply added, refetching from server');
                         await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
                         resolve(); 
-                    } 
+                    },
+                    onError: (error) => {
+                        console.error('[handleReply] Reply failed:', error);
+                        reject(error);
+                    }
                 }
             );
         });
@@ -188,7 +197,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             }
             
             const data = await response.json() as { success: boolean; issue: IssueType; comment_id: number };
-            console.log('[handleMakeIssue] Issue created, refetching from server');
+            console.log('[handleMakeIssue] Issue created:', data, 'refetching from server');
             await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
         } catch (error) {
             console.error('[CommentSection] Make issue failed:', error);

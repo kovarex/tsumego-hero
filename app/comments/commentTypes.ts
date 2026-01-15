@@ -1,3 +1,5 @@
+import type { Issue } from '../issues/issueTypes';
+
 export interface Comment {
 	id: number;
 	text: string;

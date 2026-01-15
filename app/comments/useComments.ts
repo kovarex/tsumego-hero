@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { post, del } from '../shared/api';
 import type { Comment, AddCommentRequest, CommentCounts } from './commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue } from '../issues/issueTypes';
