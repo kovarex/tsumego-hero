@@ -224,7 +224,6 @@ class TsumegoCommentsController extends AppController
 			];
 		}
 
-		// Format standalone comments
 		$standaloneJson = [];
 		foreach ($plainComments as $comment)
 			$standaloneJson[] = [
@@ -240,7 +239,6 @@ class TsumegoCommentsController extends AppController
 				'position' => $comment['TsumegoComment']['position'],
 			];
 
-		// Calculate counts
 		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
 
 		$this->response->type('json');

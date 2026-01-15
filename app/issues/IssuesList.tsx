@@ -146,7 +146,6 @@ export function IssuesList({
 							{/* Issue component (reused from play page) */}
 							<Issue
 								issue={item.issue}
-								issueNumber={item.issue.id}  // Use global ID in list context
 								currentUserId={userId}
 								isAdmin={isAdmin}
 								onDelete={handleDeleteComment}
