@@ -101,10 +101,6 @@ echo $this->fetch('css');
 echo $this->fetch('script');
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/idiomorph@0.3.0/dist/idiomorph-ext.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <?php
 echo $this->AssetCompress->script('app');
 ?>
@@ -671,6 +667,9 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
 </script>
+
+<script src="/js/dist/app.js?v=<?= filemtime(WWW_ROOT . 'js' . DS . 'dist' . DS . 'app.js') ?>" type="module"></script>
+
 		<?php
 if(!Auth::isLoggedIn())
 	echo '<style>.outerMenu1{left: 224px;}</style>';

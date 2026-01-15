@@ -17,31 +17,6 @@ class AppController extends Controller
 		'PlayResultProcessor'
 	];
 
-	/**
-	 * Check if the current request is an HTMX request.
-	 *
-	 * @return bool True if this is an HTMX AJAX request
-	 */
-	protected function isHtmxRequest(): bool
-	{
-		return $this->request->header('HX-Request') === 'true';
-	}
-
-	/**
-	 * Render a partial view (element) without layout for HTMX requests.
-	 *
-	 * @param string $element The element path (e.g., 'TsumegoIssues/list')
-	 * @param array $data Variables to pass to the element
-	 * @return void
-	 */
-	protected function renderPartial(string $element, array $data = []): void
-	{
-		$this->autoRender = false;
-		$view = new View($this);
-		$html = $view->element($element, $data);
-		$this->response->body($html);
-	}
-
 	protected function getDeletedSets()
 	{
 		$dSets = [];
@@ -542,7 +517,7 @@ class AppController extends Controller
 		if ($_COOKIE['sprint'] != 1)
 			$this->updateSprintCondition();
 
-		if (Auth::isLoggedIn() && !$this->request->is('ajax') && !$this->isHtmxRequest())
+		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
 			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
 			$achievementChecker = new AchievementChecker();

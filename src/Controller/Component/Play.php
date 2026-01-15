@@ -440,13 +440,6 @@ class Play
 		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 
-		// Load comments and issues data for the view
-		$commentsData = ClassRegistry::init('Tsumego')->loadCommentsData($id);
-		($this->setFunction)('tsumegoIssues', $commentsData['issues']);
-		($this->setFunction)('tsumegoPlainComments', $commentsData['plainComments']);
-		// Merge comment coordinates with any existing ones
-		$commentCoordinates = array_merge($commentCoordinates, $commentsData['coordinates']);
-		($this->setFunction)('commentCoordinates', $commentCoordinates);
 		return null;
 	}
 

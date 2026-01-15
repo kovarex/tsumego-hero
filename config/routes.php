@@ -52,6 +52,11 @@ Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
  * TsumegoComments routes - for managing comments on tsumego problems
  */
 Router::connect(
+	'/tsumego-comments/index/:tsumegoId',
+	['controller' => 'TsumegoComments', 'action' => 'index'],
+	['pass' => ['tsumegoId'], 'tsumegoId' => '[0-9]+']
+);
+Router::connect(
 	'/tsumego-comments/add',
 	['controller' => 'TsumegoComments', 'action' => 'add']
 );
@@ -69,6 +74,10 @@ Router::connect(
 /**
  * TsumegoIssues routes - for managing issues on tsumego problems
  */
+Router::connect(
+	'/tsumego-issues/api',
+	['controller' => 'TsumegoIssues', 'action' => 'api']
+);
 Router::connect(
 	'/tsumego-issues',
 	['controller' => 'TsumegoIssues', 'action' => 'index']
