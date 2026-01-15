@@ -7,7 +7,6 @@ import { IssueStatus, type IssueStatusId, type Issue as IssueType } from './issu
 
 interface IssueProps {
     issue: IssueType;
-    issueNumber: number; // Display number (sequential 1,2,3 or global ID)
     currentUserId: number | null;
     isAdmin: boolean;
     onDelete: (id: number) => void;
@@ -22,7 +21,6 @@ interface IssueProps {
 
 export function Issue({ 
     issue, 
-    issueNumber, 
     currentUserId, 
     isAdmin, 
     onDelete, 
@@ -63,7 +61,7 @@ export function Issue({
     return (
         <div className={`tsumego-issue tsumego-issue--${isOpen ? 'opened' : 'closed'}`} data-issue-id={issue.id}>
             <div className="tsumego-issue__header">
-                <span className="tsumego-issue__title">Issue #{issueNumber}</span>
+                <span className="tsumego-issue__title">Issue #{issue.id}</span>
                 <span className={`tsumego-issue__badge status--${isOpen ? 'opened' : 'closed'}`}>
                     {isOpen ? '🔴' : '✅'} {isOpen ? 'Opened' : 'Closed'}
                 </span>

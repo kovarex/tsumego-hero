@@ -117,9 +117,6 @@ export function useMakeIssue() {
 /**
  * Query hook for fetching comments data with automatic refetching.
  * 
- * Uses TanStack Query "Via UI" pattern - server is source of truth.
- * After mutations, call queryClient.invalidateQueries() to refetch.
- * 
  * @param tsumegoId - The tsumego ID
  * @param initialData - SSR data from PHP (avoids first fetch)
  */

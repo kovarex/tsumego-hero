@@ -37,7 +37,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
         // Extract inside memo to avoid stale dependencies
         const issues = commentsQuery.data?.issues ?? [];
         const standalone = commentsQuery.data?.standalone ?? [];
-        const items: Array<{type: 'issue' | 'comment', created: string, data: IssueType | CommentType, issueNumber?: number}> = [];
+        const items: Array<{type: 'issue' | 'comment', created: string, data: IssueType | CommentType}> = [];
         
         // Add issues - use EARLIEST comment date for sorting (not issue creation)
         issues.forEach((issue) => {
@@ -52,8 +52,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
             items.push({
                 type: 'issue',
                 created: sortDate,
-                data: issue,
-                issueNumber: issue.id
+                data: issue
             });
         });
         
@@ -266,7 +265,7 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
                                 const issue = item.data as IssueType;
                                 return (
                                     <div key={`issue-${issue.id}`} style={{ display: shouldShowItem(issue, 'issue') ? '' : 'none' }}>
-                                        <Issue issue={issue} issueNumber={item.issueNumber!} currentUserId={userId} isAdmin={isAdmin}
+                                        <Issue issue={issue} currentUserId={userId} isAdmin={isAdmin}
                                             onDelete={handleDelete} onReply={handleReply} onCloseReopen={handleCloseReopen} />
                                     </div>
                                 );
