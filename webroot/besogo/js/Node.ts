@@ -1,49 +1,44 @@
+enum StoneColor
+{
+	Black = -1,
+	Empty = 0,
+	White = 1
+}
+
+enum Correct
+{
+	Empty = 0,
+	Good = 1,
+	Bad = 2,
+	Undefined = 3
+}
+
 class Node
 {
-	static BLACK = -1;
-	static WHITE = 1;
-	static EMPTY = 0;
+	public Node parent;
+    public children = [];
+    public virtualChildren = [];
+	public move = null;
+    public setupStones = [];
+    public virtualParents = [];
+    public markup = [];
+    public comment = ''; // Comment on this node
+    public hash = 0;
+    public correctSource = false;
+    public correct = Correct.Empty;
+    public superkoMeansDead = false;
+    public cameFrom = null;
+    public statusSource = null;
+    public status = null;
+    public visited = false; // player already was in this position while solving
+	public visitedInRecursion = false; // internal bool for recursive algorithm
+    public localEdit = false;
 
-	static CORRECT_EMPTY = 0;
-	static CORRECT_GOOD = 1;
-	static CORRECT_BAD = 2;
-	static CORRECT_UNDEFINED = 3;
+	__construct(Node parent)
+	{
+		this.parent = parent;
+	}
 
-	public parent;
-
-besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
-{
-  var root = { // Inherited attributes of root node
-          blackCaps: 0,
-          whiteCaps: 0,
-          moveNumber: 0
-      };
-
-  // Initializes non-inherited attributes
-  function initNode(node, parent)
-  {
-    node.parent = parent;
-    node.board = parent ? Object.create(parent.board) : [];
-    node.children = [];
-    node.virtualChildren = [];
-
-    node.move = null;
-    node.setupStones = [];
-    node.virtualParents = [];
-    node.markup = [];
-    node.comment = ''; // Comment on this node
-    node.hash = 0;
-    node.correctSource = false;
-    node.correct = CORRECT_EMPTY;
-    node.superkoMeansDead = false;
-    node.cameFrom = null;
-    node.statusSource = null;
-    node.status = null;
-    node.visited = false; // player already was in this position while solving
-	node.visitedInRecursion = false; // internal bool for recursive algorithm
-    node.localEdit = false;
-  }
-  initNode(root, null); // Initialize root node with null parent
   root.relevantMoves = [];
   root.nodeHashTable = besogo.makeNodeHashTable();
   root.goal = GOAL_NONE;

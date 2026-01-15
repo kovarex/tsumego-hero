@@ -1,20 +1,12 @@
-class RootNode extends Node {
+class RootNode extends Node
+{
+	public board;
+	public int blackCaptures = 0;
+	public int whiteCaptures = 0;
+	public int moveNumber = 0;
 
-	besogo
-.
-	makeGameRoot = function (sizeX = 19, sizeY = 19) {
-		var root = { // Inherited attributes of root node
-			blackCaps: 0,
-			whiteCaps: 0,
-			moveNumber: 0
-		};
-
-		// Initializes non-inherited attributes
-		function initNode(node, parent) {
-			node.parent = parent;
-			node.board = parent ? Object.create(parent.board) : [];
-			node.children = [];
-			node.virtualChildren = [];
+	__construct(sizeX = 19, sizeY = 19)
+		this.board = [];
 
 			node.move = null;
 			node.setupStones = [];
