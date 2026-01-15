@@ -26,6 +26,13 @@ include($phpbb_root_path . 'includes/functions_user.' . $phpEx);
 $user->session_begin();
 $auth->acl($user->data);
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 // Initial var setup
 $forum_id	= 0;
 $topic_id	= $request->variable('t', 0);

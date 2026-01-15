@@ -33,6 +33,13 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup(array('memberlist', 'groups'));
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 // Setting a variable to let the style designer know where he is...
 $template->assign_var('S_IN_MEMBERLIST', true);
 
@@ -958,8 +965,8 @@ switch ($mode)
 		{
 			// Generate the navlinks based on the selected topic
 			$navlinks_sql_array = [
-				'SELECT'    => 'f.parent_id, f.forum_parents, f.left_id, f.right_id, f.forum_type, f.forum_name, 
-					f.forum_id, f.forum_desc, f.forum_desc_uid, f.forum_desc_bitfield, f.forum_desc_options, 
+				'SELECT'    => 'f.parent_id, f.forum_parents, f.left_id, f.right_id, f.forum_type, f.forum_name,
+					f.forum_id, f.forum_desc, f.forum_desc_uid, f.forum_desc_bitfield, f.forum_desc_options,
 					f.forum_options, t.topic_title',
 				'FROM'      => [
 					FORUMS_TABLE  => 'f',

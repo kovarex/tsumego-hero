@@ -24,6 +24,13 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup('memberlist');
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 // Get and set some variables
 $mode		= $request->variable('mode', '');
 $session_id	= $request->variable('s', '');

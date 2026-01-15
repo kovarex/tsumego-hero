@@ -24,6 +24,13 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup();
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 /** @var \phpbb\controller\helper $controller_helper */
 $controller_helper = $phpbb_container->get('controller.helper');
 

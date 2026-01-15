@@ -24,6 +24,13 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup('search');
 
+if (empty($user->data['user_id']) || $user->data['user_id'] == ANONYMOUS)
+{
+    echo "You must be logged in to see anything here.";
+    http_response_code(403);
+    exit;
+}
+
 // Define initial vars
 $mode			= $request->variable('mode', '');
 $search_id		= $request->variable('search_id', '');
