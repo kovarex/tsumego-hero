@@ -53,7 +53,6 @@ export function useDeleteComment() {
 		},
 		onSuccess: (data) => {
 			console.log('[useDeleteComment] Delete successful, response:', data);
-			// Parent component handles state update - no reload needed
 		},
 		onError: (error) => {
 			console.error('[useDeleteComment] Delete failed:', error);
@@ -84,8 +83,6 @@ export function useCloseReopenIssue() {
 		},
 		onSuccess: (data) => {
 			console.log('[useCloseReopenIssue] Success:', data);
-			// No reload - parent component updates state directly
-			// This matches htmx morph behavior (update in place)
 		},
 		onError: (error) => {
 			console.error('[useCloseReopenIssue] Error:', error);

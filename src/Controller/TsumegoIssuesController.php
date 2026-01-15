@@ -58,8 +58,6 @@ class TsumegoIssuesController extends AppController
 	 * - status: 'opened', 'closed', 'all' (default: 'opened')
 	 * - page: int (for pagination)
 	 *
-	 * React app fetches all data via /api endpoint, PHP just provides initial URL state.
-	 *
 	 * @return void
 	 */
 	public function index()
@@ -67,7 +65,7 @@ class TsumegoIssuesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
 
-		// Get filter and pagination params from URL (React uses these for initial state)
+		// Get filter and pagination params from URL (used for initial state)
 		$statusFilter = $this->request->query('status') ?: 'opened';
 		$page = (int) ($this->request->query('page') ?: 1);
 
@@ -98,7 +96,7 @@ class TsumegoIssuesController extends AppController
 			return $this->response;
 		}
 
-		// Parse JSON request body from React
+		// Parse JSON request body
 		$input = json_decode($this->request->input(), true);
 		$tsumegoId = $input['tsumego_id'] ?? null;
 		$message = $input['text'] ?? null;
@@ -153,7 +151,7 @@ class TsumegoIssuesController extends AppController
 			return $this->response;
 		}
 
-		// Return full issue data for React to add to store
+		// Return full issue data for initial state
 		$User = ClassRegistry::init('User');
 		$user = $User->findById(Auth::getUserID());
 
@@ -332,7 +330,6 @@ class TsumegoIssuesController extends AppController
 			return $this->response;
 		}
 
-		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
 
@@ -389,12 +386,9 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->id = $commentId;
 			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
 
-			// Get issue author info for React response
 			$issueUser = $User->findById($comment['TsumegoComment']['user_id']);
-			// Get comment author info
 			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
 
-			// Return full issue data for React to add to store
 			$issueData = [
 				'id' => $targetIssueId,
 				'status' => 'open',
