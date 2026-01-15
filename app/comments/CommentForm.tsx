@@ -16,12 +16,20 @@ export function CommentForm({
 	placeholder = 'Write a comment...'
 }: CommentFormProps) {
 	const [form, setForm] = useState({ text: '', position: undefined as string | undefined, reportAsIssue: false });
+	const [isLocalSubmitting, setIsLocalSubmitting] = useState(false);
 	
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		if (!form.text.trim() || isSubmitting) return;
-		await onSubmit(form.text, form.position, form.reportAsIssue);
-		setForm({ text: '', position: undefined, reportAsIssue: false });
+		if (!form.text.trim() || isSubmitting || isLocalSubmitting) return;
+		
+		setIsLocalSubmitting(true);
+		
+		try {
+			await onSubmit(form.text, form.position, form.reportAsIssue);
+			setForm({ text: '', position: undefined, reportAsIssue: false });
+		} finally {
+			setIsLocalSubmitting(false);
+		}
 	};
 	
 	const togglePosition = () => {
@@ -56,7 +64,7 @@ export function CommentForm({
 			
 			// Get first child coordinates
 			let cX = -1, cY = -1;
-			if (current.children && current.children.length > 0) {
+			if (current.children && current.children.length > 0 && current.children[0].move) {
 				cX = current.children[0].move.x;
 				cY = current.children[0].move.y;
 			}
@@ -125,8 +133,15 @@ export function CommentForm({
 				</div>
 
 				<div className="tsumego-comments__form-buttons">
-				<button type="submit" id="submitBtn-tsumegoCommentForm" disabled={!form.text.trim() || isSubmitting} className="tsumego-comments__submit-btn">
-						{isSubmitting ? 'Posting...' : submitButtonText}
+					<button type="submit" id="submitBtn-tsumegoCommentForm" disabled={!form.text.trim() || isSubmitting || isLocalSubmitting} className="tsumego-comments__submit-btn">
+						{isSubmitting || isLocalSubmitting ? (
+							<>
+								<span className="spinner" aria-hidden="true" />
+								<span>Posting...</span>
+							</>
+						) : (
+							submitButtonText
+						)}
 					</button>
 				</div>
 			</form>

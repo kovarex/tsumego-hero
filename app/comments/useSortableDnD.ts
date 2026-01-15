@@ -116,7 +116,7 @@ export function useSortableDnD({
 
 		// Create main sortable for standalone comments
 		const mainSortable = new Sortable(containerRef.current, {
-			group: { name: 'comments', pull: true, put: true } as any,
+			group: { name: 'comments', pull: true, put: true },
 			sort: false,
 			animation: 150,
 			scroll: true,
@@ -128,7 +128,7 @@ export function useSortableDnD({
 			ghostClass: 'tsumego-comment--ghost',
 			chosenClass: 'tsumego-comment--dragging',
 			filter: '.tsumego-issue',
-			onStart: (evt) => {
+			onStart: (evt: Sortable.SortableEvent) => {
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
 				dragStateRef.current = { commentId, sourceIssueId: null };
@@ -161,7 +161,7 @@ export function useSortableDnD({
 			const issueEl = container.closest('.tsumego-issue') as HTMLElement;
 
 			const issueSortable = new Sortable(htmlContainer, {
-				group: { name: `issue-${issueId}`, pull: 'comments', put: false } as any,
+				group: { name: `issue-${issueId}`, pull: true, put: false },
 				sort: false,
 				animation: 0,
 				scroll: true,
@@ -172,7 +172,7 @@ export function useSortableDnD({
 				draggable: '.tsumego-comment',
 				ghostClass: 'tsumego-comment--ghost',
 				chosenClass: 'tsumego-comment--dragging',
-				onStart: (evt) => {
+				onStart: (evt: Sortable.SortableEvent) => {
 					const commentId = parseInt((evt.item as HTMLElement).dataset.commentId || '0');
 					dragStateRef.current = { commentId, sourceIssueId: issueId };
 					console.log('[Comment DnD] Dragging from issue:', issueId);
@@ -198,8 +198,8 @@ export function useSortableDnD({
 				console.log('[Comment DnD] ESC pressed - cancelling drag');
 				showIssueDropTargets(false, null);
 				sortablesRef.current.forEach(s => {
-					if ((s as any).el) {
-						(s as any).el.classList.remove('tsumego-issue--drag-source');
+					if ((s as { el?: HTMLElement }).el) {
+						((s as { el: HTMLElement }).el).classList.remove('tsumego-issue--drag-source');
 					}
 				});
 				dragStateRef.current = null;
