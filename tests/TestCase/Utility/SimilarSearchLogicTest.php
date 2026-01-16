@@ -55,8 +55,8 @@ class SimilarSearchLogicTest extends CakeTestCase
 				'status' => 'S',
 				'sgf'
 				=> [
-					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ra][rb][sb];B[ss]C[+])',
-					'correct_moves' => 'aa', // correct moves are currently saved normalized already
+					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[ra][rb][sb];B[sa]C[+])',
+					'correct_moves' => 'sa',
 					'first_move_color' => 'B'
 				],
 			]]]);
@@ -105,7 +105,50 @@ class SimilarSearchLogicTest extends CakeTestCase
 				'sgf'
 				=> [
 					'data' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[bq][cq][dq][br][dr][bs][cs][ds];B[cr]C[+])',
-					'correct_moves' => 'cb', // correct is in the middle of the shape (but normalized already)
+					'correct_moves' => 'cr', // correct is in the middle of the shape
+					'first_move_color' => 'B'
+				],
+			]]]);
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->clickId('findSimilarProblems');
+		$tsumegoButtons = $browser->getCssSelect('.setViewButtons1');
+		$this->assertSame(2, count($tsumegoButtons));
+		$this->assertSame('1', $tsumegoButtons[0]->getText()); // the original problem
+		$this->assertSame('3', $tsumegoButtons[1]->getText()); // the third problem same as original
+	}
+
+	public function testSimilarSearchRealExample()
+	{
+		$browser = Browser::instance();
+		// problem 1 is the source
+		// problem 2 has different stones, it shouldn't be found
+		// problem 3 is same as the source
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumegos' => [
+			// first sgf is in top left corner X is stone, C is correct move
+			//  +-+-+-+-
+			//  + X X X
+			//  + X C X
+			//  + X X X
+			//
+			[
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf'
+				=> [
+					'data' => '(;FF[4]GM[1]CA[UTF-8]SZ[19]ST[0]AB[lo][lp][mq][np][nq][op][pj][pp]AW[kp][kq][lq][mo][mp][qn])',
+					'correct_moves' => 'mn',
+					'first_move_color' => 'B'
+				],
+			],
+			// second sgf is completely different
+			//['set_order' => 2, 'status' => 'S', 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[de][ed][df][fd][ha][hb][hc][hd];B[aa];W[ab];B[ba]C[+])'],
+			[
+				'set_order' => 3,
+				'status' => 'S',
+				'sgf'
+				=> [
+					'data' => '(;FF[4]GM[1]CA[UTF-8]SZ[19]ST[2]AB[dc][di][ec][fb][fc][gb][hc][hd]AW[ce][gc][gd][hb][ib][ic])',
+					'correct_moves' => 'ge',
 					'first_move_color' => 'B'
 				],
 			]]]);
