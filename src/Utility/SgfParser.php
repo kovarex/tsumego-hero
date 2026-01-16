@@ -56,15 +56,13 @@ class SgfParser
 		if ($boardBounds->x->isCloserToEnd($boardSize))
 		{
 			$stones = SgfBoard::getStonesFlipedX($stones, $boardSize);
-			// the correct moves are currently as after the normalisation, so
-			// they shouldn't be transferred together with the stones
-			//$correctMoves = SgfBoard::getStonesFlipedX($correctMoves, $boardSize);
+			$correctMoves = SgfBoard::getStonesFlipedX($correctMoves, $boardSize);
 			$boardBounds->x->flip($boardSize);
 		}
 		if ($boardBounds->y->isCloserToEnd($boardSize))
 		{
 			$stones = SgfBoard::getStonesFlipedY($stones, $boardSize);
-			//$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
+			$correctMoves = SgfBoard::getStonesFlipedY($correctMoves, $boardSize);
 			$boardBounds->y->flip($boardSize);
 		}
 	}
