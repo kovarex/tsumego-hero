@@ -291,7 +291,8 @@ class PlayResultProcessorComponent extends Component
 		}
 		$achievementCondition['AchievementCondition']['category'] = 'err';
 		$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		if ($result['solved'])
+		$solvedWithoutErrors = $result['solved'] && !isset($result['misplays']);
+		if ($solvedWithoutErrors)
 			$achievementCondition['AchievementCondition']['value']++;
 		else
 			$achievementCondition['AchievementCondition']['value'] = 0;
