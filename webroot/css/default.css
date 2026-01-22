@@ -377,7 +377,6 @@ li.statusCurrent::before
 	border-radius: 9px;
 	border: 3px solid var(--current-border-color);
 
-	z-index: 20;
 	pointer-events: none;
 }
 
@@ -3892,6 +3891,7 @@ pre {
   font-family: sans-serif;
   font-weight: 400;
   display: none;
+  z-index: 9999;
 }
 #hpIcon1 {
   top: 15px;
