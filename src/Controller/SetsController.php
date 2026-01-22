@@ -153,7 +153,6 @@ class SetsController extends AppController
 			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
 
 			$set = [];
-			$set['Set']['id'] = $ss[0]['Set']['id'] + 1;
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
 			$set['Set']['image'] = 'b1.png';
@@ -164,10 +163,7 @@ class SetsController extends AppController
 			$this->Set->create();
 			$this->Set->save($set);
 
-			$tMax = $this->Tsumego->find('first', ['order' => 'id DESC']);
-
 			$t = [];
-			$t['Tsumego']['id'] = $tMax['Tsumego']['id'] + 1;
 			$t['Tsumego']['difficulty'] = 4;
 			$t['Tsumego']['variance'] = 100;
 			$t['Tsumego']['description'] = 'b to kill';
@@ -176,15 +172,14 @@ class SetsController extends AppController
 			$this->Tsumego->save($t);
 
 			$sc = [];
-			$sc['SetConnection']['set_id'] = $ss[0]['Set']['id'] + 1;
-			$sc['SetConnection']['tsumego_id'] = $tMax['Tsumego']['id'] + 1;
+			$sc['SetConnection']['set_id'] = $this->Set->id;
+			$sc['SetConnection']['tsumego_id'] = $this->Tsumego->id;
 			$sc['SetConnection']['num'] = 1;
 			$this->SetConnection->create();
 			$this->SetConnection->save($sc);
 
 			mkdir($hashName, 0777);
 			copy('6473k339312/__new/1.sgf', $hashName . '/1.sgf');
-
 			$redirect = true;
 		}
 		$this->set('t', $t);
@@ -551,29 +546,6 @@ class SetsController extends AppController
 					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
 				}
 			}
-		if (isset($this->params['url']['add']))
-		{
-			$overallCount = $this->Tsumego->find('first', ['order' => 'id DESC']);
-			$scTcount = $this->SetConnection->find('first', ['conditions' => ['set_id' => $id, 'num' => 1]]);
-			$setCount = $this->Tsumego->findById($scTcount['SetConnection']['tsumego_id']);
-			$setCount['Tsumego']['id'] = $overallCount['Tsumego']['id'] + 1;
-			$setCount['Tsumego']['set_id'] = $scTcount['SetConnection']['set_id'];
-			$setCount['Tsumego']['num'] += 1;
-			$setCount['Tsumego']['variance'] = 100;
-			if (Auth::getUserID() == 72)
-				$setCount['Tsumego']['author'] = 'Joschka Zimdars';
-			elseif (Auth::getUserID() == 1206)
-				$setCount['Tsumego']['author'] = 'Innokentiy Zabirov';
-			elseif (Auth::getUserID() == 3745)
-				$setCount['Tsumego']['author'] = 'Dennis Olevanov';
-			else
-				$setCount['Tsumego']['author'] = Auth::getUser()['name'];
-			$this->Tsumego->create();
-			$this->Tsumego->save($setCount);
-			$set = $this->Set->findById($id);
-			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $this->Tsumego->id, $id, null, $set['Set']['title']);
-		}
-
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));

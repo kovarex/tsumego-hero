@@ -393,6 +393,67 @@ class Browser
 		Auth::logout();
 	}
 
+	/**
+	 * Check if page title contains the expected text (with wait)
+	 * @param string $expectedTitle The text expected in the page title
+	 * @param int $timeout Maximum wait time in seconds (default 5)
+	 * @return bool True if title contains expected text
+	 */
+	public function titleContains(string $expectedTitle, int $timeout = 5): bool
+	{
+		return $this->waitUntil(function ($driver) use ($expectedTitle) {
+			return str_contains($driver->getTitle(), $expectedTitle);
+		}, $timeout);
+	}
+
+	/**
+	 * Find element by ID (with implicit wait)
+	 * @param string $id The element ID
+	 * @param int $timeout Maximum wait time in seconds (default 5)
+	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
+	 */
+	public function byId(string $id, int $timeout = 5)
+	{
+		return $this->waitUntil(function ($driver) use ($id) {
+			return $driver->findElement(WebDriverBy::id($id));
+		}, $timeout);
+	}
+
+	/**
+	 * Find element by CSS selector (with implicit wait)
+	 * @param string $selector The CSS selector
+	 * @param int $timeout Maximum wait time in seconds (default 5)
+	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
+	 */
+	public function byCssSelector(string $selector, int $timeout = 5)
+	{
+		return $this->waitUntil(function ($driver) use ($selector) {
+			return $driver->findElement(WebDriverBy::cssSelector($selector));
+		}, $timeout);
+	}
+
+	/**
+	 * Wait until a condition is met or timeout
+	 * @param callable $condition Function that returns truthy value when condition met
+	 * @param int $timeout Maximum wait time in seconds
+	 * @return mixed The result of the condition function
+	 */
+	private function waitUntil(callable $condition, int $timeout = 5)
+	{
+		$wait = new WebDriverWait($this->driver, $timeout, 500);
+		return $wait->until(function ($driver) use ($condition) {
+			try
+			{
+				$result = $condition($driver);
+				return $result ?: null;
+			}
+			catch (\Exception $e)
+			{
+				return null;
+			}
+		});
+	}
+
 	public $driver;
 	private static ?Browser $browser = null;
 }
