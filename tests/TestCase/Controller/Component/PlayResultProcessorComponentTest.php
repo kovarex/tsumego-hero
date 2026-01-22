@@ -43,6 +43,16 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
+	private function performSolveWithMisplays(ContextPreparator &$context, $page, int $misplays = 1): void
+	{
+		$_COOKIE['mode'] = '1';
+		$_COOKIE['misplays'] = (string) $misplays;
+		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
+		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		$this->performVisit($context, $page);
+		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
+	}
+
 	public function testVisitFromEmpty(): void
 	{
 		foreach ($this->PAGES as $page)
@@ -476,6 +486,46 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$this->assertSame($context->user['damage'], 2); // damage was applied
 		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
+	}
+
+	/**
+	 * Solving with misplays should reset the no-error streak to 0.
+	 */
+	public function testSolveWithMisplaysResetsNoErrorStreak(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'err', 'value' => 9]],  // One away from NO_ERROR_STREAK_I
+		]);
+
+		$this->performSolveWithMisplays($context, 'sets');
+
+		// The err counter should be reset to 0, not incremented to 10
+		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+		]);
+		$this->assertSame(0, (int) $errCondition['AchievementCondition']['value'],
+			'No-error streak should reset to 0 when solving with misplays');
+	}
+
+	/**
+	 * Verify that clean solve (no misplays) still increments the streak
+	 */
+	public function testSolveWithoutMisplaysIncrementsNoErrorStreak(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'err', 'value' => 9]],
+		]);
+
+		$this->performSolve($context, 'sets');
+
+		// The err counter should be incremented to 10
+		$errCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'err'],
+		]);
+		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
+			'No-error streak should increment when solving without misplays');
 	}
 
 	/**
