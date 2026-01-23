@@ -1,6 +1,6 @@
 <?php
 
-require("cleanCodeStyleConvertor/RemoveBracersAroundBlocksWithOneCommandFixer.php");
+require_once("cleanCodeStyleConvertor/RemoveBracersAroundBlocksWithOneCommandFixer.php");
 $finder = (new PhpCsFixer\Finder())
 	->in([__DIR__ . "/src", __DIR__ . "/tests"]);
 
