@@ -458,7 +458,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			['return' => 'view']
 		);
 
-		// Edit input has original (not swapped)
-		$this->assertTextContains('value="Black to attack the white stones."', $this->view);
+		// Edit textarea has original (not swapped)
+		$this->assertTextContains('>Black to attack the white stones.</textarea>', $this->view);
 	}
 }
