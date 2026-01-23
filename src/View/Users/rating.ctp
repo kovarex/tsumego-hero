@@ -36,7 +36,7 @@
 			$tableRowColor = 'color' . Rating::getReadableRank($styleRank);
 			echo '<tr class="' . $tableRowColor . '">';
 			echo '<td style="text-align:center;">#' . ($index + 1) . '</td>';
-			echo '<td style="width:350px;align: left;">' . User::renderLinkWithOptionalRank($user) . '</td>';
+			echo '<td style="width:350px;align:left;color:blue;">' . User::renderLinkWithOptionalRank($user) . '</td>';
 			echo '<td style="width:90px;">' . User::renderPremium($user) . '</td>';
 			echo '<td style="text-align:center;">' . Rating::getReadableRank($rank) . '</td>';
 			echo '<td style="text-align:center;">' . round($user['rating']) . '</td>';

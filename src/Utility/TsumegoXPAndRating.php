@@ -31,10 +31,10 @@ class TsumegoXPAndRating
 			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
 		echo '</td>
 			<td style="width:33%;">
-				<div id="status" align="center" style="color:black;"></div>
+				<div id="status" align="center"></div>
 			</td>
 			<td style="width:33%;">
-				<div id="status2" align="center" style="color:black;">
+				<div id="status2" align="center">
 				<font size="4">
 				' . Rating::getReadableRankFromRating($this->tsumegoRating) . ' <font color="grey">(' . $this->tsumegoRating . ')</font>
 				</font>

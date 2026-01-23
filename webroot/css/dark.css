@@ -135,9 +135,15 @@
 }
 #status2 font font,
 .titleDescription1 font,
-.statsTable font { color: grey; }
-.signin { background: #515151; }
-#achievementWrapper font { color: #717171; }
+.statsTable font {
+  color: grey;
+}
+.signin {
+  background: #515151;
+}
+#achievementWrapper font {
+  color: #717171;
+}
 .achievementColorBlack2,
 .achievementColorPurple2,
 .achievementColorGreen2,
@@ -234,10 +240,23 @@
     rgba(33, 33, 33, 0.35)
   ) !important;
 }
-
-
-
-.xpDisplay { align:center; color: #f0f0f0; }
-.solvedXpDisplay { color: #0cbb0c; }
-.goldenTsumegoXpDisplay { color: #0cbb0c; }
-.sprintXpDisplay { color: #72a7f2; }
+.xpDisplay {
+  align: center;
+  color: #f0f0f0;
+}
+.solvedXpDisplay {
+  color: #0cbb0c;
+}
+.goldenTsumegoXpDisplay {
+  color: #0cbb0c;
+}
+.sprintXpDisplay {
+  color: #72a7f2;
+}
+.title {
+  color: #fff;
+}
+.highscoreTable a,
+.dailyHighscoreTable a {
+  color: #00e;
+}
