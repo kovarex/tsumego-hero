@@ -1,4 +1,8 @@
-﻿<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
+<?php
+// Open Graph meta tags for social sharing
+echo $this->element('open_graph_meta');
+?>
+<link rel="stylesheet" type="text/css" href="/besogo/css/besogo.css">
 <link rel="stylesheet" type="text/css" href="/besogo/css/board-flat.css">
 <script src="/besogo/js/besogo.js"></script>
 <script src="/besogo/js/transformation.js"></script>

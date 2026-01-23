@@ -81,7 +81,14 @@ echo $this->Html->charset();
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
-<meta property="og:title" content="Tsumego Hero">
+<?php 
+// Custom Open Graph meta tags (can be set by individual pages)
+$customMeta = $this->fetch('meta');
+if ($customMeta)
+	echo $customMeta;
+else
+	echo '<meta property="og:title" content="Tsumego Hero">';
+?>
 <?php
 // Main app CSS bundle
 echo $this->AssetCompress->css('app');
