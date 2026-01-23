@@ -533,15 +533,28 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 	}
 
-	public function testQueringSetsByRanksButVisitingFromTopic(): void
+	/**
+	 * Collections sorted by difficulty -> click problem directly (no lastSet cookie) -> shows current set only.
+	 */
+	public function testDifficultyQueryWithoutLastSetShowsCurrentSet(): void
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
-			'tsumegos' => [['sets' => [['name' => 'set 1', 'num' => 1]]]]]);
+			'user' => ['query' => 'difficulty'],
+			'tsumegos' => [
+				['sets' => [['name' => 'Set A', 'num' => 1]]],
+				['sets' => [['name' => 'Set A', 'num' => 2]]],
+				['sets' => [['name' => 'Set B', 'num' => 1]]],
+			]]);
 
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->checkPlayTitle($browser, 'Tsumego 1/1');
+
+		// Title should show set context, not generic "Tsumego X/Y"
+		$this->checkPlayTitle($browser, 'Set A 1/2');
+
+		// Navigation should show 2 buttons (Set A: 1, 2), not 3 (mixing with Set B)
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(2, $buttons, 'Bug: navigation mixed problems from different sets');
 	}
 
 	public function testQueringSetsByRanksButWithWrongLastSetCookie(): void
