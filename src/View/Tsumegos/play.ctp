@@ -172,13 +172,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					<tr>
 						<td><label for="description">Description:</label></td>
 						<td>
-							<input type="text" name="description" id="description" value="<?php echo addslashes($t['Tsumego']['description']); ?>" style="width: 300px;">
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo htmlspecialchars($t['Tsumego']['description']); ?></textarea>
 							<br><small style="color: #888;">Use "Black" for player color (auto-swaps when inverted)</small>
 						</td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo addslashes($t['Tsumego']['hint']); ?>"></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo htmlspecialchars($t['Tsumego']['hint']); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
