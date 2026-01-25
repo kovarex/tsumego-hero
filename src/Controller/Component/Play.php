@@ -249,10 +249,10 @@ class Play
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$orientation = null;
 		$colorOrientation = null;
-		if (isset($params['url']['orientation']))
-			$orientation = $params['url']['orientation'];
-		if (isset($params['url']['playercolor']))
-			$colorOrientation = $params['url']['playercolor'];
+		if (isset($params->query['orientation']))
+			$orientation = $params->query['orientation'];
+		if (isset($params->query['playercolor']))
+			$colorOrientation = $params->query['playercolor'];
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)

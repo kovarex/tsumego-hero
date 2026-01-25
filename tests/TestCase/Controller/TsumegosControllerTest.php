@@ -366,4 +366,99 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
 	}
+
+	/**
+	 * NO SWAP: Visual color matches SGF first move - description unchanged.
+	 */
+	public function testDescriptionNoSwap()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => "Black's stones attack White's group. black wins!",
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+
+		$this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black',
+			['return' => 'view']
+		);
+
+		// No mismatch = no swap, description unchanged
+		$this->assertTextContains("Black's stones attack White's group. black wins!", $this->view);
+	}
+
+	/**
+	 * SWAP: Visual color differs from SGF - description colors swapped.
+	 * Tests: uppercase, lowercase, possessives, word boundaries.
+	 */
+	public function testDescriptionSwap()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				// "Black's" (possessive), "white" (lowercase), "Blackbird"/"whitespace" (word boundaries)
+				'description' => "Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+
+		$this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white',
+			['return' => 'view']
+		);
+
+		// Swapped: "Black's"->"White's", "white"->"black"
+		// Unchanged: "Blackbird", "whitespace"
+		$this->assertTextContains("White's stones. Kill the black group near the Blackbird. Watch whitespace.", $this->view);
+	}
+
+	/**
+	 * SWAP for White-first SGF: When SGF starts with ;W and user sees Black.
+	 * Tests the other direction of the swap condition.
+	 */
+	public function testDescriptionSwapWhiteFirstSgf()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => "White to attack Black's group.",
+				// White-first SGF: ;W[aa] instead of ;B[aa]
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])'
+			]
+		]);
+
+		// User sees Black (visual), but SGF starts with White -> SWAP
+		$this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black',
+			['return' => 'view']
+		);
+
+		// "White"->"Black", "Black's"->"White's"
+		$this->assertTextContains("Black to attack White's group.", $this->view);
+	}
+
+	/**
+	 * Edit form shows ORIGINAL description (never swapped).
+	 */
+	public function testDescriptionEditFormShowsOriginal()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to attack the white stones.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
+			]
+		]);
+
+		$this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white',
+			['return' => 'view']
+		);
+
+		// Edit textarea has original (not swapped)
+		$this->assertTextContains('>Black to attack the white stones.</textarea>', $this->view);
+	}
 }

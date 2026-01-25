@@ -88,19 +88,23 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$playerColor[0] = 'WHITE';
 		$playerColor[1] = 'BLACK';
 	}
-	if($pl==0)
-		$descriptionColor = 'Black ';
-	else
-		$descriptionColor = 'White ';
 
-	if($startingPlayer==1 && $plRand==true)
+	$displayDescription = $t['Tsumego']['description'];
+	// Swap Black<->White in description when visual color doesn't match puzzle's starting player
+	// - $pl: 0=playing as Black visually, 1=playing as White visually (inverted board)
+	// - $startingPlayer: 0=Black moves first in SGF, 1=White moves first in SGF
+	// - Descriptions use "Black" to mean "the player"
+	// - Need to swap when: player is visually White but puzzle expects Black, or vice versa
+	$shouldSwap = ($pl == 1 && $startingPlayer == 0) || ($pl == 0 && $startingPlayer == 1);
+	if ($shouldSwap)
 	{
-		if($descriptionColor=='Black ')
-			$descriptionColor = 'White ';
-		else if($descriptionColor=='White ')
-			$descriptionColor = 'Black ';
+		$displayDescription = preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			$displayDescription
+		);
 	}
-	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
+
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
@@ -145,7 +149,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
-		echo '<a id="descriptionText">'.$t['Tsumego']['description'].'</a> ';
+		echo '<a id="descriptionText">'.$displayDescription.'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.$t['Tsumego']['hint'].')</font>';
 		if($tv!=null)
@@ -166,12 +170,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
 				<table>
 					<tr>
-						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo addslashes(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
+						<td><label for="description">Description:</label></td>
+						<td>
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo htmlspecialchars($t['Tsumego']['description']); ?></textarea>
+							<br><small style="color: #888;">Use "Black" for player color (auto-swaps when inverted)</small>
+						</td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo addslashes($t['Tsumego']['hint']); ?>"></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo htmlspecialchars($t['Tsumego']['hint']); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
