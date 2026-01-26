@@ -61,7 +61,13 @@ class TsumegoFilters
 
 		// Apply new value if provided
 		if ($newValue)
+		{
 			$stringResult = $newValue;
+			// Clear the cookie override so subsequent requests
+			// read from preferences instead of stale cookie value.
+			if (!empty($_COOKIE[$name]) && $_COOKIE[$name] !== $newValue)
+				Util::clearCookie($name);
+		}
 
 		// Save back to preferences if value changed or was overridden
 		Preferences::set($name, $stringResult);

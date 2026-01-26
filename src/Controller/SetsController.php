@@ -731,7 +731,7 @@ class SetsController extends AppController
 				$this->set('formRedirect', true);
 			}
 		}
-		elseif ($tsumegoFilters->query = 'favorites')
+		elseif ($tsumegoFilters->query == 'favorites')
 		{
 			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
