@@ -11,6 +11,7 @@ App::uses('SetsSelector', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
+App::uses('SetEditRenderer', 'Utility');
 
 class SetsController extends AppController
 {
@@ -230,7 +231,6 @@ class SetsController extends AppController
 		{
 			$t = [];
 			$t['Tsumego']['difficulty'] = $this->data['Tsumego']['difficulty'];
-			$t['Tsumego']['variance'] = $this->data['Tsumego']['variance'];
 			$t['Tsumego']['description'] = $this->data['Tsumego']['description'];
 			$this->Tsumego->save($t);
 		}
@@ -454,8 +454,31 @@ class SetsController extends AppController
 
 	public function addTsumego($setID)
 	{
-		if (!isset($this->data['Tsumego']))
-			return;
+		if (!Auth::isLoggedIn())
+		{
+			CookieFlash::set('Not logged in', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+
+		$set = ClassRegistry::init('Set')->findById($setID);
+		if (!$set)
+		{
+			CookieFlash::set('Specified set not found', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+		$set = $set['Set'];
+
+		if ($set['public'] && !Auth::isAdmin())
+		{
+			CookieFlash::set('Only admins can add to public sets', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+
+		if (!isset($this->data['order']))
+		{
+			CookieFlash::set('tsumego order to add not specified', 'error');
+			return $this->redirect('/sets/view/' . $setID);
+		}
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 
@@ -464,12 +487,8 @@ class SetsController extends AppController
 		try
 		{
 			$tsumego = [];
-			$tsumego['num'] = $this->data['Tsumego']['num'];
-			$tsumego['difficulty'] = 40;
-			$tsumego['variance'] = $this->data['Tsumego']['variance'];
-			$tsumego['description'] = $this->data['Tsumego']['description'];
-			$tsumego['hint'] = $this->data['Tsumego']['hint'];
-			$tsumego['author'] = $this->data['Tsumego']['author'];
+			$tsumego['num'] = $this->data['order'];
+			$tsumego['author'] = Auth::getUser()['name'];
 			$tsumegoModel->create();
 			$tsumegoModel->save($tsumego);
 
@@ -477,13 +496,13 @@ class SetsController extends AppController
 			$setConnection = [];
 			$setConnection['set_id'] = $setID;
 			$setConnection['tsumego_id'] = $tsumego['id'];
-			$setConnection['num'] = $this->data['Tsumego']['num'];
+			$setConnection['num'] = $this->data['order'];
 			ClassRegistry::init('SetConnection')->create();
 			ClassRegistry::init('SetConnection')->save($setConnection);
 
 			// Save SGF if provided (either from textarea or file upload)
 			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
-			$sgfDataOrFile = $this->data['Tsumego']['sgf'] ?? $fileUpload;
+			$sgfDataOrFile = $this->data['sgf'] ?? $fileUpload;
 
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
@@ -492,7 +511,7 @@ class SetsController extends AppController
 		catch (Exception $e)
 		{
 			$tsumegoModel->getDataSource()->rollback();
-			throw $e;
+			CookieFlash::set('Unexpected error:' . $e->getMessage(), 'error');
 		}
 		return $this->redirect('/sets/view/' . $setID);
 	}

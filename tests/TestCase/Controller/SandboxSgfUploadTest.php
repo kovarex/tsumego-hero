@@ -24,13 +24,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 			'error' => UPLOAD_ERR_OK];
 
 		// POST to addTsumego endpoint
-		$data = [
-			'Tsumego' => [
-				'num' => 1,
-				'variance' => 100,
-				'author' => $context->user['name'],
-				'description' => '',
-				'hint' => '']];
+		$data = ['order' => 1];
 
 		$this->testAction('/sets/addTsumego/' . $setID, [
 			'method' => 'post',
@@ -69,14 +63,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		$sgfContent = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[dd][pd][dp]AW[dc][pp][pq];B[qd];W[oc])';
 
 		// POST to addTsumego endpoint with SGF in data
-		$data = [
-			'Tsumego' => [
-				'num' => 1,
-				'variance' => 100,
-				'author' => $context->user['name'],
-				'description' => '',
-				'hint' => '',
-				'sgf' => $sgfContent]];
+		$data = ['order' => 1, 'sgf' => $sgfContent];
 
 		$this->testAction('/sets/addTsumego/' . $setID, [
 			'method' => 'post',
