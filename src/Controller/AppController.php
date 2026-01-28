@@ -439,7 +439,6 @@ class AppController extends Controller
 		$levelBar = 1;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
-		$hasFavs = false;
 
 		if (Auth::isLoggedIn())
 		{
@@ -584,7 +583,6 @@ class AppController extends Controller
 		$this->set('lastProfileLeft', $lastProfileLeft);
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
-		$this->set('hasFavs', $hasFavs);
 		$this->set('timeMode', $timeMode);
 		if (Auth::isLoggedIn())
 			Auth::saveUser();
