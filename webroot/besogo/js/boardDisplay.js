@@ -227,6 +227,24 @@ besogo.makeBoardDisplay = function(container, editor, corner)
         'class': 'besogo-svg-lines'
     }) );
 
+    // If the board is too tall and slim, the problem can't be viewed without scrolling.
+    // This applies for regular boards when the highest y is higher than x by at least 5 (x-y < -4).
+    // And for vertical half boards when the highest y is higher than x by at least 11 (x-y < -10).
+    if(
+      besogo.scaleParameters["boardCanvasSize"] === "regular board"
+      && besogo.scaleParameters["highest"].x - besogo.scaleParameters["highest"].y < -4
+      ||
+      besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
+      && besogo.scaleParameters["highest"].x - besogo.scaleParameters["highest"].y < -10
+    ){
+      let transformation = besogo.makeTransformation();
+      transformation.rotateCounterClockwise = true;
+      besogo.editor.applyTransformation(transformation);
+      besogo.editor.applyRotation(false);
+      if(besogo.scaleParameters["boardCanvasSize"] === "vertical half board")
+        besogo.verticalHalfBoardRotationWidthToken = true;
+    }
+
     drawHoshi(); // Draw the hoshi points
 
     if (coord !== 'none')

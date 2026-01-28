@@ -23,6 +23,7 @@
   besogo.multipleChoiceSetup = []; //multiple choice random stone placement
   besogo.multipleChoiceCustom = false;
   besogo.multipleChoiceCustomSetup = null;
+  besogo.verticalHalfBoardRotationWidthToken = false;
   let corner;
 
   function getMakers() {
@@ -245,8 +246,14 @@
       } else if (
         besogo.scaleParameters["boardCanvasSize"] === "vertical half board"
       ) {
-        $(".besogo-board").css("width", "30%");
-        $(".besogo-board").css("margin", "0 443px");
+        if(!besogo.verticalHalfBoardRotationWidthToken){
+          $(".besogo-board").css("width", "30%");
+          $(".besogo-board").css("margin", "0 443px");
+        }else{
+          $(".besogo-board").css("width", "78%");
+          $(".besogo-board").css("margin", "0 138px");
+        }
+       
       } else {
         $(".besogo-board").css("width", "50%");
         $(".besogo-board").css("margin", "0 315px");
