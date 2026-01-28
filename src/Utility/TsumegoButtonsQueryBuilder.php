@@ -78,7 +78,11 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'difficulty')
 			return;
 		if (empty($_COOKIE['lastSet']))
+		{
+			// when we don't have lastSet, we fallback to showing by topics (the set of current tsumego)
+			$this->tsumegoFilters->query = 'topics';
 			return;
+		}
 		try
 		{
 			$ratingBounds = RatingBounds::coverRank($_COOKIE['lastSet'], '15k');
