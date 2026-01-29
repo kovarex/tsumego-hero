@@ -4,6 +4,10 @@ App::uses('Query', 'Utility');
 
 class TsumegoButtonsQueryBuilder
 {
+	public $query;
+	public $description = '';
+	private $tsumegoFilters;
+
 	public function __construct($tsumegoFilters, $id)
 	{
 		$this->query = new Query('FROM tsumego');
@@ -98,9 +102,13 @@ class TsumegoButtonsQueryBuilder
 			return;
 
 		$currentTag = $_COOKIE['lastSet'] ?? '';
+		if (empty($currentTag))
+			return;
+
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
-			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
+			return;
+
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
 	}
@@ -127,8 +135,4 @@ class TsumegoButtonsQueryBuilder
 		$this->query->query .= ' JOIN schedule ON `schedule`.tsumego_id = tsumego.id AND schedule.set_id = `set`.id';
 		$this->query->conditions[] = "`schedule`.date = '" . date('Y-m-d') . "'";
 	}
-
-	private TsumegoFilters $tsumegoFilters;
-	public Query $query;
-	public string $description = "";
 }

@@ -1,5 +1,7 @@
 <?php
 
+App::uses('NotFoundException', 'Routing/Error');
+
 class TagsController extends AppController
 {
 	public function add()
@@ -45,6 +47,8 @@ class TagsController extends AppController
 	public function view($id = null)
 	{
 		$tn = $this->Tag->findById($id);
+		if (!$tn)
+			throw new NotFoundException('Tag not found');
 		$allTags = $this->getAllTags();
 		$user = $this->User->findById($tn['Tag']['user_id']);
 		$tn['Tag']['user'] = $user['User']['name'];
@@ -71,6 +75,8 @@ class TagsController extends AppController
 		$listTag = [];
 
 		$u = $this->User->findById($id);
+		if (!$u)
+			throw new NotFoundException('User not found');
 		$tagNames = $this->Tag->find('all', ['limit' => 50, 'order' => 'created DESC', 'conditions' => ['user_id' => $id, 'approved' => 1]]);
 		if (!$tagNames)
 			$tagNames = [];
@@ -282,6 +288,8 @@ class TagsController extends AppController
 	{
 		$this->loadModel('Tag');
 		$tn = $this->Tag->findById($id);
+		if (!$tn)
+			throw new NotFoundException('Tag not found');
 
 		if (isset($this->data['Tag']))
 			if ($this->data['Tag']['delete'] == $id)

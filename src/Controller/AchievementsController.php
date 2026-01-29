@@ -1,5 +1,7 @@
 <?php
 
+App::uses('NotFoundException', 'Routing/Error');
+
 class AchievementsController extends AppController
 {
 	/**
@@ -61,6 +63,8 @@ class AchievementsController extends AppController
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 		$a = $this->Achievement->findById($id);
+		if (!$a)
+			throw new NotFoundException('Achievement not found');
 
 		$as = [];
 		$asAll = $this->AchievementStatus->find('all', ['order' => 'created DESC', 'conditions' => ['achievement_id' => $id]]);
