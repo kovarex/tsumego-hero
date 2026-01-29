@@ -10,6 +10,62 @@ App::uses('Achievement', 'Model');
  */
 class NoErrorStreakAchievementTest extends AchievementTestCase
 {
+	public function testNoErrorStreakIncreasedThroughBrowser()
+	{
+		$contextInput = [];
+		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
+			$contextInput['tsumegos'] [] = $i + 1;
+		$browser = Browser::instance();
+		$context = new ContextPreparator($contextInput);
+		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
+		{
+			$browser->get('/' . $context->setConnections[$i]['id']);
+			$browser->playWithResult('S');
+			$browser->get('/' . $context->setConnections[$i]['id']);
+			$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+				['conditions' => [
+					'user_id' => Auth::getUserID(),
+					'category' => 'err']]);
+			$this->assertNotNull($achievementCondition);
+			$this->assertEquals($achievementCondition['AchievementCondition']['value'], $i + 1);
+		}
+
+		$this->assertAchievementUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should unlock at 10");
+	}
+
+	public function testNoErrorStreakGetsClearedWhenErrorHappensThroughBrowser()
+	{
+		$contextInput = [];
+		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
+			$contextInput['tsumegos'] [] = $i + 1;
+		$browser = Browser::instance();
+		$context = new ContextPreparator($contextInput);
+
+		// we activate all but the last solves normally
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->playWithResult('S');
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		$this->assertNotNull($achievementCondition);
+		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+
+		// then we get a fail, and the progress gets reset
+		$browser->get('/' . $context->setConnections[1]['id']);
+		$browser->playWithResult('F'); // one fail
+		$browser->get('/' . $context->setConnections[1]['id']);
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		$this->assertNotNull($achievementCondition);
+		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
+
+		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should not unlock");
+	}
+
 	public function testSingleNoErrorStreakAchievements()
 	{
 		// Arrange: Create user and set err=10 (just meets threshold for Achievement::NO_ERROR_STREAK_I)
