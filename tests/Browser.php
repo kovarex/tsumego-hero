@@ -401,6 +401,9 @@ class Browser
 	 */
 	public function expandComments()
 	{
+		// Wait for React to mount the comments section (renders tabs first)
+		$this->waitUntilCssSelectorExists('.tsumego-comments__tab[data-filter="open"]', 5);
+
 		// Check if #msg2x (comments content) is visible
 		$commentsContent = $this->driver->findElement(WebDriverBy::id('msg2x'));
 		if (!$commentsContent->isDisplayed())

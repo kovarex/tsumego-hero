@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import Sortable from 'sortablejs';
 import type { Issue } from '../issues/issueTypes';
 
-interface UseSortableDnDProps {
+interface UseSortableDnDProps
+{
 	containerRef: React.RefObject<HTMLDivElement | null>;
 	isAdmin: boolean;
 	tsumegoId: number;
@@ -12,7 +13,7 @@ interface UseSortableDnDProps {
 
 /**
  * Custom hook to manage SortableJS drag-and-drop for comments and issues.
- * 
+ *
  * Handles:
  * - Main content area sortable (standalone comments)
  * - Issue dropzone sortables (comments within issues)
@@ -20,18 +21,15 @@ interface UseSortableDnDProps {
  * - ESC key to cancel drag
  * - Cleanup on unmount
  */
-export function useSortableDnD({ 
-	containerRef, 
-	isAdmin, 
-	tsumegoId, 
-	issues,
-	onMoveComment 
-}: UseSortableDnDProps) {
+export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMoveComment }: UseSortableDnDProps)
+{
 	const sortablesRef = useRef<Sortable[]>([]);
 	const dragStateRef = useRef<{ commentId: number; sourceIssueId: number | null } | null>(null);
 
-	useEffect(() => {
-		if (!isAdmin || !containerRef.current) return;
+	useEffect(() =>
+	{
+		if (!isAdmin || !containerRef.current) 
+			return;
 
 		// Cleanup previous sortables
 		sortablesRef.current.forEach(s => s.destroy());
@@ -40,34 +38,45 @@ export function useSortableDnD({
 		console.log('[Comment DnD] Initializing SortableJS for tsumego:', tsumegoId);
 
 		// Show/hide drop overlays on all issues
-		const showIssueDropTargets = (show: boolean, sourceIssueId: number | null) => {
-			document.querySelectorAll('.tsumego-issue').forEach((issueEl: Element) => {
+		const showIssueDropTargets = (show: boolean, sourceIssueId: number | null) =>
+		{
+			document.querySelectorAll('.tsumego-issue').forEach((issueEl: Element) =>
+			{
 				const htmlIssueEl = issueEl as HTMLElement;
 				const issueId = parseInt(htmlIssueEl.dataset.issueId || '0');
 				const overlay = issueEl.querySelector('.tsumego-issue__drop-overlay') as HTMLElement;
-				if (overlay) {
-					if (show) {
+				if (overlay)
+					if (show)
+					{
 						overlay.style.display = 'flex';
 						const span = overlay.querySelector('span');
-						if (issueId === sourceIssueId) {
+						if (issueId === sourceIssueId)
+						{
 							overlay.classList.add('tsumego-issue__drop-overlay--source');
-							if (span) span.textContent = 'Drop to return comment';
-						} else {
-							overlay.classList.remove('tsumego-issue__drop-overlay--source');
-							if (span) span.textContent = 'Drop here to add to this issue';
+							if (span) 
+								span.textContent = 'Drop to return comment';
 						}
-					} else {
+						else
+						{
+							overlay.classList.remove('tsumego-issue__drop-overlay--source');
+							if (span) 
+								span.textContent = 'Drop here to add to this issue';
+						}
+					}
+					else
+					{
 						overlay.style.display = 'none';
 						overlay.classList.remove('tsumego-issue__drop-overlay--source');
 					}
-				}
 			});
 		};
 
 		// Setup drop overlay on issue element
-		const setupIssueDropTarget = (issueEl: HTMLElement, issueId: number) => {
+		const setupIssueDropTarget = (issueEl: HTMLElement, issueId: number) =>
+		{
 			let overlay = issueEl.querySelector('.tsumego-issue__drop-overlay') as HTMLElement;
-			if (!overlay) {
+			if (!overlay)
+			{
 				overlay = document.createElement('div');
 				overlay.className = 'tsumego-issue__drop-overlay';
 				overlay.innerHTML = '<span>Drop here to add to this issue</span>';
@@ -75,26 +84,31 @@ export function useSortableDnD({
 				issueEl.appendChild(overlay);
 			}
 
-			const handleDragOver = (e: DragEvent) => {
+			const handleDragOver = (e: DragEvent) =>
+			{
 				e.preventDefault();
 				overlay.classList.add('tsumego-issue__drop-overlay--active');
 			};
 
-			const handleDragLeave = () => {
+			const handleDragLeave = () =>
+			{
 				overlay.classList.remove('tsumego-issue__drop-overlay--active');
 			};
 
-			const handleDrop = async (e: DragEvent) => {
+			const handleDrop = async (e: DragEvent) =>
+			{
 				e.preventDefault();
 				e.stopPropagation();
 				overlay.classList.remove('tsumego-issue__drop-overlay--active');
 
-				if (!dragStateRef.current) return;
+				if (!dragStateRef.current) 
+					return;
 
 				const { commentId, sourceIssueId } = dragStateRef.current;
 
 				// Check if returning to source issue
-				if (sourceIssueId === issueId) {
+				if (sourceIssueId === issueId)
+				{
 					console.log('[Comment DnD] Comment', commentId, 'returned to source issue', issueId);
 					// Do nothing - SortableJS handles returning to source
 					return;
@@ -128,23 +142,25 @@ export function useSortableDnD({
 			ghostClass: 'tsumego-comment--ghost',
 			chosenClass: 'tsumego-comment--dragging',
 			filter: '.tsumego-issue',
-			onStart: (evt: Sortable.SortableEvent) => {
+			onStart: (evt: Sortable.SortableEvent) =>
+			{
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
 				dragStateRef.current = { commentId, sourceIssueId: null };
 				console.log('[Comment DnD] Dragging standalone comment:', commentId);
 				showIssueDropTargets(true, null);
 			},
-			onEnd: () => {
+			onEnd: () =>
+			{
 				console.log('[Comment DnD] onEnd (main)');
 				showIssueDropTargets(false, null);
 				dragStateRef.current = null;
 			},
-			onAdd: async (evt) => {
+			onAdd: async evt =>
+			{
 				// Revert SortableJS DOM change to prevent React conflict
-				if (evt.from && evt.item.parentNode !== evt.from) {
+				if (evt.from && evt.item.parentNode !== evt.from) 
 					evt.from.appendChild(evt.item);
-				}
 
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
@@ -155,7 +171,8 @@ export function useSortableDnD({
 		sortablesRef.current.push(mainSortable);
 
 		// Create sortable for each issue
-		containerRef.current.querySelectorAll('.tsumego-dnd__issue-dropzone').forEach((container: Element) => {
+		containerRef.current.querySelectorAll('.tsumego-dnd__issue-dropzone').forEach((container: Element) =>
+		{
 			const htmlContainer = container as HTMLElement;
 			const issueId = parseInt(htmlContainer.dataset.issueId || '0');
 			const issueEl = container.closest('.tsumego-issue') as HTMLElement;
@@ -172,14 +189,16 @@ export function useSortableDnD({
 				draggable: '.tsumego-comment',
 				ghostClass: 'tsumego-comment--ghost',
 				chosenClass: 'tsumego-comment--dragging',
-				onStart: (evt: Sortable.SortableEvent) => {
+				onStart: (evt: Sortable.SortableEvent) =>
+				{
 					const commentId = parseInt((evt.item as HTMLElement).dataset.commentId || '0');
 					dragStateRef.current = { commentId, sourceIssueId: issueId };
 					console.log('[Comment DnD] Dragging from issue:', issueId);
 					issueEl.classList.add('tsumego-issue--drag-source');
 					showIssueDropTargets(true, issueId);
 				},
-				onEnd: () => {
+				onEnd: () =>
+				{
 					console.log('[Comment DnD] onEnd (issue)');
 					issueEl.classList.remove('tsumego-issue--drag-source');
 					showIssueDropTargets(false, null);
@@ -193,14 +212,16 @@ export function useSortableDnD({
 		});
 
 		// ESC key handler to cancel drag
-		const handleEscKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape' && dragStateRef.current) {
+		const handleEscKey = (e: KeyboardEvent) =>
+		{
+			if (e.key === 'Escape' && dragStateRef.current)
+			{
 				console.log('[Comment DnD] ESC pressed - cancelling drag');
 				showIssueDropTargets(false, null);
-				sortablesRef.current.forEach(s => {
-					if ((s as { el?: HTMLElement }).el) {
-						((s as { el: HTMLElement }).el).classList.remove('tsumego-issue--drag-source');
-					}
+				sortablesRef.current.forEach(s =>
+				{
+					if ((s as { el?: HTMLElement }).el)
+						(s as { el: HTMLElement }).el.classList.remove('tsumego-issue--drag-source');
 				});
 				dragStateRef.current = null;
 			}
@@ -208,7 +229,8 @@ export function useSortableDnD({
 		document.addEventListener('keydown', handleEscKey);
 
 		// Cleanup on unmount
-		return () => {
+		return () =>
+		{
 			sortablesRef.current.forEach(s => s.destroy());
 			sortablesRef.current = [];
 			document.removeEventListener('keydown', handleEscKey);

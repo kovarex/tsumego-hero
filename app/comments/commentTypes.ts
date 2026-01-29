@@ -1,6 +1,7 @@
 import type { Issue } from '../issues/issueTypes';
 
-export interface Comment {
+export interface Comment
+{
 	id: number;
 	text: string;
 	user_id: number;
@@ -13,20 +14,23 @@ export interface Comment {
 	position: string | null;
 }
 
-export interface CommentCounts {
+export interface CommentCounts
+{
 	total: number;
 	comments: number;
 	issues: number;
 	openIssues: number;
 }
 
-export interface CommentsData {
+export interface CommentsData
+{
 	issues: Issue[];
 	standalone: Comment[];
 	counts: CommentCounts;
 }
 
-export interface AddCommentRequest {
+export interface AddCommentRequest
+{
 	text: string;
 	tsumego_id: number;
 	issue_id?: number;
@@ -34,7 +38,8 @@ export interface AddCommentRequest {
 	report_as_issue?: boolean;
 }
 
-export interface CloseIssueRequest {
+export interface CloseIssueRequest
+{
 	message?: string;
 	source?: string;
 }
