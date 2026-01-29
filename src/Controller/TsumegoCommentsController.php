@@ -87,20 +87,14 @@ class TsumegoCommentsController extends AppController
 	 */
 	public function delete($id)
 	{
-		error_log("[TsumegoCommentsController::delete] Called with ID: $id");
-
 		if (!$this->request->is('post'))
-		{
-			error_log("[TsumegoCommentsController::delete] Not a POST request, method: " . $this->request->method());
 			throw new MethodNotAllowedException();
-		}
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
 
 		if (!$comment)
 		{
-			error_log("[TsumegoCommentsController::delete] Comment not found: $id");
 			$this->response->statusCode(404);
 			$this->response->type('json');
 			$this->response->body(json_encode(['error' => 'Comment not found']));
@@ -109,11 +103,9 @@ class TsumegoCommentsController extends AppController
 
 		// Only admin or comment author can delete
 		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
-		error_log("[TsumegoCommentsController::delete] User ID: " . Auth::getUserID() . ", Comment owner: " . $comment['TsumegoComment']['user_id'] . ", Is owner: " . ($isOwner ? 'yes' : 'no'));
 
 		if (!Auth::isAdmin() && !$isOwner)
 		{
-			error_log("[TsumegoCommentsController::delete] Unauthorized - not admin and not owner");
 			$this->response->statusCode(403);
 			$this->response->type('json');
 			$this->response->body(json_encode(['error' => 'You are not authorized to delete this comment']));
@@ -126,11 +118,9 @@ class TsumegoCommentsController extends AppController
 		// Soft delete
 		$TsumegoComment->id = $id;
 		$saveResult = $TsumegoComment->saveField('deleted', true);
-		error_log("[TsumegoCommentsController::delete] Save result: " . ($saveResult ? 'success' : 'failed'));
 
 		if (!$saveResult)
 		{
-			error_log("[TsumegoCommentsController::delete] Failed to save deleted flag");
 			$this->response->statusCode(500);
 			$this->response->type('json');
 			$this->response->body(json_encode(['error' => 'Failed to delete comment']));
@@ -142,10 +132,8 @@ class TsumegoCommentsController extends AppController
 		{
 			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 			$TsumegoIssue->deleteIfEmpty($issueId);
-			error_log("[TsumegoCommentsController::delete] Checked if issue $issueId is empty");
 		}
 
-		error_log("[TsumegoCommentsController::delete] Delete successful");
 		$this->response->type('json');
 		$this->response->body(json_encode(['success' => true]));
 		return $this->response;

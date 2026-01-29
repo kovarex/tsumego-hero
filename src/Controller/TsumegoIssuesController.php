@@ -30,9 +30,6 @@ class TsumegoIssuesController extends AppController
 		$issues = $this->TsumegoIssue->findForIndex($statusFilter, $perPage, $page);
 		$counts = $this->TsumegoIssue->getIndexCounts();
 
-		// Debug log
-		error_log("[API] statusFilter=$statusFilter, page=$page, issues_count=" . count($issues));
-
 		$totalCount = match ($statusFilter)
 		{
 			'opened' => $counts['open'],
