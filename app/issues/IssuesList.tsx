@@ -12,11 +12,9 @@ interface IssuesListProps
 {
 	initialFilter: IssueStatusFilter;
 	initialPage: number;
-	userId: number | null;
-	isAdmin: boolean;
 }
 
-export function IssuesList({ initialFilter, initialPage, userId, isAdmin }: IssuesListProps)
+export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 {
 	// URL-synced state
 	const [statusFilter, setStatusFilter] = useState<IssueStatusFilter>(initialFilter);
@@ -166,8 +164,6 @@ export function IssuesList({ initialFilter, initialPage, userId, isAdmin }: Issu
 							{/* Issue component (reused from play page) */}
 							<Issue
 								issue={item.issue}
-								currentUserId={userId}
-								isAdmin={isAdmin}
 								onDelete={handleDeleteComment}
 								onCloseReopen={handleCloseReopen}
 								showReplyForm={false}

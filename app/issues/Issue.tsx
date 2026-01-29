@@ -4,12 +4,11 @@ import { CommentForm } from '../comments/CommentForm';
 import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from '../comments/commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue as IssueType } from './issueTypes';
+import { useAuth } from '../shared/AuthContext';
 
 interface IssueProps
 {
 	issue: IssueType;
-	currentUserId: number | null;
-	isAdmin: boolean;
 	onDelete: (id: number) => void;
 	onReply?: (issueId: number, text: string, position?: string) => Promise<void>; // Optional - not needed on list page
 	onCloseReopen: (issueId: number, newStatus: IssueStatusId) => Promise<void>;
@@ -22,8 +21,6 @@ interface IssueProps
 
 export function Issue({
 	issue,
-	currentUserId,
-	isAdmin,
 	onDelete,
 	onReply,
 	onCloseReopen,
@@ -33,9 +30,10 @@ export function Issue({
 	isDraggingEnabled = true // Default to enabling dragging
 }: IssueProps)
 {
+	const { userId, isAdmin } = useAuth();
 	const [reply, setReply] = useState({ show: false, submitting: false });
 	const isOpen = issue.tsumego_issue_status_id === IssueStatus.OPEN;
-	const canCloseReopen = isAdmin || currentUserId === issue.user_id;
+	const canCloseReopen = isAdmin || userId === issue.user_id;
 
 	// Use provided comments/author or fall back to issue data
 	const displayComments = comments ?? issue.comments ?? [];
@@ -118,8 +116,6 @@ export function Issue({
 					<Comment
 						key={c.id}
 						comment={c}
-						currentUserId={currentUserId}
-						isAdmin={isAdmin}
 						onDelete={onDelete}
 						showIssueContext={false}
 						issueStatus={issue.tsumego_issue_status_id as IssueStatusId}
@@ -128,7 +124,7 @@ export function Issue({
 				))}
 			</div>
 
-			{showReplyForm && currentUserId && (
+			{showReplyForm && userId && (
 				<div className="tsumego-issue__reply-toggle">
 					<button
 						type="button"
@@ -140,7 +136,7 @@ export function Issue({
 				</div>
 			)}
 
-			{showReplyForm && reply.show && currentUserId && (
+			{showReplyForm && reply.show && userId && (
 				<div className="tsumego-issue__reply-form">
 					<CommentForm
 						onSubmit={handleSubmitReply}
