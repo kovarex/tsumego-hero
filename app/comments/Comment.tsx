@@ -167,7 +167,6 @@ export function Comment({
 										// If still at root and we have a path, try playing the moves
 										if (isAtRoot && pathPart)
 										{
-											console.log('[Comment] Position not in tree, playing moves:', pathPart);
 											const coords = pathPart.split('+').map((c: string) => c.split('/').map(Number));
 
 											// Play each move in sequence

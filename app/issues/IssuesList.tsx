@@ -63,9 +63,8 @@ export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 			await closeReopenMutation.mutateAsync({ issueId, newStatus });
 			await invalidateList();
 		}
-		catch (error)
+		catch
 		{
-			console.error('[IssuesList] Close/reopen failed:', error);
 			alert('Failed to update issue status. Please try again.');
 		}
 	};
@@ -80,9 +79,8 @@ export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 			await deleteMutation.mutateAsync({ commentId });
 			await invalidateList();
 		}
-		catch (error)
+		catch
 		{
-			console.error('[IssuesList] Delete comment failed:', error);
 			alert('Failed to delete comment. Please try again.');
 		}
 	};

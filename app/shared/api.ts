@@ -54,7 +54,6 @@ export async function get<T>(url: string): Promise<T>
 
 export async function post<T>(url: string, data: unknown): Promise<T>
 {
-	console.log('[API] POST', url, 'data:', data);
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: {
@@ -64,7 +63,6 @@ export async function post<T>(url: string, data: unknown): Promise<T>
 		},
 		body: JSON.stringify(data)
 	});
-	console.log('[API] Response status:', response.status, 'ok:', response.ok);
 	return handleResponse<T>(response);
 }
 
