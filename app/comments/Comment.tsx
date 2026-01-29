@@ -1,13 +1,12 @@
 import { UserLink } from '../shared/UserLink';
 import type { Comment as CommentType } from './commentTypes';
 import { IssueStatus, type IssueStatusId } from '../issues/issueTypes';
+import { useAuth } from '../shared/AuthContext';
 import dayjs from 'dayjs';
 
 interface CommentProps
 {
 	comment: CommentType;
-	currentUserId: number | null;
-	isAdmin: boolean;
 	onDelete: (id: number) => void;
 	onMakeIssue?: (id: number) => void; // Optional - only available for standalone comments, not issue comments
 	showIssueContext: boolean;
@@ -80,8 +79,6 @@ function renderCommentText(text: string | null | undefined): React.ReactNode[]
 
 export function Comment({
 	comment,
-	currentUserId,
-	isAdmin,
 	onDelete,
 	onMakeIssue,
 	showIssueContext,
@@ -89,7 +86,8 @@ export function Comment({
 	isDraggingEnabled = true
 }: CommentProps)
 {
-	const canDelete = isAdmin || currentUserId === comment.user_id;
+	const { userId, isAdmin } = useAuth();
+	const canDelete = isAdmin || userId === comment.user_id;
 	// Make Issue button shows for admins on standalone comments (showIssueContext=true) that aren't already in an issue
 	const canMakeIssue = isAdmin && showIssueContext && onMakeIssue;
 

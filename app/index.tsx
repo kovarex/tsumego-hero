@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from './shared/ErrorBoundary';
+import { AuthProvider } from './shared/AuthContext';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
 import { ApiError } from './shared/api';
@@ -42,9 +43,11 @@ function initializeComments()
 		const reactRoot = createRoot(root);
 		reactRoot.render(
 			<ErrorBoundary>
-				<QueryClientProvider client={globalQueryClient}>
-					<CommentSection tsumegoId={tsumegoId} userId={userId} isAdmin={isAdmin} initialCounts={initialCounts} />
-				</QueryClientProvider>
+				<AuthProvider userId={userId} isAdmin={isAdmin}>
+					<QueryClientProvider client={globalQueryClient}>
+						<CommentSection tsumegoId={tsumegoId} initialCounts={initialCounts} />
+					</QueryClientProvider>
+				</AuthProvider>
 			</ErrorBoundary>
 		);
 	});
@@ -69,9 +72,11 @@ function initializeIssuesList()
 	const reactRoot = createRoot(root);
 	reactRoot.render(
 		<ErrorBoundary>
-			<QueryClientProvider client={globalQueryClient}>
-				<IssuesList initialFilter={statusFilter} initialPage={currentPage} userId={userId} isAdmin={isAdmin} />
-			</QueryClientProvider>
+			<AuthProvider userId={userId} isAdmin={isAdmin}>
+				<QueryClientProvider client={globalQueryClient}>
+					<IssuesList initialFilter={statusFilter} initialPage={currentPage} />
+				</QueryClientProvider>
+			</AuthProvider>
 		</ErrorBoundary>
 	);
 }

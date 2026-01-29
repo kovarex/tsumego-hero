@@ -10,17 +10,17 @@ import { moveComment } from '../shared/api';
 import { useSortableDnD } from './useSortableDnD';
 import { CommentsListSkeleton } from './CommentSkeleton';
 import { ErrorMessage } from '../shared/ErrorMessage';
+import { useAuth } from '../shared/AuthContext';
 
 interface CommentSectionProps
 {
 	tsumegoId: number;
-	userId: number | null;
-	isAdmin: boolean;
 	initialCounts: CommentCounts;
 }
 
-export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: CommentSectionProps)
+export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps)
 {
+	const { userId, isAdmin } = useAuth();
 	const contentRef = useRef<HTMLDivElement>(null);
 
 	// Local UI state (tabs and visibility)
@@ -318,8 +318,6 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
 									>
 										<Issue
 											issue={issue}
-											currentUserId={userId}
-											isAdmin={isAdmin}
 											onDelete={handleDelete}
 											onReply={handleReply}
 											onCloseReopen={handleCloseReopen}
@@ -340,8 +338,6 @@ export function CommentSection({ tsumegoId, userId, isAdmin, initialCounts }: Co
 									>
 										<Comment
 											comment={comment}
-											currentUserId={userId}
-											isAdmin={isAdmin}
 											onDelete={handleDelete}
 											onMakeIssue={handleMakeIssue}
 											showIssueContext={true}
