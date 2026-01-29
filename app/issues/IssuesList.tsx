@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Issue } from './Issue';
-import { useIssuesQuery, useInvalidateIssuesList } from './useIssues';
-import { useCloseReopenIssue } from '../comments/useComments';
-import { useDeleteComment } from '../comments/useComments';
+import { useIssuesQuery, useIssuesMutations } from './useIssues';
 import type { IssueStatusFilter, IssueWithContext } from './issueTypes';
 import { type IssueStatusId } from './issueTypes';
 import { IssuesListSkeleton } from './IssueSkeleton';
@@ -23,10 +21,8 @@ export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 	// Fetch issues with React Query - always fetch fresh, no SSR placeholder
 	const issuesQuery = useIssuesQuery(statusFilter, page);
 
-	// Mutations
-	const closeReopenMutation = useCloseReopenIssue();
-	const deleteMutation = useDeleteComment();
-	const invalidateList = useInvalidateIssuesList();
+	// Mutations with auto-invalidation
+	const { closeReopenMutation, deleteMutation } = useIssuesMutations();
 
 	// Extract data from API (all from fetch, no SSR fallbacks)
 	const issues = issuesQuery.data?.issues ?? [];
@@ -56,17 +52,10 @@ export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 		window.scrollTo(0, 0); // Scroll to top on page change
 	};
 
+	// Handlers - mutations auto-invalidate via onSuccess
 	const handleCloseReopen = async (issueId: number, newStatus: IssueStatusId) =>
 	{
-		try
-		{
-			await closeReopenMutation.mutateAsync({ issueId, newStatus });
-			await invalidateList();
-		}
-		catch
-		{
-			alert('Failed to update issue status. Please try again.');
-		}
+		await closeReopenMutation.mutateAsync({ issueId, newStatus });
 	};
 
 	const handleDeleteComment = async (commentId: number) =>
@@ -74,15 +63,7 @@ export function IssuesList({ initialFilter, initialPage }: IssuesListProps)
 		if (!confirm('Delete this comment?')) 
 			return;
 
-		try
-		{
-			await deleteMutation.mutateAsync({ commentId });
-			await invalidateList();
-		}
-		catch
-		{
-			alert('Failed to delete comment. Please try again.');
-		}
+		await deleteMutation.mutateAsync({ commentId });
 	};
 
 	// Helper to build problem title
