@@ -108,18 +108,12 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		{
 			try
 			{
-				console.log('[Comment DnD] Moving comment:', commentId, 'to:', targetIssueId);
 				const result = await moveComment(commentId, targetIssueId);
 				if (result.success)
-				{
-					// Refetch from server - let backend tell us the new state
-					console.log('[Comment DnD] Move successful, invalidating queries to refetch');
 					await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
-				}
 			}
-			catch (error)
+			catch
 			{
-				console.error('[Comment DnD] Move failed:', error);
 				alert('Failed to move comment. Please try again.');
 			}
 		},
@@ -135,28 +129,14 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		onMoveComment: handleMoveComment
 	});
 
-	// Handlers
+	// Helper to invalidate comments cache
+	const invalidateComments = () => queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
+
+	// Handlers - using mutateAsync for cleaner async/await
 	const handleAdd = async (text: string, position?: string, reportAsIssue?: boolean) =>
 	{
-		return new Promise<void>((resolve, reject) =>
-		{
-			addMutation.mutate(
-				{ data: { text, tsumego_id: tsumegoId, position, report_as_issue: reportAsIssue } },
-				{
-					onSuccess: async () =>
-					{
-						console.log('[handleAdd] Comment added, refetching from server');
-						await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
-						resolve();
-					},
-					onError: error =>
-					{
-						console.error('[handleAdd] Comment add failed:', error);
-						reject(error);
-					}
-				}
-			);
-		});
+		await addMutation.mutateAsync({ data: { text, tsumego_id: tsumegoId, position, report_as_issue: reportAsIssue } });
+		await invalidateComments();
 	};
 
 	const handleDelete = async (id: number) =>
@@ -164,50 +144,19 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		if (!confirm('Delete this comment?')) 
 			return;
 		await deleteMutation.mutateAsync({ commentId: id });
-		console.log('[handleDelete] Comment deleted, refetching from server');
-		await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
+		await invalidateComments();
 	};
 
 	const handleReply = async (issueId: number, text: string, position?: string) =>
 	{
-		return new Promise<void>((resolve, reject) =>
-		{
-			replyMutation.mutate(
-				{ issueId, text, tsumegoId, position },
-				{
-					onSuccess: async () =>
-					{
-						console.log('[handleReply] Reply added, refetching from server');
-						await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
-						resolve();
-					},
-					onError: error =>
-					{
-						console.error('[handleReply] Reply failed:', error);
-						reject(error);
-					}
-				}
-			);
-		});
+		await replyMutation.mutateAsync({ issueId, text, tsumegoId, position });
+		await invalidateComments();
 	};
 
 	const handleCloseReopen = async (issueId: number, newStatus: IssueStatusId) =>
 	{
-		return new Promise<void>((resolve, reject) =>
-		{
-			closeReopenMutation.mutate(
-				{ issueId, newStatus },
-				{
-					onSuccess: async () =>
-					{
-						console.log('[handleCloseReopen] Issue status changed, refetching from server');
-						await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
-						resolve();
-					},
-					onError: reject
-				}
-			);
-		});
+		await closeReopenMutation.mutateAsync({ issueId, newStatus });
+		await invalidateComments();
 	};
 
 	const handleMakeIssue = async (commentId: number) =>
@@ -228,17 +177,11 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 			if (!response.ok) 
 				throw new Error(`HTTP ${response.status}`);
 
-			const data = (await response.json()) as {
-				success: boolean;
-				issue: IssueType;
-				comment_id: number;
-			};
-			console.log('[handleMakeIssue] Issue created:', data, 'refetching from server');
 			await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
 		}
-		catch (error)
+		catch
 		{
-			console.error('[CommentSection] Make issue failed:', error);
+			alert('Failed to create issue from comment. Please try again.');
 		}
 	};
 

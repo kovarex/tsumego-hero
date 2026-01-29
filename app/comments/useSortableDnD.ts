@@ -35,8 +35,6 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 		sortablesRef.current.forEach(s => s.destroy());
 		sortablesRef.current = [];
 
-		console.log('[Comment DnD] Initializing SortableJS for tsumego:', tsumegoId);
-
 		// Show/hide drop overlays on all issues
 		const showIssueDropTargets = (show: boolean, sourceIssueId: number | null) =>
 		{
@@ -108,13 +106,8 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 
 				// Check if returning to source issue
 				if (sourceIssueId === issueId)
-				{
-					console.log('[Comment DnD] Comment', commentId, 'returned to source issue', issueId);
-					// Do nothing - SortableJS handles returning to source
-					return;
-				}
+					return; // Do nothing - SortableJS handles returning to source
 
-				console.log('[Comment DnD] Drop on overlay - Comment', commentId, 'dropped into issue', issueId);
 				await onMoveComment(commentId, issueId);
 			};
 
@@ -147,12 +140,10 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
 				dragStateRef.current = { commentId, sourceIssueId: null };
-				console.log('[Comment DnD] Dragging standalone comment:', commentId);
 				showIssueDropTargets(true, null);
 			},
 			onEnd: () =>
 			{
-				console.log('[Comment DnD] onEnd (main)');
 				showIssueDropTargets(false, null);
 				dragStateRef.current = null;
 			},
@@ -164,7 +155,6 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
-				console.log('[Comment DnD] Comment', commentId, 'dropped to standalone');
 				await onMoveComment(commentId, 'standalone');
 			}
 		});
@@ -193,13 +183,11 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 				{
 					const commentId = parseInt((evt.item as HTMLElement).dataset.commentId || '0');
 					dragStateRef.current = { commentId, sourceIssueId: issueId };
-					console.log('[Comment DnD] Dragging from issue:', issueId);
 					issueEl.classList.add('tsumego-issue--drag-source');
 					showIssueDropTargets(true, issueId);
 				},
 				onEnd: () =>
 				{
-					console.log('[Comment DnD] onEnd (issue)');
 					issueEl.classList.remove('tsumego-issue--drag-source');
 					showIssueDropTargets(false, null);
 					dragStateRef.current = null;
@@ -216,7 +204,6 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 		{
 			if (e.key === 'Escape' && dragStateRef.current)
 			{
-				console.log('[Comment DnD] ESC pressed - cancelling drag');
 				showIssueDropTargets(false, null);
 				sortablesRef.current.forEach(s =>
 				{

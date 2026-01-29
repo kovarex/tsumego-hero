@@ -48,22 +48,15 @@ export function CommentForm({
 		if (!form.position)
 		{
 			// Get position from besogo editor
-			const besogo = window.besogo;
-			if (!besogo || !besogo.editor)
-			{
-				alert('Board editor not available');
-				return;
-			}
-
-			const current = besogo.editor.getCurrent();
-			if (!current || !current.move)
+			const current = window.besogo.editor.getCurrent();
+			if (!current.move)
 			{
 				alert('No move at current position');
 				return;
 			}
 
 			// Get orientation from besogo
-			const besogoOrientation = besogo.editor.getOrientation();
+			const besogoOrientation = window.besogo.editor.getOrientation();
 			const orientation = besogoOrientation[1] === 'full-board' ? 'full-board' : besogoOrientation[0];
 
 			// Use coordinates directly from besogo (NO normalization)

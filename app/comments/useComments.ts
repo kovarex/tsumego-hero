@@ -55,18 +55,7 @@ export function useDeleteComment()
 {
 	return useMutation({
 		mutationFn: ({ commentId }: DeleteCommentVariables) =>
-		{
-			console.log('[useDeleteComment] Starting delete for comment:', commentId);
-			return del<{ success: boolean }>(`/tsumego-comments/delete/${commentId}`);
-		},
-		onSuccess: data =>
-		{
-			console.log('[useDeleteComment] Delete successful, response:', data);
-		},
-		onError: error =>
-		{
-			console.error('[useDeleteComment] Delete failed:', error);
-		}
+			del<{ success: boolean }>(`/tsumego-comments/delete/${commentId}`)
 	});
 }
 
@@ -90,16 +79,7 @@ export function useCloseReopenIssue()
 		{
 			const endpoint =
 				newStatus === IssueStatus.CLOSED ? `/tsumego-issues/close/${issueId}` : `/tsumego-issues/reopen/${issueId}`;
-			console.log('[useCloseReopenIssue] Calling:', endpoint, 'with status:', newStatus);
 			return post<{ success: boolean }>(endpoint, { source: 'play' });
-		},
-		onSuccess: data =>
-		{
-			console.log('[useCloseReopenIssue] Success:', data);
-		},
-		onError: error =>
-		{
-			console.error('[useCloseReopenIssue] Error:', error);
 		}
 	});
 }
