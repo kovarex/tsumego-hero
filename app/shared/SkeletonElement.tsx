@@ -2,19 +2,20 @@
  * Base skeleton element with shimmer animation
  * Reusable building block for creating skeleton screens
  */
-export function SkeletonElement({ 
-	width, 
-	height = '1rem', 
+export function SkeletonElement({
+	width,
+	height = '1rem',
 	borderRadius = '4px',
-	style 
-}: { 
-	width?: string; 
-	height?: string; 
+	style
+}: {
+	width?: string;
+	height?: string;
 	borderRadius?: string;
 	style?: React.CSSProperties;
-}) {
+})
+{
 	return (
-		<div 
+		<div
 			className="skeleton-element"
 			style={{
 				width,

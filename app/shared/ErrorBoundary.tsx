@@ -1,11 +1,13 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
 
-interface Props {
+interface Props
+{
 	children: ReactNode;
 	fallback?: ReactNode;
 }
 
-interface State {
+interface State
+{
 	hasError: boolean;
 	error: Error | null;
 }
@@ -24,36 +26,38 @@ interface State {
  *     <YourComponent />
  *   </ErrorBoundary>
  */
-export class ErrorBoundary extends Component<Props, State> {
-	constructor(props: Props) {
+export class ErrorBoundary extends Component<Props, State>
+{
+	constructor(props: Props)
+	{
 		super(props);
 		this.state = { hasError: false, error: null };
 	}
 
-	static getDerivedStateFromError(error: Error): State {
+	static getDerivedStateFromError(error: Error): State
+	{
 		return { hasError: true, error };
 	}
 
-	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+	componentDidCatch(error: Error, errorInfo: ErrorInfo)
+	{
 		console.error('React Error Boundary caught an error:', error, errorInfo);
 	}
 
-	render() {
-		if (this.state.hasError) {
+	render()
+	{
+		if (this.state.hasError)
+		{
 			// Use custom fallback if provided, otherwise default error UI
-			if (this.props.fallback) {
+			if (this.props.fallback) 
 				return this.props.fallback;
-			}
 
 			return (
 				<div className="error-boundary">
 					<div className="error-boundary__content">
 						<h3>⚠️ Something went wrong</h3>
 						<p>We encountered an error loading this section.</p>
-						<button 
-							onClick={() => window.location.reload()}
-							className="error-boundary__reload"
-						>
+						<button onClick={() => window.location.reload()} className="error-boundary__reload">
 							Reload Page
 						</button>
 						{this.state.error && (

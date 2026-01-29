@@ -3,143 +3,164 @@ import { post, del } from '../shared/api';
 import type { Comment, AddCommentRequest, CommentCounts } from './commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue } from '../issues/issueTypes';
 
-interface AddCommentVariables {
+interface AddCommentVariables
+{
 	data: AddCommentRequest;
 }
 
-interface DeleteCommentVariables {
+interface DeleteCommentVariables
+{
 	commentId: number;
 }
 
-interface ReplyToIssueVariables {
+interface ReplyToIssueVariables
+{
 	issueId: number;
 	text: string;
 	tsumegoId: number;
 	position?: string;
 }
 
-interface MakeIssueVariables {
+interface MakeIssueVariables
+{
 	commentId: number;
 }
 
-interface CloseIssueVariables {
+interface CloseIssueVariables
+{
 	issueId: number;
 	newStatus: IssueStatusId;
 }
 
-export function useAddComment() {
+export function useAddComment()
+{
 	return useMutation({
-		mutationFn: async ({ data }: AddCommentVariables) => {
+		mutationFn: async ({ data }: AddCommentVariables) =>
+		{
 			// If reporting as issue, create issue instead
-			if (data.report_as_issue) {
-				return post<{success: boolean, issue: Issue}>('/tsumego-issues/create', {
+			if (data.report_as_issue)
+				return post<{ success: boolean; issue: Issue }>('/tsumego-issues/create', {
 					tsumego_id: data.tsumego_id,
 					text: data.text,
-					position: data.position,
+					position: data.position
 				});
-			}
-			
+
 			// Regular comment
 			return post<Comment>('/tsumego-comments/add', data);
-		},
+		}
 	});
 }
 
-export function useDeleteComment() {
+export function useDeleteComment()
+{
 	return useMutation({
-		mutationFn: ({ commentId }: DeleteCommentVariables) => {
+		mutationFn: ({ commentId }: DeleteCommentVariables) =>
+		{
 			console.log('[useDeleteComment] Starting delete for comment:', commentId);
 			return del<{ success: boolean }>(`/tsumego-comments/delete/${commentId}`);
 		},
-		onSuccess: (data) => {
+		onSuccess: data =>
+		{
 			console.log('[useDeleteComment] Delete successful, response:', data);
 		},
-		onError: (error) => {
+		onError: error =>
+		{
 			console.error('[useDeleteComment] Delete failed:', error);
-		},
+		}
 	});
 }
 
-export function useReplyToIssue() {
+export function useReplyToIssue()
+{
 	return useMutation({
 		mutationFn: ({ issueId, text, tsumegoId, position }: ReplyToIssueVariables) =>
 			post<Comment>('/tsumego-comments/add', {
 				text,
 				tsumego_id: tsumegoId,
 				issue_id: issueId,
-				...(position && { position }),
-			}),
+				...(position && { position })
+			})
 	});
 }
 
-export function useCloseReopenIssue() {
+export function useCloseReopenIssue()
+{
 	return useMutation({
-		mutationFn: ({ issueId, newStatus }: CloseIssueVariables) => {
-			const endpoint = newStatus === IssueStatus.CLOSED 
-				? `/tsumego-issues/close/${issueId}`
-				: `/tsumego-issues/reopen/${issueId}`;
+		mutationFn: ({ issueId, newStatus }: CloseIssueVariables) =>
+		{
+			const endpoint =
+				newStatus === IssueStatus.CLOSED ? `/tsumego-issues/close/${issueId}` : `/tsumego-issues/reopen/${issueId}`;
 			console.log('[useCloseReopenIssue] Calling:', endpoint, 'with status:', newStatus);
 			return post<{ success: boolean }>(endpoint, { source: 'play' });
 		},
-		onSuccess: (data) => {
+		onSuccess: data =>
+		{
 			console.log('[useCloseReopenIssue] Success:', data);
 		},
-		onError: (error) => {
+		onError: error =>
+		{
 			console.error('[useCloseReopenIssue] Error:', error);
-		},
+		}
 	});
 }
 
-export function useMakeIssue() {
+export function useMakeIssue()
+{
 	return useMutation({
-		mutationFn: async ({ commentId }: MakeIssueVariables) => {
+		mutationFn: async ({ commentId }: MakeIssueVariables) =>
+		{
 			// CakePHP expects form data in format: data[Model][field]
 			const formData = new FormData();
 			formData.append('data[Comment][tsumego_issue_id]', 'new');
-			
+
 			const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
 				method: 'POST',
 				headers: {
-					'X-Requested-With': 'XMLHttpRequest',
+					'X-Requested-With': 'XMLHttpRequest'
 				},
-				body: formData,
+				body: formData
 			});
-			
-			if (!response.ok) {
+
+			if (!response.ok) 
 				throw new Error(`HTTP ${response.status}`);
-			}
-			
-			return response.json() as Promise<{ success: boolean; issue: Issue; comment_id: number }>;
-		},
+
+			return response.json() as Promise<{
+				success: boolean;
+				issue: Issue;
+				comment_id: number;
+			}>;
+		}
 	});
 }
 
 /**
  * Query hook for fetching comments data with automatic refetching.
- * 
+ *
  * @param tsumegoId - The tsumego ID
  * @param initialData - SSR data from PHP (avoids first fetch)
  */
 export function useCommentsQuery(
 	tsumegoId: number,
-	enabled: boolean = true  // Only fetch when tab is clicked
-) {
+	enabled: boolean = true // Only fetch when tab is clicked
+)
+{
 	return useQuery({
 		queryKey: ['comments', tsumegoId],
-		queryFn: async () => {
+		queryFn: async () =>
+		{
 			const response = await fetch(`/tsumego-comments/index/${tsumegoId}`, {
 				headers: {
-					'X-Requested-With': 'XMLHttpRequest',
-				},
+					'X-Requested-With': 'XMLHttpRequest'
+				}
 			});
-			if (!response.ok) {
+			if (!response.ok) 
 				throw new Error(`Failed to fetch comments: ${response.status}`);
-			}
+
 			const data = await response.json();
 			return data as { issues: Issue[]; standalone: Comment[]; counts: CommentCounts };
 		},
-		enabled,  // Don't fetch until tab clicked
+		enabled, // Don't fetch until tab clicked
 		staleTime: 0,
-		refetchOnWindowFocus: true,
+		refetchOnWindowFocus: true
 	});
 }

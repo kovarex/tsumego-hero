@@ -7,7 +7,8 @@
  * Besogo board editor API.
  * The besogo editor is defined in webroot/besogo/js/editor.js
  */
-interface BesogoEditor {
+interface BesogoEditor
+{
 	/**
 	 * Get the current move node in the game tree.
 	 */
@@ -60,7 +61,8 @@ interface BesogoEditor {
 /**
  * A node in the besogo game tree.
  */
-interface BesogoNode {
+interface BesogoNode
+{
 	/** The move at this node, or null if root */
 	move: { x: number; y: number } | null;
 
@@ -80,7 +82,8 @@ interface BesogoNode {
 /**
  * Besogo board API exposed globally.
  */
-interface Besogo {
+interface Besogo
+{
 	/** The board editor instance */
 	editor: BesogoEditor;
 
@@ -96,8 +99,10 @@ interface Besogo {
 	};
 }
 
-declare global {
-	interface Window {
+declare global
+{
+	interface Window
+	{
 		/** Besogo board editor (defined in PHP templates) */
 		besogo: Besogo;
 
