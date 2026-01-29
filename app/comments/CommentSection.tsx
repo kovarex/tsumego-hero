@@ -105,17 +105,8 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 
 	// Move comment handler (passed to SortableJS hook)
 	const handleMoveComment = useCallback(
-		async (commentId: number, targetIssueId: number | 'standalone') =>
-		{
-			try
-			{
-				await moveCommentMutation.mutateAsync({ commentId, targetIssueId });
-			}
-			catch
-			{
-				alert('Failed to move comment. Please try again.');
-			}
-		},
+		(commentId: number, targetIssueId: number | 'standalone') =>
+			moveCommentMutation.mutate({ commentId, targetIssueId }),
 		[moveCommentMutation]
 	);
 
@@ -151,17 +142,8 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		await closeReopenMutation.mutateAsync({ issueId, newStatus });
 	};
 
-	const handleMakeIssue = async (commentId: number) =>
-	{
-		try
-		{
-			await makeIssueMutation.mutateAsync({ commentId });
-		}
-		catch
-		{
-			alert('Failed to create issue from comment. Please try again.');
-		}
-	};
+	const handleMakeIssue = (commentId: number) =>
+		makeIssueMutation.mutate({ commentId });
 
 	// Filtering
 	const shouldShowItem = (item: IssueType | CommentType, type: 'issue' | 'standalone') =>
