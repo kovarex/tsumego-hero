@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Issue } from '../issues/Issue';
 import { Comment } from './Comment';
 import { CommentForm } from './CommentForm';
 import type { Comment as CommentType, CommentCounts } from './commentTypes';
 import { IssueStatus, type IssueStatusId, type Issue as IssueType } from '../issues/issueTypes';
-import { useCommentsQuery, useAddComment, useDeleteComment, useReplyToIssue, useCloseReopenIssue } from './useComments';
-import { moveComment } from '../shared/api';
+import { useCommentsQuery, useCommentMutations } from './useComments';
 import { useSortableDnD } from './useSortableDnD';
 import { CommentsListSkeleton } from './CommentSkeleton';
 import { ErrorMessage } from '../shared/ErrorMessage';
@@ -28,8 +26,18 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 	const [hasEverOpened, setHasEverOpened] = useState(false); // Track if user clicked a tab
 
 	// React Query for comments data - only fetch when user clicks tab
-	const queryClient = useQueryClient();
 	const commentsQuery = useCommentsQuery(tsumegoId, hasEverOpened);
+
+	// Consolidated mutations with auto-invalidation (per TkDodo best practices)
+	const {
+		addMutation,
+		deleteMutation,
+		replyMutation,
+		closeReopenMutation,
+		makeIssueMutation,
+		moveCommentMutation,
+		invalidate
+	} = useCommentMutations(tsumegoId);
 
 	// Use query data as source of truth (empty until first fetch)
 	const counts = commentsQuery.data?.counts ?? initialCounts;
@@ -87,19 +95,12 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		setActiveTab(current => (current === tab ? null : tab));
 	};
 
-	// TanStack Query mutations
-	const addMutation = useAddComment();
-	const deleteMutation = useDeleteComment();
-	const replyMutation = useReplyToIssue();
-	const closeReopenMutation = useCloseReopenIssue();
-
-	// Reset tabs when switching problems
+	// Reset UI state when switching problems (intentional reset when prop changes)
 	useEffect(() =>
 	{
-		// Don't auto-expand tabs - let user click to expand
-		// Reset query enabled state when switching problems
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setActiveTab(null);
-		setHasEverOpened(false); // Require user to click tab again
+		setHasEverOpened(false);
 	}, [tsumegoId]);
 
 	// Move comment handler (passed to SortableJS hook)
@@ -108,16 +109,14 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		{
 			try
 			{
-				const result = await moveComment(commentId, targetIssueId);
-				if (result.success)
-					await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
+				await moveCommentMutation.mutateAsync({ commentId, targetIssueId });
 			}
 			catch
 			{
 				alert('Failed to move comment. Please try again.');
 			}
 		},
-		[queryClient, tsumegoId]
+		[moveCommentMutation]
 	);
 
 	// Initialize SortableJS drag-and-drop (extracted to custom hook)
@@ -129,14 +128,10 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		onMoveComment: handleMoveComment
 	});
 
-	// Helper to invalidate comments cache
-	const invalidateComments = () => queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
-
-	// Handlers - using mutateAsync for cleaner async/await
+	// Handlers - mutations auto-invalidate via onSuccess
 	const handleAdd = async (text: string, position?: string, reportAsIssue?: boolean) =>
 	{
 		await addMutation.mutateAsync({ data: { text, tsumego_id: tsumegoId, position, report_as_issue: reportAsIssue } });
-		await invalidateComments();
 	};
 
 	const handleDelete = async (id: number) =>
@@ -144,40 +139,23 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		if (!confirm('Delete this comment?')) 
 			return;
 		await deleteMutation.mutateAsync({ commentId: id });
-		await invalidateComments();
 	};
 
 	const handleReply = async (issueId: number, text: string, position?: string) =>
 	{
-		await replyMutation.mutateAsync({ issueId, text, tsumegoId, position });
-		await invalidateComments();
+		await replyMutation.mutateAsync({ issueId, text, position });
 	};
 
 	const handleCloseReopen = async (issueId: number, newStatus: IssueStatusId) =>
 	{
 		await closeReopenMutation.mutateAsync({ issueId, newStatus });
-		await invalidateComments();
 	};
 
 	const handleMakeIssue = async (commentId: number) =>
 	{
 		try
 		{
-			const formData = new FormData();
-			formData.append('data[Comment][tsumego_issue_id]', 'new');
-
-			const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
-				method: 'POST',
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest'
-				},
-				body: formData
-			});
-
-			if (!response.ok) 
-				throw new Error(`HTTP ${response.status}`);
-
-			await queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] });
+			await makeIssueMutation.mutateAsync({ commentId });
 		}
 		catch
 		{
@@ -240,7 +218,7 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 				{commentsQuery.isError && (
 					<ErrorMessage
 						message="Failed to load comments. Please try again."
-						onRetry={() => queryClient.invalidateQueries({ queryKey: ['comments', tsumegoId] })}
+						onRetry={invalidate}
 					/>
 				)}
 

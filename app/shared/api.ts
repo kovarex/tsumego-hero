@@ -80,24 +80,23 @@ export async function del<T>(url: string): Promise<T>
 	return handleResponse<T>(response);
 }
 
-export async function moveComment(commentId: number, targetIssueId: number | 'standalone'): Promise<{ success: boolean }>
+/**
+ * POST with FormData (for CakePHP bracket notation like data[Model][field]).
+ * Use this when the backend expects form-encoded data instead of JSON.
+ */
+export async function postFormData<T>(url: string, data: Record<string, string>): Promise<T>
 {
-	// Use FormData instead of JSON because CakePHP expects bracket notation
 	const formData = new FormData();
-	formData.append('data[Comment][tsumego_issue_id]', String(targetIssueId));
+	Object.entries(data).forEach(([key, value]) => formData.append(key, value));
 
-	const response = await fetch(`/tsumego-issues/move-comment/${commentId}`, {
+	const response = await fetch(url, {
 		method: 'POST',
 		headers: {
-			'X-Requested-With': 'XMLHttpRequest' // Mark as AJAX to prevent rating processing
+			'X-Requested-With': 'XMLHttpRequest'
 		},
 		body: formData
 	});
-
-	if (!response.ok) 
-		throw new ApiError(`HTTP ${response.status}`, response.status);
-
-	return response.json();
+	return handleResponse<T>(response);
 }
 
 export { ApiError };

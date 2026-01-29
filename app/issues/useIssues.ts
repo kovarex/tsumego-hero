@@ -4,8 +4,9 @@
  * Handles fetching and mutating global issues list data.
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IssuesListResponse, IssueStatusFilter } from './issueTypes';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { del, get, post } from '../shared/api';
+import { IssueStatus, type IssuesListResponse, type IssueStatusFilter, type IssueStatusId } from './issueTypes';
 
 /**
  * Fetch issues list with filtering and pagination.
@@ -17,37 +18,47 @@ export function useIssuesQuery(statusFilter: IssueStatusFilter, page: number)
 {
 	return useQuery({
 		queryKey: ['issues-list', statusFilter, page],
-		queryFn: async () =>
-		{
-			// Use dedicated API endpoint (cleaner than AJAX detection)
-			const response = await fetch(`/tsumego-issues/api?status=${statusFilter}&page=${page}`, {
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest'
-				}
-			});
-			if (!response.ok) 
-				throw new Error(`Failed to fetch issues: ${response.status}`);
-
-			const data = await response.json();
-			return data as IssuesListResponse;
-		},
+		queryFn: () => get<IssuesListResponse>(`/tsumego-issues/api?status=${statusFilter}&page=${page}`),
 		staleTime: 0, // Always consider stale
 		refetchOnMount: true, // Always refetch when component mounts
 		refetchOnWindowFocus: true
 	});
 }
 
+interface CloseIssueVariables
+{
+	issueId: number;
+	newStatus: IssueStatusId;
+}
+
+interface DeleteCommentVariables
+{
+	commentId: number;
+}
+
 /**
- * Helper to invalidate issues list queries after mutations.
- *
- * Call this after close/reopen/delete actions to refresh the list.
+ * Mutations for Issues List page with auto-invalidation.
  */
-export function useInvalidateIssuesList()
+export function useIssuesMutations()
 {
 	const queryClient = useQueryClient();
+	const invalidate = () => queryClient.invalidateQueries({ queryKey: ['issues-list'] });
 
-	return async () =>
-	{
-		await queryClient.invalidateQueries({ queryKey: ['issues-list'] });
-	};
+	const closeReopenMutation = useMutation({
+		mutationFn: ({ issueId, newStatus }: CloseIssueVariables) =>
+		{
+			const endpoint =
+				newStatus === IssueStatus.CLOSED ? `/tsumego-issues/close/${issueId}` : `/tsumego-issues/reopen/${issueId}`;
+			return post<{ success: boolean }>(endpoint, { source: 'list' });
+		},
+		onSuccess: invalidate
+	});
+
+	const deleteMutation = useMutation({
+		mutationFn: ({ commentId }: DeleteCommentVariables) =>
+			del<{ success: boolean }>(`/tsumego-comments/delete/${commentId}`),
+		onSuccess: invalidate
+	});
+
+	return { closeReopenMutation, deleteMutation, invalidate };
 }
