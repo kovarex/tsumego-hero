@@ -556,11 +556,16 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		// Make an AJAX request (same as React fetch with X-Requested-With header)
 		$browser->driver->executeScript("
+			window.__ajaxDone = false;
 			fetch('/tsumego-issues', {
 				headers: { 'X-Requested-With': 'XMLHttpRequest' }
-			});
+			}).then(function() { window.__ajaxDone = true; });
 		");
-		usleep(1500000); // Wait for AJAX request to complete
+		// Wait for the fetch to complete
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return window.__ajaxDone === true;');
+		});
 
 		// Rating should still be original - AJAX shouldn't process the result
 		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);

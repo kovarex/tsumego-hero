@@ -137,10 +137,13 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 
 	/**
 	 * Wait for React to mount and fetch data on the issues index page.
-	 * The page initially shows "Loading..." then React fetches and renders issues or empty state.
+	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	 */
 	private function waitForReactIssuesList($browser)
 	{
-		usleep(1500 * 1000);
+		// Wait for skeleton to disappear and real content to appear
+		// - .issues-list__empty = no issues message (actual content, never skeleton)
+		// - .tsumego-issue:not(.skeleton-wrapper) = real issue (not a skeleton placeholder)
+		$browser->waitUntilAnyCssSelectorExists(['.issues-list__empty', '.tsumego-issue:not(.skeleton-wrapper)']);
 	}
 }
