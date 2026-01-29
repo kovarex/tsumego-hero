@@ -55,7 +55,7 @@ class PlayResultProcessorComponent extends Component
 		$timeModeComponent->processPlayResult($previousTsumego, $result);
 		$this->processXpChange($previousTsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($previousTsumego, $result, $previousStatusValue);
-		$this->processErrorAchievement($result);
+		$this->processErrorAchievement($result, $previousStatusValue);
 		$this->processUnsortedStuff($previousTsumego, $result);
 	}
 
@@ -248,15 +248,6 @@ class PlayResultProcessorComponent extends Component
 
 	private function processDamage(array $result, $previousStatusValue): void
 	{
-		if($result['misplays'] > 0)
-		{
-			$ac = ClassRegistry::init('AchievementCondition')->find('first', [
-				'order' => 'value DESC',
-				'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
-			$ac['AchievementCondition']['value'] = 0;
-			ClassRegistry::init('AchievementCondition')->save($ac);
-		}
-
 		if (!$result['misplays'])
 			return;
 		if (!Auth::isInLevelMode())
@@ -284,30 +275,28 @@ class PlayResultProcessorComponent extends Component
 		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
 	}
 
-	private function processErrorAchievement(array $result): void
+	private function processErrorAchievement(array $result, $previousTsumegoStatus): void
 	{
+		if (!Auth::XPisGainedInCurrentMode())
+			return;
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
+			return;
+
 		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'category' => 'err',
-			],
-		]);
+				'category' => 'err']]);
 		if (!$achievementCondition)
 		{
 			$achievementCondition = [];
+			$achievementCondition['AchievementCondition']['category'] = 'err';
+			$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 			ClassRegistry::init('AchievementCondition')->create();
 		}
-		$achievementCondition['AchievementCondition']['category'] = 'err';
-		$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 		if ($result['solved'])
-		{
-			if ($result['xp-gained'])
-				$achievementCondition['AchievementCondition']['value']++;
-		}
+			$achievementCondition['AchievementCondition']['value']++;
 		else
 			$achievementCondition['AchievementCondition']['value'] = 0;
-
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 

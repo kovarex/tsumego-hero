@@ -35,16 +35,12 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 
 	public function testNoErrorStreakGetsClearedWhenErrorHappensThroughBrowser()
 	{
-		$contextInput = [];
-		for ($i = 0; $i < Achievement::NO_ERROR_STREAK_I_STREAK_COUNT; $i++)
-			$contextInput['tsumegos'] [] = $i + 1;
 		$browser = Browser::instance();
-		$context = new ContextPreparator($contextInput);
+		$context = new ContextPreparator([
+			'achievement-conditions' => [['category' => 'err', 'value' => 1]],
+			'tsumego' => 1]);
 
-		// we activate one solve and test it is saved in the progress
-		$browser->get('/' . $context->setConnections[0]['id']);
-		$browser->playWithResult('S');
-		$browser->get('/' . $context->setConnections[0]['id']);
+		// we check the value is 1 to start with
 		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
 			['conditions' => [
 				'user_id' => Auth::getUserID(),
@@ -53,15 +49,54 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
 
 		// then we get a fail, and the progress gets reset
-		$browser->get('/' . $context->setConnections[1]['id']);
+		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->playWithResult('F'); // one fail
-		$browser->get('/' . $context->setConnections[1]['id']);
+		$browser->get('/' . $context->setConnections[0]['id']);
 		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
 			['conditions' => [
 				'user_id' => Auth::getUserID(),
 				'category' => 'err']]);
 		$this->assertNotNull($achievementCondition);
 		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
+	}
+
+	public function testNoErrorStreakDoesntGetAffectedOnSolvedTsumego()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'achievement-conditions' => [['category' => 'err', 'value' => 1]],
+			'tsumego' => ['status' => 'S', 'set_order' => 1]]);
+
+		// we check the value is 1 to start with
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		$this->assertNotNull($achievementCondition);
+		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+
+		// First we try to solve the already solved one
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$browser->playWithResult('S');
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		$this->assertNotNull($achievementCondition);
+		// nothing happen, solving a solved tsuomego doesn't do anything
+		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
+
+		// then we get a fail on solved tsumego
+		$browser->playWithResult('F'); // one fail
+		$browser->get('/' . $context->setConnections[0]['id']);
+		$achievementCondition = ClassRegistry::init('AchievementCondition')->find('first',
+			['conditions' => [
+				'user_id' => Auth::getUserID(),
+				'category' => 'err']]);
+		$this->assertNotNull($achievementCondition);
+		// anod nothing still happens, failing a solved tsumego doesn't matter
+		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 1);
 	}
 
 	public function testSingleNoErrorStreakAchievements()
