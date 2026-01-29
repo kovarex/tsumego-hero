@@ -248,14 +248,15 @@ class PlayResultProcessorComponent extends Component
 
 	private function processDamage(array $result, $previousStatusValue): void
 	{
-		if($result['misplays']>0){
+		if($result['misplays'] > 0)
+		{
 			$ac = ClassRegistry::init('AchievementCondition')->find('first', [
 				'order' => 'value DESC',
 				'conditions' => ['user_id' => Auth::getUserID(), 'category' => 'err']]);
 			$ac['AchievementCondition']['value'] = 0;
 			ClassRegistry::init('AchievementCondition')->save($ac);
 		}
-			
+
 		if (!$result['misplays'])
 			return;
 		if (!Auth::isInLevelMode())
@@ -299,13 +300,14 @@ class PlayResultProcessorComponent extends Component
 		}
 		$achievementCondition['AchievementCondition']['category'] = 'err';
 		$achievementCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		if ($result['solved']){
+		if ($result['solved'])
+		{
 			if ($result['xp-gained'])
 				$achievementCondition['AchievementCondition']['value']++;
-		}else{
-			$achievementCondition['AchievementCondition']['value'] = 0;
 		}
-			
+		else
+			$achievementCondition['AchievementCondition']['value'] = 0;
+
 		ClassRegistry::init('AchievementCondition')->save($achievementCondition);
 	}
 
