@@ -19,14 +19,12 @@ function CoordSpan({ coord }: { coord: string })
 {
 	const handleMouseEnter = (e: React.MouseEvent) =>
 	{
-		if (typeof window.showCoordPopup === 'function') 
-			window.showCoordPopup(coord, e.nativeEvent);
+		window.showCoordPopup(coord, e.nativeEvent);
 	};
 
 	const handleMouseLeave = () =>
 	{
-		if (typeof window.hideCoordPopup === 'function') 
-			window.hideCoordPopup();
+		window.hideCoordPopup();
 	};
 
 	return (
