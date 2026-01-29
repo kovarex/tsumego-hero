@@ -519,8 +519,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<table class="sandboxTable" width="62%">
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
-						'issues' => $tsumegoIssues ?? [],
-						'plainComments' => $tsumegoPlainComments ?? [],
 						'tsumegoId' => $t['Tsumego']['id'],
 						't' => $t,
 					]); ?></td>
@@ -1161,7 +1159,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 			msg2xselected = !msg2xselected;
 			});
-		$("#msg2x").hide();
+
 		$("#msg3").hide();
 		$("#show3").click(function(){
 			if(!msg3selected){
@@ -1434,6 +1432,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 
 	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
+		console.log('[play.ctp commentPosition] Called with:', {x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX, newY});
 		positionParams = [];
 		positionParams[0] = x;
 		positionParams[1] = y;
@@ -1446,7 +1445,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		positionParams[8] = orientation;
 		if(newX!=false)
 			positionParams[9] = newX;
+		console.log('[play.ctp commentPosition] positionParams:', positionParams);
+		console.log('[play.ctp commentPosition] besogo.editor.commentPosition exists?', typeof besogo.editor.commentPosition);
 		besogo.editor.commentPosition(positionParams);
+		console.log('[play.ctp commentPosition] besogo.editor.commentPosition called');
 
 		// Scroll to board so user can see the position
 		var boardElement = document.querySelector('.besogo-container') || document.getElementById('board');

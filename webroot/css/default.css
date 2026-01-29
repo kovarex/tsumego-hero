@@ -7604,41 +7604,6 @@ body.dark-theme .pagination-ellipsis {
   color: #777;
 }
 
-/* ==========================================================================
-   HTMX Loading Indicators
-   ========================================================================== */
-
-.htmx-indicator {
-  display: none;
-  opacity: 0;
-  transition: opacity 200ms ease-in;
-}
-
-.htmx-request .htmx-indicator,
-.htmx-request.htmx-indicator {
-  display: inline;
-  opacity: 1;
-}
-
-/* Disable buttons/links during htmx request */
-.htmx-request [hx-post],
-.htmx-request [hx-get],
-[disabled].btn {
-  pointer-events: none;
-  opacity: 0.6;
-  cursor: wait;
-}
-
-/* Subtle loading state for swapped content */
-.htmx-swapping {
-  opacity: 0.5;
-}
-
-.htmx-settling {
-  opacity: 1;
-  transition: opacity 200ms ease-out;
-}
-
 /* Ensure button colors work in dark mode */
 body.dark-theme .btn--success,
 body.dark-theme .btn--warning {
@@ -7745,4 +7710,179 @@ body.dark-theme .btn--warning {
 	background: #fff;
 	border: 1px solid #ddd;
 	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 20px;
+	gap: 15px;
+}
+
+.spinner {
+	width: 40px;
+	height: 40px;
+	border: 4px solid #f3f3f3;
+	border-top: 4px solid #717171;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+	margin: 0;
+	color: #666;
+	font-size: 14px;
+	font-family: Georgia, serif;
+}
+
+/* Error Message */
+.error-message {
+	padding: 20px;
+	margin: 20px 14px;
+	background: #fee;
+	border: 2px solid #fcc;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-message p {
+	margin: 0 0 15px 0;
+	color: #c33;
+	font-size: 14px;
+}
+
+.error-message button {
+	padding: 8px 16px;
+	background: #c33;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.error-message button:hover {
+	background: #a11;
+}
+
+/* Skeleton Loading States */
+.skeleton-wrapper {
+	animation: skeleton-fade-in 0.2s ease-in;
+}
+
+@keyframes skeleton-fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.skeleton-element {
+	background: linear-gradient(
+		90deg,
+		#f0f0f0 25%,
+		#e0e0e0 50%,
+		#f0f0f0 75%
+	);
+	background-size: 200% 100%;
+	animation: skeleton-shimmer 1.5s infinite;
+	display: inline-block;
+}
+
+@keyframes skeleton-shimmer {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+/* Skeleton wrappers preserve spacing */
+.skeleton-wrapper .tsumego-comment,
+.skeleton-wrapper .tsumego-issue {
+	pointer-events: none;
+	user-select: none;
+}
+
+/* Error Boundary */
+.error-boundary {
+	padding: 30px;
+	margin: 20px 14px;
+	background: #fee;
+	border: 3px solid #c33;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.error-boundary__content h3 {
+	margin: 0 0 10px 0;
+	color: #c33;
+	font-size: 18px;
+}
+
+.error-boundary__content p {
+	margin: 0 0 20px 0;
+	color: #666;
+	font-size: 14px;
+}
+
+.error-boundary__reload {
+	padding: 10px 20px;
+	background: #c33;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.error-boundary__reload:hover {
+	background: #a11;
+}
+
+.error-boundary__details {
+	margin-top: 20px;
+	text-align: left;
+	padding: 10px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.error-boundary__details summary {
+	cursor: pointer;
+	color: #666;
+	font-size: 12px;
+	padding: 5px;
+}
+
+.error-boundary__details pre {
+	margin: 10px 0 0 0;
+	padding: 10px;
+	background: #f5f5f5;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	overflow-x: auto;
+	font-size: 11px;
+	color: #c33;
+}
+/* Loading Spinner */
+.spinner {
+display: inline-block;
+width: 14px;
+height: 14px;
+border: 2px solid rgba(255, 255, 255, 0.3);
+border-top-color: white;
+border-radius: 50%;
+animation: spin 0.6s linear infinite;
+margin-right: 6px;
+vertical-align: middle;
+}
+
+@keyframes spin {
+to { transform: rotate(360deg); }
 }

@@ -176,10 +176,12 @@ class TsumegoIssue extends AppModel
 
 			if (!isset($issuesMap[$issueId]))
 			{
+				$statusId = $row['ti']['tsumego_issue_status_id'];
+
 				$issuesMap[$issueId] = [
 					'issue' => [
 						'id' => $issueId,
-						'tsumego_issue_status_id' => $row['ti']['tsumego_issue_status_id'],
+						'tsumego_issue_status_id' => $statusId,
 						'tsumego_id' => $row['ti']['tsumego_id'],
 						'user_id' => $row['ti']['issue_user_id'],
 						'created' => $row['ti']['issue_created'],
@@ -202,19 +204,14 @@ class TsumegoIssue extends AppModel
 			{
 				$issuesMap[$issueId]['comments'][] = [
 					'id' => $row['tc']['comment_id'],
-					'message' => $row['tc']['comment_text'],
+					'text' => $row['tc']['comment_text'],
 					'created' => $row['tc']['comment_created'],
 					'user_id' => $row['tc']['comment_user_id'],
-					'user' => $row['cu']['comment_author_name']
-						? [
-							'id' => $row['cu']['comment_author_id'],
-							'name' => $row['cu']['comment_author_name'],
-							'external_id' => $row['cu']['comment_author_external_id'],
-							'picture' => $row['cu']['comment_author_picture'],
-							'rating' => $row['cu']['comment_author_rating'],
-							'isAdmin' => $row['cu']['comment_author_isAdmin'],
-						]
-						: ['name' => '[deleted user]', 'isAdmin' => 0],
+					'user_name' => $row['cu']['comment_author_name'] ?? '[deleted user]',
+					'user_external_id' => $row['cu']['comment_author_external_id'],
+					'user_picture' => $row['cu']['comment_author_picture'],
+					'user_rating' => $row['cu']['comment_author_rating'],
+					'isAdmin' => (bool) ($row['cu']['comment_author_isAdmin'] ?? false),
 				];
 			}
 		}
@@ -258,7 +255,7 @@ class TsumegoIssue extends AppModel
 	/**
 	 * Get comment section counts for a specific tsumego.
 	 *
-	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES) via htmx OOB.
+	 * Used for updating the comment tabs (ALL/COMMENTS/ISSUES).
 	 *
 	 * @param int $tsumegoId The tsumego ID
 	 * @return array{total: int, comments: int, issues: int, openIssues: int}

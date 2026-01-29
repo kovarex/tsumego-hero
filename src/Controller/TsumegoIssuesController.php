@@ -11,7 +11,48 @@ App::uses('TsumegoIssue', 'Model');
 class TsumegoIssuesController extends AppController
 {
 	/**
-	 * List all issues with optional filtering.
+	 * API endpoint to fetch issues list with pagination and filtering.
+	 *
+	 * Query params:
+	 * - status: 'opened', 'closed', 'all' (default: 'opened')
+	 * - page: int (for pagination)
+	 *
+	 * @return CakeResponse|null
+	 */
+	public function api()
+	{
+		$this->loadModel('TsumegoIssue');
+
+		$statusFilter = $this->request->query('status') ?: 'opened';
+		$page = (int) ($this->request->query('page') ?: 1);
+		$perPage = 20;
+
+		$issues = $this->TsumegoIssue->findForIndex($statusFilter, $perPage, $page);
+		$counts = $this->TsumegoIssue->getIndexCounts();
+
+		// Debug log
+		error_log("[API] statusFilter=$statusFilter, page=$page, issues_count=" . count($issues));
+
+		$totalCount = match ($statusFilter)
+		{
+			'opened' => $counts['open'],
+			'closed' => $counts['closed'],
+			default => $counts['open'] + $counts['closed'],
+		};
+		$totalPages = (int) ceil($totalCount / $perPage);
+
+		$this->response->type('json');
+		$this->response->body(json_encode([
+			'issues' => $issues,
+			'counts' => $counts,
+			'totalPages' => $totalPages,
+			'currentPage' => $page,
+		]));
+		return $this->response;
+	}
+
+	/**
+	 * List all issues page
 	 *
 	 * Query params:
 	 * - status: 'opened', 'closed', 'all' (default: 'opened')
@@ -21,43 +62,15 @@ class TsumegoIssuesController extends AppController
 	 */
 	public function index()
 	{
-		$this->loadModel('TsumegoIssue');
-
 		$this->set('_title', 'Tsumego Hero - Issues');
 		$this->set('_page', 'issues');
 
-		// Get filter and pagination params
+		// Get filter and pagination params from URL (used for initial state)
 		$statusFilter = $this->request->query('status') ?: 'opened';
 		$page = (int) ($this->request->query('page') ?: 1);
-		$perPage = 20;
 
-		// Single optimized query using model method
-		$issues = $this->TsumegoIssue->findForIndex($statusFilter, $perPage, $page);
-
-		// Get tab counts (also used for pagination)
-		$counts = $this->TsumegoIssue->getIndexCounts();
-		$openCount = $counts['open'];
-		$closedCount = $counts['closed'];
-
-		// Calculate total for pagination based on current filter
-		$totalCount = match ($statusFilter)
-		{
-			'opened' => $openCount,
-			'closed' => $closedCount,
-			default => $openCount + $closedCount, // 'all'
-		};
-		$totalPages = (int) ceil($totalCount / $perPage);
-
-		$this->set(compact('issues', 'statusFilter', 'openCount', 'closedCount', 'totalPages', 'perPage'));
+		$this->set(compact('statusFilter'));
 		$this->set('currentPage', $page);
-
-		// htmx requests get just the issues-section element (idiomorph handles the diff)
-		if ($this->isHtmxRequest())
-		{
-			$this->layout = false;
-			$this->render('/Elements/TsumegoIssues/issues-section');
-		}
-		// Regular requests get the full page with layout
 	}
 
 	/**
@@ -78,18 +91,22 @@ class TsumegoIssuesController extends AppController
 		if (!Auth::isLoggedIn())
 		{
 			$this->response->statusCode(401);
-			$this->response->body('You must be logged in to report an issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'You must be logged in to report an issue']));
 			return $this->response;
 		}
 
-		$tsumegoId = $this->request->data('Issue.tsumego_id');
-		$message = $this->request->data('Issue.message');
-		$position = $this->request->data('Issue.position');
+		// Parse JSON request body
+		$input = json_decode($this->request->input(), true);
+		$tsumegoId = $input['tsumego_id'] ?? null;
+		$message = $input['text'] ?? null;
+		$position = $input['position'] ?? null;
 
 		if (empty($tsumegoId) || empty($message))
 		{
 			$this->response->statusCode(400);
-			$this->response->body('Tsumego ID and message are required.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Tsumego ID and message are required']));
 			return $this->response;
 		}
 
@@ -107,7 +124,8 @@ class TsumegoIssuesController extends AppController
 		if (!$TsumegoIssue->save($issue))
 		{
 			$this->response->statusCode(500);
-			$this->response->body('Failed to create issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Failed to create issue']));
 			return $this->response;
 		}
 
@@ -128,14 +146,42 @@ class TsumegoIssuesController extends AppController
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
 			$this->response->statusCode(422);
-			$this->layout = false;
-			$this->autoRender = false;
-			$this->response->body('<div class="alert alert--error">Failed to create issue.</div>');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Failed to create issue']));
 			return $this->response;
 		}
 
-		// Return the full comments section (idiomorph handles the diff)
-		return $this->_renderCommentsSection($tsumegoId);
+		// Return full issue data for initial state
+		$User = ClassRegistry::init('User');
+		$user = $User->findById(Auth::getUserID());
+
+		$issueData = [
+			'id' => $issueId,
+			'tsumego_issue_status_id' => TsumegoIssue::$OPENED_STATUS,
+			'created' => date('Y-m-d H:i:s'),
+			'user_id' => Auth::getUserID(),
+			'user_name' => $user['User']['name'],
+			'user_picture' => $user['User']['picture'],
+			'user_rating' => $user['User']['rating'],
+			'user_external_id' => $user['User']['externalId'],
+			'isAdmin' => Auth::isAdmin(),
+			'comments' => [[
+				'id' => $TsumegoComment->getLastInsertID(),
+				'text' => $message,
+				'user_id' => Auth::getUserID(),
+				'user_name' => $user['User']['name'],
+				'user_picture' => $user['User']['picture'],
+				'user_rating' => $user['User']['rating'],
+				'user_external_id' => $user['User']['externalId'],
+				'isAdmin' => Auth::isAdmin(),
+				'created' => date('Y-m-d H:i:s'),
+				'position' => $position,
+			]],
+		];
+
+		$this->response->type('json');
+		$this->response->body(json_encode(['success' => true, 'issue' => $issueData]));
+		return $this->response;
 	}
 
 	/**
@@ -158,7 +204,8 @@ class TsumegoIssuesController extends AppController
 		if (!$issue)
 		{
 			$this->response->statusCode(404);
-			$this->response->body('Issue not found.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Issue not found']));
 			return $this->response;
 		}
 
@@ -167,7 +214,8 @@ class TsumegoIssuesController extends AppController
 		if (!Auth::isAdmin() && !$isOwner)
 		{
 			$this->response->statusCode(403);
-			$this->response->body('You are not authorized to close this issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'You are not authorized to close this issue']));
 			return $this->response;
 		}
 
@@ -176,7 +224,8 @@ class TsumegoIssuesController extends AppController
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS))
 		{
 			$this->response->statusCode(500);
-			$this->response->body('Failed to close issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Failed to close issue']));
 			return $this->response;
 		}
 
@@ -195,15 +244,9 @@ class TsumegoIssuesController extends AppController
 			$TsumegoComment->save($comment);
 		}
 
-		// Return updated content
-		$source = $this->request->data('source') ?: 'list';
-
-		// Play page source - return full comments section (idiomorph handles the diff)
-		if ($source === 'play')
-			return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
-
-		// Issues list page - render with pagination support
-		return $this->_renderIssuesSection();
+		$this->response->type('json');
+		$this->response->body(json_encode(['success' => true]));
+		return $this->response;
 	}
 
 	/**
@@ -222,7 +265,8 @@ class TsumegoIssuesController extends AppController
 		if (!Auth::isAdmin())
 		{
 			$this->response->statusCode(403);
-			$this->response->body('Only admins can reopen issues.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Only admins can reopen issues']));
 			return $this->response;
 		}
 
@@ -232,7 +276,8 @@ class TsumegoIssuesController extends AppController
 		if (!$issue)
 		{
 			$this->response->statusCode(404);
-			$this->response->body('Issue not found.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Issue not found']));
 			return $this->response;
 		}
 
@@ -240,19 +285,14 @@ class TsumegoIssuesController extends AppController
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
 		{
 			$this->response->statusCode(500);
-			$this->response->body('Failed to reopen issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Failed to reopen issue']));
 			return $this->response;
 		}
 
-		// Return updated content
-		$source = $this->request->data('source') ?: 'list';
-
-		// Play page source - return full comments section (idiomorph handles the diff)
-		if ($source === 'play')
-			return $this->_renderCommentsSection($issue['TsumegoIssue']['tsumego_id']);
-
-		// Issues list page - render with pagination support
-		return $this->_renderIssuesSection();
+		$this->response->type('json');
+		$this->response->body(json_encode(['success' => true]));
+		return $this->response;
 	}
 
 	/**
@@ -274,7 +314,8 @@ class TsumegoIssuesController extends AppController
 		if (!Auth::isAdmin())
 		{
 			$this->response->statusCode(403);
-			$this->response->body('Only admins can move comments.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Only admins can move comments']));
 			return $this->response;
 		}
 
@@ -284,11 +325,11 @@ class TsumegoIssuesController extends AppController
 		if (!$comment)
 		{
 			$this->response->statusCode(404);
-			$this->response->body('Comment not found.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Comment not found']));
 			return $this->response;
 		}
 
-		$tsumegoId = $comment['TsumegoComment']['tsumego_id'];
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
 
@@ -296,7 +337,11 @@ class TsumegoIssuesController extends AppController
 		if ($targetIssueId === 'standalone')
 		{
 			if (empty($currentIssueId))
-				return $this->_renderCommentsSection($tsumegoId);
+			{
+				$this->response->type('json');
+				$this->response->body(json_encode(['success' => true]));
+				return $this->response;
+			}
 
 			$TsumegoComment->id = $commentId;
 			if ($TsumegoComment->saveField('tsumego_issue_id', null))
@@ -304,11 +349,14 @@ class TsumegoIssuesController extends AppController
 				// Check if issue is now empty and delete it
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
-				return $this->_renderCommentsSection($tsumegoId);
+				$this->response->type('json');
+				$this->response->body(json_encode(['success' => true]));
+				return $this->response;
 			}
 
 			$this->response->statusCode(500);
-			$this->response->body('Failed to remove comment from issue.');
+			$this->response->type('json');
+			$this->response->body(json_encode(['error' => 'Failed to remove comment from issue']));
 			return $this->response;
 		}
 
@@ -316,6 +364,8 @@ class TsumegoIssuesController extends AppController
 		if ($targetIssueId === 'new')
 		{
 			$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
+			$User = ClassRegistry::init('User');
+
 			$issue = [
 				'tsumego_id' => $comment['TsumegoComment']['tsumego_id'],
 				'user_id' => $comment['TsumegoComment']['user_id'], // Original comment author becomes issue author
@@ -326,15 +376,55 @@ class TsumegoIssuesController extends AppController
 			if (!$TsumegoIssue->save($issue))
 			{
 				$this->response->statusCode(500);
-				$this->response->body('Failed to create new issue.');
+				$this->response->type('json');
+				$this->response->body(json_encode(['error' => 'Failed to create new issue']));
 				return $this->response;
 			}
 			$targetIssueId = $TsumegoIssue->getLastInsertID();
+
+			// Move comment to this new issue
+			$TsumegoComment->id = $commentId;
+			$TsumegoComment->saveField('tsumego_issue_id', $targetIssueId);
+
+			$issueUser = $User->findById($comment['TsumegoComment']['user_id']);
+			$commentUser = $User->findById($comment['TsumegoComment']['user_id']);
+
+			$issueData = [
+				'id' => $targetIssueId,
+				'status' => 'open',
+				'created' => date('Y-m-d H:i:s'),
+				'user_id' => $comment['TsumegoComment']['user_id'],
+				'user_name' => $issueUser['User']['name'],
+				'user_picture' => $issueUser['User']['picture'],
+				'user_rating' => $issueUser['User']['rating'],
+				'user_external_id' => $issueUser['User']['externalId'],
+				'isAdmin' => ($issueUser['User']['isAdmin'] == 1),
+				'comments' => [[
+					'id' => $commentId,
+					'text' => $comment['TsumegoComment']['message'],
+					'user_id' => $comment['TsumegoComment']['user_id'],
+					'user_name' => $commentUser['User']['name'],
+					'user_picture' => $commentUser['User']['picture'],
+					'user_rating' => $commentUser['User']['rating'],
+					'user_external_id' => $commentUser['User']['externalId'],
+					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
+					'created' => $comment['TsumegoComment']['created'],
+					'position' => $comment['TsumegoComment']['position'],
+				]],
+			];
+
+			$this->response->type('json');
+			$this->response->body(json_encode(['success' => true, 'issue' => $issueData, 'comment_id' => $commentId]));
+			return $this->response;
 		}
 
 		// Check if moving to same issue
 		if ($currentIssueId == $targetIssueId)
-			return $this->_renderCommentsSection($tsumegoId);
+		{
+			$this->response->type('json');
+			$this->response->body(json_encode(['success' => true]));
+			return $this->response;
+		}
 
 		// Move the comment to the target issue
 		$TsumegoComment->id = $commentId;
@@ -346,73 +436,14 @@ class TsumegoIssuesController extends AppController
 				$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 				$TsumegoIssue->deleteIfEmpty($currentIssueId);
 			}
-			return $this->_renderCommentsSection($tsumegoId);
+			$this->response->type('json');
+			$this->response->body(json_encode(['success' => true]));
+			return $this->response;
 		}
 
 		$this->response->statusCode(500);
-		$this->response->body('Failed to move comment.');
+		$this->response->type('json');
+		$this->response->body(json_encode(['error' => 'Failed to move comment']));
 		return $this->response;
-	}
-
-	/**
-	 * Helper method to render the issues section for htmx responses.
-	 *
-	 * Extracts filter/page from request data and renders the issues-section element.
-	 *
-	 * @return CakeResponse
-	 */
-	protected function _renderIssuesSection(): CakeResponse
-	{
-		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-
-		$filter = $this->request->data('filter') ?: 'all';
-		$page = (int) ($this->request->data('page') ?: 1);
-		if ($page < 1)
-			$page = 1;
-
-		$perPage = 20;
-		$issues = $TsumegoIssue->findForIndex($filter, $perPage, $page);
-		$counts = $TsumegoIssue->getIndexCounts();
-
-		$totalCount = $filter === 'opened' ? $counts['open'] : ($filter === 'closed' ? $counts['closed'] : $counts['open'] + $counts['closed']);
-		$totalPages = max(1, (int) ceil($totalCount / $perPage));
-
-		$this->set('issues', $issues);
-		$this->set('statusFilter', $filter);
-		$this->set('openCount', $counts['open']);
-		$this->set('closedCount', $counts['closed']);
-		$this->set('currentPage', $page);
-		$this->set('totalPages', $totalPages);
-
-		$this->layout = false;
-		return $this->render('/Elements/TsumegoIssues/issues-section');
-	}
-
-	/**
-	 * Render the morphable comments section content for htmx morph responses (play page).
-	 *
-	 * Loads all comments data and renders just the inner content element.
-	 *
-	 * @param int $tsumegoId The tsumego ID
-	 * @return CakeResponse
-	 */
-	protected function _renderCommentsSection(int $tsumegoId): CakeResponse
-	{
-		$Tsumego = ClassRegistry::init('Tsumego');
-		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
-
-		$commentsData = $Tsumego->loadCommentsData($tsumegoId);
-		$counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
-
-		$this->set('tsumegoId', $tsumegoId);
-		$this->set('issues', $commentsData['issues']);
-		$this->set('plainComments', $commentsData['plainComments']);
-		$this->set('totalCount', $counts['total']);
-		$this->set('commentCount', $counts['comments']);
-		$this->set('issueCount', $counts['issues']);
-		$this->set('openIssueCount', $counts['openIssues']);
-
-		$this->layout = false;
-		return $this->render('/Elements/TsumegoComments/section-content');
 	}
 }
