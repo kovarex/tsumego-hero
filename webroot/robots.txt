@@ -1,2 +1,30 @@
+# Tsumego Hero robots.txt
+# Allow search engines to index public content
+
 User-Agent: *
-Disallow:
+
+# Allow all public pages by default
+Allow: /
+
+# Block admin and sensitive areas
+Disallow: /admin/
+Disallow: /admin_stats/
+
+# Block user-specific pages (no SEO value)
+Disallow: /users/logout
+Disallow: /users/resetpassword
+Disallow: /users/setnewpassword
+Disallow: /users/register
+
+# Block API endpoints (if any)
+Disallow: /api/
+
+# Forum (phpBB2) - Block entirely
+Disallow: /forums/
+
+# Block search/filter pages with parameters (avoid duplicate content)
+Disallow: /*?*sort=
+Disallow: /*?*page=
+
+# Sitemap location
+Sitemap: https://tsumego.com/sitemap.xml
