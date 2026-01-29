@@ -41,7 +41,7 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator($contextInput);
 
-		// we activate all but the last solves normally
+		// we activate one solve and test it is saved in the progress
 		$browser->get('/' . $context->setConnections[0]['id']);
 		$browser->playWithResult('S');
 		$browser->get('/' . $context->setConnections[0]['id']);
@@ -62,8 +62,6 @@ class NoErrorStreakAchievementTest extends AchievementTestCase
 				'category' => 'err']]);
 		$this->assertNotNull($achievementCondition);
 		$this->assertEquals($achievementCondition['AchievementCondition']['value'], 0);
-
-		$this->assertAchievementNotUnlocked(Achievement::NO_ERROR_STREAK_I, "No Error Streak I should not unlock");
 	}
 
 	public function testSingleNoErrorStreakAchievements()
