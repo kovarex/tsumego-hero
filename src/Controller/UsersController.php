@@ -782,9 +782,9 @@ LIMIT 100;"));
 		$exportedUsers = [];
 		foreach ($users as $user)
 			$exportedUsers [] = $user['user'];
-
+		
 		$this->set('leaderboard', $exportedUsers);
-		$this->set('uNum', "TODO");
+		$this->set('uNum', count($users));
 		$this->set('dayRecord', $userYesterdayName);
 	}
 

@@ -2,7 +2,10 @@
 	<table border="0" width="100%">
 		<tr>
 			<td width="23%" valign="top">
+				
+			<?php if(Auth::isAdmin()){ ?>
 				<font size="3px" style="font-weight:400;">Signed in users today: <?php echo $uNum; ?></font>
+			<?php } ?>
 			</td>
 			<td width="53%" valign="top">
 				<div align="center">
