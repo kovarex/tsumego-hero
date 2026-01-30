@@ -99,9 +99,7 @@ class User extends AppModel
 
 		$image = '';
 		if (str_starts_with($name, 'g__') && $externalID != null)
-		{
 			$name = substr($name, 3);
-		}
 		return '<a href="/users/view/' . $id . '">' . $image . h($name) . (empty($rank) ? '' : ' ' . $rank) . '</a>';
 	}
 }
