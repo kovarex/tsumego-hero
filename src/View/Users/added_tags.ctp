@@ -55,12 +55,6 @@
 	}
 	?>
 	</table>
-	<br><br>
-	</div>
-	<div align="center">
-	<div class="accessList" style="font-weight:400;">
-	<br><br>
-	</div>
 	</div>
 		<script>
 		</script>

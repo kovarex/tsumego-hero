@@ -3319,6 +3319,7 @@ input.newCheck {
 .highscore {
   font-size: 20px;
   font-weight: 600;
+  margin-bottom:40px;
 }
 .authors {
   font-size: 18px;

@@ -69,12 +69,4 @@
 				</tr>';
 	?>
 	</table>
-	<br><br>
-	</div>
-	<div align="center">
-	<div class="accessList" style="font-weight:400;">
-	Admins:
-	<?php echo implode($admins); ?>
-	<br><br>
-	</div>
 	</div>

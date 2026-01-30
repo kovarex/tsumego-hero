@@ -769,10 +769,6 @@ LIMIT 100;"));
 		$this->loadModel('Tsumego');
 		$this->loadModel('DayRecord');
 
-		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
-		$admins = [];
-		foreach ($adminsList as $admin)
-			$admins [] = $admin['User']['name'];
 		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
 		$userYesterdayName = 'Unknown';
 		if (count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id']))
@@ -789,7 +785,6 @@ LIMIT 100;"));
 
 		$this->set('leaderboard', $exportedUsers);
 		$this->set('uNum', "TODO");
-		$this->set('admins', $admins);
 		$this->set('dayRecord', $userYesterdayName);
 	}
 
