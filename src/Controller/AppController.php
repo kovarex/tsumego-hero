@@ -123,14 +123,14 @@ class AppController extends Controller
 	protected function checkPictureLarge($u)
 	{
 		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-			return '<img class="google-profile-image-large" src="/img/google/' . $u['User']['picture'] . '">' . substr($u['User']['name'], 3);
+			return substr($u['User']['name'], 3);
 
 		return $u['User']['name'];
 	}
 	public static function checkPicture($user)
 	{
 		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
-			return '<img class="google-profile-image" src="/img/google/' . $user['picture'] . '">' . substr($user['name'], 3);
+			return substr($user['name'], 3);
 
 		return $user['name'];
 	}

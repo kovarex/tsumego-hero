@@ -100,7 +100,6 @@ class User extends AppModel
 		$image = '';
 		if (str_starts_with($name, 'g__') && $externalID != null)
 		{
-			$image = '<img class="google-profile-image" src="/img/google/' . $picture . '">';
 			$name = substr($name, 3);
 		}
 		return '<a href="/users/view/' . $id . '">' . $image . h($name) . (empty($rank) ? '' : ' ' . $rank) . '</a>';

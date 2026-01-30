@@ -76,7 +76,7 @@
 			
 
 			if(substr($roAll['user'][$i],0,3)=='g__'){
-				$roAll['user'][$i] = '<img class="google-profile-image" src="/img/google/'.$roAll['picture'][$i].'">'.substr($roAll['user'][$i],3);
+				$roAll['user'][$i] = substr($roAll['user'][$i],3);
 			}else{
 				if(strlen($roAll['user'][$i])>20) $roAll['user'][$i] = substr($roAll['user'][$i], 0, 20);
 			}
