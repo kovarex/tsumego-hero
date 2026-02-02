@@ -1339,6 +1339,61 @@ class SetsControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	/**
+	 * Test reset button is NOT shown when partition has < 50% solved.
+	 */
+	public function testSetProgressDeletionNotOfferedWhenBelow50Percent()
+	{
+		$browser = Browser::instance();
+
+		// Create 200 problems with 40% solved (below threshold)
+		$contextParameters = ['tsumegos' => []];
+		for ($i = 0; $i < 200; $i++)
+		{
+			$contextParameters['tsumegos'][] = [
+				'sets' => [['name' => 'Test Set', 'num' => ($i + 1)]],
+				'status' => $i < 80 ? 'S' : null  // 80/200 = 40% solved
+			];
+		}
+		$context = new ContextPreparator($contextParameters);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		// With 40% solved, reset button should NOT be shown
+		$browser->get('sets/view/' . $setId . '/1');
+		$this->assertFalse($browser->idExists('showx'), "Reset button should not exist when below 50%");
+		$this->assertTextContains('You need to complete 50% to reset', $browser->driver->getPageSource());
+	}
+
+	/**
+	 * Test reset button IS shown when partition has >= 50% solved.
+	 */
+	public function testSetProgressDeletionOfferedWhenAbove50Percent()
+	{
+		$browser = Browser::instance();
+
+		// Create 200 problems with 51% solved (slightly above threshold)
+		$contextParameters = ['tsumegos' => []];
+		for ($i = 0; $i < 200; $i++)
+		{
+			$contextParameters['tsumegos'][] = [
+				'sets' => [['name' => 'Test Set 50', 'num' => ($i + 1)]],
+				'status' => $i < 102 ? 'S' : null  // 102/200 = 51% solved
+			];
+		}
+		$context = new ContextPreparator($contextParameters);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		// Verify statuses were created correctly
+		$statusCount = ClassRegistry::init('TsumegoStatus')->find('count', ['conditions' => ['user_id' => $context->user['id']]]);
+		$this->assertEquals(102, $statusCount, "Should have 102 solved statuses");
+
+		// With 51% solved, reset button SHOULD be shown
+		$browser->get('sets/view/' . $setId . '/1');
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringNotContainsString('You need to complete 50% to reset', $pageSource, "Page says <50% but should be 51%");
+		$this->assertTrue($browser->idExists('showx'), "Reset button should be shown at 51%");
+	}
+
 	public function testSetProgressDeletionOfPartitionedSet()
 	{
 		foreach ([1, 2] as $partition)
@@ -1378,9 +1433,9 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertEmpty($browser->getCssSelect("showx")); // no reset offered
 		$this->assertTextContains('Reset is only possible when collection size is set to 200', $browser->driver->getPageSource());
 
-		// we try to force it on the server anyway
+		// we try to force it on the server anyway - redirect back to same partition
 		$browser->getWithPostData('/sets/resetProgress/' . $context->sets[0]['id'] . '/1', ['reset-check' => 'reset']);
-		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'], $browser->driver->getCurrentURL());
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->sets[0]['id'] . '/1', $browser->driver->getCurrentURL());
 		$this->assertSame(400, count(ClassRegistry::init('TsumegoStatus')->find('all', ['order' => 'id'])));
 	}
 

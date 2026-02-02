@@ -366,8 +366,16 @@ class Browser
 		$this->assertNoErrors();
 	}
 
-	public function getWithPostData($url, $postData)
+	public function getWithPostData($url, $postData, int $timeout = 10)
 	{
+		$markerId = 'selenium-navigation-marker-' . uniqid();
+		$this->driver->executeScript("
+			var marker = document.createElement('div');
+			marker.id = '" . $markerId . "';
+			marker.style.display = 'none';
+			document.body.appendChild(marker);
+		");
+
 		$this->driver->executeScript("
 			var form = document.createElement('form');
 			form.method = 'POST';
@@ -384,7 +392,17 @@ class Browser
 			}
 			document.body.appendChild(form);
 			form.submit();");
-		usleep(500 * 1000);
+
+		$wait = new WebDriverWait($this->driver, $timeout, 100);
+		$wait->until(function () use ($markerId) {
+			$markerExists = $this->driver->executeScript(
+				"return document.getElementById('" . $markerId . "') !== null;"
+			);
+			if ($markerExists)
+				return false;
+			$readyState = $this->driver->executeScript('return document.readyState');
+			return $readyState === 'complete';
+		});
 	}
 
 	public function logoff()
