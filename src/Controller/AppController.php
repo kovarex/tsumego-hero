@@ -572,8 +572,9 @@ class AppController extends Controller
 		$nextDay = new DateTime('tomorrow');
 		if (Auth::isLoggedIn())
 		{
-			Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
-			$this->set('user', Auth::getUser());
+			$user = Auth::getUser();
+			$user['name'] = $this->checkPicture($user);
+			$this->set('user', $user);
 		}
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
