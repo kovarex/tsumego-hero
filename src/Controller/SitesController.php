@@ -29,10 +29,6 @@ class SitesController extends AppController
 		$this->loadModel('SetConnection');
 		$this->loadModel('PublishDate');
 
-		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']) ?: [];
-		$urNames = [];
-		foreach ($uReward as $user)
-			$urNames[] = $this->checkPicture($user);
 
 		$today = date('Y-m-d');
 		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -48,16 +44,16 @@ class SitesController extends AppController
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			if (!$userOfTheDay)
-				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
-			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
+			// Pass user array to view - renderLink handles null internally
+			$this->set('userOfTheDay', $userOfTheDay ? $userOfTheDay['User'] : null);
 		}
+		else
+			$this->set('userOfTheDay', null);
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
 		$this->set('dayRecords', ClassRegistry::init('DayRecord')->find('all', ['order' => 'date ASC']));
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
-		$this->set('urNames', $urNames);
 	}
 
 	/**

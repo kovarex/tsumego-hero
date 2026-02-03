@@ -578,7 +578,7 @@ class TagTest extends ControllerTestCase
 		$browser->get('tags/user/' . $context->user['id']);
 		$browser->checkTable('.highscoreTable', $this, [
 			['Action', 'Status', 'Timestamp'],
-			[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
+			[$context->user['display_name'] . ' created a new tag: snapback', 'accepted']]);
 	}
 
 	public function testTagContributionsShowsViewedUsersNameNotViewersName()
@@ -589,8 +589,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('tags/user/' . $context->otherUsers[0]['id']);
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('Tags and proposals by contributor', $pageSource);
-		$this->assertStringNotContainsString('Tags and proposals by viewer', $pageSource);
+		$this->assertStringContainsString('Tags and proposals by DN_contributor', $pageSource);
+		$this->assertStringNotContainsString('Tags and proposals by DN_viewer', $pageSource);
 	}
 
 	public function testAdminAcceptsTagProposal()
