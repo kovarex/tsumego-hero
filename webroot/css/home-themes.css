@@ -3,6 +3,11 @@
   position: absolute;
 }
 
+/* Make user links inherit color from parent (set by user-pick-qXX) */
+.user-pick-all a {
+  color: inherit !important;
+}
+
 .quote-pick-01 .quote1,
 .user-pick-q01 {
   color: white !important;

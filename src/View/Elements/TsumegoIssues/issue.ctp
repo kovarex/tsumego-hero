@@ -35,8 +35,7 @@ $isClosed = $statusId == TsumegoIssue::$CLOSED_STATUS;
 // Status CSS class
 $statusClass = $isOpened ? 'status--opened' : 'status--closed';
 
-// Get author name
-$authorName = isset($author['name']) ? $author['name'] : '[deleted user]';
+$authorLink = User::renderLink($author);
 
 // Format created date
 $createdDate = new DateTime($issue['created']);
@@ -80,7 +79,7 @@ else
 			<?php endif; ?>
 		</span>
 		<span class="tsumego-issue__meta">
-			by <?php echo h($authorName); ?> • <?php echo $formattedDate; ?>
+			by <?php echo $authorLink; ?> • <?php echo $formattedDate; ?>
 		</span>
 
 		<?php if ($canClose || $canReopen): ?>

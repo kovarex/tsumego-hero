@@ -177,8 +177,12 @@ class UsersControllerTest extends ControllerTestCase
 			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
 
 		$browser = Browser::instance();
+		// View own profile - email should be visible
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('current@example.com', $pageSource);
+
+		// View another user's profile - their email should NOT be visible
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}
@@ -291,5 +295,73 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('/users/showPublishSchedule');
 		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
+	}
+
+	// =====================================================================
+	// Email Login vs Google User Tests
+	// =====================================================================
+
+	/**
+	 * Test that logging in with email doesn't match Google-only users.
+	 *
+	 * When a user tries to login with an email that belongs to a Google user,
+	 * the login should fail since Google users can't login via password.
+	 */
+	public function testEmailLoginDoesNotMatchGoogleUser()
+	{
+		$context = new ContextPreparator([
+			'user' => null, // Not logged in
+			'other-users' => [[
+				'name' => 'googleuser',
+				'email' => 'google@example.com',
+				'external_id' => '123456789012345678901',
+			]],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/login');
+		usleep(100 * 1000);
+
+		// Try to login with the Google user's email
+		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('google@example.com');
+		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		usleep(200 * 1000);
+
+		// Should fail - show helpful message directing to Google Sign-In
+		// Note: This intentionally reveals the user exists (UX choice over security through obscurity)
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('This account uses Google Sign-In', $pageSource);
+	}
+
+	/**
+	 * Test that logging in with email works for regular users.
+	 *
+	 * When a user has no external_id (regular user), email login should work.
+	 */
+	public function testEmailLoginWorksForRegularUser()
+	{
+		$context = new ContextPreparator([
+			'user' => null, // Not logged in
+			'other-users' => [[
+				'name' => 'regularuser',
+				'email' => 'regular@example.com',
+				// No external_id - regular user
+			]],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/login');
+		usleep(100 * 1000);
+
+		// Login with email
+		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('regular@example.com');
+		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		usleep(200 * 1000);
+
+		// Should be logged in (redirected away from login page)
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringNotContainsString('login', $currentUrl, "Should be redirected after successful login");
 	}
 }

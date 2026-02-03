@@ -41,12 +41,19 @@
 	</tr>
 	<?php
 		$place = 1;
-		for($i=0; $i<count($users); $i++){
+		for ($i = 0; $i < count($users); $i++)
+		{
 			$excluded = '';
-			if($users[$i]['User']['name']=='Fupfv' || $users[$i]['User']['name']=='PepinoNegro' 
-			|| $users[$i]['User']['name']=='StephaneLamy' || $users[$i]['User']['name']=='Farkas' || $users[$i]['User']['name']=='yaya') $excluded = '*';
-			if($users[$i]['User']['name']!='SaberRider' && $users[$i]['User']['name']!='test11' && $users[$i]['User']['rating']!=1000){
-			if(strlen($users[$i]['User']['name'])>20) $users[$i]['User']['name'] = substr($users[$i]['User']['name'], 0, 20);
+
+			$userName = $users[$i]['User']['name'];
+			if ($userName == 'Fupfv' || $userName == 'PepinoNegro'
+			|| $userName == 'StephaneLamy' || $userName == 'Farkas' || $userName == 'yaya')
+				$excluded = '*';
+			if ($userName != 'SaberRider' && $userName != 'test11' && $users[$i]['User']['rating'] != 1000)
+			{
+			$displayName = $users[$i]['User']['display_name'];
+			if (strlen($displayName) > 20)
+				$displayName = substr($displayName, 0, 20);
 			$bgColor = '#dddddd';
 			$tableRowColor = 'color13';
 			$uType = '';
@@ -125,7 +132,7 @@
 					</td>
 					
 					<td width="225px" align="left">
-						'.$users[$i]['User']['name'].$excluded.'
+						'.$displayName.$excluded.'
 					</td>
 					
 					<td width="90px">

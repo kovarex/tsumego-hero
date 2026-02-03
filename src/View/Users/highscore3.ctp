@@ -72,16 +72,8 @@
 	</tr>
 	<?php
 		$place = 1;
-		for($i=0; $i<count($roAll['user']); $i++){
-			
-
-			if(substr($roAll['user'][$i],0,3)=='g__'){
-				$roAll['user'][$i] = substr($roAll['user'][$i],3);
-			}else{
-				if(strlen($roAll['user'][$i])>20) $roAll['user'][$i] = substr($roAll['user'][$i], 0, 20);
-			}
-
-
+		for($i=0; $i<count($roAll['users']); $i++){
+			$user = $roAll['users'][$i];
 
 			$bgColor = '#dddddd';
 			$tableRowColor = 'timeTableColor10';
@@ -107,7 +99,7 @@
 						#'.$place.'
 					</td>
 					<td width="225px" align="left" class="timeTableMiddle '.$tableRowColor.'">
-						'.$roAll['user'][$i].'
+						' . User::renderLink($user, false) . '
 					</td>
 					<td width="90px" align="center" class="timeTableMiddle '.$tableRowColor.'">
 						'.$rank.'

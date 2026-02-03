@@ -26,7 +26,7 @@ class SgfController extends AppController
 		if (!Auth::isAdmin() && !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status']))
 		{
 			$this->response->statusCode(403);
-			$this->response->body('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
+			$this->response->body('Related tsumego is not in a solved state for the user ' . Auth::getUser()['display_name']);
 			return $this->response;
 		}
 

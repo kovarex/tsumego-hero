@@ -16,28 +16,51 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 </div>
 <div class="userInfoContainerRow1">
 	<div class="userStatsGreen">
+		<?php
+		// Avatar section with Gravatar link if using Gravatar
+		$avatarUrl = User::getAvatarUrl($user['User'], 60);
+		$isGravatar = User::isUsingGravatar($user['User']);
+		$isGoogleUser = User::isGoogleUser($user['User']);
+		$isOwnProfile = Auth::getUserID() == $user['User']['id'];
+		?>
 		<table class="userTopTable1" id="name-and-email-table">
 		<tr>
-			<td><?php echo $user['User']['name']; ?></td>
-			<td><?php User::renderPremium($user['User']); ?></td>
+			<td style="width:70px;text-align:center;vertical-align:top;padding-top:10px;">
+				<?php if ($isGravatar): ?>
+					<a href="https://gravatar.com/" target="_blank" rel="noopener noreferrer" title="Change your avatar at Gravatar">
+						<img src="<?php echo h($avatarUrl); ?>" alt="" style="width:60px;height:60px;border-radius:50%;">
+					</a>
+				<?php else: ?>
+					<img src="<?php echo h($avatarUrl); ?>" alt="" style="width:60px;height:60px;border-radius:50%;">
+				<?php endif; ?>
+			</td>
+			<td style="vertical-align:top;">
+				<strong><?php echo h($user['User']['display_name']); ?></strong> <?php User::renderPremium($user['User']); ?>
+				<?php if ($isOwnProfile): ?>
+					<a id="show-name" style="color:#74d14c;cursor:pointer;font-size:11px;margin-left:5px;">edit</a>
+				<?php endif; ?>
+				<div id="name-edit-form" style="display:none;margin-top:3px;">
+					<form action="/users/updatename" method="post" style="display:inline;">
+						<input type="text" name="data[User][display_name]" value="<?php echo h($user['User']['display_name']); ?>" maxlength="50" style="width:100px;font-size:11px;">
+						<input type="submit" value="OK" style="font-size:11px;">
+					</form>
+				</div>
+				<?php if ($isOwnProfile && !$isGoogleUser): ?>
+					<br><span style="font-size:11px;color:#888;">Username: <?php echo h($user['User']['name']); ?></span>
+				<?php endif; ?>
+				<?php if ($isOwnProfile): ?>
+					<br><span style="font-size:12px;"><?php echo $user['User']['email']; ?></span>
+					<?php if (!$isGoogleUser): ?>
+						<a id="show" style="color:#74d14c;font-size:11px;margin-left:5px;">edit</a>
+						<div id="msg2" style="margin-top:3px;">
+							<?php echo $this->Form->create('User'); ?>
+							<?php echo $this->Form->input('email', ['label' => '', 'type' => 'text', 'placeholder' => 'E-Mail', 'style' => 'width:150px;font-size:11px;']); ?>
+							<input style="margin:0px;font-size:11px;" value="OK" type="submit">
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+			</td>
 		</tr>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			echo '<tr>';
-			echo '<td>'.$user['User']['email'].'</td>';
-			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<td colspan=2>';
-			echo '<div id="msg2">';
-			echo $this->Form->create('User');
-			echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-			echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-			echo '</div>';
-			echo '</td></tr>';
-		}
-		?>
 		</table>
 	</div>
 	<div class="userStatsGreen">
@@ -299,7 +322,11 @@ activateSelection(getCookie('lastProfileRight'), 'Right');
 
 $("#msg2").hide();
 $("#show").click(function(){
-	$("#msg2").show();
+	$("#msg2").toggle();
+});
+
+$("#show-name").click(function(){
+	$("#name-edit-form").toggle();
 });
 
 function updateButtonActivity(id, side, active)

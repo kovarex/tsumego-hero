@@ -91,8 +91,8 @@ class SgfsController extends AppController
 			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
-			$ux = $u['User']['name'];
+			$s[$i]['Sgf']['user'] = $u['User']['display_name'];
+			$ux = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];

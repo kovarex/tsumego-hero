@@ -7,7 +7,7 @@
 	<?php if($tn['Tag']['hint'] == 1){ ?>
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>
-	<p>Created by <?php echo $tn['Tag']['user'] ?>.</p>
+	<p>Created by <?php echo User::renderLink($tn['Tag']['user']); ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
 		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>" id="tag-edit">Edit</a>
 		<?php if(Auth::getUserID()==72){ ?>

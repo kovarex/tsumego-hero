@@ -116,7 +116,7 @@ class SetsController extends AppController
 		$adminsList = $this->User->find('all', ['order' => 'id ASC', 'conditions' => ['isAdmin >' => 0]]) ?: [];
 		$admins = [];
 		foreach ($adminsList as $item)
-			$admins[] = $item['User']['name'];
+			$admins[] = $item['User']['display_name'];
 
 		$this->set('admins', $admins);
 		$this->set('sets', $sets);
@@ -168,7 +168,8 @@ class SetsController extends AppController
 			$t['Tsumego']['difficulty'] = 4;
 			$t['Tsumego']['variance'] = 100;
 			$t['Tsumego']['description'] = 'b to kill';
-			$t['Tsumego']['author'] = Auth::getUser()['name'];
+			$t['Tsumego']['author'] = Auth::getUser()['display_name'];
+			$t['Tsumego']['author_user_id'] = Auth::getUserID();
 			$this->Tsumego->create();
 			$this->Tsumego->save($t);
 
@@ -483,7 +484,8 @@ class SetsController extends AppController
 		{
 			$tsumego = [];
 			$tsumego['num'] = $this->data['order'];
-			$tsumego['author'] = Auth::getUser()['name'];
+			$tsumego['author'] = Auth::getUser()['display_name'];
+			$tsumego['author_user_id'] = Auth::getUserID();
 			$tsumegoModel->create();
 			$tsumegoModel->save($tsumego);
 
@@ -765,7 +767,7 @@ class SetsController extends AppController
 			$set['Set']['id'] = 1;
 			$set['Set']['title'] = 'Favorites';
 			$set['Set']['title2'] = null;
-			$set['Set']['author'] = Auth::getUser()['name'];
+			$set['Set']['author'] = Auth::getUser()['display_name'];
 			$set['Set']['description'] = '';
 			$set['Set']['image'] = 'fav';
 			$set['Set']['order'] = 0;

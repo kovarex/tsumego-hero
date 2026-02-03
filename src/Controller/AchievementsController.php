@@ -85,7 +85,8 @@ class AchievementsController extends AppController
 		for ($i = 0; $i < $count; $i++)
 		{
 			$u = $this->User->findById($asAll[$i]['AchievementStatus']['user_id']);
-			$asAll[$i]['AchievementStatus']['name'] = $this->checkPicture($u);
+
+			$asAll[$i]['AchievementStatus']['user'] = $u ? $u['User'] : null;
 			$asAll2[] = $asAll[$i];
 		}
 		$asAll = $asAll2;

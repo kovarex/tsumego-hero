@@ -44,7 +44,7 @@ class AccountWidget
 				  <div id="account-bar">
 						<div id="account-bar-user" class="account-bar-user-class">
 							<a href="/users/view/' . Auth::getUserID() . '">
-								' . Auth::getUser()['name'] . '
+								' . h(Auth::getUser()['display_name']) . '
 							</a>
 						</div>
 						<div id="xp-bar">

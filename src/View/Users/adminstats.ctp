@@ -13,9 +13,9 @@
 			echo '<table border="0">';
 			for($i=0; $i<count($requestDeletion); $i++){
 				echo '<tr>';
-				echo '<td>'.$requestDeletion[$i]['User']['name'].' has requested account deletion.</td>';
+				echo '<td>'.User::renderLink($requestDeletion[$i]['User']).' has requested account deletion.</td>';
 				echo '<td><a class="new-button-default2" id="delete-user-'.($i+1).'" href="/users/adminstats?delete='.($requestDeletion[$i]['User']['id']*1111)
-				.'&hash='.md5($requestDeletion[$i]['User']['name']).'">Delete Account</a></td>';
+				.'&hash='.md5($requestDeletion[$i]['User']['display_name']).'">Delete Account</a></td>';
 				echo '</tr>';
 			}
 			echo '</table><hr>';
