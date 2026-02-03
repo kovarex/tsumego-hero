@@ -1,7 +1,5 @@
 <?php
 
-App::uses('AppController', 'Controller');
-
 class AchievementStatus extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)
@@ -35,7 +33,7 @@ class AchievementStatus extends AppModel
 			],
 			'fields' => [
 				'AchievementStatus.id', 'AchievementStatus.created', 'Achievement.id', 'Achievement.name', 'Achievement.image',
-				'User.id', 'User.name', 'User.external_id',
+				'User.id', 'User.display_name', 'User.name', 'User.external_id', 'User.picture', 'User.email', 'User.rating',
 			],
 			'limit' => $limit,
 			'order' => 'AchievementStatus.created DESC',
@@ -44,13 +42,21 @@ class AchievementStatus extends AppModel
 		$result = [];
 		foreach ($rows as $row)
 		{
+			$userData = [
+				'external_id' => $row['User']['external_id'],
+				'picture' => $row['User']['picture'],
+				'email' => $row['User']['email'],
+			];
+			$rating = (float) $row['User']['rating'];
 			$result[] = [
 				'status_id' => $row['AchievementStatus']['id'],
 				'id' => $row['Achievement']['id'],
 				'name' => $row['Achievement']['name'],
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
-				'user_name' => AppController::checkPicture($row['User']),
+				'user_name' => $row['User']['display_name'] ?: $row['User']['name'],
+				'user_avatar_url' => User::getAvatarUrl($userData, 20),
+				'user_rank' => $rating > 0 ? Rating::getReadableRankFromRating($rating) : '',
 				'created' => $row['AchievementStatus']['created'],
 			];
 		}

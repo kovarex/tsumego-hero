@@ -63,7 +63,7 @@ SELECT
 	tsumego_comment.created AS created,
 	tsumego_status.status AS status,
 	user.isAdmin AS from_admin,
-	user.name as from_name,
+	user.display_name as from_name,
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,

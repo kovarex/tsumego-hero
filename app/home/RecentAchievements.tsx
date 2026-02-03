@@ -12,6 +12,8 @@ export interface RecentAchievement {
 	image: string;
 	user_id: number;
 	user_name: string;
+	user_avatar_url: string;
+	user_rank: string;
 	created: string;
 }
 
@@ -47,7 +49,8 @@ export function RecentAchievements({ initialAchievements }: RecentAchievementsPr
 					<div className="recent-achievement-body">
 						<div className="recent-achievement-message">
 							<a className="recent-achievement-user-link" href={`/users/view/${achievement.user_id}`}>
-								{achievement.user_name}
+								<img src={achievement.user_avatar_url} alt="" className="user-avatar" style={{width: 20, height: 20, borderRadius: '50%', verticalAlign: 'middle', marginRight: 4}} />
+								{achievement.user_name}{achievement.user_rank ? ` ${achievement.user_rank}` : ''}
 							</a> earned&nbsp;
 							<a className="recent-achievement-achievement-link" href={`/achievements/view/${achievement.id}`}>
 								<b>{achievement.name}</b>

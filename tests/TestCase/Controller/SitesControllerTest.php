@@ -213,9 +213,10 @@ class SitesControllerTest extends ControllerTestCase
 		$browser->get('sites/index');
 
 		$pageSource = $browser->driver->getPageSource();
-		$aliceId = $context->otherUsers[0]['id'];
+		$this->assertStringContainsString('DN_Alice', $pageSource,
+			'User of the day name should appear on the page');
 		$this->assertStringContainsString(
-			'<a href="/users/view/' . $aliceId . '">Alice</a>',
+			'href="/users/view/' . $context->otherUsers[0]['id'] . '"',
 			$pageSource,
 			'User of the day should link to their profile'
 		);
@@ -269,17 +270,17 @@ class SitesControllerTest extends ControllerTestCase
 
 		// Most recent first: Bob's 10000 Problems (Jan 10)
 		$this->assertStringContainsString('10000 Problems', $rows[0]->getText());
-		$this->assertStringContainsString('Bob', $rows[0]->getText());
+		$this->assertStringContainsString('DN_Bob', $rows[0]->getText());
 		$link = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-achievement-link'));
 		$this->assertStringContainsString('/achievements/view/10', $link->getAttribute('href'));
 
 		// Second: Alice's 9000 Problems (Jan 9)
 		$this->assertStringContainsString('9000 Problems', $rows[1]->getText());
-		$this->assertStringContainsString('Alice', $rows[1]->getText());
+		$this->assertStringContainsString('DN_Alice', $rows[1]->getText());
 
 		// Third: Charlie's 8000 Problems (Jan 8)
 		$this->assertStringContainsString('8000 Problems', $rows[2]->getText());
-		$this->assertStringContainsString('Charlie', $rows[2]->getText());
+		$this->assertStringContainsString('DN_Charlie', $rows[2]->getText());
 
 		// Verify reverse chronological order
 		$allText = implode("\n", array_map(fn($r) => $r->getText(), $rows));
@@ -290,8 +291,8 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('1000 Problems', $allText);
 
 		// All three users appear in the visible rows
-		$this->assertStringContainsString('Alice', $allText);
-		$this->assertStringContainsString('Bob', $allText);
-		$this->assertStringContainsString('Charlie', $allText);
+		$this->assertStringContainsString('DN_Alice', $allText);
+		$this->assertStringContainsString('DN_Bob', $allText);
+		$this->assertStringContainsString('DN_Charlie', $allText);
 	}
 }
