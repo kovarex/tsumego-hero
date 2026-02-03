@@ -44,4 +44,7 @@ class AdminActivityType extends AppModel
 
 	// Tsumego merge
 	public const TSUMEGO_MERGE = 25;
+
+	// Delete user
+	public const DELETE_USER = 26;
 }

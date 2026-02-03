@@ -300,7 +300,19 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('Tag');
+		$this->loadModel('AdminActivityType');
 
+		//Indirect way to create the entry. Can be deleted when the entry exists.
+		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Delete User']]);
+		if($newAdminActivityTypeEntry==null){
+			$this->AdminActivityType->create();
+			$this->AdminActivityType->save([
+				'id' => 26,
+				'name' => 'Delete User',
+			]);
+		}
+
+		// Delete us
 		if (Auth::isAdmin())
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{
@@ -317,6 +329,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					echo '<pre>';
 					print_r('Deleted user ' . $toDelete['User']['name']);
 					echo '</pre>';
+					AdminActivityLogger::log(
+						AdminActivityType::DELETE_USER, null, null, $toDelete['User']['name'], null
+					);
 				}
 			}
 

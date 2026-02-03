@@ -223,6 +223,9 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 				// tsumego merge
 				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
+
+				// Delete user
+				['type' => AdminActivityType::DELETE_USER, 'user_id' => true, 'old_value' => 'user'],
 			]
 		]);
 
@@ -230,7 +233,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser->get('users/adminstats');
 		$pageSource = $browser->driver->getPageSource();
 
-		// Verify all 19 activity type names appear in HTML
+		// Verify all activity type names appear in HTML
 		$this->assertTextContains('Description Edit', $pageSource);
 		$this->assertTextContains('Hint Edit', $pageSource);
 		$this->assertTextContains('Author Edit', $pageSource);
@@ -252,6 +255,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
 		$this->assertTextContains('Merged tsumego', $pageSource);
+		$this->assertTextContains('Delete User', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 
@@ -425,6 +429,29 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertCount(1, $adminActivities);
 		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::REJECT_TAG);
 		$this->assertSame('snapback', $adminActivities[0]['AdminActivity']['old_value']);
+		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
+	}
+
+	public function testDeleteUser()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => ['dbstorage' => 1111, 'name' => 'TwT']
+		]);
+		$browser->get('/users/adminstats');
+		//click deleted user button
+		$browser->clickId('delete-user-1');
+		// we got redirected back to adminstats, the user shouldn't be visible anymore
+		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		// user should be deleted so this should return null
+		$this->assertEmpty(ClassRegistry::init('User')->Name('TwT'));
+
+		// user delete is saved in admin activities
+		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');
+		$this->assertCount(1, $adminActivities);
+		$this->assertSame($adminActivities[0]['AdminActivity']['type'], AdminActivityType::DELETE_USER);
+		$this->assertSame('TwT', $adminActivities[0]['AdminActivity']['old_value']);
 		$this->assertSame(null, $adminActivities[0]['AdminActivity']['new_value']);
 	}
 }
