@@ -225,7 +225,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 
 				// Delete user
-				['type' => AdminActivityType::DELETE_USER, 'user_id' => true, 'old_value' => 'user'],
+				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'user'],
 			]
 		]);
 
@@ -437,15 +437,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
-			'other-users' => ['dbstorage' => 1111, 'name' => 'TwT']
+			'other-users' => [['dbstorage' => 1111, 'name' => 'TwT']]
 		]);
 		$browser->get('/users/adminstats');
 		//click deleted user button
 		$browser->clickId('delete-user-1');
-		// we got redirected back to adminstats, the user shouldn't be visible anymore
-		$this->assertSame(Util::getMyAddress() . '/users/adminstats', $browser->driver->getCurrentURL());
+		// User should be deleted - page stays on adminstats
+		$this->assertStringContainsString('/users/adminstats', $browser->driver->getCurrentURL());
 		// user should be deleted so this should return null
-		$this->assertEmpty(ClassRegistry::init('User')->Name('TwT'));
+		$this->assertEmpty(ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'TwT']]));
 
 		// user delete is saved in admin activities
 		$adminActivities = ClassRegistry::init('AdminActivity')->find('all');

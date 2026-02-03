@@ -84,6 +84,7 @@ class ContextPreparator
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;
+		$user['dbstorage'] = Util::extract('dbstorage', $userInput) ?: 0;
 		$user['solved'] = Util::extract('solved', $userInput) ?: 0;
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
 		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
@@ -754,7 +755,8 @@ class ContextPreparator
 			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
 			AdminActivityType::ACCEPT_TAG => 'Accept Tag',
 			AdminActivityType::REJECT_TAG => 'Reject Tag',
-			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge'];
+			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
+			AdminActivityType::DELETE_USER => 'Delete User'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 

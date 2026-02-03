@@ -304,7 +304,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		//Indirect way to create the entry. Can be deleted when the entry exists.
 		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Delete User']]);
-		if($newAdminActivityTypeEntry==null){
+		if($newAdminActivityTypeEntry == null)
+		{
 			$this->AdminActivityType->create();
 			$this->AdminActivityType->save([
 				'id' => 26,
