@@ -12,6 +12,7 @@ class AdminActivityType extends AppModel
 	public const RATING_EDIT = 20;
 	public const MINIMUM_RATING_EDIT = 21;
 	public const MAXIMUM_RATING_EDIT = 22;
+	public const SGF_EDIT = 27;
 
 	// Problem Settings (multi-state: 0=disabled, 1=enabled)
 	public const ALTERNATIVE_RESPONSE = 4;
