@@ -34,7 +34,7 @@
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			echo '<a href="/tsumegos/play/'.$s[$i]['Sgf']['tsumego_id'].'"> '.$s[$i]['Sgf']['title'].'</a> ';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.($i + 1).'</a>';
+			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">';
 			echo '<a id="open-'.$s[$i]['Sgf']['id'].'">open</a>&nbsp;&nbsp;&nbsp;';

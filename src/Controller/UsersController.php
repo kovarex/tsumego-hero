@@ -281,9 +281,9 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
-			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $t['Tsumego']['num'];
-			$s[$i]['Sgf']['num'] = $t['Tsumego']['num'];
-
+			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
+			$s[$i]['Sgf']['num'] = $scT['SetConnection']['num'];
+			$s[$i]['Sgf']['version'] = count($this->Sgf->find('all', ['conditions' => ['tsumego_id' => $scT['SetConnection']['tsumego_id']]]));
 			$s[$i]['Sgf']['delete'] = false;
 			$sDiff = $this->Sgf->find('all', ['order' => 'id DESC', 'limit' => 2, 'conditions' => ['tsumego_id' => $s[$i]['Sgf']['tsumego_id']]]);
 			$s[$i]['Sgf']['diff'] = $sDiff[1]['Sgf']['id'];
