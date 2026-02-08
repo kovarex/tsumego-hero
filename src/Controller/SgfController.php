@@ -45,6 +45,8 @@ class SgfController extends AppController
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
 		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
+		$sgfDataOrFile = str_replace("\r", '', $sgfDataOrFile);
+		$sgfDataOrFile = str_replace("\n", '"+"\n"+"', $sgfDataOrFile);
 
 		if (!$sgfDataOrFile)
 			throw new AppException('No SGF data provided.');
