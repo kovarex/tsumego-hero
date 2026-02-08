@@ -65,7 +65,7 @@ class SgfController extends AppController
 			AdminActivityType::SGF_EDIT,
 			$setConnection['SetConnection']['tsumego_id'],
 			$setConnection['SetConnection']['set_id'],
-		);	
+		);
 
 		$this->set('sgf', $sgfDataOrFile);
 		$this->set('setConnectionID', $setConnectionID);

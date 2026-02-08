@@ -270,7 +270,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		]);
 
 		//to display the correct version
-		$versionCounter = array();
+		$versionCounter = [];
 
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++)
@@ -286,7 +286,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
 			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
 			$s[$i]['Sgf']['num'] = $scT['SetConnection']['num'];
-			
+
 			if(isset($versionCounter[$scT['SetConnection']['tsumego_id']]))
 				$versionCounter[$scT['SetConnection']['tsumego_id']]++;
 			else
