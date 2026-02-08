@@ -62,7 +62,7 @@
 				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.$s[$i]['Sgf']['title'].'</a> ';
 			else
 				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.$s[$i]['Sgf']['title'].'</a> ';
-			echo '<a href="#" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.(count($s) - $i).'</a>';
+			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">
 			<a id="open-'.$s[$i]['Sgf']['id'].'" class="openHistoryPointLink">open</a>&nbsp;&nbsp;&nbsp;';
