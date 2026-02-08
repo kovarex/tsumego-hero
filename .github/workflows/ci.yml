@@ -77,7 +77,9 @@ jobs:
         run: composer install --prefer-dist --no-interaction
 
       - name: Install ImageMagick for WebP conversion
-        run: sudo apt-get install -y imagemagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
 
       - name: Generate WebP images
         run: composer images:webp

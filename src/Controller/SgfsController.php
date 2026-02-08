@@ -82,7 +82,7 @@ class SgfsController extends AppController
 		}
 
 		//to display the correct version
-		$versionCounter = array();
+		$versionCounter = [];
 
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++)
