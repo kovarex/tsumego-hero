@@ -1182,11 +1182,13 @@ Joschka Zimdars';
 				}
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
-		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+
+		$user = Auth::getUser();
+		$user['name'] = $this->checkPicture($user);
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', Auth::getUser());
+		$this->set('u', $user);
 	}
 
 	/**
@@ -1209,11 +1211,13 @@ Joschka Zimdars';
 				}
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
-		Auth::getUser()['name'] = $this->checkPicture(Auth::getUser());
+
+		$user = Auth::getUser();
+		$user['name'] = $this->checkPicture($user);
 
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', Auth::getUser());
+		$this->set('u', $user);
 	}
 
 	public function solveHistory($userID)

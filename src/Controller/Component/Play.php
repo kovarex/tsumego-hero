@@ -328,8 +328,6 @@ class Play
 			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
 		}
 
-		if (Auth::isLoggedIn())
-			Auth::getUser()['name'] = AppController::checkPicture(Auth::getUser());
 		$tagConnectionsEdit = new TagConnectionsEdit($id, TsumegoUtil::hasStateAllowingInspection($t));
 
 		$isAllowedToContribute = false;

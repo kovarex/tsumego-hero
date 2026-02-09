@@ -89,6 +89,7 @@ class ContextPreparator
 		$user['xp'] = Util::extract('xp', $userInput) ?: 0;
 		$user['daily_xp'] = Util::extract('daily_xp', $userInput) ?: 0;
 		$user['daily_solved'] = Util::extract('daily_solved', $userInput) ?: 0;
+		$user['external_id'] = Util::extract('external_id', $userInput) ?: null;
 		$user['boards_bitmask'] = Util::extract('boards_bitmask', $userInput) ?: BoardSelector::$DEFAULT_BOARDS_BITMASK;
 		foreach ([
 			'used_refinement',
