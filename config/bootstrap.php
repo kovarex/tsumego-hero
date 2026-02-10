@@ -5,7 +5,8 @@ if (Util::isInGithubCI())
 	Configure::write('App.fullBaseUrl', 'https://host.docker.internal:8443');
 
 // Fix Chrome POST losing REQUEST_URI behind Apache rewrite
-if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL'])) {
+if (empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REDIRECT_URL']))
+{
 	// Remove the internal `/webroot` prefix
 	$_SERVER['REQUEST_URI'] = preg_replace('#^/webroot#', '', $_SERVER['REDIRECT_URL']);
 }
@@ -40,6 +41,13 @@ App::uses('AppView', 'View');
 
 // Setup a 'default' cache configuration for use in the application.
 Cache::config('default', ['engine' => 'File']);
+
+// Long-lived cache for data that changes infrequently (e.g. sitemap)
+Cache::config('long', [
+	'engine' => 'File',
+	'duration' => '+1 day',
+	'prefix' => 'long_',
+]);
 
 /**
  * The settings below can be used to set additional paths to models, views and controllers.

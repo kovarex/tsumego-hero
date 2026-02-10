@@ -18,7 +18,7 @@ class SitemapsController extends AppController
 	 * Generate XML sitemap
 	 *
 	 * Outputs sitemap.xml with all public URLs
-	 * Caches result for 1 hour to improve performance
+	 * Caches result for 1 day to improve performance
 	 *
 	 * @return void
 	 */
@@ -33,7 +33,7 @@ class SitemapsController extends AppController
 			// Cache miss - generate sitemap
 			$urls = $this->_generateUrls();
 
-			// Cache for 1 hour
+			// Cache for 1 day
 			Cache::write($cacheKey, $urls, 'long');
 		}
 
@@ -64,7 +64,7 @@ class SitemapsController extends AppController
 		// All public puzzle sets (collections)
 		$sets = $this->Set->find('all', [
 			'conditions' => ['Set.public' => 1],
-			'fields' => ['Set.id', 'Set.title', 'Set.created'],
+			'fields' => ['Set.id', 'Set.title'],
 			'order' => ['Set.id' => 'ASC']
 		]);
 
@@ -72,7 +72,6 @@ class SitemapsController extends AppController
 		{
 			$urls[] = [
 				'loc' => Router::url(['controller' => 'sets', 'action' => 'view', $set['Set']['id']], true),
-				'lastmod' => date('Y-m-d', strtotime($set['Set']['created'])),
 				'priority' => '0.8',
 				'changefreq' => 'weekly'
 			];
