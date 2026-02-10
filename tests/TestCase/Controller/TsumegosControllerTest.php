@@ -366,4 +366,22 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString($secondTsumegoUrl, $currentUrl, "Should navigate to next puzzle");
 	}
+
+	/**
+	 * When in tags query mode but the lastSet cookie contains a value that
+	 * isn't a valid tag name, the play page should fall back to topics
+	 * view instead of crashing.
+	 */
+	public function testPlayPageFallsBackToTopicsWhenLastSetCookieIsNotAValidTag(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'tags'],
+			'tsumego' => ['sets' => [['name' => 'test set', 'num' => 1]]],
+		]);
+		$browser = Browser::instance();
+		$browser->setCookie('lastSet', 'nonexistent-tag');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$playTitle = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
+		$this->assertCount(1, $playTitle, 'Play page should render with playTitle element');
+	}
 }
