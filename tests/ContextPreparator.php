@@ -8,6 +8,7 @@ class ContextPreparator
 	{
 		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);                // FK to: user
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);           // FK to: user, tsumego
 		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
 		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
 		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User

@@ -219,25 +219,23 @@ echo $this->AssetCompress->script('app');
 						echo '</li>';
 						echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
 						if(Auth::isLoggedIn()){
-							if(Auth::hasPremium() || Auth::isAdmin() || $hasFavs){
-								echo '<ul class="newMenuLi2">';
-								if(Auth::hasPremium() || Auth::isAdmin())
-									echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
-								echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
-								if(Auth::isAdmin()){
-									echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
-										echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
-									echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
-									echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
-								}
-								echo '</ul>';
-								}
-								}
+							echo '<ul class="newMenuLi2">';
+							if(Auth::hasPremium() || Auth::isAdmin())
+								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
+							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
+							if(Auth::isAdmin()){
+								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
+									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
+								echo '<li class="additional-adminLink2"><a id="adminLink-more" class="adminLink adminLink3"><i>more</i></a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/uploads">Uploads</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/tsumegos/mergeForm">Merge Duplicates</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/sets/duplicatesearch">Duplicate Search Results</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/showPublishSchedule">Publish Schedule</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/app/webroot/editor">Editor</a></li>';
+								echo '<li class="additional-adminLink"><a class="adminLink" href="/users/userstats">User Activities</a></li>';
+							}
+							echo '</ul>';
+						}
 						$sessionLastVisit = $_COOKIE['lastVisit'] ?? 15352;
 						echo '</li>';
 						echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';

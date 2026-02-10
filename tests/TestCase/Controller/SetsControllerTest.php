@@ -954,7 +954,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testAddingToFavoritesAndViewingIt(): void
 	{
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		for ($i = 0; $i < 3; $i++)
 			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
@@ -981,7 +980,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testRemovingFavorites(): void
 	{
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
 		for ($i = 0; $i < 3; $i++)
@@ -1007,7 +1005,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
 	{
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
 		for ($i = 0; $i < 3; $i++)
@@ -1024,7 +1021,6 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testBrowsingFavoritesByNextButton(): void
 	{
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);
 		$contextParams = [];
 		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
 		for ($i = 0; $i < 5; $i++)
@@ -1465,5 +1461,18 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->clickId("submit-size-button");
 		$tsumegoFilters = new TsumegoFilters();
 		$this->assertSame(60, $tsumegoFilters->collectionSize);
+	}
+
+	/**
+	 * Verify that Favorites menu item appears for all logged-in users,
+	 * even those without any favorites yet.
+	 */
+	public function testFavoritesMenuVisibleForAllLoggedInUsers(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'regularuser']]);
+		$browser = Browser::instance();
+		$browser->get('/');
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}
 }

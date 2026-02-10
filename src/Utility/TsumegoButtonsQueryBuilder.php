@@ -104,7 +104,11 @@ class TsumegoButtonsQueryBuilder
 		$currentTag = $_COOKIE['lastSet'] ?? '';
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
-			throw new Exception("The tag selected to view ('.$currentTag.') couldn't be found");
+		{
+			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
+			$this->tsumegoFilters->query = 'topics';
+			return;
+		}
 		$this->query->query .= ' LEFT JOIN tag_connection ON tag_connection.tsumego_id=tsumego.id';
 		$this->query->conditions[] = 'tag_connection.tag_id=' . $tag['Tag']['id'];
 	}

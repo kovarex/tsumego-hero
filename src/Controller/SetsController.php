@@ -582,6 +582,7 @@ class SetsController extends AppController
 		}
 		elseif ($tsumegoFilters->query == 'tags')
 		{
+			$set = [];
 			$set['Set']['id'] = $id;
 			$set['Set']['image'] = '';
 			$set['Set']['multiplier'] = 1;
@@ -722,7 +723,7 @@ class SetsController extends AppController
 				$this->set('formRedirect', true);
 			}
 		}
-		elseif ($tsumegoFilters->query = 'favorites')
+		elseif ($tsumegoFilters->query == 'favorites')
 		{
 			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
 			$idMap = [];
@@ -780,6 +781,8 @@ class SetsController extends AppController
 			$set['Set']['dateColor'] = '#eee';
 			$this->set('isFav', true);
 		}
+		else
+			throw new AppException('Unknown query type: ' . $tsumegoFilters->query);
 
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
