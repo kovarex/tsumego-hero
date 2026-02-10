@@ -5838,7 +5838,7 @@ ul ul {
 .commentBox1 {
 }
 .commentBox2 {
-  color: #113cd4;
+  color: var(--admin-text-color);
 }
 .img-10small,
 .img-11small,

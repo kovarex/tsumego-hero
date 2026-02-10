@@ -27,7 +27,10 @@ class CommentsRenderer
 		echo '<div class="' . $commentColor . '">';
 		echo $comment['from_name'] . ':<br>';
 		echo '</div>';
-		echo '<div id="comment_' . $comment['id'] . '"';
+		echo '<div ';
+		if($comment['from_admin'])
+			echo 'class="commentBox2" ';
+		echo 'id="comment_' . $comment['id'] . '"';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
 			echo '>' . $comment['message'] . '</div>';
 		else
