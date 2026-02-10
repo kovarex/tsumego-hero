@@ -81,7 +81,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td>
 		<?php
-		echo '<font style="font-weight:800;color:#74d14c" >' . round(Util::getPercent($user['User']['solved'], $tsumegoCount), 1) . '%. completed</font><br>';
+		echo '<font style="font-weight:800;color:#74d14c" >' . Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount) . '%. completed</font><br>';
 		if (Auth::getUserID() == $user['User']['id'])
 		{
 			if ($canResetOldTsumegoStatuses)
