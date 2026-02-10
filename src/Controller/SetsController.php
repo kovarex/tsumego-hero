@@ -1226,36 +1226,31 @@ class SetsController extends AppController
 
 	public function resetProgress(int $setID, int $partition): mixed
 	{
+		$redirectUrl = '/sets/view/' . $setID . '/' . $partition;
+
 		if (!Auth::isLoggedIn())
-			return $this->redirect('/sets/view/' . $setID);
+			return $this->redirect($redirectUrl);
 
 		if ($this->data['reset-check'] != 'reset')
 		{
 			CookieFlash::set('Reset check wasn\'t correctly typed', 'error');
-			return $this->redirect('/sets/view/' . $setID);
+			return $this->redirect($redirectUrl);
 		}
-
-		$partition = $partition - 1;
 
 		$tsumegoFilters = new TsumegoFilters();
 		if ($tsumegoFilters->collectionSize != 200)
 		{
 			CookieFlash::set('Reset is only possible for collection size 200', 'error');
-			return $this->redirect('/sets/view/' . $setID);
+			return $this->redirect($redirectUrl);
 		}
 		$tsumegoFilters->query = 'topics';
-		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $setID);
+		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition - 1, $setID);
 		$tsumegoIDToClear = [];
 		foreach ($tsumegoButtons as $tsumegoButton)
 			$tsumegoIDToClear[] = $tsumegoButton->tsumegoID;
 
-		$problemsInSet = Util::query("
-SELECT
-	COUNT(DISTINCT tsumego.id) AS total
-FROM tsumego
-	JOIN set_connection ON set_connection.tsumego_id = tsumego.id AND set_connection.set_id = ?", [$setID])[0]["total"];
-		if (TsumegoStatus::getProblemsSolvedInSet($setID) < $problemsInSet * 0.5)
-			return $this->redirect('sets/' . $setID);
+		if ($tsumegoButtons->getProblemsSolvedPercent() < 50)
+			return $this->redirect($redirectUrl);
 
 		Util::query("
 DELETE tsumego_status FROM tsumego_status
@@ -1265,7 +1260,7 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		$progresDeletion['set_id'] = $setID;
 		ClassRegistry::init('ProgressDeletion')->create();
 		ClassRegistry::init('ProgressDeletion')->save($progresDeletion);
-		return $this->redirect('/sets/view/' . $setID);
+		return $this->redirect($redirectUrl);
 	}
 
 	public function changeCollectionSize(): mixed
