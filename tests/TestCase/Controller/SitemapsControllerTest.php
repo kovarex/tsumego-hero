@@ -12,27 +12,21 @@ class SitemapsControllerTest extends ControllerTestCase
 	 */
 	public function testSitemapIncludesPublicSets()
 	{
-		// Create test context with a public set
 		$context = new ContextPreparator([
 			'set' => ['public' => 1],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
 		]);
 
-		// Clear sitemap cache
 		Cache::delete('sitemap_xml', 'long');
 
-		// Request sitemap
 		$result = $this->testAction('/sitemap.xml', [
 			'method' => 'get',
 			'return' => 'contents'
 		]);
 
-		// Verify the set is in the sitemap
 		$this->assertStringContainsString('/sets/view/' . $context->set['id'], $result);
-
-		// Verify it has proper sitemap elements
-		$this->assertStringContainsString('<changefreq>weekly</changefreq>', $result);
-		$this->assertStringContainsString('<priority>0.8</priority>', $result);
+		$this->assertStringContainsString('<urlset', $result);
+		$this->assertStringContainsString('<loc>', $result);
 	}
 
 	/**
@@ -40,21 +34,19 @@ class SitemapsControllerTest extends ControllerTestCase
 	 */
 	public function testSitemapIncludesTags()
 	{
-		// Create test context with a tag
 		$context = new ContextPreparator([
 			'tags' => [['name' => 'Test Tag']],
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
 		]);
 
-		// Request sitemap
+		Cache::delete('sitemap_xml', 'long');
+
 		$result = $this->testAction('/sitemap.xml', [
 			'method' => 'get',
 			'return' => 'contents'
 		]);
 
-		// Verify the tag is in the sitemap
 		$this->assertStringContainsString('/sets/tag/Test%20Tag', $result);
-		$this->assertStringContainsString('<priority>0.7</priority>', $result);
 	}
 
 	/**
@@ -62,26 +54,41 @@ class SitemapsControllerTest extends ControllerTestCase
 	 */
 	public function testSitemapIncludesStaticPages()
 	{
-		// Request sitemap
+		Cache::delete('sitemap_xml', 'long');
+
 		$result = $this->testAction('/sitemap.xml', [
 			'method' => 'get',
 			'return' => 'contents'
 		]);
 
-		// Verify static pages are included
 		$this->assertStringContainsString('/hero', $result);
 		$this->assertStringContainsString('/time_mode/play', $result);
-		$this->assertStringContainsString('<changefreq>monthly</changefreq>', $result);
-		$this->assertStringContainsString('<priority>0.6</priority>', $result);
 	}
 
 	/**
-	 * Tear down
+	 * Test sitemap includes individual puzzles
 	 */
+	public function testSitemapIncludesIndividualPuzzles()
+	{
+		$context = new ContextPreparator([
+			'set' => ['public' => 1],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]CA[UTF-8]SZ[19];B[aa];W[ab])']
+		]);
+
+		Cache::delete('sitemap_xml', 'long');
+
+		$result = $this->testAction('/sitemap.xml', [
+			'method' => 'get',
+			'return' => 'contents'
+		]);
+
+		// Verify individual puzzle URL is in sitemap (uses set_connection ID)
+		$this->assertStringContainsString('/' . $context->setConnections[0]['id'] . '</loc>', $result);
+	}
+
 	public function tearDown(): void
 	{
 		parent::tearDown();
-		// Clear cache after tests
 		Cache::delete('sitemap_xml', 'long');
 	}
 }

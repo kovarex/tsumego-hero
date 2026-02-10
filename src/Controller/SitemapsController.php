@@ -17,65 +17,52 @@ class SitemapsController extends AppController
 	/**
 	 * Generate XML sitemap
 	 *
-	 * Outputs sitemap.xml with all public URLs
-	 * Caches result for 1 day to improve performance
+	 * Outputs sitemap.xml with all public URLs.
+	 * Caches rendered XML for 1 day. Webserver handles gzip compression.
 	 *
 	 * @return void
 	 */
 	public function index()
 	{
-		// Check cache first
 		$cacheKey = 'sitemap_xml';
-		$urls = Cache::read($cacheKey, 'long');
+		$xml = Cache::read($cacheKey, 'long');
 
-		if ($urls === false)
+		if ($xml === false)
 		{
-			// Cache miss - generate sitemap
 			$urls = $this->_generateUrls();
-
-			// Cache for 1 day
-			Cache::write($cacheKey, $urls, 'long');
+			$xml = $this->_renderXml($urls);
+			Cache::write($cacheKey, $xml, 'long');
 		}
 
-		// Set view vars
-		$this->set('urls', $urls);
-
-		// Configure response
 		$this->response->type('xml');
-		$this->layout = 'xml/default';
+		$this->response->body($xml);
+		$this->autoRender = false;
 	}
 
 	/**
 	 * Generate all URLs for sitemap
 	 *
-	 * @return array
+	 * Note: Google ignores <priority> and <changefreq>, so we only use <loc>.
+	 * See: https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+	 *
+	 * @return string[]
 	 */
 	private function _generateUrls()
 	{
 		$urls = [];
 
-		// Homepage (highest priority)
-		$urls[] = [
-			'loc' => Router::url('/', true),
-			'priority' => '1.0',
-			'changefreq' => 'daily'
-		];
+		// Homepage
+		$urls[] = Router::url('/', true);
 
-		// All public puzzle sets (collections)
+		// All public puzzle sets
 		$sets = $this->Set->find('all', [
 			'conditions' => ['Set.public' => 1],
-			'fields' => ['Set.id', 'Set.title'],
+			'fields' => ['Set.id'],
 			'order' => ['Set.id' => 'ASC']
 		]);
 
 		foreach ($sets as $set)
-		{
-			$urls[] = [
-				'loc' => Router::url(['controller' => 'sets', 'action' => 'view', $set['Set']['id']], true),
-				'priority' => '0.8',
-				'changefreq' => 'weekly'
-			];
-		}
+			$urls[] = Router::url(['controller' => 'sets', 'action' => 'view', $set['Set']['id']], true);
 
 		// All tags
 		$tags = $this->Tag->find('all', [
@@ -84,29 +71,48 @@ class SitemapsController extends AppController
 		]);
 
 		foreach ($tags as $tag)
-		{
-			$urls[] = [
-				'loc' => Router::url(['controller' => 'sets', 'action' => 'tag', $tag['Tag']['name']], true),
-				'priority' => '0.7',
-				'changefreq' => 'weekly'
-			];
-		}
+			$urls[] = Router::url(['controller' => 'sets', 'action' => 'tag', $tag['Tag']['name']], true);
 
 		// Static pages
 		$staticPages = [
-			['controller' => 'hero', 'action' => 'index', 'priority' => '0.6'],
-			['controller' => 'time_mode', 'action' => 'play', 'priority' => '0.6']
+			['controller' => 'hero', 'action' => 'index'],
+			['controller' => 'time_mode', 'action' => 'play'],
 		];
 
 		foreach ($staticPages as $page)
-		{
-			$urls[] = [
-				'loc' => Router::url(['controller' => $page['controller'], 'action' => $page['action']], true),
-				'priority' => $page['priority'],
-				'changefreq' => 'monthly'
-			];
-		}
+			$urls[] = Router::url(['controller' => $page['controller'], 'action' => $page['action']], true);
+
+		// All individual puzzles in public sets
+		$baseUrl = Router::url('/', true);
+		$puzzleIds = Util::query("
+SELECT set_connection.id
+FROM set_connection
+	JOIN `set` ON set_connection.set_id = `set`.id
+WHERE `set`.public = 1
+ORDER BY set_connection.id ASC");
+
+		foreach ($puzzleIds as $row)
+			$urls[] = $baseUrl . $row['id'];
 
 		return $urls;
+	}
+
+	/**
+	 * Render URL list as XML sitemap string
+	 *
+	 * @param string[] $urls
+	 * @return string
+	 */
+	private function _renderXml(array $urls): string
+	{
+		$xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+		$xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+
+		foreach ($urls as $url)
+			$xml .= "\t<url><loc>" . htmlspecialchars($url, ENT_XML1, 'UTF-8') . "</loc></url>\n";
+
+		$xml .= '</urlset>' . "\n";
+
+		return $xml;
 	}
 }
