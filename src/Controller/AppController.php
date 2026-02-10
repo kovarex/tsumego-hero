@@ -356,40 +356,28 @@ class AppController extends Controller
 			// If we matched a gem rank, update the counter atomically
 			if ($counterField !== null)
 			{
-				// Check if user already has achievement (to preserve "stuck at threshold" behavior)
-				$userHasAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
-					'order' => 'value DESC',
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'category' => $achievementCategory,
-					],
-				]);
-
-				// Determine if we should increment
-				$increment = 1; // Default: increment counter
+				$increment = 1;
 				if ($conditionMet)
 				{
-					// At threshold - check if user already has achievement
+					$userHasAchievement = ClassRegistry::init('AchievementCondition')->find('first', [
+						'order' => 'value DESC',
+						'conditions' => [
+							'user_id' => Auth::getUserID(),
+							'category' => $achievementCategory,
+						],
+					]);
 					if ($userHasAchievement == null)
 					{
-						// Achievement doesn't exist yet - create it and INCREMENT counter
-						// (counter goes from 499 to 500)
 						$aCondition = [];
 						$aCondition['AchievementCondition']['category'] = $achievementCategory;
 						$aCondition['AchievementCondition']['user_id'] = Auth::getUserID();
 						$aCondition['AchievementCondition']['value'] = 1;
 						ClassRegistry::init('AchievementCondition')->save($aCondition);
-						// Keep $increment = 1 (default)
 					}
 					else
-					{
-						// User already has achievement - don't increment to keep threshold accessible
-						// This preserves old behavior: increment then decrement = net zero
 						$increment = 0;
-					}
 				}
 
-				// Atomic UPDATE query (prevents race conditions)
 				if ($increment > 0)
 					ClassRegistry::init('DayRecord')->updateAll([$counterField => $counterField . ' + ' . $increment], ['date' => $today]);
 			}
