@@ -410,29 +410,29 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
 		return [
-			'no swap: Black visual + Black-first SGF' => [
+			'no swap: Black visual (pl=0) + Black-first SGF' => [
 				"Black's stones attack White's group. black wins!",
 				$blackFirstSgf,
 				'black',
 				"Black's stones attack White's group. black wins!",
 			],
-			'swap: White visual + Black-first SGF, preserves word boundaries' => [
+			'swap: White visual (pl=1) + Black-first SGF, preserves word boundaries' => [
 				"Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
 				$blackFirstSgf,
 				'white',
 				"White's stones. Kill the black group near the Blackbird. Watch whitespace.",
 			],
-			'swap: Black visual + White-first SGF' => [
-				"Black to attack White's group.",
+			'swap: Black visual (pl=0) + White-first SGF, normalized Black swaps to White' => [
+				"Black to play. Attack the white group.",
 				$whiteFirstSgf,
 				'black',
-				"White to attack Black's group.",
+				"White to play. Attack the black group.",
 			],
-			'no swap: White visual + White-first SGF' => [
-				"Black to attack White's group.",
+			'no swap: White visual (pl=1) + White-first SGF, normalized Black stays' => [
+				"Black to play. Attack the white group.",
 				$whiteFirstSgf,
 				'white',
-				"Black to attack White's group.",
+				"Black to play. Attack the white group.",
 			],
 		];
 	}
@@ -459,9 +459,55 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Edit form shows ORIGINAL description (never swapped).
+	 * Browser test: Admin edits description on a puzzle where colors are swapped.
+	 * W-first SGF + playercolor=black → swap active → textarea shows swapped text.
+	 * After editing and saving, the stored description is normalized back (Black = solver).
 	 */
-	public function testDescriptionEditFormShowsOriginal(): void
+	public function testDescriptionEditWithSwap(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to attack the white stones.',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])'
+			]
+		]);
+
+		$browser = Browser::instance();
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		// W-first SGF + playercolor=black → pl=0, sP=1 → shouldSwap=true
+		$browser->get($setConnectionId . '?playercolor=black');
+
+		// Click the (Edit) link to reveal the form
+		$browser->clickId('modify-description');
+
+		// Verify the textarea shows swapped text (Black→White for display)
+		$textarea = $browser->find('#description');
+		$this->assertSame('White to attack the black stones.', $textarea->getAttribute('value'));
+
+		// Verify hidden color_swapped field is 1
+		$colorSwapped = $browser->find('input[name="color_swapped"]');
+		$this->assertSame('1', $colorSwapped->getAttribute('value'));
+
+		// Edit the description to something new (still in swapped/display form)
+		$textarea->clear();
+		$textarea->sendKeys('White to play here.');
+
+		// Submit the form
+		$browser->clickId('tsumego-edit-submit');
+
+		// Verify the stored description was normalized (White→Black)
+		$saved = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
+		$this->assertSame('Black to play here.', $saved['Tsumego']['description']);
+	}
+
+	/**
+	 * Browser test: Admin edits description on a puzzle where colors are NOT swapped.
+	 * B-first SGF + playercolor=black → no swap → textarea shows original text.
+	 * After editing and saving, the stored description is kept as-is.
+	 */
+	public function testDescriptionEditNoSwap(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -472,12 +518,32 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			]
 		]);
 
-		$this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white',
-			['return' => 'view']
-		);
+		$browser = Browser::instance();
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		// B-first SGF + playercolor=black → pl=0, sP=0 → shouldSwap=false
+		$browser->get($setConnectionId . '?playercolor=black');
 
-		$this->assertTextContains('>Black to attack the white stones.</textarea>', $this->view);
+		// Click the (Edit) link to reveal the form
+		$browser->clickId('modify-description');
+
+		// Verify the textarea shows original text (no swap)
+		$textarea = $browser->find('#description');
+		$this->assertSame('Black to attack the white stones.', $textarea->getAttribute('value'));
+
+		// Verify hidden color_swapped field is 0
+		$colorSwapped = $browser->find('input[name="color_swapped"]');
+		$this->assertSame('0', $colorSwapped->getAttribute('value'));
+
+		// Edit the description
+		$textarea->clear();
+		$textarea->sendKeys('Black to play first.');
+
+		// Submit the form
+		$browser->clickId('tsumego-edit-submit');
+
+		// Verify it was stored as-is (no normalization needed)
+		$saved = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
+		$this->assertSame('Black to play first.', $saved['Tsumego']['description']);
 	}
 
 	public static function startingPlayerProvider(): array
@@ -512,12 +578,14 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	 *   White-first SGF → firstMove stays WHITE → player places WHITE stones visually
 	 *
 	 * The description should match the VISUAL stone color the player places.
+	 * Under normalized convention, description stores "Black to play".
+	 * The swap formula ($pl != $startingPlayer) ensures correct visual match.
 	 */
 	public function testDescriptionMatchesActualFirstMoveColor(): void
 	{
 		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
-		// Test with "Black to play" in DB — the [b] → "Black" convention
+		// Normalized convention: "Black to play" stored for ALL puzzles (Black = solver)
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'set_order' => 1,
@@ -554,52 +622,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				($visualStoneColor === 'Black' && $descriptionSaysBlack)
 				|| ($visualStoneColor === 'White' && $descriptionSaysWhite),
 				"Iteration $i: description='$descriptionText', visual stone=$visualStoneColor, besogoPlayerColor=$besogoColor"
-			);
-		}
-	}
-
-	/**
-	 * Proves that "White to play" for a White-first SGF causes description
-	 * to NEVER match the player's visual stone color.
-	 */
-	public function testWrongDescriptionWhiteToPlayNeverMatchesVisualStone(): void
-	{
-		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
-
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => 'White to play',
-				'sgf' => $whiteFirstSgf,
-			],
-		]);
-
-		$browser = Browser::instance();
-		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
-
-		for ($i = 0; $i < 10; $i++)
-		{
-			$browser->get((string) $setConnectionId);
-
-			$descriptionText = $browser->find('#descriptionText')->getText();
-			$besogoColor = $browser->driver->executeScript("return besogoPlayerColor;");
-
-			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
-			$wait->until(function () use ($browser) {
-				return $browser->driver->executeScript("return typeof besogo !== 'undefined' && besogo.editor !== undefined;");
-			});
-
-			$nextMove = $browser->driver->executeScript("return besogo.editor.getCurrent().nextMove();");
-			$visualStoneColor = ($nextMove === -1) ? 'Black' : 'White';
-
-			$descriptionSaysBlack = str_contains($descriptionText, 'Black');
-			$descriptionSaysWhite = str_contains($descriptionText, 'White');
-
-			// "White to play" in DB for White-first SGF: description NEVER matches visual stone
-			$this->assertTrue(
-				($visualStoneColor === 'Black' && $descriptionSaysWhite)
-				|| ($visualStoneColor === 'White' && $descriptionSaysBlack),
-				"Iteration $i: Expected MISMATCH but got match! description='$descriptionText', visual stone=$visualStoneColor, besogoPlayerColor=$besogoColor"
 			);
 		}
 	}

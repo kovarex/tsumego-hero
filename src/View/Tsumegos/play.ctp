@@ -94,11 +94,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 
 	$displayDescription = $t['Tsumego']['description'];
-	// Swap Black<->White in description when visual color doesn't match puzzle's starting player
-	// - $pl: 0=playing as Black visually, 1=playing as White visually (inverted board)
-	// - $startingPlayer: 0=Black moves first in SGF, 1=White moves first in SGF
-	// - Descriptions use "Black" to mean "the player"
-	// - Need to swap when: player is visually White but puzzle expects Black, or vice versa
+	// Swap Black<->White in description when the visual stone color differs from the stored convention.
+	// Descriptions are normalized: "Black" always means the solver (the player who moves first).
+	// Swap happens when board inversion ($pl) disagrees with the SGF starting color ($startingPlayer).
 	$shouldSwap = ($pl == 1 && $startingPlayer == 0) || ($pl == 0 && $startingPlayer == 1);
 	if ($shouldSwap)
 	{
@@ -172,12 +170,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
+				<input type="hidden" name="color_swapped" value="<?php echo $shouldSwap ? '1' : '0'; ?>">
 				<table>
 					<tr>
 						<td><label for="description">Description:</label></td>
 						<td>
-							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo htmlspecialchars($t['Tsumego']['description']); ?></textarea>
-							<br><small style="color: #888;">Use "Black" for player color (auto-swaps when inverted)</small>
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo htmlspecialchars($displayDescription); ?></textarea>
+							<br><small style="color: #888;">Black/White are swapped on save to match the stored convention</small>
 						</td>
 					</tr>
 					<tr>
