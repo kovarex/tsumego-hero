@@ -423,16 +423,16 @@ class TsumegosControllerTest extends TestCaseWithAuth
 				"White's stones. Kill the black group near the Blackbird. Watch whitespace.",
 			],
 			'swap: Black visual + White-first SGF' => [
-				"White to attack Black's group.",
+				"Black to attack White's group.",
 				$whiteFirstSgf,
 				'black',
-				"Black to attack White's group.",
+				"White to attack Black's group.",
 			],
 			'no swap: White visual + White-first SGF' => [
-				"White to attack Black's group.",
+				"Black to attack White's group.",
 				$whiteFirstSgf,
 				'white',
-				"White to attack Black's group.",
+				"Black to attack White's group.",
 			],
 		];
 	}
@@ -496,5 +496,111 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	public function testGetStartingPlayer(string $sgf, int $expected): void
 	{
 		$this->assertSame($expected, TsumegosController::getStartingPlayer($sgf));
+	}
+
+	/**
+	 * Browser test: For a White-first SGF, check what color the player actually places
+	 * and whether the description matches that visual color.
+	 *
+	 * Key insight: besogoPlayerColor controls board INVERSION, not the player's stone color.
+	 * The player's visual stone color is: besogo.editor.getCurrent().nextMove()
+	 *   -1 = Black stone on screen, 1 = White stone on screen
+	 *
+	 * When besogoPlayerColor="white" (inversion active):
+	 *   White-first SGF → firstMove inverted to BLACK → player places BLACK stones visually
+	 * When besogoPlayerColor="black" (no inversion):
+	 *   White-first SGF → firstMove stays WHITE → player places WHITE stones visually
+	 *
+	 * The description should match the VISUAL stone color the player places.
+	 */
+	public function testDescriptionMatchesActualFirstMoveColor(): void
+	{
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		// Test with "Black to play" in DB — the [b] → "Black" convention
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to play',
+				'sgf' => $whiteFirstSgf,
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		for ($i = 0; $i < 10; $i++)
+		{
+			$browser->get((string) $setConnectionId);
+
+			$descriptionText = $browser->find('#descriptionText')->getText();
+			$besogoColor = $browser->driver->executeScript("return besogoPlayerColor;");
+
+			// Wait for besogo to initialize
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+			$wait->until(function () use ($browser) {
+				return $browser->driver->executeScript("return typeof besogo !== 'undefined' && besogo.editor !== undefined;");
+			});
+
+			// nextMove() returns -1 (BLACK) or 1 (WHITE) — the ACTUAL visual stone color
+			$nextMove = $browser->driver->executeScript("return besogo.editor.getCurrent().nextMove();");
+			$visualStoneColor = ($nextMove === -1) ? 'Black' : 'White';
+
+			$descriptionSaysBlack = str_contains($descriptionText, 'Black');
+			$descriptionSaysWhite = str_contains($descriptionText, 'White');
+
+			// The description color should match the visual stone color
+			$this->assertTrue(
+				($visualStoneColor === 'Black' && $descriptionSaysBlack)
+				|| ($visualStoneColor === 'White' && $descriptionSaysWhite),
+				"Iteration $i: description='$descriptionText', visual stone=$visualStoneColor, besogoPlayerColor=$besogoColor"
+			);
+		}
+	}
+
+	/**
+	 * Proves that "White to play" for a White-first SGF causes description
+	 * to NEVER match the player's visual stone color.
+	 */
+	public function testWrongDescriptionWhiteToPlayNeverMatchesVisualStone(): void
+	{
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'White to play',
+				'sgf' => $whiteFirstSgf,
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		for ($i = 0; $i < 10; $i++)
+		{
+			$browser->get((string) $setConnectionId);
+
+			$descriptionText = $browser->find('#descriptionText')->getText();
+			$besogoColor = $browser->driver->executeScript("return besogoPlayerColor;");
+
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+			$wait->until(function () use ($browser) {
+				return $browser->driver->executeScript("return typeof besogo !== 'undefined' && besogo.editor !== undefined;");
+			});
+
+			$nextMove = $browser->driver->executeScript("return besogo.editor.getCurrent().nextMove();");
+			$visualStoneColor = ($nextMove === -1) ? 'Black' : 'White';
+
+			$descriptionSaysBlack = str_contains($descriptionText, 'Black');
+			$descriptionSaysWhite = str_contains($descriptionText, 'White');
+
+			// "White to play" in DB for White-first SGF: description NEVER matches visual stone
+			$this->assertTrue(
+				($visualStoneColor === 'Black' && $descriptionSaysWhite)
+				|| ($visualStoneColor === 'White' && $descriptionSaysBlack),
+				"Iteration $i: Expected MISMATCH but got match! description='$descriptionText', visual stone=$visualStoneColor, besogoPlayerColor=$besogoColor"
+			);
+		}
 	}
 }
