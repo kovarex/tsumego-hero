@@ -132,13 +132,13 @@ class TsumegosController extends AppController
 		return $t[$num];
 	}
 
-	public static function getStartingPlayer($sgf)
+	public static function getStartingPlayer($sgf): int
 	{
 		$bStart = strpos($sgf, ';B');
 		$wStart = strpos($sgf, ';W');
-		if ($wStart == 0)
+		if ($wStart === false)
 			return 0;
-		if ($bStart == 0)
+		if ($bStart === false)
 			return 1;
 		if ($bStart <= $wStart)
 			return 0;

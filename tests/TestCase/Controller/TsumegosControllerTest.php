@@ -404,82 +404,64 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $playTitle, 'Play page should render with playTitle element');
 	}
 
-	/**
-	 * NO SWAP: Visual color matches SGF first move - description unchanged.
-	 */
-	public function testDescriptionNoSwap()
+	public static function descriptionColorSwapProvider(): array
 	{
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => "Black's stones attack White's group. black wins!",
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
-			]
-		]);
+		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
 
-		$this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black',
-			['return' => 'view']
-		);
-
-		// No mismatch = no swap, description unchanged
-		$this->assertTextContains("Black's stones attack White's group. black wins!", $this->view);
+		return [
+			'no swap: Black visual + Black-first SGF' => [
+				"Black's stones attack White's group. black wins!",
+				$blackFirstSgf,
+				'black',
+				"Black's stones attack White's group. black wins!",
+			],
+			'swap: White visual + Black-first SGF, preserves word boundaries' => [
+				"Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
+				$blackFirstSgf,
+				'white',
+				"White's stones. Kill the black group near the Blackbird. Watch whitespace.",
+			],
+			'swap: Black visual + White-first SGF' => [
+				"White to attack Black's group.",
+				$whiteFirstSgf,
+				'black',
+				"Black to attack White's group.",
+			],
+			'no swap: White visual + White-first SGF' => [
+				"White to attack Black's group.",
+				$whiteFirstSgf,
+				'white',
+				"White to attack Black's group.",
+			],
+		];
 	}
 
 	/**
-	 * SWAP: Visual color differs from SGF - description colors swapped.
-	 * Tests: uppercase, lowercase, possessives, word boundaries.
+	 * @dataProvider descriptionColorSwapProvider
 	 */
-	public function testDescriptionSwap()
+	public function testDescriptionColorSwap(string $description, string $sgf, string $playerColor, string $expected): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'set_order' => 1,
-				// "Black's" (possessive), "white" (lowercase), "Blackbird"/"whitespace" (word boundaries)
-				'description' => "Black's stones. Kill the white group near the Blackbird. Watch whitespace.",
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])'
+				'description' => $description,
+				'sgf' => $sgf,
 			]
 		]);
 
 		$this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white',
+			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=' . $playerColor,
 			['return' => 'view']
 		);
 
-		// Swapped: "Black's"->"White's", "white"->"black"
-		// Unchanged: "Blackbird", "whitespace"
-		$this->assertTextContains("White's stones. Kill the black group near the Blackbird. Watch whitespace.", $this->view);
-	}
-
-	/**
-	 * SWAP for White-first SGF: When SGF starts with ;W and user sees Black.
-	 * Tests the other direction of the swap condition.
-	 */
-	public function testDescriptionSwapWhiteFirstSgf()
-	{
-		$context = new ContextPreparator([
-			'tsumego' => [
-				'set_order' => 1,
-				'description' => "White to attack Black's group.",
-				// White-first SGF: ;W[aa] instead of ;B[aa]
-				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])'
-			]
-		]);
-
-		// User sees Black (visual), but SGF starts with White -> SWAP
-		$this->testAction(
-			'tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=black',
-			['return' => 'view']
-		);
-
-		// "White"->"Black", "Black's"->"White's"
-		$this->assertTextContains("Black to attack White's group.", $this->view);
+		$this->assertTextContains($expected, $this->view);
 	}
 
 	/**
 	 * Edit form shows ORIGINAL description (never swapped).
 	 */
-	public function testDescriptionEditFormShowsOriginal()
+	public function testDescriptionEditFormShowsOriginal(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
@@ -495,7 +477,24 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			['return' => 'view']
 		);
 
-		// Edit textarea has original (not swapped)
 		$this->assertTextContains('>Black to attack the white stones.</textarea>', $this->view);
+	}
+
+	public static function startingPlayerProvider(): array
+	{
+		return [
+			'Black first' => ['(;GM[1]FF[4]SZ[19];B[aa];W[ab])', 0],
+			'White first' => ['(;GM[1]FF[4]SZ[19];W[aa];B[ab])', 1],
+			'Black only' => ['(;GM[1]FF[4]SZ[19];B[aa])', 0],
+			'White only' => ['(;GM[1]FF[4]SZ[19];W[aa])', 1],
+		];
+	}
+
+	/**
+	 * @dataProvider startingPlayerProvider
+	 */
+	public function testGetStartingPlayer(string $sgf, int $expected): void
+	{
+		$this->assertSame($expected, TsumegosController::getStartingPlayer($sgf));
 	}
 }
