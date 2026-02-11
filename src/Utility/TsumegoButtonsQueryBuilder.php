@@ -4,9 +4,9 @@ App::uses('Query', 'Utility');
 
 class TsumegoButtonsQueryBuilder
 {
-	public $query;
-	public $description = '';
-	private $tsumegoFilters;
+	public Query $query;
+	public string $description = '';
+	private TsumegoFilters $tsumegoFilters;
 
 	public function __construct($tsumegoFilters, $id)
 	{
