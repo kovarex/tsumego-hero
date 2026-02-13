@@ -44,6 +44,10 @@ class AdminActivityType extends AppModel
 	public const REJECT_TAG = 24;
 	public const ADD_TAG = 28; // An admin adds a tag to a problem. It doesn't need to be accepted.
 
+	// Proposals
+	public const ACCEPT_PROPOSAL = 29;
+	public const REJECT_PROPOSAL = 30;
+
 	// Tsumego merge
 	public const TSUMEGO_MERGE = 25;
 

@@ -1250,6 +1250,8 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function acceptSGFProposal($sgfID)
 	{
+		$this->loadModel('AdminActivityType');
+
 		if (!Auth::isAdmin())
 			return $this->redirect('/sets');
 
@@ -1272,11 +1274,28 @@ OFFSET " . $offset, [$userID, $userID]);
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 		AppController::handleContribution($proposalToApprove['user_id'], 'made_proposal');
 		CookieFlash::set('Sgf proposal accepted', 'success');
+
+		// create AdminActivityType entry in db
+		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Accept Proposal']]);
+		if($newAdminActivityTypeEntry == null)
+		{
+			$this->AdminActivityType->create();
+			$this->AdminActivityType->save([
+				'id' => 29,
+				'name' => 'Accept Proposal',
+			]);
+		}
+		// use entry
+		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
+		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['name']);
+
 		return $this->redirect('/users/adminstats');
 	}
 
 	public function rejectSGFProposal($sgfID)
 	{
+		$this->loadModel('AdminActivityType');
+
 		if (!Auth::isAdmin())
 			return $this->redirect('/sets');
 
@@ -1303,8 +1322,22 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
-
 		CookieFlash::set('Sgf proposal rejected', 'success');
+
+		// create AdminActivityType entry in db
+		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Reject Proposal']]);
+		if($newAdminActivityTypeEntry == null)
+		{
+			$this->AdminActivityType->create();
+			$this->AdminActivityType->save([
+				'id' => 30,
+				'name' => 'Reject Proposal',
+			]);
+		}
+		// use entry
+		$userToReject = $this->User->findById($proposalToReject['user_id']);
+		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['name']);
+
 		return $this->redirect('/users/adminstats');
 	}
 
