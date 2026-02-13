@@ -312,18 +312,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tag');
 		$this->loadModel('AdminActivityType');
 
-		//Indirect way to create the entry. Can be deleted when the entry exists.
-		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Delete User']]);
-		if($newAdminActivityTypeEntry == null)
-		{
-			$this->AdminActivityType->create();
-			$this->AdminActivityType->save([
-				'id' => 26,
-				'name' => 'Delete User',
-			]);
-		}
-
-		// Delete us
+		// Delete user
 		if (Auth::isAdmin())
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{

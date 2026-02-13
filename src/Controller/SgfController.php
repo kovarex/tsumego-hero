@@ -51,16 +51,6 @@ class SgfController extends AppController
 		if (!$sgfDataOrFile)
 			throw new AppException('No SGF data provided.');
 
-		//Indirect way to create the entry. Can be deleted when the entry exists.
-		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'SGF Edit']]);
-		if($newAdminActivityTypeEntry == null)
-		{
-			$this->AdminActivityType->create();
-			$this->AdminActivityType->save([
-				'id' => 27,
-				'name' => 'SGF Edit',
-			]);
-		}
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,
 			$setConnection['SetConnection']['tsumego_id'],

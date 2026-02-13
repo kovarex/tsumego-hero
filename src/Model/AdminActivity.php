@@ -19,6 +19,8 @@ class AdminActivity extends AppModel
 		{
 			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . $adminActivity['new_value'];
 			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . $adminActivity['old_value'];
+			case AdminActivityType::ADD_TAG: return 'Added tag ' . $adminActivity['new_value'];
+			case AdminActivityType::DELETE_USER: return 'Deleted user ' . $adminActivity['old_value'];
 			case AdminActivityType::TSUMEGO_MERGE:
 				{
 					$decoded = json_decode($adminActivity['old_value'], true);
