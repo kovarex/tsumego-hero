@@ -1567,7 +1567,7 @@ li a.menuLi {
 #playTitle {
   font-size: 20px;
   font-weight: 800;
-  color: black;
+  color: var(--text-color);
 }
 #playTitleA { color: var(--text-color); }
 #descriptionText { color: var(--text-softer-color); }
