@@ -43,6 +43,7 @@ class ContextPreparator
 		$this->prepareProgressDeletion(Util::extract('progress-deletions', $options));
 		$this->prepareDayRecords(Util::extract('day-records', $options));
 		$this->prepareAchievementConditions(Util::extract('achievement-conditions', $options));
+		$this->ensureAdminActivityTypes();
 		$this->prepareAdminActivities(Util::extract('admin-activities', $options));
 		$this->prepareTags(Util::extract('tags', $options));
 		$this->checkOptionsConsumed($options);
@@ -762,6 +763,10 @@ class ContextPreparator
 			AdminActivityType::MAXIMUM_RATING_EDIT => 'Maximum Rating Edit',
 			AdminActivityType::ACCEPT_TAG => 'Accept Tag',
 			AdminActivityType::REJECT_TAG => 'Reject Tag',
+			AdminActivityType::SGF_EDIT => 'SGF Edit',
+			AdminActivityType::ADD_TAG => 'Add Tag',
+			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
+			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
 			AdminActivityType::DELETE_USER => 'Delete User'];
 
@@ -786,9 +791,6 @@ class ContextPreparator
 	{
 		if (!$adminActivities)
 			return;
-
-		// Ensure admin_activity_type table is populated with correct IDs matching AdminActivityLogger constants
-		$this->ensureAdminActivityTypes();
 
 		foreach ($adminActivities as $activityInput)
 		{

@@ -20,13 +20,21 @@ class TsumegoFilters
 		$this->sets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		foreach ($this->sets as $set)
-			$this->setIDs[] = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]])['Set']['id'];
+		{
+			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]]);
+			if ($found)
+				$this->setIDs[] = $found['Set']['id'];
+		}
 
 		$this->ranks = self::processItem('filtered_ranks', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 		$this->tags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
 		foreach ($this->tags as $tag)
-			$this->tagIDs[] = ClassRegistry::init('Tag')->findByName($tag)['Tag']['id'];
+		{
+			$found = ClassRegistry::init('Tag')->findByName($tag);
+			if ($found)
+				$this->tagIDs[] = $found['Tag']['id'];
+		}
 	}
 
 	public static function empty()
@@ -142,7 +150,7 @@ class TsumegoFilters
 		if (empty($this->setIDs))
 			return;
 		if (!str_contains($query->query, 'JOIN set_connection'))
-			$query->query .= ' JOIN set_connection ON set_connection.tsumego.id = tsumego.id';
+			$query->query .= ' JOIN set_connection ON set_connection.tsumego_id = tsumego.id';
 		if (!str_contains($query->query, 'JOIN `set`'))
 			$query->query .= ' JOIN `set` ON `set`.id = set_connection.set_id';
 		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
@@ -153,11 +161,9 @@ class TsumegoFilters
 		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
 		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
 		$query->conditions[] = '`set`.public = 1';
-		if (!empty($this->setIDs))
-			$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
+		$this->filterSets($query);
 		$this->filterTags($query);
 		$this->filterRanks($query);
-		$this->filterSets($query);
 	}
 
 	public function calculateCount(): int

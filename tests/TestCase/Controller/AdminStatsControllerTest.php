@@ -225,7 +225,17 @@ class AdminStatsControllerTest extends ControllerTestCase
 				['type' => AdminActivityType::TSUMEGO_MERGE, 'tsumego_id' => true, 'old_value' => 'other:0'],
 
 				// Delete user
-				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'user'],
+				['type' => AdminActivityType::DELETE_USER, 'old_value' => 'banned_spammer'],
+
+				// SGF edit
+				['type' => AdminActivityType::SGF_EDIT, 'tsumego_id' => true, 'old_value' => 'old sgf', 'new_value' => 'new sgf'],
+
+				// Tag management
+				['type' => AdminActivityType::ADD_TAG, 'tsumego_id' => true, 'new_value' => 'tesuji'],
+
+				// Proposal management
+				['type' => AdminActivityType::ACCEPT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer1'],
+				['type' => AdminActivityType::REJECT_PROPOSAL, 'tsumego_id' => true, 'new_value' => 'proposer2'],
 			]
 		]);
 
@@ -254,8 +264,8 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Problem Add', $pageSource);
 		$this->assertTextContains('Set Alternative Response', $pageSource);
 		$this->assertTextContains('Set Pass Mode', $pageSource);
-		$this->assertTextContains('Merged tsumego', $pageSource);
-		$this->assertTextContains('Delete User', $pageSource);
+		$this->assertTextContains('Merged tsumego ' . $context->tsumegos[0]['id'], $pageSource);
+		$this->assertTextContains('Deleted user banned_spammer', $pageSource);
 
 		// Verify formatted messages with old/new values appear in HTML
 
@@ -289,6 +299,10 @@ class AdminStatsControllerTest extends ControllerTestCase
 
 		$this->assertTextContains('Accepted tag snapback', $pageSource);
 		$this->assertTextContains('Rejected tag atari', $pageSource);
+		$this->assertTextContains('SGF Edit: old sgf → new sgf', $pageSource);
+		$this->assertTextContains('Added tag tesuji', $pageSource);
+		$this->assertTextContains('Accepted proposal by proposer1', $pageSource);
+		$this->assertTextContains('Rejected proposal by proposer2', $pageSource);
 	}
 
 	public function testProposeSGF()
