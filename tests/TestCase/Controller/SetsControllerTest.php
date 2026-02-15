@@ -1476,22 +1476,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}
 
-	public function testIndexWithNonexistentFilteredSetDoesNotCrash(): void
-	{
-		$contextParams = ['user' => [
-			'mode' => Constants::$LEVEL_MODE,
-			'query' => 'topics',
-			'filtered_sets' => ['valid-set', 'nonexistent-set-that-was-deleted']]];
-		$contextParams['tsumegos'] = [];
-		$contextParams['tsumegos'][] = [
-			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
-			'sets' => [['name' => 'valid-set', 'num' => '1']]];
-
-		new ContextPreparator($contextParams);
-		$this->testAction('sets', ['return' => 'view']);
-		$this->assertTextContains('valid-set', $this->view);
-	}
-
 	public function testIndexWithNonexistentFilteredSetAndRankFiltersDoesNotCrash(): void
 	{
 		$contextParams = ['user' => [
