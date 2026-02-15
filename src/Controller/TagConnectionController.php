@@ -44,7 +44,8 @@ class TagConnectionController extends AppController
 		$tagConnection['user_id'] = Auth::getUserID();
 		$tagConnection['approved'] = Auth::isAdmin() ? 1 : 0;
 
-		if($tagConnection['approved'] == 1){
+		if($tagConnection['approved'] == 1)
+		{
 			// create entry in db
 			$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Add Tag']]);
 			if($newAdminActivityTypeEntry == null)
@@ -56,7 +57,7 @@ class TagConnectionController extends AppController
 				]);
 			}
 			// use entry
-			AdminActivityLogger::log(AdminActivityType::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);	
+			AdminActivityLogger::log(AdminActivityType::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
 		}
 
 		ClassRegistry::init('TagConnection')->create();
