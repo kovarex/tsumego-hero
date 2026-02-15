@@ -37,7 +37,6 @@ class SgfController extends AppController
 
 	public function upload($setConnectionID)
 	{
-		$this->loadModel('AdminActivityType');
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$setConnection)
 			throw new AppException("Specified set connection does not exist.");

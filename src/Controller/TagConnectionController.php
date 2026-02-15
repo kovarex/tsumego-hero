@@ -4,7 +4,6 @@ class TagConnectionController extends AppController
 {
 	public function add($tsumegoID, $tagName)
 	{
-		$this->loadModel('AdminActivityType');
 		if (!Auth::isLoggedIn())
 		{
 			$this->response->statusCode(403);
@@ -45,20 +44,7 @@ class TagConnectionController extends AppController
 		$tagConnection['approved'] = Auth::isAdmin() ? 1 : 0;
 
 		if($tagConnection['approved'] == 1)
-		{
-			// create entry in db
-			$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Add Tag']]);
-			if($newAdminActivityTypeEntry == null)
-			{
-				$this->AdminActivityType->create();
-				$this->AdminActivityType->save([
-					'id' => 28,
-					'name' => 'Add Tag',
-				]);
-			}
-			// use entry
 			AdminActivityLogger::log(AdminActivityType::ADD_TAG, $tagConnection['tsumego_id'], null, ' ', $tagName);
-		}
 
 		ClassRegistry::init('TagConnection')->create();
 		ClassRegistry::init('TagConnection')->save($tagConnection);
