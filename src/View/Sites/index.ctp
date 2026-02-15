@@ -690,7 +690,7 @@ $highestRight = 17;
 				<b>Improved comments</b><br><br>
 				• <b>Link position in comments</b>: It is now possible to link board positions by clicking "Link current position".
 				<br>
-				<div align="center"><img width="90%" src="/img/commentPositionExample1.JPG"></div>
+				<div align="center"><img width="90%" src="/img/commentPositionExample1.jpg"></div>
 				<br>
 				The position can be accessed by selecting the icon in the comment.
 				<br>
