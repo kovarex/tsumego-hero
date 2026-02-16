@@ -2,6 +2,8 @@
 
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('NotFoundException', 'Routing/Error');
+App::uses('BadRequestException', 'Routing/Error');
 
 class SgfController extends AppController
 {
@@ -23,7 +25,7 @@ class SgfController extends AppController
 		}
 
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
-		if (!Auth::isAdmin() && !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status']))
+		if (!Auth::isAdmin() && (!$status || !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status'])))
 		{
 			$this->response->statusCode(403);
 			$this->response->body('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
@@ -39,7 +41,7 @@ class SgfController extends AppController
 	{
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$setConnection)
-			throw new AppException("Specified set connection does not exist.");
+			throw new NotFoundException("Specified set connection does not exist.");
 
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
@@ -48,7 +50,7 @@ class SgfController extends AppController
 		$sgfDataOrFile = str_replace("\n", '"+"\n"+"', $sgfDataOrFile);
 
 		if (!$sgfDataOrFile)
-			throw new AppException('No SGF data provided.');
+			throw new BadRequestException('No SGF data provided.');
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,

@@ -1,14 +1,16 @@
 <?php
 
-App::uses('AppException', 'Utility');
 App::uses('ExceptionRenderer', 'Error');
 
 class AppErrorHandler extends ExceptionRenderer
 {
-	private function renderError($code, $title, $error)
+	private function renderError($error)
 	{
+		$code = $error->getCode();
+		// Plain Exception has code 0, MissingController/Action have non-HTTP codes
+		if ($code < 400 || $code >= 600)
+			$code = 500;
 		$this->controller->response->statusCode($code);
-		$this->controller->set('title_for_layout', $title);
 		$this->controller->set([
 			'url' => $this->controller->request->here,
 			'error' => $error
@@ -16,28 +18,14 @@ class AppErrorHandler extends ExceptionRenderer
 		$this->_outputMessage('error');
 	}
 
-	public function error404($error)
-	{
-		$this->renderError(404, 'Page Not Found', $error);
-	}
-
-	public function notFound($error)
-	{
-		return $this->error404($error);
-	}
-
-	public function missingController($error)
-	{
-		return $this->error404($error);
-	}
-
-	public function missingAction($error)
-	{
-		return $this->error404($error);
-	}
-
-	public function error500($error)
-	{
-		$this->renderError(500, 'Internal Server Error', $error);
-	}
+	public function error400($error) { $this->renderError($error); }
+	public function error404($error) { $this->renderError($error); }
+	public function error500($error) { $this->renderError($error); }
+	public function notFound($error) { $this->renderError($error); }
+	public function missingController($error) { $this->renderError($error); }
+	public function missingAction($error) { $this->renderError($error); }
+	public function badRequest($error) { $this->renderError($error); }
+	public function forbidden($error) { $this->renderError($error); }
+	public function methodNotAllowed($error) { $this->renderError($error); }
+	public function internalError($error) { $this->renderError($error); }
 }

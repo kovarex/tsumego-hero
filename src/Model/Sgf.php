@@ -1,5 +1,8 @@
 <?php
 
+App::uses('BadRequestException', 'Routing/Error');
+App::uses('InternalErrorException', 'Routing/Error');
+
 class Sgf extends AppModel
 {
 	public $validate = [
@@ -35,7 +38,7 @@ class Sgf extends AppModel
 	 * @param int $userID The user ID uploading the SGF
 	 * @param bool $accepted Whether the SGF is accepted (true for admin uploads)
 	 * @return array The saved Sgf record
-	 * @throws AppException If validation fails
+	 * @throws BadRequestException|InternalErrorException If validation fails
 	 */
 	public function uploadSgf($sgfDataOrFile, int $tsumegoID, int $userID, bool $accepted): array
 	{
@@ -43,15 +46,15 @@ class Sgf extends AppModel
 		if (is_array($sgfDataOrFile))
 		{
 			if (!isset($sgfDataOrFile['tmp_name']) || $sgfDataOrFile['error'] !== UPLOAD_ERR_OK)
-				throw new AppException('Invalid file upload.');
+				throw new BadRequestException('Invalid file upload.');
 
 			$fileSize = $sgfDataOrFile['size'];
 			$array1 = explode('.', $sgfDataOrFile['name']);
 			$fileExtension = strtolower(end($array1));
 			if ($fileExtension != 'sgf')
-				throw new AppException('Only SGF files are allowed, the file name is: ' . $sgfDataOrFile['name']);
+				throw new BadRequestException('Only SGF files are allowed, the file name is: ' . $sgfDataOrFile['name']);
 			if ($fileSize > 2097152)
-				throw new AppException('The file is too large.');
+				throw new BadRequestException('The file is too large.');
 
 			$sgfData = file_get_contents($sgfDataOrFile['tmp_name']);
 		}
@@ -68,7 +71,7 @@ class Sgf extends AppModel
 		{
 			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $this->validationErrors);
 			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
-			throw new AppException('Failed to save SGF: ' . $errorMessage);
+			throw new InternalErrorException('Failed to save SGF: ' . $errorMessage);
 		}
 
 		// Return the saved record from the model (includes auto-generated ID and timestamps)

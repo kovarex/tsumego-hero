@@ -26,17 +26,31 @@ switch ($code)
 		$errorMessage = 'An internal error occurred while processing your request.';
 		$errorDetails = 'The server encountered an unexpected condition that prevented it from fulfilling the request. Our team has been notified.';
 		break;
+	case 400:
+		$errorTitle = 'Bad Request';
+		$errorColor = '#f57c00';
+		$errorMessage = 'The request could not be understood or was missing required parameters.';
+		$errorDetails = 'Please check the URL and try again.';
+		break;
 	case 403:
 		$errorTitle = 'Forbidden';
 		$errorColor = '#f57c00';
 		$errorMessage = 'You do not have permission to access this resource.';
 		$errorDetails = 'Please contact an administrator if you believe you should have access.';
 		break;
+	case 405:
+		$errorTitle = 'Method Not Allowed';
+		$errorColor = '#f57c00';
+		$errorMessage = 'The request method is not allowed for this resource.';
+		$errorDetails = 'Please use a different request method or check the URL.';
+		break;
 	default:
 		$errorTitle = 'Error ' . $code;
 		$errorColor = '#666';
 		break;
 }
+
+$this->set('title_for_layout', $errorTitle);
 ?>
 <div style="position: relative; max-width: 800px; margin: 100px auto; padding: 40px; text-align: center;">
 	<div style="position: relative; z-index: 1;">
