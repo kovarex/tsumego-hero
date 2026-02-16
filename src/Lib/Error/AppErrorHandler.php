@@ -18,14 +18,53 @@ class AppErrorHandler extends ExceptionRenderer
 		$this->_outputMessage('error');
 	}
 
-	public function error400($error) { $this->renderError($error); }
-	public function error404($error) { $this->renderError($error); }
-	public function error500($error) { $this->renderError($error); }
-	public function notFound($error) { $this->renderError($error); }
-	public function missingController($error) { $this->renderError($error); }
-	public function missingAction($error) { $this->renderError($error); }
-	public function badRequest($error) { $this->renderError($error); }
-	public function forbidden($error) { $this->renderError($error); }
-	public function methodNotAllowed($error) { $this->renderError($error); }
-	public function internalError($error) { $this->renderError($error); }
+	public function error400($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function error404($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function error500($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function notFound($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function missingController($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function missingAction($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function badRequest($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function forbidden($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function methodNotAllowed($error)
+	{
+		$this->renderError($error);
+	}
+
+	public function internalError($error)
+	{
+		$this->renderError($error);
+	}
 }
