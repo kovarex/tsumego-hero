@@ -64,7 +64,7 @@ $this->set('title_for_layout', $errorTitle);
 		<?php echo $errorDetails; ?>
 	</p>
 	
-	<?php if (Configure::read('debug') > 0 && isset($error)): ?>
+	<?php if (isset($error)): ?>
 		<div style="margin-top: 60px; padding: 30px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; text-align: left; position: relative; z-index: 2;">
 			<h3 style="color: var(--text-color, #333); margin-top: 0; margin-bottom: 20px;">Debug Information</h3>
 			
@@ -86,10 +86,10 @@ $this->set('title_for_layout', $errorTitle);
 			<?php endif; ?>
 			
 			<?php if (method_exists($error, 'getTrace')): ?>
-				<details style="margin-top: 20px;">
-					<summary style="cursor: pointer; font-weight: bold; color: var(--primary-color, #4CAF50); padding: 10px; background: rgba(0, 0, 0, 0.03); border-radius: 4px;">▶ Stack Trace (click to expand)</summary>
-					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: #f8f8f2; padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php echo h(print_r($error->getTrace(), true)); ?></pre>
-				</details>
+				<div style="margin-top: 20px;">
+					<strong style="color: var(--text-color, #333); display: block; padding: 10px; background: rgba(0, 0, 0, 0.03); border-radius: 4px;">Stack Trace</strong>
+					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: #f8f8f2; padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php echo h($error->getTraceAsString()); ?></pre>
+				</div>
 			<?php endif; ?>
 		</div>
 	<?php endif; ?>
