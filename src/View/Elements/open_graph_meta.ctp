@@ -39,7 +39,7 @@ echo '<meta property="og:image" content="' . htmlspecialchars($imageUrl) . '">' 
 echo '<meta property="og:image:type" content="image/png">' . "\n";
 echo '<meta property="og:url" content="' . htmlspecialchars($pageUrl) . '">' . "\n";
 echo '<meta property="og:type" content="website">' . "\n";
-echo '<meta property="og:site_name" content="Tsumego Hero">' . "\n";
+echo '<meta property="og:site_name" content="Tsumego">' . "\n";
 echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
 echo '<meta name="twitter:title" content="' . htmlspecialchars($ogTitle) . '">' . "\n";
 echo '<meta name="twitter:description" content="' . htmlspecialchars($ogDescription) . '">' . "\n";

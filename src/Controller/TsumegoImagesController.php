@@ -27,9 +27,9 @@ class TsumegoImagesController extends AppController
 			FROM set_connection sc
 			JOIN tsumego t ON t.id = sc.tsumego_id
 			JOIN `set` s ON s.id = sc.set_id
-			JOIN sgf ON sgf.tsumego_id = t.id
+			JOIN sgf ON sgf.tsumego_id = t.id AND sgf.accepted = 1
 			WHERE sc.id = ?
-			ORDER BY sgf.id ASC
+			ORDER BY sgf.id DESC
 			LIMIT 1',
 			[(int) $setConnectionId]
 		);
@@ -49,11 +49,9 @@ class TsumegoImagesController extends AppController
 
 		$this->response->type('png');
 		$this->response->body($imageData);
-		$this->response->cache('+1 year');
 		$this->response->etag(md5(Constants::$TSUMEGO_IMAGE_VERSION . $sgfString));
-
-		if (!empty($row['t']['created']))
-			$this->response->modified($row['t']['created']);
+		$modified = !empty($row['t']['created']) ? $row['t']['created'] : '-1 day';
+		$this->response->cache($modified, '+1 year');
 
 		return $this->response;
 	}
@@ -115,24 +113,20 @@ class TsumegoImagesController extends AppController
 		$height = 630;
 
 		// Calculate cell size to fill image (leave small margins)
-		$margin = 40;
+		// Calculate cell size — account for stone overhang beyond edge intersections
+		// Stones extend 0.45*cellSize beyond grid + shadow adds ~0.1*cellSize more
+		$stoneOverhang = 0.55; // safety margin for stone radius + shadow
+		$effectiveCropWidth = ($cropWidth - 1) + 2 * $stoneOverhang;
+		$effectiveCropHeight = ($cropHeight - 1) + 2 * $stoneOverhang;
+
+		$margin = 20;
 		$availableWidth = $width - (2 * $margin);
 		$availableHeight = $height - (2 * $margin);
 
-		// Scale to fill the image, respecting board aspect ratio
-		$boardAspectRatio = $cropWidth / $cropHeight;
-		$imageAspectRatio = $availableWidth / $availableHeight;
-
-		if ($boardAspectRatio > $imageAspectRatio)
-		{
-			// Board is wider - fit to width
-			$cellSize = $availableWidth / ($cropWidth - 1);
-		}
-		else
-		{
-			// Board is taller or square - fit to height
-			$cellSize = $availableHeight / ($cropHeight - 1);
-		}
+		$cellSize = min(
+			$availableWidth / $effectiveCropWidth,
+			$availableHeight / $effectiveCropHeight
+		);
 
 		// Calculate board dimensions
 		$boardPixelsWidth = ($cropWidth - 1) * $cellSize;
@@ -144,35 +138,66 @@ class TsumegoImagesController extends AppController
 
 		// Create image
 		$img = imagecreatetruecolor($width, $height);
+		imageantialias($img, true);
 
 		// Define colors
 		$bgColor = imagecolorallocate($img, 220, 179, 92); // Wood/tan background
 		$boardColor = imagecolorallocate($img, 210, 170, 85); // Slightly darker for board
 		$lineColor = imagecolorallocate($img, 0, 0, 0); // Black lines
-		$blackStone = imagecolorallocate($img, 20, 20, 20); // Almost black
-		$whiteStone = imagecolorallocate($img, 250, 250, 250); // Almost white
-		$textColor = imagecolorallocate($img, 50, 50, 50); // Dark gray text
+		$borderColor = imagecolorallocate($img, 60, 40, 10); // Dark brown board frame
 
 		// Fill background
 		imagefill($img, 0, 0, $bgColor);
 
-		// Draw board background
-		imagefilledrectangle($img, $boardX, $boardY, $boardX + ($cropWidth - 1) * $cellSize, $boardY + ($cropHeight - 1) * $cellSize, $boardColor);
+		// Draw board background with subtle frame
+		$frameWidth = 4;
+		imagefilledrectangle(
+			$img,
+			(int) ($boardX - $frameWidth),
+			(int) ($boardY - $frameWidth),
+			(int) ($boardX + ($cropWidth - 1) * $cellSize + $frameWidth),
+			(int) ($boardY + ($cropHeight - 1) * $cellSize + $frameWidth),
+			$borderColor
+		);
+		imagefilledrectangle(
+			$img,
+			(int) ($boardX - $frameWidth + 2),
+			(int) ($boardY - $frameWidth + 2),
+			(int) ($boardX + ($cropWidth - 1) * $cellSize + $frameWidth - 2),
+			(int) ($boardY + ($cropHeight - 1) * $cellSize + $frameWidth - 2),
+			$boardColor
+		);
 
-		// Draw grid lines
+		// Draw grid lines - thicker at board edges
+		$isLeftEdge = ($rotate ? $minY : $minX) === 0;
+		$isRightEdge = ($rotate ? $maxY : $maxX) === $boardSize - 1;
+		$isTopEdge = ($rotate ? $minX : $minY) === 0;
+		$isBottomEdge = ($rotate ? $maxX : $maxY) === $boardSize - 1;
+
+		// Interior grid lines (thin)
 		imagesetthickness($img, 1);
 		for ($i = 0; $i < $cropWidth; $i++)
 		{
 			$pos = $boardX + $i * $cellSize;
-			// Vertical line
-			imageline($img, $pos, $boardY, $pos, $boardY + ($cropHeight - 1) * $cellSize, $lineColor);
+			imageline($img, (int) $pos, (int) $boardY, (int) $pos, (int) ($boardY + ($cropHeight - 1) * $cellSize), $lineColor);
 		}
 		for ($i = 0; $i < $cropHeight; $i++)
 		{
 			$pos = $boardY + $i * $cellSize;
-			// Horizontal line
-			imageline($img, $boardX, $pos, $boardX + ($cropWidth - 1) * $cellSize, $pos, $lineColor);
+			imageline($img, (int) $boardX, (int) $pos, (int) ($boardX + ($cropWidth - 1) * $cellSize), (int) $pos, $lineColor);
 		}
+
+		// Thicker edge lines where crop touches actual board edge
+		imagesetthickness($img, 3);
+		if ($isLeftEdge)
+			imageline($img, (int) $boardX, (int) $boardY, (int) $boardX, (int) ($boardY + ($cropHeight - 1) * $cellSize), $lineColor);
+		if ($isRightEdge)
+			imageline($img, (int) ($boardX + ($cropWidth - 1) * $cellSize), (int) $boardY, (int) ($boardX + ($cropWidth - 1) * $cellSize), (int) ($boardY + ($cropHeight - 1) * $cellSize), $lineColor);
+		if ($isTopEdge)
+			imageline($img, (int) $boardX, (int) $boardY, (int) ($boardX + ($cropWidth - 1) * $cellSize), (int) $boardY, $lineColor);
+		if ($isBottomEdge)
+			imageline($img, (int) $boardX, (int) ($boardY + ($cropHeight - 1) * $cellSize), (int) ($boardX + ($cropWidth - 1) * $cellSize), (int) ($boardY + ($cropHeight - 1) * $cellSize), $lineColor);
+		imagesetthickness($img, 1);
 
 		// Draw star points (hoshi) - only if they're in the cropped area
 		$starPoints = $this->_getStarPoints($boardSize);
@@ -194,13 +219,12 @@ class TsumegoImagesController extends AppController
 				imagefilledellipse($img, (int) $x, (int) $y, $starSize, $starSize, $lineColor);
 			}
 
-		// Draw stones (adjusted for cropped coordinates and rotation)
-		$stoneRadius = $cellSize * 0.45; // Stones slightly smaller than cells
+		// Draw stones with 3D gradient effect and shadows
+		$stoneRadius = $cellSize * 0.45;
 		foreach ($stones as $stone)
 		{
 			if ($rotate)
 			{
-				// Swap coordinates for rotated board
 				$x = $boardX + ($stone['y'] - $minY) * $cellSize;
 				$y = $boardY + ($stone['x'] - $minX) * $cellSize;
 			}
@@ -210,19 +234,7 @@ class TsumegoImagesController extends AppController
 				$y = $boardY + ($stone['y'] - $minY) * $cellSize;
 			}
 
-			if ($stone['color'] === 'B')
-			{
-				// Black stone with slight gradient effect
-				$diameter = (int) ($stoneRadius * 2);
-				imagefilledellipse($img, (int) $x, (int) $y, $diameter, $diameter, $blackStone);
-			}
-			else
-			{
-				// White stone with black border
-				$diameter = (int) ($stoneRadius * 2);
-				imagefilledellipse($img, (int) $x, (int) $y, $diameter, $diameter, $whiteStone);
-				imageellipse($img, (int) $x, (int) $y, $diameter, $diameter, $lineColor);
-			}
+			$this->_drawStone($img, (int) $x, (int) $y, $stoneRadius, $stone['color'] === 'B');
 		}
 
 		// Convert to PNG and return
@@ -232,6 +244,78 @@ class TsumegoImagesController extends AppController
 		imagedestroy($img);
 
 		return $imageData;
+	}
+
+	/**
+	 * Draw a single stone with 3D radial gradient and shadow
+	 *
+	 * Creates a realistic-looking stone using concentric circles that
+	 * interpolate from base color at edges to highlight color at an
+	 * offset point, simulating light reflection.
+	 *
+	 * @param \GdImage $img GD image resource
+	 * @param int $cx Center X coordinate
+	 * @param int $cy Center Y coordinate
+	 * @param float $radius Stone radius in pixels
+	 * @param bool $isBlack True for black stone, false for white
+	 */
+	private function _drawStone(\GdImage $img, int $cx, int $cy, float $radius, bool $isBlack)
+	{
+		// Shadow (slightly offset, darkened board color)
+		$shadowOffset = max(2, (int) ($radius * 0.08));
+		$shadowDiameter = (int) ($radius * 2.05);
+		$shadowColor = imagecolorallocate($img, 160, 130, 60);
+		imagefilledellipse($img, $cx + $shadowOffset, $cy + $shadowOffset, $shadowDiameter, $shadowDiameter, $shadowColor);
+
+		// Gradient parameters
+		if ($isBlack)
+		{
+			$baseR = 10;
+			$baseG = 10;
+			$baseB = 10;
+			$highlightR = 100;
+			$highlightG = 100;
+			$highlightB = 100;
+		}
+		else
+		{
+			$baseR = 195;
+			$baseG = 195;
+			$baseB = 200;
+			$highlightR = 255;
+			$highlightG = 255;
+			$highlightB = 255;
+		}
+
+		// Draw concentric circles from outside to inside
+		$steps = max(8, (int) ($radius * 0.6));
+		$highlightOffsetX = -$radius * 0.3;
+		$highlightOffsetY = -$radius * 0.35;
+
+		for ($i = $steps; $i >= 0; $i--)
+		{
+			$ratio = ($steps - $i) / $steps; // 0 at edge, 1 at highlight center
+
+			// Position: interpolate from stone center toward highlight
+			$x = $cx + $highlightOffsetX * $ratio;
+			$y = $cy + $highlightOffsetY * $ratio;
+
+			// Color: interpolate from base to highlight
+			$r = (int) ($baseR + ($highlightR - $baseR) * $ratio);
+			$g = (int) ($baseG + ($highlightG - $baseG) * $ratio);
+			$b = (int) ($baseB + ($highlightB - $baseB) * $ratio);
+
+			$color = imagecolorallocate($img, $r, $g, $b);
+			$currentDiameter = (int) ($radius * 2.0 * ($i + 1) / ($steps + 1));
+			imagefilledellipse($img, (int) $x, (int) $y, $currentDiameter, $currentDiameter, $color);
+		}
+
+		// White stone needs a subtle outline
+		if (!$isBlack)
+		{
+			$outlineColor = imagecolorallocate($img, 100, 100, 100);
+			imageellipse($img, $cx, $cy, (int) ($radius * 2), (int) ($radius * 2), $outlineColor);
+		}
 	}
 
 	/**

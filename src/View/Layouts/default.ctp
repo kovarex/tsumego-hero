@@ -87,7 +87,7 @@ $ogMeta = $this->fetch('og_meta');
 if ($ogMeta)
 	echo $ogMeta;
 else
-	echo '<meta property="og:title" content="Tsumego Hero">';
+	echo '<meta property="og:title" content="Tsumego">';
 ?>
 <?php
 // Main app CSS bundle
