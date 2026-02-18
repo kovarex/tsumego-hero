@@ -352,7 +352,6 @@ class Browser
 		}
 		self::$browser->driver->manage()->deleteAllCookies();
 		self::$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
-		self::$browser->driver->get('about:blank'); // make sure any work is stopped
 		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
 		self::$browser->driver->executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
 		return self::$browser;
