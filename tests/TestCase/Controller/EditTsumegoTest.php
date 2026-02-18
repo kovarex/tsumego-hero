@@ -4,36 +4,38 @@ use Facebook\WebDriver\WebDriverKeys;
 
 class EditTsumegoTest extends ControllerTestCase
 {
-	public function testEditTsumego()
+	public static function editTsumegoProvider(): array
 	{
-		$testCases = [];
-		$testCases[] = ['field' => 'description', 'value' => 'bar', 'result' => 'bar'];
-		$testCases[] = ['field' => 'hint', 'value' => 'bar', 'result' => 'bar'];
-		$testCases[] = ['field' => 'author', 'value' => 'bar', 'result' => 'bar'];
-		$testCases[] = ['field' => 'rating', 'value' => '1968', 'result' => 1968.0]; // normal rating change
-		$testCases[] = ['field' => 'rating', 'value' => '1d', 'result' => 2100.]; // 1d translated to 2100 rating (center of 1d)
-		$testCases[] = ['field' => 'rating', 'value' => 'hello', 'result' => 666.0]; // invalid rating, nothing changes
-		$testCases[] = ['field' => 'minimum-rating', 'value' => '1000', 'result' => 1000.0];
-		$testCases[] = ['field' => 'minimum-rating', 'value' => '10k', 'result' => 1100.0];
-		$testCases[] = ['field' => 'minimum-rating', 'value' => 'hello', 'result' => null];
-		$testCases[] = ['field' => 'maximum-rating', 'value' => '1234', 'result' => 1234.0];
-		$testCases[] = ['field' => 'maximum-rating', 'value' => 'hello', 'result' => null];
-		$testCases[] = ['field' => 'maximum-rating', 'value' => '2d', 'result' => 2200.0];
+		return [
+			'description' => [['field' => 'description', 'value' => 'bar', 'result' => 'bar']],
+			'hint' => [['field' => 'hint', 'value' => 'bar', 'result' => 'bar']],
+			'author' => [['field' => 'author', 'value' => 'bar', 'result' => 'bar']],
+			'rating-numeric' => [['field' => 'rating', 'value' => '1968', 'result' => 1968.0]],
+			'rating-rank' => [['field' => 'rating', 'value' => '1d', 'result' => 2100.]],
+			'rating-invalid' => [['field' => 'rating', 'value' => 'hello', 'result' => 666.0]],
+			'min-rating-numeric' => [['field' => 'minimum-rating', 'value' => '1000', 'result' => 1000.0]],
+			'min-rating-rank' => [['field' => 'minimum-rating', 'value' => '10k', 'result' => 1100.0]],
+			'min-rating-invalid' => [['field' => 'minimum-rating', 'value' => 'hello', 'result' => null]],
+			'max-rating-numeric' => [['field' => 'maximum-rating', 'value' => '1234', 'result' => 1234.0]],
+			'max-rating-invalid' => [['field' => 'maximum-rating', 'value' => 'hello', 'result' => null]],
+			'max-rating-rank' => [['field' => 'maximum-rating', 'value' => '2d', 'result' => 2200.0]],
+			'min-bigger-than-max' => [['field' => 'maximum-rating', 'value' => '10k', 'field2' => 'minimum-rating', 'value2' => '5k', 'result' => null]],
+			'delete-invalid' => [['field' => 'delete', 'value' => 'bla', 'result' => true, 'public' => 0]],
+			'delete-confirm' => [['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 0]],
+			'non-admin' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'admin' => false]],
+			'invalid-tsumego' => [['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'invalid-tsumego' => true]],
+		];
+	}
 
-		// test of trying to set minimum bigger than maximum
-		$testCases[] = ['field' => 'maximum-rating', 'value' => '10k', 'field2' => 'minimum-rating', 'value2' => '5k', 'result' => null];
-
-		$testCases[] = ['field' => 'delete', 'value' => 'bla', 'result' => true, 'public' => 0];
-		$testCases[] = ['field' => 'delete', 'value' => 'delete', 'result' => true, 'public' => 0];
-		$testCases[] = ['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'admin' => false];
-		$testCases[] = ['field' => 'description', 'value' => 'bar', 'result' => 'foo', 'invalid-tsumego' => true];
-
-		foreach ($testCases as $testCase)
-		{
-			$context = new ContextPreparator([
+	/**
+	 * @dataProvider editTsumegoProvider
+	 */
+	public function testEditTsumego(array $testCase)
+	{
+		$context = new ContextPreparator([
 				'user' => ['admin' => true],
 				'tsumegos' => [[
-					'sets' => [['name' => 'set-1', 'num' => 1, 'public' => !is_null($testCase['public']) ? $testCase['public'] : 1]],
+					'sets' => [['name' => 'set-1', 'num' => 1, 'public' => ($testCase['public'] ?? null) !== null ? $testCase['public'] : 1]],
 					'description' => 'foo',
 					'hint' => 'think',
 					'author' => 'Ivan Detkov',
@@ -46,17 +48,17 @@ class EditTsumegoTest extends ControllerTestCase
 			$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
 			$browser->driver->getKeyboard()->sendKeys($testCase['value']);
 
-			if ($testCase['field2'])
+			if ($testCase['field2'] ?? null)
 			{
 				$browser->clickCssSelect("#" . $testCase['field2']);
 				$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
 				$browser->driver->getKeyboard()->sendKeys($testCase['value2']);
 			}
 
-			if ($testCase['invalid-tsumego'])
+			if ($testCase['invalid-tsumego'] ?? false)
 				ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
-			if (!is_null($testCase['admin']) && !$testCase['admin'])
+			if (($testCase['admin'] ?? null) === false)
 			{
 				Auth::getUser()['isAdmin'] = false;
 				Auth::saveUser();
@@ -64,10 +66,10 @@ class EditTsumegoTest extends ControllerTestCase
 
 			$browser->clickId("tsumego-edit-submit");
 
-			if ($testCase['invalid-tsumego'])
+			if ($testCase['invalid-tsumego'] ?? false)
 			{
 				$this->assertTextContains('doesn\'t exist', $browser->driver->getPageSource());
-				continue;
+				return;
 			}
 
 			$tsumego = ClassRegistry::init('Tsumego')->findById($context->tsumegos[0]['id']);
@@ -86,7 +88,7 @@ class EditTsumegoTest extends ControllerTestCase
 					$this->assertCount(0, $adminActivities);
 					$this->assertNull($tsumego['Tsumego']['deleted']);
 				}
-				continue;
+				return;
 			}
 
 			$this->assertSame($testCase['field'] == 'description' ? $testCase['result'] : 'foo', $tsumego['Tsumego']['description']);
@@ -140,7 +142,6 @@ class EditTsumegoTest extends ControllerTestCase
 					$this->assertSame(null, $adminActivities[0]['AdminActivity']['old_value']);
 				}
 			}
-		}
 	}
 
 	public function testInitialValuesForRatingShowsRanksWhenPossible()
