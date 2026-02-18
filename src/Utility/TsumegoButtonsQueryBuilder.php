@@ -107,12 +107,14 @@ class TsumegoButtonsQueryBuilder
 
 		$currentTag = $_COOKIE['lastSet'] ?? '';
 		if (empty($currentTag))
+		{
+			$this->tsumegoFilters->query = 'topics';
 			return;
+		}
 
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
 		{
-			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
 			$this->tsumegoFilters->query = 'topics';
 			return;
 		}
