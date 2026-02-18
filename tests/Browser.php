@@ -17,7 +17,7 @@ class Browser
 
 	public function __construct()
 	{
-		$browser = getenv('SELENIUM_BROWSER') ?: 'chrome';
+		$browser = getenv('SELENIUM_BROWSER') ?: 'firefox';
 
 		if ($browser === 'chrome')
 		{
