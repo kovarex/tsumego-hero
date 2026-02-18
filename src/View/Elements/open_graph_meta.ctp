@@ -21,8 +21,12 @@ $author = $t['Tsumego']['author'] ?? 'Unknown';
 $setTitle = $set['Set']['title'] ?? '';
 $description = strip_tags($t['Tsumego']['description'] ?? '');
 
-// Build Open Graph metadata
-$ogTitle = $setTitle; // Use set title as main title (e.g., "Life & Death - Intermediate")
+// Build Open Graph metadata — include problem position (e.g., "Korean Problem Academy 1 64/200")
+$num = $setConnection['SetConnection']['num'] ?? null;
+$total = $amountOfOtherCollection ?? null;
+$ogTitle = $setTitle;
+if ($num !== null && $total !== null)
+	$ogTitle .= ' ' . $num . '/' . $total;
 $ogDescription = $description; // Use problem description
 if ($author && $author !== 'Unknown')
 	$ogDescription .= " - by {$author}";

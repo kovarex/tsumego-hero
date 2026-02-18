@@ -87,6 +87,34 @@ class TsumegoImagesController extends AppController
 			$maxY = max($maxY, $stone['y']);
 		}
 
+		// Normalize to bottom-right corner for consistent display
+		// (like besogo's corner normalization, but always targeting bottom-right)
+		$centerX = ($minX + $maxX) / 2.0;
+		$centerY = ($minY + $maxY) / 2.0;
+		$hFlip = $centerX < ($boardSize - 1) / 2.0; // stones closer to left → flip right
+		$vFlip = $centerY < ($boardSize - 1) / 2.0; // stones closer to top → flip down
+		if ($hFlip || $vFlip)
+		{
+			foreach ($stones as &$stone)
+			{
+				if ($hFlip)
+					$stone['x'] = $boardSize - 1 - $stone['x'];
+				if ($vFlip)
+					$stone['y'] = $boardSize - 1 - $stone['y'];
+			}
+			unset($stone);
+			// Recalculate bounding box after flip
+			$minX = $minY = $boardSize - 1;
+			$maxX = $maxY = 0;
+			foreach ($stones as $stone)
+			{
+				$minX = min($minX, $stone['x']);
+				$maxX = max($maxX, $stone['x']);
+				$minY = min($minY, $stone['y']);
+				$maxY = max($maxY, $stone['y']);
+			}
+		}
+
 		// Add padding (2 intersections on each side, but don't go outside board)
 		$padding = 2;
 		$minX = max(0, $minX - $padding);
@@ -112,12 +140,13 @@ class TsumegoImagesController extends AppController
 		$width = 1200;
 		$height = 630;
 
-		// Calculate cell size to fill image (leave small margins)
-		// Calculate cell size — account for stone overhang beyond edge intersections
+		// Calculate cell size — account for stone overhang and coordinate labels
 		// Stones extend 0.45*cellSize beyond grid + shadow adds ~0.1*cellSize more
 		$stoneOverhang = 0.55; // safety margin for stone radius + shadow
-		$effectiveCropWidth = ($cropWidth - 1) + 2 * $stoneOverhang;
-		$effectiveCropHeight = ($cropHeight - 1) + 2 * $stoneOverhang;
+		// Labels need extra space: right (row numbers) and bottom (column letters)
+		$labelSpace = 1.0; // ~1 cellSize worth of space for labels
+		$effectiveCropWidth = ($cropWidth - 1) + 2 * $stoneOverhang + $labelSpace;
+		$effectiveCropHeight = ($cropHeight - 1) + 2 * $stoneOverhang + $labelSpace;
 
 		$margin = 20;
 		$availableWidth = $width - (2 * $margin);
@@ -132,9 +161,10 @@ class TsumegoImagesController extends AppController
 		$boardPixelsWidth = ($cropWidth - 1) * $cellSize;
 		$boardPixelsHeight = ($cropHeight - 1) * $cellSize;
 
-		// Center the board
-		$boardX = ($width - $boardPixelsWidth) / 2;
-		$boardY = ($height - $boardPixelsHeight) / 2;
+		// Offset board center: shift LEFT for right labels, shift UP for bottom labels
+		$labelPixels = $cellSize * $labelSpace * 0.5;
+		$boardX = ($width - $boardPixelsWidth) / 2 - $labelPixels;
+		$boardY = ($height - $boardPixelsHeight) / 2 - $labelPixels;
 
 		// Create image
 		$img = imagecreatetruecolor($width, $height);
@@ -218,6 +248,46 @@ class TsumegoImagesController extends AppController
 				$starSize = (int) ($cellSize * 0.2);
 				imagefilledellipse($img, (int) $x, (int) $y, $starSize, $starSize, $lineColor);
 			}
+
+		// Draw coordinate labels BEFORE stones (so stones naturally cover labels at edges)
+		$labelColor = imagecolorallocate($img, 140, 115, 60); // Warm brown, visible on wood
+		$fontPath = dirname(__DIR__, 2) . '/resources/fonts/NimbusSans-Bold.otf';
+		$labelFontSize = max(10, $cellSize * 0.45); // ~45% of cell size - large and readable
+		$colLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
+		$labelGap = $frameWidth + $cellSize * 0.55; // Clear stone overhang at board edges
+
+		// Column letters along bottom
+		for ($i = 0; $i < $cropWidth; $i++)
+		{
+			$col = $rotate ? ($minY + $i) : ($minX + $i);
+			if ($col < 0 || $col >= count($colLetters))
+				continue;
+			$letter = $colLetters[$col];
+			$x = $boardX + $i * $cellSize;
+			$bbox = imagettfbbox($labelFontSize, 0, $fontPath, $letter);
+			$textWidth = $bbox[2] - $bbox[0];
+			$textHeight = $bbox[1] - $bbox[7];
+			imagettftext($img, $labelFontSize, 0,
+				(int) ($x - $textWidth / 2),
+				(int) ($boardY + ($cropHeight - 1) * $cellSize + $labelGap + $textHeight),
+				$labelColor, $fontPath, $letter);
+		}
+
+		// Row numbers along right side (Go convention: row 1 is at bottom of board)
+		for ($i = 0; $i < $cropHeight; $i++)
+		{
+			$row = $rotate ? ($minX + $i) : ($minY + $i);
+			$rowNum = $boardSize - $row;
+			$label = (string) $rowNum;
+			$y = $boardY + $i * $cellSize;
+			$bbox = imagettfbbox($labelFontSize, 0, $fontPath, $label);
+			$textWidth = $bbox[2] - $bbox[0];
+			$textHeight = $bbox[1] - $bbox[7];
+			imagettftext($img, $labelFontSize, 0,
+				(int) ($boardX + ($cropWidth - 1) * $cellSize + $labelGap),
+				(int) ($y + $textHeight / 2),
+				$labelColor, $fontPath, $label);
+		}
 
 		// Draw stones with 3D gradient effect and shadows
 		$stoneRadius = $cellSize * 0.45;
