@@ -1,7 +1,5 @@
 <?php
 
-use Facebook\WebDriver\WebDriverKeys;
-
 class TagTest extends ControllerTestCase
 {
 	public function testAddTagConnection()
@@ -102,6 +100,10 @@ class TagTest extends ControllerTestCase
 
 				// cick to add the snapback
 				$addTagLinks[0]->click();
+				$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
+				$wait->until(function () use ($browser) {
+					return count($browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor')) === 1;
+				});
 				$addTagLinks = $browser->getCssSelect('.add-tag-list-popular .add-tag-list-anchor');
 
 				// tag is not in the list
@@ -116,6 +118,10 @@ class TagTest extends ControllerTestCase
 
 				//add the snapback and test, that it will be no longer offered as tag to add
 				$addTagLinks[0]->click();
+				$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
+				$wait->until(function () use ($browser, $sourceList) {
+					return count($browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor')) === 1;
+				});
 				$addTagLinks = $browser->getCssSelect('.' . $sourceList . ' .add-tag-list-anchor');
 				$this->assertSame(1, count($addTagLinks));
 				$this->assertSame($addTagLinks[0]->getText(), "[Create new tag]");
@@ -207,15 +213,9 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		$browser->driver->manage()->deleteAllCookies(); // we suddenly get logged off
-		try
-		{
-			$browser->clickId('tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains("Not logged in", $e->getMessage());
-		}
+
+		$alertText = $browser->clickIdExpectingAlert('tag-snapback');
+		$this->assertTextContains("Not logged in", $alertText);
 	}
 
 	public function testTryToAddNonExistingTag()
@@ -228,15 +228,8 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
-		try
-		{
-			$browser->clickId('tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Tag "snapback" doesn\'t exist.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('tag-snapback');
+		$this->assertTextContains('Tag "snapback" doesn\'t exist.', $alertText);
 	}
 
 	public function testTryToAddTagToNonExistingTsumego()
@@ -249,15 +242,8 @@ class TagTest extends ControllerTestCase
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('open-add-tag-menu');
 		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
-		try
-		{
-			$browser->clickId('tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('tag-snapback');
+		$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $alertText);
 	}
 
 	public function testTryToAddDupliciteTag()
@@ -277,15 +263,8 @@ class TagTest extends ControllerTestCase
 		$tagConnection['approved'] = 1;
 		ClassRegistry::init('TagConnection')->create();
 		ClassRegistry::init('TagConnection')->save($tagConnection);
-		try
-		{
-			$browser->clickId('tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('The tsumego already has tag snapback.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('tag-snapback');
+		$this->assertTextContains('The tsumego already has tag snapback.', $alertText);
 	}
 
 	public function testTryToRemoveTagWhenNotLoggedIn()
@@ -296,15 +275,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->driver->manage()->deleteAllCookies(); // we suddenly get logged off
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains("Not logged in", $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains("Not logged in", $alertText);
 	}
 
 	public function testTryToRemoveNonExistingTag()
@@ -315,15 +287,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('Tag')->delete($context->tags[0]['id']);
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Tag "snapback" doesn\'t exist.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains('Tag "snapback" doesn\'t exist.', $alertText);
 	}
 
 	public function testTryToRemoveFromNonExistingTsumego()
@@ -334,15 +299,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains('Tsumego with id="' . $context->tsumegos[0]['id'] . '" wasn\'t found.', $alertText);
 	}
 
 	public function testTryToRemoveTagConnectionWhichDoesntExist()
@@ -353,15 +311,8 @@ class TagTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		ClassRegistry::init('TagConnection')->deleteAll(['1=1']);
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Tag to remove isn\'t assigned to this tsumego.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains('Tag to remove isn\'t assigned to this tsumego.', $alertText);
 	}
 
 	public function testTryToRemoveApprovedTagAsNonAdmin()
@@ -377,15 +328,8 @@ class TagTest extends ControllerTestCase
 		$tagConnection['TagConnection']['approved'] = true;
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('Only admins can remove approved tags.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains('Only admins can remove approved tags.', $alertText);
 	}
 
 	public function testTryToRemoveTagProposedBySomeoneElse()
@@ -402,15 +346,8 @@ class TagTest extends ControllerTestCase
 		$tagConnection['TagConnection']['user_id'] = $context->otherUsers[0]['id'];
 		ClassRegistry::init('TagConnection')->save($tagConnection);
 
-		try
-		{
-			$browser->clickId('remove-tag-snapback');
-			$this->fail('Expected alert was not thrown.');
-		}
-		catch (\Facebook\WebDriver\Exception\UnexpectedAlertOpenException $e)
-		{
-			$this->assertTextContains('You can\'t remove tag proposed by someone else.', $e->getMessage());
-		}
+		$alertText = $browser->clickIdExpectingAlert('remove-tag-snapback');
+		$this->assertTextContains('You can\'t remove tag proposed by someone else.', $alertText);
 	}
 
 	public function testAddNewTagAsAdmin()
@@ -436,6 +373,12 @@ class TagTest extends ControllerTestCase
 			else
 				$browser->clickId('tag_hint_false');
 			$browser->clickId('submit_tag');
+
+			// Wait for redirect after form submission
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+			$wait->until(function () use ($browser) {
+				return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
+			});
 
 			$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -463,6 +406,12 @@ class TagTest extends ControllerTestCase
 		$browser->clickId('tag_name');
 		$browser->driver->getKeyboard()->sendKeys('self atari');
 		$browser->clickId('submit_tag');
+
+		// Wait for redirect after form submission
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function () use ($browser) {
+			return strpos($browser->driver->getCurrentURL(), '/tags/view/') !== false;
+		});
 
 		$tagAdded = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
@@ -499,9 +448,9 @@ class TagTest extends ControllerTestCase
 			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
 		$browser->get('/tags/view/' . $context->tags[0]['id']);
 		$browser->clickId('tag-edit');
-		$browser->clickId('tag_description');
-		$browser->driver->getKeyboard()->sendKeys([WebDriverKeys::CONTROL, 'a']);
-		$browser->driver->getKeyboard()->sendKeys('World');
+		$descField = $browser->find('#tag_description');
+		$descField->clear();
+		$descField->sendKeys('World');
 
 		$browser->clickId('tag_link');
 		$browser->driver->getKeyboard()->sendKeys('bla.example.com');

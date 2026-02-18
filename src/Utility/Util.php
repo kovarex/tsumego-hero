@@ -163,7 +163,7 @@ class Util
 			return $_SERVER['TEST_APP_URL'];
 		if ($url = @$_SERVER['DDEV_PRIMARY_URL'] && $_SERVER['HTTP_X_FORWARDED_HOST'])
 			return 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
-		return "https://test.tsumego.ddev.site:33003";
+		return "https://test.tsumego.ddev.site";
 	}
 
 	public static function getInternalAddress()

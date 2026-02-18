@@ -28,7 +28,10 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
 
 		// Wait for page to load
-		sleep(1);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'Unknown user');
+		});
 
 		// Check for flash message in page source
 		$pageSource = $browser->driver->getPageSource();
@@ -48,7 +51,10 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
 		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
 		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
-		sleep(1);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'alert');
+		});
 
 		// Flash message should be present on first view
 		$pageSource1 = $browser->driver->getPageSource();
@@ -56,7 +62,6 @@ class CookieFlashBrowserTest extends CakeTestCase
 
 		// Navigate to another page
 		$browser->get('sets');
-		sleep(1);
 
 		// Flash message should NOT be present on subsequent page
 		$pageSource2 = $browser->driver->getPageSource();
@@ -76,7 +81,10 @@ class CookieFlashBrowserTest extends CakeTestCase
 		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('test');
 		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('wrong');
 		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
-		sleep(1);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'alert-error');
+		});
 
 		$pageSource = $browser->driver->getPageSource();
 

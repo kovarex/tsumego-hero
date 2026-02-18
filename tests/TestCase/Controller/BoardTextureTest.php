@@ -29,7 +29,11 @@ class BoardTextureTest extends TestCaseWithAuth
 		$this->assertFalse($checkbox9->isSelected(), "Board 9 should be unchecked by default.");
 
 		$browser->driver->executeScript("arguments[0].click();", [$checkbox9]);
-		usleep(1000 * 100);
+		// Wait for AJAX to save the board texture preference
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return document.getElementById("newCheck9").checked;');
+		});
 
 		$browser->get('/');
 

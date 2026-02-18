@@ -37,7 +37,10 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$browser->byCssSelector('form input[type="submit"]')->click();
 
 		// Wait for redirect back to sandbox page
-		sleep(1);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getTitle(), 'Collections');
+		});
 		$this->assertTrue($browser->titleContains('Tsumego Hero - Collections'), 'Should redirect to sandbox after creating set');
 
 		// Verify set was created

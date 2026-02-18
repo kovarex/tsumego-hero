@@ -3,6 +3,7 @@
 use Facebook\WebDriver\Exception\WebDriverException;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
+use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverWait;
@@ -16,31 +17,45 @@ class Browser
 
 	public function __construct()
 	{
-		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+		$browser = getenv('SELENIUM_BROWSER') ?: 'chrome';
 
-		$firefoxOptions = new FirefoxOptions();
-		$firefoxOptions->addArguments(['--headless']);
+		if ($browser === 'chrome')
+		{
+			$serverUrl = getenv('SELENIUM_URL') ?: 'http://selenium-chrome:4444';
 
-		$serverUrl = Util::isInGithubCI() ? 'http://localhost:32768' : 'http://selenium-firefox:4444';
+			$chromeOptions = new ChromeOptions();
+			$chromeOptions->addArguments([
+				'--headless',
+				'--no-sandbox',
+				'--disable-dev-shm-usage',
+				'--ignore-certificate-errors',
+			]);
 
-		$firefoxOptions = new FirefoxOptions();
-		$firefoxOptions->addArguments(['--headless']);
+			$desiredCapabilities = DesiredCapabilities::chrome();
+			$desiredCapabilities->setCapability('acceptInsecureCerts', true);
+			$desiredCapabilities->setCapability(ChromeOptions::CAPABILITY, $chromeOptions);
+		}
+		else
+		{
+			$serverUrl = getenv('SELENIUM_URL') ?: 'http://selenium-firefox:4444';
 
-		// Firefox needs these preferences to accept self-signed HTTPS from Caddy
-		$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
-		$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
-		$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
-		$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
-		$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
-		$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
-		$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
-		$firefoxOptions->setPreference('security.OCSP.require', false);
+			$firefoxOptions = new FirefoxOptions();
+			$firefoxOptions->addArguments(['--headless']);
 
-		// Build capabilities
-		$desiredCapabilities = DesiredCapabilities::firefox();
+			// Firefox needs these preferences to accept self-signed HTTPS from Caddy
+			$firefoxOptions->setPreference('network.stricttransportsecurity.preloadlist', false);
+			$firefoxOptions->setPreference('network.stricttransportsecurity.enabled', false);
+			$firefoxOptions->setPreference('security.enterprise_roots.enabled', true);
+			$firefoxOptions->setPreference('security.certerrors.mitm.auto_enable_enterprise_roots', true);
+			$firefoxOptions->setPreference('security.ssl.enable_ocsp_stapling', false);
+			$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
+			$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
+			$firefoxOptions->setPreference('security.OCSP.require', false);
 
-		$desiredCapabilities->setCapability('acceptInsecureCerts', true);
-		$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
+			$desiredCapabilities = DesiredCapabilities::firefox();
+			$desiredCapabilities->setCapability('acceptInsecureCerts', true);
+			$desiredCapabilities->setCapability(FirefoxOptions::CAPABILITY, $firefoxOptions);
+		}
 
 		try
 		{
@@ -159,7 +174,19 @@ class Browser
 
 	public function hover($element)
 	{
-		new WebDriverActions($this->driver)->moveToElement($element)->perform();
+		$this->driver->executeScript("arguments[0].scrollIntoView({block: 'center'});", [$element]);
+		try
+		{
+			new WebDriverActions($this->driver)->moveToElement($element)->perform();
+		}
+		catch (\Facebook\WebDriver\Exception\MoveTargetOutOfBoundsException $e)
+		{
+			// Fallback for fixed-position elements that scrollIntoView can't reach
+			$this->driver->executeScript(
+				"arguments[0].dispatchEvent(new MouseEvent('mouseover', {bubbles: true, cancelable: true}));",
+				[$element]
+			);
+		}
 	}
 
 	public function idExists(string $id): bool
@@ -299,6 +326,21 @@ class Browser
 	{
 		if (self::$browser == null)
 			self::$browser = new Browser();
+
+		// Recover from crashed/disconnected browser session
+		try
+		{
+			self::$browser->driver->getCurrentURL();
+		}
+		catch (\Facebook\WebDriver\Exception\InvalidSessionIdException $e)
+		{
+			self::$browser = new Browser();
+		}
+		catch (\Facebook\WebDriver\Exception\Internal\WebDriverCurlException $e)
+		{
+			self::$browser = new Browser();
+		}
+
 		// Dismiss any lingering alerts from previous tests
 		try
 		{
@@ -312,14 +354,17 @@ class Browser
 		self::$browser->clearIgnoredJsErrorPatterns(); // Reset ignored patterns for each test
 		self::$browser->driver->get('about:blank'); // make sure any work is stopped
 		self::$browser->driver->get(Util::getMyAddress() . '/empty.php');
+		self::$browser->driver->executeScript('window.localStorage.clear(); window.sessionStorage.clear();');
 		return self::$browser;
 	}
 
 	public function playWithResult(string $result): void
 	{
-		usleep(1000 * 100);
+		$wait = new WebDriverWait($this->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return typeof displayResult === "function";');
+		});
 		$this->driver->executeScript("displayResult('" . $result . "')");
-		usleep(1000 * 50);
 		$this->assertNoErrors();
 	}
 
@@ -351,8 +396,18 @@ class Browser
 		}
 	}
 
+	public function waitForBoard()
+	{
+		$wait = new WebDriverWait($this->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$rects = $driver->findElements(WebDriverBy::cssSelector('rect'));
+			return count($rects) >= 19 * 19 + 1;
+		});
+	}
+
 	public function clickBoard($x, $y)
 	{
+		$this->waitForBoard();
 		$clickableRects = $this->getCssSelect('rect');
 		$boardSize = 19;
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
@@ -364,6 +419,39 @@ class Browser
 			throw new Exception("Unexpected board coords count: " . count($clickableRects));
 		$clickableRects[1 + $boardSize * ($x - 1) + ($y - 1)]->click();
 		$this->assertNoErrors();
+	}
+
+	/**
+	 * Click an element and expect a JavaScript alert to appear.
+	 * Handles both sync alerts (thrown during click, as in Firefox) and
+	 * async alerts (appearing after AJAX response, as in Chrome).
+	 * Returns the alert text.
+	 */
+	public function clickIdExpectingAlert(string $id): string
+	{
+		// Override window.alert to capture the message without showing a real dialog.
+		// This works identically in Chrome and Firefox — no browser-specific alert handling needed.
+		$this->driver->executeScript("
+			window.__capturedAlertText = null;
+			window.__savedAlert = window.__savedAlert || window.alert;
+			window.alert = function(msg) { window.__capturedAlertText = msg; };
+		");
+
+		// Click the element directly (skip assertNoErrors since alert is expected)
+		$this->driver->findElement(WebDriverBy::id($id))->click();
+
+		// Wait for the AJAX response to trigger the captured alert
+		$wait = new WebDriverWait($this->driver, 5, 200);
+		$alertText = $wait->until(function () {
+			return $this->driver->executeScript("return window.__capturedAlertText;");
+		});
+
+		// Restore original alert function
+		$this->driver->executeScript("
+			if (window.__savedAlert) { window.alert = window.__savedAlert; delete window.__savedAlert; }
+		");
+
+		return $alertText;
 	}
 
 	public function getWithPostData($url, $postData, int $timeout = 10)

@@ -68,8 +68,10 @@ class LevelAchievementTest extends AchievementTestCase
 		Auth::saveUser();
 
 		$browser->clickId('sprint');
-		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
-		$this->assertTrue($browser->driver->executeScript('return window.xpStatus.isSprintActive();'));
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 100);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
+		});
 
 		// 1d achievement wasn't unlocked by the ajax event
 		$this->assertAchievementNotUnlocked(Achievement::RATING_1_DAN);

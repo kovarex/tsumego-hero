@@ -22,7 +22,9 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Click login link from the page (this sets proper referer and stores in session)
 		$browser->driver->findElement(WebDriverBy::id('signInMenu'))->click();
-		usleep(200 * 1000);
+		// Wait for login form to appear
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(\Facebook\WebDriver\WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('UserName')));
 
 		// Fill in login form
 		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('testuser');
@@ -30,7 +32,9 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
 
 		// Should be redirected back to highscore page
-		usleep(200 * 1000);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getCurrentURL(), 'highscore');
+		});
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
@@ -48,7 +52,6 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Go to login page
 		$browser->get('users/login');
-		usleep(100 * 1000);
 
 		// Verify Google Sign In button is present
 		$this->assertTrue($browser->idExists('g_id_onload'), 'Google Sign In should be available');

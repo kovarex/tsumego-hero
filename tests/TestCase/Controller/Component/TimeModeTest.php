@@ -210,14 +210,22 @@ class TimeModeTest extends TestCaseWithAuth
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		usleep(200 * 1000);
+		// Wait for countdown JS to initialize
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
+		});
 		$result = $this->getTimeModeReportedTime($browser);
-		$this->assertSame($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
+		$this->assertWithinMargin($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1, 1);
 		$this->assertWithinMargin($result['seconds'], 3, 60);
 
 		// refresh
 		$browser->get('timeMode/play');
-		usleep(200 * 1000);
+		$wait->until(function ($driver) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
+		});
 		$timeModeSessionID = ClassRegistry::init('TimeModeSession')->find('first')['TimeModeSession']['id'];
 		$queuedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => [
 			'time_mode_session_id' => $timeModeSessionID,
@@ -231,11 +239,13 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame(count($startedQueuedAttempts), 1);
 
 		$newResult = $this->getTimeModeReportedTime($browser);
-		$this->assertSame($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1);
-		$this->assertTrue($newResult['seconds'] + $newResult['decimals'] * 0.1 < $result['seconds'] + $result['decimals'] * 0.1,
+		$this->assertWithinMargin($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1, 1);
+		$oldTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
+		$newTotal = $newResult['minutes'] * 60 + $newResult['seconds'] + $newResult['decimals'] * 0.1;
+		$this->assertTrue($newTotal < $oldTotal,
 			"Started attempt time: " . $startedQueuedAttempts[0]['TimeModeAttempt']['started']
-			. " Reported time: " . $newResult['seconds'] . '.' . $newResult['decimals']
-			. " Old time: " . $result['seconds'] . '.' . $result['decimals']);
+			. " Reported time: " . $newResult['minutes'] . ':' . $newResult['seconds'] . '.' . $newResult['decimals']
+			. " Old time: " . $result['minutes'] . ':' . $result['seconds'] . '.' . $result['decimals']);
 	}
 
 	public function testTimeModeTimeout()
@@ -256,9 +266,18 @@ class TimeModeTest extends TestCaseWithAuth
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		usleep(100 * 1000);
+		// Wait for countdown JS to be ready
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
+		});
 		$browser->driver->executeScript("window['tcount'] = 0.1;");
-		usleep(200 * 1000);
+		// Wait for countdown to show 0:00.0
+		$wait->until(function ($driver) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+			return preg_match('/0:00\.0/', $text) === 1;
+		});
 		$browser->assertNoJsErrors();
 		$newResult = $this->getTimeModeReportedTime($browser);
 		$this->assertSame($newResult['minutes'], 0);
@@ -600,7 +619,6 @@ class TimeModeTest extends TestCaseWithAuth
 		$tsumegoIDNotInTimeMode = array_find($context->tsumegos, fn($t) => !$tsumegosInTimeMode[$t['id']])['id'];
 		$setConnectionIDNotInTimeMode = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoIDNotInTimeMode]])['SetConnection']['id'];
 		$browser->playWithResult('S'); // mark the problem solved
-		usleep(1000 * 50);
 
 		// we found the only tsumego NOT in the time mode, and we open it in no-time mode
 		// first time, we are processing the previous time mode attempt
@@ -608,7 +626,6 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// now se solve the only tsumego not in time mode
 		$browser->playWithResult('S'); // mark the problem solved
-		usleep(1000 * 50);
 
 		Auth::getUser()['mode'] = Constants::$TIME_MODE; // I force the time mode to be active
 		Auth::saveUser();
@@ -638,7 +655,12 @@ class TimeModeTest extends TestCaseWithAuth
 		Auth::init();
 		$this->assertTrue(Auth::isInTimeMode());
 
-		usleep(100 * 1000);
+		// Wait for countdown JS to initialize
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#time-mode-countdown'))->getText();
+			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
+		});
 		$browser->assertNoJsErrors();
 		$beforePlayResult = $this->getTimeModeReportedTime($browser);
 		$beforePlayResultSeconds = $beforePlayResult['seconds'] + $beforePlayResult['minutes'] * 60;

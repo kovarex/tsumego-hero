@@ -51,8 +51,11 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertStringNotContainsString('"/js/util.js', $html, 'Individual util.js should NOT be loaded');
 		$this->assertStringNotContainsString('"/js/dark.js', $html, 'Individual dark.js should NOT be loaded');
 
-		// Give JS time to load and execute (important for CI)
-		sleep(2);
+		// Wait for JS bundles to load and execute
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return typeof setCookie === "function" && typeof darkAndLight === "function";');
+		});
 
 		// Verify JavaScript functions from bundled files are available
 		$hasUtil = $browser->driver->executeScript('return typeof setCookie === "function";');
@@ -80,8 +83,11 @@ class AssetBundlingTest extends CakeTestCase
 		$this->assertStringNotContainsString('"/js/multipleChoice.js', $html, 'Individual multipleChoice.js should NOT be loaded');
 		$this->assertStringNotContainsString('"/FileSaver.min.js', $html, 'Individual FileSaver.min.js should NOT be loaded');
 
-		// Give JS time to load and execute (important for CI)
-		sleep(2);
+		// Wait for JS bundles to load and execute
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return typeof makeAjaxCall === "function" && typeof displayMultipleChoiceResult === "function" && typeof createPreviewBoard === "function";');
+		});
 
 		// Verify functions from bundled files are available
 		$hasTagFunctions = $browser->driver->executeScript('return typeof makeAjaxCall === "function";');

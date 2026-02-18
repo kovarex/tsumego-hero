@@ -150,7 +150,7 @@ class UtilTest extends CakeTestCase
 		unset($_SERVER['TEST_ENVIRONMENT'], $_SERVER['HTTP_HOST']);
 		$_SERVER['DDEV_PRIMARY_URL'] = null;
 		$_SERVER['HTTP_X_FORWARDED_HOST'] = null;
-		$this->assertSame('https://test.tsumego.ddev.site:33003', Util::getMyAddress());
+		$this->assertSame('https://test.tsumego.ddev.site', Util::getMyAddress());
 	}
 
 	public function testSetCookieReturnsVoid()
