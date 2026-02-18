@@ -15,7 +15,7 @@ class XPAmountTest extends AchievementTestCase
 		$browser = Browser::instance();
 		// Arrange: User with 500 existing XP at level 69 (won't level up from 1000 XP - needs 4350 for next level)
 		$context = new ContextPreparator(['user' => ['solved' => 1000]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000, 'Achievement #1 should unlock at 1000 solved');
 		$this->assertEquals(1000, $context->XPGained());
 	}
@@ -45,7 +45,7 @@ class XPAmountTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['xp' => 0, 'level' => 10]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertAchievementUnlocked(Achievement::LEVEL_UP);
 
 		$this->assertEquals(100, $context->XPGained(), '100 XP from level achievement');

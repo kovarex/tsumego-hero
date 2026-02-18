@@ -1487,7 +1487,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'regularuser']]);
 		$browser = Browser::instance();
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}

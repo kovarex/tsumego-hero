@@ -24,7 +24,7 @@ class AssetBundlingTest extends CakeTestCase
 	public function testCssBundlesAreLoadedAndStylesApplied()
 	{
 		$browser = Browser::instance();
-		$browser->get('/');
+		$browser->get('sites/blank');
 
 		// Verify bundled CSS files are loaded (not individual files)
 		$html = $browser->driver->getPageSource();
@@ -43,7 +43,7 @@ class AssetBundlingTest extends CakeTestCase
 	public function testJsBundleIsLoadedAndFunctional()
 	{
 		$browser = Browser::instance();
-		$browser->get('/');
+		$browser->get('sites/blank');
 
 		// Verify bundled JS file is loaded (not individual files)
 		$html = $browser->driver->getPageSource();

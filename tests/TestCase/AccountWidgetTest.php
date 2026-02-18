@@ -7,7 +7,7 @@ class AccountWidgetTest extends ControllerTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['xp' => 13, 'level' => 5]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertSame('Level 5', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
 		$this->assertSame('13/90', $browser->find('#account-bar-xp')->getText());
@@ -41,7 +41,7 @@ class AccountWidgetTest extends ControllerTestCase
 		$browser = Browser::instance();
 		new ContextPreparator(['user' => ['rating' => 2075]]);
 		$browser->setCookie('showInAccountWidget', 'rating');
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$this->assertSame('1d', $browser->find('#account-bar-xp')->getText());
 		$browser->hover($browser->find('#account-bar-xp'));
 		$this->assertSame('2075', $browser->find('#account-bar-xp')->getText());
