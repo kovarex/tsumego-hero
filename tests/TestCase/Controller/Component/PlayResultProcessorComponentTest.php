@@ -559,7 +559,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser->driver->executeScript("
 			htmx.ajax('GET', '/tsumego-issues', { target: 'body' });
 		");
-		usleep(1500000); // Wait for htmx request to complete
+		// Wait for htmx request to complete
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return document.querySelectorAll(".htmx-request").length === 0;');
+		});
 
 		// Rating should still be original - htmx shouldn't process the result
 		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);

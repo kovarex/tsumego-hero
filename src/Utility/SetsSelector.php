@@ -62,7 +62,7 @@ partitioned AS (
 )
 SELECT *
 FROM partitioned
-ORDER BY total_count DESC, partition_number";
+ORDER BY total_count DESC, name ASC, partition_number";
 
 		$tagsRaw = Util::query($query);
 		foreach ($tagsRaw as $key => $tagRaw)

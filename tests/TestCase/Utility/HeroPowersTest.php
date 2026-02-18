@@ -72,8 +72,11 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['premium' => 1], 'tsumego' => ['status' => 'G', 'set_order' => 1]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		// the reported xp is normal golden
-		usleep(1000 * 100);
+		// Wait for displayResult to be available
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return typeof displayResult === "function";');
+		});
 
 		// Grabbing this just to detect page reload later
 		$oldBodyElement = $browser->driver->findElement(WebDriverBy::cssSelector('body'));
@@ -101,7 +104,10 @@ class HeroPowersTest extends TestCaseWithAuth
 		$originalTsumegoXPValue = TsumegoUtil::getXpValue($tsumego);
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 100);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
+		});
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 		$browser->get('sets');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
@@ -121,7 +127,10 @@ class HeroPowersTest extends TestCaseWithAuth
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->clickId('sprint');
-		usleep(1000 * 100); // if this fails often, we should check the ajax success and wait until that
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 100);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
+		});
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
 
 		// clicking next after solving, sprint is still visible:
@@ -184,7 +193,11 @@ class HeroPowersTest extends TestCaseWithAuth
 
 			$browser->driver->executeScript("window.alert = function(msg) { window.alertMessage = msg; return true;};");
 			$browser->clickId('revelation');
-			$message =  $browser->driver->executeScript("return window.alertMessage;");
+			if ($testCase == 'logged-off' || $testCase == 'used-up')
+				$browser->driver->wait(5, 100)->until(function () use ($browser) {
+					return $browser->driver->executeScript("return window.alertMessage;") !== null;
+				});
+			$message = $browser->driver->executeScript("return window.alertMessage;");
 			if ($testCase == 'logged-off')
 			{
 				$this->assertSame($message, 'Not logged in.');
@@ -282,6 +295,10 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->driver->wait(10, 500)->until(function () use ($context) { return $context->reloadUser()['damage'] == 0; });
 		$this->assertSame($context->user['used_rejuvenation'], 1);
 		$this->assertSame($context->user['used_intuition'], 0);
+		// Wait for UI to update after AJAX response
+		$browser->driver->wait(10, 200)->until(function () use ($browser) {
+			return $browser->find('#rejuvenation')->getCssValue('cursor') === 'auto';
+		});
 		$this->checkPowerIsInactive($browser, 'rejuvenation');
 		$this->checkPowerIsActive($browser, 'intuition');
 		$status1 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);

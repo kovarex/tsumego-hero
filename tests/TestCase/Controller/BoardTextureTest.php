@@ -18,8 +18,8 @@ class BoardTextureTest extends TestCaseWithAuth
 		// but the UI for it is likely in the main layout or a specific settings page.
 		// Looking at default.ctp, there are checkboxes with id "newCheckX".
 
-		// Let's go to the home page which uses default.ctp
-		$browser->get('/');
+		// Any page with default.ctp layout has the board selector
+		$browser->get('sites/blank');
 
 		// Find the "Board Settings" or similar dropdown that contains the checkboxes.
 		// In default.ctp, there is a loop creating #newCheck1 to #newCheck51
@@ -29,9 +29,13 @@ class BoardTextureTest extends TestCaseWithAuth
 		$this->assertFalse($checkbox9->isSelected(), "Board 9 should be unchecked by default.");
 
 		$browser->driver->executeScript("arguments[0].click();", [$checkbox9]);
-		usleep(1000 * 100);
+		// Wait for AJAX to save the board texture preference
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return document.getElementById("newCheck9").checked;');
+		});
 
-		$browser->get('/');
+		$browser->get('sites/blank');
 
 		$checkbox9 = $browser->driver->findElement(WebDriverBy::id('newCheck9'));
 		$this->assertTrue($checkbox9->isSelected(), "Board 9 should be selected after click and reload.");

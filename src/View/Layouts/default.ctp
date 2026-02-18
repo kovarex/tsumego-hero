@@ -119,7 +119,7 @@ echo $this->AssetCompress->script('app');
 				$logo = 'tsumegoHero1';
 				$logoH = 'tsumegoHero2';
 ?>
-				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="logoHover(this)" onmouseout="logoNoHover(this)" height="55px">
+				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="typeof logoHover==='function'&&logoHover(this)" onmouseout="typeof logoNoHover==='function'&&logoNoHover(this)" height="55px">
 			</a>
 		</div>
 		<div class="outerMenu1">

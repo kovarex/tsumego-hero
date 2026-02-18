@@ -205,10 +205,16 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			}
 			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 			$browser->clickBoard(1, 1);
-			usleep(500 * 1000);
+			// Wait for white's auto-response (move number advances to 2)
+			$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+			$wait->until(function ($driver) {
+				return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
+			});
 			$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
 			$browser->clickBoard(2, 1);
-			usleep(200 * 1000);
+			$wait->until(function ($driver) {
+				return $driver->executeScript('return window.problemSolved === true;');
+			});
 			$this->assertSame(true, $browser->driver->executeScript('return window.problemSolved;'));
 		}
 	}
@@ -232,7 +238,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			{
 				// click one move
 				$browser->clickBoard(1, 1);
-				usleep(500 * 1000);
+				// Wait for white's auto-response (move number advances to 2)
+				$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+				$wait->until(function ($driver) {
+					return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
+				});
 				if ($testCase != 'already-solved')
 					$this->assertSame(false, $browser->driver->executeScript('return window.problemSolved;'));
 			}
@@ -346,9 +356,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		// Solve the puzzle by making correct moves (this SGF requires 2 clicks)
 		$browser->clickBoard(1, 1); // First move
-		usleep(500 * 1000);
+		// Wait for white's auto-response (move number advances to 2)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return window.besogo && besogo.editor.getCurrent().moveNumber >= 2;');
+		});
 		$browser->clickBoard(2, 1); // Second move that solves it
-		usleep(200 * 1000);
+		$wait->until(function ($driver) {
+			return $driver->executeScript('return window.problemSolved === true;');
+		});
 
 		// Verify puzzle is solved
 		$problemSolved = $browser->driver->executeScript("return window.problemSolved;");
@@ -360,7 +376,10 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		// Click on board to navigate to next puzzle (use position near existing stones)
 		$browser->clickBoard(1, 2); // Click near the solved area
-		usleep(500 * 1000); // Wait for navigation
+		// Wait for navigation to next puzzle
+		$wait->until(function ($driver) use ($secondTsumegoUrl) {
+			return str_contains($driver->getCurrentURL(), $secondTsumegoUrl);
+		});
 
 		// Verify we navigated to the next puzzle
 		$currentUrl = $browser->driver->getCurrentURL();

@@ -1,14 +1,14 @@
 services:
-  selenium-firefox:
-    image: selenium/standalone-firefox:latest
-    container_name: ddev-${DDEV_SITENAME}-selenium-firefox
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    container_name: ddev-${DDEV_SITENAME}-selenium-chrome
     shm_size: 2g
     expose:
       - 7900
     environment:
       - VIRTUAL_HOST=$DDEV_HOSTNAME
-      - HTTPS_EXPOSE=7901:7900
-      - HTTP_EXPOSE=7911:7900
+      - HTTPS_EXPOSE=7902:7900
+      - HTTP_EXPOSE=7912:7900
     links:
       - web:tsumego.ddev.site
       - web:test.tsumego.ddev.site

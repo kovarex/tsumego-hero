@@ -76,10 +76,7 @@ class SmokeTest extends ControllerTestCase
 			// ALL pages have the logo in the header, no exceptions
 			$this->assertLogoExists($browser, $page['name']);
 
-			// Wait for animations to complete (sets page has percentage counter animation)
-			usleep(100 * 1000); // 0.1 second
-
-			// Check JS errors
+			// Check JS errors (no static delay needed - assertNoJsErrors reads from DOM directly)
 			$browser->assertNoJsErrors();
 
 			// CSS loaded

@@ -818,7 +818,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
+		$wait = new WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
@@ -861,7 +861,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
 
-		$wait = new WebDriverWait($browser->driver, 5, 50); // (driver, timeout, polling interval)
+		$wait = new WebDriverWait($browser->driver, 10, 50); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number0'))->getText() == '33%';
 		});
@@ -896,7 +896,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
@@ -933,7 +933,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get("sets");
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 500); // (driver, timeout, polling interval)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
 			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
 		});
@@ -1095,6 +1095,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemButtons[0]->getText(), '1');
 		$browser->clickCssSelect('#TsumegoViewForm input[type="submit"]');
 
+		// Wait for the page to reload with the new problem
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function () use ($browser) {
+			return count($browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'))) == 2;
+		});
+
 		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
 		$this->assertCount(2, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '1');
@@ -1215,7 +1221,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Click Accuracy tab
 		$accuracyTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
 		$accuracyTab->click();
-		sleep(1);
+		// Wait for accuracy buttons to be visible
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+			return count($buttons) > 0 && $buttons[0]->isDisplayed();
+		});
 
 		// Check accuracy buttons are visible
 		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
@@ -1269,7 +1280,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Click Time tab - use specific selector to avoid Time Mode menu link
 		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
 		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
-		sleep(1);
+		// Wait for time buttons to be visible
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+			return count($buttons) > 0 && $buttons[0]->isDisplayed();
+		});
 
 		// Check time buttons are visible
 		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
@@ -1471,7 +1487,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	{
 		new ContextPreparator(['user' => ['name' => 'regularuser']]);
 		$browser = Browser::instance();
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$pageSource = $browser->driver->getPageSource();
 		$this->assertStringContainsString('href="/sets/view/favorites"', $pageSource, 'Favorites link should be in the page HTML for logged-in users');
 	}

@@ -14,11 +14,6 @@ permissions:
 jobs:
   validation:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version:
-          - '8.4'
 
     services:
       mysql:
@@ -31,9 +26,9 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
       selenium-firefox:
-        image: seleniarm/standalone-firefox:109.0-geckodriver-0.32
+        image: selenium/standalone-firefox:latest
         ports:
-          - 4444
+          - 4444:4444
         volumes:
           - ".:/mnt/ddev_config"
         options: >-
@@ -50,15 +45,15 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.4'
           extensions: mbstring, intl, xdebug
           coverage: xdebug
 
       - name: Configure Xdebug for coverage
         run: |
             echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
-            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
-            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/${{ matrix.php-version }}/cli/conf.d/99-xdebug.ini
+            echo "xdebug.mode=coverage" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
+            echo "xdebug.start_with_request=yes" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
             php -v
             php -m | grep xdebug || (echo "Xdebug not found!" && exit 1)
 
@@ -168,6 +163,7 @@ jobs:
       - name: Run tests with coverage
         env:
           SELENIUM_URL: http://localhost:4444
+          SELENIUM_BROWSER: firefox
           TEST_APP_URL: https://host.docker.internal:8443
           TEST_ENVIRONMENT: github-ci
         run: |
@@ -179,7 +175,7 @@ jobs:
         run: php .github/ci/merge-coverage.php
 
       - name: Deploy coverage to GitHub Pages
-        if: github.ref == 'refs/heads/master'   # only on master/main
+        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

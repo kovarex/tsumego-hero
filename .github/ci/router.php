@@ -17,6 +17,21 @@ $uriWithoutQuery = parse_url($requestUri, PHP_URL_PATH);
 // Ensure no double slashes when concatenating
 $filePath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . $uriWithoutQuery;
 
+// WebP content negotiation (mirrors .htaccess rules)
+// When browser supports WebP and a .webp version exists, serve it instead of PNG/JPEG
+if (file_exists($filePath) && preg_match('/\.(png|jpe?g)$/i', $uriWithoutQuery))
+{
+	$webpPath = preg_replace('/\.(png|jpe?g)$/i', '.webp', $filePath);
+	if (file_exists($webpPath) && isset($_SERVER['HTTP_ACCEPT'])
+		&& str_contains($_SERVER['HTTP_ACCEPT'], 'image/webp'))
+	{
+		header('Content-Type: image/webp');
+		header('Vary: Accept');
+		readfile($webpPath);
+		return;
+	}
+}
+
 // If the requested file exists, serve it directly (CSS, JS, images, etc.)
 if (file_exists($filePath))
 {

@@ -113,7 +113,11 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 
 		// only one progress deletion affects this, one is too old, and one is from other user
 		$originalTsumegoXpValue = TsumegoUtil::getXpValue($context->tsumegos[0], TsumegoXPAndRating::getProgressDeletionMultiplier(1));
-		usleep(1000 * 100);
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) use ($originalTsumegoXpValue) {
+			$text = $driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText();
+			return str_contains($text, strval($originalTsumegoXpValue) . ' XP');
+		});
 		$this->assertTextContains(strval($originalTsumegoXpValue) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem

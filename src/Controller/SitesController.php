@@ -106,4 +106,16 @@ class SitesController extends AppController
 		$this->set('_title', 'Tsumego Hero - Privacy Policy');
 	}
 
+	/**
+	 * Blank page — renders the default layout with no content.
+	 * Used in tests as a lightweight alternative to the homepage.
+	 *
+	 * @return void
+	 */
+	public function blank()
+	{
+		$this->set('_page', 'blank');
+		$this->set('_title', 'Tsumego Hero');
+	}
+
 }

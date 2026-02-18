@@ -6,13 +6,13 @@ class BoardSelectorTest extends CakeTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['boards_bitmask' => 2]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$browser->clickId('check3');
 		$this->assertTrue($browser->find('#newCheck2')->isSelected()); // board 1 is unselected
 		$this->assertFalse($browser->find('#newCheck1')->isSelected()); // board 2 is selected
 		$browser->clickId('newCheck2'); // unclick board 2
 		$browser->clickId('newCheck1'); // select board 1
-		$browser->get('/'); // refresh
+		$browser->get('sites/blank'); // refresh
 		$this->assertSame(1, $context->reloadUser()['boards_bitmask']); // only board 1 is selected now
 		$browser->clickId('check3');
 		$this->assertFalse($browser->find('#newCheck2')->isSelected()); // board 2 is unselected
@@ -23,7 +23,7 @@ class BoardSelectorTest extends CakeTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['user' => ['boards_bitmask' => 3]]);
-		$browser->get('/');
+		$browser->get('sites/blank');
 		$browser->clickId('check3');
 		$this->assertTrue($browser->find('#newCheck2')->isSelected()); // board 1 is selected
 		$this->assertTrue($browser->find('#newCheck1')->isSelected()); // board 2 is selected
@@ -32,7 +32,7 @@ class BoardSelectorTest extends CakeTestCase
 		$browser->clickId('boards-unselect-all');
 		$this->assertFalse($browser->find('#newCheck2')->isSelected()); // board 1 is unselected
 		$this->assertFalse($browser->find('#newCheck1')->isSelected()); // board 2 is unselected
-		$browser->get('/');
+		$browser->get('sites/blank');
 
 		// refresh that the value is saved and displayed as unselected all
 		$this->assertSame(0, $context->reloadUser()['boards_bitmask']); // only board 1 is selected now
@@ -46,7 +46,7 @@ class BoardSelectorTest extends CakeTestCase
 		$this->assertTrue($browser->find('#newCheck1')->isSelected()); // board 1 is unselected
 
 		// refresh that the value is saved and displayed as selected all
-		$browser->get('/');
+		$browser->get('sites/blank');
 		// 17979210916167679 is bitmask of all the boards enabled
 		$this->assertSame(17979210916167679, $context->reloadUser()['boards_bitmask']); // only board 1 is selected now
 		$browser->clickId('check3');
