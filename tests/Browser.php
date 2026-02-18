@@ -395,20 +395,22 @@ class Browser
 		}
 	}
 
-	public function waitForBoard()
+	public function waitForBoard(): int
 	{
 		$wait = new WebDriverWait($this->driver, 10, 200);
-		$wait->until(function ($driver) {
+		return $wait->until(function ($driver) {
+			$size = $driver->executeScript('return typeof besogo !== "undefined" && besogo.scaleParameters ? besogo.scaleParameters.boardCoordSize : null;');
+			if (!$size)
+				return false;
 			$rects = $driver->findElements(WebDriverBy::cssSelector('rect'));
-			return count($rects) >= 19 * 19 + 1;
+			return count($rects) >= $size * $size + 1 ? $size : false;
 		});
 	}
 
 	public function clickBoard($x, $y)
 	{
-		$this->waitForBoard();
+		$boardSize = $this->waitForBoard();
 		$clickableRects = $this->getCssSelect('rect');
-		$boardSize = 19;
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
 		if ($corner == 'top-right' || $corner == 'bottom-right')
 			$x = $boardSize - $x + 1;

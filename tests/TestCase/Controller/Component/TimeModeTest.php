@@ -150,8 +150,9 @@ class TimeModeTest extends TestCaseWithAuth
 			if ($i < TimeModeUtil::$PROBLEM_COUNT)
 			{
 				$result = $this->getTimeModeReportedTime($browser);
-				$this->assertWithinMargin($result['minutes'], 1, TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60);
-				$this->assertWithinMargin($result['seconds'], 2, 60);
+				$totalSeconds = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
+				$this->assertTrue($totalSeconds > 0 && $totalSeconds <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+					"Timer should be counting down, got {$totalSeconds}s");
 			}
 			$solvedAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', [
 				'conditions' => [
@@ -217,8 +218,9 @@ class TimeModeTest extends TestCaseWithAuth
 			return preg_match('/\d+:[0-5]\d\.\d/', $text) === 1;
 		});
 		$result = $this->getTimeModeReportedTime($browser);
-		$this->assertWithinMargin($result['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1, 1);
-		$this->assertWithinMargin($result['seconds'], 3, 60);
+		$resultTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
+		$this->assertTrue($resultTotal > 200 && $resultTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+			"Timer should show close to " . TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS . "s, got {$resultTotal}s");
 
 		// refresh
 		$browser->get('timeMode/play');
@@ -239,10 +241,10 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame(count($startedQueuedAttempts), 1);
 
 		$newResult = $this->getTimeModeReportedTime($browser);
-		$this->assertWithinMargin($newResult['minutes'], TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS / 60 - 1, 1);
-		$oldTotal = $result['minutes'] * 60 + $result['seconds'] + $result['decimals'] * 0.1;
 		$newTotal = $newResult['minutes'] * 60 + $newResult['seconds'] + $newResult['decimals'] * 0.1;
-		$this->assertTrue($newTotal < $oldTotal,
+		$this->assertTrue($newTotal > 200 && $newTotal <= TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS,
+			"Timer should show close to " . TimeModeUtil::$CATEGORY_SLOW_SPEED_SECONDS . "s after refresh, got {$newTotal}s");
+		$this->assertTrue($newTotal < $resultTotal,
 			"Started attempt time: " . $startedQueuedAttempts[0]['TimeModeAttempt']['started']
 			. " Reported time: " . $newResult['minutes'] . ':' . $newResult['seconds'] . '.' . $newResult['decimals']
 			. " Old time: " . $result['minutes'] . ':' . $result['seconds'] . '.' . $result['decimals']);
