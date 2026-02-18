@@ -1,5 +1,7 @@
 <?php
 
+App::uses('NotFoundException', 'Routing/Error');
+
 class SgfsController extends AppController
 {
 	/**
@@ -35,7 +37,7 @@ class SgfsController extends AppController
 		if (isset($this->params['url']['delete']))
 		{
 			$sDel = $this->Sgf->findById($this->params['url']['delete']);
-			if (Auth::getUserID() == $sDel['Sgf']['user_id'])
+			if ($sDel && Auth::getUserID() == $sDel['Sgf']['user_id'])
 				$this->Sgf->delete($sDel['Sgf']['id']);
 		}
 
@@ -45,18 +47,30 @@ class SgfsController extends AppController
 			foreach ($newDuplicates as $duplicateId)
 			{
 				$dupl = $this->Tsumego->findById($duplicateId);
+				if (!$dupl)
+					continue;
 				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $dupl['Tsumego']['id']]]);
+				if (!$scT)
+					continue;
 				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 				$dSet = $this->Set->findById($dupl['Tsumego']['set_id']);
+				if (!$dSet)
+					continue;
 				$dId[] = $dupl['Tsumego']['id'];
 				$dTitle[] = $dSet['Set']['title'] . ' - ' . $dupl['Tsumego']['num'];
 			}
 		}
 
 		$t = $this->Tsumego->findById($id);
+		if (!$t)
+			throw new NotFoundException('Tsumego not found');
 		$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+		if (!$scT)
+			throw new NotFoundException('Tsumego not found in any set');
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 		$set = $this->Set->findById($t['Tsumego']['set_id']);
+		if (!$set)
+			throw new NotFoundException('Set not found');
 		$name = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' ' . $scT['SetConnection']['num'];
 		$this->set('_title', 'Upload History of ' . $name);
 

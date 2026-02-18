@@ -4,11 +4,11 @@ App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('AdminActivityUtil', 'Utility');
 App::uses('TsumegoButton', 'Utility');
-App::uses('AppException', 'Utility');
 App::uses('CookieFlash', 'Utility');
 App::uses('TsumegoMerger', 'Utility');
 App::uses('SimilarSearchResultItem', 'Utility');
 App::uses('SimilarSearchLogic', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -22,7 +22,7 @@ class TsumegosController extends AppController
 		foreach ($setConnections as $setConnection)
 			if ($setConnection['SetConnection']['set_id'] == $this->params->query['sid'])
 				return $setConnection;
-		throw new AppException("Problem doesn't exist in the specified set");
+		throw new NotFoundException("Problem doesn't exist in the specified set");
 	}
 
 	public static function getMatchingSetConnectionOfOtherTsumego(int $tsumegoID, int $currentSetID): ?int
@@ -54,11 +54,15 @@ class TsumegosController extends AppController
 			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
 
 		if (!$id)
-			throw new AppException("Tsumego id not provided");
+			throw new NotFoundException("Tsumego id not provided");
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
+		if (!$tsumego)
+			throw new NotFoundException("Tsumego not found");
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections)
-			throw new AppException("Problem without any set connection"); // some redirect/nicer message ?
+			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
 		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
@@ -90,17 +94,18 @@ class TsumegosController extends AppController
 		$similarSearchLogic->execute();
 
 		$this->set('result', $similarSearchLogic->result);
-		$tsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+		$tsumegoStatusResult = ClassRegistry::init('TsumegoStatus')->find('first', [
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]])['TsumegoStatus'];
+				'tsumego_id' => $similarSearchLogic->sourceTsumego['id']]]);
+		$tsumegoStatus = $tsumegoStatusResult ? $tsumegoStatusResult['TsumegoStatus']['status'] : null;
 		$this->set(
 			'sourceTsumegoButton',
 			new TsumegoButton(
 				$similarSearchLogic->sourceTsumego['id'],
 				$setConnectionID,
 				$similarSearchLogic->setConnection['num'],
-				$tsumegoStatus['status'],
+				$tsumegoStatus,
 				$similarSearchLogic->sourceTsumego['rating']));
 		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);

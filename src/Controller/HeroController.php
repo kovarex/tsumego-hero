@@ -1,5 +1,7 @@
 <?php
 
+App::uses('ForbiddenException', 'Routing/Error');
+
 class HeroController extends AppController
 {
 	public function refinement()
@@ -7,7 +9,7 @@ class HeroController extends AppController
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/users/login');
 		if (Auth::getUser()['used_refinement'])
-			throw new AppException("Refinment is already used up.");
+			throw new ForbiddenException("Refinement is already used up.");
 
 		$queryWithoutRankLimit = "SELECT "
 				. "set_connection.id as set_connection_id, tsumego.id as tsumego_id "
@@ -134,5 +136,8 @@ class HeroController extends AppController
 
 		Auth::getUser()['used_revelation']++;
 		Auth::saveUser();
+
+		$this->response->statusCode(200);
+		return $this->response;
 	}
 }

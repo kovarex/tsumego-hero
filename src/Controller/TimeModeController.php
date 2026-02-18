@@ -1,7 +1,8 @@
 <?php
 
 App::uses('TimeModeUtil', 'Utility');
-App::uses('AppException', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
+App::uses('BadRequestException', 'Routing/Error');
 App::uses('Play', 'Controller/Component');
 
 class TimeModeController extends AppController
@@ -11,10 +12,10 @@ class TimeModeController extends AppController
 		$timeMode = new TimeMode();
 		$categoryID = (int) $this->params['url']['categoryID'];
 		if (!$categoryID)
-			throw new AppException('Time mode category not specified.');
+			throw new BadRequestException('Time mode category not specified.');
 		$rankID = (int) $this->params['url']['rankID'];
 		if (!$rankID)
-			throw new AppException('Time mode rank not specified.');
+			throw new BadRequestException('Time mode rank not specified.');
 
 		$timeMode->startTimeMode($categoryID, $rankID);
 		return $this->redirect("/timeMode/play");
@@ -244,7 +245,7 @@ ORDER BY MIN(rating);");
 			if ($result = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => ['id' => $passedSessionID]]))
 				return $result;
 			else
-				throw new AppException('Time Mode Session not found.');
+				throw new NotFoundException('Time Mode Session not found.');
 		return null;
 	}
 

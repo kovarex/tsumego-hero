@@ -4,6 +4,10 @@ App::uses('Query', 'Utility');
 
 class TsumegoButtonsQueryBuilder
 {
+	public Query $query;
+	public string $description = '';
+	private TsumegoFilters $tsumegoFilters;
+
 	public function __construct($tsumegoFilters, $id)
 	{
 		$this->query = new Query('FROM tsumego');
@@ -102,10 +106,15 @@ class TsumegoButtonsQueryBuilder
 			return;
 
 		$currentTag = $_COOKIE['lastSet'] ?? '';
+		if (empty($currentTag))
+		{
+			$this->tsumegoFilters->query = 'topics';
+			return;
+		}
+
 		$tag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => $currentTag]]);
 		if (!$tag)
 		{
-			// when we get bad lastSet value, we fallback to showing by topics (the set of current tsumego)
 			$this->tsumegoFilters->query = 'topics';
 			return;
 		}
@@ -135,8 +144,4 @@ class TsumegoButtonsQueryBuilder
 		$this->query->query .= ' JOIN schedule ON `schedule`.tsumego_id = tsumego.id AND schedule.set_id = `set`.id';
 		$this->query->conditions[] = "`schedule`.date = '" . date('Y-m-d') . "'";
 	}
-
-	private TsumegoFilters $tsumegoFilters;
-	public Query $query;
-	public string $description = "";
 }

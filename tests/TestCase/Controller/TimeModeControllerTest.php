@@ -6,7 +6,7 @@ class TimeModeControllerTest extends ControllerTestCase
 	{
 		$context = new ContextPreparator(['tsumego' => 1, 'time-mode-ranks' => ['5k']]);
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->expectException(AppException::class);
+		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode category not specified.');
 		$this->testAction('/timeMode/start?rankID=' . $context->timeModeRanks[0]['id'], ['return' => 'view']);
 	}
@@ -14,7 +14,7 @@ class TimeModeControllerTest extends ControllerTestCase
 	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException()
 	{
 		$this->assertTrue(Auth::isInLevelMode());
-		$this->expectException(AppException::class);
+		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
 		$this->testAction('/timeMode/start?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED);
 	}
@@ -102,7 +102,7 @@ class TimeModeControllerTest extends ControllerTestCase
 		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE];
 		new ContextPreparator($contextParameters);
 
-		$this->expectException(AppException::class);
+		$this->expectException(NotFoundException::class);
 		$this->expectExceptionMessage('Time Mode Session not found.');
 		$this->testAction('/timeMode/result/56465487');
 	}

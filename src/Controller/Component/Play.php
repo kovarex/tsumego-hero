@@ -9,6 +9,7 @@ App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
 
 class Play
 {
@@ -57,7 +58,7 @@ class Play
 
 		$currentSetConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$currentSetConnection)
-			throw new AppException("Set connection " . $setConnectionID . " wasn't found in the database.");
+			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$id = $currentSetConnection['SetConnection']['tsumego_id'];
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
@@ -79,14 +80,14 @@ class Play
 
 		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
 
+		if ($t == null)
+			$t = ClassRegistry::init('Tsumego')->findById($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+
 		if (Auth::isLoggedIn())
 			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
 
 		if ($t['Tsumego']['rating'])
 			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
-
-		if ($t == null)
-			$t = ClassRegistry::init('Tsumego')->findById($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
 
 		Util::setCookie('lastVisit', $id);
 

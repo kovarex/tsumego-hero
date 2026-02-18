@@ -10,6 +10,7 @@ App::uses('AdminActivityRenderer', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('NotFoundException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
 
 class UsersController extends AppController
@@ -317,6 +318,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{
 				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
+				if (!$toDelete)
+					throw new NotFoundException('User to delete not found');
 				$del1 = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				$del2 = $this->TsumegoAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				if (md5($toDelete['User']['name']) == $this->params['url']['hash'])
@@ -1366,11 +1369,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
-		$reject['type'] = 'tag';
-		$tagName = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
-		$reject['type'] = $tagName['name'];
-
 		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
+		$reject['type'] = $tag['name'];
+
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 
 		ClassRegistry::init('Reject')->create();

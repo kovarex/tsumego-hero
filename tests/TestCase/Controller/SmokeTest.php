@@ -85,6 +85,25 @@ class SmokeTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that error pages also render with the site layout (logo, CSS, no JS errors).
+	 */
+	public function testErrorPagesRenderWithLayout()
+	{
+		new ContextPreparator(['user' => null]);
+		$browser = Browser::instance();
+
+		// Navigate directly (not via Browser::get which auto-asserts no errors)
+		$browser->driver->get(Util::getMyAddress() . '/nonexistent-page-' . uniqid());
+
+		$this->assertLogoExists($browser, '404 error page');
+		$this->assertCssLoaded($browser, '404 error page');
+		$browser->assertNoJsErrors();
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Page Not Found', $pageSource, '404 error page should show "Page Not Found"');
+	}
+
+	/**
 	 * Assert page has logo (common element across all pages)
 	 *
 	 * @param string $pageName Page name for error messages

@@ -2,6 +2,9 @@
 
 App::uses('TimeModeUtil', 'Utility');
 App::uses('RatingBounds', 'Utility');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('InternalErrorException', 'Routing/Error');
+App::uses('NotFoundException', 'Routing/Error');
 
 class TimeMode
 {
@@ -52,13 +55,13 @@ class TimeMode
 	public function startTimeMode(int $categoryID, int $rankID): void
 	{
 		if (!Auth::isLoggedIn())
-			throw new AppException('Not logged in.');
+			throw new ForbiddenException('Not logged in.');
 
 		ClassRegistry::init('TimeModeSession')->deleteAll(['user_id' => Auth::getUserID(), 'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS]);
 
 		$relevantTsumegos = $this->getRelevantTsumegos($rankID);
 		if (empty($relevantTsumegos))
-			throw new AppException('No relevant tsumegos.');
+			throw new InternalErrorException('No relevant tsumegos.');
 		$currentTimeSession = $this->createNewSession($categoryID, $rankID);
 		$this->createSessionAttempts($currentTimeSession, $relevantTsumegos);
 	}
@@ -72,11 +75,11 @@ class TimeMode
 	{
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($categoryID);
 		if (!$timeModeCategory)
-			throw new AppException("Time mode session category with id=" . $categoryID . " not found");
+			throw new NotFoundException("Time mode session category with id=" . $categoryID . " not found");
 
 		$timeModeRank = ClassRegistry::init('TimeModeRank')->findById($rankID);
 		if (!$timeModeRank)
-			throw new AppException("Time mode rank category with id=" . $rankID . " not found");
+			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
 		Auth::getUser()['mode'] = Constants::$TIME_MODE;
 		Auth::saveUser();

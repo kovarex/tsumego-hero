@@ -4,7 +4,8 @@ use function PHPUnit\Framework\isNull;
 
 App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
-App::uses('AppException', 'Utility');
+App::uses('NotFoundException', 'Routing/Error');
+App::uses('BadRequestException', 'Routing/Error');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('SetsSelector', 'Utility');
@@ -37,7 +38,7 @@ class SetsController extends AppController
 		if (isset($this->params['url']['restore']))
 		{
 			$restore = $this->Set->findById($this->params['url']['restore']);
-			if ($restore['Set']['public'] == -1)
+			if ($restore && $restore['Set']['public'] == -1)
 			{
 				$restore['Set']['public'] = 0;
 				$this->Set->save($restore);
@@ -202,7 +203,7 @@ class SetsController extends AppController
 				$setID = (int) str_replace('6473k339312-', '', $this->data['Set']['hash']);
 
 				$s = $this->Set->findById($setID);
-				if ($s['Set']['public'] == 0 || $s['Set']['public'] == -1)
+				if ($s && ($s['Set']['public'] == 0 || $s['Set']['public'] == -1))
 					$this->Set->delete($setID);
 				$ts = TsumegoUtil::collectTsumegosFromSet($setID);
 				if (count($ts) < 50)
@@ -389,6 +390,8 @@ class SetsController extends AppController
 	public function ui($id = null)
 	{
 		$s = $this->Set->findById($id);
+		if (!$s)
+			throw new NotFoundException('Set not found');
 		$redirect = false;
 
 		if (isset($_FILES['adminUpload']))
@@ -527,12 +530,11 @@ class SetsController extends AppController
 		$this->loadModel('Sgf');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Tag');
 		$this->loadModel('User');
 		$this->loadModel('UserContribution');
 
 		if (is_null($id))
-			throw new AppException("Set to view not specified");
+			throw new NotFoundException("Set to view not specified");
 
 		if ($id != '1')
 			$this->set('_page', 'set');
@@ -552,7 +554,23 @@ class SetsController extends AppController
 		$acS = null;
 		$acA = null;
 
-		$tsumegoFilters = new TsumegoFilters(self::decodeQueryType($id));
+		$queryType = self::decodeQueryType($id);
+
+		if ($queryType == 'topics' && is_numeric($id))
+		{
+			$set = $this->Set->findById($id);
+			if (!$set)
+				throw new NotFoundException("Set not found");
+		}
+
+		if ($queryType == 'tags')
+		{
+			$tag = $this->Tag->findByName($id);
+			if (!$tag)
+				throw new NotFoundException("Tag not found");
+		}
+
+		$tsumegoFilters = new TsumegoFilters($queryType);
 		if (Auth::isLoggedIn())
 			if (Auth::isAdmin())
 			{
@@ -782,7 +800,7 @@ class SetsController extends AppController
 			$this->set('isFav', true);
 		}
 		else
-			throw new AppException('Unknown query type: ' . $tsumegoFilters->query);
+			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);
 
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
