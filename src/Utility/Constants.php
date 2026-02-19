@@ -32,4 +32,10 @@ class Constants
 
 	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
 
+	/** Bump when tsumego image rendering algorithm changes to invalidate cached OG images */
+	public static int $TSUMEGO_IMAGE_VERSION = 1;
+	// Open Graph standard (1.91:1 aspect ratio)
+	public static int $OG_IMAGE_WIDTH = 1200;
+	public static int $OG_IMAGE_HEIGHT = 630;
+
 }
