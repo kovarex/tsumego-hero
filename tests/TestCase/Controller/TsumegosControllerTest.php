@@ -625,4 +625,38 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			);
 		}
 	}
+
+	/**
+	 * OG description should swap Black/White for White-first SGFs,
+	 * since the OG image always renders actual SGF stone colors.
+	 */
+	public function testOgDescriptionSwapsColorForWhiteFirstSgf(): void
+	{
+		$blackFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])';
+		$whiteFirstSgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];W[aa];B[ab];W[ba]C[+])';
+
+		// Black-first: OG description keeps "Black" (no swap)
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $blackFirstSgf],
+		]);
+		$result = $this->testAction(
+			'tsumegos/play/' . $context->tsumegos[0]['id'],
+			['return' => 'contents']
+		);
+		preg_match('/property="og:description"\s+content="([^"]*)"/', $result, $m);
+		$this->assertNotEmpty($m, 'og:description should exist for Black-first SGF');
+		$this->assertStringContainsString('Black to capture the white group', $m[1]);
+
+		// White-first: OG description swaps "Black" → "White"
+		$context2 = new ContextPreparator([
+			'tsumego' => ['set_order' => 1, 'description' => 'Black to capture the white group', 'sgf' => $whiteFirstSgf],
+		]);
+		$result2 = $this->testAction(
+			'tsumegos/play/' . $context2->tsumegos[0]['id'],
+			['return' => 'contents']
+		);
+		preg_match('/property="og:description"\s+content="([^"]*)"/', $result2, $m2);
+		$this->assertNotEmpty($m2, 'og:description should exist for White-first SGF');
+		$this->assertStringContainsString('White to capture the black group', $m2[1]);
+	}
 }
