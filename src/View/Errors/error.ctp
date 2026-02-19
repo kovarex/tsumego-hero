@@ -88,7 +88,44 @@ $this->set('title_for_layout', $errorTitle);
 			<?php if (method_exists($error, 'getTrace')): ?>
 				<div style="margin-top: 20px;">
 					<strong style="color: var(--text-color, #333); display: block; padding: 10px; background: rgba(0, 0, 0, 0.03); border-radius: 4px;">Stack Trace</strong>
-					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: #f8f8f2; padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php echo h($error->getTraceAsString()); ?></pre>
+					<pre style="overflow: auto; max-height: 500px; background: rgba(0, 0, 0, 0.8); color: #f8f8f2; padding: 20px; border-radius: 5px; font-size: 13px; line-height: 1.6; margin-top: 10px; font-family: 'Consolas', 'Monaco', monospace;"><?php
+						// Build trace with #-1 throw location
+						$traceLines = [];
+						$traceLines[] = '#-1 ' . h($error->getFile()) . '(' . h($error->getLine()) . ')';
+						foreach ($error->getTrace() as $i => $frame) {
+							$line = '#' . $i . ' ';
+							$line .= ($frame['file'] ?? '[internal function]') . '(' . ($frame['line'] ?? '') . '): ';
+							if (!empty($frame['class']))
+								$line .= $frame['class'] . ($frame['type'] ?? '->');
+							$line .= $frame['function'] . '(';
+							if (!empty($frame['args']))
+							{
+								$args = [];
+								foreach ($frame['args'] as $arg)
+								{
+									if (is_string($arg))
+										$args[] = "'" . (strlen($arg) > 50 ? substr($arg, 0, 50) . '...' : $arg) . "'";
+									elseif (is_numeric($arg))
+										$args[] = $arg;
+									elseif (is_bool($arg))
+										$args[] = $arg ? 'true' : 'false';
+									elseif (is_null($arg))
+										$args[] = 'NULL';
+									elseif (is_array($arg))
+										$args[] = 'Array';
+									elseif (is_object($arg))
+										$args[] = 'Object(' . get_class($arg) . ')';
+									else
+										$args[] = gettype($arg);
+								}
+								$line .= implode(', ', $args);
+							}
+							$line .= ')';
+							$traceLines[] = h($line);
+						}
+						$traceLines[] = '#' . count($error->getTrace()) . ' {main}';
+						echo implode("\n", $traceLines);
+					?></pre>
 				</div>
 			<?php endif; ?>
 		</div>

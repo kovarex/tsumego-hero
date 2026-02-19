@@ -14,16 +14,32 @@ class Rating
 		return (string) ($rank - 30) . 'd';
 	}
 
+	public static function isValidReadableRank(string $readableRank): bool
+	{
+		if (strlen($readableRank) < 2)
+			return false;
+		$suffix = substr($readableRank, -1);
+		$numberStr = substr($readableRank, 0, -1);
+		if (!ctype_digit($numberStr))
+			return false;
+		$number = (int) $numberStr;
+		if ($suffix === 'k')
+			return $number >= 1 && $number <= 30;
+		if ($suffix === 'd')
+			return $number >= 1;
+		return false;
+	}
+
 	public static function getRankFromReadableRank(string $readableRank): int
 	{
 		$suffix = substr($readableRank, -1);
 		$number = substr($readableRank, 0, -1);
-		if (!is_numeric($number))
+		if (!ctype_digit($number))
 			throw new RatingParseException($readableRank . " can't be parsed as go rank.");
-		if ($suffix == 'k')
-			return 31 - $number;
-		elseif ($suffix == 'd')
-			return 30 + $number;
+		if ($suffix === 'k')
+			return 31 - (int) $number;
+		elseif ($suffix === 'd')
+			return 30 + (int) $number;
 		else
 			throw new RatingParseException($readableRank . " can't be parsed as go rank.");
 	}
