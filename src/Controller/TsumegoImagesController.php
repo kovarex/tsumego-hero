@@ -7,6 +7,9 @@ App::uses('Constants', 'Utility');
  * TsumegoImagesController
  *
  * Generates PNG images of tsumego puzzles for Open Graph social sharing.
+ *
+ * IMPORTANT: When changing the rendering algorithm below, bump
+ * Constants::$TSUMEGO_IMAGE_VERSION to invalidate cached OG images.
  */
 class TsumegoImagesController extends AppController
 {
@@ -136,9 +139,9 @@ class TsumegoImagesController extends AppController
 			$cropHeight = $temp;
 		}
 
-		// Image dimensions - Open Graph standard (1.91:1 aspect ratio)
-		$width = 1200;
-		$height = 630;
+		// Image dimensions
+		$width = Constants::$OG_IMAGE_WIDTH;
+		$height = Constants::$OG_IMAGE_HEIGHT;
 
 		// Calculate cell size — account for stone overhang and coordinate labels
 		// Stones extend 0.45*cellSize beyond grid + shadow adds ~0.1*cellSize more

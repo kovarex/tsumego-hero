@@ -41,6 +41,8 @@ echo '<meta property="og:title" content="' . htmlspecialchars($ogTitle) . '">' .
 echo '<meta property="og:description" content="' . htmlspecialchars($ogDescription) . '">' . "\n";
 echo '<meta property="og:image" content="' . htmlspecialchars($imageUrl) . '">' . "\n";
 echo '<meta property="og:image:type" content="image/png">' . "\n";
+echo '<meta property="og:image:width" content="' . Constants::$OG_IMAGE_WIDTH . '">' . "\n";
+echo '<meta property="og:image:height" content="' . Constants::$OG_IMAGE_HEIGHT . '">' . "\n";
 echo '<meta property="og:url" content="' . htmlspecialchars($pageUrl) . '">' . "\n";
 echo '<meta property="og:type" content="website">' . "\n";
 echo '<meta property="og:site_name" content="Tsumego">' . "\n";
