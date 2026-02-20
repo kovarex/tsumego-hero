@@ -398,14 +398,14 @@ class AppController extends Controller
 				Auth::getUser()['_sessid'] = $_COOKIE['z_sess'];
 				Auth::saveUser();
 			}
-			if (Auth::getUser()['lastHighscore'] == 1)
+			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
-			elseif (Auth::getUser()['lastHighscore'] == 2)
+			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_RATING)
 				$highscoreLink = 'rating';
-			elseif (Auth::getUser()['lastHighscore'] == 3)
+			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_DAILY)
 				$highscoreLink = 'leaderboard';
-			elseif (Auth::getUser()['lastHighscore'] == 4)
-				$highscoreLink = 'highscore3';
+			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_TIME_MODE)
+				$highscoreLink = 'time_mode';
 
 			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0)
 			{
