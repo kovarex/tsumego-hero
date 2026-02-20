@@ -1690,6 +1690,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			failAlreadyReported = true;
 			misplays++;
+			setCookie("misplays", misplays);
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
@@ -1727,7 +1728,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						}
 					}
 					if (goldenTsumego)
+					{
 						window.location.href = '/' + '<?php echo $setConnection['SetConnection']['id']; ?>';
+						return;
+					}
 				}
 			}
 			else
@@ -1750,7 +1754,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					freePlayMode = true;
 				}
 			}
-			setCookie("misplays", misplays);
 		}
 	}
 

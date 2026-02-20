@@ -1507,5 +1507,24 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$this->testAction('sets', ['return' => 'view']);
 		$this->assertTextContains('15k', $this->view);
+		$this->assertTextNotContains('nonexistent-set-that-was-deleted', $this->view);
 	}
+
+	public function testIndexWithInvalidRankDoesNotCrash(): void
+	{
+		$contextParams = ['user' => [
+			'mode' => Constants::$LEVEL_MODE,
+			'query' => 'difficulty',
+			'filtered_ranks' => ['deleted', '15k']]];
+		$contextParams['tsumegos'] = [];
+		$contextParams['tsumegos'][] = [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+			'sets' => [['name' => 'TestSet', 'num' => '1']]];
+
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('15k', $this->view);
+		$this->assertTextNotContains('deleted', $this->view);
+	}
+
 }

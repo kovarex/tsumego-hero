@@ -2,6 +2,7 @@
 
 App::uses('Preferences', 'Utility');
 App::uses('Query', 'Utility');
+App::uses('Rating', 'Utility');
 
 class TsumegoFilters
 {
@@ -17,23 +18,31 @@ class TsumegoFilters
 
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
 		$this->collectionSize = (int) self::processItem('collection_size', '200');
-		$this->sets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$rawSets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
-		foreach ($this->sets as $set)
+		foreach ($rawSets as $set)
 		{
 			$found = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $set, 'public' => 1]]);
 			if ($found)
+			{
+				$this->sets[] = $set;
 				$this->setIDs[] = $found['Set']['id'];
+			}
 		}
 
-		$this->ranks = self::processItem('filtered_ranks', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
-		$this->tags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$this->ranks = self::processItem('filtered_ranks', [], function ($input) {
+			return array_values(array_filter(explode('@', $input), fn($rank) => Rating::isValidReadableRank($rank)));
+		});
+		$rawTags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
 
-		foreach ($this->tags as $tag)
+		foreach ($rawTags as $tag)
 		{
 			$found = ClassRegistry::init('Tag')->findByName($tag);
 			if ($found)
+			{
+				$this->tags[] = $tag;
 				$this->tagIDs[] = $found['Tag']['id'];
+			}
 		}
 	}
 
