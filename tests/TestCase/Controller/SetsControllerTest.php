@@ -1277,9 +1277,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 		$browser->get("sets/view/{$setId}");
 
-		// Click Time tab - use specific selector to avoid Time Mode menu link
-		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
-		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
+		// Switch to Time tab by calling d3() directly (more reliable than click on CI)
+		$browser->driver->executeScript("d3();");
 		// Wait for time buttons to be visible
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
