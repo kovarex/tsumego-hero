@@ -4,6 +4,7 @@ App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
+App::uses('ForbiddenException', 'Routing/Error');
 
 class SgfController extends AppController
 {
@@ -39,6 +40,9 @@ class SgfController extends AppController
 
 	public function upload($setConnectionID)
 	{
+		if (!Auth::isLoggedIn())
+			throw new ForbiddenException('Must be logged in to upload SGF files.');
+
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$setConnection)
 			throw new NotFoundException("Specified set connection does not exist.");
@@ -46,11 +50,11 @@ class SgfController extends AppController
 		// Use besogo textarea if provided, otherwise use file upload
 		$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
 		$sgfDataOrFile = $this->data['sgfForBesogo'] ?? file_get_contents($fileUpload['tmp_name']);
-		$sgfDataOrFile = str_replace("\r", '', $sgfDataOrFile);
-		$sgfDataOrFile = str_replace("\n", '"+"\n"+"', $sgfDataOrFile);
 
 		if (!$sgfDataOrFile)
 			throw new BadRequestException('No SGF data provided.');
+
+		self::validateSgfFormat($sgfDataOrFile);
 
 		AdminActivityLogger::log(
 			AdminActivityType::SGF_EDIT,
@@ -61,5 +65,19 @@ class SgfController extends AppController
 		$this->set('sgf', $sgfDataOrFile);
 		$this->set('setConnectionID', $setConnectionID);
 		$this->render('/Tsumegos/setup_new_sgf');
+	}
+
+	public static function validateSgfFormat(string $sgf): void
+	{
+		$maxSize = 1024 * 1024; // 1 MB
+		if (strlen($sgf) > $maxSize)
+			throw new BadRequestException('SGF data exceeds maximum size of 1 MB.');
+
+		$trimmed = trim($sgf);
+		if (!str_starts_with($trimmed, '(;'))
+			throw new BadRequestException('Invalid SGF format: must start with "(;".');
+
+		if (!str_contains($trimmed, 'GM[1]'))
+			throw new BadRequestException('Invalid SGF format: must contain GM[1] (Go game marker).');
 	}
 }
