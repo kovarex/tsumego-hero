@@ -229,10 +229,6 @@ class Play
 			($this->setFunction)('multipleChoiceTriangles', count($trX));
 			($this->setFunction)('multipleChoiceSquares', count($sqX));
 		}
-		$sgf2 = str_replace("\n", ' ', $sgf['Sgf']['sgf']);
-		$sgf['Sgf']['sgf'] = str_replace("\r", '', $sgf['Sgf']['sgf']);
-		$sgf['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $sgf['Sgf']['sgf']);
-
 		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		else
 		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
@@ -288,7 +284,7 @@ class Play
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
-		$startingPlayer = TsumegosController::getStartingPlayer($sgf2);
+		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
 
 		$eloScoreRounded = round($eloScore);
 		$eloScore2Rounded = round($eloScore2);
@@ -384,7 +380,6 @@ class Play
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
-		($this->setFunction)('sgf2', $sgf2);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);

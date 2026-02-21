@@ -88,13 +88,13 @@
 	<?php for($i=0; $i<count($s); $i++){ ?>
 		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID='.$s[$i]['Sgf']['id']; ?>");
 		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
+			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf']); ?>],{
 				type: "sgf",
 			});
 			saveAs(blob<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['title'].' v'.$s[$i]['Sgf']['version']; ?>.sgf");
 		});
 		$("#dl2-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob2<?php echo $s[$i]['Sgf']['id']; ?> = new Blob(["<?php echo $s[$i]['Sgf']['sgf']; ?>"],{
+			var blob2<?php echo $s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf']); ?>],{
 				type: "sgf",
 			});
 			saveAs(blob2<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['num']; ?>.sgf");
