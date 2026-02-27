@@ -31,7 +31,9 @@ $highestRight = 17;
 			<img src="/img/new_startpage/<?php echo $quote; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
 			<img src="/img/new_startpage/<?php echo $quote; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
 			<div class="user-pick-all user-pick-<?php echo $quote; ?>" align="center">
-					<?php echo $userOfTheDay; ?>
+				<?php if ($userOfTheDay !== null): ?>
+					<?php echo User::renderLink($userOfTheDay); ?>
+				<?php endif; ?>
 			</div>
 		</div>
 

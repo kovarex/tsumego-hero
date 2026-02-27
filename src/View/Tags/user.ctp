@@ -2,7 +2,7 @@
 <div align="center">
 	<p class="title">
 		<br>
-		Tags and proposals by <?php echo Auth::getUser()['name'] ?>
+		Tags and proposals by <?php echo User::renderLink(Auth::getUser()); ?>
 		<br><br> 
 	</p>
 	<table class="highscoreTable" border="0">

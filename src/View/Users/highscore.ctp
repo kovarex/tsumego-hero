@@ -89,7 +89,7 @@
 					</td>
 
 					<td  align="left">
-						' . User::renderLink($user['id'], $user['name'], $user['external_id'], $user['picture'],  $user['rating']) . '
+						' . User::renderLink($user) . '
 					</td>
 					<td>
 						'.$uType.'

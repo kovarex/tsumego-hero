@@ -76,7 +76,7 @@
 	if($aCount>0){
 		echo 'Completed by ';
 		for($i=0; $i<count($asAll); $i++){
-			echo $asAll[$i]['AchievementStatus']['name'];
+			echo User::renderLink($asAll[$i]['AchievementStatus']['user']);
 			if($i<count($asAll)-1) echo ', ';
 			
 		}

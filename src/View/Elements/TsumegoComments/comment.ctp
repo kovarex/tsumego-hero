@@ -26,11 +26,7 @@ $allIssues = $allIssues ?? [];
 $isAdmin = !empty($user['admin']) || !empty($user['isAdmin']);
 $commentColorClass = $isAdmin ? 'commentBox2' : 'commentBox1';
 
-// Get author name
-if ($user['name'])
-	$authorLink = User::renderLink($user['id'], $user['name'], $user['external_id'], $user['picture'], $user['rating']);
-else
-	$authorLink = '[deleted user]';
+$authorLink = User::renderLink($user);
 // Process position button if comment has a position
 $positionButton = '';
 if (!empty($comment['position'])) {
