@@ -132,13 +132,13 @@ class TsumegosController extends AppController
 		return $t[$num];
 	}
 
-	public static function getStartingPlayer($sgf)
+	public static function getStartingPlayer($sgf): int
 	{
 		$bStart = strpos($sgf, ';B');
 		$wStart = strpos($sgf, ';W');
-		if ($wStart == 0)
+		if ($wStart === false)
 			return 0;
-		if ($bStart == 0)
+		if ($bStart === false)
 			return 1;
 		if ($bStart <= $wStart)
 			return 0;
@@ -415,10 +415,19 @@ class TsumegosController extends AppController
 			return $this->redirect($this->data['redirect']);
 		}
 
-		if ($tsumego['description'] != $this->data['description'])
+		// Normalize description: the edit form shows the display version (with colors swapped for visual context)
+		$newDescription = $this->data['description'];
+		if (!empty($this->data['color_swapped']))
+			$newDescription = preg_replace_callback(
+				'/\b(Black|black|White|white)\b/',
+				fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+				$newDescription
+			);
+
+		if ($tsumego['description'] != $newDescription)
 		{
-			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $this->data['description']);
-			$tsumego['description'] = $this->data['description'];
+			AdminActivityLogger::log(AdminActivityType::DESCRIPTION_EDIT, $tsumegoID, null, $tsumego['description'], $newDescription);
+			$tsumego['description'] = $newDescription;
 		}
 
 		if ($tsumego['hint'] != $this->data['hint'])

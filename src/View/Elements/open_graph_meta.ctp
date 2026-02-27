@@ -21,6 +21,18 @@ $author = $t['Tsumego']['author'] ?? 'Unknown';
 $setTitle = $set['Set']['title'] ?? '';
 $description = strip_tags($t['Tsumego']['description'] ?? '');
 
+// OG image always renders actual SGF colors (no board inversion).
+// Descriptions are normalized: "Black" = solver. For White-first SGFs,
+// swap Black<->White so the description matches the OG image stone colors.
+if (isset($startingPlayer) && $startingPlayer == 1)
+{
+	$description = preg_replace_callback(
+		'/\b(Black|black|White|white)\b/',
+		fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+		$description
+	);
+}
+
 // Build Open Graph metadata — include problem position (e.g., "Korean Problem Academy 1 64/200")
 $num = $setConnection['SetConnection']['num'] ?? null;
 $total = $amountOfOtherCollection ?? null;
