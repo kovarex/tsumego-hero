@@ -217,6 +217,17 @@ class Util
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	/**
+	 * Execute a non-SELECT SQL statement (INSERT, UPDATE, DELETE) and return the number of affected rows.
+	 */
+	public static function execute($sql, $params = []): int
+	{
+		/** @phpstan-ignore-next-line */
+		$stmt = ClassRegistry::init('Tsumego')->getDataSource()->getConnection()->prepare($sql);
+		$stmt->execute($params);
+		return $stmt->rowCount();
+	}
+
 	public static function clampOptional($value, $min, $max)
 	{
 		$result = $value;

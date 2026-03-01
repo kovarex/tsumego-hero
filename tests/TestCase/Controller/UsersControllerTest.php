@@ -295,4 +295,32 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 	}
+
+	public function testResetOldProgressRemovesOnlyOldStatuses()
+	{
+		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'solved' => 4],
+			'tsumegos' => [
+				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $twoYearsAgo]],
+				['set_order' => 2, 'status' => 'S'],
+				['set_order' => 3, 'status' => 'S'],
+				['set_order' => 4, 'status' => 'S'],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		$browser->driver->executeScript("window.confirm = function() { return true; }");
+		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+
+		$remaining = ClassRegistry::init('TsumegoStatus')->find('count', [
+			'conditions' => ['user_id' => $context->user['id']],
+		]);
+		$this->assertEquals(3, $remaining);
+	}
 }
