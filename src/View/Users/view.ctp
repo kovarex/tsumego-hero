@@ -333,7 +333,13 @@ function delUts(){
 	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
 	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
 	if (confirmed)
-		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
+	{
+		var form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '/users/deleteOldTsumegoStatuses';
+		document.body.appendChild(form);
+		form.submit();
+	}
 }
 </script>
 <script>
