@@ -23,7 +23,7 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTrue($submitButton->isEnabled());
 		$submitButton->click();
 
-		// Wait for htmx to process the comment submission
+		// Wait for React to process the comment submission
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
 			// Comment form should be cleared after successful submission
@@ -51,7 +51,11 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$this->assertFalse($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 		$browser->playWithResult('S');
-		usleep(500 * 1000);
+		// Wait for comment space to become visible after solving
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->findElement(WebDriverBy::id('commentSpace'))->isDisplayed();
+		});
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 
@@ -104,7 +108,12 @@ class CommentsControllerTest extends ControllerTestCase
 		// Expand OPEN issues tab (issues are hidden by default until tab clicked)
 		$browser->expandComments();
 
-		usleep(1500 * 1000); // Wait for React to render
+		// Wait for React to render the issue content
+		$issueId = $context->issues[0]['id'];
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) use ($issueId) {
+			return str_contains($driver->getPageSource(), 'Issue #' . $issueId);
+		});
 
 		// Issue should be displayed with database ID
 		$issueId = $context->issues[0]['id'];
@@ -590,15 +599,15 @@ class CommentsControllerTest extends ControllerTestCase
 			return str_contains($driver->getPageSource(), 'Reply to open issue');
 		});
 
-		// After React morph: Closed issue should STILL be hidden
+		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
-		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after morph');
-		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after morph');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after re-render');
+		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after re-render');
 
-		// And open issue should still be visible
+		// Open issue should still be visible
 		$openIssuesAfter = $browser->getCssSelect('.tsumego-issue--opened');
-		$this->assertCount(1, $openIssuesAfter, 'Should still have 1 open issue after morph');
-		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after morph');
+		$this->assertCount(1, $openIssuesAfter, 'Should still have 1 open issue after re-render');
+		$this->assertTrue($openIssuesAfter[0]->isDisplayed(), 'Open issue should still be visible after re-render');
 	}
 
 	/**
@@ -636,15 +645,16 @@ class CommentsControllerTest extends ControllerTestCase
 		$messageField->sendKeys("New standalone comment");
 		$submitButton = $browser->driver->findElement(WebDriverBy::id('submitBtn-tsumegoCommentForm'));
 		$submitButton->click();
-		// Wait for new comment to appear in page source
+		// Wait for the new standalone comment to be rendered by React (mutation + refetch cycle)
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'New standalone comment');
+			$standalones = $driver->findElements(WebDriverBy::cssSelector('.tsumego-comment--standalone'));
+			return count($standalones) >= 2;
 		});
 
-		// After React morph: Closed issue should STILL be hidden
+		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
-		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after morph');
+		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after re-render');
 		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after adding comment');
 
 		// New comment should be visible
@@ -686,10 +696,11 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyField->sendKeys("Extra comment to delete");
 		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]'));
 		$submitButton->click();
-		// Wait for reply to appear
+		// Wait for the reply to be rendered by React (mutation + refetch cycle)
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Extra comment to delete');
+			$comments = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-comment'));
+			return count($comments) >= 2;
 		});
 
 		// Verify: Closed issue is NOT visible (filtered out)
@@ -712,7 +723,7 @@ class CommentsControllerTest extends ControllerTestCase
 			return count($buttons) < $deleteCountBefore;
 		});
 
-		// After React morph: Closed issue should STILL be hidden
+		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
 		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after delete');
 		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after deleting comment');
@@ -758,10 +769,11 @@ class CommentsControllerTest extends ControllerTestCase
 		$replyField->sendKeys("Comment to move");
 		$submitButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-issue__reply-form button[type="submit"]'));
 		$submitButton->click();
-		// Wait for reply to appear
+		// Wait for the reply to be rendered by React (mutation + refetch cycle)
 		$waitReply = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$waitReply->until(function ($driver) {
-			return str_contains($driver->getPageSource(), 'Comment to move');
+			$comments = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened .tsumego-comment'));
+			return count($comments) >= 2;
 		});
 
 		// Get the comment ID to move
@@ -774,44 +786,29 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertCount(1, $closedIssues, 'Should have 1 closed issue in DOM');
 		$this->assertFalse($closedIssues[0]->isDisplayed(), 'Closed issue should be hidden before move');
 
-		// Simulate the move-comment API call via JavaScript (emulating drag-and-drop)
+		// Call the move-comment API and trigger React Query refetch (React-compatible approach)
 		$browser->driver->executeScript("
-			var formData = new FormData();
+			var formData = new URLSearchParams();
 			formData.append('data[Comment][tsumego_issue_id]', 'standalone');
-			formData.append('data[Comment][htmx]', '1');
 			fetch('/tsumego-issues/move-comment/' + " . $commentId . ", {
 				method: 'POST',
 				body: formData,
-				headers: {'HX-Request': 'true'}
+				headers: {'X-Requested-With': 'XMLHttpRequest'}
 			}).then(function(response) {
-				return response.text();
-			}).then(function(html) {
-				var target = document.getElementById('comments-section-" . $context->tsumegos[0]['id'] . "');
-				if (target && html) {
-					Idiomorph.morph(target, html, {morphStyle: 'outerHTML'});
-					// Re-apply filter state after morph
-					if (typeof currentCommentsFilter !== 'undefined' && currentCommentsFilter) {
-						setTimeout(function() {
-							var targetTab = document.querySelector('.tsumego-comments__tab[data-filter=\"' + currentCommentsFilter + '\"]');
-							if (targetTab) targetTab.classList.add('active');
-							// Show the content container (morphed HTML has display:none)
-							var content = document.getElementById('msg2x');
-							if (content) content.style.display = '';
-							applyCommentsFilter(currentCommentsFilter);
-						}, 50);
-					}
-				}
+				return response.json();
+			}).then(function() {
+				// Trigger React Query refetch so React re-renders with updated data
+				if (window.__invalidateComments) window.__invalidateComments();
 			});
 		");
-		// Wait for fetch, morph, and filter re-apply (filter runs in setTimeout after morph)
-		$waitMorph = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$waitMorph->until(function ($driver) {
+		// Wait for React to refetch and re-render — moved comment appears as standalone
+		$waitMove = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$waitMove->until(function ($driver) {
 			$standalones = $driver->findElements(WebDriverBy::cssSelector('.tsumego-comment--standalone'));
-			$openIssues = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue--opened'));
-			return count($standalones) > 0 && count($openIssues) > 0 && $openIssues[0]->isDisplayed();
+			return count($standalones) > 0;
 		});
 
-		// After morph: Closed issue should STILL be hidden
+		// After React re-render: Closed issue should STILL be hidden
 		$closedIssuesAfter = $browser->getCssSelect('.tsumego-issue--closed');
 		$this->assertCount(1, $closedIssuesAfter, 'Should still have 1 closed issue in DOM after move');
 		$this->assertFalse($closedIssuesAfter[0]->isDisplayed(), 'Closed issue should STILL be hidden after moving comment');

@@ -88,6 +88,10 @@ function initializeApp()
 {
 	initializeComments();
 	initializeIssuesList();
+
+	// Expose React Query invalidation for Selenium testing
+	(window as any).__invalidateComments = () =>
+		globalQueryClient.invalidateQueries({ queryKey: ['comments'] });
 }
 
 // Wait for DOM to be fully loaded, then initialize

@@ -555,16 +555,16 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// because we're still on the same page (no navigation)
 
 		// Make an AJAX request (same as React fetch with X-Requested-With header)
+		// Use window flag so WebDriverWait can detect completion
 		$browser->driver->executeScript("
-			window.__ajaxDone = false;
+			window._fetchDone = false;
 			fetch('/tsumego-issues', {
 				headers: { 'X-Requested-With': 'XMLHttpRequest' }
-			}).then(function() { window.__ajaxDone = true; });
+			}).finally(function() { window._fetchDone = true; });
 		");
-		// Wait for the fetch to complete
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return $driver->executeScript('return window.__ajaxDone === true;');
+			return $driver->executeScript('return window._fetchDone === true;');
 		});
 
 		// Rating should still be original - AJAX shouldn't process the result
