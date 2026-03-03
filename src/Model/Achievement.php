@@ -171,5 +171,5 @@ class Achievement extends AppModel
 	public const int RUBY = 113;
 	public const int DIAMOND = 114;
 
-	public const int COUNT = 115;
+	public const int COUNT = 114;
 }
