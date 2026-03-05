@@ -399,6 +399,7 @@ class TimeModeTest extends TestCaseWithAuth
 
 		$browser->playWithResult($conditions['actuallySolvedSession'] ? 'S' : 'F'); // mark the problem solved
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$browser->waitUntilCssSelectorExists('.timeModeTable', 10); // wait for result page to load
 
 		$this->assertEmpty(ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [
 			'user_id' => Auth::getUserID(),

@@ -6,6 +6,7 @@ use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverWait;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 
@@ -225,6 +226,28 @@ class Browser
 			function () use ($selector) {
 				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
 				return count($elements) == 0;
+			}
+		);
+	}
+
+	/**
+	 * Wait until ANY of the given selectors exist (OR logic).
+	 * Useful for waiting for React components that can render either content or empty state.
+	 *
+	 * @param string[] $selectors CSS selectors to wait for (at least one must exist)
+	 * @param int $timeout Timeout in seconds
+	 */
+	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 5): void
+	{
+		new WebDriverWait($this->driver, $timeout, 500)->until(
+			function () use ($selectors) {
+				foreach ($selectors as $selector)
+				{
+					$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+					if (count($elements) > 0)
+						return true;
+				}
+				return false;
 			}
 		);
 	}
@@ -559,6 +582,27 @@ class Browser
 				return null;
 			}
 		});
+	}
+
+	/**
+	 * Helper to expand comments section and wait for React to render content.
+	 * Clicks the COMMENTS tab to ensure it's visible, then waits for content.
+	 */
+	public function expandComments()
+	{
+		// Wait for React to mount (tabs appear first)
+		$this->waitUntilCssSelectorExists('.tsumego-comments__tab[data-filter="open"]', 5);
+
+		// Click COMMENTS tab to ensure content is visible (clicking active tab is harmless)
+		$this->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="open"]'))->click();
+
+		// Wait for actual content (not skeletons) - either comments/issues, form, or login prompt
+		$this->waitUntilAnyCssSelectorExists([
+			'.tsumego-comment:not(.skeleton-wrapper)',   // Actual comment
+			'.tsumego-issue:not(.skeleton-wrapper)',     // Actual issue
+			'.tsumego-comments__form',                   // Comment form (logged-in, empty state)
+			'.tsumego-comments__login-prompt',           // Login prompt (logged-out)
+		]);
 	}
 
 	public $driver;

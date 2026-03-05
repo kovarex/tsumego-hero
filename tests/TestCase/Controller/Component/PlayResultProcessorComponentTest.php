@@ -530,13 +530,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	/**
 	 * CRITICAL TEST: Simulates the user's bug report scenario.
-	 * User fails a puzzle, then clicks htmx buttons (like issue filter),
-	 * and rating should NOT change from the htmx request.
+	 * User fails a puzzle, then clicks React buttons (like issue filter),
+	 * and rating should NOT change from the AJAX request.
 	 *
-	 * Without the htmx fix, the htmx request would trigger checkPreviousPlay
+	 * Without the X-Requested-With header check, AJAX requests would trigger checkPreviousPlay
 	 * and potentially process the fail result at an unexpected time.
 	 */
-	public function testHtmxActionsAfterFailDoNotTriggerRatingDrop(): void
+	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => 1500],
@@ -554,18 +554,20 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// At this point, cookies are set but result hasn't been processed yet
 		// because we're still on the same page (no navigation)
 
-		// Make an htmx request using htmx.ajax() API
-		// This is exactly how htmx works internally - sends HX-Request header
+		// Make an AJAX request (same as React fetch with X-Requested-With header)
+		// Use window flag so WebDriverWait can detect completion
 		$browser->driver->executeScript("
-			htmx.ajax('GET', '/tsumego-issues', { target: 'body' });
+			window._fetchDone = false;
+			fetch('/tsumego-issues', {
+				headers: { 'X-Requested-With': 'XMLHttpRequest' }
+			}).finally(function() { window._fetchDone = true; });
 		");
-		// Wait for htmx request to complete
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return $driver->executeScript('return document.querySelectorAll(".htmx-request").length === 0;');
+			return $driver->executeScript('return window._fetchDone === true;');
 		});
 
-		// Rating should still be original - htmx shouldn't process the result
+		// Rating should still be original - AJAX shouldn't process the result
 		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);
 
 		// NOW navigate to a different page - THIS should process the result

@@ -162,15 +162,15 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			'message' => 'Try playing at R19 or S18, they both work.',
 		]);
 
-		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$browser = Browser::instance();
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->expandComments();
 
 		// Check that coordinate spans exist in the HTML
-		$this->assertTextContains('go-coord', $this->view);
-		$this->assertTextContains('onmouseover="ccIn', $this->view);
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('go-coord', $pageSource);
 
-		// Check the JavaScript functions are generated
-		$this->assertTextContains('function ccIn', $this->view);
-		$this->assertTextContains('showCoordPopup', $this->view);
 	}
 
 	public function testFailingWithLastHeartLocksBoardAndShowsTryAgainTomorrow()

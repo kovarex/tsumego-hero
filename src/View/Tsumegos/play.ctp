@@ -523,8 +523,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<table class="sandboxTable" width="62%">
 		<tr>
 				<td><?php echo $this->element('TsumegoComments/section', [
-						'issues' => $tsumegoIssues ?? [],
-						'plainComments' => $tsumegoPlainComments ?? [],
 						'tsumegoId' => $t['Tsumego']['id'],
 						't' => $t,
 					]); ?></td>
@@ -1165,7 +1163,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 			msg2xselected = !msg2xselected;
 			});
-		$("#msg2x").hide();
+
 		$("#msg3").hide();
 		$("#show3").click(function(){
 			if(!msg3selected){
