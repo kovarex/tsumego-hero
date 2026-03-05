@@ -220,6 +220,16 @@ class Browser
 		);
 	}
 
+	public function waitUntilCssSelectorDisplayed(string $selector, int $timeout = 5): void
+	{
+		new WebDriverWait($this->driver, $timeout, 500)->until(
+			function () use ($selector) {
+				$elements = $this->driver->findElements(WebDriverBy::cssSelector($selector));
+				return count($elements) > 0 && $elements[0]->isDisplayed();
+			}
+		);
+	}
+
 	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 5): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(

@@ -412,7 +412,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$alerts = $browser->driver->findElements(WebDriverBy::cssSelector('#time-rank-unlock-alert'));
 		if (count($alerts) == 1)
 		{
-			$this->assertTrue($alerts[0]->isDisplayed());
+			$browser->waitUntilCssSelectorDisplayed('#time-rank-unlock-alert', 5);
 			return true;
 		}
 		return false;
