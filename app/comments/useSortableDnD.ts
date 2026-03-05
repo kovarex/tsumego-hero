@@ -215,12 +215,21 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 		};
 		document.addEventListener('keydown', handleEscKey);
 
+		const handleDragEnd = () =>
+		{
+			showIssueDropTargets(false, null);
+			dragStateRef.current = null;
+		};
+		document.addEventListener('dragend', handleDragEnd);
+
 		// Cleanup on unmount
 		return () =>
 		{
 			sortablesRef.current.forEach(s => s.destroy());
 			sortablesRef.current = [];
+			showIssueDropTargets(false, null);
 			document.removeEventListener('keydown', handleEscKey);
+			document.removeEventListener('dragend', handleDragEnd);
 		};
 	}, [isAdmin, tsumegoId, issues.length, onMoveComment, containerRef]);
 }

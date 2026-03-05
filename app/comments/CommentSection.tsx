@@ -104,10 +104,16 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 	}, [tsumegoId]);
 
 	// Move comment handler (passed to SortableJS hook)
+	const moveCommentRef = useRef(moveCommentMutation.mutate);
+	useEffect(() =>
+	{
+		moveCommentRef.current = moveCommentMutation.mutate;
+	});
 	const handleMoveComment = useCallback(
 		(commentId: number, targetIssueId: number | 'standalone') =>
-			moveCommentMutation.mutate({ commentId, targetIssueId }),
-		[moveCommentMutation]
+			moveCommentRef.current({ commentId, targetIssueId }),
+		 
+		[]
 	);
 
 	// Initialize SortableJS drag-and-drop (extracted to custom hook)
