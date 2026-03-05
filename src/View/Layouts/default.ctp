@@ -255,6 +255,7 @@ echo $this->AssetCompress->script('app');
 						echo '<li><a id="tutorialLink" href="/users/achievements" '.$achievementHighscoreA.'>Achievement Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
+						echo '<li><a id="tutorialLink" href="/users/highscore3">Time Mode Highscore</a></li>';
 						echo '</ul>';
 						if(Auth::isLoggedIn())
 							echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';

@@ -48,8 +48,9 @@ class User extends AppModel
 
 	public static function renderPremium($user): string
 	{
-		if ($user['premium'] == 2 || $user['premium'] == 1)
-			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $user['premium'] . '.png" height="16px">';
+		$premium = $user['premium'] ?? $user['user_premium'] ?? 0;
+		if ($premium == 2 || $premium == 1)
+			return '<img alt="Account Type" title="Account Type" src="/img/premium' . $premium . '.png" height="16px">';
 		return '';
 	}
 
