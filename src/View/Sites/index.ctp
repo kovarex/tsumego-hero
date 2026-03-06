@@ -357,7 +357,7 @@ $highestRight = 17;
 		</div>
 
 		<?php if(
-			false
+			!Auth::hasPremium()
 		){ ?>
 			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
 			<div class="new1">

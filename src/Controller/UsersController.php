@@ -940,6 +940,52 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return null;
 	}
 
+	public function donate($id = null){
+		$_SESSION['page'] = 'home';
+		$_SESSION['title'] = 'Tsumego Hero - Upgrade';
+
+		$overallCounter = 0;
+		$sandboxSets = $this->Set->find('all', array('conditions' => array('public' => 0)));
+		for($i=0; $i<count($sandboxSets); $i++){
+			$ts = $this->findTsumegoSet($sandboxSets[$i]['Set']['id']);
+			$overallCounter += count($ts);
+		}
+
+		$setsWithPremium = array();
+		$tsumegosWithPremium = array();
+		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
+		for($i=0;$i<count($swp);$i++){
+			array_push($setsWithPremium, $swp[$i]['Set']['id']);
+			$twp = $this->findTsumegoSet($swp[$i]['Set']['id']);
+			for($j=0;$j<count($twp);$j++)
+				array_push($tsumegosWithPremium, $twp[$j]);
+		}
+
+		$this->set('id', $id);
+		$this->set('overallCounter', $overallCounter);
+		$this->set('premiumSets', $swp);
+		$this->set('premiumTsumegos', count($tsumegosWithPremium));
+	}
+
+	public function findTsumegoSet($id){
+		$this->LoadModel('Tsumego');
+		$this->LoadModel('SetConnection');
+		$scIds = array();
+		$scMap = array();
+		$tsx = array();
+		$sc = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array('set_id' => $id)));
+		for($i=0; $i<count($sc); $i++){
+			array_push($scIds, $sc[$i]['SetConnection']['tsumego_id']);
+			$scMap[$sc[$i]['SetConnection']['tsumego_id']] = $i;
+		}
+		$ts = $this->Tsumego->find('all', array('conditions' => array('id' => $scIds)));
+		for($i=0; $i<count($ts); $i++){
+			$ts[$i]['Tsumego']['set_id'] = $id;
+			$tsx[$scMap[$ts[$i]['Tsumego']['id']]] = $ts[$i];
+		}
+		return $tsx;
+	}
+
 	/**
 	 * @return void
 	 */

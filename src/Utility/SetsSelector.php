@@ -127,6 +127,7 @@ set_counts AS (
     s.id AS set_id,
     s.title AS set_title,
     s.color AS set_color,
+    s.premium AS set_premium,
     COUNT(sc.tsumego_id) AS total_count
   FROM filtered_tsumego ft
   JOIN set_connection sc ON sc.tsumego_id = ft.id
@@ -141,6 +142,7 @@ numbered AS (
     s.id AS set_id,
     s.title AS set_title,
     s.color AS set_color,
+    s.premium AS set_premium,
     ft.rating AS rating,
     ft.id AS tsumego_id,
     ROW_NUMBER() OVER (
@@ -163,6 +165,7 @@ partitioned AS (
   	numbered.set_id as id,
     numbered.set_title AS title,
     numbered.set_color AS color,
+    numbered.set_premium AS premium,
     sc.total_count,
     CASE
       WHEN sc.total_count <= " . $this->tsumegoFilters->collectionSize . " THEN -1
@@ -178,6 +181,7 @@ partitioned AS (
   	numbered.set_id,
     numbered.set_title,
     numbered.set_color,
+    numbered.set_premium,
     sc.total_count,
     partition_number
 )
@@ -195,6 +199,7 @@ ORDER BY order_value, total_count DESC, partition_number, id
 			$set['amount'] = $row['usage_count'];
 			$partition = $row['partition_number'];
 			$set['color'] = $row['color'];
+			$set['premium'] = $row['premium'];
 			$set['solved_percent'] = Util::getPercentButAvoid100UntilComplete($row['solved_count'], $row['usage_count']);
 			$set['difficulty'] = Rating::getReadableRankFromRating($row['rating_sum'] / $row['usage_count']);
 			$set['partition'] = $partition;
@@ -216,6 +221,9 @@ ORDER BY order_value, total_count DESC, partition_number, id
 		{
 			$rankQuery = new Query('FROM tsumego');
 			RatingBounds::coverRank($rank['rank'], '15k')->addQueryConditions($rankQuery);
+
+			if (!Auth::hasPremium())
+				$rankQuery->conditions[] = '`set`.premium = 0';
 
 			$rankQuery->conditions[] = 'tsumego.deleted IS NULL';
 			$rankQuery->conditions[] = '`set`.public = 1';

@@ -45,6 +45,8 @@ class TsumegoButtonsQueryBuilder
 		if (Auth::isLoggedIn())
 			$this->query->query .= ' LEFT JOIN tsumego_status ON tsumego_status.user_id = ' . Auth::getUserID() . ' AND tsumego_status.tsumego_id = tsumego.id';
 
+		if (!Auth::hasPremium())
+			$this->query->conditions[] = '`set`.premium = false';
 
 		$this->filterRanks();
 		$this->filterSets();
