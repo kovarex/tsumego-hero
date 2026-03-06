@@ -367,16 +367,16 @@ li[class^="status"] {
 	height: 1px;
 }
 
-li.statusCurrent { position: relative; }
+li.statusCurrent { 
+  position: relative;
+  border: 3px solid var(--current-border-color); 
+}
 li.statusCurrent::before
 {
 	content: "";
 	position: absolute;
-
 	inset: -5px;
 	border-radius: 9px;
-	border: 3px solid var(--current-border-color);
-
 	pointer-events: none;
 }
 
