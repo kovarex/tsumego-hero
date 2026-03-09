@@ -403,6 +403,7 @@ class ContextPreparator
 			'name' => Util::extractWithDefault('name', $setInput, 'test set'),
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
+			'premium' => Util::extract('premium', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];

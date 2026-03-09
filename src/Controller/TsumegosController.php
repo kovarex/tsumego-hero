@@ -51,7 +51,7 @@ class TsumegosController extends AppController
 		}
 
 		if ($setConnectionID)
-			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
+			return new Play(function ($name, $value) { $this->set($name, $value); }, function ($url) { return $this->redirect($url); })->play($setConnectionID, $this->params, $this->data);
 
 		if (!$id)
 			throw new NotFoundException("Tsumego id not provided");
@@ -64,7 +64,7 @@ class TsumegosController extends AppController
 		if (!$setConnections)
 			throw new NotFoundException("Problem not found in any set");
 		$setConnection = $this->deduceRelevantSetConnection($setConnections);
-		return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+		return new Play(function ($name, $value) { $this->set($name, $value); }, function ($url) { return $this->redirect($url); })->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
 	public static function inArrayX($x, $newArray)

@@ -440,7 +440,7 @@ $highestRight = 17;
 			<b>Tags, proposals and rewards</b><br><br>
 			We need your help! The problems on this website are currently uncategorized, which we should change.
 			The goal is to assign matching tags to every problem. All users that have passed level 40 or 6k
-			are welcome to help with this meaningful task. There are amazing <a href="/users/rewards">rewards</a> for those who
+			are welcome to help with this meaningful task. There are amazing rewards for those who
 			help with adding and creating tags and/or proposals. So the next time you see a problem, for example,
 			with a <a href="/tags/view/8">Seki</a>, a <a href="/tags/view/6">Snapback</a> or an
 			<a href="/tags/view/7">Under the Stones</a> tesuji, leave a tag.

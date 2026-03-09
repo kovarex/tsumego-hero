@@ -940,25 +940,28 @@ ORDER BY category DESC', [$user['User']['id']]));
 		return null;
 	}
 
-	public function donate($id = null){
+	public function donate($id = null)
+	{
 		$this->LoadModel('SetConnection');
 		$_SESSION['page'] = 'home';
 		$_SESSION['title'] = 'Tsumego Hero - Upgrade';
 
 		$overallCounter = 0;
-		$sandboxSets = $this->Set->find('all', array('conditions' => array('public' => 0)));
-		for($i=0; $i<count($sandboxSets); $i++){
-			$ts = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array('set_id' => $sandboxSets[$i]['Set']['id'])));
+		$sandboxSets = $this->Set->find('all', ['conditions' => ['public' => 0]]);
+		for($i = 0; $i < count($sandboxSets); $i++)
+		{
+			$ts = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $sandboxSets[$i]['Set']['id']]]);
 			$overallCounter += count($ts);
 		}
 
-		$setsWithPremium = array();
-		$tsumegosWithPremium = array();
-		$swp = $this->Set->find('all', array('conditions' => array('premium' => 1)));
-		for($i=0;$i<count($swp);$i++){
+		$setsWithPremium = [];
+		$tsumegosWithPremium = [];
+		$swp = $this->Set->find('all', ['conditions' => ['premium' => 1]]);
+		for($i = 0;$i < count($swp);$i++)
+		{
 			array_push($setsWithPremium, $swp[$i]['Set']['id']);
-			$twp = $this->SetConnection->find('all', array('order' => 'num ASC', 'conditions' => array('set_id' => $swp[$i]['Set']['id'])));
-			for($j=0;$j<count($twp);$j++)
+			$twp = $this->SetConnection->find('all', ['order' => 'num ASC', 'conditions' => ['set_id' => $swp[$i]['Set']['id']]]);
+			for($j = 0;$j < count($twp);$j++)
 				array_push($tsumegosWithPremium, $twp[$j]);
 		}
 
