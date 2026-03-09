@@ -13,9 +13,12 @@ App::uses('NotFoundException', 'Routing/Error');
 
 class Play
 {
-	public function __construct($setFunction)
+	private $redirectFunction;
+
+	public function __construct($setFunction, $redirectFunction)
 	{
 		$this->setFunction = $setFunction;
+		$this->redirectFunction = $redirectFunction;
 	}
 
 	public function getTsumegoStatus(array $tsumego): string
