@@ -169,8 +169,8 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/achievements');
 		$browser->checkTable('.highscoreTable', $this, [
 			['Place', 'Name', 'Completed'],
-			['#1', 'player3d 3d', '8/115'],
-			['#2', 'Ivan Detkov 12d', '6/115']]);
+			['#1', 'player3d 3d', '8/114'],
+			['#2', 'Ivan Detkov 12d', '6/114']]);
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
