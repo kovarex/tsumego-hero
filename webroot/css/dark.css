@@ -260,3 +260,15 @@
 .dailyHighscoreTable a {
   color: #00e;
 }
+
+.color-separator td {
+  color: #aaa;
+}
+
+.color-self {
+  outline-color: #6ab0f3;
+}
+
+.color-self td {
+  background: rgba(106, 176, 243, 0.35) !important;
+}
