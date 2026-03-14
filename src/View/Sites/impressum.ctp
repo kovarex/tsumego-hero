@@ -1,23 +1,22 @@
 <div class="imp">
 	<div class="homeLeft2">
-		<p class="title4">Impressum (legal notice)</p>
+		<p class="title4">Legal Notice</p>
 		<br>
-		<h4>Impressum</h4>
-		Angaben gemäß § 5 TMG<br><br>
-		Joschka Zimdars<br>
-		Heinrich-Böll-Weg 2<br>
-		D-30629 Hannover<br><br>
-		me@joschkazimdars.com<br><br><br>
+		<h4>Legal Notice</h4>
 
-		<h4>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:</h4>
-		Joschka Zimdars<br>
-		Heinrich-Böll-Weg 2<br>
-		D-30629 Hannover<br>
+		<h4>Responsible for content according to § 5 of Act No. 480/2004 Coll., on Certain Information Society Services:</h4>
+		Michal Kovařík<br>
+		Belgická 196/38<br>
+		120 00 Praha 2-Vinohrady<br>
+		Czech Republic <br><br>
+		kovarex@gmail.com <br>
 		 <br><br>
 
-		<h4>Haftungsausschluss:<br><br>Haftung für Inhalte</h4>
+		<h4>Disclaimer:<br><br>Liability for Content</h4>
 
-		Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach § 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+		The content of our website has been created with the utmost care. However, we cannot guarantee the accuracy, completeness, or timeliness of the content. 
+		As a service provider, we are responsible for our own content on these pages in accordance with § 5 of Act No. 480/2004 Coll., on Certain Information Society Services. 
+		However, we are not obligated as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this respect is only possible from the point at which we become aware of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately.
 		<br><br><br>
 					
 	</div>
@@ -28,15 +27,12 @@
 		&nbsp;
 		</p>
 		<br>
-		<h4>Haftung für Links</h4>
-		Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
+		<h4>Liability for Links</h4>
+		Our website contains links to external websites of third parties, over whose content we have no influence. Therefore, we cannot assume any liability for this external content. The respective provider or operator of the linked pages is always responsible for their content. The linked pages were checked for possible legal violations at the time the links were created. Illegal content was not identified at the time the links were created. However, continuous monitoring of the content of linked pages is not reasonable without concrete evidence of a legal violation. Upon notification of legal violations, we will remove such links immediately.
 		<br><br><br>
-		<h4>Datenschutz</h4>
+		<h4>Data Protection</h4>
 
-		Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder eMail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben. 
-		Wir weisen darauf hin, dass die Datenübertragung im Internet (z.B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich. 
-		Der Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten durch Dritte zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit ausdrücklich widersprochen. Die Betreiber der Seiten behalten sich ausdrücklich rechtliche Schritte im Falle der unverlangten Zusendung von Werbeinformationen, etwa durch Spam-Mails, vor.
-			
+		The use of our website is generally possible without providing personal data. Insofar as personal data (e.g., name, address, or email addresses) is collected on our website, this is always done on a voluntary basis, where possible. This data will not be passed on to third parties without your express consent. Please note that data transmission over the Internet (e.g., when communicating by email) can have security vulnerabilities. Complete protection of data against access by third parties is not possible. The use of contact details published within the scope of the legal notice by third parties for sending unsolicited advertising and informational materials is hereby expressly prohibited. The operators of these pages expressly reserve the right to take legal action in the event of unsolicited advertising, such as spam emails.	
 	</div>
 	<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 </div>
