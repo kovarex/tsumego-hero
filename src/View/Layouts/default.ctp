@@ -356,7 +356,7 @@ echo $this->AssetCompress->script('app');
 			Tsumego Hero ┬⌐ <?php echo date('Y'); ?>
 	</div>
 		<div class="footer-element">
-		<a href="mailto:joschka.zimdars@googlemail.com">joschka.zimdars@googlemail.com</a>
+		<a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a>
 	</div>
 		<div class="footer-element">
 		<a href="/sites/impressum">Legal notice</a>
