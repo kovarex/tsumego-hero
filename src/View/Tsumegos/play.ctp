@@ -1934,13 +1934,14 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
-	besogo.editor.registerShowComment(function(commentText)
+	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
 			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
 			$("#theComment").text(commentText);
-
-		});
+		};
+	besogo.editor.registerShowComment(showComment);
+	showComment(besogo.editor.getCurrent().comment || '');
 
 		function addStyleLink(cssURL)
 		{
