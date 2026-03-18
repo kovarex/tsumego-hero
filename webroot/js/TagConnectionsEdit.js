@@ -21,12 +21,14 @@ class TagConnectionsEdit
 	isAdmin;
 	editActivated = false;
 	problemSolved;
+	isTimeMode;
 
-	constructor({tsumegoID, isAdmin, problemSolved, tags})
+	constructor({tsumegoID, isAdmin, problemSolved, isTimeMode, tags})
 	{
 		this.tsumegoID = tsumegoID;
 		this.isAdmin = isAdmin;
 		this.problemSolved = problemSolved;
+		this.isTimeMode = isTimeMode;
 		this.tags = tags;
 	}
 
@@ -61,7 +63,7 @@ class TagConnectionsEdit
 			.filter(tag =>
 				tag.isAdded &&
 				(tag.isApproved || tag.isMine) &&
-				(this.problemSolved || !tag.isHint))
+				(this.problemSolved || (!this.isTimeMode && !tag.isHint)))
 			.map((tag, i) => {
 				const tagLink = `href="/tags/view/${tag.id}"`;
 				const tagLinkId = `id="${makeIdValidName(tag.name)}"`;
@@ -76,13 +78,11 @@ class TagConnectionsEdit
 
 		if (!this.problemSolved)
 		{
-			const hintCount = this.tags.filter(tag =>
-				tag.isHint &&
-				tag.isAdded &&
-				(tag.isApproved || tag.isMine)
-			).length;
-			if (hintCount > 0)
-				result += ' (' + hintCount + ' hidden)';
+			const hiddenCount = this.isTimeMode
+				? this.tags.filter(tag => tag.isAdded && (tag.isApproved || tag.isMine)).length
+				: this.tags.filter(tag => tag.isHint && tag.isAdded && (tag.isApproved || tag.isMine)).length;
+			if (hiddenCount > 0)
+				result += ' (' + hiddenCount + ' hidden)';
 		}
 		if (result.length > 0)
 			result = 'Tags: ' + result;
