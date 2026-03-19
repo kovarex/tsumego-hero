@@ -1,11 +1,3 @@
-<div class="imp">
-<?php if(Auth::isAdmin()){ ?>
-	<div class="admin-panel-main-page" style="top:10px;left:540px">
-		<ul>
-			<li><a class="adminLink2" href="/users/adminstats">Activities</a></li>
-		</ul>
-	</div>
-	<?php } ?>
 	<table class="co-table" width="100%">
 	<tr>
 	<td width="50%">
@@ -20,4 +12,3 @@
 	</td>
 	</tr>
 	</table>
-</div>

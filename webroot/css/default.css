@@ -2299,38 +2299,6 @@ h4 {
 .co-table tr td {
   vertical-align: top;
 }
-.teuber {
-  height: 2920px;
-  background-color: #fff;
-  -moz-border-radius-bottomleft: 20px;
-  -moz-border-radius-bottomright: 20px;
-  border-radius-bottomleft: 20px;
-  border-radius-bottomright: 20px;
-  -moz-border-radius-bottomright: 20px;
-  -moz-border-radius-bottomleft: 20px;
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  -moz-border-radius-topright: 20px;
-  -moz-border-radius-topleft: 20px;
-  border-top-right-radius: 20px;
-  border-top-left-radius: 20px;
-}
-.imp {
-  background-color: #fff;
-
-  -moz-border-radius-bottomleft: 20px;
-  -moz-border-radius-bottomright: 20px;
-  border-radius-bottomleft: 20px;
-  border-radius-bottomright: 20px;
-  -moz-border-radius-bottomright: 20px;
-  -moz-border-radius-bottomleft: 20px;
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  -moz-border-radius-topright: 20px;
-  -moz-border-radius-topleft: 20px;
-  border-top-right-radius: 20px;
-  border-top-left-radius: 20px;
-}
 .homeCenter {
   width: 750px;
   text-align: justify;
@@ -2356,6 +2324,18 @@ h4 {
 }
 .newstable1 {
   margin: 0px;
+}
+.gradient-heading {
+  display: inline-block;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: linear-gradient(to left, #008e59, #3cc895);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .title2 {
   padding: 0px;
@@ -3128,6 +3108,133 @@ input.newCheck {
 }
 #heroLogout li a {
   color: #74d14c;
+}
+.timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 20px auto;
+  position: relative;
+}
+.timeline__event {
+  margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  margin: 20px 0;
+  border-radius: 6px;
+  align-self: center;
+  width: 1050px;
+}
+.timeline__event:nth-child(2n + 1) {
+  flex-direction: row-reverse;
+}
+.timeline__event:nth-child(2n + 1) .timeline__event__date {
+  border-radius: 6px;
+}
+.timeline__event:nth-child(2n + 1) .timeline__event__content {
+  border-radius: 6px;
+}
+.timeline__event:nth-child(2n + 1) .timeline__event__icon:before {
+  content: "";
+  width: 2px;
+  height: 100%;
+  background: #f6a4ec;
+  position: absolute;
+  top: 0%;
+  left: 50%;
+  z-index: -1;
+  transform: translateX(-50%);
+  animation: fillTop 2s forwards 4s ease-in-out;
+}
+.timeline__event:nth-child(2n + 1) .timeline__event__icon:after {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background: #f6a4ec;
+  position: absolute;
+  right: 0;
+  z-index: -1;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: fillLeft 2s forwards 4s ease-in-out;
+}
+.timeline__event__title {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  text-transform: uppercase;
+  font-weight: 600;
+  display:inline-block;
+  background: linear-gradient(to left, #81479a, #c099d0);
+  letter-spacing: 1.5px;
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.timeline__event__content {
+  padding: 20px;
+  box-shadow: 0 30px 60px -12px rgba(50,50,93,0.25),
+              0 18px 36px -18px rgba(0,0,0,0.3),
+              0 -12px 36px -8px rgba(0,0,0,0.025);
+  background: var(--info-box-background);
+  width: 684px;
+  border-radius: 6px;
+}
+.timeline__event__date {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0;
+  border-radius: 6px;
+}
+.timeline__event__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  align-self: center;
+  margin: 0 40px;
+  box-shadow: 0 30px 60px -12px rgba(50,50,93,0.25),
+              0 18px 36px -18px rgba(0,0,0,0.3),
+              0 -12px 36px -8px rgba(0,0,0,0.025);
+  padding: 0;
+  position: relative;
+}
+.timeline__event__description {
+  flex-basis: 60%;
+}
+.timeline__event--type2 .timeline__event__title {
+  background: linear-gradient(to left, #4348ac, #9799c0);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.timeline__event--type3 .timeline__event__title {
+  background: linear-gradient(to left, #008e59, #3cc895);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.timeline_box_height1{
+  height:120px;
+}
+.timeline_box_height2{
+  height:114px;
+}
+.timeline_box_height3{
+  height:116px;
+}
+.timeline_box_height4{
+  height:176px;
+}
+.timeline_box_height5{
+  height:143px;
+}
+.timeline_box_height6{
+  height:128px;
+}
+.timeline_box_height7{
+  height:196px;
 }
 .google-profile-image {
   position: relative;

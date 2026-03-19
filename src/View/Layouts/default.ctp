@@ -216,7 +216,7 @@ echo $this->AssetCompress->script('app');
 						echo '<li><a id="tutorialLink" href="/sites/websitefunctions" '.$websitefunctionsA.'>Functions & Modes</a></li>';
 						echo '<li><a id="tutorialLink" href="/sites/gotutorial" '.$gotutorialA.'>Go Rules</a></li>';
 						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a href="/users/authors" '.$aboutA.'>About</a></li>';
+						echo '<li><a href="/sites/about" '.$aboutA.'>About</a></li>';
 						echo '</ul>';
 						echo '</li>';
 						echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
@@ -353,7 +353,7 @@ echo $this->AssetCompress->script('app');
 		</div>
 	<div class="footer-space"></div>
 		<div class="footer-element">
-			Tsumego Hero ┬⌐ <?php echo date('Y'); ?>
+			Tsumego Hero © <?php echo date('Y'); ?>
 	</div>
 		<div class="footer-element">
 		<a href="mailto:kovarex@gmail.com">kovarex@gmail.com</a>
@@ -362,7 +362,7 @@ echo $this->AssetCompress->script('app');
 		<a href="/sites/impressum">Legal notice</a>
 	</div>
 		<div class="footer-element">
-		<a href="/users/authors">About</a>
+		<a href="/sites/about">About</a>
 	</div>
 	<br><br><br>
 	</div>

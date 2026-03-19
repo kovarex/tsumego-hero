@@ -976,6 +976,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 */
 	public function authors()
 	{
+		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 

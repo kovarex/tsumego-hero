@@ -1,4 +1,3 @@
-<div class="imp">
 	<div class="homeLeft2">
 		<p class="title4">Legal Notice</p>
 		<br>
@@ -10,7 +9,7 @@
 		120 00 Praha 2-Vinohrady<br>
 		Czech Republic <br><br>
 		kovarex@gmail.com <br>
-		 <br><br>
+		<br><br>
 
 		<h4>Disclaimer:<br><br>Liability for Content</h4>
 
@@ -18,7 +17,6 @@
 		As a service provider, we are responsible for our own content on these pages in accordance with § 5 of Act No. 480/2004 Coll., on Certain Information Society Services. 
 		However, we are not obligated as a service provider to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this respect is only possible from the point at which we become aware of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately.
 		<br><br><br>
-					
 	</div>
 	
 	<div class="homeRight2">
@@ -34,5 +32,3 @@
 
 		The use of our website is generally possible without providing personal data. Insofar as personal data (e.g., name, address, or email addresses) is collected on our website, this is always done on a voluntary basis, where possible. This data will not be passed on to third parties without your express consent. Please note that data transmission over the Internet (e.g., when communicating by email) can have security vulnerabilities. Complete protection of data against access by third parties is not possible. The use of contact details published within the scope of the legal notice by third parties for sending unsolicited advertising and informational materials is hereby expressly prohibited. The operators of these pages expressly reserve the right to take legal action in the event of unsolicited advertising, such as spam emails.	
 	</div>
-	<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-</div>
