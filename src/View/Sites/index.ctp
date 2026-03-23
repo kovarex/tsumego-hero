@@ -798,12 +798,6 @@ $highestRight = 17;
 				$("#title-image").attr("src", "/img/modeSelect24x.png?v=1.1");
 			<?php } ?>
 		}
-
-		var ajaxCall = $.ajax({
-			type: 'GET',
-			url: "mainPageAjax.txt",
-			dataType: 'txt'
-		});
 	</script>
 	<?php
 	if(!Auth::isLoggedIn()){
