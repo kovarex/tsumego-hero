@@ -574,6 +574,8 @@ class TsumegosController extends AppController
 		$firstMoveColor = $this->data['firstMoveColor'];
 		$correctMoves = $this->data['correctMoves'];
 
+		SgfController::validateSgfFormat($sgfData);
+
 		$tsumego = ClassRegistry::init("Tsumego")->findById($tsumegoID);
 		if (!$tsumego)
 			return;

@@ -1367,7 +1367,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	function jsCreateDownloadFile(name){
 		if(enableDownloads){
-			var blob = new Blob(["<?php echo $sgf['Sgf']['sgf']; ?>"],{
+			var blob = new Blob([<?php echo json_encode($sgf['Sgf']['sgf']); ?>],{
 				type: "sgf",
 			});
 			saveAs(blob, name+".sgf");
@@ -1914,7 +1914,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
-		options.sgf2 = "<?php echo $sgf['Sgf']['sgf']; ?>";
+		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf']); ?>;
 		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')

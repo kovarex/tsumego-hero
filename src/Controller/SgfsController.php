@@ -101,8 +101,7 @@ class SgfsController extends AppController
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++)
 		{
-			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
-			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
+
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
 			$s[$i]['Sgf']['user'] = $u['User']['name'];

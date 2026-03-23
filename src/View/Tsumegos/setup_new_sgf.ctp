@@ -32,7 +32,7 @@
 	}
 
 	let options = {};
-	options.sgf2 = "<?php echo $sgf; ?>";
+	options.sgf2 = <?php echo json_encode($sgf); ?>;
 	options.panels = [];
 	options.rootPath = '/besogo/';
 	besogo.create(document.getElementById('something'), options);
@@ -46,7 +46,7 @@
     form.method = 'POST';
     form.action = '/tsumegos/setupNewSgfStep2';
 
-	addInput(form, 'sgf', "<?php echo $sgf; ?>");
+	addInput(form, 'sgf', <?php echo json_encode($sgf); ?>);
 	addInput(form, 'firstMoveColor', firstColor);
 	addInput(form, 'correctMoves', correctMoves);
 	addInput(form, 'setConnectionID', <?php echo $setConnectionID; ?>);
