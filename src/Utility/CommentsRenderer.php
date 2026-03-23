@@ -74,7 +74,8 @@ FROM
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
-    LEFT JOIN set_connection ON set_connection.tsumego_id = tsumego.id
+    LEFT JOIN set_connection ON set_connection.id = (
+        SELECT MIN(sc.id) FROM set_connection sc WHERE sc.tsumego_id = tsumego.id)
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 
 		if (!empty($queryCondition))

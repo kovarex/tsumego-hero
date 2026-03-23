@@ -949,4 +949,24 @@ class CommentsControllerTest extends ControllerTestCase
 		else
 			$this->assertStringContainsString('too long', $messageErrors);
 	}
+
+	public function testDiscussionPageNoDuplicateCommentsForMultiSetTsumego()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'Set A', 'num' => 1],
+					['name' => 'Set B', 'num' => 1]
+				],
+				'status' => 'S',
+				'comments' => [['message' => 'UNIQUE_TEST_COMMENT_XYZ']]
+			]
+		]);
+
+		$this->testAction('comments', ['return' => 'view']);
+
+		// Comment appears in both "All Comments" and "Your Comments" sections (= 2 times)
+		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));
+	}
 }
