@@ -5,11 +5,13 @@ class TagConnectionsEdit
 	public $tsumegoID;
 	public $tags = [];
 	public $problemSolved;
+	public $isTimeMode;
 
 	public function __construct($tsumegoID, $problemSolved)
 	{
 		$this->tsumegoID = $tsumegoID;
 		$this->problemSolved = $problemSolved;
+		$this->isTimeMode = Auth::isInTimeMode();
 		$this->populateTags();
 	}
 
@@ -35,6 +37,7 @@ ORDER BY name", [Auth::getUserID(), $this->tsumegoID]);
 		$constructorParams[] = 'tsumegoID:' . $this->tsumegoID;
 		$constructorParams[] = 'isAdmin:' . Util::boolString(Auth::isAdmin());
 		$constructorParams[] = 'problemSolved:' . Util::boolString($this->problemSolved);
+		$constructorParams[] = 'isTimeMode:' . Util::boolString($this->isTimeMode);
 
 		$tags = [];
 		foreach ($this->tags as $tag)

@@ -182,6 +182,33 @@ class TagTest extends ControllerTestCase
 		$this->assertTextNotContains("hidden", $browser->getCssSelect(".tag-list")[0]->getText());
 	}
 
+	public function testHideAllTagsInTimeModeUntilSolved()
+	{
+		$contextParameters = [];
+		$contextParameters['user'] = ['mode' => Constants::$LEVEL_MODE, 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['tsumegos'] = [
+			['set_order' => 0, 'tags' => [['name' => 'ladder'], ['name' => 'hint-tag', 'is_hint' => 1]]],
+		];
+
+		$context = new ContextPreparator($contextParameters);
+		$browser = Browser::instance();
+
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_SLOW_SPEED
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		// In time mode, ALL tags (including non-hint) should be hidden before solving
+		$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-ladder"));
+		$this->assertCount(0, $browser->getCssSelect(".tag-list #tag-hint-tag"));
+
+		$browser->playWithResult('S'); // solve the problem
+
+		// After solving, both tags should be visible
+		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-ladder"));
+		$this->assertCount(1, $browser->getCssSelect(".tag-list #tag-hint-tag"));
+	}
+
 	public function testRemoveMyUnapprovedTag()
 	{
 		foreach ([false, true] as $popular)
