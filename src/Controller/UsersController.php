@@ -1414,29 +1414,31 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function deleteOldTsumegoStatuses($id): mixed
+	public function deleteOldTsumegoStatuses(): mixed
 	{
+		if (!$this->request->is('post'))
+			throw new MethodNotAllowedException();
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets');
 
-		// extra check of id, to make sure random link from someone doesn't just delete the progress
-		if ($id != Auth::getUserID())
-			return $this->redirect('/sets');
+		$userId = Auth::getUserID();
 		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
 		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
-			return $this->redirect('/users/view/' . Auth::getUserID());
+			return $this->redirect('/users/view/' . $userId);
 
-		$deleted = Util::query("SELECT COUNT(*) AS total FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()])[0]['total'];
-		Util::query("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()]);
-		Util::query("UPDATE user
+		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);
+
+		Util::execute("UPDATE user
 LEFT JOIN (
     SELECT user_id, COUNT(*) AS cnt
     FROM tsumego_status
     WHERE status IN ('S', 'W', 'C', 'X')
+    AND user_id = ?
     GROUP BY user_id
 ) ts ON ts.user_id = user.id
-SET user.solved = COALESCE(ts.cnt, 0)");
+SET user.solved = COALESCE(ts.cnt, 0)
+WHERE user.id = ?", [$userId, $userId]);
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
-		return $this->redirect('/users/view/' . Auth::getUserID());
+		return $this->redirect('/users/view/' . $userId);
 	}
 }
