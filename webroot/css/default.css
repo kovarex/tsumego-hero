@@ -770,6 +770,19 @@ li a.menuLi {
   border-bottom: 1px solid black;
 }
 
+.timeHighscoreTable td {
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+}
+.timeHighscoreTable td:first-child {
+  border-radius: 12px 0 0 12px;
+  border-left: 1px solid black;
+}
+.timeHighscoreTable td:last-child {
+  border-radius: 0 12px 12px 0;
+  border-right: 1px solid black;
+}
+
 .timeTableColor1 {
   background: linear-gradient(#d07e5a, #9f5231);
 }
@@ -4154,6 +4167,29 @@ nav ul .menuIcons1 {
 .dailyHighscoreTable {
   color: black;
 }
+
+.dailyHighscoreTable td a,
+.dailyHighscoreTable td b {
+  font-weight: bold;
+}
+
+.color-separator td {
+  font-size: 24px;
+  color: #888;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+}
+
+.color-self {
+  outline: 3px solid #4a90d9;
+  outline-offset: -3px;
+}
+
+.color-self td {
+  background: rgba(74, 144, 217, 0.3) !important;
+}
+
 nav a {
   display: block;
   font-size: 22px;

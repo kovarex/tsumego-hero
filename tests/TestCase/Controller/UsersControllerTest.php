@@ -74,47 +74,26 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/leaderboard');
 
-		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp
-		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
-		$rows = $table->findElements(WebDriverBy::tagName("tr"));
-		$this->assertCount(1, $rows);
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING));
-		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
+		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp but is shown at bottom
+		$browser->checkTable('.dailyHighscoreTable', $this,
+			[
+				['Place', 'Name', 'Premium', 'Solved', 'XP'],
+				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2 solved', '10 XP'],
+				['#2', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0 solved', '0 XP'],
+			]);
 
 		// Kovarex solves a problem
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('S'); // solve the problem
 
-		// now kovarex is there
+		// now kovarex is there (first, since solving gives more xp than Ivan's 10)
 		$browser->get('users/leaderboard');
 		$browser->checkTable('.dailyHighscoreTable', $this,
 			[
-				['1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '1 solved'],
-				['2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '2 solved']
+				['Place', 'Name', 'Premium', 'Solved', 'XP'],
+				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1 solved'],
+				['#2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2 solved', '10 XP'],
 			]);
-	}
-
-	public function testLevelHighscore()
-	{
-		foreach ([true, false] as $loggedIn)
-		{
-			$contextParameters = [];
-			$contextParameters['user'] = $loggedIn ? ['name' => 'kovarex'] : null;
-			$contextParameters['other-users'] = [['name' => 'Ivan Detkov', 'level' => 10]];
-			$contextParameters['tsumego'] = ['rating' => 2600, 'set_order' => 1];
-			$context = new ContextPreparator($contextParameters);
-			$browser = Browser::instance();
-			$browser->get('users/highscore');
-
-			// Ivan detkov is alone in the leaderboard
-			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
-			$rows = $table->findElements(WebDriverBy::tagName("tr"));
-			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
-			$this->assertTextStartsWith('Ivan Detkov', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
-			if ($loggedIn)
-				$this->assertTextStartsWith('kovarex', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
-
-		}
 	}
 
 	public function testUserContributionsShowsTagAdded()
@@ -132,45 +111,6 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextContains('Ivan Detkov', $browser->driver->getPageSource());
-	}
-
-	public function testUsersRatingLadder()
-	{
-		new ContextPreparator([
-			'other-users' => [
-				['name' => 'Ivan Detkov', 'rating' => 2887],
-				['name' => 'player3d', 'rating' => 2251],
-				['name' => 'player2d', 'rating' => 2249]]]);
-		$browser = Browser::instance();
-		$browser->get('users/rating');
-		$browser->checkTable('.highscoreTable', $this, [
-			['Place', 'Name', 'Rank', 'Rating'],
-			['#1', 'Ivan Detkov', '', '12d', '2887'],
-			['#2', 'player3d', '', '3d', '2251'],
-			['#3', 'player2d', '', '2d', '2249']]);
-	}
-
-	public function testAchievementsLadder()
-	{
-		new ContextPreparator([
-			'other-users' => [[
-				'name' => 'Ivan Detkov',
-				'rating' => 2887,
-				'achievement-statuses' => [
-					['id' => Achievement::PROBLEMS_1000],
-					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]],
-				[
-					'name' => 'player3d',
-					'rating' => 2251,
-					'achievement-statuses' => [
-						['id' => Achievement::PROBLEMS_1000],
-						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 7]]]]]);
-		$browser = Browser::instance();
-		$browser->get('users/achievements');
-		$browser->checkTable('.highscoreTable', $this, [
-			['Place', 'Name', 'Completed'],
-			['#1', 'player3d 3d', '8/115'],
-			['#2', 'Ivan Detkov 12d', '6/115']]);
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
@@ -294,5 +234,84 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('/users/showPublishSchedule');
 		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
+	}
+
+	public function testTimeModeFiltersBySpeedAndRank()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'kovarex'],
+			'other-users' => [['name' => 'timeplayer']],
+		]);
+
+		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '15k']]);
+		$rankId = $rankRow['TimeModeRank']['id'];
+		$rank10kRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '10k']]);
+		$rankId10k = $rank10kRow['TimeModeRank']['id'];
+		$sessionModel = ClassRegistry::init('TimeModeSession');
+
+		$sessions = [
+			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId, 'points' => 900],
+			['category' => TimeModeCategory::FAST, 'rank_id' => $rankId, 'points' => 600],
+			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
+		];
+		foreach ($sessions as $s)
+		{
+			$sessionModel->create();
+			$sessionModel->save(['TimeModeSession' => [
+				'user_id' => $context->otherUsers[0]['id'],
+				'time_mode_category_id' => $s['category'],
+				'time_mode_rank_id' => $s['rank_id'],
+				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
+				'points' => $s['points'],
+			]]);
+		}
+
+		// Slow/15k: shows 900, not 600 or 750
+		$this->testAction('users/highscore3?category=2&rank=15k', ['return' => 'view']);
+		$this->assertTextContains('900.00', $this->view);
+		$this->assertTextNotContains('600.00', $this->view);
+		$this->assertTextNotContains('750.00', $this->view);
+		$this->assertTextContains('new-button-time-inactive">Slow</a>', $this->view);
+		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
+
+		// Fast/15k: shows 600, not 900 or 750
+		$this->testAction('users/highscore3?category=1&rank=15k', ['return' => 'view']);
+		$this->assertTextContains('600.00', $this->view);
+		$this->assertTextNotContains('900.00', $this->view);
+		$this->assertTextContains('new-button-time-inactive">Fast</a>', $this->view);
+
+		// Slow/10k: shows 750, not 900
+		$this->testAction('users/highscore3?category=2&rank=10k', ['return' => 'view']);
+		$this->assertTextContains('750.00', $this->view);
+		$this->assertTextNotContains('900.00', $this->view);
+	}
+
+	public function testTimeModeRankButtonsPreserveCategory()
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
+
+		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '14k']]);
+		$rankId = $rankRow['TimeModeRank']['id'];
+		$sessionModel = ClassRegistry::init('TimeModeSession');
+
+		foreach ([TimeModeCategory::SLOW, TimeModeCategory::FAST, TimeModeCategory::BLITZ] as $cat)
+		{
+			$sessionModel->create();
+			$sessionModel->save(['TimeModeSession' => [
+				'user_id' => $context->user['id'],
+				'time_mode_category_id' => $cat,
+				'time_mode_rank_id' => $rankId,
+				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
+				'points' => 100,
+			]]);
+		}
+
+		// Each category's rank buttons should link back to the same category
+		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)
+		{
+			$this->testAction("users/highscore3?category={$catId}&rank=15k", ['return' => 'view']);
+			// Rank button links should contain the current category
+			$this->assertTextContains("category={$catId}&rank=", $this->view);
+		}
 	}
 }

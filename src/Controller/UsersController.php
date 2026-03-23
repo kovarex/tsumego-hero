@@ -542,8 +542,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (Auth::isLoggedIn())
 			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
 
-		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC, xp DESC']);
-		$this->set('users', $users);
+		$this->set('users', $this->queryHighscoreWithSelfView(
+			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
+				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
+			FROM user"
+		));
 		$this->set('activate', $activate);
 	}
 
@@ -561,8 +564,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$this->User->save($ux);
 		}
 
-		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'rating DESC']);
-		$this->set('users', $users);
+		$this->set('users', $this->queryHighscoreWithSelfView(
+			"SELECT id, name, external_id, picture, rating, premium,
+				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
+			FROM user"
+		));
 	}
 
 	/**
@@ -573,21 +579,22 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
 
-		$this->set('tagContributors', Util::query("
-SELECT
-	user.id as user_id,
-	user.name as user_name,
-	user.external_id as user_external_id,
-	user.picture as user_picture,
-	user.rating as user_rating,
-	count(*) AS tag_count
-FROM
-	tag_connection
-	JOIN user on tag_connection.user_id = user.id
-WHERE tag_connection.approved = true
-GROUP BY user_id
-ORDER BY tag_count DESC
-LIMIT 100"));
+		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+
+		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
+			SELECT
+				user.id as user_id,
+				user.name as user_name,
+				user.external_id as user_external_id,
+				user.picture as user_picture,
+				user.rating as user_rating,
+				user.premium as user_premium,
+				COUNT(tag_connection.id) AS tag_count,
+				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
+			FROM user
+			LEFT JOIN tag_connection ON tag_connection.user_id = user.id AND tag_connection.approved = true
+			WHERE tag_connection.id IS NOT NULL OR user.id = ?
+			GROUP BY user.id", 'user_id', [$userId]));
 	}
 
 	public function achievements(): void
@@ -602,20 +609,23 @@ LIMIT 100"));
 			$this->User->save($ux);
 		}
 
-		$this->set('users', Util::query("
-SELECT
-    user.id AS id,
-    user.name AS name,
-    user.rating AS rating,
-    user.picture AS picture,
-    user.external_id AS external_id,
-    SUM(achievement_status.value) AS achievement_score
-FROM user
-JOIN achievement_status
-    ON achievement_status.user_id = user.id
-GROUP BY user.id
-ORDER BY achievement_score DESC
-LIMIT 100;"));
+		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+
+		$this->set('users', $this->queryHighscoreWithSelfView("
+			SELECT
+				user.id AS id,
+				user.name AS name,
+				user.rating AS rating,
+				user.picture AS picture,
+				user.external_id AS external_id,
+				user.premium AS premium,
+				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
+				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
+			FROM user
+			LEFT JOIN achievement_status
+				ON achievement_status.user_id = user.id
+			WHERE achievement_status.id IS NOT NULL OR user.id = ?
+			GROUP BY user.id", 'id', [$userId]));
 	}
 
 	/**
@@ -626,140 +636,18 @@ LIMIT 100;"));
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
 
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Tsumego');
 		$this->loadModel('TimeModeSession');
+		$this->loadModel('TimeModeRank');
+
+		// Build rank name → ID lookup
+		$allRanks = $this->TimeModeRank->find('all');
+		$rankNameToId = [];
+		foreach ($allRanks as $r)
+			$rankNameToId[$r['TimeModeRank']['name']] = $r['TimeModeRank']['id'];
+
 		$currentRank = '';
 		$params1 = '';
 		$params2 = '';
-
-		if (Auth::isLoggedIn())
-		{
-			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = 2;
-			$this->User->save($ux);
-		}
-
-		if (isset($this->params['url']['category']))
-		{
-			$ro = $this->TimeModeSession->find('all', [
-				'order' => 'points DESC',
-				'conditions' => [
-					'mode' => $this->params['url']['category'],
-					'TimeModeAttempt' => $this->params['url']['TimeModeAttempt'],
-				],
-			]);
-			$currentRank = $this->params['url']['TimeModeAttempt'];
-			$params1 = $this->params['url']['category'];
-			$params2 = $this->params['url']['TimeModeAttempt'];
-		}
-		else
-		{
-			if (Auth::isLoggedIn())
-				$lastModex = Auth::getUser()['lastMode'] - 1;
-			else
-				$lastModex = 2;
-
-			$params1 = $lastModex;
-			$params2 = '15k';
-			$currentRank = $params2;
-			$ro = $this->TimeModeSession->find('all', [
-				'order' => 'points DESC',
-				'conditions' => [
-					'mode' => $params1,
-					'TimeModeAttempt' => $params2,
-				],
-			]);
-		}
-		$roAll = [];
-		$roAll['user'] = [];
-		$roAll['picture'] = [];
-		$roAll['points'] = [];
-		$roAll['result'] = [];
-
-		$roCount = count($ro);
-		for ($i = 0; $i < $roCount; $i++)
-		{
-			$us = $this->User->findById($ro[$i]['TimeModeSession']['user_id']);
-			$alreadyIn = false;
-			$roAllCount = count($roAll['user']);
-			for ($j = 0; $j < $roAllCount; $j++)
-				if ($roAll['user'][$j] == $us['User']['name'])
-					$alreadyIn = true;
-			if (!$alreadyIn)
-			{
-				array_push($roAll['user'], $us['User']['name']);
-				array_push($roAll['picture'], $us['User']['picture']);
-				array_push($roAll['points'], $ro[$i]['TimeModeSession']['points']);
-				array_push($roAll['result'], $ro[$i]['TimeModeSession']['status']);
-			}
-		}
-
-		$modes = [];
-		$modes[0] = [];
-		$modes[1] = [];
-		$modes[2] = [];
-		for ($i = 0; $i < 3; $i++)
-		{
-			$rank = 15;
-			$j = 0;
-			while ($rank > -5)
-			{
-				$kd = 'k';
-				$rank2 = $rank;
-				if ($rank >= 1)
-					$kd = 'k';
-				else
-				{
-					$rank2 = ($rank - 1) * (-1);
-					$kd = 'd';
-				}
-				$modes[$i][$j] = $rank2 . $kd;
-				$rank--;
-				$j++;
-			}
-		}
-		$modes2 = [];
-		$modes2[0] = [];
-		$modes2[1] = [];
-		$modes2[2] = [];
-		for ($i = 0; $i < 3; $i++)
-		{
-			$rank = 15;
-			$j = 0;
-			while ($rank > -5)
-			{
-				$kd = 'k';
-				$rank2 = $rank;
-				if ($rank >= 1)
-					$kd = 'k';
-				else
-				{
-					$rank2 = ($rank - 1) * (-1);
-					$kd = 'd';
-				}
-				$modes2[$i][$j] = $rank2 . $kd;
-				$rank--;
-				$j++;
-			}
-		}
-
-		$modesCount = count($modes);
-		for ($i = 0; $i < $modesCount; $i++)
-		{
-			$modesCount = count($modes[$i]);
-			for ($j = 0; $j < $modesCount; $j++)
-			{
-				$mx = $this->TimeModeSession->find('first', [
-					'conditions' => [
-						'TimeModeAttempt' => $modes[$i][$j],
-						'mode' => $i,
-					],
-				]);
-				if ($mx)
-					$modes[$i][$j] = 1;
-			}
-		}
 
 		if (Auth::isLoggedIn())
 		{
@@ -768,12 +656,122 @@ LIMIT 100;"));
 			$this->User->save($ux);
 		}
 
-		$this->set('roAll', $roAll);
+		if (isset($this->params['url']['category']))
+		{
+			$params1 = $this->params['url']['category'];
+			$params2 = $this->params['url']['rank'] ?? '15k';
+			$currentRank = $params2;
+			$categoryId = intval($params1) + 1;
+			$rankId = $rankNameToId[$params2] ?? 1;
+		}
+		else
+		{
+			if (Auth::isLoggedIn() && Auth::getUser()['last_time_mode_category_id'])
+				$categoryId = Auth::getUser()['last_time_mode_category_id'];
+			else
+				$categoryId = TimeModeCategory::SLOW;
+
+			$params1 = $categoryId - 1;
+			$params2 = '15k';
+			$currentRank = $params2;
+			$rankId = $rankNameToId[$params2] ?? 1;
+		}
+
+		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+
+		$this->set('users', $this->queryHighscoreWithSelfView("
+			SELECT
+				user.id AS id,
+				user.name AS name,
+				user.external_id AS external_id,
+				user.picture AS picture,
+				user.rating AS rating,
+				user.premium AS premium,
+				COALESCE(MAX(time_mode_session.points), 0) AS points,
+				ROW_NUMBER() OVER (ORDER BY COALESCE(MAX(time_mode_session.points), 0) DESC) as position
+			FROM user
+			LEFT JOIN time_mode_session ON time_mode_session.user_id = user.id
+				AND time_mode_session.time_mode_category_id = " . intval($categoryId) . "
+				AND time_mode_session.time_mode_rank_id = " . intval($rankId) . "
+			WHERE time_mode_session.id IS NOT NULL OR user.id = ?
+			GROUP BY user.id", 'id', [$userId]));
+
+		// Build rank buttons: single query replaces 60+ individual lookups
+		$existingSessions = Util::query("
+			SELECT time_mode_category_id, time_mode_rank_id
+			FROM time_mode_session
+			GROUP BY time_mode_category_id, time_mode_rank_id");
+		$sessionExists = [];
+		foreach ($existingSessions as $row)
+			$sessionExists[$row['time_mode_category_id'] . '_' . $row['time_mode_rank_id']] = true;
+
+		$rankNames = $this->buildRankNames();
+		$modes = [];
+		$modes2 = [];
+		for ($i = 0; $i < 3; $i++)
+		{
+			$modes[$i] = [];
+			$modes2[$i] = [];
+			foreach ($rankNames as $j => $rankName)
+			{
+				$modes2[$i][$j] = $rankName;
+				$rId = $rankNameToId[$rankName] ?? null;
+				$modes[$i][$j] = ($rId && isset($sessionExists[($i + 1) . '_' . $rId])) ? 1 : $rankName;
+			}
+		}
+
 		$this->set('TimeModeAttempt', $currentRank);
 		$this->set('params1', $params1);
 		$this->set('params2', $params2);
 		$this->set('modes', $modes);
 		$this->set('modes2', $modes2);
+	}
+
+	/**
+	 * Run a single CTE query that returns the top 100 + neighbor rows around the current user.
+	 * The $rankedQuery must be a SELECT that produces a `position` column via ROW_NUMBER().
+	 * Returns flat associative arrays with a `position` column. Gaps between top-100 and
+	 * the self-view section are visible as jumps in position numbers.
+	 *
+	 * @param string $rankedQuery SQL SELECT with ROW_NUMBER() ... as position
+	 * @param string $idColumn Column name used to identify the current user (default: 'id')
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = []): array
+	{
+		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+		$neighborRadius = 3;
+
+		$sql = "
+			WITH ranked AS ({$rankedQuery}),
+			self_pos AS (SELECT position FROM ranked WHERE {$idColumn} = ?)
+			SELECT r.*
+			FROM ranked r
+			LEFT JOIN self_pos sp ON 1=1
+			WHERE r.position <= 100
+			   OR (sp.position IS NOT NULL
+			       AND r.position BETWEEN sp.position - ? AND sp.position + ?)
+			ORDER BY r.position";
+
+		return Util::query($sql, array_merge($extraParams, [$userId, $neighborRadius, $neighborRadius]));
+	}
+
+	/**
+	 * Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
+	 */
+	private function buildRankNames(): array
+	{
+		$names = [];
+		$rank = 15;
+		while ($rank > -5)
+		{
+			if ($rank >= 1)
+				$names[] = $rank . 'k';
+			else
+				$names[] = (($rank - 1) * -1) . 'd';
+			$rank--;
+		}
+		return $names;
 	}
 
 	/**
@@ -783,27 +781,20 @@ LIMIT 100;"));
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('Tsumego');
-		$this->loadModel('DayRecord');
 
-		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
-		$userYesterdayName = 'Unknown';
-		if (count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id']))
-		{
-			$userYesterday = $this->User->findById($dayRecord[0]['DayRecord']['user_id']);
-			if ($userYesterday && isset($userYesterday['User']['name']))
-				$userYesterdayName = $userYesterday['User']['name'];
-		}
+		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
 
-		$users = ClassRegistry::init('User')->query('SELECT user.id, user.name, user.rating, user.external_id, user.picture, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
-		$exportedUsers = [];
-		foreach ($users as $user)
-			$exportedUsers [] = $user['user'];
+		$this->set('users', $this->queryHighscoreWithSelfView(
+			"SELECT id, name, external_id, picture, rating, premium, daily_xp, daily_solved,
+				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
+			FROM user
+			WHERE daily_xp > 0 OR id = ?",
+			'id',
+			[$userId]
+		));
 
-		$this->set('leaderboard', $exportedUsers);
-		$this->set('uNum', count($users));
-		$this->set('dayRecord', $userYesterdayName);
+		if (Auth::isAdmin())
+			$this->set('uNum', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
 	}
 
 	public function view($id = null): mixed
