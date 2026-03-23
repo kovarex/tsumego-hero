@@ -118,3 +118,34 @@ besogo.addTest("GameRoot", "LocalEditDoesntBreakStatusBasedProblem", function()
 	CHECK_EQUALS(move2.correct, CORRECT_GOOD);
 	CHECK_EQUALS(move3.correct, CORRECT_GOOD);
 });
+
+besogo.addTest("GameRoot", "KoComparisonRequiresBothCoordinatesToMatch", function()
+{
+	// Position A: ko point at (2,1)
+	// B(1,1) W(2,1) B(3,1) on row 1, W(1,2) W(3,2) W(2,3) surround (2,2)
+	// Black captures W(2,1) by playing at (2,2)
+	let rootA = besogo.makeGameRoot(5, 5);
+	rootA.placeSetup(1, 1, BLACK);
+	rootA.placeSetup(3, 1, BLACK);
+	rootA.placeSetup(2, 1, WHITE);
+	rootA.placeSetup(1, 2, WHITE);
+	rootA.placeSetup(3, 2, WHITE);
+	rootA.placeSetup(2, 3, WHITE);
+	let moveA = rootA.registerMove(2, 2); // Black captures W(2,1), ko at (2,1)
+
+	// Position B: ko point at (2,5) — same x, different y
+	let rootB = besogo.makeGameRoot(5, 5);
+	rootB.placeSetup(1, 5, BLACK);
+	rootB.placeSetup(3, 5, BLACK);
+	rootB.placeSetup(2, 5, WHITE);
+	rootB.placeSetup(1, 4, WHITE);
+	rootB.placeSetup(3, 4, WHITE);
+	rootB.placeSetup(2, 3, WHITE);
+	let moveB = rootB.registerMove(2, 4); // Black captures W(2,5), ko at (2,5)
+
+	// Same position should match
+	CHECK(moveA.hasSameKoStateAs(moveA));
+
+	// Different ko points sharing only x coordinate must NOT match
+	CHECK(!moveA.hasSameKoStateAs(moveB));
+});
