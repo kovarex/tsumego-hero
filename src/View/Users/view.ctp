@@ -239,7 +239,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<table width="95%" border="0">
 					<tr>
 						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements">View Achievements</a></b></td>
+						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['User']['id'] . '">View Achievements</a></b></td>
 					</tr>
 				</table>';
 	for($i=0; $i<count($as); $i++)

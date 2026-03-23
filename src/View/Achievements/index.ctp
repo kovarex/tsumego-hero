@@ -1,7 +1,12 @@
 	
 	<div align="center" >
 	<p class="title">
-				<br>Achievements
+				<br><?php
+					if (isset($viewedUser) && $viewedUser['id'] != Auth::getUserID())
+						echo htmlspecialchars($viewedUser['name']) . '\'s Achievements';
+					else
+						echo 'Achievements';
+				?>
 				<br><br> 
 				</p>
 				<div class="achievemetIndexLink">
@@ -9,9 +14,8 @@
 				</div>
 				<div class="achievemetProfileLink">
 					<?php
-						if(Auth::isLoggedIn()){
-							echo '<a href="/users/view/'.Auth::getUserID().'">Profile</a>';
-						}
+						if (isset($viewedUser))
+							echo '<a href="/users/view/' . $viewedUser['id'] . '">Profile</a>';
 					?>
 				</div>
 		<div align="center" id="achievementWrapper">
@@ -68,8 +72,13 @@
 			<br>
 			<br>
 			<?php
-				if(Auth::isLoggedIn()){
-					echo 'You completed '.($unlockedCounter+$unlockedCounter2).' of '.count($a).' achievements.';
+				if (isset($viewedUser))
+				{
+					$name = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['name']) : 'You';
+					if ($viewedUser['id'] == Auth::getUserID())
+						echo 'You completed '.($unlockedCounter+$unlockedCounter2).' of '.count($a).' achievements.';
+					else
+						echo $name . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
 				}
 			?>
 			<br>

@@ -9,6 +9,29 @@ class AchievementsController extends AppController
 	 */
 	public function index()
 	{
+		$this->renderAchievementsPage(Auth::isLoggedIn() ? Auth::getUser() : null);
+	}
+
+	/**
+	 * @param string|int $userId
+	 * @return void
+	 */
+	public function user($userId)
+	{
+		$user = $this->User->findById($userId);
+		if (!$user)
+			throw new NotFoundException('User not found');
+
+		$this->renderAchievementsPage($user['User']);
+		$this->render('index');
+	}
+
+	/**
+	 * @param array|null $viewedUser
+	 * @return void
+	 */
+	private function renderAchievementsPage($viewedUser)
+	{
 		$this->set('_page', 'user');
 		$this->set('_title', 'Tsumego Hero - Achievements');
 		$this->loadModel('AchievementStatus');
@@ -19,9 +42,10 @@ class AchievementsController extends AppController
 		if (!$a)
 			$a = [];
 
-		if (Auth::isLoggedIn())
+		if ($viewedUser)
 		{
-			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
+			$this->set('viewedUser', $viewedUser);
+			$as = $this->AchievementStatus->find('all', ['conditions' => ['user_id' => $viewedUser['id']]]);
 			if (!$as)
 				$as = [];
 
