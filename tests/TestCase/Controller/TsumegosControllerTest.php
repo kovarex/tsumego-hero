@@ -415,4 +415,21 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
 		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
 	}
+
+	public function testRootCommentIsDisplayedOnInitialLoad()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19]C[Go Seigen 4p vs Kubomatsu 6p]AB[cc];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$theComment = $browser->driver->findElement(WebDriverBy::id('theComment'));
+		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
+		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
+	}
 }
