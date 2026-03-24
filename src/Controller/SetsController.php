@@ -188,11 +188,7 @@ class SetsController extends AppController
 		$this->set('redirect', $redirect);
 	}
 
-	/**
-	 * @param int $id Set ID
-	 * @return void
-	 */
-	public function remove($id)
+	public function remove()
 	{
 		$this->loadModel('Tsumego');
 		$redirect = false;
