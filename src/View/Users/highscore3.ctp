@@ -107,7 +107,7 @@
 						#'.$place.'
 					</td>
 					<td width="225px" align="left" class="timeTableMiddle '.$tableRowColor.'">
-						'.$roAll['user'][$i].'
+						'.h($roAll['user'][$i]).'
 					</td>
 					<td width="90px" align="center" class="timeTableMiddle '.$tableRowColor.'">
 						'.$rank.'

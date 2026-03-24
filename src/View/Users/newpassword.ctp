@@ -8,7 +8,7 @@
 	<div class="left signin">
 		<?php echo CookieFlash::render(); ?>
 		 <h1>New password:</h1>
-		<form action="/users/newpassword/<?php echo $checksum; ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
+		<form action="/users/newpassword/<?php echo urlencode($checksum); ?>" id="UserNewpasswordForm" method="post" accept-charset="utf-8">
 		<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>	
 		<div class="input text required">
 			<label for="password"></label>

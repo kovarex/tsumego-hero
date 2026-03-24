@@ -5,7 +5,7 @@ echo '<thead><tr><td>Set</td><td>Tsumego</td><td>Solved</td><td>Misplays</td><td
 	foreach ($attempts as $attempt)
 	{
 		echo '<tr>';
-		echo '<td>' . $attempt['set_title'] . '</td>';
+		echo '<td>' . h($attempt['set_title']) . '</td>';
 		echo '<td>';
 		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'], false, false)->render();
 		echo '</td>';

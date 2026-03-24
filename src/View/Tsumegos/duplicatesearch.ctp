@@ -15,7 +15,7 @@
 			<?php
 				$sourceTsumegoButton->render();
 				echo '&nbsp;&nbsp;';
-				echo $sourceSetName;
+				echo h($sourceSetName);
 				?>
 			</div>
 		</td>
@@ -42,7 +42,7 @@
 			echo '<td><div style="display:flex;align-items: center">';
 			$item->tsumegoButton->render();
 			echo '&nbsp;&nbsp;';
-			echo $item->title . '</div></td>';
+			echo h($item->title) . '</div></td>';
 			echo '</tr>' . PHP_EOL;
 		}
 		if (empty($result))

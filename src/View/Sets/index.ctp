@@ -14,7 +14,7 @@
 					<?php
 						for($i=0; $i<count($setTiles); $i++){
 							if($setTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-topics'.$i.'">'.$setTiles[$i].'</div>';
+								echo '<div class="dropdown-tile" id="tile-topics'.$i.'">'.h($setTiles[$i]).'</div>';
 						}
 					?>
 					<div class="tiles-submit">
@@ -38,7 +38,7 @@
 					<?php
 						for($i=0; $i<count($difficultyTiles); $i++){
 							if($difficultyTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-difficulty'.$i.'">'.$difficultyTiles[$i].'</div>';
+								echo '<div class="dropdown-tile" id="tile-difficulty'.$i.'">'.h($difficultyTiles[$i]).'</div>';
 						}
 					?>
 					<div class="tiles-submit">
@@ -62,7 +62,7 @@
 					<?php
 						for($i=0; $i<count($tagTiles); $i++){
 							if($tagTiles[$i] != '[continuation]')
-								echo '<div class="dropdown-tile" id="tile-tags'.$i.'">'.$tagTiles[$i].'</div>';
+								echo '<div class="dropdown-tile" id="tile-tags'.$i.'">'.h($tagTiles[$i]).'</div>';
 						}
 					?>
 					<div class="tiles-submit">
@@ -149,7 +149,7 @@
 					style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
 				if ($set['solved_percent'] >= 100)
 					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top">' . $set['name'] . $partition . '</div>';
+				echo '<div class="collection-top">' . h($set['name']) . $partition . '</div>';
 				echo '<div class="collection-middle-left">' . $set['amount'] . ' ' . $problems . '</div>';
 				if ($set['difficulty'])
 					echo '<div class="collection-middle-right">' . $tilde . $set['difficulty'] . '</div>';
@@ -181,7 +181,7 @@
 				style="background-color:' . $set['color'] . ';background-image: '.$backgroundImage.'">';
 			if ($set['solved_percent'] >= 100)
 				echo '<div class="collection-completed">completed</div>';
-			echo '<div class="collection-top top-inactive">' . $set['name'] . $partition.'</div>';
+			echo '<div class="collection-top top-inactive">' . h($set['name']) . $partition.'</div>';
 			echo '<div class="collection-middle-left"></div>';
 			echo '<div class="collection-middle-right"></div>';
 			echo '<div class="collection-bottom">
@@ -338,8 +338,8 @@
 			echo 'animateBar(' . $i . ', ' . $set['solved_percent'] . ');';
 		}
 		?>
-		let query = "<?php echo $tsumegoFilters->query; ?>";
-		let queryRefresh = "<?php echo $queryRefresh; ?>";
+		let query = <?php echo json_encode($tsumegoFilters->query, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		let queryRefresh = <?php echo json_encode($queryRefresh, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let collectionSize = <?php echo $tsumegoFilters->collectionSize; ?>-0;
 		let filteredSets = [];
 		let filteredRanks = [];
@@ -372,10 +372,11 @@
 		let allTagIds = [];
 		let allTagNames = [];
 		<?php
+			$jsFlags = JSON_HEX_TAG | JSON_UNESCAPED_UNICODE;
 			foreach ($setsSelector->sets as $set)
 			{
 				echo 'allTopicIds.push("' . $set['id'] . '");';
-				echo 'allTopicNames.push("' . $set['name'] . '");';
+				echo 'allTopicNames.push(' . json_encode($set['name'], $jsFlags) . ');';
 			}
 
 		echo 'function toggleTopic(index, name, e) {
@@ -472,47 +473,53 @@
 				};';
 
 			foreach ($setTiles as $index => $setName) {
-				echo 'allTopicTiles.push("'.$setName.'");';
+				$jsName = json_encode($setName, $jsFlags);
+				echo 'allTopicTiles.push('.$jsName.');';
 				echo 'tileTopicsBool.push(false);';
-				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', "'.$setName.'", e); });';
+				echo '$("#tile-topics'.$index.'").click(function(e){ toggleTopic('.$index.', '.$jsName.', e); });';
 			}
 
 			foreach ($ranksArray as $rank) {
 				echo 'allDifficultyIds.push("'.$rank['id'].'");';
-				echo 'allDifficultyNames.push("'.$rank['name'].'");';
+				echo 'allDifficultyNames.push('.json_encode($rank['name'], $jsFlags).');';
 			}
 
 			foreach ($difficultyTiles as $index => $rankName) {
-				echo 'allDifficultyTiles.push("'.$rankName.'");';
+				$jsRankName = json_encode($rankName, $jsFlags);
+				echo 'allDifficultyTiles.push('.$jsRankName.');';
 				echo 'tileDifficultyBool.push(false);';
-				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', "'.$rankName.'", e); });';
+				echo '$("#tile-difficulty'.$index.'").click(function(e){ toggleRank('.$index.', '.$jsRankName.', e); });';
 			}
 
 			foreach ($tagList as $tag) {
 				echo 'allTagIds.push("'.$tag['id'].'");';
-				echo 'allTagNames.push("'.$tag['name'].'");';
+				echo 'allTagNames.push('.json_encode($tag['name'], $jsFlags).');';
 			}
 
 			foreach ($tagTiles as $index => $tagName) {
-				echo 'allTagTiles.push("'.$tagName.'");';
+				$jsTagName = json_encode($tagName, $jsFlags);
+				echo 'allTagTiles.push('.$jsTagName.');';
 				echo 'tileTagsBool.push(false);';
-				echo '$("#tile-tags'.$index.'").click(function(e){ toggleTag('.$index.', "'.$tagName.'", e); });';
+				echo '$("#tile-tags'.$index.'").click(function(e){ toggleTag('.$index.', '.$jsTagName.', e); });';
 			}
 
 			foreach ($tsumegoFilters->sets as $set) {
-				echo 'filteredSets.push("'.$set.'");';
-				echo 'activeTopicTiles.push("'.$set.'");';
-				echo 'handleTiles("'.$set.'", "topics", true);';
+				$jsSet = json_encode($set, $jsFlags);
+				echo 'filteredSets.push('.$jsSet.');';
+				echo 'activeTopicTiles.push('.$jsSet.');';
+				echo 'handleTiles('.$jsSet.', "topics", true);';
 			}
 			foreach ($tsumegoFilters->ranks as $rank) {
-				echo 'filteredRanks.push("'.$rank.'");';
-				echo 'activeDifficultyTiles.push("'.$rank.'");';
-				echo 'handleTiles("'.$rank.'", "difficulty", true);';
+				$jsRank = json_encode($rank, $jsFlags);
+				echo 'filteredRanks.push('.$jsRank.');';
+				echo 'activeDifficultyTiles.push('.$jsRank.');';
+				echo 'handleTiles('.$jsRank.', "difficulty", true);';
 			}
 			foreach ($tsumegoFilters->tags as $tag) {
-				echo 'filteredTags.push("'.$tag.'");';
-				echo 'activeTagTiles.push("'.$tag.'");';
-				echo 'handleTiles("'.$tag.'", "tags", true);';
+				$jsTag = json_encode($tag, $jsFlags);
+				echo 'filteredTags.push('.$jsTag.');';
+				echo 'activeTagTiles.push('.$jsTag.');';
+				echo 'handleTiles('.$jsTag.', "tags", true);';
 			}
 		?>
 		$(document).ready(function(){

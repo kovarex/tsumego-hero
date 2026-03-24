@@ -125,7 +125,7 @@
 					</td>
 					
 					<td width="225px" align="left">
-						'.$users[$i]['User']['name'].$excluded.'
+						'.h($users[$i]['User']['name']).$excluded.'
 					</td>
 					
 					<td width="90px">

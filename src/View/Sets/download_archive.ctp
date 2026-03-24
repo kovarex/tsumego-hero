@@ -17,7 +17,7 @@
 			echo $s[$i]['Set']['id'];
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
-			echo $s[$i]['Set']['title'];
+			echo h($s[$i]['Set']['title']);
 			echo '</td>';
 			echo '</tr>';
 		}

@@ -73,7 +73,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
-			echo '<a href="/' . $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a>';
+			echo '<a href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>';
 		else
 			echo '(Set-wide)';
 		echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($item) . '</div>

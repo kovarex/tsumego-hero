@@ -3,7 +3,7 @@
 <?php
 	if(!Auth::isAdmin()) echo '<script type="text/javascript">window.location.href = "/";</script>';
 
-	echo '<h2>Upload Image for '.$s['Set']['title'].'</h2>';
+echo '<h2>Upload Image for ' . h($s['Set']['title']) . '</h2>';
 ?>
 
 
@@ -16,10 +16,10 @@
 	</div>
 	<br><br>
 	<?php
-	echo '<a href="/sets/view/'.$id.'">back</a>';
-	
-	if($redirect) echo '<script type="text/javascript">window.location.href = "/sets/view/'.$id.'";</script>';
-	?>
+	echo '<a href="/sets/view/' . $id . '">back</a>';
+
+if($redirect) echo '<script type="text/javascript">window.location.href = "/sets/view/' . $id . '";</script>';
+?>
 	<style>
 		#msg2,
 #msg4,

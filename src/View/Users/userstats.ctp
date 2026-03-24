@@ -81,7 +81,7 @@
 					echo '<a style="color:black;" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_id'].'</a>';
 				echo '</td>';
 				echo '<td style="text-align:center">';
-					echo '<a style="color:black;text-decoration:none;" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_name'].'</a>';
+				echo '<a style="color:black;text-decoration:none;" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
 				echo '</td>';
 				echo '<td>';
 					echo 'lvl '. $ur[$i]['TsumegoAttempt']['level'];
@@ -94,7 +94,7 @@
 				echo '</td>';
 				echo '<td style="text-align:right">';
 					if(strlen($ur[$i]['TsumegoAttempt']['set_name'])>=30) $ur[$i]['TsumegoAttempt']['set_name'] = substr($ur[$i]['TsumegoAttempt']['set_name'], 0, 30);
-					echo $ur[$i]['TsumegoAttempt']['set_name'];
+					echo h($ur[$i]['TsumegoAttempt']['set_name']);
 				echo '</td>';
 				echo '<td>';
 					echo $ur[$i]['TsumegoAttempt']['tsumego_num'];
@@ -110,7 +110,7 @@
 			echo '</tr>';
 		}
 	}else{
-		echo $ur[0]['TsumegoAttempt']['user_name'].'<br>';
+		echo h($ur[0]['TsumegoAttempt']['user_name']).'<br>';
 		
 		$ids = array();
 		for($i=0; $i<count($ur); $i++){
@@ -140,7 +140,7 @@
 						echo '</td>';
 						echo '<td style="text-align:center">';
 							echo '<a style="color:black;text-decoration:none;" 
-							href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_name'].'</a>';
+						href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
 						echo '</td>';
 						echo '<td>';
 							echo 'lvl '. $ur[$i]['TsumegoAttempt']['level'];
@@ -154,7 +154,7 @@
 						echo '</td>';
 						echo '<td style="text-align:right">';
 							if(strlen($ur[$i]['TsumegoAttempt']['set_name'])>=30) $ur[$i]['TsumegoAttempt']['set_name'] = substr($ur[$i]['TsumegoAttempt']['set_name'], 0, 30);
-							echo $ur[$i]['TsumegoAttempt']['set_name'];
+							echo h($ur[$i]['TsumegoAttempt']['set_name']);
 						echo '</td>';
 						echo '<td>';
 							echo $ur[$i]['TsumegoAttempt']['tsumego_num'];

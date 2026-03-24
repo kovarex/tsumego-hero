@@ -34,7 +34,7 @@
 					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id']; ?>">
 					<div align="center" class="achievement1 <?php echo $a[$i]['Achievement']['color']; ?>">
 						<div class="acTitle">
-							<h1 <?php echo $adjust; ?>><?php echo $a[$i]['Achievement']['name']; ?></h1>
+							<h1 <?php echo $adjust; ?>><?php echo h($a[$i]['Achievement']['name']); ?></h1>
 						</div>
 						<div class="acImg">
 							<img src="/img/<?php echo $isActive; ?>.png"><br>
@@ -52,7 +52,7 @@
 							</div>
 						</div>
 						<div class="acDesc">
-							<?php echo $a[$i]['Achievement']['description']; ?>
+							<?php echo h($a[$i]['Achievement']['description']); ?>
 						</div>
 						<div class="acDate">
 							<?php 

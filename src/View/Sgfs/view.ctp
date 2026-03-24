@@ -14,9 +14,9 @@
 	<p class="title">
 		<br>
 		<?php if($type=='tsumego'){ ?>
-			Upload History of <?php echo $name; ?>
+			Upload History of <?php echo h($name); ?>
 		<?php }else{ ?>
-			Upload History of <?php echo $ux; ?>
+			Upload History of <?php echo h($ux); ?>
 		<?php } ?>
 		<br><br>
 	</p>
@@ -24,7 +24,7 @@
 		<div>
 			Duplicate with: <?php
 			for($i=0; $i<count($dId); $i++){
-				echo '<a href="/tsumegos/play/'.$dId[$i].'">'.$dTitle[$i].'</a>';
+				echo '<a href="/tsumegos/play/'.$dId[$i].'">'.h($dTitle[$i]).'</a>';
 				if($i!=count($dId)-1)
 					echo ', ';
 			}
@@ -55,13 +55,13 @@
 			if($s[$i]['Sgf']['user_id']==33)
 				echo 'automatically generated';
 			else
-				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'?user='.$s[$i]['Sgf']['user_id'].'">'.$s[$i]['Sgf']['user'].'</a>';
+				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'?user='.$s[$i]['Sgf']['user_id'].'">'.h($s[$i]['Sgf']['user']).'</a>';
 			echo '</td>';
 			echo '<td class="timeTableMiddle versionColor" align="left">';
 			if($type=='tsumego')
-				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.$s[$i]['Sgf']['title'].'</a> ';
+				echo '<a href="/tsumegos/play/'.($s[$i]['Sgf']['tsumego_id']).'"> '.h($s[$i]['Sgf']['title']).'</a> ';
 			else
-				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.$s[$i]['Sgf']['title'].'</a> ';
+				echo '<a href="/sgfs/view/'.($s[$i]['Sgf']['tsumego_id']*1337).'"> '.h($s[$i]['Sgf']['title']).'</a> ';
 			echo '<a href="/sgfs/view/'.$s[$i]['Sgf']['tsumego_id'].'" id="dl1-'.$s[$i]['Sgf']['id'].'">v '.$s[$i]['Sgf']['version'].'</a>';
 			echo '</td>
 			<td class="timeTableRight versionColor" align="left">
@@ -82,40 +82,40 @@
 <script>
 	function delV(sgfid){
 		var confirmed = confirm("Are you sure?");
-		if(confirmed) window.location.href = "/sgfs/view/<?php echo $id2; ?>?delete="+sgfid;
+		if(confirmed) window.location.href = "/sgfs/view/<?php echo (int)$id2; ?>?delete="+sgfid;
 	}
 
 	<?php for($i=0; $i<count($s); $i++){ ?>
-		$("#open-<?php echo $s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID='.$s[$i]['Sgf']['id']; ?>");
-		$("#dl1-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob<?php echo $s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf']); ?>],{
+		$("#open-<?php echo (int)$s[$i]['Sgf']['id'] ?>").attr("href", "<?php echo '/editor?sgfID=' . (int)$s[$i]['Sgf']['id']; ?>");
+		$("#dl1-<?php echo (int)$s[$i]['Sgf']['id']; ?>").click(function(){
+			var blob<?php echo (int)$s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
-			saveAs(blob<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['title'].' v'.$s[$i]['Sgf']['version']; ?>.sgf");
+			saveAs(blob<?php echo (int)$s[$i]['Sgf']['id']; ?>, <?php echo json_encode($s[$i]['Sgf']['title'].' v'.$s[$i]['Sgf']['version'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
-		$("#dl2-<?php echo $s[$i]['Sgf']['id']; ?>").click(function(){
-			var blob2<?php echo $s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf']); ?>],{
+		$("#dl2-<?php echo (int)$s[$i]['Sgf']['id']; ?>").click(function(){
+			var blob2<?php echo (int)$s[$i]['Sgf']['id']; ?> = new Blob([<?php echo json_encode($s[$i]['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
-			saveAs(blob2<?php echo $s[$i]['Sgf']['id']; ?>, "<?php echo $s[$i]['Sgf']['num']; ?>.sgf");
+			saveAs(blob2<?php echo (int)$s[$i]['Sgf']['id']; ?>, <?php echo json_encode($s[$i]['Sgf']['num'] . '.sgf', JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
-		$("#<?php echo $s[$i]['Sgf']['id']; ?>").hover(
+		$("#<?php echo (int)$s[$i]['Sgf']['id']; ?>").hover(
 		  function () {
-			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
+			$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#f7f7f7, #b9b9b9)");
 		  },
 		  function () {
-			$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
+			$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","");
 		  }
 		);
 		<?php if($i!=count($s)-1){ ?>
-			$("#compare-<?php echo $s[$i]['Sgf']['id']; ?>").hover(
+			$("#compare-<?php echo (int)$s[$i]['Sgf']['id']; ?>").hover(
 			  function () {
-				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
-				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
+				$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
+				$("#<?php echo (int)$s[$i]['Sgf']['diff']; ?> td").css("background","linear-gradient(#fff, #c8c8c8)");
 			  },
 			  function () {
-				$("#<?php echo $s[$i]['Sgf']['id']; ?> td").css("background","");
-				$("#<?php echo $s[$i]['Sgf']['diff']; ?> td").css("background","");
+				$("#<?php echo (int)$s[$i]['Sgf']['id']; ?> td").css("background","");
+				$("#<?php echo (int)$s[$i]['Sgf']['diff']; ?> td").css("background","");
 			  }
 			);
 		<?php } ?>

@@ -41,8 +41,8 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 	public function renderItem(int $index, array $item): void
 	{
 		echo '<td>' . ($index + 1) + ($this->page - 1) * self::$PAGE_SIZE . '</td><td class="adminpanel-table-text">' . User::renderLink($item) . ' added ';
-		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . $item['tag_name'];
-		echo '</a> for <a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . $item['set_title'] . ' - ' . $item['num'] . '</a></td>';
+		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . h($item['tag_name']);
+		echo '</a> for <a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td>';
 		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
 		echo '</td>';

@@ -93,7 +93,7 @@ class TagsController extends AppController
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
 			$ux = $this->User->findById($tagNames[$i]['Tag']['user_id']);
-			$tagNames[$i]['Tag']['status'] = '<b style="color:#047804">accepted</b>';
+			$tagNames[$i]['Tag']['status'] = 'accepted';
 			$tagNames[$i]['Tag']['type'] = 'tag name';
 			$tagNames[$i]['Tag']['user'] = $ux['User']['name'];
 
@@ -112,7 +112,7 @@ class TagsController extends AppController
 			$r = [];
 			$r['Tag']['name'] = $rejectedTagNames[$i]['Reject']['text'];
 			$r['Tag']['type'] = $rejectedTagNames[$i]['Reject']['type'];
-			$r['Tag']['status'] = '<b style="color:#ce3a47">rejected</b>';
+			$r['Tag']['status'] = 'rejected';
 			$r['Tag']['created'] = $rejectedTagNames[$i]['Reject']['created'];
 			$r['Tag']['user'] = $ux['User']['name'];
 			$tagNames[] = $r;
@@ -137,13 +137,13 @@ class TagsController extends AppController
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($tags[$i]['TagConnection']['user_id']);
 			if ($tnx['Tag']['name'] == '')
-				$tags[$i]['TagConnection']['tag_name'] = '<i>[not found]</i>';
+				$tags[$i]['TagConnection']['tag_name'] = '[not found]';
 			else
 				$tags[$i]['TagConnection']['tag_name'] = $tnx['Tag']['name'];
 			$tags[$i]['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$tags[$i]['TagConnection']['user'] = $ux['User']['name'];
 			$tags[$i]['TagConnection']['type'] = 'tag';
-			$tags[$i]['TagConnection']['status'] = '<b style="color:#047804">accepted</b>';
+			$tags[$i]['TagConnection']['status'] = 'accepted';
 
 			$listCreated[] = $tags[$i]['TagConnection']['created'];
 			$listType[] = 'tag';
@@ -168,7 +168,7 @@ class TagsController extends AppController
 			$r['TagConnection']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
 			$r['TagConnection']['user'] = $ux['User']['name'];
 			$r['TagConnection']['type'] = $rejectedTags[$i]['Reject']['type'];
-			$r['TagConnection']['status'] = '<b style="color:#ce3a47">rejected</b>';
+			$r['TagConnection']['status'] = 'rejected';
 			$r['TagConnection']['created'] = $rejectedTags[$i]['Reject']['created'];
 			$tags[] = $r;
 
@@ -191,7 +191,7 @@ class TagsController extends AppController
 			$sx = $this->Set->findById($scx['SetConnection']['set_id']);
 			$ux = $this->User->findById($proposals[$i]['Sgf']['user_id']);
 			$proposals[$i]['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$proposals[$i]['Sgf']['status'] = '<b style="color:#047804">accepted</b>';
+			$proposals[$i]['Sgf']['status'] = 'accepted';
 			$proposals[$i]['Sgf']['user'] = $ux['User']['name'];
 			$proposals[$i]['Sgf']['type'] = 'proposal';
 
@@ -215,7 +215,7 @@ class TagsController extends AppController
 			$r = [];
 			$r['Sgf']['tsumego_id'] = $rejectedProposals[$i]['Reject']['tsumego_id'];
 			$r['Sgf']['tsumego'] = $sx['Set']['title'] . ' - ' . $scx['SetConnection']['num'];
-			$r['Sgf']['status'] = '<b style="color:#ce3a47">rejected</b>';
+			$r['Sgf']['status'] = 'rejected';
 			$r['Sgf']['type'] = $rejectedProposals[$i]['Reject']['type'];
 			$r['Sgf']['user'] = $ux['User']['name'];
 			$r['Sgf']['created'] = $rejectedProposals[$i]['Reject']['created'];

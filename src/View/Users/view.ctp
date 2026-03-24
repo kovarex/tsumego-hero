@@ -18,14 +18,14 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<div class="userStatsGreen">
 		<table class="userTopTable1" id="name-and-email-table">
 		<tr>
-			<td><?php echo $user['User']['name']; ?></td>
+			<td><?php echo h($user['User']['name']); ?></td>
 			<td><?php User::renderPremium($user['User']); ?></td>
 		</tr>
 		<?php
 		if (Auth::getUserID() == $user['User']['id'])
 		{
 			echo '<tr>';
-			echo '<td>'.$user['User']['email'].'</td>';
+			echo '<td>'.h($user['User']['email']).'</td>';
 			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
 			echo '</tr>';
 			echo '<tr>';
@@ -213,6 +213,8 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<?php
+if (!function_exists('showStatistics'))
+{
 function showStatistics($side, $as, $user, $dailyResults)
 {
 	echo '
@@ -251,10 +253,10 @@ function showStatistics($side, $as, $user, $dailyResults)
 		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
 			<div class="acTitle2">
-				<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
+				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>
 			</div>
 			<div class="acImg">
-				<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
+				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
 				<div class="acImgXp">
 				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
@@ -272,6 +274,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 	</td>
 <?php
 }
+} // function_exists
 showStatistics('Left', $as, $user, $dailyResults);
 showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>

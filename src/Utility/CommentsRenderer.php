@@ -17,22 +17,22 @@ class CommentsRenderer
 		echo '<tr><td width="73%"><div style="padding-bottom:7px;"><b>#' . ($index + 1) . '</b> | ';
 		if ($comment['set_connection_id'])
 		{
-			echo '<a href="/' . $comment['set_connection_id'] . '?search=topics">';
-			echo $comment['set_title'] . ' - ' . $comment['set_num'] . '</a><br>';
+			echo '<a href="/' . (int) $comment['set_connection_id'] . '?search=topics">';
+			echo h($comment['set_title']) . ' - ' . h($comment['set_num']) . '</a><br>';
 		}
 		else
-			echo '<i>Problem (id=' . $comment['tsumego_id'] . 'doesn\'t have set connection.</i>';
+			echo '<i>Problem (id=' . (int) $comment['tsumego_id'] . ' doesn\'t have set connection.</i>';
 
 		echo '<br></div>';
 		echo '<div class="' . $commentColor . '">';
-		echo $comment['from_name'] . ':<br>';
+		echo h($comment['from_name']) . ':<br>';
 		echo '</div>';
 		echo '<div ';
 		if($comment['from_admin'])
 			echo 'class="commentBox2" ';
 		echo 'id="comment_' . $comment['id'] . '"';
 		if (TsumegoUtil::isSolvedStatus($comment['status']) || Auth::isAdmin())
-			echo '>' . $comment['message'] . '</div>';
+			echo '>' . nl2br(h($comment['message'])) . '</div>';
 		else
 			echo ' class="grey-text">[You need to solve this problem to see the comment]</div>';
 		$date = new DateTime($comment['created']);
