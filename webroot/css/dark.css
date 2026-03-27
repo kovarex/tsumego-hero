@@ -1,3 +1,6 @@
+html {
+  background-color: #111;
+}
 .filterLabel1,
 .timeTableColor11 {
   color: #f0f0f0;
@@ -194,10 +197,47 @@
   background: #2a2a2a;
 }
 .apexcharts-menu-item {
-  color: black;
+  color: #f0f0f0;
 }
 .apexcharts-title-text {
-  color: #fff;
+  fill: #fff !important;
+}
+.apexcharts-tooltip {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+.apexcharts-tooltip-title {
+  background: #2a2a2a !important;
+  border-bottom-color: #444 !important;
+}
+.apexcharts-menu {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+}
+.apexcharts-menu-item:hover {
+  background: #333 !important;
+}
+.apexcharts-tooltip,
+.apexcharts-tooltip-text,
+.apexcharts-tooltip-text-y-label,
+.apexcharts-tooltip-text-y-value,
+.apexcharts-tooltip-text-goals-label,
+.apexcharts-tooltip-text-goals-value,
+.apexcharts-tooltip-text-z-label,
+.apexcharts-tooltip-text-z-value {
+  color: #f0f0f0 !important;
+}
+/* ApexCharts SVG elements use fill, not color */
+.apexcharts-text tspan,
+.apexcharts-xaxis-label tspan,
+.apexcharts-yaxis-label tspan,
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value {
+  fill: #fff !important;
+}
+.timeGraph {
+  border-color: #333;
 }
 .h1profile h1,
 .profileTable2 a {

@@ -1,0 +1,12 @@
+/* ApexCharts SVG text colors for light mode */
+.apexcharts-text tspan,
+.apexcharts-xaxis-label tspan,
+.apexcharts-yaxis-label tspan,
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value {
+  fill: #000 !important;
+}
+
+.apexcharts-title-text {
+  fill: #000 !important;
+}
