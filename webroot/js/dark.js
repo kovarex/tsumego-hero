@@ -5,7 +5,9 @@ function darkAndLight()
 	const darkLink = document.getElementById("dark-theme-css");
 	const lightLink = document.getElementById("light-theme-css");
 
-	if (light)
+	var goingDark = light;
+
+	if (goingDark)
 	{
 		// Switch to dark theme
 		setCookie("lightDark", "dark");
@@ -25,6 +27,27 @@ function darkAndLight()
 		lightLink.disabled = false;
 		darkLink.disabled = true;
 	}
-	
+
+	if (window.__apexCharts)
+	{
+		var themeMode = goingDark ? 'dark' : 'light';
+		var foreColor = goingDark ? '#f0f0f0' : '#373d3f';
+		var gridColors = goingDark ? ['#3e3e3e', 'transparent'] : ['#ddd', 'transparent'];
+		window.__apexCharts.forEach(function(chart) {
+			chart.updateOptions({
+				theme: { mode: themeMode },
+				chart: { foreColor: foreColor },
+				grid: { row: { colors: gridColors } },
+				plotOptions: {
+					bar: {
+						dataLabels: {
+							total: { style: { color: foreColor } }
+						}
+					}
+				}
+			}, true, false); // redrawPaths=true, animate=false
+		});
+	}
+
 	light = !light;
 }

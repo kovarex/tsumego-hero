@@ -31,6 +31,7 @@ class ValueGraphRenderer
 				stacked: true,
 				foreColor: '" . Util::getGraphGridColor() . "'
 			},
+			theme: { mode: '" . Util::getGraphThemeMode() . "' },
 			plotOptions:
 			{
 				bar:
@@ -45,8 +46,7 @@ class ValueGraphRenderer
 							style:
 							{
 								fontSize: '13px',
-								fontWeight: 900,
-								color: '" . Util::getGraphGridColor() . "'
+								fontWeight: 900
 							}
 					  }
 					}
@@ -71,6 +71,9 @@ class ValueGraphRenderer
 				colors: ['#74d14c', '#d63a49']
 			}
 		};
-		new ApexCharts(document.querySelector('#" . $id . "'), options).render();";
+		var chart = new ApexCharts(document.querySelector('#" . $id . "'), options);
+chart.render();
+if (!window.__apexCharts) window.__apexCharts = [];
+window.__apexCharts.push(chart);";
 	}
 }

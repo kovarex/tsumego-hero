@@ -7993,3 +7993,94 @@ body.dark-theme .btn--warning {
 @keyframes spin {
 to { transform: rotate(360deg); }
 }
+
+/* =============================================================================
+   ApexCharts Theme Overrides
+   ============================================================================= */
+
+/* Chart container backgrounds — not covered by ApexCharts theme.mode */
+body.dark-theme #chart1,
+body.dark-theme .chart-box,
+body.dark-theme #chart2,
+body.dark-theme #chart3,
+body.dark-theme #chart11,
+body.dark-theme #chart22,
+body.dark-theme #chart33 {
+  background: #2a2a2a;
+}
+
+/* Tooltip — ApexCharts docs recommend CSS for tooltip customization.
+   Uses body class prefix so it switches instantly on toggle.
+   Both dark AND light rules needed: !important overrides stale inline styles
+   left on the tooltip HTML element between toggles. */
+body.dark-theme .apexcharts-tooltip {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .apexcharts-tooltip-title {
+  background: #2a2a2a !important;
+  border-bottom-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-theme .apexcharts-tooltip-text,
+body.dark-theme .apexcharts-tooltip-text-y-label,
+body.dark-theme .apexcharts-tooltip-text-y-value,
+body.dark-theme .apexcharts-tooltip-text-goals-label,
+body.dark-theme .apexcharts-tooltip-text-goals-value,
+body.dark-theme .apexcharts-tooltip-text-z-label,
+body.dark-theme .apexcharts-tooltip-text-z-value {
+  color: #f0f0f0 !important;
+}
+
+body.light-theme .apexcharts-tooltip {
+  background: #fff !important;
+  border-color: #e3e3e3 !important;
+  color: #373d3f !important;
+}
+
+body.light-theme .apexcharts-tooltip-title {
+  background: #f9f9f9 !important;
+  border-bottom-color: #eee !important;
+  color: #373d3f !important;
+}
+
+body.light-theme .apexcharts-tooltip-text,
+body.light-theme .apexcharts-tooltip-text-y-label,
+body.light-theme .apexcharts-tooltip-text-y-value,
+body.light-theme .apexcharts-tooltip-text-goals-label,
+body.light-theme .apexcharts-tooltip-text-goals-value,
+body.light-theme .apexcharts-tooltip-text-z-label,
+body.light-theme .apexcharts-tooltip-text-z-value {
+  color: #373d3f !important;
+}
+
+/* Menu */
+body.dark-theme .apexcharts-menu {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+}
+
+body.dark-theme .apexcharts-menu-item {
+  color: #f0f0f0;
+}
+
+body.dark-theme .apexcharts-menu-item:hover {
+  background: #333 !important;
+}
+
+body.light-theme .apexcharts-menu {
+  background: #fff !important;
+  border-color: #e3e3e3 !important;
+}
+
+body.light-theme .apexcharts-menu-item {
+  color: #373d3f;
+}
+
+/* Time graph border */
+body.dark-theme .timeGraph {
+  border-color: #333;
+}
