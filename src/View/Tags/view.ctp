@@ -1,13 +1,13 @@
 
 <div class="tags-container">
    <div class="tags-content">
-				<h1><?php echo $tn['Tag']['name']; ?></h1>
-	<p><?php echo $tn['Tag']['description']; ?></p>
-	<p><a href="<?php echo $tn['Tag']['link']; ?>" target="_blank"><?php echo $tn['Tag']['link']; ?></a></p>
+				<h1><?php echo h($tn['Tag']['name']); ?></h1>
+	<p><?php echo h($tn['Tag']['description']); ?></p>
+	<p><a href="<?php echo h($tn['Tag']['link']); ?>" target="_blank"><?php echo h($tn['Tag']['link']); ?></a></p>
 	<?php if($tn['Tag']['hint'] == 1){ ?>
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>
-	<p>Created by <?php echo $tn['Tag']['user'] ?>.</p>
+	<p>Created by <?php echo h($tn['Tag']['user']) ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
 		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>" id="tag-edit">Edit</a>
 		<?php if(Auth::getUserID()==72){ ?>
@@ -18,7 +18,7 @@
 				</div>
         <div class="existing-tags-list">
 				Other tags:
-			<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['id'] . '">' . $tag['name'] . '</a>', $allTags)); ?>
+			<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['id'] . '">' . h($tag['name']) . '</a>', $allTags)); ?>
 			<a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
 		</div>
   </div>

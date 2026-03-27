@@ -17,12 +17,12 @@ class AdminActivity extends AppModel
 	{
 		switch ($adminActivity['type'])
 		{
-			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . $adminActivity['new_value'];
-			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . $adminActivity['old_value'];
-			case AdminActivityType::ADD_TAG: return 'Added tag ' . $adminActivity['new_value'];
-			case AdminActivityType::DELETE_USER: return 'Deleted user ' . $adminActivity['old_value'];
-			case AdminActivityType::ACCEPT_PROPOSAL: return 'Accepted proposal by ' . $adminActivity['new_value'];
-			case AdminActivityType::REJECT_PROPOSAL: return 'Rejected proposal by ' . $adminActivity['new_value'];
+			case AdminActivityType::ACCEPT_TAG: return 'Accepted tag ' . h($adminActivity['new_value']);
+			case AdminActivityType::REJECT_TAG: return 'Rejected tag ' . h($adminActivity['old_value']);
+			case AdminActivityType::ADD_TAG: return 'Added tag ' . h($adminActivity['new_value']);
+			case AdminActivityType::DELETE_USER: return 'Deleted user ' . h($adminActivity['old_value']);
+			case AdminActivityType::ACCEPT_PROPOSAL: return 'Accepted proposal by ' . h($adminActivity['new_value']);
+			case AdminActivityType::REJECT_PROPOSAL: return 'Rejected proposal by ' . h($adminActivity['new_value']);
 			case AdminActivityType::TSUMEGO_MERGE:
 				{
 					$decoded = json_decode($adminActivity['old_value'], true);
@@ -60,7 +60,7 @@ class AdminActivity extends AppModel
 					/** @phpstan-ignore-next-line */
 					if ($adminActivity['new_value'] === '0')
 						return $adminActivity['readable_type'] . ' → disabled';
-					return $adminActivity['readable_type'] . ': [Empty]  → ' . $adminActivity['new_value'];
+					return $adminActivity['readable_type'] . ': [Empty]  → ' . h($adminActivity['new_value']);
 				}
 				return $adminActivity['readable_type'];
 		}

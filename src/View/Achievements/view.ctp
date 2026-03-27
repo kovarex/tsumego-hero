@@ -5,7 +5,7 @@
 	else $aColor = 'achievementColorGray';
 	?>
 	<p class="title <?php echo $aColor; ?>2">
-				<br>Achievement: <?php echo $a['Achievement']['name']; ?>
+				<br>Achievement: <?php echo h($a['Achievement']['name']); ?>
 				<br><br> 
 				</p>
 				<div class="achievemetProfileLink">
@@ -25,7 +25,7 @@
 	if(empty($as)) $a['Achievement']['image'] = 'ac000i';
 	?>">
 		<div class="acTitle">
-			<h1><?php echo $a['Achievement']['name']; ?></h1>
+			<h1><?php echo h($a['Achievement']['name']); ?></h1>
 		</div>
 		<div class="acImg">
 			<img src="/img/<?php echo $a['Achievement']['image']; ?>.png">
@@ -44,7 +44,7 @@
 		</div>
 		<div class="acDesc">
 			<?php 
-			echo $a['Achievement']['description']; 
+			echo h($a['Achievement']['description']); 
 			if($a['Achievement']['additionalDescription']!=null) echo '*';
 			?>
 		</div>
@@ -61,7 +61,7 @@
 	<font color="gray">
 	<?php 
 	if($a['Achievement']['additionalDescription']!=null)
-		echo '*'.$a['Achievement']['additionalDescription']; 
+		echo '*'.h($a['Achievement']['additionalDescription']); 
 	?></font>
 	<br>
 	<br>
@@ -76,7 +76,7 @@
 	if($aCount>0){
 		echo 'Completed by ';
 		for($i=0; $i<count($asAll); $i++){
-			echo $asAll[$i]['AchievementStatus']['name'];
+			echo h($asAll[$i]['AchievementStatus']['name']);
 			if($i<count($asAll)-1) echo ', ';
 			
 		}

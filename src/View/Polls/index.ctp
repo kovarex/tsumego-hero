@@ -44,12 +44,12 @@
         </td>
         <td>
           <?php
-				echo $posts[$i]['Post']['title'];
+				echo h($posts[$i]['Post']['title']);
             ?>
         </td>
 		<td>
           <?php
-				echo $posts[$i]['Post']['b'].' ('.$posts[$i]['Post']['bRank'].') vs '.$posts[$i]['Post']['w'].' ('.$posts[$i]['Post']['wRank'].')';
+				echo h($posts[$i]['Post']['b']).' ('.h($posts[$i]['Post']['bRank']).') vs '.h($posts[$i]['Post']['w']).' ('.h($posts[$i]['Post']['wRank']).')';
             ?>
         </td>
     </tr>

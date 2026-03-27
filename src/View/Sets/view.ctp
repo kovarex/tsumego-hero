@@ -1,20 +1,21 @@
 <?php
-	$noImage = false;
-	if($isFav) $noImage = true;
-	if($set['Set']['id']==11969 || $set['Set']['id']==29156 || $set['Set']['id']==31813 || $set['Set']['id']==33007
-	|| $set['Set']['id']==71790 || $set['Set']['id']==74761 || $set['Set']['id']==81578 || $set['Set']['id']==88156)
-		$noImage = true;
+$noImage = false;
+if($isFav) $noImage = true;
+if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id'] == 31813 || $set['Set']['id'] == 33007
+|| $set['Set']['id'] == 71790 || $set['Set']['id'] == 74761 || $set['Set']['id'] == 81578 || $set['Set']['id'] == 88156)
+	$noImage = true;
 
-	if($set['Set']['premium']==1){
-		if(!Auth::hasPremium())
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
+if($set['Set']['premium'] == 1)
+	if(!Auth::hasPremium())
+		echo '<script type="text/javascript">window.location.href = "/";</script>';
+
+if($set['Set']['public'] == 0)
+	if(Auth::isLoggedIn())
+	{
 	}
-
-	if($set['Set']['public']==0){
-		if(Auth::isLoggedIn()){
-		}else{
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}
+	else
+	{
+		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	} ?>
 </script>
 	<div class="homeRight">
@@ -27,96 +28,99 @@
 		</div>
 		<div class="set-view-main">
 		<?php
-		if($set['Set']['id']!=58 && $set['Set']['id']!=62 && $set['Set']['id']!=91 && $set['Set']['id']!=72 && $set['Set']['id']!=73 && $set['Set']['id']!=74
-		&& $set['Set']['id']!=75 && $set['Set']['id']!=76 && $set['Set']['id']!=77 && $set['Set']['id']!=78 && $set['Set']['id']!=79 && $set['Set']['id']!=80
-		&& $set['Set']['id']!=51 && $set['Set']['id']!=56 && $set['Set']['id']!=57 && $set['Set']['id']!=119
-		&& $set['Set']['id']!=119 && $set['Set']['id']!=126 && $set['Set']['id']!=129 && $set['Set']['id']!=134 && $set['Set']['id']!=135){
-			$beta2 = false;
-		}
-		else $beta2 = true;
-		if(Auth::getUserID()==72)
-			$beta2 = false;
+	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
+	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
+	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
+	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
+		$beta2 = false;
+	else $beta2 = true;
+if(Auth::getUserID() == 72)
+	$beta2 = false;
 
-		if(!$beta2)
-			foreach ($tsumegoButtons as $tsumegoButton)
-				$tsumegoButton->render();
-	?>
+if(!$beta2)
+	foreach ($tsumegoButtons as $tsumegoButton)
+		$tsumegoButton->render();
+?>
 	</div>
 	</div>
 	<div class="homeLeft">
-		<?php echo '<p class="title4">'.$set['Set']['title'].'</p>';?>
+		<?php echo '<p class="title4">' . h($set['Set']['title']) . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
 			<td style="vertical-align:top;">
 				<?php
-				$saNum;
-				$tierReward = array();
-				$tierReward[11] = '';
-				$tierReward[10] = 'Premium collection.';
-				$tierReward[9] = 'Premium collection.';
-				$tierReward[8] = 'Premium collection.';
-				$tierReward[7] = 'Premium collection.';
-				$tierReward[6] = 'Premium collection.';
-				$tierReward[5] = 'Premium collection.';
-				$tierReward[4] = 'Premium collection.';
-				$tierReward[3] = 'Premium collection.';
+			$saNum;
+$tierReward = [];
+$tierReward[11] = '';
+$tierReward[10] = 'Premium collection.';
+$tierReward[9] = 'Premium collection.';
+$tierReward[8] = 'Premium collection.';
+$tierReward[7] = 'Premium collection.';
+$tierReward[6] = 'Premium collection.';
+$tierReward[5] = 'Premium collection.';
+$tierReward[4] = 'Premium collection.';
+$tierReward[3] = 'Premium collection.';
 
-				if($set['Set']['image']=='sa-pretty.jpg') $saNum=9;
-				else if($set['Set']['image']=='sa-hunting.jpg') $saNum=8;
-				else if($set['Set']['image']=='sa-ghost.jpg') $saNum=7;
-				else if($set['Set']['image']=='sa-carnage.jpg') $saNum=6;
-				else if($set['Set']['image']=='sa-invisible.png') $saNum=5;
-				else if($set['Set']['image']=='sa-giant.jpg') $saNum=4;
-				else if($set['Set']['image']=='sa-resistance.jpg') $saNum=3;
-				else $saNum=11;
+if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
+elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
+elseif($set['Set']['image'] == 'sa-ghost.jpg') $saNum = 7;
+elseif($set['Set']['image'] == 'sa-carnage.jpg') $saNum = 6;
+elseif($set['Set']['image'] == 'sa-invisible.png') $saNum = 5;
+elseif($set['Set']['image'] == 'sa-giant.jpg') $saNum = 4;
+elseif($set['Set']['image'] == 'sa-resistance.jpg') $saNum = 3;
+else $saNum = 11;
 
-				if($saNum+Auth::premiumLevel() > 10)
-          $accessOutput = $tierReward[10];
-				else
-          $accessOutput = $tierReward[$saNum + Auth::premiumLevel()];
+if($saNum + Auth::premiumLevel() > 10)
+	$accessOutput = $tierReward[10];
+else
+	$accessOutput = $tierReward[$saNum + Auth::premiumLevel()];
 
-				if($saNum==11)
-					$accessOutput = '';
-				if($accessOutput!='')
-					echo $accessOutput.'<br><br>';
-				echo $set['Set']['description'];
-				?>
+if($saNum == 11)
+	$accessOutput = '';
+if($accessOutput != '')
+	echo $accessOutput . '<br><br>';
+echo strip_tags($set['Set']['description'], '<br><a><b><i><p><ul><ol><li><img><font><table><tr><td><th>');
+?>
 			</td>
 				<?php
-				if (!$noImage && $set['Set']['image']) {
-					if($tsumegoFilters->query == 'topics'){
-						if ($set['Set']['image'][2]!='-') {
-							echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
-								<a href="/'.$startingSetConnectionID.'">
-								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
-								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
+if (!$noImage && $set['Set']['image'])
+	if($tsumegoFilters->query == 'topics')
+		if ($set['Set']['image'][2] != '-')
+			echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
+								<a href="/' . $startingSetConnectionID . '">
+								<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
+								alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
 								</a></div></td>';
-						}else {
-							echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
-								<a href="/'.$startingSetConnectionID.'">
-								<img height="252" width="182" style="border:1px solid black" src="/img/'. $set['Set']['image'].'"
-								alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'" width="210">
+		else
+			echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
+								<a href="/' . $startingSetConnectionID . '">
+								<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
+								alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
 								</a></div></td>';
-						}
-					}else if($tsumegoFilters->query == 'difficulty'){
-						if($lightDark == 'light'){
-							$lightDarkImageBackground = 'style="background-color:gray;"';
-							$lightDarkBorder = '';
-						}else{
-							$lightDarkImageBackground = '';
-							$lightDarkBorder = 'style="border:1px solid black"';
-						}
-						echo '<td width="195px" style="vertical-align:top;"><div '.$lightDarkImageBackground.' align="center" class="set-image-zoom">
-							<a href="/'.$startingSetConnectionID.'">
-							<img width="182" '.$lightDarkBorder.' src="/img/'. $set['Set']['image'].'"
-							alt="Tsumego Collection: '.$set['Set']['title'].'" title="Tsumego Collection: '.$set['Set']['title'].'">
+	elseif($tsumegoFilters->query == 'difficulty')
+	{
+		if($lightDark == 'light')
+		{
+			$lightDarkImageBackground = 'style="background-color:gray;"';
+			$lightDarkBorder = '';
+		}
+		else
+		{
+			$lightDarkImageBackground = '';
+			$lightDarkBorder = 'style="border:1px solid black"';
+		}
+		echo '<td width="195px" style="vertical-align:top;"><div ' . $lightDarkImageBackground . ' align="center" class="set-image-zoom">
+							<a href="/' . $startingSetConnectionID . '">
+							<img width="182" ' . $lightDarkBorder . ' src="/img/' . h($set['Set']['image']) . '"
+							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
 							</a></div></td>';
-					}else{
-						echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
-					}
-				}
-				?>
+	}
+	else
+	{
+		echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
+	}
+?>
 		</tr>
 		<tr>
 			<td style="vertical-align:top;">
@@ -126,27 +130,26 @@
 						<div align="center">
 						<br>
 						<?php
-							if(isset($set['Set']['solved'])){
-								$solvedColor = '#a7a7a7';
-								if($set['Set']['solved']>0){
-									$solvedColor = '#247bb5';
-								}
-								if($set['Set']['solved']==100){
-									$solvedColor = '#3ecf78';
-								}
-							}
-							echo '<b>'.count($tsumegoButtons).' Problems<br>';
-						?>
+			if(isset($set['Set']['solved']))
+			{
+				$solvedColor = '#a7a7a7';
+				if($set['Set']['solved'] > 0)
+					$solvedColor = '#247bb5';
+				if($set['Set']['solved'] == 100)
+					$solvedColor = '#3ecf78';
+			}
+echo '<b>' . count($tsumegoButtons) . ' Problems<br>';
+?>
 						</div>
 						</td>
 						<td style="vertical-align:bottom;" width="50%">
 						<div align="center">
 							<br>
 							Difficulty: <?php
-							echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
-							if ($tsumegoFilters->query != 'topics')
-								echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';
-							?>
+	echo '<b>' . Rating::getReadableRankFromRating($setRating) . '</b>';
+if ($tsumegoFilters->query != 'topics')
+	echo '<br><br>Solved: <b>' . $problemSolvedPercent . '%</b>';
+?>
 						</div>
 						</td>
 					</tr>
@@ -156,26 +159,28 @@
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/'.$startingSetConnectionID.'">Start</a>';
-					?>
+					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
+?>
 				</div>
 			</td>
 		</tr>
 		<tr>
-		<?php if($tsumegoFilters->query == 'topics'){ ?>
+		<?php if($tsumegoFilters->query == 'topics')
+		{ ?>
 			<td>
 			<br>
 			<div align="center">
-				<?php if(Auth::isLoggedIn()){ ?>
+				<?php if(Auth::isLoggedIn())
+				{ ?>
 					<?php
 					if ($set['Set']['solved'] > 100)
 						$set['Set']['solved'] = 100;
 					echo '<table><tr><td><div class="setViewCompleted"><b>Completed: ' . $problemSolvedPercent . '%</b></div></td><td></td></tr></table>
-					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: '.$accuracy.'%</b></div></td><td>';
-					if($acA!=null) echo '<font class="setViewAccuracy">Best completion: '.$acA['AchievementCondition']['value'].'%</font>';
+					<table><tr><td><div class="setViewAccuracy"><b>Accuracy: ' . $accuracy . '%</b></div></td><td>';
+					if($acA != null) echo '<font class="setViewAccuracy">Best completion: ' . $acA['AchievementCondition']['value'] . '%</font>';
 					echo '</td></tr></table>
-					<table><tr><td><div class="setViewTime"><b>Avg. time: '.$avgTime.'s</b></div></td><td>';
-					if($acS!=null && $acS['AchievementCondition']['value']!=60) echo '<font class="setViewTime">Best completion: '.$acS['AchievementCondition']['value'].'s</font>';
+					<table><tr><td><div class="setViewTime"><b>Avg. time: ' . $avgTime . 's</b></div></td><td>';
+					if($acS != null && $acS['AchievementCondition']['value'] != 60) echo '<font class="setViewTime">Best completion: ' . $acS['AchievementCondition']['value'] . 's</font>';
 					echo '</td></tr></table>';
 				} ?>
 			</div>
@@ -189,23 +194,23 @@
 				if ($pdCounter > 0)
 				{
 					$plural = 's';
-					if ($pdCounter==1)
+					if ($pdCounter == 1)
 					{
 						$pdCounterValue = 50;
 						$plural = '';
 					}
-					else if ($pdCounter==2)
+					elseif ($pdCounter == 2)
 						$pdCounterValue = 80;
-					else if ($pdCounter==3)
+					elseif ($pdCounter == 3)
 						$pdCounterValue = 90;
 					else
 						$pdCounterValue = 99;
 
-					echo '<font color="gray">XP reduced by '.$pdCounterValue.'%. ('.$pdCounter.' reset'.$plural.' this month.)</font>';
+					echo '<font color="gray">XP reduced by ' . $pdCounterValue . '%. (' . $pdCounter . ' reset' . $plural . ' this month.)</font>';
 				}
 				if ($tsumegoFilters->collectionSize != 200)
 					echo 'Reset is only possible when collection size is set to 200';
-				else if ($problemSolvedPercent < 50)
+				elseif ($problemSolvedPercent < 50)
 					echo '<br><font color="gray">You need to complete 50% to reset.</font>';
 				else
 					echo '<div id="msg1x"><a id="showx">Reset<img id="greyArrow1" src="/img/greyArrow1.png"></a></div><br>';
@@ -215,7 +220,8 @@
 			</tr>
 			<tr>
 			<td>
-			<?php if($scoring){ ?>
+			<?php if($scoring)
+			{ ?>
 			<div align="center">
 			<br>
 			<br>
@@ -253,7 +259,6 @@
 			</tr>
 			<?php
 			if(true)
-			{
 				if(Auth::isAdmin())
 				{
 					echo '<tr><td colspan="2">
@@ -265,82 +270,92 @@
 					<td>';
 
 					SetEditRenderer::renderAddProblemForm($set, $tsumegoButtons);
-					if($set['Set']['public']==0){
+					if($set['Set']['public'] == 0)
+					{
 						echo '<br><a id="show">Edit Title<img id="greyArrow2" src="/img/greyArrow1.png"></a><br>
 						<div id="msg1">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('title', array('label' => '', 'type' => 'text', 'placeholder' => 'Title', 'value' => $set['Set']['title']));
-							echo $this->Form->input('title2', array('label' => '', 'type' => 'text', 'placeholder' => 'Title2', 'value' => $set['Set']['title2']));
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
+						echo $this->Form->create('Set');
+						echo $this->Form->input('title', ['label' => '', 'type' => 'text', 'placeholder' => 'Title', 'value' => $set['Set']['title']]);
+						echo $this->Form->input('title2', ['label' => '', 'type' => 'text', 'placeholder' => 'Title2', 'value' => $set['Set']['title2']]);
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
 						echo '</div>';
 						echo '<a id="show2">Edit Description<img id="greyArrow3" src="/img/greyArrow1.png"></a><br>
 						<div id="msg2">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('description', array('label' => '', 'type' => 'textarea', 'placeholder' => 'Description', 'value' => $set['Set']['description']));
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
+						echo $this->Form->create('Set');
+						echo $this->Form->input('description', ['label' => '', 'type' => 'textarea', 'placeholder' => 'Description', 'value' => $set['Set']['description']]);
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
 						echo '</div>';
 
 						echo '<a id="show7">Edit Difficulty<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
 						<div id="msg7">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('setDifficulty', array('label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty));
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
+						echo $this->Form->create('Set');
+						echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
 						echo '</div>';
 
 						echo '<a id="show3">Edit Color<img id="greyArrow4" src="/img/greyArrow1.png"></a><br>
 						<div id="msg3">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('color', array('label' => '', 'type' => 'text', 'placeholder' => 'color', 'value' => $set['Set']['color']));
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-							echo '<i><a href="https://www.w3schools.com/colors/colors_picker.asp" target="_blank">hex color picker</a>&nbsp;(external link)</i><br>';
+						echo $this->Form->create('Set');
+						echo $this->Form->input('color', ['label' => '', 'type' => 'text', 'placeholder' => 'color', 'value' => $set['Set']['color']]);
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
+						echo '<i><a href="https://www.w3schools.com/colors/colors_picker.asp" target="_blank">hex color picker</a>&nbsp;(external link)</i><br>';
 						echo '</div>';
 						echo '<a id="show6">Edit Order<img id="greyArrow6" src="/img/greyArrow1.png"></a><br>
 						<div id="msg6">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('order', array('label' => '', 'type' => 'text', 'placeholder' => 'Order', 'value' => $set['Set']['order']));
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-							echo '<i>Low numbers are on top, high numbers at the bottom.</i><br>';
+						echo $this->Form->create('Set');
+						echo $this->Form->input('order', ['label' => '', 'type' => 'text', 'placeholder' => 'Order', 'value' => $set['Set']['order']]);
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
+						echo '<i>Low numbers are on top, high numbers at the bottom.</i><br>';
 						echo '</div>';
-						echo '<a href="/sets/ui/'.$set['Set']['id'].'">Upload Image</a><br>';
+						echo '<a href="/sets/ui/' . $set['Set']['id'] . '">Upload Image</a><br>';
 						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
 					}
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-						$vcOn = '';
-						$vcOff = '';
-						$arOn = '';
-						$arOff = '';
-						$passingNo = '';
-						$passingYes = '';
-						$vcMessage = '';
-						$arMessage = '';
-						$passingMessage = '';
-						if($allVcActive){
-							$vcMessage = '<font color="#717171">[Merge recurring positions activated on all problems]</font><br>';
-							$vcOn = 'checked="checked"';
-						}elseif($allVcInactive){
-							$vcMessage = '<font color="#717171">[Merge recurring positions deactivated on all problems]</font><br>';
-							$vcOff = 'checked="checked"';
-						}
-						if($allArActive){
-							$arMessage = '<font color="#717171">[Alternative Respone Mode activated on all problems]</font><br>';
-							$arOn = 'checked="checked"';
-						}elseif($allArInactive){
-							$arMessage = '<font color="#717171">[Alternative Respone Mode deactivated on all problems]</font><br>';
-							$arOff = 'checked="checked"';
-						}
-						if($allPassActive){
-							$passingMessage = '<font color="#717171">[Passing enabled on all problems]</font><br>';
-							$passingYes = 'checked="checked"';
-						}elseif($allPassInactive){
-							$passingMessage = '<font color="#717171">[Passing disabled on all problems]</font><br>';
-							$passingNo = 'checked="checked"';
-						}
-						echo '
+					$vcOn = '';
+					$vcOff = '';
+					$arOn = '';
+					$arOff = '';
+					$passingNo = '';
+					$passingYes = '';
+					$vcMessage = '';
+					$arMessage = '';
+					$passingMessage = '';
+					if($allVcActive)
+					{
+						$vcMessage = '<font color="#717171">[Merge recurring positions activated on all problems]</font><br>';
+						$vcOn = 'checked="checked"';
+					}
+					elseif($allVcInactive)
+					{
+						$vcMessage = '<font color="#717171">[Merge recurring positions deactivated on all problems]</font><br>';
+						$vcOff = 'checked="checked"';
+					}
+					if($allArActive)
+					{
+						$arMessage = '<font color="#717171">[Alternative Respone Mode activated on all problems]</font><br>';
+						$arOn = 'checked="checked"';
+					}
+					elseif($allArInactive)
+					{
+						$arMessage = '<font color="#717171">[Alternative Respone Mode deactivated on all problems]</font><br>';
+						$arOff = 'checked="checked"';
+					}
+					if($allPassActive)
+					{
+						$passingMessage = '<font color="#717171">[Passing enabled on all problems]</font><br>';
+						$passingYes = 'checked="checked"';
+					}
+					elseif($allPassInactive)
+					{
+						$passingMessage = '<font color="#717171">[Passing disabled on all problems]</font><br>';
+						$passingNo = 'checked="checked"';
+					}
+					echo '
 							<div id="msg5">
 								<br>
-								'.$vcMessage.'
-								'.$arMessage.'
-								'.$passingMessage.'
+								' . $vcMessage . '
+								' . $arMessage . '
+								' . $passingMessage . '
 								<form action="" method="POST" enctype="multipart/form-data">
 									<table>
 										<tr>
@@ -371,20 +386,18 @@
 							</div>';
 					echo '</td>';
 					echo '<td>';
-					if($set['Set']['public']==0){
+					if($set['Set']['public'] == 0)
 						echo '<div align="right">
-						<a class="new-button new-buttonx" href="/users/userstats3/'.$set['Set']['id'].'">Activities</a>
+						<a class="new-button new-buttonx" href="/users/userstats3/' . $set['Set']['id'] . '">Activities</a>
 						</div>';
-					}else if($set['Set']['public']==-1){
+					elseif($set['Set']['public'] == -1)
 						echo '<a href="#" onclick="restore()">Restore Collection</a>';
-					}
 					echo '</td>
 					</tr>
 					</table>
 					</div>
 					</td>';
 				}
-			}
 			?>
 			</tr>
 		<?php } ?>
@@ -470,7 +483,8 @@
 		}
 		msg6selected = !msg6selected;
 	});
-	<?php if($tsumegoFilters->query == 'topics'){ ?>
+	<?php if($tsumegoFilters->query == 'topics')
+	{ ?>
 		function restore(){
 			var confirmed = confirm("Are you sure?");
 			if(confirmed) window.location.href = "/sets/beta?restore="+<?php echo $set['Set']['id']; ?>;
@@ -487,14 +501,14 @@
 	<?php
 		if ($tsumegoFilters->query != 'topics')
 			foreach ($tsumegoFilters->sets as $setName)
-				echo 'activeTopicTiles.push("'.$setName.'");';
-		if ($tsumegoFilters->query != 'difficulty')
-			foreach ($tsumegoFilters->ranks as $rank)
-				echo 'activeDifficultyTiles.push("'.$rank.'");';
-		if($tsumegoFilters->query != 'tags')
-			foreach ($tsumegoFilters->tags as $tag)
-				echo 'activeTagTiles.push("'.$tag.'");';
-	?>
+				echo 'activeTopicTiles.push(' . json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+if ($tsumegoFilters->query != 'difficulty')
+	foreach ($tsumegoFilters->ranks as $rank)
+		echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+if($tsumegoFilters->query != 'tags')
+	foreach ($tsumegoFilters->tags as $tag)
+		echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+?>
 
 	drawActiveTiles();
 
@@ -615,9 +629,9 @@
 	let allTags = [];
 	let newTag = null;
 	<?php
-		for($i=0;$i<count($allTags);$i++)
-			echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
-	?>
+	for($i = 0;$i < count($allTags);$i++)
+		echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+?>
 	drawTags();
 
 	function drawTags(){
@@ -688,13 +702,13 @@
 		allTags = [];
 		newTag = null;
 		<?php
-		$tags  = (array)$tags;
-		$allTags = (array)$allTags;
-			for($i=0;$i<count($tags);$i++)
-				echo 'tags.push("'.$tags[$i]['TagConnection']['name'].'");';
-			for($i=0;$i<count($allTags);$i++)
-				echo 'allTags.push("'.$allTags[$i]['Tag']['name'].'");';
-		?>
+	$tags  = (array) $tags;
+$allTags = (array) $allTags;
+for($i = 0;$i < count($tags);$i++)
+	echo 'tags.push(' . json_encode($tags[$i]['TagConnection']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+for($i = 0;$i < count($allTags);$i++)
+	echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+?>
 		drawTags();
 	});
 
@@ -704,9 +718,9 @@
 	});
 
 		<?php
-			if($refreshView)
-				echo 'window.location.href = "/sets/view/'.$set['Set']['id'].'";';
-		?>
+	if($refreshView)
+		echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
+?>
 	</script>
 	<style>
 	#show5{display:block;}
@@ -717,18 +731,18 @@
 	}
 	#showFilters, .showFilters{
 		<?php
-		$displayNone = false;
-		if($set['Set']['id']==1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
-			$displayNone = true;
-		else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
-			$displayNone = true;
-		else if($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
-			$displayNone = true;
-		else if($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
-			$displayNone = true;
-		if($displayNone)
-			echo 'display:none;';
-		?>
+$displayNone = false;
+if($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
+	$displayNone = true;
+elseif($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
+	$displayNone = true;
+elseif($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
+	$displayNone = true;
+elseif($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
+	$displayNone = true;
+if($displayNone)
+	echo 'display:none;';
+?>
 		margin:8px 4px;
 	}
 

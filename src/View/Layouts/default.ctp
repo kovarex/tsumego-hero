@@ -126,7 +126,7 @@ echo $this->AssetCompress->script('app');
 		</div>
 		<div class="outerMenu1">
 				<?php
-			$lv = $_COOKIE['lastVisit'] ?? '15352';
+			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 
 			if(Auth::isLoggedIn()){
 				if(Auth::hasPremium()) $sand = 'onmouseover="sandboxHover()" onmouseout="sandboxNoHover()"';
@@ -238,7 +238,7 @@ echo $this->AssetCompress->script('app');
 							}
 							echo '</ul>';
 						}
-						$sessionLastVisit = $_COOKIE['lastVisit'] ?? 15352;
+						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
 						echo '</li>';
 						echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
 						echo '<ul class="newMenuLi3">';
@@ -285,7 +285,7 @@ echo $this->AssetCompress->script('app');
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
-										<a class="new-button" href="<?php echo $_SERVER['REQUEST_URI']; ?>">Save</a>
+										<a class="new-button" href="<?php echo h($_SERVER['REQUEST_URI']); ?>">Save</a>
 										<br><br>
 									</div>
 									</div>
@@ -375,13 +375,13 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		echo '
 			<label>
 		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox' . $i . '" autocomplete="off" />
-		    <div class="alertBox alertInfo '.$achievementUpdate['color'].'3" id="achievementAlerts' . $i . '">
+		    <div class="alertBox alertInfo '.h($achievementUpdate['color']).'3" id="achievementAlerts' . $i . '">
 			<div class="alertBanner" align="center">
 			Achievement Completed
 			<span class="alertClose">x</span>
 			</div>
-			<span class="alertText"><img id="hpIcon1" src="/img/'.$achievementUpdate['image'].'.png">
-			<b>'.$achievementUpdate['name'].' - ' . $achievementUpdate['description'] . '</b>&nbsp; ('.$achievementUpdate['xp'].' XP)&nbsp; <a href="/achievements/view/'.$achievementUpdate['id'].'">view</a>
+			<span class="alertText"><img id="hpIcon1" src="/img/'.h($achievementUpdate['image']).'.png">
+			<b>'.h($achievementUpdate['name']).' - ' . h($achievementUpdate['description']) . '</b>&nbsp; (' . (int)$achievementUpdate['xp'] . ' XP)&nbsp; <a href="/achievements/view/' . (int)$achievementUpdate['id'] . '">view</a>
 			<br>
 			<br class="clear1"/></span>
 			</div>
@@ -426,14 +426,14 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		soundsEnabled = value;
 	}
 
-	setCookie("lightDark", "<?php echo $lightDark; ?>");
-	setCookie("lastProfileLeft", "<?php echo $lastProfileLeft; ?>");
-	setCookie("lastProfileRight", "<?php echo $lastProfileRight; ?>");
+	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	setCookie("lastProfileLeft", <?php echo json_encode($lastProfileLeft, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
+	setCookie("lastProfileRight", <?php echo json_encode($lastProfileRight, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	setCookie("type", "0");
 	setCookie("texture", "0");
 		<?php
 	if(isset($textureCookies))
-		echo 'document.cookie = "texture="+"'.$textureCookies.'"+";SameSite=Lax;expires="+lifetime+";path=/";';
+		echo 'document.cookie = "texture="+'.json_encode($textureCookies, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).'+";SameSite=Lax;expires="+lifetime+";path=/";';
 	?>
 	var soundsEnabled = true;
 	var notMode3 = true;

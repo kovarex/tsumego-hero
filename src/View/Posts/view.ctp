@@ -7,13 +7,13 @@ echo $createDate->format('d.m.y');;
 <b><?php echo h($post['Post']['title']); ?></b><br><br>
 <table>
 <tr><td>
-<?php echo $post['Post']['b'].' ('.$post['Post']['bRank'].') vs '.$post['Post']['w'].' ('.$post['Post']['wRank'].')'; ?>
+<?php echo h($post['Post']['b']).' ('.h($post['Post']['bRank']).') vs '.h($post['Post']['w']).' ('.h($post['Post']['wRank']).')'; ?>
 </td></tr>
 <tr><td>
-<?php echo 'Result: '.$post['Post']['Result']; ?>
+<?php echo 'Result: '.h($post['Post']['Result']); ?>
 </td></tr>
 <tr><td>
-<?php echo 'Server: '.$post['Post']['Server']; ?>
+<?php echo 'Server: '.h($post['Post']['Server']); ?>
 </td></tr>
 <tr><td>
 Reviewed by: 

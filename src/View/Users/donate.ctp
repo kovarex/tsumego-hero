@@ -25,7 +25,7 @@
 						<b>Premium collections (<?php echo $premiumTsumegos; ?> problems)</b><br> 
 						<?php
 							for($i=0;$i<count($premiumSets);$i++){
-								echo $premiumSets[$i]['Set']['title'];
+								echo h($premiumSets[$i]['Set']['title']);
 								if($i<count($premiumSets)-1)
 									echo ', ';
 							}

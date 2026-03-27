@@ -58,7 +58,7 @@ echo $this->element('open_graph_meta');
 	}
 	else $sandboxComment = '';
 
-	$lv = $_COOKIE['lastVisit'] ?? '15352';
+	$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 	$a1 = '';
 	$b1 = '';
 	$c1 = '';
@@ -149,17 +149,17 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
-		echo '<a id="descriptionText">'.$t['Tsumego']['description'].'</a> ';
+		echo '<a id="descriptionText">'.h($t['Tsumego']['description']).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
-			echo '<font color="grey" style="font-style:italic;">('.$t['Tsumego']['hint'].')</font>';
+			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
 		if($tv!=null)
 		{
 			if($tv['TsumegoVariant']['type']=='score_estimating')
 			{
 				echo '<br>';
-				echo 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | ';
-				echo 'White captures: '.$tv['TsumegoVariant']['answer3'].' | ';
-				echo 'Komi: '.$tv['TsumegoVariant']['answer1'].' ';
+				echo 'Black captures: '.h($tv['TsumegoVariant']['answer2']).' | ';
+				echo 'White captures: '.h($tv['TsumegoVariant']['answer3']).' | ';
+				echo 'Komi: '.h($tv['TsumegoVariant']['answer1']).' ';
 			}
 		}
 		if(Auth::isAdmin()) { ?>
@@ -167,15 +167,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<div class="modify-description-panel" style="display: none;">
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
-				<input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>">
+				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
 				<table>
 					<tr>
 						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo addslashes(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
+						<td><input type="text" name="description" id="description" value="<?php echo h(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo addslashes($t['Tsumego']['hint']); ?>"></td>
+						<td><input type="text" name="hint" id="hint" value="<?php echo h($t['Tsumego']['hint']); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
@@ -191,7 +191,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					</tr>
 					<tr>
 						<td><label for="author">Author:</label></td>
-						<td><input type="text" name="author" id="author" value="<?php echo $t['Tsumego']['author']; ?>"></td>
+						<td><input type="text" name="author" id="author" value="<?php echo h($t['Tsumego']['author']); ?>"></td>
 					</tr>
 					<?php if ($isSandbox) { ?>
 					<tr>
@@ -494,22 +494,22 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						//echo $this->Form->input('winner', array('value' => $tv['TsumegoVariant']['winner'], 'label' => 'Correct answer: ', 'type' => 'text', 'placeholder' => 'Score', 'id' => 'scoreEstEditField'));
 						echo '<label for="scoreEstEditField">Correct answer: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][winner]" value="'.$tv['TsumegoVariant']['winner'].'" placeholder="Score" id="scoreEstEditField" type="text">';
+						echo '<input name="data[Study2][winner]" value="'.h($tv['TsumegoVariant']['winner']).'" placeholder="Score" id="scoreEstEditField" type="text">';
 						echo '</td></tr><tr><td>';
 						//echo $this->Form->input('answer1', array('value' => $tv['TsumegoVariant']['answer1'], 'label' => 'Komi: ', 'type' => 'text', 'placeholder' => 'Komi', 'id' => 'scoreEstEditField2'));
 						echo '<label for="scoreEstEditField2">Komi: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer1]" value="'.$tv['TsumegoVariant']['answer1'].'" placeholder="Komi" id="scoreEstEditField2" type="text">';
+						echo '<input name="data[Study2][answer1]" value="'.h($tv['TsumegoVariant']['answer1']).'" placeholder="Komi" id="scoreEstEditField2" type="text">';
 						echo '</td></tr><tr><td>';
 						//echo $this->Form->input('answer2', array('value' => $tv['TsumegoVariant']['answer2'], 'label' => 'Black captures: ', 'type' => 'text', 'placeholder' => 'Black captures', 'id' => 'scoreEstEditField3'));
 						echo '<label for="scoreEstEditField3">Black captures: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer2]" value="'.$tv['TsumegoVariant']['answer2'].'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
+						echo '<input name="data[Study2][answer2]" value="'.h($tv['TsumegoVariant']['answer2']).'" placeholder="Black captures" id="scoreEstEditField3" type="text">';
 						echo '</td></tr><tr><td>';
 						//echo $this->Form->input('answer3', array('value' => $tv['TsumegoVariant']['answer3'], 'label' => 'White captures: ', 'type' => 'text', 'placeholder' => 'White captures', 'id' => 'scoreEstEditField4'));
 						echo '<label for="scoreEstEditField4">White captures: </label>';
 						echo '</td><td>';
-						echo '<input name="data[Study2][answer3]" value="'.$tv['TsumegoVariant']['answer3'].'" placeholder="White captures" id="scoreEstEditField4" type="text">';
+						echo '<input name="data[Study2][answer3]" value="'.h($tv['TsumegoVariant']['answer3']).'" placeholder="White captures" id="scoreEstEditField4" type="text">';
 						echo '</td></tr></table>';
 						echo '<br>';
 						echo '<div class="submit"><input type="submit" value="Submit" id="scoreEstEditSubmit"></div>';
@@ -671,13 +671,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var setID = <?php echo $set['Set']['id'] ?>;
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
-	var file = "<?php echo $file; ?>";
-	var clearFile = "<?php echo $set['Set']['title'].' - '.$setConnection['SetConnection']['num']; ?>";
+	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+	var clearFile = <?php echo json_encode($set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
 	var idForSignature = "<?php echo $idForSignature; ?>";
 	var idForSignature2 = "<?php echo $idForSignature2; ?>";
-	var author = "<?php echo $t['Tsumego']['author']; ?>";
+	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var besogoPlayerColor = "black";
 	var favorite = "<?php echo $isTSUMEGOinFAVORITE; ?>";
 	var besogoMode2Solved = false;
@@ -739,13 +739,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<?php
 		if($tsumegoFilters->query != 'topics')
 			foreach ($tsumegoFilters->sets as $setName)
-				echo 'activeTopicTiles.push("'.$setName.'");';
+				echo 'activeTopicTiles.push('.json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'difficulty')
 			foreach ($tsumegoFilters->ranks as $rank)
-				echo 'activeDifficultyTiles.push("'.$rank.'");';
+				echo 'activeDifficultyTiles.push('.json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		if($tsumegoFilters->query != 'tags')
 			foreach ($tsumegoFilters->tags as $tag)
-				echo 'activeTagTiles.push("'.$tag.'");';
+				echo 'activeTagTiles.push('.json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');';
 		?>
 	drawActiveTiles();
 
@@ -773,7 +773,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 <?php
 	if($tv!=null){
 	if($tv['TsumegoVariant']['type']=='multiple_choice' && $tv['TsumegoVariant']['explanation']!=""){
-		echo 'mText = "'.$tv['TsumegoVariant']['explanation'].'";';
+		echo 'mText = '.json_encode($tv['TsumegoVariant']['explanation'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 	}
 	}
 
@@ -831,7 +831,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$("#submitScoreEstimatingSE").click(function(e){
 			e.preventDefault();
 			if(!hasChosen){
-				let correctNum = "<?php echo $tv['TsumegoVariant']['winner']; ?>";
+				let correctNum = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 				let guess = $("#ScoreEstimatingSE").val();
 				if(parseFloat(correctNum.slice(2))===0 || parseFloat(correctNum)===0)
 					correctNum = 0;
@@ -857,7 +857,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		});
 		$("#submitScoreEstimatingBlackWins").click(function(e){
 			e.preventDefault();
-			let scoreResult = "<?php echo $tv['TsumegoVariant']['winner']; ?>";
+			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -887,7 +887,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		});
 		$("#submitScoreEstimatingWhiteWins").click(function(e){
 			e.preventDefault();
-			let scoreResult = "<?php echo $tv['TsumegoVariant']['winner']; ?>";
+			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -917,7 +917,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			});
 		$("#submitScoreEstimatingJigo").click(function(e){
 			e.preventDefault();
-			let scoreResult = "<?php echo $tv['TsumegoVariant']['winner']; ?>";
+			let scoreResult = <?php echo json_encode($tv['TsumegoVariant']['winner'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 			if(!hasChosen){
 				let res1;
 				if(scoreResult.charAt(scoreResult.length - 1) === '0')
@@ -1304,10 +1304,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$("#potionAlerts").fadeOut(500);
 		});
 		$("#showx3").click(function(){
-			jsCreateDownloadFile("<?php echo $getTitle; ?>");
+			jsCreateDownloadFile(<?php echo json_encode($getTitle, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
 		$("#showx4").click(function(){
-			jsCreateDownloadFile("<?php echo $setConnection['SetConnection']['num']; ?>");
+			jsCreateDownloadFile(<?php echo json_encode((string)$setConnection['SetConnection']['num'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 		});
 		$("#findSimilarProblems").click(function(){
 			$('.loader-container').css({"display": "flex"});
@@ -1367,7 +1367,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	function jsCreateDownloadFile(name){
 		if(enableDownloads){
-			var blob = new Blob([<?php echo json_encode($sgf['Sgf']['sgf']); ?>],{
+			var blob = new Blob([<?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>],{
 				type: "sgf",
 			});
 			saveAs(blob, name+".sgf");
@@ -1895,13 +1895,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		else if($tv!=null)
 		{
-			echo 'options.multipleChoiceCustom = "'.$tv['TsumegoVariant']['type'].'";';
+			echo 'options.multipleChoiceCustom = '.json_encode($tv['TsumegoVariant']['type'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
-			a5.push("'.$tv['TsumegoVariant']['answer1'].'");
-			a5.push("'.$tv['TsumegoVariant']['answer2'].'");
-			a5.push("'.$tv['TsumegoVariant']['answer3'].'");
-			a5.push("'.$tv['TsumegoVariant']['answer4'].'");
-			customMultipleChoiceAnswer = '.$tv['TsumegoVariant']['numAnswer'].';
+			a5.push('.json_encode($tv['TsumegoVariant']['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($tv['TsumegoVariant']['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($tv['TsumegoVariant']['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($tv['TsumegoVariant']['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}
 	?>
@@ -1914,8 +1914,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
-		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf']); ?>;
-		options.light = "<?php echo $_COOKIE['lightDark']; ?>";
+		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		options.light = <?php echo json_encode($_COOKIE['lightDark'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')
 			{

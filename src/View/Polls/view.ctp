@@ -32,22 +32,23 @@ if($poll['Poll']['correct4']!=0){
 	$selectDCorrect = "Bad Move";
 	$selectDColor = "red";
 }
+$jsFlags = JSON_HEX_TAG | JSON_UNESCAPED_UNICODE;
 $string = "
 <script>
 function selectA() {
     document.getElementById('ans').style.cssText = 'visibility:visible;color:".$selectAColor.";';
-	document.getElementById('ans').innerHTML = \"".$selectACorrect."<br>".$comment1."\";
+	document.getElementById('ans').innerHTML = ".json_encode($selectACorrect."<br>".h($comment1), $jsFlags).";
 }
 function selectB() {
     document.getElementById('ans').style.cssText = 'visibility:visible;color:".$selectBColor.";';
-	document.getElementById('ans').innerHTML = \"".$selectBCorrect."<br>".$comment2."\";
+	document.getElementById('ans').innerHTML = ".json_encode($selectBCorrect."<br>".h($comment2), $jsFlags).";
 }";
 
 if($poll['Poll']['answers'] >= 3){
 $string.= "
 function selectC() {
     document.getElementById('ans').style.cssText = 'visibility:visible;color:".$selectCColor.";';
-	document.getElementById('ans').innerHTML = \"".$selectCCorrect."<br>".$comment3."\";
+	document.getElementById('ans').innerHTML = ".json_encode($selectCCorrect."<br>".h($comment3), $jsFlags).";
 }
 ";
 }
@@ -55,7 +56,7 @@ if($poll['Poll']['answers'] == 4){
 $string.= "
 function selectD() {
     document.getElementById('ans').style.cssText = 'visibility:visible;color:".$selectDColor.";';
-	document.getElementById('ans').innerHTML = \"".$selectDCorrect."<br>".$comment4."\";
+	document.getElementById('ans').innerHTML = ".json_encode($selectDCorrect."<br>".h($comment4), $jsFlags).";
 }
 ";
 }
@@ -101,7 +102,7 @@ for ($i = 0; $i < $length; $i++) {
 <?php echo '&nbsp;&nbsp;&nbsp;'.$back; ?>
 </td>
 <td>
-<?php echo '<img src="/blog/files/images/'.$poll['Poll']['img'].'.png" width="550" height="550">'; ?>
+<?php echo '<img src="/blog/files/images/'.h($poll['Poll']['img']).'.png" width="550" height="550">'; ?>
 </td>
 <td>
 <?php echo $forward; ?>
@@ -126,7 +127,7 @@ if($des=="b"){
 if($des=="w"){
 	$des = "White to play.";
 }
-echo $des; 
+echo h($des); 
 ?></b><br>
 <br>
 <?php

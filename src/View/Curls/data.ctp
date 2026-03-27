@@ -14,25 +14,25 @@
     <?php foreach ($curls as $curl): ?>
     <tr>
         <td>
-            <?php echo $curl['Curl']['id']; ?>
+            <?php echo h($curl['Curl']['id']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['user_id']; ?>
+            <?php echo h($curl['Curl']['user_id']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['tsumego_id']; ?>
+            <?php echo h($curl['Curl']['tsumego_id']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['response']; ?>
+            <?php echo h($curl['Curl']['response']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['type']; ?>
+            <?php echo h($curl['Curl']['type']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['url']; ?>
+            <?php echo h($curl['Curl']['url']); ?>
         </td>
 		<td>
-            <?php echo $curl['Curl']['created']; ?>
+            <?php echo h($curl['Curl']['created']); ?>
         </td>
 		
 		

@@ -311,10 +311,10 @@ $highestRight = 17;
 			else $modeActions2 = 'class="modeboxes"';
 			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.AppController::getStartpage().'</div>';
 		?>
-		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
 			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php if(Auth::isLoggedIn()){ ?>
@@ -566,7 +566,7 @@ $highestRight = 17;
 		$link2 = '';
 		$link3 = '';
 		if(Auth::isLoggedIn()){
-			$link1 = '/tsumegos/play/' . ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
+			$link1 = '/tsumegos/play/' . (int)($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
 			$link2 = '/ratingMode';
 			$link3 = '/timeMode/overview';
 		}
