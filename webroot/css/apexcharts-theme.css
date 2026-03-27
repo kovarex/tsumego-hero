@@ -1,0 +1,75 @@
+[data-theme="dark"] html { background-color: #111; }
+
+/* Chart container backgrounds */
+[data-theme="dark"] #chart1,
+[data-theme="dark"] .chart-box,
+[data-theme="dark"] #chart2,
+[data-theme="dark"] #chart3,
+[data-theme="dark"] #chart11,
+[data-theme="dark"] #chart22,
+[data-theme="dark"] #chart33 {
+  background: #2a2a2a;
+}
+
+/* Tooltip dark */
+[data-theme="dark"] .apexcharts-tooltip {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+[data-theme="dark"] .apexcharts-tooltip-title {
+  background: #2a2a2a !important;
+  border-bottom-color: #444 !important;
+  color: #f0f0f0 !important;
+}
+[data-theme="dark"] .apexcharts-tooltip-text,
+[data-theme="dark"] .apexcharts-tooltip-text-y-label,
+[data-theme="dark"] .apexcharts-tooltip-text-y-value,
+[data-theme="dark"] .apexcharts-tooltip-text-goals-label,
+[data-theme="dark"] .apexcharts-tooltip-text-goals-value,
+[data-theme="dark"] .apexcharts-tooltip-text-z-label,
+[data-theme="dark"] .apexcharts-tooltip-text-z-value {
+  color: #f0f0f0 !important;
+}
+
+/* Tooltip light */
+[data-theme="light"] .apexcharts-tooltip {
+  background: #fff !important;
+  border-color: #e3e3e3 !important;
+  color: #373d3f !important;
+}
+[data-theme="light"] .apexcharts-tooltip-title {
+  background: #f9f9f9 !important;
+  border-bottom-color: #eee !important;
+  color: #373d3f !important;
+}
+[data-theme="light"] .apexcharts-tooltip-text,
+[data-theme="light"] .apexcharts-tooltip-text-y-label,
+[data-theme="light"] .apexcharts-tooltip-text-y-value,
+[data-theme="light"] .apexcharts-tooltip-text-goals-label,
+[data-theme="light"] .apexcharts-tooltip-text-goals-value,
+[data-theme="light"] .apexcharts-tooltip-text-z-label,
+[data-theme="light"] .apexcharts-tooltip-text-z-value {
+  color: #373d3f !important;
+}
+
+/* Menu dark */
+[data-theme="dark"] .apexcharts-menu {
+  background: #1e1e1e !important;
+  border-color: #444 !important;
+}
+[data-theme="dark"] .apexcharts-menu-item {
+  color: #f0f0f0;
+}
+[data-theme="dark"] .apexcharts-menu-item:hover {
+  background: #333 !important;
+}
+
+/* Menu light */
+[data-theme="light"] .apexcharts-menu {
+  background: #fff !important;
+  border-color: #e3e3e3 !important;
+}
+[data-theme="light"] .apexcharts-menu-item {
+  color: #373d3f;
+}
