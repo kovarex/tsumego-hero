@@ -317,7 +317,7 @@ class ContextPreparator
 		$issueId = $issueModel->id;
 
 		// Store issue in array for test access
-		$this->issues[] = $createdIssue['TsumegoIssue'];
+		$this->issues[] = ['id' => $issueId, 'tsumego_id' => $issue['tsumego_id'], 'user_id' => $issue['user_id']];
 
 		// Create initial comment for the issue
 		$message = Util::extract('message', $issueInput);

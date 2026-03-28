@@ -136,6 +136,86 @@ class TsumegoIssuesControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * Test that issue author's Go rank is displayed correctly on the issues list.
+	 */
+	public function testIssueAuthorRankDisplayedCorrectly()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true, 'rating' => 1500],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue with author rank']]]]);
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
+
+		// Rating 1500 should display as 6k rank
+		$this->assertTextContains('6k', $pageSource);
+	}
+
+	/**
+	 * Test closing an issue from the issues list page.
+	 */
+	public function testCloseIssueFromListPage()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue to close from list']]]]);
+		$browser->get('tsumego-issues?status=opened');
+		$this->waitForReactIssuesList($browser);
+
+		// Verify issue shows as open
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Issue to close from list', $pageSource);
+
+		// Wait for and click close button
+		$browser->waitUntilCssSelectorExists('.tsumego-issue button.btn--success', 10);
+		$closeButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--success'));
+		$closeButton->click();
+
+		// Wait for issue to disappear from opened list (the page re-fetches open issues)
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			// After closing, the issue disappears from open list, showing empty state
+			$issues = $driver->findElements(WebDriverBy::cssSelector('.tsumego-issue:not(.skeleton-wrapper)'));
+			return count($issues) === 0;
+		});
+
+		$pageSource = $browser->driver->getPageSource();
+		// Should show no open issues or empty state
+		$this->assertTextNotContains('Issue to close from list', $pageSource);
+	}
+
+	/**
+	 * Test that deleted users show as [deleted user] on the issues list.
+	 */
+	public function testDeletedUserShowsPlaceholder()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'doomed_user']],
+			'tsumego' => ['set_order' => 1, 'issues' => [['message' => 'Issue by deleted user']]]]);
+
+		// Reassign issue to other user, then delete them (with FK checks disabled)
+		$otherUserId = $context->otherUsers[0]['id'];
+		$issueModel = ClassRegistry::init('TsumegoIssue');
+		$issueModel->updateAll(
+			['TsumegoIssue.user_id' => $otherUserId],
+			['TsumegoIssue.id' => $context->issues[0]['id']]
+		);
+		$issueModel->query('SET FOREIGN_KEY_CHECKS = 0');
+		ClassRegistry::init('User')->deleteAll(['User.id' => $otherUserId]);
+		$issueModel->query('SET FOREIGN_KEY_CHECKS = 1');
+
+		$browser->get('tsumego-issues');
+		$this->waitForReactIssuesList($browser);
+		$pageSource = $browser->driver->getPageSource();
+
+		$this->assertTextContains('[deleted user]', $pageSource);
+	}
+
+	/**
 	 * Wait for React to mount and fetch data on the issues index page.
 	 * The page initially shows skeletons, then React fetches and renders actual issues or empty state.
 	 */

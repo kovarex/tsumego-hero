@@ -14,7 +14,7 @@ interface UserLinkProps
 
 function getReadableRankFromRating(rating: number | null): string
 {
-	if (rating === null) 
+	if (rating == null) 
 		return '';
 	const rank = getRankFromRating(rating);
 	return getReadableRank(rank);

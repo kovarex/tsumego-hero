@@ -969,4 +969,65 @@ class CommentsControllerTest extends ControllerTestCase
 		// Comment appears in both "All Comments" and "Your Comments" sections (= 2 times)
 		$this->assertSame(2, substr_count($this->view, 'UNIQUE_TEST_COMMENT_XYZ'));
 	}
+
+	/**
+	 * Test that issue author's Go rank is displayed correctly on the play page.
+	 */
+	public function testIssueAuthorRankOnPlayPage()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true, 'rating' => 1500],
+			'tsumego' => [
+				'set_order' => 1,
+				'issues' => [['message' => 'Issue to check rank']],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->expandComments();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'Issue to check rank');
+		});
+
+		$pageSource = $browser->driver->getPageSource();
+		// Rating 1500 should display as 6k rank
+		$this->assertTextContains('6k', $pageSource);
+	}
+
+	/**
+	 * Test reopening a closed issue from the play page.
+	 */
+	public function testReopenClosedIssue()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'issues' => [['message' => 'Issue to reopen', 'status' => TsumegoIssue::$CLOSED_STATUS]],
+				'status' => 'S']]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Click CLOSED ISSUES tab to see the closed issue
+		$browser->waitUntilCssSelectorExists('.tsumego-comments__tab[data-filter="closed"]', 5);
+		$browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comments__tab[data-filter="closed"]'))->click();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'Issue to reopen');
+		});
+
+		// Click Reopen button
+		$reopenButton = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-issue button.btn--warning'));
+		$reopenButton->click();
+
+		// Wait for status to change to Open
+		$wait->until(function ($driver) {
+			return str_contains($driver->getPageSource(), 'Opened');
+		});
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Opened', $pageSource);
+	}
 }
