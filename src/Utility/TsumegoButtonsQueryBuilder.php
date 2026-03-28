@@ -11,18 +11,6 @@ class TsumegoButtonsQueryBuilder
 	public function __construct($tsumegoFilters, $id)
 	{
 		$this->query = new Query('FROM tsumego');
-		if ($tsumegoFilters->query != 'topics')
-		{
-			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY tsumego.id) AS rn";
-			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
-			if (Auth::isLoggedIn())
-				$this->query->prefix .= ", status";
-			$this->query->prefix .= " FROM (";
-			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
-			$this->query->orderBy[] = 'tsumego.id';
-		}
-		else
-			$this->query->orderBy[] = 'set_connection.num, set_connection.id';
 		$this->tsumegoFilters = $tsumegoFilters;
 
 		$this->query->selects[] = 'tsumego.id as tsumego_id';
@@ -34,12 +22,6 @@ class TsumegoButtonsQueryBuilder
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
-
-		// when I'm quering by topics (which means sets), and I'm viewing private set
-		// It means I explicitelly want to view that.
-		// In all other cases, private set is not included.
-		if ($tsumegoFilters->query != 'topics')
-			$this->query->conditions [] = '`set`.public = 1';
 
 		$this->query->query .= " JOIN `set` ON `set`.id=set_connection.set_id";
 		if (Auth::isLoggedIn())
@@ -56,6 +38,27 @@ class TsumegoButtonsQueryBuilder
 		$this->querySet($id);
 		$this->queryFavorites();
 		$this->queryPublished();
+
+		// SQL structure must be set up AFTER query methods, because queryRank()/queryTag()
+		// can fall back to 'topics' and the SQL structure depends on the final query type.
+		if ($tsumegoFilters->query != 'topics')
+		{
+			$this->query->selects[] = "ROW_NUMBER() OVER (PARTITION BY tsumego.id ORDER BY tsumego.id) AS rn";
+			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating";
+			if (Auth::isLoggedIn())
+				$this->query->prefix .= ", status";
+			$this->query->prefix .= " FROM (";
+			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
+			$this->query->orderBy[] = 'tsumego.id';
+		}
+		else
+			$this->query->orderBy[] = 'set_connection.num, set_connection.id';
+
+		// when I'm quering by topics (which means sets), and I'm viewing private set
+		// It means I explicitelly want to view that.
+		// In all other cases, private set is not included.
+		if ($tsumegoFilters->query != 'topics')
+			$this->query->conditions[] = '`set`.public = 1';
 	}
 
 	private function filterRanks(): void
