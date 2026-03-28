@@ -178,9 +178,9 @@ rm -rf "$ROOT_DIR/webroot/cache_css"
 rm -rf "$ROOT_DIR/tmp/asset_compress_build_time"
 
 # Build React app with Vite
-echo "=== Building React app with pnpm ==="
-pnpm install
-pnpm run build
+echo "=== Building React app ==="
+npx pnpm@latest install --frozen-lockfile
+npx pnpm@latest run build
 
 # Pre-build and minify all CSS/JS assets for production (faster page loads)
 # This generates all files in webroot/cache_css/ and webroot/cache_js/
