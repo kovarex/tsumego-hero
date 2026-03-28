@@ -29,6 +29,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     node.markup = [];
     node.comment = ''; // Comment on this node
     node.hash = 0;
+    node.stoneCount = parent ? parent.stoneCount : 0;
     node.correctSource = false;
     node.correct = CORRECT_EMPTY;
     node.superkoMeansDead = false;
@@ -146,6 +147,9 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     };
     this.lastMove = color; // Store color of last move
     this.moveNumber++; // Increment move number
+    this.stoneCount += 1 - Math.abs(captures); // +1 for placed stone, -|captures| for removed
+    if (overwrite)
+      this.stoneCount--; // Overwrite doesn't add a new stone
     return true;
   };
 
@@ -212,6 +216,10 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
 
     this.setStone(x, y, color); // Place the setup stone
     this.setupStones[this.fromXY(x, y)] = color - prevColor; // Record the necessary change
+    // Update stone count: adding a stone increases count, removing decreases
+    var prevOccupied = prevColor !== EMPTY ? 1 : 0;
+    var newOccupied = color !== EMPTY ? 1 : 0;
+    this.stoneCount += newOccupied - prevOccupied;
     return true;
   };
 
@@ -321,7 +329,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
   {
     this.addChild(child);
     child.registerInVirtualMoves();
-    besogo.updateCorrectValues(this.getRoot());
+    besogo.updateCorrectValuesIncremental(this.getRoot(), child);
   }
 
   // Adds a child to this node
@@ -459,6 +467,9 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     }
     return hash;
   }
+
+  // Expose hashCode for use in treeProblemUpdater.js virtual children optimization
+  besogo.hashCode = hashCode;
 
   root.updateHash = function()
   {
@@ -769,6 +780,7 @@ besogo.makeGameRoot = function(sizeX = 19, sizeY = 19)
     let oldSetupStones = this.setupStones;
     this.setupStones = [];
     this.board = this.parent ? Object.create(this.parent.board) : [];
+    this.stoneCount = this.parent ? this.parent.stoneCount : 0;
     for (let i = 0; i < oldSetupStones.length; ++i)
       if (oldSetupStones[i])
       {

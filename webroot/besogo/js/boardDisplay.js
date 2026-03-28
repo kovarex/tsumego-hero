@@ -19,7 +19,14 @@ besogo.makeBoardDisplay = function(container, editor, corner)
 
       randIndex, // Random index for stone images
       lastHoverPosition = null,
-      TOUCH_FLAG = false; // Flag for touch interfaces
+      TOUCH_FLAG = false, // Flag for touch interfaces
+
+      // State tracking for diff-based rendering
+      previousBoardState = null, // Array of stone colors by position
+      stoneElements = null, // Array of SVG elements by position
+      shadowElements = null, // Array of shadow elements by position
+      koElement = null, // SVG element for ko mark
+      previousKo = null; // Previous ko position
 
   try
   {
@@ -80,6 +87,13 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   function initializeBoard(coord)
   {
     drawBoard(coord); // Initialize the SVG element and draw the board
+
+    // Reset diff tracking state
+    previousBoardState = null;
+    stoneElements = null;
+    shadowElements = null;
+    koElement = null;
+    previousKo = null;
 
     stoneGroup = besogo.svgEl("g");
 	svg.appendChild(stoneGroup); // Add placeholder group for stone layer
@@ -446,14 +460,95 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     };
   }
 
-  // Redraws the stones
+  // Redraws the stones (diff-based: only updates changed positions)
   function redrawStones(current)
   {
-    var group = besogo.svgEl("g"), // New stone layer group
-        shadowGroup, // Group for shadow layer
-        i, j, x, y, color; // Scratch iteration variables
 
-    // Add group for shawdows
+    // First call or board reinit: full redraw and initialize tracking
+    if (!previousBoardState)
+    {
+      fullRedrawStones(current);
+      return;
+    }
+
+    var shadowGroup = editor.SHADOWS ? stoneGroup.firstChild : null;
+
+    // Diff: only update positions that changed
+    for (var i = 1; i <= sizeX; i++)
+      for (var j = 1; j <= sizeY; j++)
+      {
+        var idx = fromXY(i, j);
+        var color = current.getStone(i, j);
+        if (color === previousBoardState[idx])
+          continue;
+
+        // Remove old stone element if present
+        if (stoneElements[idx])
+        {
+          stoneGroup.removeChild(stoneElements[idx]);
+          stoneElements[idx] = null;
+        }
+        if (editor.SHADOWS && shadowElements[idx])
+        {
+          shadowGroup.removeChild(shadowElements[idx]);
+          shadowElements[idx] = null;
+        }
+
+        // Add new stone element if needed
+        if (color)
+        {
+          var x = svgPos(i);
+          var y = svgPos(j);
+          var element;
+          if (editor.REAL_STONES)
+            element = besogo.realStone(x, y, color, randIndex[idx], editor.BLACK_STONES, editor.WHITE_STONES);
+          else
+            element = besogo.svgStone(x, y, color);
+          stoneGroup.appendChild(element);
+          stoneElements[idx] = element;
+
+          if (editor.SHADOWS)
+          {
+            var shadowEl = besogo.svgEl('g');
+            shadowEl.appendChild(besogo.svgShadow(x - 2, y - 4));
+            shadowEl.appendChild(besogo.svgShadow(x + 2, y + 4));
+            shadowGroup.appendChild(shadowEl);
+            shadowElements[idx] = shadowEl;
+          }
+        }
+
+        previousBoardState[idx] = color;
+      }
+
+    // Update ko mark
+    var koPosition = current.getForbiddenMoveBecauseOfKo();
+    var koChanged = false;
+    if (previousKo && (!koPosition || koPosition.x !== previousKo.x || koPosition.y !== previousKo.y))
+    {
+      if (koElement)
+        stoneGroup.removeChild(koElement);
+      koElement = null;
+      koChanged = true;
+    }
+    if (koPosition && (!previousKo || koPosition.x !== previousKo.x || koPosition.y !== previousKo.y))
+    {
+      koElement = besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2);
+      stoneGroup.appendChild(koElement);
+      koChanged = true;
+    }
+    previousKo = koPosition ? { x: koPosition.x, y: koPosition.y } : null;
+  }
+
+  // Full redraw: creates all stone elements from scratch and initializes tracking
+  function fullRedrawStones(current)
+  {
+    var group = besogo.svgEl("g"),
+        shadowGroup, i, j, x, y, color, idx;
+
+    previousBoardState = [];
+    stoneElements = [];
+    shadowElements = [];
+
     if (editor.SHADOWS)
     {
       shadowGroup = besogo.svgShadowGroup();
@@ -463,30 +558,45 @@ besogo.makeBoardDisplay = function(container, editor, corner)
     for (i = 1; i <= sizeX; i++)
       for (j = 1; j <= sizeY; j++)
       {
+        idx = fromXY(i, j);
         color = current.getStone(i, j);
+        previousBoardState[idx] = color;
+        stoneElements[idx] = null;
+        shadowElements[idx] = null;
+
         if (color)
         {
           x = svgPos(i);
           y = svgPos(j);
+          var element;
+          if (editor.REAL_STONES)
+            element = besogo.realStone(x, y, color, randIndex[idx], editor.BLACK_STONES, editor.WHITE_STONES);
+          else
+            element = besogo.svgStone(x, y, color);
+          group.appendChild(element);
+          stoneElements[idx] = element;
 
-          if (editor.REAL_STONES) // Realistic stone
-            group.appendChild(besogo.realStone(x, y, color, randIndex[fromXY(i, j)], editor.BLACK_STONES, editor.WHITE_STONES));
-          else // SVG stone
-            group.appendChild(besogo.svgStone(x, y, color));
-
-          // Draw shadows
           if (editor.SHADOWS)
           {
-            shadowGroup.appendChild(besogo.svgShadow(x - 2, y - 4));
-            shadowGroup.appendChild(besogo.svgShadow(x + 2, y + 4));
+            var shadowEl = besogo.svgEl('g');
+            shadowEl.appendChild(besogo.svgShadow(x - 2, y - 4));
+            shadowEl.appendChild(besogo.svgShadow(x + 2, y + 4));
+            shadowGroup.appendChild(shadowEl);
+            shadowElements[idx] = shadowEl;
           }
         }
       }
-    let koPosition = current.getForbiddenMoveBecauseOfKo();
-    if (koPosition)
-      group.appendChild(besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2));
 
-    svg.replaceChild(group, stoneGroup); // Replace the stone group
+    var koPosition = current.getForbiddenMoveBecauseOfKo();
+    koElement = null;
+    if (koPosition)
+    {
+      koElement = besogo.svgSquare(svgPos(koPosition.x), svgPos(koPosition.y), "black", 2);
+      group.appendChild(koElement);
+    }
+    previousKo = koPosition ? { x: koPosition.x, y: koPosition.y } : null;
+
+    svg.replaceChild(group, stoneGroup);
     stoneGroup = group;
   }
 
@@ -761,18 +871,28 @@ besogo.makeBoardDisplay = function(container, editor, corner)
   function redrawHover(current)
   {
     if (TOUCH_FLAG)
+    {
       return; // Do nothing for touch interfaces
-
-    var group = besogo.svgEl("g"); // Group holding hover layer elements
+    }
 
     hoverLayer = []; // Clear the references to the old layer
 
     if (editor.isPerformingAutoPlay())
     {
-      hoverLayer = []; // Clear the references to the old layer
       updateHoverState();
       return;
     }
+
+    // Defer hover element creation to next frame — keeps click response instant
+    requestAnimationFrame(function() { createHoverElements(editor.getCurrent()); });
+  }
+
+  // Creates hover elements (deferred from redrawHover)
+  function createHoverElements(current)
+  {
+    var group = besogo.svgEl("g"); // Group holding hover layer elements
+
+    hoverLayer = [];
 
     group.setAttribute('opacity', '0.35');
 

@@ -38,6 +38,12 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
 
   var sizeX = root.getSize().x;
   var sizeY = root.getSize().y;
+  var color = node.nextMove();
+  var nodeHash = node.getHash();
+  var hashCode = besogo.hashCode;
+  var table = root.nodeHashTable;
+  var parentStoneCount = node.stoneCount;
+
   for (let i = 0; i < root.relevantMoves.length; ++i)
   {
     if (!root.relevantMoves[i])
@@ -45,14 +51,38 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
     var move = root.toXY(i);
     if (!node.getStone(move.x, move.y))
     {
+      // Pre-compute the hash assuming no captures (most common case)
+      var predictedHash = (nodeHash + hashCode(move.x + '-' + move.y) * color) | 0;
+
+      // Check if any adjacent stone of opposite color exists (captures possible)
+      var hasAdjacentEnemy =
+        (move.x > 1 && node.getStone(move.x - 1, move.y) === -color) ||
+        (move.x < sizeX && node.getStone(move.x + 1, move.y) === -color) ||
+        (move.y > 1 && node.getStone(move.x, move.y - 1) === -color) ||
+        (move.y < sizeY && node.getStone(move.x, move.y + 1) === -color);
+
+      // Skip if no-capture hash has no match AND no captures are possible
+      if (!table.hasHash(predictedHash) && !hasAdjacentEnemy)
+        continue;
+
       var testChild = node.makeChild()
       if (!testChild.playMove(move.x, move.y))
-      {
-        node.removeChild(testChild);
         continue;
+
+      // Use predicted hash for no-capture moves, compute only for captures
+      var actualHash, childStoneCount;
+      if (testChild.move.captures === 0)
+      {
+        actualHash = predictedHash;
+        childStoneCount = parentStoneCount + 1;
+      }
+      else
+      {
+        actualHash = testChild.getHash();
+        childStoneCount = parentStoneCount + 1 - Math.abs(testChild.move.captures);
       }
 
-      var sameNode = root.nodeHashTable.getSameNode(testChild);
+      var sameNode = table.getSameNodeWithHash(testChild, actualHash, childStoneCount);
       if (sameNode && sameNode.parent != node)
       {
         var redirect = [];
@@ -61,7 +91,7 @@ besogo.addVirtualChildren = function(root, node, addHash = true)
         redirect.move.x = move.x;
         redirect.move.y = move.y;
         redirect.move.captures = testChild.move.captures;
-        redirect.move.color = node.nextMove();
+        redirect.move.color = color;
         node.virtualChildren.push(redirect);
         redirect.target.virtualParents.push(node);
         node.correctSource = false;
@@ -110,6 +140,47 @@ besogo.updateCorrectValues = function(root)
     besogo.updateCorrectValuesInternal(root, root);
   else
     besogo.updateCorrectValuesBasedOnStatus(root, root.goal, root.status, true /* isCorrectBranch */);
+  root.unvisitRecursion();
+}
+
+// Incremental version: only recomputes the path from changedNode to root
+// plus any virtual parent chains. Much faster than full tree recalculation.
+besogo.updateCorrectValuesIncremental = function(root, changedNode)
+{
+
+  // Build dirty set: path from changedNode to root + virtual parent closures
+  let dirty = new Set();
+  let toProcess = [changedNode];
+
+  while (toProcess.length > 0)
+  {
+    let start = toProcess.pop();
+    let node = start;
+    while (node && !dirty.has(node))
+    {
+      dirty.add(node);
+      for (let i = 0; i < node.virtualParents.length; i++)
+        toProcess.push(node.virtualParents[i]);
+      node = node.parent;
+    }
+  }
+
+  // Selectively clear only dirty nodes
+  for (let node of dirty)
+  {
+    node.correct = CORRECT_EMPTY;
+    node.status = null;
+    if (node.hasNonLocalChildIncludingVirtual())
+      node.statusSource = null;
+    node.visitedInRecursion = false;
+  }
+
+  // Recompute (reuses cached values for clean nodes)
+  besogo.updateStatusValuesInternal(root, root, root.goal);
+  if (root.goal == GOAL_NONE)
+    besogo.updateCorrectValuesInternal(root, root);
+  else
+    besogo.updateCorrectValuesBasedOnStatus(root, root.goal, root.status, true);
   root.unvisitRecursion();
 }
 

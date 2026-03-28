@@ -38,6 +38,27 @@ besogo.makeNodeHashTable = function()
         return hashPoint[i];
     return null;
   }
+
+  nodeHashTable.getSameNodeWithHash = function(node, hash, stoneCount)
+  {
+    var hashPoint = this.table[hash];
+    if (!hashPoint)
+      return null;
+    for (let i = 0; i < hashPoint.length; ++i)
+    {
+      if (stoneCount !== undefined && hashPoint[i].stoneCount !== stoneCount)
+        continue;
+      if (node.samePositionAs(hashPoint[i]))
+        return hashPoint[i];
+    }
+    return null;
+  }
+
+  nodeHashTable.hasHash = function(hash)
+  {
+    var hashPoint = this.table[hash];
+    return hashPoint && hashPoint.length > 0;
+  }
   
   nodeHashTable.size = function()
   {
