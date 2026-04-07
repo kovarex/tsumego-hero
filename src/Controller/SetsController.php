@@ -127,10 +127,11 @@ class SetsController extends AppController
 
 	/**
 	 * @param int|null $tid Tsumego ID
-	 * @return void
 	 */
 	public function create($tid = null)
 	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/');
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 		$redirect = false;
@@ -780,7 +781,7 @@ class SetsController extends AppController
 			$set['Set']['id'] = 1;
 			$set['Set']['title'] = 'Favorites';
 			$set['Set']['title2'] = null;
-			$set['Set']['author'] = Auth::getUser()['name'];
+			$set['Set']['author'] = Auth::isLoggedIn() ? Auth::getUser()['name'] : '';
 			$set['Set']['description'] = '';
 			$set['Set']['image'] = 'fav';
 			$set['Set']['order'] = 0;
