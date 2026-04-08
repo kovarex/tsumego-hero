@@ -189,6 +189,7 @@ class Play
 		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser())
 		{
 			Auth::getUser()['readingTrial']--;
+			Auth::saveUser();
 			unset($_COOKIE['skip']);
 		}
 		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]) ?: [];

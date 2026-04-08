@@ -2,8 +2,10 @@
 
 App::uses('TsumegoUtil', 'Util');
 
-class CronController extends AppController
+class CronController extends Controller
 {
+	public $uses = ['User', 'TsumegoAttempt'];
+
 	/* Supposed to be ran daily to reset hearts and hero powers */
 	public function daily($secret)
 	{

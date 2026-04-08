@@ -136,8 +136,16 @@ class Browser
 		}
 	}
 
+
+	private function flushAuthIfNeeded(): void
+	{
+		if (Auth::isLoggedIn())
+			Auth::flushUser();
+	}
+
 	public function get(string $url): void
 	{
+		$this->flushAuthIfNeeded();
 		if ($url != 'empty.php' && Auth::isLoggedIn())
 		{
 			$this->driver->manage()->addCookie(['name' => "hackedLoggedInUserID", 'value' => (string) Auth::getUserID()]);
@@ -153,12 +161,14 @@ class Browser
 
 	public function clickId($name)
 	{
+		$this->flushAuthIfNeeded();
 		$this->driver->findElement(WebDriverBy::id($name))->click();
 		$this->assertNoErrors();
 	}
 
 	public function clickCssSelect($name)
 	{
+		$this->flushAuthIfNeeded();
 		$this->driver->findElement(WebDriverBy::cssSelector($name))->click();
 		$this->assertNoErrors();
 	}
@@ -392,6 +402,7 @@ class Browser
 
 	public function playWithResult(string $result): void
 	{
+		$this->flushAuthIfNeeded();
 		$wait = new WebDriverWait($this->driver, 10, 200);
 		$wait->until(function ($driver) {
 			return $driver->executeScript('return typeof displayResult === "function";');
@@ -442,6 +453,7 @@ class Browser
 
 	public function clickBoard($x, $y)
 	{
+		$this->flushAuthIfNeeded();
 		$boardSize = $this->waitForBoard();
 		$clickableRects = $this->getCssSelect('rect');
 		$corner = $this->driver->executeScript('return window.besogo.boardParameters["corner"];');
@@ -463,6 +475,7 @@ class Browser
 	 */
 	public function clickIdExpectingAlert(string $id): string
 	{
+		$this->flushAuthIfNeeded();
 		// Override window.alert to capture the message without showing a real dialog.
 		// This works identically in Chrome and Firefox — no browser-specific alert handling needed.
 		$this->driver->executeScript("
@@ -490,6 +503,7 @@ class Browser
 
 	public function getWithPostData($url, $postData, int $timeout = 10)
 	{
+		$this->flushAuthIfNeeded();
 		$markerId = 'selenium-navigation-marker-' . uniqid();
 		$this->driver->executeScript("
 			var marker = document.createElement('div');
@@ -615,6 +629,10 @@ class Browser
 		]);
 	}
 
+	/**
+	 * Direct WebDriver access. Prefer Browser methods (get, clickId, etc.) which
+	 * auto-flush pending Auth changes before server communication.
+	 */
 	public $driver;
 	private static ?Browser $browser = null;
 }

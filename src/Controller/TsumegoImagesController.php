@@ -1,6 +1,5 @@
 <?php
 
-App::uses('AppController', 'Controller');
 App::uses('Constants', 'Utility');
 
 /**
@@ -11,7 +10,7 @@ App::uses('Constants', 'Utility');
  * IMPORTANT: When changing the rendering algorithm below, bump
  * Constants::$TSUMEGO_IMAGE_VERSION to invalidate cached OG images.
  */
-class TsumegoImagesController extends AppController
+class TsumegoImagesController extends Controller
 {
 	/**
 	 * Generate a PNG image for a tsumego puzzle for Open Graph sharing

@@ -123,7 +123,10 @@ class PlayResultProcessorComponent extends Component
 		{
 			$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
 			if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
+			{
 				Auth::getUser()['solved'] = Auth::getUser()['solved'] + 1;
+				Auth::saveUser();
+			}
 			$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
 		}
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
@@ -273,6 +276,7 @@ class PlayResultProcessorComponent extends Component
 		$user = & Auth::getUser();
 		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
 		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
+		Auth::saveUser();
 	}
 
 	private function processErrorAchievement(array $result, $previousTsumegoStatus): void
