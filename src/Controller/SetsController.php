@@ -826,7 +826,7 @@ class SetsController extends AppController
 					if ($tsumegoButton->tsumegoID == $ur[$j]['TsumegoAttempt']['tsumego_id'])
 					{
 						array_push($urTemp, $ur[$j]);
-						if ($ur[$j]['TsumegoAttempt']['solved'])
+						if ($ur[$j]['TsumegoAttempt']['solved'] && $ur[$j]['TsumegoAttempt']['seconds'] > 0)
 							$solvedSeconds[] = $ur[$j]['TsumegoAttempt']['seconds'];
 
 						if (!$ur[$j]['TsumegoAttempt']['solved'])

@@ -202,7 +202,9 @@ class PlayResultProcessorComponent extends Component
 
 		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Auth::getUser()['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = $result['xp-gained'] ?: 0;
-		$tsumegoAttempt['TsumegoAttempt']['seconds'] += Decoder::decodeSeconds($previousTsumego);
+		$decodedSeconds = Decoder::decodeSeconds($previousTsumego);
+		if ($decodedSeconds !== null)
+			$tsumegoAttempt['TsumegoAttempt']['seconds'] += $decodedSeconds;
 		$tsumegoAttempt['TsumegoAttempt']['solved'] = $result['solved'];
 		$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['misplays'] += $result['misplays'] ?: 0;

@@ -1627,7 +1627,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		let success = result == 'S';
 		if (!success && failAlreadyReported)
 			return;
-		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
+		setCookie("secondsCheck", Math.round(Math.max(seconds, 1).toFixed(2) * secondsMultiplier));
 		setCookie("av", <?php echo $activityValue[0]; ?>);
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
@@ -1798,7 +1798,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			misplays++;
 			if (accountWidget)
 				accountWidget.animate(false);
-			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
+			setCookie("secondsCheck", Math.round(Math.max(seconds, 1).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
 			updateHealth();
 		}

@@ -1247,16 +1247,16 @@ class SetsControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Test set view Time tab shows MINIMUM (best) solve time in seconds
-	 * As per UI description: "The time (in seconds) for solving is displayed."
+	 * Test Time tab in set view displays best (minimum) solve time.
+	 * Covers: minimum of multiple solves, unsolved problems, zero-second (pre-tracking) entries.
 	 */
 	public function testSetViewTimeTabShowsMinimumSolveTime()
 	{
-		// Create ONE set with TWO tsumegos
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
 			'tsumegos' => [
 				[
+					// Problem 1: Multiple solves - should show best (minimum) time
 					'sets' => [['name' => 'Test Set', 'num' => 1]],
 					'attempts' => [
 						['solved' => 1, 'seconds' => 10, 'gain' => 5],
@@ -1265,9 +1265,25 @@ class SetsControllerTest extends TestCaseWithAuth
 					],
 				],
 				[
+					// Problem 2: Unsolved - should show '-'
 					'sets' => [['name' => 'Test Set', 'num' => 2]],
 					'attempts' => [
 						['solved' => 0, 'seconds' => 20, 'gain' => -5, 'misplays' => 1],
+					],
+				],
+				[
+					// Problem 3: Pre-tracking zero-second entry + real solve - should show real time
+					'sets' => [['name' => 'Test Set', 'num' => 3]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 0, 'gain' => 5],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5],
+					],
+				],
+				[
+					// Problem 4: Only pre-tracking zero-second entry - should show '-'
+					'sets' => [['name' => 'Test Set', 'num' => 4]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 0, 'gain' => 5],
 					],
 				],
 			],
@@ -1277,27 +1293,22 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 		$browser->get("sets/view/{$setId}");
 
-		// Click Time tab - use specific selector to avoid Time Mode menu link
+		// Click Time tab
 		$timeTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(@class, 'setViewTime') or (contains(text(), 'Time') and not(contains(@href, 'timeMode')))]"));
 		$browser->driver->executeScript("arguments[0].click();", [$timeTab]);
-		// Wait for time buttons to be visible
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
 			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
 			return count($buttons) > 0 && $buttons[0]->isDisplayed();
 		});
 
-		// Check time buttons are visible
 		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
-		$this->assertCount(2, $timeButtons);
+		$this->assertCount(4, $timeButtons);
 
-		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)
-		$this->assertTrue($timeButtons[0]->isDisplayed());
-		$this->assertSame('10s', trim($timeButtons[0]->getText()), 'Problem 1 time should be 10s (best time)');
-
-		// Problem 2 should show "-" (no successful solves)
-		$this->assertTrue($timeButtons[1]->isDisplayed());
-		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2 time should be - (no successful solves)');
+		$this->assertSame('10s', trim($timeButtons[0]->getText()), 'Problem 1: best of 10,20,30 = 10s');
+		$this->assertSame('-', trim($timeButtons[1]->getText()), 'Problem 2: unsolved = -');
+		$this->assertSame('15s', trim($timeButtons[2]->getText()), 'Problem 3: ignore 0s entry, show 15s');
+		$this->assertSame('-', trim($timeButtons[3]->getText()), 'Problem 4: only 0s entries = -');
 	}
 
 	public function testSetProgressDeletion()
