@@ -114,17 +114,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
-			{
-				$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
-				$health = max(0, $maxHealth - Auth::getUser()['damage']);
-				for($i = 0; $i < $health; $i++)
-					echo '<img title="Heart" id="heart'.$i.'" src="/img/'.$fullHeart.'.png">';
-				for($i = 0; $i < ($maxHealth - $health); $i++)
-				{
-					$h = $health+$i;
-					echo '<img title="Empty Heart" id="heart'.$h.'" src="/img/'.$emptyHeart.'.png">';
-				}
-			}
+				for ($i = 0; $i < $maxHealth; $i++)
+					echo '<img title="Heart" id="heart'.$i.'">';
 			?>
 		</div>
 	</td>
@@ -611,6 +602,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var misplays = 0;
 	var hoverLocked = false;
 	var tryAgainTomorrow = false;
+	var remainingHealth = <?php echo Auth::getRemainingHealth(); ?>;
+	var maxHealth = <?php echo $maxHealth; ?>;
+	var fullHeart = '<?php echo $fullHeart; ?>';
+	var emptyHeart = '<?php echo $emptyHeart; ?>';
 	var doubleXP = false;
 	var countDownDate = new Date();
 	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
@@ -1412,7 +1407,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			misplays++;
 			setCookie('misplays', 'misplays');
-			updateHealth();
+			redrawHearts();
 		}
 		move = 0;
 
@@ -1421,19 +1416,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		failAlreadyReported = false;
 	}
 
-	function updateHealth()
+	function redrawHearts()
 	{
-		<?php
-			$m = 1;
-			while($health>0)
-			{
-				$h = $health-1;
-				echo 'if(misplays=='.$m.')document.getElementById("heart'.$h.'").src = "/img/'.$emptyHeart.'.png"; ';
-				$health--;
-				$m++;
-			}
-			?>
+		if (!document.getElementById("heart0"))
+			return;
+		var currentHealth = remainingHealth - misplays;
+		for (var i = 0; i < maxHealth; i++)
+		{
+			var full = i < currentHealth;
+			var el = document.getElementById("heart" + i);
+			el.src = "/img/" + (full ? fullHeart : emptyHeart) + ".png";
+			el.title = full ? "Heart" : "Empty Heart";
+		}
 	}
+	redrawHearts();
 
 	function commentPosition(x, y, pX, pY, cX, cY, mNum, cNum, orientation, newX=false, newY=false){
 		positionParams = [];
@@ -1465,16 +1461,16 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				url: '/hero/rejuvenation',
 				type: 'POST',
 			success: function(response) {
-					<?php
-					$health = Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0));
-					for($i = 0; $i < $health; $i++) {
-						echo 'document.getElementById("heart'.$i.'").src = "/img/'.$fullHeart.'.png";';
-	}
-			?>
 					misplays = 0;
+					remainingHealth = maxHealth;
+					redrawHearts();
 					disableRejuvenation();
 					enableIntuition();
-	}
+					tryAgainTomorrow = false;
+					locked = false;
+					toggleBoardLock(false);
+					document.getElementById("status").innerHTML = '';
+			}
 		});
 	}
 
@@ -1712,12 +1708,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					{
 						hoverLocked = false;
 						if (mode == 1)
-							updateHealth();
+							redrawHearts();
 					}
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(<?php echo Auth::getRemainingHealth(); ?> - misplays <= 0)
+						if(remainingHealth - misplays <= 0)
 						{
 							updateCurrentNavigationButton('F');
 							document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow</b>';
@@ -1800,7 +1796,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				accountWidget.animate(false);
 			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 			setCookie("misplays", misplays);
-			updateHealth();
+			redrawHearts();
 		}
 		failAlreadyReported = false;
 	}

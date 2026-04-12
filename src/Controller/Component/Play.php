@@ -400,6 +400,7 @@ class Play
 		($this->setFunction)('boardSelection', BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set['Set']['board_theme_index']));
 		($this->setFunction)('fullHeart', $fullHeart);
 		($this->setFunction)('emptyHeart', $emptyHeart);
+		($this->setFunction)('maxHealth', Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)));
 		($this->setFunction)('libertyCount', $t['Tsumego']['libertyCount']);
 		($this->setFunction)('semeaiType', $t['Tsumego']['semeaiType']);
 		($this->setFunction)('insideLiberties', $t['Tsumego']['insideLiberties']);

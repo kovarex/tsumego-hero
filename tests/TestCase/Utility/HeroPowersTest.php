@@ -306,4 +306,71 @@ class HeroPowersTest extends TestCaseWithAuth
 		$status2 = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[1]['id']]]);
 		$this->assertSame($status2['TsumegoStatus']['status'], 'W');
 	}
+
+	/**
+	 * Full rejuvenation flow: start with 1 heart, lose it to lock the board,
+	 * rejuvenate to restore all hearts, reset and fail again to verify hearts can still be lost.
+	 */
+	public function testRejuvenationClearsTryAgainTomorrowMessage()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 1],
+			'tsumegos' => [
+				['set_order' => 1]]]);
+		HeroPowers::changeUserSoRejuvenationCanBeUsed();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->driver->wait(10, 500)->until(function ($driver) {
+			return $driver->executeScript('return typeof displayResult === "function";');
+		});
+
+		$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
+		$this->assertSame(1, $browser->driver->executeScript('return remainingHealth - misplays;'));
+		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
+
+		// Lose the last heart to trigger "Try again tomorrow"
+		$browser->driver->executeScript("displayResult('F')");
+		$browser->driver->wait(10, 200)->until(function ($driver) {
+			return $driver->executeScript('return window.tryAgainTomorrow === true;');
+		});
+
+		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
+		$this->assertStringContainsString('Try again tomorrow', $statusText);
+		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
+		for ($i = 0; $i < $maxHealth; $i++)
+		{
+			$heartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . $i))->getAttribute('src');
+			$this->assertStringContainsString('heart2small', $heartSrc, "heart$i should be empty after losing the last heart");
+		}
+
+		// Rejuvenate to restore all hearts
+		$this->checkPowerIsActive($browser, 'rejuvenation');
+		$browser->clickId('rejuvenation');
+		$browser->driver->wait(10, 500)->until(function () use ($context) { return $context->reloadUser()['damage'] == 0; });
+		$browser->driver->wait(10, 200)->until(function () use ($browser) {
+			return $browser->find('#rejuvenation')->getCssValue('cursor') === 'auto';
+		});
+
+		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
+		$this->assertStringNotContainsString('Try again tomorrow', $statusText);
+		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
+		$this->assertFalse($browser->driver->executeScript('return tryAgainTomorrow;'));
+		$this->assertSame($maxHealth, $browser->driver->executeScript('return remainingHealth;'));
+		for ($i = 0; $i < $maxHealth; $i++)
+		{
+			$heartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . $i))->getAttribute('src');
+			$this->assertStringContainsString('heart1small', $heartSrc, "heart$i should be a full heart after rejuvenation");
+		}
+
+		// Press Reset to clear freePlayMode, then verify a heart can be lost
+		$browser->clickId('besogo-reset-button');
+
+		$browser->driver->executeScript("displayResult('F')");
+		$browser->driver->wait(10, 200)->until(function ($driver) {
+			return $driver->executeScript('return window.misplays > 0;');
+		});
+		$lastHeartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . ($maxHealth - 1)))->getAttribute('src');
+		$this->assertStringContainsString('heart2small', $lastHeartSrc, "last heart should be lost after failing post-rejuvenation");
+	}
 }
