@@ -30,6 +30,7 @@ class XPAmountTest extends AchievementTestCase
 
 		// Act: Trigger achievement check
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
+		Auth::flushUser(); // Persist Auth changes before direct DB query
 
 		// Assert: Both achievements #1 and #2 unlock (1000 solved + 2000 solved)
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
@@ -62,6 +63,7 @@ class XPAmountTest extends AchievementTestCase
 
 		// Act: Trigger achievement check (should unlock both #1 and #2)
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
+		Auth::flushUser(); // Persist Auth changes before direct DB query
 
 		// Assert: Both achievements unlocked
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);
@@ -84,6 +86,7 @@ class XPAmountTest extends AchievementTestCase
 
 		// Act: Unlock achievement
 		new AchievementChecker()->checkProblemNumberAchievements()->finalize();
+		Auth::flushUser(); // Persist Auth changes before direct DB query
 
 		// Assert: Achievement unlocked
 		$this->assertAchievementUnlocked(Achievement::PROBLEMS_1000);

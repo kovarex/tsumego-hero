@@ -48,6 +48,7 @@ class HeroController extends AppController
 		ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
 		Auth::getUser()['used_refinement'] = 1;
 		Auth::saveUser();
+		Auth::flushUser(); // Ensure user data is persisted before redirect
 		return $this->redirect('/' . $setConnection['set_connection_id']);
 	}
 
@@ -61,6 +62,7 @@ class HeroController extends AppController
 		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
 		Auth::getUser()['used_sprint'] = 1;
 		Auth::saveUser();
+		Auth::flushUser(); // Ensure user data is persisted before response
 		$this->response->statusCode(200);
 		return $this->response;
 	}
@@ -74,6 +76,7 @@ class HeroController extends AppController
 		}
 		Auth::getUser()['used_intuition'] = 1;
 		Auth::saveUser();
+		Auth::flushUser(); // Ensure user data is persisted before response
 		$this->response->statusCode(200);
 		return $this->response;
 	}
@@ -89,6 +92,7 @@ class HeroController extends AppController
 		Auth::getUser()['used_intuition'] = 0;
 		Auth::getUser()['damage'] = 0;
 		Auth::saveUser();
+		Auth::flushUser(); // Ensure user data is persisted before response
 
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' WHERE status='F' AND user_id=" . Auth::getUserID());
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' WHERE status='X' AND user_id=" . Auth::getUserID());
@@ -136,6 +140,7 @@ class HeroController extends AppController
 
 		Auth::getUser()['used_revelation']++;
 		Auth::saveUser();
+		Auth::flushUser(); // Ensure user data is persisted before response
 
 		$this->response->statusCode(200);
 		return $this->response;

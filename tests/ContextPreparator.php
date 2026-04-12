@@ -389,7 +389,10 @@ class ContextPreparator
 		if (!$setsInput)
 			return;
 		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
-		$this->tsumegoSets = [];
+		$tsumego['sets'] = [];
+		$tsumego['set-connections'] = [];
+		$tsumegoId = $tsumego['id'];
+		$this->setConnections = array_values(array_filter($this->setConnections, fn($c) => $c['tsumego_id'] != $tsumegoId));
 		foreach ($setsInput as $tsumegoSet)
 			$this->prepareTsumegoSet($tsumegoSet, $tsumego);
 	}
@@ -870,6 +873,8 @@ class ContextPreparator
 
 	public function reloadUser(): array
 	{
+		// Flush any pending Auth changes before reloading from DB
+		Auth::flushUser();
 		$this->user = ClassRegistry::init('User')->findById($this->user['id'])['User'];
 		return $this->user;
 	}
@@ -910,9 +915,8 @@ class ContextPreparator
 	public array $sets = [];
 	public array $tsumegos = [];
 	public array $issues = [];
-	public ?int $mode = null;
 	public ?array $resultTsumegoStatus = null;
-	public ?array $tsumegoSets = null;
+
 	public array $timeModeRanks = [];
 	public array $timeModeSessions = [];
 	public array $tags = [];

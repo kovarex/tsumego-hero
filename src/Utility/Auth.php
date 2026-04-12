@@ -19,6 +19,8 @@ class Auth
 
 	public static function init($user = null): void
 	{
+		self::$needsSave = false;
+
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
@@ -90,7 +92,16 @@ class Auth
 	public static function saveUser(): void
 	{
 		assert(Auth::isLoggedIn());
-		ClassRegistry::init('User')->save(Auth::getUser());
+		self::$needsSave = true;
+	}
+
+	public static function flushUser(): void
+	{
+		if (self::$needsSave && Auth::isLoggedIn())
+		{
+			ClassRegistry::init('User')->save(Auth::getUser());
+			self::$needsSave = false;
+		}
 	}
 
 	public static function logout(): void
@@ -166,6 +177,7 @@ class Auth
 	}
 
 	private static $user = null;
+	private static bool $needsSave = false;
 	public static int $LIGHT_MODE = 1;
 	public static int $DARK_MODE = 2;
 }

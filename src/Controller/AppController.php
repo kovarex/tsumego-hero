@@ -391,7 +391,10 @@ class AppController extends Controller
 		if (Auth::isLoggedIn())
 		{
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
+			{
 				Auth::getUser()['last_time_mode_category_id'] = $lastTimeModeCategoryID;
+				Auth::saveUser();
+			}
 			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
 			&& strlen($_COOKIE['z_sess']) > 5)
 			{
@@ -430,6 +433,7 @@ class AppController extends Controller
 				// Convert string to integer for database storage
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
 				Auth::getUser()['lastLight'] = $lightDarkInt;
+				Auth::saveUser();
 			}
 		}
 		elseif (Auth::isLoggedIn())
@@ -446,6 +450,7 @@ class AppController extends Controller
 			{
 				$levelBar = $_COOKIE['levelBar'];
 				Auth::getUser()['levelBar'] = $levelBar;
+				Auth::saveUser();
 			}
 			elseif (Auth::getUser()['levelBar'] == 0
 		  || Auth::getUser()['levelBar'] == 'level')
@@ -457,6 +462,7 @@ class AppController extends Controller
 			{
 				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
 				Auth::getUser()['lastProfileLeft'] = $lastProfileLeft;
+				Auth::saveUser();
 			}
 			else
 			{
@@ -468,6 +474,7 @@ class AppController extends Controller
 			{
 				$lastProfileRight = $_COOKIE['lastProfileRight'];
 				Auth::getUser()['lastProfileRight'] = $lastProfileRight;
+				Auth::saveUser();
 			}
 			else
 			{
@@ -533,9 +540,14 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
 		$this->set('timeMode', $timeMode);
-		if (Auth::isLoggedIn())
-			Auth::saveUser();
+
+		// Flush all user mutations from beforeFilter (cookies, PlayResultProcessor, AchievementChecker)
+		// in a single DB write, so controller actions see up-to-date data.
+		Auth::flushUser();
 	}
 
-	public function afterFilter() {}
+	public function afterFilter()
+	{
+		Auth::flushUser();
+	}
 }

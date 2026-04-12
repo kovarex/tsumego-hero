@@ -437,6 +437,18 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testSolvedIncreasedBySolvingInTimeMode(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'tsumego' => ['set_order' => 1],
+			'user' => ['solved' => 66, 'mode' => Constants::$TIME_MODE]]);
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->playWithResult('S');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame(67, $context->reloadUser()['solved']);
+	}
+
 	public function testFailingResetAndSolvingAppliesBothFailAndSolve(): void
 	{
 		$context = new ContextPreparator([

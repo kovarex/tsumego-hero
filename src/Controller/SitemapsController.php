@@ -7,7 +7,7 @@
  *
  * @link https://www.sitemaps.org/protocol.html
  */
-class SitemapsController extends AppController
+class SitemapsController extends Controller
 {
 	/**
 	 * Models
