@@ -121,32 +121,12 @@
 			if ($set['partition'] >= 4)
 				$lightDarkBoxes = '6';
 		}
-		$makeLink = true;
-		if ($set['premium'] != 1)
-		{
-			$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
-			$box1unlocked = 'box1default';
-		}
-		else
-		{
-			if ($hasPremium)
-			{
-				$backgroundImage = 'url(/img/setButtonUnlocked.png);';
-				$box1unlocked = 'box1unlocked';
-			}
-			else
-			{
-				$backgroundImage = 'url(/img/setButtonLocked.png);';
-				$box1unlocked = '';
-				$makeLink = false;
-			}
-		}
+		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
+		$box1unlocked = 'box1default';
 
-		if ($makeLink)
-		{
-			echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">
-				<div class="box1 box1topic ' . $box1unlocked.' topic-box' . $set['id'] . '"
-					style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
+		echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">
+			<div class="box1 box1topic ' . $box1unlocked.' topic-box' . $set['id'] . '"
+				style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
 				if ($set['solved_percent'] >= 100)
 					echo '<div class="collection-completed">completed</div>';
 				echo '<div class="collection-top">' . h($set['name']) . $partition . '</div>';
@@ -173,26 +153,6 @@
 					</div>
 				</div>
 			</a>';
-		}
-		else
-		{
-			echo '<a href="/users/donate" class="box1link">';
-			echo '<div class="box1 box1topic '.$box1unlocked.' topic-box' . $set['id'] . '"
-				style="background-color:' . $set['color'] . ';background-image: '.$backgroundImage.'">';
-			if ($set['solved_percent'] >= 100)
-				echo '<div class="collection-completed">completed</div>';
-			echo '<div class="collection-top top-inactive">' . h($set['name']) . $partition.'</div>';
-			echo '<div class="collection-middle-left"></div>';
-			echo '<div class="collection-middle-right"></div>';
-			echo '<div class="collection-bottom">
-					<div align="left" class="reward-bar-container">
-						<div id="account-bar-wrapper2">
-						</div>
-					</div>
-				</div>
-			</div>
-		</a>';
-		}
 	} ?>
 	</div>
 	<style>
@@ -288,7 +248,6 @@
 		<?php
 		echo 'function animateNumber(index, start, end, duration) {
 				const element = document.getElementById("number" + index);
-				// Null check: premium locked sets don\'t have number elements
 				if (!element) {
 					console.warn("Element number" + index + " not found.");
 					return;

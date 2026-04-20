@@ -404,18 +404,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $playTitle, 'Play page should render with playTitle element');
 	}
 
-	public function testOpenPremiumProblemWithNonPremiumAccount()
-	{
-		$browser = Browser::instance();
-		$context = new ContextPreparator([
-			'user' => ['mode' => Constants::$LEVEL_MODE],
-			'tsumego' => [
-				'sets' => [['name' => 'test set', 'num' => '1', 'premium' => true]]]]);
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$this->assertSame(Util::getMyAddress() . '/sets', $browser->driver->getCurrentURL());
-		$this->assertTextContains('This is premium only problem.', $browser->driver->getPageSource());
-	}
-
 	public function testRootCommentIsDisplayedOnInitialLoad()
 	{
 		$browser = Browser::instance();

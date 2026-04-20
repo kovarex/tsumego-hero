@@ -403,7 +403,6 @@ class ContextPreparator
 			'name' => Util::extractWithDefault('name', $setInput, 'test set'),
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
-			'premium' => Util::extract('premium', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
@@ -453,7 +452,6 @@ class ContextPreparator
 			$name = $input;
 			$includedInTimeMode = false;
 			$public = 1;
-			$premium = 0;
 			$boardThemeIndex = 1;
 		}
 		else
@@ -461,7 +459,6 @@ class ContextPreparator
 			$name = Util::extract('name', $input);
 			$includedInTimeMode = Util::extract('included_in_time_mode', $input);
 			$public = Util::extractWithDefault('public', $input, true);
-			$premium = Util::extractWithDefault('premium', $input, false) ?: 0;
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
 			$this->checkOptionsConsumed($input);
 		}
@@ -472,7 +469,6 @@ class ContextPreparator
 			$set['title'] = $name;
 			$set['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
 			$set['public'] = is_null($public) ? true : $public;
-			$set['premium'] = $premium;
 			$set['board_theme_index'] = $boardThemeIndex;
 			$set['order'] = Constants::$DEFAULT_SET_ORDER;
 			ClassRegistry::init('Set')->create($set);
