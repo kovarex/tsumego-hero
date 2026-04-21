@@ -5,10 +5,6 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 || $set['Set']['id'] == 71790 || $set['Set']['id'] == 74761 || $set['Set']['id'] == 81578 || $set['Set']['id'] == 88156)
 	$noImage = true;
 
-if($set['Set']['premium'] == 1)
-	if(!Auth::hasPremium())
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-
 if($set['Set']['public'] == 0)
 	if(Auth::isLoggedIn())
 	{
@@ -51,16 +47,6 @@ if(!$beta2)
 			<td style="vertical-align:top;">
 				<?php
 			$saNum;
-$tierReward = [];
-$tierReward[11] = '';
-$tierReward[10] = 'Premium collection.';
-$tierReward[9] = 'Premium collection.';
-$tierReward[8] = 'Premium collection.';
-$tierReward[7] = 'Premium collection.';
-$tierReward[6] = 'Premium collection.';
-$tierReward[5] = 'Premium collection.';
-$tierReward[4] = 'Premium collection.';
-$tierReward[3] = 'Premium collection.';
 
 if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
 elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
@@ -71,15 +57,6 @@ elseif($set['Set']['image'] == 'sa-giant.jpg') $saNum = 4;
 elseif($set['Set']['image'] == 'sa-resistance.jpg') $saNum = 3;
 else $saNum = 11;
 
-if($saNum + Auth::premiumLevel() > 10)
-	$accessOutput = $tierReward[10];
-else
-	$accessOutput = $tierReward[$saNum + Auth::premiumLevel()];
-
-if($saNum == 11)
-	$accessOutput = '';
-if($accessOutput != '')
-	echo $accessOutput . '<br><br>';
 echo strip_tags($set['Set']['description'], '<br><a><b><i><p><ul><ol><li><img><font><table><tr><td><th>');
 ?>
 			</td>
