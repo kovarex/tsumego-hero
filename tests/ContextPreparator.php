@@ -6,27 +6,32 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
-		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1']);      // FK to: user, tag
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1']);                // FK to: user
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1']);           // FK to: user, tsumego
-		ClassRegistry::init('Schedule')->deleteAll(['1 = 1']);           // FK to: Tsumego, Set
-		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1']);   // FK to: User, Set
-		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1']);          // FK to: User
-		ClassRegistry::init('Sgf')->deleteAll(['1 = 1']);                // FK to: User, Tsumego
-		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1']);    // FK to: TimeModeSession
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);    // FK to: User, TimeModeRank
-		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1']);     // FK to: User
-		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1']);       // FK to: User
-		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1']);      // FK to: User, Tsumego, Set
-		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1']);  // FK to: User, Set
-		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1']);  // FK to: User, Achievement
-		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1']);      // FK to: Tsumego, Set
-		ClassRegistry::init('User')->deleteAll(['1 = 1']);               // Parent table
-		if (!empty(ClassRegistry::init('User')->find('all')))
-			throw new Exception('Users were deleted and  yet still they are some');
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1']);       // Parent table
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1']);            // Parent table
-		ClassRegistry::init('Set')->deleteAll(['1 = 1']);                // Parent table
+		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1'], false);      // FK to: user, tag
+		ClassRegistry::init('Tag')->deleteAll(['1 = 1'], false);                // FK to: user
+		ClassRegistry::init('Favorite')->deleteAll(['1 = 1'], false);           // FK to: user, tsumego
+		ClassRegistry::init('Schedule')->deleteAll(['1 = 1'], false);           // FK to: Tsumego, Set
+		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1'], false);   // FK to: User, Set
+		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1'], false);          // FK to: User
+		ClassRegistry::init('Sgf')->deleteAll(['1 = 1'], false);                // FK to: User, Tsumego
+		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1'], false);    // FK to: TimeModeSession
+		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1'], false);    // FK to: User, TimeModeRank
+		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1'], false);     // FK to: User
+		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1'], false);       // FK to: User
+		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego, Set
+		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1'], false);  // FK to: User, Set
+		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1'], false);  // FK to: User, Achievement
+		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1'], false);      // FK to: Tsumego, Set
+		ClassRegistry::init('TsumegoAttempt')->deleteAll(['1 = 1'], false);     // FK to: User, Tsumego
+		ClassRegistry::init('TsumegoStatus')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego
+		ClassRegistry::init('UserContribution')->deleteAll(['1 = 1'], false);   // Parent table
+		ClassRegistry::init('Signature')->deleteAll(['1 = 1'], false);          // Parent table
+		ClassRegistry::init('TsumegoVariant')->deleteAll(['1 = 1'], false);     // Parent table
+		ClassRegistry::init('Reject')->deleteAll(['1 = 1'], false);             // Parent table
+		ClassRegistry::init('PublishDate')->deleteAll(['1 = 1'], false);        // Parent table
+		ClassRegistry::init('User')->deleteAll(['1 = 1'], false);               // Parent table
+		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1'], false);       // Parent table
+		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1'], false);            // Parent table
+		ClassRegistry::init('Set')->deleteAll(['1 = 1'], false);                // Parent table
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
