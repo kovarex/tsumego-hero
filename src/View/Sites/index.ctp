@@ -318,10 +318,11 @@ $highestRight = 17;
 			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php if(Auth::isLoggedIn()){ ?>
-		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
+
+		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
 			<div class="modeBox2" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
+		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
 			<div class="modeBox22" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<a href="/timeMode/overview">
