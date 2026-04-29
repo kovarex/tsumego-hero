@@ -90,34 +90,6 @@ class TsumegoImagesController extends AppController
 			$maxY = max($maxY, $stone['y']);
 		}
 
-		// Normalize to bottom-right corner for consistent display
-		// (like besogo's corner normalization, but always targeting bottom-right)
-		$centerX = ($minX + $maxX) / 2.0;
-		$centerY = ($minY + $maxY) / 2.0;
-		$hFlip = $centerX < ($boardSize - 1) / 2.0; // stones closer to left → flip right
-		$vFlip = $centerY < ($boardSize - 1) / 2.0; // stones closer to top → flip down
-		if ($hFlip || $vFlip)
-		{
-			foreach ($stones as &$stone)
-			{
-				if ($hFlip)
-					$stone['x'] = $boardSize - 1 - $stone['x'];
-				if ($vFlip)
-					$stone['y'] = $boardSize - 1 - $stone['y'];
-			}
-			unset($stone);
-			// Recalculate bounding box after flip
-			$minX = $minY = $boardSize - 1;
-			$maxX = $maxY = 0;
-			foreach ($stones as $stone)
-			{
-				$minX = min($minX, $stone['x']);
-				$maxX = max($maxX, $stone['x']);
-				$minY = min($minY, $stone['y']);
-				$maxY = max($maxY, $stone['y']);
-			}
-		}
-
 		// Add padding (2 intersections on each side, but don't go outside board)
 		$padding = 2;
 		$minX = max(0, $minX - $padding);
@@ -182,30 +154,27 @@ class TsumegoImagesController extends AppController
 		// Fill background
 		imagefill($img, 0, 0, $bgColor);
 
-		// Draw board background with subtle frame
+		// Draw board background; frame only on sides that are actual board edges
 		$frameWidth = 4;
-		imagefilledrectangle(
-			$img,
-			(int) ($boardX - $frameWidth),
-			(int) ($boardY - $frameWidth),
-			(int) ($boardX + ($cropWidth - 1) * $cellSize + $frameWidth),
-			(int) ($boardY + ($cropHeight - 1) * $cellSize + $frameWidth),
-			$borderColor
-		);
-		imagefilledrectangle(
-			$img,
-			(int) ($boardX - $frameWidth + 2),
-			(int) ($boardY - $frameWidth + 2),
-			(int) ($boardX + ($cropWidth - 1) * $cellSize + $frameWidth - 2),
-			(int) ($boardY + ($cropHeight - 1) * $cellSize + $frameWidth - 2),
-			$boardColor
-		);
-
-		// Draw grid lines - thicker at board edges
 		$isLeftEdge = ($rotate ? $minY : $minX) === 0;
 		$isRightEdge = ($rotate ? $maxY : $maxX) === $boardSize - 1;
 		$isTopEdge = ($rotate ? $minX : $minY) === 0;
 		$isBottomEdge = ($rotate ? $maxX : $maxY) === $boardSize - 1;
+		$bx0 = (int) $boardX;
+		$by0 = (int) $boardY;
+		$bx1 = (int) ($boardX + ($cropWidth - 1) * $cellSize);
+		$by1 = (int) ($boardY + ($cropHeight - 1) * $cellSize);
+		imagefilledrectangle($img, $bx0, $by0, $bx1, $by1, $boardColor);
+		if ($isLeftEdge)
+			imagefilledrectangle($img, $bx0 - $frameWidth, $by0 - ($isTopEdge ? $frameWidth : 0), $bx0 - 1, $by1 + ($isBottomEdge ? $frameWidth : 0), $borderColor);
+		if ($isRightEdge)
+			imagefilledrectangle($img, $bx1 + 1, $by0 - ($isTopEdge ? $frameWidth : 0), $bx1 + $frameWidth, $by1 + ($isBottomEdge ? $frameWidth : 0), $borderColor);
+		if ($isTopEdge)
+			imagefilledrectangle($img, $bx0 - ($isLeftEdge ? $frameWidth : 0), $by0 - $frameWidth, $bx1 + ($isRightEdge ? $frameWidth : 0), $by0 - 1, $borderColor);
+		if ($isBottomEdge)
+			imagefilledrectangle($img, $bx0 - ($isLeftEdge ? $frameWidth : 0), $by1 + 1, $bx1 + ($isRightEdge ? $frameWidth : 0), $by1 + $frameWidth, $borderColor);
+
+		// Draw grid lines - thicker at board edges
 
 		// Interior grid lines (thin)
 		imagesetthickness($img, 1);
