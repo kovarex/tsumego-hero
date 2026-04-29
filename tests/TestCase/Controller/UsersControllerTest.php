@@ -323,4 +323,41 @@ class UsersControllerTest extends ControllerTestCase
 		]);
 		$this->assertEquals(3, $remaining);
 	}
+
+	public function testResetOldProgressDoesNotAffectOtherUsers()
+	{
+		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice', 'solved' => 2],
+			'other-users' => [['name' => 'bob']],
+			'tsumegos' => [
+				['set_order' => 1, 'statuses' => [
+					['name' => 'S', 'updated' => $twoYearsAgo],
+					['name' => 'S', 'updated' => $twoYearsAgo, 'user' => 'bob'],
+				]],
+				['set_order' => 2, 'status' => 'S'],
+			],
+		]);
+
+		$bobId = ContextPreparator::getUserIdFromName('bob');
+
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+
+		$browser->driver->executeScript("window.confirm = function() { return true; }");
+		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
+
+		$aliceRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
+			'conditions' => ['user_id' => $context->user['id']],
+		]);
+		$this->assertEquals(1, $aliceRemaining, "Alice's old status should have been deleted");
+
+		$bobRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
+			'conditions' => ['user_id' => $bobId],
+		]);
+		$this->assertEquals(1, $bobRemaining, "Bob's status should not have been affected");
+	}
 }
