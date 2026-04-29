@@ -21,6 +21,9 @@ $author = $t['Tsumego']['author'] ?? 'Unknown';
 $setTitle = $set['Set']['title'] ?? '';
 $description = strip_tags($t['Tsumego']['description'] ?? '');
 
+$description = str_ireplace('[b]', 'Black', $description);
+$description = str_ireplace('[w]', 'White', $description);
+
 // Build Open Graph metadata — include problem position (e.g., "Korean Problem Academy 1 64/200")
 $num = $setConnection['SetConnection']['num'] ?? null;
 $total = $amountOfOtherCollection ?? null;
