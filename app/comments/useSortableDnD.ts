@@ -153,6 +153,16 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 				if (evt.from && evt.item.parentNode !== evt.from) 
 					evt.from.appendChild(evt.item);
 
+				// SortableJS routes both 'drop' and 'dragend' events through _onDrop, so onAdd
+				// fires even for cancelled drags (Escape key, or drop on the source-issue overlay
+				// which calls stopPropagation and prevents the 'drop' event from reaching SortableJS).
+				// Detect cancellation by checking the original event type: 'dragend' = cancelled,
+				// 'drop' = intentional drop on the standalone area.
+				// Note: @types/sortablejs omits originalEvent, but SortableJS sets it at runtime.
+				const origEvt = (evt as Sortable.SortableEvent & { originalEvent?: Event }).originalEvent;
+				if (origEvt?.type === 'dragend')
+					return;
+
 				const commentEl = evt.item.querySelector('.tsumego-comment') || evt.item;
 				const commentId = parseInt((commentEl as HTMLElement).dataset.commentId || '0');
 				await onMoveComment(commentId, 'standalone');
@@ -168,7 +178,26 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 			const issueEl = container.closest('.tsumego-issue') as HTMLElement;
 
 			const issueSortable = new Sortable(htmlContainer, {
-				group: { name: `issue-${issueId}`, pull: true, put: false },
+				group: {
+					name: `issue-${issueId}`,
+					pull: true,
+					// Allow items to be dropped back into this issue (drag cancel / return).
+					// Without this, SortableJS commits the item to the main sortable on drop-back,
+					// firing onAdd → onMoveComment('standalone') which incorrectly deletes the issue.
+					//
+					// Two return paths are handled:
+					// 1. Direct: user drops straight back on the issue without hovering main (from.el = issue dropzone)
+					// 2. Via main: user hovered over main container, then dropped on issue (from.el = main container)
+					//    Only allowed when the drag originated from THIS issue (sourceIssueId === issueId),
+					//    preventing accidental cross-issue moves.
+					put: (_to: Sortable, from: Sortable) =>
+						from.el === htmlContainer ||
+						(
+							containerRef.current !== null &&
+							from.el === containerRef.current &&
+							dragStateRef.current?.sourceIssueId === issueId
+						)
+				},
 				sort: false,
 				animation: 0,
 				scroll: true,
@@ -185,6 +214,11 @@ export function useSortableDnD({ containerRef, isAdmin, tsumegoId, issues, onMov
 					dragStateRef.current = { commentId, sourceIssueId: issueId };
 					issueEl.classList.add('tsumego-issue--drag-source');
 					showIssueDropTargets(true, issueId);
+				},
+				onAdd: (_evt: Sortable.SortableEvent) =>
+				{
+					// Comment was dropped back into this issue (drag cancelled/returned).
+					// SortableJS placed the item here; React's virtual DOM also has it here. No API call.
 				},
 				onEnd: () =>
 				{
