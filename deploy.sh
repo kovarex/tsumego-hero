@@ -147,8 +147,7 @@ mkdir -p "$ROOT_DIR/tmp/cache/persistent"
 chmod 777 "$ROOT_DIR/tmp/cache/persistent"
 mkdir -p "$ROOT_DIR/tmp/cache/views"
 chmod 777 "$ROOT_DIR/tmp/cache/views"
-mkdir -p "$ROOT_DIR/tmp/cache/asset_compress"
-chmod 777 "$ROOT_DIR/tmp/cache/asset_compress"
+
 chmod 777 "$ROOT_DIR/webroot/forums/cache"
 mkdir -p "$ROOT_DIR/webroot/forums/cache/production"
 chmod 777 "$ROOT_DIR/webroot/forums/cache/production"
@@ -172,26 +171,12 @@ echo "=== Clearing caches ==="
 rm -rf "$ROOT_DIR/tmp/cache/models"/*
 rm -rf "$ROOT_DIR/tmp/cache/persistent"/*
 rm -rf "$ROOT_DIR/tmp/cache/views"/*
-rm -rf "$ROOT_DIR/tmp/cache/asset_compress"/*
-rm -rf "$ROOT_DIR/webroot/cache_js"
-rm -rf "$ROOT_DIR/webroot/cache_css"
-rm -rf "$ROOT_DIR/tmp/asset_compress_build_time"
+
 
 # Build React app with Vite
 echo "=== Building React app ==="
 npx pnpm@latest install --frozen-lockfile
 npx pnpm@latest run build
 
-# Pre-build and minify all CSS/JS assets for production (faster page loads)
-# This generates all files in webroot/cache_css/ and webroot/cache_js/
-# Using 'clear' first ensures old build files are removed, then --force guarantees fresh build
-echo "=== Compressing css and js ==="
-mkdir -p "$ROOT_DIR/webroot/cache_js"
-chmod 777 "$ROOT_DIR/webroot/cache_js"
-mkdir -p "$ROOT_DIR/webroot/cache_css"
-chmod 777 "$ROOT_DIR/webroot/cache_css"
-
-./bin/cake asset_compress clear
-./bin/cake asset_compress build --force
 
 echo "=== Deploy complete ==="

@@ -5,11 +5,8 @@ use Facebook\WebDriver\WebDriverBy;
 /**
  * AssetBundlingTest
  *
- * Verifies that CSS and JS assets are properly bundled via AssetCompress,
+ * Verifies that CSS and JS assets are properly bundled via Vite,
  * that styles are applied, and that JavaScript functions are loaded and working.
- *
- * DISABLED: CI now uses alwaysEnableController=true (serves assets on-the-fly)
- * TODO: Re-enable when we have production-like CI with pre-built assets
  *
  * @group disabled
  *
@@ -26,14 +23,14 @@ class AssetBundlingTest extends CakeTestCase
 		$browser = Browser::instance();
 		$browser->get('sites/blank');
 
-		// Verify bundled CSS files are loaded (not individual files)
+		// Verify Vite-built CSS bundles are loaded (not individual files)
 		$html = $browser->driver->getPageSource();
-		$this->assertMatchesRegularExpression('#/cache_css/app\.v\d+\.css#', $html, 'app.css bundle should be loaded');
-		$this->assertStringNotContainsString('"/css/default.css', $html, 'Individual default.css should NOT be loaded');
-		$this->assertStringNotContainsString('"/css/home-themes.css', $html, 'Individual home-themes.css should NOT be loaded');
+		$this->assertMatchesRegularExpression('#/dist/app-theme-[a-z0-9]+\.css#', $html, 'app-theme CSS bundle should be loaded');
+		$this->assertStringNotContainsString('"css/default.css', $html, 'Individual default.css should NOT be loaded');
+		$this->assertStringNotContainsString('"css/home-themes.css', $html, 'Individual home-themes.css should NOT be loaded');
 
 		// Verify theme-specific CSS is loaded
-		$hasTheme = preg_match('#/cache_css/(dark|light)-theme\.v\d+\.css#', $html);
+		$hasTheme = preg_match('#/dist/(dark|light)-theme-[a-z0-9]+\.css#', $html);
 		$this->assertTrue((bool) $hasTheme, 'Theme CSS bundle (dark or light) should be loaded');
 	}
 
@@ -45,9 +42,9 @@ class AssetBundlingTest extends CakeTestCase
 		$browser = Browser::instance();
 		$browser->get('sites/blank');
 
-		// Verify bundled JS file is loaded (not individual files)
+		// Verify Vite-built legacy JS bundle is loaded (not individual files)
 		$html = $browser->driver->getPageSource();
-		$this->assertMatchesRegularExpression('#/cache_js/app\.v\d+\.js#', $html, 'app.js bundle should be loaded');
+		$this->assertMatchesRegularExpression('#/dist/legacy-app-[a-z0-9]+\.js#', $html, 'legacy-app JS bundle should be loaded');
 		$this->assertStringNotContainsString('"/js/util.js', $html, 'Individual util.js should NOT be loaded');
 		$this->assertStringNotContainsString('"/js/dark.js', $html, 'Individual dark.js should NOT be loaded');
 
@@ -78,7 +75,7 @@ class AssetBundlingTest extends CakeTestCase
 
 		// Verify JS bundle is loaded, not individual files
 		$html = $browser->driver->getPageSource();
-		$this->assertMatchesRegularExpression('#/cache_js/app\.v\d+\.js#', $html, 'app.js bundle should be loaded on play page');
+		$this->assertMatchesRegularExpression('#/dist/legacy-app-[a-z0-9]+\.js#', $html, 'legacy-app JS bundle should be loaded on play page');
 		$this->assertStringNotContainsString('"/js/TagConnectionsEdit.js', $html, 'Individual TagConnectionsEdit.js should NOT be loaded');
 		$this->assertStringNotContainsString('"/js/multipleChoice.js', $html, 'Individual multipleChoice.js should NOT be loaded');
 		$this->assertStringNotContainsString('"/FileSaver.min.js', $html, 'Individual FileSaver.min.js should NOT be loaded');
@@ -101,14 +98,14 @@ class AssetBundlingTest extends CakeTestCase
 	}
 
 	/**
-	 * Test that besogo library is NOT bundled into app.js
+	 * Test that besogo library is NOT bundled into the legacy JS bundle
 	 * (it should remain separate as a third-party library)
 	 */
 	public function testBesogoLibraryRemainsUnbundled()
 	{
-		// Check that besogo is NOT included in the app.js bundle
-		$jsFiles = glob(WWW_ROOT . 'cache_js/app.v*.js');
-		$this->assertNotEmpty($jsFiles, 'app.js bundle should exist');
+		// Check that besogo is NOT included in the legacy-app bundle
+		$jsFiles = glob(WWW_ROOT . 'dist/legacy-app-*.js');
+		$this->assertNotEmpty($jsFiles, 'legacy-app JS bundle should exist');
 
 		$bundleContent = file_get_contents($jsFiles[0]);
 
@@ -126,12 +123,12 @@ class AssetBundlingTest extends CakeTestCase
 	 */
 	public function testMinifiedBundlesExist()
 	{
-		// Verify bundle files exist (using wildcard pattern for versioned names)
-		$cssFiles = glob(WWW_ROOT . 'cache_css/app.v*.css');
-		$this->assertNotEmpty($cssFiles, 'app.css bundle file should exist');
+		// Verify Vite bundle files exist (using wildcard pattern for hashed names)
+		$cssFiles = glob(WWW_ROOT . 'dist/app-theme-*.css');
+		$this->assertNotEmpty($cssFiles, 'app-theme CSS bundle file should exist');
 
-		$jsFiles = glob(WWW_ROOT . 'cache_js/app.v*.js');
-		$this->assertNotEmpty($jsFiles, 'app.js bundle file should exist');
+		$jsFiles = glob(WWW_ROOT . 'dist/legacy-app-*.js');
+		$this->assertNotEmpty($jsFiles, 'legacy-app JS bundle file should exist');
 
 		// Check that files have actual content (not empty)
 		$cssContent = file_get_contents($cssFiles[0]);

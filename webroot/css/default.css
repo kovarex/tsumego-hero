@@ -1,4 +1,4 @@
-﻿@font-face {
+@font-face {
   font-family: "Exo Regular";
   font-style: normal;
   font-weight: normal;
@@ -555,16 +555,16 @@ li a.menuLi {
   padding: 15px;
 }
 .highscoreTable .color1 {
-  background: linear-gradient(#2cfdfe, #6daadd); !important;
+  background: linear-gradient(#2cfdfe, #6daadd) !important;
 }
 .highscoreTable .color2 {
-  background: linear-gradient(#fcf9b7, #f3da31); !important;
+  background: linear-gradient(#fcf9b7, #f3da31) !important;
 }
 .highscoreTable .color3 {
-  background: linear-gradient( #eceaea,#939393); !important;
+  background: linear-gradient( #eceaea,#939393) !important;
 }
 .highscoreTable .color4 {
-  background: linear-gradient(#fdd5a2, #cd7b41); !important;
+  background: linear-gradient(#fdd5a2, #cd7b41) !important;
 }
 .highscoreTable .color5 {
   /*101-200*/

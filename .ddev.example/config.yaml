@@ -17,6 +17,14 @@ web_environment: []
 corepack_enable: false
 disable_upload_dirs_warning: true
 
+# Auto-start Vite watcher whenever `ddev start` runs.
+# pnpm's node_modules symlinks don't resolve inside the container, so we run on the host.
+# Choose the line matching your OS (uncomment one):
+hooks:
+    post-start:
+        - exec-host: powershell -NonInteractive -Command "Start-Process (Get-Command pnpm).Source -ArgumentList dev -WorkingDirectory (Get-Location).Path -WindowStyle Hidden"  # Windows
+        # On Linux/macOS: - exec-host: nohup pnpm dev > /dev/null 2>&1 &
+
 # Key features of DDEV's config.yaml:
 
 # name: <projectname> # Name of the project, automatically provides
