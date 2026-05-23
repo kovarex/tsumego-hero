@@ -1,0 +1,68 @@
+# Docker Compose for testing PHP Deployer-based deployment
+# Mirrors NFSN production layout exactly (PHP 8.3, MariaDB 10.11, Node 22).
+#
+# Deploy path: /var/www/deploy/ (inside container)
+# Apache serves from: /var/www/deploy/webroot (outer symlink, same pattern as NFSN /home/public/webroot)
+# Web port: http://localhost:8081
+# SSH port: localhost:8022 (Deployer connects here, same code path as NFSN)
+# DB port: 3308
+#
+# One-time setup:
+#   cd docker/local && docker-compose up -d --build
+#
+# Deploy / rollback:
+#   vendor/bin/dep deploy local
+#   vendor/bin/dep rollback local
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: docker/local/Dockerfile
+    ports:
+      - "8081:80"
+      - "8022:22"   # SSH — Deployer connects here (mirrors production SSH pattern)
+    volumes:
+      - ../../:/var/www/html                                                        # Project source (for git clone)
+      - ./core.local.php:/var/www/deploy/shared/config/core.local.php:ro           # Shared core.local.php
+      - ../../.local/docker/deploy_local_key.pub:/tmp/deploy_key.pub:ro          # SSH public key (each dev generates their own)
+      - deploy-data:/var/www/deploy                                                 # Persistent deploy directory
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+      - DB_HOST=db
+      - DB_USER=db
+      - DB_PASS=db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - deployer-net
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: db
+      MARIADB_USER: db
+      MARIADB_PASSWORD: db
+    ports:
+      - "3308:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - deployer-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+networks:
+  deployer-net:
+    driver: bridge
+
+volumes:
+  deploy-data:
+  db-data:

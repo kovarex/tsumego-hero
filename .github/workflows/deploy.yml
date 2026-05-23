@@ -1,0 +1,83 @@
+﻿name: Deploy
+
+# Triggers only when the CI workflow completes on master.
+# deploy-test runs automatically when CI passes.
+# deploy-production waits for manual approval via GitHub Environments.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [master]
+
+jobs:
+  # Deploy to test (automatic when CI passes on master)
+  deploy-test:
+    name: Deploy to test.tsumego.com
+    runs-on: ubuntu-24.04
+    # Only run if the CI workflow succeeded
+    if: github.event.workflow_run.conclusion == 'success'
+    environment: test
+
+    steps:
+      # Check out the exact commit that CI tested, not necessarily the latest master.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Composer install (dev - includes deployer)
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Add both nyc1 and phx1 since test/prod may be on different NFSN datacenters
+          ssh-keyscan -H ssh.nyc1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.phx1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+
+      - name: Deploy to test
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: vendor/bin/dep deploy test --no-interaction
+
+  # Deploy to production (requires approval via GitHub Environments)
+  deploy-production:
+    name: Deploy to tsumego.com
+    runs-on: ubuntu-24.04
+    needs: [deploy-test]
+    if: github.event.workflow_run.conclusion == 'success'
+    environment: production
+
+    steps:
+      # Check out the same commit that was tested and deployed to test.
+      # Even if new commits were pushed while someone was reviewing, we deploy what was tested.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Composer install (dev - includes deployer)
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ssh.nyc1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.phx1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+
+      - name: Deploy to production
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: vendor/bin/dep deploy production --no-interaction
