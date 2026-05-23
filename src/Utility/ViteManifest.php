@@ -20,11 +20,13 @@
  *
  * MANIFEST ENTRY NAMES
  * ====================
- *   'app'          → app/index.tsx              (React app)
- *   'app-theme'    → webroot/css/app-theme.js   (default.css + home-themes.css)
- *   'dark-theme'   → webroot/css/dark-theme.js  (dark-constants.css + dark.css)
- *   'light-theme'  → webroot/css/light-theme.js (light-constants.css)
- *   'legacy'       → virtual:legacy-app         (bundled legacy global JS)
+ *   'app'          → app/index.tsx                        (React app)
+ *   'app-theme'    → webroot/css/app-theme.js             (default.css + home-themes.css)
+ *   'dark-theme'   → webroot/css/dark-theme.js            (dark-constants.css + dark.css)
+ *   'light-theme'  → webroot/css/light-theme.js           (light-constants.css)
+ *   'besogo-css'   → webroot/besogo/css/besogo-bundle.js  (besogo.css + board-flat.css)
+ *   'legacy'       → virtual:legacy-app                   (bundled app global JS)
+ *   'besogo'       → virtual:legacy-besogo               (bundled besogo viewer JS)
  */
 class ViteManifest
 {
@@ -43,7 +45,9 @@ class ViteManifest
 		'app-theme'   => 'webroot/css/app-theme.js',
 		'dark-theme'  => 'webroot/css/dark-theme.js',
 		'light-theme' => 'webroot/css/light-theme.js',
+		'besogo-css'  => 'webroot/besogo/css/besogo-bundle.js',
 		'legacy'      => 'virtual:legacy-app',
+		'besogo'      => 'virtual:legacy-besogo',
 	];
 
 	// ---------------------------------------------------------------------------
