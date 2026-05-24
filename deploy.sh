@@ -175,8 +175,8 @@ rm -rf "$ROOT_DIR/tmp/cache/views"/*
 
 # Build React app with Vite
 echo "=== Building React app ==="
-npx pnpm@latest install --frozen-lockfile
-npx pnpm@latest run build
+npx pnpm@10 install --frozen-lockfile
+npx pnpm@10 run build
 
 
 echo "=== Deploy complete ==="
