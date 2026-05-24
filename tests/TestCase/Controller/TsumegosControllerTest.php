@@ -419,5 +419,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$theComment = $browser->driver->findElement(WebDriverBy::id('theComment'));
 		$this->assertSame('Go Seigen 4p vs Kubomatsu 6p', $theComment->getText());
 		$this->assertTrue($theComment->isDisplayed(), 'Root comment should be visible on initial page load');
+
+		// XP & Rating info must be visible on initial page load.
+		$xpDisplayDiv = $browser->driver->findElement(WebDriverBy::id('xpDisplayDiv'));
+		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
 }

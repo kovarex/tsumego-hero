@@ -1933,7 +1933,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
-			$("#xpDisplayDiv").css("display", commentText.length == 0 ? "block" : "none");
 			$("#theComment").text(commentText);
 		};
 	besogo.editor.registerShowComment(showComment);
