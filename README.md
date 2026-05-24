@@ -165,9 +165,6 @@ composer cs-modified # Only run phpcs on modified files
 composer stan -- src/Controller
 composer cs-check -- src/Utility
 
-# Build Vite assets (required for AssetBundlingTest):
-pnpm run build
-
 # Test specific methods (inside ddev container!):
 vendor/bin/phpunit path/to/test.php --filter=testMethodName
 ```
