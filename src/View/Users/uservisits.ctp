@@ -6,8 +6,10 @@
 	}else{
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
+	$this->start('script');
+	echo '<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>';
+	$this->end();
 	?>
-	<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 	<div align="center">
 	<p class="title">
 		<br>

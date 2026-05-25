@@ -3,8 +3,13 @@
 	echo $this->element('open_graph_meta');
 	App::uses('ViteManifest', 'Utility');
 
+	$this->start('css');
 	echo ViteManifest::css('besogo-css');
+	$this->end();
+
+	$this->start('script');
 	echo ViteManifest::legacyScript('besogo');
+	$this->end();
 
 	$boardSize = 'large';
 	if ($t['Tsumego']['author'] == 'Stepan')

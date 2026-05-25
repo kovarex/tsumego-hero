@@ -1,4 +1,6 @@
+<?php $this->start('script'); ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<?php $this->end(); ?>
 <div id="login-box" class="users form">
   <div class="left signin">
 		<h1>Sign up</h1>

@@ -1,6 +1,8 @@
 <?php
 App::uses('ViteManifest', 'Utility');
+$this->start('script');
 echo ViteManifest::legacyScript('besogo');
+$this->end();
 ?>
 <div id="something"></div>
 <script>
