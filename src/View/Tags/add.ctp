@@ -19,7 +19,7 @@
 		<br>
 		Does the tag give a hint on the solution?<br>
 		<input type="radio" id="tag_hint_true" name="tag_hint" value="1"><label for="tag_hint_true">yes</label>
-		<input type="radio" id="tag_hint_false" name="tag_hint" value="0"><label for="tag_hint_false">no</label><br><br>
+		<input type="radio" id="tag_hint_false" name="tag_hint" value="0" checked="checked"><label for="tag_hint_false">no</label><br><br>
 		<input type="submit" value="submit" id="submit_tag">
 	</form>
 	<br><br><br><br><br><br>

@@ -26,10 +26,17 @@ class TagsController extends AppController
 			return $this->redirect('/tags/add');
 		}
 
+		$tagDescription = $this->data['tag_description'];
+		if (empty($tagDescription))
+		{
+			CookieFlash::set('Tag description not provided', 'error');
+			return $this->redirect('/tags/add');
+		}
+
 		$tag = [];
 		$tag['name'] = $tagName;
-		$tag['description'] = $this->data['tag_description'];
-		$tag['hint'] = $this->data['tag_hint'];
+		$tag['description'] = $tagDescription;
+		$tag['hint'] = (int) $this->data['tag_hint'];
 		$tag['link'] = $this->data['tag_reference'];
 		$tag['user_id'] = Auth::getUserID();
 		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
@@ -273,8 +280,15 @@ class TagsController extends AppController
 
 		$tag = $tag['Tag'];
 
-		$tag['description'] = $this->data['tag_description'];
-		$tag['hint'] = $this->data['tag_hint'];
+		$tagDescription = $this->data['tag_description'];
+		if (empty($tagDescription))
+		{
+			CookieFlash::set('Tag description not provided', 'error');
+			return $this->redirect('/tags/edit/' . $tagID);
+		}
+
+		$tag['description'] = $tagDescription;
+		$tag['hint'] = (int) ($this->data['tag_hint']);
 		$tag['link'] = $this->data['tag_link'];
 		ClassRegistry::init('Tag')->save($tag);
 		return $this->redirect('/tags/view/' . $tagID);
