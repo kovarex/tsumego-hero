@@ -156,6 +156,7 @@ class AdminStatsControllerTest extends ControllerTestCase
 			$tagName->create();
 			$tagName->save([
 				'name' => "Test Tag $i",
+				'description' => '',
 				'user_id' => $context->user['id'],
 				'approved' => 0
 			]);

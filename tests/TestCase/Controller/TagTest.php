@@ -432,6 +432,8 @@ class TagTest extends ControllerTestCase
 
 		$browser->clickId('tag_name');
 		$browser->driver->getKeyboard()->sendKeys('self atari');
+		$browser->clickId('tag_description');
+		$browser->driver->getKeyboard()->sendKeys('A self-atari is a move that puts your own stones into atari.');
 		$browser->clickId('submit_tag');
 
 		// Wait for redirect after form submission
@@ -444,6 +446,27 @@ class TagTest extends ControllerTestCase
 		$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
 		$this->assertSame($tagAdded['name'], 'self atari');
 		$this->assertSame($tagAdded['approved'], 0);
+	}
+
+	public function testAddTagWithoutDescriptionShowsError()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator(['user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
+		$browser->get('/tags/add');
+
+		$browser->clickId('tag_name');
+		$browser->driver->getKeyboard()->sendKeys('test tag no description');
+		$browser->clickId('submit_tag');
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function () use ($browser) {
+			return str_contains($browser->driver->getPageSource(), 'alert-error');
+		});
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('description', strtolower($pageSource));
+		$this->assertStringContainsString('/tags/add', $browser->driver->getCurrentURL());
+		$this->assertEmpty(ClassRegistry::init('Tag')->find('all'));
 	}
 
 	public function testApproveNewTag()
@@ -486,6 +509,27 @@ class TagTest extends ControllerTestCase
 		$this->assertSame('World', $tag['description']);
 		$this->assertSame('bla.example.com', $tag['link']);
 		$this->assertSame(0, $tag['hint']); // hint value was not touched
+	}
+
+	public function testEditTagWithoutDescriptionShowsError()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback', 'description' => 'Hello']]]);
+		$browser->get('/tags/view/' . $context->tags[0]['id']);
+		$browser->clickId('tag-edit');
+		$descField = $browser->find('#tag_description');
+		$descField->clear();
+		$browser->clickId('submit_tag');
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function () use ($browser) {
+			return str_contains($browser->driver->getPageSource(), 'alert-error');
+		});
+
+		$this->assertStringContainsString('/tags/edit/', $browser->driver->getCurrentURL());
+		$this->assertSame('Hello', ClassRegistry::init('Tag')->find('first')['Tag']['description']);
 	}
 
 	public function testEditTagEnableHint()
