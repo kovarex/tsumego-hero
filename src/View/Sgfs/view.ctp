@@ -8,7 +8,6 @@
 	}
 
 	?>
-	<script src ="/FileSaver.min.js"></script>
 
 	<div align="center">
 	<p class="title">

@@ -70,19 +70,7 @@ These changes just had to be done, so the data structure we are working on is cl
 
 	cp config/database.example config/database
 
-- **AssetCompress configuration**: Copy the development config example (enables on-the-fly asset building, no pre-build needed):
-
-
-	cp src/Config/asset_compress.local.example.ini src/Config/asset_compress.local.ini
-
-  This enables:
-  - **On-the-fly asset serving** during development (no need to run `asset_compress build` after every change)
-  - **No minification/gzip** (faster builds, easier debugging)
-  - **Timestamp-based cache busting** (browser automatically fetches updated assets)
-  
-  **Production note**: Production uses `src/Config/asset_compress.ini` (no `.local`) with minification + gzip enabled. The deploy script runs `asset_compress build` to pre-build all bundles.
-
-- **React development setup**: 
+- **React/Vite development setup**: 
 During development:
 
 	pnpm install
@@ -176,9 +164,6 @@ composer cs-modified # Only run phpcs on modified files
 # Specific folder analysis
 composer stan -- src/Controller
 composer cs-check -- src/Utility
-
-# Build asset bundles (required for AssetBundlingTest):
-./bin/cake AssetCompress.AssetCompress build
 
 # Test specific methods (inside ddev container!):
 vendor/bin/phpunit path/to/test.php --filter=testMethodName

@@ -1,5 +1,3 @@
-<script src ="/FileSaver.min.js"></script>
-
 <?php
 	echo 'Downloading collection '.($text).' of '.count($s).'.';
 ?>

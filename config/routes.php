@@ -24,19 +24,6 @@
 
 require_once(__DIR__ . "/../src/UrlRoute.php");
 
-// AssetCompress routes for dynamically serving built assets
-Router::connect('/cache_css/:name', [
-	'plugin' => 'AssetCompress',
-	'controller' => 'AssetCompress',
-	'action' => 'get'
-], ['name' => '[a-z0-9\-\.]+']);
-
-Router::connect('/cache_js/:name', [
-	'plugin' => 'AssetCompress',
-	'controller' => 'AssetCompress',
-	'action' => 'get'
-], ['name' => '[a-z0-9\-\.]+']);
-
 // XML Sitemap for search engines
 Router::connect('/sitemap.xml', [
 	'controller' => 'Sitemaps',

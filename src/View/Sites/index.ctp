@@ -1,8 +1,14 @@
 <?php
 $highestLeft = 19;
 $highestRight = 17;
+
+$this->start('script');
 ?>
-	<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<?php
+$this->end();
+?>
 	<div class="homeRight">
 		<div class="new-tsumego-box">
 			<?php
@@ -400,7 +406,6 @@ $highestRight = 17;
 		}
 		</script>
 		<div id="chartContainer" style="height: 400px; width: 100%;"></div>
-		<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 		<br>
 		</div>
 

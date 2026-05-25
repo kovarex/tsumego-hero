@@ -95,9 +95,6 @@ Cache::config('long', [
  */
 CakePlugin::loadAll();
 
-// AssetCompress needs bootstrap enabled to register dispatcher filter
-CakePlugin::load('AssetCompress', ['bootstrap' => true]);
-
 /**
  * To prefer app translation over plugin translation, you can set
  *
@@ -124,7 +121,6 @@ CakePlugin::load('AssetCompress', ['bootstrap' => true]);
 Configure::write('Dispatcher.filters', [
 	'AssetDispatcher',
 	'CacheDispatcher',
-	'AssetCompress.AssetCompressor',
 ]);
 
 /**

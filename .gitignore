@@ -68,4 +68,7 @@ Thumbs.db
 ########################
 node_modules/
 webroot/js/dist/
+webroot/dist/
 package-lock.json
+
+.pnpm-store/

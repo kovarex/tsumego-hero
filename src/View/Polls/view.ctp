@@ -1,4 +1,3 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <?php 
 $comment1 = $poll['Poll']['comment1'];
 $comment2 = $poll['Poll']['comment2'];

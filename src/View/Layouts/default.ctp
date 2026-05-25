@@ -3,6 +3,7 @@
 <?php
 App::uses('Level', 'Utility');
 App::uses('CookieFlash', 'Utility');
+App::uses('ViteManifest', 'Utility');
 require_once __DIR__ . '/../../Utility/AccountWidget.php';
 if (Configure::read('debug')) { ?>
 <script>
@@ -90,16 +91,15 @@ else
 	echo '<meta property="og:title" content="Tsumego">';
 ?>
 <?php
-// Main app CSS bundle
-echo $this->AssetCompress->css('app');
+echo ViteManifest::css('app-theme');
 
-// Load both theme CSS bundles for JavaScript-based theme switching
-// Initial state: one enabled, one disabled based on cookie
-echo '<link rel="stylesheet" id="dark-theme-css" href="' .
-	$this->AssetCompress->url('dark-theme.css') . '"' .
+// Load both theme CSS bundles for JavaScript-based theme switching.
+// Initial state: one enabled, one disabled based on cookie.
+$darkThemeUrl = ViteManifest::cssUrl('dark-theme');
+$lightThemeUrl = ViteManifest::cssUrl('light-theme');
+echo '<link rel="stylesheet" id="dark-theme-css" href="' . htmlspecialchars($darkThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
 	($lightDark === 'dark' ? '' : ' disabled') . ' />';
-echo '<link rel="stylesheet" id="light-theme-css" href="' .
-	$this->AssetCompress->url('light-theme.css') . '"' .
+echo '<link rel="stylesheet" id="light-theme-css" href="' . htmlspecialchars($lightThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
 	($lightDark === 'light' ? '' : ' disabled') . ' />';
 
 echo $this->Html->meta('icon');
@@ -108,7 +108,8 @@ echo $this->fetch('script');
 ?>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <?php
-echo $this->AssetCompress->script('app');
+// Legacy app.js bundle (global-scope scripts — served as plain <script>, not type="module")
+echo ViteManifest::legacyScript('legacy');
 ?>
 </head>
 
@@ -671,7 +672,10 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
 </script>
 
-<script src="/js/dist/app.js?v=<?= filemtime(WWW_ROOT . 'js' . DS . 'dist' . DS . 'app.js') ?>" type="module"></script>
+<?php
+// React app bundle
+echo ViteManifest::script('app');
+?>
 
 		<?php
 if(!Auth::isLoggedIn())

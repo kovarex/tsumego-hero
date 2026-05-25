@@ -119,14 +119,7 @@ jobs:
       - name: Setup tmp directories
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/logs tmp/sessions tmp/tests
-          mkdir -p webroot/cache_css webroot/cache_js
-          chmod -R 777 tmp webroot/cache_css webroot/cache_js
-
-      - name: Build AssetCompress assets
-        run: |
-          ./bin/cake AssetCompress.AssetCompress build
-          echo "Built AssetCompress assets:"
-          ls -lh webroot/cache_css/ webroot/cache_js/ | head -20
+          chmod -R 777 tmp
 
       - name: Setup database config
         run: |
@@ -163,7 +156,6 @@ jobs:
           }
           EOF
           cp .github/ci/core.local.php config/core.local.php
-          cp .github/ci/asset_compress.local.ini src/Config/asset_compress.local.ini
 
       - name: Import database schema
         run: |
@@ -172,7 +164,7 @@ jobs:
       - name: Start built-in PHP server
         run: |
           mkdir -p /tmp/coverage
-          # Use router script to handle AssetCompress dispatcher filter routes
+          # Use router script to handle CakePHP dispatcher filter routes
           nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
           sleep 3
 

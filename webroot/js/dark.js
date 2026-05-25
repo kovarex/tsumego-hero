@@ -1,6 +1,6 @@
 function darkAndLight()
 {
-	// With AssetCompress bundles, both themes are loaded with IDs
+	// Both theme CSS bundles are loaded with IDs in default.ctp.
 	// Toggle the disabled attribute to switch active theme
 	const darkLink = document.getElementById("dark-theme-css");
 	const lightLink = document.getElementById("light-theme-css");

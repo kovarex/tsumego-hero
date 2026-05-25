@@ -9,7 +9,6 @@
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 	}
 ?>
-	<script src ="/FileSaver.min.js"></script>
 
 	<div align="center">
 	<p class="title">
