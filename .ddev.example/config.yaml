@@ -18,24 +18,12 @@ corepack_enable: false
 disable_upload_dirs_warning: true
 
 # Auto-start Vite watcher whenever `ddev start` runs.
-# On Windows: pnpm's hardlinks can't cross the host/container boundary, so we run pnpm on the
-# Windows host and save the PID so post-stop can clean it up (no orphan processes).
-# On Linux/macOS: pnpm symlinks work natively in the container — use web_extra_daemons instead
-# (lifecycle is managed by DDEV automatically, no PID file needed).
-#
-# === Windows ===
+# OS differences automatically (Windows uses PowerShell, Linux/macOS uses bash background job).
 hooks:
     post-start:
-        - exec-host: powershell -NonInteractive -Command "Start-Process (Get-Command pnpm).Source -ArgumentList 'dev' -WorkingDirectory (Get-Location).Path -WindowStyle Hidden -PassThru | Select-Object -ExpandProperty Id | Set-Content -Path '.ddev/.pnpm-dev.pid'"
+        - exec-host: bash scripts/ddev-vite-start.sh
     post-stop:
-        - exec-host: powershell -NonInteractive -Command "if (Test-Path '.ddev/.pnpm-dev.pid') { Stop-Process -Id (Get-Content '.ddev/.pnpm-dev.pid') -Force -ErrorAction SilentlyContinue; Remove-Item '.ddev/.pnpm-dev.pid' }"
-#
-# === Linux/macOS ===
-# Replace the hooks block above with this (no post-stop needed, daemon stops with ddev stop):
-# web_extra_daemons:
-#   - name: vite
-#     command: bash -c 'pnpm run dev'
-#     directory: /var/www/html
+        - exec-host: bash scripts/ddev-vite-stop.sh
 
 # Key features of DDEV's config.yaml:
 
