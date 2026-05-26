@@ -20,10 +20,9 @@ set('shared_files', [
 ]);
 
 // Shared directories: persist across releases.
-// NOTE: Do NOT share 'tmp' as a whole - asset_compress_build_time lives in tmp/
-// and must stay per-release so its version matches that release's cache_css/cache_js files.
-// If tmp were shared, rolling back would leave release 1's cache_css files
-// but with release 2's build timestamp, causing 404s.
+// NOTE: Do NOT share 'tmp' as a whole - it must stay per-release so each
+// release's cache is isolated. If tmp were shared, rolling back could leave
+// stale cache files from a newer release.
 set('shared_dirs', [
 	'tmp/sessions',    // user sessions persist across deploys
 	'logs',
@@ -36,8 +35,6 @@ set('shared_dirs', [
 
 // Directories to chmod 777 on each deploy (built fresh, not shared)
 set('writable_dirs', [
-	'webroot/cache_css',
-	'webroot/cache_js',
 	'webroot/dist',
 ]);
 
@@ -112,21 +109,11 @@ task('deploy:migrate', function () {
 // Build React/Vite frontend
 task('deploy:build_frontend', function () {
 	cd('{{release_path}}');
-	run('CI=true npx pnpm@latest install --frozen-lockfile');
-	run('CI=true npx pnpm@latest run build');
+	run('CI=true npx pnpm@10 install --frozen-lockfile');
+	run('CI=true npx pnpm@10 run build');
 });
 
-// Build and minify CSS/JS with AssetCompress
-task('deploy:build_assets', function () {
-	cd('{{release_path}}');
-	// Ensure CakePHP TMP cache subdirs exist (not shared - per-release for correct versioning)
-	run('mkdir -p tmp/cache/models tmp/cache/persistent tmp/cache/views tmp/cache/asset_compress tmp/logs');
-	run('chmod -R 777 tmp');
-	run('mkdir -p webroot/cache_js webroot/cache_css');
-	run('chmod 777 webroot/cache_js webroot/cache_css');
-	run('./bin/cake asset_compress clear');
-	run('./bin/cake asset_compress build --force');
-});
+
 
 // Update the /home/public/webroot symlink to point to the current release's webroot.
 // Runs automatically after every deploy and rollback.
@@ -153,7 +140,7 @@ task('init', function () {
 	$sharedPath = get('deploy_path') . '/shared';
 
 	// Create TMP subdirectories required by CakePHP
-	run("mkdir -p $sharedPath/tmp/cache/models $sharedPath/tmp/cache/persistent $sharedPath/tmp/cache/views $sharedPath/tmp/cache/asset_compress $sharedPath/tmp/logs $sharedPath/tmp/sessions");
+	run("mkdir -p $sharedPath/tmp/cache/models $sharedPath/tmp/cache/persistent $sharedPath/tmp/cache/views $sharedPath/tmp/logs $sharedPath/tmp/sessions");
 	run("chmod -R 777 $sharedPath/tmp");
 
 	// Create config directory
@@ -171,14 +158,13 @@ task('init', function () {
 // deploy:prepare = [info, setup, lock, release, update_code, env, shared, writable]
 // deploy:publish = [symlink, unlock, cleanup, success]
 //
-// IMPORTANT: deploy:composer/migrate/build_assets must run AFTER deploy:shared
+// IMPORTANT: deploy:composer/migrate/build_frontend must run AFTER deploy:shared
 // because shared/tmp/ must be symlinked before CakePHP CLI can write to TMP.
 // Hook after deploy:writable to ensure shared dirs are set up first.
 
 after('deploy:writable', 'deploy:composer');
 after('deploy:composer', 'deploy:migrate');
 after('deploy:migrate', 'deploy:build_frontend');
-after('deploy:build_frontend', 'deploy:build_assets');
 
 // On deploy failure, release the lock so next deploy can proceed
 after('deploy:failed', 'deploy:unlock');

@@ -7,10 +7,8 @@
     "require": {
 		"php": ">=8.4",
 		"firebase/php-jwt": "^6.11.1",
-		"markstory/asset_compress": "^0.26.0",
 		"pieceofcake2/cakephp": "^2.12",
-		"robmorgan/phinx": "^0.16.10",
-		"tedivm/jshrink": "^1.8"
+		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
 		"deployer/deployer": "^8.0",

@@ -42,21 +42,6 @@ if [ ! -f "$SHARED_CONFIG/email.php" ]; then
     echo '<?php' > "$SHARED_CONFIG/email.php"
 fi
 
-# Create webroot/forums/config.php stub if not present (phpBB config, avoids deploy:shared error)
-SHARED_FORUMS="$SHARED_DIR/webroot/forums"
-if [ ! -f "$SHARED_FORUMS/config.php" ]; then
-    mkdir -p "$SHARED_FORUMS"
-    cp /var/www/html/webroot/forums/config.example.php "$SHARED_FORUMS/config.php" 2>/dev/null || \
-    echo '<?php' > "$SHARED_FORUMS/config.php"
-fi
-
-# Install SSH authorized_keys from volume-mounted public key
-# (Copying to a new file avoids the read-only filesystem issue)
-if [ -f /tmp/deploy_key.pub ]; then
-    cat /tmp/deploy_key.pub > /root/.ssh/authorized_keys
-    chmod 600 /root/.ssh/authorized_keys
-fi
-
 # Start OpenSSH server (runs alongside Apache)
 service ssh start
 
