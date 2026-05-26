@@ -20,11 +20,8 @@ set('shared_files', [
 ]);
 
 // Shared directories: persist across releases.
-// NOTE: Do NOT share 'tmp' as a whole - it must stay per-release so each
-// release's cache is isolated. If tmp were shared, rolling back could leave
-// stale cache files from a newer release.
 set('shared_dirs', [
-	'tmp/sessions',    // user sessions persist across deploys
+	'tmp',             // CakePHP cache, sessions, logs — shared to preserve login sessions across deploys
 	'logs',
 	'webroot/files',
 	'webroot/forums/files',
@@ -33,8 +30,9 @@ set('shared_dirs', [
 	'webroot/forums/images/avatars/upload',
 ]);
 
-// Directories to chmod 777 on each deploy (built fresh, not shared)
+// Directories to chmod 777 on each deploy
 set('writable_dirs', [
+	'tmp',
 	'webroot/dist',
 ]);
 
@@ -112,8 +110,6 @@ task('deploy:build_frontend', function () {
 	run('CI=true npx pnpm@10 install --frozen-lockfile');
 	run('CI=true npx pnpm@10 run build');
 });
-
-
 
 // Update the /home/public/webroot symlink to point to the current release's webroot.
 // Runs automatically after every deploy and rollback.
