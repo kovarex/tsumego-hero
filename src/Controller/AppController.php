@@ -486,7 +486,7 @@ class AppController extends Controller
 		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2)
 			$mode = 2;
 
-		if ($_COOKIE['sprint'] != 1)
+		if (($_COOKIE['sprint'] ?? null) != 1)
 			$this->updateSprintCondition();
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))

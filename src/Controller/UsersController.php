@@ -1017,14 +1017,14 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 	/**
 	 * @param string|int|null $id Success ID
-	 * @return void
 	 */
 	public function success($id = null)
 	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/');
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero - Success');
 
-		$s = $this->User->findById(Auth::getUserID());
 		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
 		Auth::getUser()['premium'] = 1;
 		Auth::saveUser();
@@ -1033,36 +1033,29 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
-		if (Auth::isLoggedIn())
-			$ans = Auth::getUser()['name'] . ' ' . Auth::getUser()['email'];
-		else
-			$ans = 'no login';
-		$Email->send($ans);
-		if (Auth::isLoggedIn())
-		{
-			$Email = new CakeEmail();
-			$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-			$Email->to(Auth::getUser()['email']);
-			$Email->subject('Tsumego Hero');
-			$ans = '
-Hello ' . Auth::getUser()['name'] . ',
+
+		$Email->send(Auth::getUser()['name'] . ' ' . Auth::getUser()['email']);
+		$Email = new CakeEmail();
+		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
+		$Email->to(Auth::getUser()['email']);
+		$Email->subject('Tsumego Hero');
+		$Email->send('Hello ' . Auth::getUser()['name'] . ',
 
 Thank you!. Your account should be upgraded automatically.
 
 --
 Best Regards
-Joschka Zimdars';
-			$Email->send($ans);
-		}
+Joschka Zimdars');
 		$this->set('id', $id);
 	}
 
 	/**
 	 * @param string|int|null $id Penalty ID
-	 * @return void
 	 */
 	public function penalty($id = null)
 	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/');
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero - Penalty');
 		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
@@ -1158,10 +1151,11 @@ Joschka Zimdars';
 	}
 
 	/**
-	 * @return void
 	 */
 	public function delete_account()
 	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/');
 		$redirect = false;
 		$status = '';
 

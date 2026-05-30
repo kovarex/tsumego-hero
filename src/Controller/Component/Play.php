@@ -177,7 +177,7 @@ class Play
 			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
 		}
 
-		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::getUser())
+		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::isLoggedIn())
 		{
 			Auth::getUser()['readingTrial']--;
 			unset($_COOKIE['skip']);
