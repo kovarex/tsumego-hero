@@ -151,6 +151,14 @@ class Browser
 		$this->assertNoErrors();
 	}
 
+	// Get URL without setting auth cookie, for testing anonymous access
+	public function getAnonymous(string $url): void
+	{
+		$url = ltrim($url, '/');
+		$this->driver->get(Util::getMyAddress() . '/' . $url);
+		$this->assertNoErrors();
+	}
+
 	public function clickId($name)
 	{
 		$this->driver->findElement(WebDriverBy::id($name))->click();

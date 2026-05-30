@@ -561,15 +561,28 @@ class TagTest extends ControllerTestCase
 		$this->assertSame(0, $tag['hint']); // hint value was not touched
 	}
 
-	public function testTagContributionsView()
+	public function testTagContributionsShowsUsersTagActivity()
 	{
-		$browser = Browser::instance();
 		$context = new ContextPreparator([
 			'user' => ['admin' => true],
 			'tags' => [['name' => 'snapback', 'approved' => 1]]]);
+		$browser = Browser::instance();
 		$browser->get('tags/user/' . $context->user['id']);
 		$browser->checkTable('.highscoreTable', $this, [
 			['Action', 'Status', 'Timestamp'],
 			[$context->user['name'] . ' created a new tag: snapback', 'accepted']]);
 	}
+
+	public function testTagContributionsShowsViewedUsersNameNotViewersName()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'contributor']]]);
+		$browser = Browser::instance();
+		$browser->get('tags/user/' . $context->otherUsers[0]['id']);
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Tags and proposals by contributor', $pageSource);
+		$this->assertStringNotContainsString('Tags and proposals by viewer', $pageSource);
+	}
+
 }

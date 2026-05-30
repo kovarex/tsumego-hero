@@ -253,6 +253,7 @@ class TagsController extends AppController
 		}
 
 		$this->set('list', $list);
+		$this->set('viewedUser', $u['User']);
 	}
 
 	public function edit($tagID): ?CakeResponse
