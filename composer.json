@@ -7,14 +7,13 @@
     "require": {
 		"php": ">=8.4",
 		"firebase/php-jwt": "^6.11.1",
-		"markstory/asset_compress": "^0.26.0",
 		"pieceofcake2/cakephp": "^2.12",
-		"robmorgan/phinx": "^0.16.10",
-		"tedivm/jshrink": "^1.8"
+		"robmorgan/phinx": "^0.16.10"
 	},
     "require-dev": {
-		"php-webdriver/webdriver": "^1.15",
+		"deployer/deployer": "^8.0",
 		"friendsofphp/php-cs-fixer": "^3.89",
+		"php-webdriver/webdriver": "^1.15",
 		"phpstan/phpstan": "^2.1",
 		"phpunit/php-code-coverage": "^9.2",
 		"phpunit/phpcov": "^8.2",

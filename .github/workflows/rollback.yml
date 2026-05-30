@@ -1,0 +1,40 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to roll back'
+        required: true
+        type: choice
+        options:
+          - test
+          - production
+
+jobs:
+  rollback:
+    name: Rollback ${{ inputs.environment }}
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Composer install
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ssh.nyc1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.phx1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+
+      - name: Rollback ${{ inputs.environment }}
+        run: vendor/bin/dep rollback ${{ inputs.environment }} --no-interaction
