@@ -1896,7 +1896,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		options.coord = 'western';
 		options.sgf = '/placeholder.sgf';
 		options.sgf2 = <?php echo json_encode($sgf['Sgf']['sgf'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-		options.light = <?php echo json_encode($_COOKIE['lightDark'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
+		options.light = <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		if (options.theme) addStyleLink('/besogo/css/board-'+options.theme+'.css');
 			if (options.height && options.width && options.resize === 'fixed')
 			{
