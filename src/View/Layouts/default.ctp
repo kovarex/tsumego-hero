@@ -100,7 +100,7 @@ $lightThemeUrl = ViteManifest::cssUrl('light-theme');
 echo '<link rel="stylesheet" id="dark-theme-css" href="' . htmlspecialchars($darkThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
 	($lightDark === 'dark' ? '' : ' disabled') . ' />';
 echo '<link rel="stylesheet" id="light-theme-css" href="' . htmlspecialchars($lightThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
-	($lightDark === 'light' ? '' : ' disabled') . ' />';
+	($lightDark !== 'dark' ? '' : ' disabled') . ' />';
 
 echo $this->Html->meta('icon');
 echo $this->fetch('css');
@@ -402,7 +402,7 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		});';
 	}
 	?>
-	let light = <?php echo Util::boolString($lightDark == 'light'); ?>;
+	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;
 	function updateSoundValue(value)
 	{
 		if (typeof besogo !== 'undefined')

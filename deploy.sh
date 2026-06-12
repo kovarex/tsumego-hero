@@ -126,9 +126,9 @@ fi
 
 
 ### Composer install (host in dev, local in prod)
-echo "Running Composer..."
+echo "=== Running Composer... ==="
 if [[ "$IS_DDEV" = true ]]; then
-    composer install --prefer-dist --optimize-autoloader --no-interaction
+    ddev exec composer install --prefer-dist --optimize-autoloader --no-interaction
 else
     composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
 fi
@@ -175,8 +175,13 @@ rm -rf "$ROOT_DIR/tmp/cache/views"/*
 
 # Build React app with Vite
 echo "=== Building React app ==="
-CI=true npx pnpm@10 install --frozen-lockfile
-CI=true npx pnpm@10 run build
+if [[ "$IS_DDEV" = true ]]; then
+    ddev exec CI=true npx pnpm@10 install --frozen-lockfile
+    ddev exec CI=true npx pnpm@10 run build
+else
+    CI=true npx pnpm@10 install --frozen-lockfile
+    CI=true npx pnpm@10 run build
+fi
 
 
 echo "=== Deploy complete ==="

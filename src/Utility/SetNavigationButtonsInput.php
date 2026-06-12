@@ -16,7 +16,7 @@ class SetNavigationButtonsInput
 	private function collectFromSetConnections(TsumegoButtons $tsumegoButtons, array $currentSetConnection): TsumegoButtons
 	{
 		$result = TsumegoButtons::deriveFrom($tsumegoButtons);
-		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) { return $tsumegoButton->setConnectionID === $currentSetConnection['SetConnection']['id']; });
+		$currentIndex = array_find_key((array) $tsumegoButtons, function ($tsumegoButton) use ($currentSetConnection) { return $tsumegoButton->setConnectionID === (int) $currentSetConnection['SetConnection']['id']; });
 
 		// mark the problem we are going to visit as already visited
 		if ($tsumegoButtons[$currentIndex]->status == 'N')

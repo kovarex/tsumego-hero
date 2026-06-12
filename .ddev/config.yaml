@@ -2,6 +2,7 @@ name: tsumego
 type: cakephp
 docroot: webroot
 php_version: "8.4"
+nodejs_version: auto
 webserver_type: apache-fpm
 router_http_port: "33002"
 router_https_port: "33003"
@@ -15,12 +16,19 @@ database:
 use_dns_when_possible: true
 disable_upload_dirs_warning: true
 
-# Auto-start Vite watcher whenever `ddev start` runs.
+web_environment:
+  - CHOKIDAR_USEPOLLING=true
+  - WATCHPACK_POLLING=true
+
+web_extra_daemons:
+  - name: vite
+    command: pnpm run dev
+    directory: /var/www/html
+
 hooks:
-    post-start:
-        - exec-host: bash scripts/ddev-vite-start.sh
-    post-stop:
-        - exec-host: bash scripts/ddev-vite-stop.sh
+  post-start:
+    - exec: corepack enable
+    - exec: pnpm install
 
 # Key features of DDEV's config.yaml:
 
