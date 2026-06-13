@@ -569,6 +569,184 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'set 1 1/1');
 	}
 
+	/**
+	 * When query=difficulty but lastSet is an invalid rank (e.g. a topic set name left over from
+	 * a previous session), navigation should fall back to topic-based ordering within the current set.
+	 * The navigation buttons must appear in set_connection.num order, not tsumego.id order.
+	 */
+	public function testDifficultyWithInvalidLastSetShowsCorrectNumOrder(): void
+	{
+		$browser = Browser::instance();
+		// Create 3 problems with non-sequential nums so tsumego_id order differs from num order
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 3]]],
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+			]]);
+
+		$browser->setCookie('lastSet', 'test set');
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']); // navigate to num=1
+
+		$this->checkPlayTitle($browser, 'test set 1/3');
+
+		// Buttons should be in num order: num=1 (tsumegos[1]), num=2 (tsumegos[2]), num=3 (tsumegos[0])
+		$this->checkPlayNavigationButtons($browser, 3, $context,
+			function ($index) { return [1, 2, 0][$index]; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * When query=tags but lastSet is empty, navigation should fall back to topic-based ordering.
+	 */
+	public function testTagsWithEmptyLastSetShowsCorrectNumOrder(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'tags'],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 3]]],
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+			]]);
+
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']); // navigate to num=1
+
+		$this->checkPlayTitle($browser, 'test set 1/3');
+
+		$this->checkPlayNavigationButtons($browser, 3, $context,
+			function ($index) { return [1, 2, 0][$index]; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * When query=tags but lastSet points to a nonexistent tag, navigation should fall back to topics.
+	 */
+	public function testTagsWithNonexistentTagShowsCorrectNumOrder(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'tags'],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 3]]],
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+			]]);
+
+		$browser->setCookie('lastSet', 'nonexistent_tag_xyz');
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, 'test set 1/3');
+
+		$this->checkPlayNavigationButtons($browser, 3, $context,
+			function ($index) { return [1, 2, 0][$index]; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * When query=difficulty and lastSet is empty, navigation should fall back to topics with correct order.
+	 */
+	public function testDifficultyWithEmptyLastSetShowsCorrectNumOrder(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 3]]],
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+			]]);
+
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, 'test set 1/3');
+
+		$this->checkPlayNavigationButtons($browser, 3, $context,
+			function ($index) { return [1, 2, 0][$index]; },
+			function ($index) { return $index + 1; },
+			0, 'V');
+	}
+
+	/**
+	 * Next/Back buttons should link to the correct problems when navigating within a set.
+	 */
+	public function testNextAndBackButtonsLinkCorrectlyInTopicMode(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+				['sets' => [['name' => 'test set', 'num' => 3]]],
+			]]);
+
+		// Navigate to the middle problem (num=2)
+		$browser->get('/' . $context->tsumegos[1]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'test set 2/3');
+
+		// Click Next to get to num=3
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[2]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
+		$this->checkPlayTitle($browser, 'test set 3/3');
+
+		// Click Next should go back to set view
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
+		$this->assertStringContainsString('/sets/view/', $browser->driver->getCurrentURL());
+	}
+
+	/**
+	 * When viewing the first problem in a set, the Back button should link to the set view.
+	 */
+	public function testBackButtonAtStartOfSetLinksToSetView(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => 1]]],
+				['sets' => [['name' => 'test set', 'num' => 2]]],
+			]]);
+
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->checkPlayTitle($browser, 'test set 1/2');
+
+		// Back button should go to set view since we're at the first problem
+		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-back-button'))->click();
+		$this->assertStringContainsString('/sets/view/', $browser->driver->getCurrentURL());
+	}
+
+	/**
+	 * Navigation with a valid difficulty rank should show problems across sets in sequential order.
+	 */
+	public function testDifficultyNavigationWithValidRankShowsProblemsAcrossSets(): void
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'query' => 'difficulty'],
+			'tsumegos' => [
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+					'sets' => [['name' => 'set A', 'num' => 1]]],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+					'sets' => [['name' => 'set B', 'num' => 1]]],
+				['rating' => Rating::getRankMiddleRatingFromReadableRank('10k'),
+					'sets' => [['name' => 'set C', 'num' => 1]]],
+			]]);
+
+		$browser->setCookie('lastSet', '15k');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$this->checkPlayTitle($browser, '15k 1/2');
+
+		// Should show 2 buttons (both 15k problems), not 3 (10k excluded)
+		$navigationButtons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$this->assertCount(2, $navigationButtons);
+	}
+
 	public function testClickingOnSetViewSwitchesTsumegoFiltersToSetViewAndShowsCorrectTsumego(): void
 	{
 		$browser = Browser::instance();
