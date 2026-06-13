@@ -1391,7 +1391,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (heartLoss)
 		{
 			misplays++;
-			setCookie('misplays', 'misplays');
+			setCookie('misplays', misplays);
 			redrawHearts();
 		}
 		move = 0;

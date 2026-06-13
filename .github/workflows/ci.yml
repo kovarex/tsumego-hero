@@ -74,12 +74,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install
 
       - name: Get pnpm store directory
         id: pnpm-cache

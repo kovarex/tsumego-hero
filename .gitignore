@@ -41,9 +41,9 @@ webroot/forums/cache
 webroot/forums/store
 webroot/forums/config.php
 webroot/forums/vendor
-.ddev/
 .idea/
 mainPageAjax.txt
+.local/
 
 # IDE and editor specific files #
 #################################

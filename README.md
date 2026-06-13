@@ -34,48 +34,60 @@ These changes just had to be done, so the data structure we are working on is cl
 	setup/php-install.sh
 
 ### ddev install
-- Copy .ddev.example/ folder to .ddev/
 
-
-	cp ./ddev.example/* ./ddev/
-
-- Modify the php.ini in ./ddev/php/my-php.ini, add your local ipaddress there, which is needed for debugging
+- Modify the php.ini in ./ddev/php/php.ini, add your local ipaddress there, which is needed for debugging
 - Then from ROOT of the project run: (project name should be tsumego)
 
+```
+wsl
+```
 
-	ddev config
-    ddev start
+```
+ddev start
+```
+
+- Install composer, run database migrations, install node project
+
+```
+./deploy.sh
+```
+
+- Optional: import database dump ~30 min
+```
+ddev import-db --file=/mnt/c/db-tsumego-xyz.sql
+```
 
 - To jump to your app in browser:
 
-
-    ddev launch
-
+```
+ddev launch
+```
 - Phpmyadmin access:
 
-
-    ddev phpmyadmin
-
+```
+ddev phpmyadmin
+```
 - ssh login into the docker
 
-
-    ddev ssh
-
+```
+ddev ssh
+```
 - Run locally to install all latest dependencies.
-
-    composer update
-
+```
+composer install
+```
 - Make your own database file, you can use the default one, but you can modify it if you want to use different database or credentials
 
+```
+cp config/database.example config/database
+```
 
-	cp config/database.example config/database
+### React/Vite development setup:
+ - DDEV automatically runs this on start
 
-- **React/Vite development setup**: 
-During development:
-
-	pnpm install
-	pnpm run dev
-
+```
+pnpm run dev
+```
   This starts Vite in watch mode - it rebuilds the React bundle automatically when you edit files in `app/`. The bundle is written to `webroot/js/dist/app.js` and loaded by the site with cache-busting timestamps.
 
 - Open to browse your project now.
@@ -84,9 +96,9 @@ During development:
 
 - You can also open the webpage from command line by:
 
-
-	ddev launch
-
+```
+ddev launch
+```
 ### Setup on server (part 1)
 
 	git clone https://github.com/kovarex/tsumego-hero.git .
