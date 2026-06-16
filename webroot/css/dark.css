@@ -1,3 +1,6 @@
+html {
+  background-color: #111;
+}
 .filterLabel1,
 .timeTableColor11 {
   color: #f0f0f0;
@@ -182,21 +185,6 @@
 }
 .homeCenter2 {
   background-color: #2a2a2a;
-  color: #fff;
-}
-#chart1,
-.chart-box,
-#chart2,
-#chart3,
-#chart11,
-#chart22,
-#chart33 {
-  background: #2a2a2a;
-}
-.apexcharts-menu-item {
-  color: black;
-}
-.apexcharts-title-text {
   color: #fff;
 }
 .h1profile h1,
