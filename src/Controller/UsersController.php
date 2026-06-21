@@ -805,6 +805,31 @@ LIMIT 100;"));
 		$this->set('dayRecord', $userYesterdayName);
 	}
 
+	public function savePlayerColor(): void
+	{
+		$this->autoRender = false;
+		if (!Auth::isLoggedIn())
+		{
+			$this->response->statusCode(401);
+			$this->response->send();
+			return;
+		}
+
+		$dpColor = (int) ($_POST['color'] ?? User::PLAYER_COLOR_RANDOM);
+		if ($dpColor < 0 || $dpColor > 2)
+			$dpColor = User::PLAYER_COLOR_RANDOM;
+
+		ClassRegistry::init('User')->updateAll(
+			['default_player_color' => $dpColor],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['default_player_color'] = $dpColor;
+
+		$this->response->statusCode(200);
+		$this->response->body(json_encode(['status' => 'ok']));
+		$this->response->send();
+	}
+
 	public function view($id = null): mixed
 	{
 		$this->set('_page', 'user');
