@@ -1256,13 +1256,21 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 
 	public function changeCollectionSize(): mixed
 	{
-		$collectionSize = $this->data['collection_size'];
-		if (is_null($collectionSize))
+		$collectionSize = $this->data['collection_size'] ?? null;
+		if ($collectionSize === null || $collectionSize === '')
 		{
 			CookieFlash::set('Collection size to change not provided', 'error');
 			return $this->redirect('/sets');
 		}
-		Preferences::set('collection_size', $this->data['collection_size']);
+		$collectionSizeInt = filter_var($collectionSize, FILTER_VALIDATE_INT, [
+			'options' => ['min_range' => 10, 'max_range' => 1000],
+		]);
+		if ($collectionSizeInt === false || $collectionSizeInt % 10 !== 0)
+		{
+			CookieFlash::set('Collection size must be a multiple of 10 between 10 and 1000', 'error');
+			return $this->redirect('/sets');
+		}
+		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
 	}
 }
