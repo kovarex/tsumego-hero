@@ -2,6 +2,20 @@
 
 class User extends AppModel
 {
+	public const PLAYER_COLOR_RANDOM = 0;
+	public const PLAYER_COLOR_BLACK = 1;
+	public const PLAYER_COLOR_WHITE = 2;
+
+	public static function playerColorToString(int $color): ?string
+	{
+		return match ($color)
+		{
+			self::PLAYER_COLOR_BLACK => 'black',
+			self::PLAYER_COLOR_WHITE => 'white',
+			default => null,
+		};
+	}
+
 	public function __construct($id = false, $table = null, $ds = null)
 	{
 		$id['table'] =  'user';

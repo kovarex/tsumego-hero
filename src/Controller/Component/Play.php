@@ -250,6 +250,10 @@ class Play
 			$orientation = $params['url']['orientation'];
 		if (isset($params['url']['playercolor']))
 			$colorOrientation = $params['url']['playercolor'];
+		else
+		// playerColorToString returns null when color is PLAYER_COLOR_RANDOM (0),
+		// which preserves the existing "random side" behavior.
+			$colorOrientation = User::playerColorToString(Auth::getPlayerColor());
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)

@@ -87,6 +87,11 @@ class Auth
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
+	public static function getPlayerColor(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['default_player_color'] : User::PLAYER_COLOR_RANDOM;
+	}
+
 	public static function saveUser(): void
 	{
 		assert(Auth::isLoggedIn());
