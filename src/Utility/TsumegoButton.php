@@ -23,6 +23,17 @@ class TsumegoButton
 			$tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : null);
 	}
 
+	private static array $statusLabels = [
+		'N' => '',
+		'V' => 'Seen',
+		'S' => 'Solved',
+		'C' => 'Solved again',
+		'W' => 'Was solved',
+		'F' => "Can't solve",
+		'X' => 'Can no longer solve',
+		'G' => 'Golden',
+	];
+
 	public function render()
 	{
 		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
@@ -52,7 +63,12 @@ class TsumegoButton
 		$num3 = '<div class="setViewButtons3">' . $num3 . '</div>';
 
 		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . $num2 . $num3 . '<span class="tooltip-box"></span></a>';
+		$status = $this->status ?: 'N';
+		$label = self::$statusLabels[$status] ?? '';
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . $num2 . $num3 . '<span class="tooltip-box">';
+		if ($label)
+			echo '<div class="tooltip-status" data-status="' . $status . '">' . h($label) . '</div>';
+		echo '</span></a>';
 		echo '</li>';
 	}
 
