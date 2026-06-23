@@ -61,6 +61,14 @@ class Play
 			throw new NotFoundException("Set connection " . $setConnectionID . " wasn't found in the database.");
 		$id = $currentSetConnection['SetConnection']['tsumego_id'];
 
+		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
+
+		if ($t == null)
+		{
+			$t = ClassRegistry::init('Tsumego')->findById($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+			$id = $t['Tsumego']['id'];
+		}
+
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
@@ -77,11 +85,6 @@ class Play
 			}
 
 		$tsumegoFilters = new TsumegoFilters();
-
-		$t = ClassRegistry::init('Tsumego')->findById($id); //the tsumego
-
-		if ($t == null)
-			$t = ClassRegistry::init('Tsumego')->findById($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
 
 		if (Auth::isLoggedIn())
 			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
