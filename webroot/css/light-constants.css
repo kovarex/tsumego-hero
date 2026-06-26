@@ -8,12 +8,15 @@
 	--new1-gradient: linear-gradient(#fff, #f2f2f2);
 	--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
 	--body-background-gradient:  linear-gradient(#282828, #424141);
-	--status-solved-color: #3ecf78;
-	--status-failed-color: #c63f4d;
+	--status-s-color: #3ecf78;
+	--status-c-color: #28944a;
+	--status-f-color: #c63f4d;
+	--status-x-color: #a5323f;
 	--status-w-color: #34cfcc;
 	--status-v-color: #2d98e0;
 	--status-n-color: #7f8287;
-	--status-g-color: #d7e062;
+	--status-g-color: #daa520;
+	--status-g-highlight: #f5e080;
 	--paginator-button-text-color: #333;
 	--active-paginator-button-background-color: #333;
 	--active-paginator-button-text-color: #fff;
