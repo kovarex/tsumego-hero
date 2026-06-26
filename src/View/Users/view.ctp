@@ -61,8 +61,9 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="userTopTable1" border="0">
 	<tr>
 	<td>
-		Progress bar preference:<br><br>
 	<?php
+	if (Auth::getUserID() == $user['User']['id'])
+	{
 		$levelBarDisplayChecked1 = '';
 		$levelBarDisplayChecked2 = '';
 		if ($levelBar == 1)
@@ -70,8 +71,22 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		else
 			$levelBarDisplayChecked2 = 'checked="checked"';
 	?>
+	Progress bar preference:<br>
 	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
 	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
+	<br>
+	Default player color:<br>
+	<?php
+		$playerColor = Auth::getPlayerColor();
+	?>
+	<select onchange="savePlayerColor(this.value)" style="margin-top:2px; width:180px;">
+		<option value="<?php echo User::PLAYER_COLOR_RANDOM; ?>" <?php echo $playerColor === User::PLAYER_COLOR_RANDOM ? 'selected' : ''; ?>>Random</option>
+		<option value="<?php echo User::PLAYER_COLOR_BLACK; ?>" <?php echo $playerColor === User::PLAYER_COLOR_BLACK ? 'selected' : ''; ?>>Always Black</option>
+		<option value="<?php echo User::PLAYER_COLOR_WHITE; ?>" <?php echo $playerColor === User::PLAYER_COLOR_WHITE ? 'selected' : ''; ?>>Always White</option>
+	</select>
+	<?php
+	}
+	?>
 	</td>
 	</tr>
 	</table>
@@ -399,3 +414,19 @@ function delUts(){
 	margin-top: 14px;
 }
 </style>
+<script>
+function levelBarChange(num) {
+	accountWidget.show = num === 1 ? 'level' : 'rating';
+	setCookie('showInAccountWidget', accountWidget.show);
+	setCookie('levelBar', num);
+	accountWidget.setup();
+}
+
+function savePlayerColor(color) {
+	fetch('/users/savePlayerColor', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: 'color=' + encodeURIComponent(color)
+	});
+}
+</script>
