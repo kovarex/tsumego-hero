@@ -80,7 +80,7 @@
 		<form method="post" action="/sets/changeCollectionSize">
 		<div class="set-buttons-right">
 			<div class="set-buttons">Collection size:
-				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10" name="collection_size">
+				<input id="set-size-input" type="number" value="<?php echo $tsumegoFilters->collectionSize; ?>" step="10" min="10" max="1000" name="collection_size">
 			</div>
 			<div class="set-buttons">
 			<input type="submit" id="submit-size-button" class="btn btn-link collapsed set-search" style="width:70px;" value="Submit">
