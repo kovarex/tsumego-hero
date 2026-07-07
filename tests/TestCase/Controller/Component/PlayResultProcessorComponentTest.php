@@ -387,7 +387,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	public function testFailAddsDamageInNonSolvedProblem(): void
 	{
 		$browser = Browser::instance();
-		foreach (['V', 'S', 'C'] as $status)
+		foreach (['V', 'W', 'F', 'S', 'C'] as $status)
 		{
 			$context = new ContextPreparator(['tsumego' => ['status' => $status, 'set_order' => 1]]);
 			$originalDamage = intval($context->user['damage']);
@@ -488,9 +488,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertGreaterThan(0, $context->user['xp']); // xp was gained
 	}
 
-	/**
-	 * Solving with misplays should reset the no-error streak to 0.
-	 */
 	public function testSolveWithMisplaysResetsNoErrorStreak(): void
 	{
 		$context = new ContextPreparator([
@@ -508,9 +505,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'No-error streak should reset to 0 when solving with misplays');
 	}
 
-	/**
-	 * Verify that clean solve (no misplays) still increments the streak
-	 */
 	public function testSolveWithoutMisplaysIncrementsNoErrorStreak(): void
 	{
 		$context = new ContextPreparator([
@@ -528,14 +522,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'No-error streak should increment when solving without misplays');
 	}
 
-	/**
-	 * CRITICAL TEST: Simulates the user's bug report scenario.
-	 * User fails a puzzle, then clicks React buttons (like issue filter),
-	 * and rating should NOT change from the AJAX request.
-	 *
-	 * Without the X-Requested-With header check, AJAX requests would trigger checkPreviousPlay
-	 * and potentially process the fail result at an unexpected time.
-	 */
 	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void
 	{
 		$context = new ContextPreparator([
@@ -575,5 +561,85 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		// NOW rating should have dropped
 		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
+	}
+
+	public function testPostSolveMistakesAreNotPenalized(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalRating = $context->user['rating'];
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Prove competence
+		$browser->playWithResult('S');
+		$this->assertTrue(
+			$browser->driver->executeScript('return problemSolved;'));
+
+		// Post-solve exploration (reset + mistake) - must be harmless
+		$browser->clickId('besogo-reset-button');
+		$browser->playWithResult('F');
+
+		// Trigger server processing
+		$browser->get('/sets/index');
+
+		$this->assertGreaterThan($originalRating,
+			(float) $context->reloadUser()['rating'],
+			'Rating must increase from solve; post-solve errors must not drag it down');
+
+		$this->assertSame($originalDamage,
+			(int) $context->user['damage'],
+			'Hearts must not be lost for mistakes made after solving');
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => $context->user['id'],
+			],
+		]);
+		$this->assertCount(1, $attempts,
+			'Must produce exactly one attempt record');
+		$this->assertTrue($attempts[0]['TsumegoAttempt']['solved'],
+			'Attempt must be marked solved');
+		$this->assertSame(0, (int) $attempts[0]['TsumegoAttempt']['misplays'],
+			'Post-solve mistakes must not appear in attempt history');
+	}
+
+	public function testMisplayOnAlreadySolvedProblemIsHarmless(): void
+	{
+		foreach (['S', 'C'] as $status)
+		{
+			$context = new ContextPreparator([
+				'user' => ['rating' => 1000],
+				'tsumego' => ['rating' => 1000, 'status' => $status, 'set_order' => 1]]);
+			$originalRating = (float) $context->user['rating'];
+			$originalDamage = (int) $context->user['damage'];
+
+			$this->performMisplay($context, 'sets');
+
+			// Rating must not change at all for an already-solved problem
+			$this->assertSame($originalRating,
+				(float) $context->reloadUser()['rating'],
+				"Rating must not change when misplaying on status '$status'");
+
+			// Damage must not increase
+			$this->assertSame($originalDamage,
+				(int) $context->user['damage'],
+				"Damage must not increase when misplaying on status '$status'");
+
+			// No attempt record should be created for the misplay
+			$unsolvedAttempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+				'conditions' => [
+					'tsumego_id' => $context->tsumegos[0]['id'],
+					'user_id' => $context->user['id'],
+					'solved' => false,
+				],
+			]);
+			$this->assertCount(0, $unsolvedAttempts,
+				"No unsolved attempt should be created for status '$status'");
+		}
 	}
 }

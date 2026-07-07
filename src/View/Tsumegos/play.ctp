@@ -1668,8 +1668,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		else //incorrect
 		{
 			failAlreadyReported = true;
-			misplays++;
-			setCookie("misplays", misplays);
+			if (!problemSolved)
+			{
+				misplays++;
+				setCookie("misplays", misplays);
+			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
 			{
