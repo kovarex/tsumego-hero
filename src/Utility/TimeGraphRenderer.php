@@ -29,6 +29,7 @@ var options =
 		foreColor: '" . Util::getGraphGridColor() . "',
 		zoom: {enabled: false}
 	},
+	theme: { mode: '" . Util::getGraphThemeMode() . "' },
 	dataLabels:	{ enabled: false },
 	stroke:
 	{
@@ -56,7 +57,9 @@ var options =
 	}
 };
 var chart = new ApexCharts(document.querySelector('#" . $id . "'), options);
-chart.render();";
+chart.render();
+if (!window.__apexCharts) window.__apexCharts = [];
+window.__apexCharts.push(chart);";
 		echo '</script>';
 	}
 
