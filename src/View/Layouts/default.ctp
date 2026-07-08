@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
 <?php
 App::uses('Level', 'Utility');
 App::uses('CookieFlash', 'Utility');
@@ -93,15 +93,6 @@ else
 <?php
 echo ViteManifest::css('app-theme');
 
-// Load both theme CSS bundles for JavaScript-based theme switching.
-// Initial state: one enabled, one disabled based on cookie.
-$darkThemeUrl = ViteManifest::cssUrl('dark-theme');
-$lightThemeUrl = ViteManifest::cssUrl('light-theme');
-echo '<link rel="stylesheet" id="dark-theme-css" href="' . htmlspecialchars($darkThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
-	($lightDark === 'dark' ? '' : ' disabled') . ' />';
-echo '<link rel="stylesheet" id="light-theme-css" href="' . htmlspecialchars($lightThemeUrl, ENT_QUOTES, 'UTF-8') . '"' .
-	($lightDark !== 'dark' ? '' : ' disabled') . ' />';
-
 echo $this->Html->meta('icon');
 echo $this->fetch('css');
 echo $this->fetch('script');
@@ -113,7 +104,7 @@ echo ViteManifest::legacyScript('legacy');
 ?>
 </head>
 
-<body class="<?php echo $lightDark === 'dark' ? 'dark-theme' : 'light-theme'; ?>">
+<body>
 <div id="container" align="center">
 	<div width="100%" class="whitebox1">
 		<div align="left">

@@ -10,7 +10,6 @@
  * ==================
  * CSS bundle:
  *   echo ViteManifest::css('app-theme');        // <link rel="stylesheet" href="/dist/...">
- *   echo ViteManifest::cssUrl('dark-theme');    // raw URL string for use in custom tags
  *
  * JS bundle (React app):
  *   echo ViteManifest::script('app');           // <script type="module" src="/dist/...">
@@ -21,9 +20,7 @@
  * MANIFEST ENTRY NAMES
  * ====================
  *   'app'          → app/index.tsx                        (React app)
- *   'app-theme'    → webroot/css/app-theme.js             (default.css + home-themes.css)
- *   'dark-theme'   → webroot/css/dark-theme.js            (dark-constants.css + dark.css)
- *   'light-theme'  → webroot/css/light-theme.js           (light-constants.css)
+ *   'app-theme'   → webroot/css/app-theme.js             (default.css + theme.css + home-themes.css)
  *   'besogo-css'   → webroot/besogo/css/besogo-bundle.js  (besogo.css + board-flat.css)
  *   'legacy'       → virtual:legacy-app                   (bundled app global JS)
  *   'besogo'       → virtual:legacy-besogo               (bundled besogo viewer JS)
@@ -43,8 +40,6 @@ class ViteManifest
 	private const ENTRY_MAP = [
 		'app'         => 'app/index.tsx',
 		'app-theme'   => 'webroot/css/app-theme.js',
-		'dark-theme'  => 'webroot/css/dark-theme.js',
-		'light-theme' => 'webroot/css/light-theme.js',
 		'besogo-css'  => 'webroot/besogo/css/besogo-bundle.js',
 		'legacy'      => 'virtual:legacy-app',
 		'besogo'      => 'virtual:legacy-besogo',
@@ -57,7 +52,7 @@ class ViteManifest
 	/**
 	 * Returns <link rel="stylesheet"> tags for a CSS bundle entry.
 	 *
-	 * @param string $entry  Logical entry name (e.g. 'app-theme', 'dark-theme')
+	 * @param string $entry  Logical entry name (e.g. 'app-theme')
 	 * @param array  $attrs  Additional HTML attributes for the <link> tag
 	 */
 	public static function css(string $entry, array $attrs = []): string
