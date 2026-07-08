@@ -365,7 +365,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $tagNamesCount; $i++)
 		{
 			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['user'] = $this->checkPicture($au);
+			$tags[$i]['Tag']['user'] = $this->checkPicture($au['User']);
 		}
 
 		$requestDeletion = $this->User->find('all', ['conditions' => ['dbstorage' => 1111]]);

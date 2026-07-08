@@ -174,4 +174,22 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('style="color:#74d14c;"', $pageSource,
 			'Home page should have navigation highlighting');
 	}
+
+	/**
+	 * Home page "Most Recent Achievements" should show the name of the user
+	 * who earned each achievement.
+	 */
+	public function testHomePageShowsAchieverNames(): void
+	{
+		$context = new ContextPreparator([
+			'other-users' => [
+				['name' => 'Alice', 'achievement-statuses' => [['id' => 1]]],
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('Achievement gained by Alice', $pageSource,
+			'Home page should show the name of the user who earned the achievement');
+	}
 }

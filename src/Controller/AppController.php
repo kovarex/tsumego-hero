@@ -39,7 +39,7 @@ class AppController extends Controller
 			$a = ClassRegistry::init('Achievement')->findById($latest[$i]['AchievementStatus']['achievement_id']);
 			$u = ClassRegistry::init('User')->findById($latest[$i]['AchievementStatus']['user_id']);
 			if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-				$startPageUser = AppController::checkPicture($u);
+				$startPageUser = AppController::checkPicture($u['User']);
 			else
 				$startPageUser = $u['User']['name'];
 			$latest[$i]['AchievementStatus']['name'] = $a['Achievement']['name'];
