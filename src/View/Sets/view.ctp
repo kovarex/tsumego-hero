@@ -61,42 +61,36 @@ echo strip_tags($set['Set']['description'], '<br><a><b><i><p><ul><ol><li><img><f
 ?>
 			</td>
 				<?php
-if (!$noImage && $set['Set']['image'])
-	if($tsumegoFilters->query == 'topics')
-		if ($set['Set']['image'][2] != '-')
-			echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
-								<a href="/' . $startingSetConnectionID . '">
-								<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
-								alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
-								</a></div></td>';
-		else
-			echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
-								<a href="/' . $startingSetConnectionID . '">
-								<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
-								alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
-								</a></div></td>';
-	elseif($tsumegoFilters->query == 'difficulty')
-	{
-		if($lightDark == 'light')
-		{
-			$lightDarkImageBackground = 'style="background-color:gray;"';
-			$lightDarkBorder = '';
-		}
-		else
-		{
-			$lightDarkImageBackground = '';
-			$lightDarkBorder = 'style="border:1px solid black"';
-		}
-		echo '<td width="195px" style="vertical-align:top;"><div ' . $lightDarkImageBackground . ' align="center" class="set-image-zoom">
+if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
+{
+	if ($set['Set']['image'][2] != '-')
+		echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img width="182" ' . $lightDarkBorder . ' src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
 							</a></div></td>';
-	}
 	else
-	{
-		echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
-	}
+		echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
+							<a href="/' . $startingSetConnectionID . '">
+							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
+							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
+							</a></div></td>';
+}
+elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
+{
+	if ($lightDark == 'light')
+		$lightDarkImageBackground = 'style="background-color:gray;"';
+	else
+		$lightDarkImageBackground = '';
+	echo '<td width="195px" style="vertical-align:top;"><div ' . $lightDarkImageBackground . ' align="center" class="set-image-zoom">
+						<a href="/' . $startingSetConnectionID . '">
+						<span class="rank-icon rank-icon-large">' . h($set['Set']['id']) . '</span>
+						</a></div></td>';
+}
+else
+{
+	echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
+}
 ?>
 		</tr>
 		<tr>

@@ -1820,10 +1820,6 @@ li a.menuLi {
   border-radius: 0px;
   -webkit-filter: blur(2px);
 }
-#profileRankImage {
-  position: relative;
-  top: -7px;
-}
 .modeBox1 {
   cursor: pointer;
   float: left;
@@ -8304,4 +8300,27 @@ to { transform: rotate(360deg); }
   .dailyHighscoreTable a {
     color: #00e;
   }
+}
+.rank-icon {
+	display: inline-block;
+	width: 76px;
+	height: 76px;
+	font-family: Impact, 'Arial Black', sans-serif;
+	font-size: 44px;
+	font-weight: bold;
+	line-height: 76px;
+	text-align: center;
+	letter-spacing: -1px;
+	background: linear-gradient(to bottom, #55595D 0%, #B0B5BA 25%, #FFF 45%, #FFF 55%, #B0B5BA 75%, #55595D 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	filter: drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.45));
+	-webkit-text-stroke: 0.3px #2D3033;
+}
+.rank-icon-large {
+	width: 182px;
+	height: 252px;
+	font-size: 100px;
+	line-height: 252px;
 }

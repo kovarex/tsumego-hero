@@ -256,6 +256,46 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
+	public function testProfileShowsRank(): void
+	{
+		$context = new ContextPreparator(['user' => ['rating' => 2065]]);
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$pageSource = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('<span class="rank-icon">1d</span>', $pageSource);
+	}
+
+	public function testProfileShowsSolveHistoryLink(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
+		$browser = Browser::instance();
+		$browser->get('users/view/' . $context->user['id']);
+		$pageSource = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('/users/solveHistory/' . $context->user['id'], $pageSource,
+			'Solve history link should be present on profile');
+	}
+
+	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'target']],
+		]);
+		$target = $context->otherUsers[0];
+
+		$browser = Browser::instance();
+
+		// Own profile: progress bar preference is visible
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertStringContainsString('Progress bar preference', $browser->driver->getPageSource());
+
+		// Other user's profile: progress bar preference is hidden
+		$browser->get('users/view/' . $target['id']);
+		$this->assertStringNotContainsString('Progress bar preference', $browser->driver->getPageSource());
+	}
+
 	public function testTsumegoRatingGraph()
 	{
 		$context = new ContextPreparator([

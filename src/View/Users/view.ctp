@@ -11,6 +11,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<p class="title6">Profile</p>
 		</div>
 	<div class="user-header2">
+		<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="new-button-time">solve history</a>
 		<a href="/tags/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
 	</div>
 </div>
@@ -45,13 +46,9 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td>
 	<div align="center">
-		Your rank:<br>
-		<?php
-			if (RatingBounds::fromRanks('15k', '9d')->containsRating($user['User']['rating']))
-				echo '<img id="profileRankImage" src="/img/' . Rating::getReadableRankFromRating($user['User']['rating']) . 'Rank.png" width="76px">';
-			else
-				echo Rating::getReadableRankFromRating($user['User']['rating']);
-		?>
+		<?php echo (Auth::getUserID() == $user['User']['id']) ? 'Your rank' : 'Rank'; ?>:<br>
+		<?php $rank = Rating::getReadableRankFromRating($user['User']['rating']); ?>
+		<span class="rank-icon"><?php echo $rank; ?></span>
 	</div>
 	</td>
 	</tr>
@@ -61,6 +58,10 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="userTopTable1" border="0">
 	<tr>
 	<td>
+		<?php
+		if (Auth::getUserID() == $user['User']['id'])
+		{
+		?>
 		Progress bar preference:<br><br>
 	<?php
 		$levelBarDisplayChecked1 = '';
@@ -72,6 +73,9 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	?>
 	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
 	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
+		<?php
+		}
+		?>
 	</td>
 	</tr>
 	</table>
@@ -228,9 +232,6 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<div id="chartContainer">';
 	TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
 	echo '</div>
-				<div align="center">
-					<a href="/users/solveHistory/' .$user['User']['id'] . '">Show solve history</a>
-				</div>
 			</div>
 			<div id="userShowTime' . $side . '">
 				<div id="chartContainer">

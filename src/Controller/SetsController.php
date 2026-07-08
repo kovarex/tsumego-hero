@@ -590,7 +590,6 @@ class SetsController extends AppController
 			$set = [];
 			$set['Set']['id'] = $id;
 			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
-			$set['Set']['image'] = $id . 'Rank.png';
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
 			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
