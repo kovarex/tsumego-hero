@@ -142,8 +142,6 @@ export default defineConfig({
 				// CSS bundles — Vite extracts CSS from these JS proxy files into
 				// separate hashed .css assets recorded in manifest.json
 				'app-theme': './webroot/css/app-theme.js',
-				'dark-theme': './webroot/css/dark-theme.js',
-				'light-theme': './webroot/css/light-theme.js',
 				'besogo-css': './webroot/besogo/css/besogo-bundle.js',
 			},
 			output: {

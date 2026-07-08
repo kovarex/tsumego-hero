@@ -6,144 +6,82 @@ use Facebook\WebDriver\WebDriverBy;
  * Tests for dark/light mode theming functionality.
  *
  * Tests verify:
- * - Body class is correctly set based on cookie/preference
- * - JavaScript toggle properly switches body class
- * - CSS styles are correctly applied for each mode
+ * - HTML data-theme attribute is correctly set based on cookie/preference
+ * - JavaScript toggle properly switches data-theme attribute
+ * - CSS custom properties are correctly applied for each mode
  */
 class DarkLightModeTest extends ControllerTestCase
 {
 	/**
-	 * Test that body has light-theme class by default
+	 * Test that html has data-theme="light" by default
 	 */
-	public function testDefaultBodyClassIsLightTheme()
+	public function testDefaultDataThemeIsLight()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up context with a user
 		$context = new ContextPreparator();
 
-		// Act: Load a page
 		$browser->get('sites/index');
 
-		// Assert: Body should have light-theme class
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$bodyClass = $body->getAttribute('class');
-		$this->assertStringContainsString(
-			'light-theme',
-			$bodyClass,
-			'Body should have light-theme class by default'
-		);
-		$this->assertStringNotContainsString(
-			'dark-theme',
-			$bodyClass,
-			'Body should not have dark-theme class in light mode'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$theme = $html->getAttribute('data-theme');
+		$this->assertEquals('light', $theme, 'HTML should have data-theme="light" by default');
 	}
 
 	/**
-	 * Test that body has dark-theme class when lightDark cookie is set to dark
+	 * Test that html has data-theme="dark" when lightDark cookie is set to dark
 	 */
-	public function testBodyClassWithDarkCookie()
+	public function testDataThemeWithDarkCookie()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up context with a user
 		$context = new ContextPreparator();
 
-		// Act: Set cookie to dark and load page
-		$browser->get('sites/index'); // Need to be on domain first
+		$browser->get('sites/index');
 		$browser->setCookie('lightDark', 'dark');
-		$browser->get('sites/index'); // Reload with cookie
+		$browser->get('sites/index');
 
-		// Assert: Body should have dark-theme class
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$bodyClass = $body->getAttribute('class');
-		$this->assertStringContainsString(
-			'dark-theme',
-			$bodyClass,
-			'Body should have dark-theme class when lightDark cookie is dark'
-		);
-		$this->assertStringNotContainsString(
-			'light-theme',
-			$bodyClass,
-			'Body should not have light-theme class in dark mode'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$theme = $html->getAttribute('data-theme');
+		$this->assertEquals('dark', $theme, 'HTML should have data-theme="dark" when lightDark cookie is dark');
 	}
 
 	/**
-	 * Test that JavaScript toggle switches body class from dark to light
+	 * Test that JavaScript toggle switches data-theme from dark to light
 	 */
 	public function testJavaScriptToggleDarkToLight()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up context with dark mode
 		$context = new ContextPreparator();
 
-		$browser->get('sites/index'); // Need to be on domain first
+		$browser->get('sites/index');
 		$browser->setCookie('lightDark', 'dark');
-		$browser->get('sites/index'); // Load with dark mode
+		$browser->get('sites/index');
 
-		// Verify we're in dark mode
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$this->assertStringContainsString(
-			'dark-theme',
-			$body->getAttribute('class'),
-			'Should start in dark mode'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should start in dark mode');
 
-		// Act: Click the dark/light toggle button
-		// The button has ID darkButtonImage (or darkButtonImage2/3)
 		$browser->driver->executeScript('darkAndLight();');
 
-		// Assert: Body class should have switched to light-theme
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$bodyClass = $body->getAttribute('class');
-		$this->assertStringContainsString(
-			'light-theme',
-			$bodyClass,
-			'Body should have light-theme class after toggle from dark'
-		);
-		$this->assertStringNotContainsString(
-			'dark-theme',
-			$bodyClass,
-			'Body should not have dark-theme class after toggle from dark'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('light', $html->getAttribute('data-theme'), 'Should switch to light after toggle from dark');
 	}
 
 	/**
-	 * Test that JavaScript toggle switches body class from light to dark
+	 * Test that JavaScript toggle switches data-theme from light to dark
 	 */
 	public function testJavaScriptToggleLightToDark()
 	{
 		$browser = Browser::instance();
-
-		// Arrange: Set up context with light mode
 		$context = new ContextPreparator();
 
-		$browser->get('sites/index'); // Load with light mode (default)
+		$browser->get('sites/index');
 
-		// Verify we're in light mode
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$this->assertStringContainsString(
-			'light-theme',
-			$body->getAttribute('class'),
-			'Should start in light mode'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('light', $html->getAttribute('data-theme'), 'Should start in light mode');
 
-		// Act: Click the dark/light toggle
 		$browser->driver->executeScript('darkAndLight();');
 
-		// Assert: Body class should have switched to dark-theme
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$bodyClass = $body->getAttribute('class');
-		$this->assertStringContainsString(
-			'dark-theme',
-			$bodyClass,
-			'Body should have dark-theme class after toggle from light'
-		);
-		$this->assertStringNotContainsString(
-			'light-theme',
-			$bodyClass,
-			'Body should not have light-theme class after toggle from light'
-		);
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should switch to dark after toggle from light');
 	}
 
 	/**
@@ -189,39 +127,19 @@ class DarkLightModeTest extends ControllerTestCase
 	public function testPreferencePersistsAfterRefresh()
 	{
 		$browser = Browser::instance();
-
-		// Arrange: Set up context
 		$context = new ContextPreparator();
 
 		$browser->driver->manage()->deleteCookieNamed('lightDark');
-		$browser->get('sites/index'); // Start with light mode
-
-		// Toggle to dark mode
-		$browser->driver->executeScript('darkAndLight();');
-
-		// Verify dark mode is active
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$this->assertStringContainsString(
-			'dark-theme',
-			$body->getAttribute('class'),
-			'Should be in dark mode before refresh'
-		);
-
-		// Act: Refresh the page
 		$browser->get('sites/index');
 
-		// Assert: Should still be in dark mode after refresh
-		$body = $browser->driver->findElement(WebDriverBy::tagName('body'));
-		$bodyClass = $body->getAttribute('class');
-		$this->assertStringContainsString(
-			'dark-theme',
-			$bodyClass,
-			'Should remain in dark mode after page refresh'
-		);
-		$this->assertStringNotContainsString(
-			'light-theme',
-			$bodyClass,
-			'Should not have light-theme class after refresh while in dark mode'
-		);
+		$browser->driver->executeScript('darkAndLight();');
+
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should be in dark mode before refresh');
+
+		$browser->get('sites/index');
+
+		$html = $browser->driver->findElement(WebDriverBy::tagName('html'));
+		$this->assertEquals('dark', $html->getAttribute('data-theme'), 'Should remain dark after page refresh');
 	}
 }
