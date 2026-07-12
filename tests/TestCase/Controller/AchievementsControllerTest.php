@@ -136,4 +136,19 @@ class AchievementsControllerTest extends TestCaseWithAuth
 
 		$this->assertStringContainsString('/achievements/user/' . $targetUser['id'], $result);
 	}
+
+	public function testViewAchievementShowsCompleterNames(): void
+	{
+		$context = new ContextPreparator([
+			'other-users' => [
+				['name' => 'Alice', 'achievement-statuses' => [['id' => 98]]],
+				['name' => 'Bob',   'achievement-statuses' => [['id' => 98]]],
+			],
+		]);
+
+		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
+
+		$this->assertStringContainsString('Alice', $result, 'Alice should appear as a completer');
+		$this->assertStringContainsString('Bob', $result, 'Bob should appear as a completer');
+	}
 }
