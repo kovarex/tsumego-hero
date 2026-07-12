@@ -122,60 +122,20 @@
 			<br>
 			<b>(5) Problem colors</b><br><br>
 		<table class="sitesTable">
+		<?php
+		foreach ($statusLabels as $status => $label):
+			$description = $statusDescriptions[$status] ?? '';
+		?>
 		<tr>
 			<td>
-				<img title="Not visited" alt="Not visited" src="/img/xN.png">
+				<span class="status-label status<?php echo $status; ?>"><?php echo h($label); ?></span>
 			</td>
 			<td>
-				<b>Not visited</b><br>
-				You haven't seen this problem.<br><br>
+				<b><?php echo h($label); ?></b><br>
+				<?php echo h($description); ?><br><br>
 			</td>
 		</tr>
-		<tr>
-			<td>
-				<img title="Visited" alt="Visited" src="/img/xV.png">
-			</td>
-			<td>
-				<b>Visited</b><br>
-				You have seen this problem, but not solved.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img title="Solved" alt="Solved" src="/img/xS.png">
-			</td>
-			<td>
-				<b>Solved</b><br>
-				You solved this problem.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img title="Locked" alt="Locked" src="/img/xF.png">
-			</td>
-			<td>
-				<b>Locked</b><br>
-				This problem is locked for today. Problems get locked when a player misplays and has no more hearts left.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img title="Half XP" alt="Half XP" src="/img/xW.png">
-			</td>
-			<td>
-				<b>Half XP</b><br>
-				This problem gives half XP. It becomes available one week after the first solution.<br><br>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<img title="Golden" alt="Golden" src="/img/xG.png">
-			</td>
-			<td>
-				<b>Golden</b><br>
-				This is a golden tsumego. It gives eight times more XP than usual. If you fail, it disappears.<br><br>
-			</td>
-		</tr>
+		<?php endforeach; ?>
 		</table>
 
 		</div>
