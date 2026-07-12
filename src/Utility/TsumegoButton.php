@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoStatus', 'Model');
+
 class TsumegoButton
 {
 	public function __construct(int $tsumegoID, int $setConnectionID, int $order, ?string $status, ?float $rating = 0)
@@ -52,7 +54,16 @@ class TsumegoButton
 		$num3 = '<div class="setViewButtons3">' . $num3 . '</div>';
 
 		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
-		echo '<a class="tooltip" href="/' . $this->setConnectionID . '" onmouseover="' . $this->generateTooltip() . '">' . $num . $num2 . $num3 . '<span class="tooltip-box"></span></a>';
+		$status = $this->status ?: 'N';
+		$label = TsumegoStatus::label($status);
+		$description = TsumegoStatus::description($status);
+		echo '<a class="tooltip" href="/' . $this->setConnectionID . '"'
+			. ' onmouseover="' . $this->generateTooltip() . '">'
+			. $num . $num2 . $num3
+			. '<span class="tooltip-box">'
+			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
+			. '<div class="tooltip-desc">' . h($description) . '</div>'
+			. '</span></a>';
 		echo '</li>';
 	}
 
