@@ -113,6 +113,22 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[2]['set-connections'][0]['id']);
 	}
 
+	public function testDifficultySetViewShowsRank(): void
+	{
+		$contextParams = [];
+		$contextParams['tsumegos'] = [];
+		$contextParams['tsumegos'] [] = [
+			'rating' => Rating::getRankMiddleRatingFromReadableRank('5k'),
+			'sets' => [['name' => 'set 1', 'num' => '1']]];
+		new ContextPreparator($contextParams);
+
+		$this->testAction('sets/view/5k', ['return' => 'view']);
+		$result = $this->getStringDom();
+
+		$this->assertStringContainsString('<span class="rank-icon rank-icon-large">5k</span>',
+			$result->saveHTML());
+	}
+
 	public function testSetViewSetBased(): void
 	{
 		$contextParams = [];
