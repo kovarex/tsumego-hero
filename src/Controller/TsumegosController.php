@@ -9,11 +9,43 @@ App::uses('TsumegoMerger', 'Utility');
 App::uses('SimilarSearchResultItem', 'Utility');
 App::uses('SimilarSearchLogic', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
+App::uses('BadRequestException', 'Routing/Error');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('TimeMode', 'Utility');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
+
+	public function result()
+	{
+		if (!$this->request->is('post'))
+			throw new BadRequestException('POST required');
+
+		if (!Auth::isLoggedIn())
+			throw new ForbiddenException('Login required');
+
+		$data = json_decode($this->request->input(), true) ?: $this->request->data;
+		if (!$data || empty($data['tsumego_id']))
+			throw new BadRequestException('Missing tsumego_id');
+
+		$result = $this->PlayResultProcessor->processResult($data);
+
+		// Time mode result processing (for all time mode results, not just timeouts)
+		if (Auth::isInTimeMode())
+		{
+			$timeMode = new TimeMode();
+			$tsumego = ClassRegistry::init('Tsumego')->findById((int) $data['tsumego_id']);
+			$playResult = ['solved' => !empty($data['solved'])];
+			$timeMode->processPlayResult($tsumego, $playResult, (float) ($data['seconds'] ?? 0), !empty($data['timeout']));
+		}
+
+		$this->response->type('application/json');
+		$this->response->body(json_encode($result));
+
+		return $this->response;
+	}
 
 	private function deduceRelevantSetConnection(array $setConnections): array
 	{
@@ -51,7 +83,15 @@ class TsumegosController extends AppController
 		}
 
 		if ($setConnectionID)
+		{
+			if (Auth::isLoggedIn())
+			{
+				$sc = ClassRegistry::init('SetConnection')->findById($setConnectionID);
+				if ($sc)
+					$this->PlayResultProcessor->markAsVisited((int) $sc['SetConnection']['tsumego_id']);
+			}
 			return new Play(function ($name, $value) { $this->set($name, $value); })->play($setConnectionID, $this->params, $this->data);
+		}
 
 		if (!$id)
 			throw new NotFoundException("Tsumego id not provided");
@@ -59,6 +99,9 @@ class TsumegosController extends AppController
 		$tsumego = ClassRegistry::init('Tsumego')->findById($id);
 		if (!$tsumego)
 			throw new NotFoundException("Tsumego not found");
+
+		if (Auth::isLoggedIn())
+			$this->PlayResultProcessor->markAsVisited((int) $id);
 
 		$setConnections = TsumegoUtil::getSetConnectionsWithTitles($id);
 		if (!$setConnections)

@@ -152,7 +152,7 @@ class TimeMode
 		return TimeModeUtil::$ATTEMPT_RESULT_SOLVED;
 	}
 
-	public function processPlayResult($previousTsumego, $result): void
+	public function processPlayResult($previousTsumego, $result, float $seconds = 0, bool $timeout = false): void
 	{
 		if (!$this->currentSession)
 			return;
@@ -163,11 +163,9 @@ class TimeMode
 				'time_mode_attempt_status_id' => TimeModeUtil::$ATTEMPT_RESULT_QUEUED]]);
 		if (!$currentAttempt)
 			return; // this tsumego is not related to our time mode session, we ignore it
-		$timeout = Util::clearCookie('timeout');
 		$currentAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] = self::deduceAttemptStatus($result, $timeout);
-		$seconds = $timeout ? $this->overallSecondsToSolve : Decoder::decodeSeconds($previousTsumego);
-		if (is_null($seconds))
-			throw new Exception("Seconds not provided.");
+		if ($timeout)
+			$seconds = $this->overallSecondsToSolve;
 		$timeModeCategory = ClassRegistry::init('TimeModeCategory')->findById($this->currentSession['TimeModeSession']['time_mode_category_id']);
 
 		$currentAttempt['TimeModeAttempt']['seconds'] = $seconds;

@@ -491,8 +491,8 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
-			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
-			$this->set('potionSuccess', $this->PlayResultProcessor->processPotion());
+			$this->PlayResultProcessor->checkAddFavorite();
+			$this->PlayResultProcessor->checkRemoveFavorite();
 			$achievementChecker = new AchievementChecker();
 			$achievementChecker->checkLevelAchievements();
 			$achievementChecker->checkProblemNumberAchievements();

@@ -6,7 +6,7 @@ App::uses('Constants', 'Utility');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {
-	private $PAGES = ['sets', 'tsumego'];
+	private $PAGES = ['tsumego'];
 
 	private static function getUrlFromPage(string $page, $context): string
 	{
@@ -17,10 +17,25 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		throw new Exception("Unknown page: " . $page);
 	}
 
-	private function performVisit(ContextPreparator &$context, $page): void
+	private function loginAs(ContextPreparator &$context): void
 	{
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
-		Auth::init(); // Re-init to recognize the user
+		Auth::init();
+	}
+
+	private function processResult(ContextPreparator &$context, array $params): void
+	{
+		$this->loginAs($context);
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => $params,
+		]);
+		$this->loginAs($context);
+	}
+
+	private function performVisit(ContextPreparator &$context, $page): void
+	{
+		$this->loginAs($context);
 		$_COOKIE['previousTsumegoID'] = $context->tsumegos[0]['id'];
 		$this->testAction(self::getUrlFromPage($page, $context));
 		$context->checkNewTsumegoStatusCoreValues($this);
@@ -28,29 +43,43 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	private function performSolve(ContextPreparator &$context, $page): void
 	{
-		$_COOKIE['mode'] = '1';
-		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => true,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['score']); // should be processed and cleared
 	}
 
 	private function performMisplay(ContextPreparator &$context, $page): void
 	{
-		$_COOKIE['misplays'] = '1';
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => false,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
 	private function performSolveWithMisplays(ContextPreparator &$context, $page, int $misplays = 1): void
 	{
-		$_COOKIE['mode'] = '1';
-		$_COOKIE['misplays'] = (string) $misplays;
-		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		// Simulate individual fail calls before the solve
+		for ($i = 0; $i < $misplays; $i++)
+			$this->processResult($context, [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'seconds' => 0.01,
+				'solved' => false,
+				'mode' => 1,
+			]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => true,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
 	public function testVisitFromEmpty(): void
@@ -446,6 +475,10 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('F');
+
+		// Fail is processed immediately via AJAX, no navigation needed
+		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
+
 		$browser->clickId("besogo-reset-button");
 		$browser->playWithResult('S');
 
@@ -520,47 +553,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
 			'No-error streak should increment when solving without misplays');
-	}
-
-	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['rating' => 1500],
-			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
-		$originalRating = $context->user['rating'];
-
-		$browser = Browser::instance();
-
-		// Load the puzzle page
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		// Fail the puzzle - this sets cookies but doesn't immediately process
-		$browser->playWithResult('F');
-
-		// At this point, cookies are set but result hasn't been processed yet
-		// because we're still on the same page (no navigation)
-
-		// Make an AJAX request (same as React fetch with X-Requested-With header)
-		// Use window flag so WebDriverWait can detect completion
-		$browser->driver->executeScript("
-			window._fetchDone = false;
-			fetch('/tsumego-issues', {
-				headers: { 'X-Requested-With': 'XMLHttpRequest' }
-			}).finally(function() { window._fetchDone = true; });
-		");
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window._fetchDone === true;');
-		});
-
-		// Rating should still be original - AJAX shouldn't process the result
-		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);
-
-		// NOW navigate to a different page - THIS should process the result
-		$browser->get('/sets/index');
-
-		// NOW rating should have dropped
-		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
 	}
 
 	public function testPostSolveMistakesAreNotPenalized(): void
@@ -663,14 +655,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
 		Auth::init();
 
-		// Signal that the PREVIOUS problem was failed (status 'F')
-		$_COOKIE['previousTsumegoBuffer'] = 'F';
-		$_COOKIE['previousTsumegoID'] = '99999999';
-
-		// damage == maxHealth so excessDeaths == 0, chance == 0%, counter always increments
-
-		// Load a tsumego page -- Play.php reads the buffer and increments the condition
-		$this->testAction(self::getUrlFromPage('tsumego', $context));
+		// Process a fail: damage == maxHealth, excessDeaths == 0, chance == 0%
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => false,
+			'mode' => 1,
+		]);
 
 		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -702,18 +693,18 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
 		Auth::init();
 
-		$_COOKIE['previousTsumegoBuffer'] = 'F';
-		$_COOKIE['previousTsumegoID'] = '99999999';
-
-		// excessDeaths = 200, chance = min(200 × 0.5, 100) = 100%
-		$body = $this->testAction(self::getUrlFromPage('tsumego', $context), ['return' => 'contents']);
+		// Process a fail: excessDeaths = 200, chance = 100%
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => false,
+			'mode' => 1,
+		]);
 
 		$user = $context->reloadUser();
 		$this->assertSame(1, (int) $user['used_potion'],
-			'used_potion must be set to 1 when potion triggers (consumed for the day)');
+			'used_potion must be set to 1 when potion triggers');
 		$this->assertSame(0, (int) $user['damage'],
 			'damage must be cleared to 0 when potion heals');
-
-		$this->assertStringContainsString('id="potionAlerts"', $body);
 	}
 }

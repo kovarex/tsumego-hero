@@ -109,6 +109,7 @@ class HeroPowersTest extends TestCaseWithAuth
 			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
 		});
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->waitForSubmitResult();
 		$browser->get('sets');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
@@ -132,6 +133,7 @@ class HeroPowersTest extends TestCaseWithAuth
 			return $browser->driver->executeScript('return window.xpStatus.isSprintActive();');
 		});
 		$browser->driver->executeScript("displayResult('S')"); // solve the problem
+		$browser->waitForSubmitResult();
 
 		// clicking next after solving, sprint is still visible:
 		$browser->clickId('besogo-next-button');

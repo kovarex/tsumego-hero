@@ -250,7 +250,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			// reset without the result being shown
 			$browser->clickId('besogo-reset-button');
 
-			// check that rating on account widget was immediatelly updated
 			$expectedRatingChange = ($testCase == '') ? Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER) : 0;
 			$expectedRating = round(1000 + $expectedRatingChange);
 			$displayedRating = $browser->driver->executeScript('return window.accountWidget ? accountWidget.rating : null;');
@@ -332,11 +331,13 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$wait->until(function () use ($browser) { return str_contains($browser->find('#status')->getText(), "Incorrect"); });
 
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->waitForSubmitResult();
 		$browser->clickId('besogo-reset-button');
 		$this->assertStringContainsString("", $browser->find('#status')->getText());
 		$browser->clickBoard(2, 1);
 		$wait->until(function () use ($browser) { return str_contains($browser->find('#status')->getText(), "Incorrect"); });
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->waitForSubmitResult();
 		$browser->get($tsumegoUrl);
 		$this->assertSame(2, $context->reloadUser()['damage']); // 2 errors done
 	}

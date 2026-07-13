@@ -395,7 +395,6 @@ class Play
 		else
 		($this->setFunction)('barPercent', 0);
 		($this->setFunction)('t', $t);
-		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
 		($this->setFunction)('hash', $hash);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
 		($this->setFunction)('eloScore', $eloScore);
