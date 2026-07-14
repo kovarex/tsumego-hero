@@ -520,8 +520,9 @@ class AppController extends Controller
 		if (Auth::isLoggedIn())
 		{
 			$user = Auth::getUser();
-			$user['name'] = $this->checkPicture($user);
-			$this->set('user', $user);
+			$displayUser = $user;
+			$displayUser['name'] = $this->checkPicture($user);
+			$this->set('user', $displayUser);
 		}
 		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));

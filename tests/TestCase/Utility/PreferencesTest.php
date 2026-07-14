@@ -1,34 +1,9 @@
 <?php
 
 App::uses('Preferences', 'Utility');
-App::uses('JwtAuth', 'Utility');
 
 class PreferencesTest extends CakeTestCase
 {
-	public function setUp(): void
-	{
-		parent::setUp();
-		// Clear any existing auth state using proper methods
-		Auth::logout();
-		unset($_COOKIE['hackedLoggedInUserID'], $_COOKIE['auth_token']);
-		JwtAuth::clearCache();
-		Auth::init(); // Re-initialize Auth with no user
-		// Clear cookies
-		$_COOKIE = [];
-		// Clear test storage
-		Preferences::clearTestStorage();
-	}
-
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		Auth::logout();
-		unset($_COOKIE['hackedLoggedInUserID'], $_COOKIE['auth_token']);
-		JwtAuth::clearCache();
-		$_COOKIE = [];
-		Preferences::clearTestStorage();
-	}
-
 	/**
 	 * Test that preferences can be set and retrieved for guests
 	 */

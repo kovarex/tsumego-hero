@@ -15,16 +15,7 @@ class JwtAuthTest extends CakeTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		// Override the secret for testing
 		Configure::write('Security.jwtSecret', self::TEST_SECRET);
-	}
-
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		// Clear any cookies
-		unset($_COOKIE['auth_token']);
-		JwtAuth::clearCache();
 	}
 
 	public function testCreateTokenReturnsValidJwt(): void
