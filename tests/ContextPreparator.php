@@ -6,6 +6,11 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
+		// Disable FK checks via raw PDO to avoid CakePHP query()/execute() pipeline flakiness
+		/** @var DboSource $db */
+		$db = ClassRegistry::init('User')->getDataSource();
+		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 0');
+
 		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1'], false);      // FK to: user, tag
 		ClassRegistry::init('Tag')->deleteAll(['1 = 1'], false);                // FK to: user
 		ClassRegistry::init('Favorite')->deleteAll(['1 = 1'], false);           // FK to: user, tsumego
@@ -32,6 +37,10 @@ class ContextPreparator
 		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1'], false);       // Parent table
 		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1'], false);            // Parent table
 		ClassRegistry::init('Set')->deleteAll(['1 = 1'], false);                // Parent table
+
+		/** @var DboSource $db */
+		$db = ClassRegistry::init('User')->getDataSource();
+		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);

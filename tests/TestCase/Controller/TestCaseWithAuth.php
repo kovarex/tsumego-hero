@@ -8,9 +8,6 @@ class TestCaseWithAuth extends ControllerTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		// Clear auth state
-		Auth::logout();
-		unset($_COOKIE['hackedLoggedInUserID']);
 	}
 
 	public function login($username)

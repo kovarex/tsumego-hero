@@ -10,20 +10,6 @@ App::uses('CookieFlash', 'Utility');
  */
 class CookieFlashTest extends CakeTestCase
 {
-	public function setUp(): void
-	{
-		parent::setUp();
-		unset($_COOKIE['flash_message']);
-		CookieFlash::clearCache();
-	}
-
-	public function tearDown(): void
-	{
-		parent::tearDown();
-		unset($_COOKIE['flash_message']);
-		CookieFlash::clearCache();
-	}
-
 	public function testSetStoresMessage(): void
 	{
 		CookieFlash::set('Test message');

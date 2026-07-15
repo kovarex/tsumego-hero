@@ -60,7 +60,7 @@ class Browser
 
 		try
 		{
-			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities);
+			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities, 10000, 30000);
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
@@ -83,7 +83,14 @@ class Browser
 	{
 		if (self::$browser)
 		{
-			self::$browser->driver->quit();
+			try
+			{
+				self::$browser->driver->quit();
+			}
+			catch (\Exception $e)
+			{
+				// Driver already disconnected, session will expire on Selenium side
+			}
 			self::$browser = null;
 		}
 	}
@@ -147,6 +154,7 @@ class Browser
 
 		// Strip leading slash from $url to avoid double slashes when concatenating
 		$url = ltrim($url, '/');
+		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}
@@ -155,6 +163,7 @@ class Browser
 	public function getAnonymous(string $url): void
 	{
 		$url = ltrim($url, '/');
+		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
 		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}

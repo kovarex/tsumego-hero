@@ -13,6 +13,7 @@ class TimeModeControllerTest extends ControllerTestCase
 
 	public function testStartTimeModeWithoutSpecifyingRankIDThrowsException()
 	{
+		new ContextPreparator([]);
 		$this->assertTrue(Auth::isInLevelMode());
 		$this->expectException(BadRequestException::class);
 		$this->expectExceptionMessage('Time mode rank not specified.');
