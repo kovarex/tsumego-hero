@@ -585,4 +585,122 @@ class TagTest extends ControllerTestCase
 		$this->assertStringNotContainsString('Tags and proposals by viewer', $pageSource);
 	}
 
+	public function testAdminAcceptsTagProposal()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'proposer', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]]);
+
+		// Create an unapproved tag proposal by the proposer
+		$tag = ClassRegistry::init('Tag');
+		$tag->create();
+		$tag->save([
+			'Tag' => [
+				'name' => 'tesuji',
+				'description' => 'A clever move',
+				'user_id' => $context->otherUsers[0]['id'],
+				'approved' => 0,
+			],
+		]);
+		$tagId = $tag->id;
+
+		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+
+		$browser = Browser::instance();
+		$browser->get('/tags/acceptTagProposal/' . $tagId);
+
+		// Should redirect to adminstats and approve the tag
+		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertSame(1, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+		$this->assertStringContainsString('was approved', $browser->driver->getPageSource());
+
+		// Contribution should be tracked for the proposer
+		$contrib = ClassRegistry::init('UserContribution')->find('first', [
+			'conditions' => ['user_id' => $context->otherUsers[0]['id']]]);
+		$this->assertSame(1, (int) $contrib['UserContribution']['created_tag']);
+	}
+
+	public function testAcceptAlreadyApprovedTagShowsError()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'proposer']]]);
+
+		// Create an already-approved tag
+		$tag = ClassRegistry::init('Tag');
+		$tag->create();
+		$tag->save([
+			'Tag' => [
+				'name' => 'already_approved',
+				'description' => 'Test',
+				'user_id' => $context->otherUsers[0]['id'],
+				'approved' => 1,
+			],
+		]);
+		$tagId = $tag->id;
+
+		$browser = Browser::instance();
+		$browser->get('/tags/acceptTagProposal/' . $tagId);
+
+		$this->assertStringEndsWith('/users/adminstats', $browser->driver->getCurrentURL());
+		$this->assertStringContainsString('already approved', $browser->driver->getPageSource());
+	}
+
+	public function testNonAdminCannotAcceptTagProposal()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => false],
+			'other-users' => [['name' => 'proposer']]]);
+
+		$tag = ClassRegistry::init('Tag');
+		$tag->create();
+		$tag->save([
+			'Tag' => [
+				'name' => 'unapproved_tag',
+				'description' => 'Test',
+				'user_id' => $context->otherUsers[0]['id'],
+				'approved' => 0,
+			],
+		]);
+		$tagId = $tag->id;
+
+		$browser = Browser::instance();
+		$browser->get('/tags/acceptTagProposal/' . $tagId);
+
+		// Non-admin should be redirected away from adminstats
+		$this->assertStringNotContainsString('adminstats', $browser->driver->getCurrentURL());
+
+		// Tag should still be unapproved
+		$this->assertSame(0, ClassRegistry::init('Tag')->findById($tagId)['Tag']['approved']);
+	}
+
+	public function testTagHighscoreUpdatesAfterAcceptance()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'other-users' => [['name' => 'proposer', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]],
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]]);
+
+		$proposerId = $context->otherUsers[0]['id'];
+		$tagConnectionId = $context->tsumegos[0]['tag-connections'][0]['id'];
+
+		// Before acceptance: proposer should NOT appear in the highscore
+		$before = Util::query("
+			SELECT count(*) AS tag_count
+			FROM tag_connection
+			WHERE approved = true AND user_id = $proposerId");
+		$this->assertSame(0, (int) $before[0]['tag_count'], 'Proposer should have 0 approved tags before acceptance');
+
+		// Accept the tag connection
+		$browser = Browser::instance();
+		$browser->get('/users/acceptTagConnectionProposal/' . $tagConnectionId);
+
+		// After acceptance: proposer should appear in the highscore
+		$after = Util::query("
+			SELECT count(*) AS tag_count
+			FROM tag_connection
+			WHERE approved = true AND user_id = $proposerId");
+		$this->assertSame(1, (int) $after[0]['tag_count'], 'Proposer should have 1 approved tag after acceptance');
+	}
+
 }
