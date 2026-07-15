@@ -142,6 +142,8 @@ function revelation()
 	makeAjaxCall('/hero/revelation/' + tsumegoID,
 		(response) =>
 		{
+			tryAgainTomorrow = false;
+			locked = false;
 			document.getElementById("status").style.color = playGreenColor;
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if (light)

@@ -373,4 +373,55 @@ class HeroPowersTest extends TestCaseWithAuth
 		$lastHeartSrc = $browser->driver->findElement(WebDriverBy::id('heart' . ($maxHealth - 1)))->getAttribute('src');
 		$this->assertStringContainsString('heart2small', $lastHeartSrc, "last heart should be lost after failing post-rejuvenation");
 	}
+
+	public function testRevelationAllowsReviewAfterRunningOutOfHearts()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'tsumego' => ['status' => 'F', 'set_order' => 1]]);
+		$context->unlockAchievementsWithoutEffect();
+
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$browser->get('/' . $setConnectionId);
+
+		// Wait for the page to fully load
+		$browser->driver->wait(10, 500)->until(function ($driver) {
+			return $driver->executeScript('return typeof displayResult === "function";');
+		});
+
+		// Verify failed/locked state: review button is inactive
+		$this->assertTrue($browser->idExists('besogo-review-button-inactive'));
+		$this->assertFalse($browser->idExists('besogo-review-button'));
+		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
+
+		// Use Revelation to solve the problem (AJAX, no page refresh)
+		$browser->clickId('revelation');
+		$browser->driver->wait(10, 50)->until(function () use ($browser) {
+			return $browser->driver->executeScript("return window.revelationUseCount;") == 0;
+		});
+
+		// After Revelation: review button must be active (user-visible)
+		$this->assertFalse($browser->idExists('besogo-review-button-inactive'));
+		$this->assertTrue($browser->idExists('besogo-review-button'));
+
+		// Clicking review unlocks the board so user can explore moves
+		$browser->clickId('besogo-review-button');
+		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'));
+
+		// Board click stays on the page (doesn't navigate to next puzzle)
+		$currentUrl = $browser->driver->getCurrentURL();
+		$browser->clickCssSelect('.besogo-board');
+		$this->assertSame($currentUrl, $browser->driver->getCurrentURL());
+
+		// Refresh and verify state persists from the database
+		$browser->get('/' . $setConnectionId);
+		$browser->driver->wait(10, 500)->until(function ($driver) {
+			return $driver->executeScript('return typeof displayResult === "function";');
+		});
+
+		// After refresh: review is still available, board is not locked
+		$this->assertTrue($browser->idExists('besogo-review-button'));
+		$browser->clickId('besogo-review-button');
+		$this->assertSame(0, $browser->driver->executeScript('return window.boardLockValue;'));
+	}
 }
