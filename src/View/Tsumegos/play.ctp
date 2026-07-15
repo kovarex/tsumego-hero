@@ -523,7 +523,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					</div>
 		</label>
 	<?php }else{ ?>
-		<?php if($potionAlert){ ?>
+		<?php if($potionSuccess){ ?>
 		<label>
 			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
 			<div class="alertBox alertInfo" id="potionAlerts">
@@ -999,11 +999,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$("#scoreEstEditField").val(chars+num);
 		});
 	<?php } ?>
+
 	<?php
-	if($potionSuccess){
-		echo 'document.cookie = "rejuvenationx=2;path=/tsumegos/play;SameSite=Lax";';
-		echo 'window.location = "/tsumegos/play/'.$t['Tsumego']['id'].'?potionAlert=1";';
-	}
 	if(Auth::isInLevelMode()){
 	}elseif(Auth::isInRatingMode()){
 		echo '
@@ -1069,7 +1066,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				tryAgainTomorrow = true;
 				document.getElementById("status").style.color = "#e03c4b";';
 	}
-		if($potionAlert){
+		if($potionSuccess){
 			echo '$(".alertBox").fadeIn(500);';
 	}
 		if($isSemeai){

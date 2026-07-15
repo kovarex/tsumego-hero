@@ -3,7 +3,6 @@
 App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
-App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
@@ -42,12 +41,9 @@ class Play
 		$half = '';
 		$isSandbox = false;
 		$goldenTsumego = false;
-		$potion = 0;
-		$potionSuccess = false;
 		$reviewCheat = false;
 		$commentCoordinates = [];
 		$trs = [];
-		$potionAlert = false;
 		$eloScore = 0;
 		$eloScore2 = 0;
 		$requestProblem = '';
@@ -73,9 +69,6 @@ class Play
 		$set = ClassRegistry::init('Set')->findById($currentSetConnection['SetConnection']['set_id']);
 
 		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $id]]);
-
-		if (isset($params['url']['potionAlert']))
-			$potionAlert = true;
 
 		if (isset($params['url']['search']))
 			if ($params['url']['search'] == 'topics')
@@ -194,9 +187,6 @@ class Play
 
 		if ($tsumegoStatus == 'G')
 			$goldenTsumego = true;
-
-		if (Auth::isLoggedIn() && Auth::getUser()['potion'] >= 15)
-			AppController::setPotionCondition();
 
 		Util::setCookie('previousTsumegoID', $id);
 
@@ -415,12 +405,9 @@ class Play
 		($this->setFunction)('activate', $activate);
 		($this->setFunction)('tsumegoElo', $t['Tsumego']['rating']);
 		($this->setFunction)('trs', $trs);
-		($this->setFunction)('potion', $potion);
-		($this->setFunction)('potionSuccess', $potionSuccess);
 		($this->setFunction)('reviewCheat', $reviewCheat);
 		($this->setFunction)('part', $t['Tsumego']['part']);
 		($this->setFunction)('checkBSize', $checkBSize);
-		($this->setFunction)('potionAlert', $potionAlert);
 		($this->setFunction)('file', $file);
 		($this->setFunction)('ui', $ui);
 		($this->setFunction)('requestProblem', $requestProblem);

@@ -146,7 +146,7 @@ class Achievement extends AppModel
 	// Sprint/Gold/Potion
 	public const int SPRINT = 96;       // sprint >= 30
 	public const int GOLD_DIGGER = 97;  // golden >= 10
-	public const int BAD_POTION = 98;   // potion >= 1
+	public const int BAD_POTION = 98;
 
 	// Favorites
 	public const int FAVORITES = 99;

@@ -12,8 +12,6 @@ App::uses('Progress', 'Utility');
 
 class PlayResultProcessorComponent extends Component
 {
-	public $components = ['Session'];
-
 	public function checkPreviousPlay($timeModeComponent): void
 	{
 		$this->checkAddFavorite();
@@ -57,6 +55,42 @@ class PlayResultProcessorComponent extends Component
 		$this->updateTsumegoAttempt($previousTsumego, $result, $previousStatusValue);
 		$this->processErrorAchievement($result, $previousStatusValue);
 		$this->processUnsortedStuff($previousTsumego, $result);
+	}
+
+	/**
+	 * Potion: if the previous problem was failed with no hearts and potion is
+	 * available, there is a progressive chance to heal based on how far damage
+	 * exceeds max health: chance% = (damage - maxHealth) * POTION_CHANCE_PER_DEATH.
+	 * If it does NOT trigger, increments the Bad Potion counter so
+	 * AchievementChecker can award BAD_POTION.
+	 *
+	 * Called after checkPreviousPlay() so previousTsumegoBuffer cookie is set.
+	 * Healing and counter MUST happen here (before achievements) not in Play.php.
+	 */
+	public function processPotion(): bool
+	{
+		if (!Auth::isLoggedIn())
+			return false;
+		if (!HeroPowers::canPotionTrigger())
+			return false;
+		if (!in_array($_COOKIE['previousTsumegoBuffer'] ?? '', ['F', 'X'], true))
+			return false;
+
+		$excessDeaths = Auth::getUser()['damage'] - Util::getHealthBasedOnLevel(Auth::getUser()['level']);
+		$chance = min($excessDeaths * HeroPowers::$POTION_CHANCE_PER_DEATH, 100);
+
+		if (rand(1, 100) <= $chance)
+		{
+			Auth::getUser()['damage'] = 0;
+			Auth::getUser()['used_potion'] = 1;
+			// Original also reset Rejuvenation here:
+			// Auth::getUser()['used_rejuvenation'] = 0;
+			Auth::saveUser();
+			return true;
+		}
+
+		AppController::updatePotionCondition();
+		return false;
 	}
 
 	public function checkPreviousPlayAndGetResult(&$previousTsumego): array

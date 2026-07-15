@@ -2,6 +2,7 @@
 
 App::uses('Achievement', 'Model');
 App::uses('AppController', 'Controller');
+App::uses('HeroPowers', 'Utility');
 App::uses('AchievementTestCase', 'TestCase/Achievement');
 App::uses('ContextPreparator', 'Test');
 
@@ -37,14 +38,25 @@ class SprintMiscAchievementTest extends AchievementTestCase
 	}
 
 	/**
-	 * Test Bad Potion achievement (ID 98): "Have the potion not triggered 15 times on the same day"
-	 * Actually checks potion >= 1 in code (not 15 as description says)
-	 * Requires achievement_condition with category='potion' and value >= 1
+	 * Test Bad Potion achievement checker (ID 98): "Have the potion not triggered
+	 * enough times on the same day." Requires achievement_condition with
+	 * category='potion' and value >= BAD_POTION_THRESHOLD.
+	 *
+	 * This tests only the AchievementChecker. The real trigger path
+	 * (updatePotionCondition incrementing the counter) is tested in
+	 * PlayResultProcessorComponentTest::testPotionConditionIncrementsOnPreviousFail.
 	 */
-	public function testBadPotionAchievement()
+	public function testBadPotionAchievementChecker(): void
 	{
-		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => 1]]]);
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD]]]);
 		new AchievementChecker()->checkDanSolveAchievements();
-		$this->assertAchievementUnlocked(Achievement::BAD_POTION, 'Bad Potion achievement should unlock when potion condition >= 1');
+		$this->assertAchievementUnlocked(Achievement::BAD_POTION, 'Bad Potion checker should unlock when potion condition >= ' . HeroPowers::$BAD_POTION_THRESHOLD);
+	}
+
+	public function testBadPotionDoesNotUnlockBelow15(): void
+	{
+		$context = new ContextPreparator(['achievement-conditions' => [['category' => 'potion', 'value' => HeroPowers::$BAD_POTION_THRESHOLD - 1]]]);
+		new AchievementChecker()->checkDanSolveAchievements();
+		$this->assertAchievementNotUnlocked(Achievement::BAD_POTION);
 	}
 }
