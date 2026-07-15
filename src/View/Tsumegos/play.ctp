@@ -1619,6 +1619,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (success)
 		{
 			problemSolved = true;
+			if (window._playState) window._playState.clear();
 			tagConnectionsEdit.onProblemSolved();
 			if (typeof xpStatus !== "undefined" && xpStatus)
 				xpStatus.set('solved', true);
@@ -1918,6 +1919,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);
+
 	var showComment = function(commentText)
 		{
 			$("#theComment").css("display", commentText.length == 0 ? "none" : "block");
@@ -1925,6 +1927,34 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		};
 	besogo.editor.registerShowComment(showComment);
 	showComment(besogo.editor.getCurrent().comment || '');
+
+		// Persist misplays across page reloads — prevents escape-before-wrong exploit
+		var playState = new PlayStateManager(tsumegoID);
+		PlayStateManager.cleanupStale(tsumegoID);
+		window._playState = playState;
+
+		var restoredState = !problemSolved ? playState.restore() : null;
+		if (restoredState)
+		{
+			misplays = restoredState.misplays || 0;
+			seconds = restoredState.seconds || 0;
+			besogoRotation = restoredState.rotation || -1;
+			besogoPlayerColor = restoredState.playerColor || 'black';
+			redrawHearts();
+		}
+
+		// Save state on every move, clear on solve
+		besogo.editor.registerPlayListener(function(msg) {
+			if (msg.result === 'S')
+				playState.clear();
+			else
+				playState.save(misplays, seconds, besogoRotation, besogoPlayerColor);
+		});
+
+		window.addEventListener('beforeunload', function() {
+			if (!problemSolved && misplays > 0)
+				playState.save(misplays, seconds, besogoRotation, besogoPlayerColor);
+		});
 
 		function addStyleLink(cssURL)
 		{

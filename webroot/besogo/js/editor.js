@@ -41,7 +41,8 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     commentParamList = [],
     displayResult = null,
     showComment = null,
-    addTimeForMovePlayed = null;
+    addTimeForMovePlayed = null,
+    playListeners = [];
 
   return {
     addListener: addListener,
@@ -87,6 +88,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     setSoundEnabled: setSoundEnabled,
     registerDisplayResult: registerDisplayResult,
     registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
+    registerPlayListener: registerPlayListener,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
     displayHoverCoord: displayHoverCoord,
@@ -486,6 +488,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
         );
     }
     displayResult(success ? "S" : "F");
+    notifyPlayListeners({ result: success ? "S" : "F" });
   }
 
   function navigateToNode(node, byClicking = false) {
@@ -503,6 +506,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		performingAutoPlay = true;
 		if (addTimeForMovePlayed)
 			addTimeForMovePlayed();
+		notifyPlayListeners({ move: true });
       setTimeout(function ()
       {
         // when autoplay was cancelled, it was reset in the meantime, so we forget about this
@@ -795,6 +799,17 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 		addTimeForMovePlayed = value;
 	}
 
+  function registerPlayListener(listener)
+  {
+    playListeners.push(listener);
+  }
+
+  function notifyPlayListeners(msg)
+  {
+    for (var i = 0; i < playListeners.length; i++)
+      playListeners[i](msg);
+  }
+
   function addToRequired(node, cameFrom) {
     if (node.localEdit)
       return;
@@ -813,6 +828,7 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
 			return false;
 		performingAutoPlay = true;
 		addTimeForMovePlayed(1.5);
+		notifyPlayListeners({ move: true });
 
 		setTimeout(function ()
 		{

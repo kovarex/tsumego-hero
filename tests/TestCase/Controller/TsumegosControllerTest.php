@@ -423,4 +423,111 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$xpDisplayDiv = $browser->driver->findElement(WebDriverBy::id('xpDisplayDiv'));
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
+
+	public function testPlayStateRestoresMisplaysFromLocalStorage()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => ['set_order' => 1, 'status' => 'V']]);
+		$browser = Browser::instance();
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$browser->get('/' . $setConnectionId);
+
+		// Initially, misplays should be 0 and hearts should be full
+		$this->assertSame(0, $browser->driver->executeScript('return misplays;'));
+		$heart0Before = $browser->driver->findElement(WebDriverBy::id('heart0'));
+		$this->assertStringContainsString('heart1', $heart0Before->getAttribute('src'), 'initial heart should be full');
+
+		// Simulate navigating away with many misplays — inject saved state into localStorage
+		$browser->driver->executeScript("
+			localStorage.setItem('tsumegoState_$tsumegoId', JSON.stringify({
+				tsumegoId: $tsumegoId,
+				misplays: 999,
+				seconds: 45,
+				rotation: -1,
+				playerColor: 'black',
+				timestamp: Date.now()
+			}));
+		");
+
+		// Reload the page — state should be restored
+		$browser->driver->navigate()->refresh();
+		$browser->waitUntilCssSelectorExists('#target svg', 10);
+
+		// misplays should be restored from localStorage
+		$restoredMisplays = $browser->driver->executeScript('return misplays;');
+		$this->assertSame(999, $restoredMisplays, 'misplays should be restored from localStorage after reload');
+
+		// All hearts should be empty
+		$heart0 = $browser->driver->findElement(WebDriverBy::id('heart0'));
+		$this->assertStringContainsString('heart2', $heart0->getAttribute('src'), 'hearts should be empty after restoring many misplays');
+	}
+
+	public function testPlayStateClearedOnSolve()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'V',
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])']]);
+		$browser = Browser::instance();
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		$browser->get('/' . $setConnectionId);
+
+		// Inject state with misplays, then simulate a solve
+		$browser->driver->executeScript("
+			localStorage.setItem('tsumegoState_$tsumegoId', JSON.stringify({
+				tsumegoId: $tsumegoId,
+				misplays: 1,
+				seconds: 20,
+				rotation: -1,
+				playerColor: 'black',
+				timestamp: Date.now()
+			}));
+			// Simulate solving the problem — this should clear the state
+			displayResult('S');
+		");
+
+		// localStorage should be cleared after solve
+		$stateAfterSolve = $browser->driver->executeScript("return localStorage.getItem('tsumegoState_$tsumegoId');");
+		$this->assertNull($stateAfterSolve, 'localStorage state should be cleared after solving');
+	}
+
+	public function testPlayStateNotRestoredForAlreadySolvedProblem()
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'status' => 'S',
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])']]);
+		$browser = Browser::instance();
+		$tsumegoId = $context->tsumegos[0]['id'];
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+
+		// Inject a saved state as if the user had misplays before
+		$browser->get('/empty.php');
+		$browser->driver->executeScript("
+			localStorage.setItem('tsumegoState_$tsumegoId', JSON.stringify({
+				tsumegoId: $tsumegoId,
+				misplays: 3,
+				seconds: 60,
+				rotation: -1,
+				playerColor: 'black',
+				timestamp: Date.now()
+			}));
+		");
+
+		// Navigate to the already-solved problem
+		$browser->get('/' . $setConnectionId);
+
+		// misplays should NOT be restored since the problem is already solved
+		$restoredMisplays = $browser->driver->executeScript('return misplays;');
+		$this->assertSame(0, $restoredMisplays, 'misplays should not be restored for already-solved problem');
+	}
 }

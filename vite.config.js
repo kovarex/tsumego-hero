@@ -18,6 +18,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/dark.js',
 	'webroot/js/previewBoard.js',
 	'webroot/js/TagConnectionsEdit.js',
+	'webroot/js/PlayStateManager.js',
 	'webroot/FileSaver.min.js',
 	'webroot/js/multipleChoice.js',
 	'webroot/js/multipleChoiceCustom.js',
