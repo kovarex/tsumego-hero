@@ -1,5 +1,7 @@
 <?php
 
+App::uses('AdminActivityType', 'Model');
+
 class SgfControllerUploadTest extends TestCaseWithAuth
 {
 	public function testUploadSgfViaBesogoEditor()
@@ -49,6 +51,18 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals(1, $sgfs[0]['Sgf']['accepted'], 'Admin uploads should be auto-accepted');
 		$this->assertSame('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertSame('cd', $sgfs[0]['Sgf']['correct_moves']);
+
+		// Verify admin activity was logged
+		$activity = ClassRegistry::init('AdminActivity')->find('first', [
+			'conditions' => [
+				'type' => AdminActivityType::SGF_EDIT,
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => Auth::getUserID(),
+			],
+			'order' => 'id DESC',
+		]);
+		$this->assertNotFalse($activity, 'Admin activity should be logged after besogo SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
 	}
 
 	public function testUploadSgfViaFileUpload()
@@ -82,5 +96,17 @@ class SgfControllerUploadTest extends TestCaseWithAuth
 		$this->assertEquals($newSgfContent, $sgfs[0]['Sgf']['sgf']);
 		$this->assertEquals('B', $sgfs[0]['Sgf']['first_move_color']);
 		$this->assertEquals('cd', $sgfs[0]['Sgf']['correct_moves']);
+
+		// Verify admin activity was logged
+		$activity = ClassRegistry::init('AdminActivity')->find('first', [
+			'conditions' => [
+				'type' => AdminActivityType::SGF_EDIT,
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'user_id' => Auth::getUserID(),
+			],
+			'order' => 'id DESC',
+		]);
+		$this->assertNotFalse($activity, 'Admin activity should be logged after file SGF upload');
+		$this->assertEquals($context->tsumegos[0]['set-connections'][0]['set_id'], $activity['AdminActivity']['set_id']);
 	}
 }
