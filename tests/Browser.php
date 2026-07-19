@@ -52,6 +52,15 @@ class Browser
 			$firefoxOptions->setPreference('security.ssl.errorReporting.enabled', false);
 			$firefoxOptions->setPreference('security.remote_settings.crlite_filters.enabled', false);
 			$firefoxOptions->setPreference('security.OCSP.require', false);
+			// Stability: disable features that cause issues in headless Docker
+			$firefoxOptions->setPreference('dom.disable_beforeunload', true);
+			$firefoxOptions->setPreference('dom.ipc.reportProcessHangs', false);
+			$firefoxOptions->setPreference('browser.safebrowsing.enabled', false);
+			$firefoxOptions->setPreference('browser.safebrowsing.malware.enabled', false);
+			$firefoxOptions->setPreference('datareporting.healthreport.uploadEnabled', false);
+			$firefoxOptions->setPreference('app.normandy.enabled', false);
+			$firefoxOptions->setPreference('app.shield.optoutstudies.enabled', false);
+			$firefoxOptions->setPreference('extensions.getAddons.cache.enabled', false);
 
 			$desiredCapabilities = DesiredCapabilities::firefox();
 			$desiredCapabilities->setCapability('acceptInsecureCerts', true);
@@ -60,7 +69,45 @@ class Browser
 
 		try
 		{
-			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities, 10000, 30000);
+			// Wait for Selenium to be ready before attempting session creation.
+			// Docker Selenium containers can reject /session requests for a few
+			// seconds after startup or after a previous session ends.
+			$statusUrl = rtrim($serverUrl, '/') . '/status';
+			for ($i = 0; $i < 10; $i++)
+			{
+				$ch = curl_init($statusUrl);
+				curl_setopt_array($ch, [
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_TIMEOUT => 2,
+					CURLOPT_CONNECTTIMEOUT => 2,
+				]);
+				$response = curl_exec($ch);
+				curl_close($ch);
+				if ($response !== false)
+				{
+					$data = json_decode($response, true);
+					if (!empty($data['value']['ready']))
+						break;
+				}
+				if ($i === 9)
+					throw new \Exception("Selenium not ready after 10 attempts at $statusUrl");
+				sleep(2);
+			}
+
+			// Retry: Docker Selenium can be slow to create sessions
+			for ($i = 0; $i < 3; $i++)
+			{
+				try
+				{
+					$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities, 30000, 60000);
+					break;
+				}
+				catch (\Exception $e)
+				{
+					if ($i === 2) throw $e;
+					sleep(2);
+				}
+			}
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
@@ -152,10 +199,24 @@ class Browser
 				$this->driver->manage()->addCookie(['name' => "disable-achievements", 'value' => "true"]);
 		}
 
-		// Strip leading slash from $url to avoid double slashes when concatenating
 		$url = ltrim($url, '/');
 		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
-		$this->driver->get(Util::getMyAddress() . '/' . $url);
+
+		// Retry once on timeout — refreshes session if Selenium is slow
+		for ($i = 0; $i < 2; $i++)
+		{
+			try
+			{
+				$this->driver->get(Util::getMyAddress() . '/' . $url);
+				break;
+			}
+			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+			{
+				if ($i === 1) throw $e;
+				self::shutdown();
+				self::$browser = new Browser();
+			}
+		}
 		$this->assertNoErrors();
 	}
 
@@ -164,7 +225,20 @@ class Browser
 	{
 		$url = ltrim($url, '/');
 		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
-		$this->driver->get(Util::getMyAddress() . '/' . $url);
+		for ($i = 0; $i < 2; $i++)
+		{
+			try
+			{
+				$this->driver->get(Util::getMyAddress() . '/' . $url);
+				break;
+			}
+			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
+			{
+				if ($i === 1) throw $e;
+				self::shutdown();
+				self::$browser = new Browser();
+			}
+		}
 		$this->assertNoErrors();
 	}
 
@@ -217,7 +291,7 @@ class Browser
 		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
 	}
 
-	public function waitUntilCssSelectorExists(string $selector, int $timeout = 5): void
+	public function waitUntilCssSelectorExists(string $selector, int $timeout = 10): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selector) {
@@ -227,7 +301,7 @@ class Browser
 		);
 	}
 
-	public function waitUntilCssSelectorExistsWithText(string $selector, $text, int $timeout = 5): void
+	public function waitUntilCssSelectorExistsWithText(string $selector, $text, int $timeout = 10): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selector, $text) {
@@ -237,7 +311,7 @@ class Browser
 		);
 	}
 
-	public function waitUntilCssSelectorDisplayed(string $selector, int $timeout = 5): void
+	public function waitUntilCssSelectorDisplayed(string $selector, int $timeout = 10): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selector) {
@@ -247,7 +321,7 @@ class Browser
 		);
 	}
 
-	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 5): void
+	public function waitUntilCssSelectorDoesntExist(string $selector, int $timeout = 10): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selector) {
@@ -264,7 +338,7 @@ class Browser
 	 * @param string[] $selectors CSS selectors to wait for (at least one must exist)
 	 * @param int $timeout Timeout in seconds
 	 */
-	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 5): void
+	public function waitUntilAnyCssSelectorExists(array $selectors, int $timeout = 10): void
 	{
 		new WebDriverWait($this->driver, $timeout, 500)->until(
 			function () use ($selectors) {
@@ -372,24 +446,29 @@ class Browser
 		return false;
 	}
 
-	public static function instance()
+	private static function recover(): void
 	{
-		if (self::$browser == null)
-			self::$browser = new Browser();
-
-		// Recover from crashed/disconnected browser session
+		if (!self::$browser)
+			return;
 		try
 		{
 			self::$browser->driver->getCurrentURL();
 		}
 		catch (\Facebook\WebDriver\Exception\InvalidSessionIdException $e)
 		{
-			self::$browser = new Browser();
+			self::$browser = null;
 		}
 		catch (\Facebook\WebDriver\Exception\Internal\WebDriverCurlException $e)
 		{
-			self::$browser = new Browser();
+			self::$browser = null;
 		}
+	}
+
+	public static function instance()
+	{
+		self::recover();
+		if (self::$browser == null)
+			self::$browser = new Browser();
 
 		// Dismiss any lingering alerts from previous tests
 		try
@@ -556,7 +635,7 @@ class Browser
 	 * @param int $timeout Maximum wait time in seconds (default 5)
 	 * @return bool True if title contains expected text
 	 */
-	public function titleContains(string $expectedTitle, int $timeout = 5): bool
+	public function titleContains(string $expectedTitle, int $timeout = 10): bool
 	{
 		return $this->waitUntil(function ($driver) use ($expectedTitle) {
 			return str_contains($driver->getTitle(), $expectedTitle);
@@ -569,7 +648,7 @@ class Browser
 	 * @param int $timeout Maximum wait time in seconds (default 5)
 	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
 	 */
-	public function byId(string $id, int $timeout = 5)
+	public function byId(string $id, int $timeout = 10)
 	{
 		return $this->waitUntil(function ($driver) use ($id) {
 			return $driver->findElement(WebDriverBy::id($id));
@@ -582,7 +661,7 @@ class Browser
 	 * @param int $timeout Maximum wait time in seconds (default 5)
 	 * @return \Facebook\WebDriver\Remote\RemoteWebElement
 	 */
-	public function byCssSelector(string $selector, int $timeout = 5)
+	public function byCssSelector(string $selector, int $timeout = 10)
 	{
 		return $this->waitUntil(function ($driver) use ($selector) {
 			return $driver->findElement(WebDriverBy::cssSelector($selector));
@@ -595,7 +674,7 @@ class Browser
 	 * @param int $timeout Maximum wait time in seconds
 	 * @return mixed The result of the condition function
 	 */
-	private function waitUntil(callable $condition, int $timeout = 5)
+	private function waitUntil(callable $condition, int $timeout = 10)
 	{
 		$wait = new WebDriverWait($this->driver, $timeout, 500);
 		return $wait->until(function ($driver) use ($condition) {

@@ -6,41 +6,22 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
-		// Disable FK checks via raw PDO to avoid CakePHP query()/execute() pipeline flakiness
+		// Delete all test data via raw PDO so FK check disable is guaranteed on the same connection
 		/** @var DboSource $db */
 		$db = ClassRegistry::init('User')->getDataSource();
-		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 0');
-
-		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1'], false);      // FK to: user, tag
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1'], false);                // FK to: user
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1'], false);           // FK to: user, tsumego
-		ClassRegistry::init('Schedule')->deleteAll(['1 = 1'], false);           // FK to: Tsumego, Set
-		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1'], false);   // FK to: User, Set
-		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1'], false);          // FK to: User
-		ClassRegistry::init('Sgf')->deleteAll(['1 = 1'], false);                // FK to: User, Tsumego
-		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1'], false);    // FK to: TimeModeSession
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1'], false);    // FK to: User, TimeModeRank
-		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1'], false);     // FK to: User
-		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1'], false);       // FK to: User
-		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego, Set
-		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1'], false);  // FK to: User, Set
-		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1'], false);  // FK to: User, Achievement
-		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1'], false);      // FK to: Tsumego, Set
-		ClassRegistry::init('TsumegoAttempt')->deleteAll(['1 = 1'], false);     // FK to: User, Tsumego
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego
-		ClassRegistry::init('UserContribution')->deleteAll(['1 = 1'], false);   // Parent table
-		ClassRegistry::init('Signature')->deleteAll(['1 = 1'], false);          // Parent table
-		ClassRegistry::init('TsumegoVariant')->deleteAll(['1 = 1'], false);     // Parent table
-		ClassRegistry::init('Reject')->deleteAll(['1 = 1'], false);             // Parent table
-		ClassRegistry::init('PublishDate')->deleteAll(['1 = 1'], false);        // Parent table
-		ClassRegistry::init('User')->deleteAll(['1 = 1'], false);               // Parent table
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1'], false);       // Parent table
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1'], false);            // Parent table
-		ClassRegistry::init('Set')->deleteAll(['1 = 1'], false);                // Parent table
-
-		/** @var DboSource $db */
-		$db = ClassRegistry::init('User')->getDataSource();
-		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 1');
+		$pdo = $db->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		foreach ([
+			'tag_connection', 'tag', 'favorite', 'schedule', 'progress_deletion',
+			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity',
+			'achievement_condition', 'achievement_status', 'set_connection',
+			'tsumego_attempt', 'tsumego_status', 'user_contribution', 'signature',
+			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
+			'tsumego', 'set',
+		] as $table)
+			$pdo->exec("DELETE FROM `$table`");
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
