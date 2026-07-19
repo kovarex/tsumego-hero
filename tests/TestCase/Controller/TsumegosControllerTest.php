@@ -252,9 +252,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 			// check that rating on account widget was immediatelly updated
 			$expectedRatingChange = ($testCase == '') ? Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER) : 0;
-			$browser->driver->executeScript("window.scrollTo(0, 0);");
-			$browser->hover($browser->find('#account-bar-xp'));
-			$this->assertSame(strval(round(1000 + $expectedRatingChange)), $browser->find('#account-bar-xp')->getText());
+			$expectedRating = round(1000 + $expectedRatingChange);
+			$displayedRating = $browser->driver->executeScript('return window.accountWidget ? accountWidget.rating : null;');
+			$this->assertEquals($expectedRating, round($displayedRating));
 
 			// changes are applied after refresh
 			$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
