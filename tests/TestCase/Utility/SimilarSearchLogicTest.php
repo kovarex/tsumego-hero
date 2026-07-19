@@ -1,7 +1,15 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class SimilarSearchLogicTest extends CakeTestCase
 {
+	use RetryTrait;
+
 	public function testSimilarSearchSameProblem()
 	{
 		$browser = Browser::instance();

@@ -1,15 +1,20 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
 /**
  * Tests the Start button on set view pages.
  *
  * This test verifies that clicking the Start button on /sets/view/{setId}
  * navigates to the FIRST UNSOLVED puzzle in the set (not just the first puzzle).
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class SetsViewStartButtonTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testStartButtonNavigatesToFirstUnsolvedPuzzle(): void
 	{
 		// when $statusToPick is 'W' (solved once more than a week ago)

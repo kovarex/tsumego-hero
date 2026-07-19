@@ -114,8 +114,6 @@ class ContextPreparator
 			throw new Exception("Failed to save user: " . print_r($Model->validationErrors, true));
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
 
-		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
-
 		if (isset($userInput['query'])
 			|| isset($userInput['filtered_sets'])
 			|| isset($userInput['filtered_topics'])
@@ -383,7 +381,6 @@ class ContextPreparator
 	{
 		if (!$setsInput)
 			return;
-		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		$this->tsumegoSets = [];
 		foreach ($setsInput as $tsumegoSet)
 			$this->prepareTsumegoSet($tsumegoSet, $tsumego);
@@ -417,7 +414,6 @@ class ContextPreparator
 		if (!$tagsInput)
 			return;
 
-		ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		foreach ($tagsInput as $tagInput)
 		{
 			$tag = $this->getOrCreateTag([
@@ -509,9 +505,12 @@ class ContextPreparator
 
 	private function checkSetClear(int $setID): void
 	{
-		if ($this->setsCleared[$setID])
+		if (isset($this->setsCleared[$setID]))
 			return;
-		ClassRegistry::init('SetConnection')->deleteAll(['set_id' => $setID]);
+		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		$pdo->exec("DELETE FROM `set_connection` WHERE `set_id` = " . intval($setID));
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 		$this->setsCleared[$setID] = true;
 	}
 
@@ -584,8 +583,6 @@ class ContextPreparator
 		if (!$timeModeSessions)
 			return;
 
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
-
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
 			$timeModeSession = [];
@@ -601,9 +598,9 @@ class ContextPreparator
 			$timeModeSessionModel->save($timeModeSession);
 			$newSessionId = $timeModeSessionModel->id;
 			$savedSession = $timeModeSessionModel->data['TimeModeSession'];
-			$savedSession['id'] = $newSessionId; // Ensure ID is present
+			$savedSession['id'] = $newSessionId;
 			$this->timeModeSessions [] = $savedSession;
-			foreach ($timeModeSessionInput['attempts'] as $attemptInput)
+			foreach (($timeModeSessionInput['attempts'] ?? []) as $attemptInput)
 				$this->prepareTimeModeAttempts($attemptInput, $newSessionId);
 		}
 	}
@@ -767,8 +764,11 @@ class ContextPreparator
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 
-		// Clear existing entries and repopulate with correct IDs
-		$adminActivityType->deleteAll(['1 = 1']);
+		// Clear and repopulate with correct IDs (this table is not in the constructor wipe)
+		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		$pdo->exec('DELETE FROM `admin_activity_type`');
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		foreach ($types as $id => $name)
 		{

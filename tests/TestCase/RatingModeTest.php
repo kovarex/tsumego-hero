@@ -2,9 +2,15 @@
 
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use PHPUnit\Framework\Constraint\ExceptionMessage;
+use PHPUnitRetry\RetryTrait;
 
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class RatingModeTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testRatingMode()
 	{
 		$context = new ContextPreparator([

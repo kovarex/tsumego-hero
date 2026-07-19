@@ -1,7 +1,14 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class TsumegoMergeTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testMergeTwoTsumegos()
 	{
 		foreach (['notAdmin', 'masterNotSpecified', 'slaveNotSpecified', 'slaveAndMasterAlreadyMarged', 'merge', 'mergeWithDoubleFavorite', 'masterWithoutStatus'] as $testCase)

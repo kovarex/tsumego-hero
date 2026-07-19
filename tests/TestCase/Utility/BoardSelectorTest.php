@@ -1,7 +1,15 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class BoardSelectorTest extends CakeTestCase
 {
+	use RetryTrait;
+
 	public function testChangeSelection()
 	{
 		$browser = Browser::instance();

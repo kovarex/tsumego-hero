@@ -1,5 +1,7 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
 App::uses('ControllerTestCase', 'TestSuite');
 App::uses('Browser', 'TestSuite');
 App::uses('ContextPreparator', 'TestSuite');
@@ -7,10 +9,14 @@ App::uses('ContextPreparator', 'TestSuite');
 /**
  * Tests for SetsController admin functions (create set/tsumego)
  *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ *
  * @group browser
  */
 class SetsControllerAdminTest extends ControllerTestCase
 {
+	use RetryTrait;
 	/**
 	 * Test SetsController::create() - creating new set with first tsumego
 	 */

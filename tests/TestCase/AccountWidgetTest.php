@@ -1,7 +1,14 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class AccountWidgetTest extends ControllerTestCase
 {
+	use RetryTrait;
 	// by default we show level
 	public function testShowLevelInAccountWidget()
 	{

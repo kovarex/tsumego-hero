@@ -1,8 +1,17 @@
 <?php
 
-// Base class for all achievement tests
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * Base class for all achievement tests.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 abstract class AchievementTestCase extends ControllerTestCase
 {
+	use RetryTrait;
+
 	protected function assertAchievementUnlockedWhen($when, $achievementId, $message = null)
 	{
 		if ($when)

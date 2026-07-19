@@ -1,6 +1,7 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
@@ -13,9 +14,13 @@ App::uses('AdminActivityType', 'Model');
  * - Tests filtering out non-admin SGF uploads
  * - Tests pagination with multiple sections (activity, proposals, tags, tagnames)
  * - Tests all 18 activity types display correctly with formatted messages
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class AdminStatsControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
 	/**
 	 * Test adminstats page displays in browser
 	 */

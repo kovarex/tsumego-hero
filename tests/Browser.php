@@ -72,6 +72,9 @@ class Browser
 			// Wait for Selenium to be ready before attempting session creation.
 			// Docker Selenium containers can reject /session requests for a few
 			// seconds after startup or after a previous session ends.
+			//
+			// Throws \Exception (not WebDriverException): after 20s of waiting
+			// Selenium is genuinely down, retrying tests would be pointless.
 			$statusUrl = rtrim($serverUrl, '/') . '/status';
 			for ($i = 0; $i < 10; $i++)
 			{
@@ -94,20 +97,7 @@ class Browser
 				sleep(2);
 			}
 
-			// Retry: Docker Selenium can be slow to create sessions
-			for ($i = 0; $i < 3; $i++)
-			{
-				try
-				{
-					$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities, 30000, 60000);
-					break;
-				}
-				catch (\Exception $e)
-				{
-					if ($i === 2) throw $e;
-					sleep(2);
-				}
-			}
+			$this->driver = RemoteWebDriver::create($serverUrl, $desiredCapabilities, 30000, 60000);
 
 			$this->driver->manage()->timeouts()->pageLoadTimeout(30);
 
@@ -201,22 +191,7 @@ class Browser
 
 		$url = ltrim($url, '/');
 		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
-
-		// Retry once on timeout — refreshes session if Selenium is slow
-		for ($i = 0; $i < 2; $i++)
-		{
-			try
-			{
-				$this->driver->get(Util::getMyAddress() . '/' . $url);
-				break;
-			}
-			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
-			{
-				if ($i === 1) throw $e;
-				self::shutdown();
-				self::$browser = new Browser();
-			}
-		}
+		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}
 
@@ -225,20 +200,7 @@ class Browser
 	{
 		$url = ltrim($url, '/');
 		$this->driver->manage()->timeouts()->pageLoadTimeout(60);
-		for ($i = 0; $i < 2; $i++)
-		{
-			try
-			{
-				$this->driver->get(Util::getMyAddress() . '/' . $url);
-				break;
-			}
-			catch (\Facebook\WebDriver\Exception\TimeoutException $e)
-			{
-				if ($i === 1) throw $e;
-				self::shutdown();
-				self::$browser = new Browser();
-			}
-		}
+		$this->driver->get(Util::getMyAddress() . '/' . $url);
 		$this->assertNoErrors();
 	}
 

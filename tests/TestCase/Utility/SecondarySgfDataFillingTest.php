@@ -1,7 +1,15 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class SecondarySgfDataFillingTest extends CakeTestCase
 {
+	use RetryTrait;
+
 	public function testFillFirstAndCorrectMoves()
 	{
 		$browser = Browser::instance();

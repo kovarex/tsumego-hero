@@ -4,14 +4,19 @@ App::uses('Browser', '.');
 App::uses('CookieFlash', 'Utility');
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
 /**
  * Browser tests for CookieFlash functionality.
  *
  * Tests that flash messages render correctly in the browser and auto-clear.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class CookieFlashBrowserTest extends CakeTestCase
 {
+	use RetryTrait;
 	/**
 	 * Test that flash message appears after failed login attempt
 	 */

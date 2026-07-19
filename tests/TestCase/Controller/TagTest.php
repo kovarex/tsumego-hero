@@ -1,7 +1,15 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
+
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class TagTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testAddTagConnection()
 	{
 		foreach ([false, true] as $isAdmin)
