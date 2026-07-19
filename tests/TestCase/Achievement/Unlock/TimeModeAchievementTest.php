@@ -87,16 +87,19 @@ class TimeModeAchievementTest extends AchievementTestCase
 		{
 			// Test Slow mode
 			$context = new ContextPreparator([
+				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => TimeModeUtil::$CATEGORY_SLOW_SPEED,
 					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
-					'rank' => $rank]]]);
+					'rank' => $rank,
+					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
 			$this->assertAchievementUnlocked($achievementIds[$index], "Slow $rank achievement");
 
 			// Test Fast mode
 			$context = new ContextPreparator([
+				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => TimeModeUtil::$CATEGORY_FAST_SPEED,
@@ -108,11 +111,13 @@ class TimeModeAchievementTest extends AchievementTestCase
 
 			// Test Blitz mode
 			$context = new ContextPreparator([
+				'tsumego' => 1,
 				'time-mode-ranks' => [$rank],
 				'time-mode-sessions' => [[
 					'category' => TimeModeUtil::$CATEGORY_BLITZ,
 					'status' => TimeModeUtil::$SESSION_STATUS_SOLVED,
-					'rank' => $rank]]]);
+					'rank' => $rank,
+					'attempts' => []]]]);
 			new AchievementChecker()->checkTimeModeAchievements();
 			$this->assertAchievementUnlocked(Achievement::TIME_MODE_APPRENTICE_BLITZ + $index, "Blitz $rank achievement");
 		}

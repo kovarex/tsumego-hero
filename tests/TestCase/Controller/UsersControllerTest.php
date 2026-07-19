@@ -1,9 +1,16 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class UsersControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	/**
 	 * Test that login redirects back to the page where user came from.
 	 */

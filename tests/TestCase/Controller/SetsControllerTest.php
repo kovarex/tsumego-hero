@@ -181,6 +181,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	private function checkPlayTitle($browser, string $title)
 	{
+		$browser->waitUntilCssSelectorExists('#playTitle');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('#playTitle'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertTextStartsWith($title, $collectionTopDivs[0]->getText());

@@ -6,41 +6,22 @@ class ContextPreparator
 {
 	public function __construct(?array $options = [])
 	{
-		// Disable FK checks via raw PDO to avoid CakePHP query()/execute() pipeline flakiness
+		// Delete all test data via raw PDO so FK check disable is guaranteed on the same connection
 		/** @var DboSource $db */
 		$db = ClassRegistry::init('User')->getDataSource();
-		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 0');
-
-		ClassRegistry::init('TagConnection')->deleteAll(['1 = 1'], false);      // FK to: user, tag
-		ClassRegistry::init('Tag')->deleteAll(['1 = 1'], false);                // FK to: user
-		ClassRegistry::init('Favorite')->deleteAll(['1 = 1'], false);           // FK to: user, tsumego
-		ClassRegistry::init('Schedule')->deleteAll(['1 = 1'], false);           // FK to: Tsumego, Set
-		ClassRegistry::init('ProgressDeletion')->deleteAll(['1 = 1'], false);   // FK to: User, Set
-		ClassRegistry::init('DayRecord')->deleteAll(['1 = 1'], false);          // FK to: User
-		ClassRegistry::init('Sgf')->deleteAll(['1 = 1'], false);                // FK to: User, Tsumego
-		ClassRegistry::init('TimeModeAttempt')->deleteAll(['1 = 1'], false);    // FK to: TimeModeSession
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1'], false);    // FK to: User, TimeModeRank
-		ClassRegistry::init('TsumegoComment')->deleteAll(['1 = 1'], false);     // FK to: User
-		ClassRegistry::init('TsumegoIssue')->deleteAll(['1 = 1'], false);       // FK to: User
-		ClassRegistry::init('AdminActivity')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego, Set
-		ClassRegistry::init('AchievementCondition')->deleteAll(['1 = 1'], false);  // FK to: User, Set
-		ClassRegistry::init('AchievementStatus')->deleteAll(['1 = 1'], false);  // FK to: User, Achievement
-		ClassRegistry::init('SetConnection')->deleteAll(['1 = 1'], false);      // FK to: Tsumego, Set
-		ClassRegistry::init('TsumegoAttempt')->deleteAll(['1 = 1'], false);     // FK to: User, Tsumego
-		ClassRegistry::init('TsumegoStatus')->deleteAll(['1 = 1'], false);      // FK to: User, Tsumego
-		ClassRegistry::init('UserContribution')->deleteAll(['1 = 1'], false);   // Parent table
-		ClassRegistry::init('Signature')->deleteAll(['1 = 1'], false);          // Parent table
-		ClassRegistry::init('TsumegoVariant')->deleteAll(['1 = 1'], false);     // Parent table
-		ClassRegistry::init('Reject')->deleteAll(['1 = 1'], false);             // Parent table
-		ClassRegistry::init('PublishDate')->deleteAll(['1 = 1'], false);        // Parent table
-		ClassRegistry::init('User')->deleteAll(['1 = 1'], false);               // Parent table
-		ClassRegistry::init('TimeModeRank')->deleteAll(['1 = 1'], false);       // Parent table
-		ClassRegistry::init('Tsumego')->deleteAll(['1 = 1'], false);            // Parent table
-		ClassRegistry::init('Set')->deleteAll(['1 = 1'], false);                // Parent table
-
-		/** @var DboSource $db */
-		$db = ClassRegistry::init('User')->getDataSource();
-		$db->getConnection()->exec('SET FOREIGN_KEY_CHECKS = 1');
+		$pdo = $db->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		foreach ([
+			'tag_connection', 'tag', 'favorite', 'schedule', 'progress_deletion',
+			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
+			'tsumego_comment', 'tsumego_issue', 'admin_activity',
+			'achievement_condition', 'achievement_status', 'set_connection',
+			'tsumego_attempt', 'tsumego_status', 'user_contribution', 'signature',
+			'tsumego_variant', 'reject', 'publish_date', 'user', 'time_mode_rank',
+			'tsumego', 'set',
+		] as $table)
+			$pdo->exec("DELETE FROM `$table`");
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		if (!array_key_exists('user', $options) && !array_key_exists('other-users', $options))
 			$this->prepareThisUser(['name' => 'kovarex']);
@@ -132,8 +113,6 @@ class ContextPreparator
 		if (!$saveResult)
 			throw new Exception("Failed to save user: " . print_r($Model->validationErrors, true));
 		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $user['name']]])['User'];
-
-		ClassRegistry::init('UserContribution')->deleteAll(['user_id' => $this->user['id']]);
 
 		if (isset($userInput['query'])
 			|| isset($userInput['filtered_sets'])
@@ -402,7 +381,6 @@ class ContextPreparator
 	{
 		if (!$setsInput)
 			return;
-		ClassRegistry::init('SetConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		$this->tsumegoSets = [];
 		foreach ($setsInput as $tsumegoSet)
 			$this->prepareTsumegoSet($tsumegoSet, $tsumego);
@@ -436,7 +414,6 @@ class ContextPreparator
 		if (!$tagsInput)
 			return;
 
-		ClassRegistry::init('TagConnection')->deleteAll(['tsumego_id' => $tsumego['id']]);
 		foreach ($tagsInput as $tagInput)
 		{
 			$tag = $this->getOrCreateTag([
@@ -528,9 +505,12 @@ class ContextPreparator
 
 	private function checkSetClear(int $setID): void
 	{
-		if ($this->setsCleared[$setID])
+		if (isset($this->setsCleared[$setID]))
 			return;
-		ClassRegistry::init('SetConnection')->deleteAll(['set_id' => $setID]);
+		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		$pdo->exec("DELETE FROM `set_connection` WHERE `set_id` = " . intval($setID));
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 		$this->setsCleared[$setID] = true;
 	}
 
@@ -603,8 +583,6 @@ class ContextPreparator
 		if (!$timeModeSessions)
 			return;
 
-		ClassRegistry::init('TimeModeSession')->deleteAll(['1 = 1']);
-
 		foreach ($timeModeSessions as $timeModeSessionInput)
 		{
 			$timeModeSession = [];
@@ -620,9 +598,9 @@ class ContextPreparator
 			$timeModeSessionModel->save($timeModeSession);
 			$newSessionId = $timeModeSessionModel->id;
 			$savedSession = $timeModeSessionModel->data['TimeModeSession'];
-			$savedSession['id'] = $newSessionId; // Ensure ID is present
+			$savedSession['id'] = $newSessionId;
 			$this->timeModeSessions [] = $savedSession;
-			foreach ($timeModeSessionInput['attempts'] as $attemptInput)
+			foreach (($timeModeSessionInput['attempts'] ?? []) as $attemptInput)
 				$this->prepareTimeModeAttempts($attemptInput, $newSessionId);
 		}
 	}
@@ -786,8 +764,11 @@ class ContextPreparator
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 
-		// Clear existing entries and repopulate with correct IDs
-		$adminActivityType->deleteAll(['1 = 1']);
+		// Clear and repopulate with correct IDs (this table is not in the constructor wipe)
+		$pdo = ClassRegistry::init('User')->getDataSource()->getConnection();
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+		$pdo->exec('DELETE FROM `admin_activity_type`');
+		$pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
 
 		foreach ($types as $id => $name)
 		{

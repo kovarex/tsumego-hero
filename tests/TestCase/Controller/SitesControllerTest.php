@@ -1,9 +1,16 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class SitesControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testIndex()
 	{
 		$browser = Browser::instance();

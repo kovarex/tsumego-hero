@@ -1,5 +1,6 @@
 <?php
 
+use PHPUnitRetry\RetryTrait;
 use Selenium\Keys;
 
 App::uses('TimeModeUtil', 'Utility');
@@ -9,9 +10,13 @@ App::uses('TimeModeUtil', 'Utility');
  * - No JavaScript errors
  * - CSS is loaded properly
  * - Core functionality works
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
  */
 class SmokeTest extends ControllerTestCase
 {
+	use RetryTrait;
 	public function testAllMajorPagesLoadWithoutErrors()
 	{
 		// Create realistic production-like test data

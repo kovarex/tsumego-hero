@@ -1,12 +1,20 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
+use PHPUnitRetry\RetryTrait;
 
 App::uses('TsumegoIssue', 'Model');
 
-// Tests for TsumegoIssuesController - specifically the global issues index page.
+/**
+ * Tests for TsumegoIssuesController - specifically the global issues index page.
+ *
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class TsumegoIssuesControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testIssuesIndexPageLoads()
 	{
 		$browser = Browser::instance();

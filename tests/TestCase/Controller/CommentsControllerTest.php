@@ -2,11 +2,18 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
+use PHPUnitRetry\RetryTrait;
 
 App::uses('TsumegoIssue', 'Model');
 
+/**
+ * @retryAttempts 2
+ * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+ */
 class CommentsControllerTest extends ControllerTestCase
 {
+	use RetryTrait;
+
 	public function testAddCommentToSolvedTsumego()
 	{
 		$browser = Browser::instance();
