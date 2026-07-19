@@ -43,6 +43,14 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
+	private function performSolveWithSeconds(ContextPreparator &$context, $page, float $seconds): void
+	{
+		$_COOKIE['mode'] = '1';
+		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
+		$_COOKIE['secondsCheck'] = $seconds * 100 * $context->tsumegos[0]['id'] * 79;
+		$this->performVisit($context, $page);
+	}
+
 	private function performSolveWithMisplays(ContextPreparator &$context, $page, int $misplays = 1): void
 	{
 		$_COOKIE['mode'] = '1';
@@ -640,6 +648,52 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			]);
 			$this->assertCount(0, $unsolvedAttempts,
 				"No unsolved attempt should be created for status '$status'");
+		}
+	}
+
+	public function testSecondsReflectSolveTime(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => ['set_order' => 1]]);
+			$this->performSolveWithSeconds($context, $page, 20.0);
+
+			$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+				'conditions' => [
+					'tsumego_id' => $context->tsumegos[0]['id'],
+					'user_id' => $context->user['id'],
+				],
+			]);
+			$this->assertCount(1, $attempts);
+			$this->assertEqualsWithDelta(20.0, (float) $attempts[0]['TsumegoAttempt']['seconds'], 0.01);
+		}
+	}
+
+	public function testSecondsReflectLatestSolveTime(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator([
+				'tsumego' => [
+					'attempt' => ['solved' => false, 'seconds' => 1000, 'misplays' => 0],
+					'set_order' => 1,
+				],
+			]);
+
+			$_COOKIE['mode'] = '1';
+			$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
+			$_COOKIE['secondsCheck'] = 5 * 100 * $context->tsumegos[0]['id'] * 79;
+
+			$this->performVisit($context, $page);
+
+			$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+				'conditions' => [
+					'tsumego_id' => $context->tsumegos[0]['id'],
+					'user_id' => $context->user['id'],
+				],
+			]);
+			$this->assertCount(1, $attempts);
+			$this->assertEqualsWithDelta(5.0, (float) $attempts[0]['TsumegoAttempt']['seconds'], 0.01);
 		}
 	}
 }
