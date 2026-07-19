@@ -7714,6 +7714,10 @@ ul ul {
   color: white !important;
 }
 
+[data-theme=dark] .besogo-tree-line {
+  stroke: #cccccc;
+}
+
 
 #darkButtonImage
 {
