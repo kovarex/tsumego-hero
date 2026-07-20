@@ -337,7 +337,7 @@ class TagsController extends AppController
 
 		$tagToApprove = $tagToApprove['Tag'];
 
-		if ($tagToApprove['Tag']['approved'] == 1)
+		if ($tagToApprove['approved'] == 1)
 		{
 			CookieFlash::set('Tag to approve was already approved', 'error');
 			return $this->redirect('/users/adminstats');
