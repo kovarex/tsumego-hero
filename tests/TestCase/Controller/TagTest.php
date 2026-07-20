@@ -681,26 +681,20 @@ class TagTest extends ControllerTestCase
 			'other-users' => [['name' => 'proposer', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]],
 			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'proposer', 'approved' => 0]]]]);
 
-		$proposerId = $context->otherUsers[0]['id'];
 		$tagConnectionId = $context->tsumegos[0]['tag-connections'][0]['id'];
 
+		$browser = Browser::instance();
+
 		// Before acceptance: proposer should NOT appear in the highscore
-		$before = Util::query("
-			SELECT count(*) AS tag_count
-			FROM tag_connection
-			WHERE approved = true AND user_id = $proposerId");
-		$this->assertSame(0, (int) $before[0]['tag_count'], 'Proposer should have 0 approved tags before acceptance');
+		$browser->get('/users/added_tags');
+		$this->assertStringNotContainsString('proposer', $browser->driver->getPageSource());
 
 		// Accept the tag connection
-		$browser = Browser::instance();
 		$browser->get('/users/acceptTagConnectionProposal/' . $tagConnectionId);
 
 		// After acceptance: proposer should appear in the highscore
-		$after = Util::query("
-			SELECT count(*) AS tag_count
-			FROM tag_connection
-			WHERE approved = true AND user_id = $proposerId");
-		$this->assertSame(1, (int) $after[0]['tag_count'], 'Proposer should have 1 approved tag after acceptance');
+		$browser->get('/users/added_tags');
+		$this->assertStringContainsString('proposer', $browser->driver->getPageSource());
 	}
 
 }
