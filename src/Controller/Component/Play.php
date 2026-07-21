@@ -8,6 +8,7 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('User', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 

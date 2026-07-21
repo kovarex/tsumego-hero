@@ -2,6 +2,7 @@
 
 App::uses('Constants', 'Utility');
 App::uses('JwtAuth', 'Utility');
+App::uses('User', 'Model');
 
 class Auth
 {
