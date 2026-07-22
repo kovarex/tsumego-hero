@@ -184,7 +184,8 @@ class Play
 		$ogTitle .= ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
 
 		$ogDescription = strip_tags($t['Tsumego']['description'] ?? '');
-		$ogDescription = str_ireplace('[b]', 'Black', $ogDescription);
+		// True-color convention: descriptions already match the actual board stones.
+		// The OG image also renders actual SGF colors (no board inversion), so no swap needed.
 		$author = $t['Tsumego']['author'] ?? '';
 		if ($author !== '' && $author !== 'Unknown')
 			$ogDescription .= ' - by ' . $author;

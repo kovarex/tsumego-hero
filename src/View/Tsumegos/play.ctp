@@ -88,8 +88,19 @@
 
 	if(isset($deleteProblem2))
 		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
-	$descriptionColor = $playerColor == 'black' ? 'Black ' : 'White ';
-	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
+	$swapColorWords = function (string $text): string
+	{
+		return preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			$text
+		);
+	};
+	$displayDescription = $t['Tsumego']['description'];
+	// True-color convention: descriptions already match the actual board stones.
+	// When the board is inverted ($swapColors), swap Black<->White to match what the player sees.
+	if ($swapColors)
+		$displayDescription = $swapColorWords($displayDescription);
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
@@ -143,14 +154,18 @@
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
+				<input type="hidden" name="color_swapped" value="<?php echo $shouldSwap ? '1' : '0'; ?>">
 				<table>
 					<tr>
-						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo h($t['Tsumego']['description']); ?>"></td>
+						<td><label for="description">Description:</label></td>
+						<td>
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
+							<br><small style="color: #888;">Black/White are swapped on save to match the stored convention</small>
+						</td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo h($t['Tsumego']['hint']); ?>"></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($t['Tsumego']['hint']); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
