@@ -151,6 +151,7 @@ echo ViteManifest::legacyScript('legacy');
 			$timeHighscoreA = '';
 			$achievementHighscoreA = '';
 			$dailyHighscoreA = '';
+			$tagHighscoreA = '';
 			$levelModeA = '';
 			$ratingModeA = '';
 			$timeModeA = '';
@@ -183,6 +184,7 @@ echo ViteManifest::legacyScript('legacy');
 			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
 			else if($_page == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
 			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
+			else if($_page == 'tagHighscore') $tagHighscoreA = 'style="color:#74d14c;"';
 			else if($_page == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
 
 			if(Auth::isLoggedIn()){
@@ -245,8 +247,9 @@ echo ViteManifest::legacyScript('legacy');
 						echo '<li><a id="tutorialLink" href="/users/highscore" '.$levelHighscoreA.'>Level Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/rating" '.$ratingHighscoreA.'>Rating Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/achievements" '.$achievementHighscoreA.'>Achievement Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$timeHighscoreA.'>Tag Highscore</a></li>';
+						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$tagHighscoreA.'>Tag Highscore</a></li>';
 						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
+						echo '<li><a id="tutorialLink" href="/users/time_mode" '.$timeHighscoreA.'>Time Mode Highscore</a></li>';
 						echo '</ul>';
 						if(Auth::isLoggedIn())
 							echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';

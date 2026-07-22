@@ -14,6 +14,12 @@ class Constants
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
 
+	// Highscore page identifiers (stored in user.lastHighscore)
+	public static int $HIGHSCORE_LEVEL = 1;
+	public static int $HIGHSCORE_RATING = 2;
+	public static int $HIGHSCORE_DAILY = 3;
+	public static int $HIGHSCORE_TIME_MODE = 4;
+
 	public static int $GOLDEN_TSUMEGO_XP_MULTIPLIER = 8;
 	public static int $GOLDEN_TSUMEGO_LOWER_RELATIVE_RATING_LIMIT = 0;
 	public static int $GOLDEN_TSUMEGO_UPPER_RELATIVE_RATING_LIMIT = 100;

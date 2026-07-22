@@ -84,7 +84,7 @@ class SmokeTest extends ControllerTestCase
 			['url' => "users/solveHistory/$userId", 'name' => 'Solve history', 'auth' => 'both'],
 			['url' => 'users/authors', 'name' => 'About/Authors', 'auth' => 'both'],
 			['url' => 'users/highscore', 'name' => 'Level highscore', 'auth' => 'both'],
-			// ['url' => 'users/highscore3', 'name' => 'Time highscore', 'auth' => 'logged-in'], // dead/broken code - query uses wrong column names
+			['url' => 'users/time_mode', 'name' => 'Time mode highscore', 'auth' => 'both'],
 			['url' => 'users/rating', 'name' => 'Rating highscore', 'auth' => 'both'],
 			['url' => 'users/achievements', 'name' => 'Achievement highscore', 'auth' => 'both'],
 			['url' => 'users/added_tags', 'name' => 'Tag highscore', 'auth' => 'both'],
