@@ -6,6 +6,8 @@ class HeroPowers
 	public static $INTUITION_MINIMUM_LEVEL = 30;
 	public static $REJUVENATION_MINIMUM_LEVEL = 40;
 	public static $POTION_MINIMUM_LEVEL = 50;
+	public static $POTION_CHANCE_PER_DEATH = 0.5;
+	public static $BAD_POTION_THRESHOLD = 15;
 	public static $REVELATION_MINIMUM_LEVEL = 80;
 	public static $REFINEMENT_MINIMUM_LEVEL = 100;
 
@@ -148,11 +150,11 @@ class HeroPowers
 		echo '<img id="sprint" title="Sprint: Double XP for 2 minutes." alt="Sprint"></a>';
 	}
 
-	public static function isPotionActive()
+	public static function canPotionTrigger()
 	{
 		if (!Auth::hasPremium() && Auth::getUser()['level'] < self::$POTION_MINIMUM_LEVEL)
 			return false;
-		if (!Auth::getUser()['used_potion'])
+		if (Auth::getUser()['used_potion'])
 			return false;
 		return Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']);
 	}
@@ -171,7 +173,7 @@ class HeroPowers
 
 	private static function renderPotion()
 	{
-		if (self::isPotionActive())
+		if (self::canPotionTrigger())
 			echo '<img id="potion" title="Potion (Passive): If you misplay and have no hearts left, you have a small chance to restore your health." src="/img/hp5.png">';
 	}
 }

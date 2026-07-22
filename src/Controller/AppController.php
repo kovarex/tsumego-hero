@@ -187,10 +187,9 @@ class AppController extends Controller
 		ClassRegistry::init('AchievementCondition')->save($goldenCondition);
 	}
 
-	public static function setPotionCondition(): void
+	public static function updatePotionCondition(): void
 	{
 		$potionCondition = ClassRegistry::init('AchievementCondition')->find('first', [
-			'order' => 'value DESC',
 			'conditions' => [
 				'user_id' => Auth::getUserID(),
 				'category' => 'potion',
@@ -199,11 +198,12 @@ class AppController extends Controller
 		if (!$potionCondition)
 		{
 			$potionCondition = [];
+			$potionCondition['AchievementCondition']['value'] = 0;
 			ClassRegistry::init('AchievementCondition')->create();
 		}
 		$potionCondition['AchievementCondition']['category'] = 'potion';
 		$potionCondition['AchievementCondition']['user_id'] = Auth::getUserID();
-		$potionCondition['AchievementCondition']['value'] = 1;
+		$potionCondition['AchievementCondition']['value']++;
 		ClassRegistry::init('AchievementCondition')->save($potionCondition);
 	}
 
@@ -492,6 +492,7 @@ class AppController extends Controller
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
 			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
+			$this->set('potionSuccess', $this->PlayResultProcessor->processPotion());
 			$achievementChecker = new AchievementChecker();
 			$achievementChecker->checkLevelAchievements();
 			$achievementChecker->checkProblemNumberAchievements();

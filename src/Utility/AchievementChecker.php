@@ -143,7 +143,7 @@ class AchievementChecker
 			$this->gained(Achievement::SPRINT);
 		if ($ac1['golden'] >= 10)
 			$this->gained(Achievement::GOLD_DIGGER);
-		if ($ac1['potion'] >= 1)
+		if ($ac1['potion'] >= HeroPowers::$BAD_POTION_THRESHOLD)
 			$this->gained(Achievement::BAD_POTION);
 	}
 

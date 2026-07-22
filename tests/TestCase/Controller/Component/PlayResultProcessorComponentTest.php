@@ -642,4 +642,78 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				"No unsolved attempt should be created for status '$status'");
 		}
 	}
+
+	/**
+	 * Verifies the Bad Potion counter integration: when a user has potion active
+	 * (used_potion=0, level >= 50, exactly at max health) and the previous
+	 * problem was failed, the achievement_condition.value counter for
+	 * category='potion' increments because chance = 0 x 0.5% = 0%.
+	 */
+	public function testPotionConditionIncrementsOnPreviousFail(): void
+	{
+		$maxHealth = Util::getHealthBasedOnLevel(50);
+		$context = new ContextPreparator([
+			'user' => [
+				'level' => 50,
+				'used_potion' => 0,
+				'damage' => $maxHealth,
+			],
+			'tsumego' => ['set_order' => 1]]);
+
+		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
+		Auth::init();
+
+		// Signal that the PREVIOUS problem was failed (status 'F')
+		$_COOKIE['previousTsumegoBuffer'] = 'F';
+		$_COOKIE['previousTsumegoID'] = '99999999';
+
+		// damage == maxHealth so excessDeaths == 0, chance == 0%, counter always increments
+
+		// Load a tsumego page -- Play.php reads the buffer and increments the condition
+		$this->testAction(self::getUrlFromPage('tsumego', $context));
+
+		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => [
+				'user_id' => $context->user['id'],
+				'category' => 'potion',
+			],
+		]);
+		$this->assertNotNull($condition, 'potion achievement_condition must be created');
+		$this->assertSame(1, (int) $condition['AchievementCondition']['value'],
+			'potion condition value must increment to 1 on first miss');
+	}
+
+	/**
+	 * Verifies the potion trigger path: when damage far exceeds max health,
+	 * the progressive chance reaches 100% and potion always heals.
+	 * Also verifies the banner renders in the view output.
+	 */
+	public function testPotionTriggersAndConsumesOnPreviousFail(): void
+	{
+		$maxHealth = Util::getHealthBasedOnLevel(50);
+		$context = new ContextPreparator([
+			'user' => [
+				'level' => 50,
+				'used_potion' => 0,
+				'damage' => $maxHealth + 200,
+			],
+			'tsumego' => ['set_order' => 1]]);
+
+		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
+		Auth::init();
+
+		$_COOKIE['previousTsumegoBuffer'] = 'F';
+		$_COOKIE['previousTsumegoID'] = '99999999';
+
+		// excessDeaths = 200, chance = min(200 × 0.5, 100) = 100%
+		$body = $this->testAction(self::getUrlFromPage('tsumego', $context), ['return' => 'contents']);
+
+		$user = $context->reloadUser();
+		$this->assertSame(1, (int) $user['used_potion'],
+			'used_potion must be set to 1 when potion triggers (consumed for the day)');
+		$this->assertSame(0, (int) $user['damage'],
+			'damage must be cleared to 0 when potion heals');
+
+		$this->assertStringContainsString('id="potionAlerts"', $body);
+	}
 }

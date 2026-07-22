@@ -18,6 +18,7 @@ class CronController extends AppController
 		self::createDayRecord();
 		self::publish();
 		$this->dailyUsersReset();
+		$this->dailyPotionConditionReset();
 		$this->updatePopularTags();
 		$this->updateSolvedCounts();
 
@@ -40,6 +41,12 @@ class CronController extends AppController
 		$query .= ',readingTrial=30';
 		$query .= ',reuse4=0';
 		ClassRegistry::init('User')->query($query);
+	}
+
+	private function dailyPotionConditionReset()
+	{
+		ClassRegistry::init('AchievementCondition')->query(
+			"UPDATE achievement_condition SET value=0 WHERE category='potion'");
 	}
 
 	private function dailyTsumegoStatusReset()
