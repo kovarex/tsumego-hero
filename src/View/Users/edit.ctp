@@ -9,7 +9,7 @@
                             // wenn eingeloggt
                                 if(Auth::isLoggedIn()) {
                                     // Username als Link anzeigen, damit er zum Account gelangt
-                                    echo $html->link(Auth::getUser()['name'], array('controller'=>'users', 'action' => 'view')) . '</b>';
+                                    echo User::renderLink(Auth::getUser()) . '</b>';
 									echo '<ul>';
 									echo '<li>'.$html->link(__('Edit', true), array('action' => 'edit', Auth::getUserID())).'</li>';
 									echo '<li>'.$html->link('Change password', array('controller'=>'users', 'action' => 'changePassword')).'</li>';

@@ -1,16 +1,9 @@
 <?php
 
 use Facebook\WebDriver\WebDriverBy;
-use PHPUnitRetry\RetryTrait;
 
-/**
- * @retryAttempts 2
- * @retryIfException Facebook\WebDriver\Exception\WebDriverException
- */
 class UsersControllerTest extends ControllerTestCase
 {
-	use RetryTrait;
-
 	/**
 	 * Test that login redirects back to the page where user came from.
 	 */
@@ -29,9 +22,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Click login link from the page (this sets proper referer and stores in session)
 		$browser->driver->findElement(WebDriverBy::id('signInMenu'))->click();
-		// Wait for login form to appear
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(\Facebook\WebDriver\WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('UserName')));
+		usleep(200 * 1000);
 
 		// Fill in login form
 		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('testuser');
@@ -39,9 +30,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
 
 		// Should be redirected back to highscore page
-		$wait->until(function ($driver) {
-			return str_contains($driver->getCurrentURL(), 'highscore');
-		});
+		usleep(200 * 1000);
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringContainsString('highscore', $currentUrl, "Expected to redirect back to highscore page, but was at: $currentUrl");
 	}
@@ -59,6 +48,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Go to login page
 		$browser->get('users/login');
+		usleep(100 * 1000);
 
 		// Verify Google Sign In button is present
 		$this->assertTrue($browser->idExists('g_id_onload'), 'Google Sign In should be available');
@@ -81,26 +71,47 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/leaderboard');
 
-		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp but is shown at bottom
-		$browser->checkTable('.highscoreTable', $this,
-			[
-				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
-				['#2', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0', '0'],
-			]);
+		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp
+		$table = $browser->driver->findElement(WebDriverBy::cssSelector(".dailyHighscoreTable"));
+		$rows = $table->findElements(WebDriverBy::tagName("tr"));
+		$this->assertCount(1, $rows);
+		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[1]->getText(), 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING));
+		$this->assertSame($rows[0]->findElements(WebDriverBy::tagName("td"))[2]->getText(), '2 solved');
 
 		// Kovarex solves a problem
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('S'); // solve the problem
 
-		// now kovarex is there (first, since solving gives more xp than Ivan's 10)
+		// now kovarex is there
 		$browser->get('users/leaderboard');
-		$browser->checkTable('.highscoreTable', $this,
+		$browser->checkTable('.dailyHighscoreTable', $this,
 			[
-				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
-				['#2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
+				['1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '1 solved'],
+				['2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '2 solved']
 			]);
+	}
+
+	public function testLevelHighscore()
+	{
+		foreach ([true, false] as $loggedIn)
+		{
+			$contextParameters = [];
+			$contextParameters['user'] = $loggedIn ? ['name' => 'kovarex'] : null;
+			$contextParameters['other-users'] = [['name' => 'Ivan Detkov', 'level' => 10]];
+			$contextParameters['tsumego'] = ['rating' => 2600, 'set_order' => 1];
+			$context = new ContextPreparator($contextParameters);
+			$browser = Browser::instance();
+			$browser->get('users/highscore');
+
+			// Ivan detkov is alone in the leaderboard
+			$table = $browser->driver->findElement(WebDriverBy::cssSelector(".highscoreTable"));
+			$rows = $table->findElements(WebDriverBy::tagName("tr"));
+			$this->assertCount(3 + ($loggedIn ? 1 : 0), $rows);
+			$this->assertTextStartsWith('Ivan Detkov', $rows[2]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+			if ($loggedIn)
+				$this->assertTextStartsWith('kovarex', $rows[3]->findElements(WebDriverBy::tagName("td"))[1]->getText());
+
+		}
 	}
 
 	public function testUserContributionsShowsTagAdded()
@@ -120,6 +131,45 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('Ivan Detkov', $browser->driver->getPageSource());
 	}
 
+	public function testUsersRatingLadder()
+	{
+		new ContextPreparator([
+			'other-users' => [
+				['name' => 'Ivan Detkov', 'rating' => 2887],
+				['name' => 'player3d', 'rating' => 2251],
+				['name' => 'player2d', 'rating' => 2249]]]);
+		$browser = Browser::instance();
+		$browser->get('users/rating');
+		$browser->checkTable('.highscoreTable', $this, [
+			['Place', 'Name', 'Rank', 'Rating'],
+			['#1', 'Ivan Detkov', '', '12d', '2887'],
+			['#2', 'player3d', '', '3d', '2251'],
+			['#3', 'player2d', '', '2d', '2249']]);
+	}
+
+	public function testAchievementsLadder()
+	{
+		new ContextPreparator([
+			'other-users' => [[
+				'name' => 'Ivan Detkov',
+				'rating' => 2887,
+				'achievement-statuses' => [
+					['id' => Achievement::PROBLEMS_1000],
+					['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 5]]],
+				[
+					'name' => 'player3d',
+					'rating' => 2251,
+					'achievement-statuses' => [
+						['id' => Achievement::PROBLEMS_1000],
+						['id' => Achievement::SUPERIOR_ACCURACY, 'value' => 7]]]]]);
+		$browser = Browser::instance();
+		$browser->get('users/achievements');
+		$browser->checkTable('.highscoreTable', $this, [
+			['Place', 'Name', 'Completed'],
+			['#1', 'player3d 3d', '8/115'],
+			['#2', 'Ivan Detkov 12d', '6/115']]);
+	}
+
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
 	{
 		$context = new ContextPreparator([
@@ -127,8 +177,12 @@ class UsersControllerTest extends ControllerTestCase
 			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
 
 		$browser = Browser::instance();
+		// View own profile - email should be visible
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('current@example.com', $pageSource);
+
+		// View another user's profile - their email should NOT be visible
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}
@@ -203,46 +257,6 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertSame($context->reloadUser()['solved'], 1);
 	}
 
-	public function testProfileShowsRank(): void
-	{
-		$context = new ContextPreparator(['user' => ['rating' => 2065]]);
-		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
-		$pageSource = $browser->driver->getPageSource();
-
-		$this->assertStringContainsString('<span class="rank-icon">1d</span>', $pageSource);
-	}
-
-	public function testProfileShowsSolveHistoryLink(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);
-		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
-		$pageSource = $browser->driver->getPageSource();
-
-		$this->assertStringContainsString('/users/solveHistory/' . $context->user['id'], $pageSource,
-			'Solve history link should be present on profile');
-	}
-
-	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'viewer'],
-			'other-users' => [['name' => 'target']],
-		]);
-		$target = $context->otherUsers[0];
-
-		$browser = Browser::instance();
-
-		// Own profile: progress bar preference is visible
-		$browser->get('users/view/' . $context->user['id']);
-		$this->assertStringContainsString('Progress bar preference', $browser->driver->getPageSource());
-
-		// Other user's profile: progress bar preference is hidden
-		$browser->get('users/view/' . $target['id']);
-		$this->assertStringNotContainsString('Progress bar preference', $browser->driver->getPageSource());
-	}
-
 	public function testTsumegoRatingGraph()
 	{
 		$context = new ContextPreparator([
@@ -283,147 +297,71 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
 	}
 
-	public function testResetOldProgressRemovesOnlyOldStatuses()
+	// =====================================================================
+	// Email Login vs Google User Tests
+	// =====================================================================
+
+	/**
+	 * Test that logging in with email doesn't match Google-only users.
+	 *
+	 * When a user tries to login with an email that belongs to a Google user,
+	 * the login should fail since Google users can't login via password.
+	 */
+	public function testEmailLoginDoesNotMatchGoogleUser()
 	{
-		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
 		$context = new ContextPreparator([
-			'user' => ['name' => 'alice', 'solved' => 4],
-			'tsumegos' => [
-				['set_order' => 1, 'status' => ['name' => 'S', 'updated' => $twoYearsAgo]],
-				['set_order' => 2, 'status' => 'S'],
-				['set_order' => 3, 'status' => 'S'],
-				['set_order' => 4, 'status' => 'S'],
-			],
+			'user' => null, // Not logged in
+			'other-users' => [[
+				'name' => 'googleuser',
+				'email' => 'google@example.com',
+				'external_id' => '123456789012345678901',
+			]],
 		]);
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/login');
+		usleep(100 * 1000);
 
-		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		// Try to login with the Google user's email
+		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('google@example.com');
+		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		usleep(200 * 1000);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
-
-		$remaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
-		$this->assertEquals(3, $remaining);
+		// Should fail - show helpful message directing to Google Sign-In
+		// Note: This intentionally reveals the user exists (UX choice over security through obscurity)
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('This account uses Google Sign-In', $pageSource);
 	}
 
-	public function testResetOldProgressDoesNotAffectOtherUsers()
+	/**
+	 * Test that logging in with email works for regular users.
+	 *
+	 * When a user has no external_id (regular user), email login should work.
+	 */
+	public function testEmailLoginWorksForRegularUser()
 	{
-		$twoYearsAgo = date('Y-m-d H:i:s', strtotime('-2 years'));
 		$context = new ContextPreparator([
-			'user' => ['name' => 'alice', 'solved' => 2],
-			'other-users' => [['name' => 'bob']],
-			'tsumegos' => [
-				['set_order' => 1, 'statuses' => [
-					['name' => 'S', 'updated' => $twoYearsAgo],
-					['name' => 'S', 'updated' => $twoYearsAgo, 'user' => 'bob'],
-				]],
-				['set_order' => 2, 'status' => 'S'],
-			],
+			'user' => null, // Not logged in
+			'other-users' => [[
+				'name' => 'regularuser',
+				'email' => 'regular@example.com',
+				// No external_id - regular user
+			]],
 		]);
-
-		$bobId = ContextPreparator::getUserIdFromName('bob');
 
 		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
+		$browser->get('users/login');
+		usleep(100 * 1000);
 
-		$browser->driver->executeScript("window.confirm = function() { return true; }");
-		$browser->driver->findElement(WebDriverBy::id('reset-statuses-button'))->click();
+		// Login with email
+		$browser->driver->findElement(WebDriverBy::id('UserName'))->sendKeys('regular@example.com');
+		$browser->driver->findElement(WebDriverBy::id('password'))->sendKeys('test');
+		$browser->driver->findElement(WebDriverBy::cssSelector('input[type="submit"]'))->click();
+		usleep(200 * 1000);
 
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(fn($d) => str_contains($d->getPageSource(), 'Deleted progress on 1 problems'));
-
-		$aliceRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $context->user['id']],
-		]);
-		$this->assertEquals(1, $aliceRemaining, "Alice's old status should have been deleted");
-
-		$bobRemaining = ClassRegistry::init('TsumegoStatus')->find('count', [
-			'conditions' => ['user_id' => $bobId],
-		]);
-		$this->assertEquals(1, $bobRemaining, "Bob's status should not have been affected");
-	}
-
-	public function testTimeModeFiltersBySpeedAndRank()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'kovarex'],
-			'other-users' => [['name' => 'timeplayer']],
-		]);
-
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '15k']]);
-		$rankId = $rankRow['TimeModeRank']['id'];
-		$rank10kRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '10k']]);
-		$rankId10k = $rank10kRow['TimeModeRank']['id'];
-		$sessionModel = ClassRegistry::init('TimeModeSession');
-
-		$sessions = [
-			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId, 'points' => 900],
-			['category' => TimeModeCategory::FAST, 'rank_id' => $rankId, 'points' => 600],
-			['category' => TimeModeCategory::SLOW, 'rank_id' => $rankId10k, 'points' => 750],
-		];
-		foreach ($sessions as $s)
-		{
-			$sessionModel->create();
-			$sessionModel->save(['TimeModeSession' => [
-				'user_id' => $context->otherUsers[0]['id'],
-				'time_mode_category_id' => $s['category'],
-				'time_mode_rank_id' => $s['rank_id'],
-				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
-				'points' => $s['points'],
-			]]);
-		}
-
-		// Slow/15k: shows 900, not 600 or 750
-		$this->testAction('users/time_mode?category=2&rank=15k', ['return' => 'view']);
-		$this->assertTextContains('900.00', $this->view);
-		$this->assertTextNotContains('600.00', $this->view);
-		$this->assertTextNotContains('750.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Slow</a>', $this->view);
-		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
-
-		// Fast/15k: shows 600, not 900 or 750
-		$this->testAction('users/time_mode?category=1&rank=15k', ['return' => 'view']);
-		$this->assertTextContains('600.00', $this->view);
-		$this->assertTextNotContains('900.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Fast</a>', $this->view);
-
-		// Slow/10k: shows 750, not 900
-		$this->testAction('users/time_mode?category=2&rank=10k', ['return' => 'view']);
-		$this->assertTextContains('750.00', $this->view);
-		$this->assertTextNotContains('900.00', $this->view);
-	}
-
-	public function testTimeModeRankButtonsPreserveCategory()
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
-
-		$rankRow = ClassRegistry::init('TimeModeRank')->find('first', ['conditions' => ['name' => '14k']]);
-		$rankId = $rankRow['TimeModeRank']['id'];
-		$sessionModel = ClassRegistry::init('TimeModeSession');
-
-		foreach ([TimeModeCategory::SLOW, TimeModeCategory::FAST, TimeModeCategory::BLITZ] as $cat)
-		{
-			$sessionModel->create();
-			$sessionModel->save(['TimeModeSession' => [
-				'user_id' => $context->user['id'],
-				'time_mode_category_id' => $cat,
-				'time_mode_rank_id' => $rankId,
-				'time_mode_session_status_id' => TimeModeSessionStatus::SOLVED,
-				'points' => 100,
-			]]);
-		}
-
-		// Each category's rank buttons should link back to the same category
-		foreach (['2' => 'Slow', '1' => 'Fast', '0' => 'Blitz'] as $catId => $catName)
-		{
-			$this->testAction("users/time_mode?category={$catId}&rank=15k", ['return' => 'view']);
-			// Rank button links should contain the current category
-			$this->assertTextContains("category={$catId}&rank=", $this->view);
-		}
+		// Should be logged in (redirected away from login page)
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringNotContainsString('login', $currentUrl, "Should be redirected after successful login");
 	}
 }

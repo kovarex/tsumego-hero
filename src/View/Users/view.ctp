@@ -11,34 +11,56 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<p class="title6">Profile</p>
 		</div>
 	<div class="user-header2">
-		<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="new-button-time">solve history</a>
 		<a href="/tags/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
 	</div>
 </div>
 <div class="userInfoContainerRow1">
 	<div class="userStatsGreen">
+		<?php
+		// Avatar section with Gravatar link if using Gravatar
+		$avatarUrl = User::getAvatarUrl($user['User'], 60);
+		$isGravatar = User::isUsingGravatar($user['User']);
+		$isGoogleUser = User::isGoogleUser($user['User']);
+		$isOwnProfile = Auth::getUserID() == $user['User']['id'];
+		?>
 		<table class="userTopTable1" id="name-and-email-table">
 		<tr>
-			<td><?php echo h($user['User']['name']); ?></td>
-			<td><?php User::renderPremium($user['User']); ?></td>
+			<td style="width:70px;text-align:center;vertical-align:top;padding-top:10px;">
+				<?php if ($isGravatar): ?>
+					<a href="https://gravatar.com/" target="_blank" rel="noopener noreferrer" title="Change your avatar at Gravatar">
+						<img src="<?php echo h($avatarUrl); ?>" alt="" style="width:60px;height:60px;border-radius:50%;">
+					</a>
+				<?php else: ?>
+					<img src="<?php echo h($avatarUrl); ?>" alt="" style="width:60px;height:60px;border-radius:50%;">
+				<?php endif; ?>
+			</td>
+			<td style="vertical-align:top;">
+				<strong><?php echo h($user['User']['display_name']); ?></strong> <?php User::renderPremium($user['User']); ?>
+				<?php if ($isOwnProfile): ?>
+					<a id="show-name" style="color:#74d14c;cursor:pointer;font-size:11px;margin-left:5px;">edit</a>
+				<?php endif; ?>
+				<div id="name-edit-form" style="display:none;margin-top:3px;">
+					<form action="/users/updatename" method="post" style="display:inline;">
+						<input type="text" name="data[User][display_name]" value="<?php echo h($user['User']['display_name']); ?>" maxlength="50" style="width:100px;font-size:11px;">
+						<input type="submit" value="OK" style="font-size:11px;">
+					</form>
+				</div>
+				<?php if ($isOwnProfile && !$isGoogleUser): ?>
+					<br><span style="font-size:11px;color:#888;">Username: <?php echo h($user['User']['name']); ?></span>
+				<?php endif; ?>
+				<?php if ($isOwnProfile): ?>
+					<br><span style="font-size:12px;"><?php echo $user['User']['email']; ?></span>
+					<?php if (!$isGoogleUser): ?>
+						<a id="show" style="color:#74d14c;font-size:11px;margin-left:5px;">edit</a>
+						<div id="msg2" style="margin-top:3px;">
+							<?php echo $this->Form->create('User'); ?>
+							<?php echo $this->Form->input('email', ['label' => '', 'type' => 'text', 'placeholder' => 'E-Mail', 'style' => 'width:150px;font-size:11px;']); ?>
+							<input style="margin:0px;font-size:11px;" value="OK" type="submit">
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+			</td>
 		</tr>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			echo '<tr>';
-			echo '<td>'.h($user['User']['email']).'</td>';
-			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<td colspan=2>';
-			echo '<div id="msg2">';
-			echo $this->Form->create('User');
-			echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-			echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-			echo '</div>';
-			echo '</td></tr>';
-		}
-		?>
 		</table>
 	</div>
 	<div class="userStatsGreen">
@@ -46,9 +68,13 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<tr>
 	<td>
 	<div align="center">
-		<?php echo (Auth::getUserID() == $user['User']['id']) ? 'Your rank' : 'Rank'; ?>:<br>
-		<?php $rank = Rating::getReadableRankFromRating($user['User']['rating']); ?>
-		<span class="rank-icon"><?php echo $rank; ?></span>
+		Your rank:<br>
+		<?php
+			if (RatingBounds::fromRanks('15k', '9d')->containsRating($user['User']['rating']))
+				echo '<img id="profileRankImage" src="/img/' . Rating::getReadableRankFromRating($user['User']['rating']) . 'Rank.png" width="76px">';
+			else
+				echo Rating::getReadableRankFromRating($user['User']['rating']);
+		?>
 	</div>
 	</td>
 	</tr>
@@ -58,10 +84,6 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="userTopTable1" border="0">
 	<tr>
 	<td>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-		?>
 		Progress bar preference:<br><br>
 	<?php
 		$levelBarDisplayChecked1 = '';
@@ -73,9 +95,6 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	?>
 	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
 	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
-		<?php
-		}
-		?>
 	</td>
 	</tr>
 	</table>
@@ -217,6 +236,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<table class="profileTable" width="100%" border="0">
 		<tr>
 			<?php
+
 if (!function_exists('showStatistics'))
 {
 function showStatistics($side, $as, $user, $dailyResults)
@@ -232,6 +252,9 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<div id="chartContainer">';
 	TimeGraphRenderer::render('Overall rating', 'chart-rating-' . $side, $dailyResults, 'Rating');
 	echo '</div>
+				<div align="center">
+					<a href="/users/solveHistory/' .$user['User']['id'] . '">Show solve history</a>
+				</div>
 			</div>
 			<div id="userShowTime' . $side . '">
 				<div id="chartContainer">
@@ -242,7 +265,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 				<table width="95%" border="0">
 					<tr>
 						<td class="h1profile"><h1 class="h1">Achievements</h1></td>
-						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements/user/' . $user['User']['id'] . '">View Achievements</a></b></td>
+						<td style="text-align:right;"><b class="profileTable2"><a href="/achievements">View Achievements</a></b></td>
 					</tr>
 				</table>';
 	for($i=0; $i<count($as); $i++)
@@ -254,10 +277,10 @@ function showStatistics($side, $as, $user, $dailyResults)
 		<a href="/achievements/view/<?php echo $as[$i]['AchievementStatus']['a_id']; ?>">
 		<div align="center" class="achievementSmall <?php echo $as[$i]['AchievementStatus']['a_color']; ?>">
 			<div class="acTitle2">
-				<b <?php echo $adjust; ?>><?php echo h($as[$i]['AchievementStatus']['a_title']); ?></b>
+				<b <?php echo $adjust; ?>><?php echo $as[$i]['AchievementStatus']['a_title']; ?></b>
 			</div>
 			<div class="acImg">
-				<img src="/img/<?php echo h($as[$i]['AchievementStatus']['a_image']); ?>.png" title="<?php echo h($as[$i]['AchievementStatus']['a_description']); ?>">
+				<img src="/img/<?php echo $as[$i]['AchievementStatus']['a_image']; ?>.png" title="<?php echo $as[$i]['AchievementStatus']['a_description']; ?>">
 				<div class="acImgXp">
 				<?php echo $as[$i]['AchievementStatus']['a_xp']; ?> XP
 				</div>
@@ -275,7 +298,6 @@ function showStatistics($side, $as, $user, $dailyResults)
 	</td>
 <?php
 }
-} // function_exists
 showStatistics('Left', $as, $user, $dailyResults);
 showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>
@@ -303,7 +325,11 @@ activateSelection(getCookie('lastProfileRight'), 'Right');
 
 $("#msg2").hide();
 $("#show").click(function(){
-	$("#msg2").show();
+	$("#msg2").toggle();
+});
+
+$("#show-name").click(function(){
+	$("#name-edit-form").toggle();
 });
 
 function updateButtonActivity(id, side, active)
@@ -337,13 +363,7 @@ function delUts(){
 	var dNum = "<?php echo $tsumegoStatusToRestCount; ?>";
 	var confirmed = confirm("Are you sure that you want to delete your progress on "+dNum+" problems?");
 	if (confirmed)
-	{
-		var form = document.createElement('form');
-		form.method = 'POST';
-		form.action = '/users/deleteOldTsumegoStatuses';
-		document.body.appendChild(form);
-		form.submit();
-	}
+		window.location.href = '/users/deleteOldTsumegoStatuses/<?php echo Auth::getUserID(); ?>';
 }
 </script>
 <script>

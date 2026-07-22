@@ -125,7 +125,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
-		echo '<a id="descriptionText">'.h($t['Tsumego']['description']).'</a> ';
+		echo '<a id="descriptionText">'.$displayDescription.'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
 		if($tv!=null)

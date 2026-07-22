@@ -17,7 +17,7 @@ SELECT
 	admin_activity.new_value AS new_value,
 	tsumego.id AS tsumego_id,
 	user.id AS user_id,
-	user.name AS user_name,
+	user.display_name AS user_name,
 	user.picture AS user_picture,
 	user.external_id AS user_external_id,
 	user.rating AS user_rating,

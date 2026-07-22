@@ -6,7 +6,7 @@
 		if($u[$i]['User']['lastRefresh'] == null) $u[$i]['User']['lastRefresh'] = 'null';
 		echo '<tr>';
 		echo '<td>' . $u[$i]['User']['id'] . '</td>';
-		echo '<td>' . h($u[$i]['User']['name']) . '</td>';
+		echo '<td>' . h($u[$i]['User']['display_name']) . '</td>';
 		echo '<td>' . $u[$i]['User']['lastRefresh'] . '</td>';
 		echo '<td>' . date('Y-m-d') . '</td>';
 		echo '</tr>';

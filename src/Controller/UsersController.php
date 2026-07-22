@@ -10,8 +10,9 @@ App::uses('AdminActivityRenderer', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
-App::uses('NotFoundException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
+App::uses('GoogleTokenVerifierInterface', 'Utility');
+App::uses('GoogleTokenVerifier', 'Utility');
 
 class UsersController extends AppController
 {
@@ -20,6 +21,54 @@ class UsersController extends AppController
 	public $pageTitle = 'Users';
 
 	public $helpers = ['Html', 'Form', 'Highscore'];
+
+	protected ?GoogleTokenVerifierInterface $tokenVerifier = null;
+
+	/**
+	 * Static test verifier (used by tests to inject FakeGoogleTokenVerifier)
+	 */
+	private static ?GoogleTokenVerifierInterface $testVerifier = null;
+
+	/**
+	 * Set the Google token verifier for testing (static, affects all instances)
+	 */
+	public static function setTestTokenVerifier(?GoogleTokenVerifierInterface $verifier): void
+	{
+		self::$testVerifier = $verifier;
+	}
+
+	/**
+	 * Check if running in test environment (test verifier is set)
+	 */
+	private function isTestEnvironment(): bool
+	{
+		return self::$testVerifier !== null;
+	}
+
+	/**
+	 * Set the Google token verifier (for this instance)
+	 */
+	public function setTokenVerifier(GoogleTokenVerifierInterface $verifier): void
+	{
+		$this->tokenVerifier = $verifier;
+	}
+
+	/**
+	 * Get the Google token verifier (lazily creates real verifier if not set)
+	 */
+	protected function getTokenVerifier(): GoogleTokenVerifierInterface
+	{
+		// Test verifier takes precedence
+		if (self::$testVerifier !== null)
+			return self::$testVerifier;
+
+		if ($this->tokenVerifier === null)
+		{
+			$clientId = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
+			$this->tokenVerifier = new GoogleTokenVerifier($clientId);
+		}
+		return $this->tokenVerifier;
+	}
 
 	// shows the publish schedule
 	public function showPublishSchedule(): void
@@ -55,18 +104,29 @@ class UsersController extends AppController
 		if (empty($this->data))
 			return;
 
-		$user = $this->User->findByEmail($this->data['User']['email']);
+		$userEmail = $this->data['User']['email'];
+
+		// Only allow password reset for local users (not Google Sign-In users)
+		$user = $this->User->findLocalUserByEmail($userEmail);
 		if (!$user)
+		{
+			// Check if it's a Google user - show helpful message
+			$googleUser = $this->User->findByEmail($userEmail);
+			if ($googleUser && User::isGoogleUser($googleUser['User']))
+				CookieFlash::set('This account uses Google Sign-In. Please sign in with Google.', 'info');
+			// For non-existent emails, don't reveal this - just show generic sent message
 			return;
+		}
+
 		$randomString = Util::generateRandomString(20);
 		$user['User']['passwordreset'] = $randomString;
 		$this->User->save($user);
 
-		$email = $this->_getEmailer();
-		$email->from(['me@tsumego.com' => 'https://tsumego.com']);
-		$email->to($this->data['User']['email']);
-		$email->subject('Password reset for your Tsumego Hero account');
-		$email->send('Click the following button to reset your password. If you have not requested the password reset,
+		$emailer = $this->_getEmailer();
+		$emailer->from(['me@tsumego.com' => 'https://tsumego.com']);
+		$emailer->to($userEmail);
+		$emailer->subject('Password reset for your Tsumego Hero account');
+		$emailer->send('Click the following button to reset your password. If you have not requested the password reset,
 then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/' . $randomString);
 	}
 
@@ -181,7 +241,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['display_name'];
 			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
@@ -232,7 +292,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		for ($i = 0; $i < $urCount; $i++)
 		{
 			$u = $this->User->findById($ur[$i]['TsumegoAttempt']['user_id']);
-			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
+			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
@@ -277,10 +337,11 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$sCount = count($s);
 		for ($i = 0; $i < $sCount; $i++)
 		{
-
+			$s[$i]['Sgf']['sgf'] = str_replace("\r", '', $s[$i]['Sgf']['sgf']);
+			$s[$i]['Sgf']['sgf'] = str_replace("\n", '"+"\n"+"', $s[$i]['Sgf']['sgf']);
 
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
-			$s[$i]['Sgf']['user'] = $u['User']['name'];
+			$s[$i]['Sgf']['user'] = $u['User']['display_name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
 			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -312,16 +373,25 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->loadModel('Tag');
 		$this->loadModel('AdminActivityType');
 
-		// Delete user
+		//Indirect way to create the entry. Can be deleted when the entry exists.
+		$newAdminActivityTypeEntry = $this->AdminActivityType->find('first', ['conditions' => ['name' => 'Delete User']]);
+		if($newAdminActivityTypeEntry == null)
+		{
+			$this->AdminActivityType->create();
+			$this->AdminActivityType->save([
+				'id' => 26,
+				'name' => 'Delete User',
+			]);
+		}
+
+		// Delete us
 		if (Auth::isAdmin())
 			if (isset($this->params['url']['delete']) && isset($this->params['url']['hash']))
 			{
 				$toDelete = $this->User->findById($this->params['url']['delete'] / 1111);
-				if (!$toDelete)
-					throw new NotFoundException('User to delete not found');
 				$del1 = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
 				$del2 = $this->TsumegoAttempt->find('all', ['conditions' => ['user_id' => $toDelete['User']['id']]]);
-				if (md5($toDelete['User']['name']) == $this->params['url']['hash'])
+				if (md5($toDelete['User']['display_name']) == $this->params['url']['hash'])
 				{
 					foreach ($del1 as $item)
 						$this->TsumegoStatus->delete($item['TsumegoStatus']['id']);
@@ -329,7 +399,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 						$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
 					$this->User->delete($toDelete['User']['id']);
 					echo '<pre>';
-					print_r('Deleted user ' . $toDelete['User']['name']);
+					print_r('Deleted user ' . $toDelete['User']['display_name']);
 					echo '</pre>';
 					AdminActivityLogger::log(
 						AdminActivityType::DELETE_USER, null, null, $toDelete['User']['name'], null
@@ -361,13 +431,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 		$tagTsumegos = [];
 
-		$tagNamesCount = count($tags);
-		for ($i = 0; $i < $tagNamesCount; $i++)
-		{
-			$au = $this->User->findById($tags[$i]['Tag']['user_id']);
-			$tags[$i]['Tag']['user'] = $this->checkPicture($au['User']);
-		}
-
 		$requestDeletion = $this->User->find('all', ['conditions' => ['dbstorage' => 1111]]);
 
 		$this->set('requestDeletion', $requestDeletion);
@@ -386,8 +449,12 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$input = $this->data['username'];
 		if (empty($input))
 			return null;
+
+		// findByName won't find Google users (they have name=NULL after migration)
 		if ($user = $this->User->findByName($input))
 			return $user;
+
+		// findByEmail could find Google users, which we'll handle in login()
 		if ($user = $this->User->findByEmail($input))
 			return $user;
 		return null;
@@ -420,6 +487,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 		{
 			CookieFlash::set('Unknown user', 'error');
+			return null;
+		}
+
+		// Google users should use "Sign in with Google" button
+		if (User::isGoogleUser($user['User']))
+		{
+			CookieFlash::set('This account uses Google Sign-In. Please use the "Sign in with Google" button.', 'info');
 			return null;
 		}
 
@@ -499,9 +573,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
+		if ($this->User->findByEmail($this->data['User']['email']))
+		{
+			CookieFlash::set('Email already exists', 'error');
+			return;
+		}
+
 		$userData = $this->data;
 		$userData['User']['password_hash'] = password_hash($this->data['User']['password1'], PASSWORD_DEFAULT);
 		$userData['User']['name'] = $this->data['User']['name'];
+		$userData['User']['display_name'] = User::generateUniqueDisplayName($this->data['User']['name']);
 		$userData['User']['email'] = $this->data['User']['email'];
 
 		$this->User->create();
@@ -527,6 +608,66 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	}
 
 	/**
+	 * Update user's display name (only for non-Google users)
+	 *
+	 * @return mixed
+	 */
+	public function updatename()
+	{
+		$userId = Auth::getUserID();
+		if (!$userId)
+		{
+			CookieFlash::set(__('You must be logged in.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$user = $this->User->findById($userId);
+		if (!$user)
+		{
+			CookieFlash::set(__('User not found.'), 'error');
+			return $this->redirect('/');
+		}
+
+		$newDisplayName = $this->request->data['User']['display_name'] ?? '';
+
+		if (empty($newDisplayName))
+		{
+			CookieFlash::set(__('Display name cannot be empty.'), 'error');
+			return $this->redirect(['action' => 'view', $userId]);
+		}
+
+		// Validate display name length
+		if (strlen($newDisplayName) < 3 || strlen($newDisplayName) > 50)
+		{
+			CookieFlash::set(__('Display name must be between 3 and 50 characters.'), 'error');
+			return $this->redirect(['action' => 'view', $userId]);
+		}
+
+		// Check uniqueness - another user might have this display_name
+		$existingUser = $this->User->find('first', [
+			'conditions' => [
+				'display_name' => $newDisplayName,
+				'id !=' => $userId,
+			],
+		]);
+		if ($existingUser)
+		{
+			CookieFlash::set(__('This display name is already taken.'), 'error');
+			return $this->redirect(['action' => 'view', $userId]);
+		}
+
+		// Update display_name (including forum sync)
+		User::updateDisplayName($userId, $newDisplayName);
+
+		// Update session with new display name
+		Auth::getUser()['display_name'] = $newDisplayName;
+		Auth::saveUser();
+
+		CookieFlash::set(__('Display name updated successfully.'), 'success');
+		return $this->redirect(['action' => 'view', $userId]);
+	}
+
+	/**
 	 * @return void
 	 */
 	public function highscore()
@@ -534,12 +675,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_page', 'levelHighscore');
 		$this->set('_title', 'Tsumego Hero - Highscore');
 
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, level, xp, solved,
-				ROW_NUMBER() OVER (ORDER BY level DESC, xp DESC) as position
-			FROM user"
-		));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->loadModel('Tsumego');
+		$this->loadModel('Activate');
+
+		$activate = false;
+		if (Auth::isLoggedIn())
+			$activate = $this->Activate->find('first', ['conditions' => ['user_id' => Auth::getUserID()]]);
+
+		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'level DESC, xp DESC']);
+		$this->set('users', $users);
+		$this->set('activate', $activate);
 	}
 
 	public function rating(): void
@@ -547,19 +692,17 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('_page', 'ratingHighscore');
 		$this->set('_title', 'Tsumego Hero - Rating');
 
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_RATING;
+			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
 
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium,
-				ROW_NUMBER() OVER (ORDER BY rating DESC) as position
-			FROM user"
-		));
-		$this->set('totalUsers', $this->User->find('count'));
+		$users = $this->User->find('all', ['limit' => 1000, 'order' => 'rating DESC']);
+		$this->set('users', $users);
 	}
 
 	/**
@@ -567,26 +710,26 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function added_tags()
 	{
-		$this->set('_page', 'tagHighscore');
+		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Added Tags');
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('tagContributors', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id as id,
-				user.name as name,
-				user.external_id as external_id,
-				user.picture as picture,
-				user.rating as rating,
-				user.premium as premium,
-				COUNT(tag_connection.id) AS tag_count,
-				ROW_NUMBER() OVER (ORDER BY COUNT(tag_connection.id) DESC) as position
-			FROM user
-			LEFT JOIN tag_connection ON tag_connection.user_id = user.id AND tag_connection.approved = true
-			WHERE tag_connection.id IS NOT NULL OR user.id = ?
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->User->find('count'));
+		$this->set('tagContributors', Util::query("
+SELECT
+	user.id as user_id,
+	user.name as user_name,
+	user.display_name as user_display_name,
+	user.external_id as user_external_id,
+	user.picture as user_picture,
+	user.email as user_email,
+	user.rating as user_rating,
+	count(*) AS tag_count
+FROM
+	tag_connection
+	JOIN user on tag_connection.user_id = user.id
+WHERE tag_connection.approved = true
+GROUP BY user_id
+ORDER BY tag_count DESC
+LIMIT 100"));
 	}
 
 	public function achievements(): void
@@ -597,46 +740,39 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_RATING;
+			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.name AS name,
-				user.rating AS rating,
-				user.picture AS picture,
-				user.external_id AS external_id,
-				user.premium AS premium,
-				COALESCE(SUM(achievement_status.value), 0) AS achievement_score,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(SUM(achievement_status.value), 0) DESC) as position
-			FROM user
-			LEFT JOIN achievement_status
-				ON achievement_status.user_id = user.id
-			WHERE achievement_status.id IS NOT NULL OR user.id = ?
-			GROUP BY user.id", 'id', [$userId]));
+		$this->set('users', Util::query("
+SELECT
+    user.id AS id,
+    user.name AS name,
+    user.display_name AS display_name,
+    user.rating AS rating,
+    user.picture AS picture,
+    user.external_id AS external_id,
+    user.email AS email,
+    SUM(achievement_status.value) AS achievement_score
+FROM user
+JOIN achievement_status
+    ON achievement_status.user_id = user.id
+GROUP BY user.id
+ORDER BY achievement_score DESC
+LIMIT 100;"));
 	}
 
 	/**
 	 * @return void
 	 */
-	public function time_mode()
+	public function highscore3()
 	{
 		$this->set('_page', 'timeHighscore');
 		$this->set('_title', 'Tsumego Hero - Time Highscore');
 
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
 		$this->loadModel('TimeModeSession');
-		$this->loadModel('TimeModeRank');
-
-		// Build rank name -> ID lookup
-		$allRanks = $this->TimeModeRank->find('all');
-		$rankNameToId = [];
-		foreach ($allRanks as $r)
-			$rankNameToId[$r['TimeModeRank']['name']] = $r['TimeModeRank']['id'];
-
 		$currentRank = '';
 		$params1 = '';
 		$params2 = '';
@@ -644,128 +780,140 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (Auth::isLoggedIn())
 		{
 			$ux = $this->User->findById(Auth::getUserID());
-			$ux['User']['lastHighscore'] = Constants::$HIGHSCORE_TIME_MODE;
+			$ux['User']['lastHighscore'] = 2;
 			$this->User->save($ux);
 		}
 
 		if (isset($this->params['url']['category']))
 		{
+			$ro = $this->TimeModeSession->find('all', [
+				'order' => 'points DESC',
+				'conditions' => [
+					'mode' => $this->params['url']['category'],
+					'TimeModeAttempt' => $this->params['url']['TimeModeAttempt'],
+				],
+			]);
+			$currentRank = $this->params['url']['TimeModeAttempt'];
 			$params1 = $this->params['url']['category'];
-			$params2 = $this->params['url']['rank'] ?? '15k';
-			$currentRank = $params2;
-			$categoryId = intval($params1) + 1;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$params2 = $this->params['url']['TimeModeAttempt'];
 		}
 		else
 		{
-			$user = Auth::isLoggedIn() ? Auth::getUser() : null;
-			if ($user && ($user['last_time_mode_category_id'] ?? null))
-				$categoryId = $user['last_time_mode_category_id'];
+			if (Auth::isLoggedIn())
+				$lastModex = Auth::getUser()['lastMode'] - 1;
 			else
-				$categoryId = TimeModeCategory::SLOW;
+				$lastModex = 2;
 
-			$params1 = $categoryId - 1;
+			$params1 = $lastModex;
 			$params2 = '15k';
 			$currentRank = $params2;
-			$rankId = $rankNameToId[$params2] ?? 1;
+			$ro = $this->TimeModeSession->find('all', [
+				'order' => 'points DESC',
+				'conditions' => [
+					'mode' => $params1,
+					'TimeModeAttempt' => $params2,
+				],
+			]);
 		}
+		$roAll = [];
+		$roAll['users'] = [];
+		$roAll['points'] = [];
+		$roAll['result'] = [];
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-
-		$this->set('users', $this->queryHighscoreWithSelfView("
-			SELECT
-				user.id AS id,
-				user.name AS name,
-				user.external_id AS external_id,
-				user.picture AS picture,
-				user.rating AS rating,
-				user.premium AS premium,
-				COALESCE(MAX(time_mode_session.points), 0) AS points,
-				ROW_NUMBER() OVER (ORDER BY COALESCE(MAX(time_mode_session.points), 0) DESC) as position
-			FROM user
-			LEFT JOIN time_mode_session ON time_mode_session.user_id = user.id
-				AND time_mode_session.time_mode_category_id = " . intval($categoryId) . "
-				AND time_mode_session.time_mode_rank_id = " . intval($rankId) . "
-			WHERE time_mode_session.id IS NOT NULL OR user.id = ?
-			GROUP BY user.id", 'id', [$userId]));
-		$this->set('totalUsers', $this->User->find('count'));
-
-		// Build rank buttons: single query replaces 60+ individual lookups
-		$existingSessions = Util::query("
-			SELECT time_mode_category_id, time_mode_rank_id
-			FROM time_mode_session
-			GROUP BY time_mode_category_id, time_mode_rank_id");
-		$sessionExists = [];
-		foreach ($existingSessions as $row)
-			$sessionExists[$row['time_mode_category_id'] . '_' . $row['time_mode_rank_id']] = true;
-
-		$rankNames = $this->buildRankNames();
-		$modes = [];
-		$modes2 = [];
-		for ($i = 0; $i < 3; $i++)
+		$roCount = count($ro);
+		$seenUsers = [];
+		for ($i = 0; $i < $roCount; $i++)
 		{
-			$modes[$i] = [];
-			$modes2[$i] = [];
-			foreach ($rankNames as $j => $rankName)
+			$us = $this->User->findById($ro[$i]['TimeModeSession']['user_id']);
+			$userName = $us['User']['display_name'];
+			if (!isset($seenUsers[$userName]))
 			{
-				$modes2[$i][$j] = $rankName;
-				$rId = $rankNameToId[$rankName] ?? null;
-				$modes[$i][$j] = ($rId && isset($sessionExists[($i + 1) . '_' . $rId])) ? 1 : $rankName;
+				$seenUsers[$userName] = true;
+				array_push($roAll['users'], $us['User']);
+				array_push($roAll['points'], $ro[$i]['TimeModeSession']['points']);
+				array_push($roAll['result'], $ro[$i]['TimeModeSession']['status']);
 			}
 		}
 
+		$modes = [];
+		$modes[0] = [];
+		$modes[1] = [];
+		$modes[2] = [];
+		for ($i = 0; $i < 3; $i++)
+		{
+			$rank = 15;
+			$j = 0;
+			while ($rank > -5)
+			{
+				$kd = 'k';
+				$rank2 = $rank;
+				if ($rank >= 1)
+					$kd = 'k';
+				else
+				{
+					$rank2 = ($rank - 1) * (-1);
+					$kd = 'd';
+				}
+				$modes[$i][$j] = $rank2 . $kd;
+				$rank--;
+				$j++;
+			}
+		}
+		$modes2 = [];
+		$modes2[0] = [];
+		$modes2[1] = [];
+		$modes2[2] = [];
+		for ($i = 0; $i < 3; $i++)
+		{
+			$rank = 15;
+			$j = 0;
+			while ($rank > -5)
+			{
+				$kd = 'k';
+				$rank2 = $rank;
+				if ($rank >= 1)
+					$kd = 'k';
+				else
+				{
+					$rank2 = ($rank - 1) * (-1);
+					$kd = 'd';
+				}
+				$modes2[$i][$j] = $rank2 . $kd;
+				$rank--;
+				$j++;
+			}
+		}
+
+		$modesCount = count($modes);
+		for ($i = 0; $i < $modesCount; $i++)
+		{
+			$modesCount = count($modes[$i]);
+			for ($j = 0; $j < $modesCount; $j++)
+			{
+				$mx = $this->TimeModeSession->find('first', [
+					'conditions' => [
+						'TimeModeAttempt' => $modes[$i][$j],
+						'mode' => $i,
+					],
+				]);
+				if ($mx)
+					$modes[$i][$j] = 1;
+			}
+		}
+
+		if (Auth::isLoggedIn())
+		{
+			$ux = $this->User->findById(Auth::getUserID());
+			$ux['User']['lastHighscore'] = 4;
+			$this->User->save($ux);
+		}
+
+		$this->set('roAll', $roAll);
+		$this->set('TimeModeAttempt', $currentRank);
 		$this->set('params1', $params1);
 		$this->set('params2', $params2);
 		$this->set('modes', $modes);
 		$this->set('modes2', $modes2);
-	}
-
-	/**
-	 * Run a single CTE query that returns the top N + neighbor rows around the current user.
-	 * The $rankedQuery must be a SELECT that produces a `position` column via ROW_NUMBER().
-	 * Returns flat associative arrays with a `position` column. Gaps between top-N and
-	 * the self-view section are visible as jumps in position numbers.
-	 *
-	 * @param string $rankedQuery SQL SELECT with ROW_NUMBER() ... as position
-	 * @param string $idColumn Column name used to identify the current user (default: 'id')
-	 * @return array<int, array<string, mixed>>
-	 */
-	private function queryHighscoreWithSelfView(string $rankedQuery, string $idColumn = 'id', array $extraParams = []): array
-	{
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
-		$topN = 30;
-		$neighborRadius = 3;
-
-		$sql = "
-			WITH ranked AS ({$rankedQuery}),
-			self_pos AS (SELECT position FROM ranked WHERE {$idColumn} = ?)
-			SELECT r.*
-			FROM ranked r
-			LEFT JOIN self_pos sp ON 1=1
-			WHERE r.position <= {$topN}
-			   OR (sp.position IS NOT NULL
-			       AND r.position BETWEEN sp.position - ? AND sp.position + ?)
-			ORDER BY r.position";
-
-		return Util::query($sql, array_merge($extraParams, [$userId, $neighborRadius, $neighborRadius]));
-	}
-
-	/**
-	 * Build array of rank names from 15k down to 5d (matching time_mode_rank table order).
-	 */
-	private function buildRankNames(): array
-	{
-		$names = [];
-		$rank = 15;
-		while ($rank > -5)
-		{
-			if ($rank >= 1)
-				$names[] = $rank . 'k';
-			else
-				$names[] = (($rank - 1) * -1) . 'd';
-			$rank--;
-		}
-		return $names;
 	}
 
 	/**
@@ -775,19 +923,27 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	{
 		$this->set('_page', 'dailyHighscore');
 		$this->set('_title', 'Tsumego Hero - Daily Highscore');
+		$this->loadModel('TsumegoStatus');
+		$this->loadModel('Tsumego');
+		$this->loadModel('DayRecord');
 
-		$userId = Auth::isLoggedIn() ? Auth::getUserID() : -1;
+		$dayRecord = $this->DayRecord->find('all', ['limit' => 2, 'order' => 'id DESC']);
+		$userYesterdayName = 'Unknown';
+		if (count($dayRecord) > 0 && isset($dayRecord[0]['DayRecord']['user_id']))
+		{
+			$userYesterday = $this->User->findById($dayRecord[0]['DayRecord']['user_id']);
+			if ($userYesterday && isset($userYesterday['User']['display_name']))
+				$userYesterdayName = $userYesterday['User']['display_name'];
+		}
 
-		$this->set('users', $this->queryHighscoreWithSelfView(
-			"SELECT id, name, external_id, picture, rating, premium, daily_xp, daily_solved,
-				ROW_NUMBER() OVER (ORDER BY daily_xp DESC) as position
-			FROM user
-			WHERE daily_xp > 0 OR id = ?",
-			'id',
-			[$userId]
-		));
+		$users = ClassRegistry::init('User')->query('SELECT user.id, user.name, user.display_name, user.rating, user.external_id, user.picture, user.email, user.daily_xp, user.daily_solved FROM user WHERE daily_xp > 0 ORDER BY daily_xp DESC');
+		$exportedUsers = [];
+		foreach ($users as $user)
+			$exportedUsers [] = $user['user'];
 
-		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
+		$this->set('leaderboard', $exportedUsers);
+		$this->set('uNum', count($users));
+		$this->set('dayRecord', $userYesterdayName);
 	}
 
 	public function view($id = null): mixed
@@ -808,7 +964,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$user = $this->User->findById($id);
 		if (!$user)
 			return $this->redirect('/sets');
-		$this->set('_title', 'Profile of ' . $user['User']['name']);
+		$this->set('_title', 'Profile of ' . $user['User']['display_name']);
 
 		// user edit
 		// TODO: should be its own action
@@ -910,8 +1066,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 		if ($asx != null)
 			$aNumx = $aNumx + $asx['AchievementStatus']['value'] - 1;
 
-		$user['User']['name'] = $this->checkPicture($user['User']);
-
 		$aCount = $this->Achievement->find('all');
 
 		$this->set('dailyResults', $dailyResults);
@@ -929,7 +1083,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	 */
 	public function authors()
 	{
-		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 
@@ -1002,14 +1155,14 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 	/**
 	 * @param string|int|null $id Success ID
+	 * @return void
 	 */
 	public function success($id = null)
 	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero - Success');
 
+		$s = $this->User->findById(Auth::getUserID());
 		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
 		Auth::getUser()['premium'] = 1;
 		Auth::saveUser();
@@ -1018,29 +1171,36 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
 		$Email->to('joschka.zimdars@googlemail.com');
 		$Email->subject('Upgrade');
-
-		$Email->send(Auth::getUser()['name'] . ' ' . Auth::getUser()['email']);
-		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-		$Email->to(Auth::getUser()['email']);
-		$Email->subject('Tsumego Hero');
-		$Email->send('Hello ' . Auth::getUser()['name'] . ',
+		if (Auth::isLoggedIn())
+			$ans = Auth::getUser()['display_name'] . ' ' . Auth::getUser()['email'];
+		else
+			$ans = 'no login';
+		$Email->send($ans);
+		if (Auth::isLoggedIn())
+		{
+			$Email = new CakeEmail();
+			$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
+			$Email->to(Auth::getUser()['email']);
+			$Email->subject('Tsumego Hero');
+			$ans = '
+Hello ' . Auth::getUser()['display_name'] . ',
 
 Thank you!. Your account should be upgraded automatically.
 
 --
 Best Regards
-Joschka Zimdars');
+Joschka Zimdars';
+			$Email->send($ans);
+		}
 		$this->set('id', $id);
 	}
 
 	/**
 	 * @param string|int|null $id Penalty ID
+	 * @return void
 	 */
 	public function penalty($id = null)
 	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
 		$this->set('_page', 'home');
 		$this->set('_title', 'Tsumego Hero - Penalty');
 		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
@@ -1077,44 +1237,88 @@ Joschka Zimdars');
 	 */
 	public function googlesignin()
 	{
-		$name = '';
-		$email = '';
-		$picture = '';
-		$id_token = $_POST['credential'];
-		$client_id = '986748597524-05gdpjqrfop96k6haga9gvj1f61sji6v.apps.googleusercontent.com';
-		$token_info = file_get_contents('https://oauth2.googleapis.com/tokeninfo?id_token=' . $id_token);
-		$token_data = json_decode($token_info, true);
-		if (isset($token_data['aud']) && $token_data['aud'] == $client_id)
+		// CSRF protection: Google Sign-In provides g_csrf_token in both POST and cookie
+		// These must match to prevent cross-site request forgery
+		$csrfToken = $_POST['g_csrf_token'] ?? ($this->request->data['g_csrf_token'] ?? '');
+		$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
+		// Skip CSRF check in test environment (testAction doesn't set cookies)
+		if (!$this->isTestEnvironment() && (empty($csrfToken) || $csrfToken !== $csrfCookie))
 		{
-			$name = $token_data['name'];
-			$email = $token_data['email'];
-			$picture = $token_data['picture'];
+			CakeLog::write('warning', 'GoogleSignIn: CSRF validation failed');
+			CookieFlash::set('CSRF validation failed', 'error');
+			return $this->redirect('/users/login');
 		}
-		else
-			echo 'Invalid token';
-		$externalId = 'g__' . $token_data['sub'];
+
+		// Google Sign-In posts credential directly, but testAction uses $this->request->data
+		$id_token = $_POST['credential'] ?? ($this->request->data['credential'] ?? '');
+
+		$verifier = $this->getTokenVerifier();
+		$token_data = $verifier->verify($id_token);
+
+		if (!$token_data)
+		{
+			CakeLog::write('debug', 'GoogleSignIn: Token verification failed for token: ' . substr($id_token, 0, 20));
+			CookieFlash::set('Invalid Google token', 'error');
+			return $this->redirect('/users/login');
+		}
+
+		$name = $token_data['name'] ?? '';
+		// Fallback to last 6 digits of sub if no name provided
+		if (empty($name))
+			$name = 'User ' . substr($token_data['sub'] ?? '', -6);
+		$email = $token_data['email'] ?? '';
+		$picture = $token_data['picture'] ?? '';
+		// external_id is just the Google sub claim - no prefix needed
+		$externalId = $token_data['sub'];
+
 		$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
 		if ($u == null)
 		{
-			$imageUrl = $picture;
-			$imageContent = file_get_contents($imageUrl);
+			// Generate unique display name
+			// Google users don't need 'name' - they can't use password login (password_hash = 'google_oauth')
+			$uniqueDisplayName = User::generateUniqueDisplayName($name);
 
 			$userData = [];
-			$userData['User']['name'] = 'g__' . $name;
-			$userData['User']['email'] = 'g__' . $email;
-			$userData['User']['password_hash'] = 'not used';
+			// name is NULL for Google users - they don't use password login
+			$userData['User']['display_name'] = $uniqueDisplayName;
+			$userData['User']['email'] = $email;
+			$userData['User']['password_hash'] = 'google_oauth';
 			$userData['User']['external_id'] = $externalId;
+			$userData['User']['picture'] = $picture;
 
-			if ($imageContent === false)
-				$userData['User']['picture'] = 'default.png';
-			else
-			{
-				$userData['User']['picture'] = $externalId . '.png';
-				file_put_contents('img/google/' . $externalId . '.png', $imageContent);
-			}
 			$this->User->create();
-			$this->User->save($userData, true);
+			// Save without validation for Google users - they come pre-validated by Google
+			$saveResult = $this->User->save($userData, false);
+			if (!$saveResult)
+			{
+				CookieFlash::set('Failed to create Google user', 'error');
+				return $this->redirect('/users/login');
+			}
 			$u = $this->User->find('first', ['conditions' => ['external_id' => $externalId]]);
+		}
+		else
+		{
+			// Update profile data on each login (in case user changed Google profile)
+			$updates = [];
+
+			// Update picture if changed
+			if ($picture && $u['User']['picture'] !== $picture)
+				$updates['picture'] = $picture;
+
+			// Update email if changed and not empty
+			if ($email && $u['User']['email'] !== $email)
+				$updates['email'] = $email;
+
+			// Apply updates if any changed
+			if (!empty($updates))
+			{
+				$this->User->id = $u['User']['id'];
+				foreach ($updates as $field => $value)
+				{
+					$this->User->saveField($field, $value);
+					$u['User'][$field] = $value;
+				}
+			}
 		}
 		$this->signIn($u);
 
@@ -1122,7 +1326,7 @@ Joschka Zimdars');
 		// Google Sign-In provides built-in CSRF protection via g_csrf_token cookie
 		// We use HMAC signature to prevent redirect URL tampering (stateless)
 		$redirect = '/sets/';
-		$stateJson = $_POST['state'] ?? null;
+		$stateJson = $_POST['state'] ?? ($this->request->data['state'] ?? null);
 		if ($stateJson)
 		{
 			$stateData = json_decode(base64_decode($stateJson), true);
@@ -1136,11 +1340,10 @@ Joschka Zimdars');
 	}
 
 	/**
+	 * @return void
 	 */
 	public function delete_account()
 	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
 		$redirect = false;
 		$status = '';
 
@@ -1155,12 +1358,9 @@ Joschka Zimdars');
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 
-		$user = Auth::getUser();
-		$user['name'] = $this->checkPicture($user);
-
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', $user);
+		$this->set('u', Auth::getUser());
 	}
 
 	/**
@@ -1184,12 +1384,9 @@ Joschka Zimdars');
 				else
 					$status = '<p style="color:#d63a49">Password incorrect.</p>';
 
-		$user = Auth::getUser();
-		$user['name'] = $this->checkPicture($user);
-
 		$this->set('redirect', $redirect);
 		$this->set('status', $status);
-		$this->set('u', $user);
+		$this->set('u', Auth::getUser());
 	}
 
 	public function solveHistory($userID)
@@ -1254,10 +1451,6 @@ OFFSET " . $offset, [$userID, $userID]);
 		AppController::handleContribution(Auth::getUserID(), 'reviewed');
 		AppController::handleContribution($proposalToApprove['user_id'], 'made_proposal');
 		CookieFlash::set('Sgf proposal accepted', 'success');
-
-		$userToApprove = $this->User->findById($proposalToApprove['user_id']);
-		AdminActivityLogger::log(AdminActivityType::ACCEPT_PROPOSAL, $proposalToApprove['tsumego_id'], null, null, $userToApprove['User']['name']);
-
 		return $this->redirect('/users/adminstats');
 	}
 
@@ -1289,11 +1482,8 @@ OFFSET " . $offset, [$userID, $userID]);
 		ClassRegistry::init('Reject')->create();
 		ClassRegistry::init('Reject')->save($reject);
 		ClassRegistry::init('Sgf')->delete($proposalToReject['id']);
+
 		CookieFlash::set('Sgf proposal rejected', 'success');
-
-		$userToReject = $this->User->findById($proposalToReject['user_id']);
-		AdminActivityLogger::log(AdminActivityType::REJECT_PROPOSAL, $proposalToReject['tsumego_id'], null, null, $userToReject['User']['name']);
-
 		return $this->redirect('/users/adminstats');
 	}
 
@@ -1348,9 +1538,11 @@ OFFSET " . $offset, [$userID, $userID]);
 		$reject = [];
 		$reject['user_id'] = $proposalToReject['user_id'];
 		$reject['tsumego_id'] = $proposalToReject['tsumego_id'];
-		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
-		$reject['type'] = $tag['name'];
+		$reject['type'] = 'tag';
+		$tagName = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
+		$reject['type'] = $tagName['name'];
 
+		$tag = ClassRegistry::init('Tag')->findById($proposalToReject['tag_id'])['Tag'];
 		AdminActivityLogger::log(AdminActivityType::REJECT_TAG, $proposalToReject['tsumego_id'], null, $tag['name'], null);
 
 		ClassRegistry::init('Reject')->create();
@@ -1361,31 +1553,29 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
-	public function deleteOldTsumegoStatuses(): mixed
+	public function deleteOldTsumegoStatuses($id): mixed
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets');
 
-		$userId = Auth::getUserID();
+		// extra check of id, to make sure random link from someone doesn't just delete the progress
+		if ($id != Auth::getUserID())
+			return $this->redirect('/sets');
 		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
 		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
-			return $this->redirect('/users/view/' . $userId);
+			return $this->redirect('/users/view/' . Auth::getUserID());
 
-		$deleted = Util::execute("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [$userId]);
-
-		Util::execute("UPDATE user
+		$deleted = Util::query("SELECT COUNT(*) AS total FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()])[0]['total'];
+		Util::query("DELETE FROM tsumego_status WHERE user_id = ? AND tsumego_status.updated <= NOW() - INTERVAL 1 YEAR", [Auth::getUserID()]);
+		Util::query("UPDATE user
 LEFT JOIN (
     SELECT user_id, COUNT(*) AS cnt
     FROM tsumego_status
     WHERE status IN ('S', 'W', 'C', 'X')
-    AND user_id = ?
     GROUP BY user_id
 ) ts ON ts.user_id = user.id
-SET user.solved = COALESCE(ts.cnt, 0)
-WHERE user.id = ?", [$userId, $userId]);
+SET user.solved = COALESCE(ts.cnt, 0)");
 		CookieFlash::set('Deleted progress on ' . $deleted . ' problems', 'success');
-		return $this->redirect('/users/view/' . $userId);
+		return $this->redirect('/users/view/' . Auth::getUserID());
 	}
 }

@@ -29,10 +29,7 @@ class SitesController extends AppController
 		$this->loadModel('SetConnection');
 		$this->loadModel('PublishDate');
 
-		$uReward = $this->User->find('all', ['limit' => 5, 'order' => 'reward DESC']) ?: [];
-		$urNames = [];
-		foreach ($uReward as $user)
-			$urNames[] = $this->checkPicture($user);
+
 
 		$today = date('Y-m-d');
 		$dayRecord = $this->DayRecord->find('first', ['conditions' => ['date' => $today]]);
@@ -57,7 +54,6 @@ class SitesController extends AppController
 		$this->set('dayRecords', ClassRegistry::init('DayRecord')->find('all', ['order' => 'date ASC']));
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
-		$this->set('urNames', $urNames);
 	}
 
 	/**

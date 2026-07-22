@@ -39,9 +39,7 @@ class AppController extends Controller
 			$a = ClassRegistry::init('Achievement')->findById($latest[$i]['AchievementStatus']['achievement_id']);
 			$u = ClassRegistry::init('User')->findById($latest[$i]['AchievementStatus']['user_id']);
 			if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-				$startPageUser = AppController::checkPicture($u['User']);
-			else
-				$startPageUser = $u['User']['name'];
+		$startPageUser = User::renderLink($u ? $u["User"] : null);
 			$latest[$i]['AchievementStatus']['name'] = $a['Achievement']['name'];
 			$latest[$i]['AchievementStatus']['color'] = $a['Achievement']['color'];
 			$latest[$i]['AchievementStatus']['image'] = $a['Achievement']['image'];
@@ -95,20 +93,6 @@ class AppController extends Controller
 		return base64_encode(openssl_encrypt($str, $encrypt_method, $key, 0, $iv));
 	}
 
-	protected function checkPictureLarge($u)
-	{
-		if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-			return substr($u['User']['name'], 3);
-
-		return $u['User']['name'];
-	}
-	public static function checkPicture($user)
-	{
-		if (substr($user['name'], 0, 3) == 'g__' && $user['external_id'] != null)
-			return substr($user['name'], 3);
-
-		return $user['name'];
-	}
 
 	public static function saveDanSolveCondition($solvedTsumegoRank, $tId): void
 	{
@@ -522,12 +506,8 @@ class AppController extends Controller
 		{
 			$user = Auth::getUser();
 			$displayUser = $user;
-			$displayUser['name'] = $this->checkPicture($user);
-			$this->set('user', $displayUser);
-		}
-		$this->set('mode', $mode);
-		$this->set('nextDay', $nextDay->format('m/d/Y'));
-		$this->set('boardNames', $boardNames);
+		if (Auth::isLoggedIn())
+			$this->set('user', Auth::getUser());
 		$this->set('highscoreLink', $highscoreLink);
 		$this->set('lightDark', $lightDark);
 		$this->set('levelBar', $levelBar);

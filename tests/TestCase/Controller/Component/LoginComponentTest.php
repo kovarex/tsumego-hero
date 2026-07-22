@@ -32,7 +32,7 @@ class TestEmailer
 	public static $lastEmail = null;
 };
 
-class LoginComponentTestWithAuth extends TestCaseWithAuth
+class LoginComponentTest extends TestCaseWithAuth
 {
 	public function testLogin(): void
 	{
@@ -101,12 +101,7 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 
 		// Submit the form
 		$browser->driver->findElement(WebDriverBy::cssSelector('.signin input[type="submit"]'))->click();
-
-		// Wait for form submission to process and redirect away from signup page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), 'users/add') === false;
-		});
+		usleep(1000 * 100);
 
 		// Check if user was created successfully
 		$userCountAfter = count(ClassRegistry::init('User')->find('all'));
@@ -195,13 +190,6 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$browser->driver->getKeyboard()->sendKeys($newPassword);
 		$sumbitButton = $browser->driver->findElement(WebDriverBy::cssSelector('#UserNewpasswordForm input[type="submit"]'));
 		$sumbitButton->click();
-
-		// Wait for form submission to redirect to login page
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500);
-		$wait->until(function () use ($browser) {
-			return strpos($browser->driver->getCurrentURL(), 'users/login') !== false;
-		});
-
 		$this->assertSame(Util::getMyAddress() . '/users/login', $browser->driver->getCurrentURL());
 		$this->assertTextContains("Password changed", $browser->driver->getPageSource());
 
@@ -228,5 +216,41 @@ class LoginComponentTestWithAuth extends TestCaseWithAuth
 		$links = $div->findElements(WebDriverBy::tagName('a')) ?: [];
 		$this->assertSame(count($links), 1);
 		$this->assertTextContains($context->user['name'], $links[0]->getText());
+	}
+
+	/**
+	 * Test that password reset for Google users shows helpful message.
+	 */
+	public function testResetPasswordShowsMessageForGoogleUser(): void
+	{
+		$context = new ContextPreparator([
+			'user' => null,
+			'other-users' => [[
+				'display_name' => 'Google User',
+				'email' => 'googleuser@gmail.com',
+				'external_id' => '123456789012345678901',
+			]],
+		]);
+
+		$this->registerTestEmailer();
+		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => 'googleuser@gmail.com']], 'method' => 'POST']);
+
+		// Should NOT send email (Google users can't reset password)
+		// registerTestEmailer initializes lastEmail to empty array [], not null
+		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for Google users');
+	}
+
+	/**
+	 * Test that password reset does not send email for non-existent users.
+	 */
+	public function testResetPasswordNoEmailForNonExistentUser(): void
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->registerTestEmailer();
+		$this->testAction('users/resetpassword/', ['data' => ['User' => ['email' => 'nonexistent@example.com']], 'method' => 'POST']);
+
+		// Should NOT send email
+		$this->assertEmpty(TestEmailer::$lastEmail['body'] ?? null, 'Email should not be sent for non-existent users');
 	}
 }

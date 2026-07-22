@@ -1,14 +1,8 @@
 <?php
 $highestLeft = 19;
 $highestRight = 17;
-
-$this->start('script');
 ?>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-<?php
-$this->end();
-?>
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<div class="homeRight">
 		<div class="new-tsumego-box">
 			<?php
@@ -37,7 +31,9 @@ $this->end();
 			<img src="/img/new_startpage/<?php echo $quote; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
 			<img src="/img/new_startpage/<?php echo $quote; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
 			<div class="user-pick-all user-pick-<?php echo $quote; ?>" align="center">
-					<?php echo $userOfTheDay; ?>
+				<?php if ($userOfTheDay !== null): ?>
+					<?php echo User::renderLink($userOfTheDay); ?>
+				<?php endif; ?>
 			</div>
 		</div>
 
@@ -317,18 +313,17 @@ $this->end();
 			else $modeActions2 = 'class="modeboxes"';
 			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.AppController::getStartpage().'</div>';
 		?>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
+		<a href="/tsumegos/play/<?php echo $_COOKIE['lastVisit'] ?? 15352; ?>?mode=1">
 			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<?php if(Auth::isLoggedIn()){ ?>
-
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
+		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
 			<div class="modeBox2" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
+		<a href="/tsumegos/play/<?php echo $nextMode['Tsumego']['id']; ?>?mode=2">
 			<div class="modeBox22" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
 		</a>
 		<a href="/timeMode/overview">
@@ -362,6 +357,19 @@ $this->end();
 			<a href="/forums/viewtopic.php?t=12">Version 0.2 weekly overview</a><br>
 			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
 		</div>
+
+		<?php if(
+			false
+		){ ?>
+			<p class="title4" style="margin-top:2px;">Upgrade to Premium</p>
+			<div class="new1">
+			<div align="center">
+				<br>
+				<a href="/users/donate"><img id="donateH" onmouseover="donateHover()" onmouseout="donateNoHover()" width="180px" src="/img/upgradeButton1.png"></a>
+				<br><br>
+			</div>
+			</div>
+		<?php } ?>
 
 		<p class="title4">Problem Database Size </p>
 		<div class="new1">
@@ -406,6 +414,7 @@ $this->end();
 		}
 		</script>
 		<div id="chartContainer" style="height: 400px; width: 100%;"></div>
+		<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 		<br>
 		</div>
 
@@ -433,7 +442,7 @@ $this->end();
 			<b>Tags, proposals and rewards</b><br><br>
 			We need your help! The problems on this website are currently uncategorized, which we should change.
 			The goal is to assign matching tags to every problem. All users that have passed level 40 or 6k
-			are welcome to help with this meaningful task. There are amazing rewards for those who
+			are welcome to help with this meaningful task. There are amazing <a href="/users/rewards">rewards</a> for those who
 			help with adding and creating tags and/or proposals. So the next time you see a problem, for example,
 			with a <a href="/tags/view/8">Seki</a>, a <a href="/tags/view/6">Snapback</a> or an
 			<a href="/tags/view/7">Under the Stones</a> tesuji, leave a tag.
@@ -454,9 +463,9 @@ $this->end();
 		<p class="title4">Update 13.10.2024</p>
 		<div class="new1">
 			<b>Account management</b><br><br>
-			• Longer sessions.<br>
-			• Sign in with Google account.<br>
-			• Option to delete all account related data.<br>
+			- Longer sessions.<br>
+			- Sign in with Google account.<br>
+			- Option to delete all account related data.<br>
 		</div>
 		</div>
 
@@ -473,11 +482,11 @@ $this->end();
 		<p class="title4">Update 30.04.2024</p>
 		<div class="new1">
 		<b>Improved search, ratings and board views</b><br><br>
-		<b>• Boards can be roatated.</b> <br>
-		<b>• Broader rank system:</b> While the last update enabled ranks from 21k to 9d, this update scales the existing problems into the new range.<br>
-		<b>• Improved raitng calculation:</b> The Tsumego rating calculation added an activity value that is meant to have a higher variance
+		<b>- Boards can be roatated.</b> <br>
+		<b>- Broader rank system:</b> While the last update enabled ranks from 21k to 9d, this update scales the existing problems into the new range.<br>
+		<b>- Improved raitng calculation:</b> The Tsumego rating calculation added an activity value that is meant to have a higher variance
 		with fresh problems.<br>
-		<b>• Improved similar problem search:</b> The search has been improved by storing solution types in the database.
+		<b>- Improved similar problem search:</b> The search has been improved by storing solution types in the database.
 		It always finds many similar problems in any search now and is very fast. <br>
 		<div align="center">
 		<img src="/img/example-search.png" title="search-example" alt="search-example" width="350px"><br>
@@ -492,12 +501,12 @@ $this->end();
 		<p class="title4">Update 03.04.2024</p>
 		<div class="new1">
 		<b>Improvements of rank display and score mechanics</b><br><br>
-		<b>• Broader rank system:</b> Player and Tsumego ranks range from 21k to 9d.<br>
-		<b>• Collection difficulty:</b> Instead of a difficulty value from 1 to 9, the average kyu/dan rank is shown.<br>
-		<b>• Mode-indepentent scores:</b> Problems in rating- and time mode give also xp and they change the problem's status to solved on succeeding.
+		<b>- Broader rank system:</b> Player and Tsumego ranks range from 21k to 9d.<br>
+		<b>- Collection difficulty:</b> Instead of a difficulty value from 1 to 9, the average kyu/dan rank is shown.<br>
+		<b>- Mode-indepentent scores:</b> Problems in rating- and time mode give also xp and they change the problem's status to solved on succeeding.
 		This means that rating and level
 		are affected in any mode.<br>
-		<b>• Progress bar switch:</b> The progress bar can display any type and it can be switched on the problem pages by
+		<b>- Progress bar switch:</b> The progress bar can display any type and it can be switched on the problem pages by
 		selecting the lower left corner.<br><br>
 		<div align="center">
 		<img src="/img/thumbs/1.png" title="bar-example" alt="bar-example" width="140px">
@@ -559,14 +568,14 @@ $this->end();
 		$link2 = '';
 		$link3 = '';
 		if(Auth::isLoggedIn()){
-			$link1 = '/tsumegos/play/' . (int)($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
+			$link1 = '/tsumegos/play/' . ($_COOKIE['lastVisit'] ?? 15352) . '?mode=1';
 			$link2 = '/ratingMode';
 			$link3 = '/timeMode/overview';
 		}
 		?>
-		• <a href="<?php echo $link1; ?>" style="color:#74d14c">Level mode</a> problems affect level and user rating.<br>
-		• <a href="<?php echo $link2; ?>" style="color:#c240f7">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
-		• <a href="<?php echo $link3; ?>" style="color:#ca6658">Time mode</a> also affects the user rating.<br><br>
+		- <a href="<?php echo $link1; ?>" style="color:#74d14c">Level mode</a> problems affect level and user rating.<br>
+		- <a href="<?php echo $link2; ?>" style="color:#c240f7">Rating mode</a> is the same as before, but all formulas for user and tsumego rating calculation have been improved.<br>
+		- <a href="<?php echo $link3; ?>" style="color:#ca6658">Time mode</a> also affects the user rating.<br><br>
 
 		<b>Rewards:</b> Every Sunday, the 3 highest rated users that have no premium account get a premium upgrade. Next prize giving: 03.03.24. To give everyone a fresh start, all user ratings have been reset.<br><br>
 
@@ -681,15 +690,15 @@ $this->end();
 			<p class="title4">Update 14.10.2023</p>
 			<div class="new1">
 				<b>Improved comments</b><br><br>
-				• <b>Link position in comments</b>: It is now possible to link board positions by clicking "Link current position".
+				- <b>Link position in comments</b>: It is now possible to link board positions by clicking "Link current position".
 				<br>
-				<div align="center"><img width="90%" src="/img/commentPositionExample1.jpg"></div>
+				<div align="center"><img width="90%" src="/img/commentPositionExample1.JPG"></div>
 				<br>
 				The position can be accessed by selecting the icon in the comment.
 				<br>
 				<div align="center"><img width="50%" src="/img/commentPositionExample2.png"></div>
 				<br>
-				• <b>Dynamic coordinates</b>: The coordinates written in the comments adjust according to the visible board area.
+				- <b>Dynamic coordinates</b>: The coordinates written in the comments adjust according to the visible board area.
 				<br>
 				<div align="center"><img width="90%" src="/img/dynCommentsExample.png"></div>
 				<br>
@@ -791,6 +800,12 @@ $this->end();
 				$("#title-image").attr("src", "/img/modeSelect24x.png?v=1.1");
 			<?php } ?>
 		}
+
+		var ajaxCall = $.ajax({
+			type: 'GET',
+			url: "mainPageAjax.txt",
+			dataType: 'txt'
+		});
 	</script>
 	<?php
 	if(!Auth::isLoggedIn()){

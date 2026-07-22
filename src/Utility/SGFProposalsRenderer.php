@@ -14,7 +14,7 @@ SELECT
     a.latest_accepted_id AS latest_accepted_id,
     p.id AS proposed_id,
     p.user_id AS proposed_user_id,
-    user.name AS user_name,
+    user.display_name AS user_name,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
     tsumego_status.status AS status,
