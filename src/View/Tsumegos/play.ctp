@@ -134,19 +134,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$playerColor[0] = 'WHITE';
 		$playerColor[1] = 'BLACK';
 	}
-	if($pl==0)
-		$descriptionColor = 'Black ';
-	else
-		$descriptionColor = 'White ';
 
-	if($startingPlayer==1 && $plRand==true)
+	$displayDescription = str_replace('[b]', 'Black ', $t['Tsumego']['description']);
+	// Swap Black<->White in description when the visual stone color differs from the stored convention.
+	// Descriptions are normalized: "Black" always means the solver (the player who moves first).
+	// Swap happens when board inversion ($pl) disagrees with the SGF starting color ($startingPlayer).
+	$shouldSwap = ($pl == 1 && $startingPlayer == 0) || ($pl == 0 && $startingPlayer == 1);
+	if ($shouldSwap)
 	{
-		if($descriptionColor=='Black ')
-			$descriptionColor = 'White ';
-		else if($descriptionColor=='White ')
-			$descriptionColor = 'Black ';
+		$displayDescription = preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			$displayDescription
+		);
 	}
-	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
@@ -201,14 +202,18 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<form id="tsumego-edit" method="post" action="/tsumegos/edit/<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="tsumego_id" value="<?php echo $t['Tsumego']['id']; ?>">
 				<input type="hidden" name="redirect" value="<?php echo h($_SERVER['REQUEST_URI']); ?>">
+				<input type="hidden" name="color_swapped" value="<?php echo $shouldSwap ? '1' : '0'; ?>">
 				<table>
 					<tr>
-						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo h($t['Tsumego']['description']); ?>"></td>
+						<td><label for="description">Description:</label></td>
+						<td>
+							<textarea name="description" id="description" rows="3" style="width: 100%;"><?php echo h($displayDescription); ?></textarea>
+							<br><small style="color: #888;">Black/White are swapped on save to match the stored convention</small>
+						</td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>
-						<td><input type="text" name="hint" id="hint" value="<?php echo h($t['Tsumego']['hint']); ?>"></td>
+						<td><textarea name="hint" id="hint" rows="1" style="width: 100%;"><?php echo h($t['Tsumego']['hint']); ?></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="rating">Rating:</label></td>
