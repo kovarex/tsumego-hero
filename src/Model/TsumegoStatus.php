@@ -30,6 +30,38 @@ class TsumegoStatus extends AppModel
 		}
 	}
 
+	public static array $labels = [
+		'N' => 'Not visited',
+		'V' => 'Visited',
+		'S' => 'Solved',
+		'F' => 'Locked',
+		'W' => 'Review',
+		'C' => 'Mastered',
+		'X' => 'Forgotten',
+		'G' => 'Golden',
+	];
+
+	public static array $descriptions = [
+		'N' => 'You haven\'t seen this problem.',
+		'V' => 'You have seen this problem, but not solved.',
+		'S' => 'You solved this problem.',
+		'F' => 'This problem is locked for today. Problems get locked when a player misplays and has no more hearts left.',
+		'W' => 'This problem is available for review. Solving it again gives half XP. It becomes available one week after the first solution.',
+		'C' => 'You passed the review. Rewards half XP for the repeated solve.',
+		'X' => 'You failed this problem during a review. This problem is locked for today.',
+		'G' => 'This is a golden tsumego. It gives eight times more XP than usual. If you fail, it disappears.',
+	];
+
+	public static function label(string $status): string
+	{
+		return self::$labels[$status] ?? '';
+	}
+
+	public static function description(string $status): string
+	{
+		return self::$descriptions[$status] ?? '';
+	}
+
 	public static function getProblemsSolvedInSet($setID)
 	{
 		return Util::query("

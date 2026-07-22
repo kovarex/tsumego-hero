@@ -386,23 +386,23 @@ li.statusN:hover { background-color: #a6a9b0; }
 li.statusV { background-color: var(--status-v-color); }
 li.statusV:hover { background-color: #74b5e0; }
 
-li.statusS,
-li.statusC { background-color: var(--status-solved-color); }
+li.statusS { background-color: var(--status-s-color); }
+li.statusS:hover { background-color: #5cd98a; }
 
-li.statusS:hover,
+li.statusC { background-color: var(--status-c-color); }
 li.statusC:hover { background-color: #6be39a; }
 
 li.statusW { background-color: var(--status-w-color); }
 li.statusW:hover { background-color: #7acfcd; }
 
-li.statusF,
-li.statusX { background-color: var(--status-failed-color); }
+li.statusF { background-color: var(--status-f-color); }
+li.statusF:hover { background-color: #e09da4; }
 
-li.statusF:hover,
-li.statusX:hover { background-color: #e09da4; }
+li.statusX { background-color: var(--status-x-color); }
+li.statusX:hover { background-color: #eaa8ae; }
 
-li.statusG { background-color: var(--status-g-color); }
-li.statusG:hover { background-color: #e5ee74; }
+li.statusG { background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color)); }
+li.statusG:hover { background: linear-gradient(135deg, var(--status-g-highlight), #fff8c0, var(--status-g-highlight)); }
 
 li a {
   display: block;
@@ -3391,9 +3391,6 @@ input.newCheck {
 .tooltip span {
   z-index: 100;
   display: none;
-  position: relative;
-  top: 34px;
-  left: -1px;
 }
 .eloTooltip {
   position: relative;
@@ -7741,11 +7738,71 @@ ul ul {
 {
 	display: none;
 	position: absolute;
-	left: 100%;
-	top: 0;
+	top: 34px;
+	left: -1px;
 	z-index: 1000;
 	pointer-events: none;
 }
+
+.tooltip-box svg
+{
+	display: block;
+}
+
+.tooltip-label
+{
+	opacity: 0;
+	padding: 3px 8px;
+	font-size: 12px;
+	font-weight: 800;
+	text-align: center;
+	border-radius: 3px;
+	transition: opacity 0.2s ease;
+}
+
+.tooltip-desc
+{
+	opacity: 0;
+	padding: 4px 6px;
+	font-size: 10px;
+	color: #ddd;
+	text-align: center;
+	max-width: 180px;
+	transition: opacity 0.3s ease;
+	line-height: 1.3;
+	background: rgba(0, 0, 0, 0.8);
+	border-radius: 0 0 3px 3px;
+}
+
+.tooltip-label.statusN,
+.status-label.statusN { background-color: var(--status-n-color); color: #fff; }
+.tooltip-label.statusV,
+.status-label.statusV { background-color: var(--status-v-color); color: #fff; }
+.tooltip-label.statusS,
+.status-label.statusS { background-color: var(--status-s-color); color: #fff; }
+.tooltip-label.statusC,
+.status-label.statusC { background-color: var(--status-c-color); color: #fff; }
+.tooltip-label.statusW,
+.status-label.statusW { background-color: var(--status-w-color); color: #fff; }
+.tooltip-label.statusF,
+.status-label.statusF { background-color: var(--status-f-color); color: #fff; }
+.tooltip-label.statusX,
+.status-label.statusX { background-color: var(--status-x-color); color: #fff; }
+.tooltip-label.statusG,
+.status-label.statusG { background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color)); color: #333; }
+
+.status-label
+{
+	display: inline-block;
+	padding: 4px 14px;
+	font-size: 14px;
+	font-weight: 800;
+	border-radius: 4px;
+	text-align: center;
+	min-width: 100px;
+}
+
+
 
 .paginator-link
 {
@@ -8004,12 +8061,15 @@ to { transform: rotate(360deg); }
 	--new1-gradient: linear-gradient(#fff, #f2f2f2);
 	--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
 	--body-background-gradient: linear-gradient(#282828, #424141);
-	--status-solved-color: #3ecf78;
-	--status-failed-color: #c63f4d;
+	--status-s-color: #3ecf78;
+	--status-c-color: #27ae60;
+	--status-f-color: #c63f4d;
+	--status-x-color: #a8323c;
 	--status-w-color: #34cfcc;
 	--status-v-color: #2d98e0;
 	--status-n-color: #7f8287;
-	--status-g-color: #d7e062;
+	--status-g-color: #daa520;
+	--status-g-highlight: #f5e080;
 	--paginator-button-text-color: #333;
 	--active-paginator-button-background-color: #333;
 	--active-paginator-button-text-color: #fff;
@@ -8027,12 +8087,15 @@ to { transform: rotate(360deg); }
 	--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
 	--title4-gradient: linear-gradient(#737373, #4a4a4a);
 	--body-background-gradient: linear-gradient(#2a2a2a, #111);
-	--status-solved-color: #0a4;
-	--status-failed-color: #dd3a4b;
+	--status-s-color: #0a4;
+	--status-c-color: #083;
+	--status-f-color: #dd3a4b;
+	--status-x-color: #c72a3b;
 	--status-w-color: #00aeab;
 	--status-v-color: #0088e3;
 	--status-n-color: #444;
-	--status-g-color: #b0bd00;
+	--status-g-color: #c9a22b;
+	--status-g-highlight: #f0d860;
 	--paginator-button-text-color: #ccc;
 	--active-paginator-button-background-color: #ccc;
 	--active-paginator-button-text-color: #000;

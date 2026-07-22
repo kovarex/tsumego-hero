@@ -1,6 +1,7 @@
 <?php
 
 App::uses('SgfParser', 'Utility');
+App::uses('TsumegoStatus', 'Model');
 
 class SitesController extends AppController
 {
@@ -86,6 +87,8 @@ class SitesController extends AppController
 	{
 		$this->set('_page', 'websitefunctions');
 		$this->set('_title', 'Tsumego Hero - Website Functions');
+		$this->set('statusLabels', TsumegoStatus::$labels);
+		$this->set('statusDescriptions', TsumegoStatus::$descriptions);
 	}
 
 	/**
