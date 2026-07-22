@@ -7,6 +7,7 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('User', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 
@@ -243,6 +244,8 @@ class Play
 			$orientation = $params['url']['orientation'];
 		if (isset($params['url']['playercolor']))
 			$colorOrientation = $params['url']['playercolor'];
+		else
+			$colorOrientation = User::playerColorToString(Auth::getPlayerColor());
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
