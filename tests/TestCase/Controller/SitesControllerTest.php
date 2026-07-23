@@ -196,7 +196,9 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('sites/index');
 		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('Achievement gained by Alice', $pageSource,
+		$this->assertStringContainsString('Achievement gained by', $pageSource,
+			'Home page should show the name of the user who earned the achievement');
+		$this->assertStringContainsString('DN_Alice', $pageSource,
 			'Home page should show the name of the user who earned the achievement');
 	}
 }

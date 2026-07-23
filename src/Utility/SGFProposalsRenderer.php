@@ -14,7 +14,7 @@ SELECT
     a.latest_accepted_id AS latest_accepted_id,
     p.id AS proposed_id,
     p.user_id AS proposed_user_id,
-    user.name AS user_name,
+    user.display_name AS user_display_name,
     set_connection.id AS set_connection_id,
     set_connection.num AS num,
     tsumego_status.status AS status,
@@ -37,7 +37,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		echo '<td class="adminpanel-table-text">' . h($item['user_name']) . ' made a proposal for <a class="adminpanel-link" href="/'
+		echo '<td class="adminpanel-table-text">' . h($item['user_display_name']) . ' made a proposal for <a class="adminpanel-link" href="/'
 		. $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a>:</td>';
 		echo '<td>';
 		echo '<a href="/editor/?sgfID=' . $item['latest_accepted_id'] . '">current</a> |
