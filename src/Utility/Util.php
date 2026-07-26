@@ -348,9 +348,10 @@ class Util
 				break;
 			if ($next[2] < 'a' || $next[2] > 't')
 				break;
-			$result []= substr($string, $position + 1, 2);
+			$result [] = substr($string, $position + 1, 2);
 			$position += 4;
-		} while (true);
+		}
+		while (true);
 		return $result;
 	}
 }
