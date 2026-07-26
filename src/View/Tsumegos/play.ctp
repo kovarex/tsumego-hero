@@ -670,7 +670,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
-	let multipleChoiceVariance = <?php echo $t['Tsumego']['variance']; ?>+"";
 	let multipleChoiceLibertyCount = <?php echo $t['Tsumego']['libertyCount']; ?>+"";
 	let multipleChoiceSemeaiType = <?php echo $t['Tsumego']['semeaiType']; ?>+"";
 	let multipleChoiceInsideLiberties = <?php echo $t['Tsumego']['insideLiberties']; ?>+"";
@@ -1818,7 +1817,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			$sStatusB = '';
 			$sStatusW = '';
-			if($t['Tsumego']['semeaiType'] == 1){
+			if($t['Tsumego']['semeaiType'] == 1)
+			{
 				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
 				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
 				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
@@ -1828,44 +1828,48 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				} else if ($t['Tsumego']['semeaiType'] == 2) {
 				$sStatusB = rand(0,$t['Tsumego']['libertyCount']);
 				$sStatusW = rand(0,$t['Tsumego']['libertyCount']);
-			}else if($t['Tsumego']['semeaiType'] == 3){
+			}
+			else if($t['Tsumego']['semeaiType'] == 3)
+			{
+				$sStatusB = rand(0, $multipleChoiceSquares);
+				$sStatusW = rand(0, $multipleChoiceTriangles);
+			}
+			else if($t['Tsumego']['semeaiType'] == 4)
+			{
+				$sStatusB = rand(0,$t['Tsumego']['variance']);
+				$sStatusW = rand(0,$t['Tsumego']['variance']);
+			}
+			else if($t['Tsumego']['semeaiType'] == 5)
+			{
 				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
 				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
 				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
 				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
 				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
 				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-			}else if($t['Tsumego']['semeaiType'] == 4){
+			}
+			else if($t['Tsumego']['semeaiType'] == 6)
+			{
 				$sStatusB = rand(0,$t['Tsumego']['variance']);
 				$sStatusW = rand(0,$t['Tsumego']['variance']);
-			}else if($t['Tsumego']['semeaiType'] == 5){
-				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
-				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
-				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
-				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
-				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
-				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-			}else if($t['Tsumego']['semeaiType'] == 6){
-				$sStatusB = rand(0,$t['Tsumego']['variance']);
-				$sStatusW = rand(0,$t['Tsumego']['variance']);
-	}
+			}
 			echo 'options.multipleChoice = true;';
 			echo 'let sStatusB = '.$sStatusB.';';
 			echo 'let sStatusW = '.$sStatusW.';';
 			echo 'multipleChoiceLibertiesB = sStatusB;';
 			echo 'multipleChoiceLibertiesW = sStatusW;';
-			echo 'multipleChoiceVariance = '.$t['Tsumego']['variance'].';';
 			echo 'multipleChoiceLibertyCount = '.$t['Tsumego']['libertyCount'].';';
 			echo 'let mVariance = '.$multipleChoiceTriangles.';';
 			echo 'let a1 = []; let a2 = [];
-			for(i=0;i<mVariance;i++){
+			for(i=0; i<mVariance; i++)
+			{
 				if(sStatusB>0) a1.push(1);
 				else a1.push(0);
 				if(sStatusW>0) a2.push(1);
 				else a2.push(0);
 				sStatusB--;
 				sStatusW--;
-	}
+			}
 			let a3 = a1.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a4 = a2.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
 			let a5 = [];

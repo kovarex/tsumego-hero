@@ -333,4 +333,24 @@ class Util
 			return '#d3f9c2';
 		return '#e8f9e0';
 	}
+
+	public static function getFollowingSgfCoordinates($string, $position)
+	{
+		$result = [];
+		do
+		{
+			$next = substr($string, $position, 4);
+			if ($next[0] != '[')
+				break;
+			if ($next[3] != ']')
+				break;
+			if ($next[1] < 'a' || $next[1] > 't')
+				break;
+			if ($next[2] < 'a' || $next[2] > 't')
+				break;
+			$result []= substr($string, $position + 1, 2);
+			$position += 4;
+		} while (true);
+		return $result;
+	}
 }

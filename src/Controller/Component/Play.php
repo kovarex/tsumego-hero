@@ -207,20 +207,8 @@ class Play
 			$sgf = $sgfdb;
 		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
-			$tr = strpos($sgf['Sgf']['sgf'], 'TR');
-			$sq = strpos($sgf['Sgf']['sgf'], 'SQ');
-			$sequencesSign = strpos($sgf['Sgf']['sgf'], ';B');
-			$p4 = substr($sgf['Sgf']['sgf'], $tr, $sq - $tr);
-			$trX = str_split(substr($p4, 2), 4);
-			$p5 = substr($sgf['Sgf']['sgf'], $sq, $sequencesSign - $sq);
-			$sqX = str_split(substr($p5, 2), 4);
-			$sqXCount = count($sqX);
-
-			for ($i = 0; $i < $sqXCount; $i++)
-				if (strlen($sqX[$i]) < 4)
-					unset($sqX[$i]);
-			($this->setFunction)('multipleChoiceTriangles', count($trX));
-			($this->setFunction)('multipleChoiceSquares', count($sqX));
+			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
+			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
 		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 		else

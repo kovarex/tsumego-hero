@@ -167,11 +167,14 @@ function displayMultipleChoiceResult(num) {
         $("#besogo-multipleChoice4").css("background-color", "#3ecf78");
         correct = 4;
       }
-    } else if (multipleChoiceSemeaiType == 3) {
-      console.log("b" + multipleChoiceLibertiesB);
-      console.log(multipleChoiceLibertiesW);
-      console.log(tsumegoFileLink);
-      let moreText = "";
+    } else if (multipleChoiceSemeaiType == 3)
+	{
+		console.log("multipleChoiceLibertiesB=" + multipleChoiceLibertiesB);
+		console.log("multipleChoiceLibertiesB2=" + multipleChoiceLibertiesB2);
+		console.log("multipleChoiceLibertiesW=" + multipleChoiceLibertiesW);
+		console.log("multipleChoiceLibertiesW2=" + multipleChoiceLibertiesW2);
+		console.log(tsumegoFileLink);
+		let moreText = "";
       if (tsumegoFileLink == 29824)
         moreText =
           "White can play 2 under the stones tesujis to gain 2 more liberties.<br>";
