@@ -90,16 +90,7 @@ class JwtAuth
 	public static function setAuthCookie(int $userId): string
 	{
 		$token = self::createToken($userId);
-		$_COOKIE[self::COOKIE_NAME] = $token;
-		setcookie(
-			self::COOKIE_NAME,
-			$token,
-			time() + self::DEFAULT_EXPIRY_SECONDS,
-			'/',
-			'',
-			true, // secure
-			true  // httpOnly
-		);
+		Util::setCookie(self::COOKIE_NAME, $token, true);
 		self::$cachedUserId = $userId;
 		return $token;
 	}
@@ -109,8 +100,7 @@ class JwtAuth
 	 */
 	public static function clearAuthCookie(): void
 	{
-		unset($_COOKIE[self::COOKIE_NAME]);
-		setcookie(self::COOKIE_NAME, '', time() - 3600, '/');
+		Util::clearCookie(self::COOKIE_NAME, true);
 		self::$cachedUserId = null;
 	}
 

@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Util', 'Utility');
+
 /**
  * Cookie-based flash messages for stateless operation.
  *
@@ -35,8 +37,7 @@ class CookieFlash
 		];
 
 		$json = json_encode($data);
-		$_COOKIE[self::COOKIE_NAME] = $json;
-		setcookie(self::COOKIE_NAME, $json, time() + 60, '/'); // 60 second expiry
+		Util::setCookie(self::COOKIE_NAME, $json, true, 60);
 		self::$cache = $data;
 	}
 
@@ -83,8 +84,7 @@ class CookieFlash
 	 */
 	public static function clear(): void
 	{
-		unset($_COOKIE[self::COOKIE_NAME]);
-		setcookie(self::COOKIE_NAME, '', time() - 3600, '/');
+		Util::clearCookie(self::COOKIE_NAME, true);
 		self::$cache = null;
 	}
 

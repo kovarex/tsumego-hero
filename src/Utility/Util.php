@@ -8,13 +8,16 @@ class Util
 		return $host;
 	}
 
-	public static function setCookie($name, $value)
+	public static function setCookie(string $name, $value, bool $httpOnly = false, ?int $expires = null)
 	{
+		if ($expires === null)
+			$expires = 365 * 24 * 60 * 60; // 1 year default
+		$isSecure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 		setcookie($name, $value, [
-			'expires'  => time() + 365 * 24 * 60 * 60,
+			'expires'  => time() + $expires,
 			'path'     => '/',
-			'secure'   => true,
-			'httponly' => false,
+			'secure'   => $isSecure,
+			'httponly' => $httpOnly,
 			'samesite' => 'Lax'
 		]);
 		// Also update $_COOKIE so the value is available in the current request
@@ -22,16 +25,17 @@ class Util
 	}
 
 	/* @return The value of the cleared cookie */
-	public static function clearCookie(string $name): ?string
+	public static function clearCookie(string $name, bool $httpOnly = false): ?string
 	{
 		$previous = $_COOKIE[$name] ?? null;
+		$isSecure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 
 		setcookie($name, '',
 			[
 				'expires'  => time() - 3600,
 				'path'     => '/',
-				'secure'   => true,
-				'httponly' => false,
+				'secure'   => $isSecure,
+				'httponly' => $httpOnly,
 				'samesite' => 'Lax'
 			]);
 
