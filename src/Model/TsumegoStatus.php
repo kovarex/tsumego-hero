@@ -30,6 +30,38 @@ class TsumegoStatus extends AppModel
 		}
 	}
 
+	public static array $labels = [
+		'N' => 'Not visited',
+		'V' => 'Visited',
+		'S' => 'Solved',
+		'F' => 'Locked',
+		'W' => 'Review',
+		'C' => 'Mastered',
+		'X' => 'Forgotten',
+		'G' => 'Golden',
+	];
+
+	public static array $descriptions = [
+		'N' => 'You haven\'t seen this problem yet.',
+		'V' => 'You have seen this problem but have not solved it.',
+		'S' => 'You got it right. It gives no more XP and becomes available for Review after one week.',
+		'F' => 'You can\'t play this problem today after misplaying with no hearts left. It resets to Visited tomorrow.',
+		'W' => 'A week has passed since you solved this. Solve it for half XP. Get it right and it becomes Mastered, fail and it becomes Forgotten.',
+		'C' => 'You passed the review. It gives no more XP.',
+		'X' => 'You failed a Review. You are locked out for today. It resets to Review tomorrow.',
+		'G' => 'You have one attempt at 8x XP. Created by activating the Refinement hero power.',
+	];
+
+	public static function label(string $status): string
+	{
+		return self::$labels[$status] ?? '';
+	}
+
+	public static function description(string $status): string
+	{
+		return self::$descriptions[$status] ?? '';
+	}
+
 	public static function getProblemsSolvedInSet($setID)
 	{
 		return Util::query("
