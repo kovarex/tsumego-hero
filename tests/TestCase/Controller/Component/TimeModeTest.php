@@ -520,7 +520,9 @@ class TimeModeTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('timeMode/overview');
 		$renderedCounts = $browser->driver->findElements(WebDriverBy::cssSelector(".imageContainerText2"));
-		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) { return $el->isDisplayed(); }));
+		$visibleCounts = array_values(array_filter($renderedCounts, function ($el) {
+			return $el->isDisplayed();
+		}));
 
 		$this->assertSame(count($visibleCounts), count($contextParameters['time-mode-ranks']));
 		$this->assertSame($visibleCounts[0]->getText(), "0");
@@ -556,11 +558,15 @@ class TimeModeTest extends TestCaseWithAuth
 
 		// hovering shows hovered image
 		$browser->hover($div5k);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png"; });
+		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5khover.png";
+		});
 
 		// hovering something else shows unhovered image
 		$browser->hover($div1d);
-		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) { return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png"; });
+		$browser->driver->wait(10, 50)->until(function () use ($imgs5k) {
+			return $imgs5k[0]->getAttribute('src') == "/img/rankButton5k.png";
+		});
 
 		// locked rank shows inactive image
 		$this->assertSame(count($links1d), 0);

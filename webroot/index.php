@@ -19,9 +19,8 @@
 
 use Composer\InstalledVersions;
 
-if (!defined('DS')) {
+if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
-}
 
 $primaryConfig = '/home/private/tsumego/config/define.local.php';
 $secondaryConfig = dirname(__DIR__) . DS . 'config' . DS . 'define.php';
@@ -37,28 +36,26 @@ else
 	);
 
 // For the built-in server
-if (PHP_SAPI === 'cli-server') {
-	if ($_SERVER['PHP_SELF'] !== '/' . basename(__FILE__) && file_exists(WWW_ROOT . $_SERVER['PHP_SELF'])) {
+if (PHP_SAPI === 'cli-server')
+{
+	if ($_SERVER['PHP_SELF'] !== '/' . basename(__FILE__) && file_exists(WWW_ROOT . $_SERVER['PHP_SELF']))
 		return false;
-	}
 	$_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
 }
 $_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
 
-if (!is_dir(VENDORS)) {
+if (!is_dir(VENDORS))
 	trigger_error(
 		'Composer vendors directory not found at "' . VENDORS . '". '
 		. 'Please run "composer install" in the project root directory to install dependencies.',
 		E_USER_ERROR,
 	);
-}
-if (!is_file(VENDORS . 'autoload.php')) {
+if (!is_file(VENDORS . 'autoload.php'))
 	trigger_error(
 		'Composer autoload file not found at "' . VENDORS . 'autoload.php". '
 		. 'Please run "composer install" to generate the autoload file.',
 		E_USER_ERROR,
 	);
-}
 require_once VENDORS . 'autoload.php';
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'src' . DS . 'Cake' . DS . 'bootstrap.php';

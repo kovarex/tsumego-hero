@@ -49,7 +49,9 @@ class TimeModeController extends AppController
 		$this->set('timeMode', $timeMode);
 		$this->set('nextLink', '/timeMode/skip/');
 		$this->set('noSkipNextLink', $timeMode->currentWillBeLast() ? '/timeMode/result/' . $timeMode->currentSession['TimeModeSession']['id'] : '/timeMode/play');
-		$play  = new Play(function ($name, $value) { $this->set($name, $value); });
+		$play  = new Play(function ($name, $value) {
+			$this->set($name, $value);
+		});
 		$play->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 		$this->render('/Tsumegos/play');
 		return null;
@@ -221,7 +223,9 @@ ORDER BY MIN(rating);");
 				'time_mode_session_status_id' => TimeModeUtil::$SESSION_STATUS_SOLVED]]) != 1)
 					return null;
 
-		$rankIndex = array_find_key($timeModeRanks, function ($timeModeRank) use ($finishedSession) { return $timeModeRank['TimeModeRank']['id'] == $finishedSession['TimeModeSession']['time_mode_rank_id']; });
+		$rankIndex = array_find_key($timeModeRanks, function ($timeModeRank) use ($finishedSession) {
+			return $timeModeRank['TimeModeRank']['id'] == $finishedSession['TimeModeSession']['time_mode_rank_id'];
+		});
 
 		if ($rankIndex == 0)
 		{
@@ -231,7 +235,9 @@ ORDER BY MIN(rating);");
 		$unlock = [];
 		$unlock['rank'] = $timeModeRanks[$rankIndex - 1]['TimeModeRank']['name'];
 
-		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) { return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id']; });
+		$categoryIndex = array_find_key($timeModeCategories, function ($timeModeCategory) use ($finishedSession) {
+			return $timeModeCategory['TimeModeCategory']['id'] == $finishedSession['TimeModeSession']['time_mode_category_id'];
+		});
 		$unlock['category'] = $timeModeCategories[$categoryIndex]['TimeModeCategory']['name'];
 		return $unlock;
 	}
