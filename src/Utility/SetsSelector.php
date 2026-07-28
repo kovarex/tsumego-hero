@@ -207,7 +207,9 @@ ORDER BY order_value, total_count DESC, partition_number, id
 		$ranks = SetsController::getExistingRanksArray();
 
 		if (!empty($this->tsumegoFilters->ranks))
-			$ranks = array_values(array_filter($ranks, function ($r) { return in_array($r['rank'], $this->tsumegoFilters->ranks); }));
+			$ranks = array_values(array_filter($ranks, function ($r) {
+				return in_array($r['rank'], $this->tsumegoFilters->ranks);
+			}));
 
 		$rankSelects = [];
 		$rankOrder = 0;

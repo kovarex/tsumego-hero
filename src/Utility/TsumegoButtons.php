@@ -107,7 +107,9 @@ class TsumegoButtons extends ArrayObject
 
 	private function deduceCurrentIndex($currentSetConnectionID): ?int
 	{
-		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) { return $tsumegoButton->setConnectionID === $currentSetConnectionID; });
+		return array_find_key((array) $this, function ($tsumegoButton) use ($currentSetConnectionID) {
+			return $tsumegoButton->setConnectionID === $currentSetConnectionID;
+		});
 	}
 
 	private function updateHighestTsumegoOrder()
@@ -138,7 +140,9 @@ class TsumegoButtons extends ArrayObject
 
 	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set)
 	{
-		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) { return $tsumegoButton->setConnectionID == $setConnectionID; });
+		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
+			return $tsumegoButton->setConnectionID == $setConnectionID;
+		});
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;

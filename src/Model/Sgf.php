@@ -69,7 +69,9 @@ class Sgf extends AppModel
 		$sgf['accepted'] = $accepted;
 		if (!$this->save($sgf))
 		{
-			$errorMessages = array_map(function ($error) { return is_array($error) ? implode(' ', $error) : $error; }, $this->validationErrors);
+			$errorMessages = array_map(function ($error) {
+				return is_array($error) ? implode(' ', $error) : $error;
+			}, $this->validationErrors);
 			$errorMessage = empty($errorMessages) ? 'validation failed.' : implode('; ', $errorMessages);
 			throw new InternalErrorException('Failed to save SGF: ' . $errorMessage);
 		}

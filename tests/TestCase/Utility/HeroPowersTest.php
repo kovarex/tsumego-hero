@@ -34,7 +34,11 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->assertSame($context->reloadUser()['used_refinement'], 1); // the power is used up
 
 		// the reported xp is normal golden
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'G');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'G');
 		$browser->get('sets');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $goldenTsumego['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'S');
@@ -88,7 +92,11 @@ class HeroPowersTest extends TestCaseWithAuth
 		// Wait for navigation buttons to load
 		$browser->driver->wait(10)->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::cssSelector('div.tsumegoNavi2 li')));
 
-		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $context->tsumegos[0]['id']]]);
 		$this->assertSame($status['TsumegoStatus']['status'], 'V');
 	}
@@ -240,7 +248,9 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->assertFalse($browser->driver->executeScript("return window.besogo.intuitionActive;"));
 		$this->checkPowerIsActive($browser, 'intuition');
 		$browser->clickId('intuition');
-		$browser->driver->wait(10, 500)->until(function () use ($browser) { return $browser->driver->executeScript("return window.besogo.intuitionActive;"); });
+		$browser->driver->wait(10, 500)->until(function () use ($browser) {
+			return $browser->driver->executeScript("return window.besogo.intuitionActive;");
+		});
 		$this->checkPowerIsInactive($browser, 'intuition');
 		$this->assertSame($context->reloadUser()['used_intuition'], 1);
 	}
@@ -256,7 +266,9 @@ class HeroPowersTest extends TestCaseWithAuth
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$this->checkPowerIsActive($browser, 'intuition');
 		$browser->clickId('intuition');
-		$browser->driver->wait(10, 500)->until(function () use ($browser) { return $browser->driver->executeScript("return window.besogo.intuitionActive;"); });
+		$browser->driver->wait(10, 500)->until(function () use ($browser) {
+			return $browser->driver->executeScript("return window.besogo.intuitionActive;");
+		});
 		$circles = $browser->driver->executeScript("
 			return Array.from(document.querySelectorAll('#nextMoveGroup circle'))
 				.map(c => ({
@@ -292,7 +304,9 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->checkPowerIsActive($browser, 'rejuvenation');
 		$this->checkPowerIsInactive($browser, 'intuition');
 		$browser->clickId('rejuvenation');
-		$browser->driver->wait(10, 500)->until(function () use ($context) { return $context->reloadUser()['damage'] == 0; });
+		$browser->driver->wait(10, 500)->until(function () use ($context) {
+			return $context->reloadUser()['damage'] == 0;
+		});
 		$this->assertSame($context->user['used_rejuvenation'], 1);
 		$this->assertSame($context->user['used_intuition'], 0);
 		// Wait for UI to update after AJAX response
@@ -347,7 +361,9 @@ class HeroPowersTest extends TestCaseWithAuth
 		// Rejuvenate to restore all hearts
 		$this->checkPowerIsActive($browser, 'rejuvenation');
 		$browser->clickId('rejuvenation');
-		$browser->driver->wait(10, 500)->until(function () use ($context) { return $context->reloadUser()['damage'] == 0; });
+		$browser->driver->wait(10, 500)->until(function () use ($context) {
+			return $context->reloadUser()['damage'] == 0;
+		});
 		$browser->driver->wait(10, 200)->until(function () use ($browser) {
 			return $browser->find('#rejuvenation')->getCssValue('cursor') === 'auto';
 		});

@@ -18,7 +18,9 @@ class TsumegoFilters
 
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
 		$this->collectionSize = (int) self::processItem('collection_size', '200');
-		$rawSets = self::processItem('filtered_sets', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$rawSets = self::processItem('filtered_sets', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
+		});
 
 		foreach ($rawSets as $set)
 		{
@@ -33,7 +35,9 @@ class TsumegoFilters
 		$this->ranks = self::processItem('filtered_ranks', [], function ($input) {
 			return array_values(array_filter(explode('@', $input), fn($rank) => Rating::isValidReadableRank($rank)));
 		});
-		$rawTags = self::processItem('filtered_tags', [], function ($input) { return array_values(array_filter(explode('@', $input))); });
+		$rawTags = self::processItem('filtered_tags', [], function ($input) {
+			return array_values(array_filter(explode('@', $input)));
+		});
 
 		foreach ($rawTags as $tag)
 		{

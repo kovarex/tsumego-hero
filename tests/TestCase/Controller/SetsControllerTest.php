@@ -240,7 +240,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/15k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 15k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -248,13 +252,21 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'S');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 4, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'S');
 	}
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void
@@ -288,20 +300,32 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are viewing the 'test set' and checking the buttons
 
 		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'test set #1 2/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
@@ -313,7 +337,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
 
 		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 2; }, function ($index) { return $index + 3; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index + 2;
+		}, function ($index) {
+			return $index + 3;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -371,7 +399,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 
 		// now we are viewing the 15k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -379,13 +411,21 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
@@ -400,7 +440,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '1d');
 
 		// now we are viewing the 1d set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -408,7 +452,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '1d 1/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 	}
 
 	public function testQueringSetsByTopicButLimitedByRanks(): void
@@ -455,7 +503,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -463,13 +515,21 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[6]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return ($index + 1) * 3; }, function ($index) { return $index + 2; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return ($index + 1) * 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -528,7 +588,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), '15k');
 
 		// now we are viewing the 'set 2' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -536,13 +600,21 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 1/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[5]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, '15k 2/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 4; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 4;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -610,7 +682,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(Util::getMyAddress() . '/sets/view/10k', $browser->driver->getCurrentURL());
 
 		// now we are viewing the 10k set insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
@@ -727,19 +803,31 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'atari');
 
 		// now we are viewing the 'atari' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		});
 
 		// entering the tsumego in the set
 		$buttons[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'atari 1/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// clicking next to get to the second one
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[4]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'atari 2/2');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index + 3; }, function ($index) { return $index + 1; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index + 3;
+		}, function ($index) {
+			return $index + 1;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -785,19 +873,31 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'set 1');
 
 		// now we are viewing the 'set 1' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; });
+		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		});
 
 		// entering the tsumego in the set
 		$buttons[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[3]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 2/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 0, 'V');
 
 		// clicking next to get to the second one
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[5]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
 		$this->checkPlayTitle($browser, 'set 1 3/3');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) { return $index * 2 + 3; }, function ($index) { return $index + 2; }, 1, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+			return $index * 2 + 3;
+		}, function ($index) {
+			return $index + 2;
+		}, 1, 'V');
 
 		// clicking on next problem should get us back to the set
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -983,11 +1083,19 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 
 		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 		$buttons[0]->click();
 
 		// opening the favorites problem
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 
 		// next will get us back to favorites
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
@@ -1009,15 +1117,27 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 
 		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 		$buttons[0]->click(); // opening the favorites problem
 
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, 0, 'V');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		}, 0, 'V');
 		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
 
 		// going back to favorites, which should be empty now
 		$browser->get('sets/view/favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 	}
 
 	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
@@ -1052,14 +1172,22 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get('sets/view/favorites');
 		// now we are viewing the 'favorites' insides and checking the buttons
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; });
+		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
+			return $index;
+		}, function ($index) {
+			return $index + 1;
+		});
 		$buttons[0]->click();
 
 		// first favorite
 		for ($i = 0; $i < 3; $i++)
 		{
 			$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) { return $index; }, function ($index) { return $index + 1; }, $i, 'V');
+			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
+				return $index;
+			}, function ($index) {
+				return $index + 1;
+			}, $i, 'V');
 			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		}
 		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());

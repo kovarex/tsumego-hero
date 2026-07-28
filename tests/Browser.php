@@ -250,7 +250,9 @@ class Browser
 
 	public function waitUntilIDExists($id)
 	{
-		new WebDriverWait($this->driver, 5, 500)->until(function () { return $this->idExists('commentBox'); });
+		new WebDriverWait($this->driver, 5, 500)->until(function () {
+			return $this->idExists('commentBox');
+		});
 	}
 
 	public function waitUntilCssSelectorExists(string $selector, int $timeout = 10): void

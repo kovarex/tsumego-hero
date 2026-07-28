@@ -186,7 +186,11 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains("Try again tomorrow", $browser->driver->getPageSource());
 		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
 		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
-		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) { return 0; }, function ($index) { return 1;}, 0, 'F');
+		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) {
+			return 0;
+		}, function ($index) {
+			return 1;
+		}, 0, 'F');
 	}
 
 	public function testSolveByClicking()
@@ -303,7 +307,9 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser->clickBoard(1, 1);
 
 		// Brief wait to ensure click was processed
-		$wait->until(function () use ($browser) { return $browser->driver->executeScript("return document.readyState === 'complete';"); });
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript("return document.readyState === 'complete';");
+		});
 
 		// Verify still on same problem (didn't reset or advance)
 		$this->assertStringContainsString($tsumegoUrl, $browser->driver->getCurrentURL(), "Should stay on same problem");
@@ -323,19 +329,25 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 		// Wait for board to initialize (window.besogo exists)
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
-		$wait->until(function () use ($browser) {return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';"); });
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript("return typeof window.besogo !== 'undefined';");
+		});
 
 		// Make wrong move (correct is 1,1)
 		$browser->clickBoard(2, 1);
 
 		// Wait for status to show "Incorrect"
-		$wait->until(function () use ($browser) { return str_contains($browser->find('#status')->getText(), "Incorrect"); });
+		$wait->until(function () use ($browser) {
+			return str_contains($browser->find('#status')->getText(), "Incorrect");
+		});
 
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
 		$browser->clickId('besogo-reset-button');
 		$this->assertStringContainsString("", $browser->find('#status')->getText());
 		$browser->clickBoard(2, 1);
-		$wait->until(function () use ($browser) { return str_contains($browser->find('#status')->getText(), "Incorrect"); });
+		$wait->until(function () use ($browser) {
+			return str_contains($browser->find('#status')->getText(), "Incorrect");
+		});
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
 		$browser->get($tsumegoUrl);
 		$this->assertSame(2, $context->reloadUser()['damage']); // 2 errors done
