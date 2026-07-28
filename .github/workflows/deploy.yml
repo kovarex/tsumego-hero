@@ -1,0 +1,28 @@
+﻿name: Deploy
+
+# Triggers when CI workflow completes on master.
+# test runs automatically; production waits for approval via GitHub Environments.
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [master]
+
+jobs:
+  deploy-test:
+    name: Deploy to test.tsumego.com
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      target: test
+    secrets: inherit
+
+  deploy-production:
+    name: Deploy to tsumego.com
+    needs: [deploy-test]
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      target: production
+    secrets: inherit
