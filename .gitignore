@@ -33,7 +33,6 @@ src/Config/asset_compress.local.ini
 
 /img/set_*
 /img/google/*.png
-webroot/mainPageAjax.txt
 webroot/userLogger.html
 webroot/cache_css/
 webroot/cache_js/
@@ -42,7 +41,6 @@ webroot/forums/store
 webroot/forums/config.php
 webroot/forums/vendor
 .idea/
-mainPageAjax.txt
 .local/
 
 # IDE and editor specific files #
