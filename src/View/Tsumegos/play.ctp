@@ -779,12 +779,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'var besogoMode3Next = 0;'; // probably whatever, the id doesn't matter in time mode
 	}
 	?>
-
-<?php
-		if($corner=='t' || $corner=='b' || $corner=='full board')
-			echo '$("#plus2").css("left", "340px");';
-			?>
-
 	<?php if(!Auth::isInTimeMode()){ ?>
 
 		function incrementSeconds(){
@@ -1597,6 +1591,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		let timeToAdd = <?php echo TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED; ?> * multiplier;
 		tcount += timeToAdd;
 		seconds -= timeToAdd;
+		var $p = $("#time-bonus");
+		$p.css("opacity", 1).stop(true, true).delay(800).animate({opacity: 0}, 400);
 	}
 
 	function displayResult(result)

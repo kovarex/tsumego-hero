@@ -3913,6 +3913,11 @@ pre {
 .setViewButtons3 {
   display: none;
 }
+.time-mode-timer {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+}
 #time-mode-countdown {
   font-size: 21px;
   font-weight: 800;
@@ -4119,14 +4124,16 @@ pre {
   );
   border: 1px solid black;
 }
-#plus2 {
-  display: none;
+#time-bonus {
+  opacity: 0;
   position: absolute;
-  top: 111px;
-  left: 440px;
+  left: 100%;
+  top: 1px;
+  margin-left: 2px;
   font-size: 21px;
   font-weight: 800;
-  color: blue;
+  color: #0cbb0c;
+  white-space: nowrap;
 }
 .newx {
   padding: 0;

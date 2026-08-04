@@ -28,7 +28,7 @@ class TsumegoXPAndRating
 		<span id="ratingSeparator"></span><div class="eloTooltip"><span id="ratingLossShort"></span><span class="eloTooltiptext" id="ratingLossLong"></span></div>
 	</div>';
 		if (Auth::isInTimeMode())
-			echo '<div id="time-mode-countdown">10.0</div><div id="plus2">+2</div>';
+			echo '<span class="time-mode-timer"><span id="time-mode-countdown">10.0</span><span id="time-bonus">+' . (int)TimeModeUtil::$SECONDS_ADDED_PER_MOVE_PLAYED . 's</span></span>';
 		echo '</td>
 			<td style="width:33%;">
 				<div id="status" align="center"></div>

@@ -678,4 +678,33 @@ class TimeModeTest extends TestCaseWithAuth
 		$afterPlayResultSeconds = $afterPlayResult['seconds'] + $afterPlayResult['minutes'];
 		$this->assertGreaterThan($afterPlayResultSeconds, $beforePlayResultSeconds);
 	}
+
+	/**
+	 * When a player places a stone in time mode, the +3s bonus
+	 * indicator should briefly appear next to the countdown.
+	 */
+	public function testTimeBonusIndicatorShowsOnMove(): void
+	{
+		$sgf = '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc];B[aa];W[ab];B[ba]C[+])';
+		$contextParameters = [];
+		$contextParameters['time-mode-ranks'] = ['5k'];
+		$contextParameters['tsumegos'] = [];
+		for ($i = 0; $i < TimeModeUtil::$PROBLEM_COUNT + 1; ++$i)
+			$contextParameters['tsumegos'][] = ['sgf' => $sgf, 'set_order' => $i];
+		$context = new ContextPreparator($contextParameters);
+
+		$browser = Browser::instance();
+		$browser->get('timeMode/start'
+			. '?categoryID=' . TimeModeUtil::$CATEGORY_BLITZ
+			. '&rankID=' . $context->timeModeRanks[0]['id']);
+
+		$bonus = $browser->driver->findElement(WebDriverBy::cssSelector('[id="time-bonus"]'));
+		$this->assertFalse($bonus->isDisplayed(),
+			'+3s indicator should start hidden');
+
+		$browser->driver->executeScript("addTimeForMovePlayed()");
+
+		$this->assertTrue($bonus->isDisplayed(),
+			'+3s indicator should appear after a move is played');
+	}
 }
