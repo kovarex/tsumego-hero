@@ -55,7 +55,7 @@
  * @var TagConnectionsEdit $tagConnectionsEdit
  * @var TimeMode $timeMode
  * @var TsumegoButton $tsumegoButton
- * @var TsumegoButtons $tsumegoButtons
+ * @var TsumegoButtons|null $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var array $tv
@@ -698,7 +698,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
 
-	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
+	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
 	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;

@@ -11,7 +11,7 @@
  */
 
 // Determine if comments should be visible (solved, completed, or admin)
-$shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t ?? []) || Auth::isAdmin();
+$shouldShowComments = TsumegoUtil::hasStateAllowingInspection($t) || Auth::isAdmin();
 $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 
 // Calculate counts for tabs (only thing we need from server)

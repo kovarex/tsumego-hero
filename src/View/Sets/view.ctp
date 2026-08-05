@@ -78,7 +78,7 @@ if(!$beta2)
 		<tr>
 			<td style="vertical-align:top;">
 				<?php
-// $saNum
+			$saNum = 0;
 
 if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
 elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
@@ -261,9 +261,8 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			</tr>
 			<?php
-			if(true)
-				if(Auth::isAdmin())
-				{
+			if (Auth::isAdmin())
+			{
 					echo '<tr><td colspan="2">
 					<div class="admin-panel">
 					<div align="center"><h1> Admin Panel </h1></div>

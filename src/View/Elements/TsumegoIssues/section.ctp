@@ -20,7 +20,7 @@ $isAdmin = Auth::isAdmin();
 	data-user-id="<?php echo $userId; ?>"
 	data-is-admin="<?php echo $isAdmin ? 'true' : 'false'; ?>"
 	data-status-filter="<?php echo h($statusFilter); ?>"
-	data-current-page="<?php echo h($currentPage); ?>"
+	data-current-page="<?php echo h((string)$currentPage); ?>"
 >
 	<!-- React app will mount here and fetch all data -->
 	<div class="loading">Loading issues...</div>
