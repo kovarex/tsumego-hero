@@ -183,20 +183,62 @@ class SitesControllerTest extends ControllerTestCase
 	}
 
 	/**
-	 * Home page "Most Recent Achievements" should show the name of the user
-	 * who earned each achievement.
+	 * The landing page shows recent achievements in reverse chronological
+	 * order, limited to 7 rows for layout. Older entries are cut off.
 	 */
-	public function testHomePageShowsAchieverNames(): void
+	public function testHomePageShowsRecentAchievements(): void
 	{
-		$context = new ContextPreparator([
+		new ContextPreparator([
 			'other-users' => [
-				['name' => 'Alice', 'achievement-statuses' => [['id' => 1]]],
+				['name' => 'Alice', 'achievement-statuses' => [
+					['id' => 1, 'created' => '2026-01-01 12:00:00'],
+					['id' => 3, 'created' => '2026-01-03 12:00:00'],
+					['id' => 6, 'created' => '2026-01-06 12:00:00'],
+					['id' => 9, 'created' => '2026-01-09 12:00:00'],
+				]],
+				['name' => 'Bob', 'achievement-statuses' => [
+					['id' => 2, 'created' => '2026-01-02 12:00:00'],
+					['id' => 4, 'created' => '2026-01-04 12:00:00'],
+					['id' => 7, 'created' => '2026-01-07 12:00:00'],
+					['id' => 10, 'created' => '2026-01-10 12:00:00'],
+				]],
+				['name' => 'Charlie', 'achievement-statuses' => [
+					['id' => 5, 'created' => '2026-01-05 12:00:00'],
+					['id' => 8, 'created' => '2026-01-08 12:00:00'],
+				]],
 			],
 		]);
 		$browser = Browser::instance();
 		$browser->get('sites/index');
-		$pageSource = $browser->driver->getPageSource();
-		$this->assertStringContainsString('Achievement gained by Alice', $pageSource,
-			'Home page should show the name of the user who earned the achievement');
+
+		$rows = $browser->driver->findElements(WebDriverBy::cssSelector('.recent-achievement-row'));
+		$this->assertCount(7, $rows, 'Should show at most 7 achievements');
+
+		// Most recent first: Bob's 10000 Problems (Jan 10)
+		$this->assertStringContainsString('10000 Problems', $rows[0]->getText());
+		$this->assertStringContainsString('Bob', $rows[0]->getText());
+		$link = $rows[0]->findElement(WebDriverBy::cssSelector('.recent-achievement-achievement-link'));
+		$this->assertStringContainsString('/achievements/view/10', $link->getAttribute('href'));
+
+		// Second: Alice's 9000 Problems (Jan 9)
+		$this->assertStringContainsString('9000 Problems', $rows[1]->getText());
+		$this->assertStringContainsString('Alice', $rows[1]->getText());
+
+		// Third: Charlie's 8000 Problems (Jan 8)
+		$this->assertStringContainsString('8000 Problems', $rows[2]->getText());
+		$this->assertStringContainsString('Charlie', $rows[2]->getText());
+
+		// Verify reverse chronological order
+		$allText = implode("\n", array_map(fn($r) => $r->getText(), $rows));
+
+		// Oldest three (Jan 1-3) should be cut off by the limit of 7
+		$this->assertStringNotContainsString('3000 Problems', $allText);
+		$this->assertStringNotContainsString('2000 Problems', $allText);
+		$this->assertStringNotContainsString('1000 Problems', $allText);
+
+		// All three users appear in the visible rows
+		$this->assertStringContainsString('Alice', $allText);
+		$this->assertStringContainsString('Bob', $allText);
+		$this->assertStringContainsString('Charlie', $allText);
 	}
 }

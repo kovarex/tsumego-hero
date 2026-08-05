@@ -22,6 +22,7 @@ class SitesController extends AppController
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TsumegoStatus');
+		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
 		$this->loadModel('DayRecord');
 		$this->loadModel('Schedule');
@@ -58,6 +59,23 @@ class SitesController extends AppController
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
 		$this->set('urNames', $urNames);
+
+		$recentAchievements = $this->AchievementStatus->getRecent();
+		$this->set('recentAchievements', $recentAchievements);
+	}
+
+	/**
+	 * Returns recent achievements for AJAX polling.
+	 *
+	 * @return void
+	 */
+	public function recentAchievements()
+	{
+		$this->autoRender = false;
+		$this->loadModel('AchievementStatus');
+		$this->response->type('json');
+		$recentAchievements = $this->AchievementStatus->getRecent();
+		$this->response->body(json_encode(['recentAchievements' => $recentAchievements]));
 	}
 
 	/**

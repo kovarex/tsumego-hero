@@ -29,29 +29,6 @@ class AppController extends Controller
 		return $dSets;
 	}
 
-	public static function getStartpage(): string
-	{
-		$result = '';
-		$latest = ClassRegistry::init('AchievementStatus')->find('all', ['limit' => 7, 'order' => 'created DESC']) ?: [];
-		$latestCount = count($latest);
-		for ($i = 0; $i < $latestCount; $i++)
-		{
-			$a = ClassRegistry::init('Achievement')->findById($latest[$i]['AchievementStatus']['achievement_id']);
-			$u = ClassRegistry::init('User')->findById($latest[$i]['AchievementStatus']['user_id']);
-			if (substr($u['User']['name'], 0, 3) == 'g__' && $u['User']['external_id'] != null)
-				$startPageUser = AppController::checkPicture($u['User']);
-			else
-				$startPageUser = $u['User']['name'];
-			$latest[$i]['AchievementStatus']['name'] = $a['Achievement']['name'];
-			$latest[$i]['AchievementStatus']['color'] = $a['Achievement']['color'];
-			$latest[$i]['AchievementStatus']['image'] = $a['Achievement']['image'];
-			$latest[$i]['AchievementStatus']['user'] = $startPageUser;
-			$result .= '<div class="quote1"><div class="quote1a"><a href="/achievements/view/' . $a['Achievement']['id'] . '"><img src="/img/' . $a['Achievement']['image'] . '.png" width="34px"></a></div>';
-			$result .= '<div class="quote1b">Achievement gained by ' . $startPageUser . ':<br><div class=""><b>' . $a['Achievement']['name'] . '</b></div></div></div>';
-		}
-		return $result;
-	}
-
 	/**
 	 * @param int $uid User ID
 	 * @param string $action Action type

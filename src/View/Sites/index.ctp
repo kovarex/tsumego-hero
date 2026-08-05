@@ -315,7 +315,7 @@ $this->end();
 			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
-			echo '<div class="quote-pick-all quote-pick-'.$quotePick.'" id="ajaxWallpaper">'.AppController::getStartpage().'</div>';
+			echo '<div data-recent-achievements-root data-initial-achievements="'.h(json_encode($recentAchievements, JSON_HEX_QUOT | JSON_HEX_APOS)).'"></div>';
 		?>
 		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>

@@ -4,6 +4,7 @@ import { ErrorBoundary } from './shared/ErrorBoundary';
 import { AuthProvider } from './shared/AuthContext';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
+import { RecentAchievements, type RecentAchievement } from './home/RecentAchievements';
 import { ApiError } from './shared/api';
 import type { CommentCounts } from './comments/commentTypes';
 
@@ -81,6 +82,26 @@ function initializeIssuesList()
 	);
 }
 
+function initializeRecentAchievements()
+{
+	const root = document.querySelector<HTMLElement>('[data-recent-achievements-root]');
+	if (!root)
+		return;
+
+	const initialAchievements = JSON.parse(root.dataset.initialAchievements || '[]') as RecentAchievement[];
+
+	const reactRoot = createRoot(root);
+	reactRoot.render(
+		<ErrorBoundary>
+			<AuthProvider userId={null} isAdmin={false}>
+				<QueryClientProvider client={globalQueryClient}>
+					<RecentAchievements initialAchievements={initialAchievements} />
+				</QueryClientProvider>
+			</AuthProvider>
+		</ErrorBoundary>
+	);
+}
+
 /**
  * Main initialization entry point
  */
@@ -88,6 +109,7 @@ function initializeApp()
 {
 	initializeComments();
 	initializeIssuesList();
+	initializeRecentAchievements();
 
 	// Expose React Query invalidation for Selenium testing
 	(window as any).__invalidateComments = () =>
