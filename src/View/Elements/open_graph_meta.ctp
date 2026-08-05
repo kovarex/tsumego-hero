@@ -10,6 +10,8 @@
  * - $set (set data)
  * - $setConnection (set connection data)
  * - $sgf (sgf data)
+ * 
+ * @var View $this
  */
 App::uses('Constants', 'Utility');
 

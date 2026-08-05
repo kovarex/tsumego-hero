@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <div>
 	<form action="/tsumegos/mergeFinalForm" method="post">
 		<table>

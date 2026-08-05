@@ -1,3 +1,13 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $dataForView
+ * @var array $sessionsToShow
+ * @var array $unlock
+ */
+
+?>
 	<div align="center">
 	<h2>Time Mode Results</h2>
 	<br>

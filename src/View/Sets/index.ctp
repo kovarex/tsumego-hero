@@ -1,3 +1,17 @@
+<?php
+/**
+ * @var View $this  
+ * @var array $setTiles
+ * @var TsumegoFilters $tsumegoFilters
+ * @var array $difficultyTiles
+ * @var array $tagTiles
+ * @var SetsSelector $setsSelector
+ * @var string $lightDark
+ * @var bool $queryRefresh
+ * @var array $ranksArray
+ * @var array $tagList
+ */
+?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 	<div align="center" class="set-search-menu">
 		<div class="set-buttons-left">

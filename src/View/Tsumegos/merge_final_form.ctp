@@ -1,3 +1,16 @@
+<?php
+
+/**
+ * @var View $this
+ * @var TsumegoButton $masterTsumegoButton
+ * @var array $masterTsumegoButtons
+ * @var string $masterTsumegoID
+ * @var TsumegoButton $slaveTsumegoButton
+ * @var array $slaveTsumegoButtons
+ * @var string $slaveTsumegoID
+ */
+
+?>
 <div>
 	<table>
 	<tr><td colspan="2"><h2>Master tsumego</h2></td></tr>

@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var View $this
+ * @var array $polls
+ * @var array $post
+ */
+
+?>
 
 <div align="center">
 <b><?php 

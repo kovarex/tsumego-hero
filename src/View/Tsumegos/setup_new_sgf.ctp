@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @var View $this
+ * @var int $setConnectionID
+ * @var string $sgf
+ */
+
 App::uses('ViteManifest', 'Utility');
 $this->start('script');
 echo ViteManifest::legacyScript('besogo');

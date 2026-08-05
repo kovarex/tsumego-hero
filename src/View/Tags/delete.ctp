@@ -1,3 +1,11 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $tn
+ */
+
+?>
 <?php if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
 <?php if(isset($del)) echo '<script type="text/javascript">window.location.href = "/users/adminstats";</script>'; ?>

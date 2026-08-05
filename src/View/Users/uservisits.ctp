@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var View $this
+ * @var array $a
+ */
+
+?>
 	<?php
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){

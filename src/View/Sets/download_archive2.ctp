@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @var View $this
+ * @var array $s
+ * @var string $text
+ */
+
 	echo 'Downloading collection '.($text).' of '.count($s).'.';
 ?>
 

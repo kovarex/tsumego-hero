@@ -1,3 +1,14 @@
+<?php
+
+/**
+ * @var View $this
+ * @var SimilarSearchResult $result
+ * @var int $sourceMoveCount
+ * @var string $sourceSetName
+ * @var TsumegoButton $sourceTsumegoButton
+ */
+
+?>
 <div style="text-align:center;">
 	<p class="title">
 		Similar problem search:
@@ -45,7 +56,7 @@
 			echo h($item->title) . '</div></td>';
 			echo '</tr>' . PHP_EOL;
 		}
-		if (empty($result))
+		if (empty($result->items))
 			echo 'No problems found.';
 echo '</table>';
 echo '<script>';

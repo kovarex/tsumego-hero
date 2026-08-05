@@ -1,4 +1,36 @@
 <?php
+
+/**
+ * @var View $this
+ * @var array $acA
+ * @var array $acS
+ * @var string $accuracy
+ * @var bool $allArActive
+ * @var bool $allArInactive
+ * @var bool $allPassActive
+ * @var bool $allPassInactive
+ * @var array $allTags
+ * @var bool $allVcActive
+ * @var bool $allVcInactive
+ * @var float $avgTime
+ * @var bool $isFav
+ * @var string $lightDark
+ * @var int $partition
+ * @var int $pdCounter
+ * @var int $problemSolvedPercent
+ * @var bool $refreshView
+ * @var int $saNum
+ * @var bool $scoring
+ * @var array $set
+ * @var int $setDifficulty
+ * @var int $setRating
+ * @var bool $startingSetConnectionID
+ * @var array $tags
+ * @var TsumegoButton $tsumegoButton
+ * @var TsumegoButtons $tsumegoButtons
+ * @var TsumegoFilters $tsumegoFilters
+ */
+
 $noImage = false;
 if($isFav) $noImage = true;
 if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id'] == 31813 || $set['Set']['id'] == 33007
@@ -46,7 +78,7 @@ if(!$beta2)
 		<tr>
 			<td style="vertical-align:top;">
 				<?php
-			$saNum;
+// $saNum
 
 if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
 elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;

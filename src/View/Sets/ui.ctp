@@ -1,3 +1,12 @@
+<?php
+/**
+ * @var View $this
+ * @var int $id
+ * @var bool $redirect
+ * @var array $s
+ */
+
+?>
 
 
 <?php

@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * @var View $this
+ * @var string $checksum
+ * @var bool $done
+ * @var bool $valid
+ */
+
 	if(Auth::isLoggedIn()){
 		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 	}

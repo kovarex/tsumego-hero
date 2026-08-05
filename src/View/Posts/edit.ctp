@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 
 <h1>Edit Post</h1>
 <?php

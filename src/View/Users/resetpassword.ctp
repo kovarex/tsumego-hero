@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @var View $this
+ * @var bool $sent
+ */
+
 	if(Auth::isLoggedIn()){
 		echo '<script type="text/javascript">window.location.href = "/sets";</script>';
 	}

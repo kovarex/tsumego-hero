@@ -1,8 +1,11 @@
 <?php
+
 /**
  * React Comments Section - Mount point for the React comments component.
  *
  * Variables:
+ * @var View $this
+ * @var TsumegoIssue $TsumegoIssue
  * @var int $tsumegoId The tsumego ID
  * @var array $t The tsumego data (used to determine if comments should be visible)
  */

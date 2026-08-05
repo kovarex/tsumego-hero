@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 
 	
 	

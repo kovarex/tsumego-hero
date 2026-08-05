@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var View $this
+ * @var array $t
+ */
+?>
 
 
 

@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 
 	<div class="homeRight">
 		<p class="title4">Ko</p>

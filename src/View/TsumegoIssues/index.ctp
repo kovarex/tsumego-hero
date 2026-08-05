@@ -7,6 +7,7 @@
  * React fetches all data from API - no SSR needed.
  *
  * Variables:
+ * @var View $this
  * @var string $statusFilter Current filter ('opened', 'closed', 'all')
  * @var int $currentPage Current page number (for initial state only)
  */

@@ -1,3 +1,20 @@
+<?php
+/**
+ * @var View $this
+ * @var string $lightDarkChartColor
+ * @var array $loss
+ * @var array $loss2
+ * @var array $loss3
+ * @var array $loss4
+ * @var array $tloss
+ * @var array $twin
+ * @var array $win
+ * @var array $win2
+ * @var array $win3
+ * @var array $win4
+ */
+
+?>
 
 	<?php
 		/*

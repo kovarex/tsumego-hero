@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var View $this
+ * @var array $a
+ * @var int $unlockedCounter2
+ */
+
+?>
 	
 	<div align="center" >
 	<p class="title">

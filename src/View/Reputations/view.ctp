@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var View $this
+ * @var array $ans
+ * @var array $s
+ * @var int $p
+ */
+?>
 
 	<h1>Purge</h1><br>
 	<a class="new-button new-buttonx" href="/users/purge?p=1">purge</a>

@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var View $this
+ * @var array $ut
+ */
+
+?>
 <table>
 <?php
 echo count($ut);

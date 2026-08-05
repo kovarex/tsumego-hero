@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var View $this
+ * @var array $p
+ */
+?>
 <div align="center">
 <p class="title">
 					<br> Publish Schedule

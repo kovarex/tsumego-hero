@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $tagContributors
+ * @var int $totalUsers
+ */
+
+?>
 
 <div align="center" class="highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'tags']); ?>

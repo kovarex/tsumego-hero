@@ -1,3 +1,11 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $patternsInPosts
+ */
+
+?>
 <div align="center">
 <br><br><b>
 <?php echo 'Patterns found: '.count($patternsInPosts); ?>

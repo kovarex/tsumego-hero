@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var View $this
+ * @var array $u
+ */
+
+?>
 <table>
 <?php
 	//echo '<pre>';print_r($u);echo '</pre>';

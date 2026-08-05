@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <a onclick='document.getElementsByTagName("audio")[0].play();return false' href="#">
 klick mich f&uuml;r einen Sound
 </a>

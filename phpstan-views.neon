@@ -1,0 +1,34 @@
+includes:
+	- vendor/pieceofcake2/phpstan-cakephp2/extension.neon
+	- phpstan-views-baseline.neon
+
+parameters:
+	level: 5
+	paths:
+		- src/View/
+	fileExtensions:
+		- php
+		- ctp
+	bootstrapFiles:
+		- config/phpstan-bootstrap.php
+	treatPhpDocTypesAsCertain: true
+	reportUnmatchedIgnoredErrors: false
+	ignoreErrors:
+		- '#Call to an undefined method .*::findBy.+\(#'
+		- '#Call to an undefined method .*Helper::(text|radio|select|input|textarea|hidden)\(#'
+		- '#Cannot call method get(File|Line)\(\) on class-string\|object#'
+		# Defensive coding patterns (guard clauses, null coalesce)
+		- '#on left side of \?\? always exists and is not nullable#'
+		- '#in (empty|isset)\(\) always exists and is not#'
+		- '#(If|Ternary) condition is always (true|false)\.#'
+		- '#will always evaluate to (true|false)\.#'
+		- '#[Tt]ernary operator condition is always (true|false)\.#'
+		- '#Argument of an invalid type (bool|array) supplied for foreach#'
+		# h() receiving int (safe in PHP, common in CakePHP templates)
+		- '#Parameter \#1 \$text of function h expects array\|object\|string, int given#'
+	excludePaths:
+		- src/View/Emails/*
+		- src/View/Errors/*
+		- src/View/Helper/*
+		- src/View/Layouts/rss/*
+		- src/View/Layouts/xml/*
