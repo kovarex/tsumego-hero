@@ -36,9 +36,11 @@ $this->end();
 		<div class="quote-pick-wrapper">
 			<img src="/img/new_startpage/<?php echo $quote; ?>.png?v=4.3" class="quote-pick-1" alt="Quote of the Day" title="Quote of the Day">
 			<img src="/img/new_startpage/<?php echo $quote; ?>u.png?v=4.3" class="quote-pick-1" alt="User of the Day" title="User of the Day">
+			<?php if (isset($userOfTheDayId)): ?>
 			<div class="user-pick-all user-pick-<?php echo $quote; ?>" align="center">
-					<?php echo $userOfTheDay; ?>
+				<a href="/users/view/<?php echo $userOfTheDayId; ?>"><?php echo $userOfTheDay; ?></a>
 			</div>
+			<?php endif; ?>
 		</div>
 
 		<!-- RIGHT NEWS -->
