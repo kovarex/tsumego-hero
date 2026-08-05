@@ -52,6 +52,15 @@
   white-space: nowrap;
 }
 
+.user-pick-all a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-pick-all a:hover {
+  text-decoration: underline;
+}
+
 
 .user-pick-q01 {
   color: white !important;

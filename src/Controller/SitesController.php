@@ -49,9 +49,8 @@ class SitesController extends AppController
 		{
 			$currentQuote = $dayRecord['DayRecord']['quote'];
 			$userOfTheDay = $this->User->find('first', ['conditions' => ['id' => $dayRecord['DayRecord']['user_id']]]);
-			if (!$userOfTheDay)
-				$userOfTheDay = ['User' => ['id' => 0, 'name' => 'Guest']];
 			$this->set('userOfTheDay', $this->checkPictureLarge($userOfTheDay));
+			$this->set('userOfTheDayId', $userOfTheDay['User']['id']);
 		}
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);

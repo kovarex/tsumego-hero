@@ -183,6 +183,59 @@ class SitesControllerTest extends ControllerTestCase
 	}
 
 	/**
+	 * When a day_record exists, the user of the day name links to their profile.
+	 */
+	public function testUserOfTheDayLinksToProfile()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [],
+			'other-users' => [['name' => 'Alice']],
+		]);
+
+		ClassRegistry::init('DayRecord')->create();
+		ClassRegistry::init('DayRecord')->save([
+			'DayRecord' => [
+				'user_id' => $context->otherUsers[0]['id'],
+				'date' => date('Y-m-d'),
+				'quote' => 'q01',
+				'solved' => 0,
+				'tsumego_count' => 0,
+				'usercount' => 1,
+				'visitedproblems' => 0,
+				'gems' => '0-0-0',
+				'gemCounter1' => 0,
+				'gemCounter2' => 0,
+				'gemCounter3' => 0,
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('sites/index');
+
+		$pageSource = $browser->driver->getPageSource();
+		$aliceId = $context->otherUsers[0]['id'];
+		$this->assertStringContainsString(
+			'<a href="/users/view/' . $aliceId . '">Alice</a>',
+			$pageSource,
+			'User of the day should link to their profile'
+		);
+	}
+
+	/**
+	 * Without a day_record the user-of-the-day section is not rendered.
+	 */
+	public function testUserOfTheDayHiddenWithoutDayRecord()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator();
+		$browser->get('sites/index');
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringNotContainsString('user-pick-all', $pageSource,
+			'User of the day should be hidden when no day_record exists');
+	}
+
+	/**
 	 * The landing page shows recent achievements in reverse chronological
 	 * order, limited to 7 rows for layout. Older entries are cut off.
 	 */
