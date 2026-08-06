@@ -71,6 +71,40 @@ class TsumegosController extends AppController
 		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
+	/**
+	 * AJAX endpoint: returns pre-processed board data for tooltip preview.
+	 * GET /api/preview/{tsumegoId}
+	 */
+	public function preview($tsumegoId)
+	{
+		$this->autoRender = false;
+		$this->response->type('application/json');
+
+		$sgfRow = ClassRegistry::init('Sgf')->find('first', [
+			'conditions' => ['tsumego_id' => $tsumegoId],
+			'order' => 'id DESC',
+			'limit' => 1,
+		]);
+
+		if (!$sgfRow)
+		{
+			$this->response->statusCode(404);
+			echo json_encode(['error' => 'No preview available']);
+			return;
+		}
+
+		$sgf = SgfParser::process($sgfRow['Sgf']['sgf']);
+
+		echo json_encode([
+			'black'     => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::BLACK))),
+			'white'     => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::WHITE))),
+			'xMax'      => $sgf->info[0],
+			'yMax'      => $sgf->info[1],
+			'boardSize' => $sgf->size,
+			'diff'      => '',
+		]);
+	}
+
 	public static function inArrayX($x, $newArray)
 	{
 		$newArrayCount = count($newArray);

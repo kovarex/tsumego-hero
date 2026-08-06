@@ -3431,7 +3431,6 @@ input.newCheck {
 }
 .tooltip span {
   z-index: 100;
-  display: none;
 }
 .eloTooltip {
   position: relative;
@@ -7816,12 +7815,13 @@ ul ul {
 
 .tooltip-box
 {
-	display: none;
+	opacity: 0;
 	position: absolute;
 	top: 34px;
 	left: -1px;
 	z-index: 1000;
 	pointer-events: none;
+	transition: opacity 0s;
 }
 
 .tooltip-box svg
@@ -7852,6 +7852,24 @@ ul ul {
 	line-height: 1.3;
 	background: rgba(0, 0, 0, 0.8);
 	border-radius: 0 0 3px 3px;
+}
+
+/* Tooltip show/hide and staggered fade-in on hover */
+a[data-tsumego-id]:hover .tooltip-box
+{
+	opacity: 1;
+}
+
+a[data-tsumego-id]:hover .tooltip-label
+{
+	opacity: 1;
+	transition-delay: 0.6s;
+}
+
+a[data-tsumego-id]:hover .tooltip-desc
+{
+	opacity: 1;
+	transition-delay: 1.2s;
 }
 
 .tooltip-label.statusN,

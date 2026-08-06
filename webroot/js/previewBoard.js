@@ -63,7 +63,6 @@
 	function createPreviewBoard(target, black, white, xMax=0, yMax=0, boardSize=19, diff = '')
 	{
 		createBoard(target, black, white, xMax, yMax, boardSize, diff);
-		hoverForPreviewBoard(target);
 	}
 
 	function setPreviewBoard(xMax, yMax, svg, img, w3, w32)
@@ -89,39 +88,92 @@
 		svg.appendChild(svgCircle);
 	}
 
-	function hoverForPreviewBoard(target)
-	{
-		let labelTimer = null;
-		let descTimer = null;
+/**
+ * AJAX tooltip preview loader.
+ *
+ * A single delegated mouseover listener fetches board data on demand from
+ * /api/preview/{tsumegoId} and renders an SVG preview into the link element.
+ *
+ * Debounce: 200ms hover delay before fetching -- fast swiping over buttons
+ * does not spam requests.
+ *
+ * Caching:
+ *   - SVG in DOM is the cache -- querySelector('svg') guard prevents re-fetch.
+ *   - pending Set prevents duplicate in-flight requests for the same ID.
+ *   - Page navigation clears everything naturally; no eviction needed.
+ */
+(function () {
+	'use strict';
 
-		target.addEventListener("mouseenter", function () {
-			const span = this.querySelector('span');
-			span.style.display = "block";
-			span.style.position = "absolute";
-			span.style.overflow = "hidden";
+	var pending = new Set();
+	var hoverTimer = null;
+	var hoverTarget = null;
+	var HOVER_DELAY = 200;
 
-			const label = span.querySelector('.tooltip-label');
-			const desc = span.querySelector('.tooltip-desc');
+	document.addEventListener('mouseover', function (e) {
+		var target = e.target.closest('a[data-tsumego-id]');
 
-			labelTimer = setTimeout(() => {
-				if (label) label.style.opacity = "1";
-			}, 600);
+		// Mouse left any tooltip button -- cancel pending timer
+		if (hoverTimer && hoverTarget !== target) {
+			clearTimeout(hoverTimer);
+			hoverTimer = null;
+			hoverTarget = null;
+		}
 
-			descTimer = setTimeout(() => {
-				if (desc) desc.style.opacity = "1";
-			}, 1200);
-		});
+		if (!target)
+			return;
 
-		target.addEventListener("mouseleave", function () {
-			const span = this.querySelector('span');
-			span.style.display = "none";
+		// Already rendered -- nothing to do
+		if (target.querySelector('svg'))
+			return;
 
-			clearTimeout(labelTimer);
-			clearTimeout(descTimer);
+		hoverTarget = target;
+		if (hoverTimer)
+			return; // already waiting on this target
 
-			const label = span.querySelector('.tooltip-label');
-			const desc = span.querySelector('.tooltip-desc');
-			if (label) label.style.opacity = "0";
-			if (desc) desc.style.opacity = "0";
-		});
-	}
+		hoverTimer = setTimeout(function () {
+			hoverTimer = null;
+			hoverTarget = null;
+
+			// Bail if mouse already left during the delay
+			if (!target.matches(':hover'))
+				return;
+
+			// Guard against re-render (SVG may have arrived while waiting)
+			if (target.querySelector('svg'))
+				return;
+
+			var id = target.dataset.tsumegoId;
+			if (pending.has(id))
+				return;
+
+			pending.add(id);
+
+			fetch('/api/preview/' + encodeURIComponent(id))
+				.then(function (r) {
+					if (!r.ok)
+						throw new Error('HTTP ' + r.status);
+					return r.json();
+				})
+				.then(function (data) {
+					pending.delete(id);
+
+					if (!data || !data.black)
+						return;
+
+					createBoard(
+						target,
+						data.black,
+						data.white,
+						data.xMax,
+						data.yMax,
+						data.boardSize,
+						data.diff
+					);
+				})
+				.catch(function () {
+					pending.delete(id);
+				});
+		}, HOVER_DELAY);
+	}, true);
+})();

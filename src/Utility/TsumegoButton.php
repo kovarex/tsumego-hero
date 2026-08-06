@@ -58,7 +58,7 @@ class TsumegoButton
 		$label = TsumegoStatus::label($status);
 		$description = TsumegoStatus::description($status);
 		echo '<a class="tooltip" href="/' . $this->setConnectionID . '"'
-			. ' onmouseover="' . $this->generateTooltip() . '">'
+			. ' data-tsumego-id="' . $this->tsumegoID . '">'
 			. $num . $num2 . $num3
 			. '<span class="tooltip-box">'
 			. '<div class="tooltip-label status' . $status . '">' . h($label) . '</div>'
@@ -67,23 +67,22 @@ class TsumegoButton
 		echo '</li>';
 	}
 
-	private function generateTooltip(): string
-	{
-		if (!$this->sgf)
-		{
-			$sgfObject = ClassRegistry::init('Sgf')->find('first', ['limit' => 1, 'order' => 'id DESC', 'conditions' => ['tsumego_id' => $this->tsumegoID]]);
-			if (!$sgfObject)
-				return '';
-			$this->sgf = $sgfObject['Sgf']['sgf'];
-		}
-		$result = '';
-		$result .= 'if (this.querySelector(\'svg\')) return;';
-		$result .= $this->createBoard('this', 'createPreviewBoard');
-		return $result;
-	}
-
+	/**
+	 * Generate inline JS for rendering a board preview.
+	 * Used by duplicatesearch.ctp for similar search results.
+	 * Lazily loads SGF from DB on first call.
+	 */
 	public function createBoard($target, $functionName, $diff = '')
 	{
+		if ($this->sgf === null)
+		{
+			$sgfObject = ClassRegistry::init('Sgf')->find('first', [
+				'limit' => 1,
+				'order' => 'id DESC',
+				'conditions' => ['tsumego_id' => $this->tsumegoID],
+			]);
+			$this->sgf = $sgfObject ? $sgfObject['Sgf']['sgf'] : '';
+		}
 		return self::createBoardFromSgf($this->sgf, $target, $functionName, $diff);
 	}
 
