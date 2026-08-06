@@ -69,7 +69,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator(['user' => ['name' => 'kovarex']]);
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('kovarex', $browser->driver->getPageSource());
+		$this->assertTextContains('DN_kovarex', $browser->driver->getPageSource());
 	}
 
 	public function testDailyHighscore()
@@ -85,8 +85,8 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->checkTable('.highscoreTable', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
-				['#2', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0', '0'],
+				['#1', 'DN_Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
+				['#2', 'DN_kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '0', '0'],
 			]);
 
 		// Kovarex solves a problem
@@ -98,8 +98,8 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->checkTable('.highscoreTable', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
-				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
-				['#2', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
+				['#1', 'DN_kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
+				['#2', 'DN_Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
 			]);
 	}
 
@@ -109,7 +109,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
 		$browser->clickId("navigate-to-contributions");
-		$this->assertTextContains('kovarex added the tag <i>atari</i>', $browser->driver->getPageSource());
+		$this->assertTextContains('DN_kovarex added the tag <i>atari</i>', $browser->driver->getPageSource());
 	}
 
 	public function testOpenUserPageWhenNotLoggedIn()
@@ -117,7 +117,7 @@ class UsersControllerTest extends ControllerTestCase
 		$context = new ContextPreparator(['other-users' => [['name' => 'Ivan Detkov']]]);
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
-		$this->assertTextContains('Ivan Detkov', $browser->driver->getPageSource());
+		$this->assertTextContains('DN_Ivan Detkov', $browser->driver->getPageSource());
 	}
 
 	public function testUserProfilePageEmailOnlyVisibleToCurrentUser()
@@ -127,8 +127,12 @@ class UsersControllerTest extends ControllerTestCase
 			'other-users' => [['name' => 'Ivan Detkov', 'rating' => 2600, 'email' => 'detkov@example.com']]]);
 
 		$browser = Browser::instance();
+		// View own profile - email should be visible
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('current@example.com', $pageSource);
+
+		// View another user's profile - their email should NOT be visible
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}

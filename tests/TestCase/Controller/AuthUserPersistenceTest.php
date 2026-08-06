@@ -1,5 +1,7 @@
 <?php
 
+App::uses('User', 'Model');
+
 /**
  * Tests for Auth user persistence integrity.
  *
@@ -44,16 +46,15 @@ class AuthUserPersistenceTest extends ControllerTestCase
 	/**
 	 * Test that users with special name prefixes maintain their names.
 	 *
-	 * Some authentication providers (like Google OAuth) use name prefixes
-	 * to distinguish users. These prefixes must be preserved in the database
-	 * even if they're stripped for display purposes.
+	 * Google OAuth users have name=NULL and display_name set to their
+	 * visible name. After a request, these fields must be preserved.
 	 */
-	public function testSpecialPrefixedUsernamesPreservedInDatabase()
+	public function testGoogleUserFieldsPreservedInDatabase()
 	{
-		// Arrange: Create a user with a special prefix (simulating OAuth user)
+		// Arrange: Create a Google OAuth user (name=NULL, display_name set)
 		$context = new ContextPreparator([
 			'user' => [
-				'name' => 'g__OAuthUser',
+				'display_name' => 'OAuthUser',
 				'external_id' => '12345', // Indicates OAuth authentication
 			],
 		]);
@@ -63,41 +64,42 @@ class AuthUserPersistenceTest extends ControllerTestCase
 		// Act: Make a request
 		$this->testAction('/sites/index', ['method' => 'get', 'return' => 'view']);
 
-		// Assert: The prefixed name must be preserved
+		// Assert: Google user fields must be preserved
 		$userAfterRequest = ClassRegistry::init('User')->findById($userId);
-		$this->assertEquals(
-			'g__OAuthUser',
+		$this->assertNull(
 			$userAfterRequest['User']['name'],
-			'Prefixed usernames must be preserved in database (stripping is for display only)'
+			'Google users should have name=NULL (they use display_name instead)'
+		);
+		$this->assertEquals(
+			'OAuthUser',
+			$userAfterRequest['User']['display_name'],
+			'display_name must be preserved after request'
 		);
 	}
 
 	/**
-	 * Test that users with overlapping display names can coexist.
+	 * Test that a Google user and a regular user with similar names can coexist.
 	 *
-	 * When display name processing (like prefix stripping) is done correctly,
-	 * users like "g__Alex" and "Alex" can both exist because the database
-	 * stores their actual unique names.
+	 * Google user: name=NULL, display_name='SharedName'
+	 * Regular user: name='SharedName2', display_name='SharedName2'
+	 * Both should work without conflicts.
 	 */
-	public function testUsersWithOverlappingDisplayNamesCanCoexist()
+	public function testGoogleAndRegularUsersCanCoexist()
 	{
-		// Arrange: Create two users whose display names would be the same
-		// g__SharedName (OAuth) displays as "SharedName"
-		// SharedName (regular) displays as "SharedName"
+		// Arrange: Create a Google user and a regular user
 		$context = new ContextPreparator([
 			'user' => [
-				'name' => 'g__SharedName',
+				'display_name' => 'SharedName',
 				'external_id' => '99999',
 			],
 			'other-users' => [
-				['name' => 'SharedName'],
+				['name' => 'SharedName2'],
 			],
 		]);
 
 		$oauthUserId = $context->user['id'];
 
 		// Act: Make a request as the OAuth user
-		// This should NOT cause a database conflict
 		$exceptionThrown = false;
 		$exceptionMessage = '';
 		try
@@ -110,37 +112,38 @@ class AuthUserPersistenceTest extends ControllerTestCase
 			$exceptionMessage = $e->getMessage();
 		}
 
-		// Assert: No exception, both users maintain their identities
+		// Assert: No exception, Google user maintains identity
 		$this->assertFalse($exceptionThrown,
-			"Users with overlapping display names should coexist. Exception: $exceptionMessage");
+			"Users should coexist without conflict. Exception: $exceptionMessage");
 
 		$oauthUser = ClassRegistry::init('User')->findById($oauthUserId);
-		$this->assertEquals('g__SharedName', $oauthUser['User']['name'],
-			'OAuth user must keep prefixed name');
+		$this->assertNull($oauthUser['User']['name'],
+			'Google user should have name=NULL');
+		$this->assertEquals('SharedName', $oauthUser['User']['display_name'],
+			'Google user must keep their display_name');
 	}
 
 	/**
-	 * Test that checkPicture produces correct display names.
+	 * Test that User::isGoogleUser correctly identifies Google users.
 	 *
-	 * The checkPicture function should transform usernames for display:
-	 * - OAuth users (g__ prefix + external_id): strip prefix
-	 * - Regular users: keep name as-is
+	 * Google users are identified by having a non-empty external_id.
+	 * Regular users have external_id = null.
 	 */
-	public function testDisplayNameTransformation()
+	public function testIsGoogleUserDetection()
 	{
-		// OAuth user: prefix should be stripped for display
-		$oauthUser = ['name' => 'g__GoogleUser', 'external_id' => '12345'];
-		$this->assertEquals('GoogleUser', AppController::checkPicture($oauthUser),
-			'OAuth users should have g__ prefix stripped for display');
+		// Google user: has external_id
+		$googleUser = ['name' => null, 'external_id' => '12345', 'display_name' => 'GoogleUser'];
+		$this->assertTrue(User::isGoogleUser($googleUser),
+			'User with external_id should be detected as Google user');
 
-		// Regular user: name unchanged
-		$regularUser = ['name' => 'RegularUser', 'external_id' => null];
-		$this->assertEquals('RegularUser', AppController::checkPicture($regularUser),
-			'Regular users keep their name unchanged');
+		// Regular user: no external_id
+		$regularUser = ['name' => 'RegularUser', 'external_id' => null, 'display_name' => 'RegularUser'];
+		$this->assertFalse(User::isGoogleUser($regularUser),
+			'User without external_id should not be detected as Google user');
 
-		// Edge case: g__ prefix but no external_id (shouldn't happen, but be safe)
-		$ambiguousUser = ['name' => 'g__Ambiguous', 'external_id' => null];
-		$this->assertEquals('g__Ambiguous', AppController::checkPicture($ambiguousUser),
-			'Users with g__ prefix but no external_id keep the prefix');
+		// Edge case: empty external_id
+		$ambiguousUser = ['name' => 'Someone', 'external_id' => '', 'display_name' => 'Someone'];
+		$this->assertFalse(User::isGoogleUser($ambiguousUser),
+			'User with empty external_id should not be detected as Google user');
 	}
 }
