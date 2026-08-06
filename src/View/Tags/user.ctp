@@ -3,8 +3,28 @@
 /**
  * @var View $this
  * @var array $viewedUser
- * @var array $list
+ * @var ContributionRow[] $contributions
+ * @var int $count
+ * @var int $pageIndex
+ * @var int $pageSize
  */
+
+if (!function_exists('_tagLink')):
+
+function _tagLink(ContributionRow $c): string
+{
+	$tag = h($c->tag);
+	if ($c->tagId)
+		return '<a href="/tags/view/' . $c->tagId . '"><i>' . $tag . '</i></a>';
+	return '<i>' . $tag . '</i>';
+}
+
+function _tsumegoLink(ContributionRow $c): string
+{
+	return '<a href="/tsumegos/play/' . $c->tsumegoId . '">' . h($c->tsumegoLabel) . '</a>';
+}
+
+endif;
 
 ?>
 
@@ -14,6 +34,7 @@
 		Tags and proposals by <?php echo h($viewedUser['name']) ?>
 		<br><br> 
 	</p>
+	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 	<table class="highscoreTable" border="0">
 		<tbody>
 		<tr>
@@ -21,37 +42,22 @@
 			<th align="left">Status</th>
 			<th align="left">Timestamp</th>
 		</tr>
-		<?php
-			for($i=0; $i<count($list); $i++){
-				$statusColor = $list[$i]['status'] === 'accepted' ? '#047804' : '#ce3a47';
-				if($list[$i]['type'] == 'proposal'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' made a proposal for <a href="/tsumegos/play/'.$list[$i]['tsumego_id'].'">'
-						.h($list[$i]['tsumego']).'</a></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}else if($list[$i]['type'] == 'tag'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' added the tag <i>'.h($list[$i]['tag'])
-						.'</i> for <a href="/tsumegos/play/'.$list[$i]['tsumego_id'].'">'.h($list[$i]['tsumego'])
-						.'</a></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}else if($list[$i]['type'] == 'tag name'){
-					echo '<tr>';
-						echo '<td class="timeTableLeft versionColor" align="left">'
-						.h($list[$i]['user']).' created a new tag: <i>'.h($list[$i]['tag']).'</i></td>';
-						echo '<td class="timeTableMiddle versionColor" align="left"><b style="color:'.$statusColor.'">'.h($list[$i]['status']).'</b></td>';
-						echo '<td class="timeTableRight versionColor" align="left">'.h($list[$i]['created']).'</td>';
-					echo '</tr>';
-				}
-			}
-		?>
-
+		<?php foreach ($contributions as $c): ?>
+			<?php $color = $c->status === 'accepted' ? '#047804' : '#ce3a47'; ?>
+				<tr>
+					<td class="timeTableLeft versionColor" align="left">
+						<?php if ($c->type === 'proposal'): ?>
+							made a proposal for <?php echo _tsumegoLink($c) ?>
+						<?php elseif ($c->type === 'tag'): ?>
+							added the tag <?php echo _tagLink($c) ?> for <?php echo _tsumegoLink($c) ?>
+						<?php else: ?>
+							created a new tag: <?php echo _tagLink($c) ?>
+						<?php endif; ?>
+					</td>
+					<td class="timeTableMiddle versionColor" align="left"><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
+					<td class="timeTableRight versionColor" align="left"><?php echo h($c->created) ?></td>
+				</tr>
+		<?php endforeach; ?>
 	</tbody>
 	</table>
 </div>

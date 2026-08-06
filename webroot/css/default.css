@@ -8375,9 +8375,7 @@ to { transform: rotate(360deg); }
   .versionColor a {
     color: #0066cc;
   }
-  .versionColor a:visited {
-    color: #571e8c;
-  }
+ 
   #status2 font font,
   .titleDescription1 font,
   .statsTable font {
