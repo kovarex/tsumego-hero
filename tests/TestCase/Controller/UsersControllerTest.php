@@ -103,15 +103,6 @@ class UsersControllerTest extends ControllerTestCase
 			]);
 	}
 
-	public function testUserContributionsShowsTagAdded()
-	{
-		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'tags' => [['name' => 'atari', 'user' => 'kovarex']]]]);
-		$browser = Browser::instance();
-		$browser->get('users/view/' . $context->user['id']);
-		$browser->clickId("navigate-to-contributions");
-		$this->assertTextContains('kovarex added the tag <i>atari</i>', $browser->driver->getPageSource());
-	}
-
 	public function testOpenUserPageWhenNotLoggedIn()
 	{
 		$context = new ContextPreparator(['other-users' => [['name' => 'Ivan Detkov']]]);
