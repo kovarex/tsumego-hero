@@ -19,15 +19,22 @@ class TsumegoUtil
 		return $result;
 	}
 
-	public static function getSetConnectionsWithTitles(int $tsumegoID): ?array
+	public static function getSetConnectionsWithTitles(int $tsumegoID): array
 	{
-		$setConnections = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $tsumegoID]]);
-		foreach ($setConnections as &$setConnection)
-		{
-			$duplicateSet = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
-			$setConnection['SetConnection']['title'] = $duplicateSet['Set']['title'] . ' ' . $setConnection['SetConnection']['num'];
-		}
-		return $setConnections;
+		$rows = Util::query(
+			'SELECT sc.*, s.title AS set_title '
+			. 'FROM set_connection sc '
+			. 'JOIN `set` s ON s.id = sc.set_id '
+			. 'WHERE sc.tsumego_id = ?',
+			[$tsumegoID]
+		);
+
+		if (!$rows)
+			return [];
+
+		return array_map(fn($row) => ['SetConnection' => array_merge($row, [
+			'title' => $row['set_title'] . ' ' . $row['num'],
+		])], $rows);
 	}
 
 	public static function collectTsumegosFromSet(int $setID, ?array $tsumegoConditions = null)
