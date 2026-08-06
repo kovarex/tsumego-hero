@@ -740,41 +740,26 @@ class SetsController extends AppController
 		}
 		elseif ($tsumegoFilters->query == 'favorites')
 		{
-			$allUts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-			$idMap = [];
-			$statusMap = [];
-			$allUtsCount = count($allUts);
-			for ($i = 0; $i < $allUtsCount; $i++)
-			{
-				array_push($idMap, $allUts[$i]['TsumegoStatus']['tsumego_id']);
-				array_push($statusMap, $allUts[$i]['TsumegoStatus']['status']);
-			}
-			$fav = $this->Favorite->find('all', ['order' => 'created', 'direction' => 'DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-			if (!empty($fav))
+			$userId = Auth::getUserID();
+			$rows = Util::query(
+				'SELECT ts.status '
+				. 'FROM favorite f '
+				. 'JOIN tsumego t ON t.id = f.tsumego_id '
+				. 'LEFT JOIN tsumego_status ts ON ts.tsumego_id = f.tsumego_id AND ts.user_id = ? '
+				. 'WHERE f.user_id = ? '
+				. 'ORDER BY f.created DESC',
+				[$userId, $userId]
+			);
+
+			if ($rows)
 				$this->set('achievementUpdate', new AchievementChecker()->checkSetAchievements(-1)->finalize()->updated);
-			$ts = [];
-			$difficultyCount = 0;
+
 			$solvedCount = 0;
-			$sizeCount = 0;
-			$favCount = count($fav);
-			for ($i = 0; $i < $favCount; $i++)
-			{
-				$tx = $this->Tsumego->find('first', ['conditions' => ['id' => $fav[$i]['Favorite']['tsumego_id']]]);
-				$difficultyCount += $tx['Tsumego']['difficulty'];
-				$utx = $this->findUt($fav[$i]['Favorite']['tsumego_id'], $allUts, $idMap);
-				if ($utx['TsumegoStatus']['status'] == 'S' || $utx['TsumegoStatus']['status'] == 'W' || $utx['TsumegoStatus']['status'] == 'C')
+			foreach ($rows as $row)
+				if (TsumegoUtil::isSolvedStatus($row['status']))
 					$solvedCount++;
-				$sizeCount++;
-				array_push($ts, $tx);
-			}
-			$allUtsCount = count($allUts);
-			for ($i = 0; $i < $allUtsCount; $i++)
-			{
-				$tsCount2 = count($ts);
-				for ($j = 0; $j < $tsCount2; $j++)
-					if ($allUts[$i]['TsumegoStatus']['tsumego_id'] == $ts[$j]['Tsumego']['id'])
-						$ts[$j]['Tsumego']['status'] = $allUts[$i]['TsumegoStatus']['status'];
-			}
+			$sizeCount = count($rows);
+
 			$percent = Util::getPercentButAvoid100UntilComplete($solvedCount, $sizeCount);
 			$set = [];
 			$set['Set']['id'] = 1;
@@ -1030,16 +1015,6 @@ class SetsController extends AppController
 		}
 	}
 
-	private function findUt($id = null, $allUts = null, $map = null)
-	{
-		$currentUt = array_search($id, $map);
-		$ut = $allUts[$currentUt];
-		if ($currentUt == 0)
-			if ($id != $map[0])
-				$ut = null;
-
-		return $ut;
-	}
 
 	private function getDifficultyColor($difficulty = null)
 	{
