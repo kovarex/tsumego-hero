@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * @var View $this
+ * @var int $PAGE_SIZE
+ * @var array $attempts
+ * @var int $count
+ * @var int $pageIndex
+ */
+
 echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '<table>';
 echo '<thead><tr><td>Set</td><td>Tsumego</td><td>Solved</td><td>Misplays</td><td>Rating</td></td><td>XP gained</td><td>Date</td></tr>';
@@ -7,7 +16,7 @@ echo '<thead><tr><td>Set</td><td>Tsumego</td><td>Solved</td><td>Misplays</td><td
 		echo '<tr>';
 		echo '<td>' . h($attempt['set_title']) . '</td>';
 		echo '<td>';
-		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'], false, false)->render();
+		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'])->render();
 		echo '</td>';
 		echo '<td>' . $attempt['solved'] . '</td>';
 		echo '<td>' . $attempt['misplays'] . '</td>';

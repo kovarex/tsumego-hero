@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var View $this
+ * @var array $s
+ * @var string $text
+ */
+
+?>
 
 
 <?php

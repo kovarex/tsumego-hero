@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * @var View $this
+ * @var array $admins
+ * @var string $lightDark
+ * @var int $overallCounter
+ * @var array $setsNew
+ */
+
 if (!Auth::isAdmin() && !Auth::hasPremium())
 {
 	echo '<script type="text/javascript">window.location.href = "/";</script>';

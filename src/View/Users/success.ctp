@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 	<div id="login-box2" class="users form">
 		<div class="right3">
 			<div class="thankyou">

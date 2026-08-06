@@ -1,4 +1,11 @@
-<?php $this->start('script'); ?>
+<?php
+/**
+ * @var View $this
+ * @var string $redirectUrl
+ * @var string $redirectSignature
+ */
+$this->start('script');
+?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <?php $this->end(); ?>
 <div id="login-box" class="users form">

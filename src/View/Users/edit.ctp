@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var HtmlHelper $html
+ * @var FormHelper $form
+ */
+
+?>
 <div id="Rahmen">
 	<ul id="actions">
 		<li><?php echo $html->link('Start', '/')?></li>

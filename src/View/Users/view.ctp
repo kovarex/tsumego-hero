@@ -1,4 +1,21 @@
 <?php
+
+/**
+ * @var View $this
+ * @var array $aCount
+ * @var string $aNum
+ * @var array $as
+ * @var bool $canResetOldTsumegoStatuses
+ * @var array $dailyResults
+ * @var int $deletedTsumegoStatusCount
+ * @var int $levelBar
+ * @var string $timeGraph
+ * @var array $timeModeRanks
+ * @var int $tsumegoCount
+ * @var string $tsumegoStatusToRestCount
+ * @var array $user
+ */
+
 require_once __DIR__ . "/../../Utility/ValueGraphRenderer.php";
 require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 ?>

@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var View $this
+ * @var string $status
+ * @var bool $redirect
+ */
+?>
 <div align="center">
 <p class="title">
 	Request account deletion

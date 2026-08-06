@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 	<div align="center">
 	<h2>Functions and Modes</h2>
 	</div>

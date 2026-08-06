@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <h1>Add Puzzle</h1>
 <?php
 echo $this->Form->create('Poll');

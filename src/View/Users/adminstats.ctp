@@ -1,4 +1,17 @@
 <?php
+
+/**
+ * @var View $this
+ * @var AdminActivityRenderer $adminActivityRenderer
+ * @var bool $refreshView
+ * @var array $requestDeletion
+ * @var array $set
+ * @var SGFProposalsRenderer $sgfProposalsRenderer
+ * @var TagConnectionProposalsRenderer $tagConnectionProposalsRenderer
+ * @var array $tagNames
+ * @var TagProposalsRenderer $tagProposalsRenderer
+ */
+
 	if(!Auth::isLoggedIn() || !Auth::isAdmin())
 		echo '<script type="text/javascript">window.location.href = "/";</script>';
 

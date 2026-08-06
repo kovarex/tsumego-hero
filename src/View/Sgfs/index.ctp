@@ -1,3 +1,11 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $sgfs
+ */
+
+?>
 <br><br>
 <table>
     <?php foreach ($sgfs as $sgf): ?>

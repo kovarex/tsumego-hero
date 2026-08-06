@@ -1,3 +1,11 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $solves
+ */
+
+?>
 <br><br>
 <table>
     <?php foreach ($solves as $solve): ?>

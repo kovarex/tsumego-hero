@@ -203,5 +203,8 @@ jobs:
       - name: Run PHPStan
         run: composer stan -- --error-format=github
 
+      - name: Run PHPStan (views)
+        run: composer stan-views -- --error-format=github
+
       - name: Run PHPCS
         run: composer cs-check -- --diff

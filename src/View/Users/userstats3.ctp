@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * @var View $this
+ * @var int $count
+ * @var bool $noIndex
+ * @var int $penalty
+ * @var array $ur
+ */
+
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
 			echo '<script type="text/javascript">window.location.href = "/";</script>';

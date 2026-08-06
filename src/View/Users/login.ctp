@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var string $redirectSignature
+ * @var string $redirectUrl
+ */
+
+?>
 <?php $this->start('script'); ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <?php $this->end(); ?>

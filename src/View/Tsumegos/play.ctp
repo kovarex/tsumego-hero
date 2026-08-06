@@ -1,4 +1,67 @@
 <?php
+
+/**
+ * @var View $this
+ * @var array $activityValue
+ * @var bool $alternative_response
+ * @var int $amountOfOtherCollection
+ * @var array $boardSelection
+ * @var int $checkBSize
+ * @var string $colorOrientation
+ * @var string $corner
+ * @var array $difficulty
+ * @var bool $doublexp
+ * @var string $emptyHeart
+ * @var bool $fav
+ * @var string $file
+ * @var int $firstRanks
+ * @var string $fullHeart
+ * @var string $getTitle
+ * @var bool $goldenTsumego
+ * @var bool $hasSgfProposal
+ * @var int $i
+ * @var int $idForSignature
+ * @var int $idForSignature2
+ * @var bool $isAllowedToContribute
+ * @var bool $isAllowedToContribute2
+ * @var bool $isSandbox
+ * @var bool $isSemeai
+ * @var bool $isTSUMEGOinFAVORITE
+ * @var string $lightDark
+ * @var int $maxHealth
+ * @var int $multipleChoiceSquares
+ * @var int $multipleChoiceTriangles
+ * @var string $nextLink
+ * @var bool $noSkipNextLink
+ * @var bool $nothingInRange
+ * @var bool $passEnabled
+ * @var bool $potionSuccess
+ * @var string $previousLink
+ * @var string $queryTitle
+ * @var string $requestSignature
+ * @var bool $requestSolution
+ * @var bool $reviewCheat
+ * @var string $reviewEnabled
+ * @var array $sT
+ * @var array $set
+ * @var array $setConnection
+ * @var array $setConnections
+ * @var bool $set_duplicate
+ * @var array $sgf
+ * @var string $solvedCheck
+ * @var int $startingPlayer
+ * @var bool $suspiciousBehavior
+ * @var array $t
+ * @var TagConnectionsEdit $tagConnectionsEdit
+ * @var TimeMode $timeMode
+ * @var TsumegoButton $tsumegoButton
+ * @var TsumegoButtons|null $tsumegoButtons
+ * @var TsumegoFilters $tsumegoFilters
+ * @var TsumegoXPAndRating $tsumegoXPAndRating
+ * @var array $tv
+ * @var string $ui
+ */
+
 	// Open Graph meta tags for social sharing
 	echo $this->element('open_graph_meta');
 	App::uses('ViteManifest', 'Utility');
@@ -635,7 +698,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
 
-	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
+	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
 	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;

@@ -1,3 +1,13 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $ratio
+ * @var array $t
+ * @var array $ur
+ */
+
+?>
 <br>
 <font size="5">
 <table>

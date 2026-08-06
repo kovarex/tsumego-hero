@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
   <div class="homeLeft2">
     <p class="title4">About</p>
 		<br>

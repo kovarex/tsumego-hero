@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $allTags
+ * @var array $tn
+ */
+
+?>
 
 <div class="tags-container">
    <div class="tags-content">

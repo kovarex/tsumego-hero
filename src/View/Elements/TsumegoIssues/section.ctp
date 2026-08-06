@@ -1,10 +1,12 @@
 <?php
+
 /**
  * React Issues List Mount Point
  *
  * React fetches all data from API. Only initial state needed here.
  *
  * Required variables:
+ * @var View $this
  * @var string $statusFilter - Current filter ('opened', 'closed', 'all')
  * @var int $currentPage - Current page number (for initial state)
  */
@@ -18,7 +20,7 @@ $isAdmin = Auth::isAdmin();
 	data-user-id="<?php echo $userId; ?>"
 	data-is-admin="<?php echo $isAdmin ? 'true' : 'false'; ?>"
 	data-status-filter="<?php echo h($statusFilter); ?>"
-	data-current-page="<?php echo h($currentPage); ?>"
+	data-current-page="<?php echo h((string)$currentPage); ?>"
 >
 	<!-- React app will mount here and fetch all data -->
 	<div class="loading">Loading issues...</div>

@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @var View $this
+ * @var string $sgf
+ * @var string $sgfID
+ */
+
 App::uses('ViteManifest', 'Utility');
 $this->start('script');
 echo ViteManifest::legacyScript('besogo');

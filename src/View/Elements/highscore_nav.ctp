@@ -4,7 +4,11 @@
  * Usage: $this->element('highscore_nav', ['activeTab' => 'rating'])
  *
  * Tabs: level, rating, time, achievements, tags, daily
+ * 
+ * @var View $this
+ * @var string $activeTab
  */
+
 $tabs = [
 	'level' => '/users/highscore',
 	'rating' => '/users/rating',

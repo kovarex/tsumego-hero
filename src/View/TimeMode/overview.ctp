@@ -1,3 +1,15 @@
+<?php
+
+/**
+ * @var View $this
+ * @var bool $hasFinishedSesssion
+ * @var string $lastTimeModeCategoryID
+ * @var array $solvedMap
+ * @var array $timeModeCategories
+ * @var array $timeModeRanks
+ */
+
+?>
 <div align="center">
 	<h2>Time Mode Select</h2>
 </div>

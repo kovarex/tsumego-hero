@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var View $this
+ * @var bool $redirect
+ */
+
+?>
 
 <?php
 	if(!Auth::isAdmin()) echo '<script type="text/javascript">window.location.href = "/";</script>';

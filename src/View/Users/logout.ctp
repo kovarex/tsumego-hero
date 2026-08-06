@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <script type="text/javascript">
 	var cacheLifetime = new Date();
 	cacheLifetime.setTime(cacheLifetime.getTime()+1*1*1*5*1000);

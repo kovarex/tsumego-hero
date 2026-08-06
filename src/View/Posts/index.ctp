@@ -1,3 +1,13 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $posts
+ * @var array $patternsInPosts
+ * @var array $pollsInPosts
+ */
+
+?>
 <div>
 <br><br>
 <table>

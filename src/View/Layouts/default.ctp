@@ -1,4 +1,22 @@
-﻿<!DOCTYPE html>
+<?php
+
+/**
+ * @var View $this
+ * @var string $lightDark
+ * @var string $lightDark
+ * @var string $highscoreLink
+ * @var string $discussFilter
+ * @var TimeMode $timeMode
+ * @var bool $achievementUpdate
+ * @var string $lastProfileLeft
+ * @var string $lastProfileRight
+ * @var string $nextDay
+ * @var bool $resetCookies
+ * @var string $boardsBitmask
+ */
+
+?>
+<!DOCTYPE html>
 <html lang="en" data-theme="<?php echo $lightDark === 'dark' ? 'dark' : 'light'; ?>">
 <?php
 App::uses('Level', 'Utility');

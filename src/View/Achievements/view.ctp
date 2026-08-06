@@ -1,3 +1,13 @@
+<?php
+/**
+ * @var View $this
+ * @var array $a
+ * @var string $aCount
+ * @var string $andMore
+ * @var array $asAll
+ */
+
+?>
 	
 	<div align="center" >
 	<?php

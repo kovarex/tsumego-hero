@@ -1,4 +1,17 @@
 <?php
+
+/**
+ * @var View $this
+ * @var bool $ac
+ * @var array $dayRecords
+ * @var int $levelBar
+ * @var string $quote
+ * @var array $recentAchievements
+ * @var TsumegoButton $tsumegoButton
+ * @var TsumegoButtons $tsumegoButtonsOfPublishedTsumegos
+ * @var bool $userOfTheDay
+ */
+
 $highestLeft = 19;
 $highestRight = 17;
 

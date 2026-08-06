@@ -1,3 +1,12 @@
+<?php
+/**
+ * @var View $this
+ * @var array $newTs3
+ * @var array $setDifficulty
+ * @var array $setPercent
+ */
+
+?>
 <br>
 <?php
 	//echo count($newTs3['id']).'<br>';

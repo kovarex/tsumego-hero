@@ -1,3 +1,11 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $allTags
+ */
+
+?>
 <div class="tags-container">
 <div class="tags-content" style="text-align:center">
 	<h1>Add Tag</h1>

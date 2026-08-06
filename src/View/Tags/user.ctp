@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var View $this
+ * @var array $viewedUser
+ * @var array $list
+ */
+
+?>
 
 <div align="center">
 	<p class="title">

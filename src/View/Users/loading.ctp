@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <br><br><br><br><br><br><br><br><br><br><br><br>
 <div align="center">
 <h1>Welcome back! Loading your progress back into the database.</h1>

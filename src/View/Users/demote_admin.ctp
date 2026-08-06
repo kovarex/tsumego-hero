@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var View $this
+ * @var array $u
+ * @var string $status
+ * @var bool $redirect
+ */
+?>
 <div align="center">
 <p class="title">
 	Remove admin status

@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @var View $this
+ * @var bool $activeToday
+ * @var array $trs
+ */
+
 echo count($trs).'<br>';
 if($activeToday) echo '!';
 else echo 'x';

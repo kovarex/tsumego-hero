@@ -1,4 +1,11 @@
-<?php 
+<?php
+
+/**
+ * @var View $this
+ * @var array $poll
+ * @var array $related
+ */
+
 $comment1 = $poll['Poll']['comment1'];
 $comment2 = $poll['Poll']['comment2'];
 $comment3 = $poll['Poll']['comment3'];

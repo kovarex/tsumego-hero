@@ -1,3 +1,14 @@
+<?php
+/**
+ * @var View $this
+ * @var array $params1
+ * @var string $params2
+ * @var array $modes
+ * @var array $modes2
+ * @var array $users
+ * @var int $totalUsers
+ */
+?>
 
 <div align="center" class="highscore">
 <?php echo $this->element('highscore_nav', ['activeTab' => 'time']); ?>

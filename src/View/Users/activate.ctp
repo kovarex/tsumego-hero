@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var View $this
+ */
+?>
 <div class="users view">
 
     <h2><?php  __('Account aktivieren');?></h2>

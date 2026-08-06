@@ -1,3 +1,16 @@
+  <?php
+/**
+ * @var View $this
+ * @var array $dTitle
+ * @var string $id
+ * @var string $id2
+ * @var string $name
+ * @var array $s
+ * @var string $type
+ * @var string $ux
+ */
+
+?>
 	<?php
 	if(Auth::isLoggedIn()){
 		if(!Auth::isAdmin()){
