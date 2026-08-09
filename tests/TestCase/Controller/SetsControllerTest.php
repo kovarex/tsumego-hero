@@ -1671,4 +1671,66 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextNotContains('deleted', $this->view);
 	}
 
+	/**
+	 * Verifies a sandbox tsumego's play page loads correctly for premium users.
+	 * Smoke test to ensure the $isSandbox code path in Play.php doesn't crash.
+	 *
+	 * @group browser
+	 * @retryAttempts 2
+	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+	 */
+	public function testSandboxPlayPageLoads(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'premiumuser', 'mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'tsumego' => [
+				'sets' => [['name' => 'Sandbox Play Test', 'public' => 0, 'num' => '1']],
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[pd][dp]AW[pp][dd])',
+			],
+		]);
+
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$browser = Browser::instance();
+		$browser->get('/' . $setConnectionId);
+
+		// Page loads without error
+		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'Sandbox play page should load');
+
+		// Play title exists (confirms the play page rendered fully)
+		$this->assertTrue($browser->idExists('playTitle'), 'Play title should be present');
+	}
+
+	/**
+	 * Verifies non-premium users are redirected from sandbox play pages.
+	 * Creates sandbox set as premium owner, then switches to a non-premium user.
+	 *
+	 * @group browser
+	 * @retryAttempts 2
+	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+	 */
+	public function testSandboxPlayPageRedirectsNonPremium(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'owner', 'mode' => Constants::$LEVEL_MODE, 'premium' => 1],
+			'other-users' => [['name' => 'regularuser']],
+			'tsumego' => [
+				'sets' => [['name' => 'Premium Only Set', 'public' => 0, 'num' => '1']],
+				'sgf' => '(;GM[1]FF[4]SZ[19]AB[pd][dp]AW[pp][dd])',
+			],
+		]);
+
+		$setConnectionId = $context->tsumegos[0]['set-connections'][0]['id'];
+		$regularUserId = $context->otherUsers[0]['id'];
+
+		// Navigate as non-premium user (getAnonymous avoids Browser's auto-auth cookie)
+		$browser = Browser::instance();
+		$browser->getAnonymous('empty.php');
+		$browser->setCookie('hackedLoggedInUserID', (string) $regularUserId);
+		$browser->getAnonymous('/' . $setConnectionId);
+
+		// JS redirect fires and Selenium follows it — user ends up on homepage
+		$currentUrl = $browser->driver->getCurrentURL();
+		$this->assertStringNotContainsString('/' . $setConnectionId, $currentUrl,
+			'Non-premium user should be redirected away from sandbox play page');
+	}
 }
