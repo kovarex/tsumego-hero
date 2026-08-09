@@ -77,13 +77,13 @@ class SitesControllerTest extends ControllerTestCase
 	public function testIndexPageLoadsWithDayRecord()
 	{
 		$browser = Browser::instance();
-		// Arrange: Set up test context with user, tsumego, and day_record
 		new ContextPreparator([
 			'tsumego' => [],
 			'day-records' => [[
-				'date' => date('Y-m-d'), // Today
+				'date' => date('Y-m-d'),
 				'solved' => 5,
 				'quote' => 'q01',
+				'tsumego_count' => 100,
 				'visitedproblems' => 10]]]);
 
 		// Act: Load the index page
@@ -328,8 +328,8 @@ class SitesControllerTest extends ControllerTestCase
 
                 $pageSource = $browser->driver->getPageSource();
                 $this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
-                $this->assertStringContainsString('x: new Date(2025, 01, 01), y: 100', $pageSource, 'Jan 2025 data point');
-                $this->assertStringContainsString('x: new Date(2025, 02, 01), y: 200', $pageSource, 'Feb 2025 data point');
-                $this->assertStringContainsString('x: new Date(2025, 03, 01), y: 300', $pageSource, 'Mar 2025 data point');
+                $this->assertStringContainsString("{ x: '2025-01-01', y: 100 }", $pageSource, 'Jan 2025 data point');
+                $this->assertStringContainsString("{ x: '2025-02-01', y: 200 }", $pageSource, 'Feb 2025 data point');
+                $this->assertStringContainsString("{ x: '2025-03-01', y: 300 }", $pageSource, 'Mar 2025 data point');
         }
 }

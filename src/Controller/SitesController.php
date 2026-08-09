@@ -54,10 +54,62 @@ class SitesController extends AppController
 		}
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
-		$this->set('dayRecords', $this->DayRecord->query(
-			"SELECT DATE_FORMAT(date, '%Y-%m-01') AS date, MAX(tsumego_count) AS tsumego_count
-			 FROM day_record GROUP BY DATE_FORMAT(date, '%Y-%m-01') ORDER BY date ASC"
-		));
+		$chartData = Cache::read('homepage_chart', 'long');
+		if ($chartData === false)
+		{
+			$problemsRaw = $this->Tsumego->query(
+				"SELECT DATE_FORMAT(created, '%Y-%m-01') AS date, COUNT(*) AS cnt
+				 FROM tsumego GROUP BY 1 ORDER BY 1 ASC"
+			);
+			$usersRaw = $this->User->query(
+				"SELECT DATE_FORMAT(created, '%Y-%m-01') AS date, COUNT(*) AS cnt
+				 FROM user WHERE created IS NOT NULL GROUP BY 1 ORDER BY 1 ASC"
+			);
+
+			// Build maps of cumulative values by month
+			$cumProblems = 0;
+			$problemsByMonth = [];
+			foreach ($problemsRaw as $r)
+			{
+				$cumProblems += (int)$r[0]['cnt'];
+				$problemsByMonth[(string)$r[0]['date']] = $cumProblems;
+			}
+			$cumUsers = 0;
+			$usersByMonth = [];
+			foreach ($usersRaw as $r)
+			{
+				$cumUsers += (int)$r[0]['cnt'];
+				$usersByMonth[(string)$r[0]['date']] = $cumUsers;
+			}
+
+			// Collect all unique months
+			$allMonths = array_unique(array_merge(array_keys($problemsByMonth), array_keys($usersByMonth)));
+			sort($allMonths);
+
+			// Build unified chart data, carrying forward last known values
+			$lastProblems = null;
+			$lastUsers = null;
+			$chartData = [];
+			foreach ($allMonths as $date)
+			{
+				if (array_key_exists($date, $problemsByMonth))
+				{
+					$lastProblems = $problemsByMonth[$date];
+				}
+				if (array_key_exists($date, $usersByMonth))
+				{
+					$lastUsers = $usersByMonth[$date];
+				}
+				$chartData[] = [
+					'date' => $date,
+					'problems' => $lastProblems,
+					'users' => $lastUsers,
+				];
+			}
+
+			Cache::write('homepage_chart', $chartData, 'long');
+		}
+		$this->set('chartData', $chartData);
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
 		$this->set('urNames', $urNames);

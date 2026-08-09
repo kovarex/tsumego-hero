@@ -18,7 +18,8 @@ $highestRight = 17;
 $this->start('script');
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <?php
 $this->end();
 ?>
@@ -378,49 +379,104 @@ $this->end();
 			<a href="/forums/viewtopic.php?t=11">Version 0.1 weekly overview</a>
 		</div>
 
-		<p class="title4">Problem Database Size </p>
+		<p class="title4">Site Growth</p>
 		<div class="new1">
+		<div style="height: 400px; width: 100%;"><canvas id="chartContainer"></canvas></div>
 		<script>
-		window.onload = function () {
-
-		var chart = new CanvasJS.Chart("chartContainer", {
-			animationEnabled: true,
-			animationDuration: 1000,
-			theme: "dark1",
-			title:{
-				text: "",
-				fontSize: 20,
-				 fontWeight: "lighter"
+		new Chart(document.getElementById('chartContainer'), {
+			type: 'line',
+			data: {
+				datasets: [{
+					label: 'Problems',
+					data: [
+						<?php
+							echo implode(",", array_map(function($r) {
+								return '{ x: \'' . $r['date'] . '\', y: ' . $r['problems'] . ' }';
+							}, $chartData));
+						?>
+					],
+					fill: true,
+					borderColor: '#d19fe4',
+					backgroundColor: 'rgba(209, 159, 228, 0.25)',
+					pointRadius: 0,
+					pointHoverRadius: 6,
+					borderWidth: 2,
+					tension: 0.1,
+					yAxisID: 'y'
+				}, {
+					label: 'Users',
+					data: [
+						<?php
+							echo implode(",", array_map(function($r) {
+								$y = $r['users'] !== null ? $r['users'] : 'null';
+								return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
+							}, $chartData));
+						?>
+					],
+					fill: false,
+					borderColor: '#5b9bd5',
+					pointRadius: 0,
+					pointHoverRadius: 6,
+					borderWidth: 2,
+					tension: 0.1,
+					yAxisID: 'y1'
+				}]
 			},
-		   axisX:{
-				valueFormatString: "DD MMM YY",
-				labelFontSize: 11
-			},
-			axisY:{
-				includeZero: true,
-				labelFontSize: 14
-			},
-			data: [{
-				type: "area",
-				color: "#d19fe4",
-				fillOpacity: .7,
-				lineThickness: 3,
-				dataPoints: [
-					<?php
-						echo implode(",", array_map(function($dayRecord)
-						{
-							$date = new DateTime($dayRecord[0]['date']);
-							return '{ x: new Date('.$date->format('Y').', '.$date->format('m').', '.$date->format('d').'), y: '.$dayRecord[0]['tsumego_count'].' }';
-						}, $dayRecords));
-					?>
-				]
-			}]
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					x: {
+						type: 'time',
+						time: {
+							unit: 'month',
+							displayFormats: { month: 'MMM yy' },
+							tooltipFormat: 'MMM yyyy'
+						},
+						ticks: { color: '#999' },
+						grid: { color: 'rgba(255,255,255,0.05)' }
+					},
+					y: {
+						type: 'linear',
+						display: true,
+						position: 'left',
+						beginAtZero: true,
+						ticks: { color: '#d19fe4' },
+						grid: { color: 'rgba(255,255,255,0.05)' }
+					},
+					y1: {
+						type: 'linear',
+						display: true,
+						position: 'right',
+						beginAtZero: true,
+						ticks: { color: '#5b9bd5' },
+						grid: { drawOnChartArea: false }
+					}
+				},
+				plugins: {
+					legend: {
+						display: true,
+						labels: { color: '#999' },
+						onClick: function(e, legendItem, legend) {
+							const ci = legend.chart;
+							const meta = ci.getDatasetMeta(legendItem.datasetIndex);
+							meta.hidden = meta.hidden === null ? true : null;
+							ci.options.scales.y.display = ci.isDatasetVisible(0);
+							ci.options.scales.y1.display = ci.isDatasetVisible(1);
+							ci.update();
+						}
+					},
+					tooltip: {
+						mode: 'index',
+						intersect: false,
+						callbacks: {
+							label: function(item) { return item.dataset.label + ': ' + item.parsed.y.toLocaleString(); }
+						}
+					}
+				}
+			}
 		});
-		chart.render();
-
-		}
 		</script>
-		<div id="chartContainer" style="height: 400px; width: 100%;"></div>
 		<br>
 		</div>
 
