@@ -54,7 +54,10 @@ class SitesController extends AppController
 		}
 
 		$this->set('tsumegoButtonsOfPublishedTsumegos', $tsumegoButtonsOfPublishedTsumegos);
-		$this->set('dayRecords', ClassRegistry::init('DayRecord')->find('all', ['order' => 'date ASC']));
+		$this->set('dayRecords', $this->DayRecord->query(
+			"SELECT DATE_FORMAT(date, '%Y-%m-01') AS date, MAX(tsumego_count) AS tsumego_count
+			 FROM day_record GROUP BY DATE_FORMAT(date, '%Y-%m-01') ORDER BY date ASC"
+		));
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
 		$this->set('urNames', $urNames);

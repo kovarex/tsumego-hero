@@ -409,8 +409,8 @@ $this->end();
 					<?php
 						echo implode(",", array_map(function($dayRecord)
 						{
-							$date = new DateTime($dayRecord['DayRecord']['date']);
-							return '{ x: new Date('.$date->format('Y').', '.$date->format('m').', '.$date->format('d').'), y: '.$dayRecord['DayRecord']['tsumego_count'].' }';
+							$date = new DateTime($dayRecord[0]['date']);
+							return '{ x: new Date('.$date->format('Y').', '.$date->format('m').', '.$date->format('d').'), y: '.$dayRecord[0]['tsumego_count'].' }';
 						}, $dayRecords));
 					?>
 				]

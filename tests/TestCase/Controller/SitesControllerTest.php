@@ -298,4 +298,38 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Bob', $allText);
 		$this->assertStringContainsString('Charlie', $allText);
 	}
+
+        /**
+         * Verifies the homepage chart container exists and has data.
+         *
+         * @group browser
+         * @retryAttempts 2
+         * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+         */
+        public function testHomepageChartRenders(): void
+        {
+                $context = new ContextPreparator([
+                        'user' => ['name' => 'testuser'],
+                        'day-records' => [
+                                ['date' => '2025-01-01', 'tsumego_count' => 100],
+                                ['date' => '2025-02-01', 'tsumego_count' => 200],
+                                ['date' => '2025-03-01', 'tsumego_count' => 300],
+                        ],
+                ]);
+
+                $browser = Browser::instance();
+                try
+                {
+                        $browser->get('/');
+                }
+                catch (Exception $e)
+                {
+                }
+
+                $pageSource = $browser->driver->getPageSource();
+                $this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
+                $this->assertStringContainsString('x: new Date(2025, 01, 01), y: 100', $pageSource, 'Jan 2025 data point');
+                $this->assertStringContainsString('x: new Date(2025, 02, 01), y: 200', $pageSource, 'Feb 2025 data point');
+                $this->assertStringContainsString('x: new Date(2025, 03, 01), y: 300', $pageSource, 'Mar 2025 data point');
+        }
 }
