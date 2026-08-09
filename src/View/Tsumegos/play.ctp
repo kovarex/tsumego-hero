@@ -2,7 +2,6 @@
 
 /**
  * @var View $this
- * @var array $activityValue
  * @var bool $alternative_response
  * @var int $amountOfOtherCollection
  * @var array $boardSelection
@@ -1668,7 +1667,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (!success && failAlreadyReported)
 			return;
 		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
-		setCookie("av", <?php echo $activityValue[0]; ?>);
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();

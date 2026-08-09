@@ -79,9 +79,6 @@ class Play
 
 		$tsumegoFilters = new TsumegoFilters();
 
-		if (Auth::isLoggedIn())
-			$activityValue = $this->getActivityValue(Auth::getUserID(), $t['Tsumego']['id']);
-
 		if ($t['Tsumego']['rating'])
 			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
 
@@ -357,7 +354,6 @@ class Play
 		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('idForSignature', $idForSignature);
 		($this->setFunction)('idForSignature2', $idForSignature2);
-		if (isset($activityValue))($this->setFunction)('activityValue', $activityValue);
 		($this->setFunction)('nothingInRange', $nothingInRange);
 		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
@@ -414,72 +410,6 @@ class Play
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 
 		return null;
-	}
-
-	protected function getActivityValue($uid, $tid)
-	{
-		$return = [];
-		$tsumegoNum = 90;
-		$ra = ClassRegistry::init('TsumegoAttempt')->find('all', ['limit' => $tsumegoNum, 'order' => 'created DESC', 'conditions' => ['user_id' => $uid]]);
-		if (!$ra)
-			$ra = [];
-		if (count($ra) < $tsumegoNum)
-		{
-			$missing = $tsumegoNum - count($ra);
-			$raSize = count($ra);
-			$datex = new DateTime('-1 month');
-			while ($missing != 0)
-			{
-				$ra[$raSize]['TsumegoAttempt']['created'] = $datex->format('Y-m-d H:i:s');
-				$ra[$raSize]['TsumegoAttempt']['tsumego_id'] = 1;
-				$raSize++;
-				$missing--;
-			}
-		}
-		$date = date('Y-m-d H:i:s');
-		$x = [];
-		$avg = 0;
-		$foundTsumego = 0;
-		$raCount = count($ra);
-		for ($i = 0; $i < $raCount; $i++)
-		{
-			if ($ra[$i]['TsumegoAttempt']['tsumego_id'] == $tid)
-				$foundTsumego = 1;
-			$d = $this->getActivityValueSingle($ra[$i]['TsumegoAttempt']['created']);
-			$avg += $d;
-			array_push($x, $d);
-		}
-		$avg /= count($x);
-		$return[0] = round($avg);
-		$return[1] = $foundTsumego;
-
-		return $return;
-	}
-
-	private function getActivityValueSingle($date2)
-	{
-		$date1 = new DateTime('now');
-		$date2 = new DateTime($date2);
-		$interval = $date1->diff($date2);
-		$m = $interval->m;
-		$d = $interval->d;
-		$h = $interval->h;
-		$i = $interval->i;
-		$months = 0;
-		while ($m > 0)
-		{
-			$months += 672;
-			$m--;
-		}
-		$hours = $h;
-		while ($d > 0)
-		{
-			$hours += 24;
-			$d--;
-		}
-		$hours += $months;
-
-		return $hours;
 	}
 
 	public static function renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t)
