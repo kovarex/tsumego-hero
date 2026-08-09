@@ -5,20 +5,6 @@ App::uses('NotFoundException', 'Routing/Error');
 class SgfsController extends AppController
 {
 	/**
-	 * @return void
-	 */
-	public function index()
-	{
-		$this->set('_title', 'Tsumego Hero');
-		$this->set('_page', 'play');
-		$sgfs = $this->Sgf->find('all');
-		if (!$sgfs)
-			$sgfs = [];
-
-		$this->set('sgfs', $sgfs);
-	}
-
-	/**
 	 * @param string|int|null $id
 	 * @return void
 	 */
