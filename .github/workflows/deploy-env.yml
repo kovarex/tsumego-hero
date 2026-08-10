@@ -1,0 +1,58 @@
+name: Deploy to environment
+
+# Reusable workflow — called by deploy.yml for each target.
+# Builds frontend assets then deploys via Deployer.
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+        description: 'Deployer host (test or production)'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Composer install
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          cache: true
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ssh.nyc1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.phx1.nearlyfreespeech.net >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: vendor/bin/dep deploy ${{ inputs.target }} --no-interaction
