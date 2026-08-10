@@ -43,27 +43,18 @@ class AdminActivity extends AppModel
 						$decoded['slave_first_move_color'],
 						$slaveCorrectMoves);
 
-					$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
 					$masterPreview = TsumegoButton::sgfToPreviewData($decoded['master_sgf']);
 					$slavePreview = TsumegoButton::sgfToPreviewData($decoded['slave_sgf']);
+					$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
 					if ($masterPreview)
-					{
-						$masterJson = htmlspecialchars(json_encode($masterPreview), ENT_QUOTES, 'UTF-8');
-						$onMouseOver .= 'var d=JSON.parse(this.getAttribute(\"data-master-preview\"));createPreviewBoard(this,d.black,d.white,d.xMax,d.yMax,d.boardSize);';
-					}
+						$onMouseOver .= 'createPreviewBoard(this,\'' . $masterPreview['black'] . '\',\'' . $masterPreview['white'] . '\',' . $masterPreview['xMax'] . ',' . $masterPreview['yMax'] . ',' . $masterPreview['boardSize'] . ');';
 					if ($slavePreview)
 					{
-						$slaveJson = htmlspecialchars(json_encode($slavePreview), ENT_QUOTES, 'UTF-8');
 						$diff = $comparisonResult->diff ?? '';
-						$onMouseOver .= 'var d=JSON.parse(this.getAttribute(\"data-slave-preview\"));createPreviewBoard(this.nextElementSibling,d.black,d.white,d.xMax,d.yMax,d.boardSize,"' . $diff . '");';
+						$onMouseOver .= 'createPreviewBoard(this,\'' . $slavePreview['black'] . '\',\'' . $slavePreview['white'] . '\',' . $slavePreview['xMax'] . ',' . $slavePreview['yMax'] . ',' . $slavePreview['boardSize'] . ',\'' . $diff . '\');';
 					}
 					$result = 'Merged ';
-					$attrs = '';
-					if (isset($masterJson))
-						$attrs .= ' data-master-preview="' . $masterJson . '"';
-					if (isset($slaveJson))
-						$attrs .= ' data-slave-preview="' . $slaveJson . '"';
-					$result .= '<a style="position: relative;"' . $attrs . ' onmouseover="' . $onMouseOver . '">tsumego<span class="tooltip-box"></span></a>';
+					$result .= '<a style="position: relative;" onmouseover="' . htmlspecialchars($onMouseOver, ENT_QUOTES, 'UTF-8') . '">tsumego<span class="tooltip-box"></span></a>';
 					return $result;
 				}
 			default:
