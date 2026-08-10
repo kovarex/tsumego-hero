@@ -185,7 +185,7 @@ class ContextPreparator
 		$this->prepareTsumegoAttempts(Util::extract('attempts', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
-		if (empty($tsumego['sgfs']))
+		if (empty($tsumego['sgfs']) && Auth::getUserID())
 			$this->prepareTsumegoSgf(Constants::$SGF_PLACEHOLDER, $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);

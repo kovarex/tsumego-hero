@@ -1210,10 +1210,12 @@ SELECT
 	tsumego_attempt.gain AS xp_gain,
 	tsumego_attempt.solved AS solved,
 	tsumego_attempt.misplays AS misplays,
-	tsumego_attempt.user_rating AS user_rating
+	tsumego_attempt.user_rating AS user_rating,
+	sgf.sgf AS sgf
 FROM
 	tsumego_attempt
 	JOIN set_connection ON set_connection.tsumego_id = tsumego_attempt.tsumego_id
+	JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego_attempt.tsumego_id)
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
 	JOIN `set` ON set_connection.set_id = `set`.id
 WHERE
