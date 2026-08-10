@@ -21,9 +21,7 @@ class AchievementStatus extends AppModel
 		$cacheKey = 'recent_achievements_' . $limit;
 		$cached = Cache::read($cacheKey);
 		if ($cached !== false)
-		{
 			return $cached;
-		}
 
 		$rows = $this->find('all', [
 			'joins' => [
