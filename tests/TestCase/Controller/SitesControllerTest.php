@@ -65,6 +65,10 @@ class SitesControllerTest extends ControllerTestCase
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertSame(count($buttons), 1);
 		$this->assertSame($buttons[0]->getText(), "564");
+
+		// Published tsumego buttons should have preview data
+		$previewLinks = $browser->getCssSelect('.new-tsumego-box a[data-sgf-preview]');
+		$this->assertNotEmpty($previewLinks);
 	}
 
 	/**

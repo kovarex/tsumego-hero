@@ -16,6 +16,7 @@ SELECT
 	admin_activity.old_value AS old_value,
 	admin_activity.new_value AS new_value,
 	tsumego.id AS tsumego_id,
+	sgf.sgf AS sgf,
 	user.id AS user_id,
 	user.name AS user_name,
 	user.picture AS user_picture,
@@ -52,6 +53,7 @@ FROM
 		ON `set`.id = set_connection.set_id
 	LEFT JOIN user
 		ON admin_activity.user_id = user.id
+	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	LEFT JOIN tsumego_status
 		ON tsumego_status.user_id = ?
 	   AND tsumego_status.tsumego_id = tsumego.id
@@ -65,7 +67,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
-			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+			new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])

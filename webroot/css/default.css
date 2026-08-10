@@ -7829,6 +7829,61 @@ ul ul {
 	display: block;
 }
 
+/* Toggle preview mode: show boards inline, hide pills */
+.preview-zoomed .tooltip-box
+{
+	opacity: 1;
+	position: static;
+	pointer-events: auto;
+}
+
+.preview-zoomed .setViewButtons1,
+.preview-zoomed .setViewButtons2,
+.preview-zoomed .setViewButtons3,
+.preview-zoomed .tooltip-label,
+.preview-zoomed .tooltip-desc
+{
+	display: none;
+}
+
+.preview-zoomed li[class^="status"]
+{
+	width: 130px;
+	height: 110px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-image: none;
+	border: 1px solid #444;
+	margin: 2px;
+}
+
+.preview-zoomed .tooltip-box svg
+{
+	max-width: 120px;
+	max-height: 100px;
+}
+
+.preview-zoomed .tsumegoNavi2
+{
+	height: auto;
+	width: auto;
+	max-width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	justify-content: center;
+	padding: 4px;
+}
+
+.preview-zoomed .set-view-main
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: flex-start;
+}
+
 .tooltip-label
 {
 	opacity: 0;

@@ -40,7 +40,7 @@ class CommentsRenderer
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 
 		if ($comment['set_connection_id'])
-			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'])->render();
+			new TsumegoButton($comment['tsumego_id'], $comment['set_connection_id'], $comment['set_num'], $comment['status'] ?: 'N', 0, $comment['sgf'])->render();
 		echo '</div></td></tr>';
 		echo '</table>';
 		echo '</div>';
@@ -66,11 +66,13 @@ SELECT
 	tsumego_comment.id as id,
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
-	set_connection.num as set_num";
+	set_connection.num as set_num,
+	sgf.sgf AS sgf";
 		$queryFrom = "
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
+	JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (

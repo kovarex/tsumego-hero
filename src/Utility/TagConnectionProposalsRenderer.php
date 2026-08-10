@@ -14,6 +14,7 @@ SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
     tsumego.id as tsumego_id,
+    sgf.sgf AS sgf,
     user.id AS user_id,
     user.name AS user_name,
     user.picture AS user_picture,
@@ -31,6 +32,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id = tag_connection.tsumego_id
 	JOIN user ON tag_connection.user_id = user.id
 	JOIN `set` ON `set`.id = set_connection.set_id
+	JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego.id
 WHERE tag_connection.approved = FALSE
 ORDER BY tag_connection.created, tag.id
@@ -44,7 +46,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '<a class="adminpanel-link" href="/tags/view/' . $item['tag_id'] . '">' . h($item['tag_name']);
 		echo '</a> for <a class="adminpanel-link" href="/' . $item['set_connection_id'] . '">' . h($item['set_title']) . ' - ' . h($item['num']) . '</a></td>';
 		echo '<td>';
-		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '</td>';
 		echo '<td>';
 		echo '<a class="new-button-default2" href="/users/acceptTagConnectionProposal/' . $item['tag_connection_id'] . '" id="tag-connection-accept-' . $item['tag_connection_id'] . '">Accept</a>';
