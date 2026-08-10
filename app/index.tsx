@@ -5,6 +5,7 @@ import { AuthProvider } from './shared/AuthContext';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
 import { RecentAchievements, type RecentAchievement } from './home/RecentAchievements';
+import { initializeTagEditor } from './tags/init';
 import { ApiError } from './shared/api';
 import type { CommentCounts } from './comments/commentTypes';
 
@@ -110,6 +111,7 @@ function initializeApp()
 	initializeComments();
 	initializeIssuesList();
 	initializeRecentAchievements();
+	initializeTagEditor();
 
 	// Expose React Query invalidation for Selenium testing
 	(window as any).__invalidateComments = () =>

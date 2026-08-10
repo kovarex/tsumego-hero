@@ -420,7 +420,6 @@ class ContextPreparator
 		{
 			$tag = $this->getOrCreateTag([
 				'name' => Util::extract('name', $tagInput),
-				'popular' => Util::extract('popular', $tagInput) ?: false,
 				'approved' => Util::extract('tag_approved', $tagInput) ?: true,
 				'is_hint' => Util::extract('is_hint', $tagInput) ?: 0]);
 			$tagConnection = [];
@@ -497,7 +496,6 @@ class ContextPreparator
 		if (!$tag)
 		{
 			$tag = [];
-			$tag['popular'] = Util::extract('popular', $tagInput) ?: false;
 			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
 			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
 			$tag['user_id'] = $this->user['id'];
@@ -512,7 +510,6 @@ class ContextPreparator
 		{
 			Util::extract('description', $tagInput);
 			Util::extract('approved', $tagInput);
-			Util::extract('popular', $tagInput);
 			Util::extract('is_hint', $tagInput);
 		}
 

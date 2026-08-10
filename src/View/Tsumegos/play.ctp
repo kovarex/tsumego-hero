@@ -50,7 +50,7 @@
  * @var int $startingPlayer
  * @var bool $suspiciousBehavior
  * @var array $t
- * @var TagConnectionsEdit $tagConnectionsEdit
+ * @var array $tagData
  * @var TimeMode $timeMode
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons|null $tsumegoButtons
@@ -334,20 +334,27 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			}
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
+		$tagEditorProps = json_encode([
+			'tsumegoId' => (int) $t['Tsumego']['id'],
+			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
+			'isAdmin' => Auth::isAdmin(),
+			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
+			'canContribute' => $isAllowedToContribute2,
+			'initialTags' => array_map(fn($row) => [
+				'id' => (int) $row['id'],
+				'name' => $row['name'],
+				'isAdded' => (bool) ($row['tag_connection_id'] !== null),
+				'isApproved' => (bool) ($row['approved'] ?? false),
+				'isMine' => (bool) ($row['is_mine'] ?? false),
+				'isHint' => (bool) ($row['hint'] ?? false),
+			], $tagData),
+		]);
 		?>
 		<div class="tag-container" align="center">
-			<div class="tag-list"></div>
-			<?php if($isAllowedToContribute2){ ?>
-			<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu">
-			<?php if($isAllowedToContribute){ ?>
-				Edit tags
-			<?php } ?>
-			</a></div>
-			<?php }else{
-				echo '<div style="color:gray;font-size:14px">Daily limit reached.</div>';
-			} ?>
-			<div class="add-tag-list-popular"></div>
-			<div class="add-tag-list"></div>
+			<div
+				data-tag-editor-root
+				data-tag-editor-props="<?php echo htmlspecialchars($tagEditorProps); ?>"
+			></div>
 		</div>
 		<br>
 		<?php
@@ -726,7 +733,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	<?php $tagConnectionsEdit->renderJs(); ?>
+	<?php /* Tag editor now handled by React component */ ?>
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
@@ -1176,21 +1183,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	?>
 
 	<?php if($firstRanks==0)
-		echo "tagConnectionsEdit.draw();"; ?>
-
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e)
-	{
-		tagConnectionsEdit.activateEdit();
-		$("#open-add-tag-menu").hide();
-			$(".add-tag-list").hide();
-			$(".add-tag-list-popular").show();
-		});
-
-	$('.tag-container').on('click', "#open-more-tags", function(e){
-		$("#open-add-tag-menu").hide();
-		$(".add-tag-list").show();
-			$(".add-tag-list-popular").hide();
-		});
+		echo "window.dispatchEvent(new Event('tag-editor-draw'));"; ?>
 
 		$('#target').click(function(e){
 			if(locked)
@@ -1693,7 +1686,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (success)
 		{
 			problemSolved = true;
-			tagConnectionsEdit.onProblemSolved();
+			window.dispatchEvent(new Event('tag-editor-solved'));
 			if (typeof xpStatus !== "undefined" && xpStatus)
 				xpStatus.set('solved', true);
 			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
