@@ -31,7 +31,7 @@ class SimilarSearchLogic
 SELECT
     tsumego.id AS tsumego_id,
     set_connection_latest.id AS set_connection_id,
-    sgf.sgf AS sgf,
+    COALESCE(sgf.sgf, '') AS sgf,
     sgf.first_move_color AS first_move_color,
     sgf.correct_moves AS correct_moves
 FROM tsumego

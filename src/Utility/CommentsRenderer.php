@@ -67,7 +67,7 @@ SELECT
 	set_connection.id AS set_connection_id,
 	CONCAT(`set`.title, ' ', `set`.title2) as set_title,
 	set_connection.num as set_num,
-	sgf.sgf AS sgf";
+	COALESCE(sgf.sgf, '') AS sgf";
 		$queryFrom = "
 FROM
 	tsumego_comment

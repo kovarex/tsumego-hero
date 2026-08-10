@@ -14,7 +14,7 @@ SELECT
 	tag.id as tag_id,
 	tag.name as tag_name,
     tsumego.id as tsumego_id,
-    sgf.sgf AS sgf,
+    COALESCE(sgf.sgf, '') AS sgf,
     user.id AS user_id,
     user.name AS user_name,
     user.picture AS user_picture,

@@ -12,7 +12,7 @@ class SGFProposalsRenderer extends DataTableRenderer
 SELECT
     p.tsumego_id as tsumego_id,
     a.latest_accepted_id AS latest_accepted_id,
-    sgf.sgf AS sgf,
+    COALESCE(sgf.sgf, '') AS sgf,
     p.id AS proposed_id,
     p.user_id AS proposed_user_id,
     user.name AS user_name,

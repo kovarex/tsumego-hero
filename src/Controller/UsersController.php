@@ -1211,7 +1211,7 @@ SELECT
 	tsumego_attempt.solved AS solved,
 	tsumego_attempt.misplays AS misplays,
 	tsumego_attempt.user_rating AS user_rating,
-	sgf.sgf AS sgf
+	COALESCE(sgf.sgf, '') AS sgf
 FROM
 	tsumego_attempt
 	JOIN set_connection ON set_connection.tsumego_id = tsumego_attempt.tsumego_id
