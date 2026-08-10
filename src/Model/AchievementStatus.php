@@ -18,6 +18,13 @@ class AchievementStatus extends AppModel
 	 */
 	public function getRecent(int $limit = 7): array
 	{
+		$cacheKey = 'recent_achievements_' . $limit;
+		$cached = Cache::read($cacheKey);
+		if ($cached !== false)
+		{
+			return $cached;
+		}
+
 		$rows = $this->find('all', [
 			'joins' => [
 				[
@@ -54,6 +61,7 @@ class AchievementStatus extends AppModel
 				'created' => $row['AchievementStatus']['created'],
 			];
 		}
+		Cache::write($cacheKey, $result, 'default');
 		return $result;
 	}
 }
