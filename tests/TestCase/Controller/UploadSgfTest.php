@@ -7,7 +7,7 @@ class UploadSgfTest extends TestCaseWithAuth
 	public function testUploadSgf()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S']]);
+		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => [ 'set_order' => 1, 'status' => 'S', 'no-auto-sgf' => true]]);
 		$initialCount = count(ClassRegistry::init('Sgf')->find('all', ['conditions' => ['tsumego_id' => $context->tsumegos[0]['id']]]));
 		$this->assertSame(0, $initialCount);
 		$browser->get($context->setConnections[0]['id']);
