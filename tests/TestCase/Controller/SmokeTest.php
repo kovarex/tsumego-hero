@@ -30,7 +30,7 @@ class SmokeTest extends ControllerTestCase
 			// Rating=1500 tsumego needed so ratingMode finds it for user with rating 1500 (range ±240)
 			'tsumegos' => [['rating' => 1100], ['rating' => 1200], ['rating' => 1500, 'sets' => [['name' => 'Rating Set', 'num' => 1]]]],
 			'tags' => [['name' => 'capture', 'approved' => 1]],
-			'day-records' => [['date' => date('Y-m-d'), 'solved' => 10, 'visitedproblems' => 20]],
+			'day-records' => [['date' => date('Y-m-d')]],
 			// Two ranks needed so timeMode/overview hits the BUCKET GROUP BY code path (count==1 uses a simpler query)
 			'time-mode-ranks' => ['15k', '14k'],
 			'time-mode-sessions' => [

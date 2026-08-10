@@ -20,6 +20,7 @@ final class SuperglobalCleanup implements BeforeTestHook
 		CookieFlash::clearCache();
 		Preferences::clearTestStorage();
 		Cache::clear(false, 'default');
+		Cache::clear(false, 'long');
 	}
 
 	public function executeBeforeTest(string $test): void

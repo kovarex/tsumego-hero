@@ -71,15 +71,15 @@ class SitesController extends AppController
 			$problemsByMonth = [];
 			foreach ($problemsRaw as $r)
 			{
-				$cumProblems += (int)$r[0]['cnt'];
-				$problemsByMonth[(string)$r[0]['date']] = $cumProblems;
+				$cumProblems += (int) $r[0]['cnt'];
+				$problemsByMonth[(string) $r[0]['date']] = $cumProblems;
 			}
 			$cumUsers = 0;
 			$usersByMonth = [];
 			foreach ($usersRaw as $r)
 			{
-				$cumUsers += (int)$r[0]['cnt'];
-				$usersByMonth[(string)$r[0]['date']] = $cumUsers;
+				$cumUsers += (int) $r[0]['cnt'];
+				$usersByMonth[(string) $r[0]['date']] = $cumUsers;
 			}
 
 			// Collect all unique months
@@ -93,13 +93,9 @@ class SitesController extends AppController
 			foreach ($allMonths as $date)
 			{
 				if (array_key_exists($date, $problemsByMonth))
-				{
 					$lastProblems = $problemsByMonth[$date];
-				}
 				if (array_key_exists($date, $usersByMonth))
-				{
 					$lastUsers = $usersByMonth[$date];
-				}
 				$chartData[] = [
 					'date' => $date,
 					'problems' => $lastProblems,

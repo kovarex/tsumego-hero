@@ -114,22 +114,6 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
 	}
 
-	public function testTsumegoStatisticsInDayRecord()
-	{
-		new ContextPreparator([
-			'tsumegos' => [
-				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]], // in sandbox
-				['sets' => [['name' => 'set 1', 'num' => 3]]], // normal
-				['sets' => [['name' => 'set 1', 'num' => 4], ['name' => 'set 2', 'num' => 5]]], // two set occurances counted as one
-				['sets' => [['name' => 'set 1', 'num' => 4]], 'deleted' => '2025-05-05 00:00:00']]]); // deleted
-
-		// 1 is in private set, one is deleted, only 2 remaining normal ones.
-		$this->assertSame(TsumegoUtil::currentTsumegoCount(), 2);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$dayRecord = ClassRegistry::init('DayRecord')->find('first', ['order' => 'id DESC']);
-		$this->assertSame($dayRecord['DayRecord']['tsumego_count'], 2);
-	}
-
 	public function testPopularTagsUpdate()
 	{
 		$contextInput = [];

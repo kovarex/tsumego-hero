@@ -391,7 +391,8 @@ $this->end();
 					data: [
 						<?php
 							echo implode(",", array_map(function($r) {
-								return '{ x: \'' . $r['date'] . '\', y: ' . $r['problems'] . ' }';
+								$y = $r['problems'] !== null ? $r['problems'] : 'null';
+								return '{ x: \'' . $r['date'] . '\', y: ' . $y . ' }';
 							}, $chartData));
 						?>
 					],

@@ -26,11 +26,7 @@ class SitesControllerTest extends ControllerTestCase
 			'DayRecord' => [
 				'user_id' => $context->user['id'],
 				'date' => date('Y-m-d'),
-				'solved' => 5,
 				'quote' => 'q01',
-				'tsumego_count' => TsumegoUtil::currentTsumegoCount(),
-				'usercount' => 1,
-				'visitedproblems' => 1,
 				'gems' => '0-0-0',
 				'gemCounter1' => 0,
 				'gemCounter2' => 0,
@@ -81,10 +77,7 @@ class SitesControllerTest extends ControllerTestCase
 			'tsumego' => [],
 			'day-records' => [[
 				'date' => date('Y-m-d'),
-				'solved' => 5,
-				'quote' => 'q01',
-				'tsumego_count' => 100,
-				'visitedproblems' => 10]]]);
+				'quote' => 'q01']]]);
 
 		// Act: Load the index page
 		$browser->get('sites/index');
@@ -131,9 +124,7 @@ class SitesControllerTest extends ControllerTestCase
 			'day-records' => [
 				[
 					'date' => date('Y-m-d'),
-					'solved' => 0,
 					'quote' => 'q01', // q01 has all images and CSS
-					'visitedproblems' => 0,
 				],
 			],
 		]);
@@ -202,10 +193,6 @@ class SitesControllerTest extends ControllerTestCase
 				'user_id' => $context->otherUsers[0]['id'],
 				'date' => date('Y-m-d'),
 				'quote' => 'q01',
-				'solved' => 0,
-				'tsumego_count' => 0,
-				'usercount' => 1,
-				'visitedproblems' => 0,
 				'gems' => '0-0-0',
 				'gemCounter1' => 0,
 				'gemCounter2' => 0,
@@ -299,37 +286,23 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Charlie', $allText);
 	}
 
-        /**
-         * Verifies the homepage chart container exists and has data.
-         *
-         * @group browser
-         * @retryAttempts 2
-         * @retryIfException Facebook\WebDriver\Exception\WebDriverException
-         */
-        public function testHomepageChartRenders(): void
-        {
-                $context = new ContextPreparator([
-                        'user' => ['name' => 'testuser'],
-                        'day-records' => [
-                                ['date' => '2025-01-01', 'tsumego_count' => 100],
-                                ['date' => '2025-02-01', 'tsumego_count' => 200],
-                                ['date' => '2025-03-01', 'tsumego_count' => 300],
-                        ],
-                ]);
+	/**
+	 * Verifies the homepage chart container exists and has data.
+	 *
+	 * @group browser
+	 * @retryAttempts 2
+	 * @retryIfException Facebook\WebDriver\Exception\WebDriverException
+	 */
+	public function testHomepageChartRenders(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
 
-                $browser = Browser::instance();
-                try
-                {
-                        $browser->get('/');
-                }
-                catch (Exception $e)
-                {
-                }
+		$browser = Browser::instance();
+		$browser->get('/');
 
-                $pageSource = $browser->driver->getPageSource();
-                $this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
-                $this->assertStringContainsString("{ x: '2025-01-01', y: 100 }", $pageSource, 'Jan 2025 data point');
-                $this->assertStringContainsString("{ x: '2025-02-01', y: 200 }", $pageSource, 'Feb 2025 data point');
-                $this->assertStringContainsString("{ x: '2025-03-01', y: 300 }", $pageSource, 'Mar 2025 data point');
-        }
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('chartContainer', $pageSource, 'Chart container should exist');
+		$this->assertStringContainsString("label: 'Problems'", $pageSource, 'Problems dataset should exist');
+		$this->assertStringContainsString("label: 'Users'", $pageSource, 'Users dataset should exist');
+	}
 }
