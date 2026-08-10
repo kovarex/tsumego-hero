@@ -29,12 +29,12 @@ class TsumegoButtonsQueryBuilder
 		$this->query->selects[] = 'tsumego.rating as rating';
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
-		$this->query->selects[] = 'sgf.sgf as sgf';
+		$this->query->selects[] = 'COALESCE(sgf.sgf, \'\') as sgf';
 		if (Auth::isLoggedIn())
 			$this->query->selects[] = 'tsumego_status.status as status';
 
 		$this->query->query .= " JOIN set_connection ON set_connection.tsumego_id = tsumego.id";
-		$this->query->query .= " JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)";
+		$this->query->query .= " LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)";
 		$this->query->conditions[] = 'tsumego.deleted is NULL';
 
 		// when I'm quering by topics (which means sets), and I'm viewing private set
