@@ -72,7 +72,7 @@ SELECT
 FROM
 	tsumego_comment
 	JOIN tsumego ON tsumego_comment.tsumego_id = tsumego.id
-	JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
+    LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (

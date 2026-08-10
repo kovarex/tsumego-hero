@@ -30,7 +30,7 @@ JOIN (
 JOIN set_connection ON set_connection.tsumego_id = p.tsumego_id
 JOIN user ON p.user_id=user.id
 JOIN `set` ON `set`.id = set_connection.set_id
-JOIN sgf ON sgf.id = a.latest_accepted_id
+LEFT JOIN sgf ON sgf.id = a.latest_accepted_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
 WHERE p.accepted = FALSE
 LIMIT " . self::$PAGE_SIZE . "

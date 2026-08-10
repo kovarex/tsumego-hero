@@ -32,7 +32,7 @@ FROM
 	JOIN set_connection ON set_connection.tsumego_id = tag_connection.tsumego_id
 	JOIN user ON tag_connection.user_id = user.id
 	JOIN `set` ON `set`.id = set_connection.set_id
-	JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
+	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego.id)
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego.id
 WHERE tag_connection.approved = FALSE
 ORDER BY tag_connection.created, tag.id

@@ -51,7 +51,7 @@ class SitesControllerTest extends ControllerTestCase
 	public function testShowPublishedTsumego()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['tsumego' => 564]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 564, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
 
 		ClassRegistry::init('Schedule')->create();
 		$schedule = [];
