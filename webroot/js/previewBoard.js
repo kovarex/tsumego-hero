@@ -88,7 +88,6 @@
 		svg.appendChild(svgCircle);
 	}
 
-<<<<<<< Updated upstream
 /**
  * Inline SGF preview loader.
  *
@@ -132,41 +131,3 @@
 		);
 	}, true);
 })();
-=======
-	function hoverForPreviewBoard(target)
-	{
-		let labelTimer = null;
-		let descTimer = null;
-
-		target.addEventListener("mouseenter", function () {
-			const span = this.querySelector('span');
-			span.style.display = "block";
-			span.style.position = "absolute";
-			span.style.overflow = "hidden";
-
-			const label = span.querySelector('.tooltip-label');
-			const desc = span.querySelector('.tooltip-desc');
-
-			labelTimer = setTimeout(() => {
-				if (label) label.style.opacity = "1";
-			}, 600);
-
-			descTimer = setTimeout(() => {
-				if (desc) desc.style.opacity = "1";
-			}, 1200);
-		});
-
-		target.addEventListener("mouseleave", function () {
-			const span = this.querySelector('span');
-			span.style.display = "none";
-
-			clearTimeout(labelTimer);
-			clearTimeout(descTimer);
-
-			const label = span.querySelector('.tooltip-label');
-			const desc = span.querySelector('.tooltip-desc');
-			if (label) label.style.opacity = "0";
-			if (desc) desc.style.opacity = "0";
-		});
-	}
->>>>>>> Stashed changes
