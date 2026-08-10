@@ -109,7 +109,7 @@ class TsumegosController extends AppController
 				$similarSearchLogic->sourceTsumego['id'],
 				$setConnectionID,
 				$similarSearchLogic->setConnection['num'],
-				$tsumegoStatus ?: 'N',			0,				$similarSearchLogic->sourceSgf));
+				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
 		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);
 		return null;
