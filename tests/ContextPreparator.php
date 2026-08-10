@@ -185,7 +185,7 @@ class ContextPreparator
 		$this->prepareTsumegoAttempts(Util::extract('attempts', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgf(Util::extract('sgf', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoSgfs(Util::extract('sgfs', $tsumegoInput), $tsumego);
-		if (empty($tsumego['sgfs']) && Auth::getUserID())
+		if (empty($tsumego['sgfs']) && $this->user)
 			$this->prepareTsumegoSgf(Constants::$SGF_PLACEHOLDER, $tsumego);
 		$this->prepareTsumegoComments(Util::extract('comments', $tsumegoInput), $tsumego);
 		$this->prepareTsumegoIssues(Util::extract('issues', $tsumegoInput), $tsumego);
@@ -249,7 +249,7 @@ class ContextPreparator
 		$sgf['accepted'] = Util::extractWithDefault('accepted', $tsumegoSgf, true);
 		$sgf['correct_moves'] = Util::extract('correct_moves', $tsumegoSgf);
 		$sgf['first_move_color'] = Util::extract('first_move_color', $tsumegoSgf);
-		$sgf['user_id'] = Auth::getUserID();
+		$sgf['user_id'] = $this->user['id'];
 		$sgfModel = ClassRegistry::init('Sgf');
 		$sgfModel->save($sgf);
 		$savedSgf = $sgfModel->data['Sgf'];
