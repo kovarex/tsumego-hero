@@ -544,6 +544,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
+			else
+				ClassRegistry::init('Sgf')->uploadSgf(Constants::$SGF_PLACEHOLDER, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
 			$tsumegoModel->getDataSource()->commit();
 			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $tsumegoModel->id, $setID);
 		}
