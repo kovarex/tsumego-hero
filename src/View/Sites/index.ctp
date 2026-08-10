@@ -3,6 +3,7 @@
 /**
  * @var View $this
  * @var bool $ac
+ * @var array $chartData
  * @var array $dayRecords
  * @var int $levelBar
  * @var string $quote
