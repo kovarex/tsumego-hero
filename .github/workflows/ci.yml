@@ -180,6 +180,7 @@ jobs:
 
       - name: Run tests with coverage
         env:
+          TZ: Europe/Berlin
           SELENIUM_URL: http://localhost:4444
           SELENIUM_BROWSER: firefox
           TEST_APP_URL: https://host.docker.internal:8443
