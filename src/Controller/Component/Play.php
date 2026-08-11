@@ -280,7 +280,6 @@ class Play
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
-		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
 
 		$eloScoreRounded = round($eloScore);
 		$eloScore2Rounded = round($eloScore2);
@@ -440,7 +439,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
 		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
-		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);

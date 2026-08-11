@@ -47,7 +47,6 @@
  * @var bool $set_duplicate
  * @var array $sgf
  * @var string $solvedCheck
- * @var int $startingPlayer
  * @var bool $suspiciousBehavior
  * @var array $t
  * @var TagConnectionsEdit $tagConnectionsEdit
