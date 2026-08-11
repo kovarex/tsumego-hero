@@ -230,9 +230,15 @@ class Play
 		{
 			$playerColor = Auth::getPlayerColor();
 			if ($playerColor === User::PLAYER_COLOR_FROM_PUZZLE)
+			{
 				$colorOrientation = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 'white' : 'black';
+				$colorRand = false;
+			}
 			else
-				$colorOrientation = null;
+			{
+				$colorOrientation = rand(0, 1) ? 'white' : 'black';
+				$colorRand = true;
+			}
 		}
 
 		$checkBSize = 19;
@@ -388,6 +394,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
+		($this->setFunction)('colorRand', $colorRand);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);

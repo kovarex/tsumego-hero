@@ -114,18 +114,13 @@
 	$ansDisplay = 'ans';
 	$playerColor = array();
 	$pl = 0;
-	$plRand = false;
+	$plRand = $colorRand ?? false;
 	if($colorOrientation=='black')
 		$pl = 0;
 	else if($colorOrientation=='white')
 		$pl = 1;
 	else if ($tv != null)
 		$pl = 0;
-	else
-	{
-		$pl = rand(0,1);
-		$plRand = true;
-	}
 if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253)
 		$pl=0;
