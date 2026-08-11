@@ -36,7 +36,7 @@ class CommentsRenderer
 		else
 			echo ' class="grey-text">[You need to solve this problem to see the comment]</div>';
 		$date = new DateTime($comment['created']);
-		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="datetime">' . $date->format('Y-m-d') . '<br>' . $date->format('H:i') . '</time></td>';
+		echo '</td><td class="sandboxTable2time" align="right"><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="date">' . $date->format('Y-m-d') . '</time><br><time datetime="' . Util::toIso8601($comment['created']) . '" data-format="time">' . $date->format('H:i') . '</time></td>';
 		echo '</tr>';
 		echo '<tr><td colspan="2"><div width="100%"><div align="center">';
 

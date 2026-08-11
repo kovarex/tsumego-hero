@@ -65,7 +65,7 @@
 						<div class="acDate">
 							<?php 
 							$date = new DateTime($a[$i]['Achievement']['created']);
-							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['created']) . '">' . $a[$i]['Achievement']['created'] . '</time>';
+							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['created']) . '" data-format="datetime">' . $a[$i]['Achievement']['created'] . '</time>';
 							?>
 						</div>
 					</div>

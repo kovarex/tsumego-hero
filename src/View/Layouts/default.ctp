@@ -686,10 +686,10 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 	document.querySelectorAll('time[datetime]').forEach(function(el) {
 		var d = new Date(el.getAttribute('datetime'));
 		if (isNaN(d)) return;
-		if (el.getAttribute('data-format') === 'date')
-			el.textContent = d.toLocaleDateString();
-		else
-			el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+		var fmt = el.getAttribute('data-format') || 'datetime';
+		if (fmt === 'date') el.textContent = d.toLocaleDateString();
+		else if (fmt === 'time') el.textContent = d.toLocaleTimeString([], { timeStyle: 'short' });
+		else el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 	});
 </script>
 
