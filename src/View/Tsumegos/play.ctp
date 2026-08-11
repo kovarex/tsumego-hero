@@ -6,7 +6,7 @@
  * @var int $amountOfOtherCollection
  * @var array $boardSelection
  * @var int $checkBSize
- * @var string $colorOrientation
+ * @var int $solverColor 0=Black, 1=White
  * @var string $corner
  * @var array $difficulty
  * @var bool $doublexp
@@ -113,18 +113,7 @@
 	$x2 = '';
 	$ansDisplay = 'ans';
 	$playerColor = array();
-	$pl = 0;
-	$plRand = $colorRand ?? false;
-	if($colorOrientation=='black')
-		$pl = 0;
-	else if($colorOrientation=='white')
-		$pl = 1;
-	else if ($tv != null)
-		$pl = 0;
-if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
-	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253)
-		$pl=0;
-	if($pl==0)
+	if($solverColor==0)
 	{
 		$playerColor[0] = 'BLACK';
 		$playerColor[1] = 'WHITE';
@@ -134,18 +123,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$playerColor[0] = 'WHITE';
 		$playerColor[1] = 'BLACK';
 	}
-	if($pl==0)
+	if($solverColor==0)
 		$descriptionColor = 'Black ';
 	else
 		$descriptionColor = 'White ';
 
-	if($startingPlayer==1 && $plRand==true)
-	{
-		if($descriptionColor=='Black ')
-			$descriptionColor = 'White ';
-		else if($descriptionColor=='White ')
-			$descriptionColor = 'Black ';
-	}
 	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
@@ -838,12 +820,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'besogoNoLogin = true;';
 	}
 
-	if($pl==1) echo 'besogoPlayerColor = "white";';
-	if (
-		!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id'] == 109
-		|| $t['Tsumego']['set_id'] == 233 || $t['Tsumego']['set_id'] == 236
-	)
-	echo 'besogoPlayerColor = "black";';
+	if($solverColor==1) echo 'besogoPlayerColor = "white";';
 
 	if ($authorx == Auth::getWithDefault('name', ''))
 		echo 'authorProblem = true;';

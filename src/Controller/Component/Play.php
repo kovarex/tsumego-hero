@@ -221,30 +221,36 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$orientation = null;
-		$colorOrientation = null;
+		$solverColor = 0;
 		if (isset($params['url']['orientation']))
 			$orientation = $params['url']['orientation'];
 		if (isset($params['url']['playercolor']))
-			$colorOrientation = $params['url']['playercolor'];
+			$solverColor = $params['url']['playercolor'] === 'white' ? 1 : 0;
 		else
 		{
 			$playerColor = Auth::getPlayerColor();
 			if ($playerColor === User::PLAYER_COLOR_FROM_PUZZLE)
-			{
-				$colorOrientation = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 'white' : 'black';
-				$colorRand = false;
-			}
+				$solverColor = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 1 : 0;
 			else
-			{
-				$colorOrientation = rand(0, 1) ? 'white' : 'black';
-				$colorRand = true;
-			}
+				$solverColor = rand(0, 1);
 		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
 			if (strpos(';' . $set['Set']['title'], $i . 'x' . $i))
 				$checkBSize = $i;
+
+		if ($tsumegoVariant != null
+			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
+			|| $t['Tsumego']['set_id'] == 109
+			|| $t['Tsumego']['set_id'] == 233
+			|| $t['Tsumego']['set_id'] == 236)
+				$solverColor = 0;
+		if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
+			|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244
+			|| $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251
+			|| $t['Tsumego']['set_id'] == 253)
+				$solverColor = 0;
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)
 		{
@@ -393,8 +399,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
-		($this->setFunction)('colorOrientation', $colorOrientation);
-		($this->setFunction)('colorRand', $colorRand);
+		($this->setFunction)('solverColor', $solverColor);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
