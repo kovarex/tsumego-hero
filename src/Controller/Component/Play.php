@@ -227,9 +227,13 @@ class Play
 		if (isset($params['url']['playercolor']))
 			$colorOrientation = $params['url']['playercolor'];
 		else
-			$colorOrientation = User::playerColorToString(Auth::getPlayerColor());
-		if ($colorOrientation === 'auto')
-			$colorOrientation = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 'white' : 'black';
+		{
+			$playerColor = Auth::getPlayerColor();
+			if ($playerColor === User::PLAYER_COLOR_FROM_PUZZLE)
+				$colorOrientation = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 'white' : 'black';
+			else
+				$colorOrientation = null;
+		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
