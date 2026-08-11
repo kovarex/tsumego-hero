@@ -68,8 +68,8 @@ Router::connect(
  * TsumegoIssues routes - for managing issues on tsumego problems
  */
 Router::connect(
-	'/users/savePlayerColor',
-	['controller' => 'Users', 'action' => 'savePlayerColor']
+	'/users/playerColorPreference',
+	['controller' => 'Users', 'action' => 'playerColorPreference']
 );
 Router::connect(
 	'/tsumego-issues/api',

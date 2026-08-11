@@ -790,7 +790,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
 	}
 
-	public function savePlayerColor(): void
+	public function playerColorPreference(): void
 	{
 		$this->autoRender = false;
 		if (!Auth::isLoggedIn())
