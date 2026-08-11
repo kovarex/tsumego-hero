@@ -39,7 +39,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'tsumego' => [
 				'sets' => [['name' => 'fromPuzzleWhiteSet', 'num' => 1]],
 				'description' => '[b]to play.',
-				'sgf' => ['first_move_color' => 'W'],
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])', 'first_move_color' => 'W'],
 			],
 		]);
 		$this->login('fromPuzzleWhite');
