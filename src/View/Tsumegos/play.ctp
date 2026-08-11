@@ -119,8 +119,6 @@
 		$pl = 0;
 	else if($colorOrientation=='white')
 		$pl = 1;
-	else if($colorOrientation==='')
-		$pl = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 1 : 0;
 	else if ($tv != null)
 		$pl = 0;
 	else

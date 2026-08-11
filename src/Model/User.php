@@ -9,7 +9,7 @@ class User extends AppModel
 	{
 		return match ($color)
 		{
-			self::PLAYER_COLOR_FROM_PUZZLE => '',
+			self::PLAYER_COLOR_FROM_PUZZLE => 'auto',
 			default => null,
 		};
 	}
