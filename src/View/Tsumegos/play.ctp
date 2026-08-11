@@ -112,17 +112,6 @@
 	$d1 = '';
 	$x2 = '';
 	$ansDisplay = 'ans';
-	$playerColorArray = array();
-	if($playerColor=='black')
-	{
-		$playerColorArray[0] = 'BLACK';
-		$playerColorArray[1] = 'WHITE';
-	}
-	else
-	{
-		$playerColorArray[0] = 'WHITE';
-		$playerColorArray[1] = 'BLACK';
-	}
 	if($playerColor=='black')
 		$descriptionColor = 'Black ';
 	else
