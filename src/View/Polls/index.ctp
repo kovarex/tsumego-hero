@@ -31,8 +31,7 @@
 		<td>
           <?php
 				$createDate = new DateTime($polls[$i]['Poll']['created']);
-				$strip = $createDate->format('d.m.y');
-                echo $strip;
+				echo '<time datetime="' . Util::toIso8601($polls[$i]['Poll']['created']) . '" data-format="date">' . $createDate->format('d.m.y') . '</time>';
             ?>
         </td>
 		<td>

@@ -282,4 +282,17 @@ class UtilTest extends CakeTestCase
 		$this->assertSame(10, Util::getHealthBasedOnLevel(0));
 		$this->assertSame(11, Util::getHealthBasedOnLevel(9));
 	}
+
+	public function testToIso8601(): void
+	{
+		$original = date_default_timezone_get();
+
+		date_default_timezone_set('UTC');
+		$this->assertSame('2026-08-11T12:00:00+00:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set('Europe/Prague');
+		$this->assertSame('2026-08-11T12:00:00+02:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set($original);
+	}
 }

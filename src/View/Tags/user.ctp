@@ -55,7 +55,7 @@ endif;
 						<?php endif; ?>
 					</td>
 					<td class="timeTableMiddle versionColor" align="left"><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
-					<td class="timeTableRight versionColor" align="left"><?php echo h($c->created) ?></td>
+					<td class="timeTableRight versionColor" align="left"><time datetime="<?php echo Util::toIso8601($c->created) ?>" data-format="datetime"><?php echo h($c->created) ?></time></td>
 				</tr>
 		<?php endforeach; ?>
 	</tbody>

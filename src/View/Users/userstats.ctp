@@ -115,7 +115,7 @@
 					'. $ur[$i]['TsumegoAttempt']['tsumego_id'].'</a>';
 				echo '</td>';
 				echo '<td>';
-					echo $ur[$i]['TsumegoAttempt']['created'];
+					echo '<time datetime="' . Util::toIso8601($ur[$i]['TsumegoAttempt']['created']) . '" data-format="datetime">' . $ur[$i]['TsumegoAttempt']['created'] . '</time>';
 				echo '</td>';
 			echo '</tr>';
 		}
@@ -175,7 +175,7 @@
 							'. $ur[$i]['TsumegoAttempt']['tsumego_id'].'</a>';
 						echo '</td>';
 						echo '<td>';
-							echo $ur[$i]['TsumegoAttempt']['created'];
+echo '<time datetime="' . Util::toIso8601($ur[$i]['TsumegoAttempt']['created']) . '" data-format="datetime">' . $ur[$i]['TsumegoAttempt']['created'] . '</time>';
 						echo '</td>';
 						echo '</tr>';
 						echo '</table>';

@@ -8,10 +8,7 @@
 ?>
 
 <div align="center">
-<b><?php 
-$createDate = new DateTime($post['Post']['created']);
-echo $createDate->format('d.m.y');;
-?></b><br>
+<b><time datetime="<?php echo Util::toIso8601($post['Post']['created']) ?>" data-format="date"><?php echo $createDate->format('d.m.y') ?></time></b><br>
 <b><?php echo h($post['Post']['title']); ?></b><br><br>
 <table>
 <tr><td>
