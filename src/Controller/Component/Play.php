@@ -178,10 +178,7 @@ class Play
 			Auth::getUser()['readingTrial']--;
 			unset($_COOKIE['skip']);
 		}
-		$sandboxSets = ClassRegistry::init('Set')->find('all', ['conditions' => ['public' => 0]]) ?: [];
-		foreach ($sandboxSets as $sandboxSet)
-			if ($set['Set']['id'] == $sandboxSet['Set']['id'])
-				$isSandbox = true;
+		$isSandbox = ($set['Set']['public'] == 0);
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
