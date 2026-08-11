@@ -70,7 +70,8 @@ class TsumegoCommentsController extends AppController
 			'user_rating' => $savedComment['User']['rating'] ?? null,
 			'user_external_id' => $savedComment['User']['external_id'] ?? null,
 			'isAdmin' => isset($savedComment['User']['isAdmin']) && $savedComment['User']['isAdmin'] ? true : false,
-			'created' => $savedComment['TsumegoComment']['created'],
+			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
+			echo '<td>' . $attempt['created'] . '</td>';
 			'position' => $savedComment['TsumegoComment']['position'],
 		]));
 		return $this->response;
@@ -193,7 +194,7 @@ class TsumegoCommentsController extends AppController
 					'user_rating' => $comment['User']['rating'] ?? null,
 					'user_external_id' => $comment['User']['externalId'] ?? null,
 					'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
-					'created' => $comment['created'],
+					'created' => Util::toIso8601($comment['created']),
 					'position' => $comment['position'],
 				];
 
@@ -201,7 +202,7 @@ class TsumegoCommentsController extends AppController
 			$issuesJson[] = [
 				'id' => $issue['TsumegoIssue']['id'],
 				'tsumego_issue_status_id' => $issue['TsumegoIssue']['tsumego_issue_status_id'],
-				'created' => $issue['TsumegoIssue']['created'],
+				'created' => Util::toIso8601($issue['TsumegoIssue']['created']),
 				'user_id' => $issue['TsumegoIssue']['user_id'],
 				'user_name' => $issue['User']['name'] ?? null,
 				'user_picture' => $issue['User']['picture'] ?? null,
@@ -223,7 +224,7 @@ class TsumegoCommentsController extends AppController
 				'user_rating' => $comment['User']['rating'] ?? null,
 				'user_external_id' => $comment['User']['externalId'] ?? null,
 				'isAdmin' => isset($comment['User']) && $comment['User']['isAdmin'] ? true : false,
-				'created' => $comment['TsumegoComment']['created'],
+				'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 				'position' => $comment['TsumegoComment']['position'],
 			];
 

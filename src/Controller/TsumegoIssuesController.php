@@ -405,7 +405,7 @@ class TsumegoIssuesController extends AppController
 					'user_rating' => $commentUser['User']['rating'],
 					'user_external_id' => $commentUser['User']['externalId'],
 					'isAdmin' => ($commentUser['User']['isAdmin'] == 1),
-					'created' => $comment['TsumegoComment']['created'],
+					'created' => Util::toIso8601($comment['TsumegoComment']['created']),
 					'position' => $comment['TsumegoComment']['position'],
 				]],
 			];
