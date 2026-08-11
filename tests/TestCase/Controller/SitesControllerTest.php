@@ -44,27 +44,101 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('New Collection', $browser->driver->getPageSource());
 	}
 
-	public function testShowPublishedTsumego()
+	public function testShowsPublishedTsumegoWithDateLabel()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 564, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
 
+		$today = date('Y-m-d', strtotime('+30 days'));
 		ClassRegistry::init('Schedule')->create();
-		$schedule = [];
-		$schedule['tsumego_id'] = $context->tsumegos[0]['id'];
-		$schedule['set_id'] = $context->tsumegos[0]['set-connections'][0]['set_id'];
-		$schedule['date'] = date('Y-m-d');
-		$schedule['published'] = 1;
-		ClassRegistry::init('Schedule')->save($schedule);
+		ClassRegistry::init('Schedule')->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => $today,
+			'published' => 1,
+		]);
 
 		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('Latest additions', $source);
+		$this->assertStringContainsString(date('M j', strtotime($today)), $source);
+
 		$buttons = $browser->getCssSelect('.setViewButtons1');
-		$this->assertSame(count($buttons), 1);
-		$this->assertSame($buttons[0]->getText(), "564");
+		$this->assertCount(1, $buttons);
+		$this->assertSame('564', $buttons[0]->getText());
 
 		// Published tsumego buttons should have preview data
 		$previewLinks = $browser->getCssSelect('.new-tsumego-box a[data-sgf-preview]');
 		$this->assertNotEmpty($previewLinks);
+	}
+
+	public function testShowsLatestPublishedWhenTodayEmpty()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => 564]);
+
+		$pastDate = date('Y-m-d', strtotime('+20 days'));
+		ClassRegistry::init('Schedule')->create();
+		ClassRegistry::init('Schedule')->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => $pastDate,
+			'published' => 1,
+		]);
+
+		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('Latest additions', $source);
+		$this->assertStringContainsString(date('M j', strtotime($pastDate)), $source);
+
+		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$this->assertCount(1, $buttons);
+		$this->assertSame('564', $buttons[0]->getText());
+	}
+
+	public function testIgnoresUnpublishedFutureEntries()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => 564]);
+
+		ClassRegistry::init('Schedule')->deleteAll([]);
+
+		$publishedDate = date('Y-m-d', strtotime('+100 days'));
+		$unpublishedDate = date('Y-m-d', strtotime('+200 days'));
+
+		ClassRegistry::init('Schedule')->create();
+		ClassRegistry::init('Schedule')->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => $publishedDate,
+			'published' => 1,
+		]);
+		ClassRegistry::init('Schedule')->create();
+		ClassRegistry::init('Schedule')->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => $unpublishedDate,
+			'published' => 0,
+		]);
+
+		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('Latest additions', $source);
+		$this->assertStringContainsString(date('M j', strtotime($publishedDate)), $source);
+	}
+
+	public function testNoLatestAdditionsWhenScheduleEmpty()
+	{
+		$browser = Browser::instance();
+		new ContextPreparator();
+
+		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringNotContainsString('Latest additions', $source);
 	}
 
 	/**

@@ -29,7 +29,8 @@ $this->end();
 			<?php
 			if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 			{
-				echo '<font color="#f0f0f0">Added today:</font><br>';
+				$dateLabel = isset($latestPublishDate) ? date('M j', strtotime($latestPublishDate)) : '';
+				echo '<font color="#f0f0f0">Latest additions'.($dateLabel ? ' ('.$dateLabel.')' : '').':</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
 					if ($setConnection = ClassRegistry::init('SetConnection')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setConnectionID))
 					{

@@ -13,6 +13,7 @@ class TsumegoFilters
 		if ($newQuery == 'published')
 		{
 			$this->query = $newQuery;
+			$this->publishedDate = null;
 			return;
 		}
 
