@@ -6,6 +6,8 @@ App::uses('Rating', 'Utility');
 
 class TsumegoFilters
 {
+	public $publishedDate = null;
+
 	public function __construct(?string $newQuery = null, bool $empty = false)
 	{
 		if ($empty)
