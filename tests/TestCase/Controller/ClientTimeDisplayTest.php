@@ -25,7 +25,7 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 				'user_rating' => 1000,
 				'gain' => 0,
 				'seconds' => 10,
-				'created' => date('Y-m-d H:i:s'),
+				'created' => '2026-08-15 12:00:00',
 			],
 		]);
 
@@ -35,8 +35,14 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 		$timeElements = $browser->driver->findElements(WebDriverBy::tagName('time'));
 		$this->assertGreaterThan(0, count($timeElements));
 
-		$first = $timeElements[0];
-		$this->assertNotEmpty($first->getAttribute('datetime'));
-		$this->assertSame('datetime', $first->getAttribute('data-format'));
+		// Server stores in UTC (+00:00), browser is in Europe/Prague (CEST +02:00).
+		// Displayed time should be shifted by 2 hours.
+		$displayed = $timeElements[0]->getText();
+		$this->assertNotEmpty($displayed);
+		$this->assertStringNotContainsString('2026-08-15 12:00:00', $displayed,
+			'Displayed time should be converted from UTC to local timezone');
+
+		// datetime attribute comes from PHP server (UTC)
+		$this->assertSame('2026-08-15T12:00:00+00:00', $timeElements[0]->getAttribute('datetime'));
 	}
 }

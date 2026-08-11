@@ -27,6 +27,8 @@ jobs:
 
       selenium-firefox:
         image: selenium/standalone-firefox:latest
+        env:
+          TZ: Europe/Prague
         ports:
           - 4444:4444
         volumes:
