@@ -71,7 +71,6 @@ class TsumegoCommentsController extends AppController
 			'user_external_id' => $savedComment['User']['external_id'] ?? null,
 			'isAdmin' => isset($savedComment['User']['isAdmin']) && $savedComment['User']['isAdmin'] ? true : false,
 			'created' => Util::toIso8601($savedComment['TsumegoComment']['created']),
-			echo '<td>' . $attempt['created'] . '</td>';
 			'position' => $savedComment['TsumegoComment']['position'],
 		]));
 		return $this->response;
