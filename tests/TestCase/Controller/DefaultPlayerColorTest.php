@@ -3,7 +3,7 @@
 App::uses('User', 'Model');
 
 /**
- * Tests that the default_player_color user preference drives the
+ * Tests that the pref_player_color user preference drives the
  * player color and description on the puzzle page.
  */
 class DefaultPlayerColorTest extends TestCaseWithAuth
@@ -17,17 +17,17 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		]);
 		$this->login('fromPuzzle');
 		ClassRegistry::init('User')->updateAll(
-			['default_player_color' => User::PLAYER_COLOR_FROM_PUZZLE],
+			['pref_player_color' => User::PREF_PLAYER_COLOR_FROM_PUZZLE],
 			['id' => Auth::getUserID()]
 		);
-		Auth::getUser()['default_player_color'] = User::PLAYER_COLOR_FROM_PUZZLE;
+		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_FROM_PUZZLE;
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
 			['return' => 'view']
 		);
 
-		$this->assertTextContains('besogoPlayerColor = "black"', $this->view);
+		$this->assertTextContains('options.playerColor = "black"', $this->view);
 		$this->assertTextContains('Black to play.', $this->view);
 	}
 
@@ -44,17 +44,17 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		]);
 		$this->login('fromPuzzleWhite');
 		ClassRegistry::init('User')->updateAll(
-			['default_player_color' => User::PLAYER_COLOR_FROM_PUZZLE],
+			['pref_player_color' => User::PREF_PLAYER_COLOR_FROM_PUZZLE],
 			['id' => Auth::getUserID()]
 		);
-		Auth::getUser()['default_player_color'] = User::PLAYER_COLOR_FROM_PUZZLE;
+		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_FROM_PUZZLE;
 
 		$this->testAction(
 			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
 			['return' => 'view']
 		);
 
-		$this->assertTextContains('besogoPlayerColor = "white"', $this->view);
+		$this->assertTextContains('options.playerColor = "white"', $this->view);
 		$this->assertTextContains('White to play.', $this->view);
 	}
 
@@ -67,10 +67,10 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		]);
 		$this->login('randomDefault2');
 		ClassRegistry::init('User')->updateAll(
-			['default_player_color' => User::PLAYER_COLOR_RANDOM],
+			['pref_player_color' => User::PREF_PLAYER_COLOR_RANDOM],
 			['id' => Auth::getUserID()]
 		);
-		Auth::getUser()['default_player_color'] = User::PLAYER_COLOR_RANDOM;
+		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_RANDOM;
 
 		$sawBlack = false;
 		$sawWhite = false;
@@ -78,8 +78,8 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		{
 			srand($seed);
 			$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
-			$sawBlack = $sawBlack || str_contains($this->view, 'besogoPlayerColor = "black"');
-			$sawWhite = $sawWhite || str_contains($this->view, 'besogoPlayerColor = "white"');
+			$sawBlack = $sawBlack || str_contains($this->view, 'options.playerColor = "black"');
+			$sawWhite = $sawWhite || str_contains($this->view, 'options.playerColor = "white"');
 		}
 		$this->assertTrue($sawBlack, 'Random should produce black for some seeds');
 		$this->assertTrue($sawWhite, 'Random should produce white for some seeds');

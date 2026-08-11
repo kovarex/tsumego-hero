@@ -800,15 +800,15 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
-		$dpColor = (int) ($_POST['color'] ?? User::PLAYER_COLOR_RANDOM);
+		$dpColor = (int) ($_POST['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
 		if ($dpColor < 0 || $dpColor > 1)
-			$dpColor = User::PLAYER_COLOR_RANDOM;
+			$dpColor = User::PREF_PLAYER_COLOR_RANDOM;
 
 		ClassRegistry::init('User')->updateAll(
-			['default_player_color' => $dpColor],
+			['pref_player_color' => $dpColor],
 			['id' => Auth::getUserID()]
 		);
-		Auth::getUser()['default_player_color'] = $dpColor;
+		Auth::getUser()['pref_player_color'] = $dpColor;
 
 		$this->response->statusCode(200);
 		$this->response->body(json_encode(['status' => 'ok']));

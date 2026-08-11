@@ -91,11 +91,11 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<br>
 	Default player color:<br>
 	<?php
-		$playerColor = Auth::getPlayerColor();
+		$playerColor = Auth::getPrefPlayerColor();
 	?>
 	<select onchange="savePlayerColor(this.value)" style="margin-top:2px; width:180px;">
-		<option value="<?php echo User::PLAYER_COLOR_RANDOM; ?>" <?php echo $playerColor === User::PLAYER_COLOR_RANDOM ? 'selected' : ''; ?>>Random</option>
-		<option value="<?php echo User::PLAYER_COLOR_FROM_PUZZLE; ?>" <?php echo $playerColor === User::PLAYER_COLOR_FROM_PUZZLE ? 'selected' : ''; ?>>From puzzle</option>
+		<option value="<?php echo User::PREF_PLAYER_COLOR_RANDOM; ?>" <?php echo $playerColor === User::PREF_PLAYER_COLOR_RANDOM ? 'selected' : ''; ?>>Random</option>
+		<option value="<?php echo User::PREF_PLAYER_COLOR_FROM_PUZZLE; ?>" <?php echo $playerColor === User::PREF_PLAYER_COLOR_FROM_PUZZLE ? 'selected' : ''; ?>>From puzzle</option>
 	</select>
 	<?php
 	}

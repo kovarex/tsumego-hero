@@ -21,9 +21,9 @@ class ProfilePreferencesTest extends ControllerTestCase
 
 		// Wait for the fire-and-forget fetch to persist
 		$wait = new WebDriverWait($browser->driver, 5);
-		$wait->until(fn($d) => (int) ClassRegistry::init('User')->findById($context->user['id'])['User']['default_player_color'] === 1);
+		$wait->until(fn($d) => (int) ClassRegistry::init('User')->findById($context->user['id'])['User']['pref_player_color'] === 1);
 
-		$this->assertSame(1, (int) ClassRegistry::init('User')->findById($context->user['id'])['User']['default_player_color']);
+		$this->assertSame(1, (int) ClassRegistry::init('User')->findById($context->user['id'])['User']['pref_player_color']);
 	}
 
 	public function testLevelBarPreferenceViaRadio()

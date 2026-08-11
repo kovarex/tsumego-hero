@@ -2,8 +2,8 @@
 
 class User extends AppModel
 {
-	public const PLAYER_COLOR_RANDOM = 0;
-	public const PLAYER_COLOR_FROM_PUZZLE = 1;
+	public const PREF_PLAYER_COLOR_RANDOM = 0;
+	public const PREF_PLAYER_COLOR_FROM_PUZZLE = 1;
 
 	public function __construct($id = false, $table = null, $ds = null)
 	{
