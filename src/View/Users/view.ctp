@@ -89,7 +89,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
 	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
 	<br>
-	Default player color:<br>
+	I play as:<br>
 	<?php
 		$playerColor = Auth::getPrefPlayerColor();
 	?>
