@@ -25,7 +25,7 @@ export function RecentAchievements({ initialAchievements }: RecentAchievementsPr
 		queryKey: ['recentAchievements'],
 		queryFn: () => get<{ recentAchievements: RecentAchievement[] }>('/sites/recentAchievements'),
 		initialData: { recentAchievements: initialAchievements },
-		refetchInterval: 60000,
+		refetchInterval: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
 		retry: false,
 	});

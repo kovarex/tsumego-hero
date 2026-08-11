@@ -17,6 +17,9 @@ class AchievementChecker
 		ClassRegistry::init('AchievementStatus')->create();
 		ClassRegistry::init('AchievementStatus')->save($achievementStatus);
 
+		// Invalidate recent achievements cache so the new achievement appears immediately.
+		Cache::delete('recent_achievements_7', 'default');
+
 		$achievement = ClassRegistry::init('Achievement')->findById($achievementID);
 		$this->updated [] = $achievement['Achievement'];
 	}
@@ -584,6 +587,7 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 			{
 				$as100['AchievementStatus']['value'] = $ac100counter;
 				ClassRegistry::init('AchievementStatus')->save($as100);
+				Cache::delete('recent_achievements_7', 'default');
 			}
 		}
 		return $this;

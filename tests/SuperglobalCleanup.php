@@ -19,6 +19,7 @@ final class SuperglobalCleanup implements BeforeTestHook
 		JwtAuth::clearCache();
 		CookieFlash::clearCache();
 		Preferences::clearTestStorage();
+		Cache::clear(false, 'default');
 	}
 
 	public function executeBeforeTest(string $test): void
