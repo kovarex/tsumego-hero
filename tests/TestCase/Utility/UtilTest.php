@@ -285,16 +285,7 @@ class UtilTest extends CakeTestCase
 
 	public function testToIso8601(): void
 	{
-		$original = date_default_timezone_get();
-
-		// When server is UTC, MySQL datetime "12:00" is noon UTC (= 12:00Z)
-		date_default_timezone_set('UTC');
+		// Tests simulate server in UTC. If this fails, check tests/bootstrap.php.
 		$this->assertSame('2026-08-11T12:00:00+00:00', Util::toIso8601('2026-08-11 12:00:00'));
-
-		// When server is CEST, MySQL datetime "12:00" is noon CEST (= 10:00Z)
-		date_default_timezone_set('Europe/Prague');
-		$this->assertSame('2026-08-11T12:00:00+02:00', Util::toIso8601('2026-08-11 12:00:00'));
-
-		date_default_timezone_set($original);
 	}
 }

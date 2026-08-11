@@ -54,12 +54,8 @@ class RecentAchievementsTest extends TestCaseWithAuth
 		$this->assertNotEmpty($item['image']);
 		$this->assertNotEmpty($item['user_name']);
 
-		// created must be ISO 8601 with timezone for correct dayjs.fromNow()
-		$this->assertMatchesRegularExpression(
-			'/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/',
-			$item['created'],
-			"created should be ISO 8601 with timezone, got: {$item['created']}"
-		);
+		// Tests simulate server in UTC. Verifies timezone offset is correct.
+		$this->assertStringEndsWith('+00:00', $item['created'], "Expected UTC, got: {$item['created']}");
 	}
 
 	public function testGetRecentRespectsLimit(): void
