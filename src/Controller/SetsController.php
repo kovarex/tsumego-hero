@@ -447,11 +447,9 @@ class SetsController extends AppController
 		}
 		$set = $set['Set'];
 
-		// Public sets: admin only. Sandbox sets: admin or premium.
-		$canAdd = Auth::isAdmin() || (!$set['public'] && Auth::hasPremium());
-		if (!$canAdd)
+		if (!Auth::isAdmin())
 		{
-			CookieFlash::set('Only admins can add problems to this set', 'error');
+			CookieFlash::set('Only admins can add problems to sets', 'error');
 			return $this->redirect('/sets/view/' . $setID);
 		}
 

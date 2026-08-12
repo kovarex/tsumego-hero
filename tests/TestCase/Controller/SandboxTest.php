@@ -243,7 +243,7 @@ class SandboxTest extends ControllerTestCase
 		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
-	public function testAddTsumegoAllowsPremiumToAddToSandbox(): void
+	public function testAddTsumegoBlocksPremiumFromSandbox(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'premium_user', 'premium' => 1, 'admin' => false],
@@ -256,7 +256,7 @@ class SandboxTest extends ControllerTestCase
 			'order' => 2,
 		]]);
 
-		$this->assertEquals($beforeCount + 1, ClassRegistry::init('Tsumego')->find('count'));
+		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
 	public function testAddTsumegoBlocksNonAdminFromPublicSets(): void
