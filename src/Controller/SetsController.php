@@ -244,9 +244,7 @@ class SetsController extends AppController
 				$set['Set']['author'] = 'various creators';
 			}
 			else
-			{
 				$set['Set']['user_id'] = Auth::getUserID();
-			}
 
 			$this->Set->create();
 			$this->Set->save($set);
@@ -864,10 +862,8 @@ class SetsController extends AppController
 
 			// Owner check: private sets (public=0, user_id!=NULL) only visible to owner or admin
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] !== null)
-			{
 				if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
 					throw new NotFoundException("Set not found");
-			}
 
 			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 			$allArActive = true;
