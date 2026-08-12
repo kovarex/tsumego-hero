@@ -113,6 +113,34 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+'] // ID of the SetConnection
 );
 
+/**
+ * User Sets routes
+ */
+Router::connect(
+	'/sets/mine',
+	['controller' => 'sets', 'action' => 'mine']
+);
+Router::connect(
+	'/sets/user/:userId',
+	['controller' => 'sets', 'action' => 'mine'],
+	['pass' => ['userId']]
+);
+Router::connect(
+	'/sets/delete/:id',
+	['controller' => 'sets', 'action' => 'delete'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
+	'/sets/removeTsumego/:id',
+	['controller' => 'sets', 'action' => 'removeTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+|favorites']
+);
+Router::connect(
+	'/sets/reorderTsumego/:id',
+	['controller' => 'sets', 'action' => 'reorderTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+
 //Router::connect('/*', ['routeClass' => 'UrlRoute']);
 
 /**

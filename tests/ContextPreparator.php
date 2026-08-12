@@ -12,7 +12,7 @@ class ContextPreparator
 		$pdo = $db->getConnection();
 		$pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
 		foreach ([
-			'tag_connection', 'tag', 'favorite', 'schedule', 'progress_deletion',
+			'tag_connection', 'tag', 'schedule', 'progress_deletion',
 			'day_record', 'sgf', 'time_mode_attempt', 'time_mode_session',
 			'tsumego_comment', 'tsumego_issue', 'admin_activity',
 			'achievement_condition', 'achievement_status', 'set_connection',
@@ -451,6 +451,7 @@ class ContextPreparator
 			$includedInTimeMode = Util::extract('included_in_time_mode', $input);
 			$public = Util::extractWithDefault('public', $input, true);
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
+			$userId = Util::extract('user_id', $input);
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -462,6 +463,8 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['board_theme_index'] = $boardThemeIndex;
 			$set['order'] = Constants::$DEFAULT_SET_ORDER;
+			if ($userId !== null)
+				$set['user_id'] = $userId;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
@@ -820,11 +823,50 @@ class ContextPreparator
 
 	public function addFavorite($tsumego)
 	{
-		$favorite = [];
-		$favorite['tsumego_id'] = $tsumego['id'];
-		$favorite['user_id'] = $this->user['id'];
-		ClassRegistry::init('Favorite')->create($favorite);
-		ClassRegistry::init('Favorite')->save($favorite);
+		// Get or create the user's default "Favorites" set
+		$setModel = ClassRegistry::init('Set');
+		$set = $setModel->find('first', [
+			'conditions' => ['user_id' => $this->user['id'], 'title' => 'Favorites', 'public' => 0],
+		]);
+
+		if (!$set)
+		{
+			$setModel->create();
+			$setModel->save([
+				'Set' => [
+					'user_id' => $this->user['id'],
+					'title' => 'Favorites',
+					'public' => 0,
+					'image' => null,
+					'author' => $this->user['name'],
+					'order' => Constants::$DEFAULT_SET_ORDER,
+				],
+			]);
+			$set = $setModel->find('first', [
+				'conditions' => ['user_id' => $this->user['id'], 'title' => 'Favorites', 'public' => 0],
+			]);
+		}
+
+		// Check if already in set
+		$existing = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego['id']],
+		]);
+		if ($existing)
+			return;
+
+		// Add to set
+		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $set['Set']['id']],
+			'order' => 'num DESC',
+		]);
+		$nextNum = $lastSc ? $lastSc['SetConnection']['num'] + 1 : 1;
+
+		$sc = [];
+		$sc['SetConnection']['set_id'] = $set['Set']['id'];
+		$sc['SetConnection']['tsumego_id'] = $tsumego['id'];
+		$sc['SetConnection']['num'] = $nextNum;
+		ClassRegistry::init('SetConnection')->create($sc);
+		ClassRegistry::init('SetConnection')->save($sc);
 	}
 
 	public function reloadUser(): array

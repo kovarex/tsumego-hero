@@ -175,7 +175,7 @@ class Play
 			Auth::getUser()['readingTrial']--;
 			unset($_COOKIE['skip']);
 		}
-		$isSandbox = ($set['Set']['public'] == 0);
+		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
@@ -336,7 +336,29 @@ class Play
 
 		$checkNotInSearch = false;
 
-		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
+		$userSetsJson = '[]';
+		if (Auth::isLoggedIn())
+		{
+			// Build user sets list for the heart dropdown
+			$userSets = ClassRegistry::init('Set')->find('all', [
+				'conditions' => ['user_id' => Auth::getUserID(), 'public' => 0],
+				'order' => ['title'],
+			]);
+			$setsData = [];
+			foreach ($userSets as $s)
+			{
+				$inSet = ClassRegistry::init('SetConnection')->find('first', [
+					'conditions' => ['set_id' => $s['Set']['id'], 'tsumego_id' => $id],
+				]);
+				$setsData[] = [
+					'id' => $s['Set']['id'],
+					'title' => $s['Set']['title'],
+					'contains' => ($inSet != null),
+				];
+			}
+			$userSetsJson = json_encode($setsData);
+		}
+		($this->setFunction)('userSetsJson', $userSetsJson);
 
 		if (Auth::isInLevelMode())
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
@@ -357,7 +379,6 @@ class Play
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
-		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);

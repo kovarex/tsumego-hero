@@ -14,9 +14,6 @@ class PlayResultProcessorComponent extends Component
 {
 	public function checkPreviousPlay($timeModeComponent): void
 	{
-		$this->checkAddFavorite();
-		$this->checkRemoveFavorite();
-
 		$previousTsumegoID = Util::clearNumericCookie('previousTsumegoID');
 		if (!$previousTsumegoID)
 			return;
@@ -164,47 +161,8 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
 
-	private function checkAddFavorite(): void
-	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$tsumegoID = Util::clearCookie('add_favorite');
-		if (empty($tsumegoID))
-			return;
-
-		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if ($favorite)
-			return;
-
-		try
-		{
-			$favorite = [];
-			$favorite['user_id'] = Auth::getUserID();
-			$favorite['tsumego_id'] = $tsumegoID;
-			ClassRegistry::init('Favorite')->create();
-			ClassRegistry::init('Favorite')->save($favorite);
-		}
-		catch (Exception $e)
-		{
-			throw new Exception('Tsumego id = ' . $tsumegoID, 0, $e);
-		}
-	}
-
-	private function checkRemoveFavorite(): void
-	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$tsumegoID = Util::clearCookie('remove_favorite');
-		if (empty($tsumegoID))
-			return;
-
-		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if (!$favorite)
-			return;
-		ClassRegistry::init('Favorite')->delete($favorite['Favorite']['id']);
-	}
+	// checkAddFavorite and checkRemoveFavorite removed.
+	// Favorites are now handled via addTsumego/removeTsumego with user-owned sets.
 
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus): void
 	{

@@ -110,8 +110,6 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'Tsumego';
 
-		if ($this->query == 'favorites')
-			return 'Favorites';
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
@@ -124,8 +122,6 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'favorites';
 
-		if ($this->query == 'favorites')
-			return 'favorites';
 		return "Unsupported yet";
 	}
 

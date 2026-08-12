@@ -51,7 +51,6 @@ class TsumegoButtonsQueryBuilder
 		$this->queryRank();
 		$this->queryTag();
 		$this->querySet($id);
-		$this->queryFavorites();
 		$this->queryPublished();
 	}
 
@@ -126,14 +125,6 @@ class TsumegoButtonsQueryBuilder
 		if ($this->tsumegoFilters->query != 'topics')
 			return;
 		$this->query->conditions[] = '`set`.id=' . $id;
-	}
-
-	private function queryFavorites()
-	{
-		if ($this->tsumegoFilters->query != 'favorites')
-			return;
-		$this->query->query .= ' JOIN favorite ON `favorite`.user_id =' . Auth::getUserID() . ' AND favorite.tsumego_id = tsumego.id';
-		$this->query->orderBy = ['favorite.id ASC'];
 	}
 
 	private function queryPublished()

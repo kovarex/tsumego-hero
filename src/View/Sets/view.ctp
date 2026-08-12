@@ -68,7 +68,21 @@ if(Auth::getUserID() == 72)
 if(!$beta2)
 	foreach ($tsumegoButtons as $tsumegoButton)
 		$tsumegoButton->render();
+
+$totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
+if ($totalPages > 1):
+	$currentPage = $partition + 1;
 ?>
+	<div style="clear:both;display:block;width:100%;margin:12px 0;text-align:center">
+<?php for ($p = 1; $p <= $totalPages; $p++): ?>
+<?php if ($p === $currentPage): ?>
+		<strong><?php echo $p; ?></strong>
+<?php else: ?>
+		<a href="/sets/view/<?php echo $set['Set']['id'] . ($p > 1 ? '/' . $p : ''); ?>"><?php echo $p; ?></a>
+<?php endif; ?>
+<?php endfor; ?>
+	</div>
+<?php endif; ?>
 	</div>
 	</div>
 	<div class="homeLeft">
@@ -261,11 +275,12 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			</tr>
 			<?php
-			if (Auth::isAdmin())
+			if (Auth::isAdmin() || (isset($isOwner) && $isOwner))
 			{
+					$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 					echo '<tr><td colspan="2">
 					<div class="admin-panel">
-					<div align="center"><h1> Admin Panel </h1></div>
+					<div align="center"><h1>' . (Auth::isAdmin() ? 'Admin Panel' : 'Edit Set') . '</h1></div>
 					<br>
 					<table width="100%">
 					<tr>
@@ -288,12 +303,15 @@ if ($tsumegoFilters->query != 'topics')
 						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
 						echo '</div>';
 
-						echo '<a id="show7">Edit Difficulty<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
-						<div id="msg7">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
+						if (Auth::isAdmin())
+						{
+							echo '<a id="show7">Edit Difficulty<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
+							<div id="msg7">';
+							echo $this->Form->create('Set');
+							echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
+							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
+							echo '</div>';
+						}
 
 						echo '<a id="show3">Edit Color<img id="greyArrow4" src="/img/greyArrow1.png"></a><br>
 						<div id="msg3">';
@@ -309,9 +327,33 @@ if ($tsumegoFilters->query != 'topics')
 						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
 						echo '<i>Low numbers are on top, high numbers at the bottom.</i><br>';
 						echo '</div>';
-						echo '<a href="/sets/ui/' . $set['Set']['id'] . '">Upload Image</a><br>';
+
+						// Inline image upload
+						echo '<form method="post" action="/sets/view/' . $set['Set']['id'] . '" enctype="multipart/form-data" style="margin:4px 0">';
+						echo '<input type="file" name="image" accept=".png,.jpg" style="display:inline;width:auto"> ';
+						echo '<input type="submit" value="Upload Image" style="display:inline;width:auto">';
+						echo ' <small>Max 2MB</small>';
+						echo '</form>';
+						echo '<br>';
+
+						echo '<a id="show8">Manage Problems<img id="greyArrow8" src="/img/greyArrow1.png"></a><br>';
+						echo '<div id="msg8">';
+						foreach ($tsumegoButtons as $b)
+						{
+							echo '<div style="padding:2px">' . $b->order . '. <a href="/' . $b->setConnectionID . '">Problem #' . $b->tsumegoID . '</a>';
+							echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'up\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move up">▲</a>';
+							echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'down\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move down">▼</a>';
+							echo ' <form method="post" action="/sets/removeTsumego/' . $set['Set']['id'] . '" style="display:inline">';
+							echo '<input type="hidden" name="tsumego_id" value="' . $b->tsumegoID . '">';
+							echo '<input type="submit" value="✕" style="border:none;background:none;cursor:pointer;color:#c44;padding:0 4px">';
+							echo '</form></div>';
+						}
+						echo '</div>';
+
 						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
 					}
+					if (Auth::isAdmin())
+					{
 					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
 					$vcOn = '';
 					$vcOff = '';
@@ -400,6 +442,7 @@ if ($tsumegoFilters->query != 'topics')
 					</div>
 					</td>';
 				}
+			}
 			?>
 			</tr>
 		<?php } ?>
@@ -485,15 +528,33 @@ if ($tsumegoFilters->query != 'topics')
 		}
 		msg6selected = !msg6selected;
 	});
+	var msg8selected = false;
+	$("#msg8").hide();
+	$("#show8").click(function(){
+		if(!msg8selected){
+			$("#msg8").fadeIn(250);
+			document.getElementById("greyArrow8").src = "/img/greyArrow2.png";
+		}else{
+			$("#msg8").fadeOut(250);
+			document.getElementById("greyArrow8").src = "/img/greyArrow1.png";
+		}
+		msg8selected = !msg8selected;
+	});
+	function reorderTsumego(tsumegoId, dir, url) {
+		fetch(url + '?tsumego_id=' + tsumegoId + '&dir=' + dir, { method: 'POST' })
+			.then(() => location.reload());
+	}
 	<?php if($tsumegoFilters->query == 'topics')
 	{ ?>
-		function restore(){
-			var confirmed = confirm("Are you sure?");
-			if(confirmed) window.location.href = "/sets/beta?restore="+<?php echo $set['Set']['id']; ?>;
-		}
 		function remove(){
-			var confirmed = confirm("Are you sure?");
-			if(confirmed) window.location.href = "/sets/beta2?remove="+<?php echo $set['Set']['id']; ?>;
+			var confirmed = confirm("Delete this collection?");
+			if(confirmed) {
+				var form = document.createElement('form');
+				form.method = 'POST';
+				form.action = '/sets/delete/<?= $set['Set']['id'] ?>';
+				document.body.appendChild(form);
+				form.submit();
+			}
 		}
 	<?php } ?>
 	const activeTopicTiles = [];
