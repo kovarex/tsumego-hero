@@ -8,8 +8,9 @@ final class AddUserIdToSet extends AbstractMigration
 {
 	public function up(): void
 	{
-		// 1. Add user_id column (nullable, no FK yet)
+		// 1. Add user_id to set and default_set_id to user
 		$this->execute("ALTER TABLE `set` ADD COLUMN `user_id` INT UNSIGNED NULL AFTER `id`");
+		$this->execute("ALTER TABLE `user` ADD COLUMN `default_set_id` INT UNSIGNED NULL AFTER `rating`");
 
 		// 2. For each user with favorites, create a default "Favorites" set
 		//    and migrate their favorites to set_connection.
@@ -40,6 +41,9 @@ final class AddUserIdToSet extends AbstractMigration
 				continue;
 			$setId = (int) $setRow['id'];
 
+			// Point user.default_set_id to this set
+			$this->execute("UPDATE `user` SET default_set_id = {$setId} WHERE id = {$userId}");
+
 			// Migrate favorites to set_connection
 			$this->execute(
 				"INSERT INTO `set_connection` (set_id, tsumego_id, num, created) "
@@ -49,9 +53,12 @@ final class AddUserIdToSet extends AbstractMigration
 			);
 		}
 
-		// 3. Add FK constraint (only after data is migrated)
+		// 3. Add FK constraints (only after data is migrated)
 		$this->execute(
 			"ALTER TABLE `set` ADD FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE"
+		);
+		$this->execute(
+			"ALTER TABLE `user` ADD FOREIGN KEY (`default_set_id`) REFERENCES `set`(`id`) ON DELETE SET NULL"
 		);
 
 		// 4. Drop the favorite table
@@ -95,7 +102,9 @@ final class AddUserIdToSet extends AbstractMigration
 			. "(SELECT id FROM `set` WHERE title = 'Favorites' AND public = 0 AND user_id IS NOT NULL)");
 		$this->execute("DELETE FROM `set` WHERE title = 'Favorites' AND public = 0 AND user_id IS NOT NULL");
 
-		// Remove FK and column
+		// Remove FKs and columns
+		$this->execute("ALTER TABLE `user` DROP FOREIGN KEY `user_ibfk_1`");
+		$this->execute("ALTER TABLE `user` DROP COLUMN `default_set_id`");
 		$this->execute("ALTER TABLE `set` DROP FOREIGN KEY `set_ibfk_1`");
 		$this->execute("ALTER TABLE `set` DROP COLUMN `user_id`");
 	}

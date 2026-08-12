@@ -93,33 +93,31 @@ HAVING
 
 	private function mergeFavorites()
 	{
-		// Find users who have either master or slave in their private sets
-		$mergeSources = Util::query("
-SELECT
-    s.user_id,
-    MAX(CASE WHEN sc.tsumego_id = :id1 THEN sc.id END) AS sc_id_1,
-    MAX(CASE WHEN sc.tsumego_id = :id2 THEN sc.id END) AS sc_id_2
-FROM set_connection sc
-JOIN `set` s ON s.id = sc.set_id AND s.public = 0
-WHERE sc.tsumego_id IN (:id1, :id2)
-GROUP BY s.user_id
-HAVING COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
-		foreach ($mergeSources as $row)
-		{
-			// slave is empty, nothing to do
-			if (!$row['sc_id_2'])
-				continue;
+		// Pre-fetch set_ids that already contain the master (for O(1) lookup)
+		$masterSetIds = array_flip(array_column(
+			ClassRegistry::init('SetConnection')->find('all', [
+				'conditions' => ['tsumego_id' => $this->masterTsumegoID],
+				'fields' => ['set_id'],
+			]),
+			'{n}.SetConnection.set_id'
+		));
 
-			// master is empty, change the slave set_connection to point to master
-			if (!$row['sc_id_1'])
+		$slaveConnections = ClassRegistry::init('SetConnection')->find('all', [
+			'conditions' => ['tsumego_id' => $this->slaveTsumegoID],
+		]);
+
+		foreach ($slaveConnections as $sc)
+		{
+			$setId = $sc['SetConnection']['set_id'];
+
+			if (isset($masterSetIds[$setId]))
 			{
-				$sc = ClassRegistry::init('SetConnection')->findById($row['sc_id_2'])['SetConnection'];
-				$sc['tsumego_id'] = $this->masterTsumegoID;
-				ClassRegistry::init('SetConnection')->save($sc);
+				ClassRegistry::init('SetConnection')->delete($sc['SetConnection']['id']);
 				continue;
 			}
-			// when both master and slave are present, the slave one will be removed by
-			// foreign key cascade when the slave tsumego is deleted
+
+			$sc['SetConnection']['tsumego_id'] = $this->masterTsumegoID;
+			ClassRegistry::init('SetConnection')->save($sc);
 		}
 	}
 

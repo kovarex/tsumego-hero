@@ -823,14 +823,16 @@ class ContextPreparator
 
 	public function addFavorite($tsumego)
 	{
-		// Get or create the user's default "Favorites" set
-		$setModel = ClassRegistry::init('Set');
-		$set = $setModel->find('first', [
-			'conditions' => ['user_id' => $this->user['id'], 'title' => 'Favorites', 'public' => 0],
-		]);
+		$defaultSetId = $this->user['default_set_id'] ?? null;
 
-		if (!$set)
+		if ($defaultSetId)
 		{
+			$set = ClassRegistry::init('Set')->findById($defaultSetId);
+		}
+		else
+		{
+			// No default set — create one
+			$setModel = ClassRegistry::init('Set');
 			$setModel->create();
 			$setModel->save([
 				'Set' => [
@@ -842,9 +844,13 @@ class ContextPreparator
 					'order' => Constants::$DEFAULT_SET_ORDER,
 				],
 			]);
-			$set = $setModel->find('first', [
-				'conditions' => ['user_id' => $this->user['id'], 'title' => 'Favorites', 'public' => 0],
-			]);
+			$set = $setModel->findById($setModel->id);
+
+			// Update user.default_set_id
+			$userModel = ClassRegistry::init('User');
+			$userModel->id = $this->user['id'];
+			$userModel->saveField('default_set_id', $setModel->id);
+			$this->user['default_set_id'] = $setModel->id;
 		}
 
 		// Check if already in set

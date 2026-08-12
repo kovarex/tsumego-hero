@@ -614,31 +614,36 @@ class SetsController extends AppController
 	private function _getOrCreateDefaultFavoritesSet(): array
 	{
 		$userId = Auth::getUserID();
-		$setModel = ClassRegistry::init('Set');
+		$defaultSetId = Auth::getUser()['default_set_id'] ?? null;
 
-		$set = $setModel->find('first', [
-			'conditions' => ['user_id' => $userId, 'title' => 'Favorites', 'public' => 0],
-		]);
-
-		if (!$set)
+		if ($defaultSetId)
 		{
-			$setModel->create();
-			$setModel->save([
-				'Set' => [
-					'user_id' => $userId,
-					'title' => 'Favorites',
-					'public' => 0,
-					'image' => null,
-					'author' => Auth::getUser()['name'],
-					'order' => Constants::$DEFAULT_SET_ORDER,
-				],
-			]);
-			$set = $setModel->find('first', [
-				'conditions' => ['user_id' => $userId, 'title' => 'Favorites', 'public' => 0],
-			]);
+			$set = ClassRegistry::init('Set')->findById($defaultSetId);
+			if ($set)
+				return $set;
 		}
 
-		return $set;
+		// No default set or it was deleted — create one
+		$setModel = ClassRegistry::init('Set');
+		$setModel->create();
+		$setModel->save([
+			'Set' => [
+				'user_id' => $userId,
+				'title' => 'Favorites',
+				'public' => 0,
+				'image' => null,
+				'author' => Auth::getUser()['name'],
+				'order' => Constants::$DEFAULT_SET_ORDER,
+			],
+		]);
+
+		// Update user.default_set_id
+		$userModel = ClassRegistry::init('User');
+		$userModel->id = $userId;
+		$userModel->saveField('default_set_id', $setModel->id);
+		Auth::getUser()['default_set_id'] = $setModel->id;
+
+		return $setModel->findById($setModel->id);
 	}
 
 	/**

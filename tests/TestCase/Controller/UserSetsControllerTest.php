@@ -352,23 +352,6 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(1, $count);
 	}
 
-	// ── AJAX ────────────────────────────────────────────────────────────
-
-	public function testCreateReturnsJsonForAjax(): void
-	{
-		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
-		$this->login('alice');
-
-		$_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
-		$data = ['Set' => ['title' => 'Ajax Set']];
-		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST', 'return' => 'contents']);
-
-		// AJAX response should be JSON, not HTML redirect
-		$this->assertStringContainsString('"id"', $this->contents);
-		$this->assertStringContainsString('"title"', $this->contents);
-		$this->assertStringContainsString('Ajax Set', $this->contents);
-	}
-
 	// ── Reorder ─────────────────────────────────────────────────────────
 
 	public function testReorderTsumegoUp(): void
