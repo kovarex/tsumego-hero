@@ -316,7 +316,7 @@ class SetsController extends AppController
 
 	/**
 	 * @param int $tid Tsumego ID
-	 * @return void
+	 * @return CakeResponse|null
 	 * @deprecated Use edit() instead
 	 */
 	public function add($tid)
