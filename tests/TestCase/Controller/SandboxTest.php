@@ -271,7 +271,7 @@ class SandboxTest extends ControllerTestCase
 		$beforeTsumego = ClassRegistry::init('Tsumego')->find('count');
 		$beforeSgf = ClassRegistry::init('Sgf')->find('count');
 
-		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
+		$this->testAction('/sets/createAndAddTsumego/' . $setId, ['method' => 'post', 'data' => [
 			'order' => 5,
 			'sgf' => $sgfContent,
 		]]);

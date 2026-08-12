@@ -131,6 +131,16 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/addTsumego/:id',
+	['controller' => 'sets', 'action' => 'addTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+|favorites']
+);
+Router::connect(
+	'/sets/createAndAddTsumego/:id',
+	['controller' => 'sets', 'action' => 'createAndAddTsumego'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/removeTsumego/:id',
 	['controller' => 'sets', 'action' => 'removeTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']

@@ -501,7 +501,6 @@ class SetsController extends AppController
 			return $this->redirect('/sets');
 		}
 
-		// Handle the 'favorites' magic route: look up or create the user's default Favorites set
 		if ($setID === 'favorites')
 		{
 			$set = $this->_getOrCreateDefaultFavoritesSet();
@@ -518,52 +517,69 @@ class SetsController extends AppController
 		}
 		$set = $set['Set'];
 
-		// Auth: admin or set owner
 		if (!Auth::isAdmin() && $set['user_id'] != Auth::getUserID())
 		{
 			CookieFlash::set('Not authorized to modify this set', 'error');
 			return $this->redirect('/sets');
 		}
 
-		// If adding an existing tsumego (just tsumego_id, no SGF/order)
-		if (isset($this->data['tsumego_id']) && !isset($this->data['order']) && !isset($_FILES['adminUpload']))
+		$tsumegoId = (int) $this->data['tsumego_id'];
+		if (!$tsumegoId || !ClassRegistry::init('Tsumego')->findById($tsumegoId))
 		{
-			$tsumegoId = (int) $this->data['tsumego_id'];
-
-			// Check if already in set (idempotent)
-			$existing = ClassRegistry::init('SetConnection')->find('first', [
-				'conditions' => ['set_id' => $setID, 'tsumego_id' => $tsumegoId],
-			]);
-			if ($existing)
-			{
-				CookieFlash::set('Already in set', 'info');
-				return $this->redirect('/sets/view/' . $setID);
-			}
-
-			// Get the next num
-			$lastSc = ClassRegistry::init('SetConnection')->find('first', [
-				'conditions' => ['set_id' => $setID],
-				'order' => 'num DESC',
-			]);
-			$nextNum = $lastSc ? $lastSc['SetConnection']['num'] + 1 : 1;
-
-			$sc = [];
-			$sc['SetConnection']['set_id'] = $setID;
-			$sc['SetConnection']['tsumego_id'] = $tsumegoId;
-			$sc['SetConnection']['num'] = $nextNum;
-			ClassRegistry::init('SetConnection')->create();
-			ClassRegistry::init('SetConnection')->save($sc);
-
-			if (isset($_SERVER['HTTP_X_REQUESTED_WITH']))
-			{
-				$this->autoRender = false;
-				$this->response->type('application/json');
-				$this->response->body(json_encode(['contains' => true]));
-				return;
-			}
-
-			CookieFlash::set('Added to set', 'success');
+			CookieFlash::set('Tsumego not found', 'error');
 			return $this->redirect('/sets/view/' . $setID);
+		}
+
+		$existing = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $setID, 'tsumego_id' => $tsumegoId],
+		]);
+		if ($existing)
+		{
+			CookieFlash::set('Already in set', 'info');
+			return $this->redirect('/sets/view/' . $setID);
+		}
+
+		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $setID],
+			'order' => 'num DESC',
+		]);
+		$nextNum = $lastSc ? $lastSc['SetConnection']['num'] + 1 : 1;
+
+		$sc = [];
+		$sc['SetConnection']['set_id'] = $setID;
+		$sc['SetConnection']['tsumego_id'] = $tsumegoId;
+		$sc['SetConnection']['num'] = $nextNum;
+		ClassRegistry::init('SetConnection')->create();
+		ClassRegistry::init('SetConnection')->save($sc);
+
+		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']))
+		{
+			$this->autoRender = false;
+			$this->response->type('application/json');
+			$this->response->body(json_encode(['contains' => true]));
+			return;
+		}
+
+		CookieFlash::set('Added to set', 'success');
+		return $this->redirect('/sets/view/' . $setID);
+	}
+
+	/**
+	 * Create a new tsumego and add it to a set. Admin only.
+	 */
+	public function createAndAddTsumego($setID)
+	{
+		if (!Auth::isAdmin())
+		{
+			CookieFlash::set('Not authorized', 'error');
+			return $this->redirect('/sets');
+		}
+
+		$set = ClassRegistry::init('Set')->findById($setID);
+		if (!$set)
+		{
+			CookieFlash::set('Specified set not found', 'error');
+			return $this->redirect('/sets');
 		}
 
 		if (!isset($this->data['order']))
@@ -573,7 +589,6 @@ class SetsController extends AppController
 		}
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
-
 		$tsumegoModel->getDataSource()->begin();
 
 		try
@@ -592,7 +607,6 @@ class SetsController extends AppController
 			ClassRegistry::init('SetConnection')->create();
 			ClassRegistry::init('SetConnection')->save($setConnection);
 
-			// Save SGF if provided (either from textarea or file upload)
 			$fileUpload = isset($_FILES['adminUpload']) && $_FILES['adminUpload']['error'] === UPLOAD_ERR_OK ? $_FILES['adminUpload'] : null;
 			$sgfDataOrFile = $this->data['sgf'] ?? $fileUpload;
 

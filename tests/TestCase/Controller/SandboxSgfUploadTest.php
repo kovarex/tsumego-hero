@@ -26,7 +26,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint
 		$data = ['order' => 1];
 
-		$this->testAction('/sets/addTsumego/' . $setID, [
+		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
 			'method' => 'post',
 			'data' => $data]);
 
@@ -65,7 +65,7 @@ class SandboxSgfUploadTest extends TestCaseWithAuth
 		// POST to addTsumego endpoint with SGF in data
 		$data = ['order' => 1, 'sgf' => $sgfContent];
 
-		$this->testAction('/sets/addTsumego/' . $setID, [
+		$this->testAction('/sets/createAndAddTsumego/' . $setID, [
 			'method' => 'post',
 			'data' => $data]);
 
