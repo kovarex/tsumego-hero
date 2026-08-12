@@ -19,24 +19,14 @@ class FavoritesViewTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['name' => 'favuser', 'rating' => 1500],
 			'tsumegos' => [
-				['set_order' => 1, 'status' => 'S'],
-				['set_order' => 2],
-				['set_order' => 3, 'status' => 'W'],
+				['set_order' => 1, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+				['set_order' => 2, 'sets' => [['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
+				['set_order' => 3, 'status' => 'W', 'sets' => [['name' => 'Favorites', 'num' => 3, 'user_id' => 'self', 'public' => 0]]],
 			],
 		]);
 
-		// Add to favorites via the new set-based system
-		$context->addFavorite($context->tsumegos[0]);
-		$context->addFavorite($context->tsumegos[1]);
-		$context->addFavorite($context->tsumegos[2]);
-
-		// Get the default Favorites set and view it directly
-		$favSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
-		$this->assertNotEmpty($favSet);
-
-		$this->testAction('/sets/view/' . $favSet['Set']['id'], ['return' => 'view']);
+		$favSetId = $context->user['default_set_id'];
+		$this->testAction('/sets/view/' . $favSetId, ['return' => 'view']);
 		$this->assertTextContains('Favorites', $this->view);
 		$this->assertStringContainsString('statusS', $this->view);
 		$this->assertStringContainsString('statusN', $this->view);
@@ -48,20 +38,14 @@ class FavoritesViewTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'user' => ['name' => 'solver', 'rating' => 1500],
 			'tsumegos' => [
-				['set_order' => 1, 'status' => 'S'],
-				['set_order' => 2, 'status' => 'S'],
-				['set_order' => 3],
+				['set_order' => 1, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+				['set_order' => 2, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
+				['set_order' => 3, 'sets' => [['name' => 'Favorites', 'num' => 3, 'user_id' => 'self', 'public' => 0]]],
 			],
 		]);
 
-		$context->addFavorite($context->tsumegos[0]);
-		$context->addFavorite($context->tsumegos[1]);
-		$context->addFavorite($context->tsumegos[2]);
-
-		$favSet = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-		]);
-		$this->testAction('/sets/view/' . $favSet['Set']['id'], ['return' => 'view']);
+		$favSetId = $context->user['default_set_id'];
+		$this->testAction('/sets/view/' . $favSetId, ['return' => 'view']);
 		$this->assertStringContainsString('66', $this->view);
 		$this->assertStringContainsString('Favorites', $this->view);
 	}

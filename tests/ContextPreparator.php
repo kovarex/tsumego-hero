@@ -395,7 +395,8 @@ class ContextPreparator
 			'name' => Util::extractWithDefault('name', $setInput, 'test set'),
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
-			'board_theme_index' => Util::extract('board_theme_index', $setInput)]);
+			'board_theme_index' => Util::extract('board_theme_index', $setInput),
+			'user_id' => Util::extract('user_id', $setInput)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
@@ -451,6 +452,7 @@ class ContextPreparator
 			$includedInTimeMode = Util::extract('included_in_time_mode', $input);
 			$public = Util::extractWithDefault('public', $input, true);
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
+			$userId = Util::extract('user_id', $input);
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -462,11 +464,17 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['board_theme_index'] = $boardThemeIndex;
 			$set['order'] = Constants::$DEFAULT_SET_ORDER;
+			if ($userId === 'self')
+				$set['user_id'] = $this->user['id'];
+			elseif ($userId !== null)
+				$set['user_id'] = (int) $userId;
 			ClassRegistry::init('Set')->create($set);
 			ClassRegistry::init('Set')->save($set);
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 			$this->sets [] = $set['Set'];
+			if ($name === 'Favorites' && $userId === 'self')
+				$this->user['default_set_id'] = $set['Set']['id'];
 		}
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
@@ -816,60 +824,6 @@ class ContextPreparator
 			return;
 		foreach ($tagsInput as $tagInput)
 			$this->getOrCreateTag($tagInput);
-	}
-
-	public function addFavorite($tsumego)
-	{
-		$defaultSetId = $this->user['default_set_id'] ?? null;
-
-		if ($defaultSetId)
-		{
-			$set = ClassRegistry::init('Set')->findById($defaultSetId);
-		}
-		else
-		{
-			// No default set, create one
-			$setModel = ClassRegistry::init('Set');
-			$setModel->create();
-			$setModel->save([
-				'Set' => [
-					'user_id' => $this->user['id'],
-					'title' => 'Favorites',
-					'public' => 0,
-					'image' => null,
-					'author' => $this->user['name'],
-					'order' => Constants::$DEFAULT_SET_ORDER,
-				],
-			]);
-			$set = $setModel->findById($setModel->id);
-
-			// Update user.default_set_id
-			$userModel = ClassRegistry::init('User');
-			$userModel->id = $this->user['id'];
-			$userModel->saveField('default_set_id', $setModel->id);
-			$this->user['default_set_id'] = $setModel->id;
-		}
-
-		// Check if already in set
-		$existing = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumego['id']],
-		]);
-		if ($existing)
-			return;
-
-		// Add to set
-		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $set['Set']['id']],
-			'order' => 'num DESC',
-		]);
-		$nextNum = $lastSc ? $lastSc['SetConnection']['num'] + 1 : 1;
-
-		$sc = [];
-		$sc['SetConnection']['set_id'] = $set['Set']['id'];
-		$sc['SetConnection']['tsumego_id'] = $tsumego['id'];
-		$sc['SetConnection']['num'] = $nextNum;
-		ClassRegistry::init('SetConnection')->create($sc);
-		ClassRegistry::init('SetConnection')->save($sc);
 	}
 
 	public function reloadUser(): array

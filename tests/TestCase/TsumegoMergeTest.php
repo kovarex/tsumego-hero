@@ -27,7 +27,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'description' => 'Master tsumego',
 						'sets' => [
 							['name' => 'set 1', 'num' => '1'],
-							['name' => 'set 3', 'num' => '1']],
+							['name' => 'set 3', 'num' => '1'],
+							['name' => 'Favorites', 'num' => '1', 'user_id' => 'self', 'public' => 0]],
 						'attempts' => [['solved' => 0, 'seconds' => 5, 'gain' => 5]],
 						'comments' => [['message' => 'master comment']],
 						'tags' => [['name' => 'atari'], ['name' => 'tenuki']]
@@ -37,7 +38,8 @@ class TsumegoMergeTest extends ControllerTestCase
 						'rating' => 100,
 						'sgf' => $version2,
 						'description' => 'Slave tsumego',
-						'sets' => [['name' => 'set 2', 'num' => '1']],
+						'sets' => [['name' => 'set 2', 'num' => '1'],
+							['name' => 'Favorites', 'num' => '2', 'user_id' => 'self', 'public' => 0]],
 						'attempts' => [['solved' => 1, 'seconds' => 5, 'gain' => 10]],
 						'comments' => [['message' => 'slave comment']],
 						'tags' => [['name' => 'snapback'], ['name' => 'atari']],
@@ -49,9 +51,17 @@ class TsumegoMergeTest extends ControllerTestCase
 					'status' => TimeModeUtil::$SESSION_STATUS_IN_PROGRESS,
 					'attempts' => [['order' => 1, 'status' => TimeModeUtil::$ATTEMPT_RESULT_SOLVED, 'tsumego_id' => 'other:1']]]]]);
 
-			if ($testCase == 'mergeWithDoubleFavorite')
-				$context->addFavorite($context->tsumegos[0]);
-			$context->addFavorite($context->tsumegos[1]);
+			// For non-double-favorite cases, remove master from Favorites
+			if ($testCase != 'mergeWithDoubleFavorite')
+			{
+				$favSet = ClassRegistry::init('Set')->find('first', [
+					'conditions' => ['title' => 'Favorites'],
+				]);
+				ClassRegistry::init('SetConnection')->deleteAll([
+					'set_id' => $favSet['Set']['id'],
+					'tsumego_id' => $context->tsumegos[0]['id'],
+				]);
+			}
 
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
@@ -120,11 +130,8 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
 
 			// favorites got merged: master should still be in Favorites set
-			$favSet = ClassRegistry::init('Set')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
-			]);
 			$favConnections = ClassRegistry::init('SetConnection')->find('all', [
-				'conditions' => ['set_id' => $favSet['Set']['id']],
+				'conditions' => ['set_id' => $context->user['default_set_id']],
 			]);
 			$this->assertSame(1, count($favConnections));
 			$this->assertSame($favConnections[0]['SetConnection']['tsumego_id'], $context->tsumegos[0]['id']);
