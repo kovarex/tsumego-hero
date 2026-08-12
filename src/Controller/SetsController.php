@@ -291,8 +291,10 @@ class SetsController extends AppController
 			return $this->redirect('/sets');
 		}
 
-		// Auth: admin or set owner
-		if (!Auth::isAdmin() && $s['Set']['user_id'] != Auth::getUserID())
+		// Auth: set owner can delete their own sets; admin can delete sandbox sets
+		$isOwner = ($s['Set']['user_id'] == Auth::getUserID());
+		$isSandbox = ($s['Set']['user_id'] === null && $s['Set']['public'] == 0);
+		if (!$isOwner && !(Auth::isAdmin() && $isSandbox))
 		{
 			CookieFlash::set('Not authorized', 'error');
 			return $this->redirect('/sets');

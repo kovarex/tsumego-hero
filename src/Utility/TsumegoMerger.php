@@ -102,8 +102,15 @@ HAVING
 			'{n}.SetConnection.set_id'
 		));
 
+		// Only touch user-owned private sets (not sandbox/public)
 		$slaveConnections = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['tsumego_id' => $this->slaveTsumegoID],
+			'joins' => [[
+				'table' => 'set',
+				'alias' => 'Set',
+				'type' => 'INNER',
+				'conditions' => ['Set.id = SetConnection.set_id', 'Set.public' => 0, 'Set.user_id IS NOT NULL'],
+			]],
 		]);
 
 		foreach ($slaveConnections as $sc)

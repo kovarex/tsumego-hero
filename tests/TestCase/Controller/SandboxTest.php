@@ -186,8 +186,8 @@ class SandboxTest extends ControllerTestCase
 			'Set' => ['id' => $setId],
 		]]);
 
-		// Admin can delete any set, including public ones
-		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
+		// Public sets cannot be deleted
+		$this->assertNotEmpty(ClassRegistry::init('Set')->findById($setId));
 	}
 
 	public function testRemovePreservesTsumegos(): void
