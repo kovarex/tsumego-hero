@@ -58,6 +58,7 @@
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var array $tv
  * @var string $ui
+ * @var string $userSetsJson
  */
 
 	// Open Graph meta tags for social sharing

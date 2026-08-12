@@ -37,6 +37,7 @@
 		"cs-fix": "./vendor/bin/php-cs-fixer fix",
 		"stan": "phpstan analyse",
 		"stan-views": "phpstan analyse -c phpstan-views.neon",
+		"stan-all": "phpstan analyse; phpstan analyse -c phpstan-views.neon",
 		"migrate": "vendor/bin/phinx migrate",
 		"migrate-test": "vendor/bin/phinx migrate -e test",
 		"migrate-status": "vendor/bin/phinx status",
