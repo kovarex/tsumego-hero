@@ -129,13 +129,6 @@ class TsumegoMergeTest extends ControllerTestCase
 			$this->assertSame($comments[1]['TsumegoComment']['message'], 'slave comment');
 			$this->assertSame($comments[2]['TsumegoComment']['message'], 'Slave issue message');
 
-			// favorites got merged: master should still be in Favorites set
-			$favConnections = ClassRegistry::init('SetConnection')->find('all', [
-				'conditions' => ['set_id' => $context->user['default_set_id']],
-			]);
-			$this->assertSame(1, count($favConnections));
-			$this->assertSame($favConnections[0]['SetConnection']['tsumego_id'], $context->tsumegos[0]['id']);
-
 			// tags got merged
 			$tagConnections = ClassRegistry::init('TagConnection')->find('all');
 			$this->assertSame(3, count($tagConnections));

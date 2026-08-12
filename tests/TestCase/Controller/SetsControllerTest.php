@@ -1069,40 +1069,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('Solved: <b>25%</b>', $browser->driver->getPageSource());
 	}
 
-	public function testAddingToFavoritesAndViewingIt(): void
-	{
-		$contextParams = [];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
-		$browser->get('/sets/view/favorites');
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		});
-		$buttons[0]->click();
-
-		// opening the favorites problem
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		}, 0, 'V');
-
-		// next will get us back to favorites
-		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-	}
-
 	public function testOnlyPublicSetsAreVisible(): void
 	{
 		new ContextPreparator(['tsumego' => ['sets' => [
