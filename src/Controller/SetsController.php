@@ -231,7 +231,7 @@ class SetsController extends AppController
 
 		if (isset($this->data['Set']))
 		{
-			$isSandbox = Auth::isAdmin() && !empty($this->data['Set']['sandbox']);
+			$isSandbox = isset($this->params['url']['sandbox']) && Auth::isAdmin();
 
 			$set = [];
 			$set['Set']['title'] = $this->data['Set']['title'];

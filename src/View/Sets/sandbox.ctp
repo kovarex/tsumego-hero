@@ -30,7 +30,7 @@ if (!Auth::isAdmin() && !Auth::hasPremium())
 			<br><br>
 			<table width="100%">
 			<tr>
-			<td><a href="/sets/create">Create Set</a></td>
+			<td><a href="/sets/create?sandbox=1">Create Set</a></td>
 			</tr>
 			</table>
 

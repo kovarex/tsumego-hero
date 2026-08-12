@@ -56,8 +56,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$this->login('admin');
 
-		$data = ['Set' => ['title' => 'New Sandbox', 'sandbox' => '1']];
-		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
+		$data = ['Set' => ['title' => 'New Sandbox']];
+		$this->testAction('/sets/create?sandbox=1', ['data' => $data, 'method' => 'POST']);
 
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'New Sandbox'],

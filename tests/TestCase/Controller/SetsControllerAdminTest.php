@@ -29,7 +29,7 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$browser = Browser::instance();
 
 		// Navigate to create set page
-		$browser->get('sets/create');
+		$browser->get('sets/create?sandbox=1');
 		$this->assertTrue($browser->titleContains('Tsumego Hero'), 'Should load create set page');
 
 		// Get current number of sets in database

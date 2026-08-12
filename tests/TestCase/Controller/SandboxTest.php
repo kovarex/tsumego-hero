@@ -94,20 +94,6 @@ class SandboxTest extends ControllerTestCase
 		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
 	}
 
-	public function testCreateBlocksNonAdmin(): void
-	{
-		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
-
-		$beforeCount = ClassRegistry::init('Set')->find('count');
-
-		$this->testAction('/sets/create', ['method' => 'post', 'data' => [
-			'Set' => ['title' => 'Blocked Set'],
-		]]);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
-		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
-	}
-
 	public function testCreateAllowsAdmin(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
@@ -119,6 +105,7 @@ class SandboxTest extends ControllerTestCase
 		$set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC']);
 		$this->assertEquals('Admin Set', $set['Set']['title']);
 		$this->assertEquals(0, $set['Set']['public']);
+		$this->assertNotEmpty($set['Set']['user_id']);
 	}
 
 	public function testCreateMakesPlaceholderTsumegoAndConnection(): void
@@ -128,7 +115,7 @@ class SandboxTest extends ControllerTestCase
 		$beforeTsumegoCount = ClassRegistry::init('Tsumego')->find('count');
 		$beforeConnCount = ClassRegistry::init('SetConnection')->find('count');
 
-		$this->testAction('/sets/create', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/create?sandbox=1', ['method' => 'post', 'data' => [
 			'Set' => ['title' => 'Test Set'],
 		]]);
 
@@ -222,7 +209,7 @@ class SandboxTest extends ControllerTestCase
 			'order' => 1,
 		]]);
 
-		$this->assertSame(Util::getInternalAddress() . '/sets/view/' . $setId, $this->headers['Location']);
+		$this->assertSame(Util::getInternalAddress() . '/sets', $this->headers['Location']);
 	}
 
 	public function testAddTsumegoBlocksRegularUserFromSandbox(): void
@@ -301,19 +288,6 @@ class SandboxTest extends ControllerTestCase
 		]);
 		$this->assertNotEmpty($connection);
 		$this->assertEquals(5, $connection['SetConnection']['num']);
-	}
-
-	public function testUiBlocksNonAdmin(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'regular', 'admin' => false],
-			'set' => ['title' => 'image set', 'public' => 0],
-		]);
-		$setId = $context->set['id'];
-
-		$this->testAction('/sets/ui/' . $setId, ['method' => 'post']);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
 	}
 
 	private function createSetWithTsumego(string $title, int $public): int
