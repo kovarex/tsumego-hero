@@ -102,20 +102,26 @@ HAVING
 			'{n}.SetConnection.set_id'
 		));
 
-		// Only touch user-owned private sets (not sandbox/public)
+		// Pre-fetch user-owned private set IDs to filter by
+		$userSetIds = array_flip(array_column(
+			ClassRegistry::init('Set')->find('all', [
+				'conditions' => ['public' => 0, 'user_id IS NOT NULL'],
+				'fields' => ['id'],
+			]),
+			'{n}.Set.id'
+		));
+
 		$slaveConnections = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['tsumego_id' => $this->slaveTsumegoID],
-			'joins' => [[
-				'table' => 'set',
-				'alias' => 'Set',
-				'type' => 'INNER',
-				'conditions' => ['Set.id = SetConnection.set_id', 'Set.public' => 0, 'Set.user_id IS NOT NULL'],
-			]],
 		]);
 
 		foreach ($slaveConnections as $sc)
 		{
 			$setId = $sc['SetConnection']['set_id'];
+
+			// Only touch user-owned private sets
+			if (!isset($userSetIds[$setId]))
+				continue;
 
 			if (isset($masterSetIds[$setId]))
 			{

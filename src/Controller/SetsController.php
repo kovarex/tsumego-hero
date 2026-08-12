@@ -269,7 +269,7 @@ class SetsController extends AppController
 				$this->SetConnection->save($sc);
 			}
 
-			$this->redirect('/sets/view/' . $this->Set->id);
+			$this->redirect($isSandbox ? '/sets/sandbox' : '/sets/view/' . $this->Set->id);
 			return;
 		}
 		$this->set('t', $t);
