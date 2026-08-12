@@ -24,7 +24,10 @@ class SetsController extends AppController
 	public function sandbox()
 	{
 		if (!Auth::isAdmin() && !Auth::hasPremium())
-			return $this->redirect('/');
+		{
+			$this->redirect('/');
+			return;
+		}
 
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
@@ -362,7 +365,10 @@ class SetsController extends AppController
 	public function ui($id = null)
 	{
 		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		{
+			$this->redirect('/');
+			return;
+		}
 
 		$s = $this->Set->findById($id);
 		if (!$s)
