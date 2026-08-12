@@ -2,8 +2,11 @@
 
 /**
  * @var View $this
- * @var array $dataForView
- * @var array $sessionsToShow
+ * @var array $categories
+ * @var array $ranks
+ * @var array $bestByKey
+ * @var array|null $finishedSession
+ * @var array $attemptsBySession
  * @var array $unlock
  */
 
@@ -31,72 +34,112 @@
 	} ?>
 	<table class="timeModeTable" border="0">
 	<?php
-		function showSession($session, $isCurrent) {
-			echo '<tr>';
-			echo '<td colspan="5">';
-			$color = $session['status'] == 'passed' ? 'green' : '#e03c4b';
-			echo '<h4 style="color:'.$color.';">'.($isCurrent ? 'Result' : 'Best').': '.$session['status'].'('.$session['solvedCount'].'/'.TimeModeUtil::$PROBLEM_COUNT.')';
-			if ($isCurrent) {
-				echo '- '.$session['points'].' points';
-			}
-			echo '</h4>';
-			echo '</td>';
-			echo '</tr>';
-			foreach ($session['attempts'] as $attempt) {
-					echo '<tr>';
-					echo '<td width="9%">#'.$attempt['order'].'</td>';
-					echo '<td width="46%"><a href="/tsumegos/play/'.$attempt['tsumego_id'].'">'.$attempt['set'].' - '.$attempt['set_order'].'</a></td>';
-					$color = $attempt['status'] == 'solved' ? 'green' : '#e03c4b';
-					echo '<td width="7%" style="color:'.$color.';">'.$attempt['status'].'</td>';
-					echo '<td width="8%" style="color:'.$color.';">'.$attempt['seconds'].'</td>';
-					echo '<td>'.$attempt['points'].' points</td>';
-					echo '</tr>';
-				}
-		}
+		$finishedId = $finishedSession ? (int) $finishedSession['TimeModeSession']['id'] : 0;
+		foreach ($categories as $cat):
+			$catId = $cat['TimeModeCategory']['id'];
+			$catName = $cat['TimeModeCategory']['name'];
+			foreach ($ranks as $rank):
+				$rankId = $rank['TimeModeRank']['id'];
+				$rankName = $rank['TimeModeRank']['name'];
+				$key = $catId . '-' . $rankId;
 
-		function showRank($session, $dataForView) {
-			$containsCurrent = isset($session['current']);
-			$headerSession = isset($session['best']) ? $session['best'] : $session['current'];
+				$isCurrent = $finishedSession
+					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $catId
+					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $rankId;
 
-			if($headerSession['status'] == 'passed') {
-				$boxHighlight = 'tScoreTitle1';
-			}
-			else
-				$boxHighlight = 'tScoreTitle2';
+				$best = $bestByKey[$key] ?? null;
+				if ($best && $isCurrent && (int) $best['id'] === $finishedId)
+					$best = null; // best is same session as current, don't show twice
 
-			echo '<tr>';
-			echo '<td>';
-			echo '<div class="tScoreTitle '.$boxHighlight.'" id="title'.$headerSession['id'].'" onclick="toggleRelatedContent(this);">';
-			echo '<table class="timeModeTable2" width="100%" border="0">';
-			echo '<tr>';
-			echo '<td width="9%">'.$headerSession['category'].'</td>';
-			echo '<td width="46%">'.$headerSession['rank'].'</td>';
-			echo '<td width="15%"><b>'.$headerSession['status'].'</b></td>';
-			echo '<td width="13%">'.$headerSession['points'].' points</td>';
-			echo '<td class="timeModeTable2td">'.$headerSession['created'].'</td>';
-			echo '<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="'.($containsCurrent ? $dataForView['rankArrowOpened'] : $dataForView['rankArrowClosed']).'"></td>';
-			echo '</tr>';
-			echo '</table>';
-			echo '</div>';
-			echo '<div class="timeModeTable3" width="100%" style="display: '.($containsCurrent ? '' : 'none').';"'.
-				' id="results_'.$headerSession['category'].'_'.$headerSession['rank'].'">';
-			echo '<table width="100%" class="scoreTable" border="0">';
-			if (isset($session['best'])) {
-				showSession($session['best'], false);
-			}
-			if (isset($session['current'])) {
-				showSession($session['current'], true);
-			}
-			echo '</table>';
-			echo '</div>';
-		}
+				if (!$best && !$isCurrent)
+					continue;
 
-		foreach ($sessionsToShow as $categoryToShow) {
-			foreach ($categoryToShow as $rankToShow) {
-				showRank($rankToShow, $dataForView);
-			}
-		}
-	?>
+				$header = $best ?? $finishedSession['TimeModeSession'];
+				$headerStatus = (int) $header['time_mode_session_status_id'] === TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
+				$boxHighlight = $headerStatus === 'passed' ? 'tScoreTitle1' : 'tScoreTitle2';
+				$arrowSrc = $isCurrent ? '/img/greyArrow2.png' : '/img/greyArrow1.png';
+				$displayStyle = $isCurrent ? '' : 'none';
+		?>
+		<tr>
+			<td>
+				<div class="tScoreTitle <?php echo $boxHighlight; ?>" id="title<?php echo $header['id']; ?>" onclick="toggleRelatedContent(this);">
+					<table class="timeModeTable2" width="100%" border="0">
+						<tr>
+							<td width="9%"><?php echo h($catName); ?></td>
+							<td width="46%"><?php echo h($rankName); ?></td>
+							<td width="15%"><b><?php echo $headerStatus; ?></b></td>
+							<td width="13%"><?php echo (int) $header['points']; ?> points</td>
+							<td class="timeModeTable2td"><?php echo (new DateTime($header['created']))->format('H:i d.m.Y'); ?></td>
+							<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="<?php echo $arrowSrc; ?>"></td>
+						</tr>
+					</table>
+				</div>
+				<div class="timeModeTable3" width="100%" style="display: <?php echo $displayStyle; ?>;" id="results_<?php echo $catName; ?>_<?php echo $rankName; ?>">
+					<table width="100%" class="scoreTable" border="0">
+						<?php if ($best):
+							$bestAttempts = $attemptsBySession[(int) $best['id']] ?? [];
+							$bestSolved = count(array_filter($bestAttempts, fn($a) => (int) $a['time_mode_attempt_status_id'] === TimeModeUtil::$ATTEMPT_RESULT_SOLVED));
+							$bestStatus = (int) $best['time_mode_session_status_id'] === TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
+							$bestColor = $bestStatus === 'passed' ? 'green' : '#e03c4b';
+						?>
+						<tr>
+							<td colspan="5">
+								<h4 style="color:<?php echo $bestColor; ?>;">Best: <?php echo $bestStatus; ?>(<?php echo $bestSolved; ?>/<?php echo TimeModeUtil::$PROBLEM_COUNT; ?>)</h4>
+							</td>
+						</tr>
+						<?php foreach ($bestAttempts as $a):
+							$astatus = TimeModeUtil::attemptStatusName((int) $a['time_mode_attempt_status_id']);
+							$acolor = $astatus === 'solved' ? 'green' : '#e03c4b';
+							$secs = (float) $a['seconds'];
+							$min = floor($secs / 60);
+							$secs -= $min * 60;
+							$label = $a['set_title'] . ($a['set_title2'] ? ' ' . $a['set_title2'] : '');
+						?>
+						<tr>
+							<td width="9%">#<?php echo $a['order']; ?></td>
+							<td width="46%"><a class="tooltip" data-tsumego-id="<?php echo $a['tsumego_id']; ?>" href="/tsumegos/play/<?php echo $a['tsumego_id']; ?>"><?php echo h($label); ?> - <?php echo $a['set_num']; ?><span class="tooltip-box"></span></a></td>
+							<td width="7%" style="color:<?php echo $acolor; ?>;"><?php echo $astatus; ?></td>
+							<td width="8%" style="color:<?php echo $acolor; ?>;"><?php echo $min; ?> : <?php echo number_format($secs, 2); ?></td>
+							<td><?php echo (int) $a['points']; ?> points</td>
+						</tr>
+						<?php endforeach; ?>
+						<?php endif; ?>
+
+						<?php if ($isCurrent):
+							$currentAttempts = $attemptsBySession[$finishedId] ?? [];
+							$currentSolved = count(array_filter($currentAttempts, fn($a) => (int) $a['time_mode_attempt_status_id'] === TimeModeUtil::$ATTEMPT_RESULT_SOLVED));
+							$currentStatus = (int) $finishedSession['TimeModeSession']['time_mode_session_status_id'] === TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
+							$currentColor = $currentStatus === 'passed' ? 'green' : '#e03c4b';
+							$currentPoints = (int) $finishedSession['TimeModeSession']['points'];
+						?>
+						<tr>
+							<td colspan="5">
+								<h4 style="color:<?php echo $currentColor; ?>;">Result: <?php echo $currentStatus; ?>(<?php echo $currentSolved; ?>/<?php echo TimeModeUtil::$PROBLEM_COUNT; ?>)- <?php echo $currentPoints; ?> points</h4>
+							</td>
+						</tr>
+						<?php foreach ($currentAttempts as $a):
+							$astatus = TimeModeUtil::attemptStatusName((int) $a['time_mode_attempt_status_id']);
+							$acolor = $astatus === 'solved' ? 'green' : '#e03c4b';
+							$secs = (float) $a['seconds'];
+							$min = floor($secs / 60);
+							$secs -= $min * 60;
+							$label = $a['set_title'] . ($a['set_title2'] ? ' ' . $a['set_title2'] : '');
+						?>
+						<tr>
+							<td width="9%">#<?php echo $a['order']; ?></td>
+							<td width="46%"><a class="tooltip" data-tsumego-id="<?php echo $a['tsumego_id']; ?>" href="/tsumegos/play/<?php echo $a['tsumego_id']; ?>"><?php echo h($label); ?> - <?php echo $a['set_num']; ?><span class="tooltip-box"></span></a></td>
+							<td width="7%" style="color:<?php echo $acolor; ?>;"><?php echo $astatus; ?></td>
+							<td width="8%" style="color:<?php echo $acolor; ?>;"><?php echo $min; ?> : <?php echo number_format($secs, 2); ?></td>
+							<td><?php echo (int) $a['points']; ?> points</td>
+						</tr>
+						<?php endforeach; ?>
+						<?php endif; ?>
+					</table>
+				</div>
+			</td>
+		</tr>
+		<?php endforeach; ?>
+		<?php endforeach; ?>
 	</table>
 	<br>
 	</div>
@@ -107,11 +150,11 @@
 			let rankArrow = div.querySelector('.rankArrow');
 			if (content.style.display === 'none' || getComputedStyle(content).display === 'none') {
 				content.style.display = '';
-				rankArrow.setAttribute('src', '<?php echo $dataForView['rankArrowOpened'] ?>');
+				rankArrow.setAttribute('src', '/img/greyArrow2.png');
 			}
 			else {
 				content.style.display = 'none';
-				rankArrow.setAttribute('src', '<?php echo $dataForView['rankArrowClosed'] ?>');
+				rankArrow.setAttribute('src', '/img/greyArrow1.png');
 			}
 		}
 		$(document).ready(function() {

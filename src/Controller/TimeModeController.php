@@ -169,42 +169,6 @@ ORDER BY MIN(rating);");
 		return null;
 	}
 
-	public function exportSessionToShow($session, $timeModeCategory, $timeModeRank): array
-	{
-		$result = [];
-		$result['id'] = $session['TimeModeSession']['id'];
-		$result['status'] = $session['TimeModeSession']['time_mode_session_status_id'] == TimeModeUtil::$SESSION_STATUS_SOLVED ? 'passed' : 'failed';
-		$result['category'] = $timeModeCategory['TimeModeCategory']['name'];
-		$result['points'] = $session['TimeModeSession']['points'];
-		$result['rank'] = $timeModeRank['TimeModeRank']['name'];
-		$date = new DateTime($session['TimeModeSession']['created']);
-		$result['created'] = $date->format('H:i d.m.Y');
-		$timeModeAttempts = ClassRegistry::init('TimeModeAttempt')->find('all', ['conditions' => ['time_mode_session_id' => $session['TimeModeSession']['id']]]) ?: [];
-		$result['attempts'] = [];
-		$solvedCount = 0;
-		foreach ($timeModeAttempts as $timeModeAttempt)
-		{
-			if ($timeModeAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
-				$solvedCount++;
-			$attempt = [];
-			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $timeModeAttempt['TimeModeAttempt']['tsumego_id']]]);
-			$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
-			$attempt['tsumego_id'] = $timeModeAttempt['TimeModeAttempt']['tsumego_id'];
-			$attempt['set'] = $set['Set']['title'] . ' ' . $set['Set']['title2'];
-			$attempt['set_order'] = $setConnection['SetConnection']['num'];
-			$seconds = $timeModeAttempt['TimeModeAttempt']['seconds'];
-			$minutes = floor($seconds / 60);
-			$seconds -= $minutes * 60;
-			$attempt['seconds'] = $minutes . ' : ' . number_format($seconds, 2);
-			$attempt['points'] = $timeModeAttempt['TimeModeAttempt']['points'];
-			$attempt['order'] = $timeModeAttempt['TimeModeAttempt']['order'];
-			$attempt['status'] = TimeModeUtil::attemptStatusName($timeModeAttempt['TimeModeAttempt']['time_mode_attempt_status_id']);
-			$result['attempts'] [] = $attempt;
-		}
-		$result['solvedCount'] = $solvedCount;
-		return $result;
-	}
-
 	public static function deduceUnlock(?array $finishedSession, array $timeModeRanks, array $timeModeCategories): ?array
 	{
 		if (!$finishedSession)
@@ -263,42 +227,64 @@ ORDER BY MIN(rating);");
 		$timeMode = new TimeMode();
 		$finishedSession = $this->deduceFinishedSession($timeModeSessionID, $timeMode);
 
-		$this->loadModel('Tsumego');
-		$this->loadModel('Set');
-		$this->loadModel('TimeModeSession');
-		$this->loadModel('SetConnection');
 		$this->set('_title', 'Time Mode - Result');
 		$this->set('_page', 'time mode');
 
-		$timeModeCategories = ClassRegistry::init('TimeModeCategory')->find('all', []);
-		$timeModeRanks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
+		$categories = ClassRegistry::init('TimeModeCategory')->find('all', []);
+		$ranks = ClassRegistry::init('TimeModeRank')->find('all', ['order' => 'id DESC']);
 
-		$sessionsToShow = [];
-		foreach ($timeModeCategories as $timeModeCategory)
-			foreach ($timeModeRanks as $timeModeRank)
-			{
-				$session = ClassRegistry::init('TimeModeSession')->find('first', [
-					'conditions' => [
-						'user_id' => Auth::getUserID(),
-						'time_mode_category_id' => $timeModeCategory['TimeModeCategory']['id'],
-						'time_mode_rank_id' => $timeModeRank['TimeModeRank']['id']],
-					'order' => 'points DESC']);
-				$categoryID = $timeModeCategory['TimeModeCategory']['id'];
-				$rankID = $timeModeRank['TimeModeRank']['id'];
-				if (isset($finishedSession)
-					&& $finishedSession['TimeModeSession']['time_mode_category_id'] == $categoryID
-					&& $finishedSession['TimeModeSession']['time_mode_rank_id'] == $rankID)
-						$sessionsToShow[$categoryID][$rankID]['current'] = $this->exportSessionToShow($finishedSession, $timeModeCategory, $timeModeRank);
-				if (!$session || isset($finishedSession) && $session['TimeModeSession']['id'] == $finishedSession['TimeModeSession']['id'])
-					continue;
-				$sessionsToShow[$categoryID][$rankID]['best'] = $this->exportSessionToShow($session, $timeModeCategory, $timeModeRank);
-			}
+		$userId = Auth::getUserID();
+		$finishedId = $finishedSession ? (int) $finishedSession['TimeModeSession']['id'] : 0;
 
-		$this->set('sessionsToShow', $sessionsToShow);
+		// Best session per category×rank (metadata only)
+		$bestRows = Util::query(
+			'SELECT tms.* '
+			. 'FROM time_mode_session tms '
+			. 'JOIN ('
+			. '  SELECT time_mode_category_id, time_mode_rank_id, COALESCE(MAX(points), 0) AS max_points '
+			. '  FROM time_mode_session WHERE user_id = ? GROUP BY time_mode_category_id, time_mode_rank_id'
+			. ') best ON tms.time_mode_category_id = best.time_mode_category_id '
+			. '    AND tms.time_mode_rank_id = best.time_mode_rank_id '
+			. '    AND COALESCE(tms.points, 0) = best.max_points '
+			. 'WHERE tms.user_id = ?',
+			[$userId, $userId]
+		);
+
+		$bestByKey = [];
+		$displayIds = [];
+		foreach ($bestRows as $row)
+		{
+			$key = $row['time_mode_category_id'] . '-' . $row['time_mode_rank_id'];
+			$bestByKey[$key] = $row;
+			$displayIds[] = (int) $row['id'];
+		}
+		if ($finishedId && !in_array($finishedId, $displayIds, true))
+			$displayIds[] = $finishedId;
+
+		// Attempts + set info for displayed sessions
+		$attemptsBySession = [];
+		if ($displayIds)
+		{
+			$placeholders = implode(',', array_fill(0, count($displayIds), '?'));
+			$attemptRows = Util::query(
+				'SELECT tma.*, sc.num AS set_num, s.title AS set_title, s.title2 AS set_title2 '
+				. 'FROM time_mode_attempt tma '
+				. 'JOIN set_connection sc ON sc.tsumego_id = tma.tsumego_id '
+				. 'JOIN `set` s ON s.id = sc.set_id '
+				. 'WHERE tma.time_mode_session_id IN (' . $placeholders . ') '
+				. 'ORDER BY tma.time_mode_session_id, tma.`order`',
+				$displayIds
+			);
+			foreach ($attemptRows as $row)
+				$attemptsBySession[(int) $row['time_mode_session_id']][] = $row;
+		}
+
+		$this->set('categories', $categories);
+		$this->set('ranks', $ranks);
+		$this->set('bestByKey', $bestByKey);
 		$this->set('finishedSession', $finishedSession);
-		$this->set('rankArrowClosed', '/img/greyArrow1.png');
-		$this->set('rankArrowOpened', '/img/greyArrow2.png');
-		$this->set('unlock', self::deduceUnlock($finishedSession, $timeModeRanks, $timeModeCategories));
+		$this->set('attemptsBySession', $attemptsBySession);
+		$this->set('unlock', self::deduceUnlock($finishedSession, $ranks, $categories));
 		$this->set('achievementUpdates', new AchievementChecker()->checkTimeModeAchievements()->finalize()->updated);
 
 		return null;
