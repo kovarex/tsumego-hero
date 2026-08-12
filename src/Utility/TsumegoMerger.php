@@ -28,6 +28,18 @@ class TsumegoMerger
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
 		{
+			$setId = $slaveTsumegoBrother['SetConnection']['set_id'];
+
+			// If this set already has the master, delete the slave connection (dedup)
+			$masterExists = ClassRegistry::init('SetConnection')->find('first', [
+				'conditions' => ['set_id' => $setId, 'tsumego_id' => $this->masterTsumegoID],
+			]);
+			if ($masterExists)
+			{
+				ClassRegistry::init('SetConnection')->delete($slaveTsumegoBrother['SetConnection']['id']);
+				continue;
+			}
+
 			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $this->masterTsumegoID;
 			ClassRegistry::init('SetConnection')->save($slaveTsumegoBrother);
 		}
@@ -88,49 +100,6 @@ HAVING
 		{
 			$slaveComment['TsumegoComment']['tsumego_id'] = $this->masterTsumegoID;
 			ClassRegistry::init('TsumegoComment')->save($slaveComment);
-		}
-	}
-
-	private function mergeFavorites()
-	{
-		// Pre-fetch set_ids that already contain the master (for O(1) lookup)
-		$masterSetIds = array_flip(array_column(
-			ClassRegistry::init('SetConnection')->find('all', [
-				'conditions' => ['tsumego_id' => $this->masterTsumegoID],
-				'fields' => ['set_id'],
-			]),
-			'{n}.SetConnection.set_id'
-		));
-
-		// Pre-fetch user-owned private set IDs to filter by
-		$userSetIds = array_flip(array_column(
-			ClassRegistry::init('Set')->find('all', [
-				'conditions' => ['public' => 0, 'user_id IS NOT NULL'],
-				'fields' => ['id'],
-			]),
-			'{n}.Set.id'
-		));
-
-		$slaveConnections = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['tsumego_id' => $this->slaveTsumegoID],
-		]);
-
-		foreach ($slaveConnections as $sc)
-		{
-			$setId = $sc['SetConnection']['set_id'];
-
-			// Only touch user-owned private sets
-			if (!isset($userSetIds[$setId]))
-				continue;
-
-			if (isset($masterSetIds[$setId]))
-			{
-				ClassRegistry::init('SetConnection')->delete($sc['SetConnection']['id']);
-				continue;
-			}
-
-			$sc['SetConnection']['tsumego_id'] = $this->masterTsumegoID;
-			ClassRegistry::init('SetConnection')->save($sc);
 		}
 	}
 
@@ -205,7 +174,6 @@ HAVING
 			$this->mergeStatuses();
 			$this->mergeTsumegoAttempts();
 			$this->mergeComments();
-			$this->mergeFavorites();
 			$this->mergeTagConnections();
 			$this->mergeTimeModeAttempts();
 			$this->mergeIssues();

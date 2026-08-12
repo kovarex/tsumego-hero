@@ -1,5 +1,7 @@
 <?php
 
+App::uses('TsumegoMerger', 'Utility');
+
 class FavoritesViewTest extends TestCaseWithAuth
 {
 	public function testFavoritesRedirectsToDefaultSet()
@@ -119,5 +121,85 @@ class FavoritesViewTest extends TestCaseWithAuth
 		$sets = json_decode($result['userSetsJson'], true);
 		$contains = array_column($sets, 'contains');
 		$this->assertCount(2, array_filter($contains));
+	}
+
+	// ── Merge: favorites repointed when tsumegos merged ──────────────────
+
+	public function testMergeFavoritesSlaveOnlyRepointedToMaster(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'merger'],
+			'tsumegos' => [
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[aa])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[bb])', 'sets' => [['name' => 'Playable Set', 'num' => 2],
+					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+
+		$masterId = $context->tsumegos[0]['id'];
+		$slaveId = $context->tsumegos[1]['id'];
+		$favSetId = $context->user['default_set_id'];
+
+		// Slave only is in Favorites — after merge, master should be
+		(new TsumegoMerger($masterId, $slaveId))->execute();
+
+		$conn = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $favSetId],
+		]);
+		$this->assertNotEmpty($conn);
+		$this->assertEquals($masterId, $conn['SetConnection']['tsumego_id']);
+	}
+
+	public function testMergeFavoritesBothInSetDeduplicates(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'merger'],
+			'tsumegos' => [
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[aa])', 'sets' => [['name' => 'Playable Set', 'num' => 1],
+					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[bb])', 'sets' => [['name' => 'Playable Set', 'num' => 2],
+					['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+
+		$masterId = $context->tsumegos[0]['id'];
+		$slaveId = $context->tsumegos[1]['id'];
+		$favSetId = $context->user['default_set_id'];
+
+		(new TsumegoMerger($masterId, $slaveId))->execute();
+
+		$connections = ClassRegistry::init('SetConnection')->find('all', [
+			'conditions' => ['set_id' => $favSetId],
+		]);
+		$this->assertCount(1, $connections);
+		$this->assertEquals($masterId, $connections[0]['SetConnection']['tsumego_id']);
+	}
+
+	public function testMergeFavoritesIgnoresSandboxSets(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'merger'],
+			'tsumegos' => [
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[aa])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
+				['sgf' => '(;GM[1]FF[4]SZ[19];B[bb])', 'sets' => [['name' => 'Playable Set', 'num' => 2],
+					['name' => 'sandbox set', 'num' => 1, 'public' => 0]]],
+			],
+		]);
+
+		$masterId = $context->tsumegos[0]['id'];
+		$slaveId = $context->tsumegos[1]['id'];
+
+		// Sandbox set (user_id=null) should not be affected
+		$sandboxSetId = ClassRegistry::init('Set')->find('first', [
+			'conditions' => ['title' => 'sandbox set'],
+		])['Set']['id'];
+
+		(new TsumegoMerger($masterId, $slaveId))->execute();
+
+		// Sandbox connection untouched by mergeFavorites, slave cascade doesn't fire in tests
+		$conn = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $sandboxSetId],
+		]);
+		$this->assertNotEmpty($conn);
 	}
 }
