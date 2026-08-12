@@ -16,8 +16,8 @@
 <br><h1>Delete Set</h1>
 	<?php
 		echo $this->Form->create('Set');
-		echo $this->Form->input('hash', array('label' => 'Hash: ', 'type' => 'text', 'placeholder' => 'hash'));
-		echo $this->Form->end('Submit');
+		echo $this->Form->input('id', array('label' => 'Set ID: ', 'type' => 'text', 'placeholder' => 'Set ID'));
+		echo $this->Form->end('Delete');
 	?>
 <br><br>
 <a href="/sets/sandbox"> back </a>

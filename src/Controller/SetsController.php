@@ -1,7 +1,5 @@
 <?php
 
-use function PHPUnit\Framework\isNull;
-
 App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
@@ -25,6 +23,9 @@ class SetsController extends AppController
 	 */
 	public function sandbox()
 	{
+		if (!Auth::isAdmin() && !Auth::hasPremium())
+			return $this->redirect('/');
+
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('TsumegoStatus');
@@ -49,7 +50,6 @@ class SetsController extends AppController
 			'order' => ['Set.order'],
 			'conditions' => ['public' => 0],
 		]) ?: [];
-		$u = $this->User->findById(Auth::getUserID());
 
 		if (Auth::isLoggedIn())
 		{
@@ -128,9 +128,9 @@ class SetsController extends AppController
 	/**
 	 * @param int|null $tid Tsumego ID
 	 */
-	public function create($tid = null)
+	public function create()
 	{
-		if (!Auth::isLoggedIn())
+		if (!Auth::isAdmin())
 			return $this->redirect('/');
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -138,23 +138,6 @@ class SetsController extends AppController
 		$t = [];
 		if (isset($this->data['Set']))
 		{
-			$s = $this->Set->find('all', ['order' => 'id DESC']);
-			if (!$s)
-				$s = [];
-			$ss = [];
-			$sCount = count($s);
-			for ($i = 0; $i < $sCount; $i++)
-				if ($s[$i]['Set']['id'] < 6472)
-					array_push($ss, $s[$i]);
-
-			$seed = str_split('abcdefghijklmnopqrstuvwxyz0123456789');
-			shuffle($seed);
-			$rand = '';
-			foreach (array_rand($seed, 6) as $k)
-				$rand .= $seed[$k];
-			$hashName = '6473k339312/_' . $rand . '_' . $this->data['Set']['title'];
-			$hashName2 = '_' . $rand . '_' . $this->data['Set']['title'];
-
 			$set = [];
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
@@ -181,8 +164,6 @@ class SetsController extends AppController
 			$this->SetConnection->create();
 			$this->SetConnection->save($sc);
 
-			mkdir($hashName, 0777);
-			copy('6473k339312/__new/1.sgf', $hashName . '/1.sgf');
 			$redirect = true;
 		}
 		$this->set('t', $t);
@@ -191,24 +172,20 @@ class SetsController extends AppController
 
 	public function remove()
 	{
-		$this->loadModel('Tsumego');
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
 		$redirect = false;
 
-		if (isset($this->data['Set']))
-			if (strpos(';' . $this->data['Set']['hash'], '6473k339312-') == 1)
-			{
-				$setID = (int) str_replace('6473k339312-', '', $this->data['Set']['hash']);
+		if (isset($this->data['Set']['id']))
+		{
+			$setID = (int) $this->data['Set']['id'];
 
-				$s = $this->Set->findById($setID);
-				if ($s && ($s['Set']['public'] == 0 || $s['Set']['public'] == -1))
-					$this->Set->delete($setID);
-				$ts = TsumegoUtil::collectTsumegosFromSet($setID);
-				if (count($ts) < 50)
-					foreach ($ts as $item)
-						$this->Tsumego->delete($item['Tsumego']['id']);
-				$redirect = true;
-			}
-		//$this->set('t', $t);
+			$s = $this->Set->findById($setID);
+			if ($s && $s['Set']['public'] == 0)
+				$this->Set->delete($setID);
+			$redirect = true;
+		}
 		$this->set('redirect', $redirect);
 	}
 
@@ -387,6 +364,9 @@ class SetsController extends AppController
 	 */
 	public function ui($id = null)
 	{
+		if (!Auth::isAdmin())
+			return $this->redirect('/');
+
 		$s = $this->Set->findById($id);
 		if (!$s)
 			throw new NotFoundException('Set not found');
@@ -464,9 +444,11 @@ class SetsController extends AppController
 		}
 		$set = $set['Set'];
 
-		if ($set['public'] && !Auth::isAdmin())
+		// Public sets: admin only. Sandbox sets: admin or premium.
+		$canAdd = Auth::isAdmin() || (!$set['public'] && Auth::hasPremium());
+		if (!$canAdd)
 		{
-			CookieFlash::set('Only admins can add to public sets', 'error');
+			CookieFlash::set('Only admins can add problems to this set', 'error');
 			return $this->redirect('/sets/view/' . $setID);
 		}
 
