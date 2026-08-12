@@ -613,6 +613,7 @@ class SetsController extends AppController
 			if ($sgfDataOrFile)
 				ClassRegistry::init('Sgf')->uploadSgf($sgfDataOrFile, $tsumego['id'], Auth::getUserID(), Auth::isAdmin());
 			$tsumegoModel->getDataSource()->commit();
+			AdminActivityLogger::log(AdminActivityType::PROBLEM_ADD, $tsumegoModel->id, $setID);
 		}
 		catch (Exception $e)
 		{
@@ -907,18 +908,20 @@ class SetsController extends AppController
 				$this->Set->save($changeSet, true);
 				$oldTitle = $set['Set']['title'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
+				if ($this->_isElevatedSetEdit($set))
+					AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
 			}
 			if (isset($this->data['Set']['description']))
 			{
 				$this->Set->create();
 				$changeSet = $set;
-				$changeSet['Set']['description'] = $this->data['Set']['description'];
+				$changeSet['Set']['description'] = $this->_sanitizeDescription($this->data['Set']['description']);
 				$this->set('data', $changeSet['Set']['description']);
 				$this->Set->save($changeSet, true);
 				$oldDescription = $set['Set']['description'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
+				if ($this->_isElevatedSetEdit($set))
+					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
 			}
 			if (isset($this->data['Set']['setDifficulty']))
 				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
@@ -946,7 +949,8 @@ class SetsController extends AppController
 				$this->Set->save($changeSet, true);
 				$oldColor = $set['Set']['color'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
+				if ($this->_isElevatedSetEdit($set))
+					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
 			}
 			if (isset($this->data['Set']['order']))
 			{
@@ -957,7 +961,8 @@ class SetsController extends AppController
 				$this->Set->save($changeSet, true);
 				$oldOrder = $set['Set']['order'];
 				$set = $this->Set->findById($id);
-				AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
+				if ($this->_isElevatedSetEdit($set))
+					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
 			}
 			// Handle image upload from the view page admin panel
 			if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK
@@ -1501,5 +1506,28 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		}
 		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
+	}
+
+	/**
+	 * Sanitize set description HTML: strip images with external src.
+	 */
+	private function _sanitizeDescription(string $description): string
+	{
+		// Strip <img> tags with non-relative, non-data-URI src
+		$description = preg_replace(
+			'/<img[^>]+src=["\'](?!\/|data:image\/)[^"\']+["\'][^>]*>/i',
+			'',
+			$description
+		);
+
+		return $description;
+	}
+
+	/**
+	 * True when an admin edits a set they do not own (elevated privilege).
+	 */
+	private function _isElevatedSetEdit(array $set): bool
+	{
+		return Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID();
 	}
 }

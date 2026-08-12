@@ -286,7 +286,8 @@ if ($tsumegoFilters->query != 'topics')
 					<tr>
 					<td>';
 
-					SetEditRenderer::renderAddProblemForm($set, $tsumegoButtons);
+					if (Auth::isAdmin())
+						SetEditRenderer::renderAddProblemForm($set, $tsumegoButtons);
 					if($set['Set']['public'] == 0)
 					{
 						echo '<br><a id="show">Edit Title<img id="greyArrow2" src="/img/greyArrow1.png"></a><br>
@@ -300,6 +301,7 @@ if ($tsumegoFilters->query != 'topics')
 						<div id="msg2">';
 						echo $this->Form->create('Set');
 						echo $this->Form->input('description', ['label' => '', 'type' => 'textarea', 'placeholder' => 'Description', 'value' => $set['Set']['description']]);
+						echo '<i><font color="gray">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</font></i><br>';
 						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
 						echo '</div>';
 
@@ -316,9 +318,8 @@ if ($tsumegoFilters->query != 'topics')
 						echo '<a id="show3">Edit Color<img id="greyArrow4" src="/img/greyArrow1.png"></a><br>
 						<div id="msg3">';
 						echo $this->Form->create('Set');
-						echo $this->Form->input('color', ['label' => '', 'type' => 'text', 'placeholder' => 'color', 'value' => $set['Set']['color']]);
+						echo $this->Form->input('color', ['label' => '', 'type' => 'color', 'value' => $set['Set']['color']]);
 						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-						echo '<i><a href="https://www.w3schools.com/colors/colors_picker.asp" target="_blank">hex color picker</a>&nbsp;(external link)</i><br>';
 						echo '</div>';
 						echo '<a id="show6">Edit Order<img id="greyArrow6" src="/img/greyArrow1.png"></a><br>
 						<div id="msg6">';
