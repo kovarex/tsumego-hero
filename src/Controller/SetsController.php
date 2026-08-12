@@ -306,6 +306,12 @@ class SetsController extends AppController
 			$this->redirect('/sets/mine');
 	}
 
+	/** @deprecated Use delete() instead */
+	public function remove()
+	{
+		return $this->delete(null);
+	}
+
 	/**
 	 * @param int $tid Tsumego ID
 	 * @return void

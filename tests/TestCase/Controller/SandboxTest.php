@@ -157,11 +157,11 @@ class SandboxTest extends ControllerTestCase
 
 		$beforeCount = ClassRegistry::init('Set')->find('count');
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
+		$this->assertSame(Util::getInternalAddress() . '/sets', $this->headers['Location']);
 		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
 	}
 
@@ -170,7 +170,7 @@ class SandboxTest extends ControllerTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('to delete', 0);
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 
@@ -182,14 +182,12 @@ class SandboxTest extends ControllerTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('public set', 1);
 
-		$beforeCount = ClassRegistry::init('Set')->find('count');
-
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 
-		$this->assertNotEmpty(ClassRegistry::init('Set')->findById($setId));
-		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
+		// Admin can delete any set, including public ones
+		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
 	}
 
 	public function testRemovePreservesTsumegos(): void
@@ -199,7 +197,7 @@ class SandboxTest extends ControllerTestCase
 
 		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 

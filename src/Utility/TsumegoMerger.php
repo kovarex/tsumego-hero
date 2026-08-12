@@ -93,32 +93,33 @@ HAVING
 
 	private function mergeFavorites()
 	{
-		$favoritesMergeSource = Util::query("
+		// Find users who have either master or slave in their private sets
+		$mergeSources = Util::query("
 SELECT
-    user_id,
-    MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS favorite_id_1,
-    MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS favorite_id_2
-FROM favorite
-WHERE tsumego_id IN (:id1, :id2)
-GROUP BY user_id
-HAVING
-    COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
-		foreach ($favoritesMergeSource as $favoriteMergeSource)
+    s.user_id,
+    MAX(CASE WHEN sc.tsumego_id = :id1 THEN sc.id END) AS sc_id_1,
+    MAX(CASE WHEN sc.tsumego_id = :id2 THEN sc.id END) AS sc_id_2
+FROM set_connection sc
+JOIN `set` s ON s.id = sc.set_id AND s.public = 0
+WHERE sc.tsumego_id IN (:id1, :id2)
+GROUP BY s.user_id
+HAVING COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
+		foreach ($mergeSources as $row)
 		{
 			// slave is empty, nothing to do
-			if (!$favoriteMergeSource['favorite_id_2'])
+			if (!$row['sc_id_2'])
 				continue;
 
-			// master is empty, we change the slave to master
-			if (!$favoriteMergeSource['favorite_id_1'])
+			// master is empty, change the slave set_connection to point to master
+			if (!$row['sc_id_1'])
 			{
-				$favorite = ClassRegistry::init('Favorite')->findById($favoriteMergeSource['favorite_id_2'])['Favorite'];
-				$favorite['tsumego_id'] = $this->masterTsumegoID;
-				ClassRegistry::init('Favorite')->save($favorite);
+				$sc = ClassRegistry::init('SetConnection')->findById($row['sc_id_2'])['SetConnection'];
+				$sc['tsumego_id'] = $this->masterTsumegoID;
+				ClassRegistry::init('SetConnection')->save($sc);
 				continue;
 			}
-			// when both master and slave is present, we don't have to do anything, the slave one will be removed by
-			// foreign key cascade
+			// when both master and slave are present, the slave one will be removed by
+			// foreign key cascade when the slave tsumego is deleted
 		}
 	}
 

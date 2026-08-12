@@ -31,7 +31,6 @@ if (!Auth::isAdmin() && !Auth::hasPremium())
 			<table width="100%">
 			<tr>
 			<td><a href="/sets/create">Create Set</a></td>
-			<td><a href="/sets/remove">Delete Set</a></td>
 			</tr>
 			</table>
 

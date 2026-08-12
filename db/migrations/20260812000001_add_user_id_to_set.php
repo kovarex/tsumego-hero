@@ -11,11 +11,7 @@ final class AddUserIdToSet extends AbstractMigration
 		// 1. Add user_id column (nullable, no FK yet)
 		$this->execute("ALTER TABLE `set` ADD COLUMN `user_id` INT UNSIGNED NULL AFTER `id`");
 
-		// 2. Unique index to prevent duplicate default "Favorites" sets
-		//    title is varchar(400) utf8mb4 = 1600 bytes, must use prefix for index
-		$this->execute("ALTER TABLE `set` ADD UNIQUE INDEX `idx_user_default` (`user_id`, `title`(100), `public`)");
-
-		// 3. For each user with favorites, create a default "Favorites" set
+		// 2. For each user with favorites, create a default "Favorites" set
 		//    and migrate their favorites to set_connection.
 		//    Skip users who no longer exist in the `user` table.
 		$users = $this->fetchAll(
@@ -32,7 +28,7 @@ final class AddUserIdToSet extends AbstractMigration
 			// Create default "Favorites" set
 			$escapedName = addslashes($name);
 			$this->execute(
-				"INSERT IGNORE INTO `set` (user_id, title, public, image, author, `order`, created) "
+				"INSERT INTO `set` (user_id, title, public, image, author, `order`, created) "
 				. "VALUES ({$userId}, 'Favorites', 0, NULL, '{$escapedName}', 999999, NOW())"
 			);
 
@@ -53,12 +49,12 @@ final class AddUserIdToSet extends AbstractMigration
 			);
 		}
 
-		// 4. Add FK constraint (only after data is migrated)
+		// 3. Add FK constraint (only after data is migrated)
 		$this->execute(
 			"ALTER TABLE `set` ADD FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE"
 		);
 
-		// 5. Drop the favorite table
+		// 4. Drop the favorite table
 		$this->execute("DROP TABLE `favorite`");
 	}
 
@@ -101,7 +97,6 @@ final class AddUserIdToSet extends AbstractMigration
 
 		// Remove FK and column
 		$this->execute("ALTER TABLE `set` DROP FOREIGN KEY `set_ibfk_1`");
-		$this->execute("ALTER TABLE `set` DROP INDEX `idx_user_default`");
 		$this->execute("ALTER TABLE `set` DROP COLUMN `user_id`");
 	}
 }
