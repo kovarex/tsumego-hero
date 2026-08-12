@@ -828,7 +828,7 @@ class ContextPreparator
 		}
 		else
 		{
-			// No default set — create one
+			// No default set, create one
 			$setModel = ClassRegistry::init('Set');
 			$setModel->create();
 			$setModel->save([

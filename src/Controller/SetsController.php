@@ -623,7 +623,7 @@ class SetsController extends AppController
 				return $set;
 		}
 
-		// No default set or it was deleted — create one
+		// No default set or it was deleted, create one
 		$setModel = ClassRegistry::init('Set');
 		$setModel->create();
 		$setModel->save([

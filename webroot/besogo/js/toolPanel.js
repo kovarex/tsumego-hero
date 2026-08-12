@@ -751,7 +751,7 @@ besogo.makeToolPanel = function (container, editor) {
       });
       container.appendChild(heart[0]);
 
-      // Dropdown arrow — only if user has sets
+      // Dropdown arrow, only if user has sets
       if (userSets && userSets.length > 0) {
         let arrow = $('<span id="favDropdownArrow" style="cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none" title="save to set">▼</span>');
         arrow.on("click", function () { showFavDropdown(); });

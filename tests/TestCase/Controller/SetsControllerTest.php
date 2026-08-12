@@ -1103,99 +1103,6 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
 	}
 
-	public function testRemovingFavorites(): void
-	{
-		$this->markTestSkipped('Needs rewrite for new set-based favorites system.');
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-		$context->addFavorite($context->tsumegos[0]);
-
-		$browser = Browser::instance();
-		$browser->get('sets/view/favorites');
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		});
-		$buttons[0]->click(); // opening the favorites problem
-
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 1, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		}, 0, 'V');
-		$browser->driver->findElement(WebDriverBy::cssSelector('#favButton'))->click();
-
-		// going back to favorites, which should be empty now
-		$browser->get('sets/view/favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 0, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		});
-	}
-
-	public function testGoingFromFavoritesToSetIndexResetsTheFavoritesQuery(): void
-	{
-		$this->markTestSkipped('Needs rewrite for new set-based favorites system.');
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 3; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		$browser = Browser::instance();
-		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(3, $collectionTopDivs); // the 3 sets are visible even when not in favorites, as top index ignores favorites
-		$tsumegoFilters = new TsumegoFilters();
-		$this->assertTrue($tsumegoFilters->query != 'favorites');
-	}
-
-	public function testBrowsingFavoritesByNextButton(): void
-	{
-		$this->markTestSkipped('Needs rewrite for new set-based favorites system.');
-		$contextParams = [];
-		$contextParams['user'] = ['mode' => Constants::$LEVEL_MODE, 'query' => 'favorites'];
-		for ($i = 0; $i < 5; $i++)
-			$contextParams ['tsumegos'] [] = ['sets' => [['name' => 'set ' . $i, 'num' => $i]]];
-		$context = new ContextPreparator($contextParams);
-
-		// only 3 out of 5 are favorites
-		for ($i = 0; $i < 3; $i++)
-			$context->addFavorite($context->tsumegos[$i]);
-
-		$browser = Browser::instance();
-		$browser->get('sets/view/favorites');
-		// now we are viewing the 'favorites' insides and checking the buttons
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.title4'))[1]->getText(), 'Favorites');
-		$buttons = $this->checkSetNavigationButtons($browser, 3, $context, function ($index) {
-			return $index;
-		}, function ($index) {
-			return $index + 1;
-		});
-		$buttons[0]->click();
-
-		// first favorite
-		for ($i = 0; $i < 3; $i++)
-		{
-			$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[$i]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-			$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 3, $context, function ($index) {
-				return $index;
-			}, function ($index) {
-				return $index + 1;
-			}, $i, 'V');
-			$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
-		}
-		$this->assertSame(Util::getMyAddress() . '/sets/view/favorites', $browser->driver->getCurrentURL());
-	}
-
 	public function testOnlyPublicSetsAreVisible(): void
 	{
 		new ContextPreparator(['tsumego' => ['sets' => [
@@ -1731,7 +1638,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->setCookie('hackedLoggedInUserID', (string) $regularUserId);
 		$browser->getAnonymous('/' . $setConnectionId);
 
-		// JS redirect fires and Selenium follows it — user ends up on homepage
+		// JS redirect fires and Selenium follows it, user ends up on homepage
 		$currentUrl = $browser->driver->getCurrentURL();
 		$this->assertStringNotContainsString('/' . $setConnectionId, $currentUrl,
 			'Non-premium user should be redirected away from sandbox play page');
