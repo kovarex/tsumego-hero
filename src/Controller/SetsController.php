@@ -125,9 +125,6 @@ class SetsController extends AppController
 		$this->set('overallCounter', $overallCounter);
 	}
 
-	/**
-	 * @param int|null $tid Tsumego ID
-	 */
 	public function create()
 	{
 		if (!Auth::isAdmin())
