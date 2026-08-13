@@ -153,9 +153,6 @@ class SetsController extends AppController
 			$isOwn = true;
 		}
 
-		$this->loadModel('Tsumego');
-		$this->loadModel('TsumegoStatus');
-		$this->loadModel('SetConnection');
 		$this->loadModel('User');
 
 		$profileUser = $this->User->findById($userId);
@@ -164,55 +161,44 @@ class SetsController extends AppController
 		$this->set('profileUser', $profileUser ? $profileUser['User'] : null);
 		$this->set('isOwn', $isOwn);
 
-		$conditions = $isOwn || Auth::isAdmin()
-			? ['user_id' => $userId, 'public' => 0]
-			: ['user_id' => $userId, 'public' => 1];
+		// Own sets (or an admin browsing) show all sets; others only see public ones
+		$publicFilter = ($isOwn || Auth::isAdmin()) ? '' : 'AND s.public = 1';
 
-		$sets = $this->Set->find('all', [
-			'order' => ['Set.order'],
-			'conditions' => $conditions,
-		]) ?: [];
-
-		$uts = $this->TsumegoStatus->find('all', ['conditions' => ['user_id' => Auth::getUserID()]]);
-		if (!$uts)
-			$uts = [];
-		$tsumegoStatusMap = [];
-		$utsCount4 = count($uts);
-		for ($l = 0; $l < $utsCount4; $l++)
-			$tsumegoStatusMap[$uts[$l]['TsumegoStatus']['tsumego_id']] = $uts[$l]['TsumegoStatus']['status'];
+		$rows = Util::query("
+SELECT
+	s.id,
+	s.title,
+	s.color,
+	COUNT(sc.tsumego_id) AS amount,
+	COALESCE(SUM(t.rating), 0) AS elo_sum,
+	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
+FROM `set` s
+LEFT JOIN (
+	SELECT set_id, tsumego_id, MIN(num) AS num
+	FROM set_connection
+	GROUP BY set_id, tsumego_id
+) sc ON sc.set_id = s.id
+LEFT JOIN tsumego t ON t.id = sc.tsumego_id
+LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
+WHERE s.user_id = ? $publicFilter
+GROUP BY s.id, s.title, s.color
+ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		$setsNew = [];
-		$setsCount = count($sets);
-		for ($i = 0; $i < $setsCount; $i++)
+		foreach ($rows as $row)
 		{
-			$ts = TsumegoUtil::collectTsumegosFromSet($sets[$i]['Set']['id']);
-			$counter = 0;
-			$elo = 0;
-			$tsCount3 = count($ts);
-			for ($k = 0; $k < $tsCount3; $k++)
-			{
-				$elo += $ts[$k]['Tsumego']['rating'];
-				if (isset($tsumegoStatusMap[$ts[$k]['Tsumego']['id']]))
-					if ($tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'S' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'W' || $tsumegoStatusMap[$ts[$k]['Tsumego']['id']] == 'C')
-						$counter++;
-			}
-			if (count($ts) > 0)
-				$elo = $elo / count($ts);
-			else
-				$elo = 0;
+			$amount = (int) $row['amount'];
+			$elo = $amount > 0 ? (float) $row['elo_sum'] / $amount : 0.0;
+			$percent = $amount > 0 ? Util::getPercentButAvoid100UntilComplete((int) $row['solved'], $amount) : 0;
 
-			$percent = 0;
-			if (count($ts) > 0)
-				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
-
-			$sn = [];
-			$sn['id'] = $sets[$i]['Set']['id'];
-			$sn['name'] = $sets[$i]['Set']['title'];
-			$sn['amount'] = count($ts);
-			$sn['color'] = $sets[$i]['Set']['color'];
-			$sn['difficulty'] = Rating::getReadableRankFromRating($elo);
-			$sn['solved'] = $percent;
-			array_push($setsNew, $sn);
+			$setsNew[] = [
+				'id' => $row['id'],
+				'name' => $row['title'],
+				'amount' => $amount,
+				'color' => $row['color'],
+				'difficulty' => Rating::getReadableRankFromRating($elo),
+				'solved' => $percent,
+			];
 		}
 
 		$this->set('setsNew', $setsNew);
@@ -267,7 +253,7 @@ class SetsController extends AppController
 				$this->SetConnection->save($sc);
 			}
 
-			$this->redirect($isSandbox ? '/sets/sandbox' : '/sets/view/' . $this->Set->id);
+			$this->redirect('/sets/view/' . $this->Set->id);
 			return;
 		}
 		$this->set('t', $t);
@@ -310,16 +296,6 @@ class SetsController extends AppController
 	public function remove()
 	{
 		return $this->delete(null);
-	}
-
-	/**
-	 * @param int $tid Tsumego ID
-	 * @return CakeResponse|null
-	 * @deprecated Use edit() instead
-	 */
-	public function add($tid)
-	{
-		return $this->redirect('/sets/edit/' . $tid);
 	}
 
 	public function index(): void
@@ -466,16 +442,6 @@ class SetsController extends AppController
 		}))
 			return $firstRecentlyUnsolved->setConnectionID;
 		return $tsumegoButtons[0]->setConnectionID;
-	}
-
-	/**
-	 * @param int|null $id Set ID
-	 * @return void
-	 */
-	/** @deprecated Use edit() instead */
-	public function ui($id = null)
-	{
-		return $this->redirect('/sets/edit/' . $id);
 	}
 
 	private function decodeQueryType($input)
