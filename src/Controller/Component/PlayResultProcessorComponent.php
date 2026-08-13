@@ -161,9 +161,6 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
 
-	// checkAddFavorite and checkRemoveFavorite removed.
-	// Favorites are now handled via addTsumego/removeTsumego with user-owned sets.
-
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus): void
 	{
 		if (Auth::isInTimeMode())
