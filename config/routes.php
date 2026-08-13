@@ -122,7 +122,7 @@ Router::connect(
 );
 Router::connect(
 	'/sets/user/:userId',
-	['controller' => 'sets', 'action' => 'mine'],
+	['controller' => 'sets', 'action' => 'userSets'],
 	['pass' => ['userId']]
 );
 Router::connect(

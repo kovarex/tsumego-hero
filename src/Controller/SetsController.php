@@ -127,34 +127,24 @@ class SetsController extends AppController
 		$this->set('overallCounter', $overallCounter);
 	}
 
-	public function mine($userId = null)
+	public function mine()
 	{
-		$this->_showUserSets($userId);
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/');
+
+		$this->_showUserSets(Auth::getUserID());
 	}
 
-	private function _showUserSets($userId): void
+	public function userSets($userId)
 	{
-		// Viewing own sets requires login
-		if ($userId === null && !Auth::isLoggedIn())
-		{
-			$this->redirect('/');
-			return;
-		}
+		$this->_showUserSets((int) $userId);
+	}
 
-		// If viewing a specific user, only show their public sets
-		if ($userId !== null)
-		{
-			$userId = (int) $userId;
-			$isOwn = ($userId === Auth::getUserID());
-		}
-		else
-		{
-			$userId = Auth::getUserID();
-			$isOwn = true;
-		}
-
+	private function _showUserSets(int $userId): void
+	{
 		$this->loadModel('User');
 
+		$isOwn = ($userId === Auth::getUserID());
 		$profileUser = $this->User->findById($userId);
 		$pageTitle = $isOwn ? 'My Sets' : h($profileUser['User']['name']) . "'s Sets";
 		$this->set('_title', 'Tsumego Hero - ' . $pageTitle);
@@ -202,7 +192,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		$this->set('setsNew', $setsNew);
-		$this->render('mine');
+		$this->render('user_sets');
 	}
 
 	public function create()
@@ -758,7 +748,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		if ($id === null)
 		{
-			$this->_showUserSets(null);
+			$this->redirect('/sets/mine');
 			return;
 		}
 
