@@ -199,7 +199,11 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function create()
 	{
 		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(401);
+			return;
+		}
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -253,17 +257,26 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function delete($id = null)
 	{
 		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(401);
+			return;
+		}
 
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)
-			return $this->redirect('/');
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(400);
+			return;
+		}
 
 		$s = $this->Set->findById((int) $setID);
 		if (!$s)
 		{
-			CookieFlash::set('Set not found', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(404);
+			return;
 		}
 
 		// Auth: set owner can delete their own sets; admin can delete sandbox sets
@@ -271,8 +284,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$isSandbox = ($s['Set']['user_id'] === null && $s['Set']['public'] == 0);
 		if (!$isOwner && !(Auth::isAdmin() && $isSandbox))
 		{
-			CookieFlash::set('Not authorized', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(403);
+			return;
 		}
 
 		$this->Set->delete($setID);
@@ -291,12 +305,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$this->redirect('/sets/sandbox');
 		else
 			$this->redirect('/sets/mine');
-	}
-
-	/** @deprecated Use delete() instead */
-	public function remove()
-	{
-		return $this->delete(null);
 	}
 
 	public function index(): void
@@ -512,8 +520,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		]);
 		if ($existing)
 		{
-			CookieFlash::set('Already in set', 'info');
-			return $this->redirect('/sets/view/' . $setID);
+			$this->autoRender = false;
+			$this->response->statusCode(409);
+			return;
 		}
 
 		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
@@ -752,7 +761,11 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			'conditions' => ['set_id' => $setID, 'num' => $adjacentNum],
 		]);
 		if (!$adjacent)
-			return $this->redirect('/sets/view/' . $setID);
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(409);
+			return;
+		}
 
 		// Swap num values
 		$scModel->id = $current['SetConnection']['id'];

@@ -340,11 +340,16 @@ if ($tsumegoFilters->query != 'topics')
 
 						echo '<a id="show8">Manage Problems<img id="greyArrow8" src="/img/greyArrow1.png"></a><br>';
 						echo '<div id="msg8">';
+						$manageCount = count($tsumegoButtons);
+						$manageIndex = 0;
 						foreach ($tsumegoButtons as $b)
 						{
+							$manageIndex++;
 							echo '<div style="padding:2px">' . $b->order . '. <a href="/' . $b->setConnectionID . '">Problem #' . $b->tsumegoID . '</a>';
-							echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'up\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move up">▲</a>';
-							echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'down\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move down">▼</a>';
+							if ($manageIndex > 1)
+								echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'up\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move up">▲</a>';
+							if ($manageIndex < $manageCount)
+								echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'down\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move down">▼</a>';
 							echo ' <form method="post" action="/sets/removeTsumego/' . $set['Set']['id'] . '" style="display:inline">';
 							echo '<input type="hidden" name="tsumego_id" value="' . $b->tsumegoID . '">';
 							echo '<input type="submit" value="✕" style="border:none;background:none;cursor:pointer;color:#c44;padding:0 4px">';

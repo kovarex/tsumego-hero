@@ -83,7 +83,7 @@ class SandboxTest extends ControllerTestCase
 		$this->assertContains('kovarex', $this->vars['admins']);
 	}
 
-	public function testCreateRedirectsUnauthenticated(): void
+	public function testCreateRequiresLogin(): void
 	{
 		new ContextPreparator(['user' => null]);
 
@@ -91,7 +91,7 @@ class SandboxTest extends ControllerTestCase
 			'Set' => ['title' => 'Test'],
 		]]);
 
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
+		$this->assertSame(401, $this->controller->response->statusCode());
 	}
 
 	public function testCreateAllowsAdmin(): void
@@ -148,7 +148,7 @@ class SandboxTest extends ControllerTestCase
 			'Set' => ['id' => $setId],
 		]]);
 
-		$this->assertSame(Util::getInternalAddress() . '/sets', $this->headers['Location']);
+		$this->assertSame(403, $this->controller->response->statusCode());
 		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
 	}
 

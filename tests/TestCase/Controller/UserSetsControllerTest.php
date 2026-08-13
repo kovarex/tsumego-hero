@@ -93,6 +93,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$data = ['Set' => ['title' => 'Guest Set']];
 		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
 
+		$this->assertSame(401, $this->controller->response->statusCode());
+
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'Guest Set'],
 		]);
@@ -213,6 +215,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('bob');
 
 		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+
+		$this->assertSame(403, $this->controller->response->statusCode());
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertNotEmpty($set);
@@ -350,6 +354,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$data = ['tsumego_id' => $tsumegoId];
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+
+		$this->assertSame(409, $this->controller->response->statusCode());
 
 		$count = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -608,6 +614,33 @@ class UserSetsControllerTest extends TestCaseWithAuth
 			'order' => 'num',
 		]);
 		$this->assertEquals($context->tsumegos[0]['id'], $scs[0]['SetConnection']['tsumego_id']);
+	}
+
+	public function testReorderAtBoundaryReturnsConflict(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [
+				['sets' => [['name' => 'My Set', 'num' => 1, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
+				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
+			],
+		]);
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$set['Set']['user_id'] = $context->user['id'];
+		ClassRegistry::init('Set')->save($set);
+		$this->login('alice');
+
+		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up", ['method' => 'POST']);
+
+		$this->assertSame(409, $this->controller->response->statusCode());
+
+		$scs = ClassRegistry::init('SetConnection')->find('all', [
+			'conditions' => ['set_id' => $setId],
+			'order' => 'num',
+		]);
+		$this->assertEquals($context->tsumegos[0]['id'], $scs[0]['SetConnection']['tsumego_id']);
+		$this->assertEquals($context->tsumegos[1]['id'], $scs[1]['SetConnection']['tsumego_id']);
 	}
 
 	public function testCreateAndAddTsumegoRequiresAdmin(): void
