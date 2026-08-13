@@ -42,12 +42,12 @@ class SetsControllerAdminTest extends ControllerTestCase
 		$browser->byId('SetTitle')->sendKeys('Test Auto-Increment Set');
 		$browser->byCssSelector('form input[type="submit"]')->click();
 
-		// Wait for redirect back to sandbox page
+		// Wait for redirect to the newly created set's view page
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return str_contains($driver->getTitle(), 'Collections');
+			return str_contains($driver->getTitle(), 'Test Auto-Increment Set');
 		});
-		$this->assertTrue($browser->titleContains('Tsumego Hero - Collections'), 'Should redirect to sandbox after creating set');
+		$this->assertTrue($browser->titleContains('Test Auto-Increment Set'), 'Should redirect to the new set view after creating set');
 
 		// Verify set was created
 		$newSetCount = $setModel->find('count');
@@ -60,7 +60,7 @@ class SetsControllerAdminTest extends ControllerTestCase
 		// Verify the set and tsumego are properly linked
 		$newSet = $setModel->find('first', ['order' => 'id DESC']);
 		$this->assertEquals('Test Auto-Increment Set', $newSet['Set']['title'], 'Set should have correct title');
-		$this->assertEquals($context->user['User']['id'], $newSet['Set']['user_id'], 'Set should belong to admin user');
+		$this->assertNull($newSet['Set']['user_id'], 'Sandbox set should not belong to any user');
 		$this->assertEquals(false, $newSet['Set']['public'], 'New set should be private');
 
 		$newTsumego = $tsumegoModel->find('first', ['order' => 'id DESC']);
