@@ -529,6 +529,10 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		ClassRegistry::init('SetConnection')->create();
 		ClassRegistry::init('SetConnection')->save($sc);
 
+		$achievementChecker = new AchievementChecker();
+		$achievementChecker->checkFavoritesAchievement((int) $setID);
+		$achievementChecker->finalize();
+
 		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']))
 		{
 			$this->autoRender = false;

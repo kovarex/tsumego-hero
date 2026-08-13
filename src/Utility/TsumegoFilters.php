@@ -17,6 +17,8 @@ class TsumegoFilters
 		}
 
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
+		if (!in_array($this->query, ['topics', 'difficulty', 'tags'], true))
+			$this->query = 'topics';
 		$this->collectionSize = (int) self::processItem('collection_size', '200');
 		$rawSets = self::processItem('filtered_sets', [], function ($input) {
 			return array_values(array_filter(explode('@', $input)));

@@ -443,7 +443,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 						<a id="playTitleA" href=""></a>';
 
 		$order = $setConnection['SetConnection']['num'];
-		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')
+		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
 			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set['Set']['id']) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
 											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">

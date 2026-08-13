@@ -7,15 +7,40 @@ App::uses('ContextPreparator', 'Test');
 
 class FavoritesAchievementTest extends AchievementTestCase
 {
-	/* Test "Those are my favorites" achievement Achievement::FAVORITES
-	 * Unlocks when user views their favorites collection (set_id = -1) */
-	public function testFavoritesAchievement()
+	public function testFavoritesAchievementUnlocksWhenFavoritingAProblem()
 	{
-		new ContextPreparator();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
+		]);
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
 
-		// Trigger check with sid = -1 (favorites)
-		// No need to create achievement_condition - favorites check happens before that query now
-		new AchievementChecker()->checkSetAchievements(-1);
-		$this->assertAchievementUnlocked(Achievement::FAVORITES, 'Favorites achievement should unlock when accessing favorites collection (sid = -1)');
+		$this->testAction('/sets/addTsumego/favorites', [
+			'data' => ['tsumego_id' => $tsumegoId],
+			'method' => 'POST',
+		]);
+
+		$this->assertAchievementUnlocked(Achievement::FAVORITES, 'Favorites achievement should unlock when favoriting a problem');
+	}
+
+	public function testFavoritesAchievementDoesNotUnlockForRegularSet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
+		]);
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => 'My Set', 'public' => 0, 'user_id' => $context->user['id'], 'order' => Constants::$DEFAULT_SET_ORDER]);
+		$setId = $set->getInsertID();
+
+		$this->testAction("/sets/addTsumego/{$setId}", [
+			'data' => ['tsumego_id' => $tsumegoId],
+			'method' => 'POST',
+		]);
+
+		$this->assertAchievementNotUnlocked(Achievement::FAVORITES);
 	}
 }

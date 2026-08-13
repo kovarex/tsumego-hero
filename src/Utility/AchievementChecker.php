@@ -479,12 +479,6 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 	public function checkSetAchievements($sid = null, $setRating = 0): AchievementChecker
 	{
-		if ($sid == -1)
-		{
-			$this->gained(Achievement::FAVORITES);
-			return $this;
-		}
-
 		$tNum = count(TsumegoUtil::collectTsumegosFromSet($sid));
 		$acA = ClassRegistry::init('AchievementCondition')->find('first', [
 			'order' => 'value DESC',
@@ -590,6 +584,22 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 				Cache::delete('recent_achievements_7', 'default');
 			}
 		}
+		return $this;
+	}
+
+	public function checkFavoritesAchievement(int $setId): AchievementChecker
+	{
+		if ($this->unlocked(Achievement::FAVORITES))
+			return $this;
+
+		$user = ClassRegistry::init('User')->findById(Auth::getUserID());
+		if (!$user || empty($user['User']['default_set_id']) || $setId !== (int) $user['User']['default_set_id'])
+			return $this;
+
+		$count = ClassRegistry::init('SetConnection')->find('count', ['conditions' => ['set_id' => $setId]]);
+		if ($count > 0)
+			$this->gained(Achievement::FAVORITES);
+
 		return $this;
 	}
 
