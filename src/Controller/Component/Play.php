@@ -340,30 +340,20 @@ class Play
 		if (Auth::isLoggedIn())
 		{
 			// Build user sets list for the heart dropdown
-			$userSets = ClassRegistry::init('Set')->find('all', [
-				'joins' => [
-					[
-						'table' => 'set_connection',
-						'alias' => 'SetConnection',
-						'type' => 'LEFT',
-						'conditions' => [
-							'SetConnection.set_id = Set.id',
-							'SetConnection.tsumego_id' => $id,
-						],
-					],
-				],
-				'conditions' => ['Set.user_id' => Auth::getUserID(), 'Set.public' => 0],
-				'order' => ['Set.title'],
-				'fields' => ['Set.id', 'Set.title', 'SetConnection.tsumego_id'],
-			]);
+			$userSets = Util::query("
+SELECT DISTINCT s.id, s.title, sc.tsumego_id
+FROM `set` s
+LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
+WHERE s.user_id = ?
+ORDER BY s.title", [$id, Auth::getUserID()]);
 
 			$setsData = [];
 			foreach ($userSets as $s)
 			{
 				$setsData[] = [
-					'id' => $s['Set']['id'],
-					'title' => $s['Set']['title'],
-					'contains' => ($s['SetConnection']['tsumego_id'] != null),
+					'id' => $s['id'],
+					'title' => $s['title'],
+					'contains' => ($s['tsumego_id'] != null),
 				];
 			}
 			$userSetsJson = json_encode($setsData);
