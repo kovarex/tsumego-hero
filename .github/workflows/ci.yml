@@ -161,6 +161,8 @@ jobs:
           ./vendor/bin/phinx migrate -e test
 
       - name: Start built-in PHP server
+        env:
+          TZ: UTC
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
@@ -182,7 +184,7 @@ jobs:
 
       - name: Run tests with coverage
         env:
-          TZ: Europe/Berlin
+          TZ: UTC
           SELENIUM_URL: http://localhost:4444
           SELENIUM_BROWSER: firefox
           TEST_APP_URL: https://host.docker.internal:8443

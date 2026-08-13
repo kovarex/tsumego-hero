@@ -29,9 +29,9 @@ if (PHP_SAPI === 'cli' && !empty($_SERVER['argv']) && str_contains($_SERVER['arg
 require_once ROOT . '/tests/Browser.php';
 require_once ROOT . '/tests/ContextPreparator.php';
 
-// Force tests to run in Europe/Prague (UTC+2, production timezone).
-// Dev server (DDEV) runs in UTC, so timezone conversion code is exercised.
-date_default_timezone_set('Europe/Prague');
+// Pin the server timezone to UTC. The Selenium browser runs in its own
+// timezone (Europe/Prague), so displayed times shift, which browser tests assert.
+date_default_timezone_set('UTC');
 require_once ROOT . '/tests/TestCase/Controller/TestCaseWithAuth.php';
 require_once ROOT . '/tests/TestCase/Achievement/AchievementTestCase.php';
 register_shutdown_function(fn() => Browser::shutdown());

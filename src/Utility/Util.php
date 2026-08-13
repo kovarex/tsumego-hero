@@ -356,7 +356,8 @@ class Util
 	}
 
 	/**
-	 * Convert a MySQL datetime string to ISO 8601 with timezone offset.
+	 * Convert a MySQL datetime string to ISO 8601 with the server's
+	 * timezone offset.
 	 */
 	public static function toIso8601(string $mysqlDatetime): string
 	{

@@ -7,7 +7,7 @@ use Facebook\WebDriver\WebDriverBy;
 
 class ClientTimeDisplayTest extends TestCaseWithAuth
 {
-	public function testSolveHistoryHasTimeElements(): void
+	public function testSolveHistoryDisplaysTimeInBrowserTimezone(): void
 	{
 		$context = new ContextPreparator([
 			'tsumego' => ['sets' => [['name' => 'Time Test Set', 'num' => '1']]],
@@ -35,14 +35,21 @@ class ClientTimeDisplayTest extends TestCaseWithAuth
 		$timeElements = $browser->driver->findElements(WebDriverBy::tagName('time'));
 		$this->assertGreaterThan(0, count($timeElements));
 
-		// Server stores in UTC (+00:00), browser is in Europe/Prague (CEST +02:00).
-		// Displayed time should be shifted by 2 hours.
-		$displayed = $timeElements[0]->getText();
+		$time = $timeElements[0];
+
+		// The server renders the machine-readable datetime in UTC.
+		$this->assertSame('2026-08-15T12:00:00+00:00', $time->getAttribute('datetime'));
+
+		// The browser (Europe/Prague, UTC+2) shifts 12:00 UTC to 14:00 local.
+		$localHour = (int) $browser->driver->executeScript(
+			"return new Date(document.querySelector('time[datetime]').getAttribute('datetime')).getHours();"
+		);
+		$this->assertSame(14, $localHour, '12:00 UTC must render as hour 14 in the Europe/Prague browser');
+
+		// The DOM text is the converted local-time rendering, not the raw UTC string.
+		$displayed = $time->getText();
 		$this->assertNotEmpty($displayed);
 		$this->assertStringNotContainsString('2026-08-15 12:00:00', $displayed,
 			'Displayed time should be converted from UTC to local timezone');
-
-		// datetime attribute comes from PHP server (UTC)
-		$this->assertSame('2026-08-15T12:00:00+00:00', $timeElements[0]->getAttribute('datetime'));
 	}
 }
