@@ -356,9 +356,8 @@ class Util
 	}
 
 	/**
-	 * Convert a MySQL datetime string to ISO 8601 with timezone offset.
-	 * e.g. "2026-08-11 12:00:00" -> "2026-08-11T12:00:00+02:00"
-	 * Needed for dayjs on the frontend to display correct relative/absolute times.
+	 * Convert a MySQL datetime string to ISO 8601 with the server's
+	 * timezone offset.
 	 */
 	public static function toIso8601(string $mysqlDatetime): string
 	{

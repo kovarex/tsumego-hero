@@ -285,7 +285,14 @@ class UtilTest extends CakeTestCase
 
 	public function testToIso8601(): void
 	{
-		// Tests simulate server in UTC. If this fails, check tests/bootstrap.php.
+		$original = date_default_timezone_get();
+
+		date_default_timezone_set('UTC');
 		$this->assertSame('2026-08-11T12:00:00+00:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set('Europe/Prague');
+		$this->assertSame('2026-08-11T12:00:00+02:00', Util::toIso8601('2026-08-11 12:00:00'));
+
+		date_default_timezone_set($original);
 	}
 }
