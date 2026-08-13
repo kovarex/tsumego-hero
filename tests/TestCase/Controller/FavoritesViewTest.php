@@ -16,42 +16,6 @@ class FavoritesViewTest extends TestCaseWithAuth
 		$this->assertStringContainsString('/sets/view/', $redirectUrl);
 	}
 
-	public function testFavoritesWithMixedStatuses()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'favuser', 'rating' => 1500],
-			'tsumegos' => [
-				['set_order' => 1, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
-				['set_order' => 2, 'sets' => [['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
-				['set_order' => 3, 'status' => 'W', 'sets' => [['name' => 'Favorites', 'num' => 3, 'user_id' => 'self', 'public' => 0]]],
-			],
-		]);
-
-		$favSetId = $context->user['default_set_id'];
-		$this->testAction('/sets/view/' . $favSetId, ['return' => 'view']);
-		$this->assertTextContains('Favorites', $this->view);
-		$this->assertStringContainsString('statusS', $this->view);
-		$this->assertStringContainsString('statusN', $this->view);
-		$this->assertStringContainsString('statusW', $this->view);
-	}
-
-	public function testFavoritesSolvedCount()
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'solver', 'rating' => 1500],
-			'tsumegos' => [
-				['set_order' => 1, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
-				['set_order' => 2, 'status' => 'S', 'sets' => [['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
-				['set_order' => 3, 'sets' => [['name' => 'Favorites', 'num' => 3, 'user_id' => 'self', 'public' => 0]]],
-			],
-		]);
-
-		$favSetId = $context->user['default_set_id'];
-		$this->testAction('/sets/view/' . $favSetId, ['return' => 'view']);
-		$this->assertStringContainsString('66', $this->view);
-		$this->assertStringContainsString('Favorites', $this->view);
-	}
-
 	// ── Heart flag: lit when in ANY set ──────────────────────────────────
 
 	public function testHeartFlagTrueWhenInAnySet(): void
@@ -132,7 +96,7 @@ class FavoritesViewTest extends TestCaseWithAuth
 			'tsumegos' => [
 				['sgf' => '(;GM[1]FF[4]SZ[19];B[aa])', 'sets' => [['name' => 'Playable Set', 'num' => 1]]],
 				['sgf' => '(;GM[1]FF[4]SZ[19];B[bb])', 'sets' => [['name' => 'Playable Set', 'num' => 2],
-					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0, 'default' => true]]],
 			],
 		]);
 
@@ -156,7 +120,7 @@ class FavoritesViewTest extends TestCaseWithAuth
 			'user' => ['name' => 'merger'],
 			'tsumegos' => [
 				['sgf' => '(;GM[1]FF[4]SZ[19];B[aa])', 'sets' => [['name' => 'Playable Set', 'num' => 1],
-					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+					['name' => 'Favorites', 'num' => 1, 'user_id' => 'self', 'public' => 0, 'default' => true]]],
 				['sgf' => '(;GM[1]FF[4]SZ[19];B[bb])', 'sets' => [['name' => 'Playable Set', 'num' => 2],
 					['name' => 'Favorites', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
 			],

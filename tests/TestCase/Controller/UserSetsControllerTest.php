@@ -428,4 +428,90 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('Alice Public Set', $this->view);
 		$this->assertTextNotContains('Alice Private Set', $this->view);
 	}
+
+	// ── Aggregation (amount / solved / difficulty) ──────────────────────
+
+	public function testMineComputesAmountSolvedAndDifficulty(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [
+				['status' => 'S', 'sets' => [['name' => 'My Set', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+				['status' => 'S', 'sets' => [['name' => 'My Set', 'num' => 2, 'user_id' => 'self', 'public' => 0]]],
+				['sets' => [['name' => 'My Set', 'num' => 3, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+		$this->login('alice');
+
+		$result = $this->testAction('/sets/mine', ['return' => 'vars']);
+
+		$this->assertCount(1, $result['setsNew']);
+		$set = $result['setsNew'][0];
+		$this->assertSame('My Set', $set['name']);
+		$this->assertSame(3, $set['amount']);
+		$this->assertSame(67, $set['solved']);
+		$this->assertSame('11k', $set['difficulty']);
+	}
+
+	// ── Description sanitization ────────────────────────────────────────
+
+	public function testDescriptionStripsExternalImages(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$description = 'External <img src="https://evil.com/tracker.png"> Internal <img src="/img/ok.png">';
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['description' => $description]], 'method' => 'POST']);
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertStringNotContainsString('evil.com', $set['Set']['description']);
+		$this->assertStringContainsString('/img/ok.png', $set['Set']['description']);
+	}
+
+	// ── Admin activity logging ──────────────────────────────────────────
+
+	public function testEditingOwnSetDoesNotLogAdminActivity(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['description' => 'New desc']], 'method' => 'POST']);
+
+		$this->assertSame(0, ClassRegistry::init('AdminActivity')->find('count'));
+	}
+
+	public function testAdminEditingOthersSetLogsActivity(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$bobId = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => 'bob']])['User']['id'];
+		$setId = $this->_createSet('Bob Set', $bobId, 0);
+		$this->login('admin');
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['description' => 'New desc']], 'method' => 'POST']);
+
+		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
+		$this->assertNotEmpty($activity);
+		$this->assertSame(AdminActivityType::SET_DESCRIPTION_EDIT, $activity['AdminActivity']['type']);
+	}
+
+	public function testCreateAndAddTsumegoLogsProblemAdd(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'set' => ['title' => 'Sandbox Set', 'public' => 0],
+		]);
+		$setId = $context->set['id'];
+		$this->login('admin');
+
+		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
+
+		$activity = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
+		$this->assertNotEmpty($activity);
+		$this->assertSame(AdminActivityType::PROBLEM_ADD, $activity['AdminActivity']['type']);
+	}
 }

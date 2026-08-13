@@ -396,7 +396,8 @@ class ContextPreparator
 			'included_in_time_mode' => Util::extract('included_in_time_mode', $setInput),
 			'public' => Util::extract('public', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput),
-			'user_id' => Util::extract('user_id', $setInput)]);
+			'user_id' => Util::extract('user_id', $setInput),
+			'default' => Util::extract('default', $setInput)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
@@ -439,6 +440,7 @@ class ContextPreparator
 
 	private function getOrCreateTsumegoSet($input): array
 	{
+		$isDefault = false;
 		if (is_string($input))
 		{
 			$name = $input;
@@ -453,6 +455,7 @@ class ContextPreparator
 			$public = Util::extractWithDefault('public', $input, true);
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
 			$userId = Util::extract('user_id', $input);
+			$isDefault = Util::extract('default', $input) ?: false;
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -473,11 +476,18 @@ class ContextPreparator
 			// reloading so the generated id is retrieved
 			$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
 			$this->sets [] = $set['Set'];
-			if ($name === 'Favorites' && $userId === 'self')
-				$this->user['default_set_id'] = $set['Set']['id'];
 		}
+		if ($isDefault)
+			$this->setDefaultSetId($set['Set']['id']);
 		$this->checkSetClear($set['Set']['id']);
 		return $set['Set'];
+	}
+
+	private function setDefaultSetId(int $setId): void
+	{
+		$this->user['default_set_id'] = $setId;
+		ClassRegistry::init('User')->id = $this->user['id'];
+		ClassRegistry::init('User')->saveField('default_set_id', $setId);
 	}
 
 	private function getOrCreateTag($tagInput): array
