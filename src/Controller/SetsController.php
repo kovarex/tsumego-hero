@@ -453,8 +453,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	{
 		if (!Auth::isLoggedIn())
 		{
-			CookieFlash::set('Not logged in', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(401);
+			return;
 		}
 
 		if ($setID === 'favorites')
@@ -467,23 +468,32 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set = ClassRegistry::init('Set')->findById($setID);
 			if (!$set)
 			{
-				CookieFlash::set('Specified set not found', 'error');
-				return $this->redirect('/sets');
+				$this->autoRender = false;
+				$this->response->statusCode(404);
+				return;
 			}
 		}
 		$set = $set['Set'];
 
 		if (!Auth::isAdmin() && $set['user_id'] != Auth::getUserID())
 		{
-			CookieFlash::set('Not authorized to modify this set', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(403);
+			return;
 		}
 
-		$tsumegoId = (int) $this->data['tsumego_id'];
-		if (!$tsumegoId || !ClassRegistry::init('Tsumego')->findById($tsumegoId))
+		$tsumegoId = (int) ($this->data['tsumego_id'] ?? 0);
+		if (!$tsumegoId)
 		{
-			CookieFlash::set('Tsumego not found', 'error');
-			return $this->redirect('/sets/view/' . $setID);
+			$this->autoRender = false;
+			$this->response->statusCode(400);
+			return;
+		}
+		if (!ClassRegistry::init('Tsumego')->findById($tsumegoId))
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(404);
+			return;
 		}
 
 		$existing = ClassRegistry::init('SetConnection')->find('first', [
@@ -527,21 +537,24 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	{
 		if (!Auth::isAdmin())
 		{
-			CookieFlash::set('Not authorized', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(403);
+			return;
 		}
 
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 		{
-			CookieFlash::set('Specified set not found', 'error');
-			return $this->redirect('/sets');
+			$this->autoRender = false;
+			$this->response->statusCode(404);
+			return;
 		}
 
 		if (!isset($this->data['order']))
 		{
-			CookieFlash::set('tsumego order to add not specified', 'error');
-			return $this->redirect('/sets/view/' . $setID);
+			$this->autoRender = false;
+			$this->response->statusCode(400);
+			return;
 		}
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');

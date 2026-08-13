@@ -741,12 +741,14 @@ besogo.makeToolPanel = function (container, editor) {
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
             body: "tsumego_id=" + tsumegoFileLink
           })
-          .then(() => {
+          .then(r => {
+            if (!r.ok)
+              return;
             $("#favButton").text('❤️');
             let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
             if (fav) fav.contains = true;
           })
-          .catch(() => $("#favButton").text('❤️'));
+          .catch(err => console.error('Failed to update favorites', err));
         }
       });
       container.appendChild(heart[0]);

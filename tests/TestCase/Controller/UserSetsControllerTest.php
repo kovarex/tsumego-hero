@@ -267,6 +267,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$data = ['tsumego_id' => 1];
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
 
+		$this->assertSame(403, $this->controller->response->statusCode());
+
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => 1],
 		]);
@@ -615,6 +617,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
 
+		$this->assertSame(403, $this->controller->response->statusCode());
 		$this->assertEquals($before, ClassRegistry::init('Tsumego')->find('count'));
 	}
 

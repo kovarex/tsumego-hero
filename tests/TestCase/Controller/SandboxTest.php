@@ -198,18 +198,28 @@ class SandboxTest extends ControllerTestCase
 		$this->assertEmpty($connections, 'Set connections should be cascade-deleted');
 	}
 
-	public function testAddTsumegoRedirectsUnauthenticated(): void
+	public function testAddTsumegoRequiresLogin(): void
 	{
 		$context = new ContextPreparator([
+			'user' => null,
 			'set' => ['title' => 'target', 'public' => 0]]);
-		Auth::logout();
 		$setId = $context->set['id'];
 
+		$tsumegoModel = ClassRegistry::init('Tsumego');
+		$tsumegoModel->create();
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$tsumegoId = $tsumegoModel->id;
+
 		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
-			'order' => 1,
+			'tsumego_id' => $tsumegoId,
 		]]);
 
-		$this->assertSame(Util::getInternalAddress() . '/sets', $this->headers['Location']);
+		$this->assertSame(401, $this->controller->response->statusCode());
+
+		$sc = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
+		]);
+		$this->assertEmpty($sc);
 	}
 
 	public function testAddTsumegoBlocksRegularUserFromSandbox(): void
