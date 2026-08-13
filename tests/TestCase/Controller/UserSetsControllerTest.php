@@ -326,6 +326,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($set);
 		$this->assertEquals(0, $set['Set']['public']);
 
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertEquals($set['Set']['id'], $user['User']['default_set_id']);
+
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $set['Set']['id'], 'tsumego_id' => $tsumegoId],
 		]);
@@ -551,5 +554,78 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
 		$this->assertEquals(2000, $tsumego['Tsumego']['rating']);
+	}
+
+	// ── Authorization: mutate actions on someone else's set ─────────────
+
+	public function testRemoveTsumegoFromOtherUserSetFails(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+		]);
+		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
+		$tsumegoModel = ClassRegistry::init('Tsumego');
+		$tsumegoModel->create();
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$scModel = ClassRegistry::init('SetConnection');
+		$scModel->create();
+		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]]);
+		$this->login('bob');
+
+		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => ['tsumego_id' => $tsumegoModel->id], 'method' => 'POST']);
+
+		$sc = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id],
+		]);
+		$this->assertNotEmpty($sc);
+	}
+
+	public function testReorderTsumegoInOtherUserSetFails(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'bob']],
+			'tsumegos' => [
+				['sets' => [['name' => 'My Set', 'num' => 1, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
+				['sets' => [['name' => 'My Set', 'num' => 2, 'public' => 0]], 'sgf' => '(;GM[1]FF[4]SZ[19])'],
+			],
+		]);
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$set['Set']['user_id'] = $context->user['id'];
+		ClassRegistry::init('Set')->save($set);
+		$this->login('bob');
+
+		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up", ['method' => 'POST']);
+
+		$scs = ClassRegistry::init('SetConnection')->find('all', [
+			'conditions' => ['set_id' => $setId],
+			'order' => 'num',
+		]);
+		$this->assertEquals($context->tsumegos[0]['id'], $scs[0]['SetConnection']['tsumego_id']);
+	}
+
+	public function testCreateAndAddTsumegoRequiresAdmin(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
+		$this->login('alice');
+		$before = ClassRegistry::init('Tsumego')->find('count');
+
+		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
+
+		$this->assertEquals($before, ClassRegistry::init('Tsumego')->find('count'));
+	}
+
+	public function testAdminCanDeleteSandboxSet(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
+		$this->login('admin');
+		$setId = $this->_createSet('Sandbox Set', null, 0);
+
+		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+
+		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
 	}
 }
