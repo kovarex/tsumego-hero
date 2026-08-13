@@ -112,13 +112,13 @@ if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 	if ($set['Set']['image'][2] != '-')
 		echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
 							</a></div></td>';
 	else
 		echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
-							<img height="252" width="182" style="border:1px solid black" src="/img/' . h($set['Set']['image']) . '"
+							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
 							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
 							</a></div></td>';
 }
@@ -332,7 +332,7 @@ if ($tsumegoFilters->query != 'topics')
 
 						// Inline image upload
 						echo '<form method="post" action="/sets/view/' . $set['Set']['id'] . '" enctype="multipart/form-data" style="margin:4px 0">';
-						echo '<input type="file" name="image" accept=".png,.jpg" style="display:inline;width:auto"> ';
+						echo '<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" style="display:inline;width:auto"> ';
 						echo '<input type="submit" value="Upload Image" style="display:inline;width:auto">';
 						echo ' <small>Max 2MB</small>';
 						echo '</form>';

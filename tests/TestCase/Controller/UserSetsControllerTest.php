@@ -601,6 +601,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up", ['method' => 'POST']);
 
+		$this->assertSame(403, $this->controller->response->statusCode());
+
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['set_id' => $setId],
 			'order' => 'num',
@@ -630,5 +632,118 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
 
 		$this->assertEmpty(ClassRegistry::init('Set')->findById($setId));
+	}
+
+	// ── Set image upload ───────────────────────────────────────────────
+
+	public function testUploadSetImageStoresWebp(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$tmp = $this->_createTempImage(400, 200);
+		$_FILES['image'] = [
+			'name' => 'cover.png',
+			'type' => 'image/png',
+			'tmp_name' => $tmp,
+			'error' => UPLOAD_ERR_OK,
+			'size' => filesize($tmp),
+		];
+
+		$this->testAction("/sets/view/{$setId}", ['method' => 'POST']);
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertMatchesRegularExpression('#^sets/' . $setId . '/[0-9a-f]{16}\.webp$#', $set['Set']['image']);
+
+		$path = WWW_ROOT . 'img' . DS . str_replace('/', DS, $set['Set']['image']);
+		$this->assertFileExists($path);
+		$this->assertSame('WEBP', substr((string) file_get_contents($path), 8, 4));
+
+		@unlink($tmp);
+		@unlink($path);
+		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+	}
+
+	public function testDeleteSetRemovesImageFolder(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
+		mkdir($setDir, 0775, true);
+		file_put_contents($setDir . DS . 'abc.webp', 'fake');
+
+		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
+
+		$this->assertDirectoryDoesNotExist($setDir);
+	}
+
+	public function testUploadSetImageReplacesPreviousImage(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$this->_uploadImage($setId, 400, 200);
+		$first = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+		$firstPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $first);
+
+		$this->_uploadImage($setId, 500, 300);
+		$second = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+
+		$this->assertNotSame($first, $second);
+		$this->assertFileDoesNotExist($firstPath);
+		$this->assertFileExists(WWW_ROOT . 'img' . DS . str_replace('/', DS, $second));
+
+		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $second));
+		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+	}
+
+	public function testUploadSetImagePreservesSharedImage(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$shared = 'legacy-cover.png';
+		file_put_contents(WWW_ROOT . 'img' . DS . $shared, 'x');
+		$setModel = ClassRegistry::init('Set');
+		$setModel->id = $setId;
+		$setModel->saveField('image', $shared);
+
+		$this->_uploadImage($setId, 400, 200);
+
+		$this->assertFileExists(WWW_ROOT . 'img' . DS . $shared);
+
+		$uploaded = ClassRegistry::init('Set')->findById($setId)['Set']['image'];
+		@unlink(WWW_ROOT . 'img' . DS . $shared);
+		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $uploaded));
+		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+	}
+
+	private function _uploadImage(int $setId, int $width, int $height): void
+	{
+		$tmp = $this->_createTempImage($width, $height);
+		$_FILES['image'] = [
+			'name' => 'cover.png',
+			'type' => 'image/png',
+			'tmp_name' => $tmp,
+			'error' => UPLOAD_ERR_OK,
+			'size' => filesize($tmp),
+		];
+		$this->testAction("/sets/view/{$setId}", ['method' => 'POST']);
+		@unlink($tmp);
+	}
+
+	private function _createTempImage(int $width, int $height): string
+	{
+		$img = imagecreatetruecolor($width, $height);
+		imagefill($img, 0, 0, imagecolorallocate($img, 255, 0, 0));
+		$path = tempnam(sys_get_temp_dir(), 'setimg');
+		imagepng($img, $path);
+		imagedestroy($img);
+		return $path;
 	}
 }

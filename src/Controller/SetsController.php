@@ -11,6 +11,7 @@ App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
 App::uses('SetEditRenderer', 'Utility');
+App::uses('SetImage', 'Utility');
 
 class SetsController extends AppController
 {
@@ -275,6 +276,16 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		$this->Set->delete($setID);
+
+		// Remove the set's uploaded image folder
+		$setImageDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setID;
+		if (is_dir($setImageDir))
+		{
+			foreach (glob($setImageDir . DS . '*') ?: [] as $file)
+				if (is_file($file))
+					unlink($file);
+			@rmdir($setImageDir);
+		}
 
 		if (Auth::isAdmin())
 			$this->redirect('/sets/sandbox');
@@ -689,24 +700,46 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function reorderTsumego($setID)
 	{
 		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(401);
+			return;
+		}
 
 		$set = ClassRegistry::init('Set')->findById($setID);
-		if (!$set || (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID()))
-			return $this->redirect('/');
+		if (!$set)
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(404);
+			return;
+		}
+		if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(403);
+			return;
+		}
 
 		$tsumegoId = $_GET['tsumego_id'] ?? $this->data['tsumego_id'] ?? null;
 		$dir = $_GET['dir'] ?? $this->data['dir'] ?? null;
 
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
-			return $this->redirect('/sets/view/' . $setID);
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(400);
+			return;
+		}
 
 		$scModel = ClassRegistry::init('SetConnection');
 		$current = $scModel->find('first', [
 			'conditions' => ['set_id' => $setID, 'tsumego_id' => (int) $tsumegoId],
 		]);
 		if (!$current)
-			return $this->redirect('/sets/view/' . $setID);
+		{
+			$this->autoRender = false;
+			$this->response->statusCode(404);
+			return;
+		}
 
 		$currentNum = $current['SetConnection']['num'];
 		$adjacentNum = $dir === 'up' ? $currentNum - 1 : $currentNum + 1;
@@ -937,27 +970,46 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK
 				&& (Auth::isAdmin() || (Auth::isLoggedIn() && $set['Set']['user_id'] == Auth::getUserID())))
 			{
-				$filename = 'set_' . substr(bin2hex(random_bytes(3)), 0, 6) . '_' . basename($_FILES['image']['name']);
 				$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
 
-				if (!in_array($file_ext, ['png', 'jpg']))
-					CookieFlash::set('png/jpg allowed.', 'error');
+				if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
+					CookieFlash::set('png/jpg/webp allowed.', 'error');
 				elseif ($_FILES['image']['size'] > 2097152)
 					CookieFlash::set('The file is too large (max 2MB).', 'error');
 				else
 				{
+					$setId = $set['Set']['id'];
 					$oldImage = $set['Set']['image'];
-					if ($oldImage && $oldImage !== 'b1.png' && $oldImage !== 'fav')
+
+					try
 					{
-						$oldPath = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/img/' . $oldImage;
-						if (file_exists($oldPath))
-							unlink($oldPath);
+						$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+
+						$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
+						if (!is_dir($setDir))
+							mkdir($setDir, 0775, true);
+
+						$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
+						$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
+						file_put_contents($uploadPath, $processed['data']);
+
+						// Only delete user-uploaded images (inside sets/), never shared assets
+						if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)
+						{
+							$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
+							if (file_exists($oldPath))
+								unlink($oldPath);
+						}
+
+						$set['Set']['image'] = $filename;
+						$this->Set->id = $setId;
+						$this->Set->saveField('image', $filename);
+						CookieFlash::set('Image uploaded', 'success');
 					}
-					$uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/app/webroot/img/' . $filename;
-					move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath);
-					$set['Set']['image'] = $filename;
-					$this->Set->save($set);
-					CookieFlash::set('Image uploaded', 'success');
+					catch (Exception $e)
+					{
+						CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
+					}
 				}
 			}
 
