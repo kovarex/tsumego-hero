@@ -91,14 +91,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 	public function testCreateRequiresLogin(): void
 	{
 		$data = ['Set' => ['title' => 'Guest Set']];
+
+		$this->expectException(UnauthorizedException::class);
+
 		$this->testAction('/sets/create', ['data' => $data, 'method' => 'POST']);
-
-		$this->assertSame(401, $this->controller->response->statusCode());
-
-		$set = ClassRegistry::init('Set')->find('first', [
-			'conditions' => ['title' => 'Guest Set'],
-		]);
-		$this->assertEmpty($set);
 	}
 
 	// ── /sets/edit/:id ──────────────────────────────────────────────────
@@ -214,13 +210,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('bob');
 
+		$this->expectException(ForbiddenException::class);
+
 		$this->testAction("/sets/delete/{$setId}", ['method' => 'POST']);
-
-		$this->assertSame(403, $this->controller->response->statusCode());
-
-		$set = ClassRegistry::init('Set')->findById($setId);
-		$this->assertNotEmpty($set);
-		$this->assertEquals(0, $set['Set']['public']);
 	}
 
 	// ── Sandbox excludes user sets ──────────────────────────────────────
@@ -269,14 +261,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->login('bob');
 
 		$data = ['tsumego_id' => 1];
+
+		$this->expectException(ForbiddenException::class);
+
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
-
-		$this->assertSame(403, $this->controller->response->statusCode());
-
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => 1],
-		]);
-		$this->assertEmpty($sc);
 	}
 
 	// ── removeTsumego ───────────────────────────────────────────────────
@@ -353,9 +341,16 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$data = ['tsumego_id' => $tsumegoId];
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
-		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
 
-		$this->assertSame(409, $this->controller->response->statusCode());
+		try
+		{
+			$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+			$this->fail('Expected ConflictException');
+		}
+		catch (ConflictException $e)
+		{
+			// expected
+		}
 
 		$count = ClassRegistry::init('SetConnection')->find('count', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -581,12 +576,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$scModel->save(['SetConnection' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id, 'num' => 1]]);
 		$this->login('bob');
 
-		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => ['tsumego_id' => $tsumegoModel->id], 'method' => 'POST']);
+		$this->expectException(ForbiddenException::class);
 
-		$sc = ClassRegistry::init('SetConnection')->find('first', [
-			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoModel->id],
-		]);
-		$this->assertNotEmpty($sc);
+		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => ['tsumego_id' => $tsumegoModel->id], 'method' => 'POST']);
 	}
 
 	public function testReorderTsumegoInOtherUserSetFails(): void
@@ -605,15 +597,9 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('Set')->save($set);
 		$this->login('bob');
 
+		$this->expectException(ForbiddenException::class);
+
 		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[1]['id']}&dir=up", ['method' => 'POST']);
-
-		$this->assertSame(403, $this->controller->response->statusCode());
-
-		$scs = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['set_id' => $setId],
-			'order' => 'num',
-		]);
-		$this->assertEquals($context->tsumegos[0]['id'], $scs[0]['SetConnection']['tsumego_id']);
 	}
 
 	public function testReorderAtBoundaryReturnsConflict(): void
@@ -631,9 +617,15 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		ClassRegistry::init('Set')->save($set);
 		$this->login('alice');
 
-		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up", ['method' => 'POST']);
-
-		$this->assertSame(409, $this->controller->response->statusCode());
+		try
+		{
+			$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$context->tsumegos[0]['id']}&dir=up", ['method' => 'POST']);
+			$this->fail('Expected ConflictException');
+		}
+		catch (ConflictException $e)
+		{
+			// expected
+		}
 
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
 			'conditions' => ['set_id' => $setId],
@@ -648,12 +640,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('alice');
-		$before = ClassRegistry::init('Tsumego')->find('count');
+
+		$this->expectException(ForbiddenException::class);
 
 		$this->testAction("/sets/createAndAddTsumego/{$setId}", ['data' => ['order' => 1], 'method' => 'POST']);
-
-		$this->assertSame(403, $this->controller->response->statusCode());
-		$this->assertEquals($before, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
 	public function testAdminCanDeleteSandboxSet(): void

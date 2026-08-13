@@ -4,6 +4,9 @@ App::uses('SgfParser', 'Utility');
 App::uses('TsumegoUtil', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
+App::uses('UnauthorizedException', 'Routing/Error');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('ConflictException', 'Lib/Error');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('SetsSelector', 'Utility');
@@ -199,11 +202,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function create()
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(401);
-			return;
-		}
+			throw new UnauthorizedException();
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -257,37 +256,21 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function delete($id = null)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(401);
-			return;
-		}
+			throw new UnauthorizedException();
 
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(400);
-			return;
-		}
+			throw new BadRequestException();
 
 		$s = $this->Set->findById((int) $setID);
 		if (!$s)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Set not found');
 
 		// Auth: set owner can delete their own sets; admin can delete sandbox sets
 		$isOwner = ($s['Set']['user_id'] == Auth::getUserID());
 		$isSandbox = ($s['Set']['user_id'] === null && $s['Set']['public'] == 0);
 		if (!$isOwner && !(Auth::isAdmin() && $isSandbox))
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(403);
-			return;
-		}
+			throw new ForbiddenException();
 
 		$this->Set->delete($setID);
 
@@ -471,11 +454,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function addTsumego($setID)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(401);
-			return;
-		}
+			throw new UnauthorizedException();
 
 		if ($setID === 'favorites')
 		{
@@ -486,44 +465,24 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		{
 			$set = ClassRegistry::init('Set')->findById($setID);
 			if (!$set)
-			{
-				$this->autoRender = false;
-				$this->response->statusCode(404);
-				return;
-			}
+				throw new NotFoundException('Set not found');
 		}
 		$set = $set['Set'];
 
 		if (!Auth::isAdmin() && $set['user_id'] != Auth::getUserID())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(403);
-			return;
-		}
+			throw new ForbiddenException();
 
 		$tsumegoId = (int) ($this->data['tsumego_id'] ?? 0);
 		if (!$tsumegoId)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(400);
-			return;
-		}
+			throw new BadRequestException();
 		if (!ClassRegistry::init('Tsumego')->findById($tsumegoId))
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Tsumego not found');
 
 		$existing = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setID, 'tsumego_id' => $tsumegoId],
 		]);
 		if ($existing)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(409);
-			return;
-		}
+			throw new ConflictException('Already in set');
 
 		$lastSc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setID],
@@ -560,26 +519,14 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function createAndAddTsumego($setID)
 	{
 		if (!Auth::isAdmin())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(403);
-			return;
-		}
+			throw new ForbiddenException();
 
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Set not found');
 
 		if (!isset($this->data['order']))
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(400);
-			return;
-		}
+			throw new BadRequestException();
 
 		$tsumegoModel = ClassRegistry::init('Tsumego');
 		$tsumegoModel->getDataSource()->begin();
@@ -660,35 +607,19 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function removeTsumego($setID)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(401);
-			return;
-		}
+			throw new UnauthorizedException();
 
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Set not found');
 
 		// Auth: admin or set owner
 		if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(403);
-			return;
-		}
+			throw new ForbiddenException();
 
 		$tsumegoId = $this->data['tsumego_id'] ?? null;
 		if (!$tsumegoId)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(400);
-			return;
-		}
+			throw new BadRequestException();
 
 		ClassRegistry::init('SetConnection')->deleteAll([
 			'set_id' => $setID,
@@ -713,46 +644,26 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	public function reorderTsumego($setID)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(401);
-			return;
-		}
+			throw new UnauthorizedException();
 
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Set not found');
 		if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(403);
-			return;
-		}
+			throw new ForbiddenException();
 
 		$tsumegoId = $_GET['tsumego_id'] ?? $this->data['tsumego_id'] ?? null;
 		$dir = $_GET['dir'] ?? $this->data['dir'] ?? null;
 
 		if (!$tsumegoId || !in_array($dir, ['up', 'down']))
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(400);
-			return;
-		}
+			throw new BadRequestException();
 
 		$scModel = ClassRegistry::init('SetConnection');
 		$current = $scModel->find('first', [
 			'conditions' => ['set_id' => $setID, 'tsumego_id' => (int) $tsumegoId],
 		]);
 		if (!$current)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(404);
-			return;
-		}
+			throw new NotFoundException('Tsumego not in set');
 
 		$currentNum = $current['SetConnection']['num'];
 		$adjacentNum = $dir === 'up' ? $currentNum - 1 : $currentNum + 1;
@@ -761,11 +672,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			'conditions' => ['set_id' => $setID, 'num' => $adjacentNum],
 		]);
 		if (!$adjacent)
-		{
-			$this->autoRender = false;
-			$this->response->statusCode(409);
-			return;
-		}
+			throw new ConflictException();
 
 		// Swap num values
 		$scModel->id = $current['SetConnection']['id'];
