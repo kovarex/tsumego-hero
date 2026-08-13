@@ -280,7 +280,7 @@ if ($tsumegoFilters->query != 'topics')
 					$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 					echo '<tr><td colspan="2">
 					<div class="admin-panel">
-					<div align="center"><h1>' . (Auth::isAdmin() ? 'Admin Panel' : 'Edit Set') . '</h1></div>
+					<div align="center"><h1>Edit Set</h1></div>
 					<br>
 					<table width="100%">
 					<tr>
@@ -307,11 +307,12 @@ if ($tsumegoFilters->query != 'topics')
 
 						if (Auth::isAdmin())
 						{
-							echo '<a id="show7">Edit Difficulty<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
+							echo '<a id="show7">Re-rate Problems<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
 							<div id="msg7">';
 							echo $this->Form->create('Set');
 							echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
 							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
+							echo '<i><font color="gray">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere.</font></i><br>';
 							echo '</div>';
 						}
 

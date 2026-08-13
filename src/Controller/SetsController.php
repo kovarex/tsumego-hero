@@ -879,7 +879,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				if ($this->_isElevatedSetEdit($set))
 					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
 			}
-			if (isset($this->data['Set']['setDifficulty']))
+			if (isset($this->data['Set']['setDifficulty']) && Auth::isAdmin())
 				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
 				{
 					$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);

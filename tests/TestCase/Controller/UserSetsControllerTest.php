@@ -514,4 +514,42 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($activity);
 		$this->assertSame(AdminActivityType::PROBLEM_ADD, $activity['AdminActivity']['type']);
 	}
+
+	// ── Re-rate problems (admin only) ───────────────────────────────────
+
+	public function testNonAdminCannotReRateProblems(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [
+				['rating' => 1000, 'sets' => [['name' => 'My Set', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+		$this->login('alice');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['setDifficulty' => 2000]], 'method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
+	}
+
+	public function testAdminCanReRateProblems(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['rating' => 1000, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
+			],
+		]);
+		$this->login('admin');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['setDifficulty' => 2000]], 'method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertEquals(2000, $tsumego['Tsumego']['rating']);
+	}
 }
