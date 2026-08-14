@@ -26,7 +26,7 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$this->assertFalse($browser->idExists('favDropdownArrow'), 'Dropdown arrow should be hidden when the user has no sets');
 	}
 
-	public function testHeartDropdownShowsWhenUserHasSets(): void
+	public function testHeartButtonHidesDropdownWhenUserHasOneSet(): void
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'alice'],
@@ -37,7 +37,24 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
 		$browser->byId('favButton');
-		$this->assertTrue($browser->idExists('favDropdownArrow'), 'Dropdown arrow should show when the user has at least one set');
+		$this->assertFalse($browser->idExists('favDropdownArrow'), 'Dropdown arrow should be hidden when the user has only one set');
+	}
+
+	public function testHeartDropdownShowsWhenUserHasMultipleSets(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'sets' => [
+				['name' => 'First Set', 'num' => 1, 'user_id' => 'self', 'public' => 0],
+				['name' => 'Second Set', 'num' => 2, 'user_id' => 'self', 'public' => 0],
+			]],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->byId('favButton');
+		$this->assertTrue($browser->idExists('favDropdownArrow'), 'Dropdown arrow should show when the user has multiple sets');
 	}
 
 	public function testDropdownListsUserSets(): void
@@ -68,16 +85,21 @@ class HeartDropdownTest extends TestCaseWithAuth
 			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])', 'set_order' => 1],
 		]);
 
-		// An empty user-owned set to add the tsumego to
+		// Two empty user-owned sets, so the dropdown shows with a choice
 		$setModel = ClassRegistry::init('Set');
-		$setModel->create();
-		$setModel->save(['Set' => [
-			'user_id' => $context->user['id'],
-			'title' => 'Target Set',
-			'public' => 0,
-			'order' => Constants::$DEFAULT_SET_ORDER,
-		]]);
-		$setId = $setModel->id;
+		$setId = null;
+		foreach (['Target Set', 'Other Set'] as $title)
+		{
+			$setModel->create();
+			$setModel->save(['Set' => [
+				'user_id' => $context->user['id'],
+				'title' => $title,
+				'public' => 0,
+				'order' => Constants::$DEFAULT_SET_ORDER,
+			]]);
+			if ($title === 'Target Set')
+				$setId = $setModel->id;
+		}
 		$tsumegoId = $context->tsumegos[0]['id'];
 
 		$browser = Browser::instance();
@@ -86,7 +108,8 @@ class HeartDropdownTest extends TestCaseWithAuth
 		$browser->byId('favDropdownArrow')->click();
 		$browser->waitUntilCssSelectorExists('#fav-dropdown');
 
-		$browser->driver->findElement(WebDriverBy::cssSelector('#fav-dropdown input[type="checkbox"]'))->click();
+		$targetRow = $browser->driver->findElement(WebDriverBy::xpath("//div[@id='fav-dropdown']//*[input and contains(., 'Target Set')]"));
+		$targetRow->findElement(WebDriverBy::cssSelector('input'))->click();
 		$browser->waitUntilCssSelectorExistsWithText('#favButton', '❤️');
 
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
