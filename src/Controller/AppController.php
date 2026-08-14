@@ -353,7 +353,6 @@ class AppController extends Controller
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('SetConnection');
 		$this->loadModel('Tag');
-		$this->loadModel('Favorite');
 
 		Auth::init();
 		$timeMode = new TimeMode();

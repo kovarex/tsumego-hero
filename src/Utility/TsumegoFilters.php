@@ -17,6 +17,8 @@ class TsumegoFilters
 		}
 
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
+		if (!in_array($this->query, ['topics', 'difficulty', 'tags'], true))
+			$this->query = 'topics';
 		$this->collectionSize = (int) self::processItem('collection_size', '200');
 		$rawSets = self::processItem('filtered_sets', [], function ($input) {
 			return array_values(array_filter(explode('@', $input)));
@@ -110,8 +112,6 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'Tsumego';
 
-		if ($this->query == 'favorites')
-			return 'Favorites';
 		throw new Exception('Unknown query: ""' . $this->query);
 	}
 
@@ -124,8 +124,6 @@ class TsumegoFilters
 		if ($this->query == 'tags')
 			return $_COOKIE['lastSet'] ?? 'favorites';
 
-		if ($this->query == 'favorites')
-			return 'favorites';
 		return "Unsupported yet";
 	}
 

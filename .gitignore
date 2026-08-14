@@ -43,6 +43,10 @@ webroot/forums/vendor
 .idea/
 .local/
 
+# User-uploaded set cover images (keep the cache-control .htaccess)
+/webroot/img/sets/*
+!/webroot/img/sets/.htaccess
+
 # IDE and editor specific files #
 #################################
 /nbproject

@@ -83,29 +83,15 @@ class SandboxTest extends ControllerTestCase
 		$this->assertContains('kovarex', $this->vars['admins']);
 	}
 
-	public function testCreateRedirectsUnauthenticated(): void
+	public function testCreateRequiresLogin(): void
 	{
 		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
 
 		$this->testAction('/sets/create', ['method' => 'post', 'data' => [
 			'Set' => ['title' => 'Test'],
 		]]);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
-	}
-
-	public function testCreateBlocksNonAdmin(): void
-	{
-		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
-
-		$beforeCount = ClassRegistry::init('Set')->find('count');
-
-		$this->testAction('/sets/create', ['method' => 'post', 'data' => [
-			'Set' => ['title' => 'Blocked Set'],
-		]]);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
-		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
 	}
 
 	public function testCreateAllowsAdmin(): void
@@ -119,6 +105,7 @@ class SandboxTest extends ControllerTestCase
 		$set = ClassRegistry::init('Set')->find('first', ['order' => 'id DESC']);
 		$this->assertEquals('Admin Set', $set['Set']['title']);
 		$this->assertEquals(0, $set['Set']['public']);
+		$this->assertNotEmpty($set['Set']['user_id']);
 	}
 
 	public function testCreateMakesPlaceholderTsumegoAndConnection(): void
@@ -128,7 +115,7 @@ class SandboxTest extends ControllerTestCase
 		$beforeTsumegoCount = ClassRegistry::init('Tsumego')->find('count');
 		$beforeConnCount = ClassRegistry::init('SetConnection')->find('count');
 
-		$this->testAction('/sets/create', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/create?sandbox=1', ['method' => 'post', 'data' => [
 			'Set' => ['title' => 'Test Set'],
 		]]);
 
@@ -155,14 +142,11 @@ class SandboxTest extends ControllerTestCase
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 		$setId = $this->createSetWithTsumego('victim set', 0);
 
-		$beforeCount = ClassRegistry::init('Set')->find('count');
+		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
-		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
 	}
 
 	public function testRemoveDeletesSetById(): void
@@ -170,7 +154,7 @@ class SandboxTest extends ControllerTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('to delete', 0);
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 
@@ -182,14 +166,11 @@ class SandboxTest extends ControllerTestCase
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 		$setId = $this->createSetWithTsumego('public set', 1);
 
-		$beforeCount = ClassRegistry::init('Set')->find('count');
+		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
-
-		$this->assertNotEmpty(ClassRegistry::init('Set')->findById($setId));
-		$this->assertEquals($beforeCount, ClassRegistry::init('Set')->find('count'));
 	}
 
 	public function testRemovePreservesTsumegos(): void
@@ -199,7 +180,7 @@ class SandboxTest extends ControllerTestCase
 
 		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
 
-		$this->testAction('/sets/remove', ['method' => 'post', 'data' => [
+		$this->testAction('/sets/delete', ['method' => 'post', 'data' => [
 			'Set' => ['id' => $setId],
 		]]);
 
@@ -213,18 +194,23 @@ class SandboxTest extends ControllerTestCase
 		$this->assertEmpty($connections, 'Set connections should be cascade-deleted');
 	}
 
-	public function testAddTsumegoRedirectsUnauthenticated(): void
+	public function testAddTsumegoRequiresLogin(): void
 	{
 		$context = new ContextPreparator([
+			'user' => null,
 			'set' => ['title' => 'target', 'public' => 0]]);
-		Auth::logout();
 		$setId = $context->set['id'];
 
-		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
-			'order' => 1,
-		]]);
+		$tsumegoModel = ClassRegistry::init('Tsumego');
+		$tsumegoModel->create();
+		$tsumegoModel->save(['Tsumego' => ['difficulty' => 4, 'variance' => 100]]);
+		$tsumegoId = $tsumegoModel->id;
 
-		$this->assertSame(Util::getInternalAddress() . '/sets/view/' . $setId, $this->headers['Location']);
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
+			'tsumego_id' => $tsumegoId,
+		]]);
 	}
 
 	public function testAddTsumegoBlocksRegularUserFromSandbox(): void
@@ -234,13 +220,11 @@ class SandboxTest extends ControllerTestCase
 			'set' => ['title' => 'sandbox set', 'public' => 0]]);
 		$setId = $context->set['id'];
 
-		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
+		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
 			'order' => 2,
 		]]);
-
-		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
 	public function testAddTsumegoBlocksPremiumFromSandbox(): void
@@ -250,13 +234,11 @@ class SandboxTest extends ControllerTestCase
 			'set' => ['title' => 'sandbox set', 'public' => 0]]);
 		$setId = $context->set['id'];
 
-		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
+		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
 			'order' => 2,
 		]]);
-
-		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
 	public function testAddTsumegoBlocksNonAdminFromPublicSets(): void
@@ -266,13 +248,11 @@ class SandboxTest extends ControllerTestCase
 			'set' => ['title' => 'public set', 'public' => 1]]);
 		$setId = $context->set['id'];
 
-		$beforeCount = ClassRegistry::init('Tsumego')->find('count');
+		$this->expectException(ForbiddenException::class);
 
 		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
 			'order' => 2,
 		]]);
-
-		$this->assertEquals($beforeCount, ClassRegistry::init('Tsumego')->find('count'));
 	}
 
 	public function testAddTsumegoCreatesRecordsInTransaction(): void
@@ -286,7 +266,7 @@ class SandboxTest extends ControllerTestCase
 		$beforeTsumego = ClassRegistry::init('Tsumego')->find('count');
 		$beforeSgf = ClassRegistry::init('Sgf')->find('count');
 
-		$this->testAction('/sets/addTsumego/' . $setId, ['method' => 'post', 'data' => [
+		$this->testAction('/sets/createAndAddTsumego/' . $setId, ['method' => 'post', 'data' => [
 			'order' => 5,
 			'sgf' => $sgfContent,
 		]]);
@@ -303,19 +283,6 @@ class SandboxTest extends ControllerTestCase
 		]);
 		$this->assertNotEmpty($connection);
 		$this->assertEquals(5, $connection['SetConnection']['num']);
-	}
-
-	public function testUiBlocksNonAdmin(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['name' => 'regular', 'admin' => false],
-			'set' => ['title' => 'image set', 'public' => 0],
-		]);
-		$setId = $context->set['id'];
-
-		$this->testAction('/sets/ui/' . $setId, ['method' => 'post']);
-
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
 	}
 
 	private function createSetWithTsumego(string $title, int $public): int

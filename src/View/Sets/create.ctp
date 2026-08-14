@@ -1,16 +1,8 @@
 <?php
 /**
  * @var View $this
- * @var bool $redirect
  */
-
 ?>
-
-<?php
-	if(!Auth::isAdmin()) echo '<script type="text/javascript">window.location.href = "/";</script>';
-
-?>
-
 
 <div align="center">
 <br><h1>New Set</h1>
@@ -20,10 +12,5 @@
 		echo $this->Form->end('Submit');
 	?>
 <br><br>
-<a href="/sets/sandbox"> back </a>
+<a href="<?= Auth::isAdmin() ? '/sets/sandbox' : '/sets/mine' ?>"> back </a>
 </div>
-
-<?php
-	//echo '<pre>'; print_r($t); echo '</pre>';
-	//echo $t['Tsumego']['id'];
-	if($redirect) echo '<script type="text/javascript">window.location.href = "/sets/sandbox";</script>';

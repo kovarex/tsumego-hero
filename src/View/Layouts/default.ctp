@@ -234,9 +234,10 @@ echo ViteManifest::legacyScript('legacy');
 						echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
+							echo '<li><a href="/sets/mine">My Sets</a></li>';
+							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
 								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
-							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
 							if(Auth::isAdmin()){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';

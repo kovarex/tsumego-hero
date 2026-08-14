@@ -8,7 +8,7 @@ class TsumegoButtons extends ArrayObject
 	public function __construct(?TsumegoFilters $tsumegoFilters = null, ?int $currentSetConnectionID = null, ?int $partition = null, string|int|null $id = null)
 	{
 		if (!$tsumegoFilters)
-			return; // Temporary until also the favorites are covered
+			return;
 		$condition = "";
 		$this->fill($condition, $tsumegoFilters, $id);
 
@@ -20,13 +20,6 @@ class TsumegoButtons extends ArrayObject
 		if (!is_null($currentSetConnectionID))
 		{
 			$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
-			if (is_null($currentIndex))
-				if ($tsumegoFilters->query == 'favorites')
-				{
-					$tsumegoFilters->setQuery('topics');
-					$this->fill($condition, $tsumegoFilters, $id);
-					$currentIndex = $this->deduceCurrentIndex($currentSetConnectionID);
-				}
 			if (!is_null($currentIndex))
 			{
 				// mark the problem we are going to visit as the currently opened one

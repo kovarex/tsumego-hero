@@ -25,7 +25,6 @@
  * @var bool $isAllowedToContribute2
  * @var bool $isSandbox
  * @var bool $isSemeai
- * @var bool $isTSUMEGOinFAVORITE
  * @var string $lightDark
  * @var int $maxHealth
  * @var int $multipleChoiceSquares
@@ -59,6 +58,7 @@
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var array $tv
  * @var string $ui
+ * @var string $userSetsJson
  */
 
 	// Open Graph meta tags for social sharing
@@ -721,7 +721,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var idForSignature2 = "<?php echo $idForSignature2; ?>";
 	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var besogoPlayerColor = "black";
-	var favorite = "<?php echo $isTSUMEGOinFAVORITE; ?>";
+	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;
 	var disableAutoplay = false;
 	var besogoNoLogin = false;

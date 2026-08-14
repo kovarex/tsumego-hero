@@ -28,6 +28,18 @@ class TsumegoMerger
 		$slaveSetConnectionBrothers = ClassRegistry::init('SetConnection')->find('all', ['conditions' => ['tsumego_id' => $this->slaveTsumegoID]]);
 		foreach ($slaveSetConnectionBrothers as $slaveTsumegoBrother)
 		{
+			$setId = $slaveTsumegoBrother['SetConnection']['set_id'];
+
+			// If this set already has the master, delete the slave connection (dedup)
+			$masterExists = ClassRegistry::init('SetConnection')->find('first', [
+				'conditions' => ['set_id' => $setId, 'tsumego_id' => $this->masterTsumegoID],
+			]);
+			if ($masterExists)
+			{
+				ClassRegistry::init('SetConnection')->delete($slaveTsumegoBrother['SetConnection']['id']);
+				continue;
+			}
+
 			$slaveTsumegoBrother['SetConnection']['tsumego_id'] = $this->masterTsumegoID;
 			ClassRegistry::init('SetConnection')->save($slaveTsumegoBrother);
 		}
@@ -88,37 +100,6 @@ HAVING
 		{
 			$slaveComment['TsumegoComment']['tsumego_id'] = $this->masterTsumegoID;
 			ClassRegistry::init('TsumegoComment')->save($slaveComment);
-		}
-	}
-
-	private function mergeFavorites()
-	{
-		$favoritesMergeSource = Util::query("
-SELECT
-    user_id,
-    MAX(CASE WHEN tsumego_id = :id1 THEN id END)     AS favorite_id_1,
-    MAX(CASE WHEN tsumego_id = :id2 THEN id END)     AS favorite_id_2
-FROM favorite
-WHERE tsumego_id IN (:id1, :id2)
-GROUP BY user_id
-HAVING
-    COUNT(*) BETWEEN 1 AND 2", [':id1' => $this->masterTsumegoID, ':id2' => $this->slaveTsumegoID]);
-		foreach ($favoritesMergeSource as $favoriteMergeSource)
-		{
-			// slave is empty, nothing to do
-			if (!$favoriteMergeSource['favorite_id_2'])
-				continue;
-
-			// master is empty, we change the slave to master
-			if (!$favoriteMergeSource['favorite_id_1'])
-			{
-				$favorite = ClassRegistry::init('Favorite')->findById($favoriteMergeSource['favorite_id_2'])['Favorite'];
-				$favorite['tsumego_id'] = $this->masterTsumegoID;
-				ClassRegistry::init('Favorite')->save($favorite);
-				continue;
-			}
-			// when both master and slave is present, we don't have to do anything, the slave one will be removed by
-			// foreign key cascade
 		}
 	}
 
@@ -193,7 +174,6 @@ HAVING
 			$this->mergeStatuses();
 			$this->mergeTsumegoAttempts();
 			$this->mergeComments();
-			$this->mergeFavorites();
 			$this->mergeTagConnections();
 			$this->mergeTimeModeAttempts();
 			$this->mergeIssues();

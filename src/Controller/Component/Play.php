@@ -175,7 +175,7 @@ class Play
 			Auth::getUser()['readingTrial']--;
 			unset($_COOKIE['skip']);
 		}
-		$isSandbox = ($set['Set']['public'] == 0);
+		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
@@ -336,7 +336,29 @@ class Play
 
 		$checkNotInSearch = false;
 
-		$isTSUMEGOinFAVORITE = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id]]);
+		$userSetsJson = '[]';
+		if (Auth::isLoggedIn())
+		{
+			// Build user sets list for the heart dropdown
+			$userSets = Util::query("
+SELECT DISTINCT s.id, s.title, sc.tsumego_id
+FROM `set` s
+LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
+WHERE s.user_id = ?
+ORDER BY s.title", [$id, Auth::getUserID()]);
+
+			$setsData = [];
+			foreach ($userSets as $s)
+			{
+				$setsData[] = [
+					'id' => $s['id'],
+					'title' => $s['title'],
+					'contains' => ($s['tsumego_id'] != null),
+				];
+			}
+			$userSetsJson = json_encode($setsData);
+		}
+		($this->setFunction)('userSetsJson', $userSetsJson);
 
 		if (Auth::isInLevelMode())
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
@@ -357,7 +379,6 @@ class Play
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
-		($this->setFunction)('isTSUMEGOinFAVORITE', $isTSUMEGOinFAVORITE != null);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
@@ -422,7 +443,7 @@ class Play
 						<a id="playTitleA" href=""></a>';
 
 		$order = $setConnection['SetConnection']['num'];
-		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags' || $tsumegoFilters->query == 'favorites')
+		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')
 			return '<a id="playTitleA" href="/sets/view/' . $tsumegoFilters->getSetID($set['Set']['id']) . $tsumegoButtons->getPartitionLinkSuffix() . '">' . $queryTitle . '</a><br>
 							<font style="font-weight:400;" color="grey">
 											<a style="color:grey;" id="playTitleA" href="/sets/view/' . $set['Set']['id'] . '">

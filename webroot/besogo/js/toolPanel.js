@@ -715,17 +715,50 @@ besogo.makeToolPanel = function (container, editor) {
     );
 
     if (!besogoNoLogin) {
-      let favImage = favorite ? "/img/favButtonActive.png" : "/img/favButton.png";
-      makeImageButton(favImage, "mark as favorite", "favButton", function () {
-        if (favImage == "/img/favButton.png") {
-          favImage = "/img/favButtonActive.png";
-          setCookie("add_favorite", tsumegoFileLink);
+      let heart = $('<span id="favButton" style="cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none" title="mark as favorite">' + (window.userSets && window.userSets.some(s => s.contains) ? '❤️' : '🤍') + '</span>');
+      heart.on("click", function () {
+        let anyContain = window.userSets && window.userSets.some(s => s.contains);
+        if (anyContain) {
+          // Remove from ALL sets
+          let promises = [];
+          window.userSets.forEach(s => {
+            if (s.contains) {
+              s.contains = false;
+              promises.push(
+                fetch("/sets/removeTsumego/" + s.id, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+                  body: "tsumego_id=" + tsumegoFileLink
+                })
+              );
+            }
+          });
+          Promise.all(promises).then(() => $("#favButton").text('🤍'));
         } else {
-          favImage = "/img/favButton.png";
-          setCookie("remove_favorite", tsumegoFileLink);
+          // Add to Favorites set
+          fetch("/sets/addTsumego/favorites", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+            body: "tsumego_id=" + tsumegoFileLink
+          })
+          .then(r => {
+            if (!r.ok)
+              return;
+            $("#favButton").text('❤️');
+            let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
+            if (fav) fav.contains = true;
+          })
+          .catch(err => console.error('Failed to update favorites', err));
         }
-        $("#favButton").attr("src", favImage);
       });
+      container.appendChild(heart[0]);
+
+      // Dropdown arrow, only if user has sets
+      if (userSets && userSets.length > 0) {
+        let arrow = $('<span id="favDropdownArrow" style="cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none" title="save to set">▼</span>');
+        arrow.on("click", function () { showFavDropdown(); });
+        container.appendChild(arrow[0]);
+      }
     }
     if (besogo.scaleParameters["orientation"] !== "full-board")
       makeBlankSpace(2);
@@ -1099,5 +1132,53 @@ besogo.makeToolPanel = function (container, editor) {
       besogo.coordArea["highestYconverted"] =
         convertedCoords.y[besogo.coordArea["highestY"] + 1];
     }
+  }
+
+  // Heart dropdown: show popover with all user sets
+  function showFavDropdown() {
+    let existing = document.getElementById("fav-dropdown");
+    if (existing) { existing.remove(); return; }
+
+    let arrow = $("#favDropdownArrow");
+    let offset = arrow.offset();
+    let div = $('<div id="fav-dropdown" style="position:absolute;z-index:1000;background:#fff;border:1px solid #ccc;padding:8px;max-height:300px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,0.15);min-width:160px"></div>');
+    div.css({top: offset.top + 22, left: offset.left - 150});
+    $("body").append(div);
+
+    if (!window.userSets || window.userSets.length === 0) {
+      div.append('<div style="padding:4px;color:#999">No sets yet.</div>');
+    } else {
+      window.userSets.forEach(function (s) {
+        let row = $('<div style="padding:4px;cursor:pointer;white-space:nowrap"></div>');
+        let cb = $('<input type="checkbox" style="margin-right:4px">');
+        cb.prop("checked", s.contains);
+        cb.on("change", function () {
+          let url = this.checked
+            ? "/sets/addTsumego/" + s.id
+            : "/sets/removeTsumego/" + s.id;
+          fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+            body: "tsumego_id=" + tsumegoFileLink
+          }).then(r => r.json()).then(data => {
+            if (data.contains !== undefined) {
+              s.contains = data.contains;
+              // Heart lit if ANY set still contains this tsumego
+              let anyContain = window.userSets.some(x => x.contains);
+              $("#favButton").text(anyContain ? '❤️' : '🤍');
+            }
+          });
+        });
+        row.append(cb).append(s.title);
+        div.append(row);
+      });
+    }
+
+    $(document).on("click.favDropdown", function (e) {
+      if (!$(e.target).closest("#fav-dropdown, #favDropdownArrow").length) {
+        $("#fav-dropdown").remove();
+        $(document).off("click.favDropdown");
+      }
+    });
   }
 };

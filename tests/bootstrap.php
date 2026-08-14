@@ -10,6 +10,8 @@ if (!defined('DS'))
 	define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', dirname(__DIR__));
 define('VENDORS', ROOT . DS . 'vendor' . DS);
+define('WEBROOT_DIR', 'webroot');
+define('WWW_ROOT', ROOT . DS . WEBROOT_DIR . DS);
 
 require_once InstalledVersions::getInstallPath('pieceofcake2/cakephp') . DS . 'tests' . DS . 'bootstrap.php';
 

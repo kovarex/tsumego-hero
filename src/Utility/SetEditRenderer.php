@@ -4,8 +4,8 @@ class SetEditRenderer
 {
 	public static function renderAddProblemForm($set, $tsumegoButtons)
 	{
-		echo '<h1>Add Problem</h1>';
-		echo '<form id="TsumegoViewForm" method="post" action="/sets/addTsumego/' . $set['Set']['id'] . '" enctype="multipart/form-data">';
+		echo '<h1>Create Problem</h1>';
+		echo '<form id="TsumegoViewForm" method="post" action="/sets/createAndAddTsumego/' . $set['Set']['id'] . '" enctype="multipart/form-data">';
 		echo '<label for="order">Order:</label>';
 		echo '<input type="text" name="order" id="order" value="' . ($tsumegoButtons->highestTsumegoOrder + 1) . '" placeholder="Order" />';
 		echo '<input type="hidden" id="set_id" value="' . $set['Set']['id'] . '">';
