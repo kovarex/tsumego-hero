@@ -373,6 +373,31 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'test set #2 3/4');
 	}
 
+	public function testEditTitleFormSavesBaseTitle(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 4; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'My Set', 'num' => $i + 1, 'user_id' => 'self', 'public' => 0]]];
+
+		$context = new ContextPreparator($contextParams);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get('sets/view/' . $setId . '/2');
+
+		$browser->byId('show')->click();
+		$browser->byId('SetTitle')->clear();
+		$browser->byId('SetTitle')->sendKeys('Renamed Set');
+		$browser->byCssSelector('#msg1 input[type="submit"]')->click();
+
+		// Heading keeps the partition, but the saved title must not contain it
+		$browser->waitUntilCssSelectorExistsWithText('.homeLeft .title4', 'Renamed Set #2');
+
+		$this->assertSame('Renamed Set', ClassRegistry::init('Set')->findById($setId)['Set']['title']);
+	}
+
 
 	public function testOfVisiting2RankBasedSetsBothInTheFilters(): void
 	{

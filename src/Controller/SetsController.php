@@ -769,7 +769,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		{
 			$set = [];
 			$set['Set']['id'] = $id;
-			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
+			$set['Set']['title'] = $id;
 			$set['Set']['multiplier'] = 1;
 			$set['Set']['public'] = 1;
 			$elo = Rating::getRankMinimalRatingFromReadableRank($id);
@@ -785,7 +785,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$tagName = $this->Tag->findByName($id);
 			if ($tagName && isset($tagName['Tag']['description']))
 				$set['Set']['description'] = $tagName['Tag']['description'];
-			$set['Set']['title'] = $id . $tsumegoButtons->getPartitionTitleSuffix();
+			$set['Set']['title'] = $id;
 		}
 		elseif ($tsumegoFilters->query == 'topics')
 		{
@@ -798,7 +798,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
 					throw new NotFoundException("Set not found");
 
-			$set['Set']['title'] = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 			$allArActive = true;
 			$allArInactive = true;
 			$allPassActive = true;
@@ -984,7 +983,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		if ($tsumegoButtons->description)
 			$set['Set']['description'] = $tsumegoButtons->description;
 
-		$this->set('_title', $set['Set']['title'] . ' on Tsumego Hero');
+		$displayTitle = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
+		$this->set('_title', $displayTitle . ' on Tsumego Hero');
+		$this->set('setTitle', $displayTitle);
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{
