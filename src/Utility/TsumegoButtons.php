@@ -1,6 +1,5 @@
 <?php
 
-App::uses('SgfParser', 'Utility');
 App::uses('TsumegoButtonsQueryBuilder', 'Utility');
 
 class TsumegoButtons extends ArrayObject
@@ -54,7 +53,8 @@ class TsumegoButtons extends ArrayObject
 				$row['set_connection_id'],
 				$row['num'],
 				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
-				$row['rating']);
+				$row['rating'],
+				$row['sgf']);
 		$this->updateHighestTsumegoOrder();
 	}
 

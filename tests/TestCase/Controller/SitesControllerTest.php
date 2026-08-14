@@ -51,7 +51,7 @@ class SitesControllerTest extends ControllerTestCase
 	public function testShowPublishedTsumego()
 	{
 		$browser = Browser::instance();
-		$context = new ContextPreparator(['tsumego' => 564]);
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 564, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
 
 		ClassRegistry::init('Schedule')->create();
 		$schedule = [];
@@ -65,6 +65,10 @@ class SitesControllerTest extends ControllerTestCase
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertSame(count($buttons), 1);
 		$this->assertSame($buttons[0]->getText(), "564");
+
+		// Published tsumego buttons should have preview data
+		$previewLinks = $browser->getCssSelect('.new-tsumego-box a[data-sgf-preview]');
+		$this->assertNotEmpty($previewLinks);
 	}
 
 	/**

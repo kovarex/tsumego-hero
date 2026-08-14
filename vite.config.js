@@ -17,6 +17,7 @@ const LEGACY_APP_FILES = [
 	'webroot/js/AccountWidget.js',
 	'webroot/js/dark.js',
 	'webroot/js/previewBoard.js',
+	'webroot/js/previewZoom.js',
 	'webroot/js/TagConnectionsEdit.js',
 	'webroot/FileSaver.min.js',
 	'webroot/js/multipleChoice.js',

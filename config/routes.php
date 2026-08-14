@@ -31,15 +31,6 @@ Router::connect('/sitemap.xml', [
 ]);
 
 /**
- * API endpoint for AJAX tooltip board previews
- */
-Router::connect(
-	'/api/preview/:tsumegoId',
-	['controller' => 'Tsumegos', 'action' => 'preview'],
-	['pass' => ['tsumegoId'], 'tsumegoId' => '[0-9]+']
-);
-
-/**
  * Here, we are connecting '/' (base path) to controller called 'Pages',
  * its action called 'display', and we pass a param to select the view file
  * to use (in this case, /app/View/Pages/home.ctp)...

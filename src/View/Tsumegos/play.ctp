@@ -357,6 +357,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<a id="showx3" style="margin-right:20px;" class="selectable-text">Download SGF</a>';
 			echo '<a id="findSimilarProblems" style="margin-right:20px;" class="selectable-text">Find Similar Problems</a>';
 			echo '<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>';
+			echo ' <label style="cursor:pointer;font-size:12px;color:#888;margin-left:12px" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>';
 			echo '<br><br>';
 			echo '<div class="filters-outer">
 				<div id="msgFilters">

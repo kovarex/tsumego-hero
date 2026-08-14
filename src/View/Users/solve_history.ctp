@@ -16,7 +16,7 @@ echo '<thead><tr><td>Set</td><td>Tsumego</td><td>Solved</td><td>Misplays</td><td
 		echo '<tr>';
 		echo '<td>' . h($attempt['set_title']) . '</td>';
 		echo '<td>';
-		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'])->render();
+		new TsumegoButton($attempt['tsumego_id'], $attempt['set_connection_id'], $attempt['num'], $attempt['status'] ?: 'N', 0, $attempt['sgf'])->render();
 		echo '</td>';
 		echo '<td>' . $attempt['solved'] . '</td>';
 		echo '<td>' . $attempt['misplays'] . '</td>';

@@ -50,6 +50,7 @@ if($set['Set']['public'] == 0)
 		<p class="title4">Problems</p>
 		<div class="showFilters">
 			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
+			<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
 		</div>
 		<div id="msgFilters">
 			<div class="active-tiles-container tiles-view"></div>

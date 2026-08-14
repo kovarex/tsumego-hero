@@ -71,40 +71,6 @@ class TsumegosController extends AppController
 		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
 	}
 
-	/**
-	 * AJAX endpoint: returns pre-processed board data for tooltip preview.
-	 * GET /api/preview/{tsumegoId}
-	 */
-	public function preview($tsumegoId)
-	{
-		$this->autoRender = false;
-		$this->response->type('application/json');
-
-		$sgfRow = ClassRegistry::init('Sgf')->find('first', [
-			'conditions' => ['tsumego_id' => $tsumegoId],
-			'order' => 'id DESC',
-			'limit' => 1,
-		]);
-
-		if (!$sgfRow)
-		{
-			$this->response->statusCode(404);
-			echo json_encode(['error' => 'No preview available']);
-			return;
-		}
-
-		$sgf = SgfParser::process($sgfRow['Sgf']['sgf']);
-
-		echo json_encode([
-			'black'     => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::BLACK))),
-			'white'     => implode('', array_map(fn($stone) => BoardPosition::toLetters($stone), $sgf->filterStonesPositions(SgfBoard::WHITE))),
-			'xMax'      => $sgf->info[0],
-			'yMax'      => $sgf->info[1],
-			'boardSize' => $sgf->size,
-			'diff'      => '',
-		]);
-	}
-
 	public static function inArrayX($x, $newArray)
 	{
 		$newArrayCount = count($newArray);
@@ -143,8 +109,7 @@ class TsumegosController extends AppController
 				$similarSearchLogic->sourceTsumego['id'],
 				$setConnectionID,
 				$similarSearchLogic->setConnection['num'],
-				$tsumegoStatus,
-				$similarSearchLogic->sourceTsumego['rating']));
+				$tsumegoStatus ?: 'N', 0, $similarSearchLogic->sourceSgf));
 		$this->set('sourceSetName', ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id'])['Set']['title']);
 		$this->set('sourceMoveCount', $similarSearchLogic->sourceMoveCount);
 		return null;
@@ -534,15 +499,27 @@ class TsumegosController extends AppController
 		$masterTsumego = ClassRegistry::init('Tsumego')->findById($masterSetConnection['tsumego_id']);
 		$slaveTsumego = ClassRegistry::init('Tsumego')->findById($slaveSetConnection['tsumego_id']);
 
+		$sgfs = [];
+		$ids = array_unique(array_merge(
+			Hash::extract($masterSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+			Hash::extract($slaveSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+		));
+		if ($ids)
+			foreach (ClassRegistry::init('Sgf')->find('all', [
+				'fields' => ['tsumego_id', 'sgf'],
+				'conditions' => ['tsumego_id' => $ids, 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
+			]) as $s)
+				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
+
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
-			$masterSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($masterSetConnectionBrother['SetConnection']);
+			$masterSetConnectionBrothersButtons [] = new TsumegoButton($masterSetConnectionBrother['SetConnection']['tsumego_id'], $masterSetConnectionBrother['SetConnection']['id'], $masterSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$masterSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
 		$this->set('masterTsumegoButtons', $masterSetConnectionBrothersButtons);
 		$this->set('masterTsumegoID', $masterSetConnection['tsumego_id']);
 
 		$slaveSetConnectionBrothersButtons = [];
 		foreach ($slaveSetConnectionBrothers as $slaveSetConnectionBrother)
-			$slaveSetConnectionBrothersButtons [] = TsumegoButton::createFromSetConnection($slaveSetConnectionBrother['SetConnection']);
+			$slaveSetConnectionBrothersButtons [] = new TsumegoButton($slaveSetConnectionBrother['SetConnection']['tsumego_id'], $slaveSetConnectionBrother['SetConnection']['id'], $slaveSetConnectionBrother['SetConnection']['num'], 'N', 0, $sgfs[$slaveSetConnectionBrother['SetConnection']['tsumego_id']] ?? '');
 		$this->set('slaveTsumegoButtons', $slaveSetConnectionBrothersButtons);
 		$this->set('slaveTsumegoID', $slaveSetConnection['tsumego_id']);
 		return null;

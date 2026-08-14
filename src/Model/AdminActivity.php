@@ -43,11 +43,18 @@ class AdminActivity extends AppModel
 						$decoded['slave_first_move_color'],
 						$slaveCorrectMoves);
 
+					$masterPreview = TsumegoButton::sgfToPreviewData($decoded['master_sgf']);
+					$slavePreview = TsumegoButton::sgfToPreviewData($decoded['slave_sgf']);
 					$onMouseOver = 'if (this.querySelector(\'svg\')) return;';
-					$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['master_sgf'], 'this', 'createPreviewBoard');
-					$onMouseOver .= TsumegoButton::createBoardFromSgf($decoded['slave_sgf'], 'this', 'createPreviewBoard', $comparisonResult->diff);
+					if ($masterPreview)
+						$onMouseOver .= 'createPreviewBoard(this,\'' . $masterPreview['black'] . '\',\'' . $masterPreview['white'] . '\',' . $masterPreview['xMax'] . ',' . $masterPreview['yMax'] . ',' . $masterPreview['boardSize'] . ');';
+					if ($slavePreview)
+					{
+						$diff = $comparisonResult->diff ?? '';
+						$onMouseOver .= 'createPreviewBoard(this,\'' . $slavePreview['black'] . '\',\'' . $slavePreview['white'] . '\',' . $slavePreview['xMax'] . ',' . $slavePreview['yMax'] . ',' . $slavePreview['boardSize'] . ',\'' . $diff . '\');';
+					}
 					$result = 'Merged ';
-					$result .= '<a style="position: relative;" onmouseover="' . $onMouseOver . '">tsumego<span class="tooltip-box"></span></a>';
+					$result .= '<a style="position: relative;" onmouseover="' . htmlspecialchars($onMouseOver, ENT_QUOTES, 'UTF-8') . '">tsumego<span class="tooltip-box"></span></a>';
 					return $result;
 				}
 			default:

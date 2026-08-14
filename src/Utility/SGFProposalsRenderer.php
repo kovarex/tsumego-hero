@@ -12,6 +12,7 @@ class SGFProposalsRenderer extends DataTableRenderer
 SELECT
     p.tsumego_id as tsumego_id,
     a.latest_accepted_id AS latest_accepted_id,
+    COALESCE(sgf.sgf, '') AS sgf,
     p.id AS proposed_id,
     p.user_id AS proposed_user_id,
     user.name AS user_name,
@@ -29,6 +30,7 @@ JOIN (
 JOIN set_connection ON set_connection.tsumego_id = p.tsumego_id
 JOIN user ON p.user_id=user.id
 JOIN `set` ON `set`.id = set_connection.set_id
+LEFT JOIN sgf ON sgf.id = a.latest_accepted_id
 LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = p.tsumego_id
 WHERE p.accepted = FALSE
 LIMIT " . self::$PAGE_SIZE . "
@@ -45,7 +47,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 			<a href="/editor/?sgfID=' . $item['proposed_id'] . '&diffID=' . $item['latest_accepted_id'] . '">diff</a>';
 		echo '</td>';
 		echo '<td>';
-		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'])->render();
+		new TsumegoButton($item['tsumego_id'], $item['set_connection_id'], $item['num'], $item['status'] ?: 'N', 0, $item['sgf'])->render();
 		echo '<td><a class="new-button-default2" href="/users/acceptSGFProposal/'
 			. $item['proposed_id'] . '" id="accept-' . $item['proposed_id'] . '">Accept</a>
 			<a class="new-button-default2" href="/users/rejectSGFProposal/' . $item['proposed_id'] . '" id="reject-' . $item['proposed_id'] . '">Reject</a></td>';
