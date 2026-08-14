@@ -262,10 +262,7 @@ besogo.makeToolPanel = function (container, editor) {
       "rotate counter-clockwise",
       spinIcon,
       function () {
-        let transformation = besogo.makeTransformation();
-        transformation.rotateCounterClockwise = true;
-        besogo.editor.applyTransformation(transformation);
-        besogo.editor.applyRotation(false);
+        besogo.editor.rotateBoard(false);
         $("#boardSpinCounterClockwise").css("opacity", "1");
         $("#boardSpinClockwise").css("opacity", ".62");
         $("#boardOrientationTL").css("opacity", ".62");
@@ -281,10 +278,7 @@ besogo.makeToolPanel = function (container, editor) {
       "rotate clockwise",
       spinIcon,
       function () {
-        let transformation = besogo.makeTransformation();
-        transformation.rotateClockwise = true;
-        besogo.editor.applyTransformation(transformation);
-        besogo.editor.applyRotation(true);
+        besogo.editor.rotateBoard(true);
         $("#boardSpinClockwise").css("opacity", "1");
         $("#boardSpinCounterClockwise").css("opacity", ".62");
         $("#boardOrientationTL").css("opacity", ".62");
