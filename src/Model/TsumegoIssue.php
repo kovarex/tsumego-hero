@@ -191,7 +191,7 @@ class TsumegoIssue extends AppModel
 						'user_rating' => $row['u']['issue_author_rating'] ?? null,
 						'user_external_id' => $row['u']['issue_author_external_id'] ?? null,
 						'user_picture' => $row['u']['issue_author_picture'] ?? null,
-						'created' => $row['ti']['issue_created'],
+						'created' => Util::toIso8601($row['ti']['issue_created']),
 					],
 					'comments' => [],
 					'author' => $row['u']['issue_author_name']
@@ -212,7 +212,7 @@ class TsumegoIssue extends AppModel
 				$issuesMap[$issueId]['comments'][] = [
 					'id' => $row['tc']['comment_id'],
 					'text' => $row['tc']['comment_text'],
-					'created' => $row['tc']['comment_created'],
+					'created' => Util::toIso8601($row['tc']['comment_created']),
 					'user_id' => $row['tc']['comment_user_id'],
 					'user_name' => $row['cu']['comment_author_name'] ?? '[deleted user]',
 					'user_external_id' => $row['cu']['comment_author_external_id'],

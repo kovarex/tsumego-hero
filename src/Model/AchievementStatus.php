@@ -56,7 +56,7 @@ class AchievementStatus extends AppModel
 				'image' => $row['Achievement']['image'],
 				'user_id' => (int) $row['User']['id'],
 				'user_name' => AppController::checkPicture($row['User']),
-				'created' => $row['AchievementStatus']['created'],
+				'created' => Util::toIso8601($row['AchievementStatus']['created']),
 			];
 		}
 		Cache::write($cacheKey, $result, 'default');

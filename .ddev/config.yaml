@@ -16,6 +16,8 @@ database:
 use_dns_when_possible: true
 disable_upload_dirs_warning: true
 
+timezone: UTC
+
 web_environment:
   - CHOKIDAR_USEPOLLING=true
   - WATCHPACK_POLLING=true
