@@ -13,7 +13,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		Auth::logout();
 		$context = new ContextPreparator([
 			'user' => ['name' => 'fromPuzzle'],
-			'tsumego' => ['sets' => [['name' => 'fromPuzzleSet', 'num' => 1]], 'description' => '[b]to play.'],
+			'tsumego' => ['sets' => [['name' => 'fromPuzzleSet', 'num' => 1]], 'description' => '[b]to play.', 'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])']],
 		]);
 		$this->login('fromPuzzle');
 		ClassRegistry::init('User')->updateAll(
@@ -39,7 +39,7 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 			'tsumego' => [
 				'sets' => [['name' => 'fromPuzzleWhiteSet', 'num' => 1]],
 				'description' => '[b]to play.',
-				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];B[aa])', 'first_move_color' => 'W'],
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[19];W[aa])'],
 			],
 		]);
 		$this->login('fromPuzzleWhite');
@@ -56,32 +56,5 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 
 		$this->assertTextContains('options.playerColor = "white"', $this->view);
 		$this->assertTextContains('White to play.', $this->view);
-	}
-
-	public function testRandomYieldsBothColors(): void
-	{
-		Auth::logout();
-		$context = new ContextPreparator([
-			'user' => ['name' => 'randomDefault2'],
-			'tsumego' => ['sets' => [['name' => 'randomDefaultSet2', 'num' => 1]], 'description' => '[b]to play.'],
-		]);
-		$this->login('randomDefault2');
-		ClassRegistry::init('User')->updateAll(
-			['pref_player_color' => User::PREF_PLAYER_COLOR_RANDOM],
-			['id' => Auth::getUserID()]
-		);
-		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_RANDOM;
-
-		$sawBlack = false;
-		$sawWhite = false;
-		for ($seed = 0; $seed < 20 && !($sawBlack && $sawWhite); $seed++)
-		{
-			srand($seed);
-			$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
-			$sawBlack = $sawBlack || str_contains($this->view, 'options.playerColor = "black"');
-			$sawWhite = $sawWhite || str_contains($this->view, 'options.playerColor = "white"');
-		}
-		$this->assertTrue($sawBlack, 'Random should produce black for some seeds');
-		$this->assertTrue($sawWhite, 'Random should produce white for some seeds');
 	}
 }

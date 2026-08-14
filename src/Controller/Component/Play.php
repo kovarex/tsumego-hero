@@ -9,6 +9,7 @@ App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('User', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
+App::uses('SgfParser', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 
 class Play
@@ -230,7 +231,15 @@ class Play
 		{
 			$preference = Auth::getPrefPlayerColor();
 			if ($preference === User::PREF_PLAYER_COLOR_FROM_PUZZLE)
-				$playerColor = (($sgf['Sgf']['first_move_color'] ?? 'B') === 'W') ? 'white' : 'black';
+			{
+				$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+				if ($firstMove === 'W')
+					$playerColor = 'white';
+				elseif ($firstMove === 'B')
+					$playerColor = 'black';
+				else
+					$playerColor = rand(0, 1) ? 'white' : 'black';
+			}
 			else
 				$playerColor = rand(0, 1) ? 'white' : 'black';
 		}
