@@ -753,8 +753,8 @@ besogo.makeToolPanel = function (container, editor) {
       });
       container.appendChild(heart[0]);
 
-      // Dropdown arrow, only if user has sets
-      if (userSets && userSets.length > 0) {
+      // Dropdown arrow, only if user has more than one set to choose from
+      if (userSets && userSets.length > 1) {
         let arrow = $('<span id="favDropdownArrow" style="cursor:pointer;font-size:18px;margin:15px 5px 0 0;vertical-align:middle;user-select:none" title="save to set">▼</span>');
         arrow.on("click", function () { showFavDropdown(); });
         container.appendChild(arrow[0]);
@@ -1149,7 +1149,7 @@ besogo.makeToolPanel = function (container, editor) {
       div.append('<div style="padding:4px;color:#999">No sets yet.</div>');
     } else {
       window.userSets.forEach(function (s) {
-        let row = $('<div style="padding:4px;cursor:pointer;white-space:nowrap"></div>');
+        let row = $('<label style="display:block;padding:4px;cursor:pointer;white-space:nowrap"></label>');
         let cb = $('<input type="checkbox" style="margin-right:4px">');
         cb.prop("checked", s.contains);
         cb.on("change", function () {
