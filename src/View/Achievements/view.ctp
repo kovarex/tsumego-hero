@@ -61,7 +61,6 @@
 		<div class="acDate">
 			<?php 
 			if(!empty($as)){
-				$date = new DateTime($as['Achievement']['created']);
 				echo '<time datetime="' . Util::toIso8601($as['AchievementStatus']['created']) . '" data-format="datetime">' . $as['AchievementStatus']['created'] . '</time>';
 			}
 			?>

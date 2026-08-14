@@ -34,7 +34,7 @@
 	{
 		echo '<tr id="' . $s[$i]['Sgf']['id'] . '">
 			<td class="timeTableLeft versionColor" align="center">
-				' . $s[$i]['Sgf']['created'] . '
+				<time datetime="' . Util::toIso8601($s[$i]['Sgf']['created']) . '" data-format="datetime">' . $s[$i]['Sgf']['created'] . '</time>
 			</td>
 			<td class="timeTableMiddle versionColor" align="left">';
 		echo '<a href="/sgfs/view/' . $id2 . '?user=' . $s[$i]['Sgf']['user_id'] . '">' . h($s[$i]['Sgf']['user']) . '</a>';

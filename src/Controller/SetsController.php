@@ -90,14 +90,6 @@ class SetsController extends AppController
 				$elo = $elo / count($ts);
 			else
 				$elo = 0;
-			$date = new DateTime($sets[$i]['Set']['created']);
-			$month = date('F', strtotime($sets[$i]['Set']['created']));
-			$setday = $date->format('d. ');
-			$setyear = $date->format('Y');
-			if ($setday[0] == 0)
-				$setday = substr($setday, -3);
-			$sets[$i]['Set']['created'] = $date->format('Ymd');
-			$sets[$i]['Set']['createdDisplay'] = $setday . $month . ' ' . $setyear;
 			$percent = 0;
 			if (count($ts) > 0)
 				$percent = Util::getPercentButAvoid100UntilComplete($counter, count($ts));
@@ -108,7 +100,7 @@ class SetsController extends AppController
 			$sets[$i]['Set']['topicColor'] = $sets[$i]['Set']['color'];
 			$sets[$i]['Set']['difficultyColor'] = $this->getDifficultyColor($sets[$i]['Set']['difficulty']);
 			$sets[$i]['Set']['sizeColor'] = $this->getSizeColor($sets[$i]['Set']['anz']);
-			$sets[$i]['Set']['dateColor'] = $this->getDateColor($sets[$i]['Set']['created']);
+			$sets[$i]['Set']['dateColor'] = $this->getDateColor(date('Ymd', strtotime($sets[$i]['Set']['created'])));
 
 			$sn = [];
 			$sn['id'] = $sets[$i]['Set']['id'];
