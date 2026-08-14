@@ -24,6 +24,7 @@
  * @var array $set
  * @var int $setDifficulty
  * @var int $setRating
+ * @var string $setTitle
  * @var bool $startingSetConnectionID
  * @var array $tags
  * @var TsumegoButton $tsumegoButton
