@@ -86,6 +86,26 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('666', $href->textContent);
 	}
 
+	public function testClearFiltersReloadsCurrentPlayPage(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['set_order' => 666]]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
+		$browser->getAnonymous('/tsumegos/play/' . $tsumegoId);
+
+		// open the filters panel so the active tiles (and clear button) are visible
+		$browser->driver->findElement(WebDriverBy::cssSelector('#showFilters'))->click();
+		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
+		$browser->driver->findElement(WebDriverBy::cssSelector('#unselect-active-tiles'))->click();
+
+		$this->assertSame(Util::getMyAddress() . '/tsumegos/play/' . $tsumegoId, $browser->driver->getCurrentURL());
+		$this->assertFalse($browser->idExists('unselect-active-tiles'));
+	}
+
 	// testing the same things as testViewingTsumegoInMoreSets, but using the web driver to do so
 	// if this test fails, it probably means something is wrong with the web driver configuration
 	public function testViewingTsumegoInMoreSetsUsingWebDriver()

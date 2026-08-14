@@ -806,11 +806,29 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
 		$(".active-tiles-container").html("");
-		setCookie("filtered_sets", "");
-		setCookie("filtered_ranks", "");
-		setCookie("filtered_tags", "");
-		window.location.href = "/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>";
+		setCookie("filtered_sets", "clear");
+		setCookie("filtered_ranks", "clear");
+		setCookie("filtered_tags", "clear");
+		window.location.reload();
 	});
+
+	function removeActiveTopic(index){
+		activeTopicTiles.splice(index, 1);
+		setCookie("filtered_sets", activeTopicTiles.length == 0 ? "clear" : activeTopicTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveDifficulty(index){
+		activeDifficultyTiles.splice(index, 1);
+		setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? "clear" : activeDifficultyTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveTag(index){
+		activeTagTiles.splice(index, 1);
+		setCookie("filtered_tags", activeTagTiles.length == 0 ? "clear" : activeTagTiles.join("@"));
+		window.location.reload();
+	}
 
 <?php
 	if($tv!=null){
@@ -2029,16 +2047,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	#showFilters,
 	.showFilters {
 				<?php
-			$displayNone = false;
-			if ($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
-				$displayNone = true;
-			else if($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
-				$displayNone = true;
-			else if($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
-				$displayNone = true;
-			else if($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
-				$displayNone = true;
-			if($displayNone)
+			$displayNone = empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags);
+			if ($displayNone)
 				echo 'display:none;';
 		?>margin: 8px 4px;
 	}

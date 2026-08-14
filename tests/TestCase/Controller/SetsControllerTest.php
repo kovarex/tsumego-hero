@@ -170,6 +170,31 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[1]['set-connections'][0]['id']);
 	}
 
+	public function testClearFiltersReloadsCurrentSetView(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'sets' => [['name' => 'tsumego set 1', 'num' => '666']],
+			],
+		]);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('sets/view/' . $setId);
+		$browser->driver->manage()->deleteAllCookies();
+		$browser->driver->manage()->addCookie(['name' => 'filtered_ranks', 'value' => '15k']);
+		$browser->getAnonymous('sets/view/' . $setId);
+
+		// open the filters panel so the active tiles (and clear button) are visible
+		$browser->driver->findElement(WebDriverBy::cssSelector('#showFilters'))->click();
+		$browser->waitUntilCssSelectorDisplayed('#unselect-active-tiles');
+
+		$browser->driver->findElement(WebDriverBy::cssSelector('#unselect-active-tiles'))->click();
+
+		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $setId, $browser->driver->getCurrentURL());
+		$this->assertFalse($browser->idExists('unselect-active-tiles'));
+	}
+
 	private function checkSetNavigationButtons($browser, int $count, $context, $indexFunction, $orderFunction): array
 	{
 		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.set-view-main li'));

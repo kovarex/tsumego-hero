@@ -50,8 +50,8 @@ if($set['Set']['public'] == 0)
 		<p class="title4">Problems</p>
 		<div class="showFilters">
 			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
-			<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
 		</div>
+		<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
 		<div id="msgFilters">
 			<div class="active-tiles-container tiles-view"></div>
 		</div>
@@ -573,14 +573,13 @@ if ($tsumegoFilters->query != 'topics')
 		if ($tsumegoFilters->query != 'topics')
 			foreach ($tsumegoFilters->sets as $setName)
 				echo 'activeTopicTiles.push(' . json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if ($tsumegoFilters->query != 'difficulty')
-	foreach ($tsumegoFilters->ranks as $rank)
-		echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-if($tsumegoFilters->query != 'tags')
-	foreach ($tsumegoFilters->tags as $tag)
-		echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-
+		if ($tsumegoFilters->query != 'difficulty')
+			foreach ($tsumegoFilters->ranks as $rank)
+				echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+		if ($tsumegoFilters->query != 'tags')
+			foreach ($tsumegoFilters->tags as $tag)
+				echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+	?>
 	drawActiveTiles();
 
 	function drawActiveTiles(){
@@ -598,11 +597,29 @@ if($tsumegoFilters->query != 'tags')
 	$(".active-tiles-container").on("click", "#unselect-active-tiles", function(e){
 		e.preventDefault();
 		$(".active-tiles-container").html("");
-		setCookie("filteredSets", "");
-		setCookie("filteredRanks", "");
-		setCookie("filteredTags", "");
-		window.location.href = "/sets/view/<?php echo $set['Set']['id']; ?>";
+		setCookie("filtered_sets", "clear");
+		setCookie("filtered_ranks", "clear");
+		setCookie("filtered_tags", "clear");
+		window.location.reload();
 	});
+
+	function removeActiveTopic(index){
+		activeTopicTiles.splice(index, 1);
+		setCookie("filtered_sets", activeTopicTiles.length == 0 ? "clear" : activeTopicTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveDifficulty(index){
+		activeDifficultyTiles.splice(index, 1);
+		setCookie("filtered_ranks", activeDifficultyTiles.length == 0 ? "clear" : activeDifficultyTiles.join("@"));
+		window.location.reload();
+	}
+
+	function removeActiveTag(index){
+		activeTagTiles.splice(index, 1);
+		setCookie("filtered_tags", activeTagTiles.length == 0 ? "clear" : activeTagTiles.join("@"));
+		window.location.reload();
+	}
 
 		var msg2selected = false;
 		var msg3selected = false;
@@ -800,18 +817,14 @@ for($i = 0;$i < count($allTags);$i++)
 		display:none;
 		margin:0 4px 8px
 	}
+	.showFilters{
+		display:inline-block;
+	}
 	#showFilters, .showFilters{
 		<?php
-$displayNone = false;
-if($set['Set']['id'] == 1 || (empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags)))
-	$displayNone = true;
-elseif($tsumegoFilters->query && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags))
-	$displayNone = true;
-elseif($tsumegoFilters->query == 'difficulty' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->tags))
-	$displayNone = true;
-elseif($tsumegoFilters->query == 'tags' && empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks))
-	$displayNone = true;
-if($displayNone)
+// Show Filters button whenever any filter type has active selections
+$displayNone = empty($tsumegoFilters->sets) && empty($tsumegoFilters->ranks) && empty($tsumegoFilters->tags);
+if ($displayNone)
 	echo 'display:none;';
 ?>
 		margin:8px 4px;
