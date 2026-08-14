@@ -74,9 +74,9 @@
 	$this->end();
 
 	$boardSize = 'large';
-	if ($t['Tsumego']['author'] == 'Stepan')
-		$t['Tsumego']['author'] = 'Stepan Trubitsin';
 	$authorx = $t['Tsumego']['author'];
+	if ($authorx == 'Stepan')
+		$authorx = 'Stepan Trubitsin';
 	if ($authorx == 'Joschka Zimdars')
 		$authorx = 'd4rkm4tter';
 	else if ($authorx == 'Jérôme Hubert')
@@ -151,7 +151,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		else if($descriptionColor=='White ')
 			$descriptionColor = 'Black ';
 	}
-	$t['Tsumego']['description'] = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
+	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
@@ -187,7 +187,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
-		echo '<a id="descriptionText">'.h($t['Tsumego']['description']).'</a> ';
+		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
 		if($tv!=null)
@@ -209,7 +209,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				<table>
 					<tr>
 						<td><label for="description">Desription:</label></td>
-						<td><input type="text" name="description" id="description" value="<?php echo h(str_replace($descriptionColor, '[b]', $t['Tsumego']['description'])); ?>"></td>
+						<td><input type="text" name="description" id="description" value="<?php echo h($t['Tsumego']['description']); ?>"></td>
 					</tr>
 					<tr>
 						<td><label for="hint">Hint:</label></td>

@@ -32,13 +32,14 @@
 	<a href="/achievements" style="text-decoration:none;">
 	<div align="center" class="achievement2 <?php 
 	echo $aColor;
-	if(empty($as)) $a['Achievement']['image'] = 'ac000i';
+	$displayImage = $a['Achievement']['image'];
+	if(empty($as)) $displayImage = 'ac000i';
 	?>">
 		<div class="acTitle">
 			<h1><?php echo h($a['Achievement']['name']); ?></h1>
 		</div>
 		<div class="acImg">
-			<img src="/img/<?php echo $a['Achievement']['image']; ?>.png">
+			<img src="/img/<?php echo $displayImage; ?>.png">
 			<?php 
 			$a46style = '';
 			if(!empty($as) && $a['Achievement']['id']==46){ 

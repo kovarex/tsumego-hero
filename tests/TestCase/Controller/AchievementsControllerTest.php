@@ -151,4 +151,21 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Alice', $result, 'Alice should appear as a completer');
 		$this->assertStringContainsString('Bob', $result, 'Bob should appear as a completer');
 	}
+
+	public function testUnlockedAchievementShowsUnlockDate(): void
+	{
+		new ContextPreparator([
+			'user' => [
+				'name' => 'achiever',
+				'achievement-statuses' => [
+					['id' => 1, 'created' => '2024-05-15 12:30:00'],
+				],
+			],
+		]);
+		$this->login('achiever');
+
+		$result = $this->testAction('/achievements', ['return' => 'view']);
+
+		$this->assertStringContainsString('2024-05-15 12:30:00', $result);
+	}
 }

@@ -57,7 +57,7 @@ class AchievementsController extends AppController
 		for ($i = 0; $i < $aCount; $i++)
 		{
 			$a[$i]['Achievement']['unlocked'] = false;
-			$a[$i]['Achievement']['created'] = '';
+			$a[$i]['Achievement']['unlocked_at'] = null;
 			if (isset($existingAs[$a[$i]['Achievement']['id']]))
 			{
 				if ($a[$i]['Achievement']['id'] == 46)
@@ -66,7 +66,7 @@ class AchievementsController extends AppController
 					$unlockedCounter2 = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['value'] - 1;
 				}
 				$a[$i]['Achievement']['unlocked'] = true;
-				$a[$i]['Achievement']['created'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
+				$a[$i]['Achievement']['unlocked_at'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
 			}
 		}
 		$this->set('a', $a);
