@@ -64,6 +64,6 @@ echo 'document.querySelectorAll("a[data-sgf-preview]").forEach(function(a) {';
 echo '  var td = a.closest("tr").querySelector("td[id^=preview]");';
 echo '  if (!td) return;';
 echo '  var data = JSON.parse(a.dataset.sgfPreview);';
-echo '  createBoard(td, data.black, data.white, data.xMax, data.yMax, data.boardSize);';
+echo '  createBoard(td, data.black, data.white, data.xMax, data.yMax, data.boardSize, data.diff || "");';
 echo '});';
 echo '</script>';

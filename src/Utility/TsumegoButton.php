@@ -47,7 +47,11 @@ class TsumegoButton
 		{
 			$preview = self::sgfToPreviewData($this->sgf);
 			if ($preview)
+			{
+				if ($this->diff)
+					$preview['diff'] = $this->diff;
 				$sgfAttr = ' data-sgf-preview=\'' . json_encode($preview) . '\'';
+			}
 		}
 
 		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
@@ -92,4 +96,5 @@ class TsumegoButton
 	public string $performance;
 	public bool $isCurrentlyOpened = false;
 	public string $sgf;
+	public ?string $diff = null;
 }

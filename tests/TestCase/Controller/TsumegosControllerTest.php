@@ -435,4 +435,48 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$xpDisplayDiv = $browser->driver->findElement(WebDriverBy::id('xpDisplayDiv'));
 		$this->assertTrue($xpDisplayDiv->isDisplayed(), 'xpDisplayDiv must be visible on initial page load');
 	}
+
+	public function testMergeFormShowsPreviewsForSiblingTsumegos()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumegos' => [
+				[
+					'set_order' => 1,
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[aa])',
+					'sets' => [['name' => 'masterSetA', 'num' => 1], ['name' => 'masterSetB', 'num' => 1]],
+				],
+				[
+					'set_order' => 2,
+					'sgf' => '(;GM[1]FF[4]SZ[19];B[bb])',
+					'sets' => [['name' => 'slaveSet', 'num' => 1]],
+				],
+			],
+		]);
+
+		$result = $this->testAction('/tsumegos/mergeFinalForm', [
+			'data' => [
+				'master-id' => $context->tsumegos[0]['set-connections'][0]['id'],
+				'slave-id' => $context->tsumegos[1]['set-connections'][0]['id'],
+			],
+			'return' => 'view',
+		]);
+
+		$this->assertStringContainsString('data-sgf-preview', $result);
+	}
+
+	public function testSimilarSearchPreviewIncludesDiff()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumegos' => [
+				['set_order' => 1, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[dd][df][fd][ff];B[aa];W[ab];B[ba]C[+])'],
+				['set_order' => 2, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[dd][df][fd][fe];B[aa];W[ab];B[ba]C[+])'],
+			],
+		]);
+
+		$result = $this->testAction('/tsumegos/duplicatesearch/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+
+		$this->assertMatchesRegularExpression('/"diff":"[a-z]+"/', $result);
+	}
 }

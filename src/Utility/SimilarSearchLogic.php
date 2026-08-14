@@ -106,9 +106,10 @@ LEFT JOIN sgf
 			$candidate['tsumego_id'],
 			$setConnection['id'],
 			$setConnection['num'],
-			$tsumegoStatus['TsumegoStatus']['status'],
+			$tsumegoStatus['TsumegoStatus']['status'] ?? 'N',
 			0,
 			$candidate['sgf']);
+		$item->tsumegoButton->diff = $comparisonResult->diff;
 		$this->result->items[] = $item;
 	}
 

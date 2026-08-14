@@ -501,18 +501,15 @@ class TsumegosController extends AppController
 
 		$sgfs = [];
 		$ids = array_unique(array_merge(
-			array_column($masterSetConnectionBrothers, 'SetConnection.tsumego_id'),
-			array_column($slaveSetConnectionBrothers, 'SetConnection.tsumego_id'),
+			Hash::extract($masterSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
+			Hash::extract($slaveSetConnectionBrothers, '{n}.SetConnection.tsumego_id'),
 		));
 		if ($ids)
-		{
-			$placeholders = implode(',', array_fill(0, count($ids), '?'));
 			foreach (ClassRegistry::init('Sgf')->find('all', [
 				'fields' => ['tsumego_id', 'sgf'],
-				'conditions' => ['tsumego_id IN (' . $placeholders . ')', 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
+				'conditions' => ['tsumego_id' => $ids, 'id IN (SELECT MAX(id) FROM sgf GROUP BY tsumego_id)'],
 			]) as $s)
 				$sgfs[$s['Sgf']['tsumego_id']] = $s['Sgf']['sgf'];
-		}
 
 		$masterSetConnectionBrothersButtons = [];
 		foreach ($masterSetConnectionBrothers as $masterSetConnectionBrother)
