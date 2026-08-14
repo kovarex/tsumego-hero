@@ -67,8 +67,6 @@ class AchievementsController extends AppController
 				}
 				$a[$i]['Achievement']['unlocked'] = true;
 				$a[$i]['Achievement']['created'] = $existingAs[$a[$i]['Achievement']['id']]['AchievementStatus']['created'];
-				$date = date_create($a[$i]['Achievement']['created']);
-				$a[$i]['Achievement']['created'] = date_format($date, 'd.m.Y H:i');
 			}
 		}
 		$this->set('a', $a);
@@ -97,11 +95,6 @@ class AchievementsController extends AppController
 		$aCount = count($asAll);
 		if (Auth::isLoggedIn())
 			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
-		if ($as)
-		{
-			$date = date_create($as['AchievementStatus']['created']);
-			$as['AchievementStatus']['created'] = date_format($date, 'd.m.Y H:i');
-		}
 		$asAll2 = [];
 		$count = 10;
 		if (count($asAll) < 10)

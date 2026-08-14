@@ -62,12 +62,13 @@
 						<div class="acDesc">
 							<?php echo h($a[$i]['Achievement']['description']); ?>
 						</div>
+						<?php if ($a[$i]['Achievement']['unlocked']) { ?>
 						<div class="acDate">
 							<?php 
-							$date = new DateTime($a[$i]['Achievement']['created']);
 							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['created']) . '" data-format="datetime">' . $a[$i]['Achievement']['created'] . '</time>';
 							?>
 						</div>
+						<?php } ?>
 					</div>
 					</a>
 				

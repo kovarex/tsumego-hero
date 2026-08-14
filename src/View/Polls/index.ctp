@@ -30,8 +30,7 @@
     <tr>
 		<td>
           <?php
-				$createDate = new DateTime($polls[$i]['Poll']['created']);
-				echo '<time datetime="' . Util::toIso8601($polls[$i]['Poll']['created']) . '" data-format="date">' . $createDate->format('d.m.y') . '</time>';
+				echo '<time datetime="' . Util::toIso8601($polls[$i]['Poll']['created']) . '" data-format="date">' . h($polls[$i]['Poll']['created']) . '</time>';
             ?>
         </td>
 		<td>

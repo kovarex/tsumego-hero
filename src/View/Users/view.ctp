@@ -280,8 +280,7 @@ function showStatistics($side, $as, $user, $dailyResults)
 				</div>
 			</div>
 			<div class="acDate2">
-				<?php $date = date_create($as[$i]['AchievementStatus']['created']); ?>
-				<time datetime="<?php echo Util::toIso8601($as[$i]['AchievementStatus']['created']) ?>" data-format="datetime"><?php echo date_format($date,"d.m.Y H:i") ?></time>
+				<time datetime="<?php echo Util::toIso8601($as[$i]['AchievementStatus']['created']) ?>" data-format="datetime"><?php echo h($as[$i]['AchievementStatus']['created']) ?></time>
 			</div>
 		</div>
 		</a>

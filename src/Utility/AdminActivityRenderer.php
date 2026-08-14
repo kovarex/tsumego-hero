@@ -62,10 +62,6 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 
 	public function renderItem(int $index, array $item): void
 	{
-		// Format date without seconds
-		$timestamp = strtotime($item['created']);
-		$dateFormatted = date('Y-m-d H:i', $timestamp);
-
 		echo '<td>' . ($index + 1 + 100 * ($this->page - 1)) . '</td>';
 		echo '<td>';
 		if ($item['set_connection_id'])
@@ -79,7 +75,7 @@ OFFSET " . $this->offset, [Auth::getUserID()]);
 		echo '<div style="color:#666; margin-top:5px;">' . AdminActivity::renderChange($item) . '</div>
 				</td>
 				<td>
-					<div>' . $dateFormatted . '</div>
+					<div><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . h($item['created']) . '</time></div>
 					<div style="font-size:0.9em; color:#666; margin-top:2px;">' . User::renderLink($item) . '</div>
 				</td>';
 	}

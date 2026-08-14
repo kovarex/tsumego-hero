@@ -38,9 +38,7 @@
 	<table><tr><td>
 	<?php
 	for($i=0; $i<count($ans); $i++){
-		$date2 = new DateTime($ans[$i]['Answer']['created']);
-		$date2 = $date2->format('Y-m-d');
-		echo $date2.' | <b>'.$ans[$i]['Answer']['dismissed'].'</b><br>';
+		echo '<time datetime="'.Util::toIso8601($ans[$i]['Answer']['created']).'" data-format="datetime">'.$ans[$i]['Answer']['created'].'</time> | <b>'.$ans[$i]['Answer']['dismissed'].'</b><br>';
 	}
 	?>
 	</td><td style="vertical-align: top;">
