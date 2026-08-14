@@ -22,7 +22,7 @@ echo '<thead><tr><td>Set</td><td>Tsumego</td><td>Solved</td><td>Misplays</td><td
 		echo '<td>' . $attempt['misplays'] . '</td>';
 		echo '<td>' . round($attempt['user_rating']) . '</td>';
 		echo '<td>' . $attempt['xp_gain'] . '</td>';
-		echo '<td>' . $attempt['created'] . '</td>';
+		echo '<td><time datetime="' . Util::toIso8601($attempt['created']) . '" data-format="datetime">' . $attempt['created'] . '</time></td>';
 		echo '</tr>';
 	}
 echo '</table>';

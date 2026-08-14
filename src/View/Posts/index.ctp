@@ -36,8 +36,7 @@
         <td>
           <?php
 				$createDate = new DateTime($posts[$i]['Post']['created']);
-				$strip = $createDate->format('d.m.y');
-				echo  $strip;
+				echo '<time datetime="' . Util::toIso8601($posts[$i]['Post']['created']) . '" data-format="date">' . $createDate->format('d.m.y') . '</time>';
 				/*
                 echo $this->Html->link(
                     $strip,

@@ -40,8 +40,8 @@
             <?php echo h($curl['Curl']['url']); ?>
         </td>
 		<td>
-            <?php echo h($curl['Curl']['created']); ?>
-        </td>
+			<time datetime="<?php echo Util::toIso8601($curl['Curl']['created']) ?>" data-format="datetime"><?php echo h($curl['Curl']['created']) ?></time>
+		</td>
 		
 		
     </tr>

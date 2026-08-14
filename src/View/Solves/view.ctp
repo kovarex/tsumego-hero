@@ -5,5 +5,5 @@
  * @var array $post
  */
 
-echo $post['Post']['created'];
+echo '<time datetime="' . Util::toIso8601($post['Post']['created']) . '" data-format="datetime">' . $post['Post']['created'] . '</time>';
 ?>

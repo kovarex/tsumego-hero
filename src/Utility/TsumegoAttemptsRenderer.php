@@ -32,7 +32,7 @@ OFFSET " . $this->offset, [$tsumegoID]);
 		echo '<td>' . $item['solved'] . '</td>';
 		echo '<td>' . $item['misplays'] . '</td>';
 		echo '<td>' . $item['tsumego_rating'] . '</td>';
-		echo '<td>' . $item['created'] . '</td>';
+		echo '<td><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}
 
 	protected function renderHeader(): void

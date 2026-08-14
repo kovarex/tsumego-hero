@@ -73,7 +73,7 @@
 			echo '<td width="46%">'.$headerSession['rank'].'</td>';
 			echo '<td width="15%"><b>'.$headerSession['status'].'</b></td>';
 			echo '<td width="13%">'.$headerSession['points'].' points</td>';
-			echo '<td class="timeModeTable2td">'.$headerSession['created'].'</td>';
+			echo '<td class="timeModeTable2td"><time datetime="' . Util::toIso8601($headerSession['created']) . '" data-format="datetime">' . $headerSession['created'] . '</time></td>';
 			echo '<td width="3%" class="timeModeTable2td"><img class="rankArrow" src="'.($containsCurrent ? $dataForView['rankArrowOpened'] : $dataForView['rankArrowClosed']).'"></td>';
 			echo '</tr>';
 			echo '</table>';
