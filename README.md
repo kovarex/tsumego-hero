@@ -165,7 +165,7 @@ I just implement the method up, as reverse migrations are not realistic or usefu
 composer test        # PHPUnit tests
 composer cs-check   # PHP CodeSniffer
 composer cs-fix     # Auto-fix CS issues
-composer stan       # PHPStan static analysis
+composer stan       # PHPStan on src/ + views
 
 ### also:
 composer cs-modified # Only run phpcs on modified files
@@ -174,7 +174,6 @@ composer cs-modified # Only run phpcs on modified files
 ### Development Commands Quick Reference
 ```bash
 # Specific folder analysis
-composer stan -- src/Controller
 composer cs-check -- src/Utility
 
 # Test specific methods (inside ddev container!):
