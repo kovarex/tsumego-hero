@@ -1,3 +1,40 @@
+// Native fetch does not send X-Requested-With, unlike jQuery's $.ajax, but the
+// server (AppController / SetsController) relies on that header to distinguish
+// ajax calls from page loads. Patch fetch once here so every same-origin request
+// carries it and no call site has to remember.
+(function ()
+{
+	const nativeFetch = window.fetch;
+	if (typeof nativeFetch !== 'function')
+		return;
+
+	const isSameOrigin = function (url)
+	{
+		try
+		{
+			return new URL(url, window.location.href).origin === window.location.origin;
+		}
+		catch (error)
+		{
+			return false;
+		}
+	};
+
+	window.fetch = function (input, init)
+	{
+		const requestUrl = typeof input === 'string' ? input : input.url;
+		if (isSameOrigin(requestUrl))
+		{
+			init = init || {};
+			const headers = new Headers(init.headers || {});
+			if (!headers.has('X-Requested-With'))
+				headers.set('X-Requested-With', 'XMLHttpRequest');
+			init.headers = headers;
+		}
+		return nativeFetch.call(window, input, init);
+	};
+})();
+
 function setCookie(name, value, days = 365)
 {
 	const date = new Date();
