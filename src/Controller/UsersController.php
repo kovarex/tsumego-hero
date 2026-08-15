@@ -15,10 +15,6 @@ App::uses('CookieFlash', 'Utility');
 
 class UsersController extends AppController
 {
-	public $name = 'Users';
-
-	public $pageTitle = 'Users';
-
 	public $helpers = ['Html', 'Form', 'Highscore'];
 
 	// shows the publish schedule
@@ -809,6 +805,16 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!$user)
 			return $this->redirect('/sets');
 		$this->set('_title', 'Profile of ' . $user['User']['name']);
+
+		$this->set('og', [
+			'title' => 'Profile of ' . $user['User']['name'],
+			'description' => $user['User']['name'] . ' on Tsumego',
+			'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+			'url' => Router::url('/users/view/' . $user['User']['id'], true),
+			'type' => 'profile',
+			'profile_username' => $user['User']['name'],
+			'site_name' => 'Tsumego',
+		]);
 
 		// user edit
 		// TODO: should be its own action

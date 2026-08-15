@@ -1,58 +1,68 @@
 <?php
+
 /**
  * Open Graph meta tags element
- * 
- * Generates Open Graph and Twitter Card meta tags for social sharing.
- * Should be called from views that want rich social media previews.
- * 
- * Required variables:
- * - $t (tsumego data)
- * - $set (set data)
- * - $setConnection (set connection data)
- * - $sgf (sgf data)
- * 
+ *
+ * Renders Open Graph and Twitter Card meta tags from a prepared $og array.
+ * The tags are appended to the 'og_meta' block, which the layout renders in <head>.
+ *
+ * Expected keys in $og:
+ * - title (required)
+ * - url (required)
+ * - type (default 'website')
+ * - site_name (default 'Tsumego')
+ * - description (optional)
+ * - image (optional)
+ * - image_type, image_width, image_height, image_alt (optional, only with image)
+ * - locale (optional)
+ * - profile_username (optional, only with og:type=profile)
+ * - twitter_card (optional, default 'summary')
+ *
  * @var View $this
+ * @var array $og
  */
-App::uses('Constants', 'Utility');
-
-if (!isset($t) || !isset($set) || !isset($setConnection) || !isset($sgf))
+if (empty($og))
 	return;
 
-$setConnectionId = $setConnection['SetConnection']['id'];
-$author = $t['Tsumego']['author'] ?? 'Unknown';
-$setTitle = $set['Set']['title'] ?? '';
-$description = strip_tags($t['Tsumego']['description'] ?? '');
+$title = $og['title'] ?? '';
+$description = $og['description'] ?? '';
+$image = $og['image'] ?? '';
+$url = $og['url'] ?? '';
+$type = $og['type'] ?? 'website';
+$siteName = $og['site_name'] ?? 'Tsumego';
+$imageType = $og['image_type'] ?? '';
+$imageWidth = $og['image_width'] ?? '';
+$imageHeight = $og['image_height'] ?? '';
+$imageAlt = $og['image_alt'] ?? '';
+$locale = $og['locale'] ?? 'en_US';
+$profileUsername = $og['profile_username'] ?? '';
+$twitterCard = $og['twitter_card'] ?? 'summary';
 
-$description = str_ireplace('[b]', 'Black', $description);
-$description = str_ireplace('[w]', 'White', $description);
-
-// Build Open Graph metadata — include problem position (e.g., "Korean Problem Academy 1 64/200")
-$num = $setConnection['SetConnection']['num'] ?? null;
-$total = $amountOfOtherCollection ?? null;
-$ogTitle = $setTitle;
-if ($num !== null && $total !== null)
-	$ogTitle .= ' ' . $num . '/' . $total;
-$ogDescription = $description; // Use problem description
-if ($author && $author !== 'Unknown')
-	$ogDescription .= " - by {$author}";
-
-$imageUrl = Router::url("/tsumego-image/{$setConnectionId}?v=" . Constants::$TSUMEGO_IMAGE_VERSION
-	. '&t=' . strtotime($sgf['Sgf']['created']), true);
-$pageUrl = Router::url("/{$setConnectionId}", true);
-
-// Append to meta block (rendered in layout head)
 $this->append('og_meta');
-echo '<meta property="og:title" content="' . htmlspecialchars($ogTitle) . '">' . "\n";
-echo '<meta property="og:description" content="' . htmlspecialchars($ogDescription) . '">' . "\n";
-echo '<meta property="og:image" content="' . htmlspecialchars($imageUrl) . '">' . "\n";
-echo '<meta property="og:image:type" content="image/png">' . "\n";
-echo '<meta property="og:image:width" content="' . Constants::$OG_IMAGE_WIDTH . '">' . "\n";
-echo '<meta property="og:image:height" content="' . Constants::$OG_IMAGE_HEIGHT . '">' . "\n";
-echo '<meta property="og:url" content="' . htmlspecialchars($pageUrl) . '">' . "\n";
-echo '<meta property="og:type" content="website">' . "\n";
-echo '<meta property="og:site_name" content="Tsumego">' . "\n";
-echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
-echo '<meta name="twitter:title" content="' . htmlspecialchars($ogTitle) . '">' . "\n";
-echo '<meta name="twitter:description" content="' . htmlspecialchars($ogDescription) . '">' . "\n";
-echo '<meta name="twitter:image" content="' . htmlspecialchars($imageUrl) . '">' . "\n";
+echo '<meta property="og:title" content="' . htmlspecialchars($title) . '">' . "\n";
+if ($description !== '')
+	echo '<meta property="og:description" content="' . htmlspecialchars($description) . '">' . "\n";
+if ($image !== '')
+	echo '<meta property="og:image" content="' . htmlspecialchars($image) . '">' . "\n";
+if ($imageType !== '')
+	echo '<meta property="og:image:type" content="' . htmlspecialchars($imageType) . '">' . "\n";
+if ($imageWidth !== '')
+	echo '<meta property="og:image:width" content="' . htmlspecialchars($imageWidth) . '">' . "\n";
+if ($imageHeight !== '')
+	echo '<meta property="og:image:height" content="' . htmlspecialchars($imageHeight) . '">' . "\n";
+if ($imageAlt !== '')
+	echo '<meta property="og:image:alt" content="' . htmlspecialchars($imageAlt) . '">' . "\n";
+echo '<meta property="og:url" content="' . htmlspecialchars($url) . '">' . "\n";
+echo '<meta property="og:type" content="' . htmlspecialchars($type) . '">' . "\n";
+if ($profileUsername !== '')
+	echo '<meta property="profile:username" content="' . htmlspecialchars($profileUsername) . '">' . "\n";
+echo '<meta property="og:site_name" content="' . htmlspecialchars($siteName) . '">' . "\n";
+if ($locale !== '')
+	echo '<meta property="og:locale" content="' . htmlspecialchars($locale) . '">' . "\n";
+echo '<meta name="twitter:card" content="' . htmlspecialchars($twitterCard) . '">' . "\n";
+echo '<meta name="twitter:title" content="' . htmlspecialchars($title) . '">' . "\n";
+if ($description !== '')
+	echo '<meta name="twitter:description" content="' . htmlspecialchars($description) . '">' . "\n";
+if ($image !== '')
+	echo '<meta name="twitter:image" content="' . htmlspecialchars($image) . '">' . "\n";
 $this->end();

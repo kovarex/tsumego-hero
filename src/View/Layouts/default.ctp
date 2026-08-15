@@ -101,12 +101,22 @@ echo $this->Html->charset();
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
 <?php
-// Custom Open Graph meta tags (set by individual pages via og_meta block)
-$ogMeta = $this->fetch('og_meta');
-if ($ogMeta)
-	echo $ogMeta;
-else
-	echo '<meta property="og:title" content="Tsumego">';
+// Open Graph meta tags. Controllers may set a richer $og array
+// (see src/View/Elements/open_graph_meta.ctp); otherwise a generic default is used.
+if (empty($og))
+{
+	$og = [
+		'title' => $_title ?? 'Tsumego',
+		'description' => 'Interactive tsumego database. Solve go problems, get stronger, level up, have fun.',
+		'image' => Router::url('/img/Tsumego-Hero-Logo.png', true),
+		'url' => Router::url(null, true),
+		'type' => 'website',
+		'site_name' => 'Tsumego',
+		'locale' => 'en_US',
+	];
+}
+$this->element('open_graph_meta', ['og' => $og]);
+echo $this->fetch('og_meta');
 ?>
 <?php
 echo ViteManifest::css('app-theme');

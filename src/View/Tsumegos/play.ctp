@@ -61,8 +61,6 @@
  * @var string $userSetsJson
  */
 
-	// Open Graph meta tags for social sharing
-	echo $this->element('open_graph_meta');
 	App::uses('ViteManifest', 'Utility');
 
 	$this->start('css');
