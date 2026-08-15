@@ -48,13 +48,18 @@ class TsumegoButtons extends ArrayObject
 		$this->description = $queryBuilder->description;
 
 		foreach ($result as $index => $row)
-			$this [] = new TsumegoButton(
+		{
+			$tsumegoButton = new TsumegoButton(
 				$row['tsumego_id'],
 				$row['set_connection_id'],
 				$row['num'],
 				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
 				$row['rating'],
 				$row['sgf']);
+			$tsumegoButton->setID = isset($row['set_id']) ? (int) $row['set_id'] : null;
+			$tsumegoButton->setTitle = $row['set_title'] ?? null;
+			$this [] = $tsumegoButton;
+		}
 		$this->updateHighestTsumegoOrder();
 	}
 

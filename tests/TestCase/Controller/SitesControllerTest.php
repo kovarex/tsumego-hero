@@ -158,6 +158,38 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringNotContainsString('Latest additions', $source);
 	}
 
+	public function testShowsMultipleSetsPublishedSameDay()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'Level Evaluation', 'num' => '1']]],
+			'tsumegos' => [
+				['sets' => [['name' => 'Set Beginner', 'num' => '1']]],
+			],
+		]);
+
+		$today = date('Y-m-d');
+		foreach ($context->tsumegos as $tsumego)
+		{
+			ClassRegistry::init('Schedule')->create();
+			ClassRegistry::init('Schedule')->save([
+				'tsumego_id' => $tsumego['id'],
+				'set_id' => $tsumego['set-connections'][0]['set_id'],
+				'date' => $today,
+				'published' => 1,
+			]);
+		}
+
+		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringContainsString('Latest additions', $source);
+		$this->assertStringContainsString('Level Evaluation', $source);
+		$this->assertStringContainsString('Set Beginner', $source);
+		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
+		$this->assertCount(2, $browser->getCssSelect('.setViewButtons1'));
+	}
+
 	/**
 	 * Test that the index page loads successfully with day_record data
 	 */

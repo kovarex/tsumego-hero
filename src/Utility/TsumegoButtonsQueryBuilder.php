@@ -17,6 +17,8 @@ class TsumegoButtonsQueryBuilder
 			$this->query->prefix = "SELECT tsumego_id, set_connection_id, num, rating, sgf";
 			if (Auth::isLoggedIn())
 				$this->query->prefix .= ", status";
+			if ($tsumegoFilters->query == 'published')
+				$this->query->prefix .= ", set_id, set_title";
 			$this->query->prefix .= " FROM (";
 			$this->query->suffix = ") x WHERE rn = 1 ORDER BY tsumego_id";
 			$this->query->orderBy[] = 'tsumego.id';
@@ -30,6 +32,11 @@ class TsumegoButtonsQueryBuilder
 		$this->query->selects[] = 'set_connection.id as set_connection_id';
 		$this->query->selects[] = 'set_connection.num as num';
 		$this->query->selects[] = 'COALESCE(sgf.sgf, \'\') as sgf';
+		if ($tsumegoFilters->query == 'published')
+		{
+			$this->query->selects[] = 'set_connection.set_id as set_id';
+			$this->query->selects[] = '`set`.title as set_title';
+		}
 		if (Auth::isLoggedIn())
 			$this->query->selects[] = 'tsumego_status.status as status';
 

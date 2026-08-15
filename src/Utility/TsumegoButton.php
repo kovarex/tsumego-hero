@@ -97,4 +97,6 @@ class TsumegoButton
 	public bool $isCurrentlyOpened = false;
 	public string $sgf;
 	public ?string $diff = null;
+	public ?int $setID = null;
+	public ?string $setTitle = null;
 }
