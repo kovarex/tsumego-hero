@@ -30,7 +30,7 @@ web_extra_daemons:
 hooks:
   post-start:
     - exec: corepack enable
-    - exec: nohup /var/www/html/scripts/cron-daily.sh &
+    - exec: nohup bash /var/www/html/scripts/cron-daily.sh &
     - exec: pnpm install
 
 # Key features of DDEV's config.yaml:
