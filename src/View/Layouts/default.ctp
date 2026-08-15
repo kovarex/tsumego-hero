@@ -684,11 +684,21 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 
 	boardSelector = new BoardSelector(<?php echo $boardsBitmask . 'n';?>);
 
+	// Localize <time datetime="..."> elements.
+	//
+	// Convention:
+	// - Timestamps (full ISO 8601, e.g. 2026-08-15T12:00:00+00:00) are instants:
+	//   render them in the user's local timezone, where the day may cross over.
+	// - Calendar dates (date-only YYYY-MM-DD) are timezone-free: anchor them at
+	//   UTC so the day never changes across timezones.
 	document.querySelectorAll('time[datetime]').forEach(function(el) {
-		var d = new Date(el.getAttribute('datetime'));
+		var raw = el.getAttribute('datetime');
+		var dateOnly = raw.indexOf('T') === -1;
+		var d = new Date(dateOnly ? raw + 'T00:00:00Z' : raw);
 		if (isNaN(d)) return;
 		var fmt = el.getAttribute('data-format') || 'datetime';
-		if (fmt === 'date') el.textContent = d.toLocaleDateString();
+		if (fmt === 'date') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC' } : undefined);
+		else if (fmt === 'month-day') el.textContent = d.toLocaleDateString(undefined, dateOnly ? { timeZone: 'UTC', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' });
 		else if (fmt === 'time') el.textContent = d.toLocaleTimeString([], { timeStyle: 'short' });
 		else el.textContent = d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 	});

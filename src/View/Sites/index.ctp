@@ -29,7 +29,7 @@ $this->end();
 			<?php
 			if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 			{
-				$dateLabel = isset($latestPublishDate) ? date('M j', strtotime($latestPublishDate)) : '';
+				$dateLabel = isset($latestPublishDate) ? '<time datetime="' . $latestPublishDate . '" data-format="month-day">' . $latestPublishDate . '</time>' : '';
 				echo '<font color="#f0f0f0">Latest additions'.($dateLabel ? ' ('.$dateLabel.')' : '').':</font><br>';
 				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
 					if ($setConnection = ClassRegistry::init('SetConnection')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setConnectionID))
