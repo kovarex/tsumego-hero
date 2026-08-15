@@ -2,6 +2,7 @@
 
 App::uses('Constants', 'Utility');
 App::uses('JwtAuth', 'Utility');
+App::uses('User', 'Model');
 
 class Auth
 {
@@ -85,6 +86,11 @@ class Auth
 	public static function premiumLevel(): int
 	{
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
+	}
+
+	public static function getPrefPlayerColor(): int
+	{
+		return Auth::isLoggedIn() ? (int) Auth::getUser()['pref_player_color'] : User::PREF_PLAYER_COLOR_RANDOM;
 	}
 
 	public static function saveUser(): void

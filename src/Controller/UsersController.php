@@ -790,6 +790,30 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		$this->set('totalUsers', Util::query("SELECT COUNT(*) as cnt FROM user WHERE daily_xp > 0")[0]['cnt']);
 	}
 
+	public function playerColorPreference(): void
+	{
+		$this->autoRender = false;
+		if (!Auth::isLoggedIn())
+		{
+			$this->response->statusCode(401);
+			return;
+		}
+
+		$color = (int) ($_POST['color'] ?? User::PREF_PLAYER_COLOR_RANDOM);
+		if ($color < 0 || $color > 1)
+			$color = User::PREF_PLAYER_COLOR_RANDOM;
+
+		ClassRegistry::init('User')->updateAll(
+			['pref_player_color' => $color],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['pref_player_color'] = $color;
+
+		$this->response->statusCode(200);
+		$this->response->type('application/json');
+		$this->response->body(json_encode(['status' => 'ok']));
+	}
+
 	public function view($id = null): mixed
 	{
 		$this->set('_page', 'user');

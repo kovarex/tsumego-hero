@@ -7,7 +7,9 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
+App::uses('User', 'Model');
 App::uses('TagConnectionsEdit', 'Utility');
+App::uses('SgfParser', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 
 class Play
@@ -220,16 +222,44 @@ class Play
 		if (!isset($t['Tsumego']['file']) || $t['Tsumego']['file'] == '')
 			$t['Tsumego']['file'] = $currentSetConnection['SetConnection']['num'];
 		$orientation = null;
-		$colorOrientation = null;
+		$playerColor = 'black';
 		if (isset($params['url']['orientation']))
 			$orientation = $params['url']['orientation'];
 		if (isset($params['url']['playercolor']))
-			$colorOrientation = $params['url']['playercolor'];
+			$playerColor = $params['url']['playercolor'] === 'white' ? 'white' : 'black';
+		else
+		{
+			$preference = Auth::getPrefPlayerColor();
+			if ($preference === User::PREF_PLAYER_COLOR_FROM_PUZZLE)
+			{
+				$firstMove = SgfParser::firstMoveColor($sgf['Sgf']['sgf']);
+				if ($firstMove === 'W')
+					$playerColor = 'white';
+				elseif ($firstMove === 'B')
+					$playerColor = 'black';
+				else
+					$playerColor = rand(0, 1) ? 'white' : 'black';
+			}
+			else
+				$playerColor = rand(0, 1) ? 'white' : 'black';
+		}
 
 		$checkBSize = 19;
 		for ($i = 2; $i <= 19; $i++)
 			if (strpos(';' . $set['Set']['title'], $i . 'x' . $i))
 				$checkBSize = $i;
+
+		if ($tsumegoVariant != null
+			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
+			|| $set['Set']['id'] == 109
+			|| $set['Set']['id'] == 233
+			|| $set['Set']['id'] == 236)
+				$playerColor = 'black';
+		if ($checkBSize != 19 || $set['Set']['id'] == 239
+			|| $set['Set']['id'] == 243 || $set['Set']['id'] == 244
+			|| $set['Set']['id'] == 246 || $set['Set']['id'] == 251
+			|| $set['Set']['id'] == 253)
+				$playerColor = 'black';
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)
 		{
@@ -259,7 +289,6 @@ class Play
 
 		$ui = 2;
 		$file = 'placeholder2.sgf';
-		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
 
 		$eloScoreRounded = round($eloScore);
 		$eloScore2Rounded = round($eloScore2);
@@ -378,7 +407,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('sgf', $sgf);
 		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
-		($this->setFunction)('colorOrientation', $colorOrientation);
+		($this->setFunction)('playerColor', $playerColor);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
@@ -419,7 +448,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
 		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
-		($this->setFunction)('startingPlayer', $startingPlayer);
 		($this->setFunction)('tv', $tsumegoVariant);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);

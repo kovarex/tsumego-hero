@@ -6,7 +6,7 @@
  * @var int $amountOfOtherCollection
  * @var array $boardSelection
  * @var int $checkBSize
- * @var string $colorOrientation
+ * @var string $playerColor 'black' or 'white'
  * @var string $corner
  * @var array $difficulty
  * @var bool $doublexp
@@ -47,7 +47,6 @@
  * @var bool $set_duplicate
  * @var array $sgf
  * @var string $solvedCheck
- * @var int $startingPlayer
  * @var bool $suspiciousBehavior
  * @var array $t
  * @var TagConnectionsEdit $tagConnectionsEdit
@@ -112,45 +111,11 @@
 	$d1 = '';
 	$x2 = '';
 	$ansDisplay = 'ans';
-	$playerColor = array();
-	$pl = 0;
-	$plRand = false;
-	if($colorOrientation=='black')
-		$pl = 0;
-	else if($colorOrientation=='white')
-		$pl = 1;
-	else if ($tv != null)
-		$pl = 0;
-	else
-	{
-		$pl = rand(0,1);
-		$plRand = true;
-	}
-if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
-	|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244 || $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251 || $t['Tsumego']['set_id'] == 253)
-		$pl=0;
-	if($pl==0)
-	{
-		$playerColor[0] = 'BLACK';
-		$playerColor[1] = 'WHITE';
-	}
-	else
-	{
-		$playerColor[0] = 'WHITE';
-		$playerColor[1] = 'BLACK';
-	}
-	if($pl==0)
+	if($playerColor=='black')
 		$descriptionColor = 'Black ';
 	else
 		$descriptionColor = 'White ';
 
-	if($startingPlayer==1 && $plRand==true)
-	{
-		if($descriptionColor=='Black ')
-			$descriptionColor = 'White ';
-		else if($descriptionColor=='White ')
-			$descriptionColor = 'Black ';
-	}
 	$displayDescription = str_replace('[b]', $descriptionColor, $t['Tsumego']['description']);
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
@@ -721,7 +686,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var idForSignature = "<?php echo $idForSignature; ?>";
 	var idForSignature2 = "<?php echo $idForSignature2; ?>";
 	var author = <?php echo json_encode($t['Tsumego']['author'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var besogoPlayerColor = "black";
 	var userSets = <?php echo $userSetsJson; ?>;
 	var besogoMode2Solved = false;
 	var disableAutoplay = false;
@@ -842,13 +806,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						}else{
 		echo 'besogoNoLogin = true;';
 	}
-
-	if($pl==1) echo 'besogoPlayerColor = "white";';
-	if (
-		!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $t['Tsumego']['set_id'] == 109
-		|| $t['Tsumego']['set_id'] == 233 || $t['Tsumego']['set_id'] == 236
-	)
-	echo 'besogoPlayerColor = "black";';
 
 	if ($authorx == Auth::getWithDefault('name', ''))
 		echo 'authorProblem = true;';
@@ -1973,7 +1930,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		const cornerArray = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 		shuffledCornerArray = cornerArray.sort((a, b) => 0.5 - Math.random());
 		options.corner = shuffledCornerArray[0];
-		options.playerColor = besogoPlayerColor;
+		options.playerColor = "<?php echo $playerColor; ?>";
 		options.rootPath = '/besogo/';
 		options.theme = '<?php echo $boardSelection['texture']; ?>';
 		options.themeParameters = ['<?php echo $boardSelection['black']; ?>', '<?php echo $boardSelection['white']; ?>'];

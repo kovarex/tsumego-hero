@@ -37,6 +37,27 @@ class SgfParser
 		return new SgfBoard($stones, $tInfo, $boardSize, $correctMoves);
 	}
 
+	/**
+	 * Determine the color of the first move in an SGF string.
+	 *
+	 * @param string $sgf
+	 * @return string 'B' for black first, 'W' for white first, 'N' when the SGF has no move
+	 */
+	public static function firstMoveColor(string $sgf): string
+	{
+		$blackPos = strpos($sgf, ';B[');
+		$whitePos = strpos($sgf, ';W[');
+
+		if ($blackPos === false && $whitePos === false)
+			return 'N';
+		if ($blackPos === false)
+			return 'W';
+		if ($whitePos === false)
+			return 'B';
+
+		return $blackPos < $whitePos ? 'B' : 'W';
+	}
+
 	private static function detectBoardSize(string $sgf): int
 	{
 		$boardSizePos = strpos($sgf, 'SZ');

@@ -37,4 +37,13 @@ class SgfParserTest extends CakeTestCase
 		$result = SgfParser::process($sgf);
 		$this->assertEquals(9, $result->size);
 	}
+
+	public function testFirstMoveColor()
+	{
+		$this->assertSame('B', SgfParser::firstMoveColor('(;GM[1]SZ[19];B[aa])'));
+		$this->assertSame('W', SgfParser::firstMoveColor('(;GM[1]SZ[19];W[aa])'));
+		$this->assertSame('B', SgfParser::firstMoveColor('(;GM[1]SZ[19];B[aa];W[bb])'));
+		$this->assertSame('W', SgfParser::firstMoveColor('(;GM[1]SZ[19];W[aa];B[bb])'));
+		$this->assertSame('N', SgfParser::firstMoveColor('(;GM[1]SZ[19]AB[aa])'));
+	}
 }
