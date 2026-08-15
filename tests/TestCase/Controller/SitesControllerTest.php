@@ -62,7 +62,7 @@ class SitesControllerTest extends ControllerTestCase
 		$source = $browser->driver->getPageSource();
 
 		$this->assertStringContainsString('Latest additions', $source);
-		$this->assertStringContainsString(date('M j', strtotime($today)), $source);
+		$this->assertStringContainsString('<time datetime="' . $today . '"', $source);
 
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertCount(1, $buttons);
@@ -91,7 +91,7 @@ class SitesControllerTest extends ControllerTestCase
 		$source = $browser->driver->getPageSource();
 
 		$this->assertStringContainsString('Latest additions', $source);
-		$this->assertStringContainsString(date('M j', strtotime($pastDate)), $source);
+		$this->assertStringContainsString('<time datetime="' . $pastDate . '"', $source);
 
 		$buttons = $browser->getCssSelect('.setViewButtons1');
 		$this->assertCount(1, $buttons);
@@ -125,7 +125,7 @@ class SitesControllerTest extends ControllerTestCase
 		$source = $browser->driver->getPageSource();
 
 		$this->assertStringContainsString('Latest additions', $source);
-		$this->assertStringContainsString(date('M j', strtotime($publishedDate)), $source);
+		$this->assertStringContainsString('<time datetime="' . $publishedDate . '"', $source);
 	}
 
 	public function testIgnoresFuturePublishedEntries()
