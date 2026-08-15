@@ -24,6 +24,7 @@
  * @var array $set
  * @var int $setDifficulty
  * @var int $setRating
+ * @var string $setTitle
  * @var bool $startingSetConnectionID
  * @var array $tags
  * @var TsumegoButton $tsumegoButton
@@ -87,7 +88,7 @@ if ($totalPages > 1):
 	</div>
 	</div>
 	<div class="homeLeft">
-		<?php echo '<p class="title4">' . h($set['Set']['title']) . '</p>';?>
+		<?php echo '<p class="title4">' . h($setTitle) . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
 		<tr>
@@ -114,13 +115,13 @@ if (!$noImage && $tsumegoFilters->query == 'topics' && $set['Set']['image'])
 		echo '<td width="195px" style="vertical-align:top;"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
 							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
-							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '">
+							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '">
 							</a></div></td>';
 	else
 		echo '<td width="195px" style="vertical-align:bottom;padding-bottom:17px;"><div align="center" class="set-image-zoom">
 							<a href="/' . $startingSetConnectionID . '">
 							<img height="252" width="182" style="border:1px solid black;object-fit:cover" src="/img/' . h($set['Set']['image']) . '"
-							alt="Tsumego Collection: ' . h($set['Set']['title']) . '" title="Tsumego Collection: ' . h($set['Set']['title']) . '" width="210">
+							alt="Tsumego Collection: ' . h($setTitle) . '" title="Tsumego Collection: ' . h($setTitle) . '" width="210">
 							</a></div></td>';
 }
 elseif (!$noImage && $tsumegoFilters->query == 'difficulty')

@@ -32,15 +32,16 @@
 				for($i=0; $i<count($a); $i++){
 					$isActive = 'ac000i';
 					//$a[$i]['Achievement']['unlocked'] = true;
+					$displayColor = $a[$i]['Achievement']['color'];
 					if($a[$i]['Achievement']['unlocked']){
 						$isActive = $a[$i]['Achievement']['image'];
 						$unlockedCounter++;
-					}else $a[$i]['Achievement']['color'] = 'achievementColorGray';
+					}else $displayColor = 'achievementColorGray';
 					if(strlen($a[$i]['Achievement']['name'])>30) $adjust = 'style="font-weight:normal;font-size:17px;"';
 					else $adjust = '';
 					?>
 					<a href="/achievements/view/<?php echo $a[$i]['Achievement']['id']; ?>">
-					<div align="center" class="achievement1 <?php echo $a[$i]['Achievement']['color']; ?>">
+					<div align="center" class="achievement1 <?php echo $displayColor; ?>">
 						<div class="acTitle">
 							<h1 <?php echo $adjust; ?>><?php echo h($a[$i]['Achievement']['name']); ?></h1>
 						</div>
@@ -65,7 +66,7 @@
 						<?php if ($a[$i]['Achievement']['unlocked']) { ?>
 						<div class="acDate">
 							<?php 
-							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['created']) . '" data-format="datetime">' . $a[$i]['Achievement']['created'] . '</time>';
+							echo '<time datetime="' . Util::toIso8601($a[$i]['Achievement']['unlocked_at']) . '" data-format="datetime">' . $a[$i]['Achievement']['unlocked_at'] . '</time>';
 							?>
 						</div>
 						<?php } ?>
