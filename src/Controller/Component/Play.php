@@ -251,14 +251,14 @@ class Play
 
 		if ($tsumegoVariant != null
 			|| ($t['Tsumego']['semeaiType'] ?? 0) != 0
-			|| $t['Tsumego']['set_id'] == 109
-			|| $t['Tsumego']['set_id'] == 233
-			|| $t['Tsumego']['set_id'] == 236)
+			|| $set['Set']['id'] == 109
+			|| $set['Set']['id'] == 233
+			|| $set['Set']['id'] == 236)
 				$playerColor = 'black';
-		if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
-			|| $t['Tsumego']['set_id'] == 243 || $t['Tsumego']['set_id'] == 244
-			|| $t['Tsumego']['set_id'] == 246 || $t['Tsumego']['set_id'] == 251
-			|| $t['Tsumego']['set_id'] == 253)
+		if ($checkBSize != 19 || $set['Set']['id'] == 239
+			|| $set['Set']['id'] == 243 || $set['Set']['id'] == 244
+			|| $set['Set']['id'] == 246 || $set['Set']['id'] == 251
+			|| $set['Set']['id'] == 253)
 				$playerColor = 'black';
 
 		if (Util::getHealthBasedOnLevel(Auth::getWithDefault('level', 0)) >= 8)

@@ -57,4 +57,79 @@ class DefaultPlayerColorTest extends TestCaseWithAuth
 		$this->assertTextContains('options.playerColor = "white"', $this->view);
 		$this->assertTextContains('White to play.', $this->view);
 	}
+
+	public function testFromPuzzleForcesBlackOnSmallBoard(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator([
+			'user' => ['name' => 'smallBoard'],
+			'tsumego' => [
+				'sets' => [['name' => '9x9 Test Set', 'num' => 1]],
+				'description' => '[b]to play.',
+				'sgf' => ['data' => '(;GM[1]FF[4]SZ[9];W[aa])'],
+			],
+		]);
+		$this->login('smallBoard');
+		ClassRegistry::init('User')->updateAll(
+			['pref_player_color' => User::PREF_PLAYER_COLOR_FROM_PUZZLE],
+			['id' => Auth::getUserID()]
+		);
+		Auth::getUser()['pref_player_color'] = User::PREF_PLAYER_COLOR_FROM_PUZZLE;
+
+		$this->testAction(
+			'/' . $context->tsumegos[0]['set-connections'][0]['id'],
+			['return' => 'view']
+		);
+
+		$this->assertTextContains('options.playerColor = "black"', $this->view);
+		$this->assertTextContains('Black to play.', $this->view);
+	}
+
+	public function testPlayerColorPreferenceStoresValue(): void
+	{
+		Auth::logout();
+		$context = new ContextPreparator(['user' => ['name' => 'prefStores']]);
+		$this->login('prefStores');
+
+		$result = $this->testAction('/users/playerColorPreference', [
+			'method' => 'post',
+			'data' => ['color' => User::PREF_PLAYER_COLOR_FROM_PUZZLE],
+			'return' => 'contents',
+		]);
+
+		$this->assertSame('{"status":"ok"}', $result);
+		$user = ClassRegistry::init('User')->findById($context->user['id']);
+		$this->assertSame(User::PREF_PLAYER_COLOR_FROM_PUZZLE, (int) $user['User']['pref_player_color']);
+	}
+
+	public function testPlayerColorPreferenceClampsOutOfRangeValue(): void
+	{
+		foreach ([99, -5, 2] as $invalid)
+		{
+			Auth::logout();
+			$name = 'prefClamps' . $invalid;
+			$context = new ContextPreparator(['user' => ['name' => $name]]);
+			$this->login($name);
+
+			$this->testAction('/users/playerColorPreference', [
+				'method' => 'post',
+				'data' => ['color' => $invalid],
+			]);
+
+			$user = ClassRegistry::init('User')->findById($context->user['id']);
+			$this->assertSame(User::PREF_PLAYER_COLOR_RANDOM, (int) $user['User']['pref_player_color']);
+		}
+	}
+
+	public function testPlayerColorPreferenceRequiresLogin(): void
+	{
+		Auth::logout();
+
+		$this->testAction('/users/playerColorPreference', [
+			'method' => 'post',
+			'data' => ['color' => User::PREF_PLAYER_COLOR_FROM_PUZZLE],
+		]);
+
+		$this->assertSame(401, $this->controller->response->statusCode());
+	}
 }

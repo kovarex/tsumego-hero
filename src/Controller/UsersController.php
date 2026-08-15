@@ -796,7 +796,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if (!Auth::isLoggedIn())
 		{
 			$this->response->statusCode(401);
-			$this->response->send();
 			return;
 		}
 
@@ -811,8 +810,8 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		Auth::getUser()['pref_player_color'] = $color;
 
 		$this->response->statusCode(200);
+		$this->response->type('application/json');
 		$this->response->body(json_encode(['status' => 'ok']));
-		$this->response->send();
 	}
 
 	public function view($id = null): mixed
