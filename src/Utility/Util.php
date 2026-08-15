@@ -356,8 +356,11 @@ class Util
 	}
 
 	/**
-	 * Convert a MySQL datetime string to ISO 8601 with the server's
-	 * timezone offset.
+	 * Convert a MySQL datetime (an instant) to ISO 8601 for the client-side
+	 * <time datetime="..."> localizer. Timestamps are rendered in the user's
+	 * local timezone. For timezone-free calendar dates, emit the raw YYYY-MM-DD
+	 * in datetime instead; the client anchors those at UTC so the day never
+	 * shifts across timezones.
 	 */
 	public static function toIso8601(string $mysqlDatetime): string
 	{

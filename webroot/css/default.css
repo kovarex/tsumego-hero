@@ -2493,6 +2493,8 @@ h4 {
   color: white;
 }
 .scheduleTsumego {
+  display: block;
+  clear: both;
   color: #f0f0f0;
 }
 .achievemetProfileLink {
@@ -2935,9 +2937,10 @@ h4 {
 }
 .homeRight .new-tsumego-box{
   background-image: url("/img/mode-select-bg-right.png");
-}
-.new-tsumego-box-separator{
-  margin-top:8px;
+  background-size: 100% 100%;
+  min-height: 175px;
+  height: auto;
+  display: flow-root;
 }
 .achievement-quote-pick{
   width:629px;

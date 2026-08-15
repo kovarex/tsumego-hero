@@ -12,7 +12,7 @@
 <?php
 
 echo HighscoreHelper::renderTable(
-	'Daily Highscore<br><span style="display:inline-block;margin-top:4px;font-weight:normal;text-decoration:none"><time datetime="' . date('c') . '" data-format="date">' . date('Y-m-d') . '</time></span>',
+	'Daily Highscore<br><span style="display:inline-block;margin-top:4px;font-weight:normal;text-decoration:none"><time datetime="' . date('Y-m-d') . '" data-format="date">' . date('Y-m-d') . '</time></span>',
 	$users,
 	[
 		['label' => 'Solved', 'render' => fn($row) => $row['daily_solved']],

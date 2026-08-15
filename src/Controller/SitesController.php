@@ -42,7 +42,8 @@ class SitesController extends AppController
 
 		$currentQuote = 'q01';
 
-		$tsumegoFilters = new TsumegoFilters('published');
+		$latestPublishDate = ClassRegistry::init('Schedule')->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC') ?: null;
+		$tsumegoFilters = new TsumegoFilters('published', false, $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 
 		if ($dayRecord)
@@ -61,6 +62,7 @@ class SitesController extends AppController
 			Cache::write('homepage_chart', $chartData, 'long');
 		}
 		$this->set('chartData', $chartData);
+		$this->set('latestPublishDate', $latestPublishDate);
 		$this->set('quote', $currentQuote);
 		$this->set('dayRecord', $dayRecord);
 		$this->set('urNames', $urNames);

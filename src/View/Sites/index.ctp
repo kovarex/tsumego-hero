@@ -29,23 +29,20 @@ $this->end();
 			<?php
 			if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 			{
-				echo '<font color="#f0f0f0">Added today:</font><br>';
-				if (count($tsumegoButtonsOfPublishedTsumegos) > 1)
-					if ($setConnection = ClassRegistry::init('SetConnection')->findById($tsumegoButtonsOfPublishedTsumegos[0]->setConnectionID))
-					{
-						$setID = $setConnection['SetConnection']['set_id'];
-						$set = ClassRegistry::init('Set')->findById($setID);
-						echo '<a class="scheduleTsumego" href="/sets/view/'.$setID.'"><b>
-							'.$set['Set']['title'] . ' - '.count($tsumegoButtonsOfPublishedTsumegos).' problems</b></a><br>';
-					}
-				foreach ($tsumegoButtonsOfPublishedTsumegos as $index => $tsumegoButton)
-					$tsumegoButton->render($index);
-				if(count($tsumegoButtonsOfPublishedTsumegos) > 10)
-				  echo '<br>';
-				echo '<br><br><div class="new-tsumego-box-separator"></div>';
+				$dateLabel = isset($latestPublishDate) ? '<time datetime="' . $latestPublishDate . '" data-format="month-day">' . $latestPublishDate . '</time>' : '';
+				echo '<font color="#f0f0f0">Latest additions'.($dateLabel ? ' ('.$dateLabel.')' : '').':</font><br>';
+				$publishedBySet = [];
+				foreach ($tsumegoButtonsOfPublishedTsumegos as $tsumegoButton)
+					$publishedBySet[$tsumegoButton->setID][] = $tsumegoButton;
+				foreach ($publishedBySet as $setID => $setButtons)
+				{
+					echo '<a class="scheduleTsumego" href="/sets/view/'.$setID.'"><b>'
+						.$setButtons[0]->setTitle . ' - '.count($setButtons).' problems</b></a><br>';
+					foreach ($setButtons as $index => $tsumegoButton)
+						$tsumegoButton->render($index);
+				}
 			}
 			?>
-			<br><br><div style="margin-top:6px"></div>
 		</div>
 
 		<div class="quote-pick-wrapper">

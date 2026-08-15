@@ -6,8 +6,9 @@ App::uses('Rating', 'Utility');
 
 class TsumegoFilters
 {
-	public function __construct(?string $newQuery = null, bool $empty = false)
+	public function __construct(?string $newQuery = null, bool $empty = false, ?string $publishedDate = null)
 	{
+		$this->publishedDate = $publishedDate;
 		if ($empty)
 			return;
 		if ($newQuery == 'published')
@@ -185,6 +186,7 @@ class TsumegoFilters
 		return Util::query($query->str())[0]['total'];
 	}
 
+	public ?string $publishedDate = null;
 	public string $query;
 	public int $collectionSize = 0;
 	public array $sets = [];
