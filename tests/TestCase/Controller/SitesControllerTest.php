@@ -49,7 +49,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 564, 'sgf' => '(;GM[1]FF[4]SZ[19]AB[cc]AW[dd])']]);
 
-		$today = date('Y-m-d', strtotime('+30 days'));
+		$today = date('Y-m-d');
 		ClassRegistry::init('Schedule')->create();
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
@@ -78,7 +78,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => 564]);
 
-		$pastDate = date('Y-m-d', strtotime('+20 days'));
+		$pastDate = date('Y-m-d', strtotime('-20 days'));
 		ClassRegistry::init('Schedule')->create();
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
@@ -103,9 +103,7 @@ class SitesControllerTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => 564]);
 
-		ClassRegistry::init('Schedule')->deleteAll([]);
-
-		$publishedDate = date('Y-m-d', strtotime('+100 days'));
+		$publishedDate = date('Y-m-d', strtotime('-100 days'));
 		$unpublishedDate = date('Y-m-d', strtotime('+200 days'));
 
 		ClassRegistry::init('Schedule')->create();
@@ -128,6 +126,25 @@ class SitesControllerTest extends ControllerTestCase
 
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString(date('M j', strtotime($publishedDate)), $source);
+	}
+
+	public function testIgnoresFuturePublishedEntries()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['tsumego' => 564]);
+
+		ClassRegistry::init('Schedule')->create();
+		ClassRegistry::init('Schedule')->save([
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'date' => date('Y-m-d', strtotime('+100 days')),
+			'published' => 1,
+		]);
+
+		$browser->get('/');
+		$source = $browser->driver->getPageSource();
+
+		$this->assertStringNotContainsString('Latest additions', $source);
 	}
 
 	public function testNoLatestAdditionsWhenScheduleEmpty()

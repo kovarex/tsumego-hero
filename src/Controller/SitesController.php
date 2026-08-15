@@ -42,9 +42,8 @@ class SitesController extends AppController
 
 		$currentQuote = 'q01';
 
-		$tsumegoFilters = new TsumegoFilters('published');
-		$latestPublishDate = ClassRegistry::init('Schedule')->field('date', ['published' => 1], 'date DESC');
-		$tsumegoFilters->publishedDate = $latestPublishDate;
+		$latestPublishDate = ClassRegistry::init('Schedule')->field('date', ['published' => 1, 'date <=' => date('Y-m-d')], 'date DESC');
+		$tsumegoFilters = new TsumegoFilters('published', false, $latestPublishDate);
 		$tsumegoButtonsOfPublishedTsumegos = new TsumegoButtons($tsumegoFilters);
 
 		if ($dayRecord)
