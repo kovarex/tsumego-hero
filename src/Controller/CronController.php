@@ -1,7 +1,5 @@
 <?php
 
-App::uses('TsumegoUtil', 'Util');
-
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
@@ -13,6 +11,14 @@ class CronController extends AppController
 			$this->response->body('Wrong cron secret.');
 			return $this->response;
 		}
+
+		// Already ran today - nothing to do
+		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => date('Y-m-d')]]) > 0)
+		{
+			$this->response->statusCode(200);
+			return $this->response;
+		}
+
 		$this->dailyTsumegoStatusReset();
 		$this->dailyStalingSolvedTsumegoStatuses();
 		self::createDayRecord();
@@ -99,21 +105,13 @@ WHERE
 
 	private function createDayRecord()
 	{
+		$today = date('Y-m-d');
+		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
+			return;
+
 		$userOfTheDay = self::deduceUserOfTheDay();
 		$currentQuote = self::deduceQuoteToUse();
-		$today = date('Y-m-d');
-		$activity = $this->TsumegoAttempt->find('all', ['limit' => 40000, 'conditions' => ['created' => date('Y-m-d', strtotime('yesterday'))]]) ?: [];
-		$visitedProblems = count($activity);
 
-		//how many users today
-		$usersNum = [];
-		$activities = $this->User->find('all', ['limit' => 400, 'order' => 'created DESC']) ?: [];
-		foreach ($activities as $activity)
-		{
-			$a = new DateTime($activity['User']['created']);
-			if ($a->format('Y-m-d') == $today)
-				array_push($usersNum, $activity['User']);
-		}
 		$gemRand1 = rand(0, 2);
 		$gemRand2 = rand(0, 2);
 		$gemRand3 = rand(0, 2);
@@ -147,15 +145,11 @@ WHERE
 		$dayRecord = [];
 		$dayRecord['DayRecord']['user_id'] = $userOfTheDay['User']['id'];
 		$dayRecord['DayRecord']['date'] = $today;
-		$dayRecord['DayRecord']['solved'] = $userOfTheDay['User']['daily_solved'];
 		$dayRecord['DayRecord']['quote'] = $currentQuote;
-		$dayRecord['DayRecord']['usercount'] = count($usersNum);
-		$dayRecord['DayRecord']['visitedproblems'] = $visitedProblems;
 		$dayRecord['DayRecord']['gems'] = $gemRand1 . '-' . $gemRand2 . '-' . $gemRand3;
 		$dayRecord['DayRecord']['gemCounter1'] = 0;
 		$dayRecord['DayRecord']['gemCounter2'] = 0;
 		$dayRecord['DayRecord']['gemCounter3'] = 0;
-		$dayRecord['DayRecord']['tsumego_count'] = TsumegoUtil::currentTsumegoCount();
 		ClassRegistry::init('DayRecord')->save($dayRecord);
 
 		ClassRegistry::init('AchievementCondition')->create();
@@ -170,7 +164,7 @@ WHERE
 	public static function publish()
 	{
 		$date = date('Y-m-d', strtotime('today'));
-		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
+		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
 		foreach ($todaysSchedule as $item)
 		{
 			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
