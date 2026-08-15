@@ -87,6 +87,19 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($dayRecords[0]['DayRecord']['user_id'], $context->otherUsers[0]['id']);
 	}
 
+	public function testDailyCronCreatesSingleDayRecord()
+	{
+		new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE, 'daily_xp' => 5, 'daily_solved' => 1]]);
+
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+		$this->testAction('/cron/daily/' . CRON_SECRET);
+
+		$this->assertSame(1, ClassRegistry::init('DayRecord')->find('count'));
+		$this->assertSame(1, ClassRegistry::init('AchievementCondition')->find('count', [
+			'conditions' => ['category' => 'uotd']]));
+	}
+
 	public function testPublish()
 	{
 		$context = new ContextPreparator([
@@ -112,6 +125,37 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame($newTsumego['Tsumego']['id'], $tsumegoToMigrate['id']);
 		$this->assertSame($newSetConnection['SetConnection']['id'], $tsumegoToMigrate['set-connections'][0]['id']);
 		$this->assertSame($newSetConnection['SetConnection']['set_id'], $publicSetID);
+	}
+
+	public function testPublishSkipsAlreadyPublishedTsumego()
+	{
+		$context = new ContextPreparator([
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'set 1', 'num' => 3]]]]]);
+
+		$tsumegoToMigrate = $context->tsumegos[0];
+		$publicSetID = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
+		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 1;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		ClassRegistry::init('Tsumego')->updateAll(
+			['solved' => 42, 'failed' => 7],
+			['id' => $tsumegoToMigrate['id']]);
+
+		CronController::publish();
+
+		$this->assertSame(0, ClassRegistry::init('PublishDate')->find('count', [
+			'conditions' => ['tsumego_id' => $tsumegoToMigrate['id']]]));
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoToMigrate['id']);
+		$this->assertSame(42, (int) $tsumego['Tsumego']['solved']);
+		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
 	}
 
 	public function testPopularTagsUpdate()

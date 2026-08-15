@@ -105,9 +105,12 @@ WHERE
 
 	private function createDayRecord()
 	{
+		$today = date('Y-m-d');
+		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => $today]]) > 0)
+			return;
+
 		$userOfTheDay = self::deduceUserOfTheDay();
 		$currentQuote = self::deduceQuoteToUse();
-		$today = date('Y-m-d');
 
 		$gemRand1 = rand(0, 2);
 		$gemRand2 = rand(0, 2);
@@ -161,7 +164,7 @@ WHERE
 	public static function publish()
 	{
 		$date = date('Y-m-d', strtotime('today'));
-		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date]]) ?: [];
+		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
 		foreach ($todaysSchedule as $item)
 		{
 			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
