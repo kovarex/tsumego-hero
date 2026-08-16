@@ -734,7 +734,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var besogoNoLogin = false;
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
-	<?php /* Tag editor now handled by React component */ ?>
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
