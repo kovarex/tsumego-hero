@@ -109,6 +109,139 @@ class TagTest extends ControllerTestCase
 		$this->assertStringContainsString('already proposed', $browser->driver->getPageSource());
 	}
 
+	private function getTagListText(Browser $browser): string
+	{
+		return $browser->find('[data-testid="tag-list"]')->getText();
+	}
+
+	private function tagListContains(Browser $browser, string $tagName): bool
+	{
+		return count($browser->getCssSelect('[data-testid="tag-' . $tagName . '"]')) > 0;
+	}
+
+	// --- Hint visibility ---
+
+	public function testHintTagHiddenWhenUnsolved(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other']],
+			'tsumego' => ['set_order' => 1, 'tags' => [
+				['name' => 'snapback', 'is_hint' => 1, 'user' => 'other'],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertFalse($this->tagListContains($browser, 'snapback'));
+		$this->assertStringContainsString('1 hidden', $this->getTagListText($browser));
+	}
+
+	public function testHintTagVisibleWhenSolved(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other']],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [
+				['name' => 'snapback', 'is_hint' => 1, 'user' => 'other'],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertTrue($this->tagListContains($browser, 'snapback'));
+		$this->assertStringNotContainsString('hidden', $this->getTagListText($browser));
+	}
+
+	public function testOwnHintTagVisibleWhenUnsolved(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1, 'tags' => [
+				['name' => 'snapback', 'is_hint' => 1],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertTrue($this->tagListContains($browser, 'snapback'));
+		$this->assertStringNotContainsString('hidden', $this->getTagListText($browser));
+	}
+
+	public function testHiddenCountShowsForHintTags(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other']],
+			'tsumego' => ['set_order' => 1, 'tags' => [
+				['name' => 'atari', 'user' => 'other'],
+				['name' => 'snapback', 'is_hint' => 1, 'user' => 'other'],
+				['name' => 'ko', 'is_hint' => 1, 'user' => 'other'],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertTrue($this->tagListContains($browser, 'atari'));
+		$this->assertFalse($this->tagListContains($browser, 'snapback'));
+		$this->assertStringContainsString('2 hidden', $this->getTagListText($browser));
+	}
+
+	public function testHiddenCountGoneWhenSolved(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other']],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [
+				['name' => 'atari', 'user' => 'other'],
+				['name' => 'snapback', 'is_hint' => 1, 'user' => 'other'],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertTrue($this->tagListContains($browser, 'atari'));
+		$this->assertTrue($this->tagListContains($browser, 'snapback'));
+		$this->assertStringNotContainsString('hidden', $this->getTagListText($browser));
+	}
+
+	public function testHiddenCountExcludesOwnHints(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'other']],
+			'tsumego' => ['set_order' => 1, 'tags' => [
+				['name' => 'snapback', 'is_hint' => 1, 'user' => 'other'],
+				['name' => 'ko', 'is_hint' => 1],
+			]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		// My hint (ko) is visible, other's hint (snapback) is hidden
+		$this->assertTrue($this->tagListContains($browser, 'ko'));
+		$this->assertFalse($this->tagListContains($browser, 'snapback'));
+		// Only 1 hidden (not 2), because my own hint is excluded
+		$this->assertStringContainsString('1 hidden', $this->getTagListText($browser));
+	}
+
+	public function testHintIndicatorInDropdown(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1],
+			'tags' => [['name' => 'snapback', 'is_hint' => 1]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->openEditorAndType($browser, 'snap');
+		$browser->waitUntilCssSelectorExists('[role="option"]');
+
+		$option = $browser->find('[role="option"]');
+		$this->assertStringContainsString('(hint)', $option->getText());
+	}
+
 	private function clickAndWaitForError(Browser $browser, string $selector): void
 	{
 		$browser->find($selector)->click();

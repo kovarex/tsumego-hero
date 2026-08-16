@@ -338,6 +338,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
+			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
 			'canContribute' => $isAllowedToContribute2,
 			'initialTags' => array_map(fn($row) => [

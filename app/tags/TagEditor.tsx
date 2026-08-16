@@ -8,13 +8,15 @@ declare function makeIdValidName(name: string): string;
 interface Props
 {
 	tsumegoId: number;
+	userId: number | null;
 	isAdmin: boolean;
+	isTimeMode: boolean;
 	problemSolved: boolean;
 	canContribute: boolean;
 	initialTags: TagItem[];
 }
 
-export function TagEditor({ tsumegoId, isAdmin, problemSolved, canContribute, initialTags }: Props)
+export function TagEditor({ tsumegoId, userId, isAdmin, isTimeMode, problemSolved, canContribute, initialTags }: Props)
 {
 	const [tags, setTags] = useState<TagItem[]>(initialTags);
 	const [query, setQuery] = useState('');
@@ -114,30 +116,43 @@ export function TagEditor({ tsumegoId, isAdmin, problemSolved, canContribute, in
 
 	const addedTags = tags.filter(t =>
 		t.isAdded && (t.isApproved || t.isMine) &&
-		(problemSolved || !t.isHint)
+		(t.isMine || problemSolved || (!isTimeMode && !t.isHint))
 	);
 
+	const hiddenCount = problemSolved ? 0 : isTimeMode
+		? tags.filter(t => t.isAdded && !t.isMine && (t.isApproved || t.isMine)).length
+		: tags.filter(t => t.isAdded && t.isHint && !t.isMine && (t.isApproved || t.isMine)).length;
+
+	const tagList = (addedTags.length > 0 || hiddenCount > 0) && (
+		<div style={{ marginBottom: 8 }} data-testid="tag-list">
+			{addedTags.map(t => (
+					<span key={t.id} style={{ display: 'inline-block', margin: '0 6px 4px 0', padding: '2px 8px', background: 'var(--info-box-background)', borderRadius: 12, fontSize: 13, color: 'var(--text-color)', border: '1px solid var(--current-border-color)' }}>
+						<a href={`/tags/view/${t.id}`} style={{ color: 'var(--link-color)', textDecoration: 'none' }} data-testid={makeIdValidName(t.name)} id={makeIdValidName(t.name)}>{t.name}</a>
+						{userId && ((t.isMine && !t.isApproved) || isAdmin) && (
+							<button onClick={() => handleRemove(t)} style={{ marginLeft: 4, background: 'none', border: 'none', color: 'var(--text-softer-color)', cursor: 'pointer', fontSize: 13 }} title="Remove tag" id={makeIdValidName(t.name).replace('tag-', 'remove-')}>×</button>
+					)}
+				</span>
+			))}
+			{hiddenCount > 0 && <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({hiddenCount} hidden)</span>}
+		</div>
+	);
+
+	if (!userId)
+	{
+		if (!tagList) return null;
+		return <div data-testid="tag-editor">{tagList}</div>;
+	}
+
 	if (!canContribute)
-		return <div style={{ color: '#999', fontSize: 14 }}>Daily limit reached.</div>;
+		return <div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>;
 
 	if (error) return <div style={{ color: '#e03c4b' }} data-testid="tag-error">{error}</div>;
 
 	return (
 		<div data-testid="tag-editor">
-			{addedTags.length > 0 && (
-				<div style={{ marginBottom: 8 }} data-testid="tag-list">
-					{addedTags.map(t => (
-						<span key={t.id} style={{ display: 'inline-block', margin: '0 6px 4px 0', padding: '2px 8px', background: '#333', borderRadius: 12, fontSize: 13, color: '#ddd' }}>
-							<a href={`/tags/view/${t.id}`} style={{ color: '#d19fe4', textDecoration: 'none' }} data-testid={makeIdValidName(t.name)} id={makeIdValidName(t.name)}>{t.name}</a>
-							{((t.isMine && !t.isApproved) || isAdmin) && (
-								<button onClick={() => handleRemove(t)} style={{ marginLeft: 4, background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: 13 }} title="Remove tag" id={makeIdValidName(t.name).replace('tag-', 'remove-')}>×</button>
-							)}
-						</span>
-					))}
-				</div>
-			)}
+			{tagList}
 
-			<div style={{ position: 'relative' }}>
+			<div style={{ position: 'relative', display: 'inline-block', maxWidth: 300, width: '100%' }}>
 				<input
 					ref={inputRef}
 					type="text"
@@ -147,46 +162,46 @@ export function TagEditor({ tsumegoId, isAdmin, problemSolved, canContribute, in
 					onChange={e => { setQuery(e.target.value); setOpen(true); }}
 					onFocus={() => setOpen(true)}
 					onKeyDown={handleKeyDown}
-					style={{ width: '100%', maxWidth: 300, padding: '6px 10px', background: '#1a1a1a', border: '1px solid #444', borderRadius: 4, color: '#ddd', fontSize: 14 }}
+					style={{ width: '100%', maxWidth: 300, padding: '6px 10px', background: 'var(--info-box-background)', border: '1px solid var(--current-border-color)', borderRadius: 4, color: 'var(--text-color)', fontSize: 14 }}
 				/>
 
 				{open && visible.length > 0 && (
 					<div
 						ref={dropdownRef}
-						style={{ position: 'absolute', top: '100%', left: 0, zIndex: 50, width: '100%', maxWidth: 300, maxHeight: 200, overflowY: 'auto', background: '#2a2a2a', border: '1px solid #555', borderRadius: 4, marginTop: 2 }}
+						style={{ position: 'absolute', top: '100%', left: 0, zIndex: 50, width: '100%', maxWidth: 300, maxHeight: 200, overflowY: 'auto', background: 'var(--info-box-background)', border: '1px solid var(--current-border-color)', borderRadius: 4, marginTop: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
 					>
 						{visible.map((tag, i) => {
 							const tagStyle: React.CSSProperties = {
 								padding: '6px 10px',
 								cursor: 'pointer',
 								fontSize: 14,
-								color: '#ddd',
-								background: i === selectedIndex ? '#444' : 'transparent',
+								color: 'var(--text-color)',
+								background: i === selectedIndex ? 'rgba(128, 128, 128, 0.15)' : 'transparent',
 							};
 
 							if (tag.isAdded && !tag.isMine && !tag.isApproved)
 							{
 								return (
 									<div key={tag.id} style={{ ...tagStyle, color: '#e03c4b', cursor: 'default' }}>
-										{tag.name} <span style={{ color: '#888', fontSize: 12 }}>(already proposed)</span>
+										{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>(already proposed)</span>
 									</div>
 								);
 							}
 
 							if (tag.isAdded && tag.isMine && !tag.isApproved)
-								return <div key={tag.id} style={{ ...tagStyle, color: '#888', cursor: 'default' }}>{tag.name} (pending)</div>;
+								return <div key={tag.id} style={{ ...tagStyle, color: 'var(--text-softer-color)', cursor: 'default' }}>{tag.name} (pending)</div>;
 
 							return (
 								<div
 									key={tag.id}
 									style={tagStyle}
 									onClick={() => handleAdd(tag.name)}
-									onMouseEnter={e => { (e.target as HTMLElement).style.background = '#444'; }}
-									onMouseLeave={e => { (e.target as HTMLElement).style.background = i === selectedIndex ? '#444' : 'transparent'; }}
+									onMouseEnter={e => { (e.target as HTMLElement).style.background = 'rgba(128, 128, 128, 0.15)'; }}
+									onMouseLeave={e => { (e.target as HTMLElement).style.background = i === selectedIndex ? 'rgba(128, 128, 128, 0.15)' : 'transparent'; }}
 									id={makeIdValidName(tag.name)}
 									role="option"
 								>
-									{tag.name}
+									{tag.name}{tag.isHint && <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}> (hint)</span>}
 								</div>
 							);
 						})}
@@ -195,7 +210,7 @@ export function TagEditor({ tsumegoId, isAdmin, problemSolved, canContribute, in
 			</div>
 
 			<div style={{ marginTop: 6 }}>
-				<a href="/tags/add" style={{ color: '#999', fontSize: 12 }} id="create-new-tag">+ New tag</a>
+				<a href="/tags/add" style={{ color: 'var(--text-softer-color)', fontSize: 12 }} id="create-new-tag">+ New tag</a>
 			</div>
 		</div>
 	);

@@ -24,7 +24,9 @@ export function initializeTagEditor()
 				<QueryClientProvider client={queryClient}>
 					<TagEditor
 						tsumegoId={props.tsumegoId ?? 0}
+						userId={props.userId ?? null}
 						isAdmin={props.isAdmin ?? false}
+						isTimeMode={props.isTimeMode ?? false}
 						problemSolved={props.problemSolved ?? false}
 						canContribute={props.canContribute ?? false}
 						initialTags={props.initialTags ?? []}
