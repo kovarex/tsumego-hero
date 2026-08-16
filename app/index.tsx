@@ -1,123 +1,24 @@
-import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ErrorBoundary } from './shared/ErrorBoundary';
-import { AuthProvider } from './shared/AuthContext';
+import { mountApp } from './shared/mountApp';
 import { CommentSection } from './comments/CommentSection';
 import { IssuesList } from './issues/IssuesList';
-import { RecentAchievements, type RecentAchievement } from './home/RecentAchievements';
-import { ApiError } from './shared/api';
-import type { CommentCounts } from './comments/commentTypes';
+import { RecentAchievements } from './home/RecentAchievements';
+import { TagEditor } from './tags/TagEditor';
+import { queryClient } from './queryClient';
 
-const globalQueryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnWindowFocus: false,
-			retry: (failureCount, error) =>
-			{
-				// Don't retry on client errors (4xx)
-				if (error instanceof ApiError && error.status >= 400 && error.status < 500) 
-					return false;
-
-				// Retry server errors up to 3 times
-				return failureCount < 3;
-			},
-			retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000) // Exponential backoff
-		}
-	}
-});
-
-/**
- * Initialize comment sections (play page)
- */
-function initializeComments()
-{
-	const roots = document.querySelectorAll<HTMLElement>('[data-comments-root]');
-
-	roots.forEach(root =>
-	{
-		const tsumegoId = parseInt(root.dataset.tsumegoId || '0', 10);
-		const userId = root.dataset.userId ? parseInt(root.dataset.userId, 10) : null;
-		const isAdmin = root.dataset.isAdmin === 'true';
-		const initialCounts: CommentCounts = JSON.parse(
-			root.dataset.initialCounts || '{"comments":0,"openIssues":0,"closedIssues":0}'
-		);
-		const reactRoot = createRoot(root);
-		reactRoot.render(
-			<ErrorBoundary>
-				<AuthProvider userId={userId} isAdmin={isAdmin}>
-					<QueryClientProvider client={globalQueryClient}>
-						<CommentSection tsumegoId={tsumegoId} initialCounts={initialCounts} />
-					</QueryClientProvider>
-				</AuthProvider>
-			</ErrorBoundary>
-		);
-	});
-}
-
-/**
- * Initialize issues list (admin issues page)
- */
-function initializeIssuesList()
-{
-	const root = document.querySelector<HTMLElement>('[data-issues-root]');
-
-	if (!root) 
-		return;
-
-	// Parse URL params for initial state
-	const statusFilter = (root.dataset.statusFilter || 'opened') as 'opened' | 'closed' | 'all';
-	const currentPage = parseInt(root.dataset.currentPage || '1', 10);
-	const userId = root.dataset.userId ? parseInt(root.dataset.userId, 10) : null;
-	const isAdmin = root.dataset.isAdmin === 'true';
-
-	const reactRoot = createRoot(root);
-	reactRoot.render(
-		<ErrorBoundary>
-			<AuthProvider userId={userId} isAdmin={isAdmin}>
-				<QueryClientProvider client={globalQueryClient}>
-					<IssuesList initialFilter={statusFilter} initialPage={currentPage} />
-				</QueryClientProvider>
-			</AuthProvider>
-		</ErrorBoundary>
-	);
-}
-
-function initializeRecentAchievements()
-{
-	const root = document.querySelector<HTMLElement>('[data-recent-achievements-root]');
-	if (!root)
-		return;
-
-	const initialAchievements = JSON.parse(root.dataset.initialAchievements || '[]') as RecentAchievement[];
-
-	const reactRoot = createRoot(root);
-	reactRoot.render(
-		<ErrorBoundary>
-			<AuthProvider userId={null} isAdmin={false}>
-				<QueryClientProvider client={globalQueryClient}>
-					<RecentAchievements initialAchievements={initialAchievements} />
-				</QueryClientProvider>
-			</AuthProvider>
-		</ErrorBoundary>
-	);
-}
-
-/**
- * Main initialization entry point
- */
 function initializeApp()
 {
-	initializeComments();
-	initializeIssuesList();
-	initializeRecentAchievements();
+	mountApp('[data-comments-root]', CommentSection);
+	mountApp('[data-issues-root]', IssuesList);
+	mountApp('[data-recent-achievements-root]', RecentAchievements);
+	mountApp('[data-tag-editor-root]', TagEditor);
 
 	// Expose React Query invalidation for Selenium testing
 	(window as any).__invalidateComments = () =>
-		globalQueryClient.invalidateQueries({ queryKey: ['comments'] });
+		queryClient.invalidateQueries({ queryKey: ['comments'] });
 }
 
 // Wait for DOM to be fully loaded, then initialize
-if (document.readyState === 'loading') 
+if (document.readyState === 'loading')
 	document.addEventListener('DOMContentLoaded', initializeApp);
-else 
+else
 	initializeApp();

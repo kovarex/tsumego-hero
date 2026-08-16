@@ -7,7 +7,6 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
-App::uses('TagConnectionsEdit', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 
 class Play
@@ -332,7 +331,7 @@ class Play
 			$idForSignature = TsumegosController::getTheIdForTheThing($idForSignature2);
 		}
 
-		$tagConnectionsEdit = new TagConnectionsEdit($id, TsumegoUtil::hasStateAllowingInspection($t));
+		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
 		$isAllowedToContribute2 = false;
@@ -401,7 +400,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);
 
-		($this->setFunction)('tagConnectionsEdit', $tagConnectionsEdit);
+		($this->setFunction)('tagData', $tagData);
 		($this->setFunction)('requestSignature', $requestSignature);
 		($this->setFunction)('idForSignature', $idForSignature);
 		($this->setFunction)('idForSignature2', $idForSignature2);

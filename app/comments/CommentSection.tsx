@@ -110,8 +110,8 @@ export function CommentSection({ tsumegoId, initialCounts }: CommentSectionProps
 		moveCommentRef.current = moveCommentMutation.mutate;
 	});
 	const handleMoveComment = useCallback(
-		(commentId: number, targetIssueId: number | 'standalone') =>
-			moveCommentRef.current({ commentId, targetIssueId }),
+		async (commentId: number, targetIssueId: number | 'standalone') =>
+			await moveCommentRef.current({ commentId, targetIssueId }),
 		 
 		[]
 	);

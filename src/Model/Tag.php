@@ -7,5 +7,22 @@ class Tag extends AppModel
 		$id['table'] =  'tag';
 		parent::__construct($id, $table, $ds);
 	}
-	public static int $POPULAR_COUNT = 10;
+
+	/**
+	 * Return all tags with their connection status for a given tsumego.
+	 */
+	public static function getForTsumego(int $tsumegoId): array
+	{
+		return Util::query("
+SELECT
+	tag.id,
+	tag.name,
+	tag.hint,
+	tag_connection.id AS tag_connection_id,
+	tag_connection.approved,
+	tag_connection.user_id = ? AS is_mine
+FROM tag
+LEFT JOIN tag_connection ON tag_connection.tag_id = tag.id AND tag_connection.tsumego_id = ?
+ORDER BY tag.name", [Auth::getUserID(), $tsumegoId]);
+	}
 }

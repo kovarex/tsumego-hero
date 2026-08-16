@@ -17,6 +17,12 @@ $userId = Auth::isLoggedIn() ? Auth::getUserID() : null;
 // Calculate counts for tabs (only thing we need from server)
 $TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 $counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
+$props = json_encode([
+	'userId' => $userId,
+	'isAdmin' => Auth::isAdmin(),
+	'tsumegoId' => (int) $tsumegoId,
+	'initialCounts' => $counts,
+]);
 ?>
 
 <!-- React mount point with only counts (fetch comments on tab click) -->
@@ -24,10 +30,7 @@ $counts = $TsumegoIssue->getCommentSectionCounts($tsumegoId);
 	id="commentSpace"
 	class="tsumego-comments-section"
 	data-comments-root 
-	data-tsumego-id="<?= $tsumegoId ?>"
-	data-user-id="<?= $userId ?>"
-	data-is-admin="<?= Auth::isAdmin() ? 'true' : 'false' ?>"
-	data-initial-counts="<?= htmlspecialchars(json_encode($counts), ENT_QUOTES, 'UTF-8') ?>"
+	data-props="<?= htmlspecialchars($props, ENT_QUOTES, 'UTF-8') ?>"
 	<?php if (!$shouldShowComments): ?>style="display: none;"<?php endif; ?>
 >
 	<!-- React will mount here and fetch comments when tab clicked -->

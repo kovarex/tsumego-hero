@@ -329,7 +329,8 @@ $this->end();
 			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
 			if($ac) $modeActions2 = 'class="modeboxes"';
 			else $modeActions2 = 'class="modeboxes"';
-			echo '<div data-recent-achievements-root data-initial-achievements="'.h(json_encode($recentAchievements, JSON_HEX_QUOT | JSON_HEX_APOS)).'"></div>';
+			$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
+echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'"></div>';
 		?>
 		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
 			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>

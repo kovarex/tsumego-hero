@@ -187,21 +187,6 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame(1, $count);
 	}
 
-	public function testPopularTagsUpdate()
-	{
-		$contextInput = [];
-		$contextInput['tsumegos'] = [];
-		for ($i = 0; $i < Tag::$POPULAR_COUNT; $i++)
-			$contextInput['tsumegos'][] = ['tags' => [['name' => 'tag-' . $i]]];
-		$contextInput['tags'][] = ['name' => 'unpopular-tag'];
-		$context = new ContextPreparator($contextInput);
-		$this->testAction('/cron/daily/' . CRON_SECRET);
-		$popularCount = ClassRegistry::init('Tag')->find('count', ['conditions' => ['popular' => 1]]);
-		$this->assertSame($popularCount, Tag::$POPULAR_COUNT);
-		$unpopularTag = ClassRegistry::init('Tag')->find('first', ['conditions' => ['name' => 'unpopular-tag']]);
-		$this->assertSame($unpopularTag['Tag']['popular'], false);
-	}
-
 	public function testUpdateSolved()
 	{
 		$context = new ContextPreparator([
