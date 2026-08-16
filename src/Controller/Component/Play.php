@@ -205,7 +205,6 @@ class Play
 
 		$ogDescription = strip_tags($t['Tsumego']['description'] ?? '');
 		$ogDescription = str_ireplace('[b]', 'Black', $ogDescription);
-		$ogDescription = str_ireplace('[w]', 'White', $ogDescription);
 		$author = $t['Tsumego']['author'] ?? '';
 		if ($author !== '' && $author !== 'Unknown')
 			$ogDescription .= ' - by ' . $author;
