@@ -341,7 +341,7 @@ class Play
 		{
 			// Build user sets list for the heart dropdown
 			$userSets = Util::query("
-SELECT DISTINCT s.id, s.title, sc.tsumego_id
+SELECT s.id, s.title, sc.tsumego_id
 FROM `set` s
 LEFT JOIN set_connection sc ON sc.set_id = s.id AND sc.tsumego_id = ?
 WHERE s.user_id = ?

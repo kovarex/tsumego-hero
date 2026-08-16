@@ -158,6 +158,35 @@ class CronControllerTest extends TestCaseWithAuth
 		$this->assertSame(7, (int) $tsumego['Tsumego']['failed']);
 	}
 
+	public function testPublishWhenAlreadyInTargetSetKeepsOneConnection(): void
+	{
+		$context = new ContextPreparator([
+			'tsumegos' => [
+				['sets' => [
+					['name' => 'sandbox set', 'num' => 5, 'public' => 0],
+					['name' => 'set 1', 'num' => 3],
+				]],
+			]]);
+
+		$tsumegoToMigrate = $context->tsumegos[0];
+		$targetSetId = $tsumegoToMigrate['set-connections'][1]['set_id'];
+
+		ClassRegistry::init('Schedule')->create();
+		$scheduleItem = [];
+		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
+		$scheduleItem['set_id'] = $targetSetId;
+		$scheduleItem['date'] = date('Y-m-d');
+		$scheduleItem['published'] = 0;
+		ClassRegistry::init('Schedule')->save($scheduleItem);
+
+		CronController::publish();
+
+		$count = ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $tsumegoToMigrate['id']],
+		]);
+		$this->assertSame(1, $count);
+	}
+
 	public function testPopularTagsUpdate()
 	{
 		$contextInput = [];

@@ -181,8 +181,22 @@ WHERE
 		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
 		if (!$setConnection)
 			return;
-		$setConnection['SetConnection']['set_id'] = $to;
-		ClassRegistry::init('SetConnection')->save($setConnection);
+
+		if ($setConnection['SetConnection']['set_id'] != $to)
+		{
+			// UNIQUE(set_id, tsumego_id): moving into a set that already contains
+			// this tsumego would fail, so drop this connection instead.
+			$alreadyInTarget = ClassRegistry::init('SetConnection')->find('first', [
+				'conditions' => ['set_id' => $to, 'tsumego_id' => $tsumegoID],
+			]);
+			if ($alreadyInTarget)
+				ClassRegistry::init('SetConnection')->delete($setConnection['SetConnection']['id']);
+			else
+			{
+				$setConnection['SetConnection']['set_id'] = $to;
+				ClassRegistry::init('SetConnection')->save($setConnection);
+			}
+		}
 
 		// delete tsumego stats
 		$tsumego['Tsumego']['created'] = $date . ' 22:00:00';
