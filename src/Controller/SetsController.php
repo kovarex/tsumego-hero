@@ -20,8 +20,6 @@ class SetsController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
-	public $title = 'tsumego-hero.com';
-
 	/**
 	 * @return void
 	 */
@@ -982,6 +980,43 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$displayTitle = $set['Set']['title'] . $tsumegoButtons->getPartitionTitleSuffix();
 		$this->set('_title', $displayTitle . ' on Tsumego Hero');
 		$this->set('setTitle', $displayTitle);
+
+		$ogDescription = trim(strip_tags($set['Set']['description'] ?? ''));
+		if ($ogDescription === '')
+		{
+			if ($tsumegoFilters->query === 'topics')
+				$ogDescription = $this->Set->getProblemCount($set['Set']['id']) . ' go problems';
+			else
+				$ogDescription = 'Interactive go problems';
+		}
+
+		$og = [
+			'title' => $displayTitle,
+			'description' => $ogDescription,
+			'url' => Router::url('/sets/view/' . $set['Set']['id'], true),
+			'type' => 'website',
+			'site_name' => 'Tsumego',
+		];
+
+		$image = $set['Set']['image'] ?? '';
+		if ($image !== '')
+		{
+			$og['image'] = Router::url('/img/' . $image, true);
+			$og['image_alt'] = 'Cover image of ' . $displayTitle;
+			$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $image);
+			if (file_exists($imagePath))
+			{
+				$size = getimagesize($imagePath);
+				if ($size)
+				{
+					$og['image_width'] = $size[0];
+					$og['image_height'] = $size[1];
+					$og['image_type'] = $size['mime'];
+				}
+			}
+		}
+
+		$this->set('og', $og);
 
 		if (Auth::isLoggedIn() && $tsumegoFilters->query == 'topics')
 		{

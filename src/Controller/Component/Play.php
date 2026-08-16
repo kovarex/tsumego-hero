@@ -199,6 +199,38 @@ class Play
 		}
 		else
 			$sgf = $sgfdb;
+
+		$ogTitle = $set['Set']['title'] ?? '';
+		$ogTitle .= ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $amountOfOtherCollection;
+
+		$ogDescription = strip_tags($t['Tsumego']['description'] ?? '');
+		$ogDescription = str_ireplace('[b]', 'Black', $ogDescription);
+		$author = $t['Tsumego']['author'] ?? '';
+		if ($author !== '' && $author !== 'Unknown')
+			$ogDescription .= ' - by ' . $author;
+		if (trim($ogDescription) === '')
+			$ogDescription = $ogTitle;
+
+		$sgfCreated = $sgf['Sgf']['created'] ?? '';
+		$imageUrl = Router::url('/tsumego-image/' . $currentSetConnection['SetConnection']['id']
+			. '?v=' . Constants::$TSUMEGO_IMAGE_VERSION
+			. '&t=' . ($sgfCreated !== '' ? strtotime($sgfCreated) : ''), true);
+
+		($this->setFunction)('og', [
+			'title' => $ogTitle,
+			'description' => $ogDescription,
+			'image' => $imageUrl,
+			'image_type' => 'image/png',
+			'image_width' => Constants::$OG_IMAGE_WIDTH,
+			'image_height' => Constants::$OG_IMAGE_HEIGHT,
+			'image_alt' => $ogTitle,
+			'url' => Router::url('/' . $currentSetConnection['SetConnection']['id'], true),
+			'type' => 'website',
+			'site_name' => 'Tsumego',
+			'locale' => 'en_US',
+			'twitter_card' => 'summary_large_image',
+		]);
+
 		if (!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0)
 		{
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
