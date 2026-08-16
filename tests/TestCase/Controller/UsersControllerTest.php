@@ -253,6 +253,7 @@ class UsersControllerTest extends ControllerTestCase
 	public function testShowPublishSchedule()
 	{
 		$context = new ContextPreparator([
+			'user' => ['admin' => true],
 			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
 				['sets' => [['name' => 'set 1', 'num' => 673]]]]]);
@@ -264,6 +265,7 @@ class UsersControllerTest extends ControllerTestCase
 		$scheduleItem = [];
 		$scheduleItem['tsumego_id'] = $tsumegoToPublish['id'];
 		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['set_id_from'] = $tsumegoToPublish['set-connections'][0]['set_id'];
 		$scheduleItem['date'] = date('Y-m-d');
 		$scheduleItem['published'] = 0;
 		ClassRegistry::init('Schedule')->save($scheduleItem);

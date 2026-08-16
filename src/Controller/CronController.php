@@ -167,18 +167,21 @@ WHERE
 		$todaysSchedule = ClassRegistry::init('Schedule')->find('all', ['conditions' => ['date' => $date, 'published' => 0]]) ?: [];
 		foreach ($todaysSchedule as $item)
 		{
-			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date']);
+			self::publishSingle($item['Schedule']['tsumego_id'], $item['Schedule']['set_id'], $item['Schedule']['date'], $item['Schedule']['set_id_from']);
 			$item['Schedule']['published'] = 1;
 			ClassRegistry::init('Schedule')->save($item);
 		}
 	}
 
-	protected static function publishSingle($tsumegoID = null, $to = null, $date = null): void
+	protected static function publishSingle($tsumegoID, $to, $date, $setIdFrom): void
 	{
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 			return;
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+
+		$setConnection = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['tsumego_id' => $tsumegoID, 'set_id' => $setIdFrom],
+		]);
 		if (!$setConnection)
 			return;
 		$setConnection['SetConnection']['set_id'] = $to;

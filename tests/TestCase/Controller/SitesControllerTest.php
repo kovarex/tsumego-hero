@@ -54,6 +54,7 @@ class SitesControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $today,
 			'published' => 1,
 		]);
@@ -83,6 +84,7 @@ class SitesControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $pastDate,
 			'published' => 1,
 		]);
@@ -110,6 +112,7 @@ class SitesControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $publishedDate,
 			'published' => 1,
 		]);
@@ -117,6 +120,7 @@ class SitesControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => $unpublishedDate,
 			'published' => 0,
 		]);
@@ -137,6 +141,7 @@ class SitesControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save([
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'set_id' => $context->tsumegos[0]['set-connections'][0]['set_id'],
+			'set_id_from' => $context->tsumegos[0]['set-connections'][0]['set_id'],
 			'date' => date('Y-m-d', strtotime('+100 days')),
 			'published' => 1,
 		]);
@@ -175,6 +180,7 @@ class SitesControllerTest extends ControllerTestCase
 			ClassRegistry::init('Schedule')->save([
 				'tsumego_id' => $tsumego['id'],
 				'set_id' => $tsumego['set-connections'][0]['set_id'],
+				'set_id_from' => $tsumego['set-connections'][0]['set_id'],
 				'date' => $today,
 				'published' => 1,
 			]);

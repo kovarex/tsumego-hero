@@ -11,6 +11,8 @@ App::uses('SGFProposalsRenderer', 'Utility');
 App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
+App::uses('BadRequestException', 'Routing/Error');
+App::uses('ForbiddenException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
 
 class UsersController extends AppController
@@ -24,24 +26,137 @@ class UsersController extends AppController
 	// shows the publish schedule
 	public function showPublishSchedule(): void
 	{
-		$this->loadModel('Tsumego');
+		if (!Auth::isAdmin())
+			throw new ForbiddenException();
+
 		$this->loadModel('Set');
-		$this->loadModel('Schedule');
-		$this->loadModel('SetConnection');
 
-		$p = $this->Schedule->find('all', ['order' => 'date ASC', 'conditions' => ['published' => 0]]);
+		$p = Util::query("
+SELECT
+	schedule.id AS id,
+	schedule.date AS date,
+	schedule.tsumego_id AS tsumego_id,
+	schedule.set_id AS set_id,
+	set_connection.num AS num,
+	`set`.title AS set_title,
+	`set`.title2 AS set_title2
+FROM schedule
+LEFT JOIN set_connection
+	ON set_connection.tsumego_id = schedule.tsumego_id
+	AND set_connection.set_id = schedule.set_id_from
+LEFT JOIN `set` ON `set`.id = set_connection.set_id
+WHERE schedule.published = 0
+ORDER BY schedule.date ASC");
 
-		$pCount = count($p);
-		for ($i = 0; $i < $pCount; $i++)
-		{
-			$t = $this->Tsumego->findById($p[$i]['Schedule']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
-			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
-			$s = $this->Set->findById($t['Tsumego']['set_id']);
-			$p[$i]['Schedule']['num'] = $scT['SetConnection']['num'];
-			$p[$i]['Schedule']['set'] = $s['Set']['title'] . ' ' . $s['Set']['title2'] . ' ';
-		}
 		$this->set('p', $p);
+		$this->set('sandboxSets', $this->Set->find('all', [
+			'order' => ['Set.order'],
+			'conditions' => ['public' => 0, 'user_id IS NULL'],
+		]) ?: []);
+		$this->set('publicSets', $this->Set->find('all', [
+			'order' => ['Set.order'],
+			'conditions' => ['public' => 1],
+		]) ?: []);
+	}
+
+	/**
+	 * Schedule sandbox problems for publishing. Admin only.
+	 * Schedules the next `count` unscheduled problems of the source set that are
+	 * not already in the target set, optionally starting from position `num`.
+	 */
+	public function addToSchedule(): void
+	{
+		if (!Auth::isAdmin())
+			throw new ForbiddenException();
+
+		$setIdFrom = (int) ($this->data['set_id_from'] ?? 0);
+		$targetSetId = (int) ($this->data['set_id_to'] ?? 0);
+		$num = (int) ($this->data['num'] ?? 0);
+		$count = (int) ($this->data['count'] ?? 1);
+		$startDate = (string) ($this->data['start_date'] ?? '');
+
+		if ($setIdFrom <= 0 || $targetSetId <= 0)
+			throw new BadRequestException('Invalid set ids.');
+		if ($count < 1 || $count > 100)
+			throw new BadRequestException('Count must be between 1 and 100.');
+		if (!strtotime($startDate))
+			throw new BadRequestException('Invalid start date.');
+		if (strtotime($startDate) < strtotime('tomorrow'))
+			throw new BadRequestException('Start date must be tomorrow or later.');
+
+		$sourceSet = ClassRegistry::init('Set')->find('first', [
+			'conditions' => ['id' => $setIdFrom, 'public' => 0, 'user_id IS NULL'],
+		]);
+		if (!$sourceSet)
+			throw new BadRequestException('Source set must be a sandbox set.');
+
+		$targetSet = ClassRegistry::init('Set')->find('first', [
+			'conditions' => ['id' => $targetSetId, 'public' => 1],
+		]);
+		if (!$targetSet)
+			throw new BadRequestException('Target set must be public.');
+
+		$numCondition = $num > 0 ? " AND sc.num >= {$num}" : '';
+		$candidates = Util::query("
+SELECT sc.tsumego_id
+FROM set_connection sc
+WHERE sc.set_id = {$setIdFrom}
+  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM schedule WHERE published = 0)
+  AND sc.tsumego_id NOT IN (SELECT tsumego_id FROM set_connection WHERE set_id = {$targetSetId})
+  {$numCondition}
+ORDER BY sc.num ASC
+LIMIT {$count}");
+
+		$scheduleModel = ClassRegistry::init('Schedule');
+		$scheduled = 0;
+		foreach ($candidates as $candidate)
+		{
+			$date = date('Y-m-d', strtotime($startDate . ' +' . $scheduled . ' days'));
+			$scheduleModel->create();
+			$scheduleModel->save([
+				'Schedule' => [
+					'tsumego_id' => $candidate['tsumego_id'],
+					'set_id' => $targetSetId,
+					'set_id_from' => $setIdFrom,
+					'date' => $date,
+					'published' => 0,
+				],
+			]);
+			AdminActivityLogger::log(AdminActivityType::SCHEDULE_ADD, $candidate['tsumego_id'], $targetSetId, null, $date);
+			$scheduled++;
+		}
+
+		CookieFlash::set($scheduled . ' problems scheduled.', 'success');
+		$this->redirect('/users/showPublishSchedule');
+	}
+
+	/**
+	 * Cancel a pending schedule entry. Admin only.
+	 */
+	public function cancelSchedule($id): void
+	{
+		if (!Auth::isAdmin())
+			throw new ForbiddenException();
+
+		$id = (int) $id;
+		$schedule = ClassRegistry::init('Schedule')->findById($id);
+		if (!$schedule)
+			throw new NotFoundException('Schedule entry not found.');
+		if ($schedule['Schedule']['published'])
+			throw new BadRequestException('Schedule entry is already published.');
+
+		AdminActivityLogger::log(
+			AdminActivityType::SCHEDULE_CANCEL,
+			$schedule['Schedule']['tsumego_id'],
+			$schedule['Schedule']['set_id'],
+			null,
+			$schedule['Schedule']['date']
+		);
+
+		ClassRegistry::init('Schedule')->delete($id);
+
+		CookieFlash::set('Schedule entry cancelled.', 'success');
+		$this->redirect('/users/showPublishSchedule');
 	}
 
 	/**
