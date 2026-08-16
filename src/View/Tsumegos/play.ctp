@@ -1182,9 +1182,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	?>
 
-	<?php if($firstRanks==0)
-		echo "window.dispatchEvent(new Event('tag-editor-draw'));"; ?>
-
 		$('#target').click(function(e){
 			if(locked)
 				window.location = nextButtonLink;
