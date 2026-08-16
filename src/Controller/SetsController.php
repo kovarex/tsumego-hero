@@ -159,11 +159,7 @@ SELECT
 	COALESCE(SUM(t.rating), 0) AS elo_sum,
 	COALESCE(SUM(CASE WHEN ts.status IN ('S','W','C') THEN 1 ELSE 0 END), 0) AS solved
 FROM `set` s
-LEFT JOIN (
-	SELECT set_id, tsumego_id, MIN(num) AS num
-	FROM set_connection
-	GROUP BY set_id, tsumego_id
-) sc ON sc.set_id = s.id
+LEFT JOIN set_connection sc ON sc.set_id = s.id
 LEFT JOIN tsumego t ON t.id = sc.tsumego_id
 LEFT JOIN tsumego_status ts ON ts.tsumego_id = sc.tsumego_id AND ts.user_id = ?
 WHERE s.user_id = ? $publicFilter

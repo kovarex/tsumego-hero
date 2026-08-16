@@ -1008,22 +1008,12 @@ class SetsControllerTest extends TestCaseWithAuth
 			'query' => 'topics']];
 		$contextParams['tsumegos'] = [];
 
-		// first 40 problems are 20 duplications
-		for ($i = 0; $i < 10; $i++)
-			$contextParams['tsumegos'] [] = [
-				'sets' => [
-					['name' => 'partitioned set', 'num' => $i * 2 + 1],
-					['name' => 'partitioned set', 'num' => $i * 2 + 2]],
-				'status' => 'S'];
-
-		// The reversed direction of filling is important here
-		// this means that the ids of tsumegos are not sequential in the set and the sql logic needs to make sure
-		// to sort primarily by set connection num
-		for ($i = 299; $i >= 20; $i--)
+		// Fill 300 problems in reverse so tsumego ids are not sequential in the
+		// set; the SQL must sort primarily by set connection num.
+		for ($i = 299; $i >= 0; $i--)
 			$contextParams['tsumegos'] [] = [
 				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]],
 				'status' => ($i < 200 ? ($i < 66 ? 'S' : 'N') : (($i - 200) < 66 ? 'S' : 'N'))];
-		;
 
 		new ContextPreparator($contextParams);
 		$browser->get("sets");
@@ -1037,7 +1027,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
 		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
-		$this->assertSame('Problems found: 290', $browser->find('#problems-found')->getText());
+		$this->assertSame('Problems found: 300', $browser->find('#problems-found')->getText());
 	}
 
 	public function testTagBasedSetViewShowsSolvedPercentProperly(): void
