@@ -335,9 +335,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$getTitle = str_replace('&','and',$set['Set']['title']);
 			$getTitle .= ' '.$set['SetConnection']['num'];
 		$tagEditorProps = json_encode([
-			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'userId' => Auth::getUserID() ? (int) Auth::getUserID() : null,
 			'isAdmin' => Auth::isAdmin(),
+			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
 			'canContribute' => $isAllowedToContribute2,
@@ -354,7 +354,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		<div class="tag-container" align="center">
 			<div
 				data-tag-editor-root
-				data-tag-editor-props="<?php echo htmlspecialchars($tagEditorProps); ?>"
+				data-props="<?php echo htmlspecialchars($tagEditorProps); ?>"
 			></div>
 		</div>
 		<br>

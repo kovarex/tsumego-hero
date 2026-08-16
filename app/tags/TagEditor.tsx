@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useAuth } from '../shared/AuthContext';
 import type { TagItem } from './tagTypes';
 import { addTag, removeTag } from './api';
 
@@ -8,16 +9,15 @@ declare function makeIdValidName(name: string): string;
 interface Props
 {
 	tsumegoId: number;
-	userId: number | null;
-	isAdmin: boolean;
 	isTimeMode: boolean;
 	problemSolved: boolean;
 	canContribute: boolean;
 	initialTags: TagItem[];
 }
 
-export function TagEditor({ tsumegoId, userId, isAdmin, isTimeMode, problemSolved, canContribute, initialTags }: Props)
+export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canContribute, initialTags }: Props)
 {
+	const { userId, isAdmin } = useAuth();
 	const [tags, setTags] = useState<TagItem[]>(initialTags);
 	const [query, setQuery] = useState('');
 	const [selectedIndex, setSelectedIndex] = useState(0);
