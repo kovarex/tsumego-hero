@@ -10,7 +10,24 @@ class AppErrorHandler extends ExceptionRenderer
 		// Plain Exception has code 0, MissingController/Action have non-HTTP codes
 		if ($code < 400 || $code >= 600)
 			$code = 500;
+		// 422 is not in CakePHP 2's default status code map
+		if ($code === 422)
+			$this->controller->response->httpCodes([422 => 'Unprocessable Entity']);
 		$this->controller->response->statusCode($code);
+
+		// JSON API consumers (React frontend) expect {"error": ...} bodies,
+		// regular browser requests get the HTML error page.
+		$wantsJson = $this->controller->request->is('ajax')
+			|| strpos((string) CakeRequest::header('Accept'), 'application/json') !== false;
+
+		if ($wantsJson)
+		{
+			$this->controller->response->type('json');
+			$this->controller->response->body(json_encode(['error' => $error->getMessage()]));
+			$this->controller->response->send();
+			return;
+		}
+
 		$this->controller->set([
 			'url' => $this->controller->request->here,
 			'error' => $error

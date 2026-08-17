@@ -1,16 +1,14 @@
 <?php
 
+App::uses('ForbiddenException', 'Routing/Error');
+
 class CronController extends AppController
 {
 	/* Supposed to be ran daily to reset hearts and hero powers */
 	public function daily($secret)
 	{
 		if ($secret != CRON_SECRET)
-		{
-			$this->response->statusCode(403);
-			$this->response->body('Wrong cron secret.');
-			return $this->response;
-		}
+			throw new ForbiddenException('Wrong cron secret.');
 
 		// Already ran today - nothing to do
 		if (ClassRegistry::init('DayRecord')->find('count', ['conditions' => ['date' => date('Y-m-d')]]) > 0)

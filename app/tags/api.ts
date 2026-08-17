@@ -1,4 +1,4 @@
-import { get } from '../shared/api';
+import { get, post } from '../shared/api';
 import type { TagItem } from './tagTypes';
 
 export async function fetchTags(tsumegoId: number): Promise<TagItem[]>
@@ -8,28 +8,10 @@ export async function fetchTags(tsumegoId: number): Promise<TagItem[]>
 
 export async function addTag(tsumegoId: number, tagName: string): Promise<void>
 {
-	const response = await fetch(`/tagConnection/add/${tsumegoId}/${encodeURIComponent(tagName)}`, {
-		method: 'POST',
-		headers: { 'X-Requested-With': 'XMLHttpRequest' },
-	});
-
-	if (!response.ok)
-	{
-		const body = await response.text();
-		throw new Error(body || `Failed to add tag "${tagName}"`);
-	}
+	await post<{ success: boolean }>(`/tagConnection/add/${tsumegoId}/${encodeURIComponent(tagName)}`, {});
 }
 
 export async function removeTag(tsumegoId: number, tagName: string): Promise<void>
 {
-	const response = await fetch(`/tagConnection/remove/${tsumegoId}/${encodeURIComponent(tagName)}`, {
-		method: 'POST',
-		headers: { 'X-Requested-With': 'XMLHttpRequest' },
-	});
-
-	if (!response.ok)
-	{
-		const body = await response.text();
-		throw new Error(body || `Failed to remove tag "${tagName}"`);
-	}
+	await post<{ success: boolean }>(`/tagConnection/remove/${tsumegoId}/${encodeURIComponent(tagName)}`, {});
 }

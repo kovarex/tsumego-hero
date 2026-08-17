@@ -1,6 +1,11 @@
 <?php
 
 App::uses('TsumegoIssue', 'Model');
+App::uses('BadRequestException', 'Routing/Error');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('NotFoundException', 'Routing/Error');
+App::uses('UnauthorizedException', 'Routing/Error');
+App::uses('UnprocessableEntityException', 'Lib/Error');
 
 /**
  * Controller for managing tsumego issues.
@@ -86,12 +91,7 @@ class TsumegoIssuesController extends AppController
 			throw new MethodNotAllowedException();
 
 		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(401);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'You must be logged in to report an issue']));
-			return $this->response;
-		}
+			throw new UnauthorizedException('You must be logged in to report an issue');
 
 		// Parse JSON request body
 		$input = json_decode($this->request->input(), true);
@@ -100,12 +100,7 @@ class TsumegoIssuesController extends AppController
 		$position = $input['position'] ?? null;
 
 		if (empty($tsumegoId) || empty($message))
-		{
-			$this->response->statusCode(400);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Tsumego ID and message are required']));
-			return $this->response;
-		}
+			throw new BadRequestException('Tsumego ID and message are required');
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
@@ -119,12 +114,7 @@ class TsumegoIssuesController extends AppController
 
 		$TsumegoIssue->create();
 		if (!$TsumegoIssue->save($issue))
-		{
-			$this->response->statusCode(500);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to create issue']));
-			return $this->response;
-		}
+			throw new InternalErrorException('Failed to create issue');
 
 		$issueId = $TsumegoIssue->getLastInsertID();
 
@@ -142,10 +132,7 @@ class TsumegoIssuesController extends AppController
 		{
 			// Rollback: delete the issue if comment fails
 			$TsumegoIssue->delete($issueId);
-			$this->response->statusCode(422);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to create issue']));
-			return $this->response;
+			throw new UnprocessableEntityException('Failed to create issue');
 		}
 
 		// Return full issue data for initial state
@@ -199,32 +186,17 @@ class TsumegoIssuesController extends AppController
 		$issue = $TsumegoIssue->findById($id);
 
 		if (!$issue)
-		{
-			$this->response->statusCode(404);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Issue not found']));
-			return $this->response;
-		}
+			throw new NotFoundException('Issue not found');
 
 		// Only admin or issue author can close
 		$isOwner = $issue['TsumegoIssue']['user_id'] === Auth::getUserID();
 		if (!Auth::isAdmin() && !$isOwner)
-		{
-			$this->response->statusCode(403);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'You are not authorized to close this issue']));
-			return $this->response;
-		}
+			throw new ForbiddenException('You are not authorized to close this issue');
 
 		// Update status to closed
 		$TsumegoIssue->id = $id;
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$CLOSED_STATUS))
-		{
-			$this->response->statusCode(500);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to close issue']));
-			return $this->response;
-		}
+			throw new InternalErrorException('Failed to close issue');
 
 		// Add closing comment if provided
 		$closingMessage = $this->request->data('Issue.message');
@@ -260,32 +232,17 @@ class TsumegoIssuesController extends AppController
 			throw new MethodNotAllowedException();
 
 		if (!Auth::isAdmin())
-		{
-			$this->response->statusCode(403);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Only admins can reopen issues']));
-			return $this->response;
-		}
+			throw new ForbiddenException('Only admins can reopen issues');
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
 		if (!$issue)
-		{
-			$this->response->statusCode(404);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Issue not found']));
-			return $this->response;
-		}
+			throw new NotFoundException('Issue not found');
 
 		$TsumegoIssue->id = $id;
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))
-		{
-			$this->response->statusCode(500);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to reopen issue']));
-			return $this->response;
-		}
+			throw new InternalErrorException('Failed to reopen issue');
 
 		$this->response->type('json');
 		$this->response->body(json_encode(['success' => true]));
@@ -309,23 +266,13 @@ class TsumegoIssuesController extends AppController
 			throw new MethodNotAllowedException();
 
 		if (!Auth::isAdmin())
-		{
-			$this->response->statusCode(403);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Only admins can move comments']));
-			return $this->response;
-		}
+			throw new ForbiddenException('Only admins can move comments');
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($commentId);
 
 		if (!$comment)
-		{
-			$this->response->statusCode(404);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Comment not found']));
-			return $this->response;
-		}
+			throw new NotFoundException('Comment not found');
 
 		$targetIssueId = $this->request->data('Comment.tsumego_issue_id');
 		$currentIssueId = $comment['TsumegoComment']['tsumego_issue_id'];
@@ -351,10 +298,7 @@ class TsumegoIssuesController extends AppController
 				return $this->response;
 			}
 
-			$this->response->statusCode(500);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to remove comment from issue']));
-			return $this->response;
+			throw new InternalErrorException('Failed to remove comment from issue');
 		}
 
 		// Handle 'new' - create new issue
@@ -371,12 +315,7 @@ class TsumegoIssuesController extends AppController
 
 			$TsumegoIssue->create();
 			if (!$TsumegoIssue->save($issue))
-			{
-				$this->response->statusCode(500);
-				$this->response->type('json');
-				$this->response->body(json_encode(['error' => 'Failed to create new issue']));
-				return $this->response;
-			}
+				throw new InternalErrorException('Failed to create new issue');
 			$targetIssueId = $TsumegoIssue->getLastInsertID();
 
 			// Move comment to this new issue
@@ -438,9 +377,6 @@ class TsumegoIssuesController extends AppController
 			return $this->response;
 		}
 
-		$this->response->statusCode(500);
-		$this->response->type('json');
-		$this->response->body(json_encode(['error' => 'Failed to move comment']));
-		return $this->response;
+		throw new InternalErrorException('Failed to move comment');
 	}
 }

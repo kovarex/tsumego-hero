@@ -26,8 +26,10 @@ class CronControllerTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator(['user' => ['mode' => Constants::$LEVEL_MODE, 'used_refinement' => 1]]);
 		$this->assertSame($context->reloadUser()['used_refinement'], 1);
+
+		$this->expectException(ForbiddenException::class);
+
 		$this->testAction('/cron/daily/wrongsecret');
-		$this->assertSame($context->reloadUser()['used_refinement'], 1); // nothing happened
 	}
 
 

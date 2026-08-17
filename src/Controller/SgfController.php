@@ -11,27 +11,15 @@ class SgfController extends AppController
 	public function fetch(int $sgfID)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(403);
-			$this->response->body('User not logged in.');
-			return $this->response;
-		}
+			throw new ForbiddenException('User not logged in.');
 
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
 		if (!$sgf)
-		{
-			$this->response->statusCode(404);
-			$this->response->body('Sgf not found.');
-			return $this->response;
-		}
+			throw new NotFoundException('Sgf not found.');
 
 		$status = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $sgf['Sgf']['tsumego_id'], 'user_id' => Auth::getUserID()]]);
 		if (!Auth::isAdmin() && (!$status || !TsumegoUtil::isRecentlySolved($status['TsumegoStatus']['status'])))
-		{
-			$this->response->statusCode(403);
-			$this->response->body('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
-			return $this->response;
-		}
+			throw new ForbiddenException('Related tsumego is not in a solved state for the user ' . Auth::getUser()['name']);
 
 		$this->response->statusCode(200);
 		$this->response->body($sgf['Sgf']['sgf']);
