@@ -117,6 +117,7 @@ class CronControllerTest extends TestCaseWithAuth
 		$scheduleItem = [];
 		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
 		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['set_id_from'] = $tsumegoToMigrate['set-connections'][0]['set_id'];
 		$scheduleItem['date'] = date('Y-m-d');
 		$scheduleItem['published'] = 0;
 		ClassRegistry::init('Schedule')->save($scheduleItem);
@@ -143,6 +144,7 @@ class CronControllerTest extends TestCaseWithAuth
 		$scheduleItem = [];
 		$scheduleItem['tsumego_id'] = $tsumegoToMigrate['id'];
 		$scheduleItem['set_id'] = $publicSetID;
+		$scheduleItem['set_id_from'] = $tsumegoToMigrate['set-connections'][0]['set_id'];
 		$scheduleItem['date'] = date('Y-m-d');
 		$scheduleItem['published'] = 1;
 		ClassRegistry::init('Schedule')->save($scheduleItem);

@@ -739,7 +739,9 @@ class ContextPreparator
 			AdminActivityType::ACCEPT_PROPOSAL => 'Accept Proposal',
 			AdminActivityType::REJECT_PROPOSAL => 'Reject Proposal',
 			AdminActivityType::TSUMEGO_MERGE => 'Tsumego Merge',
-			AdminActivityType::DELETE_USER => 'Delete User'];
+			AdminActivityType::DELETE_USER => 'Delete User',
+			AdminActivityType::SCHEDULE_ADD => 'Schedule Add',
+			AdminActivityType::SCHEDULE_CANCEL => 'Schedule Cancel'];
 
 		$adminActivityType = ClassRegistry::init('AdminActivityType');
 
