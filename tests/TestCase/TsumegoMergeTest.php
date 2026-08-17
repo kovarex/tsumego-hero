@@ -66,7 +66,7 @@ class TsumegoMergeTest extends ControllerTestCase
 			$browser->get('/tsumegos/mergeForm');
 			if ($testCase == 'notAdmin')
 			{
-				$this->assertSame(Util::getMyAddress() . '/', $browser->driver->getCurrentURL());
+				$this->assertStringContainsString('Forbidden', $browser->driver->getPageSource());
 				continue;
 			}
 			if ($testCase != 'masterNotSpecified')

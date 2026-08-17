@@ -262,7 +262,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->manage()->deleteAllCookies();
 		$this->clickAndWaitForError($browser, '#tag-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains("Not logged in", $error);
+		$this->assertTextContains("Unauthorized", $error);
 	}
 
 	public function testTryToAddNonExistingTag()
@@ -343,7 +343,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->manage()->deleteAllCookies();
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains("Not logged in", $error);
+			$this->assertTextContains("Unauthorized", $error);
 	}
 
 	public function testTryToRemoveNonExistingTag()
@@ -399,7 +399,7 @@ class TagTest extends ControllerTestCase
 
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains('Only admins can remove', $error);
+		$this->assertTextContains('Forbidden', $error);
 	}
 
 	public function testTryToRemoveTagProposedBySomeoneElse()
@@ -417,7 +417,7 @@ class TagTest extends ControllerTestCase
 
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains("can't remove tag proposed", $error);
+		$this->assertTextContains('Forbidden', $error);
 	}
 
 	public function testAddNewTagAsAdmin()

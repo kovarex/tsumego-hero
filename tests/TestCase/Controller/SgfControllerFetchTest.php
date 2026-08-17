@@ -1,6 +1,7 @@
 <?php
 
 App::uses('ForbiddenException', 'Routing/Error');
+App::uses('UnauthorizedException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
 
 class SgfControllerFetchTest extends ControllerTestCase
@@ -9,7 +10,7 @@ class SgfControllerFetchTest extends ControllerTestCase
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->expectException(ForbiddenException::class);
+		$this->expectException(UnauthorizedException::class);
 
 		$this->testAction('/sgf/fetch/1', ['method' => 'get']);
 	}
