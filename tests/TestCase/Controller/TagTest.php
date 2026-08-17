@@ -343,7 +343,7 @@ class TagTest extends ControllerTestCase
 		$browser->driver->manage()->deleteAllCookies();
 		$this->clickAndWaitForError($browser, '#remove-snapback');
 		$error = $browser->find('[data-testid="tag-error"]')->getText();
-			$this->assertTextContains("Unauthorized", $error);
+		$this->assertTextContains("Unauthorized", $error);
 	}
 
 	public function testTryToRemoveNonExistingTag()
