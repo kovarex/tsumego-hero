@@ -15,6 +15,7 @@ App::uses('AdminActivityType', 'Model');
 App::uses('Progress', 'Utility');
 App::uses('SetEditRenderer', 'Utility');
 App::uses('SetImage', 'Utility');
+App::uses('HtmlSanitizer', 'Utility');
 
 class SetsController extends AppController
 {
@@ -826,7 +827,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			{
 				$this->Set->create();
 				$changeSet = $set;
-				$changeSet['Set']['description'] = $this->_sanitizeDescription($this->data['Set']['description']);
+				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
 				$this->set('data', $changeSet['Set']['description']);
 				$this->Set->save($changeSet, true);
 				$oldDescription = $set['Set']['description'];
@@ -1475,21 +1476,6 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 		}
 		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
-	}
-
-	/**
-	 * Sanitize set description HTML: strip images with external src.
-	 */
-	private function _sanitizeDescription(string $description): string
-	{
-		// Strip <img> tags with non-relative, non-data-URI src
-		$description = preg_replace(
-			'/<img[^>]+src=["\'](?!\/|data:image\/)[^"\']+["\'][^>]*>/i',
-			'',
-			$description
-		);
-
-		return $description;
 	}
 
 	/**

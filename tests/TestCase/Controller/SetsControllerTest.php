@@ -170,6 +170,20 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($problemLinks[0]->getAttribute('href'), '/' . $context->tsumegos[1]['set-connections'][0]['id']);
 	}
 
+	public function testSetViewSanitizesDescriptionOnDisplay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'xss set', 'num' => '1',
+				'description' => '<b onmouseover="alert(1)">hi</b><a href="javascript:alert(2)">click</a>']]]]);
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+
+		$this->testAction('sets/view/' . $setId, ['return' => 'view']);
+
+		$this->assertStringNotContainsString('onmouseover', $this->view);
+		$this->assertStringNotContainsString('javascript:alert(2)', $this->view);
+		$this->assertStringContainsString('<b>hi</b>', $this->view);
+	}
+
 	public function testClearFiltersReloadsCurrentSetView(): void
 	{
 		$context = new ContextPreparator([

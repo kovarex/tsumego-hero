@@ -6,6 +6,7 @@
     "license": "proprietary",
     "require": {
 		"php": ">=8.4",
+		"ezyang/htmlpurifier": "^4.19",
 		"firebase/php-jwt": "^6.11.1",
 		"markstory/asset_compress": "^0.26.0",
 		"pieceofcake2/cakephp": "^2.12",
