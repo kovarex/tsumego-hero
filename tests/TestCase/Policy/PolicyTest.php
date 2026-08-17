@@ -81,8 +81,8 @@ class PolicyTest extends CakeTestCase
 		$policy = new SetPolicy();
 		$sandboxSet = ['public' => 0, 'user_id' => null];
 
-		$this->assertTrue($policy->canView($this->identity(false), $sandboxSet), 'logged-in can view sandbox sets');
-		$this->assertFalse($policy->canView($this->identity(null), $sandboxSet), 'anonymous blocked from sandbox sets');
+		$this->assertTrue($policy->canView($this->identity(false), $sandboxSet), 'logged-in can view sandbox');
+		$this->assertFalse($policy->canView($this->identity(null), $sandboxSet), 'anonymous blocked');
 	}
 
 	public function testSetPolicyRestrictsPrivateUserOwnedSets()
@@ -96,6 +96,19 @@ class PolicyTest extends CakeTestCase
 		$this->assertTrue($policy->canView($this->identity(true), $privateSet), 'admin can view');
 		$this->assertFalse($policy->canView($this->identity(false), $privateSet), 'other user blocked');
 		$this->assertFalse($policy->canView($this->identity(null), $privateSet), 'anonymous blocked');
+	}
+
+	public function testSetPolicyAllowsPlayingSandboxOnlyWithPermission()
+	{
+		$policy = new SetPolicy();
+		$sandboxSet = ['public' => 0, 'user_id' => null];
+		$publicSet = ['public' => 1, 'user_id' => null];
+
+		$this->assertTrue($policy->canPlay($this->identity(true), $sandboxSet), 'admin can play sandbox');
+		$this->assertTrue($policy->canPlay($this->identity(false, 1), $sandboxSet), 'premium can play sandbox');
+		$this->assertFalse($policy->canPlay($this->identity(false), $sandboxSet), 'regular blocked from sandbox');
+		$this->assertFalse($policy->canPlay($this->identity(null), $sandboxSet), 'anonymous blocked from sandbox');
+		$this->assertTrue($policy->canPlay($this->identity(null), $publicSet), 'anyone can play public sets');
 	}
 
 	public function testTsumegoCommentPolicyAllowsOwnerOrAdmin()

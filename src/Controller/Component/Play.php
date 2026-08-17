@@ -4,6 +4,8 @@ App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('SetPolicy', 'Policy');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
@@ -175,6 +177,9 @@ class Play
 			unset($_COOKIE['skip']);
 		}
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
+
+		if (!SetPolicy::canPlay(Auth::identity(), $set['Set']))
+			throw new ForbiddenException();
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 

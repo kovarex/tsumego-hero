@@ -30,6 +30,16 @@ class SetPolicy extends BasePolicy
 	}
 
 	/**
+	 * Solving a problem: sandbox sets require the sandbox permission.
+	 */
+	public static function canPlay($user, $set): bool
+	{
+		if (!($set['public'] == 0 && $set['user_id'] === null))
+			return true;
+		return static::hasPermission($user, 'sandbox');
+	}
+
+	/**
 	 * Editing a set (add/remove/reorder tsumegos): admin or set owner.
 	 */
 	public static function canEdit($user, $set): bool
