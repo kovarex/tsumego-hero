@@ -12,9 +12,6 @@
  * @var TagProposalsRenderer $tagProposalsRenderer
  */
 
-	if(!Auth::isLoggedIn() || !Auth::isAdmin())
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-
 	echo '<div class="homeRight" style="width:40%">';
 	$adminActivityRenderer->render();
 	echo '</div>';

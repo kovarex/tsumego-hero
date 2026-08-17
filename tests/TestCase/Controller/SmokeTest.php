@@ -63,8 +63,8 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'sets/view/favorites', 'name' => 'Favorites', 'auth' => 'logged-in'],
 			['url' => 'sets/sandbox', 'name' => 'Sandbox/premium sets', 'auth' => 'logged-in'],
 
-			// SGF upload history
-			['url' => "sgfs/view/$tsumegoId", 'name' => 'SGF upload history', 'auth' => 'both'],
+			// SGF upload history (admin-only)
+			['url' => "sgfs/view/$tsumegoId", 'name' => 'SGF upload history', 'auth' => 'logged-in'],
 
 			// Tsumego play
 			['url' => $setConnectionId, 'name' => 'Tsumego play', 'auth' => 'both'],

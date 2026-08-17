@@ -154,6 +154,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats($uid = null)
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
@@ -206,6 +207,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats3($sid = null)
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
@@ -255,6 +257,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function uploads()
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Uploads');
 		$this->loadModel('Sgf');
@@ -299,6 +302,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function adminstats(): void
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'Admin Panel');
 		$this->loadModel('User');
@@ -1240,8 +1244,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function acceptSGFProposal($sgfID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToApprove = ClassRegistry::init('Sgf')->findById($sgfID);
 		if (!$proposalToApprove)
@@ -1271,8 +1274,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function rejectSGFProposal($sgfID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToReject = ClassRegistry::init('Sgf')->findById($sgfID);
 		if (!$proposalToReject)
@@ -1307,8 +1309,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function acceptTagConnectionProposal($tagConnectionID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToApprove = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
 		if (!$proposalToApprove)
@@ -1335,8 +1336,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function rejectTagConnectionProposal($tagConnectionID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToReject = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
 		if (!$proposalToReject)

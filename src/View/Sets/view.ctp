@@ -38,14 +38,7 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 || $set['Set']['id'] == 71790 || $set['Set']['id'] == 74761 || $set['Set']['id'] == 81578 || $set['Set']['id'] == 88156)
 	$noImage = true;
 
-if($set['Set']['public'] == 0)
-	if(Auth::isLoggedIn())
-	{
-	}
-	else
-	{
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-	} ?>
+?>
 </script>
 	<div class="homeRight">
 		<p class="title4">Problems</p>

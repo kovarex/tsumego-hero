@@ -337,16 +337,10 @@ class Play
 		$isAllowedToContribute2 = false;
 		if (Auth::isLoggedIn())
 		{
-			if (Auth::getUser()['level'] >= 40)
-				$isAllowedToContribute = true;
-			elseif (Auth::getUser()['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE)
-				$isAllowedToContribute = true;
+			$isAllowedToContribute = Auth::can('can_contribute');
 
 			if (Auth::isAdmin())
-			{
-				$isAllowedToContribute = true;
 				$isAllowedToContribute2 = true;
-			}
 			else
 			{
 				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];

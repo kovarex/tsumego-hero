@@ -150,7 +150,7 @@ class ContextPreparator
 
 		$set = [];
 		$set['title'] = Util::extract('title', $setInput) ?: 'Test Set';
-		$set['public'] = Util::extract('public', $setInput) ?? 0;
+		$set['public'] = Util::extract('public', $setInput) ?? 1;
 		$set['order'] = Util::extract('order', $setInput) ?: Constants::$DEFAULT_SET_ORDER;
 		ClassRegistry::init('Set')->create();
 		ClassRegistry::init('Set')->save($set);

@@ -91,11 +91,7 @@ class TsumegoCommentsController extends AppController
 		if (!$comment)
 			throw new NotFoundException('Comment not found');
 
-		// Only admin or comment author can delete
-		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
-
-		if (!Auth::isAdmin() && !$isOwner)
-			throw new ForbiddenException('You are not authorized to delete this comment');
+		$this->Authorization->authorize($comment, 'delete');
 
 		// Remember the issue ID before deleting
 		$issueId = $comment['TsumegoComment']['tsumego_issue_id'];

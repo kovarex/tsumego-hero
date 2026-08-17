@@ -5,6 +5,9 @@ App::uses('JwtAuth', 'Utility');
 
 class Auth
 {
+	/** Memoized identity (user + permissions), null when logged out. */
+	private static $identity = null;
+
 	/**
 	 * Generate random login token for phpBB2 forum SSO
 	 * The forum reads this cookie to authenticate users automatically
@@ -19,6 +22,8 @@ class Auth
 
 	public static function init($user = null): void
 	{
+		self::$identity = null;
+
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
@@ -60,6 +65,54 @@ class Auth
 		return (bool) Auth::$user;
 	}
 
+	/**
+	 * Returns the identity (user array with a computed `permissions` list)
+	 * for the current user, or null when not logged in. Memoized per request.
+	 */
+	public static function identity(): ?array
+	{
+		if (self::$identity !== null)
+			return self::$identity;
+		if (!Auth::isLoggedIn())
+			return null;
+		$user = Auth::$user;
+		$user['permissions'] = self::computePermissions($user);
+		self::$identity = $user;
+		return $user;
+	}
+
+	/**
+	 * Whether the current user holds the given permission. Reads only the
+	 * computed permission list; null/unknown permissions are always false.
+	 */
+	public static function can(string $permission): bool
+	{
+		$identity = Auth::identity();
+		if ($identity === null)
+			return false;
+		return in_array($permission, $identity['permissions'], true);
+	}
+
+	/**
+	 * Computes the permission list from the user row. Policies read only
+	 * these permissions, never raw role booleans.
+	 */
+	private static function computePermissions(array $user): array
+	{
+		$perms = [];
+		if ((bool) $user['isAdmin'])
+			$perms[] = 'admin';
+		if ((bool) $user['isAdmin'] || (bool) $user['premium'])
+			$perms[] = 'sandbox';
+		if (
+			(bool) $user['isAdmin']
+			|| (int) $user['level'] >= 40
+			|| (float) $user['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE
+		)
+			$perms[] = 'can_contribute';
+		return $perms;
+	}
+
 	public static function getUserID(): int
 	{
 		return Auth::$user ? Auth::$user['id'] : 0;
@@ -99,6 +152,7 @@ class Auth
 		JwtAuth::clearAuthCookie();
 		Util::clearCookie('login_token');
 		Auth::$user = null;
+		self::$identity = null;
 	}
 
 	public static function getWithDefault($key, $default)

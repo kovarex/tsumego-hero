@@ -96,12 +96,9 @@
 	if(isset($deleteProblem2))
 		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
 	if ($isSandbox)
-	{
 		$sandboxComment = '(Sandbox)';
-		if (!Auth::hasPremium() && !Auth::isAdmin())
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
-	else $sandboxComment = '';
+	else
+		$sandboxComment = '';
 
 	$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 	$a1 = '';

@@ -179,6 +179,7 @@ class TagsController extends AppController
 	 */
 	public function delete($id)
 	{
+		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
@@ -203,8 +204,7 @@ class TagsController extends AppController
 
 	public function acceptTagProposal($tagID): CakeResponse
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tag');
 
 		$tagToApprove = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tagToApprove)
@@ -231,8 +231,7 @@ class TagsController extends AppController
 
 	public function rejectTagProposal($tagID): CakeResponse
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tag');
 
 		$tagToReject = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tagToReject)

@@ -9,14 +9,6 @@
  * @var array $ur
  */
 
-	if(Auth::isLoggedIn()){
-		if(!Auth::isAdmin()){
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}
-	}else{
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
-
 	
 	if($noIndex) echo '<div align="center"><a style="color:black;text-decoration:none;" href="/users/userstats/">back</a></div>';
 	

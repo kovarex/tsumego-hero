@@ -12,22 +12,22 @@ App::uses('Util', 'Utility');
  */
 class SandboxTest extends ControllerTestCase
 {
-	public function testSandboxRedirectsUnauthenticated(): void
+	public function testSandboxRequiresLogin(): void
 	{
 		new ContextPreparator(['user' => null]);
 
-		$this->testAction('/sets/sandbox', ['method' => 'get']);
+		$this->expectException(UnauthorizedException::class);
 
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
+		$this->testAction('/sets/sandbox', ['method' => 'get']);
 	}
 
-	public function testSandboxRedirectsRegularUser(): void
+	public function testSandboxRequiresPremiumOrAdmin(): void
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'premium' => 0, 'admin' => false]]);
 
-		$this->testAction('/sets/sandbox', ['method' => 'get']);
+		$this->expectException(ForbiddenException::class);
 
-		$this->assertSame(Util::getInternalAddress() . '/', $this->headers['Location']);
+		$this->testAction('/sets/sandbox', ['method' => 'get']);
 	}
 
 	public function testSandboxAllowsPremiumUser(): void

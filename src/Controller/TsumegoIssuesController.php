@@ -188,10 +188,7 @@ class TsumegoIssuesController extends AppController
 		if (!$issue)
 			throw new NotFoundException('Issue not found');
 
-		// Only admin or issue author can close
-		$isOwner = $issue['TsumegoIssue']['user_id'] === Auth::getUserID();
-		if (!Auth::isAdmin() && !$isOwner)
-			throw new ForbiddenException('You are not authorized to close this issue');
+		$this->Authorization->authorize($issue, 'close');
 
 		// Update status to closed
 		$TsumegoIssue->id = $id;
@@ -231,8 +228,7 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isAdmin())
-			throw new ForbiddenException('Only admins can reopen issues');
+		$this->Authorization->authorize('TsumegoIssue', 'reopen');
 
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
@@ -265,8 +261,7 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isAdmin())
-			throw new ForbiddenException('Only admins can move comments');
+		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($commentId);

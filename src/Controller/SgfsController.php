@@ -10,6 +10,7 @@ class SgfsController extends AppController
 	 */
 	public function view($id = null)
 	{
+		$this->Authorization->authorize('Sgf');
 		$this->set('_page', 'play');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
