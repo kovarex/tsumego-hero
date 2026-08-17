@@ -548,6 +548,24 @@ class TagTest extends ControllerTestCase
 		$this->assertSame(0, $tag['hint']);
 	}
 
+	public function testTagViewSanitizesDescriptionAndGuardsLink(): void
+	{
+		$context = new ContextPreparator(['tags' => [[
+			'name' => 'snapback',
+			'description' => '<b onmouseover="alert(1)">Shape</b>',
+			'link' => 'javascript:alert(1)',
+		]]]);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('<b>Shape</b>', $this->view);
+		$this->assertStringNotContainsString('onmouseover', $this->view);
+		$this->assertStringNotContainsString('href="javascript:', $this->view);
+
+		$safe = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
+		$this->testAction('/tags/view/' . $safe->tags[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('href="https://example.com/ref"', $this->view);
+	}
+
 	public function testEditTagWithoutDescriptionShowsError()
 	{
 		$browser = Browser::instance();

@@ -504,6 +504,7 @@ class ContextPreparator
 			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
 			$tag['user_id'] = $this->user['id'];
 			$tag['description'] = Util::extract('description', $tagInput) ?? '';
+			$tag['link'] = Util::extractWithDefault('link', $tagInput, '');
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
@@ -515,6 +516,7 @@ class ContextPreparator
 			Util::extract('description', $tagInput);
 			Util::extract('approved', $tagInput);
 			Util::extract('is_hint', $tagInput);
+			Util::extractWithDefault('link', $tagInput, '');
 		}
 
 		$this->checkOptionsConsumed($tagInput);

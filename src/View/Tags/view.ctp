@@ -11,8 +11,11 @@
 <div class="tags-container">
    <div class="tags-content">
 				<h1><?php echo h($tn['Tag']['name']); ?></h1>
-	<p><?php echo h($tn['Tag']['description']); ?></p>
-	<p><a href="<?php echo h($tn['Tag']['link']); ?>" target="_blank"><?php echo h($tn['Tag']['link']); ?></a></p>
+	<p><?php echo HtmlSanitizer::sanitize((string) ($tn['Tag']['description'] ?? '')); ?></p>
+	<?php $tagLink = trim((string) ($tn['Tag']['link'] ?? '')); ?>
+	<?php if ($tagLink !== ''): ?>
+	<p><?php echo HtmlSanitizer::sanitize('<a href="' . h($tagLink) . '">' . h($tagLink) . '</a>'); ?></p>
+	<?php endif; ?>
 	<?php if($tn['Tag']['hint'] == 1){ ?>
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>

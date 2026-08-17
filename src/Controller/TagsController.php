@@ -1,6 +1,7 @@
 <?php
 
 App::uses('NotFoundException', 'Routing/Error');
+App::uses('HtmlSanitizer', 'Utility');
 
 class TagsController extends AppController
 {
@@ -35,7 +36,7 @@ class TagsController extends AppController
 
 		$tag = [];
 		$tag['name'] = $tagName;
-		$tag['description'] = $tagDescription;
+		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
 		$tag['hint'] = (int) $this->data['tag_hint'];
 		$tag['link'] = $this->data['tag_reference'];
 		$tag['user_id'] = Auth::getUserID();
@@ -166,7 +167,7 @@ class TagsController extends AppController
 			return $this->redirect('/tags/edit/' . $tagID);
 		}
 
-		$tag['description'] = $tagDescription;
+		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
 		$tag['hint'] = (int) ($this->data['tag_hint']);
 		$tag['link'] = $this->data['tag_link'];
 		ClassRegistry::init('Tag')->save($tag);
