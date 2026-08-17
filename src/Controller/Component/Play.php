@@ -178,6 +178,9 @@ class Play
 		}
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
+		// TODO: Direct policy call because Play is a component, not a controller —
+		// can't use AuthorizationComponent here. Revisit with CakePHP 5 where
+		// authorization middleware can handle this at the controller level.
 		if (!SetPolicy::canPlay(Auth::identity(), $set['Set']))
 			throw new ForbiddenException();
 
