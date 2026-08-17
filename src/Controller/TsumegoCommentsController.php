@@ -1,5 +1,10 @@
 <?php
 
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('NotFoundException', 'Routing/Error');
+App::uses('UnauthorizedException', 'Routing/Error');
+App::uses('UnprocessableEntityException', 'Lib/Error');
+
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
@@ -27,12 +32,7 @@ class TsumegoCommentsController extends AppController
 			throw new MethodNotAllowedException();
 
 		if (!Auth::isLoggedIn())
-		{
-			$this->response->statusCode(401);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'You must be logged in to comment']));
-			return $this->response;
-		}
+			throw new UnauthorizedException('You must be logged in to comment');
 
 		$input = json_decode($this->request->input(), true);
 
@@ -47,12 +47,7 @@ class TsumegoCommentsController extends AppController
 
 		$TsumegoComment->create();
 		if (!$TsumegoComment->save($comment))
-		{
-			$this->response->statusCode(422);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to add comment']));
-			return $this->response;
-		}
+			throw new UnprocessableEntityException('Failed to add comment');
 
 		// Get saved comment with user data
 		$savedComment = $TsumegoComment->find('first', [
@@ -94,23 +89,13 @@ class TsumegoCommentsController extends AppController
 		$comment = $TsumegoComment->findById($id);
 
 		if (!$comment)
-		{
-			$this->response->statusCode(404);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Comment not found']));
-			return $this->response;
-		}
+			throw new NotFoundException('Comment not found');
 
 		// Only admin or comment author can delete
 		$isOwner = $comment['TsumegoComment']['user_id'] === Auth::getUserID();
 
 		if (!Auth::isAdmin() && !$isOwner)
-		{
-			$this->response->statusCode(403);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'You are not authorized to delete this comment']));
-			return $this->response;
-		}
+			throw new ForbiddenException('You are not authorized to delete this comment');
 
 		// Remember the issue ID before deleting
 		$issueId = $comment['TsumegoComment']['tsumego_issue_id'];
@@ -120,12 +105,7 @@ class TsumegoCommentsController extends AppController
 		$saveResult = $TsumegoComment->saveField('deleted', true);
 
 		if (!$saveResult)
-		{
-			$this->response->statusCode(500);
-			$this->response->type('json');
-			$this->response->body(json_encode(['error' => 'Failed to delete comment']));
-			return $this->response;
-		}
+			throw new InternalErrorException('Failed to delete comment');
 
 		// If comment was part of an issue, check if issue is now empty and delete it
 		if (!empty($issueId))

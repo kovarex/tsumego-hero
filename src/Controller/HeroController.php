@@ -54,10 +54,7 @@ class HeroController extends AppController
 	public function sprint()
 	{
 		if (!HeroPowers::canUseSprint())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException();
 		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
 		Auth::getUser()['used_sprint'] = 1;
 		Auth::saveUser();
@@ -68,10 +65,7 @@ class HeroController extends AppController
 	public function intuition()
 	{
 		if (!HeroPowers::canUseIntuition())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException();
 		Auth::getUser()['used_intuition'] = 1;
 		Auth::saveUser();
 		$this->response->statusCode(200);
@@ -81,10 +75,7 @@ class HeroController extends AppController
 	public function rejuvenation()
 	{
 		if (!HeroPowers::canUseRejuvanation())
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException();
 		Auth::getUser()['used_rejuvenation'] = 1;
 		Auth::getUser()['used_intuition'] = 0;
 		Auth::getUser()['damage'] = 0;
@@ -100,24 +91,13 @@ class HeroController extends AppController
 	public function revelation($tsumegoID)
 	{
 		if (!Auth::isLoggedIn())
-		{
-			$this->response->body('Not logged in.');
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException('Not logged in.');
 
 		if (!HeroPowers::canUseRevelation())
-		{
-			$this->response->body('Revelation is used up today.');
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException('Revelation is used up today.');
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
-		{
-			$this->response->statusCode(403);
-			return $this->response;
-		}
+			throw new ForbiddenException();
 
 		$previousTsumegoStatus = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
 		if (!$previousTsumegoStatus)
