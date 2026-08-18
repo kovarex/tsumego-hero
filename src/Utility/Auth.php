@@ -109,7 +109,13 @@ class Auth
 		JwtAuth::clearAuthCookie();
 		Util::clearCookie('login_token');
 		Auth::$user = null;
+	}
 
+	public static function getWithDefault($key, $default)
+	{
+		if (!Auth::isLoggedIn())
+			return $default;
+		return Auth::getUser()[$key];
 	}
 
 	public static function getMode(): int

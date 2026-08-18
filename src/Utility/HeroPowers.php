@@ -152,6 +152,8 @@ class HeroPowers
 
 	public static function canPotionTrigger()
 	{
+		if (!Auth::isLoggedIn())
+			return false;
 		if (!Auth::hasPremium() && Auth::getUser()['level'] < self::$POTION_MINIMUM_LEVEL)
 			return false;
 		if (Auth::getUser()['used_potion'])
@@ -161,6 +163,8 @@ class HeroPowers
 
 	public static function canUseRefinement()
 	{
+		if (!Auth::isLoggedIn())
+			return false;
 		if (!Auth::hasPremium() && Auth::getWithDefault('level', 0) < self::$REFINEMENT_MINIMUM_LEVEL)
 			return false;
 		return !Auth::getUser()['used_refinement'];
