@@ -98,7 +98,7 @@ elseif($set['Set']['image'] == 'sa-giant.jpg') $saNum = 4;
 elseif($set['Set']['image'] == 'sa-resistance.jpg') $saNum = 3;
 else $saNum = 11;
 
-echo strip_tags($set['Set']['description'], '<br><a><b><i><p><ul><ol><li><img><font><table><tr><td><th>');
+echo HtmlSanitizer::sanitize((string) ($set['Set']['description'] ?? ''));
 ?>
 			</td>
 				<?php

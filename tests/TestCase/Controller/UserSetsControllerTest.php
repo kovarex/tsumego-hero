@@ -462,18 +462,21 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 	// ── Description sanitization ────────────────────────────────────────
 
-	public function testDescriptionStripsExternalImages(): void
+	public function testDescriptionIsSanitizedOnSave(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$description = 'External <img src="https://evil.com/tracker.png"> Internal <img src="/img/ok.png">';
+		$description = 'External <img src="https://evil.com/tracker.png"> Internal <img src="/img/ok.png"> '
+			. '<b onmouseover="alert(1)">hi</b> <a href="javascript:alert(2)">click</a>';
 		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['description' => $description]], 'method' => 'POST']);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertStringNotContainsString('evil.com', $set['Set']['description']);
 		$this->assertStringContainsString('/img/ok.png', $set['Set']['description']);
+		$this->assertStringNotContainsString('onmouseover', $set['Set']['description']);
+		$this->assertStringNotContainsString('javascript:', $set['Set']['description']);
 	}
 
 	// ── Admin activity logging ──────────────────────────────────────────

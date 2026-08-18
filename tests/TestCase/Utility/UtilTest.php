@@ -29,6 +29,15 @@ class UtilTest extends CakeTestCase
 		$this->assertEmpty($_COOKIE['number']);
 	}
 
+	public function testIsHttpUrl(): void
+	{
+		$this->assertTrue(Util::isHttpUrl('https://senseis.xmp.net/?Snapback'));
+		$this->assertTrue(Util::isHttpUrl(' http://example.com '));
+		$this->assertFalse(Util::isHttpUrl('javascript:alert(1)'));
+		$this->assertFalse(Util::isHttpUrl('tag.example.com'));
+		$this->assertFalse(Util::isHttpUrl(''));
+	}
+
 	public function testClearNumericCookieThrowsOnNonNumeric()
 	{
 		$_COOKIE['not-number'] = 'abc';

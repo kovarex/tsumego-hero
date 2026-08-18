@@ -397,7 +397,8 @@ class ContextPreparator
 			'public' => Util::extract('public', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput),
 			'user_id' => Util::extract('user_id', $setInput),
-			'default' => Util::extract('default', $setInput)]);
+			'default' => Util::extract('default', $setInput),
+			'description' => Util::extractWithDefault('description', $setInput, null)]);
 		$setConnection = [];
 		$setConnection['tsumego_id'] = $tsumego['id'];
 		$setConnection['set_id'] = $set['id'];
@@ -446,6 +447,8 @@ class ContextPreparator
 			$includedInTimeMode = false;
 			$public = 1;
 			$boardThemeIndex = 1;
+			$userId = null;
+			$description = null;
 		}
 		else
 		{
@@ -455,6 +458,7 @@ class ContextPreparator
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
 			$userId = Util::extract('user_id', $input);
 			$isDefault = Util::extract('default', $input) ?: false;
+			$description = Util::extractWithDefault('description', $input, null);
 			$this->checkOptionsConsumed($input);
 		}
 		$set  = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => $name]]);
@@ -466,6 +470,8 @@ class ContextPreparator
 			$set['public'] = is_null($public) ? true : $public;
 			$set['board_theme_index'] = $boardThemeIndex;
 			$set['order'] = Constants::$DEFAULT_SET_ORDER;
+			if ($description !== null)
+				$set['description'] = $description;
 			if ($userId === 'self')
 				$set['user_id'] = $this->user['id'];
 			elseif ($userId !== null)
@@ -496,10 +502,11 @@ class ContextPreparator
 		if (!$tag)
 		{
 			$tag = [];
-			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
+			$tag['hint'] = Util::extractWithDefault('is_hint', $tagInput, 0);
 			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
 			$tag['user_id'] = $this->user['id'];
-			$tag['description'] = Util::extract('description', $tagInput) ?? '';
+			$tag['description'] = Util::extractWithDefault('description', $tagInput, '');
+			$tag['link'] = Util::extractWithDefault('link', $tagInput, '');
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
 			ClassRegistry::init('Tag')->save($tag);
@@ -508,9 +515,10 @@ class ContextPreparator
 		}
 		else
 		{
-			Util::extract('description', $tagInput);
-			Util::extract('approved', $tagInput);
-			Util::extract('is_hint', $tagInput);
+			Util::extractWithDefault('description', $tagInput, '');
+			Util::extractWithDefault('approved', $tagInput, true);
+			Util::extractWithDefault('is_hint', $tagInput, 0);
+			Util::extractWithDefault('link', $tagInput, '');
 		}
 
 		$this->checkOptionsConsumed($tagInput);
