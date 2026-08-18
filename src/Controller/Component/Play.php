@@ -182,7 +182,7 @@ class Play
 		// TODO: Direct policy call because Play is a component, not a controller —
 		// can't use AuthorizationComponent here. Revisit with CakePHP 5 where
 		// authorization middleware can handle this at the controller level.
-		if (!SetPolicy::canPlay(Auth::identity(), $set['Set']))
+		if (!SetPolicy::canPlay(Auth::getIdentity(), $set['Set']))
 			throw new ForbiddenException();
 
 		$tsumegoStatus = Play::getTsumegoStatus($t);
@@ -346,7 +346,7 @@ class Play
 		$canAddMoreTags = false;
 		if (Auth::isLoggedIn())
 		{
-			$isAllowedToContribute = BasePolicy::canPropose(Auth::identity());
+			$isAllowedToContribute = BasePolicy::canPropose(Auth::getIdentity());
 			$canAddMoreTags = ClassRegistry::init('TagConnection')::canUserAddTag(Auth::getUserID());
 		}
 

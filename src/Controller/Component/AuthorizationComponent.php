@@ -22,7 +22,7 @@ class AuthorizationComponent extends Component
 	{
 		if (!$this->can($resource, $action))
 		{
-			if (Auth::identity() === null)
+			if (Auth::getIdentity() === null)
 				throw new UnauthorizedException();
 			throw new ForbiddenException();
 		}
@@ -50,7 +50,7 @@ class AuthorizationComponent extends Component
 		App::uses($class, 'Policy');
 		if (!method_exists($class, $method))
 			throw new RuntimeException("Missing policy method {$class}::{$method}");
-		$identity = Auth::identity();
+		$identity = Auth::getIdentity();
 		if ($entity !== null)
 			return (bool) call_user_func([$class, $method], $identity, $entity);
 		return (bool) call_user_func([$class, $method], $identity);

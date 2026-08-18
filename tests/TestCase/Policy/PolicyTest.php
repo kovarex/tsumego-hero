@@ -12,12 +12,12 @@ App::uses('Constants', 'Utility');
 
 /**
  * Authorization policies decide whether an identity may perform an action.
- * They read only the computed `permissions` list attached by Auth::identity().
+ * They read only the computed `permissions` list attached by Auth::getIdentity().
  */
 class PolicyTest extends CakeTestCase
 {
 	/**
-	 * Builds an identity array (like Auth::identity() returns) for the given role.
+	 * Builds an identity array (like Auth::getIdentity() returns) for the given role.
 	 */
 	private function identity($isAdmin, int $premium = 0): ?array
 	{

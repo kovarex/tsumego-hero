@@ -5,9 +5,6 @@ App::uses('JwtAuth', 'Utility');
 
 class Auth
 {
-	/** Memoized identity, null when logged out. */
-	private static $identity = null;
-
 	/**
 	 * Generate random login token for phpBB2 forum SSO
 	 * The forum reads this cookie to authenticate users automatically
@@ -22,7 +19,6 @@ class Auth
 
 	public static function init($user = null): void
 	{
-		self::$identity = null;
 
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
@@ -66,17 +62,12 @@ class Auth
 	}
 
 	/**
-	 * Returns the identity (user array) for the current user,
-	 * or null when not logged in. Memoized per request.
+	 * Returns the identity (user array), or null when not logged in.
+	 * Matches CakePHP 5's $request->getAttribute('identity') contract.
 	 */
-	public static function identity(): ?array
+	public static function getIdentity(): ?array
 	{
-		if (self::$identity !== null)
-			return self::$identity;
-		if (!Auth::isLoggedIn())
-			return null;
-		self::$identity = Auth::$user;
-		return self::$identity;
+		return Auth::$user;
 	}
 
 	public static function getUserID(): int
@@ -118,14 +109,7 @@ class Auth
 		JwtAuth::clearAuthCookie();
 		Util::clearCookie('login_token');
 		Auth::$user = null;
-		self::$identity = null;
-	}
 
-	public static function getWithDefault($key, $default)
-	{
-		if (!Auth::isLoggedIn())
-			return $default;
-		return Auth::getUser()[$key];
 	}
 
 	public static function getMode(): int
