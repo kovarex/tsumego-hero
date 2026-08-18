@@ -338,6 +338,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
 			'canAddMoreTags' => $canAddMoreTags,
+			'isAllowedToContribute' => $isAllowedToContribute,
 			'initialTags' => array_map(fn($row) => [
 				'id' => (int) $row['id'],
 				'name' => $row['name'],

@@ -1,5 +1,6 @@
 <?php
 
+use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 
 /**
@@ -55,6 +56,31 @@ class TagTest extends ControllerTestCase
 		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
 	}
 
+	public function testTagEditorHiddenForUsersWhoCannotContribute()
+	{
+		// First verify tag editor works for a normal contributor
+		$contextNormal = new ContextPreparator([
+			'user' => ['name' => 'normaluser', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'snapback', 'approved' => 1]]]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $contextNormal->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+		$this->assertGreaterThanOrEqual(1, $browser->getCssSelect('[data-testid="tag-search-input"]'),
+			'Contributor sees the tag search input');
+
+		// Now verify it's hidden for a non-contributor
+		$contextLow = new ContextPreparator([
+			'user' => ['name' => 'lowrating', 'rating' => 100],
+			'tsumego' => ['set_order' => 1, 'status' => 'S', 'tags' => [['name' => 'ko', 'approved' => 1]]]]);
+		$browser2 = Browser::instance();
+		$browser2->get('/' . $contextLow->tsumegos[0]['set-connections'][0]['id']);
+		$browser2->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->assertCount(1, $browser2->getCssSelect('[data-testid="tag-ko"]'));
+		$this->assertCount(0, $browser2->getCssSelect('[data-testid="tag-search-input"]'),
+			'Non-contributor should not see the tag search input');
+	}
+
 	public function testShowMyUnapprovedTagsInTagListAndNotInTagsToAdd()
 	{
 		$context = new ContextPreparator([
@@ -107,6 +133,34 @@ class TagTest extends ControllerTestCase
 		$this->openEditorAndType($browser, 'ata');
 		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-editor"] [role="option"]'));
 		$this->assertStringContainsString('already proposed', $browser->driver->getPageSource());
+	}
+
+	public function testEnterOnNonAddableTagDoesNotSubmit()
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
+			'other-users' => [['name' => 'Ivan detkov']],
+			'tsumegos' => [[
+				'set_order' => 1,
+				'tags' => [['name' => 'atari', 'approved' => 0, 'user' => 'Ivan detkov']]]],
+			'tags' => [['name' => 'snapback']]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-editor"]');
+
+		$this->openEditorAndType($browser, 'atari');
+		$browser->driver->getKeyboard()->sendKeys(WebDriverKeys::ENTER);
+		usleep(500000);
+
+		$connectionCount = ClassRegistry::init('TagConnection')->find('count', [
+			'conditions' => [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'tag_id' => $context->tsumegos[0]['tag-connections'][0]['TagConnection']['tag_id'],
+				'user_id' => $context->user['id'],
+			],
+		]);
+		$this->assertSame(0, $connectionCount,
+			'Enter on non-addable tag should not create a connection');
 	}
 
 	private function getTagListText(Browser $browser): string
@@ -385,39 +439,29 @@ class TagTest extends ControllerTestCase
 		$this->assertTextContains("isn't assigned", $error);
 	}
 
-	public function testTryToRemoveApprovedTagAsNonAdmin()
+	public function testRemoveButtonHiddenForApprovedTag()
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
-			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 0]]]]);
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'user' => 'kovarex', 'approved' => 1]]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$browser->waitUntilCssSelectorExists('[data-testid="tag-snapback"]');
 
-		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']);
-		$tagConnection['TagConnection']['approved'] = true;
-		ClassRegistry::init('TagConnection')->save($tagConnection);
-
-		$this->clickAndWaitForError($browser, '#remove-snapback');
-		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains('Forbidden', $error);
+		$this->assertFalse($browser->idExists('remove-snapback'));
 	}
 
-	public function testTryToRemoveTagProposedBySomeoneElse()
+	public function testRemoveButtonHiddenForTagProposedBySomeoneElse()
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE],
 			'other-users' => [['name' => 'Ivan Detkov']],
-			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'approved' => 0]]]]);
+			'tsumego' => ['set_order' => 1, 'tags' => [['name' => 'snapback', 'approved' => 0, 'user' => 'Ivan Detkov']]]]);
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 
-		$tagConnection = ClassRegistry::init('TagConnection')->findById($context->tsumegos[0]['tag-connections'][0]['id']);
-		$tagConnection['TagConnection']['user_id'] = $context->otherUsers[0]['id'];
-		ClassRegistry::init('TagConnection')->save($tagConnection);
-
-		$this->clickAndWaitForError($browser, '#remove-snapback');
-		$error = $browser->find('[data-testid="tag-error"]')->getText();
-		$this->assertTextContains('Forbidden', $error);
+		// Others' unapproved tags are not visible in the tag list
+		$this->assertCount(0, $browser->getCssSelect('[data-testid="tag-snapback"]'));
 	}
 
 	public function testAddNewTagAsAdmin()

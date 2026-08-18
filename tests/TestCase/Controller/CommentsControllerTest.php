@@ -1008,7 +1008,7 @@ class CommentsControllerTest extends ControllerTestCase
 	public function testReopenClosedIssue()
 	{
 		$context = new ContextPreparator([
-			'user' => ['admin' => true],
+			'user' => ['admin' => false],
 			'tsumego' => [
 				'set_order' => 1,
 				'issues' => [['message' => 'Issue to reopen', 'status' => TsumegoIssue::$CLOSED_STATUS]],
