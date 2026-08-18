@@ -19,6 +19,7 @@ class Auth
 
 	public static function init($user = null): void
 	{
+
 		// a hack to inject login in test environment
 		if (Util::isInTestEnvironment() && !empty($_COOKIE["hackedLoggedInUserID"]))
 		{
@@ -58,6 +59,15 @@ class Auth
 	public static function isLoggedIn(): bool
 	{
 		return (bool) Auth::$user;
+	}
+
+	/**
+	 * Returns the identity (user array), or null when not logged in.
+	 * Matches CakePHP 5's $request->getAttribute('identity') contract.
+	 */
+	public static function getIdentity(): ?array
+	{
+		return Auth::$user;
 	}
 
 	public static function getUserID(): int

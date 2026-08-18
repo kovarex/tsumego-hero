@@ -4,6 +4,9 @@ App::uses('SetNavigationButtonsInput', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
+App::uses('ForbiddenException', 'Routing/Error');
+App::uses('BasePolicy', 'Policy');
+App::uses('SetPolicy', 'Policy');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
@@ -176,6 +179,12 @@ class Play
 		}
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
+		// TODO: Direct policy call because Play is a component, not a controller —
+		// can't use AuthorizationComponent here. Revisit with CakePHP 5 where
+		// authorization middleware can handle this at the controller level.
+		if (!SetPolicy::canPlay(Auth::getIdentity(), $set['Set']))
+			throw new ForbiddenException();
+
 		$tsumegoStatus = Play::getTsumegoStatus($t);
 
 		if ($tsumegoStatus == 'G')
@@ -334,35 +343,11 @@ class Play
 		$tagData = ClassRegistry::init('Tag')::getForTsumego($id);
 
 		$isAllowedToContribute = false;
-		$isAllowedToContribute2 = false;
+		$canAddMoreTags = false;
 		if (Auth::isLoggedIn())
 		{
-			if (Auth::getUser()['level'] >= 40)
-				$isAllowedToContribute = true;
-			elseif (Auth::getUser()['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE)
-				$isAllowedToContribute = true;
-
-			if (Auth::isAdmin())
-			{
-				$isAllowedToContribute = true;
-				$isAllowedToContribute2 = true;
-			}
-			else
-			{
-				$tagsToCheck = ClassRegistry::init('TagConnection')->find('all', ['limit' => 20, 'order' => 'created DESC', 'conditions' => ['user_id' => Auth::getUserID()]]) ?: [];
-				$datex = date('Y-m-d', strtotime('today'));
-				$tagsToCheckCount = count($tagsToCheck);
-
-				for ($i = 0; $i < $tagsToCheckCount; $i++)
-				{
-					$datexx = new DateTime($tagsToCheck[$i]['TagConnection']['created']);
-					$datexx = $datexx->format('Y-m-d');
-					if ($datex !== $datexx)
-						$isAllowedToContribute2 = true;
-				}
-				if (count($tagsToCheck) < 20)
-					$isAllowedToContribute2 = true;
-			}
+			$isAllowedToContribute = BasePolicy::canPropose(Auth::getIdentity());
+			$canAddMoreTags = ClassRegistry::init('TagConnection')::canCurrentUserAddTag();
 		}
 
 		$checkNotInSearch = false;
@@ -395,7 +380,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
-		($this->setFunction)('isAllowedToContribute2', $isAllowedToContribute2);
+		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
 
 		$sgfProposal = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['tsumego_id' => $id, 'user_id' => Auth::getUserID(), 'accepted' => false]]);
 		($this->setFunction)('hasSgfProposal', $sgfProposal != null);

@@ -2,6 +2,7 @@
 
 App::uses('TestCaseWithAuth', 'TestSuite');
 App::uses('ContextPreparator', 'TestSuite');
+App::uses('ForbiddenException', 'Routing/Error');
 
 class UserSetsControllerTest extends TestCaseWithAuth
 {
@@ -123,15 +124,15 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('Alice Set', $context->user['id'], 0);
 		$this->login('bob');
 
-		// Non-owner gets 404 when trying to view a private set
+		// Non-owner gets 403 when trying to edit a private set
 		try
 		{
 			$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
-			$this->fail('Expected NotFoundException');
+			$this->fail('Expected ForbiddenException');
 		}
-		catch (NotFoundException $e)
+		catch (ForbiddenException $e)
 		{
-			$this->assertStringContainsString('Set not found', $e->getMessage());
+			$this->assertTrue(true, 'Non-owner blocked from editing private set');
 		}
 
 		$set = ClassRegistry::init('Set')->findById($setId);
@@ -180,10 +181,10 @@ class UserSetsControllerTest extends TestCaseWithAuth
 			$this->testAction("/sets/view/{$setId}", ['return' => 'view']);
 			$this->assertTextNotContains('Alice Secret', $this->view);
 		}
-		catch (NotFoundException $e)
+		catch (ForbiddenException $e)
 		{
-			// Expected: non-owner gets 404 for private set
-			$this->assertStringContainsString('Set not found', $e->getMessage());
+			// Expected: non-owner gets 403 for private set
+			$this->assertTrue(true, 'Non-owner blocked from viewing private set');
 		}
 	}
 

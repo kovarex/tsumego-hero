@@ -20,6 +20,7 @@ class UsersController extends AppController
 	// shows the publish schedule
 	public function showPublishSchedule(): void
 	{
+		$this->Authorization->authorize('Admin');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('Schedule');
@@ -154,6 +155,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats($uid = null)
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
@@ -206,6 +208,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function userstats3($sid = null)
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'USER STATS');
 		$this->loadModel('TsumegoAttempt');
@@ -255,6 +258,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 	 */
 	public function uploads()
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'set');
 		$this->set('_title', 'Uploads');
 		$this->loadModel('Sgf');
@@ -299,6 +303,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 
 	public function adminstats(): void
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_page', 'user');
 		$this->set('_title', 'Admin Panel');
 		$this->loadModel('User');
@@ -1007,54 +1012,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	/**
-	 * @param string|int|null $id Success ID
-	 */
-	public function success($id = null)
-	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
-		$this->set('_page', 'home');
-		$this->set('_title', 'Tsumego Hero - Success');
-
-		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
-		Auth::getUser()['premium'] = 1;
-		Auth::saveUser();
-
-		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-		$Email->to('joschka.zimdars@googlemail.com');
-		$Email->subject('Upgrade');
-
-		$Email->send(Auth::getUser()['name'] . ' ' . Auth::getUser()['email']);
-		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-		$Email->to(Auth::getUser()['email']);
-		$Email->subject('Tsumego Hero');
-		$Email->send('Hello ' . Auth::getUser()['name'] . ',
-
-Thank you!. Your account should be upgraded automatically.
-
---
-Best Regards
-Joschka Zimdars');
-		$this->set('id', $id);
-	}
-
-	/**
-	 * @param string|int|null $id Penalty ID
-	 */
-	public function penalty($id = null)
-	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
-		$this->set('_page', 'home');
-		$this->set('_title', 'Tsumego Hero - Penalty');
-		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
-		Auth::saveUser();
-		$this->set('id', $id);
-	}
-
-	/**
 	 * @param string|int|null $id Set ID
 	 * @return void
 	 */
@@ -1240,8 +1197,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function acceptSGFProposal($sgfID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToApprove = ClassRegistry::init('Sgf')->findById($sgfID);
 		if (!$proposalToApprove)
@@ -1271,8 +1227,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function rejectSGFProposal($sgfID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToReject = ClassRegistry::init('Sgf')->findById($sgfID);
 		if (!$proposalToReject)
@@ -1307,8 +1262,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function acceptTagConnectionProposal($tagConnectionID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToApprove = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
 		if (!$proposalToApprove)
@@ -1335,8 +1289,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 	public function rejectTagConnectionProposal($tagConnectionID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/sets');
+		$this->Authorization->authorize('Admin');
 
 		$proposalToReject = ClassRegistry::init('TagConnection')->findById($tagConnectionID);
 		if (!$proposalToReject)

@@ -11,11 +11,11 @@ interface Props
 	tsumegoId: number;
 	isTimeMode: boolean;
 	problemSolved: boolean;
-	canContribute: boolean;
+	canAddMoreTags: boolean;
 	initialTags: TagItem[];
 }
 
-export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canContribute, initialTags }: Props)
+export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags, initialTags }: Props)
 {
 	const { userId, isAdmin } = useAuth();
 	const [tags, setTags] = useState<TagItem[]>(initialTags);
@@ -143,7 +143,7 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canContribute,
 		return <div data-testid="tag-editor">{tagList}</div>;
 	}
 
-	if (!canContribute)
+	if (!canAddMoreTags)
 		return <div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>;
 
 	if (error) return <div style={{ color: '#e03c4b' }} data-testid="tag-error">{error}</div>;

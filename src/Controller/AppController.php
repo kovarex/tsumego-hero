@@ -14,7 +14,8 @@ class AppController extends Controller
 
 	public $components = [
 		//'DebugKit.Toolbar',
-		'PlayResultProcessor'
+		'PlayResultProcessor',
+		'Authorization'
 	];
 
 	protected function getDeletedSets()

@@ -37,6 +37,7 @@ class Constants
 	public static float $RATING_MODE_DIFFERENCE_SETTING_3 = 450;
 
 	public static float $MINIMUM_RATING_TO_CONTRIBUTE = 1500;
+	public static int $DAILY_TAG_LIMIT = 20;
 
 	/** Bump when tsumego image rendering algorithm changes to invalidate cached OG images */
 	public static int $TSUMEGO_IMAGE_VERSION = 1;

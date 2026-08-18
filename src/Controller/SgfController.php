@@ -5,13 +5,14 @@ App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
+App::uses('UnauthorizedException', 'Routing/Error');
 
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
 	{
 		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('User not logged in.');
+			throw new UnauthorizedException('User not logged in.');
 
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['id' => $sgfID], 'order' => 'id DESC']);
 		if (!$sgf)
@@ -29,7 +30,7 @@ class SgfController extends AppController
 	public function upload($setConnectionID)
 	{
 		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Must be logged in to upload SGF files.');
+			throw new UnauthorizedException('Must be logged in to upload SGF files.');
 
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$setConnection)

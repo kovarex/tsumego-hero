@@ -253,6 +253,7 @@ class UsersControllerTest extends ControllerTestCase
 	public function testShowPublishSchedule()
 	{
 		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
 			'tsumegos' => [
 				['sets' => [['name' => 'sandbox set', 'num' => 268, 'public' => 0]]],
 				['sets' => [['name' => 'set 1', 'num' => 673]]]]]);

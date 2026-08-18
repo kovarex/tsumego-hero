@@ -354,8 +354,7 @@ class TsumegosController extends AppController
 
 	public function edit($tsumegoID)
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect($this->data['redirect']);
+		$this->Authorization->authorize('Tsumego');
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 		{
@@ -457,11 +456,7 @@ class TsumegosController extends AppController
 
 	public function mergeForm(): mixed
 	{
-		if (!Auth::isAdmin())
-		{
-			CookieFlash::set('error', 'You are not authorized to access this page.');
-			return $this->redirect('/');
-		}
+		$this->Authorization->authorize('Tsumego');
 		$this->set('_page', 'sandbox');
 		$this->set('_title', 'Merge Duplicates');
 		return null;
@@ -469,8 +464,7 @@ class TsumegosController extends AppController
 
 	public function mergeFinalForm(): mixed
 	{
-		if (!Auth::isAdmin())
-			return $this->redirect('/');
+		$this->Authorization->authorize('Tsumego');
 		$masterSetConnectionID = $this->request->data['master-id'];
 		$slaveSetConnectionID = $this->request->data['slave-id'];
 		$masterSetConnection = ClassRegistry::init('SetConnection')->findById($masterSetConnectionID);
@@ -527,6 +521,7 @@ class TsumegosController extends AppController
 
 	public function performMerge()
 	{
+		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
 		$flash = $merger->execute();
 		if ($flash)
@@ -536,11 +531,7 @@ class TsumegosController extends AppController
 
 	public function setupSgf(): mixed
 	{
-		if (!Auth::isAdmin())
-		{
-			CookieFlash::set('No rights to call this', 'error');
-			return $this->redirect('/sets');
-		}
+		$this->Authorization->authorize('Tsumego');
 
 		$sgf = ClassRegistry::init('Sgf')->find('first', ['conditions' => ['OR' => ['first_move_color' => null, 'correct_moves' => null]]]);
 		if (!$sgf)
@@ -556,8 +547,7 @@ class TsumegosController extends AppController
 
 	public function setupSgfStep2($sgfID, $firstMoveColor, $correctMoves = null)
 	{
-		if (!Auth::isAdmin())
-			return;
+		$this->Authorization->authorize('Tsumego');
 		$sgf = ClassRegistry::init("Sgf")->findById($sgfID);
 		if (!$sgf)
 			return;

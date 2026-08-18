@@ -39,6 +39,9 @@ require 'functions.php';
 // Load custom error handler
 App::uses('AppErrorHandler', 'Lib/Error');
 
+// Authorization policies live in src/Policy/
+App::build(['Policy' => [APP . 'Policy' . DS]], App::APPEND);
+
 // Load custom AppView class
 App::uses('AppView', 'View');
 

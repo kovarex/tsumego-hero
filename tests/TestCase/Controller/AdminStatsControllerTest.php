@@ -48,12 +48,15 @@ class AdminStatsControllerTest extends ControllerTestCase
 		$this->assertTextContains('Description Edit', $pageSource);
 	}
 
-	public function testAdminStatsRedirectsNonAdmin()
+	public function testAdminStatsBlocksNonAdmin()
 	{
 		$browser = Browser::instance();
-		new ContextPreparator();
+		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
 		$browser->get('users/adminstats');
-		$this->assertStringContainsString('/', $browser->driver->getCurrentURL()); // Should redirect to home page
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertTextContains('Forbidden', $pageSource);
+		$this->assertTextNotContains('Admin Activity', $pageSource);
 	}
 
 	/**

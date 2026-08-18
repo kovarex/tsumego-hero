@@ -7,12 +7,7 @@
  * @var int $overallCounter
  * @var array $setsNew
  */
-
-if (!Auth::isAdmin() && !Auth::hasPremium())
-{
-	echo '<script type="text/javascript">window.location.href = "/";</script>';
-	return;
-}?>
+?>
 	<div align="center" class="display1" style="padding-top:10px;">
 	<div id="sandbox">
 	<h4>Admin Panel</h4>

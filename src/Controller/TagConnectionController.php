@@ -6,8 +6,9 @@ class TagConnectionController extends AppController
 {
 	public function add($tsumegoID, $tagName)
 	{
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Not logged in.');
+		$this->Authorization->authorize('TagConnection', 'add');
+		if (!ClassRegistry::init('TagConnection')::canCurrentUserAddTag())
+			throw new ForbiddenException('Daily tag limit reached.');
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
@@ -41,9 +42,6 @@ class TagConnectionController extends AppController
 
 	public function remove($tsumegoID, $tagName)
 	{
-		if (!Auth::isLoggedIn())
-			throw new ForbiddenException('Not logged in.');
-
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)
 			throw new ForbiddenException('Tag "' . $tagName . '" doesn\'t exist.');
@@ -58,11 +56,7 @@ class TagConnectionController extends AppController
 		if (!$tagConnection)
 			throw new ForbiddenException('Tag to remove isn\'t assigned to this tsumego.');
 
-		if ($tagConnection['TagConnection']['approved'] == 1 && !Auth::isAdmin())
-			throw new ForbiddenException('Only admins can remove approved tags.');
-
-		if ($tagConnection['TagConnection']['user_id'] != Auth::getUserID() && !Auth::isAdmin())
-			throw new ForbiddenException('You can\'t remove tag proposed by someone else.');
+		$this->Authorization->authorize($tagConnection, 'remove');
 
 		ClassRegistry::init('TagConnection')->delete($tagConnection['TagConnection']['id']);
 		$this->response->type('json');

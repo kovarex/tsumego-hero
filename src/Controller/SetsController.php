@@ -25,11 +25,7 @@ class SetsController extends AppController
 	 */
 	public function sandbox()
 	{
-		if (!Auth::isAdmin() && !Auth::hasPremium())
-		{
-			$this->redirect('/');
-			return;
-		}
+		$this->Authorization->authorize('Set');
 
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
@@ -252,11 +248,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		if (!$s)
 			throw new NotFoundException('Set not found');
 
-		// Auth: set owner can delete their own sets; admin can delete sandbox sets
-		$isOwner = ($s['Set']['user_id'] == Auth::getUserID());
-		$isSandbox = ($s['Set']['user_id'] === null && $s['Set']['public'] == 0);
-		if (!$isOwner && !(Auth::isAdmin() && $isSandbox))
-			throw new ForbiddenException();
+		$this->Authorization->authorize($s);
 
 		$this->Set->delete($setID);
 
@@ -453,10 +445,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			if (!$set)
 				throw new NotFoundException('Set not found');
 		}
-		$set = $set['Set'];
 
-		if (!Auth::isAdmin() && $set['user_id'] != Auth::getUserID())
-			throw new ForbiddenException();
+		$this->Authorization->authorize($set);
 
 		$tsumegoId = (int) ($this->data['tsumego_id'] ?? 0);
 		if (!$tsumegoId)
@@ -504,8 +494,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 */
 	public function createAndAddTsumego($setID)
 	{
-		if (!Auth::isAdmin())
-			throw new ForbiddenException();
+		$this->Authorization->authorize('Set');
 
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
@@ -599,9 +588,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		if (!$set)
 			throw new NotFoundException('Set not found');
 
-		// Auth: admin or set owner
-		if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
-			throw new ForbiddenException();
+		$this->Authorization->authorize($set);
 
 		$tsumegoId = $this->data['tsumego_id'] ?? null;
 		if (!$tsumegoId)
@@ -635,8 +622,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
-		if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
-			throw new ForbiddenException();
+		$this->Authorization->authorize($set);
 
 		$tsumegoId = $_GET['tsumego_id'] ?? $this->data['tsumego_id'] ?? null;
 		$dir = $_GET['dir'] ?? $this->data['dir'] ?? null;
@@ -733,6 +719,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set = $this->Set->findById($id);
 			if (!$set)
 				throw new NotFoundException("Set not found");
+			$this->Authorization->authorize($set, "view");
 		}
 
 		if ($queryType == 'tags')
@@ -786,11 +773,8 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set = ClassRegistry::init('Set')->findById($id);
 			if (!$set)
 				throw new NotFoundException("Set not found");
+			$this->Authorization->authorize($set, "view");
 
-			// Owner check: private sets (public=0, user_id!=NULL) only visible to owner or admin
-			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] !== null)
-				if (!Auth::isAdmin() && $set['Set']['user_id'] != Auth::getUserID())
-					throw new NotFoundException("Set not found");
 
 			$allArActive = true;
 			$allArInactive = true;

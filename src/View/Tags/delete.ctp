@@ -6,8 +6,6 @@
  */
 
 ?>
-<?php if(!Auth::isLoggedIn() || !Auth::isAdmin())
-		echo '<script type="text/javascript">window.location.href = "/";</script>'; ?>
 <?php if(isset($del)) echo '<script type="text/javascript">window.location.href = "/users/adminstats";</script>'; ?>
 <div align="center">
 	<h1>Delete Tag: <?php echo h($tn['Tag']['name']); ?></h1>

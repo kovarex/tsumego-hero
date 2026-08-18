@@ -11,16 +11,6 @@
  */
 
 ?>
-	<?php
-	if(Auth::isLoggedIn()){
-		if(!Auth::isAdmin()){
-			echo '<script type="text/javascript">window.location.href = "/";</script>';
-		}
-	}else{
-		echo '<script type="text/javascript">window.location.href = "/";</script>';
-	}
-
-	?>
 
 	<div align="center">
 	<p class="title">
