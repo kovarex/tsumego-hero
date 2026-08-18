@@ -23,13 +23,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$user = ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
-		$user['permissions'] = [];
-		if ($isAdmin)
-			$user['permissions'][] = 'admin';
-		if ($isAdmin || $premium)
-			$user['permissions'][] = 'sandbox';
-		return $user;
+		return ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
 	}
 
 	public function testAdminPolicyAllowsOnlyAdmins()

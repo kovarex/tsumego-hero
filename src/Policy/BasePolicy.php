@@ -10,25 +10,26 @@
 abstract class BasePolicy
 {
 	/**
-	 * Whether the identity holds the given permission (false for anonymous).
-	 */
-	protected static function hasPermission($user, string $permission): bool
-	{
-		return $user !== null && in_array($permission, $user['permissions'], true);
-	}
-
-	/**
 	 * Whether the identity is an admin (false for anonymous).
 	 */
 	protected static function isAdmin($user): bool
 	{
-		return static::hasPermission($user, 'admin');
+		return $user !== null && (bool) $user['isAdmin'];
+	}
+
+	/**
+	 * Whether the identity has sandbox access: admin or premium.
+	 */
+	protected static function hasSandbox($user): bool
+	{
+		if ($user === null)
+			return false;
+		return (bool) $user['isAdmin'] || (bool) $user['premium'];
 	}
 
 	/**
 	 * Whether the identity may propose SGF edits or tag connections.
-	 * Matches CakePHP 5 pattern: policy methods own the business logic,
-	 * permission strings are not exposed to callers.
+	 * Cross-cutting: used by both SgfPolicy and TagConnectionPolicy.
 	 */
 	public static function canPropose($user): bool
 	{

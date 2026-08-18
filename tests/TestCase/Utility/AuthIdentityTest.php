@@ -4,8 +4,8 @@ App::uses('Auth', 'Utility');
 App::uses('BasePolicy', 'Policy');
 
 /**
- * Auth::identity() returns the user with a computed permissions list,
- * or null when not logged in.
+ * Auth::identity() returns the user array, or null when not logged in.
+ * Policies check user fields directly (isAdmin, premium, level, rating).
  */
 class AuthIdentityTest extends CakeTestCase
 {
@@ -16,31 +16,31 @@ class AuthIdentityTest extends CakeTestCase
 		$this->assertNull(Auth::identity());
 	}
 
-	public function testRegularUserHasNoPermissions()
+	public function testIdentityContainsUserFields()
 	{
 		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false, 'premium' => 0]]);
 
 		$identity = Auth::identity();
 		$this->assertNotNull($identity);
-		$this->assertSame([], $identity['permissions']);
+		$this->assertSame('regular', $identity['name']);
+		$this->assertFalse((bool) $identity['isAdmin']);
 	}
 
-	public function testAdminHasAdminAndSandboxPermissions()
+	public function testAdminIsDetected()
 	{
 		new ContextPreparator(['user' => ['name' => 'admin', 'admin' => true]]);
 
 		$identity = Auth::identity();
-		$this->assertContains('admin', $identity['permissions']);
-		$this->assertContains('sandbox', $identity['permissions']);
+		$this->assertTrue(BasePolicy::canPropose($identity));
 	}
 
-	public function testPremiumUserHasSandboxPermission()
+	public function testPremiumUserIsDetected()
 	{
 		new ContextPreparator(['user' => ['name' => 'premium', 'admin' => false, 'premium' => 1]]);
 
 		$identity = Auth::identity();
-		$this->assertContains('sandbox', $identity['permissions']);
-		$this->assertNotContains('admin', $identity['permissions']);
+		$this->assertTrue((bool) $identity['premium']);
+		$this->assertFalse((bool) $identity['isAdmin']);
 	}
 
 	public function testLowRatingUserCannotContribute()

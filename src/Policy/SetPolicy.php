@@ -11,7 +11,7 @@ class SetPolicy extends BasePolicy
 {
 	public static function canSandbox($user): bool
 	{
-		return static::hasPermission($user, 'sandbox');
+		return static::hasSandbox($user);
 	}
 
 	/**
@@ -36,7 +36,7 @@ class SetPolicy extends BasePolicy
 	{
 		if (!($set['public'] == 0 && $set['user_id'] === null))
 			return true;
-		return static::hasPermission($user, 'sandbox');
+		return static::hasSandbox($user);
 	}
 
 	/**

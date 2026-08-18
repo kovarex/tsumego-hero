@@ -5,7 +5,7 @@ App::uses('JwtAuth', 'Utility');
 
 class Auth
 {
-	/** Memoized identity (user + permissions), null when logged out. */
+	/** Memoized identity, null when logged out. */
 	private static $identity = null;
 
 	/**
@@ -66,8 +66,8 @@ class Auth
 	}
 
 	/**
-	 * Returns the identity (user array with a computed `permissions` list)
-	 * for the current user, or null when not logged in. Memoized per request.
+	 * Returns the identity (user array) for the current user,
+	 * or null when not logged in. Memoized per request.
 	 */
 	public static function identity(): ?array
 	{
@@ -75,24 +75,8 @@ class Auth
 			return self::$identity;
 		if (!Auth::isLoggedIn())
 			return null;
-		$user = Auth::$user;
-		$user['permissions'] = self::computePermissions($user);
-		self::$identity = $user;
-		return $user;
-	}
-
-	/**
-	 * Computes the permission list from the user row. Policies read only
-	 * these permissions, never raw role booleans.
-	 */
-	private static function computePermissions(array $user): array
-	{
-		$perms = [];
-		if ((bool) $user['isAdmin'])
-			$perms[] = 'admin';
-		if ((bool) $user['isAdmin'] || (bool) $user['premium'])
-			$perms[] = 'sandbox';
-		return $perms;
+		self::$identity = Auth::$user;
+		return self::$identity;
 	}
 
 	public static function getUserID(): int
