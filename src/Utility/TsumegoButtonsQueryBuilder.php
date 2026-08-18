@@ -10,6 +10,14 @@ class TsumegoButtonsQueryBuilder
 
 	public function __construct($tsumegoFilters, $id)
 	{
+		$this->tsumegoFilters = $tsumegoFilters;
+
+		if ($tsumegoFilters->query == 'mistake_training')
+		{
+			$this->buildMistakeTrainingQuery();
+			return;
+		}
+
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
 		{
@@ -145,4 +153,55 @@ class TsumegoButtonsQueryBuilder
 		$this->query->conditions[] = "`schedule`.date = '" . $date . "'";
 		$this->query->conditions[] = '`schedule`.published = 1';
 	}
+
+	/**
+	 * Build a completely custom query for mistake training.
+	 * Starts from tsumego_status instead of tsumego, deduplicates by tsumego_id,
+	 * orders by mt_due ASC (most overdue first).
+	 */
+	private function buildMistakeTrainingQuery(): void
+	{
+		// Build the complete SQL directly, since we start from tsumego_status
+		// rather than tsumego and cannot reuse Query::str().
+		$this->mistakeTrainingSql = "
+			SELECT
+				ts.tsumego_id,
+				sc.id AS set_connection_id,
+				sc.num,
+				ts.status,
+				t.rating,
+				COALESCE(sgf.sgf, '') AS sgf
+			FROM tsumego_status ts
+			JOIN set_connection sc ON sc.tsumego_id = ts.tsumego_id
+			JOIN tsumego t ON t.id = ts.tsumego_id
+			LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = ts.tsumego_id)
+			WHERE ts.user_id = ?
+			  AND ts.mt_due IS NOT NULL
+			  AND ts.mt_due <= NOW()
+			  AND t.deleted IS NULL
+			ORDER BY ts.mt_due ASC, sc.id
+		";
+	}
+
+	/**
+	 * Get the SQL string. For mistake_training, returns the custom SQL directly.
+	 * For all other query types, uses the standard Query builder.
+	 */
+	public function getSql(): string
+	{
+		if ($this->mistakeTrainingSql !== '')
+			return $this->mistakeTrainingSql;
+		return $this->query->str();
+	}
+
+	/**
+	 * Get query params. For mistake_training, returns the user ID.
+	 * For all other query types, returns empty (no params needed).
+	 */
+	public function getParams(): array
+	{
+		return $this->mistakeTrainingSql !== '' ? [Auth::getUserID()] : [];
+	}
+
+	private string $mistakeTrainingSql = '';
 }

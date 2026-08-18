@@ -189,6 +189,11 @@ class Auth
 		return Auth::getMode() == Constants::$TIME_MODE;
 	}
 
+	public static function isInMistakeTrainingMode(): bool
+	{
+		return Auth::getMode() == Constants::$MISTAKE_TRAINING_MODE;
+	}
+
 	public static function addSuspicion(): void
 	{
 		Auth::incrementUserField('penalty', 1);

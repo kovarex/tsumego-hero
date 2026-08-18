@@ -67,7 +67,7 @@ class TsumegosController extends AppController
 
 	public function play($id = null, $setConnectionID = null)
 	{
-		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
+		if (Auth::isLoggedIn() && !Auth::isInLevelMode() && !Auth::isInMistakeTrainingMode())
 			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		if ($setConnectionID)
@@ -98,6 +98,54 @@ class TsumegosController extends AppController
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
 		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+	}
+
+	public function mistakeTraining()
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		$next = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'mt_due <=' => date('Y-m-d H:i:s'),
+				'mt_due IS NOT NULL',
+			],
+			'order' => 'mt_due ASC',
+		]);
+
+		if (!$next)
+		{
+			$this->set('_page', 'mistake-training');
+			$this->set('_title', 'Tsumego Hero - Mistake Training');
+			return;
+		}
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($next['TsumegoStatus']['tsumego_id']);
+		if (!$tsumego)
+		{
+			ClassRegistry::init('TsumegoStatus')->updateAll(
+				['mt_due' => 'NULL'],
+				['user_id' => Auth::getUserID(), 'tsumego_id' => $next['TsumegoStatus']['tsumego_id']]
+			);
+			return $this->redirect('/mistake-training');
+		}
+
+		$setConnections = ClassRegistry::init('SetConnection')->find('all', [
+			'conditions' => ['tsumego_id' => $next['TsumegoStatus']['tsumego_id']],
+			'limit' => 1,
+		]);
+		if (!$setConnections)
+		{
+			ClassRegistry::init('TsumegoStatus')->updateAll(
+				['mt_due' => 'NULL'],
+				['user_id' => Auth::getUserID(), 'tsumego_id' => $next['TsumegoStatus']['tsumego_id']]
+			);
+			return $this->redirect('/mistake-training');
+		}
+
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$this->redirect('/' . $setConnections[0]['SetConnection']['id']);
 	}
 
 	public static function inArrayX($x, $newArray)

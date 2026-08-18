@@ -151,6 +151,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<table width="100%" border="0">
 	<tr>
 	<td align="center" width="29%">
+		<?php if (!isset($isTrainingMode) || !$isTrainingMode): ?>
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
@@ -158,8 +159,14 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					echo '<img title="Heart" id="heart'.$i.'">';
 			?>
 		</div>
+		<?php endif; ?>
 	</td>
 	<td align="center" width="42%">
+	<?php if (isset($isTrainingMode) && $isTrainingMode): ?>
+		<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 6px 12px; margin-bottom: 8px; font-size: 13px; color: #856404; display: inline-block;">
+			⚡ Mistake Training
+		</div>
+	<?php endif; ?>
 	<table>
 	<tr>
 		<td align="center">
@@ -241,11 +248,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	</table>
 	</td>
 	<td align="center" width="29%">
-		<?php HeroPowers::render(); ?>
+		<?php if (!(isset($isTrainingMode) && $isTrainingMode)) HeroPowers::render(); ?>
 	</td>
 	</tr>
 	</table>
-	<?php $tsumegoXPAndRating->render(); ?>
+	<?php if (!(isset($isTrainingMode) && $isTrainingMode)): ?>
+		<?php $tsumegoXPAndRating->render(); ?>
+	<?php else: ?>
+		<div align="center"><div id="status" align="center"></div></div>
+	<?php endif; ?>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
@@ -1670,7 +1681,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		if (accountWidget)
+		if (accountWidget && typeof xpStatus !== "undefined")
 			accountWidget.animate(success);
 		if (success)
 		{
