@@ -663,22 +663,6 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 		if(document.getElementById("highscoreInMenu")) document.getElementById("highscoreInMenu").style.color = "#d19fe4";
 	}
 
-	function upgradeHover2(){
-		document.getElementById("donateH2").src = '/img/upgradeButton1h.png';
-	}
-
-	function upgradeNoHover2(){
-		document.getElementById("donateH2").src = "/img/upgradeButton1.png";
-	}
-
-	function donateHover2(){
-		document.getElementById("donateH2").src = '/img/donateButton1h.png';
-	}
-
-	function donateNoHover2(){
-		document.getElementById("donateH2").src = "/img/donateButton1.png";
-	}
-
 	function deleteAllCookies()
 	{
 		const cookies = document.cookie.split(";");

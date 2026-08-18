@@ -821,12 +821,6 @@ echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'">
 					$("#show-more-right").hide();
 		});
 
-		function donateHover(){
-			document.getElementById("donateH").src = '/img/upgradeButton1h.png';
-		}
-		function donateNoHover(){
-			document.getElementById("donateH").src = "/img/upgradeButton1.png";
-		}
 		function sandboxY(){
 			document.cookie = "sandbox=3";
 			document.getElementById("sandboxVolunteers").style = "display:none;";

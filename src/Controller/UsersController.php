@@ -1012,54 +1012,6 @@ ORDER BY category DESC', [$user['User']['id']]));
 	}
 
 	/**
-	 * @param string|int|null $id Success ID
-	 */
-	public function success($id = null)
-	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
-		$this->set('_page', 'home');
-		$this->set('_title', 'Tsumego Hero - Success');
-
-		Auth::getUser()['reward'] = date('Y-m-d H:i:s');
-		Auth::getUser()['premium'] = 1;
-		Auth::saveUser();
-
-		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-		$Email->to('joschka.zimdars@googlemail.com');
-		$Email->subject('Upgrade');
-
-		$Email->send(Auth::getUser()['name'] . ' ' . Auth::getUser()['email']);
-		$Email = new CakeEmail();
-		$Email->from(['me@joschkazimdars.com' => 'https://tsumego.com']);
-		$Email->to(Auth::getUser()['email']);
-		$Email->subject('Tsumego Hero');
-		$Email->send('Hello ' . Auth::getUser()['name'] . ',
-
-Thank you!. Your account should be upgraded automatically.
-
---
-Best Regards
-Joschka Zimdars');
-		$this->set('id', $id);
-	}
-
-	/**
-	 * @param string|int|null $id Penalty ID
-	 */
-	public function penalty($id = null)
-	{
-		if (!Auth::isLoggedIn())
-			return $this->redirect('/');
-		$this->set('_page', 'home');
-		$this->set('_title', 'Tsumego Hero - Penalty');
-		Auth::getUser()['penalty'] = Auth::getUser()['penalty'] + 1;
-		Auth::saveUser();
-		$this->set('id', $id);
-	}
-
-	/**
 	 * @param string|int|null $id Set ID
 	 * @return void
 	 */
