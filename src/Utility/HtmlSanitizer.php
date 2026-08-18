@@ -5,20 +5,24 @@ class HtmlSanitizer
 	/** @var string HTMLPurifier HTML.Allowed whitelist (tag[attr] list). */
 	private const HTML_ALLOWED = 'br,a[href],b,i,p,h1,h2,h3,ul,ol,li,img[src|alt],div,span,font[color],table,tr,td,th';
 
-	/** @var \HTMLPurifier_Config|null */
-	private static $config = null;
+	/** @var string Cache dir for HTMLPurifier's serialized definitions (CakePHP TMP/cache, always present). */
+	private const CACHE_PATH = CACHE . 'htmlpurifier';
+
+	/** @var \HTMLPurifier|null Reused instance; building it is the expensive part. */
+	private static $purifier = null;
 
 	public static function sanitize(string $html): string
 	{
-		$purifier = new \HTMLPurifier(self::getConfig());
-
-		return $purifier->purify($html);
+		return self::purifier()->purify($html);
 	}
 
-	private static function getConfig(): \HTMLPurifier_Config
+	private static function purifier(): \HTMLPurifier
 	{
-		if (self::$config === null)
+		if (self::$purifier === null)
 		{
+			if (!is_dir(self::CACHE_PATH))
+				mkdir(self::CACHE_PATH, 0755, true);
+
 			$config = \HTMLPurifier_Config::createDefault();
 			$config->set('HTML.Allowed', self::HTML_ALLOWED);
 			// http/https/mailto keep external links working; data: preserves
@@ -33,13 +37,11 @@ class HtmlSanitizer
 			// External images (hotlinking/tracking) are not allowed; relative and
 			// data:image URLs still work. Links to external sites are unaffected.
 			$config->set('URI.DisableExternalResources', true);
-			$cachePath = defined('TMP') ? TMP . 'cache' . DS . 'htmlpurifier' : sys_get_temp_dir();
-			if (!is_dir($cachePath))
-				@mkdir($cachePath, 0777, true);
-			$config->set('Cache.SerializerPath', $cachePath);
-			self::$config = $config;
+			$config->set('Cache.SerializerPath', self::CACHE_PATH);
+			$config->set('Cache.SerializerPermissions', 0755);
+			self::$purifier = new \HTMLPurifier($config);
 		}
 
-		return self::$config;
+		return self::$purifier;
 	}
 }

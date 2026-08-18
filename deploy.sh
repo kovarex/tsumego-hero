@@ -147,6 +147,8 @@ mkdir -p "$ROOT_DIR/tmp/cache/persistent"
 chmod 777 "$ROOT_DIR/tmp/cache/persistent"
 mkdir -p "$ROOT_DIR/tmp/cache/views"
 chmod 777 "$ROOT_DIR/tmp/cache/views"
+mkdir -p "$ROOT_DIR/tmp/cache/htmlpurifier"
+chmod 777 "$ROOT_DIR/tmp/cache/htmlpurifier"
 
 chmod 777 "$ROOT_DIR/webroot/forums/cache"
 mkdir -p "$ROOT_DIR/webroot/forums/cache/production"
