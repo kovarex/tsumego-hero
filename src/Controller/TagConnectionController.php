@@ -7,7 +7,7 @@ class TagConnectionController extends AppController
 	public function add($tsumegoID, $tagName)
 	{
 		$this->Authorization->authorize('TagConnection', 'add');
-		if (!ClassRegistry::init('TagConnection')::canUserAddTag(Auth::getUserID()))
+		if (!ClassRegistry::init('TagConnection')::canCurrentUserAddTag())
 			throw new ForbiddenException('Daily tag limit reached.');
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);
 		if (!$tag)

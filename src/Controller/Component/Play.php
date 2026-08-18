@@ -347,7 +347,7 @@ class Play
 		if (Auth::isLoggedIn())
 		{
 			$isAllowedToContribute = BasePolicy::canPropose(Auth::getIdentity());
-			$canAddMoreTags = ClassRegistry::init('TagConnection')::canUserAddTag(Auth::getUserID());
+			$canAddMoreTags = ClassRegistry::init('TagConnection')::canCurrentUserAddTag();
 		}
 
 		$checkNotInSearch = false;

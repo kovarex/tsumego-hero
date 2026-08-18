@@ -26,12 +26,12 @@ class TagConnection extends AppModel
 	}
 
 	/**
-	 * Whether the user may add more tags today. Admins are never rate-limited.
+	 * Whether the current user may add more tags today. Admins are never rate-limited.
 	 */
-	public static function canUserAddTag(int $userId): bool
+	public static function canCurrentUserAddTag(): bool
 	{
 		if (Auth::isAdmin())
 			return true;
-		return self::countTodaysTags($userId) < Constants::$DAILY_TAG_LIMIT;
+		return self::countTodaysTags(Auth::getUserID()) < Constants::$DAILY_TAG_LIMIT;
 	}
 }

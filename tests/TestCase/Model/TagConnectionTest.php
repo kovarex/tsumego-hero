@@ -59,7 +59,7 @@ class TagConnectionTest extends CakeTestCase
 	{
 		new ContextPreparator(['user' => ['name' => 'under', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
 
-		$this->assertTrue(TagConnection::canUserAddTag(Auth::getUserID()));
+		$this->assertTrue(TagConnection::canCurrentUserAddTag());
 	}
 
 	public function testCanUserAddTagBlocksAtLimit()
@@ -91,7 +91,7 @@ class TagConnectionTest extends CakeTestCase
 		}
 
 		$this->assertSame(Constants::$DAILY_TAG_LIMIT, TagConnection::countTodaysTags($context->user['id']));
-		$this->assertFalse(TagConnection::canUserAddTag($context->user['id']));
+		$this->assertFalse(TagConnection::canCurrentUserAddTag());
 	}
 
 	public function testCanUserAddTagBypassesLimitForAdmin()
@@ -121,7 +121,7 @@ class TagConnectionTest extends CakeTestCase
 			]]);
 		}
 
-		$this->assertTrue(TagConnection::canUserAddTag($context->user['id']));
+		$this->assertTrue(TagConnection::canCurrentUserAddTag());
 	}
 
 	public function testYesterdayTagsDoNotCountTowardTodayLimit()
@@ -154,6 +154,6 @@ class TagConnectionTest extends CakeTestCase
 		}
 
 		$this->assertSame(0, TagConnection::countTodaysTags($context->user['id']));
-		$this->assertTrue(TagConnection::canUserAddTag($context->user['id']));
+		$this->assertTrue(TagConnection::canCurrentUserAddTag());
 	}
 }
