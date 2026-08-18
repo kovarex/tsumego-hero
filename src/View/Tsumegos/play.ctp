@@ -22,7 +22,7 @@
  * @var int $idForSignature
  * @var int $idForSignature2
  * @var bool $isAllowedToContribute
- * @var bool $isAllowedToContribute2
+ * @var bool $canAddMoreTags
  * @var bool $isSandbox
  * @var bool $isSemeai
  * @var string $lightDark
@@ -337,7 +337,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			'tsumegoId' => (int) $t['Tsumego']['id'],
 			'isTimeMode' => Auth::isInTimeMode(),
 			'problemSolved' => TsumegoUtil::hasStateAllowingInspection($t),
-			'canContribute' => $isAllowedToContribute2,
+			'canAddMoreTags' => $canAddMoreTags,
 			'initialTags' => array_map(fn($row) => [
 				'id' => (int) $row['id'],
 				'name' => $row['name'],
