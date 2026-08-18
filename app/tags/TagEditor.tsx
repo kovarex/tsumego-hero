@@ -12,10 +12,11 @@ interface Props
 	isTimeMode: boolean;
 	problemSolved: boolean;
 	canAddMoreTags: boolean;
+	isAllowedToContribute: boolean;
 	initialTags: TagItem[];
 }
 
-export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags, initialTags }: Props)
+export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags, isAllowedToContribute, initialTags }: Props)
 {
 	const { userId, isAdmin } = useAuth();
 	const [tags, setTags] = useState<TagItem[]>(initialTags);
@@ -56,6 +57,8 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		return () => window.removeEventListener('tag-editor-solved', handler);
 	}, []);
 
+	const isNonAddable = (tag: TagItem) => tag.isAdded && !tag.isApproved;
+
 	const available = tags.filter(t => !t.isAdded || (!t.isMine && !t.isApproved));
 	const visible = query
 		? available.filter(t => t.name.toLowerCase().includes(query.toLowerCase()))
@@ -90,8 +93,9 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		else if (e.key === 'Enter')
 		{
 			e.preventDefault();
-			if (visible[selectedIndex])
-				handleAdd(visible[selectedIndex].name);
+			const selected = visible[selectedIndex];
+			if (selected && !isNonAddable(selected))
+				handleAdd(selected.name);
 		}
 		else if (e.key === 'Escape')
 		{
@@ -137,21 +141,24 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 		</div>
 	);
 
-	if (!userId)
+	if (!isAllowedToContribute)
 	{
 		if (!tagList) return null;
 		return <div data-testid="tag-editor">{tagList}</div>;
 	}
 
-	if (!canAddMoreTags)
-		return <div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>;
-
-	if (error) return <div style={{ color: '#e03c4b' }} data-testid="tag-error">{error}</div>;
-
 	return (
 		<div data-testid="tag-editor">
 			{tagList}
 
+			{error && <div style={{ color: '#e03c4b', marginBottom: 6 }} data-testid="tag-error">{error}</div>}
+
+			{!canAddMoreTags && (
+				<div style={{ color: 'var(--text-softer-color)', fontSize: 14 }}>Daily limit reached.</div>
+			)}
+
+			{canAddMoreTags && !error && (
+			<>
 			<div style={{ position: 'relative', display: 'inline-block', maxWidth: 300, width: '100%' }}>
 				<input
 					ref={inputRef}
@@ -179,17 +186,15 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 								background: i === selectedIndex ? 'rgba(128, 128, 128, 0.15)' : 'transparent',
 							};
 
-							if (tag.isAdded && !tag.isMine && !tag.isApproved)
-							{
-								return (
-									<div key={tag.id} style={{ ...tagStyle, color: '#e03c4b', cursor: 'default' }}>
-										{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>(already proposed)</span>
-									</div>
-								);
-							}
-
-							if (tag.isAdded && tag.isMine && !tag.isApproved)
-								return <div key={tag.id} style={{ ...tagStyle, color: 'var(--text-softer-color)', cursor: 'default' }}>{tag.name} (pending)</div>;
+						if (isNonAddable(tag))
+						{
+							const label = tag.isMine ? 'pending' : 'already proposed';
+							return (
+								<div key={tag.id} style={{ ...tagStyle, color: tag.isMine ? 'var(--text-softer-color)' : '#e03c4b', cursor: 'default' }}>
+									{tag.name} <span style={{ color: 'var(--text-softer-color)', fontSize: 12 }}>({label})</span>
+								</div>
+							);
+						}
 
 							return (
 								<div
@@ -212,6 +217,8 @@ export function TagEditor({ tsumegoId, isTimeMode, problemSolved, canAddMoreTags
 			<div style={{ marginTop: 6 }}>
 				<a href="/tags/add" style={{ color: 'var(--text-softer-color)', fontSize: 12 }} id="create-new-tag">+ New tag</a>
 			</div>
+			</>
+			)}
 		</div>
 	);
 }

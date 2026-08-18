@@ -136,12 +136,22 @@ class PolicyTest extends CakeTestCase
 		$this->assertFalse($policy->canClose($this->identity(false), $issue), 'other user blocked');
 	}
 
-	public function testTsumegoIssuePolicyReopenAndMoveAreAdminOnly()
+	public function testTsumegoIssuePolicyReopenAllowsOwnerOrAdmin()
 	{
 		$policy = new TsumegoIssuePolicy();
-		$this->assertTrue($policy->canReopen($this->identity(true)));
-		$this->assertFalse($policy->canReopen($this->identity(false)));
-		$this->assertFalse($policy->canReopen($this->identity(null)));
+		$issue = ['user_id' => 7];
+		$owner = $this->identity(false);
+		$owner['id'] = 7;
+
+		$this->assertTrue($policy->canReopen($owner, $issue), 'owner can reopen');
+		$this->assertTrue($policy->canReopen($this->identity(true), $issue), 'admin can reopen');
+		$this->assertFalse($policy->canReopen($this->identity(false), $issue), 'other user blocked');
+		$this->assertFalse($policy->canReopen($this->identity(null), $issue), 'anonymous blocked');
+	}
+
+	public function testTsumegoIssuePolicyMoveCommentIsAdminOnly()
+	{
+		$policy = new TsumegoIssuePolicy();
 		$this->assertTrue($policy->canMoveComment($this->identity(true)));
 		$this->assertFalse($policy->canMoveComment($this->identity(false)));
 	}

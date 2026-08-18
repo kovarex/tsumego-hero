@@ -228,13 +228,13 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		$this->Authorization->authorize('TsumegoIssue', 'reopen');
-
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
 		if (!$issue)
 			throw new NotFoundException('Issue not found');
+
+		$this->Authorization->authorize($issue, 'reopen');
 
 		$TsumegoIssue->id = $id;
 		if (!$TsumegoIssue->saveField('tsumego_issue_status_id', TsumegoIssue::$OPENED_STATUS))

@@ -17,9 +17,13 @@ class TsumegoIssuePolicy extends BasePolicy
 		return (int) $issue['user_id'] === $user['id'];
 	}
 
-	public static function canReopen($user): bool
+	public static function canReopen($user, $issue): bool
 	{
-		return static::isAdmin($user);
+		if (static::isAdmin($user))
+			return true;
+		if ($user === null)
+			return false;
+		return (int) $issue['user_id'] === $user['id'];
 	}
 
 	public static function canMoveComment($user): bool
