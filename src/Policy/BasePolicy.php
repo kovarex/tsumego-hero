@@ -24,4 +24,22 @@ abstract class BasePolicy
 	{
 		return static::hasPermission($user, 'admin');
 	}
+
+	/**
+	 * Whether the identity may propose SGF edits or tag connections.
+	 * Matches CakePHP 5 pattern: policy methods own the business logic,
+	 * permission strings are not exposed to callers.
+	 */
+	public static function canPropose($user): bool
+	{
+		if ($user === null)
+			return false;
+		if (static::isAdmin($user))
+			return true;
+		if ((int) $user['level'] >= 40)
+			return true;
+		if ((float) $user['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE)
+			return true;
+		return false;
+	}
 }

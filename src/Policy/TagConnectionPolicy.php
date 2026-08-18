@@ -3,14 +3,14 @@
 App::uses('BasePolicy', 'Policy');
 
 /**
- * Tag connections: proposing a tag requires the can_contribute capability;
+ * Tag connections: proposing a tag requires the canPropose capability;
  * removing one is allowed for admins or the proposer (unapproved proposals only).
  */
 class TagConnectionPolicy extends BasePolicy
 {
 	public static function canAdd($user): bool
 	{
-		return static::hasPermission($user, 'can_contribute');
+		return static::canPropose($user);
 	}
 
 	public static function canRemove($user, $tagConnection): bool

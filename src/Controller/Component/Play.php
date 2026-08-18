@@ -5,6 +5,7 @@ App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('ForbiddenException', 'Routing/Error');
+App::uses('BasePolicy', 'Policy');
 App::uses('SetPolicy', 'Policy');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
@@ -345,7 +346,7 @@ class Play
 		$canAddMoreTags = false;
 		if (Auth::isLoggedIn())
 		{
-			$isAllowedToContribute = Auth::can('can_contribute');
+			$isAllowedToContribute = BasePolicy::canPropose(Auth::identity());
 			$canAddMoreTags = ClassRegistry::init('TagConnection')::canUserAddTag(Auth::getUserID());
 		}
 

@@ -82,18 +82,6 @@ class Auth
 	}
 
 	/**
-	 * Whether the current user holds the given permission. Reads only the
-	 * computed permission list; null/unknown permissions are always false.
-	 */
-	public static function can(string $permission): bool
-	{
-		$identity = Auth::identity();
-		if ($identity === null)
-			return false;
-		return in_array($permission, $identity['permissions'], true);
-	}
-
-	/**
 	 * Computes the permission list from the user row. Policies read only
 	 * these permissions, never raw role booleans.
 	 */
@@ -104,12 +92,6 @@ class Auth
 			$perms[] = 'admin';
 		if ((bool) $user['isAdmin'] || (bool) $user['premium'])
 			$perms[] = 'sandbox';
-		if (
-			(bool) $user['isAdmin']
-			|| (int) $user['level'] >= 40
-			|| (float) $user['rating'] >= Constants::$MINIMUM_RATING_TO_CONTRIBUTE
-		)
-			$perms[] = 'can_contribute';
 		return $perms;
 	}
 

@@ -8,6 +8,7 @@ App::uses('TsumegoCommentPolicy', 'Policy');
 App::uses('TsumegoIssuePolicy', 'Policy');
 App::uses('TagConnectionPolicy', 'Policy');
 App::uses('TsumegoPolicy', 'Policy');
+App::uses('Constants', 'Utility');
 
 /**
  * Authorization policies decide whether an identity may perform an action.
@@ -22,7 +23,7 @@ class PolicyTest extends CakeTestCase
 	{
 		if ($isAdmin === null)
 			return null;
-		$user = ['isAdmin' => $isAdmin, 'premium' => $premium];
+		$user = ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
 		$user['permissions'] = [];
 		if ($isAdmin)
 			$user['permissions'][] = 'admin';
@@ -155,9 +156,9 @@ class PolicyTest extends CakeTestCase
 	{
 		$policy = new TagConnectionPolicy();
 		$contributor = $this->identity(false);
-		$contributor['permissions'][] = 'can_contribute';
+		$contributor['rating'] = Constants::$MINIMUM_RATING_TO_CONTRIBUTE;
 
-		$this->assertTrue($policy->canAdd($contributor));
+		$this->assertTrue($policy->canAdd($contributor), 'contributor allowed');
 		$this->assertFalse($policy->canAdd($this->identity(false)), 'non-contributor blocked');
 		$this->assertFalse($policy->canAdd($this->identity(null)), 'anonymous blocked');
 	}
