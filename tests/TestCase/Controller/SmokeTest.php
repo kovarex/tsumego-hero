@@ -25,6 +25,9 @@ class SmokeTest extends ControllerTestCase
 			'other-users' => [
 				['name' => 'opponent1', 'rating' => 1600],
 				['name' => 'opponent2', 'rating' => 1400],
+				// Smoke test roles: premium and regular (non-premium) logged-in users
+				['name' => 'premiumuser', 'rating' => 1500, 'premium' => 1],
+				['name' => 'regularuser', 'rating' => 1500],
 			],
 			'tsumego' => ['rating' => 1000, 'sets' => [['name' => 'Free Set', 'num' => '1']]],
 			// Rating=1500 tsumego needed so ratingMode finds it for user with rating 1500 (range ±240)
@@ -49,83 +52,93 @@ class SmokeTest extends ControllerTestCase
 		$tagId = $context->tags[0]['id'];
 		$finishedSessionId = $context->timeModeSessions[1]['id'];
 
-		// auth values:
-		//   'both'      - tested logged-in AND anonymously
-		//   'logged-in' - only tested when logged in (e.g. requires session data)
-		//   'anonymous' - only tested when logged out (e.g. login/registration forms)
+		// The test scenarios (roles) and the user that plays each one; null = logged out.
+		// No hierarchy is assumed between them - each page declares its own set.
+		$roles = [
+			'admin' => $userId,
+			'premium' => ContextPreparator::getUserIdFromName('premiumuser'),
+			'regular' => ContextPreparator::getUserIdFromName('regularuser'),
+			'anonymous' => null,
+		];
+		// Common sets derived from $roles so they cannot drift when roles change:
+		// $everyone = every scenario, $loggedIn = every scenario that logs a user in.
+		$everyone = array_keys($roles);
+		$loggedIn = array_keys(array_filter($roles, fn($roleUserId) => $roleUserId !== null));
+
+		// auth - the test scenarios that may view the page. Each page declares its
+		// own array of scenarios (no hierarchy assumed); $everyone / $loggedIn are
+		// convenience sets for the common cases, e.g. ['admin', 'premium'] for the sandbox.
 		$pages = [
 			// Core pages
-			['url' => '', 'name' => 'Homepage', 'auth' => 'both'],
+			['url' => '', 'name' => 'Homepage', 'auth' => $everyone],
 
 			// Collections
-			['url' => 'sets', 'name' => 'Sets index', 'auth' => 'both'],
-			['url' => "sets/view/$setId", 'name' => 'Set view', 'auth' => 'both'],
-			['url' => 'sets/view/favorites', 'name' => 'Favorites', 'auth' => 'logged-in'],
-			['url' => 'sets/sandbox', 'name' => 'Sandbox/premium sets', 'auth' => 'logged-in'],
+			['url' => 'sets', 'name' => 'Sets index', 'auth' => $everyone],
+			['url' => "sets/view/$setId", 'name' => 'Set view', 'auth' => $everyone],
+			['url' => 'sets/view/favorites', 'name' => 'Favorites', 'auth' => $loggedIn],
+			['url' => 'sets/sandbox', 'name' => 'Sandbox/premium sets', 'auth' => ['admin', 'premium']],
 
 			// SGF upload history (admin-only)
-			['url' => "sgfs/view/$tsumegoId", 'name' => 'SGF upload history', 'auth' => 'logged-in'],
+			['url' => "sgfs/view/$tsumegoId", 'name' => 'SGF upload history', 'auth' => ['admin']],
 
 			// Tsumego play
-			['url' => $setConnectionId, 'name' => 'Tsumego play', 'auth' => 'both'],
-			['url' => 'ratingMode', 'name' => 'Rating mode play', 'auth' => 'logged-in'],
-			['url' => 'timeMode/overview', 'name' => 'Time mode overview', 'auth' => 'logged-in'],
-			['url' => 'timeMode/play', 'name' => 'Time mode play', 'auth' => 'logged-in'],
-			['url' => "timeMode/result/$finishedSessionId", 'name' => 'Time mode result', 'auth' => 'logged-in'],
+			['url' => $setConnectionId, 'name' => 'Tsumego play', 'auth' => $everyone],
+			['url' => 'ratingMode', 'name' => 'Rating mode play', 'auth' => $loggedIn],
+			['url' => 'timeMode/overview', 'name' => 'Time mode overview', 'auth' => $loggedIn],
+			['url' => 'timeMode/play', 'name' => 'Time mode play', 'auth' => $loggedIn],
+			['url' => "timeMode/result/$finishedSessionId", 'name' => 'Time mode result', 'auth' => $loggedIn],
 
 			// Achievements
-			['url' => 'achievements', 'name' => 'Achievements', 'auth' => 'both'],
-			['url' => 'achievements/view/1', 'name' => 'Achievement detail', 'auth' => 'both'],
-			['url' => "achievements/user/$userId", 'name' => 'User achievements', 'auth' => 'both'],
+			['url' => 'achievements', 'name' => 'Achievements', 'auth' => $everyone],
+			['url' => 'achievements/view/1', 'name' => 'Achievement detail', 'auth' => $everyone],
+			['url' => "achievements/user/$userId", 'name' => 'User achievements', 'auth' => $everyone],
 
 			// User pages
-			['url' => "users/view/$userId", 'name' => 'User profile', 'auth' => 'both'],
-			['url' => "tags/user/$userId", 'name' => 'User contributions', 'auth' => 'both'],
-			['url' => "users/solveHistory/$userId", 'name' => 'Solve history', 'auth' => 'both'],
-			['url' => 'users/authors', 'name' => 'About/Authors', 'auth' => 'both'],
-			['url' => 'users/highscore', 'name' => 'Level highscore', 'auth' => 'both'],
-			['url' => 'users/time_mode', 'name' => 'Time mode highscore', 'auth' => 'both'],
-			['url' => 'users/rating', 'name' => 'Rating highscore', 'auth' => 'both'],
-			['url' => 'users/achievements', 'name' => 'Achievement highscore', 'auth' => 'both'],
-			['url' => 'users/added_tags', 'name' => 'Tag highscore', 'auth' => 'both'],
-			['url' => 'users/leaderboard', 'name' => 'Daily leaderboard', 'auth' => 'both'],
+			['url' => "users/view/$userId", 'name' => 'User profile', 'auth' => $everyone],
+			['url' => "tags/user/$userId", 'name' => 'User contributions', 'auth' => $everyone],
+			['url' => "users/solveHistory/$userId", 'name' => 'Solve history', 'auth' => $everyone],
+			['url' => 'users/authors', 'name' => 'About/Authors', 'auth' => $everyone],
+			['url' => 'users/highscore', 'name' => 'Level highscore', 'auth' => $everyone],
+			['url' => 'users/time_mode', 'name' => 'Time mode highscore', 'auth' => $everyone],
+			['url' => 'users/rating', 'name' => 'Rating highscore', 'auth' => $everyone],
+			['url' => 'users/achievements', 'name' => 'Achievement highscore', 'auth' => $everyone],
+			['url' => 'users/added_tags', 'name' => 'Tag highscore', 'auth' => $everyone],
+			['url' => 'users/leaderboard', 'name' => 'Daily leaderboard', 'auth' => $everyone],
 
 			// Auth pages (anonymous-only forms)
-			['url' => 'users/login', 'name' => 'Login form', 'auth' => 'anonymous'],
-			['url' => 'users/add', 'name' => 'Registration form', 'auth' => 'anonymous'],
-			['url' => 'users/resetpassword', 'name' => 'Reset password form', 'auth' => 'anonymous'],
-			['url' => 'users/newpassword/invalid-checksum', 'name' => 'New password form (invalid link)', 'auth' => 'anonymous'],
+			['url' => 'users/login', 'name' => 'Login form', 'auth' => ['anonymous']],
+			['url' => 'users/add', 'name' => 'Registration form', 'auth' => ['anonymous']],
+			['url' => 'users/resetpassword', 'name' => 'Reset password form', 'auth' => ['anonymous']],
+			['url' => 'users/newpassword/invalid-checksum', 'name' => 'New password form (invalid link)', 'auth' => ['anonymous']],
 
 			// User account pages
-			['url' => 'users/delete_account', 'name' => 'Delete account form', 'auth' => 'logged-in'],
+			['url' => 'users/delete_account', 'name' => 'Delete account form', 'auth' => $loggedIn],
 
 			// Comments (requires login)
-			['url' => 'comments', 'name' => 'Comments', 'auth' => 'logged-in'],
+			['url' => 'comments', 'name' => 'Comments', 'auth' => $loggedIn],
 
 			// Tags
-			['url' => 'tags/add', 'name' => 'Add tag form', 'auth' => 'both'],
-			['url' => "tags/view/$tagId", 'name' => 'Tag detail', 'auth' => 'both'],
+			['url' => 'tags/add', 'name' => 'Add tag form', 'auth' => $everyone],
+			['url' => "tags/view/$tagId", 'name' => 'Tag detail', 'auth' => $everyone],
 
 			// Tutorials
-			['url' => 'sites/websitefunctions', 'name' => 'Website functions', 'auth' => 'both'],
-			['url' => 'sites/gotutorial', 'name' => 'Go rules tutorial', 'auth' => 'both'],
-			['url' => 'sites/impressum', 'name' => 'Legal notice', 'auth' => 'both'],
-			['url' => 'sites/privacypolicy', 'name' => 'Privacy policy', 'auth' => 'both'],
-			['url' => 'sites/about', 'name' => 'About/Credits', 'auth' => 'both'],
+			['url' => 'sites/websitefunctions', 'name' => 'Website functions', 'auth' => $everyone],
+			['url' => 'sites/gotutorial', 'name' => 'Go rules tutorial', 'auth' => $everyone],
+			['url' => 'sites/impressum', 'name' => 'Legal notice', 'auth' => $everyone],
+			['url' => 'sites/privacypolicy', 'name' => 'Privacy policy', 'auth' => $everyone],
+			['url' => 'sites/about', 'name' => 'About/Credits', 'auth' => $everyone],
 
 			// Issues
-			['url' => 'tsumego-issues', 'name' => 'Issues list', 'auth' => 'both'],
+			['url' => 'tsumego-issues', 'name' => 'Issues list', 'auth' => $everyone],
 		];
 
-		// Pass 1: logged-in
-		foreach (array_filter($pages, fn($p) => $p['auth'] !== 'anonymous') as $page)
-			$this->assertPageLoadsOk($browser, $page['url'], $page['name'] . ' (logged-in)');
-
-		// Pass 2: anonymous — clear PHP-side auth (otherwise Browser::get re-injects the cookie)
-		Auth::logout();
-		$browser->driver->manage()->deleteAllCookies();
-		foreach (array_filter($pages, fn($p) => $p['auth'] !== 'logged-in') as $page)
-			$this->assertPageLoadsOk($browser, $page['url'], $page['name'] . ' (anonymous)', false);
+		// One pass per scenario; each pass visits every page that lists that scenario.
+		foreach ($roles as $role => $roleUserId)
+		{
+			$this->switchUser($browser, $roleUserId);
+			foreach (array_filter($pages, fn($p) => in_array($role, $p['auth'], true)) as $page)
+				$this->assertPageLoadsOk($browser, $page['url'], $page['name'] . " ($role)", $roleUserId !== null);
+		}
 	}
 
 	/**
@@ -153,6 +166,24 @@ class SmokeTest extends ControllerTestCase
 			"var xhr = new XMLHttpRequest(); xhr.open('HEAD', window.location.href, false); xhr.send(); return xhr.status;"
 		);
 		$this->assertSame(200, $status, "$label: page returned HTTP $status");
+	}
+
+	/**
+	 * Switch the PHP-side auth identity and drop stale browser cookies so the
+	 * next Browser::get() injects the new user. Null userId logs out (anonymous).
+	 */
+	private function switchUser($browser, ?int $userId): void
+	{
+		Auth::logout();
+		if ($userId !== null)
+		{
+			$_COOKIE['hackedLoggedInUserID'] = (string) $userId;
+			$_COOKIE['disable-achievements'] = true;
+			Auth::init();
+		}
+		else
+			unset($_COOKIE['hackedLoggedInUserID']);
+		$browser->driver->manage()->deleteAllCookies();
 	}
 
 	private function assertPageLoadsOk($browser, string $url, string $label, bool $loggedIn = true): void
