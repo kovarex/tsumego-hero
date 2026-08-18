@@ -242,11 +242,29 @@ class Play
 		else
 		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
+		// If in training mode but this tsumego isn't in the training queue, reset to level mode
+		if (Auth::isInMistakeTrainingMode())
+		{
+			$mtStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id],
+			]);
+			if (!$mtStatus || empty($mtStatus['TsumegoStatus']['mt_due']))
+			{
+				Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+			}
+		}
+
 		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
 			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
+		}
+		elseif (Auth::isInMistakeTrainingMode())
+		{
+			$mtButtons = TsumegoButtons::fromMistakeTraining($currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($mtButtons, $currentSetConnection);
+			($this->setFunction)('_title', 'Mistake Training ' . $mtButtons->currentOrder . '/' . $mtButtons->highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
@@ -372,6 +390,8 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 
 		if (Auth::isInLevelMode())
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
+		elseif (Auth::isInMistakeTrainingMode() && isset($mtButtons))
+			$mtButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
@@ -391,6 +411,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
+		($this->setFunction)('isTrainingMode', Auth::isInMistakeTrainingMode());
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
 		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
 		($this->setFunction)('boardSelection', BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set['Set']['board_theme_index']));

@@ -8,6 +8,7 @@ class TsumegoButtons extends ArrayObject
 	{
 		if (!$tsumegoFilters)
 			return;
+		$this->currentSetConnectionID = $currentSetConnectionID;
 		$condition = "";
 		$this->fill($condition, $tsumegoFilters, $id);
 
@@ -41,11 +42,26 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
+	/**
+	 * Build buttons for mistake training via the normal TsumegoFilters pipeline.
+	 */
+	public static function fromMistakeTraining(int $currentSetConnectionID): TsumegoButtons
+	{
+		$filters = TsumegoFilters::empty();
+		$filters->query = 'mistake_training';
+		$filters->collectionSize = 200;
+		return new TsumegoButtons($filters, $currentSetConnectionID);
+	}
+
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
-		$result = Util::query($queryBuilder->query->str());
+		$result = Util::query($queryBuilder->getSql(), $queryBuilder->getParams());
 		$this->description = $queryBuilder->description;
+
+		// Deduplicate by tsumego_id for mistake training (one button per tsumego)
+		if ($tsumegoFilters->query == 'mistake_training')
+			$result = $this->deduplicateByTsumego($result, $this->currentSetConnectionID ?? null);
 
 		foreach ($result as $index => $row)
 		{
@@ -61,6 +77,27 @@ class TsumegoButtons extends ArrayObject
 			$this [] = $tsumegoButton;
 		}
 		$this->updateHighestTsumegoOrder();
+	}
+
+	/**
+	 * Keep one row per tsumego_id, preferring the current set connection.
+	 */
+	private function deduplicateByTsumego(array $rows, ?int $currentSetConnectionID): array
+	{
+		$seen = [];
+		foreach ($rows as $row)
+		{
+			$tsumegoId = (int) $row['tsumego_id'];
+			$scId = (int) $row['set_connection_id'];
+			if (isset($seen[$tsumegoId]))
+			{
+				if ($scId === $currentSetConnectionID)
+					$seen[$tsumegoId] = $row;
+				continue;
+			}
+			$seen[$tsumegoId] = $row;
+		}
+		return array_values($seen);
 	}
 
 	public function resetOrders(): void
@@ -175,4 +212,5 @@ class TsumegoButtons extends ArrayObject
 	public int $highestTsumegoOrder = -1;
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
+	private ?int $currentSetConnectionID = null;
 }

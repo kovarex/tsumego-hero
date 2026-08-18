@@ -96,6 +96,14 @@ Router::connect(
 );
 
 /**
+ * Mistake Training
+ */
+Router::connect(
+	'/mistake-training',
+	['controller' => 'Tsumegos', 'action' => 'mistakeTraining']
+);
+
+/**
  * Tsumego image generation for Open Graph / social sharing
  */
 Router::connect(

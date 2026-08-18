@@ -732,4 +732,123 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 				$this->assertArrayHasKey($field, $achievementUpdate, "Each update should carry '$field' for client-side rendering");
 		}
 	}
+
+	// ── Mistake Training Entry Hook ────────────────────────────────────
+
+	public function testMisplayOnFirstEncounterSetsMtDue(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$this->performMisplay($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+				'Misplay on first encounter should set mt_due (' . $page . ')');
+		}
+	}
+
+	public function testSolveWithMisplaysOnFirstEncounterSetsMtDue(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$this->performSolveWithMisplays($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+				'Solve with misplays on first encounter should set mt_due (' . $page . ')');
+		}
+	}
+
+	public function testCleanSolveOnFirstEncounterDoesNotSetMtDue(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$this->performSolve($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNull($status['TsumegoStatus']['mt_due'],
+				'Clean solve on first encounter should not set mt_due (' . $page . ')');
+		}
+	}
+
+	public function testVisitOnlyDoesNotSetMtDue(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$this->performVisit($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNull($status['TsumegoStatus']['mt_due'],
+				'Visit only should not set mt_due (' . $page . ')');
+		}
+	}
+
+	public function testFailPushesMtDueToTomorrow(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+
+			// First encounter: misplay to enter training
+			$this->performMisplay($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+				'Should have mt_due after first misplay (' . $page . ')');
+
+			// mt_due should be roughly tomorrow from the first misplay
+			$firstDue = $status['TsumegoStatus']['mt_due'];
+
+			// Now fail again (simulate coming back and failing)
+			$this->performMisplay($context, $page);
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+
+			// mt_due should still be in the future (roughly tomorrow)
+			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+				'Should still have mt_due after second fail (' . $page . ')');
+			$this->assertGreaterThan(
+				date('Y-m-d H:i:s'),
+				$status['TsumegoStatus']['mt_due'],
+				'mt_due should be in the future after fail, so problem drops from due queue (' . $page . ')'
+			);
+		}
+	}
+
+	public function testSolveUpdatesMtDueForTrainingProblem(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+
+			// Enter training via misplay
+			$this->performMisplay($context, $page);
+
+			// Clean solve (no misplays) should update mt_due via SM-2
+			$this->performSolve($context, $page);
+
+			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			]);
+			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+				'Clean solve after entering training should keep mt_due (' . $page . ')');
+			// After misplay + clean solve: SM-2 gives interval=1 (first clean solve after entry)
+			// So mt_due should be ~1 day from now
+			$this->assertGreaterThan(
+				date('Y-m-d H:i:s'),
+				$status['TsumegoStatus']['mt_due'],
+				'mt_due should be in the future after clean solve (' . $page . ')'
+			);
+		}
+	}
 }
