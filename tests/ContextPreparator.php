@@ -447,6 +447,8 @@ class ContextPreparator
 			$includedInTimeMode = false;
 			$public = 1;
 			$boardThemeIndex = 1;
+			$userId = null;
+			$description = null;
 		}
 		else
 		{
@@ -500,10 +502,10 @@ class ContextPreparator
 		if (!$tag)
 		{
 			$tag = [];
-			$tag['hint'] = Util::extract('is_hint', $tagInput) ?: 0;
+			$tag['hint'] = Util::extractWithDefault('is_hint', $tagInput, 0);
 			$tag['approved'] = Util::extractWithDefault('approved', $tagInput, true);
 			$tag['user_id'] = $this->user['id'];
-			$tag['description'] = Util::extract('description', $tagInput) ?? '';
+			$tag['description'] = Util::extractWithDefault('description', $tagInput, '');
 			$tag['link'] = Util::extractWithDefault('link', $tagInput, '');
 			$tag['name'] = $name;
 			ClassRegistry::init('Tag')->create($tag);
@@ -513,9 +515,9 @@ class ContextPreparator
 		}
 		else
 		{
-			Util::extract('description', $tagInput);
-			Util::extract('approved', $tagInput);
-			Util::extract('is_hint', $tagInput);
+			Util::extractWithDefault('description', $tagInput, '');
+			Util::extractWithDefault('approved', $tagInput, true);
+			Util::extractWithDefault('is_hint', $tagInput, 0);
 			Util::extractWithDefault('link', $tagInput, '');
 		}
 
