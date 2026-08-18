@@ -3,10 +3,20 @@
 App::uses('BasePolicy', 'Policy');
 
 /**
- * Tag deletion is admin-only.
+ * Tag management is admin-only.
  */
 class TagPolicy extends BasePolicy
 {
+	public static function canEdit($user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	public static function canEditAction($user): bool
+	{
+		return static::isAdmin($user);
+	}
+
 	public static function canDelete($user): bool
 	{
 		return static::isAdmin($user);

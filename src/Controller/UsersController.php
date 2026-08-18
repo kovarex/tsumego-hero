@@ -20,6 +20,7 @@ class UsersController extends AppController
 	// shows the publish schedule
 	public function showPublishSchedule(): void
 	{
+		$this->Authorization->authorize('Admin');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('Schedule');

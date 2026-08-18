@@ -136,6 +136,7 @@ class TagsController extends AppController
 
 	public function edit($tagID): ?CakeResponse
 	{
+		$this->Authorization->authorize('Tag');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tag)
 		{
@@ -150,6 +151,7 @@ class TagsController extends AppController
 
 	public function editAction($tagID)
 	{
+		$this->Authorization->authorize('Tag', 'editAction');
 		$tag = ClassRegistry::init('Tag')->findById($tagID);
 		if (!$tag)
 		{

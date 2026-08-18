@@ -34,7 +34,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3'] as $method)
+		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -53,9 +53,12 @@ class PolicyTest extends CakeTestCase
 	public function testTagPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TagPolicy();
-		$this->assertTrue($policy->canDelete($this->identity(true)));
-		$this->assertFalse($policy->canDelete($this->identity(false)));
-		$this->assertFalse($policy->canDelete($this->identity(null)));
+		foreach (['canDelete', 'canEdit', 'canEditAction'] as $method)
+		{
+			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
+			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
+			$this->assertFalse($policy->{$method}($this->identity(null)), $method . ' blocks anonymous');
+		}
 	}
 
 	public function testSetPolicyAllowsAdminOrPremium()
@@ -176,7 +179,7 @@ class PolicyTest extends CakeTestCase
 	public function testTsumegoPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TsumegoPolicy();
-		foreach (['canEdit', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2'] as $method)
+		foreach (['canEdit', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2', 'canPerformMerge'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');

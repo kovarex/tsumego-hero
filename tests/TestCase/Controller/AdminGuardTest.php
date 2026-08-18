@@ -157,4 +157,64 @@ class AdminGuardTest extends ControllerTestCase
 	{
 		return ClassRegistry::init('Set')->find('first', ['conditions' => ['public' => 0]])['Set']['id'];
 	}
+
+	// ── TsumegosController::performMerge ──
+
+	public function testPerformMergeRequiresAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tsumego' => ['set_order' => 1],
+		]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tsumegos/performMerge', [
+			'data' => [
+				'master-tsumego-id' => $context->tsumegos[0]['id'],
+				'slave-tsumego-id' => $context->tsumegos[0]['id'],
+			],
+			'method' => 'post',
+		]);
+	}
+
+	// ── UsersController::showPublishSchedule ──
+
+	public function testShowPublishScheduleRequiresAdmin()
+	{
+		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/users/showPublishSchedule', ['method' => 'get']);
+	}
+
+	// ── TagsController::edit / editAction ──
+
+	public function testTagEditRequiresAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tags' => [['name' => 'atari']],
+		]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tags/edit/' . $context->tags[0]['id'], ['method' => 'get']);
+	}
+
+	public function testTagEditActionRequiresAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regular', 'admin' => false],
+			'tags' => [['name' => 'atari']],
+		]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tags/editAction/' . $context->tags[0]['id'], [
+			'data' => ['tag_description' => 'test'],
+			'method' => 'post',
+		]);
+	}
 }

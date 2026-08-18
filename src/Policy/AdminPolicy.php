@@ -46,4 +46,9 @@ class AdminPolicy extends BasePolicy
 	{
 		return static::isAdmin($user);
 	}
+
+	public static function canShowPublishSchedule($user): bool
+	{
+		return static::isAdmin($user);
+	}
 }

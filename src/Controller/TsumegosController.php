@@ -521,6 +521,7 @@ class TsumegosController extends AppController
 
 	public function performMerge()
 	{
+		$this->Authorization->authorize('Tsumego');
 		$merger = new TsumegoMerger($this->request->data['master-tsumego-id'], $this->request->data['slave-tsumego-id']);
 		$flash = $merger->execute();
 		if ($flash)
