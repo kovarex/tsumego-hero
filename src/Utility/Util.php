@@ -128,6 +128,13 @@ class Util
 		return $amount / $max;
 	}
 
+	public static function isHttpUrl(string $url): bool
+	{
+		$scheme = strtolower((string) parse_url(trim($url), PHP_URL_SCHEME));
+
+		return in_array($scheme, ['http', 'https'], true);
+	}
+
 	public static function getPercent(float|int $amount, float|int $max): float
 	{
 		return self::getRatio($amount, $max) * 100;

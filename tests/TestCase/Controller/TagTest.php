@@ -435,7 +435,7 @@ class TagTest extends ControllerTestCase
 			$browser->clickId('tag_description');
 			$browser->driver->getKeyboard()->sendKeys('Not the console, which is named by this by the way.');
 			$browser->clickId('tag_reference');
-			$browser->driver->getKeyboard()->sendKeys('tag.example.com');
+			$browser->driver->getKeyboard()->sendKeys('https://example.com');
 			if ($isHint)
 				$browser->clickId('tag_hint_true');
 			else
@@ -451,7 +451,7 @@ class TagTest extends ControllerTestCase
 			$this->assertSame(Util::getMyAddress() . '/tags/view/' . $tagAdded['id'], $browser->driver->getCurrentURL());
 			$this->assertSame($tagAdded['name'], 'atari');
 			$this->assertSame($tagAdded['description'], 'Not the console, which is named by this by the way.');
-			$this->assertSame($tagAdded['link'], 'tag.example.com');
+			$this->assertSame($tagAdded['link'], 'https://example.com');
 			$this->assertSame($tagAdded['hint'], $isHint ? 1 : 0);
 			$this->assertSame($tagAdded['user_id'], Auth::getUserID());
 			$this->assertSame($tagAdded['approved'], 1);
@@ -540,30 +540,50 @@ class TagTest extends ControllerTestCase
 		$descField->sendKeys('World');
 
 		$browser->clickId('tag_link');
-		$browser->driver->getKeyboard()->sendKeys('bla.example.com');
+		$browser->driver->getKeyboard()->sendKeys('https://example.com');
 		$browser->clickId('submit_tag');
 		$tag = ClassRegistry::init('Tag')->find('first')['Tag'];
 		$this->assertSame('World', $tag['description']);
-		$this->assertSame('bla.example.com', $tag['link']);
+		$this->assertSame('https://example.com', $tag['link']);
 		$this->assertSame(0, $tag['hint']);
 	}
 
-	public function testTagViewSanitizesDescriptionAndGuardsLink(): void
+	public function testTagViewSanitizesDescription(): void
 	{
 		$context = new ContextPreparator(['tags' => [[
 			'name' => 'snapback',
 			'description' => '<b onmouseover="alert(1)">Shape</b>',
-			'link' => 'javascript:alert(1)',
 		]]]);
 		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
 
 		$this->assertStringContainsString('<b>Shape</b>', $this->view);
 		$this->assertStringNotContainsString('onmouseover', $this->view);
-		$this->assertStringNotContainsString('href="javascript:', $this->view);
+	}
 
-		$safe = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
-		$this->testAction('/tags/view/' . $safe->tags[0]['id'], ['return' => 'view']);
+	public function testTagViewRendersHttpReferenceAsLink(): void
+	{
+		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'https://example.com/ref']]]);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+
 		$this->assertStringContainsString('href="https://example.com/ref"', $this->view);
+	}
+
+	public function testTagViewRendersNonUrlReferenceAsText(): void
+	{
+		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'segoe seigen tesuji jiten vol 1']]]);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('>segoe seigen tesuji jiten vol 1</p>', $this->view);
+		$this->assertStringNotContainsString('href="segoe seigen', $this->view);
+	}
+
+	public function testTagViewDoesNotLinkifyUnsafeReference(): void
+	{
+		$context = new ContextPreparator(['tags' => [['name' => 'ok', 'link' => 'javascript:alert(1)']]]);
+		$this->testAction('/tags/view/' . $context->tags[0]['id'], ['return' => 'view']);
+
+		$this->assertStringContainsString('>javascript:alert(1)</p>', $this->view);
+		$this->assertStringNotContainsString('href="javascript:', $this->view);
 	}
 
 	public function testEditTagWithoutDescriptionShowsError()

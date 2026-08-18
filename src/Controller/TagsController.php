@@ -38,7 +38,7 @@ class TagsController extends AppController
 		$tag['name'] = $tagName;
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
 		$tag['hint'] = (int) $this->data['tag_hint'];
-		$tag['link'] = $this->data['tag_reference'];
+		$tag['link'] = trim((string) ($this->data['tag_reference'] ?? ''));
 		$tag['user_id'] = Auth::getUserID();
 		$tag['approved'] = Auth::isAdmin() ? 1 : 0;
 		ClassRegistry::init('Tag')->save($tag);
@@ -169,7 +169,7 @@ class TagsController extends AppController
 
 		$tag['description'] = HtmlSanitizer::sanitize((string) $tagDescription);
 		$tag['hint'] = (int) ($this->data['tag_hint']);
-		$tag['link'] = $this->data['tag_link'];
+		$tag['link'] = trim((string) ($this->data['tag_link'] ?? ''));
 		ClassRegistry::init('Tag')->save($tag);
 		return $this->redirect('/tags/view/' . $tagID);
 	}

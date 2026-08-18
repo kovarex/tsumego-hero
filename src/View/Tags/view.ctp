@@ -12,10 +12,13 @@
    <div class="tags-content">
 				<h1><?php echo h($tn['Tag']['name']); ?></h1>
 	<p><?php echo HtmlSanitizer::sanitize((string) ($tn['Tag']['description'] ?? '')); ?></p>
-	<?php $tagLink = trim((string) ($tn['Tag']['link'] ?? '')); ?>
-	<?php if ($tagLink !== ''): ?>
-	<p><?php echo HtmlSanitizer::sanitize('<a href="' . h($tagLink) . '">' . h($tagLink) . '</a>'); ?></p>
-	<?php endif; ?>
+	<?php
+	$tagLink = trim((string) ($tn['Tag']['link'] ?? ''));
+	if ($tagLink !== '' && Util::isHttpUrl($tagLink))
+		echo '<p><a href="' . h($tagLink) . '" target="_blank" rel="noopener noreferrer">' . h($tagLink) . '</a></p>';
+	elseif ($tagLink !== '')
+		echo '<p>' . h($tagLink) . '</p>';
+	?>
 	<?php if($tn['Tag']['hint'] == 1){ ?>
 	<p><i>This tag gives a hint.</i></p>
 	<?php } ?>
