@@ -343,14 +343,14 @@ class HeroPowersTest extends TestCaseWithAuth
 		$this->assertSame(1, $browser->driver->executeScript('return remainingHealth - misplays;'));
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 
-		// Lose the last heart to trigger "Try again tomorrow"
+		// Lose the last heart to trigger lock message
 		$browser->driver->executeScript("displayResult('F')");
 		$browser->driver->wait(10, 200)->until(function ($driver) {
 			return $driver->executeScript('return window.tryAgainTomorrow === true;');
 		});
 
 		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
-		$this->assertStringContainsString('Try again tomorrow', $statusText);
+		$this->assertStringContainsString('This problem is locked until', $statusText);
 		$this->assertSame(1, $browser->driver->executeScript('return boardLockValue;'));
 		for ($i = 0; $i < $maxHealth; $i++)
 		{
@@ -369,7 +369,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		});
 
 		$statusText = $browser->driver->findElement(WebDriverBy::id('status'))->getText();
-		$this->assertStringNotContainsString('Try again tomorrow', $statusText);
+		$this->assertStringNotContainsString('This problem is locked until', $statusText);
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$this->assertFalse($browser->driver->executeScript('return tryAgainTomorrow;'));
 		$this->assertSame($maxHealth, $browser->driver->executeScript('return remainingHealth;'));

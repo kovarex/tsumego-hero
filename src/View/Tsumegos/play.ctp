@@ -658,6 +658,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var maxHealth = <?php echo $maxHealth; ?>;
 	var fullHeart = '<?php echo $fullHeart; ?>';
 	var emptyHeart = '<?php echo $emptyHeart; ?>';
+	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 	var doubleXP = false;
 	var countDownDate = new Date();
 	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
@@ -1145,7 +1146,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<?php
 		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 		echo '
-				document.getElementById("status").innerHTML = \'<b style="font-size:17px">Try again tomorrow</b>\';
+				document.getElementById("status").innerHTML = \'<b style="font-size:17px">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
 				document.getElementById("status").style.color = "#e03c4b";';
 	}
@@ -1766,7 +1767,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 						if(remainingHealth - misplays <= 0)
 						{
 							updateCurrentNavigationButton('F');
-							document.getElementById("status").innerHTML = '<b style="font-size:17px">Try again tomorrow</b>';
+							document.getElementById("status").innerHTML = '<b style="font-size:17px">This problem is locked until ' + heartResetTime + '</b>';
 							tryAgainTomorrow = true;
 							toggleBoardLock(true);
 						}
