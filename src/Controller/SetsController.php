@@ -864,7 +864,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$oldOrder = $set['Set']['order'];
 				$set = $this->Set->findById($id);
 				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, $oldOrder, $newOrder);
+					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, Util::strOrNull($oldOrder), Util::strOrNull($newOrder));
 			}
 			// Handle image upload from the view page admin panel
 			if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK
