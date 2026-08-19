@@ -704,12 +704,31 @@ besogo.makeToolPanel = function (container, editor) {
       function () {
         let transformation = besogo.makeTransformation();
         transformation.invertColors = true;
-        let descriptionText = $("#descriptionText").text();
-        if (descriptionText.includes("Black"))
-          descriptionText = descriptionText.replaceAll("Black", "White");
-        else if (descriptionText.includes("White"))
-          descriptionText = descriptionText.replaceAll("White", "Black");
-        $("#descriptionText").text(descriptionText);
+        let swapColorWords = function (text) {
+          return text.replace(/\b(Black|black|White|white)\b/g, function (m) {
+            return { Black: "White", black: "white", White: "Black", white: "black" }[m];
+          });
+        };
+        $("#descriptionText").text(swapColorWords($("#descriptionText").text()));
+        if (besogo.multipleChoiceCustom === "multiple_choice") {
+          // Custom multiple-choice answers are stored in true colors; match the inverted board.
+          ["besogo-multipleChoice1", "besogo-multipleChoice2", "besogo-multipleChoice3", "besogo-multipleChoice4"].forEach(function (id) {
+            let el = $("#" + id);
+            if (el.length) el.val(swapColorWords(el.val()));
+          });
+        } else if (besogo.multipleChoiceCustom === "score_estimating") {
+          // Score-estimating result buttons and summary labels.
+          ["besogo-se-black", "besogo-se-white"].forEach(function (id) {
+            let el = $("#" + id);
+            if (el.length) el.val(swapColorWords(el.val()));
+          });
+          ["submitScoreEstimatingBlackWins", "submitScoreEstimatingWhiteWins"].forEach(function (id) {
+            let el = $("#" + id);
+            if (el.length) el.text(swapColorWords(el.text()));
+          });
+          let scoreLabels = $("#scoreEstimatingLabels");
+          if (scoreLabels.length) scoreLabels.text(swapColorWords(scoreLabels.text()));
+        }
         besogo.editor.applyTransformation(transformation);
       }
     );
