@@ -101,6 +101,14 @@
 	// When the board is inverted ($swapColors), swap Black<->White to match what the player sees.
 	if ($swapColors)
 		$displayDescription = $swapColorWords($displayDescription);
+
+	// Variant answers are stored in true colors (they describe the stones on the board as authored).
+	// When the board is inverted ($swapColors), swap Black<->White so the answers match what the player sees.
+	$displayAnswers = $tv['TsumegoVariant'] ?? null;
+	if ($displayAnswers !== null && $swapColors)
+		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
+			if (isset($displayAnswers[$answerKey]))
+				$displayAnswers[$answerKey] = $swapColorWords($displayAnswers[$answerKey]);
 	if ($nothingInRange != false)
 		echo '<div align="center" class="status-message">'.$nothingInRange.'</div>';
 	?>
@@ -142,10 +150,11 @@
 		{
 			if($tv['TsumegoVariant']['type']=='score_estimating')
 			{
+				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
+				if ($pl == 1)
+					$capturesLabels = $swapColorWords($capturesLabels);
 				echo '<br>';
-				echo 'Black captures: '.h($tv['TsumegoVariant']['answer2']).' | ';
-				echo 'White captures: '.h($tv['TsumegoVariant']['answer3']).' | ';
-				echo 'Komi: '.h($tv['TsumegoVariant']['answer1']).' ';
+				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv['TsumegoVariant']['answer1']).'</span>';
 			}
 		}
 		if(Auth::isAdmin()) { ?>
@@ -222,11 +231,11 @@
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
-			<a id="submitScoreEstimatingBlackWins" href="#">Black wins</a>
+			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $pl == 1 ? 'White wins' : 'Black wins'; ?></a>
 			<?php if(substr($tv['TsumegoVariant']['answer1'],-2) !== '.5') { ?>
 				<a id="submitScoreEstimatingJigo" href="#">Jigo</a>
 			<?php } ?>
-			<a id="submitScoreEstimatingWhiteWins" href="#">White wins</a>
+			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $pl == 1 ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
 			<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
@@ -1773,10 +1782,10 @@
 		{
 			echo 'options.multipleChoiceCustom = '.json_encode($tv['TsumegoVariant']['type'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
-			a5.push('.json_encode($tv['TsumegoVariant']['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}

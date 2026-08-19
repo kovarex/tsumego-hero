@@ -1040,4 +1040,118 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($m2, 'og:description should exist for White-first SGF');
 		$this->assertStringContainsString('White to capture the black group', $m2[1]);
 	}
+
+	private function createTsumegoVariant(int $tsumegoId, array $variantData): void
+	{
+		$variant = ['TsumegoVariant' => array_merge(['tsumego_id' => $tsumegoId], $variantData)];
+		ClassRegistry::init('TsumegoVariant')->create($variant);
+		ClassRegistry::init('TsumegoVariant')->save($variant);
+	}
+
+	/**
+	 * Custom multiple-choice variant answers are stored in true colors. When the
+	 * board is inverted (playercolor=white), the answer text is swapped so it
+	 * matches the stones the player actually sees.
+	 */
+	public function testMultipleChoiceVariantAnswersSwapWhenBoardInverted(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to play. What is the result?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
+			'type' => 'multiple_choice',
+			'answer1' => 'White is dead',
+			'answer2' => 'Ko',
+			'answer3' => 'Seki in sente',
+			'answer4' => 'Seki in gote',
+			'numAnswer' => '3',
+		]);
+
+		// No inversion: answers keep their true colors.
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('"White is dead"', $this->view);
+
+		// Inverted board: the answer text is swapped to match the visual stones.
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('"Black is dead"', $this->view);
+		$this->assertStringNotContainsString('"White is dead"', $this->view);
+	}
+
+	/**
+	 * Score-estimating summary labels are stored in true colors. When the board
+	 * is inverted, the "Black/White captures" labels swap while the numeric
+	 * values stay in place.
+	 */
+	public function testScoreEstimatingLabelsSwapWhenBoardInverted(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Who wins?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
+			'type' => 'score_estimating',
+			'answer1' => '6.5',
+			'answer2' => '3',
+			'answer3' => '6',
+			'numAnswer' => '0',
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+		$this->assertStringContainsString('Black captures: 3', $this->view);
+		$this->assertStringContainsString('White captures: 6', $this->view);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?playercolor=white', ['return' => 'view']);
+		$this->assertStringContainsString('White captures: 3', $this->view);
+		$this->assertStringContainsString('Black captures: 6', $this->view);
+	}
+
+	/**
+	 * Browser test: clicking the color-orientation button inverts the board and
+	 * swaps the multiple-choice answer text so it matches the visual stones.
+	 */
+	public function testOrientationButtonSwapsVariantAnswers(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tsumego' => [
+				'set_order' => 1,
+				'description' => 'Black to play. What is the result?',
+				'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19]AB[cc]AW[dd];B[aa];W[ab];B[ba]C[+])',
+			],
+		]);
+		$this->createTsumegoVariant($context->tsumegos[0]['id'], [
+			'type' => 'multiple_choice',
+			'answer1' => 'White is dead',
+			'answer2' => 'Ko',
+			'answer3' => 'Seki in sente',
+			'answer4' => 'Seki in gote',
+			'numAnswer' => '3',
+		]);
+
+		$browser = Browser::instance();
+		$browser->get((string) $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10);
+		$wait->until(function () use ($browser) {
+			return $browser->driver->executeScript(
+				"return typeof besogo !== 'undefined' && document.getElementById('besogo-multipleChoice1') !== null;"
+			);
+		});
+
+		$this->assertSame('White is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
+
+		$browser->driver->executeScript("document.getElementById('colorOrientation').click();");
+
+		$this->assertSame('Black is dead', $browser->find('#besogo-multipleChoice1')->getAttribute('value'));
+		$this->assertSame('White to play. What is the result?', $browser->find('#descriptionText')->getText());
+	}
 }
