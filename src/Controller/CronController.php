@@ -175,7 +175,7 @@ WHERE
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 			return;
-		$setConnection = ClassRegistry::init('SetConnection')->findPrimaryForTsumego($tsumegoID);
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			return;
 

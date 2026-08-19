@@ -30,7 +30,7 @@ final class AddUserIdToSet extends AbstractMigration
 			$escapedName = addslashes($name);
 			$this->execute(
 				"INSERT INTO `set` (user_id, title, public, image, author, `order`, created) "
-				. "VALUES ({$userId}, 'Favorites', 0, NULL, '{$escapedName}', 99999, NOW())"
+				. "VALUES ({$userId}, 'Favorites', 0, NULL, '{$escapedName}', 999, NOW())"
 			);
 
 			// Get the set ID

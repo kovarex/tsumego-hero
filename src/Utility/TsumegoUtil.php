@@ -1,5 +1,7 @@
 <?php
 
+App::uses('SetConnection', 'Model');
+
 class TsumegoUtil
 {
 	public static function getMapForCurrentUser($conditions = null): array
@@ -25,7 +27,8 @@ class TsumegoUtil
 			'SELECT sc.*, s.title AS set_title '
 			. 'FROM set_connection sc '
 			. 'JOIN `set` s ON s.id = sc.set_id '
-			. 'WHERE sc.tsumego_id = ?',
+			. 'WHERE sc.tsumego_id = ? '
+			. 'ORDER BY ' . SetConnection::displayOrderSql('s', 'sc'),
 			[$tsumegoID]
 		);
 

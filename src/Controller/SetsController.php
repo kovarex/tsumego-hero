@@ -200,17 +200,15 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
 
+			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
+
 			if ($isSandbox)
 			{
 				$set['Set']['image'] = 'b1.png';
 				$set['Set']['author'] = 'various creators';
-				$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 			}
 			else
-			{
 				$set['Set']['user_id'] = Auth::getUserID();
-				$set['Set']['order'] = Constants::$USER_SET_ORDER;
-			}
 
 			$this->Set->create();
 			$this->Set->save($set);
@@ -567,7 +565,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				'public' => 0,
 				'image' => null,
 				'author' => Auth::getUser()['name'],
-				'order' => Constants::$USER_SET_ORDER,
+				'order' => Constants::$DEFAULT_SET_ORDER,
 			],
 		]);
 
@@ -854,8 +852,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			if (isset($this->data['Set']['order']))
 			{
 				$newOrder = (int) $this->data['Set']['order'];
-				if (!Auth::isAdmin())
-					$newOrder = max($newOrder, Constants::$USER_SET_ORDER);
 				$this->Set->create();
 				$changeSet = $set;
 				$changeSet['Set']['order'] = $newOrder;

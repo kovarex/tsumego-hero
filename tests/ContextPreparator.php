@@ -397,6 +397,7 @@ class ContextPreparator
 			'public' => Util::extract('public', $setInput),
 			'board_theme_index' => Util::extract('board_theme_index', $setInput),
 			'user_id' => Util::extract('user_id', $setInput),
+			'order' => Util::extractWithDefault('order', $setInput, null),
 			'default' => Util::extract('default', $setInput),
 			'description' => Util::extractWithDefault('description', $setInput, null)]);
 		$setConnection = [];
@@ -441,6 +442,7 @@ class ContextPreparator
 	private function getOrCreateTsumegoSet($input): array
 	{
 		$isDefault = false;
+		$order = null;
 		if (is_string($input))
 		{
 			$name = $input;
@@ -457,6 +459,7 @@ class ContextPreparator
 			$public = Util::extractWithDefault('public', $input, true);
 			$boardThemeIndex = Util::extractWithDefault('board_theme_index', $input, null);
 			$userId = Util::extract('user_id', $input);
+			$order = Util::extractWithDefault('order', $input, null);
 			$isDefault = Util::extract('default', $input) ?: false;
 			$description = Util::extractWithDefault('description', $input, null);
 			$this->checkOptionsConsumed($input);
@@ -469,7 +472,7 @@ class ContextPreparator
 			$set['included_in_time_mode'] = is_null($includedInTimeMode) ? true : $includedInTimeMode;
 			$set['public'] = is_null($public) ? true : $public;
 			$set['board_theme_index'] = $boardThemeIndex;
-			$set['order'] = Constants::$DEFAULT_SET_ORDER;
+			$set['order'] = $order ?: Constants::$DEFAULT_SET_ORDER;
 			if ($description !== null)
 				$set['description'] = $description;
 			if ($userId === 'self')
