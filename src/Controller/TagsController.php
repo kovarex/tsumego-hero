@@ -79,47 +79,49 @@ class TagsController extends AppController
 		$offset = ($pageIndex - 1) * $pageSize;
 
 		$rows = Util::query(
-			'SELECT SQL_CALC_FOUND_ROWS type, status, created, tag_id, tag, tsumego_id, tsumego_label FROM ('
-				// Accepted tag names
-				. 'SELECT \'tag name\' AS type, \'accepted\' AS status, t.created, t.id AS tag_id, t.name AS tag, \'\' AS tsumego_id, \'\' AS tsumego_label '
-				. 'FROM tag t WHERE t.user_id = ? AND t.approved = 1 '
+			'SELECT SQL_CALC_FOUND_ROWS type, status, created, tag_id, tag, tsumego_id, tsumego_label, row_id FROM ('
+				// Tag names: accepted + pending
+				. 'SELECT \'tag name\' AS type, IF(t.approved, \'accepted\', \'pending\') AS status, t.created, t.id AS tag_id, t.name AS tag, \'\' AS tsumego_id, \'\' AS tsumego_label, t.id AS row_id '
+				. 'FROM tag t WHERE t.user_id = ? '
 				. 'UNION ALL '
-				// Rejected tag names
-				. 'SELECT \'tag name\', \'rejected\', r.created, \'\', r.text, \'\', \'\' '
-				. 'FROM reject r WHERE r.user_id = ? AND r.type = \'tag name\' '
-				. 'UNION ALL '
-				// Accepted tag connections
-				. 'SELECT \'tag\', \'accepted\', tc.created, t.id, t.name, tc.tsumego_id, CONCAT(s.title, \' - \', sc.num) '
+				// Tag connections: accepted + pending
+				. 'SELECT \'tag\', IF(tc.approved, \'accepted\', \'pending\'), tc.created, t.id, t.name, tc.tsumego_id, CONCAT(s.title, \' - \', sc.num), tc.id '
 				. 'FROM tag_connection tc '
 				. 'JOIN tag t ON t.id = tc.tag_id '
-				. 'JOIN set_connection sc ON sc.tsumego_id = tc.tsumego_id '
+				. 'JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = tc.tsumego_id '
+					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE tc.user_id = ? AND tc.approved = 1 '
+				. 'WHERE tc.user_id = ? '
 				. 'UNION ALL '
-				// Rejected tags
-				. 'SELECT \'tag\', \'rejected\', r.created, \'\', r.text, r.tsumego_id, CONCAT(s.title, \' - \', sc.num) '
-				. 'FROM reject r '
-				. 'JOIN set_connection sc ON sc.tsumego_id = r.tsumego_id '
-				. 'JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE r.user_id = ? AND r.type = \'tag\' '
-				. 'UNION ALL '
-				// Accepted proposals
-				. 'SELECT \'proposal\', \'accepted\', sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num) '
+				// Proposals (SGF uploads)
+				. 'SELECT \'proposal\', IF(sg.accepted, \'accepted\', \'pending\'), sg.created, \'\', \'\', sg.tsumego_id, CONCAT(s.title, \' - \', sc.num), sg.id '
 				. 'FROM sgf sg '
-				. 'JOIN set_connection sc ON sc.tsumego_id = sg.tsumego_id '
+				. 'JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = sg.tsumego_id '
+					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
 				. 'JOIN `set` s ON s.id = sc.set_id '
 				. 'WHERE sg.user_id = ? '
 				. 'UNION ALL '
-				// Rejected proposals
-				. 'SELECT \'proposal\', \'rejected\', r.created, \'\', \'\', r.tsumego_id, CONCAT(s.title, \' - \', sc.num) '
+				// Rejected items (tag names have tsumego_id = 0, so LEFT JOIN gives empty label)
+				. 'SELECT r.type, \'rejected\', r.created, \'\', r.text, r.tsumego_id, '
+				. 'COALESCE(CONCAT(s.title, \' - \', sc.num), \'\'), r.id '
 				. 'FROM reject r '
-				. 'JOIN set_connection sc ON sc.tsumego_id = r.tsumego_id '
-				. 'JOIN `set` s ON s.id = sc.set_id '
-				. 'WHERE r.user_id = ? AND r.type = \'proposal\' '
+				. 'LEFT JOIN set_connection sc ON sc.id = ('
+					. 'SELECT sc2.id FROM set_connection sc2 '
+					. 'JOIN `set` s2 ON s2.id = sc2.set_id '
+					. 'WHERE sc2.tsumego_id = r.tsumego_id '
+					. 'ORDER BY s2.`order` ASC, sc2.id ASC LIMIT 1) '
+				. 'LEFT JOIN `set` s ON s.id = sc.set_id '
+				. 'WHERE r.user_id = ? AND (sc.id IS NOT NULL OR r.tsumego_id = 0) '
 			. ') AS contributions '
-			. "ORDER BY created DESC "
+			. "ORDER BY created DESC, row_id DESC "
 			. "LIMIT {$pageSize} OFFSET {$offset}",
-			[$id, $id, $id, $id, $id, $id]
+			[$id, $id, $id, $id]
 		);
 
 		$count = Util::query('SELECT FOUND_ROWS()')[0]['FOUND_ROWS()'];

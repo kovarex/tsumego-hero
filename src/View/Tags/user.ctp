@@ -11,18 +11,18 @@
 
 if (!function_exists('_tagLink')):
 
-function _tagLink(ContributionRow $c): string
-{
-	$tag = h($c->tag);
-	if ($c->tagId)
-		return '<a href="/tags/view/' . $c->tagId . '"><i>' . $tag . '</i></a>';
-	return '<i>' . $tag . '</i>';
-}
+	function _tagLink(ContributionRow $c): string
+	{
+		$tag = h($c->tag);
+		if ($c->tagId)
+			return '<b><a href="/tags/view/' . $c->tagId . '"><i>' . $tag . '</i></a></b>';
+		return '<b><i>' . $tag . '</i></b>';
+	}
 
-function _tsumegoLink(ContributionRow $c): string
-{
-	return '<a href="/tsumegos/play/' . $c->tsumegoId . '">' . h($c->tsumegoLabel) . '</a>';
-}
+	function _tsumegoLink(ContributionRow $c): string
+	{
+		return '<b><a href="/tsumegos/play/' . $c->tsumegoId . '">' . h($c->tsumegoLabel) . '</a></b>';
+	}
 
 endif;
 
@@ -43,15 +43,22 @@ endif;
 			<th align="left">Timestamp</th>
 		</tr>
 		<?php foreach ($contributions as $c): ?>
-			<?php $color = $c->status === 'accepted' ? '#047804' : '#ce3a47'; ?>
+			<?php
+				if ($c->status === 'accepted')
+					$color = '#047804';
+				elseif ($c->status === 'pending')
+					$color = '#b08000';
+				else
+					$color = '#ce3a47';
+			?>
 				<tr>
 					<td class="timeTableLeft versionColor" align="left">
-						<?php if ($c->type === 'proposal'): ?>
-							made a proposal for <?php echo _tsumegoLink($c) ?>
-						<?php elseif ($c->type === 'tag'): ?>
-							added the tag <?php echo _tagLink($c) ?> for <?php echo _tsumegoLink($c) ?>
-						<?php else: ?>
-							created a new tag: <?php echo _tagLink($c) ?>
+					<?php if ($c->type === 'proposal'): ?>
+						Proposal for <?php echo _tsumegoLink($c) ?> was submitted
+					<?php elseif ($c->type === 'tag'): ?>
+						Tag <?php echo _tagLink($c) ?> was added to <?php echo _tsumegoLink($c) ?>
+					<?php else: ?>
+						Tag <?php echo _tagLink($c) ?> was created
 						<?php endif; ?>
 					</td>
 					<td class="timeTableMiddle versionColor" align="left"><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
