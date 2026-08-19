@@ -1148,7 +1148,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo '
 				document.getElementById("status").innerHTML = \'<b style="font-size:17px">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
-				document.getElementById("status").style.color = "#e03c4b";';
+				document.getElementById("status").style.color = "#e03c4b";
+				$(".besogo-board").addClass("besogo-board-red-glow");
+				var resetBtn = document.getElementById("besogo-reset-button");
+				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
 	}
 		if($potionSuccess){
 			echo '$(".alertBox").fadeIn(500);';
@@ -1181,7 +1184,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	?>
 
-		$('#target').click(function(e){
+		$('.besogo-board').click(function(e){
 			if(locked)
 				window.location = nextButtonLink;
 	});
@@ -1519,6 +1522,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					locked = false;
 					toggleBoardLock(false);
 					document.getElementById("status").innerHTML = '';
+					$(".besogo-board").removeClass("besogo-board-red-glow");
+					var resetBtn = document.getElementById("besogo-reset-button-inactive");
+					if (resetBtn) { resetBtn.id = "besogo-reset-button"; resetBtn.onclick = function() { window.location.reload(); }; }
 			}
 		});
 	}
@@ -1742,10 +1748,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				branch = "no";
 				document.getElementById("status").style.color = "#e03c4b";
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
-				if (light)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
+				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (mode==3)
 				{
 					timeModeEnabled = false;
@@ -1770,6 +1773,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 							document.getElementById("status").innerHTML = '<b style="font-size:17px">This problem is locked until ' + heartResetTime + '</b>';
 							tryAgainTomorrow = true;
 							toggleBoardLock(true);
+							var resetBtn = document.getElementById("besogo-reset-button");
+							if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }
 						}
 					}
 					if (goldenTsumego)
@@ -1787,10 +1792,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				noLastMark = true;
 				besogoMode2Solved = true;
 				setCookie("mode", mode);
-				if (light)
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2)");
-				else
-					$(".besogo-board").css("box-shadow","0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58)");
+				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (!noXP)
 				{
 					playedWrong = true;
@@ -1983,6 +1985,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	if(authorProblem)
 		options.reviewEnabled = true;
 	besogo.create(div, options);
+	if (tryAgainTomorrow) { var resetBtn = document.getElementById("besogo-reset-button"); if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; } }
 	besogo.editor.setAutoPlay(true);
 	besogo.editor.registerAddTimeForMovePlayed(addTimeForMovePlayed);
 	besogo.editor.registerDisplayResult(displayResult);

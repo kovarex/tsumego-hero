@@ -3608,6 +3608,13 @@ input:checked + .mode-slider:before {
   box-shadow: 0 2px 14px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
 }
 
+[data-theme="light"] .besogo-board-red-glow {
+  box-shadow: 0 2px 14px 0 rgba(183, 19, 19, 0.8), 0 6px 20px 0 rgba(183, 19, 19, 0.2) !important;
+}
+[data-theme="dark"] .besogo-board-red-glow {
+  box-shadow: 0 2px 14px 0 rgb(225, 34, 34), 0 6px 20px 0 rgba(253, 59, 59, 0.58) !important;
+}
+
 .besogo-tsumegoPlayTool {
   display: flex;
   justify-content: center;
@@ -3808,6 +3815,11 @@ input:checked + .mode-slider:before {
 }
 #besogo-reset-button {
   background-color: #5b5d60 !important;
+}
+#besogo-reset-button-inactive {
+  background-color: #8f9092 !important;
+  cursor: context-menu;
+  pointer-events: none;
 }
 .besogo-tsumegoPlayTool input:nth-last-child(1) {
   background-color: #8f9092 !important;
