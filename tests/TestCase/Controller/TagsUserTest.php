@@ -69,24 +69,27 @@ class TagsUserTest extends TestCaseWithAuth
 		$text = strip_tags($this->view);
 
 		// 1. Accepted tag name
-		$this->assertStringContainsString('created a new tag: tesuji', $text);
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('tesuji', $text);
 		$this->assertStringContainsString('color:#047804', $this->view); // green = accepted
 
 		// 2. Rejected tag name
-		$this->assertStringContainsString('created a new tag: badname', $text);
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('badname', $text);
 		$this->assertStringContainsString('color:#ce3a47', $this->view); // red = rejected
 
 		// 3. Accepted tag connection
-		$this->assertStringContainsString('added the tag tesuji for', $text);
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('tesuji', $text);
 
 		// 4. Rejected tag connection
-		$this->assertStringContainsString('added the tag bad tag for', $text);
+		$this->assertStringContainsString('bad tag', $text);
 
 		// 5. Accepted proposal
-		$this->assertTextContains('made a proposal for', $this->view);
+		$this->assertTextContains('Proposal for', $this->view);
 
-		// 6. Rejected proposal (shows tsumego label, not the SGF text)
-		$this->assertTextContains('made a proposal for', $this->view);
+		// 6. Rejected proposal
+		$this->assertTextContains('Proposal for', $this->view);
 
 		// Verify both colors appear
 		$greenCount = substr_count($this->view, '#047804');
@@ -171,5 +174,92 @@ class TagsUserTest extends TestCaseWithAuth
 		$this->testAction('/tags/user/' . $user['User']['id'], ['return' => 'view']);
 
 		$this->assertTextContains('Tags and proposals by pageTitleUser', $this->view);
+	}
+
+	// --- Pending proposals ---
+
+	/**
+	 * A pending tag name proposal (approved=0) appears in the contributions list.
+	 */
+	public function testPendingTagNameAppearsInContributions()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'proposer', 'rating' => 1500],
+			'tags' => [['name' => 'snapback', 'approved' => 0]],
+		]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['return' => 'view']);
+		$text = strip_tags($this->view);
+
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('was created', $text);
+		$this->assertStringContainsString('snapback', $text);
+		$this->assertStringContainsString('pending', $text);
+	}
+
+	/**
+	 * A pending tag connection (approved=0) appears in the contributions list.
+	 */
+	public function testPendingTagConnectionAppearsInContributions()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'tagger', 'rating' => 1500],
+			'tsumegos' => [[
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19])',
+				'tags' => [['name' => 'atari', 'approved' => 0]],
+			]],
+		]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['return' => 'view']);
+		$text = strip_tags($this->view);
+
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('atari', $text);
+		$this->assertStringContainsString('pending', $text);
+	}
+
+	/**
+	 * Pending items appear alongside accepted and rejected items.
+	 */
+	public function testPendingItemsMixedWithAcceptedAndRejected()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'mixer', 'rating' => 1500],
+			'tags' => [['name' => 'tesuji']],
+			'tsumegos' => [[
+				'set_order' => 1,
+				'sgf' => '(;GM[1]FF[4]SZ[19])',
+				'tags' => [['name' => 'snapback', 'approved' => 0]],
+			]],
+		]);
+
+		// Add a rejected tag name
+		$reject = ClassRegistry::init('Reject');
+		$reject->create();
+		$reject->save(['Reject' => [
+			'user_id' => $context->user['id'],
+			'tsumego_id' => 0,
+			'type' => 'tag name',
+			'text' => 'badname',
+		]]);
+
+		$this->testAction('/tags/user/' . $context->user['id'], ['return' => 'view']);
+		$text = strip_tags($this->view);
+
+		// Accepted tag name
+		$this->assertStringContainsString('was created', $text);
+		$this->assertStringContainsString('accepted', $text);
+
+		// Pending tag connection
+		$this->assertStringContainsString('was added to', $text);
+		$this->assertStringContainsString('snapback', $text);
+		$this->assertStringContainsString('pending', $text);
+
+		// Rejected tag name
+		$this->assertStringContainsString('Tag', $text);
+		$this->assertStringContainsString('badname', $text);
+		$this->assertStringContainsString('rejected', $text);
 	}
 }
