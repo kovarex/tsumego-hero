@@ -36,7 +36,7 @@ class SgfsController extends AppController
 				$dupl = $this->Tsumego->findById($duplicateId);
 				if (!$dupl)
 					continue;
-				$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $dupl['Tsumego']['id']]]);
+				$scT = $this->SetConnection->findPrimaryForTsumego($dupl['Tsumego']['id']);
 				if (!$scT)
 					continue;
 				$dupl['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -51,7 +51,7 @@ class SgfsController extends AppController
 		$t = $this->Tsumego->findById($id);
 		if (!$t)
 			throw new NotFoundException('Tsumego not found');
-		$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+		$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 		if (!$scT)
 			throw new NotFoundException('Tsumego not found in any set');
 		$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
@@ -94,7 +94,7 @@ class SgfsController extends AppController
 			$s[$i]['Sgf']['user'] = $u['User']['name'];
 			$ux = $u['User']['name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
 			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];

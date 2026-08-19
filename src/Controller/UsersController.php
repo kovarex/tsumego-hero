@@ -32,7 +32,7 @@ class UsersController extends AppController
 		for ($i = 0; $i < $pCount; $i++)
 		{
 			$t = $this->Tsumego->findById($p[$i]['Schedule']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$p[$i]['Schedule']['num'] = $scT['SetConnection']['num'];
@@ -182,7 +182,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$ur[$i]['TsumegoAttempt']['user_name'] = $u['User']['name'];
 			$ur[$i]['TsumegoAttempt']['level'] = $u['User']['level'];
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $scT['SetConnection']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
@@ -235,7 +235,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$t = $this->Tsumego->findById($ur[$i]['TsumegoAttempt']['tsumego_id']);
 			$ur[$i]['TsumegoAttempt']['tsumego_num'] = $t['Tsumego']['num'];
 			$ur[$i]['TsumegoAttempt']['tsumego_xp'] = $t['Tsumego']['difficulty'];
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$s = $this->Set->findById($t['Tsumego']['set_id']);
 			$ur[$i]['TsumegoAttempt']['set_name'] = $s['Set']['title'];
@@ -282,7 +282,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			$u = $this->User->findById($s[$i]['Sgf']['user_id']);
 			$s[$i]['Sgf']['user'] = $u['User']['name'];
 			$t = $this->Tsumego->findById($s[$i]['Sgf']['tsumego_id']);
-			$scT = $this->SetConnection->find('first', ['conditions' => ['tsumego_id' => $t['Tsumego']['id']]]);
+			$scT = $this->SetConnection->findPrimaryForTsumego($t['Tsumego']['id']);
 			$t['Tsumego']['set_id'] = $scT['SetConnection']['set_id'];
 			$set = $this->Set->findById($t['Tsumego']['set_id']);
 			$s[$i]['Sgf']['title'] = $set['Set']['title'] . ' ' . $set['Set']['title2'] . ' #' . $scT['SetConnection']['num'];
