@@ -199,6 +199,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set = [];
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
+
 			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 
 			if ($isSandbox)
@@ -850,15 +851,16 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			}
 			if (isset($this->data['Set']['order']))
 			{
+				$newOrder = (int) $this->data['Set']['order'];
 				$this->Set->create();
 				$changeSet = $set;
-				$changeSet['Set']['order'] = $this->data['Set']['order'];
+				$changeSet['Set']['order'] = $newOrder;
 				$this->set('data', $changeSet['Set']['order']);
 				$this->Set->save($changeSet, true);
 				$oldOrder = $set['Set']['order'];
 				$set = $this->Set->findById($id);
 				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, $oldOrder, $this->data['Set']['order']);
+					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, Util::strOrNull($oldOrder), Util::strOrNull($newOrder));
 			}
 			// Handle image upload from the view page admin panel
 			if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK

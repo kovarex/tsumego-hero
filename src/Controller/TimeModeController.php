@@ -42,7 +42,7 @@ class TimeModeController extends AppController
 			return $this->redirect("/timeMode/result/" . $timeModeSessionID);
 		assert($tsumegoID != null);
 
-		$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $tsumegoID]]);
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($tsumegoID);
 		if (!$setConnection)
 			throw new Exception('Time mode session contains tsumego without a set connection.');
 
@@ -186,7 +186,7 @@ ORDER BY MIN(rating);");
 			if ($timeModeAttempt['TimeModeAttempt']['time_mode_attempt_status_id'] == TimeModeUtil::$ATTEMPT_RESULT_SOLVED)
 				$solvedCount++;
 			$attempt = [];
-			$setConnection = ClassRegistry::init('SetConnection')->find('first', ['conditions' => ['tsumego_id' => $timeModeAttempt['TimeModeAttempt']['tsumego_id']]]);
+			$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection($timeModeAttempt['TimeModeAttempt']['tsumego_id']);
 			$set = ClassRegistry::init('Set')->findById($setConnection['SetConnection']['set_id']);
 			$attempt['tsumego_id'] = $timeModeAttempt['TimeModeAttempt']['tsumego_id'];
 			$attempt['set'] = $set['Set']['title'] . ' ' . $set['Set']['title2'];
