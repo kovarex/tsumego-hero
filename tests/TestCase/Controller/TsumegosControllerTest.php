@@ -193,7 +193,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 
 	}
 
-	public function testFailingWithLastHeartLocksBoardAndShowsTryAgainTomorrow()
+	public function testFailingWithLastHeartLocksBoardAndShowsLockMessage()
 	{
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
@@ -203,7 +203,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('F');
-		$this->assertTextContains("Try again tomorrow", $browser->driver->getPageSource());
+		$this->assertTextContains("This problem is locked until", $browser->driver->getPageSource());
 		$this->assertSame(true, $browser->driver->executeScript("return window.tryAgainTomorrow;"));
 		$this->assertSame(1, $browser->driver->executeScript("return window.boardLockValue;"));
 		$this->checkPlayNavigationButtons($browser, 1, $context, function ($index) {
