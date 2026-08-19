@@ -1861,104 +1861,69 @@ li a.menuLi {
   border-radius: 0px;
   -webkit-filter: blur(2px);
 }
-.modeBox1 {
+.mode-select-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.mode-button {
+  position: relative;
+  z-index: 0;
+  display: inline-block;
+  line-height: 0;
   cursor: pointer;
-  float: left;
-  position: absolute;
-  top: 122px;
-  left: 32px;
-  width: 134px;
-  height: 36px;
-  border-radius: 18px;
-  -moz-border-radius: 18px;
-  -webkit-border-radius: 18px;
-  /* background:green; */
 }
-.modeBox11 {
-  cursor: pointer;
-  float: left;
+.mode-button::before {
+  content: "";
   position: absolute;
-  top: 39px;
-  left: 70px;
-  width: 55px;
-  height: 79px;
-  border-radius: 42px;
-  -moz-border-radius: 42px;
-  -webkit-border-radius: 42px;
-  /* background:green; */
+  left: 50%;
+  top: 50%;
+  width: 170px;
+  height: 170px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--mode-glow) 0%, transparent 20%);
+  filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
 }
-.modeBox2 {
-  float: left;
-  position: absolute;
-  top: 122px;
-  left: 179px;
-  width: 134px;
-  height: 36px;
-  border-radius: 18px;
-  -moz-border-radius: 18px;
-  -webkit-border-radius: 18px;
-  /* background:purple; */
+.mode-button img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  transition: filter 0.15s ease;
 }
-.modeBox22 {
-  cursor: pointer;
-  float: left;
-  position: absolute;
-  top: 36px;
-  left: 221px;
-  width: 47px;
-  height: 83px;
-  border-radius: 42px;
-  -moz-border-radius: 42px;
-  -webkit-border-radius: 42px;
-  /* background:purple; */
+.mode-button:hover::before {
+  opacity: 1;
 }
-.modeBox3 {
-  position: absolute;
-  top: 122px;
-  left: 328px;
-  width: 134px;
-  height: 36px;
-  border-radius: 18px;
-  -moz-border-radius: 18px;
-  -webkit-border-radius: 18px;
-  /* background:orange; */
+.mode-button:hover img {
+  filter: brightness(1.45) saturate(1.6);
 }
-.modeBox33 {
-  cursor: pointer;
-  float: left;
-  position: absolute;
-  top: 33px;
-  left: 374px;
-  width: 44px;
-  height: 87px;
-  border-radius: 42px;
-  -moz-border-radius: 42px;
-  -webkit-border-radius: 42px;
-  /* background:orange; */
+.mode-button-level {
+  --mode-glow: #8cff2e;
 }
-.modeBox4 {
-  position: absolute;
-  top: 122px;
-  left: 476px;
-  width: 134px;
-  height: 36px;
-  border-radius: 18px;
-  -moz-border-radius: 18px;
-  -webkit-border-radius: 18px;
-  /* background:teal; */
+.mode-button-rating {
+  --mode-glow: #e05cff;
 }
-.modeBox44 {
-  cursor: pointer;
-  float: left;
-  position: absolute;
-  top: 53px;
-  left: 522px;
-  width: 42px;
-  height: 42px;
-  border-radius: 42px;
-  -moz-border-radius: 42px;
-  -webkit-border-radius: 42px;
-  /* background:teal; */
+.mode-button-time {
+  --mode-glow: #ffa04a;
+}
+.mode-button-achievements {
+  --mode-glow: #4dffe6;
+}
+.mode-button-disabled::before {
+  display: none;
+}
+.mode-button-disabled,
+.mode-button-disabled:hover {
+  cursor: default;
+  filter: grayscale(1) opacity(0.65);
+}
+.mode-button-disabled:hover img {
+  filter: none;
 }
 .time-mode-play {
   position: absolute;

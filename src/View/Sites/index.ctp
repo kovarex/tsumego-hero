@@ -2,7 +2,6 @@
 
 /**
  * @var View $this
- * @var bool $ac
  * @var array $chartData
  * @var array $dayRecords
  * @var int $levelBar
@@ -314,51 +313,31 @@ $this->end();
 	</div>
 
 	<div class="homeLeft">
-		<div class="new-tsumego-box">
+		<div class="new-tsumego-box mode-select-box">
 		<?php
-		if(Auth::isLoggedIn())
-			echo '<img id="title-image" src="/img/modeSelect24.png?v=1.1" width="100%" alt="Tsumego Hero Modes" title="Tsumego Hero Modes">';
-		else
-			echo '<img id="title-image" src="/img/modeSelect24x.png?v=1.1" width="100%" alt="Tsumego Hero Modes" title="Tsumego Hero Modes">';
+			$loggedIn = Auth::isLoggedIn();
+			$lastVisit = (int)($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
+			$modes = [
+				['name' => 'level', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=1', 'label' => 'Level Mode', 'enabled' => true],
+				['name' => 'rating', 'url' => '/tsumegos/play/' . $lastVisit . '?mode=2', 'label' => 'Rating Mode', 'enabled' => $loggedIn],
+				['name' => 'time', 'url' => '/timeMode/overview', 'label' => 'Time Mode', 'enabled' => $loggedIn],
+				['name' => 'achievements', 'url' => '/achievements', 'label' => 'Achievements', 'enabled' => $loggedIn],
+			];
+			foreach ($modes as $mode)
+			{
+				$classes = 'mode-button mode-button-' . $mode['name'] . ($mode['enabled'] ? '' : ' mode-button-disabled');
+				$image = '<img src="/img/mode-button-' . $mode['name'] . '.png?v=1.0" alt="' . $mode['label'] . '" title="' . $mode['label'] . '" width="134" height="123">';
+				if ($mode['enabled'])
+					echo '<a class="' . $classes . '" href="' . $mode['url'] . '">' . $image . '</a>';
+				else
+					echo '<span class="' . $classes . '">' . $image . '</span>';
+			}
 		?>
 		</div>
 		<?php
-			$quotePick = substr($quote, 1);
-			$modeActions = '';
-			$modeActions2 = 'class="modeboxes"';
-			if(Auth::isLoggedIn() && $ac) $modeActions = 'class="modeboxes" onmouseover="mode2hover()" onmouseout="modeNoHover()"';
-			if($ac) $modeActions2 = 'class="modeboxes"';
-			else $modeActions2 = 'class="modeboxes"';
 			$achievementsProps = json_encode(['initialAchievements' => $recentAchievements], JSON_HEX_QUOT | JSON_HEX_APOS);
-echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'"></div>';
+			echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'"></div>';
 		?>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
-			<div class="modeBox1" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=1">
-			<div class="modeBox11" onmouseover="mode1hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<?php if(Auth::isLoggedIn()){ ?>
-
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
-			<div class="modeBox2" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/tsumegos/play/<?php echo (int)($_COOKIE['lastVisit'] ?? 15352); ?>?mode=2">
-			<div class="modeBox22" onmouseover="mode2hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/timeMode/overview">
-			<div class="modeBox3" onmouseover="mode3hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/timeMode/overview">
-			<div class="modeBox33" onmouseover="mode3hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/achievements">
-			<div class="modeBox4" onmouseover="mode4hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<a href="/achievements">
-			<div class="modeBox44" onmouseover="mode4hover()" onmouseout="modeNoHover()"></div>
-		</a>
-		<?php } ?>
 
 		<img src="/img/new_startpage/<?php echo $quote; ?>e.png?v=4.3" class="achievement-quote-pick" alt="Most Recent Achievements" title="Most Recent Achievements">
 
@@ -832,29 +811,6 @@ echo '<div data-recent-achievements-root data-props="'.h($achievementsProps).'">
 		function sandboxM(){
 			document.cookie = "sandbox=2";
 			document.getElementById("sandboxVolunteers").style = "display:none;";
-		}
-		function mode1hover(){
-			<?php if(Auth::isLoggedIn()){ ?>
-				$("#title-image").attr("src", "/img/modeSelect24-1.png?v=1.1");
-			<?php }else{ ?>
-				$("#title-image").attr("src", "/img/modeSelect24x-1.png?v=1.1");
-			<?php } ?>
-		}
-		function mode2hover(){
-			$("#title-image").attr("src", "/img/modeSelect24-2.png?v=1.1");
-		}
-		function mode3hover(){
-			$("#title-image").attr("src", "/img/modeSelect24-3.png?v=1.1");
-		}
-		function mode4hover(){
-			$("#title-image").attr("src", "/img/modeSelect24-4.png?v=1.1");
-		}
-		function modeNoHover(){
-			<?php if(Auth::isLoggedIn()){ ?>
-				$("#title-image").attr("src", "/img/modeSelect24.png?v=1.1");
-			<?php }else{ ?>
-				$("#title-image").attr("src", "/img/modeSelect24x.png?v=1.1");
-			<?php } ?>
 		}
 	</script>
 	<?php
