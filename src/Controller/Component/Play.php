@@ -217,13 +217,11 @@ class Play
 		// descriptions are normalized to "Black = solver". For White-first SGFs,
 		// swap Black<->White so the description matches the OG image.
 		if (TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']) == 1)
-		{
 			$ogDescription = preg_replace_callback(
 				'/\b(Black|black|White|white)\b/',
 				fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
 				$ogDescription
 			);
-		}
 		$author = $t['Tsumego']['author'] ?? '';
 		if ($author !== '' && $author !== 'Unknown')
 			$ogDescription .= ' - by ' . $author;

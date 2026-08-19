@@ -135,19 +135,30 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$playerColor[1] = 'BLACK';
 	}
 
+	$swapColorWords = function (string $text): string
+	{
+		return preg_replace_callback(
+			'/\b(Black|black|White|white)\b/',
+			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
+			$text
+		);
+	};
+
 	$displayDescription = str_replace('[b]', 'Black ', $t['Tsumego']['description']);
 	// Swap Black<->White in description when the visual stone color differs from the stored convention.
 	// Descriptions are normalized: "Black" always means the solver (the player who moves first).
 	// Swap happens when board inversion ($pl) disagrees with the SGF starting color ($startingPlayer).
 	$shouldSwap = ($pl == 1 && $startingPlayer == 0) || ($pl == 0 && $startingPlayer == 1);
 	if ($shouldSwap)
-	{
-		$displayDescription = preg_replace_callback(
-			'/\b(Black|black|White|white)\b/',
-			fn($m) => ['Black' => 'White', 'black' => 'white', 'White' => 'Black', 'white' => 'black'][$m[1]],
-			$displayDescription
-		);
-	}
+		$displayDescription = $swapColorWords($displayDescription);
+
+	// Variant answers are stored in true colors (they describe the stones on the board as authored).
+	// When the board is inverted ($pl == 1), swap Black<->White so the answers match what the player sees.
+	$displayAnswers = $tv['TsumegoVariant'] ?? null;
+	if ($displayAnswers !== null && $pl == 1)
+		foreach (['answer1', 'answer2', 'answer3', 'answer4'] as $answerKey)
+			if (isset($displayAnswers[$answerKey]))
+				$displayAnswers[$answerKey] = $swapColorWords($displayAnswers[$answerKey]);
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
@@ -190,10 +201,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			if($tv['TsumegoVariant']['type']=='score_estimating')
 			{
+				$capturesLabels = 'Black captures: '.$tv['TsumegoVariant']['answer2'].' | White captures: '.$tv['TsumegoVariant']['answer3'];
+				if ($pl == 1)
+					$capturesLabels = $swapColorWords($capturesLabels);
 				echo '<br>';
-				echo 'Black captures: '.h($tv['TsumegoVariant']['answer2']).' | ';
-				echo 'White captures: '.h($tv['TsumegoVariant']['answer3']).' | ';
-				echo 'Komi: '.h($tv['TsumegoVariant']['answer1']).' ';
+				echo '<span id="scoreEstimatingLabels">'.h($capturesLabels).' | Komi: '.h($tv['TsumegoVariant']['answer1']).'</span>';
 			}
 		}
 		if(Auth::isAdmin()) { ?>
@@ -274,11 +286,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<div align="center">
 		<?php if($t['Tsumego']['set_id']==262){ ?>
 			<br>
-			<a id="submitScoreEstimatingBlackWins" href="#">Black wins</a>
+			<a id="submitScoreEstimatingBlackWins" href="#"><?php echo $pl == 1 ? 'White wins' : 'Black wins'; ?></a>
 			<?php if(substr($tv['TsumegoVariant']['answer1'],-2) !== '.5') { ?>
 				<a id="submitScoreEstimatingJigo" href="#">Jigo</a>
 			<?php } ?>
-			<a id="submitScoreEstimatingWhiteWins" href="#">White wins</a>
+			<a id="submitScoreEstimatingWhiteWins" href="#"><?php echo $pl == 1 ? 'Black wins' : 'White wins'; ?></a>
 		<?php }else{ ?>
 			<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
@@ -1953,10 +1965,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			echo 'options.multipleChoiceCustom = '.json_encode($tv['TsumegoVariant']['type'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).';';
 			echo 'let a5 = [];
-			a5.push('.json_encode($tv['TsumegoVariant']['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
-			a5.push('.json_encode($tv['TsumegoVariant']['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer1'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer2'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer3'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
+			a5.push('.json_encode($displayAnswers['answer4'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).');
 			customMultipleChoiceAnswer = '.(int)$tv['TsumegoVariant']['numAnswer'].';
 			options.multipleChoiceCustomSetup = a5;';
 		}
