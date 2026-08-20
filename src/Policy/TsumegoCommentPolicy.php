@@ -7,6 +7,11 @@ App::uses('BasePolicy', 'Policy');
  */
 class TsumegoCommentPolicy extends BasePolicy
 {
+	public static function canAdd($user): bool
+	{
+		return $user !== null;
+	}
+
 	public static function canDelete($user, $comment): bool
 	{
 		if (static::isAdmin($user))

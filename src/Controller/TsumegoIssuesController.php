@@ -4,7 +4,6 @@ App::uses('TsumegoIssue', 'Model');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
 App::uses('UnprocessableEntityException', 'Lib/Error');
 
 /**
@@ -90,8 +89,7 @@ class TsumegoIssuesController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException('You must be logged in to report an issue');
+		$this->Authorization->authorize('TsumegoIssue', 'create');
 
 		// Parse JSON request body
 		$input = json_decode($this->request->input(), true);

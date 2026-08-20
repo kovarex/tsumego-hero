@@ -8,6 +8,11 @@ App::uses('BasePolicy', 'Policy');
  */
 class TsumegoIssuePolicy extends BasePolicy
 {
+	public static function canCreate($user): bool
+	{
+		return $user !== null;
+	}
+
 	public static function canClose($user, $issue): bool
 	{
 		if (static::isAdmin($user))

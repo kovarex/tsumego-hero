@@ -29,8 +29,7 @@ class SgfController extends AppController
 
 	public function upload($setConnectionID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException('Must be logged in to upload SGF files.');
+		$this->Authorization->authorize('Sgf', 'propose');
 
 		$setConnection = ClassRegistry::init('SetConnection')->findById($setConnectionID);
 		if (!$setConnection)

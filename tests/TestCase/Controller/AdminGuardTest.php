@@ -2,6 +2,7 @@
 
 App::uses('ForbiddenException', 'Routing/Error');
 App::uses('UnauthorizedException', 'Routing/Error');
+App::uses('Constants', 'Utility');
 
 /**
  * Server-side auth guards: anonymous -> 401, logged-in-without-permission -> 403.
@@ -214,6 +215,110 @@ class AdminGuardTest extends ControllerTestCase
 
 		$this->testAction('/tags/editAction/' . $context->tags[0]['id'], [
 			'data' => ['tag_description' => 'test'],
+			'method' => 'post',
+		]);
+	}
+
+	// ── TagsController::add / addAction ──
+
+	public function testTagAddRequiresLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/tags/add', ['method' => 'get']);
+	}
+
+	public function testTagAddRequiresContribution()
+	{
+		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tags/add', ['method' => 'get']);
+	}
+
+	public function testTagAddActionRequiresLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/tags/addAction', [
+			'data' => ['tag_name' => 'foo', 'tag_description' => 'bar'],
+			'method' => 'post',
+		]);
+	}
+
+	public function testTagAddActionRequiresContribution()
+	{
+		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tags/addAction', [
+			'data' => ['tag_name' => 'foo', 'tag_description' => 'bar'],
+			'method' => 'post',
+		]);
+	}
+
+	public function testTagAddActionSucceedsForContributor()
+	{
+		new ContextPreparator(['user' => ['name' => 'contributor', 'rating' => Constants::$MINIMUM_RATING_TO_CONTRIBUTE]]);
+
+		$this->testAction('/tags/addAction', [
+			'data' => ['tag_name' => 'contribution tag', 'tag_description' => 'desc'],
+			'method' => 'post',
+		]);
+
+		$tag = ClassRegistry::init('Tag')->findByName('contribution tag');
+		$this->assertNotEmpty($tag);
+		$this->assertSame(0, (int) $tag['Tag']['approved']);
+	}
+
+	// ── CurlsController::data ──
+
+	public function testCurlsDataRequiresLogin()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$this->expectException(UnauthorizedException::class);
+
+		$this->testAction('/curls/data', ['method' => 'get']);
+	}
+
+	public function testCurlsDataRequiresAdmin()
+	{
+		new ContextPreparator(['user' => ['name' => 'regular', 'admin' => false]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/curls/data', ['method' => 'get']);
+	}
+
+	// ── SGF proposals require the contribution capability ──
+
+	public function testSgfUploadRequiresContribution()
+	{
+		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/sgf/upload/1', [
+			'data' => ['sgfForBesogo' => '(;GM[1])'],
+			'method' => 'post',
+		]);
+	}
+
+	public function testSetupNewSgfStep2RequiresContribution()
+	{
+		new ContextPreparator(['user' => ['name' => 'lowrating', 'rating' => 100]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tsumegos/setupNewSgfStep2', [
+			'data' => ['setConnectionID' => 1],
 			'method' => 'post',
 		]);
 	}

@@ -7,12 +7,14 @@ class TagsController extends AppController
 {
 	public function add()
 	{
+		$this->Authorization->authorize('Tag', 'add');
 		$allTags = $this->getAllTags();
 		$this->set('allTags', $allTags);
 	}
 
 	public function addAction(): CakeResponse
 	{
+		$this->Authorization->authorize('Tag', 'add');
 		$tagName = $this->data['tag_name'];
 		if (empty($tagName))
 		{
@@ -62,6 +64,7 @@ class TagsController extends AppController
 		$tn['Tag']['user'] = $user['User']['name'];
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
+		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 	}
 
 	/**
@@ -149,6 +152,7 @@ class TagsController extends AppController
 
 		$this->set('allTags', $this->getAllTags());
 		$this->set('tag', $tag['Tag']);
+		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
 		return null;
 	}
 
@@ -247,7 +251,7 @@ class TagsController extends AppController
 
 		$tagToReject = $tagToReject['Tag'];
 
-		if ($tagToReject['Tag']['approved'] == 1)
+		if ($tagToReject['approved'] == 1)
 		{
 			CookieFlash::set('Tag to reject was already approved', 'error');
 			return $this->redirect('/users/adminstats');

@@ -39,4 +39,13 @@ class HeroControllerTest extends ControllerTestCase
 
 		$this->testAction('/hero/revelation/1', ['method' => 'post']);
 	}
+
+	public function testRefinementRequiresLevelOrPremium()
+	{
+		new ContextPreparator(['user' => ['name' => 'lowlevel', 'level' => 1, 'premium' => 0]]);
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/hero/refinement', ['method' => 'post']);
+	}
 }

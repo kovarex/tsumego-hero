@@ -29,7 +29,7 @@ class PolicyTest extends CakeTestCase
 	public function testAdminPolicyAllowsOnlyAdmins()
 	{
 		$policy = new AdminPolicy();
-		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule'] as $method)
+		foreach (['canAdminstats', 'canUploads', 'canUserstats', 'canUserstats3', 'canShowPublishSchedule', 'canData'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -184,7 +184,7 @@ class PolicyTest extends CakeTestCase
 	public function testTsumegoPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TsumegoPolicy();
-		foreach (['canEdit', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2', 'canPerformMerge'] as $method)
+		foreach (['canEdit', 'canEditSettings', 'canMergeForm', 'canMergeFinalForm', 'canSetupSgf', 'canSetupSgfStep2', 'canPerformMerge'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
@@ -226,6 +226,25 @@ class PolicyTest extends CakeTestCase
 		$this->assertTrue($policy->canCreateAndAddTsumego($this->identity(true)));
 		$this->assertFalse($policy->canCreateAndAddTsumego($this->identity(false)));
 		$this->assertFalse($policy->canCreateAndAddTsumego($this->identity(null)));
+	}
+
+	public function testSetPolicyEditSettingsAllowsOnlyAdmins()
+	{
+		$policy = new SetPolicy();
+		$this->assertTrue($policy->canEditSettings($this->identity(true)));
+		$this->assertFalse($policy->canEditSettings($this->identity(false)));
+		$this->assertFalse($policy->canEditSettings($this->identity(null)));
+	}
+
+	public function testTagPolicyAddRequiresContribution()
+	{
+		$policy = new TagPolicy();
+		$contributor = $this->identity(false);
+		$contributor['rating'] = Constants::$MINIMUM_RATING_TO_CONTRIBUTE;
+
+		$this->assertTrue($policy->canAdd($contributor), 'contributor allowed');
+		$this->assertFalse($policy->canAdd($this->identity(false)), 'non-contributor blocked');
+		$this->assertFalse($policy->canAdd($this->identity(null)), 'anonymous blocked');
 	}
 
 	public function testTagPolicyProposalActionsAllowOnlyAdmins()

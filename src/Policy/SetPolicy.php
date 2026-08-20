@@ -66,6 +66,30 @@ class SetPolicy extends BasePolicy
 	}
 
 	/**
+	 * Creating a set: any logged-in user.
+	 */
+	public static function canCreate($user): bool
+	{
+		return $user !== null;
+	}
+
+	/**
+	 * Creating a sandbox set: admin only.
+	 */
+	public static function canCreateSandbox($user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
+	 * Editing set-level settings (re-rate, alternative response, pass mode): admin only.
+	 */
+	public static function canEditSettings($user): bool
+	{
+		return static::isAdmin($user);
+	}
+
+	/**
 	 * Creating and adding a tsumego to a set: admin only.
 	 */
 	public static function canCreateAndAddTsumego($user): bool

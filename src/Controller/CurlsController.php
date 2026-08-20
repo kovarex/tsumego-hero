@@ -7,6 +7,7 @@ class CurlsController extends AppController
 	 */
 	public function data()
 	{
+		$this->Authorization->authorize('Admin');
 		$this->set('_title', 'CURLs');
 		$curls = $this->Curl->find('all', [
 			'limit' => 1000,

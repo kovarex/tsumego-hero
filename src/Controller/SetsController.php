@@ -184,8 +184,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 	public function create()
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
+		$this->Authorization->authorize('Set', 'create');
 
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
@@ -194,7 +193,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		if (isset($this->data['Set']))
 		{
-			$isSandbox = isset($this->params['url']['sandbox']) && Auth::isAdmin();
+			$isSandbox = isset($this->params['url']['sandbox']) && $this->Authorization->can('Set', 'createSandbox');
 
 			$set = [];
 			$set['Set']['title'] = $this->data['Set']['title'];
@@ -732,18 +731,17 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		$tsumegoFilters = new TsumegoFilters($queryType);
-		if (Auth::isLoggedIn())
-			if (Auth::isAdmin())
+		if ($this->Authorization->can('Tsumego', 'edit'))
+		{
+			$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
+			// Check if last activity was a problem deletion - if so, actually delete it
+			if (isset($aad['AdminActivity']['type']) && $aad['AdminActivity']['type'] == AdminActivityType::PROBLEM_DELETE)
 			{
-				$aad = $this->AdminActivity->find('first', ['order' => 'id DESC']);
-				// Check if last activity was a problem deletion - if so, actually delete it
-				if (isset($aad['AdminActivity']['type']) && $aad['AdminActivity']['type'] == AdminActivityType::PROBLEM_DELETE)
-				{
-					$scDelete = $this->SetConnection->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $aad['AdminActivity']['tsumego_id']]]);
-					$this->SetConnection->delete($scDelete['SetConnection']['id']);
-					$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
-				}
+				$scDelete = $this->SetConnection->find('first', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $aad['AdminActivity']['tsumego_id']]]);
+				$this->SetConnection->delete($scDelete['SetConnection']['id']);
+				$this->Tsumego->delete($aad['AdminActivity']['tsumego_id']);
 			}
+		}
 		Util::setCookie('lastSet', $id);
 		$tsumegoButtons = new TsumegoButtons($tsumegoFilters, null, $partition, $id);
 		$this->set('startingSetConnectionID', $this->getFirstUnsolvedSetConnectionId($tsumegoButtons));
@@ -795,7 +793,9 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$this->set('_page', 'sandbox');
 			$this->set('isFav', false);
 			$this->set('isOwner', Auth::isLoggedIn() && $set['Set']['user_id'] == Auth::getUserID());
-			if (isset($this->data['Set']['title']))
+			$canEdit = $this->Authorization->can($set, 'edit');
+			$canEditSettings = $this->Authorization->can('Set', 'editSettings');
+			if ($canEdit && isset($this->data['Set']['title']))
 			{
 				$this->Set->create();
 				$changeSet = $set;
@@ -808,7 +808,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				if ($this->_isElevatedSetEdit($set))
 					AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
 			}
-			if (isset($this->data['Set']['description']))
+			if ($canEdit && isset($this->data['Set']['description']))
 			{
 				$this->Set->create();
 				$changeSet = $set;
@@ -820,7 +820,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				if ($this->_isElevatedSetEdit($set))
 					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
 			}
-			if (isset($this->data['Set']['setDifficulty']) && Auth::isAdmin())
+			if ($canEditSettings && isset($this->data['Set']['setDifficulty']))
 				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
 				{
 					$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
@@ -837,7 +837,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					}
 					AdminActivityLogger::log(AdminActivityType::SET_RATING_EDIT, null, $id);
 				}
-			if (isset($this->data['Set']['color']))
+			if ($canEdit && isset($this->data['Set']['color']))
 			{
 				$this->Set->create();
 				$changeSet = $set;
@@ -849,7 +849,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				if ($this->_isElevatedSetEdit($set))
 					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
 			}
-			if (isset($this->data['Set']['order']))
+			if ($canEdit && isset($this->data['Set']['order']))
 			{
 				$newOrder = (int) $this->data['Set']['order'];
 				$this->Set->create();
@@ -863,8 +863,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, Util::strOrNull($oldOrder), Util::strOrNull($newOrder));
 			}
 			// Handle image upload from the view page admin panel
-			if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK
-				&& (Auth::isAdmin() || (Auth::isLoggedIn() && $set['Set']['user_id'] == Auth::getUserID())))
+			if ($canEdit && isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
 			{
 				$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
 
@@ -909,7 +908,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				}
 			}
 
-			if (isset($this->data['Settings']))
+			if ($canEditSettings && isset($this->data['Settings']))
 			{
 				if ($this->data['Settings']['r39'] == 'on')
 				{
@@ -1193,7 +1192,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 * @param float $accuracy Accuracy percentage
 	 * @return void
 	 */
-	public function updateAchievementConditions($sid, $avgTime, $accuracy)
+	private function updateAchievementConditions($sid, $avgTime, $accuracy)
 	{
 		$uid = Auth::getUserID();
 		$acS = $this->AchievementCondition->find('first', ['order' => 'value ASC', 'conditions' => ['set_id' => $sid, 'user_id' => $uid, 'category' => 's']]);

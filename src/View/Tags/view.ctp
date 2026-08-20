@@ -4,6 +4,7 @@
  * @var View $this
  * @var array $allTags
  * @var array $tn
+ * @var bool $canAddTag
  */
 
 ?>
@@ -34,6 +35,8 @@
         <div class="existing-tags-list">
 				Other tags:
 			<?php echo implode(', ', array_map(fn($tag) => '<a href="/tags/view/' . $tag['id'] . '">' . h($tag['name']) . '</a>', $allTags)); ?>
-			<a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
+			<?php if ($canAddTag) { ?>
+				<a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>
+			<?php } ?>
 		</div>
   </div>

@@ -2,7 +2,6 @@
 
 App::uses('ForbiddenException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
-App::uses('UnauthorizedException', 'Routing/Error');
 App::uses('UnprocessableEntityException', 'Lib/Error');
 
 /**
@@ -31,8 +30,7 @@ class TsumegoCommentsController extends AppController
 		if (!$this->request->is('post'))
 			throw new MethodNotAllowedException();
 
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException('You must be logged in to comment');
+		$this->Authorization->authorize('TsumegoComment', 'add');
 
 		$input = json_decode($this->request->input(), true);
 
