@@ -118,7 +118,7 @@ class SmokeTest extends ControllerTestCase
 			['url' => 'comments', 'name' => 'Comments', 'auth' => $loggedIn],
 
 			// Tags
-			['url' => 'tags/add', 'name' => 'Add tag form', 'auth' => $everyone],
+			['url' => 'tags/add', 'name' => 'Add tag form', 'auth' => $loggedIn],
 			['url' => "tags/view/$tagId", 'name' => 'Tag detail', 'auth' => $everyone],
 
 			// Tutorials
