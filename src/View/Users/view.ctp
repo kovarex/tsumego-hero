@@ -3,7 +3,7 @@
 /**
  * @var View $this
  * @var array $aCount
- * @var string $aNum
+ * @var int $aNum
  * @var array $as
  * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
