@@ -24,7 +24,7 @@ final class AddUserIdToSet extends AbstractMigration
 		foreach ($users as $user)
 		{
 			$userId = (int) $user['user_id'];
-			$name = $user['name'];
+			$name = $user['name'] ?? 'Unknown';
 
 			// Create default "Favorites" set
 			$escapedName = addslashes($name);
