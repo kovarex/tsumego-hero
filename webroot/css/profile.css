@@ -1,0 +1,394 @@
+/* ══════════════════════════════════════════════════════
+   Profile page styles
+   
+   Reusable CSS variables are defined in :root.
+   Other pages can reuse these classes:
+     .progress-bar / .progress-bar-fill / .progress-bar-text
+     .progress-bar-fill.health-high / .health-medium / .health-low
+     .sub-nav / .sub-nav-link
+     .card-section / .card-button / .card-button-danger
+   ══════════════════════════════════════════════════════ */
+
+:root
+{
+	/* ── Brand colors ── */
+	--color-green: #74d14c;
+	--color-green-dark: #366421;
+	--color-green-light: #82c95b;
+	--color-purple: #caa8d8;
+	--color-blue: #5b9bd5;
+	--color-blue-dark: #2a6496;
+	--color-red: #d63a49;
+	--color-red-muted: #e07070;
+
+	/* ── Surface colors ── */
+	--color-surface: #2a2a2a;
+	--color-surface-raised: #3a3a3a;
+	--color-surface-bar: #222;
+	--color-border: #444;
+	--color-border-light: #555;
+
+	/* ── Text colors ── */
+	--color-text: #ccc;
+	--color-text-muted: #888;
+	--color-text-faint: #666;
+}
+
+/* ── Header ── */
+.profile-header
+{
+	margin-bottom: 12px;
+}
+
+.profile-username
+{
+	font-size: 32px;
+	font-weight: 800;
+	margin: 0;
+	padding: 10px 0 8px;
+	text-align: center;
+}
+
+/* ── Sub-navigation (reusable as .sub-nav) ── */
+.profile-nav,
+.sub-nav
+{
+	display: flex;
+	gap: 0;
+	justify-content: center;
+	border-bottom: 2px solid var(--color-border);
+}
+
+.profile-nav-link,
+.sub-nav-link
+{
+	padding: 10px 20px;
+	color: #bbb;
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 15px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.profile-nav-link:hover,
+.sub-nav-link:hover
+{
+	color: var(--color-green);
+	border-bottom-color: var(--color-green);
+}
+
+/* ── Layout rows ── */
+.userInfoContainerRow1
+{
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	margin: 0 4px 12px;
+}
+
+.userInfoContainerRow2
+{
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	margin: 0 4px 16px;
+	align-items: stretch;
+}
+
+/* ── Green boxes (identity) ── */
+.userStatsGreen
+{
+	flex: 1;
+	min-width: 250px;
+	border: 3px solid var(--color-green);
+	box-sizing: border-box;
+	padding: 8px;
+}
+
+/* ── Purple boxes (stats) ── */
+.userStatsPurple
+{
+	flex: 1;
+	min-width: 250px;
+	border: 3px solid var(--color-purple);
+	box-sizing: border-box;
+	padding: 8px;
+}
+
+.userTopTable1
+{
+	width: 100%;
+}
+
+.userTopTable1 td
+{
+	vertical-align: top;
+	padding: 7px;
+	text-align: left;
+	width: 50%;
+}
+
+/* ── Progress bars (reusable as .progress-bar) ── */
+.profile-bar,
+.progress-bar
+{
+	height: 18px;
+	background: var(--color-surface-bar);
+	border-radius: 9px;
+	overflow: hidden;
+	margin-top: 4px;
+	position: relative;
+}
+
+.profile-bar-fill,
+.progress-bar-fill
+{
+	height: 100%;
+	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
+	border-radius: 9px;
+	min-width: 2px;
+}
+
+.profile-bar-text,
+.progress-bar-text
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: 800;
+	color: #fff;
+	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+}
+
+/* ── Health bar colors ── */
+.profile-bar-fill.health-high,
+.progress-bar-fill.health-high
+{
+	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
+}
+
+.profile-bar-fill.health-medium,
+.progress-bar-fill.health-medium
+{
+	background: linear-gradient(#e6c832, #b89a1a);
+}
+
+.profile-bar-fill.health-low,
+.progress-bar-fill.health-low
+{
+	background: linear-gradient(#e05555, #a02020);
+}
+
+/* ── Hero powers section ── */
+.hero-powers-section
+{
+	margin: 0 4px 16px;
+	border: 3px solid var(--color-blue);
+	box-sizing: border-box;
+	padding: 12px 16px;
+}
+
+.hero-powers-title
+{
+	font-weight: 800;
+	color: var(--color-blue);
+	font-size: 14px;
+	margin-bottom: 10px;
+}
+
+.hero-powers-timeline
+{
+	position: relative;
+	padding: 0 0 36px;
+	margin: 0 10px;
+}
+
+.hero-powers-track
+{
+	height: 14px;
+	background: var(--color-surface-bar);
+	border-radius: 7px;
+	overflow: hidden;
+	position: relative;
+}
+
+.hero-powers-fill
+{
+	height: 100%;
+	background: linear-gradient(var(--color-blue), var(--color-blue-dark));
+	border-radius: 7px;
+}
+
+.hero-power-marker
+{
+	position: absolute;
+	top: 14px;
+	transform: translateX(-50%);
+	text-align: center;
+	white-space: nowrap;
+}
+
+.hero-power-dot
+{
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: #444;
+	border: 2px solid var(--color-border-light);
+	margin: 0 auto 2px;
+}
+
+.hero-power-marker.unlocked .hero-power-dot
+{
+	background: var(--color-blue);
+	border-color: var(--color-blue);
+}
+
+.hero-power-label
+{
+	font-size: 10px;
+	color: var(--color-text-faint);
+}
+
+.hero-power-marker.unlocked .hero-power-label
+{
+	color: var(--color-blue);
+}
+
+.hero-power-level
+{
+	font-size: 9px;
+	color: var(--color-border-light);
+}
+
+.hero-power-marker.unlocked .hero-power-level
+{
+	color: #7ab0e0;
+}
+
+/* ── Account / Settings section (reusable as .card-section) ── */
+.account-section,
+.card-section
+{
+	margin-top: 20px;
+	padding: 12px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: 5px;
+	background: var(--color-surface);
+}
+
+.account-section-title,
+.card-section-title
+{
+	font-weight: 800;
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.05em;
+	margin-bottom: 10px;
+}
+
+.account-section-actions
+{
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.account-setting
+{
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.account-setting-label
+{
+	color: var(--color-text);
+	font-size: 13px;
+}
+
+.account-radio
+{
+	color: var(--color-text);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.account-radio input[type="radio"]
+{
+	margin-right: 4px;
+}
+
+.account-button,
+.card-button
+{
+	display: block;
+	width: fit-content;
+	padding: 6px 14px;
+	border: 1px solid var(--color-border-light);
+	border-radius: 4px;
+	background: var(--color-surface-raised);
+	color: var(--color-text);
+	text-decoration: none;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s;
+}
+
+.account-button:hover,
+.card-button:hover
+{
+	background: #4a4a4a;
+	color: #fff;
+}
+
+.account-button-disabled
+{
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.account-button-disabled:hover
+{
+	background: var(--color-surface-raised);
+	color: var(--color-text);
+}
+
+.account-button-danger,
+.card-button-danger
+{
+	border-color: #8b3a3a;
+	color: var(--color-red-muted);
+}
+
+.account-button-danger:hover,
+.card-button-danger:hover
+{
+	background: #4a2020;
+	color: #ff8080;
+}
+
+.account-section-hint,
+.card-section-hint
+{
+	font-size: 12px;
+	color: var(--color-text-faint);
+}
+
+.new-button-time-inactive
+{
+	cursor: pointer;
+}
