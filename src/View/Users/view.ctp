@@ -24,64 +24,76 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 
 <div class="homeCenter2">
 	<div class="profile-header">
-		<p class="profile-username"><?php echo h($user['User']['name']); ?></p>
+		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
 		<div class="profile-nav">
 			<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="profile-nav-link">Solve History</a>
 			<a href="/tags/user/<?php echo $user['User']['id']; ?>" class="profile-nav-link">Contributions</a>
 			<a href="/achievements/user/<?php echo $user['User']['id']; ?>" class="profile-nav-link">Achievements</a>
 		</div>
 	</div>
+<?php if (Auth::getUserID() == $user['User']['id']): ?>
 <div class="userInfoContainerRow1">
 	<div class="userStatsGreen">
+		<div class="account-section-title">Email</div>
 		<table class="userTopTable1" id="name-and-email-table">
-		<tr>
-			<td><?php echo h($user['User']['name']); ?></td>
-			<td><?php User::renderPremium($user['User']); ?></td>
-		</tr>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			echo '<tr>';
-			echo '<td>'.h($user['User']['email']).'</td>';
-			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<td colspan=2>';
-			echo '<div id="msg2">';
-			echo $this->Form->create('User');
-			echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-			echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-			echo '</div>';
-			echo '</td></tr>';
-		}
-		?>
+			<tr>
+				<td><?php echo h($user['User']['email']); ?></td>
+				<td><a id="show" style="color:#74d14c;">change</a></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div id="msg2">
+						<?php
+						echo $this->Form->create('User');
+						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
+						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
+						?>
+					</div>
+				</td>
+			</tr>
 		</table>
 	</div>
 	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0" width="100%">
-	<tr>
-	<td>
-	<div align="center">
-		<?php echo (Auth::getUserID() == $user['User']['id']) ? 'Your rank' : 'Rank'; ?>:<br>
-		<?php $rank = Rating::getReadableRankFromRating($user['User']['rating']); ?>
-		<span class="rank-icon"><?php echo $rank; ?></span>
-	</div>
-	</td>
-	</tr>
-	</table>
+		<div class="account-section-title">Progress bar</div>
+		<div class="account-setting">
+			<span class="account-setting-label">Progress bar shows:</span>
+			<?php
+			$levelBarDisplayChecked1 = '';
+			$levelBarDisplayChecked2 = '';
+			if ($levelBar == 1)
+				$levelBarDisplayChecked1 = 'checked="checked"';
+			else
+				$levelBarDisplayChecked2 = 'checked="checked"';
+			?>
+			<label class="account-radio"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
+			<label class="account-radio"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
+		</div>
 	</div>
 	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0">
-	<tr>
-	<td>
-		<?php if ($user['User']['created']): ?>
-			Member since: <b><?php echo date('F Y', strtotime($user['User']['created'])); ?></b>
-		<?php endif; ?>
-	</td>
-	</tr>
-	</table>
+		<div class="account-section-title">Account</div>
+		<div class="account-section-actions">
+			<?php if ($canResetOldTsumegoStatuses): ?>
+				<a class="account-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+			<?php else: ?>
+				<a class="account-button account-button-disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<span class="account-section-hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
+			<?php endif; ?>
+			<?php if ($deletedTsumegoStatusCount > 0): ?>
+				<span class="account-section-hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
+			<?php endif; ?>
+			<?php if ($user['User']['dbstorage'] != 1111): ?>
+				<a class="account-button account-button-danger" href="/users/delete_account">Request account deletion</a>
+			<?php else: ?>
+				<span style="color:#d63a49;">Account deletion requested.&nbsp;</span>
+				<a class="account-button" href="/users/view/<?php echo $user['User']['id']; ?>?undo=<?php echo ($user['User']['id'] * 1111); ?>">Undo</a>
+			<?php endif; ?>
+			<?php if (Auth::isAdmin()): ?>
+				<a class="account-button account-button-danger" href="/users/demote_admin">Remove admin status</a>
+			<?php endif; ?>
+		</div>
 	</div>
 </div>
+<?php endif; ?>
 
 <div class="userInfoContainerRow2">
 	<div class="userStatsPurple">
@@ -115,7 +127,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 					if (Auth::getUserID() == $user['User']['id'])
 						echo $remainingHealth . '/' . $maxHealth . ' HP';
 					else
-						echo $remainingHealth . '/' . $maxHealth . ' HP';
+						echo $maxHealth . ' HP';
 					?>
 				</td>
 			</tr>
@@ -142,7 +154,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		<table class="userTopTable1" id="rank-info-table">
 			<tr>
 				<td>Rank:</td>
-				<td><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></td>
+				<td><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
 			</tr>
 			<tr>
 				<td>Rating:</td>
@@ -156,6 +168,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 				<td>Highest rating:</td>
 				<td><?php echo $highestRating; ?></td>
 			</tr>
+			<?php if ($user['User']['created']): ?>
+			<tr>
+				<td>Member since:</td>
+				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+			</tr>
+			<?php endif; ?>
 		</table>
 	</div>
 
@@ -202,21 +220,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	</div>
 </div>
 <?php
-$heroPowers = [
-	['name' => 'Sprint', 'level' => HeroPowers::$SPRINT_MINIMUM_LEVEL, 'description' => 'Speed solving'],
-	['name' => 'Intuition', 'level' => HeroPowers::$INTUITION_MINIMUM_LEVEL, 'description' => 'Shows first correct move'],
-	['name' => 'Rejuvenation', 'level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'description' => 'Restores health and locks'],
-	['name' => 'Potion', 'level' => HeroPowers::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health'],
-	['name' => 'Revelation', 'level' => HeroPowers::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem'],
-	['name' => 'Refinement', 'level' => HeroPowers::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance'],
-];
-$maxPowerLevel = end($heroPowers)['level'];
-$unlockedCount =0;
+$heroPowers = HeroPowers::getPowers();
+$maxPowerLevel = max(array_column($heroPowers, 'level'));
+$unlockedCount = 0;
 foreach ($heroPowers as $power)
 {
-	if ($user['User']['level'] >= $power['level'])
-		$unlockedCount++;
-	elseif ($power['name'] === 'Refinement' && $user['User']['premium'] > 0)
+	if (HeroPowers::isPowerUnlocked($power['name'], $user['User']))
 		$unlockedCount++;
 }
 ?>
@@ -228,11 +237,9 @@ foreach ($heroPowers as $power)
 		</div>
 		<?php foreach ($heroPowers as $power):
 			$pos = round($power['level'] / $maxPowerLevel * 100);
-			$isUnlocked = $user['User']['level'] >= $power['level'];
-			if ($power['name'] === 'Refinement' && $user['User']['premium'] > 0)
-				$isUnlocked = true;
+			$isUnlocked = HeroPowers::isPowerUnlocked($power['name'], $user['User']);
 		?>
-		<div class="hero-power-marker<?php echo $isUnlocked ? ' unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%">
+		<div class="hero-power-marker<?php echo $isUnlocked ? ' unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
 			<div class="hero-power-dot"></div>
 			<div class="hero-power-label"><?php echo $power['name']; ?></div>
 			<div class="hero-power-level">Lv <?php echo $power['level']; ?></div>
@@ -335,44 +342,6 @@ function showStatistics($side, $as, $user, $dailyResults)
 showStatistics('Left', $as, $user, $dailyResults);
 showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>
-	<?php if (Auth::getUserID() == $user['User']['id']): ?>
-	<div class="account-section">
-		<div class="account-section-title">Settings & Account</div>
-		<div class="account-section-actions">
-			<div class="account-setting">
-				<span class="account-setting-label">Progress bar shows:</span>
-				<?php
-				$levelBarDisplayChecked1 = '';
-				$levelBarDisplayChecked2 = '';
-				if ($levelBar == 1)
-					$levelBarDisplayChecked1 = 'checked="checked"';
-				else
-					$levelBarDisplayChecked2 = 'checked="checked"';
-				?>
-				<label class="account-radio"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
-				<label class="account-radio"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
-			</div>
-			<?php if ($canResetOldTsumegoStatuses): ?>
-				<a class="account-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-			<?php else: ?>
-				<a class="account-button account-button-disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
-				<span class="account-section-hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
-			<?php endif; ?>
-			<?php if ($deletedTsumegoStatusCount > 0): ?>
-				<span class="account-section-hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
-			<?php endif; ?>
-			<?php if ($user['User']['dbstorage'] != 1111): ?>
-				<a class="account-button account-button-danger" href="/users/delete_account">Request account deletion</a>
-			<?php else: ?>
-				<span style="color:#d63a49;">Account deletion requested.&nbsp;</span>
-				<a class="account-button" href="/users/view/<?php echo $user['User']['id']; ?>?undo=<?php echo ($user['User']['id'] * 1111); ?>">Undo</a>
-			<?php endif; ?>
-			<?php if (Auth::isAdmin()): ?>
-				<a class="account-button account-button-danger" href="/users/demote_admin">Remove admin status</a>
-			<?php endif; ?>
-		</div>
-	</div>
-	<?php endif; ?>
 </div>
 
 <script>

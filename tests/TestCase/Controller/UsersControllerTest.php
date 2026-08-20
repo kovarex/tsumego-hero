@@ -119,7 +119,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 0, 0)->getText());
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}

@@ -11,7 +11,7 @@
 
 :root
 {
-	/* ── Brand colors ── */
+	/* ── Brand colors (theme-independent accents) ── */
 	--color-green: #74d14c;
 	--color-green-dark: #366421;
 	--color-green-light: #82c95b;
@@ -21,17 +21,16 @@
 	--color-red: #d63a49;
 	--color-red-muted: #e07070;
 
-	/* ── Surface colors ── */
-	--color-surface: #2a2a2a;
-	--color-surface-raised: #3a3a3a;
-	--color-surface-bar: #222;
-	--color-border: #444;
-	--color-border-light: #555;
-
-	/* ── Text colors ── */
-	--color-text: #ccc;
-	--color-text-muted: #888;
-	--color-text-faint: #666;
+	/* ── Surface / border / text colors delegate to the theme
+	   variables defined in default.css so light/dark mode is respected ── */
+	--color-surface: var(--info-box-background);
+	--color-surface-raised: var(--new1-gradient);
+	--color-surface-bar: rgba(0, 0, 0, 0.2);
+	--color-border: var(--current-border-color);
+	--color-border-light: var(--current-border-color);
+	--color-text: var(--text-color);
+	--color-text-muted: var(--text-softer-color);
+	--color-text-faint: var(--text-softer-color);
 }
 
 /* ── Header ── */
@@ -47,6 +46,11 @@
 	margin: 0;
 	padding: 10px 0 8px;
 	text-align: center;
+}
+
+.profile-username img
+{
+	vertical-align: middle;
 }
 
 /* ── Sub-navigation (reusable as .sub-nav) ── */
