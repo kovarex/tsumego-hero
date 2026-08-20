@@ -163,7 +163,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Health:', '23/23 HP']]);
 
 		$browser->checkTable('#rank-info-table', $this, [
-			['Rank:', '1d'],
+			['1d'],
 			['Rating:', '2065'],
 			['Highest rank:', '2d'],
 			['Highest rating:', '2165']]);

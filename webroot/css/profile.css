@@ -136,6 +136,20 @@
 	width: 50%;
 }
 
+/* ── Prominent rank icon in the stats box ── */
+.profile-rank-cell
+{
+	text-align: center;
+}
+
+.profile-rank-cell .rank-icon
+{
+	width: 110px;
+	height: 110px;
+	font-size: 64px;
+	line-height: 110px;
+}
+
 /* ── Progress bars (reusable as .progress-bar) ── */
 .profile-bar,
 .progress-bar

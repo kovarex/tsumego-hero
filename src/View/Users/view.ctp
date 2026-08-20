@@ -153,8 +153,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<div class="userStatsPurple">
 		<table class="userTopTable1" id="rank-info-table">
 			<tr>
-				<td>Rank:</td>
-				<td><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
+				<td colspan="2" class="profile-rank-cell"><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
 			</tr>
 			<tr>
 				<td>Rating:</td>
