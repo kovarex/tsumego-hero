@@ -251,11 +251,11 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Own profile: progress bar preference is visible
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertStringContainsString('Progress bar shows:', $browser->driver->getPageSource());
+		$this->assertStringContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 
 		// Other user's profile: progress bar preference is hidden
 		$browser->get('users/view/' . $target['id']);
-		$this->assertStringNotContainsString('Progress bar shows:', $browser->driver->getPageSource());
+		$this->assertStringNotContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 	}
 
 	public function testTsumegoRatingGraph()

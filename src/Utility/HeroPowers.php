@@ -17,34 +17,19 @@ class HeroPowers
 			['name' => 'Sprint', 'level' => self::$SPRINT_MINIMUM_LEVEL, 'description' => 'Speed solving'],
 			['name' => 'Intuition', 'level' => self::$INTUITION_MINIMUM_LEVEL, 'description' => 'Shows first correct move'],
 			['name' => 'Rejuvenation', 'level' => self::$REJUVENATION_MINIMUM_LEVEL, 'description' => 'Restores health and locks'],
-			['name' => 'Potion', 'level' => self::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health'],
-			['name' => 'Revelation', 'level' => self::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem'],
-			['name' => 'Refinement', 'level' => self::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance'],
+			['name' => 'Potion', 'level' => self::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health', 'premium' => true],
+			['name' => 'Revelation', 'level' => self::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem', 'bonus' => 'Contribution reward grants an additional use'],
+			['name' => 'Refinement', 'level' => self::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance', 'premium' => true],
 		];
 	}
 
-	public static function isPowerUnlocked(string $name, array $user): bool
+	public static function hasPremiumUnlock(array $user): bool
 	{
-		$level = (int) ($user['level'] ?? 0);
-		$premium = (int) ($user['premium'] ?? 0);
-		switch ($name)
-		{
-			case 'Sprint': return $level >= self::$SPRINT_MINIMUM_LEVEL;
-			case 'Intuition': return $level >= self::$INTUITION_MINIMUM_LEVEL;
-			case 'Rejuvenation': return $level >= self::$REJUVENATION_MINIMUM_LEVEL;
-			case 'Potion': return $premium > 0 || $level >= self::$POTION_MINIMUM_LEVEL;
-			case 'Revelation': return self::hasRevelationUse($user);
-			case 'Refinement': return $premium > 0 || $level >= self::$REFINEMENT_MINIMUM_LEVEL;
-			default: return false;
-		}
+		return (int) ($user['premium'] ?? 0) > 0;
 	}
 
-	private static function hasRevelationUse(array $user): bool
+	public static function hasContributionRevelationBonus(array $user): bool
 	{
-		if (($user['level'] ?? 0) >= self::$REVELATION_MINIMUM_LEVEL)
-			return true;
-		if (!empty($user['isAdmin']))
-			return true;
 		$userId = (int) ($user['id'] ?? 0);
 		if ($userId && ($contribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]])))
 			if (!empty($contribution['UserContribution']['reward3']))

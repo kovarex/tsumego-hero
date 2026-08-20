@@ -56,7 +56,6 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<div class="userStatsGreen">
 		<div class="account-section-title">Progress bar</div>
 		<div class="account-setting">
-			<span class="account-setting-label">Progress bar shows:</span>
 			<?php
 			$levelBarDisplayChecked1 = '';
 			$levelBarDisplayChecked2 = '';
@@ -70,7 +69,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</div>
 	</div>
 	<div class="userStatsGreen">
-		<div class="account-section-title">Account</div>
+		<div class="account-section-title">Reset progress</div>
 		<div class="account-section-actions">
 			<?php if ($canResetOldTsumegoStatuses): ?>
 				<a class="account-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
@@ -81,6 +80,11 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 			<?php if ($deletedTsumegoStatusCount > 0): ?>
 				<span class="account-section-hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
 			<?php endif; ?>
+		</div>
+	</div>
+	<div class="userStatsGreen">
+		<div class="account-section-title">Account</div>
+		<div class="account-section-actions">
 			<?php if ($user['User']['dbstorage'] != 1111): ?>
 				<a class="account-button account-button-danger" href="/users/delete_account">Request account deletion</a>
 			<?php else: ?>
@@ -170,12 +174,6 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 				<td>Highest rating:</td>
 				<td><?php echo $highestRating; ?></td>
 			</tr>
-			<?php if ($user['User']['created']): ?>
-			<tr>
-				<td>Member since:</td>
-				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
-			</tr>
-			<?php endif; ?>
 		</table>
 	</div>
 
@@ -218,16 +216,24 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 					</div>
 				</td>
 			</tr>
+			<?php if ($user['User']['created']): ?>
+			<tr>
+				<td>Member since:</td>
+				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+			</tr>
+			<?php endif; ?>
 		</table>
 	</div>
 </div>
 <?php
 $heroPowers = HeroPowers::getPowers();
 $maxPowerLevel = max(array_column($heroPowers, 'level'));
+$isPremium = HeroPowers::hasPremiumUnlock($user['User']);
+$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user['User']);
 $unlockedCount = 0;
 foreach ($heroPowers as $power)
 {
-	if (HeroPowers::isPowerUnlocked($power['name'], $user['User']))
+	if ($user['User']['level'] >= $power['level'])
 		$unlockedCount++;
 }
 ?>
@@ -239,12 +245,18 @@ foreach ($heroPowers as $power)
 		</div>
 		<?php foreach ($heroPowers as $power):
 			$pos = round($power['level'] / $maxPowerLevel * 100);
-			$isUnlocked = HeroPowers::isPowerUnlocked($power['name'], $user['User']);
+			$isUnlocked = $user['User']['level'] >= $power['level'];
 		?>
 		<div class="hero-power-marker<?php echo $isUnlocked ? ' unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
 			<div class="hero-power-dot"></div>
 			<div class="hero-power-label"><?php echo $power['name']; ?></div>
 			<div class="hero-power-level">Lv <?php echo $power['level']; ?></div>
+			<?php if (!empty($power['premium'])): ?>
+				<div class="hero-power-badge<?php echo $isPremium ? ' active' : ''; ?>" title="Also unlocks with premium">Premium</div>
+			<?php endif; ?>
+			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
+				<div class="hero-power-badge active" title="<?php echo $power['bonus']; ?>">+1 use</div>
+			<?php endif; ?>
 		</div>
 		<?php endforeach; ?>
 	</div>
