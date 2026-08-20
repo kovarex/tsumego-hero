@@ -215,6 +215,30 @@ class UsersControllerTest extends ControllerTestCase
 			'Solve history link should be present on profile');
 	}
 
+	public function testSolveHistoryShowsOnlyViewableSets(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'alice']],
+			'tsumego' => [
+				'sets' => [['name' => 'public set', 'public' => 1, 'num' => 10]],
+				'attempt' => ['solved' => 1],
+			],
+		]);
+
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => 'alice favorites', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]);
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
+
+		$this->testAction('users/solveHistory/' . $context->user['id'], ['return' => 'view']);
+
+		$this->assertTextContains('public set', $this->view);
+		$this->assertStringNotContainsString('alice favorites', $this->view);
+	}
+
 	public function testProgressBarPreferenceOnlyOnOwnProfile(): void
 	{
 		$context = new ContextPreparator([

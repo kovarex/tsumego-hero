@@ -12,6 +12,7 @@ App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class UsersController extends AppController
 {
@@ -1115,7 +1116,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 		$attempts = Util::query("
 SELECT
-	set.title AS set_title,
+	s.title AS set_title,
 	tsumego_attempt.tsumego_id AS tsumego_id,
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,
@@ -1128,10 +1129,17 @@ SELECT
 	COALESCE(sgf.sgf, '') AS sgf
 FROM
 	tsumego_attempt
-	JOIN set_connection ON set_connection.tsumego_id = tsumego_attempt.tsumego_id
+	LEFT JOIN set_connection ON set_connection.id = (
+		SELECT sc.id
+		FROM set_connection sc
+		JOIN `set` ss ON ss.id = sc.set_id
+		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
+			AND " . SetConnection::visibilitySql('ss') . "
+		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
+		LIMIT 1)
 	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego_attempt.tsumego_id)
 	LEFT JOIN tsumego_status ON tsumego_status.user_id = ? AND tsumego_status.tsumego_id = tsumego_attempt.tsumego_id
-	JOIN `set` ON set_connection.set_id = `set`.id
+	LEFT JOIN `set` s ON set_connection.set_id = s.id
 WHERE
 	tsumego_attempt.user_id=?
 ORDER BY created DESC

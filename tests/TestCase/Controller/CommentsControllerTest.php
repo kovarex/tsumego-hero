@@ -74,6 +74,42 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertTrue($browser->getCssSelect('#commentSpace')[0]->isDisplayed());
 	}
 
+	public function testCommentsLinkToViewableSet(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'alice']],
+		]);
+
+		$tsumego = ClassRegistry::init('Tsumego');
+		$tsumego->create();
+		$tsumego->save(['description' => 'comment set link']);
+
+		// Private set connection created first, so it would win the old MIN(id) pick
+		$aliceSet = ClassRegistry::init('Set');
+		$aliceSet->create();
+		$aliceSet->save(['title' => 'alice favorites', 'title2' => '', 'public' => 0, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]);
+		$aliceConnection = ClassRegistry::init('SetConnection');
+		$aliceConnection->create();
+		$aliceConnection->save(['tsumego_id' => $tsumego->id, 'set_id' => $aliceSet->id, 'num' => 3]);
+
+		$publicSet = ClassRegistry::init('Set');
+		$publicSet->create();
+		$publicSet->save(['title' => 'public set', 'title2' => '', 'public' => 1, 'order' => 1]);
+		$publicConnection = ClassRegistry::init('SetConnection');
+		$publicConnection->create();
+		$publicConnection->save(['tsumego_id' => $tsumego->id, 'set_id' => $publicSet->id, 'num' => 10]);
+
+		$comment = ClassRegistry::init('TsumegoComment');
+		$comment->create();
+		$comment->save(['tsumego_id' => $tsumego->id, 'user_id' => $context->user['id'], 'message' => 'hello']);
+
+		$this->testAction('comments/index', ['return' => 'view']);
+
+		$this->assertTextContains('public set', $this->view);
+		$this->assertStringNotContainsString('alice favorites', $this->view);
+	}
+
 	public function testCommentsToggle()
 	{
 		$context = new ContextPreparator(['tsumego' => ['set_order' => 1, 'comments' => [['message' => 'test comment']], 'status' => 'S']]);

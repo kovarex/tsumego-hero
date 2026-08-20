@@ -3,6 +3,8 @@
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
 
+App::uses('NotFoundException', 'Routing/Error');
+
 class TsumegosControllerTest extends TestCaseWithAuth
 {
 	public function testSetNameAndNumIsVisible()
@@ -72,6 +74,209 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertTextContains("666", $this->view);
 		$this->assertTextContains("tsumego set 2", $this->view);
 		$this->assertTextContains("777", $this->view);
+	}
+
+	public function testDuplicateGroupShowsOwnPrivateSet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'myself'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set', 'public' => 1, 'num' => 10],
+					['name' => 'my favorites', 'public' => 0, 'user_id' => 'self', 'num' => 5],
+				],
+			],
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set', $links[0]->textContent);
+		$this->assertTextContains('my favorites', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupShowsOnlyViewableSets()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'myself'],
+			'other-users' => [['name' => 'alice']],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set 1', 'public' => 1, 'num' => 10],
+					['name' => 'public set 2', 'public' => 1, 'num' => 20],
+				],
+			],
+		]);
+		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set 1', $links[0]->textContent);
+		$this->assertTextContains('public set 2', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupShowsOnlyPublicSetsForAnonymous()
+	{
+		$context = new ContextPreparator([
+			'user' => null,
+			'other-users' => [['name' => 'alice']],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set 1', 'public' => 1, 'num' => 10],
+					['name' => 'public set 2', 'public' => 1, 'num' => 20],
+				],
+			],
+		]);
+		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set 1', $links[0]->textContent);
+		$this->assertTextContains('public set 2', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupShowsSandboxSetForPremiumUser()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'premiumuser', 'premium' => true],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set', 'public' => 1, 'num' => 10],
+					['name' => 'sandbox set', 'public' => 0, 'num' => 1],
+				],
+			],
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set', $links[0]->textContent);
+		$this->assertTextContains('sandbox set', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupShowsOnlyPublicSetsForRegularUser()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'regularuser'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set 1', 'public' => 1, 'num' => 10],
+					['name' => 'public set 2', 'public' => 1, 'num' => 20],
+					['name' => 'sandbox set', 'public' => 0, 'num' => 1],
+				],
+			],
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set 1', $links[0]->textContent);
+		$this->assertTextContains('public set 2', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupShowsPublicSetsForAdmin()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'adminuser', 'admin' => true],
+			'other-users' => [['name' => 'alice']],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set 1', 'public' => 1, 'num' => 10],
+					['name' => 'public set 2', 'public' => 1, 'num' => 20],
+				],
+			],
+		]);
+		$this->addSetForTsumego($context->tsumegos[0]['id'], 'alice favorites', $context->otherUsers[0]['id'], 0, 3);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$links = $dom->querySelector('.duplicateTable')->getElementsByTagName('a');
+		$this->assertSame(2, count($links));
+		$this->assertTextContains('public set 1', $links[0]->textContent);
+		$this->assertTextContains('public set 2', $links[1]->textContent);
+	}
+
+	public function testDuplicateGroupHidesUserOwnedPublicSet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'viewer'],
+			'other-users' => [['name' => 'alice']],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'official public', 'public' => 1, 'num' => 10],
+					['name' => 'second public', 'public' => 1, 'num' => 20],
+				],
+			],
+		]);
+
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$this->assertNotFalse($set->save(['title' => 'alice public', 'public' => 1, 'user_id' => $context->otherUsers[0]['id'], 'order' => 1]));
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 3]);
+
+		$titles = array_map(fn($row) => $row['SetConnection']['title'], TsumegoUtil::getSetConnectionsWithTitles($context->tsumegos[0]['id']));
+		$this->assertSame(['official public 10', 'second public 20'], $titles);
+	}
+
+	public function testPlayResolvesSidToOwnPrivateSet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'myself'],
+			'tsumego' => [
+				'sets' => [
+					['name' => 'public set', 'public' => 1, 'num' => 10],
+					['name' => 'my favorites', 'public' => 0, 'user_id' => 'self', 'num' => 5],
+				],
+			],
+		]);
+
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'] . '?sid=' . $context->tsumegos[0]['sets'][1]['id'], ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$href = $dom->querySelector('#playTitleA');
+		$this->assertTextContains('my favorites', $href->textContent);
+	}
+
+	public function testPlayRequiresViewableSet()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'myself'],
+			'other-users' => [['name' => 'alice']],
+		]);
+
+		$tsumego = ClassRegistry::init('Tsumego');
+		$tsumego->create();
+		$tsumego->save(['description' => 'private only']);
+		$this->addSetForTsumego($tsumego->id, 'alice favorites', $context->otherUsers[0]['id'], 0, 1);
+
+		$this->expectException(NotFoundException::class);
+		$this->testAction('tsumegos/play/' . $tsumego->id);
+	}
+
+	private function addSetForTsumego(int $tsumegoId, string $title, ?int $userId, int $public, int $num): void
+	{
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => $title, 'public' => $public, 'user_id' => $userId, 'order' => 1]);
+
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $tsumegoId, 'set_id' => $set->id, 'num' => $num]);
 	}
 
 	public function testViewingTsumegoWithoutAnySGF()
