@@ -1,5 +1,7 @@
 <?php
 
+App::uses('SetConnection', 'Model');
+
 class CommentsRenderer
 {
 	public function __construct(string $name, ?int $userID, $urlParams)
@@ -76,7 +78,12 @@ FROM
 	JOIN user ON tsumego_comment.user_id = user.id
 	LEFT JOIN tsumego_status ON tsumego_status.tsumego_id = tsumego.id AND tsumego_status.user_id = ?
     LEFT JOIN set_connection ON set_connection.id = (
-        SELECT MIN(sc.id) FROM set_connection sc WHERE sc.tsumego_id = tsumego.id)
+        SELECT sc.id
+        FROM set_connection sc
+        JOIN `set` s ON s.id = sc.set_id
+        WHERE sc.tsumego_id = tsumego.id AND " . SetConnection::visibilitySql('s') . "
+        ORDER BY " . SetConnection::displayOrderSql('s', 'sc') . "
+        LIMIT 1)
     LEFT JOIN `set` ON set_connection.set_id = `set`.id";
 
 		if (!empty($queryCondition))

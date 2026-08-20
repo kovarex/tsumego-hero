@@ -26,6 +26,20 @@ class SetConnection extends AppModel
 	}
 
 	/**
+	 * SQL predicate for the sets the current user may view: official public
+	 * sets, the user's own sets, and (for admins/premium) sandbox sets.
+	 */
+	public static function visibilitySql(string $setAlias): string
+	{
+		$visibility = '(' . $setAlias . '.public != 0 AND ' . $setAlias . '.user_id IS NULL)';
+		if (Auth::isLoggedIn())
+			$visibility .= ' OR ' . $setAlias . '.user_id = ' . (int) Auth::getUserID();
+		if (Auth::isAdmin() || Auth::hasPremium())
+			$visibility .= ' OR (' . $setAlias . '.public = 0 AND ' . $setAlias . '.user_id IS NULL)';
+		return '(' . $visibility . ')';
+	}
+
+	/**
 	 * Find a representative set connection for a tsumego, for display only.
 	 */
 	public function findDisplaySetConnection(int $tsumegoId): ?array

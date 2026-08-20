@@ -28,6 +28,7 @@ class TsumegoUtil
 			. 'FROM set_connection sc '
 			. 'JOIN `set` s ON s.id = sc.set_id '
 			. 'WHERE sc.tsumego_id = ? '
+			. 'AND ' . SetConnection::visibilitySql('s') . ' '
 			. 'ORDER BY ' . SetConnection::displayOrderSql('s', 'sc'),
 			[$tsumegoID]
 		);
