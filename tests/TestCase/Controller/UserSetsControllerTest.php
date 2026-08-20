@@ -155,6 +155,47 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals('Fixed by Admin', $set['Set']['title']);
 	}
 
+	public function testAnonymousCannotEditPublicSetTitle(): void
+	{
+		new ContextPreparator(['user' => null]);
+		$setId = $this->_createSet('Public Set', null, 1);
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertEquals('Public Set', $set['Set']['title']);
+	}
+
+	public function testNonOwnerCannotEditPublicSetTitle(): void
+	{
+		new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('Public Set', null, 1);
+		$this->login('alice');
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Set' => ['title' => 'Hacked']], 'method' => 'POST']);
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertEquals('Public Set', $set['Set']['title']);
+	}
+
+	public function testNonAdminCannotToggleSetSettings(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [
+				['rating' => 1000, 'sets' => [['name' => 'My Set', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+		$this->login('alice');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'My Set']])['Set']['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction("/sets/view/{$setId}", ['data' => ['Settings' => ['r43' => 'yes']], 'method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame(0, (int) $tsumego['Tsumego']['pass']);
+	}
+
 	// ── /sets/view/:id ──────────────────────────────────────────────────
 
 	public function testViewOwnPrivateSet(): void

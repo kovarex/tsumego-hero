@@ -7,6 +7,7 @@ App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('ForbiddenException', 'Routing/Error');
 App::uses('BasePolicy', 'Policy');
 App::uses('SetPolicy', 'Policy');
+App::uses('TsumegoPolicy', 'Policy');
 App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
@@ -86,7 +87,7 @@ class Play
 
 		Util::setCookie('lastVisit', $id);
 
-		if (Auth::isLoggedIn())
+		if (TsumegoPolicy::canEditSettings(Auth::getIdentity()))
 			if (!empty($data))
 			{
 				if (isset($data['Study']))
