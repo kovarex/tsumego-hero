@@ -140,14 +140,15 @@
 .userTopTable1 td.profile-rank-cell
 {
 	text-align: center;
+	padding: 0 7px;
 }
 
 .profile-rank-cell .rank-icon
 {
 	width: 110px;
-	height: 110px;
-	font-size: 64px;
-	line-height: 110px;
+	height: 76px;
+	font-size: 60px;
+	line-height: 76px;
 }
 
 .profile-rank-label
