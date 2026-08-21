@@ -7,25 +7,19 @@
 
 ?>
 	
-	<div align="center" >
-	<p class="title">
-				<br><?php
-					if (isset($viewedUser) && $viewedUser['id'] != Auth::getUserID())
-						echo htmlspecialchars($viewedUser['name']) . '\'s Achievements';
-					else
-						echo 'Achievements';
-				?>
-				<br><br> 
-				</p>
-				<div class="achievemetIndexLink">
-					<a href="/">Home</a>
-				</div>
-				<div class="achievemetProfileLink">
-					<?php
-						if (isset($viewedUser))
-							echo '<a href="/users/view/' . $viewedUser['id'] . '">Profile</a>';
-					?>
-				</div>
+	<div align="center">
+	<p class="profile-username">
+		<?php
+			if (isset($viewedUser))
+				echo htmlspecialchars($viewedUser['name']);
+			else
+				echo 'Achievements';
+		?>
+	</p>
+	<?php
+		if (isset($viewedUser))
+			echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
+	?>
 		<div align="center" id="achievementWrapper">
 		<?php
 		$unlockedCounter = 0;
