@@ -73,7 +73,7 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 	public function testShowingSprintAfterSprintIsClicked(): void
 	{
 		$context = new ContextPreparator(['user' => ['premium' => 1], 'tsumego' => 1]);
-		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->changeUserSoSprintCanBeUsed();
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		// the reported xp is normal

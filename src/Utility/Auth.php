@@ -12,8 +12,7 @@ class Auth
 	private static function generateLoginToken(int $user_id): void
 	{
 		$token = Util::generateRandomString(50);
-		Auth::getUser()['login_token'] = $token;
-		Auth::saveUser();
+		Auth::saveUserField('login_token', $token);
 		Util::setCookie('login_token', $token);
 	}
 
@@ -97,10 +96,62 @@ class Auth
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
-	public static function saveUser(): void
+	public static function saveUserField(string $field, $value): void
 	{
 		assert(Auth::isLoggedIn());
-		ClassRegistry::init('User')->save(Auth::getUser());
+		Auth::$user[$field] = $value;
+		ClassRegistry::init('User')->save(
+			['User' => ['id' => Auth::getUserID(), $field => $value]],
+			['validate' => false, 'fieldList' => [$field]]
+		);
+	}
+
+	public static function saveUserFields(array $fieldValues): void
+	{
+		assert(Auth::isLoggedIn());
+		foreach ($fieldValues as $field => $value)
+			Auth::$user[$field] = $value;
+		$data = ['User' => ['id' => Auth::getUserID()]];
+		foreach ($fieldValues as $field => $value)
+			$data['User'][$field] = $value;
+		ClassRegistry::init('User')->save($data, [
+			'validate' => false,
+			'fieldList' => array_keys($fieldValues),
+		]);
+	}
+
+	public static function incrementUserField(string $field, $delta): void
+	{
+		assert(Auth::isLoggedIn());
+		Auth::$user[$field] = Auth::getUser()[$field] + $delta;
+		ClassRegistry::init('User')->updateAll(
+			[$field => $field . ' + ' . $delta],
+			['id' => Auth::getUserID()]
+		);
+	}
+
+	/**
+	 * Atomically increments a field only while the row satisfies $conditions.
+	 * Used for bounded counters (e.g. used_revelation) where the bound must be
+	 * enforced by the database, not only by a PHP check that can race.
+	 *
+	 * Bypasses callbacks/validation/timestamps, like incrementUserField().
+	 *
+	 * @return bool Whether the increment was applied (condition still held).
+	 */
+	public static function incrementUserFieldIf(string $field, $delta, array $conditions): bool
+	{
+		assert(Auth::isLoggedIn());
+		$conditions['id'] = Auth::getUserID();
+		$model = ClassRegistry::init('User');
+		$model->updateAll(
+			[$field => $field . ' + ' . $delta],
+			$conditions
+		);
+		$affected = $model->getDataSource()->lastAffected();
+		if ($affected)
+			Auth::$user[$field] = Auth::getUser()[$field] + $delta;
+		return $affected > 0;
 	}
 
 	public static function logout(): void
@@ -140,8 +191,7 @@ class Auth
 
 	public static function addSuspicion(): void
 	{
-		Auth::getUser()['penalty'] += 1;
-		Auth::saveUser();
+		Auth::incrementUserField('penalty', 1);
 	}
 
 	public static function XPisGainedInCurrentMode()

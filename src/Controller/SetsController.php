@@ -332,7 +332,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$achievementChecker->checkSetCompletedAchievements();
 			$achievementChecker->finalize();
 			$this->set('achievementUpdate', $achievementChecker->updated);
-			Auth::saveUser();
 		}
 
 		$ranksArray = SetsController::getExistingRanksArray();
@@ -569,10 +568,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		]);
 
 		// Update user.default_set_id
-		$userModel = ClassRegistry::init('User');
-		$userModel->id = $userId;
-		$userModel->saveField('default_set_id', $setModel->id);
-		Auth::getUser()['default_set_id'] = $setModel->id;
+		Auth::saveUserField('default_set_id', $setModel->id);
 
 		return $setModel->findById($setModel->id);
 	}

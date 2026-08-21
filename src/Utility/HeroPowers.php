@@ -59,12 +59,6 @@ class HeroPowers
 		echo self::canUseRefinement() ? "enableRefinement();" : "disableRefinement();";
 	}
 
-	public static function changeUserSoRejuvenationCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$REJUVENATION_MINIMUM_LEVEL;
-		Auth::saveUser();
-	}
-
 	public static function canUseRejuvanation()
 	{
 		if (Auth::getWithDefault('level', 0) < self::$REJUVENATION_MINIMUM_LEVEL)
@@ -75,12 +69,6 @@ class HeroPowers
 	public static function renderRejuvenation()
 	{
 		echo '<img id="rejuvenation" title="Rejuvenation (Level ' . self::$REJUVENATION_MINIMUM_LEVEL . '): Restores health, Intuition and locks.">';
-	}
-
-	public static function changeUserSoIntuitionCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$INTUITION_MINIMUM_LEVEL;
-		Auth::saveUser();
 	}
 
 	public static function canUseIntuition()
@@ -139,13 +127,6 @@ class HeroPowers
 			echo ' onclick="revelation(); return false;"';
 		}
 		echo ' style="cursor:' . (self::canUseRevelation() ? 'pointer' : 'auto') . '"></a>';
-	}
-
-	public static function changeUserSoSprintCanBeUsed()
-	{
-		Auth::getUser()['level'] = self::$SPRINT_MINIMUM_LEVEL;
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
 	}
 
 	public static function canUseSprint()

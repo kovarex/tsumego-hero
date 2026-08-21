@@ -78,11 +78,12 @@ class PlayResultProcessorComponent extends Component
 
 		if (rand(1, 100) <= $chance)
 		{
-			Auth::getUser()['damage'] = 0;
-			Auth::getUser()['used_potion'] = 1;
+			Auth::saveUserFields([
+				'damage' => 0,
+				'used_potion' => 1,
+			]);
 			// Original also reset Rejuvenation here:
 			// Auth::getUser()['used_rejuvenation'] = 0;
-			Auth::saveUser();
 			return true;
 		}
 
@@ -154,7 +155,7 @@ class PlayResultProcessorComponent extends Component
 		{
 			$newStatus = $this->getNewStatus($result['solved'], $previousTsumegoStatus['TsumegoStatus']['status'], $result);
 			if (TsumegoUtil::isSolvedStatus($newStatus) && !TsumegoUtil::isSolvedStatus($previousTsumegoStatus['TsumegoStatus']['status']))
-				Auth::getUser()['solved'] = Auth::getUser()['solved'] + 1;
+				Auth::incrementUserField('solved', 1);
 			$previousTsumegoStatus['TsumegoStatus']['status'] = $newStatus;
 		}
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
@@ -224,8 +225,7 @@ class PlayResultProcessorComponent extends Component
 		if ($result['solved'])
 			self::processRatingChangeStep($userRating, $tsumegoRating, true);
 
-		Auth::getUser()['rating'] = $userRating;
-		Auth::saveUser();
+		Auth::saveUserField('rating', $userRating);
 
 		$previousTsumego['Tsumego']['rating'] = Util::clampOptional(
 			$tsumegoRating,
@@ -243,8 +243,7 @@ class PlayResultProcessorComponent extends Component
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousStatusValue))
 			return;
-		Auth::getUser()['damage'] += $result['misplays'];
-		Auth::saveUser();
+		Auth::incrementUserField('damage', $result['misplays']);
 	}
 
 	private function processXpChange(array $previousTsumego, array &$result, string $previousTsumegoStatus, $originalTsumegoRating): void
@@ -262,6 +261,12 @@ class PlayResultProcessorComponent extends Component
 		$user = & Auth::getUser();
 		$result['xp-gained'] = Rating::ratingToXP($originalTsumegoRating, $multiplier);
 		Level::addXPAsResultOfTsumegoSolving($user, $result['xp-gained']);
+		Auth::saveUserFields([
+			'xp' => $user['xp'],
+			'level' => $user['level'],
+			'daily_xp' => $user['daily_xp'],
+			'daily_solved' => $user['daily_solved'],
+		]);
 	}
 
 	private function processErrorAchievement(array $result, $previousTsumegoStatus): void

@@ -46,8 +46,7 @@ class HeroController extends AppController
 		$tsumegoStatus['created'] = date('Y-m-d H:i:s');
 		$tsumegoStatus['status'] = 'G';
 		ClassRegistry::init('TsumegoStatus')->save($tsumegoStatus);
-		Auth::getUser()['used_refinement'] = 1;
-		Auth::saveUser();
+		Auth::saveUserField('used_refinement', 1);
 		return $this->redirect('/' . $setConnection['set_connection_id']);
 	}
 
@@ -55,9 +54,10 @@ class HeroController extends AppController
 	{
 		if (!HeroPowers::canUseSprint())
 			throw new ForbiddenException();
-		Auth::getUser()['sprint_start'] = date('Y-m-d H:i:s');
-		Auth::getUser()['used_sprint'] = 1;
-		Auth::saveUser();
+		Auth::saveUserFields([
+			'sprint_start' => date('Y-m-d H:i:s'),
+			'used_sprint' => 1,
+		]);
 		$this->response->statusCode(200);
 		return $this->response;
 	}
@@ -66,8 +66,7 @@ class HeroController extends AppController
 	{
 		if (!HeroPowers::canUseIntuition())
 			throw new ForbiddenException();
-		Auth::getUser()['used_intuition'] = 1;
-		Auth::saveUser();
+		Auth::saveUserField('used_intuition', 1);
 		$this->response->statusCode(200);
 		return $this->response;
 	}
@@ -76,10 +75,11 @@ class HeroController extends AppController
 	{
 		if (!HeroPowers::canUseRejuvanation())
 			throw new ForbiddenException();
-		Auth::getUser()['used_rejuvenation'] = 1;
-		Auth::getUser()['used_intuition'] = 0;
-		Auth::getUser()['damage'] = 0;
-		Auth::saveUser();
+		Auth::saveUserFields([
+			'used_rejuvenation' => 1,
+			'used_intuition' => 0,
+			'damage' => 0,
+		]);
 
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='V' WHERE status='F' AND user_id=" . Auth::getUserID());
 		ClassRegistry::init('TsumegoStatus')->query("UPDATE tsumego_status SET status='W' WHERE status='X' AND user_id=" . Auth::getUserID());
@@ -95,6 +95,13 @@ class HeroController extends AppController
 
 		if (!HeroPowers::canUseRevelation())
 			throw new ForbiddenException('Revelation is used up today.');
+
+		// used_revelation is bounded by getRevelationUseCount(). Enforce the bound
+		// in the database with a conditional atomic increment so two concurrent
+		// requests that both pass canUseRevelation() cannot push it past the limit.
+		if (!Auth::incrementUserFieldIf('used_revelation', 1, ['used_revelation <' => HeroPowers::getRevelationUseCount()]))
+			throw new ForbiddenException('Revelation is used up today.');
+
 		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoID);
 		if (!$tsumego)
 			throw new ForbiddenException();
@@ -113,9 +120,6 @@ class HeroController extends AppController
 		$previousTsumegoStatus['created'] = date('Y-m-d H:i:s');
 		$previousTsumegoStatus['status'] = 'S';
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
-
-		Auth::getUser()['used_revelation']++;
-		Auth::saveUser();
 
 		$this->response->statusCode(200);
 		return $this->response;

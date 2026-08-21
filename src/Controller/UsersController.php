@@ -2,6 +2,7 @@
 
 App::uses('CakeEmail', 'Network/Email');
 App::uses('Constants', 'Utility');
+App::uses('Validation', 'Utility');
 App::uses('SgfParser', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('SGFProposalsRenderer', 'Utility');
@@ -780,16 +781,13 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			if (!empty($this->data))
 				if (isset($this->data['User']['email']))
 				{
-					Auth::getUser()['email'] = $this->data['User']['email'];
-					Auth::saveUser();
+					if (Validation::email($this->data['User']['email']))
+						Auth::saveUserField('email', $this->data['User']['email']);
 					$this->set('data', $this->data['User']['email']);
 				}
 			if (isset($this->params['url']['undo']))
 				if ($this->params['url']['undo'] / 1111 == $id)
-				{
-					Auth::getUser()['dbstorage'] = 1;
-					Auth::saveUser();
-				}
+					Auth::saveUserField('dbstorage', 1);
 		}
 
 		$tsumegoStatusToRestCount = Util::query("
@@ -1063,8 +1061,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 			if (isset($this->data['User']['delete']))
 				if (password_verify($this->data['User']['delete'], Auth::getUser()['password_hash']))
 				{
-					Auth::getUser()['dbstorage'] = 1111;
-					Auth::saveUser();
+					Auth::saveUserField('dbstorage', 1111);
 					$redirect = true;
 				}
 				else
@@ -1092,8 +1089,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 			if (isset($this->data['User']['demote']))
 				if (password_verify($this->data['User']['demote'], Auth::getUser()['password_hash']))
 				{
-					Auth::getUser()['isAdmin'] = 0;
-					Auth::saveUser();
+					Auth::saveUserField('isAdmin', 0);
 					$redirect = true;
 				}
 				else

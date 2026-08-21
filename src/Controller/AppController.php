@@ -368,13 +368,10 @@ class AppController extends Controller
 		if (Auth::isLoggedIn())
 		{
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
-				Auth::getUser()['last_time_mode_category_id'] = $lastTimeModeCategoryID;
+				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
 			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
 			&& strlen($_COOKIE['z_sess']) > 5)
-			{
-				Auth::getUser()['_sessid'] = $_COOKIE['z_sess'];
-				Auth::saveUser();
-			}
+				Auth::saveUserField('_sessid', $_COOKIE['z_sess']);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
 			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_RATING)
@@ -385,14 +382,10 @@ class AppController extends Controller
 				$highscoreLink = 'time_mode';
 
 			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0)
-			{
-				Auth::getUser()['lastMode'] = $_COOKIE['lastMode'];
-				Auth::saveUser();
-			}
+				Auth::saveUserField('lastMode', $_COOKIE['lastMode']);
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
-				Auth::getUser()['sound'] = $_COOKIE['sound'];
-				Auth::saveUser();
+				Auth::saveUserField('sound', $_COOKIE['sound']);
 				unset($_COOKIE['sound']);
 			}
 			$this->set('ac', true);
@@ -406,7 +399,7 @@ class AppController extends Controller
 			{
 				// Convert string to integer for database storage
 				$lightDarkInt = ($lightDark === 'light') ? 0 : 2;
-				Auth::getUser()['lastLight'] = $lightDarkInt;
+				Auth::saveUserField('lastLight', $lightDarkInt);
 			}
 		}
 		elseif (Auth::isLoggedIn())
@@ -422,7 +415,7 @@ class AppController extends Controller
 			if (isset($_COOKIE['levelBar']) && $_COOKIE['levelBar'] != '0')
 			{
 				$levelBar = $_COOKIE['levelBar'];
-				Auth::getUser()['levelBar'] = $levelBar;
+				Auth::saveUserField('levelBar', $levelBar);
 			}
 			elseif (Auth::getUser()['levelBar'] == 0
 		  || Auth::getUser()['levelBar'] == 'level')
@@ -433,7 +426,7 @@ class AppController extends Controller
 			if (isset($_COOKIE['lastProfileLeft']) && $_COOKIE['lastProfileLeft'] != '0')
 			{
 				$lastProfileLeft = $_COOKIE['lastProfileLeft'];
-				Auth::getUser()['lastProfileLeft'] = $lastProfileLeft;
+				Auth::saveUserField('lastProfileLeft', $lastProfileLeft);
 			}
 			else
 			{
@@ -444,7 +437,7 @@ class AppController extends Controller
 			if (isset($_COOKIE['lastProfileRight']) && $_COOKIE['lastProfileRight'] != '0')
 			{
 				$lastProfileRight = $_COOKIE['lastProfileRight'];
-				Auth::getUser()['lastProfileRight'] = $lastProfileRight;
+				Auth::saveUserField('lastProfileRight', $lastProfileRight);
 			}
 			else
 			{
@@ -484,10 +477,7 @@ class AppController extends Controller
 		if (!is_null($boardsBitmask = Util::clearCookie('boards_bitmask')))
 		{
 			if (Auth::isLoggedIn())
-			{
-				Auth::getUser()['boards_bitmask'] = BoardSelector::filterValidBits($boardsBitmask);
-				Auth::saveUser();
-			}
+				Auth::saveUserField('boards_bitmask', BoardSelector::filterValidBits($boardsBitmask));
 		}
 		else
 			$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
@@ -512,8 +502,6 @@ class AppController extends Controller
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('resetCookies', $resetCookies);
 		$this->set('timeMode', $timeMode);
-		if (Auth::isLoggedIn())
-			Auth::saveUser();
 	}
 
 	public function afterFilter() {}

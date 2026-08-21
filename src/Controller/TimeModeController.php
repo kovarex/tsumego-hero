@@ -27,10 +27,7 @@ class TimeModeController extends AppController
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInTimeMode())
-		{
-			Auth::getUser()['mode'] = Constants::$TIME_MODE;
-			Auth::saveUser();
-		}
+			Auth::saveUserField('mode', Constants::$TIME_MODE);
 
 		$timeMode = new TimeMode();
 

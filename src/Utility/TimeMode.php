@@ -81,8 +81,7 @@ class TimeMode
 		if (!$timeModeRank)
 			throw new NotFoundException("Time mode rank category with id=" . $rankID . " not found");
 
-		Auth::getUser()['mode'] = Constants::$TIME_MODE;
-		Auth::saveUser();
+		Auth::saveUserField('mode', Constants::$TIME_MODE);
 		$currentTimeSession = [];
 		$currentTimeSession['user_id'] = Auth::getUserID();
 		$currentTimeSession['time_mode_session_status_id'] = TimeModeUtil::$SESSION_STATUS_IN_PROGRESS;
@@ -265,8 +264,7 @@ class TimeMode
 		$this->currentSession['TimeModeSession']['time_mode_session_status_id'] = $sessionSuccessful ? TimeModeUtil::$SESSION_STATUS_SOLVED : TimeModeUtil::$SESSION_STATUS_FAILED;
 		$this->currentSession['TimeModeSession']['points'] = $overallPoints;
 		ClassRegistry::init('TimeModeSession')->save($this->currentSession);
-		Auth::getUser()['mode'] = Constants::$LEVEL_MODE;
-		Auth::saveUser();
+		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		return $this->currentSession['TimeModeSession']['id'];
 	}

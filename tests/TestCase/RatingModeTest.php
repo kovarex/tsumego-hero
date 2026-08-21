@@ -25,8 +25,7 @@ class RatingModeTest extends ControllerTestCase
 		$browser = Browser::instance();
 		$browser->get('/ratingMode');
 		$this->assertSame('1000 rating tsumego', $browser->find('#descriptionText')->getText());
-		Auth::getUser()['rating'] = 500;
-		Auth::saveUser();
+		Auth::saveUserField('rating', 500);
 
 		$browser->clickId('besogo-next-button');
 		$this->assertSame('500 rating tsumego', $browser->find('#descriptionText')->getText());
