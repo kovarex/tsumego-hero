@@ -158,48 +158,6 @@ class PlayResultProcessorComponent extends Component
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
 	}
 
-	public function checkAddFavorite(): void
-	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$tsumegoID = Util::clearCookie('add_favorite');
-		if (empty($tsumegoID))
-			return;
-
-		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if ($favorite)
-			return;
-
-		try
-		{
-			$favorite = [];
-			$favorite['user_id'] = Auth::getUserID();
-			$favorite['tsumego_id'] = $tsumegoID;
-			ClassRegistry::init('Favorite')->create();
-			ClassRegistry::init('Favorite')->save($favorite);
-		}
-		catch (Exception $e)
-		{
-			throw new Exception('Tsumego id = ' . $tsumegoID, 0, $e);
-		}
-	}
-
-	public function checkRemoveFavorite(): void
-	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$tsumegoID = Util::clearCookie('remove_favorite');
-		if (empty($tsumegoID))
-			return;
-
-		$favorite = ClassRegistry::init('Favorite')->find('first', ['conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoID]]);
-		if (!$favorite)
-			return;
-		ClassRegistry::init('Favorite')->delete($favorite['Favorite']['id']);
-	}
-
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus, float $seconds): void
 	{
 		if (Auth::isInTimeMode())
@@ -352,7 +310,7 @@ class PlayResultProcessorComponent extends Component
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
 		AppController::updateGems($solvedTsumegoRank);
-		if ($sprint === '1' || $sprint === 1 || $sprint === true)
+		if ($sprint === '1')
 			AppController::updateSprintCondition(true);
 		else
 			AppController::updateSprintCondition();

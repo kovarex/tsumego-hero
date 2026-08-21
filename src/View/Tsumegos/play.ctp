@@ -699,7 +699,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var failAlreadyReported = false;
 	window._submitResultSeq = 0;
 
-	var tcount = <?php echo $timeMode ? $timeMode->secondsToSolve : 0; ?>;
+	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;
 	var whiteMoveAfterCorrectI = 0;
