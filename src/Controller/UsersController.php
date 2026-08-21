@@ -1109,6 +1109,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 
 	public function solveHistory($userID)
 	{
+		$userName = Util::query("SELECT name FROM user WHERE id = ?", [$userID])[0]['name'] ?? 'Unknown';
 		$PAGE_SIZE = 500;
 		$pageIndex = isset($this->params->query['page']) ? max(1, (int) $this->params->query['page']) : 1;
 		$count = Util::query("SELECT COUNT(*) FROM tsumego_attempt where user_id = ?", [$userID])[0]['COUNT(*)'];
@@ -1147,8 +1148,9 @@ LIMIT " . $PAGE_SIZE . "
 OFFSET " . $offset, [$userID, $userID]);
 
 		$this->set('_page', 'solveHistory');
-		$this->set('_title', 'Solve history');
+		$this->set('_title', $userName . '\'s Solve History');
 		$this->set('userID', $userID);
+		$this->set('userName', $userName);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);
