@@ -328,7 +328,7 @@ echo ViteManifest::legacyScript('legacy');
 		<div class="outerMenu3">
 			<?php
 			$currentPage = '';
-			if($_page == 'user')
+			if($_page == 'login')
 				$currentPage = 'style="color:#74d14c;" ';
 			if(!Auth::isLoggedIn())
 				echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';

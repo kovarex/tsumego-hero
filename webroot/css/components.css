@@ -1,8 +1,20 @@
 /* ══════════════════════════════════════════════════════
    Shared design tokens and UI components
    Imported globally via app-theme.js.
-   Tokens delegate to default.css theme variables so light
-   and dark mode are respected.
+
+   Philosophy:
+   - Tokens → Components → Page composition → State/theme
+   - Raw values (colors, spacing) live ONLY in tokens.
+   - Components are semantic and reusable (used 2-5×).
+     Modifiers encode state/variant, not visual values.
+   - Page-specific rules stay in page CSS files.
+   - BEM naming: block__element--modifier (see getbem.com).
+     Exception: structural HTML elements (td, th, tr, li)
+     scoped to a block may use element selectors.
+   - IDs are JS hooks only, never styled.
+   - When adding a new class, ask: "Can an existing
+     component or modifier handle this?" If not, add it
+     here so the next page can reuse it.
    ══════════════════════════════════════════════════════ */
 
 :root
@@ -39,6 +51,23 @@
 	--radius-sm: 4px;
 	--radius-md: 8px;
 	--radius-full: 999px;
+
+	/* ── Typography ── */
+	--font-size-xs: 9px;
+	--font-size-sm: 11px;
+	--font-size-base: 12px;
+	--font-size-md: 13px;
+	--font-size-lg: 15px;
+	--font-weight-normal: 400;
+	--font-weight-bold: 700;
+	--font-weight-heavy: 800;
+
+	/* ── Neutral colors ── */
+	--color-white: #fff;
+	--color-gray-dark: #4a4a4a;
+	--color-red-dark: #8b3a3a;
+	--color-red-darker: #4a2020;
+	--color-red-light: #ff8080;
 }
 
 /* ── Layout objects ── */
@@ -89,12 +118,12 @@
 
 .card__title
 {
-	font-weight: 800;
+	font-weight: var(--font-weight-heavy);
 	color: var(--text-muted);
 	text-transform: uppercase;
-	font-size: 12px;
+	font-size: var(--font-size-base);
 	letter-spacing: 0.05em;
-	margin-bottom: 10px;
+	margin-bottom: var(--space-3);
 }
 
 /* ── Stat list ── */
@@ -106,7 +135,7 @@
 .stat td
 {
 	vertical-align: top;
-	padding: 7px;
+	padding: var(--space-2);
 	text-align: left;
 	width: 50%;
 }
@@ -116,9 +145,9 @@
 {
 	height: 18px;
 	background: var(--surface-bar);
-	border-radius: 9px;
+	border-radius: var(--radius-full);
 	overflow: hidden;
-	margin-top: 4px;
+	margin-top: var(--space-1);
 	position: relative;
 }
 
@@ -126,7 +155,7 @@
 {
 	height: 100%;
 	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
-	border-radius: 9px;
+	border-radius: var(--radius-full);
 	min-width: 2px;
 }
 
@@ -155,9 +184,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
-	font-weight: 800;
-	color: #fff;
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-heavy);
+	color: var(--color-white);
 	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
 	pointer-events: none;
 }
@@ -166,21 +195,21 @@
 .btn
 {
 	display: inline-block;
-	padding: 6px 14px;
+	padding: var(--space-1) var(--space-3);
 	border: 1px solid var(--border);
-	border-radius: 4px;
+	border-radius: var(--radius-sm);
 	background: var(--surface-raised);
 	color: var(--text);
 	text-decoration: none;
-	font-size: 13px;
+	font-size: var(--font-size-md);
 	cursor: pointer;
 	transition: background 0.2s, color 0.2s;
 }
 
 .btn:hover
 {
-	background: #4a4a4a;
-	color: #fff;
+	background: var(--color-gray-dark);
+	color: var(--color-white);
 }
 
 .btn--disabled
@@ -197,14 +226,14 @@
 
 .btn--danger
 {
-	border-color: #8b3a3a;
+	border-color: var(--color-red-dark);
 	color: var(--color-red-muted);
 }
 
 .btn--danger:hover
 {
-	background: #4a2020;
-	color: #ff8080;
+	background: var(--color-red-darker);
+	color: var(--color-red-light);
 }
 
 /* ── Sub-navigation ── */
@@ -218,11 +247,11 @@
 
 .subnav__link
 {
-	padding: 10px 20px;
+	padding: var(--space-3) var(--space-5);
 	color: var(--text-muted);
 	text-decoration: none;
-	font-weight: 700;
-	font-size: 15px;
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-lg);
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
 	border-bottom: 3px solid transparent;
@@ -236,24 +265,30 @@
 	border-bottom-color: var(--color-green);
 }
 
+.subnav__link--active
+{
+	color: var(--text);
+	border-bottom-color: var(--color-green);
+}
+
 /* ── Badge ── */
 .badge
 {
 	display: inline-block;
-	margin-top: 4px;
-	padding: 1px 6px;
-	font-size: 9px;
-	font-weight: 700;
+	margin-top: var(--space-1);
+	padding: 1px var(--space-1);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	border: 1px solid var(--border);
-	border-radius: 8px;
+	border-radius: var(--radius-full);
 	color: var(--text-muted);
 }
 
 .badge--active
 {
-	color: #fff;
+	color: var(--color-white);
 	background: var(--color-blue-dark);
 	border-color: var(--color-blue-dark);
 }
@@ -263,26 +298,26 @@
 {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: var(--space-3);
 	flex-wrap: wrap;
 }
 
 .field__option
 {
 	color: var(--text);
-	font-size: 13px;
+	font-size: var(--font-size-md);
 	cursor: pointer;
 }
 
 .field__option input[type="radio"]
 {
-	margin-right: 4px;
+	margin-right: var(--space-1);
 }
 
 /* ── Hint (muted helper text) ── */
 .hint
 {
-	font-size: 12px;
+	font-size: var(--font-size-base);
 	color: var(--text-muted);
 }
 
@@ -297,3 +332,47 @@
 	color: var(--color-green);
 	cursor: pointer;
 }
+
+/* ── Data table ── */
+.data-table
+{
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--font-size-md);
+}
+
+.data-table th
+{
+	text-align: left;
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-base);
+	color: var(--text-muted);
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--border);
+}
+
+.data-table td
+{
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--border);
+}
+
+.data-table tr:last-child td
+{
+	border-bottom: none;
+}
+
+.data-table a:not(.tooltip)
+{
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.data-table a:not(.tooltip):hover
+{
+	text-decoration: underline;
+}
+
+
+
+
