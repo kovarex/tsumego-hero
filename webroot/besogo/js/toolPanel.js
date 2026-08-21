@@ -11,7 +11,7 @@ besogo.makeToolPanel = function (container, editor) {
   var blIcon = null;
   var brIcon = null;
   var spinIcon = null;
-  var favButtonLit = false; // Whether the favorite (heart) button is currently lit
+  var favButtonLit = false;
 
   if (container.className == "besogo-tsumegoPlayTool")
     makeReviewToolButtons(container, editor);
