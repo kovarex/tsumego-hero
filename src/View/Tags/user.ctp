@@ -29,30 +29,29 @@ endif;
 ?>
 
 <div align="center">
-	<p class="title">
-		<br>
-		Tags and proposals by <?php echo h($viewedUser['name']) ?>
-		<br><br> 
-	</p>
+	<p class="profile-username"><?php echo h($viewedUser['name']); ?></p>
+	<?php echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'contributions']); ?>
 	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
-	<table class="highscoreTable" border="0">
-		<tbody>
+	<table class="data-table">
+		<thead>
 		<tr>
-			<th align="left">Action</th>
-			<th align="left">Status</th>
-			<th align="left">Timestamp</th>
+			<th>Action</th>
+			<th>Status</th>
+			<th>Timestamp</th>
 		</tr>
+		</thead>
+		<tbody>
 		<?php foreach ($contributions as $c): ?>
 			<?php
 				if ($c->status === 'accepted')
-					$color = '#047804';
+					$color = 'var(--color-green)';
 				elseif ($c->status === 'pending')
-					$color = '#b08000';
+					$color = 'var(--color-yellow)';
 				else
-					$color = '#ce3a47';
+					$color = 'var(--color-red)';
 			?>
 				<tr>
-					<td class="timeTableLeft versionColor" align="left">
+					<td>
 					<?php if ($c->type === 'proposal'): ?>
 						Proposal for <?php echo _tsumegoLink($c) ?> was submitted
 					<?php elseif ($c->type === 'tag'): ?>
@@ -61,10 +60,11 @@ endif;
 						Tag <?php echo _tagLink($c) ?> was created
 						<?php endif; ?>
 					</td>
-					<td class="timeTableMiddle versionColor" align="left"><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
-					<td class="timeTableRight versionColor" align="left"><time datetime="<?php echo Util::toIso8601($c->created) ?>" data-format="datetime"><?php echo h($c->created) ?></time></td>
+					<td><b style="color:<?php echo $color ?>"><?php echo h($c->status) ?></b></td>
+					<td><time datetime="<?php echo Util::toIso8601($c->created) ?>" data-format="datetime"><?php echo h($c->created) ?></time></td>
 				</tr>
 		<?php endforeach; ?>
 	</tbody>
 	</table>
+	<?php echo PaginationHelper::render($pageIndex, (int) ceil($count / $pageSize), 'page'); ?>
 </div>

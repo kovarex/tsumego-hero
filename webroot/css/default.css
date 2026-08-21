@@ -8174,10 +8174,11 @@ to { transform: rotate(360deg); }
 
 /* Unified theme: light is default (:root), dark overrides via [data-theme="dark"] */
 :root {
-	--text-color: black;
-	--text-softer-color: #666666;
+	--text-color: #222;
+	--text-softer-color: grey;
 	--link-color: #0000EE;
-	--current-border-color: #111;
+	--current-border-color: #ccc;
+	--surface-bar: #f5f5f5;
 	--dark-button-icon: url("/img/light-icon1x.png");
 	--new1-gradient: linear-gradient(#fff, #f2f2f2);
 	--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
@@ -8196,14 +8197,15 @@ to { transform: rotate(360deg); }
 	--active-paginator-button-text-color: #fff;
 	--paginator-info-text-color: #666;
 	--admin-text-color: #1010EE;
-	--info-box-background: #fefefe;
+	--info-box-background: #fff;
 }
 
 [data-theme="dark"] {
-	--text-color: #f0f0f0;
-	--text-softer-color: #aaa;
+	--text-color: #ddd;
+	--text-softer-color: grey;
 	--link-color: #f0f0f0;
-	--current-border-color: #eee;
+	--current-border-color: #444;
+	--surface-bar: #303030;
 	--dark-button-icon: url("/img/dark-icon1.png");
 	--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
 	--title4-gradient: linear-gradient(#737373, #4a4a4a);
@@ -8222,7 +8224,7 @@ to { transform: rotate(360deg); }
 	--active-paginator-button-text-color: #000;
 	--paginator-info-text-color: #999;
 	--admin-text-color: #7EE0FF;
-	--info-box-background: #444;
+	--info-box-background: #2a2a2a;
 }
 
 [data-theme="dark"] {

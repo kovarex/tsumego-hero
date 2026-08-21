@@ -33,13 +33,7 @@
 	--color-red-fill: #e05555;
 	--color-red-fill-dark: #a02020;
 
-	/* ── Semantic tokens (delegate to the theme variables) ── */
-	--text: var(--text-color);
-	--text-muted: var(--text-softer-color);
-	--surface: var(--info-box-background);
-	--surface-raised: var(--new1-gradient);
-	--surface-bar: rgba(0, 0, 0, 0.2);
-	--border: var(--current-border-color);
+
 
 	/* ── Spacing and radius ── */
 	--space-1: 4px;
@@ -101,7 +95,7 @@
 /* ── Card ── */
 .card
 {
-	border: 3px solid var(--border);
+	border: 3px solid var(--current-border-color);
 	box-sizing: border-box;
 	padding: var(--space-2);
 }
@@ -119,7 +113,7 @@
 .card__title
 {
 	font-weight: var(--font-weight-heavy);
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 	text-transform: uppercase;
 	font-size: var(--font-size-base);
 	letter-spacing: 0.05em;
@@ -196,10 +190,10 @@
 {
 	display: inline-block;
 	padding: var(--space-1) var(--space-3);
-	border: 1px solid var(--border);
+	border: 1px solid var(--current-border-color);
 	border-radius: var(--radius-sm);
-	background: var(--surface-raised);
-	color: var(--text);
+	background: var(--new1-gradient);
+	color: var(--text-color);
 	text-decoration: none;
 	font-size: var(--font-size-md);
 	cursor: pointer;
@@ -220,8 +214,8 @@
 
 .btn--disabled:hover
 {
-	background: var(--surface-raised);
-	color: var(--text);
+	background: var(--new1-gradient);
+	color: var(--text-color);
 }
 
 .btn--danger
@@ -242,13 +236,13 @@
 	display: flex;
 	gap: 0;
 	justify-content: center;
-	border-bottom: 2px solid var(--border);
+	border-bottom: 2px solid var(--current-border-color);
 }
 
 .subnav__link
 {
 	padding: var(--space-3) var(--space-5);
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 	text-decoration: none;
 	font-weight: var(--font-weight-bold);
 	font-size: var(--font-size-lg);
@@ -267,7 +261,7 @@
 
 .subnav__link--active
 {
-	color: var(--text);
+	color: var(--text-color);
 	border-bottom-color: var(--color-green);
 }
 
@@ -281,9 +275,9 @@
 	font-weight: var(--font-weight-bold);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
-	border: 1px solid var(--border);
+	border: 1px solid var(--current-border-color);
 	border-radius: var(--radius-full);
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 }
 
 .badge--active
@@ -304,7 +298,7 @@
 
 .field__option
 {
-	color: var(--text);
+	color: var(--text-color);
 	font-size: var(--font-size-md);
 	cursor: pointer;
 }
@@ -318,7 +312,7 @@
 .hint
 {
 	font-size: var(--font-size-base);
-	color: var(--text-muted);
+	color: var(--text-softer-color);
 }
 
 .hint--danger
@@ -336,39 +330,52 @@
 /* ── Data table ── */
 .data-table
 {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: var(--font-size-md);
+	table-layout: auto;
 }
 
 .data-table th
 {
-	text-align: left;
-	font-weight: var(--font-weight-bold);
-	font-size: var(--font-size-base);
-	color: var(--text-muted);
-	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--border);
+	color: var(--text-softer-color);
+	position: sticky;
+	top: 0;
+	background: var(--info-box-background);
+	z-index: 1;
 }
 
 .data-table td
 {
-	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--border);
+	padding: 15px;
+	border-top: 1px solid var(--current-border-color);
+	border-bottom: 1px solid var(--current-border-color);
+	background: var(--info-box-background);
+	color: var(--text-color);
+	font-weight: normal;
 }
 
-.data-table tr:last-child td
+.data-table td:first-child
 {
-	border-bottom: none;
+	border-radius: 12px 0 0 12px;
+	border-left: 1px solid var(--current-border-color);
 }
 
-.data-table a:not(.tooltip)
+.data-table td:last-child
 {
-	color: var(--link-color);
+	border-radius: 0 12px 12px 0;
+	border-right: 1px solid var(--current-border-color);
+}
+
+.data-table tr:nth-child(even) td
+{
+	background: var(--surface-bar);
+}
+
+.data-table a
+{
+	color: inherit;
 	text-decoration: none;
 }
 
-.data-table a:not(.tooltip):hover
+.data-table a:hover
 {
 	text-decoration: underline;
 }
