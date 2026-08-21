@@ -1117,6 +1117,7 @@ ORDER BY category DESC', [$user['User']['id']]));
 		$attempts = Util::query("
 SELECT
 	s.title AS set_title,
+	s.id AS set_id,
 	tsumego_attempt.tsumego_id AS tsumego_id,
 	set_connection.id AS set_connection_id,
 	set_connection.num AS num,
@@ -1134,7 +1135,6 @@ FROM
 		FROM set_connection sc
 		JOIN `set` ss ON ss.id = sc.set_id
 		WHERE sc.tsumego_id = tsumego_attempt.tsumego_id
-			AND " . SetConnection::visibilitySql('ss') . "
 		ORDER BY " . SetConnection::displayOrderSql('ss', 'sc') . "
 		LIMIT 1)
 	LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = tsumego_attempt.tsumego_id)
