@@ -729,7 +729,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
-	var resultSubmitted = false;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1443,8 +1442,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			heartLoss = false;
 		if (mode==2)
 			heartLoss = false;
-		if (failAlreadyReported)
-			heartLoss = false;
 		freePlayMode = false;
 		freePlayMode2 = false;
 		freePlayMode2done = false;
@@ -1722,14 +1719,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function displayResult(result)
 	{
 		let success = result == 'S';
-		if (success && resultSubmitted)
-			return;
-		if (!success && failAlreadyReported)
-		{
-			window._submitResultSeq++;
-			window._submitResultDone = window._submitResultSeq;
-			return;
-		}
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
@@ -1738,13 +1727,20 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			accountWidget.animate(success);
 		if (success)
 		{
-			resultSubmitted = true;
-			problemSolved = true;
-			window.dispatchEvent(new Event('tag-editor-solved'));
-			if (typeof xpStatus !== "undefined" && xpStatus)
-				xpStatus.set('solved', true);
-			// Track total misplays so the server can detect error-free solves
-			submitResult(true, seconds, goldenTsumego ? 'g' : null);
+			if (!problemSolved)
+			{
+				problemSolved = true;
+				window.dispatchEvent(new Event('tag-editor-solved'));
+				if (typeof xpStatus !== "undefined" && xpStatus)
+					xpStatus.set('solved', true);
+				// Track total misplays so the server can detect error-free solves
+				submitResult(true, seconds, goldenTsumego ? 'g' : null);
+			}
+			else
+			{
+				window._submitResultSeq++;
+				window._submitResultDone = window._submitResultSeq;
+			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
@@ -1778,9 +1774,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		else //incorrect
 		{
-			failAlreadyReported = true;
-			if (!problemSolved)
+			if (!failAlreadyReported && !problemSolved)
 			{
+				failAlreadyReported = true;
 				misplays++;
 				// Each fail is a single event, processed immediately
 				submitResult(false, seconds, null);
@@ -1884,8 +1880,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if(isAtStart)
 			heartLoss = false;
 		if (noXP || freePlayMode || locked || authorProblem)
-			heartLoss = false;
-		if (failAlreadyReported)
 			heartLoss = false;
 
 		freePlayMode = false;
