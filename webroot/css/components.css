@@ -34,12 +34,12 @@
 	--color-red-fill-dark: #a02020;
 
 	/* ── Semantic tokens (delegate to the theme variables) ── */
-	--text: var(--text-color);
-	--text-muted: var(--text-softer-color);
-	--surface: var(--info-box-background);
+	--text: #222;
+	--text-muted: grey;
+	--surface: #fff;
 	--surface-raised: var(--new1-gradient);
-	--surface-bar: rgba(0, 0, 0, 0.2);
-	--border: var(--current-border-color);
+	--surface-bar: #f5f5f5;
+	--border: #ccc;
 
 	/* ── Spacing and radius ── */
 	--space-1: 4px;
@@ -336,41 +336,64 @@
 /* ── Data table ── */
 .data-table
 {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: var(--font-size-md);
+	table-layout: auto;
 }
 
 .data-table th
 {
-	text-align: left;
-	font-weight: var(--font-weight-bold);
-	font-size: var(--font-size-base);
 	color: var(--text-muted);
-	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--border);
+	position: sticky;
+	top: 0;
+	background: var(--surface);
+	z-index: 1;
 }
 
 .data-table td
 {
-	padding: var(--space-2) var(--space-3);
+	padding: 15px;
+	border-top: 1px solid var(--border);
 	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--text);
+	font-weight: normal;
 }
 
-.data-table tr:last-child td
+.data-table td:first-child
 {
-	border-bottom: none;
+	border-radius: 12px 0 0 12px;
+	border-left: 1px solid var(--border);
 }
 
-.data-table a:not(.tooltip)
+.data-table td:last-child
 {
-	color: var(--link-color);
+	border-radius: 0 12px 12px 0;
+	border-right: 1px solid var(--border);
+}
+
+.data-table tr:nth-child(even) td
+{
+	background: var(--surface-bar);
+}
+
+.data-table a
+{
+	color: inherit;
 	text-decoration: none;
 }
 
-.data-table a:not(.tooltip):hover
+.data-table a:hover
 {
 	text-decoration: underline;
+}
+
+/* ── Dark mode token overrides ── */
+[data-theme="dark"]
+{
+	--text: #ddd;
+	--text-muted: grey;
+	--surface: #2a2a2a;
+	--surface-bar: #303030;
+	--border: #444;
 }
 
 
