@@ -1,0 +1,299 @@
+/* ══════════════════════════════════════════════════════
+   Shared design tokens and UI components
+   Imported globally via app-theme.js.
+   Tokens delegate to default.css theme variables so light
+   and dark mode are respected.
+   ══════════════════════════════════════════════════════ */
+
+:root
+{
+	/* ── Brand colors (theme-independent accents) ── */
+	--color-green: #74d14c;
+	--color-green-dark: #366421;
+	--color-green-light: #82c95b;
+	--color-purple: #caa8d8;
+	--color-blue: #5b9bd5;
+	--color-blue-dark: #2a6496;
+	--color-red: #d63a49;
+	--color-red-muted: #e07070;
+	--color-yellow: #e6c832;
+	--color-yellow-dark: #b89a1a;
+	--color-red-fill: #e05555;
+	--color-red-fill-dark: #a02020;
+
+	/* ── Semantic tokens (delegate to the theme variables) ── */
+	--text: var(--text-color);
+	--text-muted: var(--text-softer-color);
+	--surface: var(--info-box-background);
+	--surface-raised: var(--new1-gradient);
+	--surface-bar: rgba(0, 0, 0, 0.2);
+	--border: var(--current-border-color);
+
+	/* ── Spacing and radius ── */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 24px;
+	--space-6: 32px;
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-full: 999px;
+}
+
+/* ── Layout objects ── */
+.cluster
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1);
+	margin: 0 var(--space-1) var(--space-3);
+}
+
+.cluster--stretch
+{
+	align-items: stretch;
+}
+
+.cluster > *
+{
+	flex: 1;
+	min-width: 250px;
+}
+
+.stack
+{
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	align-items: flex-start;
+}
+
+/* ── Card ── */
+.card
+{
+	border: 3px solid var(--border);
+	box-sizing: border-box;
+	padding: var(--space-2);
+}
+
+.card--green
+{
+	border-color: var(--color-green);
+}
+
+.card--purple
+{
+	border-color: var(--color-purple);
+}
+
+.card__title
+{
+	font-weight: 800;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.05em;
+	margin-bottom: 10px;
+}
+
+/* ── Stat list ── */
+.stat
+{
+	width: 100%;
+}
+
+.stat td
+{
+	vertical-align: top;
+	padding: 7px;
+	text-align: left;
+	width: 50%;
+}
+
+/* ── Progress bar ── */
+.progress
+{
+	height: 18px;
+	background: var(--surface-bar);
+	border-radius: 9px;
+	overflow: hidden;
+	margin-top: 4px;
+	position: relative;
+}
+
+.progress__fill
+{
+	height: 100%;
+	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
+	border-radius: 9px;
+	min-width: 2px;
+}
+
+.progress__fill--high
+{
+	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
+}
+
+.progress__fill--medium
+{
+	background: linear-gradient(var(--color-yellow), var(--color-yellow-dark));
+}
+
+.progress__fill--low
+{
+	background: linear-gradient(var(--color-red-fill), var(--color-red-fill-dark));
+}
+
+.progress__label
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: 800;
+	color: #fff;
+	text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+	pointer-events: none;
+}
+
+/* ── Button ── */
+.btn
+{
+	display: inline-block;
+	padding: 6px 14px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: var(--surface-raised);
+	color: var(--text);
+	text-decoration: none;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s;
+}
+
+.btn:hover
+{
+	background: #4a4a4a;
+	color: #fff;
+}
+
+.btn--disabled
+{
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn--disabled:hover
+{
+	background: var(--surface-raised);
+	color: var(--text);
+}
+
+.btn--danger
+{
+	border-color: #8b3a3a;
+	color: var(--color-red-muted);
+}
+
+.btn--danger:hover
+{
+	background: #4a2020;
+	color: #ff8080;
+}
+
+/* ── Sub-navigation ── */
+.subnav
+{
+	display: flex;
+	gap: 0;
+	justify-content: center;
+	border-bottom: 2px solid var(--border);
+}
+
+.subnav__link
+{
+	padding: 10px 20px;
+	color: var(--text-muted);
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 15px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	transition: color 0.2s, border-color 0.2s;
+}
+
+.subnav__link:hover
+{
+	color: var(--color-green);
+	border-bottom-color: var(--color-green);
+}
+
+/* ── Badge ── */
+.badge
+{
+	display: inline-block;
+	margin-top: 4px;
+	padding: 1px 6px;
+	font-size: 9px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	color: var(--text-muted);
+}
+
+.badge--active
+{
+	color: #fff;
+	background: var(--color-blue-dark);
+	border-color: var(--color-blue-dark);
+}
+
+/* ── Field (inline group of controls) ── */
+.field
+{
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.field__option
+{
+	color: var(--text);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.field__option input[type="radio"]
+{
+	margin-right: 4px;
+}
+
+/* ── Hint (muted helper text) ── */
+.hint
+{
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.hint--danger
+{
+	color: var(--color-red);
+}
+
+/* ── Link (green text link) ── */
+.link
+{
+	color: var(--color-green);
+	cursor: pointer;
+}

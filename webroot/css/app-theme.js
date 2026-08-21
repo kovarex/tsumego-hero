@@ -2,4 +2,5 @@
 import './default.css';
 import './home-themes.css';
 import './apexcharts-theme.css';
+import './components.css';
 import './profile.css';
