@@ -1148,6 +1148,7 @@ OFFSET " . $offset, [$userID, $userID]);
 
 		$this->set('_page', 'solveHistory');
 		$this->set('_title', 'Solve history');
+		$this->set('userID', $userID);
 		$this->set('count', $count);
 		$this->set('pageIndex', $pageIndex);
 		$this->set('PAGE_SIZE', $PAGE_SIZE);

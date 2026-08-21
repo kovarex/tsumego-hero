@@ -265,6 +265,12 @@
 	border-bottom-color: var(--color-green);
 }
 
+.subnav__link--active
+{
+	color: var(--text);
+	border-bottom-color: var(--color-green);
+}
+
 /* ── Badge ── */
 .badge
 {

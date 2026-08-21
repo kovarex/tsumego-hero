@@ -26,6 +26,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 	<div class="profile-header">
 		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
 		<div class="subnav">
+			<a href="/users/view/<?php echo $user['User']['id']; ?>" class="subnav__link subnav__link--active">Profile</a>
 			<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="subnav__link">Solve History</a>
 			<a href="/tags/user/<?php echo $user['User']['id']; ?>" class="subnav__link">Contributions</a>
 			<a href="/achievements/user/<?php echo $user['User']['id']; ?>" class="subnav__link">Achievements</a>
