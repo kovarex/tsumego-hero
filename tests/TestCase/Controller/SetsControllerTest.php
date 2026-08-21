@@ -1322,9 +1322,9 @@ class SetsControllerTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * A solved attempt's misplays must count toward the fail side of the ratio.
+	 * Misplays on solved attempts are summed across all solve sessions.
 	 */
-	public function testSetViewAccuracyTabCountsMisplaysOnSolvedAttempts()
+	public function testSetViewAccuracyTabSumsMisplaysAcrossSolvedAttempts()
 	{
 		$context = new ContextPreparator([
 			'user' => ['name' => 'testuser'],
@@ -1332,7 +1332,8 @@ class SetsControllerTest extends TestCaseWithAuth
 				[
 					'sets' => [['name' => 'Test Set', 'num' => 1]],
 					'attempts' => [
-						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'misplays' => 8],
+						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'misplays' => 3],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5, 'misplays' => 2],
 					],
 				],
 				['sets' => [['name' => 'Test Set', 'num' => 2]]],  // No attempts
@@ -1354,7 +1355,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		});
 
 		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
-		$this->assertSame('1/8', trim($accuracyButtons[0]->getText()), 'A solved attempt with 8 misplays should show 1/8');
+		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
 	}
 
 	/**
