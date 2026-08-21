@@ -1027,19 +1027,16 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 						if ($ur[$j]['TsumegoAttempt']['solved'])
 							$solvedSeconds[] = $ur[$j]['TsumegoAttempt']['seconds'];
 
-						if (!$ur[$j]['TsumegoAttempt']['solved'])
+						$mis = $ur[$j]['TsumegoAttempt']['misplays'];
+						if (!$ur[$j]['TsumegoAttempt']['solved'] && $mis == 0)
+							$mis = 1;
+						while ($mis > 0)
 						{
-							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
-							if ($mis == 0)
-								$mis = 1;
-							while ($mis > 0)
-							{
-								$urSum .= 'F';
-								$mis--;
-							}
+							$urSum .= 'F';
+							$mis--;
 						}
-						else
-							$urSum .= $ur[$j]['TsumegoAttempt']['solved'];
+						if ($ur[$j]['TsumegoAttempt']['solved'])
+							$urSum .= '1';
 					}
 				// Use minimum (best) solve time from all successful attempts
 				if (!empty($solvedSeconds))
