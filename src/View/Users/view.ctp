@@ -3,7 +3,7 @@
 /**
  * @var View $this
  * @var array $aCount
- * @var string $aNum
+ * @var int $aNum
  * @var array $as
  * @var bool $canResetOldTsumegoStatuses
  * @var array $dailyResults
@@ -23,137 +23,144 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 <?php TimeGraphRenderer::renderScriptInclude(); ?>
 
 <div class="homeCenter2">
-	<div class="user-header-container">
-		<div class="user-header1">
-		<p class="title6">Profile</p>
+	<div class="profile-header">
+		<p class="profile-username"><?php echo h($user['User']['name']); ?> <?php User::renderPremium($user['User']); ?></p>
+		<div class="subnav">
+			<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="subnav__link">Solve History</a>
+			<a href="/tags/user/<?php echo $user['User']['id']; ?>" class="subnav__link">Contributions</a>
+			<a href="/achievements/user/<?php echo $user['User']['id']; ?>" class="subnav__link">Achievements</a>
 		</div>
-	<div class="user-header2">
-		<a href="/users/solveHistory/<?php echo $user['User']['id']; ?>" class="new-button-time">solve history</a>
-		<a href="/tags/user/<?php echo $user['User']['id']; ?>" id="navigate-to-contributions" class="new-button-time">contributions</a>
 	</div>
-</div>
-<div class="userInfoContainerRow1">
-	<div class="userStatsGreen">
-		<table class="userTopTable1" id="name-and-email-table">
-		<tr>
-			<td><?php echo h($user['User']['name']); ?></td>
-			<td><?php User::renderPremium($user['User']); ?></td>
-		</tr>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			echo '<tr>';
-			echo '<td>'.h($user['User']['email']).'</td>';
-			echo '<td><a id="show" style="color:#74d14c;">change</a></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<td colspan=2>';
-			echo '<div id="msg2">';
-			echo $this->Form->create('User');
-			echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
-			echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-			echo '</div>';
-			echo '</td></tr>';
-		}
-		?>
+<?php if (Auth::getUserID() == $user['User']['id']): ?>
+<div class="cluster">
+	<div class="card card--green">
+		<div class="card__title">Email</div>
+		<table class="stat" id="name-and-email-table">
+			<tr>
+				<td><?php echo h($user['User']['email']); ?></td>
+				<td><a id="show" class="link">change</a></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<div id="msg2">
+						<?php
+						echo $this->Form->create('User');
+						echo $this->Form->input('email', array('label' => '', 'type' => 'text', 'placeholder' => 'E-Mail'));
+						echo '<div class="submit"><input class="btn" value="Submit" type="submit"></div>';
+						?>
+					</div>
+				</td>
+			</tr>
 		</table>
 	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0" width="100%">
-	<tr>
-	<td>
-	<div align="center">
-		<?php echo (Auth::getUserID() == $user['User']['id']) ? 'Your rank' : 'Rank'; ?>:<br>
-		<?php $rank = Rating::getReadableRankFromRating($user['User']['rating']); ?>
-		<span class="rank-icon"><?php echo $rank; ?></span>
-	</div>
-	</td>
-	</tr>
-	</table>
-	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0">
-	<tr>
-	<td>
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-		?>
-		Progress bar preference:<br><br>
-	<?php
-		$levelBarDisplayChecked1 = '';
-		$levelBarDisplayChecked2 = '';
-		if ($levelBar == 1)
-			$levelBarDisplayChecked1 = 'checked="checked"';
-		else
-			$levelBarDisplayChecked2 = 'checked="checked"';
-	?>
-	<input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> <b id="levelBarDisplay1text">Show level</b><br>
-	<input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> <b id="levelBarDisplay2text">Show rating</b><br>
-		<?php
-		}
-		?>
-	</td>
-	</tr>
-	</table>
-	</div>
-	<div class="userStatsGreen">
-	<table class="userTopTable1" border="0">
-	<tr>
-	<td>
-		<?php
-		echo '<font style="font-weight:800;color:#74d14c" >' . Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount) . '%. completed</font><br>';
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			if ($canResetOldTsumegoStatuses)
-				echo '<br><br><a class="new-button" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
+	<div class="card card--green">
+		<div class="card__title">Progress bar</div>
+		<div class="field">
+			<?php
+			$levelBarDisplayChecked1 = '';
+			$levelBarDisplayChecked2 = '';
+			if ($levelBar == 1)
+				$levelBarDisplayChecked1 = 'checked="checked"';
 			else
-			{
-				echo '<br><br><a class="new-button-inactive" href="#" id="reset-statuses-button">Reset (' . $tsumegoStatusToRestCount . ')</a><br><br>';
-				echo 'If you have completed at least '.Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED.'%, you can reset progress older than 1 year.<br>';
-			}
-		}
-		if ($deletedTsumegoStatusCount > 0)
-			echo '<font style="font-weight:800;color:#74d14c" >The progress of '.$deletedTsumegoStatusCount.' problems has been deleted.</font><br>';
-		?>
-	</td>
-	</tr>
-	</table>
+				$levelBarDisplayChecked2 = 'checked="checked"';
+			?>
+			<label class="field__option"><input type="radio" id="levelBarDisplay1" name="levelBarDisplay" value="1" onclick="levelBarChange(1);" <?php echo $levelBarDisplayChecked1; ?>> Level</label>
+			<label class="field__option"><input type="radio" id="levelBarDisplay2" name="levelBarDisplay" value="2" onclick="levelBarChange(2);" <?php echo $levelBarDisplayChecked2; ?>> Rating</label>
+		</div>
+	</div>
+	<div class="card card--green">
+		<div class="card__title">Reset progress</div>
+		<div class="stack">
+			<?php if ($canResetOldTsumegoStatuses): ?>
+				<a class="btn" href="#" onclick="delUts(); return false;" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+			<?php else: ?>
+				<a class="btn btn--disabled" href="#" id="reset-statuses-button">Reset old progress (<?php echo $tsumegoStatusToRestCount; ?>)</a>
+				<span class="hint">Available after <?php echo Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED; ?>% completion</span>
+			<?php endif; ?>
+			<?php if ($deletedTsumegoStatusCount > 0): ?>
+				<span class="hint">Progress of <?php echo $deletedTsumegoStatusCount; ?> problems has been deleted.</span>
+			<?php endif; ?>
+		</div>
+	</div>
+	<div class="card card--green">
+		<div class="card__title">Account</div>
+		<div class="stack">
+			<?php if ($user['User']['dbstorage'] != 1111): ?>
+				<a class="btn btn--danger" href="/users/delete_account">Request account deletion</a>
+			<?php else: ?>
+				<span class="hint hint--danger">Account deletion requested.&nbsp;</span>
+				<a class="btn" href="/users/view/<?php echo $user['User']['id']; ?>?undo=<?php echo ($user['User']['id'] * 1111); ?>">Undo</a>
+			<?php endif; ?>
+			<?php if (Auth::isAdmin()): ?>
+				<a class="btn btn--danger" href="/users/demote_admin">Remove admin status</a>
+			<?php endif; ?>
+		</div>
 	</div>
 </div>
+<?php endif; ?>
 
-<div class="userInfoContainerRow2">
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="level-info-table">
+<div class="cluster cluster--stretch">
+	<div class="card card--purple">
+		<table class="stat" id="level-info-table">
 			<tr>
 				<td>Level:</td>
 				<td><?php echo $user['User']['level']; ?></td>
 			</tr>
 			<tr>
-				<td>Level up:</td>
-				<td><?php echo $user['User']['xp'].'/'.Level::getXPForNext($user['User']['level']); ?></td>
+				<td>Next level:</td>
+				<td><?php echo $user['User']['xp'] . '/' . Level::getXPForNext($user['User']['level']) . ' XP'; ?></td>
 			</tr>
 			<tr>
-				<td>XP earned:</td>
-				<td><?php echo Level::getOverallXPGained($user['User']).' XP'; ?></td>
+				<td colspan="2">
+					<?php
+					$xpForNext = Level::getXPForNext($user['User']['level']);
+					$xpPercent = $xpForNext > 0 ? round($user['User']['xp'] / $xpForNext * 100) : 0;
+					?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $xpPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $xpPercent; ?>%</div>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<td>Health:</td>
-				<td><?php echo Util::getHealthBasedOnLevel($user['User']['level']).' HP'; ?></td>
+				<td>
+					<?php
+					$maxHealth = Util::getHealthBasedOnLevel($user['User']['level']);
+					$remainingHealth = max(0, $maxHealth - ($user['User']['damage'] ?? 0));
+					if (Auth::getUserID() == $user['User']['id'])
+						echo $remainingHealth . '/' . $maxHealth . ' HP';
+					else
+						echo $maxHealth . ' HP';
+					?>
+				</td>
 			</tr>
 			<tr>
-				<td>Hero powers:</td>
-				<td><?php echo User::getHeroPowersCount($user['User']); ?></td>
+				<td colspan="2">
+					<?php
+					$healthPercent = $maxHealth > 0 ? round($remainingHealth / $maxHealth * 100) : 0;
+					$healthClass = 'progress__fill--high';
+					if ($healthPercent <30)
+						$healthClass = 'progress__fill--low';
+					elseif ($healthPercent <60)
+						$healthClass = 'progress__fill--medium';
+					?>
+					<div class="progress">
+						<div class="progress__fill <?php echo $healthClass; ?>" style="width:<?php echo $healthPercent; ?>%"></div>
+					</div>
+				</td>
 			</tr>
 		</table>
 	</div>
 
 	<?php $highestRating = User::getHighestRating($user['User']); ?>
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="rank-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="rank-info-table">
 			<tr>
-				<td>Rank:</td>
-				<td><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></td>
+				<td colspan="2" class="rank"><span class="rank__label">Rank</span></td>
+			</tr>
+			<tr>
+				<td colspan="2" class="rank"><span class="rank-icon"><?php echo Rating::getReadableRankFromRating($user['User']['rating']); ?></span></td>
 			</tr>
 			<tr>
 				<td>Rating:</td>
@@ -170,8 +177,8 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</table>
 	</div>
 
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="time-mode-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="time-mode-info-table">
 			<?php
 			foreach ($timeModeRanks as $timeModeRank)
 			{
@@ -181,21 +188,77 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 		</table>
 	</div>
 
-	<div class="userStatsPurple">
-		<table class="userTopTable1" id="final-info-table">
+	<div class="card card--purple">
+		<table class="stat" id="final-info-table">
 			<tr>
-				<td>Overall solved:</td>
+				<td>Completed:</td>
 				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
 			</tr>
 			<tr>
-				<td>Overall %:</td>
-				<td><?php echo Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount) . '%'; ?></td>
+				<td colspan="2">
+					<?php $completedPercent = Util::getPercentButAvoid100UntilComplete($user['User']['solved'], $tsumegoCount); ?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $completedPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $completedPercent; ?>%</div>
+					</div>
+				</td>
 			</tr>
 			<tr>
 				<td>Achievements:</td>
-				<td><?php echo $aNum.'/'.count($aCount); ?></td>
+				<td><?php echo $aNum . ' of ' . count($aCount); ?></td>
 			</tr>
+			<tr>
+				<td colspan="2">
+					<?php $achievementPercent = count($aCount) > 0 ? round($aNum / count($aCount) * 100) : 0; ?>
+					<div class="progress">
+						<div class="progress__fill" style="width:<?php echo $achievementPercent; ?>%"></div>
+						<div class="progress__label"><?php echo $achievementPercent; ?>%</div>
+					</div>
+				</td>
+			</tr>
+			<?php if ($user['User']['created']): ?>
+			<tr>
+				<td>Member since:</td>
+				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+			</tr>
+			<?php endif; ?>
 		</table>
+	</div>
+</div>
+<?php
+$heroPowers = HeroPowers::getPowers();
+$maxPowerLevel = max(array_column($heroPowers, 'level'));
+$isPremium = HeroPowers::hasPremiumUnlock($user['User']);
+$hasRevelationBonus = HeroPowers::hasContributionRevelationBonus($user['User']);
+$unlockedCount = 0;
+foreach ($heroPowers as $power)
+{
+	if ($user['User']['level'] >= $power['level'])
+		$unlockedCount++;
+}
+?>
+<div class="hero-powers">
+	<div class="hero-powers__title">Hero Powers: <?php echo $unlockedCount . ' of ' . count($heroPowers); ?> unlocked</div>
+	<div class="hero-powers__timeline">
+		<div class="hero-powers__track">
+			<div class="hero-powers__fill" style="width:<?php echo min(100, round($user['User']['level'] / $maxPowerLevel * 100)); ?>%"></div>
+		</div>
+		<?php foreach ($heroPowers as $power):
+			$pos = round($power['level'] / $maxPowerLevel * 100);
+			$isUnlocked = $user['User']['level'] >= $power['level'];
+		?>
+		<div class="hero-powers__marker<?php echo $isUnlocked ? ' hero-powers__marker--unlocked' : ''; ?>" style="left:<?php echo $pos; ?>%" title="<?php echo $power['description']; ?>">
+			<div class="hero-powers__dot"></div>
+			<div class="hero-powers__name"><?php echo $power['name']; ?></div>
+			<div class="hero-powers__level">Lv <?php echo $power['level']; ?></div>
+			<?php if (!empty($power['premium']) && $isPremium): ?>
+				<div class="badge badge--active" title="Unlocked via premium">Premium</div>
+			<?php endif; ?>
+			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
+				<div class="badge badge--active" title="<?php echo $power['bonus']; ?>">+1 use</div>
+			<?php endif; ?>
+		</div>
+		<?php endforeach; ?>
 	</div>
 </div>
 <?php
@@ -293,22 +356,6 @@ function showStatistics($side, $as, $user, $dailyResults)
 showStatistics('Left', $as, $user, $dailyResults);
 showStatistics('Right', $as, $user, $dailyResults); ?>
 	</tr></table>
-	<div width="100%" align="right">
-		<?php
-		if (Auth::getUserID() == $user['User']['id'])
-		{
-			if($user['User']['dbstorage'] != 1111)
-				echo '<div><a style="color:gray;" href="/users/delete_account">Request account deletion</a></div><br>';
-			else
-			{
-				echo '<p style="color:#d63a49;">You have requested account deletion.&nbsp;';
-				echo '<a class="new-button-default" href="/users/view/'.$user['User']['id'].'?undo='.($user['User']['id']*1111).'">Undo</a></p>';
-			}
-			if(Auth::isAdmin())
-				echo '<div><a style="color:gray;" href="/users/demote_admin">Remove admin status</a></div><br>';
-		}
-		?>
-	</div>
 </div>
 
 <script>
@@ -388,29 +435,3 @@ function delUts(){
 </script>
 <script>
 </script>
-<style>
-.new-button-time-inactive
-{
-	cursor:pointer;
-}
-
-.userTopTable1 td
-{
-	vertical-align:top;padding:7px;
-	text-align:left;
-	width:50%;
-}
-.user-header-container{
-	width:100%;
-	height:50px;
-}
-.user-header1{
-	width:50%;
-	float:left;
-}
-.user-header2{
-	width:50%;
-	float:left;
-	margin-top: 14px;
-}
-</style>

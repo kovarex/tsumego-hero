@@ -11,6 +11,32 @@ class HeroPowers
 	public static $REVELATION_MINIMUM_LEVEL = 80;
 	public static $REFINEMENT_MINIMUM_LEVEL = 100;
 
+	public static function getPowers(): array
+	{
+		return [
+			['name' => 'Sprint', 'level' => self::$SPRINT_MINIMUM_LEVEL, 'description' => 'Speed solving'],
+			['name' => 'Intuition', 'level' => self::$INTUITION_MINIMUM_LEVEL, 'description' => 'Shows first correct move'],
+			['name' => 'Rejuvenation', 'level' => self::$REJUVENATION_MINIMUM_LEVEL, 'description' => 'Restores health and locks'],
+			['name' => 'Potion', 'level' => self::$POTION_MINIMUM_LEVEL, 'description' => 'Chance to restore health', 'premium' => true],
+			['name' => 'Revelation', 'level' => self::$REVELATION_MINIMUM_LEVEL, 'description' => 'Solves a problem', 'bonus' => 'Contribution reward grants an additional use'],
+			['name' => 'Refinement', 'level' => self::$REFINEMENT_MINIMUM_LEVEL, 'description' => 'Golden tsumego chance', 'premium' => true],
+		];
+	}
+
+	public static function hasPremiumUnlock(array $user): bool
+	{
+		return (int) ($user['premium'] ?? 0) > 0;
+	}
+
+	public static function hasContributionRevelationBonus(array $user): bool
+	{
+		$userId = (int) ($user['id'] ?? 0);
+		if ($userId && ($contribution = ClassRegistry::init('UserContribution')->find('first', ['conditions' => ['user_id' => $userId]])))
+			if (!empty($contribution['UserContribution']['reward3']))
+				return true;
+		return false;
+	}
+
 	public static function render(): void
 	{
 		if (!Auth::isLoggedIn())

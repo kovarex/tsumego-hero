@@ -179,3 +179,22 @@ class AccountWidget
 		return true;
 	}
 }
+
+function levelBarChange(num)
+{
+	if (typeof accountWidget === 'undefined')
+		return;
+
+	if (num === 1)
+	{
+		accountWidget.show = 'level';
+		accountWidget.showLevel();
+	}
+	else
+	{
+		accountWidget.show = 'rating';
+		accountWidget.showRating();
+	}
+	setCookie('showInAccountWidget', accountWidget.show);
+	setCookie('levelBar', num);
+}

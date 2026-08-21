@@ -119,7 +119,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 1, 0)->getText());
+		$this->assertTextContains('current@example.com', $browser->getTableCell('#name-and-email-table', 0, 0)->getText());
 		$browser->get('users/view/' . $context->otherUsers[0]['id']);
 		$this->assertTextNotContains('detkov@example.com', $browser->driver->getPageSource());
 	}
@@ -158,13 +158,13 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/view/' . $context->user['id']);
 		$browser->checkTable('#level-info-table', $this, [
 			['Level:', '66'],
-			['Level up:', '57/4050'],
-			['XP earned:', '90957 XP'],
-			['Health:', Util::getHealthBasedOnLevel(66) . ' HP'],
-			['Hero powers:', '3']]);
+			['Next level:', '57/4050 XP'],
+			['1%'],
+			['Health:', '23/23 HP']]);
 
 		$browser->checkTable('#rank-info-table', $this, [
-			['Rank:', '1d'],
+			['RANK'],
+			['1d'],
 			['Rating:', '2065'],
 			['Highest rank:', '2d'],
 			['Highest rating:', '2165']]);
@@ -178,10 +178,10 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
-			['Overall solved:', '2 of 2'], // one problem in two sets still counted as one
-			['Overall %:', '100%']]);
+			['Completed:', '2 of 2'], // one problem in two sets still counted as one
+			['100%']]);
 
-		$this->assertSame('RESET (1)', $browser->find('#reset-statuses-button')->getText());
+		$this->assertSame('Reset old progress (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
 		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));
@@ -251,11 +251,11 @@ class UsersControllerTest extends ControllerTestCase
 
 		// Own profile: progress bar preference is visible
 		$browser->get('users/view/' . $context->user['id']);
-		$this->assertStringContainsString('Progress bar preference', $browser->driver->getPageSource());
+		$this->assertStringContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 
 		// Other user's profile: progress bar preference is hidden
 		$browser->get('users/view/' . $target['id']);
-		$this->assertStringNotContainsString('Progress bar preference', $browser->driver->getPageSource());
+		$this->assertStringNotContainsString('id="levelBarDisplay1"', $browser->driver->getPageSource());
 	}
 
 	public function testTsumegoRatingGraph()

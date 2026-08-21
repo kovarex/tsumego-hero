@@ -138,4 +138,58 @@ class AccountWidgetTest extends ControllerTestCase
 			$this->assertSame(strval(round(2050 + $expectedChange)), $browser->find('#account-bar-xp')->getText());
 		}
 	}
+
+	public function testProfileLevelRadioSwitchesWidgetToLevel()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->setCookie('showInAccountWidget', 'rating');
+		$browser->get('users/view/' . $context->user['id']);
+
+		// AccountWidget starts in rating mode (shows a rank, not "Level")
+		$ratingText = $browser->find('#account-bar-xp')->getText();
+		$this->assertStringStartsNotWith('Level', $ratingText);
+
+		// Click "Level" radio button on profile page
+		$browser->clickId('levelBarDisplay1');
+		$browser->hover($browser->find('body'));
+
+		// AccountWidget should now show level
+		$this->assertStringStartsWith('Level', $browser->find('#account-bar-xp')->getText());
+	}
+
+	public function testProfileRatingRadioSwitchesWidgetToRating()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->get('users/view/' . $context->user['id']);
+
+		// AccountWidget starts in level mode by default
+		$this->assertStringStartsWith('Level', $browser->find('#account-bar-xp')->getText());
+
+		// Click "Rating" radio button on profile page
+		$browser->clickId('levelBarDisplay2');
+		$browser->hover($browser->find('body'));
+
+		// AccountWidget should now show rating (a rank, not "Level")
+		$ratingText = $browser->find('#account-bar-xp')->getText();
+		$this->assertStringStartsNotWith('Level', $ratingText);
+	}
+
+	public function testProfileLevelRadioPersistsAcrossPageLoad()
+	{
+		$browser = Browser::instance();
+		$context = new ContextPreparator(['user' => ['rating' => 2075]]);
+		$browser->get('users/view/' . $context->user['id']);
+
+		// Click "Rating" radio button
+		$browser->clickId('levelBarDisplay2');
+		$browser->hover($browser->find('body'));
+		$ratingText = $browser->find('#account-bar-xp')->getText();
+		$this->assertStringStartsNotWith('Level', $ratingText);
+
+		// Reload the page - preference should persist
+		$browser->get('users/view/' . $context->user['id']);
+		$this->assertStringStartsNotWith('Level', $browser->find('#account-bar-xp')->getText());
+	}
 }
