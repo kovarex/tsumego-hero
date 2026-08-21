@@ -251,8 +251,8 @@ foreach ($heroPowers as $power)
 			<div class="hero-powers__dot"></div>
 			<div class="hero-powers__name"><?php echo $power['name']; ?></div>
 			<div class="hero-powers__level">Lv <?php echo $power['level']; ?></div>
-			<?php if (!empty($power['premium'])): ?>
-				<div class="badge<?php echo $isPremium ? ' badge--active' : ''; ?>" title="Also unlocks with premium">Premium</div>
+			<?php if (!empty($power['premium']) && $isPremium): ?>
+				<div class="badge badge--active" title="Unlocked via premium">Premium</div>
 			<?php endif; ?>
 			<?php if (!empty($power['bonus']) && $hasRevelationBonus): ?>
 				<div class="badge badge--active" title="<?php echo $power['bonus']; ?>">+1 use</div>
