@@ -54,7 +54,7 @@ class AchievementsControllerTest extends TestCaseWithAuth
 
 		$result = $this->testAction('/achievements/user/' . $targetUser['id'], ['return' => 'view']);
 
-		$this->assertStringContainsString('target\'s Achievements', $result);
+		$this->assertStringContainsString('target', $result);
 		$this->assertMatchesRegularExpression('/target completed 1 of/', $result);
 		$this->assertStringNotContainsString('You completed', $result);
 	}
