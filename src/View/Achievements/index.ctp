@@ -9,16 +9,10 @@
 	
 	<div align="center">
 	<p class="profile-username">
-		<?php
-			if (isset($viewedUser))
-				echo htmlspecialchars($viewedUser['name']);
-			else
-				echo 'Achievements';
-		?>
+		<?php echo isset($viewedUser) ? htmlspecialchars($viewedUser['name']) : 'Achievements'; ?>
 	</p>
-	<?php
-		if (isset($viewedUser))
-			echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
+	<?php if (isset($viewedUser))
+		echo $this->element('user_subnav', ['userID' => $viewedUser['id'], 'activeTab' => 'achievements']);
 	?>
 		<div align="center" id="achievementWrapper">
 		<?php
@@ -75,16 +69,10 @@
 			</div>
 			<br>
 			<br>
-			<?php
-				if (isset($viewedUser))
-				{
-					$name = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['name']) : 'You';
-					if ($viewedUser['id'] == Auth::getUserID())
-						echo 'You completed '.($unlockedCounter+$unlockedCounter2).' of '.count($a).' achievements.';
-					else
-						echo $name . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
-				}
-			?>
+			<?php if (isset($viewedUser)):
+				$name = $viewedUser['id'] != Auth::getUserID() ? htmlspecialchars($viewedUser['name']) : 'You';
+				echo $name . ' completed ' . ($unlockedCounter + $unlockedCounter2) . ' of ' . count($a) . ' achievements.';
+			endif; ?>
 			<br>
 			<br>
 			
