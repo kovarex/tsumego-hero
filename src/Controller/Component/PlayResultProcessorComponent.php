@@ -72,21 +72,10 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function markAsVisited(int $tsumegoID): void
 	{
-		$existing = ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => [
-			'tsumego_id' => $tsumegoID,
-			'user_id' => Auth::getUserID(),
-		]]);
-		if (!$existing)
-		{
-			ClassRegistry::init('TsumegoStatus')->create();
-			ClassRegistry::init('TsumegoStatus')->save([
-				'TsumegoStatus' => [
-					'user_id' => Auth::getUserID(),
-					'tsumego_id' => $tsumegoID,
-					'status' => 'V',
-				]
-			]);
-		}
+		Util::execute(
+			'INSERT INTO tsumego_status (user_id, tsumego_id, status) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE status = status',
+			[Auth::getUserID(), $tsumegoID, 'V']
+		);
 	}
 
 	/**

@@ -1723,6 +1723,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function displayResult(result)
 	{
 		let success = result == 'S';
+		if (success && problemSolved)
+			return;
 		if (!success && failAlreadyReported)
 		{
 			window._submitResultSeq++;
