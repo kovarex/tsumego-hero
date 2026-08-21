@@ -141,3 +141,65 @@
 .besogo-file {
     flex: 0 0 auto;
 }
+
+/* Favorite (heart) button like-burst */
+.fav-heart {
+    display: inline-block;
+}
+
+.fav-heart.pop {
+    animation: favHeartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes favHeartPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.5); }
+    70% { transform: scale(0.86); }
+    100% { transform: scale(1); }
+}
+
+.fav-burst-particle {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: favParticleFly 0.55s cubic-bezier(0.12, 0.8, 0.35, 1) forwards;
+}
+
+.fav-burst-particle--heart {
+    line-height: 1;
+}
+
+.fav-burst-particle--sparkle {
+    line-height: 1;
+}
+
+.fav-burst-particle--round {
+    border-radius: 50%;
+}
+
+.fav-burst-particle--shape {
+    border-radius: 2px;
+}
+
+@keyframes favParticleFly {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); opacity: 0; }
+}
+
+.fav-burst-ring {
+    position: fixed;
+    z-index: 9999;
+    width: 56px;
+    height: 56px;
+    border: 3px solid rgba(255, 68, 102, 0.85);
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: favRingExpand 0.5s ease-out forwards;
+}
+
+@keyframes favRingExpand {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+    100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}

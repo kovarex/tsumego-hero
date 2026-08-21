@@ -11,6 +11,7 @@ besogo.makeToolPanel = function (container, editor) {
   var blIcon = null;
   var brIcon = null;
   var spinIcon = null;
+  var favButtonLit = false; // Whether the favorite (heart) button is currently lit
 
   if (container.className == "besogo-tsumegoPlayTool")
     makeReviewToolButtons(container, editor);
@@ -715,7 +716,8 @@ besogo.makeToolPanel = function (container, editor) {
     );
 
     if (!besogoNoLogin) {
-      let heart = $('<span id="favButton" style="cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none" title="mark as favorite">' + (window.userSets && window.userSets.some(s => s.contains) ? '❤️' : '🤍') + '</span>');
+      favButtonLit = window.userSets && window.userSets.some(s => s.contains);
+      let heart = $('<span id="favButton" class="fav-heart" style="cursor:pointer;font-size:18px;margin:12px 0 0 1px;user-select:none" title="mark as favorite">' + (favButtonLit ? '❤️' : '🤍') + '</span>');
       heart.on("click", function () {
         let anyContain = window.userSets && window.userSets.some(s => s.contains);
         if (anyContain) {
@@ -733,7 +735,7 @@ besogo.makeToolPanel = function (container, editor) {
               );
             }
           });
-          Promise.all(promises).then(() => $("#favButton").text('🤍'));
+          Promise.all(promises).then(() => updateFavButton(false));
         } else {
           // Add to Favorites set
           fetch("/sets/addTsumego/favorites", {
@@ -744,9 +746,9 @@ besogo.makeToolPanel = function (container, editor) {
           .then(r => {
             if (!r.ok)
               return;
-            $("#favButton").text('❤️');
             let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
             if (fav) fav.contains = true;
+            updateFavButton(true);
           })
           .catch(err => console.error('Failed to update favorites', err));
         }
@@ -1165,7 +1167,7 @@ besogo.makeToolPanel = function (container, editor) {
               s.contains = data.contains;
               // Heart lit if ANY set still contains this tsumego
               let anyContain = window.userSets.some(x => x.contains);
-              $("#favButton").text(anyContain ? '❤️' : '🤍');
+              updateFavButton(anyContain);
             }
           });
         });
@@ -1180,5 +1182,68 @@ besogo.makeToolPanel = function (container, editor) {
         $(document).off("click.favDropdown");
       }
     });
+  }
+
+  // Update the heart button state and fire the like-burst on a fresh like
+  function updateFavButton(liked) {
+    var btn = $("#favButton");
+    if (!btn.length)
+      return;
+    btn.text(liked ? '❤️' : '🤍');
+    if (liked && !favButtonLit) {
+      btn.removeClass('pop');
+      void btn[0].offsetWidth; // restart the pop animation
+      btn.addClass('pop');
+      burstLikeAnimation(btn[0]);
+    }
+    favButtonLit = liked;
+  }
+
+  // Rewarding burst: particles + shockwave ring from the heart
+  function burstLikeAnimation(button) {
+    var rect = button.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var colors = ['#ff4466', '#ff8fab', '#ffd166', '#c77dff', '#4cc9f0', '#80ed99'];
+    var count = 16;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('span');
+      var angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+      var dist = 34 + Math.random() * 44;
+      p.className = 'fav-burst-particle';
+      p.style.left = cx + 'px';
+      p.style.top = cy + 'px';
+      p.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
+      p.style.setProperty('--dy', (Math.sin(angle) * dist).toFixed(1) + 'px');
+
+      var kind = i % 4;
+      if (kind === 0) {
+        // Emoji heart, no rotation so it stays sharp
+        p.classList.add('fav-burst-particle--heart');
+        p.textContent = '❤';
+        p.style.fontSize = '16px';
+      } else if (kind === 2) {
+        // Colored sparkle glyph for a bit of the earlier sparkle feel
+        p.classList.add('fav-burst-particle--sparkle');
+        p.textContent = '✦';
+        p.style.color = colors[i % colors.length];
+        p.style.fontSize = '14px';
+      } else {
+        // Solid shapes render sharp (text glyphs looked soft when scaled)
+        p.classList.add(kind === 1 ? 'fav-burst-particle--round' : 'fav-burst-particle--shape');
+        var size = (6 + Math.random() * 6).toFixed(0);
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = colors[i % colors.length];
+      }
+      document.body.appendChild(p);
+      (function (node) { setTimeout(function () { node.remove(); }, 600); })(p);
+    }
+    var ring = document.createElement('span');
+    ring.className = 'fav-burst-ring';
+    ring.style.left = cx + 'px';
+    ring.style.top = cy + 'px';
+    document.body.appendChild(ring);
+    setTimeout(function () { ring.remove(); }, 550);
   }
 };
