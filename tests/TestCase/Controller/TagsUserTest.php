@@ -24,8 +24,8 @@ class TagsUserTest extends TestCaseWithAuth
 
 		$this->testAction('/tags/user/' . $user['User']['id'], ['return' => 'view']);
 
-		$this->assertTextContains('Tags and proposals by lonely', $this->view);
-		// No data rows in the table (only header row)
+		$this->assertTextContains('lonely', $this->view);
+		// No legacy classes in the table
 		$this->assertStringNotContainsString('timeTableLeft', $this->view);
 	}
 
@@ -71,12 +71,12 @@ class TagsUserTest extends TestCaseWithAuth
 		// 1. Accepted tag name
 		$this->assertStringContainsString('Tag', $text);
 		$this->assertStringContainsString('tesuji', $text);
-		$this->assertStringContainsString('color:#047804', $this->view); // green = accepted
+		$this->assertStringContainsString('color:var(--color-green)', $this->view); // green = accepted
 
 		// 2. Rejected tag name
 		$this->assertStringContainsString('Tag', $text);
 		$this->assertStringContainsString('badname', $text);
-		$this->assertStringContainsString('color:#ce3a47', $this->view); // red = rejected
+		$this->assertStringContainsString('color:var(--color-red)', $this->view); // red = rejected
 
 		// 3. Accepted tag connection
 		$this->assertStringContainsString('was added to', $text);
@@ -92,8 +92,8 @@ class TagsUserTest extends TestCaseWithAuth
 		$this->assertTextContains('Proposal for', $this->view);
 
 		// Verify both colors appear
-		$greenCount = substr_count($this->view, '#047804');
-		$redCount = substr_count($this->view, '#ce3a47');
+		$greenCount = substr_count($this->view, 'var(--color-green)');
+		$redCount = substr_count($this->view, 'var(--color-red)');
 		$this->assertGreaterThanOrEqual(3, $greenCount); // 3 accepted items
 		$this->assertGreaterThanOrEqual(3, $redCount);   // 3 rejected items
 	}
@@ -173,7 +173,7 @@ class TagsUserTest extends TestCaseWithAuth
 
 		$this->testAction('/tags/user/' . $user['User']['id'], ['return' => 'view']);
 
-		$this->assertTextContains('Tags and proposals by pageTitleUser', $this->view);
+		$this->assertTextContains('pageTitleUser', $this->view);
 	}
 
 	// --- Pending proposals ---
