@@ -33,7 +33,6 @@
  * @var bool $noSkipNextLink
  * @var bool $nothingInRange
  * @var bool $passEnabled
- * @var bool $potionSuccess
  * @var string $previousLink
  * @var string $queryTitle
  * @var string $requestSignature
@@ -46,7 +45,6 @@
  * @var array $setConnections
  * @var bool $set_duplicate
  * @var array $sgf
- * @var string $solvedCheck
  * @var int $startingPlayer
  * @var bool $suspiciousBehavior
  * @var array $t
