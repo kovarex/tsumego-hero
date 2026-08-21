@@ -729,6 +729,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
+	var resultSubmitted = false;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
 	let multipleChoiceLibertiesB = 0;
 	let multipleChoiceLibertiesW = 0;
@@ -1721,6 +1722,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function displayResult(result)
 	{
 		let success = result == 'S';
+		if (success && resultSubmitted)
+			return;
 		if (!success && failAlreadyReported)
 		{
 			window._submitResultSeq++;
@@ -1735,6 +1738,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			accountWidget.animate(success);
 		if (success)
 		{
+			resultSubmitted = true;
 			problemSolved = true;
 			window.dispatchEvent(new Event('tag-editor-solved'));
 			if (typeof xpStatus !== "undefined" && xpStatus)
