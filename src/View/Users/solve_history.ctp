@@ -36,4 +36,5 @@ foreach ($attempts as $attempt)
 	echo '</tr>';
 }
 echo '</tbody></table>';
+echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '</div>';
