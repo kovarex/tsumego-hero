@@ -971,4 +971,39 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame($originalXp, $context->reloadUser()['xp'],
 			'Re-solving should not grant more XP');
 	}
+
+	public function testSolveUpdatesXPDisplay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('S');
+
+		// XP display should show solved state
+		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
+		$xpText = $browser->driver->findElement(WebDriverBy::id('xpDisplayText'))->getText();
+		$this->assertNotEmpty($xpText, 'XP display should show XP gained');
+	}
+
+	public function testPotionTriggerRestoresHeartsAndShowsAlert(): void
+	{
+		$maxHealth = Util::getHealthBasedOnLevel(50);
+		$context = new ContextPreparator([
+			'user' => ['level' => 50, 'damage' => $maxHealth + 200],
+			'tsumego' => ['set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+
+		// Potion should trigger: hearts restored, alert visible
+		$this->assertSame(0, $browser->driver->executeScript('return window.misplays;'),
+			'Potion should reset misplays to 0');
+		$this->assertSame($maxHealth, $browser->driver->executeScript('return window.remainingHealth;'),
+			'Potion should restore remainingHealth to max');
+		$this->assertTrue($browser->driver->executeScript(
+			'return document.getElementById("potionAlerts").style.display !== "none";'),
+			'Potion alert should be visible');
+	}
 }
