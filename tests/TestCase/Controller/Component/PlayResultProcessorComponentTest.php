@@ -312,6 +312,31 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testSolvingTwiceCountsGoldenSolveOnce(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1],
+		]);
+
+		$params = [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0.01,
+			'solved' => true,
+			'mode' => 1,
+			'type' => 'g',
+		];
+		$this->processResult($context, $params);
+		$this->processResult($context, $params);
+
+		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+		]);
+		$this->assertNotNull($goldenCondition, 'golden achievement condition must be created');
+		$this->assertSame(1, (int) $goldenCondition['AchievementCondition']['value'],
+			'Solving the same tsumego twice must count the golden solve only once');
+	}
+
 	public function testSolvingAddsNewTsumegoAttempt(): void
 	{
 		foreach (['V', 'W', 'S', 'C'] as $status)
@@ -732,5 +757,130 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'method' => 'POST',
 			'data' => [],
 		]);
+	}
+
+	public function testResetAfterSolveDoesntCauseDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Solve the puzzle
+		$browser->driver->executeScript("displayResult('S');");
+		$browser->waitForSubmitResult();
+
+		// Reset the puzzle
+		$browser->clickId('besogo-reset-button');
+
+		// Verify no damage - puzzle was already solved, noXP guard protects
+		$this->assertSame($originalDamage, (int) $context->reloadUser()['damage'],
+			'Resetting after solve should not cause damage');
+	}
+
+	public function testResetAfterFailDoesntCauseDuplicateDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Fail once
+		$browser->playWithResult('F');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'First fail should cause damage');
+
+		// Reset - should NOT cause additional damage
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Reset after fail should not cause duplicate damage');
+	}
+
+	public function testResetAtStartDoesntCauseDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Reset immediately without making any moves
+		$browser->clickId('besogo-reset-button');
+
+		// Verify no damage
+		$this->assertSame($originalDamage, (int) $context->reloadUser()['damage'],
+			'Resetting at start should not cause damage');
+	}
+
+	public function testMultipleFailsThenResetThenSolve(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Fail twice (second fail blocked by failAlreadyReported)
+		$browser->playWithResult('F');
+		$browser->playWithResult('F');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Only first fail should cause damage');
+
+		// Reset - should not cause additional damage
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Reset should not cause additional damage');
+
+		// Solve
+		$browser->playWithResult('S');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Verify final state
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Damage should only be from the first fail');
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]]);
+		$this->assertSame('S', $status['TsumegoStatus']['status'],
+			'Status should be solved');
+	}
+
+	public function testFailWithOneHeartLeftKeepsStatusVisited(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1) - 1]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('V', $context->resultTsumegoStatus['status'],
+			'Failing with one heart left should keep status V (spending your last heart)');
+	}
+
+	public function testFailWithTwoHeartsLeftKeepsStatusVisited(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1) - 2]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('V', $context->resultTsumegoStatus['status'],
+			'Failing with two hearts left should keep status V');
+	}
+
+	public function testFailWithZeroHeartsSetsStatusToFailed(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1)]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('F', $context->resultTsumegoStatus['status'],
+			'Failing with zero hearts should set status to F');
 	}
 }

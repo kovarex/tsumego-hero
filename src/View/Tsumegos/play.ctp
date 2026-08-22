@@ -1413,50 +1413,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	}
 
-	function reset()
-	{
-		if(!tryAgainTomorrow)
-			locked = false;
-		hoverLocked = false;
-		ko = false, lastMove = false;
-		lastHover = false, lastX = -1, lastY = -1;
-		moveCounter = 0;
-		isCorrect = false;
-		isIncorrect = false;
-		whiteMoveAfterCorrect = false;
-		whiteMoveAfterCorrectI = 0;
-		whiteMoveAfterCorrectJ = 0;
-		disableAutoplay = false;
-		branch = "";
-		rw = false;
-		boardSize = 19;
-		<?php if($checkBSize!=19)
-			echo 'boardSize = '.$checkBSize.';'; ?>
-		var i, j;
-		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		let heartLoss = !isStatusAllowingInspection(tStatus);
-
-		if (move==0)
-			heartLoss = false;
-		if (noXP || freePlayMode || locked || authorProblem)
-			heartLoss = false;
-		if (mode==2)
-			heartLoss = false;
-		freePlayMode = false;
-		freePlayMode2 = false;
-		freePlayMode2done = false;
-		if (heartLoss)
-		{
-			misplays++;
-			redrawHearts();
-		}
-		move = 0;
-
-		document.getElementById("status").innerHTML = "";
-		document.getElementById("theComment").style.cssText = "display:none;";
-		failAlreadyReported = false;
-	}
-
 	function redrawHearts()
 	{
 		if (!document.getElementById("heart0"))
@@ -1790,7 +1746,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(remainingHealth - misplays <= 0)
+						if(remainingHealth - misplays < 0)
 						{
 							updateCurrentNavigationButton('F');
 							document.getElementById("status").innerHTML = '<b style="font-size:17px">This problem is locked until ' + heartResetTime + '</b>';
@@ -1859,6 +1815,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if(isAtStart)
 			heartLoss = false;
 		if (noXP || freePlayMode || locked || authorProblem)
+			heartLoss = false;
+		if (failAlreadyReported)
 			heartLoss = false;
 
 		freePlayMode = false;

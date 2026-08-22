@@ -35,25 +35,22 @@ class PlayResultProcessorComponent extends Component
 			],
 		]);
 
+		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N';
+		$this->processDamage($result, $previousStatusValue);
 		$this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
-
-		if (!isset($result['solved']))
-			return $result;
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
 
-		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N';
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		$this->processRatingChange($tsumego, $result, $previousStatusValue);
-		$this->processDamage($result, $previousStatusValue);
 		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, (float) $params['seconds']);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoID);
-		$this->processUnsortedStuff($tsumego, $result, $params['type'] ?? null, $params['sprint'] ?? null);
+		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue, $params['type'] ?? null, $params['sprint'] ?? null);
 
 		if (Auth::isInTimeMode())
 		{
@@ -130,13 +127,13 @@ class PlayResultProcessorComponent extends Component
 
 		// not solved from now
 		if ($currentStatus == 'V') // if it was just visited so far (so we don't overwrite solved)
-		{if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+		{if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
 			return 'F';  // only mark as failed when the user has no hearts left
 			return $currentStatus;
 		}
 		if ($currentStatus == 'W')
 		{
-			if (Auth::getUser()['damage'] >= Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+			if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
 				return 'X'; // only mark as 'stale failed' when the user has no hearts left
 			return $currentStatus;
 		}
@@ -310,8 +307,10 @@ class PlayResultProcessorComponent extends Component
 		return $attempt && (int) $attempt['TsumegoAttempt']['misplays'] > 0;
 	}
 
-	private function processUnsortedStuff(array $previousTsumego, array $result, ?string $type = null, ?string $sprint = null): void
+	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus, ?string $type = null, ?string $sprint = null): void
 	{
+		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
+			return;
 		if (!$result['solved'])
 			return;
 
