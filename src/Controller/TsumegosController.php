@@ -11,7 +11,6 @@ App::uses('SimilarSearchLogic', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
-App::uses('TimeMode', 'Utility');
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
@@ -33,15 +32,6 @@ class TsumegosController extends AppController
 			throw new BadRequestException('Missing tsumego_id');
 
 		$result = $this->PlayResultProcessor->processResult($data);
-
-		// Time mode result processing (for all time mode results, not just timeouts)
-		if (Auth::isInTimeMode())
-		{
-			$timeMode = new TimeMode();
-			$tsumego = ClassRegistry::init('Tsumego')->findById((int) $data['tsumego_id']);
-			$playResult = ['solved' => !empty($data['solved'])];
-			$timeMode->processPlayResult($tsumego, $playResult, (float) ($data['seconds'] ?? 0), !empty($data['timeout']));
-		}
 
 		$this->response->body(json_encode($result));
 

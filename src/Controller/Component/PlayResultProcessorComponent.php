@@ -8,6 +8,7 @@ App::uses('HeroPowers', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('Progress', 'Utility');
+App::uses('TimeMode', 'Utility');
 
 class PlayResultProcessorComponent extends Component
 {
@@ -53,6 +54,13 @@ class PlayResultProcessorComponent extends Component
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, (float) $params['seconds']);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoID);
 		$this->processUnsortedStuff($tsumego, $result, $params['type'] ?? null, $params['sprint'] ?? null);
+
+		if (Auth::isInTimeMode())
+		{
+			$timeMode = new TimeMode();
+			$playResult = ['solved' => !empty($params['solved'])];
+			$timeMode->processPlayResult($tsumego, $playResult, (float) ($params['seconds'] ?? 0), !empty($params['timeout']));
+		}
 
 		$response = [
 			'xp_gained' => $result['xp-gained'] ?? 0,
