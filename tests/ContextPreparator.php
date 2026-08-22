@@ -97,8 +97,8 @@ class ContextPreparator
 			'used_revelation'] as $name)
 				$user[$name] = Util::extract($name, $userInput) ?: 0;
 		$user['level'] = Util::extract('level', $userInput) ?: 1;
-		if ($health = Util::extract('health', $userInput))
-			$user['damage'] = Util::getHealthBasedOnLevel($user['level']) - $health;
+		if (array_key_exists('health', $userInput))
+			$user['damage'] = Util::getHealthBasedOnLevel($user['level']) - (int) $userInput['health'];
 		else
 			$user['damage'] = Util::extract('damage', $userInput) ?? 0;
 		$user['sprint_start'] = Util::extract('sprint_start', $userInput) ?: null;
