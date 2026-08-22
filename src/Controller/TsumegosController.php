@@ -132,7 +132,12 @@ class TsumegosController extends AppController
 			return;
 		}
 
-		$tsumego = ClassRegistry::init('Tsumego')->findById($next['TsumegoStatus']['tsumego_id']);
+		$tsumego = ClassRegistry::init('Tsumego')->find('first', [
+			'conditions' => [
+				'id' => $next['TsumegoStatus']['tsumego_id'],
+				'deleted IS NULL',
+			],
+		]);
 		if (!$tsumego)
 		{
 			ClassRegistry::init('TsumegoStatus')->updateAll(
