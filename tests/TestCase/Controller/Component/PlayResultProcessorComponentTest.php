@@ -44,7 +44,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$this->processResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => true,
 			'mode' => 1,
 		]);
@@ -55,7 +55,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$this->processResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => false,
 			'mode' => 1,
 		]);
@@ -68,13 +68,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		for ($i = 0; $i < $misplays; $i++)
 			$this->processResult($context, [
 				'tsumego_id' => $context->tsumegos[0]['id'],
-				'seconds' => 0.01,
+				'seconds' => 0,
 				'solved' => false,
 				'mode' => 1,
 			]);
 		$this->processResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => true,
 			'mode' => 1,
 		]);
@@ -321,7 +321,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 		$params = [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => true,
 			'mode' => 1,
 			'type' => 'g',
@@ -682,7 +682,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// Process a fail: damage == maxHealth, excessDeaths == 0, chance == 0%
 		$this->processResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => false,
 			'mode' => 1,
 		]);
@@ -720,7 +720,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		// Process a fail: excessDeaths = 200, chance = 100%
 		$this->processResult($context, [
 			'tsumego_id' => $context->tsumegos[0]['id'],
-			'seconds' => 0.01,
+			'seconds' => 0,
 			'solved' => false,
 			'mode' => 1,
 		]);
