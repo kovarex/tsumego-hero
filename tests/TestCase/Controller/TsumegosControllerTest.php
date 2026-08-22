@@ -402,7 +402,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
-			'user' => ['premium' => true, 'damage' => Util::getHealthBasedOnLevel(1)], // 0 hearts left - fail should lock
+			'user' => ['premium' => true, 'health' => 0], // 0 hearts left - fail should lock
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])']]);
 		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
 		$browser = Browser::instance();
