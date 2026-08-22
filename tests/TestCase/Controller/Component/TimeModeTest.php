@@ -636,8 +636,7 @@ class TimeModeTest extends TestCaseWithAuth
 		// now se solve the only tsumego not in time mode
 		$browser->playWithResult('S'); // mark the problem solved
 
-		Auth::getUser()['mode'] = Constants::$TIME_MODE; // I force the time mode to be active
-		Auth::saveUser();
+		Auth::saveUserField('mode', Constants::$TIME_MODE); // I force the time mode to be active
 
 		// I'm processing result of the play which wasn't time mode related, while time mode is also activated
 		$browser->get('/sets');

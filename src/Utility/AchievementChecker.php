@@ -626,7 +626,10 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 
 		$user = &Auth::getUser();
 		Level::addXP($user, $xpBonus);
-		Auth::saveUser();
+		Auth::saveUserFields([
+			'xp' => $user['xp'],
+			'level' => $user['level'],
+		]);
 		return $this;
 	}
 

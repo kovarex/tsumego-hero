@@ -65,10 +65,7 @@ class EditTsumegoTest extends ControllerTestCase
 			ClassRegistry::init('Tsumego')->delete($context->tsumegos[0]['id']);
 
 		if (($testCase['admin'] ?? null) === false)
-		{
-			Auth::getUser()['isAdmin'] = false;
-			Auth::saveUser();
-		}
+			Auth::saveUserField('isAdmin', false);
 
 		$browser->clickId("tsumego-edit-submit");
 

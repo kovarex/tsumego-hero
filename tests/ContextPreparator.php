@@ -876,6 +876,24 @@ class ContextPreparator
 		new AchievementChecker()->checkAll();
 	}
 
+	public function changeUserSoRejuvenationCanBeUsed()
+	{
+		Auth::saveUserField('level', HeroPowers::$REJUVENATION_MINIMUM_LEVEL);
+	}
+
+	public function changeUserSoIntuitionCanBeUsed()
+	{
+		Auth::saveUserField('level', HeroPowers::$INTUITION_MINIMUM_LEVEL);
+	}
+
+	public function changeUserSoSprintCanBeUsed()
+	{
+		Auth::saveUserFields([
+			'level' => HeroPowers::$SPRINT_MINIMUM_LEVEL,
+			'mode' => Constants::$LEVEL_MODE,
+		]);
+	}
+
 	public ?array $user = null;
 	public array $otherUsers = [];
 	public ?array $set = null;

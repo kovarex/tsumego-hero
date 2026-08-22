@@ -40,6 +40,18 @@ class HeroControllerTest extends ControllerTestCase
 		$this->testAction('/hero/revelation/1', ['method' => 'post']);
 	}
 
+	public function testRevelationRespectsUseLimit()
+	{
+		$context = new ContextPreparator(['tsumego' => 1, 'user' => ['level' => 1]]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$this->testAction('/hero/revelation/' . $tsumegoId, ['method' => 'post']);
+		$this->assertSame(1, (int) $context->reloadUser()['used_revelation']);
+
+		$this->expectException(ForbiddenException::class);
+		$this->testAction('/hero/revelation/' . $tsumegoId, ['method' => 'post']);
+	}
+
 	public function testRefinementRequiresLevelOrPremium()
 	{
 		new ContextPreparator(['user' => ['name' => 'lowlevel', 'level' => 1, 'premium' => 0]]);

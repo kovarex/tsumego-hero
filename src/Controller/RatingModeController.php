@@ -27,10 +27,9 @@ class RatingModeController extends AppController
 			return $this->redirect('/users/login');
 
 		if (!Auth::isInRatingMode())
-			Auth::getUser()['mode'] = Constants::$RATING_MODE;
+			Auth::saveUserField('mode', Constants::$RATING_MODE);
 		if ($difficultyChange = Util::clearCookie('difficulty'))
-			Auth::getUser()['t_glicko'] = $difficultyChange;
-		Auth::saveUser();
+			Auth::saveUserField('t_glicko', $difficultyChange);
 
 		$adjustedRating =  Auth::getUser()['rating'] + self::ratingAdjustment(Auth::getUser()['t_glicko']);
 		$ratingBounds = new RatingBounds(

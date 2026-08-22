@@ -60,12 +60,11 @@ class LevelAchievementTest extends AchievementTestCase
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator(['tsumego' => 1]);
-		HeroPowers::changeUserSoSprintCanBeUsed();
+		$context->changeUserSoSprintCanBeUsed();
 		$context->XPGained(); // to reset the lastXPgained for the final test
 		$browser->get('/' . $context->setConnections[0]['id']);
 
-		Auth::getUser()['rating'] = Rating::getRankMiddleRatingFromReadableRank('1d');
-		Auth::saveUser();
+		Auth::saveUserField('rating', Rating::getRankMiddleRatingFromReadableRank('1d'));
 
 		$browser->clickId('sprint');
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 5, 100);
