@@ -324,14 +324,14 @@ class HeroPowersTest extends TestCaseWithAuth
 	}
 
 	/**
-	 * Full rejuvenation flow: start with 1 heart, lose it to lock the board,
+	 * Full rejuvenation flow: start with 0 hearts, fail to lock the board,
 	 * rejuvenate to restore all hearts, reset and fail again to verify hearts can still be lost.
 	 */
 	public function testRejuvenationClearsTryAgainTomorrowMessage()
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 1],
+			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 0],
 			'tsumegos' => [
 				['set_order' => 1]]]);
 		$context->changeUserSoRejuvenationCanBeUsed();
@@ -342,7 +342,7 @@ class HeroPowersTest extends TestCaseWithAuth
 		});
 
 		$maxHealth = Util::getHealthBasedOnLevel(Auth::getUser()['level']);
-		$this->assertSame(1, $browser->driver->executeScript('return remainingHealth - misplays;'));
+		$this->assertSame(0, $browser->driver->executeScript('return remainingHealth - misplays;'));
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 
 		// Lose the last heart to trigger lock message
