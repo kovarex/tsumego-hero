@@ -456,7 +456,6 @@ class Browser
 		$wait->until(function ($driver) {
 			return $driver->executeScript('return typeof displayResult === "function";');
 		});
-		// displayResult now sets _submitResultDone = false at the start
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		$this->waitForSubmitResult();
 		$this->assertNoErrors();
@@ -466,7 +465,10 @@ class Browser
 	{
 		$wait = new WebDriverWait($this->driver, 10, 200);
 		$wait->until(function ($driver) {
-			return $driver->executeScript('return window._submitResultDone === window._submitResultSeq;');
+			return $driver->executeScript(
+				'if (!window._submitResultPromise) return true;'
+				. 'return window._submitResultPromise.then(function() { return true; }, function() { return true; });'
+			);
 		});
 	}
 

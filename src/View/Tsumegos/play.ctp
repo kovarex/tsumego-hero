@@ -697,7 +697,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
-	window._submitResultSeq = 0;
+	window._submitResultPromise = null;
 
 	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
 	var isCorrect = false;
@@ -1665,12 +1665,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	function submitResult(solved, secs, typeParam, extraFields)
 	{
 		if (besogoNoLogin)
-		{
-			window._submitResultSeq++;
-			window._submitResultDone = window._submitResultSeq;
 			return;
-		}
-		var seq = ++window._submitResultSeq;
 		let data = {
 			tsumego_id: tsumegoID,
 			seconds: secs,
@@ -1682,14 +1677,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (extraFields)
 			Object.assign(data, extraFields);
 
-		fetch('/tsumegos/result', {
+		window._submitResultPromise = fetch('/tsumegos/result', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			body: JSON.stringify(data),
 			keepalive: true,
 		}).then(response => response.json()).then(result => {
-			if (seq === window._submitResultSeq)
-				window._submitResultDone = seq;
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 			{
 				accountWidget.rating = result.new_rating;
@@ -1710,8 +1703,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				$("#potionAlerts").fadeIn(500);
 			}
 		}).catch(err => {
-			if (seq === window._submitResultSeq)
-				window._submitResultDone = seq;
 			console.error('submitResult failed:', err);
 		});
 	}
@@ -1733,13 +1724,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				window.dispatchEvent(new Event('tag-editor-solved'));
 				if (typeof xpStatus !== "undefined" && xpStatus)
 					xpStatus.set('solved', true);
-				// Track total misplays so the server can detect error-free solves
 				submitResult(true, seconds, goldenTsumego ? 'g' : null);
-			}
-			else
-			{
-				window._submitResultSeq++;
-				window._submitResultDone = window._submitResultSeq;
 			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
@@ -1778,13 +1763,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			{
 				failAlreadyReported = true;
 				misplays++;
-				// Each fail is a single event, processed immediately
 				submitResult(false, seconds, null);
-			}
-			else
-			{
-				window._submitResultSeq++;
-				window._submitResultDone = window._submitResultSeq;
 			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
