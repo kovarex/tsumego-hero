@@ -270,7 +270,7 @@ echo ViteManifest::legacyScript('legacy');
 								],
 							]);
 							$mtLabel = 'Mistake Training' . ($mtDueCount > 0 ? ' (' . $mtDueCount . ')' : '');
-						echo '<li style="width:155px"><a href="/mistake-training">' . $mtLabel . '</a></li>';
+						echo '<li><a style="font-size:16px" href="/mistake-training">' . $mtLabel . '</a></li>';
 						}
 								echo '</ul>';
 						echo '<li><a '.$refreshLinkToHighscore.' '.$highscoreA.' href="/users/'.$highscoreLink.'">Highscore</a>';
