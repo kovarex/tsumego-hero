@@ -40,7 +40,7 @@ class XPStatus
 
 	getMultiplier()
 	{
-		let multiplier = this.getProgressDeletionMultiplier();
+		let multiplier = this.goldenTsumego ? 1 : this.getProgressDeletionMultiplier();
 		if (this.goldenTsumego)
 			multiplier *= this.goldenTsumegoMultiplier;
 		else if (this.resolving)

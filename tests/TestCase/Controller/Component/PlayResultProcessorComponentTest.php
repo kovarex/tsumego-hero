@@ -264,6 +264,23 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			}
 	}
 
+	public function testGoldenSolveIgnoresProgressDeletionReduction(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['status' => 'G', 'rating' => 1000, 'set_order' => 1],
+			'progress-deletions' => [
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+			],
+		]);
+
+		$this->performSolve($context, 'sets');
+
+		$this->assertSame($context->XPGained(), TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER));
+	}
+
 	public function testSolvingSolvedDoesntAddXP(): void
 	{
 		foreach ($this->PAGES as $page)

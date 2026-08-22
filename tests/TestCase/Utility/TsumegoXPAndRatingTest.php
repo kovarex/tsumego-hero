@@ -25,6 +25,23 @@ class TsumegoXPAndRatingTest extends TestCaseWithAuth
 		$this->assertTextContains('Golden', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
 	}
 
+	public function testProgressDeletionsDontAffectGoldenXPShown(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['premium' => 1],
+			'tsumego' => ['set_order' => 1, 'status' => 'G'],
+			'progress-deletions' => [
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+				['set' => 'test set', 'created' => date('Y-m-d H:i:s')],
+			],
+		]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		// golden uses the base value, not the progress-deletion reduced value
+		$this->assertTextContains(TsumegoUtil::getXpValue($context->tsumegos[0], Constants::$GOLDEN_TSUMEGO_XP_MULTIPLIER) . ' XP', $browser->driver->findElement(WebDriverBy::cssSelector('#xpDisplay'))->getText());
+	}
+
 	public function testShowingNormalStatusAndUpdatingToSolved(): void
 	{
 		$context = new ContextPreparator(['user' => ['premium' => 1], 'tsumego' => 1]);
