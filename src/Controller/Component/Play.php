@@ -254,9 +254,7 @@ class Play
 				'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id],
 			]);
 			if (!$mtStatus || empty($mtStatus['TsumegoStatus']['mt_due']))
-			{
 				Auth::saveUserField('mode', Constants::$LEVEL_MODE);
-			}
 		}
 
 		if (Auth::isInLevelMode())
@@ -393,7 +391,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
-		if (Auth::isInLevelMode())
+		if (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
 		elseif (Auth::isInMistakeTrainingMode() && isset($mtButtons))
 			$mtButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
