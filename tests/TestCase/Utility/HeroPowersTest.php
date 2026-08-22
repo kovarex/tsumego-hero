@@ -331,7 +331,7 @@ class HeroPowersTest extends TestCaseWithAuth
 	{
 		$browser = Browser::instance();
 		$context = new ContextPreparator([
-			'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'health' => 0],
+				'user' => ['level' => HeroPowers::$REJUVENATION_MINIMUM_LEVEL, 'damage' => Util::getHealthBasedOnLevel(HeroPowers::$REJUVENATION_MINIMUM_LEVEL)],
 			'tsumegos' => [
 				['set_order' => 1]]]);
 		$context->changeUserSoRejuvenationCanBeUsed();
