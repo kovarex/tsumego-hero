@@ -402,7 +402,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 	{
 		// Create a tsumego with a comment containing coordinates
 		$context = new ContextPreparator([
-			'user' => ['premium' => true, 'health' => 1], // Admin so comments are visible
+			'user' => ['premium' => true, 'health' => 0], // 0 hearts left - fail should lock
 			'tsumego' => ['set_order' => 1, 'sgf' => '(;GM[1]FF[4]CA[UTF-8]ST[2]SZ[19];B[aa];W[ab];B[ba]C[+])']]);
 		$context->unlockAchievementsWithoutEffect(); // avoiding premium achievement increasing level and health
 		$browser = Browser::instance();
@@ -479,7 +479,6 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			// reset without the result being shown
 			$browser->clickId('besogo-reset-button');
 
-			// check that rating on account widget was immediatelly updated
 			$expectedRatingChange = ($testCase == '') ? Rating::calculateRatingChange(1000, 1000, 0, Constants::$PLAYER_RATING_CALCULATION_MODIFIER) : 0;
 			$expectedRating = round(1000 + $expectedRatingChange);
 			$displayedRating = $browser->driver->executeScript('return window.accountWidget ? accountWidget.rating : null;');
@@ -567,6 +566,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		});
 
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->waitForSubmitResult();
 		$browser->clickId('besogo-reset-button');
 		$this->assertStringContainsString("", $browser->find('#status')->getText());
 		$browser->clickBoard(2, 1);
@@ -574,6 +574,7 @@ class TsumegosControllerTest extends TestCaseWithAuth
 			return str_contains($browser->find('#status')->getText(), "Incorrect");
 		});
 		$this->assertStringContainsString("Incorrect", $browser->find('#status')->getText());
+		$browser->waitForSubmitResult();
 		$browser->get($tsumegoUrl);
 		$this->assertSame(2, $context->reloadUser()['damage']); // 2 errors done
 	}

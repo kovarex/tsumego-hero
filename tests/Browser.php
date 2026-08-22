@@ -457,7 +457,19 @@ class Browser
 			return $driver->executeScript('return typeof displayResult === "function";');
 		});
 		$this->driver->executeScript("displayResult('" . $result . "')");
+		$this->waitForSubmitResult();
 		$this->assertNoErrors();
+	}
+
+	public function waitForSubmitResult(): void
+	{
+		$wait = new WebDriverWait($this->driver, 10, 200);
+		$wait->until(function ($driver) {
+			return $driver->executeScript(
+				'if (!window._submitResultPromise) return true;'
+				. 'return window._submitResultPromise.then(function() { return true; }, function() { return true; });'
+			);
+		});
 	}
 
 	public function getAlertText()

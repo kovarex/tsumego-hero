@@ -33,7 +33,6 @@
  * @var bool $noSkipNextLink
  * @var bool $nothingInRange
  * @var bool $passEnabled
- * @var bool $potionSuccess
  * @var string $previousLink
  * @var string $queryTitle
  * @var string $requestSignature
@@ -46,7 +45,6 @@
  * @var array $setConnections
  * @var bool $set_duplicate
  * @var array $sgf
- * @var string $solvedCheck
  * @var int $startingPlayer
  * @var bool $suspiciousBehavior
  * @var array $t
@@ -590,7 +588,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					</div>
 		</label>
 	<?php }else{ ?>
-		<?php if($potionSuccess){ ?>
 		<label>
 			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
 			<div class="alertBox alertInfo" id="potionAlerts">
@@ -606,7 +603,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<br class="clear1"/></span>
 					</div>
 		</label>
-	<?php }else{ ?>
 		<label>
 		<input type="checkbox" class="alertCheckbox1" id="customAlertCheckbox" autocomplete="off" />
 		<div class="alertBox alertInfo" id="customAlerts">
@@ -620,7 +616,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		</span>
 		</div>
 		</label>
-	<?php } ?>
 	<?php } ?>
 
 	<?php echo '</div>'; ?>
@@ -702,9 +697,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
 	var tStatus = "<?php echo $t['Tsumego']['status']; ?>";
 	var failAlreadyReported = false;
+	window._submitResultPromise = null;
 
 	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
-	var secondsMultiplier = <?php echo $t['Tsumego']['id'] * 7900; ?>;
 	var isCorrect = false;
 	var whiteMoveAfterCorrect = false;
 	var whiteMoveAfterCorrectI = 0;
@@ -1153,9 +1148,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				var resetBtn = document.getElementById("besogo-reset-button");
 				if (resetBtn) { resetBtn.id = "besogo-reset-button-inactive"; }';
 	}
-		if($potionSuccess){
-			echo '$(".alertBox").fadeIn(500);';
-	}
 		if($isSemeai){
 			echo '
 				tryAgainTomorrow = true;
@@ -1421,53 +1413,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	}
 	}
 
-	function reset()
-	{
-		if(!tryAgainTomorrow)
-			locked = false;
-		hoverLocked = false;
-		ko = false, lastMove = false;
-		lastHover = false, lastX = -1, lastY = -1;
-		moveCounter = 0;
-		isCorrect = false;
-		isIncorrect = false;
-		whiteMoveAfterCorrect = false;
-		whiteMoveAfterCorrectI = 0;
-		whiteMoveAfterCorrectJ = 0;
-		disableAutoplay = false;
-		branch = "";
-		rw = false;
-		boardSize = 19;
-		<?php if($checkBSize!=19)
-			echo 'boardSize = '.$checkBSize.';'; ?>
-		var i, j;
-		tStatus = "<?php echo $t['Tsumego']['status']; ?>";
-		let heartLoss = !isStatusAllowingInspection(tStatus);
-
-		if (move==0)
-			heartLoss = false;
-		if (noXP || freePlayMode || locked || authorProblem)
-			heartLoss = false;
-		if (mode==2)
-			heartLoss = false;
-		if (failAlreadyReported)
-			heartLoss = false;
-		freePlayMode = false;
-		freePlayMode2 = false;
-		freePlayMode2done = false;
-		if (heartLoss)
-		{
-			misplays++;
-			setCookie('misplays', misplays);
-			redrawHearts();
-		}
-		move = 0;
-
-		document.getElementById("status").innerHTML = "";
-		document.getElementById("theComment").style.cssText = "display:none;";
-		failAlreadyReported = false;
-	}
-
 	function redrawHearts()
 	{
 		if (!document.getElementById("heart0"))
@@ -1673,12 +1618,54 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		seconds -= timeToAdd;
 	}
 
+	function submitResult(solved, secs, typeParam, extraFields)
+	{
+		if (besogoNoLogin)
+			return;
+		let data = {
+			tsumego_id: tsumegoID,
+			seconds: secs,
+			solved: solved,
+			mode: mode,
+		};
+		if (typeParam)
+			data.type = typeParam;
+		if (extraFields)
+			Object.assign(data, extraFields);
+
+		window._submitResultPromise = fetch('/tsumegos/result', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			body: JSON.stringify(data),
+			keepalive: true,
+		}).then(response => response.json()).then(result => {
+			if (typeof accountWidget !== 'undefined' && accountWidget)
+			{
+				accountWidget.rating = result.new_rating;
+				accountWidget.xp = result.new_xp;
+				accountWidget.level = result.new_level;
+				try { accountWidget.setup(); } catch(e) { console.error('accountWidget.setup failed:', e); }
+			}
+			if (result.xp_gained && typeof xpStatus !== 'undefined' && xpStatus)
+			{
+				xpStatus.set('solved', true);
+				xpStatus.update();
+			}
+			if (result.potion_triggered)
+			{
+				misplays = 0;
+				remainingHealth = maxHealth;
+				redrawHearts();
+				$("#potionAlerts").fadeIn(500);
+			}
+		}).catch(err => {
+			console.error('submitResult failed:', err);
+		});
+	}
+
 	function displayResult(result)
 	{
 		let success = result == 'S';
-		if (!success && failAlreadyReported)
-			return;
-		setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
 		document.getElementById("status").style.color = "<?php echo $playGreenColor; ?>";
 		if (timeModeTimer)
 			timeModeTimer.stop();
@@ -1687,11 +1674,14 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			accountWidget.animate(success);
 		if (success)
 		{
-			problemSolved = true;
-			window.dispatchEvent(new Event('tag-editor-solved'));
-			if (typeof xpStatus !== "undefined" && xpStatus)
-				xpStatus.set('solved', true);
-			setCookie("solvedCheck", "<?php echo $solvedCheck; ?>");
+			if (!problemSolved)
+			{
+				problemSolved = true;
+				window.dispatchEvent(new Event('tag-editor-solved'));
+				if (typeof xpStatus !== "undefined" && xpStatus)
+					xpStatus.set('solved', true);
+				submitResult(true, seconds, goldenTsumego ? 'g' : null);
+			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
 			if(light)
@@ -1713,34 +1703,23 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					$("#reviewButton").show();
 					$("#reviewButton-inactive").hide();
 				}
-				if(!noXP)
-				{
-					if (goldenTsumego)
-						setCookie("type", "g");
-					noXP = true;
-				}
+				noXP = true;
 			}
 			else
 			{//mode 2 correct
 				besogoMode2Solved = true;
-				if (!noXP)
-				{
-					setCookie("mode", mode);
-					if(goldenTsumego)
-						setCookie("type", "g");
-					noXP = true;
-				}
+				noXP = true;
 			}
 			toggleBoardLock(true);
 			displaySettings();
 		}
 		else //incorrect
 		{
-			failAlreadyReported = true;
-			if (!problemSolved)
+			if (!failAlreadyReported && !problemSolved)
 			{
+				failAlreadyReported = true;
 				misplays++;
-				setCookie("misplays", misplays);
+				submitResult(false, seconds, null);
 			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
@@ -1767,7 +1746,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					freePlayMode = true;
 					if (mode == 1)
 					{
-						if(remainingHealth - misplays <= 0)
+						if(remainingHealth - misplays < 0)
 						{
 							updateCurrentNavigationButton('F');
 							document.getElementById("status").innerHTML = '<b style="font-size:17px">This problem is locked until ' + heartResetTime + '</b>';
@@ -1791,7 +1770,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				document.getElementById("status").innerHTML = "<h2>Incorrect</h2>";
 				noLastMark = true;
 				besogoMode2Solved = true;
-				setCookie("mode", mode);
 				$(".besogo-board").addClass("besogo-board-red-glow");
 				if (!noXP)
 				{
@@ -1845,11 +1823,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (heartLoss)
 		{
 			misplays++;
-			if (accountWidget)
-				accountWidget.animate(false);
-			setCookie("secondsCheck", Math.round(Math.max(seconds, 0.01).toFixed(2) * secondsMultiplier));
-			setCookie("misplays", misplays);
 			redrawHearts();
+			if (typeof accountWidget !== 'undefined' && accountWidget)
+				accountWidget.animate(false);
+			submitResult(false, seconds, null);
 		}
 		failAlreadyReported = false;
 	}

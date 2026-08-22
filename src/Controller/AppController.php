@@ -447,11 +447,6 @@ class AppController extends Controller
 			}
 		}
 		$mode = 1;
-		if (isset($_COOKIE['mode']) && $_COOKIE['mode'] != '0')
-			if ($_COOKIE['mode'] == 1)
-				$mode = 1;
-			else
-				$mode = 2;
 
 		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2)
 			$mode = 2;
@@ -461,8 +456,6 @@ class AppController extends Controller
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
-			$this->PlayResultProcessor->checkPreviousPlay($timeMode);
-			$this->set('potionSuccess', $this->PlayResultProcessor->processPotion());
 			$achievementChecker = new AchievementChecker();
 			$achievementChecker->checkLevelAchievements();
 			$achievementChecker->checkProblemNumberAchievements();

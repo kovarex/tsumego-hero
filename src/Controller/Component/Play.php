@@ -191,8 +191,6 @@ class Play
 		if ($tsumegoStatus == 'G')
 			$goldenTsumego = true;
 
-		Util::setCookie('previousTsumegoID', $id);
-
 		$amountOfOtherCollection = count(TsumegoUtil::collectTsumegosFromSet($set['Set']['id']));
 
 		$sgf = [];
@@ -414,7 +412,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		else
 		($this->setFunction)('barPercent', 0);
 		($this->setFunction)('t', $t);
-		($this->setFunction)('solvedCheck', AppController::encrypt($t['Tsumego']['id'] . '-' . time()));
 		($this->setFunction)('hash', $hash);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
 		($this->setFunction)('eloScore', $eloScore);

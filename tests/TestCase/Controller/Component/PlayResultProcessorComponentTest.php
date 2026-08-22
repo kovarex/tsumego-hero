@@ -6,7 +6,7 @@ App::uses('Constants', 'Utility');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {
-	private $PAGES = ['sets', 'tsumego'];
+	private $PAGES = ['tsumego'];
 
 	private static function getUrlFromPage(string $page, $context): string
 	{
@@ -17,40 +17,68 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		throw new Exception("Unknown page: " . $page);
 	}
 
-	private function performVisit(ContextPreparator &$context, $page): void
+	private function loginAs(ContextPreparator &$context): void
 	{
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
-		Auth::init(); // Re-init to recognize the user
-		$_COOKIE['previousTsumegoID'] = $context->tsumegos[0]['id'];
+		Auth::init();
+	}
+
+	private function processResult(ContextPreparator &$context, array $params): void
+	{
+		$this->loginAs($context);
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => $params,
+		]);
+		$this->loginAs($context);
+	}
+
+	private function performVisit(ContextPreparator &$context, $page): void
+	{
+		$this->loginAs($context);
 		$this->testAction(self::getUrlFromPage($page, $context));
 		$context->checkNewTsumegoStatusCoreValues($this);
 	}
 
 	private function performSolve(ContextPreparator &$context, $page): void
 	{
-		$_COOKIE['mode'] = '1';
-		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['score']); // should be processed and cleared
 	}
 
 	private function performMisplay(ContextPreparator &$context, $page): void
 	{
-		$_COOKIE['misplays'] = '1';
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
 	private function performSolveWithMisplays(ContextPreparator &$context, $page, int $misplays = 1): void
 	{
-		$_COOKIE['mode'] = '1';
-		$_COOKIE['misplays'] = (string) $misplays;
-		$_COOKIE['solvedCheck'] = Util::encrypt($context->tsumegos[0]['id'] . '-' . time());
-		$_COOKIE['secondsCheck'] = $context->tsumegos[0]['id'] * 7900 * 0.01;
+		// Simulate individual fail calls before the solve
+		for ($i = 0; $i < $misplays; $i++)
+			$this->processResult($context, [
+				'tsumego_id' => $context->tsumegos[0]['id'],
+				'seconds' => 0,
+				'solved' => false,
+				'mode' => 1,
+			]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+		]);
 		$this->performVisit($context, $page);
-		$this->assertEmpty($_COOKIE['misplays']); // should be processed and cleared
 	}
 
 	public function testVisitFromEmpty(): void
@@ -284,6 +312,31 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testSolvingTwiceCountsGoldenSolveOnce(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1],
+		]);
+
+		$params = [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+			'type' => 'g',
+		];
+		$this->processResult($context, $params);
+		$this->processResult($context, $params);
+
+		$goldenCondition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'golden'],
+		]);
+		$this->assertNotNull($goldenCondition, 'golden achievement condition must be created');
+		$this->assertSame(1, (int) $goldenCondition['AchievementCondition']['value'],
+			'Solving the same tsumego twice must count the golden solve only once');
+	}
+
 	public function testSolvingAddsNewTsumegoAttempt(): void
 	{
 		foreach (['V', 'W', 'S', 'C'] as $status)
@@ -446,6 +499,10 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
 		$browser->playWithResult('F');
+
+		// Fail is processed immediately via AJAX, no navigation needed
+		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
+
 		$browser->clickId("besogo-reset-button");
 		$browser->playWithResult('S');
 
@@ -520,47 +577,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 		$this->assertSame(10, (int) $errCondition['AchievementCondition']['value'],
 			'No-error streak should increment when solving without misplays');
-	}
-
-	public function testAjaxActionsAfterFailDoNotTriggerRatingDrop(): void
-	{
-		$context = new ContextPreparator([
-			'user' => ['rating' => 1500],
-			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
-		$originalRating = $context->user['rating'];
-
-		$browser = Browser::instance();
-
-		// Load the puzzle page
-		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
-
-		// Fail the puzzle - this sets cookies but doesn't immediately process
-		$browser->playWithResult('F');
-
-		// At this point, cookies are set but result hasn't been processed yet
-		// because we're still on the same page (no navigation)
-
-		// Make an AJAX request (same as React fetch with X-Requested-With header)
-		// Use window flag so WebDriverWait can detect completion
-		$browser->driver->executeScript("
-			window._fetchDone = false;
-			fetch('/tsumego-issues', {
-				headers: { 'X-Requested-With': 'XMLHttpRequest' }
-			}).finally(function() { window._fetchDone = true; });
-		");
-		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
-		$wait->until(function ($driver) {
-			return $driver->executeScript('return window._fetchDone === true;');
-		});
-
-		// Rating should still be original - AJAX shouldn't process the result
-		$this->assertSame($originalRating, (float) $context->reloadUser()['rating']);
-
-		// NOW navigate to a different page - THIS should process the result
-		$browser->get('/sets/index');
-
-		// NOW rating should have dropped
-		$this->assertLessThan($originalRating, (float) $context->reloadUser()['rating']);
 	}
 
 	public function testPostSolveMistakesAreNotPenalized(): void
@@ -663,14 +679,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
 		Auth::init();
 
-		// Signal that the PREVIOUS problem was failed (status 'F')
-		$_COOKIE['previousTsumegoBuffer'] = 'F';
-		$_COOKIE['previousTsumegoID'] = '99999999';
-
-		// damage == maxHealth so excessDeaths == 0, chance == 0%, counter always increments
-
-		// Load a tsumego page -- Play.php reads the buffer and increments the condition
-		$this->testAction(self::getUrlFromPage('tsumego', $context));
+		// Process a fail: damage == maxHealth, excessDeaths == 0, chance == 0%
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+			'mode' => 1,
+		]);
 
 		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
 			'conditions' => [
@@ -702,18 +717,293 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$_COOKIE['hackedLoggedInUserID'] = $context->user['id'];
 		Auth::init();
 
-		$_COOKIE['previousTsumegoBuffer'] = 'F';
-		$_COOKIE['previousTsumegoID'] = '99999999';
-
-		// excessDeaths = 200, chance = min(200 × 0.5, 100) = 100%
-		$body = $this->testAction(self::getUrlFromPage('tsumego', $context), ['return' => 'contents']);
+		// Process a fail: excessDeaths = 200, chance = 100%
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+			'mode' => 1,
+		]);
 
 		$user = $context->reloadUser();
 		$this->assertSame(1, (int) $user['used_potion'],
-			'used_potion must be set to 1 when potion triggers (consumed for the day)');
+			'used_potion must be set to 1 when potion triggers');
 		$this->assertSame(0, (int) $user['damage'],
 			'damage must be cleared to 0 when potion heals');
+	}
 
-		$this->assertStringContainsString('id="potionAlerts"', $body);
+	public function testResetAfterSolveDoesntCauseDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Solve the puzzle
+		$browser->driver->executeScript("displayResult('S');");
+		$browser->waitForSubmitResult();
+
+		// Reset the puzzle
+		$browser->clickId('besogo-reset-button');
+
+		// Verify no damage - puzzle was already solved, noXP guard protects
+		$this->assertSame($originalDamage, (int) $context->reloadUser()['damage'],
+			'Resetting after solve should not cause damage');
+	}
+
+	public function testResetAfterFailDoesntCauseDuplicateDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Fail once
+		$browser->playWithResult('F');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'First fail should cause damage');
+
+		// Reset - should NOT cause additional damage
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Reset after fail should not cause duplicate damage');
+	}
+
+	public function testResetAtStartDoesntCauseDamage(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Reset immediately without making any moves
+		$browser->clickId('besogo-reset-button');
+
+		// Verify no damage
+		$this->assertSame($originalDamage, (int) $context->reloadUser()['damage'],
+			'Resetting at start should not cause damage');
+	}
+
+	public function testMultipleFailsThenResetThenSolve(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$originalDamage = (int) $context->user['damage'];
+
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Fail twice (second fail blocked by failAlreadyReported)
+		$browser->playWithResult('F');
+		$browser->playWithResult('F');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Only first fail should cause damage');
+
+		// Reset - should not cause additional damage
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Reset should not cause additional damage');
+
+		// Solve
+		$browser->playWithResult('S');
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Verify final state
+		$this->assertSame($originalDamage + 1, (int) $context->reloadUser()['damage'],
+			'Damage should only be from the first fail');
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]]);
+		$this->assertSame('S', $status['TsumegoStatus']['status'],
+			'Status should be solved');
+	}
+
+	public function testFailWithOneHeartLeftKeepsStatusVisited(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1) - 1]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('V', $context->resultTsumegoStatus['status'],
+			'Failing with one heart left should keep status V (spending your last heart)');
+	}
+
+	public function testFailWithTwoHeartsLeftKeepsStatusVisited(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1) - 2]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('V', $context->resultTsumegoStatus['status'],
+			'Failing with two hearts left should keep status V');
+	}
+
+	public function testFailWithZeroHeartsSetsStatusToFailed(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => 1,
+			'user' => ['damage' => Util::getHealthBasedOnLevel(1)]]);
+		$this->performMisplay($context, 'tsumego');
+		$this->assertSame('F', $context->resultTsumegoStatus['status'],
+			'Failing with zero hearts should set status to F');
+	}
+
+	public function testSolveShowsCorrectAndUpdatesXP(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('S');
+
+		$this->assertStringContainsString('Correct!', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
+		$this->assertTrue($browser->driver->executeScript('return window.problemSolved;'));
+		$this->assertTrue($browser->driver->executeScript('return window.noXP;'));
+		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
+
+		// Account widget should reflect server state
+		$this->assertGreaterThan(0, $browser->driver->executeScript('return window.accountWidget.xp;'));
+		$this->assertNotNull($browser->driver->executeScript('return window.accountWidget.rating;'));
+	}
+
+	public function testFailShowsIncorrectAndLosesHeart(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+
+		$this->assertStringContainsString('Incorrect', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
+		$this->assertTrue($browser->driver->executeScript('return window.failAlreadyReported;'));
+		$this->assertSame(1, $browser->driver->executeScript('return window.misplays;'));
+		$this->assertSame(1, $context->reloadUser()['damage']);
+	}
+
+	public function testRunOutOfHeartsShowsLockedMessage(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1, 'user' => ['health' => 0]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+
+		$this->assertStringContainsString('locked until', $browser->driver->findElement(WebDriverBy::id('status'))->getText());
+		$this->assertTrue($browser->driver->executeScript('return window.tryAgainTomorrow;'));
+		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
+	}
+
+	public function testResetAfterFailDoesNotCostExtraHeart(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+		$this->assertSame(1, $context->reloadUser()['damage']);
+
+		$browser->clickId('besogo-reset-button');
+		$this->assertSame(1, $context->reloadUser()['damage'],
+			'Reset should not cause additional damage');
+		$this->assertFalse($browser->driver->executeScript('return window.failAlreadyReported;'));
+	}
+
+	public function testResetAfterSolveDoesNotCostHeart(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('S');
+		$browser->clickId('besogo-reset-button');
+
+		$this->assertSame(0, $context->reloadUser()['damage'],
+			'Resetting after solve should not cause damage');
+	}
+
+	public function testFailThenSolveAppliesBothEffects(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['rating' => 1000],
+			'tsumego' => ['rating' => 1000, 'set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+		$browser->clickId('besogo-reset-button');
+		$browser->playWithResult('S');
+
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$this->assertSame(1, $context->reloadUser()['damage'],
+			'Damage from fail should persist');
+		$this->assertGreaterThan(0, $context->reloadUser()['xp'],
+			'XP should be gained from solve');
+		$this->assertSame('S', ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']]])['TsumegoStatus']['status']);
+	}
+
+	public function testSolvedPuzzleCannotBeFailedOrReSolved(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('S');
+		$originalDamage = (int) $context->reloadUser()['damage'];
+		$originalXp = $context->reloadUser()['xp'];
+
+		// Try to fail — should be harmless
+		$browser->playWithResult('F');
+		$this->assertSame($originalDamage, (int) $context->reloadUser()['damage'],
+			'Fail on solved puzzle should not cause damage');
+
+		// Try to solve again — should be harmless
+		$browser->playWithResult('S');
+		$this->assertSame($originalXp, $context->reloadUser()['xp'],
+			'Re-solving should not grant more XP');
+	}
+
+	public function testSolveUpdatesXPDisplay(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('S');
+
+		// XP display should show solved state
+		$this->assertTrue($browser->driver->executeScript('return window.xpStatus !== undefined;'));
+		$xpText = $browser->driver->findElement(WebDriverBy::id('xpDisplayText'))->getText();
+		$this->assertNotEmpty($xpText, 'XP display should show XP gained');
+	}
+
+	public function testPotionTriggerRestoresHeartsAndShowsAlert(): void
+	{
+		$maxHealth = Util::getHealthBasedOnLevel(50);
+		$context = new ContextPreparator([
+			'user' => ['level' => 50, 'damage' => $maxHealth + 200],
+			'tsumego' => ['set_order' => 1]]);
+		$browser = Browser::instance();
+		$browser->get('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+
+		$browser->playWithResult('F');
+
+		// Potion should trigger: hearts restored, alert visible
+		$this->assertSame(0, $browser->driver->executeScript('return window.misplays;'),
+			'Potion should reset misplays to 0');
+		$this->assertSame($maxHealth, $browser->driver->executeScript('return window.remainingHealth;'),
+			'Potion should restore remainingHealth to max');
+		$this->assertTrue($browser->driver->executeScript(
+			'return document.getElementById("potionAlerts").style.display !== "none";'),
+			'Potion alert should be visible');
 	}
 }

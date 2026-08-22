@@ -285,6 +285,7 @@ class TimeModeTest extends TestCaseWithAuth
 		$this->assertSame($newResult['minutes'], 0);
 		$this->assertSame($newResult['seconds'], 0);
 		$this->assertSame($newResult['decimals'], 0);
+		$browser->waitForSubmitResult();
 		$browser->get('timeMode/play');
 
 		$session = ClassRegistry::init('TimeModeSession')->find('first', ['conditions' => [

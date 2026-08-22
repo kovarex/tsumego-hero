@@ -350,6 +350,7 @@ besogo.makeToolPanel = function (container, editor) {
 				document.getElementById("status").innerHTML = "";
 				document.getElementById("theComment").style.cssText = "display:none;";
 				$("#customAlerts").fadeOut(500);
+				$(".besogo-board").removeClass("besogo-board-red-glow");
 				$(".besogo-panels").css("display", "none");
 				if (besogo.scaleParameters["boardCanvasSize"] === "full board")
 				{
