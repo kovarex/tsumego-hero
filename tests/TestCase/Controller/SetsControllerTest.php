@@ -1322,6 +1322,43 @@ class SetsControllerTest extends TestCaseWithAuth
 	}
 
 	/**
+	 * Misplays on solved attempts are summed across all solve sessions.
+	 */
+	public function testSetViewAccuracyTabSumsMisplaysAcrossSolvedAttempts()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'testuser'],
+			'tsumegos' => [
+				[
+					'sets' => [['name' => 'Test Set', 'num' => 1]],
+					'attempts' => [
+						['solved' => 1, 'seconds' => 10, 'gain' => 5, 'misplays' => 3],
+						['solved' => 1, 'seconds' => 15, 'gain' => 5, 'misplays' => 2],
+					],
+				],
+				['sets' => [['name' => 'Test Set', 'num' => 2]]],  // No attempts
+			],
+		]);
+
+		$browser = Browser::instance();
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+		$browser->get("sets/view/{$setId}");
+
+		// Click Accuracy tab
+		$accuracyTab = $browser->driver->findElement(WebDriverBy::xpath("//a[contains(text(), 'Accuracy')]"));
+		$accuracyTab->click();
+		// Wait for accuracy buttons to be visible
+		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
+		$wait->until(function ($driver) {
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+			return count($buttons) > 0 && $buttons[0]->isDisplayed();
+		});
+
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
+	}
+
+	/**
 	 * Test set view Time tab shows MINIMUM (best) solve time in seconds
 	 * As per UI description: "The time (in seconds) for solving is displayed."
 	 */

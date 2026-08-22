@@ -1009,33 +1009,30 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 					'tsumego_id' => $tsIds,
 				],
 			]) ?: [];
+			$urCount2 = count($ur);
 			foreach ($tsumegoButtons as $tsumegoButton)
 			{
-				$urTemp = [];
 				$urSum = '';
 				$tsumegoButton->seconds = 0;
 				$solvedSeconds = []; // Track all successful solve times to find minimum (best)
-				$urCount2 = count($ur);
 				for ($j = 0; $j < $urCount2; $j++)
-					if ($tsumegoButton->tsumegoID == $ur[$j]['TsumegoAttempt']['tsumego_id'])
+					if ($tsumegoButton->tsumegoID === (int) $ur[$j]['TsumegoAttempt']['tsumego_id'])
 					{
-						array_push($urTemp, $ur[$j]);
-						if ($ur[$j]['TsumegoAttempt']['solved'])
-							$solvedSeconds[] = $ur[$j]['TsumegoAttempt']['seconds'];
+						$isSolved = (bool) $ur[$j]['TsumegoAttempt']['solved'];
+						$attemptSeconds = (int) $ur[$j]['TsumegoAttempt']['seconds'];
+						if ($isSolved && $attemptSeconds > 0)
+							$solvedSeconds[] = $attemptSeconds;
 
-						if (!$ur[$j]['TsumegoAttempt']['solved'])
+						$mis = (int) $ur[$j]['TsumegoAttempt']['misplays'];
+						if (!$isSolved && $mis <= 0)
+							$mis = 1;
+						while ($mis > 0)
 						{
-							$mis = $ur[$j]['TsumegoAttempt']['misplays'];
-							if ($mis == 0)
-								$mis = 1;
-							while ($mis > 0)
-							{
-								$urSum .= 'F';
-								$mis--;
-							}
+							$urSum .= 'F';
+							$mis--;
 						}
-						else
-							$urSum .= $ur[$j]['TsumegoAttempt']['solved'];
+						if ($isSolved)
+							$urSum .= '1';
 					}
 				// Use minimum (best) solve time from all successful attempts
 				if (!empty($solvedSeconds))
