@@ -409,7 +409,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
 		($this->setFunction)('isSandbox', $isSandbox);
-		($this->setFunction)('isTrainingMode', Auth::isInMistakeTrainingMode());
 		($this->setFunction)('goldenTsumego', $goldenTsumego);
 		$boardsBitmask = BoardSelector::filterValidBits(Auth::isLoggedIn() ? Auth::getUser()['boards_bitmask'] : BoardSelector::$DEFAULT_BOARDS_BITMASK);
 		($this->setFunction)('boardSelection', BoardSelector::selectBoard($boardsBitmask, $goldenTsumego, $set['Set']['board_theme_index']));

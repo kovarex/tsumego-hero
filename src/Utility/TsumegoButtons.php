@@ -50,7 +50,9 @@ class TsumegoButtons extends ArrayObject
 		$filters = TsumegoFilters::empty();
 		$filters->query = 'mistake_training';
 		$filters->collectionSize = 200;
-		return new TsumegoButtons($filters, $currentSetConnectionID);
+		$buttons = new TsumegoButtons($filters, $currentSetConnectionID);
+		$buttons->isMistakeTraining = true;
+		return $buttons;
 	}
 
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
@@ -179,13 +181,17 @@ class TsumegoButtons extends ArrayObject
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
 
+		$edgeLink = $this->isMistakeTraining
+			? '/mistake-training'
+			: TsumegosController::tsumegoOrSetLink($tsumegoFilters, null, $tsumegoFilters->getSetID($set));
+
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
-		$setFunction('previousLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($previousSetConnectionID) ? $previousSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+		$setFunction('previousLink', isset($previousSetConnectionID) ? '/' . $previousSetConnectionID : $edgeLink);
 
 		if (isset($indexOfCurrent) && count($this) > $indexOfCurrent + 1)
 			$nextSetConnectionID = $this[$indexOfCurrent + 1]->setConnectionID;
-		$setFunction('nextLink', TsumegosController::tsumegoOrSetLink($tsumegoFilters, isset($nextSetConnectionID) ? $nextSetConnectionID : null, $tsumegoFilters->getSetID($set)));
+		$setFunction('nextLink', isset($nextSetConnectionID) ? '/' . $nextSetConnectionID : $edgeLink);
 	}
 
 	public function getProblemsSolvedPercent(): float
@@ -213,4 +219,5 @@ class TsumegoButtons extends ArrayObject
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
 	private ?int $currentSetConnectionID = null;
+	private bool $isMistakeTraining = false;
 }

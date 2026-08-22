@@ -129,6 +129,31 @@ class TsumegosController extends AppController
 		{
 			$this->set('_page', 'mistake-training');
 			$this->set('_title', 'Tsumego Hero - Mistake Training');
+
+			$totalInTraining = ClassRegistry::init('TsumegoStatus')->find('count', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'mt_due IS NOT NULL',
+				],
+			]);
+			$this->set('totalInTraining', (int) $totalInTraining);
+
+			$upcoming = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'mt_due >' => date('Y-m-d H:i:s'),
+				],
+				'order' => 'mt_due ASC',
+				'limit' => 30,
+			]);
+			$upcomingByDay = [];
+			foreach ($upcoming as $row)
+			{
+				$day = date('Y-m-d', strtotime($row['TsumegoStatus']['mt_due']));
+				$upcomingByDay[$day] = ($upcomingByDay[$day] ?? 0) + 1;
+			}
+			$this->set('upcomingByDay', $upcomingByDay);
+
 			return;
 		}
 
