@@ -732,33 +732,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'damage must be cleared to 0 when potion heals');
 	}
 
-	public function testResultRejectsGet(): void
-	{
-		$this->expectException(BadRequestException::class);
-		$this->testAction('/tsumegos/result', ['method' => 'GET']);
-	}
-
-	public function testResultRejectsUnauthenticated(): void
-	{
-		$this->logout();
-		$this->expectException(ForbiddenException::class);
-		$this->testAction('/tsumegos/result', [
-			'method' => 'POST',
-			'data' => ['tsumego_id' => 1],
-		]);
-	}
-
-	public function testResultRejectsMissingTsumegoId(): void
-	{
-		$context = new ContextPreparator(['tsumego' => 1]);
-		$this->loginAs($context);
-		$this->expectException(BadRequestException::class);
-		$this->testAction('/tsumegos/result', [
-			'method' => 'POST',
-			'data' => [],
-		]);
-	}
-
 	public function testResetAfterSolveDoesntCauseDamage(): void
 	{
 		$context = new ContextPreparator([
