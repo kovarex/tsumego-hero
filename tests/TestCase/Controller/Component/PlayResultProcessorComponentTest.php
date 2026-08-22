@@ -857,8 +857,6 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			'Failing with zero hearts should set status to F');
 	}
 
-	// --- Browser contract tests: user-facing interactions ---
-
 	public function testSolveShowsCorrectAndUpdatesXP(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -871,6 +869,10 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertTrue($browser->driver->executeScript('return window.problemSolved;'));
 		$this->assertTrue($browser->driver->executeScript('return window.noXP;'));
 		$this->assertSame(1, $browser->driver->executeScript('return window.boardLockValue;'));
+
+		// Account widget should reflect server state
+		$this->assertGreaterThan(0, $browser->driver->executeScript('return window.accountWidget.xp;'));
+		$this->assertNotNull($browser->driver->executeScript('return window.accountWidget.rating;'));
 	}
 
 	public function testFailShowsIncorrectAndLosesHeart(): void
