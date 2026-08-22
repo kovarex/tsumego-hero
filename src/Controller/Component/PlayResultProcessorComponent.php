@@ -65,7 +65,7 @@ class PlayResultProcessorComponent extends Component
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
 			'new_damage' => Auth::getUser()['damage'],
-			'status' => $result['solved'] ? 'S' : 'F',
+			'status' => $tsumegoStatus['TsumegoStatus']['status'],
 			'potion_triggered' => $result['potion_triggered'] ?? false,
 		];
 
