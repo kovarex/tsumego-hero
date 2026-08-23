@@ -9,6 +9,7 @@ import react from '@vitejs/plugin-react';
  */
 const LEGACY_APP_FILES = [
 	'webroot/js/util.js',
+	'webroot/js/AchievementAlerts.js',
 	'webroot/js/Rating.js',
 	'webroot/js/TimeModeTimer.js',
 	'webroot/js/XPStatus.js',

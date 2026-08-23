@@ -7,6 +7,23 @@ class AchievementChecker
 		$this->fillExistingStatuses();
 	}
 
+	/**
+	 * The fields the client needs to render an achievement popup from data.
+	 * Both the /tsumegos/result response and the page-load embed use this, so
+	 * the popup payload stays pure data and the client renders the markup.
+	 */
+	public static function toPopupData(array $achievement): array
+	{
+		return [
+			'id' => (int) $achievement['id'],
+			'name' => $achievement['name'],
+			'description' => $achievement['description'],
+			'xp' => (int) $achievement['xp'],
+			'image' => $achievement['image'],
+			'color' => $achievement['color'],
+		];
+	}
+
 	public function gained($achievementID): void
 	{
 		if ($this->existingStatuses[$achievementID])
@@ -600,6 +617,25 @@ WHERE rn = 1;", [Auth::getUserID(), TimeModeUtil::$SESSION_STATUS_SOLVED]);
 		if ($count > 0)
 			$this->gained(Achievement::FAVORITES);
 
+		return $this;
+	}
+
+	/**
+	 * Run the standard solve/progress-dependent achievement checks.
+	 *
+	 * This is the canonical set that runs after a solve (PlayResultProcessor) and
+	 * on each page load (AppController::beforeFilter). Add new solve- or
+	 * progress-dependent checks here so both call sites stay in sync.
+	 * (checkTimeModeAchievements is intentionally separate - it runs on the time
+	 * mode result page via TimeModeController.)
+	 */
+	public function checkStandardAchievements(): AchievementChecker
+	{
+		$this->checkLevelAchievements();
+		$this->checkProblemNumberAchievements();
+		$this->checkRatingAchievements();
+		$this->checkDanSolveAchievements();
+		$this->checkNoErrorAchievements();
 		return $this;
 	}
 

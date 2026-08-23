@@ -1118,4 +1118,85 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		]);
 		$this->assertGreaterThan(0, $unlocked, 'Sprint achievement should unlock at 30 solves within a sprint');
 	}
+
+	public function testModeIsCorrectAfterSwitchThenImmediateSolve(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => 1,
+		]);
+
+		// Switch to rating mode -> DB mode must be rating immediately (same request).
+		$this->loginAs($context);
+		$this->testAction('/ratingMode');
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+			'DB mode should be RATING right after visiting /ratingMode');
+
+		// Switch back to level mode by opening a problem directly -> DB mode must be level immediately.
+		$this->loginAs($context);
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id'], ['return' => 'view']);
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+			'DB mode should be LEVEL right after opening a problem directly');
+		$this->assertTextContains('var mode = 1;', $this->view,
+			'Play page should render as level mode (no one-request lag)');
+
+		// Solve immediately; the mode used for the result must still be level (XP gained, mode unchanged).
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $context->reloadUser()['mode'],
+			'DB mode should still be LEVEL after the solve');
+		$this->assertGreaterThan(0, (int) $context->reloadUser()['xp'],
+			'XP should be gained when solving in level mode');
+	}
+
+	public function testRatingModeSolveAfterImmediateSwitchProcessesAsRating(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['mode' => Constants::$LEVEL_MODE],
+			'tsumego' => 1,
+		]);
+
+		// Switch to rating mode and solve immediately, without touching level mode in between.
+		$this->loginAs($context);
+		$this->testAction('/ratingMode');
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+			'DB mode should be RATING after visiting /ratingMode');
+
+		$ratingBefore = (int) $context->reloadUser()['rating'];
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+		$this->assertSame(Constants::$RATING_MODE, (int) $context->reloadUser()['mode'],
+			'DB mode should still be RATING after solving in rating mode');
+		$this->assertNotSame($ratingBefore, (int) $context->reloadUser()['rating'],
+			'Rating should change when solving in rating mode');
+	}
+
+	public function testSolveResponseIncludesNewlyUnlockedAchievement(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['solved' => 999],
+			'tsumego' => 1,
+		]);
+		$this->loginAs($context);
+		$this->testAction('/tsumegos/result', [
+			'method' => 'POST',
+			'data' => ['tsumego_id' => $context->tsumegos[0]['id'], 'seconds' => 0, 'solved' => true],
+		]);
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertNotEmpty($body['achievement_updates'] ?? [], 'Response should include newly unlocked achievements');
+		$unlocked = array_column($body['achievement_updates'], 'id');
+		$this->assertContains(Achievement::PROBLEMS_1000, $unlocked, 'Solving the 1000th problem should return PROBLEMS_1000 in the response');
+		foreach ($body['achievement_updates'] as $achievementUpdate)
+		{
+			$this->assertArrayNotHasKey('html', $achievementUpdate, 'The response should be pure data, not pre-rendered HTML');
+			foreach (['name', 'description', 'xp', 'image', 'color'] as $field)
+				$this->assertArrayHasKey($field, $achievementUpdate, "Each update should carry '$field' for client-side rendering");
+		}
+	}
 }

@@ -438,10 +438,6 @@ class AppController extends Controller
 					$lastProfileRight = 1;
 			}
 		}
-		$mode = 1;
-
-		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2)
-			$mode = 2;
 
 		if (HeroPowers::getSprintRemainingSeconds() == 0)
 			$this->updateSprintCondition();
@@ -449,12 +445,7 @@ class AppController extends Controller
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
 			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkLevelAchievements();
-			$achievementChecker->checkProblemNumberAchievements();
-			$achievementChecker->checkRatingAchievements();
-			$achievementChecker->checkDanSolveAchievements();
-			$achievementChecker->checkNoErrorAchievements();
-			$achievementChecker->finalize();
+			$achievementChecker->checkStandardAchievements()->finalize();
 			$this->set('achievementUpdates', $achievementChecker->updated);
 		}
 		$boardNames = [];
@@ -477,7 +468,6 @@ class AppController extends Controller
 			$displayUser['name'] = $this->checkPicture($user);
 			$this->set('user', $displayUser);
 		}
-		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
 		$this->set('highscoreLink', $highscoreLink);

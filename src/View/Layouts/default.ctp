@@ -21,6 +21,7 @@
 App::uses('Level', 'Utility');
 App::uses('CookieFlash', 'Utility');
 App::uses('ViteManifest', 'Utility');
+App::uses('AchievementChecker', 'Utility');
 require_once __DIR__ . '/../../Utility/AccountWidget.php';
 if (Configure::read('debug')) { ?>
 <script>
@@ -370,42 +371,17 @@ echo ViteManifest::legacyScript('legacy');
 	<br><br><br>
 	</div>
 <?php
-if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievementUpdates))
-{
-	$xpBonus = 0;
-	foreach ($achievementUpdates as $i => $achievementUpdate)
-	{
-		echo '
-			<label>
-		    <input type="checkbox" class="alertCheckbox1" id="alertCheckbox' . $i . '" autocomplete="off" />
-		    <div class="alertBox alertInfo '.h($achievementUpdate['color']).'3" id="achievementAlerts' . $i . '">
-			<div class="alertBanner" align="center">
-			Achievement Completed
-			<span class="alertClose">x</span>
-			</div>
-			<span class="alertText"><img id="hpIcon1" src="/img/'.h($achievementUpdate['image']).'.png">
-			<b>'.h($achievementUpdate['name']).' - ' . h($achievementUpdate['description']) . '</b>&nbsp; (' . (int)$achievementUpdate['xp'] . ' XP)&nbsp; <a href="/achievements/view/' . (int)$achievementUpdate['id'] . '">view</a>
-			<br>
-			<br class="clear1"/></span>
-			</div>
-			</label>
-			';
-		$xpBonus += $achievementUpdate['xp'];
-	}
-}
+// Achievement popups are rendered client-side by the shared renderer in
+// webroot/js/AchievementAlerts.js; here we only hand it the pure data.
 ?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS($timeMode); ?>
 	<?php
-	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
-
-	for ($i = 0; $i < $count; $i++)
+	if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && !empty($achievementUpdates))
 	{
-		echo '$("#achievementAlerts'.$i.'").fadeIn(600);';
-		echo '
-		$("#alertCheckbox'.$i.'").change(function(){
-			$("#achievementAlerts'.$i.'").fadeOut(500);
-		});';
+		$popupData = array_map(['AchievementChecker', 'toPopupData'], array_values($achievementUpdates));
+		echo 'var achievementUpdates = ' . json_encode($popupData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) . ';';
+		echo 'achievementUpdates.forEach(showAchievementPopup);';
 	}
 	?>
 	let light = <?php echo Util::boolString($lightDark !== 'dark'); ?>;

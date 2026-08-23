@@ -5,6 +5,7 @@ App::uses('SetConnection', 'Model');
 App::uses('Rating', 'Utility');
 App::uses('Util', 'Utility');
 App::uses('HeroPowers', 'Utility');
+App::uses('AchievementChecker', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
 App::uses('Level', 'Utility');
 App::uses('Progress', 'Utility');
@@ -15,7 +16,7 @@ class PlayResultProcessorComponent extends Component
 	/**
 	 * Process a play result submitted via AJAX. Takes explicit params, no cookies.
 	 *
-	 * @param array $params Keys: tsumego_id, seconds, solved, mode, type, timeout
+	 * @param array $params Keys: tsumego_id, seconds, solved, type, timeout
 	 * @return array Result with xp_gained, rating_change, new_rating, etc.
 	 */
 	public function processResult(array $params): array
@@ -59,6 +60,11 @@ class PlayResultProcessorComponent extends Component
 			$timeMode->processPlayResult($tsumego, $playResult, (float) ($params['seconds'] ?? 0), !empty($params['timeout']));
 		}
 
+		// Check solve-dependent achievements right away (not only on the next page
+		// load) so the user sees the popup immediately after solving.
+		$achievementChecker = new AchievementChecker();
+		$achievementChecker->checkStandardAchievements()->finalize();
+
 		$response = [
 			'xp_gained' => $result['xp-gained'] ?? 0,
 			'new_rating' => Auth::getUser()['rating'],
@@ -68,6 +74,8 @@ class PlayResultProcessorComponent extends Component
 			'status' => $tsumegoStatus['TsumegoStatus']['status'],
 			'potion_triggered' => $result['potion_triggered'] ?? false,
 		];
+		if (!empty($achievementChecker->updated))
+			$response['achievement_updates'] = $achievementChecker->updated;
 
 		return $response;
 	}
