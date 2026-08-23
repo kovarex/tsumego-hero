@@ -236,9 +236,9 @@ class PlayResultProcessorComponent extends Component
 		}
 
 		$newDue = MistakeTraining::computeNextDue(Auth::getUserID(), $tsumegoId);
-		ClassRegistry::init('TsumegoStatus')->updateAll(
-			['mt_due' => $newDue ? "'" . $newDue . "'" : 'NULL'],
-			['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoId]
+		Util::execute(
+			'UPDATE tsumego_status SET mt_due = ? WHERE user_id = ? AND tsumego_id = ?',
+			[$newDue, Auth::getUserID(), $tsumegoId]
 		);
 	}
 
