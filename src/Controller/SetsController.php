@@ -1434,10 +1434,6 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 			CookieFlash::set('Collection size must be a multiple of 10 between 10 and 1000', 'error');
 			return $this->redirect('/sets');
 		}
-		// Clear any stale unprefixed collection_size cookie (a leftover from the
-		// old tile-click JS) so it can't override the just-submitted value on the
-		// next request - the form is the single source of truth for this pref.
-		Util::clearCookie('collection_size');
 		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
 	}
