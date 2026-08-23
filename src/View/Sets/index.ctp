@@ -313,7 +313,6 @@
 		?>
 		let query = <?php echo json_encode($tsumegoFilters->query, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let queryRefresh = <?php echo json_encode($queryRefresh, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-		let collectionSize = <?php echo $tsumegoFilters->collectionSize; ?>-0;
 		let filteredSets = [];
 		let filteredRanks = [];
 		let filteredTags = [];
@@ -884,17 +883,14 @@
 
 		$("#tile-topics-submit").click(function(e){
 			setCookie("query", "topics");
-			setCookie("collectionSize", collectionSize);
 			window.location.href = "/sets";
 		});
 		$("#tile-difficulty-submit").click(function(e){
 			setCookie("query", "difficulty");
-			setCookie("collectionSize", collectionSize);
 			window.location.href = "/sets";
 		});
 		$("#tile-tags-submit").click(function(e){
 			setCookie("query", "tags");
-			setCookie("collectionSize", collectionSize);
 			window.location.href = "/sets";
 		});
 

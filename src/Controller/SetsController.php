@@ -1138,23 +1138,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		else
 			$scoring = false;
 
-		$allTags = $this->Tag->find('all') ?: [];
-		$allTagsSorted = [];
-		$allTagsKeys = [];
-		$allTagsCount = count($allTags);
-		for ($i = 0; $i < $allTagsCount; $i++)
-		{
-			array_push($allTagsSorted, $allTags[$i]['Tag']['name']);
-			$allTagsKeys[$allTags[$i]['Tag']['name']] = $allTags[$i];
-		}
-		sort($allTagsSorted);
-		$s2Tags = [];
-		$allTagsSortedCount = count($allTagsSorted);
-		for ($i = 0; $i < $allTagsSortedCount; $i++)
-			array_push($s2Tags, $allTagsKeys[$allTagsSorted[$i]]);
-
-		$allTags = $s2Tags;
-
 		if ($tsumegoFilters->query == 'topics')
 		{
 			$this->set('allVcActive', $allVcActive);
@@ -1169,7 +1152,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('allTags', $allTags);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);
 		$this->set('refreshView', $refreshView);

@@ -8,6 +8,7 @@ App::uses('CookieFlash', 'Utility');
 App::uses('TsumegoMerger', 'Utility');
 App::uses('SimilarSearchResultItem', 'Utility');
 App::uses('SimilarSearchLogic', 'Utility');
+App::uses('AchievementChecker', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
@@ -32,6 +33,11 @@ class TsumegosController extends AppController
 			throw new BadRequestException('Missing tsumego_id');
 
 		$result = $this->PlayResultProcessor->processResult($data);
+
+		// Keep the response as pure data; the client renders the popup from the
+		// fields it needs (see webroot/js/AchievementAlerts.js).
+		if (!empty($result['achievement_updates']))
+			$result['achievement_updates'] = array_map(['AchievementChecker', 'toPopupData'], $result['achievement_updates']);
 
 		$this->response->body(json_encode($result));
 

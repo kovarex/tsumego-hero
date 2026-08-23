@@ -39,7 +39,6 @@
 <script>
 	var tooltipSgfs = window.tooltipSgfs || [];
 	let tagList = "null";
-	let tagNameList = "null";
 	let proposalList = "null";
 	let submitCount = 0;
 
@@ -51,8 +50,6 @@
 				$("#tagname-submit'.$h.'").show();
 				$("#tagname-accept'.$h.'").hide();
 				$("#tagname-reject'.$h.'").hide();
-				tagNameList = tagNameList + "-" + "a'.$tagNames[$h]['Tag']['id'].'";
-				setCookie("tagNameList", tagNameList);
 				submitCount++;
 				$(".tag-submit-button").html("Submit ("+submitCount+")");
 			});';
@@ -60,8 +57,6 @@
 				$("#tagname-submit'.$h.'").show();
 				$("#tagname-accept'.$h.'").hide();
 				$("#tagname-reject'.$h.'").hide();
-				tagNameList = tagNameList + "-" + "r'.$tagNames[$h]['Tag']['id'].'";
-				setCookie("tagNameList", tagNameList);
 				submitCount++;
 				$(".tag-submit-button").html("Submit ("+submitCount+")");
 			});';

@@ -4,6 +4,7 @@ App::uses('Auth', 'Utility');
 App::uses('BoardSelector', 'Utility');
 App::uses('TsumegoFilters', 'Utility');
 App::uses('AchievementChecker', 'Utility');
+App::uses('HeroPowers', 'Utility');
 App::uses('TimeMode', 'Utility');
 
 class AppController extends Controller
@@ -335,8 +336,6 @@ class AppController extends Controller
 		$vs = $this->TsumegoStatus->find('first', ['conditions' => ['user_id' => $user['User']['id']], 'order' => 'updated DESC']);
 		if ($vs)
 			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
-		Util::setCookie('texture', $user['User']['texture']);
-		Util::setCookie('check1', $user['User']['id']);
 	}
 
 	public function beforeFilter(): void
@@ -359,7 +358,6 @@ class AppController extends Controller
 
 		$highscoreLink = 'highscore';
 		$lightDark = 'light';
-		$resetCookies = false;
 		$levelBar = 1;
 		$lastProfileLeft = 1;
 		$lastProfileRight = 2;
@@ -368,9 +366,6 @@ class AppController extends Controller
 		{
 			if ($lastTimeModeCategoryID = Util::clearCookie('lastTimeModeCategoryID'))
 				Auth::saveUserField('last_time_mode_category_id', $lastTimeModeCategoryID);
-			if (isset($_COOKIE['z_sess']) && $_COOKIE['z_sess'] != 0
-			&& strlen($_COOKIE['z_sess']) > 5)
-				Auth::saveUserField('_sessid', $_COOKIE['z_sess']);
 			if (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_LEVEL)
 				$highscoreLink = 'highscore';
 			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_RATING)
@@ -380,8 +375,6 @@ class AppController extends Controller
 			elseif (Auth::getUser()['lastHighscore'] == Constants::$HIGHSCORE_TIME_MODE)
 				$highscoreLink = 'time_mode';
 
-			if (isset($_COOKIE['lastMode']) && $_COOKIE['lastMode'] != 0)
-				Auth::saveUserField('lastMode', $_COOKIE['lastMode']);
 			if (isset($_COOKIE['sound']) && $_COOKIE['sound'] != '0')
 			{
 				Auth::saveUserField('sound', $_COOKIE['sound']);
@@ -445,23 +438,14 @@ class AppController extends Controller
 					$lastProfileRight = 1;
 			}
 		}
-		$mode = 1;
 
-		if (Auth::isLoggedIn() && Auth::getUser()['mode'] == 2)
-			$mode = 2;
-
-		if (($_COOKIE['sprint'] ?? null) != 1)
+		if (HeroPowers::getSprintRemainingSeconds() == 0)
 			$this->updateSprintCondition();
 
 		if (Auth::isLoggedIn() && !$this->request->is('ajax'))
 		{
 			$achievementChecker = new AchievementChecker();
-			$achievementChecker->checkLevelAchievements();
-			$achievementChecker->checkProblemNumberAchievements();
-			$achievementChecker->checkRatingAchievements();
-			$achievementChecker->checkDanSolveAchievements();
-			$achievementChecker->checkNoErrorAchievements();
-			$achievementChecker->finalize();
+			$achievementChecker->checkStandardAchievements()->finalize();
 			$this->set('achievementUpdates', $achievementChecker->updated);
 		}
 		$boardNames = [];
@@ -484,7 +468,6 @@ class AppController extends Controller
 			$displayUser['name'] = $this->checkPicture($user);
 			$this->set('user', $displayUser);
 		}
-		$this->set('mode', $mode);
 		$this->set('nextDay', $nextDay->format('m/d/Y'));
 		$this->set('boardNames', $boardNames);
 		$this->set('highscoreLink', $highscoreLink);
@@ -492,7 +475,6 @@ class AppController extends Controller
 		$this->set('levelBar', $levelBar);
 		$this->set('lastProfileLeft', $lastProfileLeft);
 		$this->set('lastProfileRight', $lastProfileRight);
-		$this->set('resetCookies', $resetCookies);
 		$this->set('timeMode', $timeMode);
 	}
 
