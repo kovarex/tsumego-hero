@@ -476,6 +476,7 @@ class AppController extends Controller
 		$this->set('lastProfileLeft', $lastProfileLeft);
 		$this->set('lastProfileRight', $lastProfileRight);
 		$this->set('timeMode', $timeMode);
+		$this->set('mtDueCount', Auth::isLoggedIn() ? $this->TsumegoStatus->mistakeTrainingDueCount((int) Auth::getUserID()) : 0);
 	}
 
 	public function afterFilter() {}

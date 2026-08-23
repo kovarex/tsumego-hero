@@ -1,12 +1,15 @@
 <?php
 
 App::uses('Constants', 'Utility');
+App::uses('TsumegoButtons', 'Utility');
+App::uses('Util', 'Utility');
 
 /**
- * SM-2 spaced repetition algorithm for mistake training.
+ * Mistake training: SM-2 spaced repetition for failed tsumegos.
  *
- * Replays the algorithm from tsumego_attempt history to compute
- * the next review date. State is never stored, only mt_due is persisted.
+ * Owns the training queue (which problems are due) and the SM-2 algorithm.
+ * Replays the algorithm from tsumego_attempt history to compute the next review
+ * date; state is never stored, only mt_due is persisted.
  */
 class MistakeTraining
 {
@@ -90,5 +93,52 @@ class MistakeTraining
 			return null;
 
 		return date('Y-m-d H:i:s', strtotime($lastDate . " +{$interval} days"));
+	}
+
+	/**
+	 * Build the navigation buttons for the current training queue.
+	 * One button per tsumego, preferring the set connection the user is on,
+	 * ordered by mt_due (most overdue first).
+	 */
+	public static function buildQueueButtons(int $currentSetConnectionID): TsumegoButtons
+	{
+		$rows = Util::query(self::queueSql(), [$currentSetConnectionID, Auth::getUserID()]);
+		return TsumegoButtons::fromRows($rows, $currentSetConnectionID, 200);
+	}
+
+	/**
+	 * The training queue: user's tsumego_status rows that are due for review.
+	 * Deduplicates in SQL (one row per tsumego via ROW_NUMBER), preferring the
+	 * current set connection so navigation stays on the connection the user is on.
+	 */
+	private static function queueSql(): string
+	{
+		return "
+			SELECT tsumego_id, set_connection_id, num, status, rating, sgf
+			FROM (
+				SELECT
+					ts.tsumego_id,
+					sc.id AS set_connection_id,
+					sc.num,
+					ts.status,
+					t.rating,
+					ts.mt_due,
+					COALESCE(sgf.sgf, '') AS sgf,
+					ROW_NUMBER() OVER (
+						PARTITION BY ts.tsumego_id
+						ORDER BY CASE WHEN sc.id = ? THEN 0 ELSE 1 END, sc.id
+					) AS rn
+				FROM tsumego_status ts
+				JOIN set_connection sc ON sc.tsumego_id = ts.tsumego_id
+				JOIN tsumego t ON t.id = ts.tsumego_id
+				LEFT JOIN sgf ON sgf.id = (SELECT MAX(s2.id) FROM sgf s2 WHERE s2.tsumego_id = ts.tsumego_id)
+				WHERE ts.user_id = ?
+				  AND ts.mt_due IS NOT NULL
+				  AND ts.mt_due <= NOW()
+				  AND t.deleted IS NULL
+			) x
+			WHERE rn = 1
+			ORDER BY mt_due ASC
+		";
 	}
 }

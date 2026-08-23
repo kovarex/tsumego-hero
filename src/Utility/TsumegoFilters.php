@@ -11,7 +11,7 @@ class TsumegoFilters
 		$this->publishedDate = $publishedDate;
 		if ($empty)
 			return;
-		if ($newQuery == 'published' || $newQuery == 'mistake_training')
+		if ($newQuery == 'published')
 		{
 			$this->query = $newQuery;
 			return;

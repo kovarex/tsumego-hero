@@ -8,13 +8,40 @@ class TsumegoButtons extends ArrayObject
 	{
 		if (!$tsumegoFilters)
 			return;
-		$this->currentSetConnectionID = $currentSetConnectionID;
-		$condition = "";
-		$this->fill($condition, $tsumegoFilters, $id);
+		$this->fill('', $tsumegoFilters, $id);
 
 		// in topics we respect the orders specified by set connections, in other cases, it is kind of a
 		// 'virtual set' and we just order it from 1 to max
-		if ($tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published')
+		$resetOrders = $tsumegoFilters->query != 'topics' && $tsumegoFilters->query != 'published';
+		$this->finalize($currentSetConnectionID, $partition, $tsumegoFilters->collectionSize, $resetOrders);
+	}
+
+	/**
+	 * Build buttons directly from a row set, used by dynamic queues such as mistake training.
+	 * Rows must expose tsumego_id, set_connection_id, num, status, rating and sgf.
+	 */
+	public static function fromRows(array $rows, ?int $currentSetConnectionID = null, int $collectionSize = 200): TsumegoButtons
+	{
+		$result = new TsumegoButtons();
+		foreach ($rows as $row)
+			$result[] = new TsumegoButton(
+				(int) $row['tsumego_id'],
+				(int) $row['set_connection_id'],
+				(int) $row['num'],
+				Auth::isLoggedIn() ? ($row['status'] ?: 'N') : 'N',
+				isset($row['rating']) ? (float) $row['rating'] : 0,
+				$row['sgf'] ?? ''
+			);
+		$result->finalize($currentSetConnectionID, null, $collectionSize, true);
+		return $result;
+	}
+
+	/**
+	 * Apply virtual-set ordering, mark the currently opened problem and partition.
+	 */
+	private function finalize(?int $currentSetConnectionID, ?int $partition, int $collectionSize, bool $resetOrders): void
+	{
+		if ($resetOrders)
 			$this->resetOrders();
 
 		if (!is_null($currentSetConnectionID))
@@ -26,10 +53,10 @@ class TsumegoButtons extends ArrayObject
 				$this[$currentIndex]->isCurrentlyOpened = true;
 				$this->currentOrder = $this[$currentIndex]->order;
 			}
-			$this->partitionByCurrentOne($currentIndex, $tsumegoFilters->collectionSize);
+			$this->partitionByCurrentOne($currentIndex, $collectionSize);
 		}
 		elseif (!is_null($partition))
-			$this->partitionByParameter($partition, $tsumegoFilters->collectionSize);
+			$this->partitionByParameter($partition, $collectionSize);
 	}
 
 	public static function deriveFrom(TsumegoButtons $other)
@@ -42,28 +69,11 @@ class TsumegoButtons extends ArrayObject
 		return $result;
 	}
 
-	/**
-	 * Build buttons for mistake training via the normal TsumegoFilters pipeline.
-	 */
-	public static function fromMistakeTraining(int $currentSetConnectionID): TsumegoButtons
-	{
-		$filters = TsumegoFilters::empty();
-		$filters->query = 'mistake_training';
-		$filters->collectionSize = 200;
-		$buttons = new TsumegoButtons($filters, $currentSetConnectionID);
-		$buttons->isMistakeTraining = true;
-		return $buttons;
-	}
-
 	public function fill(string $condition, TsumegoFilters $tsumegoFilters, $id)
 	{
 		$queryBuilder = new TsumegoButtonsQueryBuilder($tsumegoFilters, $id);
-		$result = Util::query($queryBuilder->getSql(), $queryBuilder->getParams());
+		$result = Util::query($queryBuilder->query->str());
 		$this->description = $queryBuilder->description;
-
-		// Deduplicate by tsumego_id for mistake training (one button per tsumego)
-		if ($tsumegoFilters->query == 'mistake_training')
-			$result = $this->deduplicateByTsumego($result, $this->currentSetConnectionID ?? null);
 
 		foreach ($result as $index => $row)
 		{
@@ -79,27 +89,6 @@ class TsumegoButtons extends ArrayObject
 			$this [] = $tsumegoButton;
 		}
 		$this->updateHighestTsumegoOrder();
-	}
-
-	/**
-	 * Keep one row per tsumego_id, preferring the current set connection.
-	 */
-	private function deduplicateByTsumego(array $rows, ?int $currentSetConnectionID): array
-	{
-		$seen = [];
-		foreach ($rows as $row)
-		{
-			$tsumegoId = (int) $row['tsumego_id'];
-			$scId = (int) $row['set_connection_id'];
-			if (isset($seen[$tsumegoId]))
-			{
-				if ($scId === $currentSetConnectionID)
-					$seen[$tsumegoId] = $row;
-				continue;
-			}
-			$seen[$tsumegoId] = $row;
-		}
-		return array_values($seen);
 	}
 
 	public function resetOrders(): void
@@ -175,15 +164,14 @@ class TsumegoButtons extends ArrayObject
 		return ' #' . ($this->partition + 1);
 	}
 
-	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set)
+	public function exportCurrentAndPreviousLink($setFunction, $tsumegoFilters, $setConnectionID, $set, ?string $edgeLink = null)
 	{
 		$indexOfCurrent = array_find_key((array) $this, function ($tsumegoButton) use ($setConnectionID) {
 			return $tsumegoButton->setConnectionID == $setConnectionID;
 		});
 
-		$edgeLink = $this->isMistakeTraining
-			? '/mistake-training'
-			: TsumegosController::tsumegoOrSetLink($tsumegoFilters, null, $tsumegoFilters->getSetID($set));
+		if ($edgeLink === null)
+			$edgeLink = TsumegosController::tsumegoOrSetLink($tsumegoFilters, null, $tsumegoFilters->getSetID($set));
 
 		if (isset($indexOfCurrent) && $indexOfCurrent > 0)
 			$previousSetConnectionID = $this[$indexOfCurrent - 1]->setConnectionID;
@@ -218,6 +206,4 @@ class TsumegoButtons extends ArrayObject
 	public int $highestTsumegoOrder = -1;
 	public ?int $currentOrder = -1;
 	public ?string $description = null;
-	private ?int $currentSetConnectionID = null;
-	private bool $isMistakeTraining = false;
 }

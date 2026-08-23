@@ -208,6 +208,7 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = (int) $tsumegoAttempt['TsumegoAttempt']['misplays'];
 		else
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = (int) $tsumegoAttempt['TsumegoAttempt']['misplays'] + 1;
+		$tsumegoAttempt['TsumegoAttempt']['mode'] = Auth::getMode();
 		$tsumegoAttempt['TsumegoAttempt']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
 	}

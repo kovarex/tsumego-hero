@@ -178,7 +178,7 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 		if ($sid == null)
 			$ur = $this->TsumegoAttempt->find('all', ['limit' => 500, 'order' => 'created DESC']);
 		else
-			$ur = $this->TsumegoAttempt->find('all', ['order' => 'updated DESC', 'conditions' => ['tsumego_id' => $ids]]);
+			$ur = $this->TsumegoAttempt->find('all', ['order' => 'created DESC', 'conditions' => ['tsumego_id' => $ids]]);
 
 		$urCount = count($ur);
 		for ($i = 0; $i < $urCount; $i++)
@@ -806,6 +806,7 @@ WHERE
 			FROM tsumego_attempt
 			WHERE user_id = :user_id
 			  AND created > :oldest
+			  AND IFNULL(mode, 1) <> 5
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['user_id' => $id, 'oldest'  => $oldest]);
@@ -1118,6 +1119,7 @@ SELECT
 	tsumego_attempt.solved AS solved,
 	tsumego_attempt.misplays AS misplays,
 	tsumego_attempt.user_rating AS user_rating,
+	tsumego_attempt.mode AS mode,
 	COALESCE(sgf.sgf, '') AS sgf
 FROM
 	tsumego_attempt

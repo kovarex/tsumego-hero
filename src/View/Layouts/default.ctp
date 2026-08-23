@@ -262,14 +262,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<li><a href="/ratingMode" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
-							$mtDueCount = ClassRegistry::init('TsumegoStatus')->find('count', [
-								'conditions' => [
-									'user_id' => Auth::getUserID(),
-									'mt_due <=' => date('Y-m-d H:i:s'),
-									'mt_due IS NOT NULL',
-								],
-							]);
-							$mtLabel = 'Mistake Training' . ($mtDueCount > 0 ? ' (' . $mtDueCount . ')' : '');
+							$mtLabel = 'Mistake Training' . (!empty($mtDueCount) ? ' (' . $mtDueCount . ')' : '');
 						echo '<li><a style="font-size:16px" href="/mistake-training">' . $mtLabel . '</a></li>';
 						}
 								echo '</ul>';

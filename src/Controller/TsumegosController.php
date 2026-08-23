@@ -172,11 +172,8 @@ class TsumegosController extends AppController
 			return $this->redirect('/mistake-training');
 		}
 
-		$setConnections = ClassRegistry::init('SetConnection')->find('all', [
-			'conditions' => ['tsumego_id' => $next['TsumegoStatus']['tsumego_id']],
-			'limit' => 1,
-		]);
-		if (!$setConnections)
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection((int) $next['TsumegoStatus']['tsumego_id']);
+		if (!$setConnection)
 		{
 			ClassRegistry::init('TsumegoStatus')->updateAll(
 				['mt_due' => 'NULL'],
@@ -186,7 +183,7 @@ class TsumegosController extends AppController
 		}
 
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
-		$this->redirect('/' . $setConnections[0]['SetConnection']['id']);
+		$this->redirect('/' . $setConnection['SetConnection']['id']);
 	}
 
 	public static function inArrayX($x, $newArray)

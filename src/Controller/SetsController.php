@@ -1007,6 +1007,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				'conditions' => [
 					'user_id' => Auth::getUserID(),
 					'tsumego_id' => $tsIds,
+					'IFNULL(mode, 1) <> 5',
 				],
 			]) ?: [];
 			$urCount2 = count($ur);

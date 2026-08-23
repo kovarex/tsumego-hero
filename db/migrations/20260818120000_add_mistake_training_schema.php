@@ -2,7 +2,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class AddMtDueToTsumegoStatus extends AbstractMigration
+class AddMistakeTrainingSchema extends AbstractMigration
 {
 	public function change(): void
 	{
@@ -15,5 +15,14 @@ class AddMtDueToTsumegoStatus extends AbstractMigration
 		]);
 		$table->addIndex(['user_id', 'mt_due'], ['name' => 'idx_mt_due']);
 		$table->update();
+
+		$attempts = $this->table('tsumego_attempt');
+		$attempts->addColumn('mode', 'integer', [
+			'null' => true,
+			'default' => null,
+			'comment' => 'Mode the attempt was made in (1 level, 2 rating, 3 time, 5 mistake training); NULL = legacy rows',
+			'after' => 'misplays',
+		]);
+		$attempts->update();
 	}
 }

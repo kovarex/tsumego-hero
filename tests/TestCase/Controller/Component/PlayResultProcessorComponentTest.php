@@ -851,4 +851,24 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			);
 		}
 	}
+
+	public function testMistakeTrainingAttemptsRecordMode(): void
+	{
+		foreach ($this->PAGES as $page)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+			$this->performMisplay($context, $page);
+
+			$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+				'order' => 'id DESC',
+			]);
+			$this->assertSame(
+				Constants::$MISTAKE_TRAINING_MODE,
+				(int) $attempt['TsumegoAttempt']['mode'],
+				'Training attempts should be tagged with the mistake training mode (' . $page . ')'
+			);
+		}
+	}
 }

@@ -120,6 +120,36 @@
 	margin-bottom: var(--space-3);
 }
 
+/* ── Info box (muted callout / empty-state container) ── */
+.info-box
+{
+	background: var(--info-box-background);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-md);
+	padding: var(--space-6);
+}
+
+.info-box--empty
+{
+	max-width: 600px;
+	margin: 100px auto;
+	text-align: center;
+}
+
+.info-box__icon
+{
+	font-size: 48px;
+	line-height: 1;
+	margin: 0 0 var(--space-4);
+}
+
+.info-box__title
+{
+	font-size: 18px;
+	font-weight: var(--font-weight-bold);
+	margin: 0 0 var(--space-2);
+}
+
 /* ── Stat list ── */
 .stat
 {

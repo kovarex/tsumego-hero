@@ -1,6 +1,7 @@
 <?php
 
 App::uses('DataTableRenderer', 'Utility');
+App::uses('Constants', 'Utility');
 
 class TsumegoAttemptsRenderer extends DataTableRenderer
 {
@@ -13,6 +14,7 @@ SELECT
 	tsumego_attempt.solved as solved,
 	tsumego_attempt.misplays as misplays,
 	tsumego_attempt.tsumego_rating as tsumego_rating,
+	tsumego_attempt.mode as mode,
 	tsumego_attempt.created as created,
 	user.name as user_name,
 	user.id as user_id,
@@ -32,6 +34,7 @@ OFFSET " . $this->offset, [$tsumegoID]);
 		echo '<td>' . $item['solved'] . '</td>';
 		echo '<td>' . $item['misplays'] . '</td>';
 		echo '<td>' . $item['tsumego_rating'] . '</td>';
+		echo '<td>' . h(Constants::modeLabel(isset($item['mode']) ? (int) $item['mode'] : null)) . '</td>';
 		echo '<td><time datetime="' . Util::toIso8601($item['created']) . '" data-format="datetime">' . $item['created'] . '</time></td>';
 	}
 
@@ -42,6 +45,7 @@ OFFSET " . $this->offset, [$tsumegoID]);
 		echo '<td>Solved</td>';
 		echo '<td>Misplays</td>';
 		echo '<td>Rating</td>';
+		echo '<td>Mode</td>';
 		echo '<td>Datetime</td>';
 		echo '</thead>';
 	}
