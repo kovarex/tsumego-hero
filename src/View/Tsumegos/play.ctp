@@ -1613,7 +1613,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		seconds -= timeToAdd;
 	}
 
-	function submitResult(solved, secs, typeParam, extraFields)
+	function submitResult(solved, secs, timeout)
 	{
 		if (besogoNoLogin)
 			return;
@@ -1622,10 +1622,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			seconds: secs,
 			solved: solved,
 		};
-		if (typeParam)
-			data.type = typeParam;
-		if (extraFields)
-			Object.assign(data, extraFields);
+		if (timeout)
+			data.timeout = true;
 
 		window._submitResultPromise = fetch('/tsumegos/result', {
 			method: 'POST',
@@ -1676,7 +1674,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				window.dispatchEvent(new Event('tag-editor-solved'));
 				if (typeof xpStatus !== "undefined" && xpStatus)
 					xpStatus.set('solved', true);
-				submitResult(true, seconds, goldenTsumego ? 'g' : null);
+				submitResult(true, seconds);
 			}
 			updateCurrentNavigationButton('S');
 			document.getElementById("status").innerHTML = "<h2>Correct!</h2>";
@@ -1715,7 +1713,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			{
 				failAlreadyReported = true;
 				misplays++;
-				submitResult(false, seconds, null);
+				submitResult(false, seconds);
 			}
 			// Don't lock board - let user keep trying
 			if (mode != 2)
@@ -1821,7 +1819,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			redrawHearts();
 			if (typeof accountWidget !== 'undefined' && accountWidget)
 				accountWidget.animate(false);
-			submitResult(false, seconds, null);
+			submitResult(false, seconds);
 		}
 		failAlreadyReported = false;
 	}
