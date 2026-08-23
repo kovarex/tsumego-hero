@@ -806,7 +806,7 @@ WHERE
 			FROM tsumego_attempt
 			WHERE user_id = :user_id
 			  AND created > :oldest
-			  AND IFNULL(mode, 1) <> 5
+			  AND IFNULL(mode, 1) <> " . Constants::$MISTAKE_TRAINING_MODE . "
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['user_id' => $id, 'oldest'  => $oldest]);

@@ -730,6 +730,7 @@ class TsumegosController extends AppController
 				MAX(tsumego_rating) AS Rating
 			FROM tsumego_attempt
 			WHERE tsumego_id = :tsumego_id AND tsumego_rating != 0
+			  AND IFNULL(mode, 1) <> " . Constants::$MISTAKE_TRAINING_MODE . "
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['tsumego_id' => $tsumegoID]);
