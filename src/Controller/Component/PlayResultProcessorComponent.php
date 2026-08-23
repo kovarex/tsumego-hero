@@ -45,12 +45,11 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		$this->processRatingChange($tsumego, $result, $previousStatusValue);
-		if (!$result['solved'])
+		if (!$result['solved'] && !Auth::isInMistakeTrainingMode())
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
-		$this->maybeAddToMistakeTraining($tsumego, $result, $tsumegoStatus);
-		$this->updateMistakeTrainingDue($tsumego);
+		$this->updateMistakeTraining($tsumego, $result, $tsumegoStatus);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
 		if (!Auth::isInMistakeTrainingMode())
 			$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
@@ -214,49 +213,27 @@ class PlayResultProcessorComponent extends Component
 	}
 
 	/**
-	 * Add to mistake training pool on first-encounter mistakes.
-	 *
-	 * Entry criteria: previous status was V or N (first encounter) AND
-	 * not a clean first-try solve. Sets mt_due = NOW() + 1 day.
+	 * Keep the mistake-training pool in sync after a result: enter first-encounter
+	 * mistakes and reschedule anything already in training. SM-2 computes the next
+	 * due date; a NULL due means the problem does not belong in the pool.
 	 */
-	private function maybeAddToMistakeTraining(array $tsumego, array $result, ?array $tsumegoStatus): void
-	{
-		if (!Auth::isLoggedIn())
-			return;
-
-		$oldStatus = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N';
-		if ($oldStatus !== 'V' && $oldStatus !== 'N')
-			return;
-
-		// A clean first-try solve (no accumulated failures) does not enter training.
-		if ($result['solved'] && !$this->hadMisplaysBeforeSolve((int) $tsumego['Tsumego']['id']))
-			return;
-
-		$tsumegoId = (int) $tsumego['Tsumego']['id'];
-		$due = date('Y-m-d H:i:s', strtotime('+1 day'));
-
-		ClassRegistry::init('TsumegoStatus')->updateAll(
-			['mt_due' => "'" . $due . "'"],
-			['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoId]
-		);
-	}
-
-	/**
-	 * Recompute mt_due for any tsumego currently in the training pool.
-	 * Called after every solve/fail so the SM-2 interval stays up to date.
-	 * If the interval reaches graduation (>= 365 days), mt_due is cleared.
-	 */
-	private function updateMistakeTrainingDue(array $tsumego): void
+	private function updateMistakeTraining(array $tsumego, array $result, ?array $tsumegoStatus): void
 	{
 		if (!Auth::isLoggedIn())
 			return;
 
 		$tsumegoId = (int) $tsumego['Tsumego']['id'];
-		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-			'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $tsumegoId],
-		]);
-		if (!$status || empty($status['TsumegoStatus']['mt_due']))
-			return;
+		$alreadyInTraining = $tsumegoStatus && !empty($tsumegoStatus['TsumegoStatus']['mt_due']);
+
+		if (!$alreadyInTraining)
+		{
+			// Entry: only first-encounter mistakes (V/N) that are not a clean first-try solve.
+			$oldStatus = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N';
+			if ($oldStatus !== 'V' && $oldStatus !== 'N')
+				return;
+			if ($result['solved'] && !$this->hadMisplaysBeforeSolve($tsumegoId))
+				return;
+		}
 
 		$newDue = MistakeTraining::computeNextDue(Auth::getUserID(), $tsumegoId);
 		ClassRegistry::init('TsumegoStatus')->updateAll(
