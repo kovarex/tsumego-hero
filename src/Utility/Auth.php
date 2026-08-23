@@ -84,9 +84,21 @@ class Auth
 		return Auth::isLoggedIn() ? Auth::getUser()['premium'] : 0;
 	}
 
+	/**
+	 * Throws when $field is not an existing column on the user table, so a typo
+	 * or schema mismatch fails loudly instead of being silently dropped.
+	 */
+	private static function assertUserFieldExists(string $field): void
+	{
+		$schema = ClassRegistry::init('User')->schema();
+		if (!array_key_exists($field, $schema))
+			throw new Exception("Cannot write unknown user column '{$field}' - it does not exist in the user table schema.");
+	}
+
 	public static function saveUserField(string $field, $value): void
 	{
 		assert(Auth::isLoggedIn());
+		self::assertUserFieldExists($field);
 		Auth::$user[$field] = $value;
 		ClassRegistry::init('User')->save(
 			['User' => ['id' => Auth::getUserID(), $field => $value]],
@@ -97,6 +109,8 @@ class Auth
 	public static function saveUserFields(array $fieldValues): void
 	{
 		assert(Auth::isLoggedIn());
+		foreach ($fieldValues as $field => $value)
+			self::assertUserFieldExists($field);
 		foreach ($fieldValues as $field => $value)
 			Auth::$user[$field] = $value;
 		$data = ['User' => ['id' => Auth::getUserID()]];
@@ -111,6 +125,7 @@ class Auth
 	public static function incrementUserField(string $field, $delta): void
 	{
 		assert(Auth::isLoggedIn());
+		self::assertUserFieldExists($field);
 		Auth::$user[$field] = Auth::getUser()[$field] + $delta;
 		ClassRegistry::init('User')->updateAll(
 			[$field => $field . ' + ' . $delta],
@@ -130,6 +145,7 @@ class Auth
 	public static function incrementUserFieldIf(string $field, $delta, array $conditions): bool
 	{
 		assert(Auth::isLoggedIn());
+		self::assertUserFieldExists($field);
 		$conditions['id'] = Auth::getUserID();
 		$model = ClassRegistry::init('User');
 		$model->updateAll(

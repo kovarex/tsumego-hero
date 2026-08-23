@@ -58,4 +58,25 @@ class AuthTest extends CakeTestCase
 		$this->assertFalse($incremented);
 		$this->assertSame(1, (int) ClassRegistry::init('User')->findById($userId)['User']['used_revelation']);
 	}
+
+	public function testSaveUserFieldThrowsOnUnknownColumn()
+	{
+		new ContextPreparator(['user' => ['name' => 'guard']]);
+		$this->expectException(Exception::class);
+		Auth::saveUserField('nonexistent_column', 1);
+	}
+
+	public function testSaveUserFieldsThrowsOnUnknownColumn()
+	{
+		new ContextPreparator(['user' => ['name' => 'guard']]);
+		$this->expectException(Exception::class);
+		Auth::saveUserFields(['xp' => 1, 'nonexistent_column' => 1]);
+	}
+
+	public function testIncrementUserFieldThrowsOnUnknownColumn()
+	{
+		new ContextPreparator(['user' => ['name' => 'guard']]);
+		$this->expectException(Exception::class);
+		Auth::incrementUserField('nonexistent_column', 1);
+	}
 }
