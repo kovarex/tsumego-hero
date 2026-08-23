@@ -2,6 +2,15 @@
 
 class TsumegoStatus extends AppModel
 {
+	public static string $NOT_VISITED = 'N';
+	public static string $VISITED = 'V';
+	public static string $SOLVED = 'S';
+	public static string $MASTERED = 'C';
+	public static string $REVIEW = 'W';
+	public static string $LOCKED = 'F';
+	public static string $FORGOTTEN = 'X';
+	public static string $GOLDEN = 'G';
+
 	public function __construct($id = false, $table = null, $ds = null)
 	{
 		$id['table'] =  'tsumego_status';
@@ -18,14 +27,14 @@ class TsumegoStatus extends AppModel
 	{
 		switch ($status)
 		{
-			case 'F' : return 0; // failed
-			case 'N' : return 1; // nothing
-			case 'V' : return 2; // visited
-			case 'X' : return 3; // once solve but then failed
-			case 'S' : return 4; // once solved
-			case 'W' : return 5; // half XP after once solved
-			case 'C' : return 6; // double solved
-			case 'G' : return 7; // golden tsumego
+			case self::$LOCKED: return 0; // failed
+			case self::$NOT_VISITED: return 1; // nothing
+			case self::$VISITED: return 2; // visited
+			case self::$FORGOTTEN: return 3; // once solve but then failed
+			case self::$SOLVED: return 4; // once solved
+			case self::$REVIEW: return 5; // half XP after once solved
+			case self::$MASTERED: return 6; // double solved
+			case self::$GOLDEN: return 7; // golden tsumego
 			default: throw new Exception("Unknown status: $status");
 		}
 	}

@@ -32,7 +32,12 @@ class TsumegosController extends AppController
 		if (!$data || empty($data['tsumego_id']))
 			throw new BadRequestException('Missing tsumego_id');
 
-		$result = $this->PlayResultProcessor->processResult($data);
+		$result = $this->PlayResultProcessor->processResult(
+			(int) $data['tsumego_id'],
+			!empty($data['solved']),
+			(float) ($data['seconds'] ?? 0),
+			!empty($data['timeout'])
+		);
 
 		// Keep the response as pure data; the client renders the popup from the
 		// fields it needs (see webroot/js/AchievementAlerts.js).

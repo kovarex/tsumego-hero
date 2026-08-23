@@ -21,7 +21,7 @@ class TimeModeTimer
 			timeUp = true;
 			locked = true;
 			tryAgainTomorrow = true;
-			submitResult(false, seconds, null, { timeout: true });
+			submitResult(false, seconds, true);
 
 			$("#time-mode-countdown").css("color","#e03c4b");
 			document.getElementById("status").style.color = "#e03c4b";

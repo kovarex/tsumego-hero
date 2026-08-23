@@ -247,15 +247,13 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 	{
 		$context = new ContextPreparator([
 			'user' => ['rating' => 1000],
-			'tsumego' => ['rating' => 1000, 'set_order' => 1],
+			'tsumego' => ['rating' => 1000, 'status' => 'G', 'set_order' => 1],
 		]);
 
 		$params = [
 			'tsumego_id' => $context->tsumegos[0]['id'],
 			'seconds' => 0,
 			'solved' => true,
-			'mode' => 1,
-			'type' => 'g',
 		];
 		$this->postResult($context, $params);
 		$this->postResult($context, $params);

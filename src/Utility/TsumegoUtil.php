@@ -1,6 +1,7 @@
 <?php
 
 App::uses('SetConnection', 'Model');
+App::uses('TsumegoStatus', 'Model');
 
 class TsumegoUtil
 {
@@ -74,12 +75,12 @@ class TsumegoUtil
 
 	public static function isRecentlySolved($status)
 	{
-		return $status == 'S' || $status == 'C';
+		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED;
 	}
 
 	public static function isSolvedStatus($status)
 	{
-		return $status == 'S' || $status == 'C' || $status == 'W';
+		return $status == TsumegoStatus::$SOLVED || $status == TsumegoStatus::$MASTERED || $status == TsumegoStatus::$REVIEW;
 	}
 
 	public static function getXpValue(array $tsumego, float $multiplier = 1.0): int
