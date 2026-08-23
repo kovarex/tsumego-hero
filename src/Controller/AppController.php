@@ -342,7 +342,6 @@ class AppController extends Controller
 	public function beforeFilter(): void
 	{
 		$this->loadModel('User');
-		$this->loadModel('Activate');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');
 		$this->loadModel('TimeModeAttempt');

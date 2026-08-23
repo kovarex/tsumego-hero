@@ -282,9 +282,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 					foreach ($del2 as $item)
 						$this->TsumegoAttempt->delete($item['TsumegoAttempt']['id']);
 					$this->User->delete($toDelete['User']['id']);
-					echo '<pre>';
-					print_r('Deleted user ' . $toDelete['User']['name']);
-					echo '</pre>';
 					AdminActivityLogger::log(
 						AdminActivityType::DELETE_USER, null, null, $toDelete['User']['name'], null
 					);
@@ -473,9 +470,6 @@ then ignore this email. https://' . $_SERVER['HTTP_HOST'] . '/users/newpassword/
 			return;
 		}
 
-		$user = ClassRegistry::init('User')->find('first', ['conditions' => ['name' => $this->data['User']['name']]]);
-		if (!$user)
-			die("New user created, but it is not possible to load it.");
 		CookieFlash::set(__('Registration successful.'), 'success');
 		return $this->redirect(['controller' => 'sets', 'action' => 'index']);
 	}

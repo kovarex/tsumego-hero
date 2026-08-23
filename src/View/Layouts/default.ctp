@@ -85,13 +85,6 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 ?>
 <?php
-// Check redirect cookie and handle loading page redirect
-if (isset($_COOKIE['redirect']) && $_COOKIE['redirect'] == 'loading')
-{
-	Util::clearCookie('redirect');
-	Util::setCookie('initialLoading', 'true');
-	echo '<script type="text/javascript">window.location.href = "/users/loading";</script>';
-}
 echo $this->Html->charset();
 ?>
 <title>
