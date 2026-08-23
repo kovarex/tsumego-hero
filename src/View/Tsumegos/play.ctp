@@ -630,11 +630,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	$browser = $_SERVER['HTTP_USER_AGENT'] . "\n\n";
 	echo '<audio><source src="/sounds/newStone.ogg"></audio>';
 	echo '';
-
-	/*
-	§TESTING AREA§
-	echo '<pre>'; print_r($levelBar); echo '</pre>';
-	*/
 		?>
 
 <script type="text/javascript">

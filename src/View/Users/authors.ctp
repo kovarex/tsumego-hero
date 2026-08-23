@@ -3,7 +3,6 @@
 /**
  * @var View $this
  */
-//echo '<pre>';print_r($c);echo '</pre>'; 
 ?><br>
 <div align="center">
 <p class="title">

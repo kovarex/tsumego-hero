@@ -178,12 +178,10 @@ echo '<time datetime="' . Util::toIso8601($ur[$i]['TsumegoAttempt']['created']) 
 		
 		
 		
-		//print_r($vals);
 	}
 	?>
 	</table>
 	<?php
-	//echo '<pre>';print_r($ur);echo '</pre>';
 	echo 'Penalty: '.$penalty;
 	echo '<br></div>';
 	

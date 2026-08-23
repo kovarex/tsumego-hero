@@ -139,12 +139,10 @@
 		
 		
 		
-		//print_r($vals);
 	}
 	?>
 	</table>
 	<?php
-	//echo '<pre>';print_r($ur);echo '</pre>';
 	echo 'Penalty: '.$penalty;
 	echo '<br></div>';
 	
