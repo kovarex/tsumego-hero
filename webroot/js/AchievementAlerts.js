@@ -23,6 +23,8 @@ function showAchievementPopup(achievement)
 	var close = document.createElement('span');
 	close.className = 'alertClose';
 	close.textContent = 'x';
+	// The popup is blocking and important, so only the close button dismisses
+	// it; clicking the body does not (to avoid accidental dismissal).
 	$(close).on('click', function ()
 	{
 		$(popup).fadeOut(500);

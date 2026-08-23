@@ -459,6 +459,16 @@ class Browser
 		$this->driver->executeScript("displayResult('" . $result . "')");
 		$this->waitForSubmitResult();
 		$this->assertNoErrors();
+		// Achievement popups are blocking; dismiss any that a solve unlocked so
+		// later interactions (e.g. clicking the next button) are not covered.
+		$this->dismissAchievementPopups();
+	}
+
+	public function dismissAchievementPopups(): void
+	{
+		$this->driver->executeScript(
+			"document.querySelectorAll('.achievement-popup').forEach(function (el) { el.style.display = 'none'; });"
+		);
 	}
 
 	public function waitForSubmitResult(): void

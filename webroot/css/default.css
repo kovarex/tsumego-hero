@@ -4020,15 +4020,6 @@ pre {
   position: relative;
   width: 40px;
 }
-/* Achievement popups are toasts: they must never block the page underneath,
-   so clicks pass through except on the close button and the "view" link. */
-.achievement-popup {
-  pointer-events: none;
-}
-.achievement-popup .alertClose,
-.achievement-popup a {
-  pointer-events: auto;
-}
 .alertCheckbox1 {
   display: none;
 }
