@@ -1590,6 +1590,25 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(60, $tsumegoFilters->collectionSize);
 	}
 
+	public function testChangeCollectionSizeFormWinsOverStaleCookie(): void
+	{
+		$context = new ContextPreparator(['user' => ['collection_size' => 200]]);
+		$this->login($context->user['User']['name']);
+
+		// A stale unprefixed cookie left by the old filter-tile JS.
+		$_COOKIE['collection_size'] = '200';
+
+		$this->testAction('/sets/changeCollectionSize', [
+			'method' => 'POST',
+			'data' => ['collection_size' => 500],
+		]);
+		$this->login($context->user['User']['name']);
+
+		$tsumegoFilters = new TsumegoFilters();
+		$this->assertSame(500, $tsumegoFilters->collectionSize,
+			'A form-submitted collection size must not be overridden by a stale cookie');
+	}
+
 	/**
 	 * Verify that Favorites menu item appears for all logged-in users,
 	 * even those without any favorites yet.

@@ -1769,7 +1769,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				if (!noXP)
 				{
 					playedWrong = true;
-					setCookie("transition", 2);
 					hoverLocked = false;
 					freePlayMode = true;
 				}

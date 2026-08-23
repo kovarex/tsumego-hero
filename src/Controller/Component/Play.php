@@ -173,11 +173,6 @@ class Play
 			if ($aad && $aad['AdminActivity']['type'] === AdminActivityType::PROBLEM_DELETE)($this->setFunction)('deleteProblem2', true);
 		}
 
-		if (isset($_COOKIE['skip']) && $_COOKIE['skip'] != '0' && Auth::isLoggedIn())
-		{
-			Auth::getUser()['readingTrial']--;
-			unset($_COOKIE['skip']);
-		}
 		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
 
 		// TODO: Direct policy call because Play is a component, not a controller —

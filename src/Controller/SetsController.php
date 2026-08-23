@@ -1138,23 +1138,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		else
 			$scoring = false;
 
-		$allTags = $this->Tag->find('all') ?: [];
-		$allTagsSorted = [];
-		$allTagsKeys = [];
-		$allTagsCount = count($allTags);
-		for ($i = 0; $i < $allTagsCount; $i++)
-		{
-			array_push($allTagsSorted, $allTags[$i]['Tag']['name']);
-			$allTagsKeys[$allTags[$i]['Tag']['name']] = $allTags[$i];
-		}
-		sort($allTagsSorted);
-		$s2Tags = [];
-		$allTagsSortedCount = count($allTagsSorted);
-		for ($i = 0; $i < $allTagsSortedCount; $i++)
-			array_push($s2Tags, $allTagsKeys[$allTagsSorted[$i]]);
-
-		$allTags = $s2Tags;
-
 		if ($tsumegoFilters->query == 'topics')
 		{
 			$this->set('allVcActive', $allVcActive);
@@ -1169,7 +1152,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		$this->set('tsumegoFilters', $tsumegoFilters);
-		$this->set('allTags', $allTags);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('set', $set);
 		$this->set('refreshView', $refreshView);
@@ -1452,6 +1434,10 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 			CookieFlash::set('Collection size must be a multiple of 10 between 10 and 1000', 'error');
 			return $this->redirect('/sets');
 		}
+		// Clear any stale unprefixed collection_size cookie (a leftover from the
+		// old tile-click JS) so it can't override the just-submitted value on the
+		// next request - the form is the single source of truth for this pref.
+		Util::clearCookie('collection_size');
 		Preferences::set('collection_size', $collectionSizeInt);
 		return $this->redirect('/sets');
 	}

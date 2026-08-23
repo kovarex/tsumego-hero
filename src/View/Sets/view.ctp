@@ -9,7 +9,6 @@
  * @var bool $allArInactive
  * @var bool $allPassActive
  * @var bool $allPassInactive
- * @var array $allTags
  * @var bool $allVcActive
  * @var bool $allVcInactive
  * @var float $avgTime
@@ -26,7 +25,6 @@
  * @var int $setRating
  * @var string $setTitle
  * @var bool $startingSetConnectionID
- * @var array $tags
  * @var TsumegoButton $tsumegoButton
  * @var TsumegoButtons $tsumegoButtons
  * @var TsumegoFilters $tsumegoFilters
@@ -424,11 +422,6 @@ if ($tsumegoFilters->query != 'topics')
 									<input value="Submit" type="submit"/>
 								</form>
 								<br><br>
-								<div class="tag-container" align="left">
-									<div class="tag-list"></div>
-									<div class="add-tag-list-button"><a class="add-tag-list-anchor" id="open-add-tag-menu" >Add tag</a></div>
-									<div class="add-tag-list"></div>
-								</div>
 							</div>';
 					echo '</td>';
 					echo '<td>';
@@ -704,100 +697,6 @@ if ($tsumegoFilters->query != 'topics')
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "1px solid #b34717");
 		}
-
-	let tags = [];
-	let unapprovedTags = [];
-	let idTags = [];
-	let allTags = [];
-	let newTag = null;
-	<?php
-	for($i = 0;$i < count($allTags);$i++)
-		echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-	drawTags();
-
-	function drawTags(){
-		if(tags.length>0) $(".tag-list").append("Tags: ");
-		let foundNewTag = false;
-		for(let i=0;i<tags.length;i++){
-			let isNewTag = '';
-			if(tags[i]===newTag){
-				isNewTag = 'class="is-new-tag"';
-				foundNewTag = true;
-			}
-			if(unapprovedTags[i]==0){
-				isNewTag = 'class="is-new-tag"';
-			}
-			let tagLink = 'href="/tags/view/'+idTags[i]+'"';
-			let tagLinkId = 'id="'+makeIdValidName(tags[i])+'"';
-			if(typeof idTags[i] === "undefined"){
-				tagLink = '';
-				tagLinkId = '';
-			}
-			$(".tag-list").append('<a '+tagLink+' '+isNewTag+' '+tagLinkId+'>'+tags[i]+'</a>');
-			if(i<tags.length-1)
-				$(".tag-list").append(', ');
-		}
-		if(foundNewTag){
-			$(".tag-list").append(" ");
-			$(".tag-list").append('<button id="undo-tags-button">Undo</button>');
-			$(".tag-list").append(' <a class="new-button-default" href="/sets/view/<?php echo $set['Set']['id'] ?>?hash=32bb90e8976aab5298d5da10fe66f21d">Submit</a>');
-			$("#undo-tags-button").show();
-		}
-
-		$(".add-tag-list").append("Add tag to ALL problems in this collection: ");
-		for(let i=0;i<allTags.length;i++){
-			$(".add-tag-list").append('<a class="add-tag-list-anchor" id="'+makeIdValidName(allTags[i])+'">'
-			+allTags[i]+'</a>');
-			if(i<allTags.length-1)
-				$(".add-tag-list").append(', ');
-		}
-		$(".add-tag-list").append(' <a class="add-tag-list-anchor" href="/tags/add">[Create new tag]</a>');
-	}
-
-	for(let i=0;i<allTags.length;i++){
-		let currentIdValue = "#" + makeIdValidName(allTags[i]);
-		$('.tag-container').on('click', currentIdValue, function(e) {
-			e.preventDefault();
-			setCookie("addTag", "<?php echo $set['Set']['id']; ?>-"+allTags[i]);
-			newTag = $(currentIdValue).text();
-			let newAllTags = [];
-			for(let i=0;i<allTags.length;i++){
-				if(allTags[i] !== $(currentIdValue).text())
-					newAllTags.push(allTags[i]);
-			}
-			allTags = newAllTags;
-			tags.push($(currentIdValue).text());
-			$(".tag-list").html("");
-			$(".add-tag-list").html("");
-			drawTags();
-			$(".add-tag-list").hide();
-		});
-	}
-
-	$('.tag-container').on('click', '#undo-tags-button', function(){
-		setCookie("addTag", 0);
-		$(".tag-list").html("");
-		$(".add-tag-list").html("");
-		$(".add-tag-list").show();
-		tags = [];
-		allTags = [];
-		newTag = null;
-		<?php
-	$tags  = (array) $tags;
-$allTags = (array) $allTags;
-for($i = 0;$i < count($tags);$i++)
-	echo 'tags.push(' . json_encode($tags[$i]['TagConnection']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-for($i = 0;$i < count($allTags);$i++)
-	echo 'allTags.push(' . json_encode($allTags[$i]['Tag']['name'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-?>
-		drawTags();
-	});
-
-	$('.tag-container').on('click', "#open-add-tag-menu", function(e){
-		$("#open-add-tag-menu").hide();
-		$(".add-tag-list").show();
-	});
 
 		<?php
 	if($refreshView)

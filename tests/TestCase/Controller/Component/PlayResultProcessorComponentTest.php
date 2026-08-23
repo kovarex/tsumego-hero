@@ -3,6 +3,9 @@
 use Facebook\WebDriver\WebDriverBy;
 
 App::uses('Constants', 'Utility');
+App::uses('HeroPowers', 'Utility');
+App::uses('AchievementChecker', 'Utility');
+App::uses('Achievement', 'Model');
 
 class PlayResultProcessorComponentTest extends TestCaseWithAuth
 {
@@ -1022,5 +1025,97 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertTrue($browser->driver->executeScript(
 			'return document.getElementById("potionAlerts").style.display !== "none";'),
 			'Potion alert should be visible');
+	}
+
+	private function sprintConditionValue(ContextPreparator $context): int
+	{
+		$condition = ClassRegistry::init('AchievementCondition')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'category' => 'sprint'],
+		]);
+		return $condition ? (int) $condition['AchievementCondition']['value'] : 0;
+	}
+
+	public function testSolveDuringSprintIncrementsSprintCounter(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
+			'tsumego' => 1,
+		]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+		]);
+		$this->assertSame(1, $this->sprintConditionValue($context));
+	}
+
+	public function testSolveDuringSprintAccumulatesAcrossProblems(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
+			'tsumegos' => [1, 2],
+		]);
+		foreach ($context->tsumegos as $tsumego)
+			$this->processResult($context, [
+				'tsumego_id' => $tsumego['id'],
+				'seconds' => 0,
+				'solved' => true,
+				'mode' => 1,
+			]);
+		$this->assertSame(2, $this->sprintConditionValue($context));
+	}
+
+	public function testSolveOutsideSprintResetsSprintCounter(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['level' => HeroPowers::$SPRINT_MINIMUM_LEVEL],
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'sprint', 'value' => 12]],
+		]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+		]);
+		$this->assertSame(0, $this->sprintConditionValue($context));
+	}
+
+	public function testFailDuringSprintDoesNotIncrementSprintCounter(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
+			'tsumego' => 1,
+		]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+			'mode' => 1,
+		]);
+		$this->assertSame(0, $this->sprintConditionValue($context));
+	}
+
+	public function testSprintAchievementUnlocksAfterThirtySolvesDuringSprint(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['sprint_start' => date('Y-m-d H:i:s')],
+			'tsumego' => 1,
+			'achievement-conditions' => [['category' => 'sprint', 'value' => 29]],
+		]);
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+			'mode' => 1,
+		]);
+		$this->assertSame(30, $this->sprintConditionValue($context));
+		$this->loginAs($context);
+		new AchievementChecker()->checkDanSolveAchievements();
+		$unlocked = ClassRegistry::init('AchievementStatus')->find('count', [
+			'conditions' => ['user_id' => $context->user['id'], 'achievement_id' => Achievement::SPRINT],
+		]);
+		$this->assertGreaterThan(0, $unlocked, 'Sprint achievement should unlock at 30 solves within a sprint');
 	}
 }

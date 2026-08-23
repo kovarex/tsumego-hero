@@ -157,7 +157,6 @@ function revelation()
 			$("#commentSpace").show();
 			updateCurrentNavigationButton('S');
 			displaySettings();
-			setCookie("revelation", "1");
 			revelationUseCount--;
 			disableRevelation();
 		});

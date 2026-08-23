@@ -15,7 +15,7 @@ class PlayResultProcessorComponent extends Component
 	/**
 	 * Process a play result submitted via AJAX. Takes explicit params, no cookies.
 	 *
-	 * @param array $params Keys: tsumego_id, seconds, solved, mode, type, sprint, timeout
+	 * @param array $params Keys: tsumego_id, seconds, solved, mode, type, timeout
 	 * @return array Result with xp_gained, rating_change, new_rating, etc.
 	 */
 	public function processResult(array $params): array
@@ -50,7 +50,7 @@ class PlayResultProcessorComponent extends Component
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, (float) $params['seconds']);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoID);
-		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue, $params['type'] ?? null, $params['sprint'] ?? null);
+		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue, $params['type'] ?? null);
 
 		if (Auth::isInTimeMode())
 		{
@@ -308,7 +308,7 @@ class PlayResultProcessorComponent extends Component
 		return $attempt && (int) $attempt['TsumegoAttempt']['misplays'] > 0;
 	}
 
-	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus, ?string $type = null, ?string $sprint = null): void
+	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus, ?string $type = null): void
 	{
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
@@ -318,7 +318,9 @@ class PlayResultProcessorComponent extends Component
 		$solvedTsumegoRank = Rating::getReadableRankFromRating($previousTsumego['Tsumego']['rating']);
 		AppController::saveDanSolveCondition($solvedTsumegoRank, $previousTsumego['Tsumego']['id']);
 		AppController::updateGems($solvedTsumegoRank);
-		if ($sprint === '1')
+		// Sprint state is server-authoritative (user.sprint_start). A solve only
+		// counts toward the sprint achievement while a sprint is actually active.
+		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			AppController::updateSprintCondition(true);
 		else
 			AppController::updateSprintCondition();

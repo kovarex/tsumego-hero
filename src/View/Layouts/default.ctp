@@ -11,7 +11,6 @@
  * @var string $lastProfileLeft
  * @var string $lastProfileRight
  * @var string $nextDay
- * @var bool $resetCookies
  * @var string $boardsBitmask
  */
 
@@ -397,16 +396,7 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 ?>
 <script type="text/javascript">
 	<?php AccountWidget::renderJS($timeMode); ?>
-	var lifetime = new Date();
-
-	lifetime.setTime(lifetime.getTime()+8*24*60*60*1000);
-	lifetime = lifetime.toUTCString()+"";
 	<?php
-	if(isset($removeCookie))
-		echo 'setCookie("'.$removeCookie.'", "0");';
-	if($_page!='level mode' && $_page!='rating mode' && $_page!='time mode')
-		echo 'setCookie("mode", 1);';
-
 	$count = is_array($achievementUpdate)?count($achievementUpdate):$achievementUpdate;
 
 	for ($i = 0; $i < $count; $i++)
@@ -433,12 +423,6 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 	setCookie("lightDark", <?php echo json_encode($lightDark, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	setCookie("lastProfileLeft", <?php echo json_encode($lastProfileLeft, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
 	setCookie("lastProfileRight", <?php echo json_encode($lastProfileRight, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>);
-	setCookie("type", "0");
-	setCookie("texture", "0");
-		<?php
-	if(isset($textureCookies))
-		echo 'document.cookie = "texture="+'.json_encode($textureCookies, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE).'+";SameSite=Lax;expires="+lifetime+";path=/";';
-	?>
 	var soundsEnabled = true;
 	var notMode3 = true;
 
@@ -522,10 +506,6 @@ if (Auth::isLoggedIn() && !$_COOKIE['disable-achievements'] && isset($achievemen
 				document.getElementById("homeCountdown").innerHTML += seconds;
 			}
 		}
-		<?php } ?>
-		<?php if($resetCookies){ ?>
-		setCookie("score", 0);
-		setCookie("seconds", 0);
 		<?php } ?>
 	});
 

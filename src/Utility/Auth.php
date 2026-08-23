@@ -5,17 +5,6 @@ App::uses('JwtAuth', 'Utility');
 
 class Auth
 {
-	/**
-	 * Generate random login token for phpBB2 forum SSO
-	 * The forum reads this cookie to authenticate users automatically
-	 */
-	private static function generateLoginToken(int $user_id): void
-	{
-		$token = Util::generateRandomString(50);
-		Auth::saveUserField('login_token', $token);
-		Util::setCookie('login_token', $token);
-	}
-
 	public static function init($user = null): void
 	{
 
@@ -35,7 +24,6 @@ class Auth
 			Auth::$user = $user['User'];
 			// Set JWT cookie for stateless auth
 			JwtAuth::setAuthCookie(Auth::getUserID());
-			self::generateLoginToken(Auth::getUserID()); // For phpBB2 forum SSO
 			return;
 		}
 
@@ -156,9 +144,8 @@ class Auth
 
 	public static function logout(): void
 	{
-		// Clear JWT cookie and phpBB2 SSO token
+		// Clear JWT auth cookie
 		JwtAuth::clearAuthCookie();
-		Util::clearCookie('login_token');
 		Auth::$user = null;
 	}
 
