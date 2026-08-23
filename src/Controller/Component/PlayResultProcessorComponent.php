@@ -38,7 +38,7 @@ class PlayResultProcessorComponent extends Component
 
 		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : 'N';
 		$this->processDamage($result, $previousStatusValue);
-		$this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
+		$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
@@ -71,7 +71,7 @@ class PlayResultProcessorComponent extends Component
 			'new_xp' => Auth::getUser()['xp'],
 			'new_level' => Auth::getUser()['level'],
 			'new_damage' => Auth::getUser()['damage'],
-			'status' => $tsumegoStatus['TsumegoStatus']['status'],
+			'status' => $newStatus,
 			'potion_triggered' => $result['potion_triggered'] ?? false,
 		];
 		if (!empty($achievementChecker->updated))
@@ -150,7 +150,7 @@ class PlayResultProcessorComponent extends Component
 		return $currentStatus;
 	}
 
-	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): void
+	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
 	{
 		if ($previousTsumegoStatus == null)
 		{
@@ -169,6 +169,7 @@ class PlayResultProcessorComponent extends Component
 		}
 		$previousTsumegoStatus['TsumegoStatus']['created'] = date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoStatus')->save($previousTsumegoStatus);
+		return $previousTsumegoStatus['TsumegoStatus']['status'];
 	}
 
 	private function updateTsumegoAttempt(array $previousTsumego, array $result, $previousTsumegoStatus, float $seconds): void
