@@ -11,9 +11,9 @@ App::uses('Util', 'Utility');
  * Replays the player's own attempt history to compute the next review date;
  * state is never stored, only mt_due is persisted.
  *
- * A clean solve climbs one rung of the review ladder; each misplay is a fail
- * and drops one rung. The rung therefore measures how hard this problem is
- * for this specific player, not for the population.
+ * A clean solve climbs one rung of the review ladder; a failed attempt drops
+ * one rung. The rung therefore measures how hard this problem is for this
+ * specific player, not for the population.
  */
 class MistakeTraining
 {
@@ -69,10 +69,9 @@ class MistakeTraining
 			}
 			else
 			{
-				// Lapse: each misplay is a fail, so drop one rung per misplay
-				// (at least one), never below the daily rung.
+				// Lapse: one failed attempt drops one rung, never below daily.
 				$graduated = false;
-				$rung = max($rung - max($misplays, 1), 0);
+				$rung = max($rung - 1, 0);
 			}
 		}
 

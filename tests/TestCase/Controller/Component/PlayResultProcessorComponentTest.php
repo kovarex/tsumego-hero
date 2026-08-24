@@ -851,6 +851,40 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		);
 	}
 
+	public function testTrainingFailsDoNotAccumulateOnOneAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->failResult($context);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Each training fail should be its own attempt');
+		foreach ($attempts as $attempt)
+			$this->assertSame(1, (int) $attempt['TsumegoAttempt']['misplays'], 'Each training fail should record one misplay');
+	}
+
+	public function testModeSwitchStartsNewAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$RATING_MODE);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'A mode switch should start a new attempt');
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $attempts[0]['TsumegoAttempt']['mode'], 'First attempt should be level mode');
+		$this->assertSame(Constants::$RATING_MODE, (int) $attempts[1]['TsumegoAttempt']['mode'], 'Second attempt should be rating mode');
+	}
+
 	// ── Mode side-effect matrix ──────────────────────────────────────────
 
 	public function testTrainingSolveDoesNotAffectLevelProgress(): void

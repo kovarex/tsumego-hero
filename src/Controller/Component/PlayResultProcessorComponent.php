@@ -186,8 +186,16 @@ class PlayResultProcessorComponent extends Component
 				'order' => 'id DESC']
 		);
 
-		// only not solved ones are updated (misplays get accumulated)
-		if (!$lastTsumegoAttempt || $lastTsumegoAttempt['TsumegoAttempt']['solved'])
+		// A session continues only within the same mode while still unsolved;
+		// training is always a fresh attempt and a mode switch starts a new one.
+		// Legacy attempts (mode NULL) don't break the session.
+		$lastMode = $lastTsumegoAttempt ? ($lastTsumegoAttempt['TsumegoAttempt']['mode'] ?? null) : null;
+		$sameSession = $lastTsumegoAttempt
+			&& !$lastTsumegoAttempt['TsumegoAttempt']['solved']
+			&& ($lastMode === null || (int) $lastMode === Auth::getMode())
+			&& !Auth::isInMistakeTrainingMode();
+
+		if (!$sameSession)
 		{
 			$tsumegoAttempt = [];
 			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();

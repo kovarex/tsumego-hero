@@ -120,7 +120,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame('2026-08-20 10:00:00', $result);
 	}
 
-	public function testEachMisplayDropsARung()
+	public function testFailedAttemptDropsOneRung()
 	{
 		foreach ([false, true] as $solved)
 		{
@@ -133,12 +133,12 @@ class MistakeTrainingTest extends TestCaseWithAuth
 			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
 			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-03 10:00:00');
 			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-10 10:00:00');
-			// Two misplays are two fails, not one
+			// One failed attempt drops one rung, regardless of how many misplays
 			$this->createAttempt($userId, $tsumegoId, $solved, 2, '2026-08-24 10:00:00');
 
 			$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-			// Two fails drop two rungs: rung 3 -> rung 1 (3 days)
-			$this->assertSame('2026-08-27 10:00:00', $result, 'solved=' . ($solved ? '1' : '0'));
+			// rung 3 -> rung 2 (7 days)
+			$this->assertSame('2026-08-31 10:00:00', $result, 'solved=' . ($solved ? '1' : '0'));
 		}
 	}
 
