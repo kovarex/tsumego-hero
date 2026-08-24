@@ -373,4 +373,38 @@ class Util
 	{
 		return date('c', strtotime($mysqlDatetime));
 	}
+
+	public static function calculateLibertyStatus(
+		$multipleChoiceSquares,
+		$multipleChoiceTriangles,
+		$minLiberties,
+		$maxLiberties,
+		$libertyCount,
+		$variance)
+	{
+		$minLiberties = max(1, $minLiberties);
+		$maxLiberties = min($maxLiberties, $libertyCount);
+
+		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
+		$maxBlackLiberties = $maxLiberties;
+
+		$minWhiteLiberties = max($minLiberties, $libertyCount - $multipleChoiceTriangles);
+		$maxWhiteLiberties = $maxLiberties;
+
+		// Restrict Black to values for which a valid White value exists
+		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
+		$maxBlackLiberties = min($maxBlackLiberties, $maxWhiteLiberties + $variance);
+
+		$remainingBlackLiberties = random_int($minBlackLiberties, $maxBlackLiberties);
+
+		// Calculate valid White range
+		$validMinWhiteLiberties = max($minWhiteLiberties, $remainingBlackLiberties - $variance);
+		$validMaxWhiteLiberties = min($maxWhiteLiberties, $remainingBlackLiberties + $variance);
+
+		// Pick remaining White liberties
+		$remainingW = random_int($validMinWhiteLiberties, $validMaxWhiteLiberties);
+
+		// Return number of liberties to remove
+		return [$libertyCount - $remainingBlackLiberties, $libertyCount - $remainingW];
+	}
 }

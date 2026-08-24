@@ -1858,13 +1858,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			$sStatusW = '';
 			if($t['Tsumego']['semeaiType'] == 1)
 			{
-				$t['Tsumego']['minLib'] += $t['Tsumego']['variance'];
-				$t['Tsumego']['maxLib'] -= $t['Tsumego']['variance'];
-				$sStatusB = rand($t['Tsumego']['minLib'],$t['Tsumego']['maxLib']);
-				$sStatusWmin = $sStatusB - $t['Tsumego']['variance'];
-				$sStatusWmax = $sStatusB + $t['Tsumego']['variance'];
-				$sStatusW = rand($sStatusWmin,$sStatusWmax);
-				} else if ($t['Tsumego']['semeaiType'] == 2) {
+				[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
+					$multipleChoiceSquares,
+					$multipleChoiceTriangles,
+					$t['Tsumego']['minLib'],
+					$t['Tsumego']['maxLib'],
+					$t['Tsumego']['libertyCount'],
+					$t['Tsumego']['variance']);
+			} else if ($t['Tsumego']['semeaiType'] == 2)
+			{
 				$sStatusB = rand(0,$t['Tsumego']['libertyCount']);
 				$sStatusW = rand(0,$t['Tsumego']['libertyCount']);
 			}
