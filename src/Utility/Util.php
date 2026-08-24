@@ -393,6 +393,8 @@ class Util
 		// maxLib can be unobtainable when there is not enough places where we can remove white liberties
 		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
 
+		$variance = $variance != 0 ? $variance : $maxLiberties - $minLiberties;
+
 		// Restrict Black to values for which a valid White value exists
 		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
 		$maxBlackLiberties = min($maxBlackLiberties, $maxWhiteLiberties + $variance);
