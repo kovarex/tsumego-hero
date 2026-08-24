@@ -383,7 +383,7 @@ class Util
 		$variance)
 	{
 		$minLiberties = max(1, $minLiberties);
-		$maxLiberties = min($maxLiberties, $libertyCount);
+		$maxLiberties = $maxLiberties != 0 ? min($maxLiberties, $libertyCount) : $libertyCount;
 
 		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
 		// maxLib can be unobtainable when there is not enough places where we can remove black liberties
