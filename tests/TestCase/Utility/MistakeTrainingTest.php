@@ -55,12 +55,9 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
 
 		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		// n=0 gives interval=1, second attempt is clean: n=0→interval=1 (wait, n=1 now)
-		// First attempt (misplays=1): entered training, n=0, interval=1, ef=2.3
-		// Second attempt (clean): n=0→interval=1, n=1, ef=2.4
-		// Due = 2026-08-02 + 1 day = 2026-08-03
-		$this->assertNotNull($result);
-		$this->assertSame('2026-08-03 10:00:00', $result);
+		// Entering misplay: rung 0. Clean solve: rung 1 (3 days).
+		// Due = 2026-08-02 + 3 days = 2026-08-05
+		$this->assertSame('2026-08-05 10:00:00', $result);
 	}
 
 	public function testCleanSolveProgression()
@@ -71,17 +68,17 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		// First: misplay (enters training)
 		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
-		// Clean solve 1: interval = 1 (n=0)
+		// Clean solve 1: rung 1 (3 days)
 		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
-		// Clean solve 2: interval = 6 (n=1)
+		// Clean solve 2: rung 2 (7 days)
 		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-03 10:00:00');
 
 		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		// Due = 2026-08-03 + 6 days = 2026-08-09
-		$this->assertSame('2026-08-09 10:00:00', $result);
+		// Due = 2026-08-03 + 7 days = 2026-08-10
+		$this->assertSame('2026-08-10 10:00:00', $result);
 	}
 
-	public function testMisplayResetsInterval()
+	public function testFailShrinksIntervalAfterCleanStreak()
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
@@ -89,16 +86,60 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		// First: misplay (enters training)
 		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
-		// Clean solve 1: interval = 1
+		// Clean solve 1: rung 1 (3 days)
 		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
-		// Clean solve 2: interval = 6
+		// Clean solve 2: rung 2 (7 days)
 		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-03 10:00:00');
-		// Misplay: resets to interval = 1
-		$this->createAttempt($userId, $tsumegoId, false, 2, '2026-08-10 10:00:00');
+		// Fail: drops one rung to 3 days instead of resetting to 1
+		$this->createAttempt($userId, $tsumegoId, false, 1, '2026-08-10 10:00:00');
 
 		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		// Due = 2026-08-10 + 1 day = 2026-08-11
-		$this->assertSame('2026-08-11 10:00:00', $result);
+		// Due = 2026-08-10 + 3 days = 2026-08-13
+		$this->assertSame('2026-08-13 10:00:00', $result);
+	}
+
+	public function testSolveAfterFailKeepsGrowingFromShrunkInterval()
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$userId = $context->user['id'];
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		// First: misplay (enters training)
+		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
+		// Clean solve 1: rung 1 (3 days)
+		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
+		// Clean solve 2: rung 2 (7 days)
+		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-03 10:00:00');
+		// Fail: drops to rung 1 (3 days)
+		$this->createAttempt($userId, $tsumegoId, false, 1, '2026-08-10 10:00:00');
+		// Clean solve climbs back to rung 2, not from rung 0
+		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-13 10:00:00');
+
+		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
+		// Due = 2026-08-13 + 7 days = 2026-08-20
+		$this->assertSame('2026-08-20 10:00:00', $result);
+	}
+
+	public function testEachMisplayDropsARung()
+	{
+		foreach ([false, true] as $solved)
+		{
+			$context = new ContextPreparator(['tsumego' => 1]);
+			$userId = $context->user['id'];
+			$tsumegoId = $context->tsumegos[0]['id'];
+
+			// Enter training and climb to rung 3 (14 days)
+			$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
+			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-02 10:00:00');
+			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-03 10:00:00');
+			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-10 10:00:00');
+			// Two misplays are two fails, not one
+			$this->createAttempt($userId, $tsumegoId, $solved, 2, '2026-08-24 10:00:00');
+
+			$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
+			// Two fails drop two rungs: rung 3 -> rung 1 (3 days)
+			$this->assertSame('2026-08-27 10:00:00', $result, 'solved=' . ($solved ? '1' : '0'));
+		}
 	}
 
 	public function testGraduation()
@@ -107,25 +148,13 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$userId = $context->user['id'];
 		$tsumegoId = $context->tsumegos[0]['id'];
 
-		// First: misplay (enters training)
-		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-01-01 10:00:00');
-		// Clean solve 1: interval = 1 (n=0→1)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-01-02 10:00:00');
-		// Clean solve 2: interval = 6 (n=1→2)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-01-03 10:00:00');
-		// Clean solve 3: interval = round(6 * 2.4) = 14 (n=2→3, ef=2.4→2.5)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-01-09 10:00:00');
-		// Clean solve 4: interval = round(14 * 2.5) = 35 (n=3→4, ef=2.5→2.6)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-01-23 10:00:00');
-		// Clean solve 5: interval = round(35 * 2.6) = 91 (n=4→5, ef=2.6→2.7)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-02-27 10:00:00');
-		// Clean solve 6: interval = round(91 * 2.7) = 246 (n=5→6, ef=2.7→2.8)
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-05-28 10:00:00');
-		// Clean solve 7: interval = round(246 * 2.8) = 689 >= 365 → GRADUATED
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-01 10:00:00');
+		// Enter training, then climb the ladder to the top rung
+		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
+		foreach (['02', '03', '04', '05', '06', '07'] as $day)
+			$this->createAttempt($userId, $tsumegoId, true, 0, '2026-08-' . $day . ' 10:00:00');
 
 		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		$this->assertNull($result, 'Problem should graduate when interval >= 365');
+		$this->assertNull($result, 'Problem should graduate on a clean solve at the top rung');
 	}
 
 	public function testFailedAttemptEntersTraining()
@@ -142,7 +171,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 		$this->assertSame('2026-08-02 10:00:00', $result);
 	}
 
-	public function testEfFloorAt13()
+	public function testFailsFloorAtDailyRung()
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
 		$userId = $context->user['id'];
@@ -150,18 +179,12 @@ class MistakeTrainingTest extends TestCaseWithAuth
 
 		// Enter training
 		$this->createAttempt($userId, $tsumegoId, true, 1, '2026-08-01 10:00:00');
-		// Many failures to push EF down
-		for ($i = 0; $i < 20; $i++)
+		// Repeated failures never push below the daily rung
+		for ($i = 0; $i < 5; $i++)
 			$this->createAttempt($userId, $tsumegoId, false, 1, '2026-08-' . str_pad($i + 2, 2, '0', STR_PAD_LEFT) . ' 10:00:00');
 
 		$result = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		$this->assertNotNull($result);
-
-		// EF should be floored at 1.3. After a clean solve, interval would be 6 (n=1).
-		// But we need to verify the EF didn't go below 1.3 — do this by checking
-		// that a clean solve after many failures still produces a reasonable interval.
-		$this->createAttempt($userId, $tsumegoId, true, 0, '2026-09-01 10:00:00');
-		$result2 = MistakeTraining::computeNextDue($userId, $tsumegoId);
-		$this->assertNotNull($result2);
+		// Due = 2026-08-06 + 1 day = 2026-08-07 (still daily)
+		$this->assertSame('2026-08-07 10:00:00', $result);
 	}
 }

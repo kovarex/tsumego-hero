@@ -5,36 +5,32 @@ App::uses('TsumegoButtons', 'Utility');
 App::uses('Util', 'Utility');
 
 /**
- * Mistake training: SM-2 spaced repetition for failed tsumegos.
+ * Mistake training: spaced repetition for failed tsumegos.
  *
- * Owns the training queue (which problems are due) and the SM-2 algorithm.
- * Replays the algorithm from tsumego_attempt history to compute the next review
- * date; state is never stored, only mt_due is persisted.
+ * Owns the training queue (which problems are due) and the review schedule.
+ * Replays the player's own attempt history to compute the next review date;
+ * state is never stored, only mt_due is persisted.
+ *
+ * A clean solve climbs one rung of the review ladder; each misplay is a fail
+ * and drops one rung. The rung therefore measures how hard this problem is
+ * for this specific player, not for the population.
  */
 class MistakeTraining
 {
 	/**
-	 * Graduation threshold: interval >= 365 days means the problem is mastered.
+	 * Review ladder: days until the next review at each rung. A clean solve
+	 * climbs a rung; a lapse drops a rung; a clean solve at the top graduates.
 	 */
-	public static int $GRADUATION_INTERVAL = 365;
+	private static array $LADDER = [1, 3, 7, 14, 30, 60];
 
 	/**
-	 * Initial easiness factor.
-	 */
-	private static float $INITIAL_EF = 2.5;
-
-	/**
-	 * Minimum easiness factor.
-	 */
-	private static float $MIN_EF = 1.3;
-
-	/**
-	 * Compute the next mt_due for a user+tsumego pair by replaying SM-2
-	 * from tsumego_attempt history.
+	 * Compute the next mt_due for a user+tsumego pair by replaying the
+	 * player's own attempt history up and down the review ladder.
 	 *
 	 * Returns:
 	 *  - a datetime string for the next due date, OR
-	 *  - null if the problem has graduated (interval >= 365 days) or has no training history
+	 *  - null if the problem has graduated (clean solve at the top rung)
+	 *    or has no training history
 	 */
 	public static function computeNextDue(int $userId, int $tsumegoId): ?string
 	{
@@ -43,9 +39,9 @@ class MistakeTraining
 			'order' => 'created ASC',
 		]);
 
-		$ef = self::$INITIAL_EF;
-		$n = 0;
-		$interval = 0;
+		$top = count(self::$LADDER) - 1;
+		$rung = 0;
+		$graduated = false;
 		$started = false;
 		$lastDate = null;
 
@@ -66,33 +62,28 @@ class MistakeTraining
 			if ($solved && $misplays === 0)
 			{
 				// Clean solve
-				if ($n === 0)
-					$interval = 1;
-				elseif ($n === 1)
-					$interval = 6;
+				if ($rung >= $top)
+					$graduated = true;
 				else
-					$interval = (int) round($interval * $ef);
-				$n++;
-				$ef += 0.1;
+					$rung++;
 			}
 			else
 			{
-				// Mistakes or failure
-				$n = 0;
-				$interval = 1;
-				$ef -= 0.2;
+				// Lapse: each misplay is a fail, so drop one rung per misplay
+				// (at least one), never below the daily rung.
+				$graduated = false;
+				$rung = max($rung - max($misplays, 1), 0);
 			}
-			$ef = max(self::$MIN_EF, $ef);
 		}
 
 		if (!$started || $lastDate === null)
 			return null;
 
 		// Graduation
-		if ($interval >= self::$GRADUATION_INTERVAL)
+		if ($graduated)
 			return null;
 
-		return date('Y-m-d H:i:s', strtotime($lastDate . " +{$interval} days"));
+		return date('Y-m-d H:i:s', strtotime($lastDate . " +" . self::$LADDER[$rung] . " days"));
 	}
 
 	/**
