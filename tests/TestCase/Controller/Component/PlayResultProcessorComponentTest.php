@@ -885,6 +885,25 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$this->assertSame(Constants::$RATING_MODE, (int) $attempts[1]['TsumegoAttempt']['mode'], 'Second attempt should be rating mode');
 	}
 
+	public function testSwitchingBackToModeResumesItsAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$RATING_MODE);
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Switching back to a mode should resume its attempt');
+		$this->assertSame(2, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'The level attempt should accumulate its two misplays');
+		$this->assertSame(1, (int) $attempts[1]['TsumegoAttempt']['misplays'], 'The rating attempt should keep its one misplay');
+	}
+
 	// ── Mode side-effect matrix ──────────────────────────────────────────
 
 	public function testTrainingSolveDoesNotAffectLevelProgress(): void

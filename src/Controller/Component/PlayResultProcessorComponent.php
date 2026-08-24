@@ -178,24 +178,26 @@ class PlayResultProcessorComponent extends Component
 			return;
 		if (TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
-		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find(
-			'first',
-			['conditions'
-				=> ['user_id' => Auth::getUserID(),
-					'tsumego_id' => $previousTsumego['Tsumego']['id']],
-				'order' => 'id DESC']
-		);
+		// Find the last unsolved attempt of the current mode, so a mode switch
+		// pauses a session instead of abandoning it. Legacy mode-NULL rows match
+		// any mode.
+		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'tsumego_id' => $previousTsumego['Tsumego']['id'],
+				'solved' => 0,
+				'OR' => [
+					['mode' => Auth::getMode()],
+					['mode' => null],
+				],
+			],
+			'order' => 'id DESC',
+		]);
 
-		// A session continues only within the same mode while still unsolved;
-		// training is always a fresh attempt and a mode switch starts a new one.
-		// Legacy attempts (mode NULL) don't break the session.
-		$lastMode = $lastTsumegoAttempt ? ($lastTsumegoAttempt['TsumegoAttempt']['mode'] ?? null) : null;
-		$sameSession = $lastTsumegoAttempt
-			&& !$lastTsumegoAttempt['TsumegoAttempt']['solved']
-			&& ($lastMode === null || (int) $lastMode === Auth::getMode())
-			&& !Auth::isInMistakeTrainingMode();
+		// Training has no retry, so it never resumes — always a fresh attempt.
+		$tsumegoAttempt = Auth::isInMistakeTrainingMode() ? null : $lastTsumegoAttempt;
 
-		if (!$sameSession)
+		if (!$tsumegoAttempt)
 		{
 			$tsumegoAttempt = [];
 			$tsumegoAttempt['TsumegoAttempt']['user_id'] = Auth::getUserID();
@@ -205,8 +207,6 @@ class PlayResultProcessorComponent extends Component
 			$tsumegoAttempt['TsumegoAttempt']['tsumego_rating'] = $previousTsumego['Tsumego']['rating'];
 			$tsumegoAttempt['TsumegoAttempt']['misplays'] = 0;
 		}
-		else
-			$tsumegoAttempt = $lastTsumegoAttempt;
 
 		$tsumegoAttempt['TsumegoAttempt']['user_rating'] = Auth::getUser()['rating'];
 		$tsumegoAttempt['TsumegoAttempt']['gain'] = $result['xp-gained'] ?: 0;
