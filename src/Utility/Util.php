@@ -386,10 +386,12 @@ class Util
 		$maxLiberties = min($maxLiberties, $libertyCount);
 
 		$minBlackLiberties = max($minLiberties, $libertyCount - $multipleChoiceSquares);
-		$maxBlackLiberties = $maxLiberties;
+		// maxLib can be unobtainable when there is not enough places where we can remove black liberties
+		$maxBlackLiberties = max($maxLiberties, $libertyCount - $multipleChoiceSquares);
 
 		$minWhiteLiberties = max($minLiberties, $libertyCount - $multipleChoiceTriangles);
-		$maxWhiteLiberties = $maxLiberties;
+		// maxLib can be unobtainable when there is not enough places where we can remove white liberties
+		$maxWhiteLiberties = max($maxLiberties, $libertyCount - $multipleChoiceTriangles);
 
 		// Restrict Black to values for which a valid White value exists
 		$minBlackLiberties = max($minBlackLiberties, $minWhiteLiberties - $variance);
