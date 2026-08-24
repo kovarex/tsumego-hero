@@ -11,9 +11,9 @@ class Util
 	public static function setCookie($name, $value)
 	{
 		setcookie($name, $value, [
-			'expires'  => time() + 365 * 24 * 60 * 60,
-			'path'     => '/',
-			'secure'   => true,
+			'expires' => time() + 365 * 24 * 60 * 60,
+			'path' => '/',
+			'secure' => true,
 			'httponly' => false,
 			'samesite' => 'Lax'
 		]);
@@ -28,9 +28,9 @@ class Util
 
 		setcookie($name, '',
 			[
-				'expires'  => time() - 3600,
-				'path'     => '/',
-				'secure'   => true,
+				'expires' => time() - 3600,
+				'path' => '/',
+				'secure' => true,
 				'httponly' => false,
 				'samesite' => 'Lax'
 			]);
@@ -189,7 +189,7 @@ class Util
 			$existingCondition = $condition;
 			return;
 		}
-		$existingCondition .= " AND " ;
+		$existingCondition .= " AND ";
 		if (str_contains($condition, " OR "))
 			$existingCondition .= '(' . $condition . ')';
 		else
