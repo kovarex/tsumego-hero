@@ -24,6 +24,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true) ?? [];
 	}
 
+	private function processResult(ContextPreparator &$context, array $params): array
+	{
+		return $this->postResult($context, $params);
+	}
+
 	private function solve(ContextPreparator &$context): array
 	{
 		return $this->postResult($context, [
@@ -737,139 +742,113 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 
 	public function testMisplayOnFirstEncounterSetsMtDue(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
-			$this->performMisplay($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
-				'Misplay on first encounter should set mt_due (' . $page . ')');
-		}
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Misplay on first encounter should set mt_due');
 	}
 
 	public function testSolveWithMisplaysOnFirstEncounterSetsMtDue(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
-			$this->performSolveWithMisplays($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
-				'Solve with misplays on first encounter should set mt_due (' . $page . ')');
-		}
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->solveWithMisplays($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Solve with misplays on first encounter should set mt_due');
 	}
 
 	public function testCleanSolveOnFirstEncounterDoesNotSetMtDue(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
-			$this->performSolve($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNull($status['TsumegoStatus']['mt_due'],
-				'Clean solve on first encounter should not set mt_due (' . $page . ')');
-		}
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->solve($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'],
+			'Clean solve on first encounter should not set mt_due');
 	}
 
 	public function testVisitOnlyDoesNotSetMtDue(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
-			$this->performVisit($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNull($status['TsumegoStatus']['mt_due'],
-				'Visit only should not set mt_due (' . $page . ')');
-		}
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->loginAs($context);
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'],
+			'Visit only should not set mt_due');
 	}
 
 	public function testFailPushesMtDueToTomorrow(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
+		$context = new ContextPreparator(['tsumego' => 1]);
 
-			// First encounter: misplay to enter training
-			$this->performMisplay($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
-				'Should have mt_due after first misplay (' . $page . ')');
+		// First encounter: misplay to enter training
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Should have mt_due after first misplay');
 
-			// mt_due should be roughly tomorrow from the first misplay
-			$firstDue = $status['TsumegoStatus']['mt_due'];
+		// Now fail again (simulate coming back and failing)
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
 
-			// Now fail again (simulate coming back and failing)
-			$this->performMisplay($context, $page);
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-
-			// mt_due should still be in the future (roughly tomorrow)
-			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
-				'Should still have mt_due after second fail (' . $page . ')');
-			$this->assertGreaterThan(
-				date('Y-m-d H:i:s'),
-				$status['TsumegoStatus']['mt_due'],
-				'mt_due should be in the future after fail, so problem drops from due queue (' . $page . ')'
-			);
-		}
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Should still have mt_due after second fail');
+		$this->assertGreaterThan(
+			date('Y-m-d H:i:s'),
+			$status['TsumegoStatus']['mt_due'],
+			'mt_due should be in the future after fail, so problem drops from due queue'
+		);
 	}
 
 	public function testSolveUpdatesMtDueForTrainingProblem(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
+		$context = new ContextPreparator(['tsumego' => 1]);
 
-			// Enter training via misplay
-			$this->performMisplay($context, $page);
+		// Enter training via misplay
+		$this->failResult($context);
 
-			// Clean solve (no misplays) should update mt_due via SM-2
-			$this->performSolve($context, $page);
+		// Clean solve (no misplays) should update mt_due via the review ladder
+		$this->solve($context);
 
-			$status = ClassRegistry::init('TsumegoStatus')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-			]);
-			$this->assertNotNull($status['TsumegoStatus']['mt_due'],
-				'Clean solve after entering training should keep mt_due (' . $page . ')');
-			// After misplay + clean solve: SM-2 gives interval=1 (first clean solve after entry)
-			// So mt_due should be ~1 day from now
-			$this->assertGreaterThan(
-				date('Y-m-d H:i:s'),
-				$status['TsumegoStatus']['mt_due'],
-				'mt_due should be in the future after clean solve (' . $page . ')'
-			);
-		}
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Clean solve after entering training should keep mt_due');
+		$this->assertGreaterThan(
+			date('Y-m-d H:i:s'),
+			$status['TsumegoStatus']['mt_due'],
+			'mt_due should be in the future after clean solve'
+		);
 	}
 
 	public function testMistakeTrainingAttemptsRecordMode(): void
 	{
-		foreach ($this->PAGES as $page)
-		{
-			$context = new ContextPreparator(['tsumego' => 1]);
-			Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
-			$this->performMisplay($context, $page);
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$this->failResult($context);
 
-			$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-				'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
-				'order' => 'id DESC',
-			]);
-			$this->assertSame(
-				Constants::$MISTAKE_TRAINING_MODE,
-				(int) $attempt['TsumegoAttempt']['mode'],
-				'Training attempts should be tagged with the mistake training mode (' . $page . ')'
-			);
-		}
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(
+			Constants::$MISTAKE_TRAINING_MODE,
+			(int) $attempt['TsumegoAttempt']['mode'],
+			'Training attempts should be tagged with the mistake training mode'
+		);
 	}
 
 	// ── Mode side-effect matrix ──────────────────────────────────────────

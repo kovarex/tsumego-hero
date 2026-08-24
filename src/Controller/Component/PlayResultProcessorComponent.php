@@ -35,9 +35,7 @@ class PlayResultProcessorComponent extends Component
 
 		$previousStatusValue = $tsumegoStatus ? $tsumegoStatus['TsumegoStatus']['status'] : TsumegoStatus::$NOT_VISITED;
 		$this->processDamage($result, $previousStatusValue);
-		$newStatus = $previousStatusValue;
-		if (!Auth::isInMistakeTrainingMode())
-			$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
+		$newStatus = $this->updateTsumegoStatus($tsumego, $result, $tsumegoStatus);
 
 		if (HeroPowers::getSprintRemainingSeconds() > 0)
 			$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SPRINT_MULTIPLIER;
@@ -45,14 +43,13 @@ class PlayResultProcessorComponent extends Component
 		$originalTsumegoRating = $tsumego['Tsumego']['rating'];
 
 		$this->processRatingChange($tsumego, $result, $previousStatusValue);
-		if (!$result['solved'] && !Auth::isInMistakeTrainingMode())
+		if (!$result['solved'])
 			$result['potion_triggered'] = $this->processPotion();
 		$this->processXpChange($tsumego, $result, $previousStatusValue, $originalTsumegoRating);
 		$this->updateTsumegoAttempt($tsumego, $result, $previousStatusValue, $seconds);
 		$this->updateMistakeTraining($tsumego, $result, $tsumegoStatus);
 		$this->processErrorAchievement($result, $previousStatusValue, $tsumegoId);
-		if (!Auth::isInMistakeTrainingMode())
-			$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
+		$this->processUnsortedStuff($tsumego, $result, $previousStatusValue);
 
 		if (Auth::isInTimeMode())
 		{
@@ -97,6 +94,8 @@ class PlayResultProcessorComponent extends Component
 	 */
 	public function processPotion(): bool
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return false;
 		if (!HeroPowers::canPotionTrigger())
 			return false;
 
@@ -153,6 +152,9 @@ class PlayResultProcessorComponent extends Component
 
 	private function updateTsumegoStatus(array $previousTsumego, array &$result, ?array $previousTsumegoStatus): string
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return $previousTsumegoStatus['TsumegoStatus']['status'] ?? TsumegoStatus::$NOT_VISITED;
+
 		if ($previousTsumegoStatus == null)
 		{
 			$previousTsumegoStatus['TsumegoStatus'] = [];
@@ -214,8 +216,9 @@ class PlayResultProcessorComponent extends Component
 
 	/**
 	 * Keep the mistake-training pool in sync after a result: enter first-encounter
-	 * mistakes and reschedule anything already in training. SM-2 computes the next
-	 * due date; a NULL due means the problem does not belong in the pool.
+	 * mistakes and reschedule anything already in training. The review ladder
+	 * computes the next due date; a NULL due means the problem does not belong in
+	 * the pool.
 	 */
 	private function updateMistakeTraining(array $tsumego, array $result, ?array $tsumegoStatus): void
 	{
@@ -348,6 +351,8 @@ class PlayResultProcessorComponent extends Component
 
 	private function processUnsortedStuff(array $previousTsumego, array $result, string $previousTsumegoStatus): void
 	{
+		if (Auth::isInMistakeTrainingMode())
+			return;
 		if (!Level::XPAndRatingIsGainedInTsumegoStatus($previousTsumegoStatus))
 			return;
 		if (!$result['solved'])
