@@ -11,20 +11,24 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  validation:
+  tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mariadb:10.11
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: test
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mariadb-admin ping -h localhost -u root -proot" --health-interval=10s --health-timeout=5s --health-retries=3
 
       selenium-firefox:
         image: selenium/standalone-firefox:latest
@@ -38,7 +42,7 @@ jobs:
           --add-host=host.docker.internal:host-gateway
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Required for git-restore-mtime to access full history
 
@@ -53,6 +57,7 @@ jobs:
           coverage: xdebug
 
       - name: Configure Xdebug for coverage
+        if: github.ref == 'refs/heads/master'
         run: |
             echo "zend_extension=$(php -i | grep -i xdebug | grep extension_dir | awk '{print $3}')/xdebug.so" >> $GITHUB_ENV
             echo "xdebug.mode=coverage" | sudo tee -a /etc/php/8.4/cli/conf.d/99-xdebug.ini
@@ -65,7 +70,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -74,25 +79,14 @@ jobs:
       - name: Composer install
         run: composer install --prefer-dist --no-interaction
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - run: corepack enable
-      - run: pnpm install
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          cache: pnpm
 
       - name: Install pnpm dependencies
         run: pnpm install --frozen-lockfile
@@ -111,8 +105,8 @@ jobs:
         run: composer images:webp
 
       - name: Commit generated WebP files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        if: github.ref == 'refs/heads/master'
         with:
           commit_message: "chore: auto-generate WebP images"
           file_pattern: "webroot/img/*.webp webroot/img/**/*.webp"
@@ -169,7 +163,11 @@ jobs:
         run: |
           mkdir -p /tmp/coverage
           # Use router script to handle CakePHP dispatcher filter routes
-          nohup php -d xdebug.mode=coverage  -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            nohup php -d xdebug.mode=coverage -d xdebug.start_with_request=yes -d auto_prepend_file=/home/runner/work/tsumego-hero/tsumego-hero/.github/ci/xdebug-prepend.php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          else
+            nohup php -S 0.0.0.0:8080 -t webroot .github/ci/router.php > server.log 2>&1 &
+          fi
           sleep 3
 
       - name: Start Caddy HTTPS reverse proxy
@@ -185,7 +183,7 @@ jobs:
           echo "Caddy log:"
           cat caddy.log || true
 
-      - name: Run tests with coverage
+      - name: Run tests
         env:
           TZ: UTC
           SELENIUM_URL: http://localhost:4444
@@ -194,10 +192,10 @@ jobs:
           TEST_ENVIRONMENT: github-ci
         run: |
           mkdir -p /tmp/coverage
-          # Run all tests (excluding apache-only and disabled groups) with coverage in both formats
-          vendor/bin/phpunit --exclude-group apache-only,disabled --coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov
+          vendor/bin/phpunit --exclude-group apache-only,disabled ${{ github.ref == 'refs/heads/master' && '--coverage-clover /tmp/coverage/clover.xml --coverage-php /tmp/coverage/phpunit.cov' || '' }}
 
       - name: Merge coverage files
+        if: github.ref == 'refs/heads/master'
         run: php .github/ci/merge-coverage.php
 
       - name: Deploy coverage to GitHub Pages
@@ -207,6 +205,33 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./coverage
           destination_dir: coverage
+
+  static-analysis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer install
+        run: composer install --prefer-dist --no-interaction
 
       - name: Run PHPStan
         run: composer stan -- --error-format=github
