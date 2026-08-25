@@ -13,6 +13,26 @@ class Constants
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;
+	public static int $MISTAKE_TRAINING_MODE = 5;
+
+	/**
+	 * Human-readable label for a play mode (user.mode / tsumego_attempt.mode).
+	 * NULL or unknown modes default to Level, which is what legacy attempts were.
+	 */
+	public static function modeLabel(?int $mode): string
+	{
+		switch ($mode)
+		{
+			case self::$RATING_MODE:
+				return 'Rating';
+			case self::$TIME_MODE:
+				return 'Time';
+			case self::$MISTAKE_TRAINING_MODE:
+				return 'Training';
+			default:
+				return 'Level';
+		}
+	}
 
 	// Highscore page identifiers (stored in user.lastHighscore)
 	public static int $HIGHSCORE_LEVEL = 1;

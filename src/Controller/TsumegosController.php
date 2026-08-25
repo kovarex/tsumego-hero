@@ -78,7 +78,7 @@ class TsumegosController extends AppController
 
 	public function play($id = null, $setConnectionID = null)
 	{
-		if (Auth::isLoggedIn() && !Auth::isInLevelMode())
+		if (Auth::isLoggedIn() && !Auth::isInLevelMode() && !Auth::isInMistakeTrainingMode())
 			Auth::saveUserField('mode', Constants::$LEVEL_MODE);
 
 		if ($setConnectionID)
@@ -109,6 +109,81 @@ class TsumegosController extends AppController
 		return new Play(function ($name, $value) {
 			$this->set($name, $value);
 		})->play($setConnection['SetConnection']['id'], $this->params, $this->data);
+	}
+
+	public function mistakeTraining()
+	{
+		if (!Auth::isLoggedIn())
+			return $this->redirect('/users/login');
+
+		$next = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => [
+				'user_id' => Auth::getUserID(),
+				'mt_due <=' => date('Y-m-d H:i:s'),
+				'mt_due IS NOT NULL',
+			],
+			'order' => 'mt_due ASC',
+		]);
+
+		if (!$next)
+		{
+			$this->set('_page', 'mistake-training');
+			$this->set('_title', 'Tsumego Hero - Mistake Training');
+
+			$totalInTraining = ClassRegistry::init('TsumegoStatus')->find('count', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'mt_due IS NOT NULL',
+				],
+			]);
+			$this->set('totalInTraining', (int) $totalInTraining);
+
+			$upcoming = ClassRegistry::init('TsumegoStatus')->find('all', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'mt_due >' => date('Y-m-d H:i:s'),
+				],
+				'order' => 'mt_due ASC',
+				'limit' => 30,
+			]);
+			$upcomingByDay = [];
+			foreach ($upcoming as $row)
+			{
+				$day = date('Y-m-d', strtotime($row['TsumegoStatus']['mt_due']));
+				$upcomingByDay[$day] = ($upcomingByDay[$day] ?? 0) + 1;
+			}
+			$this->set('upcomingByDay', $upcomingByDay);
+
+			return;
+		}
+
+		$tsumego = ClassRegistry::init('Tsumego')->find('first', [
+			'conditions' => [
+				'id' => $next['TsumegoStatus']['tsumego_id'],
+				'deleted IS NULL',
+			],
+		]);
+		if (!$tsumego)
+		{
+			ClassRegistry::init('TsumegoStatus')->updateAll(
+				['mt_due' => 'NULL'],
+				['user_id' => Auth::getUserID(), 'tsumego_id' => $next['TsumegoStatus']['tsumego_id']]
+			);
+			return $this->redirect('/mistake-training');
+		}
+
+		$setConnection = ClassRegistry::init('SetConnection')->findDisplaySetConnection((int) $next['TsumegoStatus']['tsumego_id']);
+		if (!$setConnection)
+		{
+			ClassRegistry::init('TsumegoStatus')->updateAll(
+				['mt_due' => 'NULL'],
+				['user_id' => Auth::getUserID(), 'tsumego_id' => $next['TsumegoStatus']['tsumego_id']]
+			);
+			return $this->redirect('/mistake-training');
+		}
+
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$this->redirect('/' . $setConnection['SetConnection']['id']);
 	}
 
 	public static function inArrayX($x, $newArray)
@@ -655,6 +730,7 @@ class TsumegosController extends AppController
 				MAX(tsumego_rating) AS Rating
 			FROM tsumego_attempt
 			WHERE tsumego_id = :tsumego_id AND tsumego_rating != 0
+			  AND IFNULL(mode, 1) <> " . Constants::$MISTAKE_TRAINING_MODE . "
 			GROUP BY DATE(created)
 			ORDER BY day ASC
 		", ['tsumego_id' => $tsumegoID]);

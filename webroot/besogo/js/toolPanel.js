@@ -315,7 +315,7 @@ besogo.makeToolPanel = function (container, editor) {
           "besogo-pass-button"
         );
       }
-      if (mode == 1) {
+      if (mode == 1 || mode == 5) {
         let prevButtonId;
         prevButtonId = "besogo-back-button";
 
@@ -387,8 +387,11 @@ besogo.makeToolPanel = function (container, editor) {
 			  },
 			"besogo-reset-button"
 			);
+	  }
+	  if (mode == 1 || mode == 2 || mode == 5)
+	  {
 		makeHyperlinkText("Next", "next problem", nextButtonLink, "besogo-next-button");
-	}
+	  }
       let reviewButtonId;
       if (editor.getReviewEnabled()) reviewButtonId = "besogo-review-button";
       else reviewButtonId = "besogo-review-button-inactive";

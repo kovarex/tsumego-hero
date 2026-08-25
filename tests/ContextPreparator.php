@@ -223,6 +223,7 @@ class ContextPreparator
 		$tsumegoAttempt['solved'] = Util::extract('solved', $tsumegoAttemptInput) ?: false;
 		$tsumegoAttempt['tsumego_rating'] = Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating'];
 		$tsumegoAttempt['misplays'] = Util::extract('misplays', $tsumegoAttemptInput) ?: 0;
+		$tsumegoAttempt['mode'] = Util::extract('mode', $tsumegoAttemptInput) ?: Constants::$LEVEL_MODE;
 		$tsumegoAttempt['created'] = Util::extract('created', $tsumegoAttemptInput) ?: date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoAttempt')->create($tsumegoAttempt);
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);
@@ -335,6 +336,7 @@ class ContextPreparator
 	{
 		$statusValue = $tsumegoStatus ? (is_string($tsumegoStatus) ? $tsumegoStatus : $tsumegoStatus['name']) : null;
 		$updated = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : $tsumegoStatus['updated']) : null;
+		$mtDue = $tsumegoStatus ? (is_string($tsumegoStatus) ? null : ($tsumegoStatus['mt_due'] ?? null)) : null;
 		$userID = $tsumegoStatus
 			? (is_string($tsumegoStatus)
 				? $this->user['id']
@@ -355,6 +357,8 @@ class ContextPreparator
 				$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 				if ($updated)
 					$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
+				if ($mtDue)
+					$originalTsumegoStatus['TsumegoStatus']['mt_due'] = $mtDue;
 				ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 			}
 		elseif ($tsumegoStatus)
@@ -363,11 +367,10 @@ class ContextPreparator
 			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
 			if ($updated)
 				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
-			$originalTsumegoStatus['TsumegoStatus']['status'] = $statusValue;
+			if ($mtDue)
+				$originalTsumegoStatus['TsumegoStatus']['mt_due'] = $mtDue;
 			$originalTsumegoStatus['TsumegoStatus']['user_id'] = $userID;
 			$originalTsumegoStatus['TsumegoStatus']['tsumego_id'] = $tsumego['id'];
-			if ($updated)
-				$originalTsumegoStatus['TsumegoStatus']['updated'] = $updated;
 			ClassRegistry::init('TsumegoStatus')->create($originalTsumegoStatus);
 			ClassRegistry::init('TsumegoStatus')->save($originalTsumegoStatus);
 		}

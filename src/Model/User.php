@@ -1,5 +1,7 @@
 <?php
 
+App::uses('Constants', 'Utility');
+
 class User extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)
@@ -71,7 +73,7 @@ class User extends AppModel
 	public static function getHighestRating($user): float
 	{
 		$highestTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => ['user_id' => $user['id']],
+			'conditions' => ['user_id' => $user['id'], 'IFNULL(mode, 1) <> ' . Constants::$MISTAKE_TRAINING_MODE],
 			'order' => 'user_rating DESC']);
 		if ($highestTsumegoAttempt)
 			return max($highestTsumegoAttempt['TsumegoAttempt']['user_rating'], $user['rating']);

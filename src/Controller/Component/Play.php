@@ -1,6 +1,7 @@
 <?php
 
 App::uses('SetNavigationButtonsInput', 'Utility');
+App::uses('MistakeTraining', 'Utility');
 App::uses('TsumegoButton', 'Utility');
 App::uses('TsumegoButtons', 'Utility');
 App::uses('TsumegoXPAndRating', 'Utility');
@@ -242,11 +243,27 @@ class Play
 		else
 		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
 
+		// If in training mode but this tsumego isn't in the training queue, reset to level mode
+		if (Auth::isInMistakeTrainingMode())
+		{
+			$mtStatus = ClassRegistry::init('TsumegoStatus')->find('first', [
+				'conditions' => ['user_id' => Auth::getUserID(), 'tsumego_id' => $id],
+			]);
+			if (!$mtStatus || empty($mtStatus['TsumegoStatus']['mt_due']))
+				Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		}
+
 		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
 			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
+		}
+		elseif (Auth::isInMistakeTrainingMode())
+		{
+			$mtButtons = MistakeTraining::buildQueueButtons($currentSetConnection['SetConnection']['id']);
+			new SetNavigationButtonsInput($this->setFunction)->execute($mtButtons, $currentSetConnection);
+			($this->setFunction)('_title', 'Mistake Training ' . $mtButtons->currentOrder . '/' . $mtButtons->highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
@@ -370,8 +387,10 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		}
 		($this->setFunction)('userSetsJson', $userSetsJson);
 
-		if (Auth::isInLevelMode())
+		if (Auth::isInLevelMode() && isset($tsumegoButtons))
 			$tsumegoButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set);
+		elseif (Auth::isInMistakeTrainingMode() && isset($mtButtons))
+			$mtButtons->exportCurrentAndPreviousLink($this->setFunction, $tsumegoFilters, $setConnectionID, $set, '/mistake-training');
 
 		($this->setFunction)('isAllowedToContribute', $isAllowedToContribute);
 		($this->setFunction)('canAddMoreTags', $canAddMoreTags);
@@ -450,6 +469,9 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 						<div id="sliderText">regular</div>
 						</div>
 						<a id="playTitleA" href=""></a>';
+
+		if (Auth::isInMistakeTrainingMode())
+			return '<a id="playTitleA" href="/mistake-training">Mistake Training ' . ($tsumegoButtons->currentOrder ?? 0) . '/' . ($tsumegoButtons->highestTsumegoOrder ?? 0) . '</a>';
 
 		$order = $setConnection['SetConnection']['num'];
 		if ($tsumegoFilters->query == 'difficulty' || $tsumegoFilters->query == 'tags')

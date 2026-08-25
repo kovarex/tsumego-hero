@@ -151,6 +151,11 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<table width="100%" border="0">
 	<tr>
 	<td align="center" width="29%">
+		<?php if (Auth::isInMistakeTrainingMode()): ?>
+		<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #856404; display: inline-block;">
+			Mistake Training
+		</div>
+		<?php else: ?>
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
@@ -158,6 +163,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					echo '<img title="Heart" id="heart'.$i.'">';
 			?>
 		</div>
+		<?php endif; ?>
 	</td>
 	<td align="center" width="42%">
 	<table>
@@ -180,6 +186,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo '<div id="titleDescription" class="titleDescription1">';
 		elseif (Auth::isInRatingMode()|| Auth::isInTimeMode())
 			echo '<div id="titleDescription" class="titleDescription2">';
+		else
+			echo '<div id="titleDescription" class="titleDescription1">';
 		echo '<a id="descriptionText">'.h($displayDescription).'</a> ';
 		if (isset($t['Tsumego']['hint']) && $t['Tsumego']['hint']!='')
 			echo '<font color="grey" style="font-style:italic;">('.h($t['Tsumego']['hint']).')</font>';
@@ -241,11 +249,15 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	</table>
 	</td>
 	<td align="center" width="29%">
-		<?php HeroPowers::render(); ?>
+		<?php if (!Auth::isInMistakeTrainingMode()) HeroPowers::render(); ?>
 	</td>
 	</tr>
 	</table>
-	<?php $tsumegoXPAndRating->render(); ?>
+	<?php if (!Auth::isInMistakeTrainingMode()): ?>
+		<?php $tsumegoXPAndRating->render(); ?>
+	<?php else: ?>
+		<div align="center"><div id="status" align="center"></div></div>
+	<?php endif; ?>
 	<div align="center">
 		<div id="theComment"></div>
 	</div>
@@ -757,7 +769,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	<?php
 		$tsumegoXPAndRating->renderJavascript();
-		HeroPowers::renderJavascript();
+		if (!Auth::isInMistakeTrainingMode())
+			HeroPowers::renderJavascript();
 	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
@@ -1099,7 +1112,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	echo 'var goldenTsumego = '.Util::boolString($goldenTsumego).';';
 
-	if ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X') {
+	if (!Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')) {
 		echo 'var locked=true; tryAgainTomorrow = true;';
 		echo 'toggleBoardLock(true);';
 	} else echo 'var locked=false;';
@@ -1134,7 +1147,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			echo 'notMode3 = false;';
 	?>
 	<?php
-		if (!Auth::isInTimeMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
+		if (!Auth::isInTimeMode() && !Auth::isInMistakeTrainingMode() && ($t['Tsumego']['status'] == 'F' || $t['Tsumego']['status'] == 'X')){
 		echo '
 				document.getElementById("status").innerHTML = \'<b style="font-size:17px">This problem is locked until \' + heartResetTime + \'</b>\';
 				tryAgainTomorrow = true;
@@ -1664,7 +1677,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		if (timeModeTimer)
 			timeModeTimer.stop();
 
-		if (accountWidget)
+		if (accountWidget && typeof xpStatus !== "undefined")
 			accountWidget.animate(success);
 		if (success)
 		{
@@ -1726,6 +1739,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				{
 					timeModeEnabled = false;
 					$("#time-mode-countdown").css("color","#e45663");
+					toggleBoardLock(true);
+				}
+				if (mode==<?php echo Constants::$MISTAKE_TRAINING_MODE; ?>)
+				{
 					toggleBoardLock(true);
 				}
 				noLastMark = true;

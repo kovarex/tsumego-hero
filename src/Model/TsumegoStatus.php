@@ -83,4 +83,25 @@ WHERE
 	tsumego_status.user_id = ? AND
 	tsumego_status.status IN ('S', 'C', 'W')", [$setID, Auth::getUserID()])[0]["total"];
 	}
+
+	/**
+	 * Number of tsumegos currently due for mistake training review.
+	 * Soft-deleted tsumegos are excluded so the count matches the training queue.
+	 */
+	public function mistakeTrainingDueCount(int $userId): int
+	{
+		return (int) $this->find('count', [
+			'joins' => [[
+				'table' => 'tsumego',
+				'alias' => 'T',
+				'type' => 'INNER',
+				'conditions' => ['T.id = TsumegoStatus.tsumego_id', 'T.deleted IS NULL'],
+			]],
+			'conditions' => [
+				'TsumegoStatus.user_id' => $userId,
+				'TsumegoStatus.mt_due <=' => date('Y-m-d H:i:s'),
+				'TsumegoStatus.mt_due IS NOT NULL',
+			],
+		]);
+	}
 }

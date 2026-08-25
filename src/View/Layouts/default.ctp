@@ -262,6 +262,8 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn()){
 							echo '<li><a href="/ratingMode" '.$ratingModeA.'>Rating</a></li>';
 							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
+							$mtLabel = 'Mistake Training' . (!empty($mtDueCount) ? ' (' . $mtDueCount . ')' : '');
+						echo '<li><a style="font-size:16px" href="/mistake-training">' . $mtLabel . '</a></li>';
 						}
 								echo '</ul>';
 						echo '<li><a '.$refreshLinkToHighscore.' '.$highscoreA.' href="/users/'.$highscoreLink.'">Highscore</a>';

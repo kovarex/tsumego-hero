@@ -15,7 +15,7 @@ echo '<p class="profile-username">' . h($userName) . '</p>';
 echo $this->element('user_subnav', ['userID' => $userID, 'activeTab' => 'solveHistory']);
 echo PaginationHelper::render($pageIndex, intval(ceil($count / $PAGE_SIZE)), 'page');
 echo '<table class="data-table">';
-echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:#888;font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Date</th></tr></thead>';
+echo '<thead><tr><th>Set</th><th>Tsumego <label style="cursor:pointer;font-size:11px;color:#888;font-weight:normal;text-transform:none" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍</label></th><th>Solved</th><th>Misplays</th><th>Rating</th><th>XP gained</th><th>Mode</th><th>Date</th></tr></thead>';
 echo '<tbody>';
 foreach ($attempts as $attempt)
 {
@@ -36,6 +36,7 @@ foreach ($attempts as $attempt)
 	echo '<td>' . $attempt['misplays'] . '</td>';
 	echo '<td>' . round($attempt['user_rating']) . '</td>';
 	echo '<td>' . $attempt['xp_gain'] . '</td>';
+	echo '<td>' . h(Constants::modeLabel(isset($attempt['mode']) ? (int) $attempt['mode'] : null)) . '</td>';
 	echo '<td><time datetime="' . Util::toIso8601($attempt['created']) . '" data-format="datetime">' . $attempt['created'] . '</time></td>';
 	echo '</tr>';
 }

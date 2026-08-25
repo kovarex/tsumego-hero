@@ -24,6 +24,11 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		return json_decode($this->controller->response->body(), true) ?? [];
 	}
 
+	private function processResult(ContextPreparator &$context, array $params): array
+	{
+		return $this->postResult($context, $params);
+	}
+
 	private function solve(ContextPreparator &$context): array
 	{
 		return $this->postResult($context, [
@@ -731,5 +736,397 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			foreach (['name', 'description', 'xp', 'image', 'color'] as $field)
 				$this->assertArrayHasKey($field, $achievementUpdate, "Each update should carry '$field' for client-side rendering");
 		}
+	}
+
+	// ── Mistake Training Entry Hook ────────────────────────────────────
+
+	public function testMisplayOnFirstEncounterSetsMtDue(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Misplay on first encounter should set mt_due');
+	}
+
+	public function testSolveWithMisplaysOnFirstEncounterSetsMtDue(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->solveWithMisplays($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Solve with misplays on first encounter should set mt_due');
+	}
+
+	public function testCleanSolveOnFirstEncounterDoesNotSetMtDue(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->solve($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'],
+			'Clean solve on first encounter should not set mt_due');
+	}
+
+	public function testVisitOnlyDoesNotSetMtDue(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$this->loginAs($context);
+		$this->testAction('/' . $context->tsumegos[0]['set-connections'][0]['id']);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'],
+			'Visit only should not set mt_due');
+	}
+
+	public function testFailPushesMtDueToTomorrow(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		// First encounter: misplay to enter training
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Should have mt_due after first misplay');
+
+		// Now fail again (simulate coming back and failing)
+		$this->failResult($context);
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Should still have mt_due after second fail');
+		$this->assertGreaterThan(
+			date('Y-m-d H:i:s'),
+			$status['TsumegoStatus']['mt_due'],
+			'mt_due should be in the future after fail, so problem drops from due queue'
+		);
+	}
+
+	public function testSolveUpdatesMtDueForTrainingProblem(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		// Enter training via misplay
+		$this->failResult($context);
+
+		// Clean solve (no misplays) should update mt_due via the review ladder
+		$this->solve($context);
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'Clean solve after entering training should keep mt_due');
+		$this->assertGreaterThan(
+			date('Y-m-d H:i:s'),
+			$status['TsumegoStatus']['mt_due'],
+			'mt_due should be in the future after clean solve'
+		);
+	}
+
+	public function testMistakeTrainingAttemptsRecordMode(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+		$this->failResult($context);
+
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(
+			Constants::$MISTAKE_TRAINING_MODE,
+			(int) $attempt['TsumegoAttempt']['mode'],
+			'Training attempts should be tagged with the mistake training mode'
+		);
+	}
+
+	public function testTrainingFailsDoNotAccumulateOnOneAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->failResult($context);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Each training fail should be its own attempt');
+		foreach ($attempts as $attempt)
+			$this->assertSame(1, (int) $attempt['TsumegoAttempt']['misplays'], 'Each training fail should record one misplay');
+	}
+
+	public function testTrainingReviewOnSolvedStatusStillRecordsAttempt(): void
+	{
+		// A problem can stay in the training pool (mt_due set) even after being
+		// solved in another mode — a mid-ladder solve doesn't graduate it. The
+		// review ladder (computeNextDue) is driven entirely by attempt history,
+		// so the training review of such a problem must record an attempt too.
+		// Training deliberately ignores tsumego status: it only matters whether
+		// the user solved this review or not.
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'S', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+		]);
+
+		$attempts = $this->attemptsOf($context);
+		$this->assertSame(1, count($attempts), 'A training review on a solved-status problem should still record an attempt');
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, (int) $attempts[0]['TsumegoAttempt']['mode'], 'The attempt should be tagged as mistake training');
+		$this->assertSame(0, (int) $attempts[0]['TsumegoAttempt']['solved'], 'The lapse should be recorded as unsolved');
+		$this->assertSame(1, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'A training lapse records exactly one misplay');
+	}
+
+	public function testTrainingGraduationMarksProblemSolved(): void
+	{
+		// A never-solved (V) problem graduates when a clean solve lands on the top
+		// rung of the review ladder: it leaves the pool and is marked solved.
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				'attempts' => [
+					['solved' => false, 'misplays' => 1, 'created' => '2026-07-01 10:00:00'], // entry fail
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-02 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-03 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-04 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-05 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-06 10:00:00'],
+				],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$beforeSolved = (int) Auth::getUser()['solved'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'], 'Graduation should remove the problem from the pool');
+		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Graduation should mark the problem solved');
+		$this->assertSame($beforeSolved + 1, (int) Auth::getUser()['solved'], 'Graduation should bump the solved counter');
+	}
+
+	public function testPoolProblemStaysRegardlessOfStatus(): void
+	{
+		// A problem already in the pool stays there and keeps showing even after
+		// it gets solved elsewhere — only graduation removes it from the pool.
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		// Enter the pool via a first-encounter fail
+		$this->failResult($context);
+
+		// Solve it in level mode -> status becomes S, but it must stay in the pool
+		$this->solve($context);
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark it solved');
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'A solved pool problem must stay in the pool — shown regardless of its status');
+	}
+
+	public function testModeSwitchStartsNewAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$RATING_MODE);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'A mode switch should start a new attempt');
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $attempts[0]['TsumegoAttempt']['mode'], 'First attempt should be level mode');
+		$this->assertSame(Constants::$RATING_MODE, (int) $attempts[1]['TsumegoAttempt']['mode'], 'Second attempt should be rating mode');
+	}
+
+	public function testSwitchingBackToModeResumesItsAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$RATING_MODE);
+		$this->failResult($context);
+		Auth::saveUserField('mode', Constants::$LEVEL_MODE);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Switching back to a mode should resume its attempt');
+		$this->assertSame(2, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'The level attempt should accumulate its two misplays');
+		$this->assertSame(1, (int) $attempts[1]['TsumegoAttempt']['misplays'], 'The rating attempt should keep its one misplay');
+	}
+
+	public function testRatingModeNeverResumesItsAttempt(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+		Auth::saveUserField('mode', Constants::$RATING_MODE);
+
+		$this->failResult($context);
+		$this->failResult($context);
+
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Rating mode should record one fresh attempt per fail, never resume an unsolved rating row');
+		$this->assertSame(Constants::$RATING_MODE, (int) $attempts[0]['TsumegoAttempt']['mode']);
+		$this->assertSame(1, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'First rating fail should record one misplay');
+		$this->assertSame(1, (int) $attempts[1]['TsumegoAttempt']['misplays'], 'Second rating fail must not accumulate into the first');
+	}
+
+	// ── Mode side-effect matrix ──────────────────────────────────────────
+
+	public function testTrainingSolveDoesNotAffectLevelProgress(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				'attempt' => ['solved' => false, 'misplays' => 1], // real pool member (entered via fail)
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$beforeXp = Auth::getUser()['xp'];
+		$beforeRating = Auth::getUser()['rating'];
+		$beforeDamage = Auth::getUser()['damage'];
+		$beforeDailySolved = Auth::getUser()['daily_solved'];
+		$beforeDailyXp = Auth::getUser()['daily_xp'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+
+		$this->assertSame($beforeXp, Auth::getUser()['xp'], 'Training solve should not grant XP');
+		$this->assertSame($beforeRating, Auth::getUser()['rating'], 'Training solve should not change rating');
+		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'Training solve should not change damage');
+		$this->assertSame($beforeDailySolved, Auth::getUser()['daily_solved'], 'Training solve should not bump daily solves');
+		$this->assertSame($beforeDailyXp, Auth::getUser()['daily_xp'], 'Training solve should not bump daily XP');
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training solve should not change tsumego status');
+
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, (int) $attempt['TsumegoAttempt']['mode'], 'Training solve should record a training attempt');
+	}
+
+	public function testTrainingFailDoesNotPunish(): void
+	{
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$beforeDamage = Auth::getUser()['damage'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+		]);
+
+		$this->assertSame($beforeDamage, Auth::getUser()['damage'], 'Training fail should not add damage');
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame('V', $status['TsumegoStatus']['status'], 'Training fail should not change tsumego status');
+
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, (int) $attempt['TsumegoAttempt']['mode'], 'Training fail should record a training attempt');
+		$this->assertSame(1, (int) $attempt['TsumegoAttempt']['misplays'], 'Training fail should record one misplay');
+	}
+
+	public function testLevelSolveGrantsProgress(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$beforeXp = Auth::getUser()['xp'];
+		$beforeRating = Auth::getUser()['rating'];
+		$beforeDailySolved = Auth::getUser()['daily_solved'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+
+		$this->assertGreaterThan($beforeXp, Auth::getUser()['xp'], 'Level solve should grant XP');
+		$this->assertGreaterThan($beforeDailySolved, Auth::getUser()['daily_solved'], 'Level solve should bump daily solves');
+		$this->assertNotEquals($beforeRating, Auth::getUser()['rating'], 'Level solve should change rating');
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark the problem solved');
+
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $attempt['TsumegoAttempt']['mode'], 'Level solve should record a level attempt');
+	}
+
+	public function testLevelFailAddsDamage(): void
+	{
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		$beforeDamage = Auth::getUser()['damage'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+		]);
+
+		$this->assertGreaterThan($beforeDamage, Auth::getUser()['damage'], 'Level fail should add damage');
+
+		$attempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id DESC',
+		]);
+		$this->assertSame(Constants::$LEVEL_MODE, (int) $attempt['TsumegoAttempt']['mode'], 'Level fail should record a level attempt');
 	}
 }

@@ -10,6 +10,7 @@ class TsumegoButtonsQueryBuilder
 
 	public function __construct($tsumegoFilters, $id)
 	{
+		$this->tsumegoFilters = $tsumegoFilters;
 		$this->query = new Query('FROM tsumego');
 		if ($tsumegoFilters->query != 'topics')
 		{
@@ -145,4 +146,5 @@ class TsumegoButtonsQueryBuilder
 		$this->query->conditions[] = "`schedule`.date = '" . $date . "'";
 		$this->query->conditions[] = '`schedule`.published = 1';
 	}
+
 }
