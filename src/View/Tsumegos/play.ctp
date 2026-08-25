@@ -769,7 +769,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 
 	<?php
 		$tsumegoXPAndRating->renderJavascript();
-		HeroPowers::renderJavascript();
+		if (!Auth::isInMistakeTrainingMode())
+			HeroPowers::renderJavascript();
 	?>
 	$("#showFilters").click(function(){
 		if(!msgFilterSelected){
