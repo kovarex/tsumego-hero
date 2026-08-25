@@ -868,6 +868,89 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 			$this->assertSame(1, (int) $attempt['TsumegoAttempt']['misplays'], 'Each training fail should record one misplay');
 	}
 
+	public function testTrainingReviewOnSolvedStatusStillRecordsAttempt(): void
+	{
+		// A problem can stay in the training pool (mt_due set) even after being
+		// solved in another mode — a mid-ladder solve doesn't graduate it. The
+		// review ladder (computeNextDue) is driven entirely by attempt history,
+		// so the training review of such a problem must record an attempt too.
+		// Training deliberately ignores tsumego status: it only matters whether
+		// the user solved this review or not.
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'S', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => false,
+		]);
+
+		$attempts = $this->attemptsOf($context);
+		$this->assertSame(1, count($attempts), 'A training review on a solved-status problem should still record an attempt');
+		$this->assertSame(Constants::$MISTAKE_TRAINING_MODE, (int) $attempts[0]['TsumegoAttempt']['mode'], 'The attempt should be tagged as mistake training');
+		$this->assertSame(0, (int) $attempts[0]['TsumegoAttempt']['solved'], 'The lapse should be recorded as unsolved');
+		$this->assertSame(1, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'A training lapse records exactly one misplay');
+	}
+
+	public function testTrainingGraduationMarksProblemSolved(): void
+	{
+		// A never-solved (V) problem graduates when a clean solve lands on the top
+		// rung of the review ladder: it leaves the pool and is marked solved.
+		$context = new ContextPreparator([
+			'tsumego' => [
+				'status' => ['name' => 'V', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				'attempts' => [
+					['solved' => false, 'misplays' => 1, 'created' => '2026-07-01 10:00:00'], // entry fail
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-02 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-03 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-04 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-05 10:00:00'],
+					['solved' => true, 'misplays' => 0, 'created' => '2026-07-06 10:00:00'],
+				],
+			],
+		]);
+		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);
+
+		$beforeSolved = (int) Auth::getUser()['solved'];
+
+		$this->processResult($context, [
+			'tsumego_id' => $context->tsumegos[0]['id'],
+			'seconds' => 0,
+			'solved' => true,
+		]);
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNull($status['TsumegoStatus']['mt_due'], 'Graduation should remove the problem from the pool');
+		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Graduation should mark the problem solved');
+		$this->assertSame($beforeSolved + 1, (int) Auth::getUser()['solved'], 'Graduation should bump the solved counter');
+	}
+
+	public function testPoolProblemStaysRegardlessOfStatus(): void
+	{
+		// A problem already in the pool stays there and keeps showing even after
+		// it gets solved elsewhere — only graduation removes it from the pool.
+		$context = new ContextPreparator(['tsumego' => 1]);
+
+		// Enter the pool via a first-encounter fail
+		$this->failResult($context);
+
+		// Solve it in level mode -> status becomes S, but it must stay in the pool
+		$this->solve($context);
+
+		$status = ClassRegistry::init('TsumegoStatus')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame('S', $status['TsumegoStatus']['status'], 'Level solve should mark it solved');
+		$this->assertNotNull($status['TsumegoStatus']['mt_due'],
+			'A solved pool problem must stay in the pool — shown regardless of its status');
+	}
+
 	public function testModeSwitchStartsNewAttempt(): void
 	{
 		$context = new ContextPreparator(['tsumego' => 1]);
@@ -911,6 +994,7 @@ class PlayResultProcessorComponentTest extends TestCaseWithAuth
 		$context = new ContextPreparator([
 			'tsumego' => [
 				'status' => ['name' => 'V', 'mt_due' => date('Y-m-d H:i:s', strtotime('-1 day'))],
+				'attempt' => ['solved' => false, 'misplays' => 1], // real pool member (entered via fail)
 			],
 		]);
 		Auth::saveUserField('mode', Constants::$MISTAKE_TRAINING_MODE);

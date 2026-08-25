@@ -30,7 +30,7 @@ class MistakeTraining
 	 * Returns:
 	 *  - a datetime string for the next due date, OR
 	 *  - null if the problem has graduated (clean solve at the top rung)
-	 *    or has no training history
+	 *    or was never missed (never entered training)
 	 */
 	public static function computeNextDue(int $userId, int $tsumegoId): ?string
 	{
