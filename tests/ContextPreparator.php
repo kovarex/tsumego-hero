@@ -223,6 +223,7 @@ class ContextPreparator
 		$tsumegoAttempt['solved'] = Util::extract('solved', $tsumegoAttemptInput) ?: false;
 		$tsumegoAttempt['tsumego_rating'] = Util::extract('tsumego_rating', $tsumegoAttemptInput) ?: $tsumego['rating'];
 		$tsumegoAttempt['misplays'] = Util::extract('misplays', $tsumegoAttemptInput) ?: 0;
+		$tsumegoAttempt['mode'] = Util::extract('mode', $tsumegoAttemptInput) ?: Constants::$LEVEL_MODE;
 		$tsumegoAttempt['created'] = Util::extract('created', $tsumegoAttemptInput) ?: date('Y-m-d H:i:s');
 		ClassRegistry::init('TsumegoAttempt')->create($tsumegoAttempt);
 		ClassRegistry::init('TsumegoAttempt')->save($tsumegoAttempt);

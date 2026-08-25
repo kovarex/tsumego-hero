@@ -14,6 +14,7 @@ class MistakeTrainingTest extends TestCaseWithAuth
 				'tsumego_id' => $tsumegoId,
 				'solved' => $solved ? 1 : 0,
 				'misplays' => $misplays,
+				'mode' => Constants::$LEVEL_MODE,
 				'seconds' => 10,
 				'tsumego_rating' => 1000,
 				'user_rating' => 1000,

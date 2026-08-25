@@ -125,8 +125,7 @@ class PlayResultProcessorComponent extends Component
 		if ($solved)
 		{
 			if ($currentStatus == TsumegoStatus::$REVIEW) // half xp state
-			{
-				$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
+			{$result['xp-modifier'] = ($result['xp-modifier'] ?: 1) * Constants::$SECOND_SOLVE_XP_MULTIPLIER;
 				return TsumegoStatus::$MASTERED; // double solved
 			}
 			if ($currentStatus == TsumegoStatus::$GOLDEN)
@@ -141,9 +140,8 @@ class PlayResultProcessorComponent extends Component
 
 		// not solved from now
 		if ($currentStatus == TsumegoStatus::$VISITED) // if it was just visited so far (so we don't overwrite solved)
-		{
-			if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
-				return TsumegoStatus::$LOCKED;  // only mark as failed when the user has no hearts left
+		{if (Auth::getUser()['damage'] > Util::getHealthBasedOnLevel(Auth::getUser()['level']))
+			return TsumegoStatus::$LOCKED;  // only mark as failed when the user has no hearts left
 			return $currentStatus;
 		}
 		if ($currentStatus == TsumegoStatus::$REVIEW)
@@ -209,24 +207,22 @@ class PlayResultProcessorComponent extends Component
 		// schedule would never move.
 		if (!Auth::isInMistakeTrainingMode() && TsumegoUtil::isRecentlySolved($previousTsumegoStatus))
 			return;
-		// Find the last unsolved attempt of the current mode, so a mode switch
-		// pauses a session instead of abandoning it. Legacy mode-NULL rows match
-		// any mode.
-		$lastTsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first', [
-			'conditions' => [
-				'user_id' => Auth::getUserID(),
-				'tsumego_id' => $previousTsumego['Tsumego']['id'],
-				'solved' => 0,
-				'OR' => [
-					['mode' => Auth::getMode()],
-					['mode' => null],
+		// Only level mode resumes an open buffer — it is the only mode a player
+		// can leave and come back to (hearts lockout). Rating/training sessions
+		// always end in a solve or a fail, so they record one fresh attempt and
+		// never resume. The mode filter keeps a rating/training fail row (also
+		// solved=0) from being mistaken for the level buffer.
+		$tsumegoAttempt = Auth::isInLevelMode()
+			? ClassRegistry::init('TsumegoAttempt')->find('first', [
+				'conditions' => [
+					'user_id' => Auth::getUserID(),
+					'tsumego_id' => $previousTsumego['Tsumego']['id'],
+					'solved' => 0,
+					'mode' => Constants::$LEVEL_MODE,
 				],
-			],
-			'order' => 'id DESC',
-		]);
-
-		// Training has no retry, so it never resumes — always a fresh attempt.
-		$tsumegoAttempt = Auth::isInMistakeTrainingMode() ? null : $lastTsumegoAttempt;
+				'order' => 'id DESC',
+			])
+			: null;
 
 		if (!$tsumegoAttempt)
 		{
