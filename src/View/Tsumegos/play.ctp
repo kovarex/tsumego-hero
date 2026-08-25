@@ -260,7 +260,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
-		<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+		<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 		<br><br>
 	</div>
 	<?php }else if($tv!=null && $tv['TsumegoVariant']['type'] == 'score_estimating'){ ?>
@@ -273,7 +273,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<?php } ?>
 			<a id="submitScoreEstimatingWhiteWins" href="#">White wins</a>
 		<?php }else{ ?>
-			<a href="/tsumegos/play/<?php echo $t['Tsumego']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
+			<a href="/<?php echo $setConnection['SetConnection']['id']; ?>" title="reset problem" id="besogo-next-button">Reset</a>
 			<input value="0" placeholder="Score" type="text" id="ScoreEstimatingSE">
 			<a id="submitScoreEstimatingSE" href="#">Submit</a>
 		<?php } ?>
