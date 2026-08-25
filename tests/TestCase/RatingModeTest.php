@@ -96,8 +96,14 @@ class RatingModeTest extends ControllerTestCase
 		$this->assertSame(0, $browser->driver->executeScript('return boardLockValue;'));
 		$browser->playWithResult('S');
 		$browser->clickId('besogo-next-button');
-		$tsumegoAttempt = ClassRegistry::init('TsumegoAttempt')->find('first')['TsumegoAttempt'];
-		$this->assertSame(1, $tsumegoAttempt['misplays']);
-		$this->assertSame(true, $tsumegoAttempt['solved']);
+		$attempts = ClassRegistry::init('TsumegoAttempt')->find('all', [
+			'conditions' => ['user_id' => $context->user['id'], 'tsumego_id' => $context->tsumegos[0]['id']],
+			'order' => 'id ASC',
+		]);
+		$this->assertSame(2, count($attempts), 'Rating mode should record the fail and the solve as separate attempts');
+		$this->assertSame(false, (bool) $attempts[0]['TsumegoAttempt']['solved']);
+		$this->assertSame(1, (int) $attempts[0]['TsumegoAttempt']['misplays'], 'The failed attempt should keep its one misplay');
+		$this->assertSame(true, (bool) $attempts[1]['TsumegoAttempt']['solved']);
+		$this->assertSame(0, (int) $attempts[1]['TsumegoAttempt']['misplays'], 'The retry solve should be a clean attempt');
 	}
 }
