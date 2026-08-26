@@ -89,6 +89,10 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     registerAddTimeForMovePlayed: registerAddTimeForMovePlayed,
     resetToStart: resetToStart,
     registerShowComment: registerShowComment,
+    getCurrentPath: getCurrentPath,
+    restoreToPath: restoreToPath,
+    getRotation: getRotation,
+    getCorner: getCorner,
     displayHoverCoord: displayHoverCoord,
     commentPosition: commentPosition,
     commentTreeSearch: commentTreeSearch,
@@ -837,6 +841,54 @@ besogo.makeEditor = function (sizeX = 19, sizeY = 19, options = []) {
     prevNode(-1);
     remainingRequiredNodes = [];
     root.unvisit();
+  }
+
+  // Returns the sequence of moves from the root to the current node.
+  function getCurrentPath() {
+    var path = [];
+    var node = current;
+    while (node && node.parent && node.move) {
+      path.unshift({ x: node.move.x, y: node.move.y, color: node.move.color });
+      node = node.parent;
+    }
+    return path;
+  }
+
+  // Restores the board to a saved move path. The replay runs with autoplay off,
+  // so it never judges the position or fires a result by itself; off-tree moves
+  // are replayed with the auto color so they stay correct under any color
+  // orientation. Returns the reached node.
+  function restoreToPath(path) {
+    var savedAutoPlay = autoPlay;
+    setAutoPlay(false);
+    try {
+      for (var i = 0; i < path.length; i++) {
+        var move = path[i];
+        if (!navigate(move.x, move.y, false))
+          playMove(move.x, move.y, 0, false);
+      }
+    }
+    finally {
+      setAutoPlay(savedAutoPlay);
+    }
+    // If the saved line ends on the solver's move with an opponent response still
+    // pending (the state was saved inside the autoplay delay window), resume the
+    // opponent's auto-response so the board keeps behaving like normal play.
+    if (savedAutoPlay && !reviewMode && current.move &&
+        current.move.color == current.getRoot().firstMove &&
+        current.hasNonLocalChildIncludingVirtual())
+      navigateToNode(current, false);
+    return current;
+  }
+
+  function getRotation() {
+    return besogo.scaleParameters && typeof besogo.scaleParameters["rotation"] === "number"
+      ? besogo.scaleParameters["rotation"]
+      : -1;
+  }
+
+  function getCorner() {
+    return besogo.boardParameters ? besogo.boardParameters["corner"] : null;
   }
 
   function registerShowComment(value) {
