@@ -185,6 +185,43 @@
 	pointer-events: none;
 }
 
+/* ── Rarity badge ── */
+.rarity
+{
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: var(--radius-full);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-weight-heavy);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-left: var(--space-2);
+}
+
+.rarity--common
+{
+	color: var(--color-green-dark);
+	background: var(--color-green-light);
+}
+
+.rarity--uncommon
+{
+	color: var(--color-blue-dark);
+	background: var(--color-blue);
+}
+
+.rarity--rare
+{
+	color: var(--color-purple);
+	background: var(--color-blue-dark);
+}
+
+.rarity--ultra-rare
+{
+	color: var(--color-yellow);
+	background: var(--color-red);
+}
+
 /* ── Button ── */
 .btn
 {

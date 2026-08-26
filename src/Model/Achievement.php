@@ -1,11 +1,69 @@
 <?php
 
+App::uses('HeroPowers', 'Utility');
+
 class Achievement extends AppModel
 {
 	public function __construct($id = false, $table = null, $ds = null)
 	{
 		$id['table'] = 'achievement';
 		parent::__construct($id, $table, $ds);
+	}
+
+	/**
+	 * Returns the progress counter definition for an achievement, or null if the
+	 * achievement has no progress to show (binary unlock or derived elsewhere).
+	 *
+	 * @param int $achievementId
+	 * @return array|null ['category' => string, 'goal' => int]
+	 */
+	public static function progressDefinition(int $achievementId): ?array
+	{
+		$definitions = [
+			self::COMPLETE_SETS_I => ['category' => 'set', 'goal' => self::COMPLETE_SETS_I_SETS_COUNT],
+			self::COMPLETE_SETS_II => ['category' => 'set', 'goal' => self::COMPLETE_SETS_II_SETS_COUNT],
+			self::COMPLETE_SETS_III => ['category' => 'set', 'goal' => self::COMPLETE_SETS_III_SETS_COUNT],
+			self::COMPLETE_SETS_IV => ['category' => 'set', 'goal' => self::COMPLETE_SETS_IV_SETS_COUNT],
+			self::COMPLETE_SETS_V => ['category' => 'set', 'goal' => self::COMPLETE_SETS_V_SETS_COUNT],
+			self::COMPLETE_SETS_VI => ['category' => 'set', 'goal' => self::COMPLETE_SETS_VI_SETS_COUNT],
+			self::NO_ERROR_STREAK_I => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_I_STREAK_COUNT],
+			self::NO_ERROR_STREAK_II => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_II_STREAK_COUNT],
+			self::NO_ERROR_STREAK_III => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_III_STREAK_COUNT],
+			self::NO_ERROR_STREAK_IV => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_IV_STREAK_COUNT],
+			self::NO_ERROR_STREAK_V => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_V_STREAK_COUNT],
+			self::NO_ERROR_STREAK_VI => ['category' => 'err', 'goal' => self::NO_ERROR_STREAK_VI_STREAK_COUNT],
+			self::SPRINT => ['category' => 'sprint', 'goal' => self::SPRINT_COUNT],
+			self::GOLD_DIGGER => ['category' => 'golden', 'goal' => self::GOLD_DIGGER_COUNT],
+			self::BAD_POTION => ['category' => 'potion', 'goal' => HeroPowers::$BAD_POTION_THRESHOLD],
+			self::SOLVE_10_1D => ['category' => 'danSolve1d', 'goal' => self::SOLVE_10_COUNT],
+			self::SOLVE_10_2D => ['category' => 'danSolve2d', 'goal' => self::SOLVE_10_COUNT],
+			self::SOLVE_10_3D => ['category' => 'danSolve3d', 'goal' => self::SOLVE_10_COUNT],
+			self::SOLVE_10_4D => ['category' => 'danSolve4d', 'goal' => self::SOLVE_10_COUNT],
+			self::SOLVE_10_5D => ['category' => 'danSolve5d', 'goal' => self::SOLVE_10_COUNT],
+		];
+		return $definitions[$achievementId] ?? null;
+	}
+
+	// Rarity thresholds (percentage of all users who completed the achievement)
+	public const float RARITY_COMMON_PERCENT = 10;
+	public const float RARITY_UNCOMMON_PERCENT = 1;
+	public const float RARITY_RARE_PERCENT = 0.1;
+
+	/**
+	 * Returns the rarity label for an achievement completion percentage.
+	 *
+	 * @param float $completionPercent Percentage of all users who completed it.
+	 * @return string
+	 */
+	public static function getRarityLabel(float $completionPercent): string
+	{
+		if ($completionPercent >= self::RARITY_COMMON_PERCENT)
+			return 'Common';
+		if ($completionPercent >= self::RARITY_UNCOMMON_PERCENT)
+			return 'Uncommon';
+		if ($completionPercent >= self::RARITY_RARE_PERCENT)
+			return 'Rare';
+		return 'Ultra rare';
 	}
 
 	// Solved Count Achievements
@@ -145,7 +203,9 @@ class Achievement extends AppModel
 
 	// Sprint/Gold/Potion
 	public const int SPRINT = 96;       // sprint >= 30
+	public const int SPRINT_COUNT = 30;
 	public const int GOLD_DIGGER = 97;  // golden >= 10
+	public const int GOLD_DIGGER_COUNT = 10;
 	public const int BAD_POTION = 98;
 
 	// Favorites
@@ -159,6 +219,7 @@ class Achievement extends AppModel
 	public const int SOLVE_4D = 104;
 	public const int SOLVE_5D = 105;
 	// Multiple solves
+	public const int SOLVE_10_COUNT = 10;
 	public const int SOLVE_10_1D = 106;
 	public const int SOLVE_10_2D = 107;
 	public const int SOLVE_10_3D = 108;
