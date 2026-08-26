@@ -2,8 +2,7 @@
 /**
  * @var View $this
  * @var array $a
- * @var string $aCount
- * @var string $andMore
+ * @var int $aCount
  * @var array $asAll
  */
 
@@ -90,7 +89,7 @@
 			if($i<count($asAll)-1) echo ', ';
 			
 		}
-		echo $andMore;
+		echo $aCount > count($asAll) ? ' and more.' : '.';
 	}
 	?>
 	</font>

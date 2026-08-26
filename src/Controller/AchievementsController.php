@@ -98,19 +98,14 @@ class AchievementsController extends AppController
 			$asAll = [];
 		if (Auth::isLoggedIn())
 			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
-		$asAll2 = [];
-		$andMore = $aCount > 10 ? ' and more.' : '.';
 		$userIds = array_values(array_unique(array_map(fn($item) => $item['AchievementStatus']['user_id'], $asAll)));
 		$userNames = [];
 		if ($userIds)
 			foreach ($this->User->find('all', ['conditions' => ['id' => $userIds]]) as $u)
 				$userNames[$u['User']['id']] = $this->checkPicture($u['User']);
-		foreach ($asAll as $item)
-		{
+		foreach ($asAll as &$item)
 			$item['AchievementStatus']['name'] = $userNames[$item['AchievementStatus']['user_id']] ?? '';
-			$asAll2[] = $item;
-		}
-		$asAll = $asAll2;
+		unset($item);
 
 		if (Auth::isLoggedIn())
 		{
@@ -131,7 +126,6 @@ class AchievementsController extends AppController
 		$this->set('as', $as);
 		$this->set('asAll', $asAll);
 		$this->set('aCount', $aCount);
-		$this->set('andMore', $andMore);
 	}
 
 }
