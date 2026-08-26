@@ -152,6 +152,22 @@ class AchievementsControllerTest extends TestCaseWithAuth
 		$this->assertStringContainsString('Bob', $result, 'Bob should appear as a completer');
 	}
 
+	public function testViewAchievementShowsOnlyTenMostRecentCompleterNames(): void
+	{
+		$completers = [];
+		for ($i = 1; $i <= 12; $i++)
+			$completers[] = [
+				'name' => 'User' . $i,
+				'achievement-statuses' => [['id' => 98, 'created' => date('Y-m-d H:i:s', strtotime("2024-01-01 +{$i} days"))]],
+			];
+		new ContextPreparator(['other-users' => $completers]);
+
+		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
+
+		$this->assertStringContainsString('12 users completed this achievement.', $result);
+		$this->assertStringContainsString('Recently completed by User12, User11, User10, User9, User8, User7, User6, User5, User4, User3 and more.', $result);
+	}
+
 	public function testUnlockedAchievementShowsUnlockDate(): void
 	{
 		new ContextPreparator([

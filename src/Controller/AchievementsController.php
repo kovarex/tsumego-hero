@@ -89,25 +89,26 @@ class AchievementsController extends AppController
 			throw new NotFoundException('Achievement not found');
 
 		$as = [];
-		$asAll = $this->AchievementStatus->find('all', ['order' => 'created DESC', 'conditions' => ['achievement_id' => $id]]);
+		$aCount = $this->AchievementStatus->find('count', ['conditions' => ['achievement_id' => $id]]);
+		$asAll = $this->AchievementStatus->find('all', [
+			'order' => 'created DESC',
+			'conditions' => ['achievement_id' => $id],
+			'limit' => 10]);
 		if (!$asAll)
 			$asAll = [];
-		$aCount = count($asAll);
 		if (Auth::isLoggedIn())
 			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
 		$asAll2 = [];
-		$count = 10;
-		if (count($asAll) < 10)
-			$count = count($asAll);
-		if (count($asAll) > 10)
-			$andMore = ' and more.';
-		else
-			$andMore = '.';
-		for ($i = 0; $i < $count; $i++)
+		$andMore = $aCount > 10 ? ' and more.' : '.';
+		$userIds = array_values(array_unique(array_map(fn($item) => $item['AchievementStatus']['user_id'], $asAll)));
+		$userNames = [];
+		if ($userIds)
+			foreach ($this->User->find('all', ['conditions' => ['id' => $userIds]]) as $u)
+				$userNames[$u['User']['id']] = $this->checkPicture($u['User']);
+		foreach ($asAll as $item)
 		{
-			$u = $this->User->findById($asAll[$i]['AchievementStatus']['user_id']);
-			$asAll[$i]['AchievementStatus']['name'] = $this->checkPicture($u['User']);
-			$asAll2[] = $asAll[$i];
+			$item['AchievementStatus']['name'] = $userNames[$item['AchievementStatus']['user_id']] ?? '';
+			$asAll2[] = $item;
 		}
 		$asAll = $asAll2;
 

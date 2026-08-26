@@ -84,7 +84,7 @@
 	<font color="gray">
 	<?php
 	if($aCount>0){
-		echo 'Completed by ';
+		echo 'Recently completed by ';
 		for($i=0; $i<count($asAll); $i++){
 			echo h($asAll[$i]['AchievementStatus']['name']);
 			if($i<count($asAll)-1) echo ', ';
