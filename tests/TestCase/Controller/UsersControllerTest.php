@@ -204,6 +204,20 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('<span class="rank-icon">1d</span>', $pageSource);
 	}
 
+	public function testProfileShowsRemainingHealthForSelfAndOthers(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['level' => 66, 'health' => 20],
+			'other-users' => [['name' => 'target', 'level' => 66, 'health' => 20]]]);
+		$browser = Browser::instance();
+		foreach ([$context->user['id'], $context->otherUsers[0]['id']] as $userId)
+		{
+			$browser->get('users/view/' . $userId);
+			$browser->checkTable('#level-info-table', $this, [
+				3 => ['Health:', '20/23 HP']]);
+		}
+	}
+
 	public function testProfileShowsSolveHistoryLink(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'testuser']]);

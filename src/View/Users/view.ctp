@@ -124,10 +124,7 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 					<?php
 					$maxHealth = Util::getHealthBasedOnLevel($user['User']['level']);
 					$remainingHealth = max(0, $maxHealth - ($user['User']['damage'] ?? 0));
-					if (Auth::getUserID() == $user['User']['id'])
-						echo $remainingHealth . '/' . $maxHealth . ' HP';
-					else
-						echo $maxHealth . ' HP';
+					echo $remainingHealth . '/' . $maxHealth . ' HP';
 					?>
 				</td>
 			</tr>
