@@ -9,7 +9,6 @@
  * @var string $colorOrientation
  * @var string $corner
  * @var array $difficulty
- * @var bool $doublexp
  * @var string $emptyHeart
  * @var bool $fav
  * @var string $file
@@ -55,7 +54,6 @@
  * @var TsumegoFilters $tsumegoFilters
  * @var TsumegoXPAndRating $tsumegoXPAndRating
  * @var array $tv
- * @var string $ui
  * @var string $userSetsJson
  */
 
@@ -69,7 +67,6 @@
 	echo ViteManifest::legacyScript('besogo');
 	$this->end();
 
-	$boardSize = 'large';
 	$authorx = $t['Tsumego']['author'];
 	if ($authorx == 'Stepan')
 		$authorx = 'Stepan Trubitsin';
@@ -83,28 +80,14 @@
 	if ($lightDark == 'dark')
 	{
 		$playGreenColor = '#0cbb0c';
-		$playBlueColor = '#72a7f2';
 	}
 	else
 	{
 		$playGreenColor = 'green';
-		$playBlueColor = 'blue';
 	}
 
 	if(isset($deleteProblem2))
 		echo '<script type="text/javascript">window.location.href = "/sets/view/'.$t['Tsumego']['set_id'].'";</script>';
-	if ($isSandbox)
-		$sandboxComment = '(Sandbox)';
-	else
-		$sandboxComment = '';
-
-	$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
-	$a1 = '';
-	$b1 = '';
-	$c1 = '';
-	$d1 = '';
-	$x2 = '';
-	$ansDisplay = 'ans';
 	$playerColor = array();
 	$pl = 0;
 	$plRand = false;
@@ -166,10 +149,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			<div id="playTitle">
 				<?php echo Play::renderTitle($setConnection, $set, $tsumegoFilters, $tsumegoButtons, $amountOfOtherCollection, $difficulty, $timeMode, $queryTitle, $t); ?>
 				<br>
-				<?php
-				if (!isset($additionalInfo))
-					$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99], 'mode' => 0];
-				?>
 			</div>
 		</td>
 	</tr>
@@ -251,12 +230,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	</div>
 
 	<!-- BOARD -->
-	<?php if($ui==2){ ?>
-		<div id="target"></div>
-		<div id="targetLockOverlay"></div>
-	<?php }else{ ?>
-		<div id="board" align="center"></div>
-	<?php } ?>
+	<div id="target"></div>
+	<div id="targetLockOverlay"></div>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || ($tv!=null && $tv['TsumegoVariant']['type']=='multiple_choice')){ ?>
 	<div align="center">
 	<br>
@@ -638,7 +613,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var lastHover = false,
 		lastX = -1,
 		lastY = -1;
-	var moveCounter = 0;
 	var move = 0;
 	var branch = "";
 	var misplays = 0;
@@ -649,7 +623,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var fullHeart = '<?php echo $fullHeart; ?>';
 	var emptyHeart = '<?php echo $emptyHeart; ?>';
 	var heartResetTime = new Date(new Date().setUTCHours(24,0,0,0)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-	var doubleXP = false;
 	var countDownDate = new Date();
 	var revelationUseCount = <?php echo HeroPowers::remainingRevelationUseCount(); ?>;
 	var multipleChoiceSelected = false;
@@ -663,30 +636,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var msgSEselected = false;
 	var playedWrong = false;
 	var seconds = 0;
-	var xpInfo = [];
 	var freePlayMode = false;
-	var freePlayMode2 = false;
-	var freePlayMode2done = false;
-	var rw = false;
-	var rwLevel = 0;
-	var rwBranch = 0;
-	var masterArrayPreI = 0;
-	var masterArrayPreJ = 0;
-	var rwSwitcher = 2;
-	var inPath = false;
-	var pathLock = false;
 	var reviewEnabled = false;
 	var theComment = "";
-	var moveHasComment = false;
-	var isIncorrect = false;
-	var thumbsUpSelected = false;
-	var thumbsDownSelected = false;
-	var thumbsUpSelected2 = false;
-	var thumbsDownSelected2 = false;
 	var mode = <?php echo Auth::getWithDefault('mode', 1); ?>;
 	var timeModeEnabled = true;
 	var timeUp = false;
-	var moveTimeout = 360;
 	var authorProblem = false;
 	var tsumegoID = <?php echo $t['Tsumego']['id'] ?>;
 	var playGreenColor = '<?php echo $playGreenColor; ?>';
@@ -695,12 +650,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	window._submitResultPromise = null;
 
 	var tcount = <?php echo $timeMode->secondsToSolve; ?>;
-	var isCorrect = false;
-	var whiteMoveAfterCorrect = false;
-	var whiteMoveAfterCorrectI = 0;
-	var whiteMoveAfterCorrectJ = 0;
-	var reviewModeActive = false;
-	var ui = <?php echo $ui; ?>;
 	var userXP = <?php echo Auth::getWithDefault('xp', 0); ?>;
 	var previousButtonLink = "<?php echo $previousLink; ?>";
 	var nextButtonLink = "<?php echo $nextLink; ?>";
@@ -710,7 +659,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var isMutable = true;
 	var deleteNextMoveGroup = false;
 	var file = <?php echo json_encode($file, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
-	var clearFile = <?php echo json_encode($set['Set']['title'] . ' - ' . $setConnection['SetConnection']['num'], JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 	var tsumegoFileLink = "<?php echo $t['Tsumego']['id']; ?>";
 	var requestSignature = "<?php echo $requestSignature; ?>";
 	var idForSignature = "<?php echo $idForSignature; ?>";
@@ -721,7 +669,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	var besogoMode2Solved = false;
 	var disableAutoplay = false;
 	var besogoNoLogin = false;
-	var soundParameterForCorrect = false;
 	var sprintSeconds = <?php echo Constants::$SPRINT_SECONDS; ?>;
 	var problemSolved = <?php echo Util::boolString(TsumegoUtil::hasStateAllowingInspection($t)); ?>;
 	var playerRatingCalculationModifier = <?php echo Constants::$PLAYER_RATING_CALCULATION_MODIFIER; ?>;
@@ -733,12 +680,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	let multipleChoiceEnabled = false;
 	let hasChosen = false;
 	let enableDownloads = false;
-	let cvn = true;
 	let adminCommentOpened = false;
 	let customMultipleChoiceAnswer = 0;
 	var boardLockValue = 0;
 	let mText = "";
-	let ratingBarLock = false;
 	let passEnabled = <?php echo $t['Tsumego']['pass']; ?>+"";
 	let besogoRotation = -1;
 	let msgFilterSelected = false;
@@ -1116,19 +1061,12 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		echo 'var noXP=true;';
 	else
 		echo 'var noXP=false;';
-
-	if (!isset($additionalInfo))
-		$additionalInfo = ['triangle' => [], 'square' => [], 'playerNames' => [], 'lastPlayed' => [99, 99]];
 	?>
 
 	$(document).ready(function(){
 	<?php
 		if($t['Tsumego']['set_id']==210)
 			echo '$("#author-notice").hide();';
-		if ($ui==1)
-			echo 'document.cookie = "ui=1;path=/tsumegos/play;SameSite=Lax";';
-		else if($ui==2)
-			echo 'document.cookie = "ui=2;path=/tsumegos/play;SameSite=Lax";';
 
 		if(Auth::isInTimeMode())
 			echo 'notMode3 = false;';
@@ -1148,9 +1086,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 				tryAgainTomorrow = true;
 				locked = true;
 		';
-	}
-		if($doublexp!=null && !$goldenTsumego){
-			echo 'doubleXP = true; countDownDate = '.$doublexp.';';
 	}
 
 		if($t['Tsumego']['status']=='S' || $t['Tsumego']['status']=='C'){
@@ -1469,11 +1404,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		});
 	}
 
-	function selectFav()
-	{
-		document.getElementById("ans2").innerHTML = "";
-	}
-
 	$(document).keydown(function(event){
 		var keycode = (event.keyCode ? event.keyCode : event.which);
 		if(mode!=2){
@@ -1491,24 +1421,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			}
 		}
 	});
-
-	function m1hover(){
-		$("#modeSwitcher1 label").css("background-color", "#5dcb89");
-	}
-
-	function m1noHover(){
-		if(ui==1) $("#modeSwitcher1 label").css("background-color", "#54b97c");
-		else $("#modeSwitcher1 label").css("background-color", "#5b5d60");
-	}
-
-	function m2hover(){
-		$("#modeSwitcher2 label").css("background-color", "#ca7a6f");
-	}
-
-	function m2noHover(){
-		if(ui==2) $("#modeSwitcher2 label").css("background-color", "#ca6658");
-		else $("#modeSwitcher2 label").css("background-color", "#5b5d60");
-	}
 
 	<?php
 	$dynamicCommentCoords = array();
@@ -1824,7 +1736,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		failAlreadyReported = false;
 	}
 	</script>
-	<?php if($ui==2){ ?>
 	<script type="text/javascript">
 	(function() {
 		var options = { },
@@ -1979,7 +1890,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		}
 		?>
 	</script>
-<?php } ?>
 	<style>
 		#msg2,
 		#msg4,
