@@ -26,6 +26,19 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		}
 	}
 
+	public function testPageTitleShowsRealSetCount()
+	{
+		$context = new ContextPreparator([
+			'tsumego' => ['sets' => [['name' => 'test set', 'num' => '1']]],
+			'tsumegos' => [
+				['sets' => [['name' => 'test set', 'num' => '2']]],
+				['sets' => [['name' => 'test set', 'num' => '3']]],
+			],
+		]);
+		$this->testAction('tsumegos/play/' . $context->tsumegos[0]['id'], ['return' => 'contents']);
+		$this->assertTextContains('test set 1/3 on Tsumego Hero', $this->contents);
+	}
+
 	public function testViewingTsumegoInMoreSets()
 	{
 		$context = new ContextPreparator(

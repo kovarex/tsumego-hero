@@ -8,7 +8,6 @@ App::uses('ForbiddenException', 'Routing/Error');
 App::uses('BasePolicy', 'Policy');
 App::uses('SetPolicy', 'Policy');
 App::uses('TsumegoPolicy', 'Policy');
-App::uses('Level', 'Utility');
 App::uses('AdminActivityLogger', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
@@ -38,20 +37,10 @@ class Play
 	{
 		($this->setFunction)('page', 'play');
 
-		$highestTsumegoOrder = 0;
-		$doublexp = null;
 		$suspiciousBehavior = false;
-		$half = '';
 		$isSandbox = false;
 		$goldenTsumego = false;
 		$reviewCheat = false;
-		$commentCoordinates = [];
-		$trs = [];
-		$eloScore = 0;
-		$eloScore2 = 0;
-		$requestProblem = '';
-		$achievementUpdate = [];
-		$tRank = '15k';
 		$nothingInRange = false;
 		$queryTitle = '';
 
@@ -73,23 +62,12 @@ class Play
 
 		$tsumegoVariant = ClassRegistry::init('TsumegoVariant')->find('first', ['conditions' => ['tsumego_id' => $id]]);
 
-		if (isset($params['url']['search']))
-			if ($params['url']['search'] == 'topics')
-			{
-				$query = $params['url']['search'];
-				$_COOKIE['query'] = $params['url']['search'];
-			}
-
 		$tsumegoFilters = new TsumegoFilters();
-
-		if ($t['Tsumego']['rating'])
-			$tRank = Rating::getReadableRankFromRating($t['Tsumego']['rating']);
 
 		Util::setCookie('lastVisit', $id);
 
 		if (TsumegoPolicy::canEditSettings(Auth::getIdentity()))
 			if (!empty($data))
-			{
 				if (isset($data['Study']))
 				{
 					$tsumegoVariant['TsumegoVariant']['answer1'] = $data['Study']['study1'];
@@ -165,8 +143,6 @@ class Play
 					if ($t['Tsumego']['rating'] > 100)
 						ClassRegistry::init('Tsumego')->save($t, true);
 				}
-				($this->setFunction)('formRedirect', true);
-			}
 		if (Auth::isAdmin())
 		{
 			$aad = ClassRegistry::init('AdminActivity')->find('first', ['order' => 'id DESC']);
@@ -238,15 +214,15 @@ class Play
 			($this->setFunction)('multipleChoiceTriangles', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'TR') + 2)));
 			($this->setFunction)('multipleChoiceSquares', count(Util::getFollowingSgfCoordinates($sgf['Sgf']['sgf'], strpos($sgf['Sgf']['sgf'], 'SQ') + 2)));
 		}
-		if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
-		else
-		($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $highestTsumegoOrder . ' on Tsumego Hero');
-
 		if (Auth::isInLevelMode())
 		{
 			$tsumegoButtons = new TsumegoButtons($tsumegoFilters, $currentSetConnection['SetConnection']['id'], null, $set['Set']['id']);
 			new SetNavigationButtonsInput($this->setFunction)->execute($tsumegoButtons, $currentSetConnection);
 			$queryTitle = $tsumegoFilters->getSetTitle($set) . $tsumegoButtons->getPartitionTitleSuffix() . ' ' . $tsumegoButtons->currentOrder . '/' . $tsumegoButtons->highestTsumegoOrder;
+
+			if ($tsumegoFilters->query == 'topics')($this->setFunction)('_title', $set['Set']['title'] . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
+			else
+			($this->setFunction)('_title', ($_COOKIE['lastSet'] ?? 'Tsumego') . ' ' . $currentSetConnection['SetConnection']['num'] . '/' . $tsumegoButtons->highestTsumegoOrder . ' on Tsumego Hero');
 		}
 
 		$t['Tsumego']['status'] = $tsumegoStatus;
@@ -278,25 +254,16 @@ class Play
 		if (Auth::isLoggedIn())
 			if (Auth::getUser()['reuse5'] == 1)
 				$suspiciousBehavior = true;
-		$hash = AppController::encrypt($currentSetConnection['SetConnection']['num'] . 'number' . $set['Set']['id']);
-
-		$activate = true;
 		if (Auth::isInRatingMode() || Auth::isInTimeMode())($this->setFunction)('_title', 'Tsumego Hero');
 		if ($isSandbox)
 			$t['Tsumego']['userWin'] = 0;
-
-		$crs = 0;
 
 		if (Auth::isInLevelMode())($this->setFunction)('page', 'level mode');
 		elseif (Auth::isInRatingMode())($this->setFunction)('page', 'rating mode');
 		elseif (Auth::isInTimeMode())($this->setFunction)('page', 'time mode');
 
-		$ui = 2;
 		$file = 'placeholder2.sgf';
 		$startingPlayer = TsumegosController::getStartingPlayer($sgf['Sgf']['sgf']);
-
-		$eloScoreRounded = round($eloScore);
-		$eloScore2Rounded = round($eloScore2);
 
 		$existingSignatures = ClassRegistry::init('Signature')->find('all', ['conditions' => ['tsumego_id' => $id]]);
 		if ($existingSignatures == null || $existingSignatures[0]['Signature']['created'] < date('Y-m-d', strtotime('-1 week')))
@@ -344,8 +311,6 @@ class Play
 			$canAddMoreTags = ClassRegistry::init('TagConnection')::canCurrentUserAddTag();
 		}
 
-		$checkNotInSearch = false;
-
 		$userSetsJson = '[]';
 		if (Auth::isLoggedIn())
 		{
@@ -384,9 +349,7 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('idForSignature', $idForSignature);
 		($this->setFunction)('idForSignature2', $idForSignature2);
 		($this->setFunction)('nothingInRange', $nothingInRange);
-		($this->setFunction)('tRank', $tRank);
 		($this->setFunction)('sgf', $sgf);
-		($this->setFunction)('crs', $crs);
 		($this->setFunction)('orientation', $orientation);
 		($this->setFunction)('colorOrientation', $colorOrientation);
 		($this->setFunction)('suspiciousBehavior', $suspiciousBehavior);
@@ -400,31 +363,14 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('libertyCount', $t['Tsumego']['libertyCount']);
 		($this->setFunction)('semeaiType', $t['Tsumego']['semeaiType']);
 		($this->setFunction)('insideLiberties', $t['Tsumego']['insideLiberties']);
-		($this->setFunction)('doublexp', $doublexp);
-		($this->setFunction)('half', $half);
 		($this->setFunction)('set', $set);
-		if (Auth::isLoggedIn())($this->setFunction)('barPercent', Util::getPercent(Auth::getUser()['xp'], Level::getXPForNext(Auth::getUser()['level'])));
-		else
-		($this->setFunction)('barPercent', 0);
 		($this->setFunction)('t', $t);
-		($this->setFunction)('hash', $hash);
 		($this->setFunction)('rating', Auth::getWithDefault('rating', 0));
-		($this->setFunction)('eloScore', $eloScore);
-		($this->setFunction)('eloScore2', $eloScore2);
-		($this->setFunction)('eloScoreRounded', $eloScoreRounded);
-		($this->setFunction)('eloScore2Rounded', $eloScore2Rounded);
-		($this->setFunction)('activate', $activate);
-		($this->setFunction)('tsumegoElo', $t['Tsumego']['rating']);
-		($this->setFunction)('trs', $trs);
 		($this->setFunction)('reviewCheat', $reviewCheat);
-		($this->setFunction)('part', $t['Tsumego']['part']);
 		($this->setFunction)('checkBSize', $checkBSize);
 		($this->setFunction)('file', $file);
-		($this->setFunction)('ui', $ui);
-		($this->setFunction)('requestProblem', $requestProblem);
 		($this->setFunction)('alternative_response', $t['Tsumego']['alternative_response']);
 		($this->setFunction)('passEnabled', $t['Tsumego']['pass']);
-		($this->setFunction)('achievementUpdate', $achievementUpdate);
 		($this->setFunction)('setConnection', $currentSetConnection);
 		($this->setFunction)('setConnections', $setConnections);
 		if (isset($params['url']['requestSolution']))($this->setFunction)('requestSolution', AdminActivityLogger::log(AdminActivityType::SOLUTION_REQUEST, $id));
@@ -433,7 +379,6 @@ ORDER BY s.title", [$id, Auth::getUserID()]);
 		($this->setFunction)('tsumegoFilters', $tsumegoFilters);
 		($this->setFunction)('queryTitle', $queryTitle);
 		($this->setFunction)('amountOfOtherCollection', $amountOfOtherCollection);
-		($this->setFunction)('checkNotInSearch', $checkNotInSearch);
 		($this->setFunction)('tsumegoXPAndRating', new TsumegoXPAndRating($t['Tsumego'], $tsumegoStatus));
 
 		return null;
