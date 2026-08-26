@@ -138,15 +138,15 @@ class AchievementChecker
 			$this->gained(Achievement::SOLVE_4D);
 		if ($ac1['5d'] > 0)
 			$this->gained(Achievement::SOLVE_5D);
-		if ($ac1['1d'] >= 10)
+		if ($ac1['1d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(Achievement::SOLVE_10_1D);
-		if ($ac1['2d'] >= 10)
+		if ($ac1['2d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(Achievement::SOLVE_10_2D);
-		if ($ac1['3d'] >= 10)
+		if ($ac1['3d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(Achievement::SOLVE_10_3D);
-		if ($ac1['4d'] >= 10)
+		if ($ac1['4d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(Achievement::SOLVE_10_4D);
-		if ($ac1['5d'] >= 10)
+		if ($ac1['5d'] >= Achievement::SOLVE_10_COUNT)
 			$this->gained(Achievement::SOLVE_10_5D);
 		if (isset($ac1['emerald']) && $ac1['emerald'] == 1)
 			$this->gained(Achievement::EMERALD);
@@ -159,9 +159,9 @@ class AchievementChecker
 			&& $this->unlocked(Achievement::SAPPHIRE)
 			&& $this->unlocked(Achievement::RUBY))
 				$this->gained(Achievement::DIAMOND);
-		if ($ac1['sprint'] >= 30)
+		if ($ac1['sprint'] >= Achievement::SPRINT_COUNT)
 			$this->gained(Achievement::SPRINT);
-		if ($ac1['golden'] >= 10)
+		if ($ac1['golden'] >= Achievement::GOLD_DIGGER_COUNT)
 			$this->gained(Achievement::GOLD_DIGGER);
 		if ($ac1['potion'] >= HeroPowers::$BAD_POTION_THRESHOLD)
 			$this->gained(Achievement::BAD_POTION);

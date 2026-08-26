@@ -160,12 +160,110 @@ class AchievementsControllerTest extends TestCaseWithAuth
 				'name' => 'User' . $i,
 				'achievement-statuses' => [['id' => 98, 'created' => date('Y-m-d H:i:s', strtotime("2024-01-01 +{$i} days"))]],
 			];
-		new ContextPreparator(['other-users' => $completers]);
+		$context = new ContextPreparator(['other-users' => $completers]);
 
 		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
 
-		$this->assertStringContainsString('12 users completed this achievement.', $result);
-		$this->assertStringContainsString('Recently completed by User12, User11, User10, User9, User8, User7, User6, User5, User4, User3 and more.', $result);
+		// The total is implied by the shown completers + "and X others"
+		$this->assertStringNotContainsString('users completed this achievement', $result);
+		// Newest completer is rendered as a link to their profile
+		$newestUser = $context->otherUsers[count($context->otherUsers) - 1];
+		$this->assertStringContainsString('<a href="/users/view/' . $newestUser['id'] . '">User12', $result);
+		$this->assertStringContainsString('and 2 others.', $result);
+	}
+
+	public function testViewAchievementShowsRarityBadgeWithTooltip(): void
+	{
+		new ContextPreparator([
+			'user' => ['achievement-statuses' => [['id' => 98]]],
+			'other-users' => [
+				['name' => 'Alice', 'achievement-statuses' => [['id' => 98]]],
+				['name' => 'Bob'],
+				['name' => 'Carol'],
+			],
+		]);
+
+		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
+
+		// 2 of 4 users (50%) completed it - Common rarity, shown as a badge with a tooltip
+		$this->assertStringContainsString('rarity rarity--common', $result);
+		$this->assertStringContainsString('title="50% of all users"', $result);
+		// Rarity badge belongs near the achievement title, not next to the completion count
+		$this->assertLessThan(
+			strpos($result, 'achievementWrapper'),
+			strpos($result, 'rarity')
+		);
+	}
+
+	public function testViewAchievementShowsUserPercentage(): void
+	{
+		new ContextPreparator([
+			'user' => ['achievement-statuses' => [['id' => 98]]],
+			'other-users' => [
+				['name' => 'Alice', 'achievement-statuses' => [['id' => 98]]],
+				['name' => 'Bob'],
+				['name' => 'Carol'],
+			],
+		]);
+
+		$result = $this->testAction('/achievements/view/98', ['return' => 'view']);
+
+		// The percentage lives in the rarity badge tooltip
+		$this->assertStringContainsString('title="50% of all users"', $result);
+	}
+
+	public function testViewAchievementShowsProgressBarForCounterAchievements(): void
+	{
+		new ContextPreparator([
+			'achievement-conditions' => [
+				['category' => 'golden', 'value' => 7],
+				['category' => 'potion', 'value' => 3],
+				['category' => 'set', 'value' => 24],
+				['category' => 'err', 'value' => 41],
+				['category' => 'danSolve2d', 'value' => 7],
+			],
+		]);
+
+		$goldDigger = $this->testAction('/achievements/view/' . Achievement::GOLD_DIGGER, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $goldDigger);
+		$this->assertStringContainsString('progress__fill--', $goldDigger);
+		$this->assertStringContainsString('width:70%', $goldDigger);
+		$this->assertStringContainsString('7/10', $goldDigger);
+
+		$badPotion = $this->testAction('/achievements/view/' . Achievement::BAD_POTION, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $badPotion);
+		$this->assertStringContainsString('width:20%', $badPotion);
+		$this->assertStringContainsString('3/15', $badPotion);
+
+		$completeSets = $this->testAction('/achievements/view/' . Achievement::COMPLETE_SETS_III, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $completeSets);
+		$this->assertStringContainsString('width:80%', $completeSets);
+		$this->assertStringContainsString('24/30', $completeSets);
+
+		$errorStreak = $this->testAction('/achievements/view/' . Achievement::NO_ERROR_STREAK_IV, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $errorStreak);
+		$this->assertStringContainsString('41/50', $errorStreak);
+
+		$danSolve = $this->testAction('/achievements/view/' . Achievement::SOLVE_10_2D, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $danSolve);
+		$this->assertStringContainsString('7/10', $danSolve);
+
+		$sprint = $this->testAction('/achievements/view/' . Achievement::SPRINT, ['return' => 'view']);
+		$this->assertStringContainsString('class="progress"', $sprint);
+	}
+
+	public function testViewAchievementShowsNoProgressBarForNonCounterAchievement(): void
+	{
+		new ContextPreparator([
+			'achievement-conditions' => [
+				['category' => 'golden', 'value' => 7],
+			],
+		]);
+
+		$result = $this->testAction('/achievements/view/1', ['return' => 'view']);
+
+		$this->assertStringNotContainsString('class="progress"', $result);
+		$this->assertStringNotContainsString('progress__fill', $result);
 	}
 
 	public function testUnlockedAchievementShowsUnlockDate(): void

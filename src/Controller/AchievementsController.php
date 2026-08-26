@@ -84,48 +84,60 @@ class AchievementsController extends AppController
 		$this->loadModel('AchievementCondition');
 		$this->loadModel('AchievementStatus');
 		$this->loadModel('User');
-		$a = $this->Achievement->findById($id);
-		if (!$a)
+		$achievement = $this->Achievement->findById($id);
+		if (!$achievement)
 			throw new NotFoundException('Achievement not found');
 
-		$as = [];
-		$aCount = $this->AchievementStatus->find('count', ['conditions' => ['achievement_id' => $id]]);
-		$asAll = $this->AchievementStatus->find('all', [
+		$currentUserStatus = [];
+		$completerCount = $this->AchievementStatus->find('count', ['conditions' => ['achievement_id' => $id]]);
+		$completers = $this->AchievementStatus->find('all', [
 			'order' => 'created DESC',
 			'conditions' => ['achievement_id' => $id],
 			'limit' => 10]);
-		if (!$asAll)
-			$asAll = [];
+		if (!$completers)
+			$completers = [];
 		if (Auth::isLoggedIn())
-			$as = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
-		$userIds = array_values(array_unique(array_map(fn($item) => $item['AchievementStatus']['user_id'], $asAll)));
-		$userNames = [];
+			$currentUserStatus = $this->AchievementStatus->find('first', ['conditions' => ['achievement_id' => $id, 'user_id' => Auth::getUserID()]]);
+		$userIds = array_map(fn($item) => $item['AchievementStatus']['user_id'], $completers);
+		$usersById = [];
 		if ($userIds)
 			foreach ($this->User->find('all', ['conditions' => ['id' => $userIds]]) as $u)
-				$userNames[$u['User']['id']] = $this->checkPicture($u['User']);
-		foreach ($asAll as &$item)
-			$item['AchievementStatus']['name'] = $userNames[$item['AchievementStatus']['user_id']] ?? '';
+				$usersById[$u['User']['id']] = $u['User'];
+		foreach ($completers as &$item)
+			$item['AchievementStatus']['user'] = $usersById[$item['AchievementStatus']['user_id']] ?? null;
 		unset($item);
+		$userCount = $this->User->find('count');
+		$completionPercent = $userCount > 0 ? round($completerCount / $userCount * 100, 1) : 0;
+		$rarity = Achievement::getRarityLabel($completionPercent);
 
+		$progress = null;
+		$progressGoal = null;
 		if (Auth::isLoggedIn())
 		{
-			$acGolden = $this->AchievementCondition->find('all', ['conditions' => ['user_id' => Auth::getUserID(), 'category' => 'golden']]);
-			if (!$acGolden)
-				$acGolden = [];
-			if (count($acGolden) == 0)
-				$acGoldenCount = 0;
-			else
-				$acGoldenCount = $acGolden[0]['AchievementCondition']['value'];
-			if ($as)
-				$acGoldenCount = 10;
-			if ($a['Achievement']['id'] == 97)
-				$a['Achievement']['additionalDescription'] = 'Progress: ' . $acGoldenCount . '/10';
+			$progressDefinition = Achievement::progressDefinition((int) $achievement['Achievement']['id']);
+			if ($progressDefinition)
+			{
+				$condition = $this->AchievementCondition->find('first', [
+					'order' => 'value DESC',
+					'conditions' => ['user_id' => Auth::getUserID(), 'category' => $progressDefinition['category']],
+				]);
+				$progress = $condition ? (int) $condition['AchievementCondition']['value'] : 0;
+				$progressGoal = $progressDefinition['goal'];
+				if ($currentUserStatus)
+					$progress = $progressGoal;
+				$progress = min($progress, $progressGoal);
+			}
 		}
 
-		$this->set('a', $a);
-		$this->set('as', $as);
-		$this->set('asAll', $asAll);
-		$this->set('aCount', $aCount);
+		$this->set('achievement', $achievement);
+		$this->set('currentUserStatus', $currentUserStatus);
+		$this->set('completers', $completers);
+		$this->set('completerCount', $completerCount);
+		$this->set('userCount', $userCount);
+		$this->set('completionPercent', $completionPercent);
+		$this->set('rarity', $rarity);
+		$this->set('progress', $progress);
+		$this->set('progressGoal', $progressGoal);
 	}
 
 }
