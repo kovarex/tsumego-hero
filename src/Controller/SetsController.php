@@ -248,9 +248,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 */
 	public function edit($id = null)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$this->loadModel('Tsumego');
 		$this->loadModel('SetConnection');
 
@@ -475,9 +472,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 	public function delete($id = null)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)
 			throw new BadRequestException();
@@ -668,9 +662,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 
 	public function addTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		if ($setID === 'favorites')
 		{
 			$set = $this->_getOrCreateDefaultFavoritesSet();
@@ -815,9 +806,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 */
 	public function removeTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
@@ -850,9 +838,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 	 */
 	public function reorderTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
