@@ -178,6 +178,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Slow mode runs:', '0']]);
 
 		$browser->checkTable('#final-info-table', $this, [
+			['Member since:', date('F Y')],
 			['Completed:', '2 of 2'], // one problem in two sets still counted as one
 			['100%']]);
 

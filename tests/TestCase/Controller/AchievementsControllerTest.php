@@ -226,7 +226,8 @@ class AchievementsControllerTest extends TestCaseWithAuth
 
 		$goldDigger = $this->testAction('/achievements/view/' . Achievement::GOLD_DIGGER, ['return' => 'view']);
 		$this->assertStringContainsString('class="progress"', $goldDigger);
-		$this->assertStringContainsString('progress__fill--', $goldDigger);
+		$this->assertStringContainsString('progress__fill', $goldDigger);
+		$this->assertStringContainsString('--percent:70', $goldDigger);
 		$this->assertStringContainsString('width:70%', $goldDigger);
 		$this->assertStringContainsString('7/10', $goldDigger);
 

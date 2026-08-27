@@ -82,16 +82,9 @@ if ($achievement['Achievement']['additionalDescription'] != null)
 	</div>
 	</a>
 	<?php if ($progress !== null && $progressGoal > 0): ?>
-		<?php
-		$progressPercent = (int) round($progress / $progressGoal * 100);
-		$progressClass = 'progress__fill--high';
-		if ($progressPercent < 30)
-			$progressClass = 'progress__fill--low';
-	elseif ($progressPercent < 60)
-		$progressClass = 'progress__fill--medium';
-?>
+		<?php $progressPercent = (int) round($progress / $progressGoal * 100); ?>
 		<div class="progress" style="width:220px;margin:0 auto;">
-			<div class="progress__fill <?php echo $progressClass; ?>" style="width:<?php echo $progressPercent; ?>%"></div>
+			<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $progressPercent; ?>;width:<?php echo $progressPercent; ?>%"></div>
 			<div class="progress__label"><?php echo $progress; ?>/<?php echo $progressGoal; ?></div>
 		</div>
 	<?php endif; ?>

@@ -130,16 +130,9 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php
-					$healthPercent = $maxHealth > 0 ? round($remainingHealth / $maxHealth * 100) : 0;
-					$healthClass = 'progress__fill--high';
-					if ($healthPercent <30)
-						$healthClass = 'progress__fill--low';
-					elseif ($healthPercent <60)
-						$healthClass = 'progress__fill--medium';
-					?>
+					<?php $healthPercent = $maxHealth > 0 ? round($remainingHealth / $maxHealth * 100) : 0; ?>
 					<div class="progress">
-						<div class="progress__fill <?php echo $healthClass; ?>" style="width:<?php echo $healthPercent; ?>%"></div>
+						<div class="progress__fill progress__fill--tonal" style="--percent:<?php echo $healthPercent; ?>;width:<?php echo $healthPercent; ?>%"></div>
 					</div>
 				</td>
 			</tr>
@@ -183,6 +176,12 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 
 	<div class="card card--purple">
 		<table class="stat" id="final-info-table">
+			<?php if ($user['User']['created']): ?>
+			<tr>
+				<td>Member since:</td>
+				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
+			</tr>
+			<?php endif; ?>
 			<tr>
 				<td>Completed:</td>
 				<td><?php echo $user['User']['solved'] . ' of ' . $tsumegoCount; ?></td>
@@ -209,12 +208,6 @@ require_once __DIR__ . "/../../Utility/TimeGraphRenderer.php";
 					</div>
 				</td>
 			</tr>
-			<?php if ($user['User']['created']): ?>
-			<tr>
-				<td>Member since:</td>
-				<td><?php echo date('F Y', strtotime($user['User']['created'])); ?></td>
-			</tr>
-			<?php endif; ?>
 		</table>
 	</div>
 </div>
