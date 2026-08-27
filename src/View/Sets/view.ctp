@@ -267,10 +267,8 @@ if ($tsumegoFilters->query != 'topics')
 			</tr>
 			<?php
 			if (isset($canEdit) && $canEdit)
-				echo '<tr><td colspan="2">
-					<div class="admin-panel">
-					<div align="center"><a class="new-button new-buttonx" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a></div>
-					</div>
+				echo '<tr><td colspan="2" style="text-align:center;padding-top:8px">
+					<a class="new-button" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
 					</td></tr>';
 			?>
 			</tr>

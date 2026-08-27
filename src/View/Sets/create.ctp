@@ -9,7 +9,7 @@
 	<div class="set-edit__header">
 		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / New Set</p>
 		<h1 class="set-edit-title">New Set</h1>
-		<p class="hint">Create a set to organize your favorite problems, then add problems with the heart button.</p>
+		<p class="hint"><?php echo isset($this->params['url']['sandbox']) ? 'Create a new collection for the sandbox.' : 'Create a set to organize your favorite problems.'; ?></p>
 	</div>
 
 	<div class="card card--green set-edit__section">

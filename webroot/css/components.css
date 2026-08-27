@@ -381,17 +381,16 @@
 
 .swatch
 {
-	appearance: none;
+	display: inline-block;
 	width: 24px;
 	height: 24px;
 	border-radius: var(--radius-full);
 	border: 2px solid var(--current-border-color);
 	cursor: pointer;
-	margin: 0;
 	background: var(--swatch-color);
 }
 
-.swatch:checked
+.swatch:hover
 {
 	border-color: var(--color-white);
 	box-shadow: 0 0 0 2px var(--color-blue);

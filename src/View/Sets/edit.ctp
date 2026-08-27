@@ -46,10 +46,11 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<label class="form-field__label">Color</label>
 					<div class="swatches">
 						<?php foreach ($presetColors as $presetColor): ?>
-							<input type="radio" class="swatch" name="data[Set][color]" value="<?php echo $presetColor; ?>"
-								style="--swatch-color:<?php echo $presetColor; ?>" title="<?php echo $presetColor; ?>"
-								<?php echo strcasecmp($presetColor, $currentColor) === 0 ? ' checked' : ''; ?>>
+							<span class="swatch" style="--swatch-color:<?php echo $presetColor; ?>" title="<?php echo $presetColor; ?>"
+								onclick="document.getElementById('set-color').value='<?php echo $presetColor; ?>'"></span>
 						<?php endforeach; ?>
+						<input type="color" id="set-color" name="data[Set][color]" value="<?php echo h($currentColor ?: '#74d14c'); ?>"
+							style="width:24px;height:24px;padding:0;border:2px solid var(--current-border-color);border-radius:var(--radius-full);cursor:pointer;background:none;">
 					</div>
 				</div>
 				<div class="form-field">
@@ -57,6 +58,7 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<div class="set-edit__image">
 						<?php if (!empty($set['Set']['image'])): ?>
 							<img class="set-edit__thumb" src="/img/<?php echo h($set['Set']['image']); ?>" alt="Set image">
+							<label style="font-size:var(--font-size-sm);cursor:pointer"><input type="checkbox" name="data[Set][remove_image]" value="1"> Remove</label>
 						<?php endif; ?>
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
 					</div>
@@ -66,9 +68,8 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 		</div>
 
 		<div class="card card--purple set-edit__section">
-			<h2 class="set-edit__heading">Problems (<?php echo $problemCount; ?>)</h2>
 			<div class="set-edit__problems-head">
-				<p class="hint">Click the heart on any problem to add it to this set.</p>
+				<h2 class="set-edit__heading" style="margin:0">Problems (<?php echo $problemCount; ?>)</h2>
 				<label class="set-edit__preview-toggle" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider">🔍 Preview</label>
 			</div>
 			<?php if ($problemCount === 0): ?>
@@ -122,35 +123,28 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 			<form method="post" action="/sets/edit/<?php echo $setId; ?>" id="set-edit-settings" class="set-edit__settings">
 				<h3 class="set-edit__heading">Re-rate Problems</h3>
 				<label for="SetSetDifficulty">Rating</label>
-				<input type="text" id="SetSetDifficulty" name="data[Set][setDifficulty]" value="<?php echo h($setRating); ?>">
-				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere.</p>
+				<input type="text" id="SetSetDifficulty" name="data[Set][setDifficulty]" placeholder="<?php echo h((string) $setRating); ?>">
+				<p class="hint">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere. Leave empty to skip.</p>
 
 				<h3 class="set-edit__heading">Solve Modes</h3>
-				<?php
-				$arMessage = '';
-		$passingMessage = '';
-		if ($allArActive)
-			$arMessage = '<p class="hint">Alternative Response activated on all problems</p>';
-	elseif ($allArInactive)
-		$arMessage = '<p class="hint">Alternative Response deactivated on all problems</p>';
-if ($allPassActive)
-	$passingMessage = '<p class="hint">Passing enabled on all problems</p>';
-elseif ($allPassInactive)
-	$passingMessage = '<p class="hint">Passing disabled on all problems</p>';
-echo $arMessage . $passingMessage;
-?>
-				<table>
-					<tr>
-						<td>Alternative Response Mode</td>
-						<td><input type="radio" id="r39" name="data[Settings][r39]" value="on"><label for="r39">on</label></td>
-						<td><input type="radio" id="r39" name="data[Settings][r39]" value="off"><label for="r39">off</label></td>
-					</tr>
-					<tr>
-						<td>Enable passing</td>
-						<td><input type="radio" id="r43" name="data[Settings][r43]" value="no"><label for="r43">no</label></td>
-						<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes"><label for="r43">yes</label></td>
-					</tr>
-				</table>
+				<div class="set-edit__mode">
+					<span class="set-edit__mode-label">Alternative Response</span>
+					<span class="set-edit__mode-hint"><?php echo $allArActive ? 'all on' : ($allArInactive ? 'all off' : 'mixed'); ?></span>
+					<select name="data[Settings][r39]">
+						<option value="">no change</option>
+						<option value="on">on</option>
+						<option value="off">off</option>
+					</select>
+				</div>
+				<div class="set-edit__mode">
+					<span class="set-edit__mode-label">Passing</span>
+					<span class="set-edit__mode-hint"><?php echo $allPassActive ? 'all on' : ($allPassInactive ? 'all off' : 'mixed'); ?></span>
+					<select name="data[Settings][r43]">
+						<option value="">no change</option>
+						<option value="yes">yes</option>
+						<option value="no">no</option>
+					</select>
+				</div>
 				<input type="submit" class="btn" value="Apply">
 			</form>
 			<?php if ($isSandbox): ?>

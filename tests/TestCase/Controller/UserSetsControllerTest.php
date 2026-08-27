@@ -641,6 +641,60 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertEquals(2000, $tsumego['Tsumego']['rating']);
 	}
 
+	public function testEmptyRatingFieldDoesNotReRate(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['rating' => 1000, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
+			],
+		]);
+		$this->login('admin');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+
+		$this->testAction("/sets/edit/{$setId}", ['method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertEquals(1000, $tsumego['Tsumego']['rating']);
+	}
+
+	public function testAdminCanToggleAlternativeResponseOn(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['rating' => 1000, 'alternative_response' => 0, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
+			],
+		]);
+		$this->login('admin');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+
+		$this->testAction("/sets/edit/{$setId}", ['data' => ['Settings' => ['r39' => 'on']], 'method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame(1, (int) $tsumego['Tsumego']['alternative_response']);
+	}
+
+	public function testAdminCanTogglePassingOn(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['rating' => 1000, 'pass' => 0, 'sets' => [['name' => 'Sandbox Set', 'num' => 1, 'public' => 0]]],
+			],
+		]);
+		$this->login('admin');
+		$setId = ClassRegistry::init('Set')->find('first', ['conditions' => ['title' => 'Sandbox Set']])['Set']['id'];
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+
+		$this->testAction("/sets/edit/{$setId}", ['data' => ['Settings' => ['r43' => 'yes']], 'method' => 'POST']);
+
+		$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoId);
+		$this->assertSame(1, (int) $tsumego['Tsumego']['pass']);
+	}
+
 	// ── Authorization: mutate actions on someone else's set ─────────────
 
 	public function testRemoveTsumegoFromOtherUserSetFails(): void
@@ -826,6 +880,23 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		@unlink(WWW_ROOT . 'img' . DS . $shared);
 		@unlink(WWW_ROOT . 'img' . DS . str_replace('/', DS, $uploaded));
 		@rmdir(WWW_ROOT . 'img' . DS . 'sets' . DS . $setId);
+	}
+
+	public function testRemoveImageDeletesFileAndClearsField(): void
+	{
+		$context = new ContextPreparator(['user' => ['name' => 'alice']]);
+		$setId = $this->_createSet('My Set', $context->user['id'], 0);
+		$this->login('alice');
+
+		$this->_uploadImage($setId, 400, 200);
+		$imagePath = WWW_ROOT . 'img' . DS . str_replace('/', DS, ClassRegistry::init('Set')->findById($setId)['Set']['image']);
+		$this->assertFileExists($imagePath);
+
+		$this->testAction("/sets/edit/{$setId}", ['data' => ['Set' => ['remove_image' => '1']], 'method' => 'POST']);
+
+		$set = ClassRegistry::init('Set')->findById($setId);
+		$this->assertSame('', $set['Set']['image']);
+		$this->assertFileDoesNotExist($imagePath);
 	}
 
 	private function _uploadImage(int $setId, int $width, int $height): void

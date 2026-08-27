@@ -2944,7 +2944,7 @@ h4 {
 }
 #content {
 }
-.dropdown {
+.board-picker {
   display: inline-block;
   font-family: Georgia;
   letter-spacing: 1px;
@@ -2969,8 +2969,8 @@ h4 {
   left: 0;
 }
 .dropdown-inner {
-  background: #292929;
-  border: #aaa solid 1px;
+  background: var(--surface-bar);
+  border: var(--current-border-color) solid 1px;
   border-radius: 3px;
   position: absolute;
   width: 700px;
@@ -4016,6 +4016,24 @@ pre {
   );
   border: 1px solid black;
 }
+
+/* CookieFlash messages (CakePHP2 flash infrastructure) */
+.alert {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+.alert-success { background: #e6f9e6; color: #1a5c1a; border-color: #82c95b; }
+.alert-error   { background: #fde8e8; color: #8b3a3a; border-color: #d63a49; }
+.alert-warning { background: #fff8e1; color: #7a5e00; border-color: #e6c832; }
+.alert-info    { background: #e8f0fe; color: #2a5090; border-color: #5b9bd5; }
+[data-theme="dark"] .alert-success { background: #1a3a1a; color: #82c95b; border-color: #366421; }
+[data-theme="dark"] .alert-error   { background: #3a1a1a; color: #ff8080; border-color: #8b3a3a; }
+[data-theme="dark"] .alert-warning { background: #3a3010; color: #e6c832; border-color: #7a5e00; }
+[data-theme="dark"] .alert-info    { background: #1a2a3a; color: #5b9bd5; border-color: #2a5090; }
+
 #plus2 {
   display: none;
   position: absolute;

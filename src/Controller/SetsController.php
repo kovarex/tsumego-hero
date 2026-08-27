@@ -334,7 +334,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['alternative_response'] = true;
+					$tsumego['Tsumego']['alternative_response'] = true;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
@@ -344,7 +344,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['alternative_response'] = false;
+					$tsumego['Tsumego']['alternative_response'] = false;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
@@ -354,7 +354,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['pass'] = true;
+					$tsumego['Tsumego']['pass'] = true;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '1');
@@ -364,11 +364,27 @@ ORDER BY sc.num ASC", [(int) $id]);
 				foreach ($problems as $problem)
 				{
 					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
-					$tsumego['pass'] = false;
+					$tsumego['Tsumego']['pass'] = false;
 					ClassRegistry::init('Tsumego')->save($tsumego);
 				}
 				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '0');
 			}
+		}
+
+		// Handle image removal
+		if (!empty($this->data['Set']['remove_image']))
+		{
+			$oldImage = $set['Set']['image'];
+			if ($oldImage && str_starts_with($oldImage, 'sets/'))
+			{
+				$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
+				if (file_exists($oldPath))
+					unlink($oldPath);
+			}
+			$this->Set->id = (int) $id;
+			$this->Set->saveField('image', '');
+			$set['Set']['image'] = '';
+			CookieFlash::set('Image removed', 'success');
 		}
 
 		// Handle image upload from the details form
