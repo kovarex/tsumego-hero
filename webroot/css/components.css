@@ -397,6 +397,36 @@
 	box-shadow: 0 0 0 2px var(--color-blue);
 }
 
+/* ── Dropdown popover (set picker, menus) ── */
+.dropdown
+{
+	position: absolute;
+	z-index: 1000;
+	background: var(--surface-bar);
+	border: 1px solid var(--current-border-color);
+	color: var(--text-color);
+	padding: var(--space-2);
+	max-height: 300px;
+	overflow-y: auto;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-width: 160px;
+}
+
+.dropdown__row
+{
+	display: block;
+	padding: var(--space-1);
+	cursor: pointer;
+	white-space: nowrap;
+	color: var(--text-color);
+}
+
+.dropdown__empty
+{
+	padding: var(--space-1);
+	color: var(--text-softer-color);
+}
+
 /* ── Hint (muted helper text) ── */
 .hint
 {
