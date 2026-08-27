@@ -198,6 +198,12 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$set = [];
 			$set['Set']['title'] = $this->data['Set']['title'];
 			$set['Set']['public'] = 0;
+			if (isset($this->data['Set']['description']))
+				$set['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
+			if (isset($this->data['Set']['color']) && $this->data['Set']['color'] !== '')
+				$set['Set']['color'] = $this->data['Set']['color'];
+			else
+				$set['Set']['color'] = '#5b9bd5';
 
 			$set['Set']['order'] = Constants::$DEFAULT_SET_ORDER;
 
@@ -230,17 +236,242 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$this->SetConnection->save($sc);
 			}
 
-			$this->redirect('/sets/view/' . $this->Set->id);
+			$this->redirect('/sets/edit/' . $this->Set->id);
 			return;
 		}
 		$this->set('t', $t);
 	}
 
+	/**
+	 * Edit a set: details, problems and (for admins) re-rate and solve-mode
+	 * settings. Owner or admin only.
+	 */
+	public function edit($id = null)
+	{
+		$this->loadModel('Tsumego');
+		$this->loadModel('SetConnection');
+
+		$set = $this->Set->findById((int) $id);
+		if (!$set)
+			throw new NotFoundException('Set not found');
+
+		$this->Authorization->authorize($set);
+		$canEditSettings = $this->Authorization->can('Set', 'editSettings');
+		$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
+
+		// Problems in this set, in display order
+		$problems = Util::query("
+SELECT sc.id AS set_connection_id, sc.num, sc.tsumego_id, t.rating,
+	t.alternative_response, t.pass
+FROM set_connection sc
+JOIN tsumego t ON t.id = sc.tsumego_id
+WHERE sc.set_id = ?
+ORDER BY sc.num ASC", [(int) $id]);
+
+		// Tsumego buttons (status colors, tooltips, board previews) for the problem list
+		$tsumegoButtons = new TsumegoButtons(new TsumegoFilters('topics'), null, null, (int) $id);
+
+		if (isset($this->data['Set']))
+		{
+			$changeSet = $set;
+			if (array_key_exists('title', $this->data['Set']))
+				$changeSet['Set']['title'] = $this->data['Set']['title'];
+			if (array_key_exists('title2', $this->data['Set']))
+				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
+			if (array_key_exists('description', $this->data['Set']))
+				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
+			if (array_key_exists('color', $this->data['Set']) && $this->data['Set']['color'] !== '')
+				$changeSet['Set']['color'] = $this->data['Set']['color'];
+			if (array_key_exists('order', $this->data['Set']) && $this->data['Set']['order'] !== '')
+				$changeSet['Set']['order'] = (int) $this->data['Set']['order'];
+
+			$this->Set->create();
+			$this->Set->save($changeSet, true);
+
+			$oldTitle = $set['Set']['title'];
+			$oldDescription = $set['Set']['description'];
+			$oldColor = $set['Set']['color'];
+			$oldOrder = $set['Set']['order'];
+			$set = $this->Set->findById((int) $id);
+			if ($this->_isElevatedSetEdit($set))
+			{
+				if ($oldTitle != $set['Set']['title'])
+					AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, (int) $id, $oldTitle, $set['Set']['title']);
+				if ($oldDescription != $set['Set']['description'])
+					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, (int) $id, $oldDescription, $set['Set']['description']);
+				if ($oldColor != $set['Set']['color'])
+					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, (int) $id, $oldColor, $set['Set']['color']);
+				if ($oldOrder != $set['Set']['order'])
+					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, (int) $id, Util::strOrNull($oldOrder), Util::strOrNull($set['Set']['order']));
+			}
+
+			CookieFlash::set('Set saved', 'success');
+		}
+
+		// Re-rate every problem in this set (admin only)
+		if ($canEditSettings && isset($this->data['Set']['setDifficulty']))
+			if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
+			{
+				foreach ($problems as $problem)
+				{
+					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
+					$tsumego['Tsumego']['rating']
+						= Util::clampOptional(
+							$this->data['Set']['setDifficulty'],
+							$tsumego['Tsumego']['minimum_rating'],
+							$tsumego['Tsumego']['maximum_rating']);
+					$this->Tsumego->save($tsumego);
+				}
+				AdminActivityLogger::log(AdminActivityType::SET_RATING_EDIT, null, (int) $id);
+			}
+
+		// Alternative response / pass mode for all problems (admin only)
+		if ($canEditSettings && isset($this->data['Settings']))
+		{
+			if ($this->data['Settings']['r39'] == 'on')
+			{
+				foreach ($problems as $problem)
+				{
+					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
+					$tsumego['Tsumego']['alternative_response'] = true;
+					ClassRegistry::init('Tsumego')->save($tsumego);
+				}
+				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '1');
+			}
+			if ($this->data['Settings']['r39'] == 'off')
+			{
+				foreach ($problems as $problem)
+				{
+					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
+					$tsumego['Tsumego']['alternative_response'] = false;
+					ClassRegistry::init('Tsumego')->save($tsumego);
+				}
+				AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, (int) $id, null, '0');
+			}
+			if ($this->data['Settings']['r43'] == 'yes')
+			{
+				foreach ($problems as $problem)
+				{
+					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
+					$tsumego['Tsumego']['pass'] = true;
+					ClassRegistry::init('Tsumego')->save($tsumego);
+				}
+				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '1');
+			}
+			if ($this->data['Settings']['r43'] == 'no')
+			{
+				foreach ($problems as $problem)
+				{
+					$tsumego = ClassRegistry::init('Tsumego')->findById($problem['tsumego_id']);
+					$tsumego['Tsumego']['pass'] = false;
+					ClassRegistry::init('Tsumego')->save($tsumego);
+				}
+				AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, (int) $id, null, '0');
+			}
+		}
+
+		// Handle image removal
+		if (!empty($this->data['Set']['remove_image']))
+		{
+			$oldImage = $set['Set']['image'];
+			if ($oldImage && str_starts_with($oldImage, 'sets/'))
+			{
+				$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
+				if (file_exists($oldPath))
+					unlink($oldPath);
+			}
+			$this->Set->id = (int) $id;
+			$this->Set->saveField('image', '');
+			$set['Set']['image'] = '';
+			CookieFlash::set('Image removed', 'success');
+		}
+
+		// Handle image upload from the details form
+		if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
+		{
+			$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+
+			if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
+				CookieFlash::set('png/jpg/webp allowed.', 'error');
+			elseif ($_FILES['image']['size'] > 2097152)
+				CookieFlash::set('The file is too large (max 2MB).', 'error');
+			else
+			{
+				$setId = (int) $id;
+				$oldImage = $set['Set']['image'];
+
+				try
+				{
+					$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
+
+					$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
+					if (!is_dir($setDir))
+						mkdir($setDir, 0775, true);
+
+					$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
+					$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
+					file_put_contents($uploadPath, $processed['data']);
+
+					// Only delete user-uploaded images (inside sets/), never shared assets
+					if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)
+					{
+						$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
+						if (file_exists($oldPath))
+							unlink($oldPath);
+					}
+
+					$this->Set->id = $setId;
+					$this->Set->saveField('image', $filename);
+					CookieFlash::set('Image uploaded', 'success');
+				}
+				catch (Exception $e)
+				{
+					CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
+				}
+			}
+		}
+
+		if (isset($this->data['Set']) || isset($this->data['Settings']))
+			return $this->redirect('/sets/edit/' . (int) $id);
+
+		// Solve-mode states for the admin settings panel
+		$allArActive = true;
+		$allArInactive = true;
+		$allPassActive = true;
+		$allPassInactive = true;
+		foreach ($problems as $problem)
+		{
+			if (!$problem['alternative_response'])
+				$allArActive = false;
+			if ($problem['alternative_response'])
+				$allArInactive = false;
+			if (!$problem['pass'])
+				$allPassActive = false;
+			if ($problem['pass'])
+				$allPassInactive = false;
+		}
+
+		$setRating = 0;
+		if (count($problems) > 0)
+			$setRating = round(array_sum(array_column($problems, 'rating')) / count($problems));
+
+		$this->set('_page', 'user');
+		$this->set('_title', 'Tsumego Hero - Edit Set: ' . $set['Set']['title']);
+		$this->set('set', $set);
+		$this->set('problems', $problems);
+		$this->set('tsumegoButtons', $tsumegoButtons);
+		$this->set('canEditSettings', $canEditSettings);
+		$this->set('canDelete', $this->Authorization->can($set, 'delete'));
+		$this->set('isSandbox', $isSandbox);
+		$this->set('allArActive', $allArActive);
+		$this->set('allArInactive', $allArInactive);
+		$this->set('allPassActive', $allPassActive);
+		$this->set('allPassInactive', $allPassInactive);
+		$this->set('setRating', $setRating);
+	}
+
 	public function delete($id = null)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
 		if (!$setID)
 			throw new BadRequestException();
@@ -431,9 +662,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 	public function addTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		if ($setID === 'favorites')
 		{
 			$set = $this->_getOrCreateDefaultFavoritesSet();
@@ -486,7 +714,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		CookieFlash::set('Added to set', 'success');
-		return $this->redirect('/sets/view/' . $setID);
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -535,7 +763,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 			$tsumegoModel->getDataSource()->rollback();
 			CookieFlash::set('Unexpected error:' . $e->getMessage(), 'error');
 		}
-		return $this->redirect('/sets/view/' . $setID);
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -578,9 +806,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 */
 	public function removeTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
@@ -605,7 +830,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		}
 
 		CookieFlash::set('Removed from set', 'success');
-		return $this->redirect('/sets/view/' . $setID);
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -613,9 +838,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 	 */
 	public function reorderTsumego($setID)
 	{
-		if (!Auth::isLoggedIn())
-			throw new UnauthorizedException();
-
 		$set = ClassRegistry::init('Set')->findById($setID);
 		if (!$set)
 			throw new NotFoundException('Set not found');
@@ -650,7 +872,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$scModel->saveField('num', $currentNum);
 
 		CookieFlash::set('Reordered', 'success');
-		return $this->redirect('/sets/view/' . $setID);
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	public function view(string|int|null $id = null, int $partition = 1): void
@@ -699,15 +921,10 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$refreshView = false;
 		$avgTime = 0;
 		$accuracy = 0;
-		$allVcActive = false;
-		$allVcInactive = false;
-		$allArActive = false;
-		$allArInactive = false;
-		$allPassActive = false;
-		$allPassInactive = false;
 		$pdCounter = 0;
 		$acS = null;
 		$acA = null;
+		$this->set('canEdit', false);
 
 		$queryType = self::decodeQueryType($id);
 
@@ -771,187 +988,13 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				throw new NotFoundException("Set not found");
 			$this->Authorization->authorize($set, "view");
 
-
-			$allArActive = true;
-			$allArInactive = true;
-			$allPassActive = true;
-			$allPassInactive = true;
-			foreach ($tsumegoButtons as $tsumegoButton)
-			{
-				if (!$tsumegoButton->alternativeResponse)
-					$allArActive = false;
-				if (!$tsumegoButton->passEnabled)
-					$allPassActive = false;
-			}
 			foreach ($tsumegoButtons as $tsumegoButton)
 				$tsIds [] = $tsumegoButton->tsumegoID;
 			if ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null)
 				$this->set('_page', 'sandbox');
 			$this->set('isFav', false);
 			$this->set('isOwner', Auth::isLoggedIn() && $set['Set']['user_id'] == Auth::getUserID());
-			$canEdit = $this->Authorization->can($set, 'edit');
-			$canEditSettings = $this->Authorization->can('Set', 'editSettings');
-			if ($canEdit && isset($this->data['Set']['title']))
-			{
-				$this->Set->create();
-				$changeSet = $set;
-				$changeSet['Set']['title'] = $this->data['Set']['title'];
-				$changeSet['Set']['title2'] = $this->data['Set']['title2'];
-				$this->set('data', $changeSet['Set']['title']);
-				$this->Set->save($changeSet, true);
-				$oldTitle = $set['Set']['title'];
-				$set = $this->Set->findById($id);
-				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_TITLE_EDIT, null, $id, $oldTitle, $this->data['Set']['title']);
-			}
-			if ($canEdit && isset($this->data['Set']['description']))
-			{
-				$this->Set->create();
-				$changeSet = $set;
-				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
-				$this->set('data', $changeSet['Set']['description']);
-				$this->Set->save($changeSet, true);
-				$oldDescription = $set['Set']['description'];
-				$set = $this->Set->findById($id);
-				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, $id, $oldDescription, $this->data['Set']['description']);
-			}
-			if ($canEditSettings && isset($this->data['Set']['setDifficulty']))
-				if ($this->data['Set']['setDifficulty'] != 1200 && $this->data['Set']['setDifficulty'] >= 900 && $this->data['Set']['setDifficulty'] <= 2900)
-				{
-					$setDifficultyTsumegoSet = TsumegoUtil::collectTsumegosFromSet($set['Set']['id']);
-					$setDifficulty = $this->data['Set']['setDifficulty'];
-					$setDifficultyTsumegoSetCount = count($setDifficultyTsumegoSet);
-					for ($i = 0; $i < $setDifficultyTsumegoSetCount; $i++)
-					{
-						$setDifficultyTsumegoSet[$i]['Tsumego']['rating']
-							= Util::clampOptional(
-								$this->data['Set']['setDifficulty'],
-								$setDifficultyTsumegoSet[$i]['Tsumego']['minimum_rating'],
-								$setDifficultyTsumegoSet[$i]['Tsumego']['maximum_rating']);
-						$this->Tsumego->save($setDifficultyTsumegoSet[$i]);
-					}
-					AdminActivityLogger::log(AdminActivityType::SET_RATING_EDIT, null, $id);
-				}
-			if ($canEdit && isset($this->data['Set']['color']))
-			{
-				$this->Set->create();
-				$changeSet = $set;
-				$changeSet['Set']['color'] = $this->data['Set']['color'];
-				$this->set('data', $changeSet['Set']['color']);
-				$this->Set->save($changeSet, true);
-				$oldColor = $set['Set']['color'];
-				$set = $this->Set->findById($id);
-				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, $id, $oldColor, $this->data['Set']['color']);
-			}
-			if ($canEdit && isset($this->data['Set']['order']))
-			{
-				$newOrder = (int) $this->data['Set']['order'];
-				$this->Set->create();
-				$changeSet = $set;
-				$changeSet['Set']['order'] = $newOrder;
-				$this->set('data', $changeSet['Set']['order']);
-				$this->Set->save($changeSet, true);
-				$oldOrder = $set['Set']['order'];
-				$set = $this->Set->findById($id);
-				if ($this->_isElevatedSetEdit($set))
-					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, $id, Util::strOrNull($oldOrder), Util::strOrNull($newOrder));
-			}
-			// Handle image upload from the view page admin panel
-			if ($canEdit && isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
-			{
-				$file_ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-
-				if (!in_array($file_ext, ['png', 'jpg', 'jpeg', 'webp']))
-					CookieFlash::set('png/jpg/webp allowed.', 'error');
-				elseif ($_FILES['image']['size'] > 2097152)
-					CookieFlash::set('The file is too large (max 2MB).', 'error');
-				else
-				{
-					$setId = $set['Set']['id'];
-					$oldImage = $set['Set']['image'];
-
-					try
-					{
-						$processed = SetImage::process($_FILES['image']['tmp_name'], $file_ext);
-
-						$setDir = WWW_ROOT . 'img' . DS . 'sets' . DS . $setId;
-						if (!is_dir($setDir))
-							mkdir($setDir, 0775, true);
-
-						$filename = 'sets/' . $setId . '/' . substr($processed['hash'], 0, 16) . '.webp';
-						$uploadPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $filename);
-						file_put_contents($uploadPath, $processed['data']);
-
-						// Only delete user-uploaded images (inside sets/), never shared assets
-						if ($oldImage && str_starts_with($oldImage, 'sets/') && $oldImage !== $filename)
-						{
-							$oldPath = WWW_ROOT . 'img' . DS . str_replace('/', DS, $oldImage);
-							if (file_exists($oldPath))
-								unlink($oldPath);
-						}
-
-						$set['Set']['image'] = $filename;
-						$this->Set->id = $setId;
-						$this->Set->saveField('image', $filename);
-						CookieFlash::set('Image uploaded', 'success');
-					}
-					catch (Exception $e)
-					{
-						CookieFlash::set('Image upload failed: ' . $e->getMessage(), 'error');
-					}
-				}
-			}
-
-			if ($canEditSettings && isset($this->data['Settings']))
-			{
-				if ($this->data['Settings']['r39'] == 'on')
-				{
-					foreach ($tsumegoButtons as $tsumegoButton)
-					{
-						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-						$tsumego['alternative_response'] = true;
-						ClassRegistry::init('Tsumego')->save($tsumego);
-					}
-					$allArActive = true;
-					AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, $id, null, '1');
-				}
-				if ($this->data['Settings']['r39'] == 'off')
-				{
-					foreach ($tsumegoButtons as $tsumegoButton)
-					{
-						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-						$tsumego['alternative_response'] = false;
-						ClassRegistry::init('Tsumego')->save($tsumego);
-					}
-					$allArInactive = true;
-					AdminActivityLogger::log(AdminActivityType::SET_ALTERNATIVE_RESPONSE, null, $id, null, '0');
-				}
-				if ($this->data['Settings']['r43'] == 'yes')
-				{
-					foreach ($tsumegoButtons as $tsumegoButton)
-					{
-						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-						$tsumego['pass'] = true;
-						ClassRegistry::init('Tsumego')->save($tsumego);
-					}
-					$allPassActive = true;
-					AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, $id, null, '1');
-				}
-				if ($this->data['Settings']['r43'] == 'no')
-				{
-					foreach ($tsumegoButtons as $tsumegoButton)
-					{
-						$tsumego = ClassRegistry::init('Tsumego')->findById($tsumegoButton->tsumegoID);
-						$tsumego['pass'] = false;
-						ClassRegistry::init('Tsumego')->save($tsumego);
-					}
-					$allPassInactive = true;
-					AdminActivityLogger::log(AdminActivityType::SET_PASS_MODE, null, $id, null, '0');
-				}
-				$this->set('formRedirect', true);
-			}
+			$this->set('canEdit', $this->Authorization->can($set, 'edit'));
 		}
 		else
 			throw new BadRequestException('Unknown query type: ' . $tsumegoFilters->query);
@@ -1140,12 +1183,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 
 		if ($tsumegoFilters->query == 'topics')
 		{
-			$this->set('allVcActive', $allVcActive);
-			$this->set('allVcInactive', $allVcInactive);
-			$this->set('allArActive', $allArActive);
-			$this->set('allArInactive', $allArInactive);
-			$this->set('allPassActive', $allPassActive);
-			$this->set('allPassInactive', $allPassInactive);
 			$this->set('pdCounter', $pdCounter);
 			$this->set('acS', $acS);
 			$this->set('acA', $acA);

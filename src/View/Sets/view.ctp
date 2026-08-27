@@ -5,12 +5,6 @@
  * @var array $acA
  * @var array $acS
  * @var string $accuracy
- * @var bool $allArActive
- * @var bool $allArInactive
- * @var bool $allPassActive
- * @var bool $allPassInactive
- * @var bool $allVcActive
- * @var bool $allVcInactive
  * @var float $avgTime
  * @var bool $isFav
  * @var string $lightDark
@@ -21,7 +15,6 @@
  * @var int $saNum
  * @var bool $scoring
  * @var array $set
- * @var int $setDifficulty
  * @var int $setRating
  * @var string $setTitle
  * @var bool $startingSetConnectionID
@@ -65,7 +58,7 @@ if(!$beta2)
 $totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
 if ($totalPages > 1):
 	$currentPage = $partition + 1;
-?>
+	?>
 	<div style="clear:both;display:block;width:100%;margin:12px 0;text-align:center">
 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
 <?php if ($p === $currentPage): ?>
@@ -85,7 +78,7 @@ if ($totalPages > 1):
 		<tr>
 			<td style="vertical-align:top;">
 				<?php
-			$saNum = 0;
+				$saNum = 0;
 
 if($set['Set']['image'] == 'sa-pretty.jpg') $saNum = 9;
 elseif($set['Set']['image'] == 'sa-hunting.jpg') $saNum = 8;
@@ -127,9 +120,7 @@ elseif (!$noImage && $tsumegoFilters->query == 'difficulty')
 						</a></div></td>';
 }
 else
-{
 	echo '<td width="195px" style="vertical-align:top;"><div align="center"></div></td>';
-}
 ?>
 		</tr>
 		<tr>
@@ -268,176 +259,10 @@ if ($tsumegoFilters->query != 'topics')
 			</td>
 			</tr>
 			<?php
-			if (Auth::isAdmin() || (isset($isOwner) && $isOwner))
-			{
-					$isSandbox = ($set['Set']['public'] == 0 && $set['Set']['user_id'] === null);
-					echo '<tr><td colspan="2">
-					<div class="admin-panel">
-					<div align="center"><h1>Edit Set</h1></div>
-					<br>
-					<table width="100%">
-					<tr>
-					<td>';
-
-					if (Auth::isAdmin())
-						SetEditRenderer::renderAddProblemForm($set, $tsumegoButtons);
-					if($set['Set']['public'] == 0)
-					{
-						echo '<br><a id="show">Edit Title<img id="greyArrow2" src="/img/greyArrow1.png"></a><br>
-						<div id="msg1">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('title', ['label' => '', 'type' => 'text', 'placeholder' => 'Title', 'value' => $set['Set']['title']]);
-						echo $this->Form->input('title2', ['label' => '', 'type' => 'text', 'placeholder' => 'Title2', 'value' => $set['Set']['title2']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
-						echo '<a id="show2">Edit Description<img id="greyArrow3" src="/img/greyArrow1.png"></a><br>
-						<div id="msg2">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('description', ['label' => '', 'type' => 'textarea', 'placeholder' => 'Description', 'value' => $set['Set']['description']]);
-						echo '<i><font color="gray">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</font></i><br>';
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-						echo '</div>';
-
-						if (Auth::isAdmin())
-						{
-							echo '<a id="show7">Re-rate Problems<img id="greyArrow7" src="/img/greyArrow1.png"></a><br>
-							<div id="msg7">';
-							echo $this->Form->create('Set');
-							echo $this->Form->input('setDifficulty', ['label' => '', 'type' => 'text', 'placeholder' => 'Rating', 'value' => $setDifficulty]);
-							echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div><br>';
-							echo '<i><font color="gray">Sets the rating of every problem in this collection. Problems are shared, so this changes their rating everywhere.</font></i><br>';
-							echo '</div>';
-						}
-
-						echo '<a id="show3">Edit Color<img id="greyArrow4" src="/img/greyArrow1.png"></a><br>
-						<div id="msg3">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('color', ['label' => '', 'type' => 'color', 'value' => $set['Set']['color']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-						echo '</div>';
-						echo '<a id="show6">Edit Order<img id="greyArrow6" src="/img/greyArrow1.png"></a><br>
-						<div id="msg6">';
-						echo $this->Form->create('Set');
-						echo $this->Form->input('order', ['label' => '', 'type' => 'text', 'placeholder' => 'Order', 'value' => $set['Set']['order']]);
-						echo '<div class="submit"><input style="margin:0px;" value="Submit" type="submit"></div>';
-						echo '<i>Low numbers are on top, high numbers at the bottom.</i><br>';
-						echo '</div>';
-
-						// Inline image upload
-						echo '<form method="post" action="/sets/view/' . $set['Set']['id'] . '" enctype="multipart/form-data" style="margin:4px 0">';
-						echo '<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" style="display:inline;width:auto"> ';
-						echo '<input type="submit" value="Upload Image" style="display:inline;width:auto">';
-						echo ' <small>Max 2MB</small>';
-						echo '</form>';
-						echo '<br>';
-
-						echo '<a id="show8">Manage Problems<img id="greyArrow8" src="/img/greyArrow1.png"></a><br>';
-						echo '<div id="msg8">';
-						$manageCount = count($tsumegoButtons);
-						$manageIndex = 0;
-						foreach ($tsumegoButtons as $b)
-						{
-							$manageIndex++;
-							echo '<div style="padding:2px">' . $b->order . '. <a href="/' . $b->setConnectionID . '">Problem #' . $b->tsumegoID . '</a>';
-							if ($manageIndex > 1)
-								echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'up\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move up">▲</a>';
-							if ($manageIndex < $manageCount)
-								echo ' <a href="#" onclick="reorderTsumego(' . $b->tsumegoID . ',\'down\',\'/sets/reorderTsumego/' . $set['Set']['id'] . '\')" title="Move down">▼</a>';
-							echo ' <form method="post" action="/sets/removeTsumego/' . $set['Set']['id'] . '" style="display:inline">';
-							echo '<input type="hidden" name="tsumego_id" value="' . $b->tsumegoID . '">';
-							echo '<input type="submit" value="✕" style="border:none;background:none;cursor:pointer;color:#c44;padding:0 4px">';
-							echo '</form></div>';
-						}
-						echo '</div>';
-
-						echo '<a href="#" onclick="remove()">Remove Collection</a><br><br>';
-					}
-					if (Auth::isAdmin())
-					{
-					echo '<a id="show5" class="selectable-text">Settings<img id="greyArrow5" src="/img/greyArrow1.png"></a>';
-					$vcOn = '';
-					$vcOff = '';
-					$arOn = '';
-					$arOff = '';
-					$passingNo = '';
-					$passingYes = '';
-					$vcMessage = '';
-					$arMessage = '';
-					$passingMessage = '';
-					if($allVcActive)
-					{
-						$vcMessage = '<font color="#717171">[Merge recurring positions activated on all problems]</font><br>';
-						$vcOn = 'checked="checked"';
-					}
-					elseif($allVcInactive)
-					{
-						$vcMessage = '<font color="#717171">[Merge recurring positions deactivated on all problems]</font><br>';
-						$vcOff = 'checked="checked"';
-					}
-					if($allArActive)
-					{
-						$arMessage = '<font color="#717171">[Alternative Respone Mode activated on all problems]</font><br>';
-						$arOn = 'checked="checked"';
-					}
-					elseif($allArInactive)
-					{
-						$arMessage = '<font color="#717171">[Alternative Respone Mode deactivated on all problems]</font><br>';
-						$arOff = 'checked="checked"';
-					}
-					if($allPassActive)
-					{
-						$passingMessage = '<font color="#717171">[Passing enabled on all problems]</font><br>';
-						$passingYes = 'checked="checked"';
-					}
-					elseif($allPassInactive)
-					{
-						$passingMessage = '<font color="#717171">[Passing disabled on all problems]</font><br>';
-						$passingNo = 'checked="checked"';
-					}
-					echo '
-							<div id="msg5">
-								<br>
-								' . $vcMessage . '
-								' . $arMessage . '
-								' . $passingMessage . '
-								<form action="" method="POST" enctype="multipart/form-data">
-									<table>
-										<tr>
-											<td>Merge recurring positions</td>
-											<td><input type="radio" id="r38" name="data[Settings][r38]" value="on" ><label for="r38">on</label></td>
-											<td><input type="radio" id="r38" name="data[Settings][r38]" value="off" ><label for="r38">off</label></td>
-										</tr>
-										<tr>
-											<td>Alternative Response Mode</td>
-											<td><input type="radio" id="r39" name="data[Settings][r39]" value="on" ><label for="r39">on</label></td>
-											<td><input type="radio" id="r39" name="data[Settings][r39]" value="off" ><label for="r39">off</label></td>
-										</tr>
-										<tr>
-											<td>Enable passing</td>
-											<td><input type="radio" id="r43" name="data[Settings][r43]" value="no" ><label for="r43">no</label></td>
-											<td><input type="radio" id="r43" name="data[Settings][r43]" value="yes" ><label for="r43">yes</label></td>
-										</tr>
-									</table>
-									<br>
-									<input value="Submit" type="submit"/>
-								</form>
-								<br><br>
-							</div>';
-					echo '</td>';
-					echo '<td>';
-					if($set['Set']['public'] == 0)
-						echo '<div align="right">
-						<a class="new-button new-buttonx" href="/users/userstats3/' . $set['Set']['id'] . '">Activities</a>
-						</div>';
-					elseif($set['Set']['public'] == -1)
-						echo '<a href="#" onclick="restore()">Restore Collection</a>';
-					echo '</td>
-					</tr>
-					</table>
-					</div>
-					</td>';
-				}
-			}
+			if (isset($canEdit) && $canEdit)
+				echo '<tr><td colspan="2" style="text-align:center;padding-top:8px">
+					<a class="new-button" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
+					</td></tr>';
 			?>
 			</tr>
 		<?php } ?>
@@ -450,108 +275,6 @@ if ($tsumegoFilters->query != 'topics')
 	<div style="clear:both;"></div>
 
 	<script>
-	var t1 = false;
-	var t2 = false;
-	var t7 = false;
-	var t3 = false;
-	var msg5selected = false;
-	var msg6selected = false;
-	$("#msg1").hide();
-	$("#msg2").hide();
-	$("#msg7").hide();
-	$("#msg3").hide();
-	$("#msg5").hide();
-	$("#msg6").hide();
-
-	$("#show").click(function(){
-		if(!t1){
-			$("#msg1").show();
-			document.getElementById("greyArrow2").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg1").hide();
-			document.getElementById("greyArrow2").src = "/img/greyArrow1.png";
-		}
-		t1=!t1;
-	});
-	$("#show2").click(function(){
-		if(!t2){
-			$("#msg2").show();
-			document.getElementById("greyArrow3").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg2").hide();
-			document.getElementById("greyArrow3").src = "/img/greyArrow1.png";
-		}
-		t2=!t2;
-	});
-	$("#show7").click(function(){
-		if(!t7){
-			$("#msg7").show();
-			document.getElementById("greyArrow7").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg7").hide();
-			document.getElementById("greyArrow7").src = "/img/greyArrow1.png";
-		}
-		t7=!t7;
-	});
-	$("#show3").click(function(){
-		if(!t3){
-			$("#msg3").show();
-			document.getElementById("greyArrow4").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg3").hide();
-			document.getElementById("greyArrow4").src = "/img/greyArrow1.png";
-		}
-		t3=!t3;
-	});
-	$("#show5").click(function(){
-		if(!msg5selected){
-			$("#msg5").fadeIn(250);
-			document.getElementById("greyArrow5").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg5").fadeOut(250);
-			document.getElementById("greyArrow5").src = "/img/greyArrow1.png";
-		}
-		msg5selected = !msg5selected;
-	});
-	$("#show6").click(function(){
-		if(!msg6selected){
-			$("#msg6").fadeIn(250);
-			document.getElementById("greyArrow6").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg6").fadeOut(250);
-			document.getElementById("greyArrow6").src = "/img/greyArrow1.png";
-		}
-		msg6selected = !msg6selected;
-	});
-	var msg8selected = false;
-	$("#msg8").hide();
-	$("#show8").click(function(){
-		if(!msg8selected){
-			$("#msg8").fadeIn(250);
-			document.getElementById("greyArrow8").src = "/img/greyArrow2.png";
-		}else{
-			$("#msg8").fadeOut(250);
-			document.getElementById("greyArrow8").src = "/img/greyArrow1.png";
-		}
-		msg8selected = !msg8selected;
-	});
-	function reorderTsumego(tsumegoId, dir, url) {
-		fetch(url + '?tsumego_id=' + tsumegoId + '&dir=' + dir, { method: 'POST' })
-			.then(() => location.reload());
-	}
-	<?php if($tsumegoFilters->query == 'topics')
-	{ ?>
-		function remove(){
-			var confirmed = confirm("Delete this collection?");
-			if(confirmed) {
-				var form = document.createElement('form');
-				form.method = 'POST';
-				form.action = '/sets/delete/<?= $set['Set']['id'] ?>';
-				document.body.appendChild(form);
-				form.submit();
-			}
-		}
-	<?php } ?>
 	const activeTopicTiles = [];
 	const activeDifficultyTiles = [];
 	const activeTagTiles = [];
@@ -560,13 +283,13 @@ if ($tsumegoFilters->query != 'topics')
 		if ($tsumegoFilters->query != 'topics')
 			foreach ($tsumegoFilters->sets as $setName)
 				echo 'activeTopicTiles.push(' . json_encode($setName, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-		if ($tsumegoFilters->query != 'difficulty')
-			foreach ($tsumegoFilters->ranks as $rank)
-				echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-		if ($tsumegoFilters->query != 'tags')
-			foreach ($tsumegoFilters->tags as $tag)
-				echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
-	?>
+if ($tsumegoFilters->query != 'difficulty')
+	foreach ($tsumegoFilters->ranks as $rank)
+		echo 'activeDifficultyTiles.push(' . json_encode($rank, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+if ($tsumegoFilters->query != 'tags')
+	foreach ($tsumegoFilters->tags as $tag)
+		echo 'activeTagTiles.push(' . json_encode($tag, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE) . ');';
+?>
 	drawActiveTiles();
 
 	function drawActiveTiles(){
@@ -609,9 +332,6 @@ if ($tsumegoFilters->query != 'topics')
 	}
 
 		var msg2selected = false;
-		var msg3selected = false;
-		var msg4selected = false;
-		var msg5selected = false;
 		var msgFilterSelected = false;
 
 		$("#msg2x").hide();
@@ -699,13 +419,11 @@ if ($tsumegoFilters->query != 'topics')
 		}
 
 		<?php
-	if($refreshView)
-		echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
+if($refreshView)
+	echo 'window.location.href = "/sets/view/' . $set['Set']['id'] . '";';
 ?>
 	</script>
 	<style>
-	#show5{display:block;}
-	#show6{text-decoration:underline;cursor:pointer;}
 	#msgFilters{
 		display:none;
 		margin:0 4px 8px

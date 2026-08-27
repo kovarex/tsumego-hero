@@ -1,16 +1,24 @@
 <?php
+
 /**
  * @var View $this
  */
-?>
 
-<div align="center">
-<br><h1>New Set</h1>
-	<?php
-		echo $this->Form->create('Set');
-		echo $this->Form->input('title', array('label' => 'Title: ', 'type' => 'text', 'placeholder' => 'title'));
-		echo $this->Form->end('Submit');
-	?>
-<br><br>
-<a href="<?= Auth::isAdmin() ? '/sets/sandbox' : '/sets/mine' ?>"> back </a>
+?>
+<div class="set-edit">
+	<div class="set-edit__header">
+		<p class="set-edit__crumb"><a href="/sets/mine">My Sets</a> / New Set</p>
+		<h1 class="set-edit-title">New Set</h1>
+		<p class="hint"><?php echo isset($this->params['url']['sandbox']) ? 'Create a new collection for the sandbox.' : 'Create a set to organize your favorite problems.'; ?></p>
+	</div>
+
+	<div class="card card--green set-edit__section">
+		<?php echo $this->Form->create('Set', ['id' => 'set-edit-details']); ?>
+			<div class="form-field">
+				<label class="form-field__label" for="SetTitle">Title</label>
+				<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" placeholder="My set name" required>
+			</div>
+			<p class="hint">You can add a description, color and image after creating, in the set editor.</p>
+		<?php echo $this->Form->end(['label' => 'Create Set', 'class' => 'btn']); ?>
+	</div>
 </div>

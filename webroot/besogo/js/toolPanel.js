@@ -1144,15 +1144,15 @@ besogo.makeToolPanel = function (container, editor) {
 
     let arrow = $("#favDropdownArrow");
     let offset = arrow.offset();
-    let div = $('<div id="fav-dropdown" style="position:absolute;z-index:1000;background:#fff;border:1px solid #ccc;padding:8px;max-height:300px;overflow-y:auto;box-shadow:0 2px 8px rgba(0,0,0,0.15);min-width:160px"></div>');
+    let div = $('<div id="fav-dropdown" class="dropdown"></div>');
     div.css({top: offset.top + 22, left: offset.left - 150});
     $("body").append(div);
 
     if (!window.userSets || window.userSets.length === 0) {
-      div.append('<div style="padding:4px;color:#999">No sets yet.</div>');
+      div.append('<div class="dropdown__empty">No sets yet.</div>');
     } else {
       window.userSets.forEach(function (s) {
-        let row = $('<label style="display:block;padding:4px;cursor:pointer;white-space:nowrap"></label>');
+        let row = $('<label class="dropdown__row"></label>');
         let cb = $('<input type="checkbox" style="margin-right:4px">');
         cb.prop("checked", s.contains);
         cb.on("change", function () {

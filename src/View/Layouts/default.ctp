@@ -292,7 +292,7 @@ echo ViteManifest::legacyScript('legacy');
 					</li>';
 						?>
 						<li class="menuIcons1">
-							<div class="dropdown" id="check3">
+								<div class="board-picker" id="check3">
 								<label for="dropdown-1" id="boardsInMenu" class="dropdown-button">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
 								</label>
