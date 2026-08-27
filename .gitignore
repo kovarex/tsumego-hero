@@ -1,65 +1,54 @@
-# User specific & automatically generated files #
-#################################################
-/tmp/cache/*
-!/tmp/cache/*/
-/tmp/cache/*/*
-!/tmp/cache/*/.gitkeep
-/tmp/sessions/*
-!/tmp/sessions/.gitkeep
-/tmp/tests/*
-!/tmp/tests/.gitkeep
-/tmp/asset_compress_build_time
-/logs/*
-!/logs/.gitkeep
-/app/Plugin/*
-!/app/Plugin/empty
-/app/Vendor/*
-!/app/Vendor/empty
+# CakePHP runtime #
+###################
+/tmp/
+/logs/
+
+# Dependencies #
+#################
 /vendor
 /plugins
-*.mo
-.phpunit.result.cache
-/phpunit.xml
+
+# Config (sensitive / local) #
+##############################
 config/database.php
 config/email.php
 config/core.local.php
 config/define.local.php
-src/Config/asset_compress.local.ini
+
+# Build artifacts & caches #
+############################
+*.mo
+.phpunit.result.cache
+/phpunit.xml
 .php-cs-fixer.cache
-./.php-cs-fixer.php
-
-/selenium/geckodriver
-/selenium/geckodriver*.gz
-
-/img/set_*
-/img/google/*.png
-webroot/userLogger.html
-webroot/cache_css/
-webroot/cache_js/
-webroot/forums/cache
-webroot/forums/store
-webroot/forums/config.php
-webroot/forums/vendor
-.idea/
-.local/
+/.php-cs-fixer.php
 
 # User-uploaded set cover images (keep the cache-control .htaccess)
 /webroot/img/sets/*
 !/webroot/img/sets/.htaccess
 
-# IDE and editor specific files #
-#################################
+# Google profile pictures (created at runtime in UsersController::googlesignin)
+/img/google/*.png
+
+# phpBB forum runtime files
+webroot/forums/cache
+webroot/forums/store
+webroot/forums/config.php
+webroot/forums/vendor
+
+# IDE and editor files #
+########################
+.idea/
+.vscode/
+.local/
 /nbproject
-.idea
 /.project
 /.buildpath
 /.settings/
-.vscode/
 
 # OS generated files #
 ######################
 .DS_Store
-.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
@@ -72,5 +61,4 @@ node_modules/
 webroot/js/dist/
 webroot/dist/
 package-lock.json
-
 .pnpm-store/
