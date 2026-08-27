@@ -236,10 +236,7 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 				$this->SetConnection->save($sc);
 			}
 
-			if ($isSandbox)
-				$this->redirect('/sets/view/' . $this->Set->id);
-			else
-				$this->redirect('/sets/edit/' . $this->Set->id);
+			$this->redirect('/sets/edit/' . $this->Set->id);
 			return;
 		}
 		$this->set('t', $t);

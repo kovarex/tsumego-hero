@@ -63,6 +63,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$data = ['Set' => ['title' => 'New Sandbox']];
 		$this->testAction('/sets/create?sandbox=1', ['data' => $data, 'method' => 'POST']);
 
+		$this->assertStringContainsString('/sets/edit/', $this->headers['Location']);
+
 		$set = ClassRegistry::init('Set')->find('first', [
 			'conditions' => ['title' => 'New Sandbox'],
 		]);
