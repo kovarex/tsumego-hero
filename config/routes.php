@@ -122,6 +122,11 @@ Router::connect(
 	['pass' => ['id'], 'id' => '[0-9]+']
 );
 Router::connect(
+	'/sets/edit/:id',
+	['controller' => 'sets', 'action' => 'edit'],
+	['pass' => ['id'], 'id' => '[0-9]+']
+);
+Router::connect(
 	'/sets/addTsumego/:id',
 	['controller' => 'sets', 'action' => 'addTsumego'],
 	['pass' => ['id'], 'id' => '[0-9]+|favorites']

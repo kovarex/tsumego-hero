@@ -399,15 +399,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 
 		$browser = Browser::instance();
-		$browser->get('sets/view/' . $setId . '/2');
+		$browser->get('sets/edit/' . $setId);
 
-		$browser->byId('show')->click();
 		$browser->byId('SetTitle')->clear();
 		$browser->byId('SetTitle')->sendKeys('Renamed Set');
-		$browser->byCssSelector('#msg1 input[type="submit"]')->click();
+		$browser->byCssSelector('#set-edit-details input[type="submit"]')->click();
 
-		// Heading keeps the partition, but the saved title must not contain it
-		$browser->waitUntilCssSelectorExistsWithText('.homeLeft .title4', 'Renamed Set #2');
+		$browser->waitUntilCssSelectorExistsWithText('.set-edit-title', 'Renamed Set');
 
 		$this->assertSame('Renamed Set', ClassRegistry::init('Set')->findById($setId)['Set']['title']);
 	}
@@ -1163,7 +1161,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			'user' => ['mode' => Constants::$LEVEL_MODE, 'admin' => 1],
 			'tsumegos' => [['sets' => [['name' => 'private set', 'public' => 0, 'num' => '1']]]]]);
 		$browser = Browser::instance();
-		$browser->get('/sets/view/' . $context->tsumegos[0]['set-connections'][0]['set_id']);
+		$browser->get('/sets/edit/' . $context->tsumegos[0]['set-connections'][0]['set_id']);
 
 		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
 		$this->assertCount(1, $problemButtons);

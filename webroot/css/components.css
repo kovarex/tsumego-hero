@@ -345,6 +345,58 @@
 	margin-right: var(--space-1);
 }
 
+/* ── Form field (stacked label + control) ── */
+.form-field
+{
+	margin-bottom: var(--space-4);
+}
+
+.form-field__label
+{
+	display: block;
+	font-weight: var(--font-weight-bold);
+	margin-bottom: var(--space-1);
+	color: var(--text-color);
+}
+
+.form-field__control
+{
+	width: 100%;
+	box-sizing: border-box;
+	background: var(--surface-bar);
+	color: var(--text-color);
+	border: 1px solid var(--current-border-color);
+	border-radius: var(--radius-sm);
+	padding: var(--space-2);
+}
+
+/* ── Color swatches (preset color picker) ── */
+.swatches
+{
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	flex-wrap: wrap;
+}
+
+.swatch
+{
+	appearance: none;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-full);
+	border: 2px solid var(--current-border-color);
+	cursor: pointer;
+	margin: 0;
+	background: var(--swatch-color);
+}
+
+.swatch:checked
+{
+	border-color: var(--color-white);
+	box-shadow: 0 0 0 2px var(--color-blue);
+}
+
 /* ── Hint (muted helper text) ── */
 .hint
 {
