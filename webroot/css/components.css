@@ -143,6 +143,7 @@
 	overflow: hidden;
 	margin-top: var(--space-1);
 	position: relative;
+	text-align: left;
 }
 
 .progress__fill
@@ -153,19 +154,20 @@
 	min-width: 2px;
 }
 
-.progress__fill--high
+/* Fill whose color reflects the amount: red at 0%, yellow at 50%, green at 100%.
+   Two parallel tracks (light/dark) so the gradient matches the regular bars. */
+.progress__fill--tonal
 {
-	background: linear-gradient(var(--color-green-light), var(--color-green-dark));
-}
-
-.progress__fill--medium
-{
-	background: linear-gradient(var(--color-yellow), var(--color-yellow-dark));
-}
-
-.progress__fill--low
-{
-	background: linear-gradient(var(--color-red-fill), var(--color-red-fill-dark));
+	--percent: 0;
+	/* Light track (top): red-fill → yellow → green-light */
+	--_a: color-mix(in srgb, var(--color-red-fill) calc((1 - var(--percent) / 50) * 100%), var(--color-yellow));
+	--_b: color-mix(in srgb, var(--color-yellow) calc(((100 - var(--percent)) / 50) * 100%), var(--color-green-light));
+	--_light: color-mix(in srgb, var(--_a) calc((1 - var(--percent) / 100) * 100%), var(--_b));
+	/* Dark track (bottom): red-fill-dark → yellow-dark → green-dark */
+	--_c: color-mix(in srgb, var(--color-red-fill-dark) calc((1 - var(--percent) / 50) * 100%), var(--color-yellow-dark));
+	--_d: color-mix(in srgb, var(--color-yellow-dark) calc(((100 - var(--percent)) / 50) * 100%), var(--color-green-dark));
+	--_dark: color-mix(in srgb, var(--_c) calc((1 - var(--percent) / 100) * 100%), var(--_d));
+	background: linear-gradient(var(--_light), var(--_dark));
 }
 
 .progress__label
