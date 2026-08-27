@@ -5,12 +5,6 @@
  * @var array $acA
  * @var array $acS
  * @var string $accuracy
- * @var bool $allArActive
- * @var bool $allArInactive
- * @var bool $allPassActive
- * @var bool $allPassInactive
- * @var bool $allVcActive
- * @var bool $allVcInactive
  * @var float $avgTime
  * @var bool $isFav
  * @var string $lightDark
@@ -21,7 +15,6 @@
  * @var int $saNum
  * @var bool $scoring
  * @var array $set
- * @var int $setDifficulty
  * @var int $setRating
  * @var string $setTitle
  * @var bool $startingSetConnectionID
@@ -339,9 +332,6 @@ if ($tsumegoFilters->query != 'tags')
 	}
 
 		var msg2selected = false;
-		var msg3selected = false;
-		var msg4selected = false;
-		var msg5selected = false;
 		var msgFilterSelected = false;
 
 		$("#msg2x").hide();
@@ -434,8 +424,6 @@ if($refreshView)
 ?>
 	</script>
 	<style>
-	#show5{display:block;}
-	#show6{text-decoration:underline;cursor:pointer;}
 	#msgFilters{
 		display:none;
 		margin:0 4px 8px

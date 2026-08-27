@@ -6,6 +6,7 @@
  * @var bool $allArInactive
  * @var bool $allPassActive
  * @var bool $allPassInactive
+ * @var bool $canDelete
  * @var bool $canEditSettings
  * @var bool $isSandbox
  * @var array $problems
@@ -38,6 +39,10 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 					<input class="form-field__control" type="text" id="SetTitle" name="data[Set][title]" value="<?php echo h($set['Set']['title']); ?>" required>
 				</div>
 				<div class="form-field">
+					<label class="form-field__label" for="SetTitle2">Subtitle</label>
+					<input class="form-field__control" type="text" id="SetTitle2" name="data[Set][title2]" value="<?php echo h($set['Set']['title2'] ?? ''); ?>" placeholder="Optional subtitle shown after the title">
+				</div>
+				<div class="form-field">
 					<label class="form-field__label" for="SetDescription">Description</label>
 					<textarea class="form-field__control" id="SetDescription" name="data[Set][description]" rows="4"><?php echo h($set['Set']['description'] ?? ''); ?></textarea>
 					<p class="hint">Allowed tags: &lt;br&gt; &lt;a&gt; &lt;b&gt; &lt;i&gt; &lt;p&gt; &lt;ul&gt; &lt;ol&gt; &lt;li&gt; &lt;img&gt; &lt;font&gt; &lt;table&gt; &lt;tr&gt; &lt;td&gt; &lt;th&gt;</p>
@@ -63,6 +68,11 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 						<input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
 					</div>
 					<p class="hint">Max 2MB, png/jpg/webp.</p>
+				</div>
+				<div class="form-field">
+					<label class="form-field__label" for="SetOrder">Order</label>
+					<input class="form-field__control" type="number" id="SetOrder" name="data[Set][order]" value="<?php echo h($set['Set']['order'] ?? ''); ?>">
+					<p class="hint">Low numbers are on top, high numbers at the bottom.</p>
 				</div>
 			<?php echo $this->Form->end(['label' => 'Save', 'class' => 'btn']); ?>
 		</div>
@@ -153,10 +163,12 @@ if ($currentColor !== '' && !in_array(strtolower($currentColor), array_map('strt
 		</div>
 	<?php endif; ?>
 
-	<div class="card set-edit__section set-edit__section--danger">
-		<h2 class="set-edit__heading">Danger Zone</h2>
-		<form method="post" action="/sets/delete/<?php echo $setId; ?>" onsubmit="return confirm('Delete this collection?');">
-			<input type="submit" class="btn btn--danger" value="Delete Collection">
-		</form>
-	</div>
+	<?php if (!empty($canDelete)): ?>
+		<div class="card set-edit__section set-edit__section--danger">
+			<h2 class="set-edit__heading">Danger Zone</h2>
+			<form method="post" action="/sets/delete/<?php echo $setId; ?>" onsubmit="return confirm('Delete this collection?');">
+				<input type="submit" class="btn btn--danger" value="Delete Collection">
+			</form>
+		</div>
+	<?php endif; ?>
 </div>

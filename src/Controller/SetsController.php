@@ -288,6 +288,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 				$changeSet['Set']['description'] = HtmlSanitizer::sanitize((string) $this->data['Set']['description']);
 			if (array_key_exists('color', $this->data['Set']) && $this->data['Set']['color'] !== '')
 				$changeSet['Set']['color'] = $this->data['Set']['color'];
+			if (array_key_exists('order', $this->data['Set']) && $this->data['Set']['order'] !== '')
+				$changeSet['Set']['order'] = (int) $this->data['Set']['order'];
 
 			$this->Set->create();
 			$this->Set->save($changeSet, true);
@@ -295,6 +297,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$oldTitle = $set['Set']['title'];
 			$oldDescription = $set['Set']['description'];
 			$oldColor = $set['Set']['color'];
+			$oldOrder = $set['Set']['order'];
 			$set = $this->Set->findById((int) $id);
 			if ($this->_isElevatedSetEdit($set))
 			{
@@ -304,6 +307,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 					AdminActivityLogger::log(AdminActivityType::SET_DESCRIPTION_EDIT, null, (int) $id, $oldDescription, $set['Set']['description']);
 				if ($oldColor != $set['Set']['color'])
 					AdminActivityLogger::log(AdminActivityType::SET_COLOR_EDIT, null, (int) $id, $oldColor, $set['Set']['color']);
+				if ($oldOrder != $set['Set']['order'])
+					AdminActivityLogger::log(AdminActivityType::SET_ORDER_EDIT, null, (int) $id, Util::strOrNull($oldOrder), Util::strOrNull($set['Set']['order']));
 			}
 
 			CookieFlash::set('Set saved', 'success');
@@ -436,8 +441,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 			return $this->redirect('/sets/edit/' . (int) $id);
 
 		// Solve-mode states for the admin settings panel
-		$allVcActive = true;
-		$allVcInactive = true;
 		$allArActive = true;
 		$allArInactive = true;
 		$allPassActive = true;
@@ -464,9 +467,8 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('problems', $problems);
 		$this->set('tsumegoButtons', $tsumegoButtons);
 		$this->set('canEditSettings', $canEditSettings);
+		$this->set('canDelete', $this->Authorization->can($set, 'delete'));
 		$this->set('isSandbox', $isSandbox);
-		$this->set('allVcActive', $allVcActive);
-		$this->set('allVcInactive', $allVcInactive);
 		$this->set('allArActive', $allArActive);
 		$this->set('allArInactive', $allArInactive);
 		$this->set('allPassActive', $allPassActive);
@@ -724,19 +726,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		CookieFlash::set('Added to set', 'success');
-		return $this->redirect($this->_setReturnTarget((int) $setID));
-	}
-
-	/**
-	 * Where to return after a set mutation: stay on the edit page when the
-	 * request came from there, otherwise back to the set view.
-	 */
-	private function _setReturnTarget(int $setID): string
-	{
-		$referer = $_SERVER['HTTP_REFERER'] ?? '';
-		if (str_contains($referer, '/sets/edit/'))
-			return '/sets/edit/' . $setID;
-		return '/sets/view/' . $setID;
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -785,7 +775,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 			$tsumegoModel->getDataSource()->rollback();
 			CookieFlash::set('Unexpected error:' . $e->getMessage(), 'error');
 		}
-		return $this->redirect($this->_setReturnTarget((int) $setID));
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -855,7 +845,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 
 		CookieFlash::set('Removed from set', 'success');
-		return $this->redirect($this->_setReturnTarget((int) $setID));
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	/**
@@ -900,7 +890,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$scModel->saveField('num', $currentNum);
 
 		CookieFlash::set('Reordered', 'success');
-		return $this->redirect($this->_setReturnTarget((int) $setID));
+		return $this->redirect('/sets/edit/' . (int) $setID);
 	}
 
 	public function view(string|int|null $id = null, int $partition = 1): void

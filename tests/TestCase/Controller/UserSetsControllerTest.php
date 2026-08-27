@@ -109,13 +109,14 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$setId = $this->_createSet('My Set', $context->user['id'], 0);
 		$this->login('alice');
 
-		$data = ['Set' => ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc']];
+		$data = ['Set' => ['title' => 'Renamed', 'description' => 'New desc', 'color' => '#3366cc', 'order' => '7']];
 		$this->testAction("/sets/edit/{$setId}", ['data' => $data, 'method' => 'POST']);
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEquals('Renamed', $set['Set']['title']);
 		$this->assertEquals('New desc', $set['Set']['description']);
 		$this->assertEquals('#3366cc', $set['Set']['color']);
+		$this->assertEquals(7, $set['Set']['order']);
 	}
 
 	public function testEditPageRenders(): void
@@ -192,6 +193,19 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$set = ClassRegistry::init('Set')->findById($setId);
 		$this->assertEquals('Fixed by Admin', $set['Set']['title']);
+	}
+
+	public function testEditPageHidesDeleteForPublicSiteSet(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'other-users' => [['name' => 'admin', 'admin' => true]],
+		]);
+		$setId = $this->_createSet('Public Set', null, 1);
+		$this->login('admin');
+
+		$this->testAction("/sets/edit/{$setId}", ['return' => 'view']);
+		$this->assertTextNotContains('Delete Collection', $this->view);
 	}
 
 	public function testAnonymousCannotEditPublicSetTitle(): void
@@ -324,6 +338,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$data = ['tsumego_id' => $tsumegoId];
 		$this->testAction("/sets/addTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
 
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
+
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
 		]);
@@ -367,6 +383,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		$data = ['tsumego_id' => $tsumegoId];
 		$this->testAction("/sets/removeTsumego/{$setId}", ['data' => $data, 'method' => 'POST']);
+
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
 
 		$sc = ClassRegistry::init('SetConnection')->find('first', [
 			'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
@@ -460,6 +478,8 @@ class UserSetsControllerTest extends TestCaseWithAuth
 
 		// Move second problem up
 		$this->testAction("/sets/reorderTsumego/{$setId}?tsumego_id={$secondTsumego['id']}&dir=up", ['method' => 'POST']);
+
+		$this->assertStringContainsString("/sets/edit/{$setId}", $this->headers['Location']);
 
 		// Verify nums swapped
 		$scs = ClassRegistry::init('SetConnection')->find('all', [
