@@ -135,6 +135,30 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(1, $dom->querySelectorAll('.collection-completed'));
 	}
 
+	public function testTopicsIndexShowsDifficultyPerPartition(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams['tsumegos'] = [];
+		foreach ([
+			Rating::getRankMiddleRatingFromReadableRank('15k'),
+			Rating::getRankMiddleRatingFromReadableRank('15k'),
+			Rating::getRankMiddleRatingFromReadableRank('5k'),
+			Rating::getRankMiddleRatingFromReadableRank('5k')] as $i => $rating)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
+				'rating' => $rating];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		// difficulty must be computed per partition, not per whole set:
+		// partition 1 (two 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
+		$dom = $this->getStringDom();
+		$difficulties = $dom->querySelectorAll('.collection-middle-right');
+		$this->assertCount(2, $difficulties);
+		$this->assertSame('~15k', $difficulties[0]->textContent);
+		$this->assertSame('~5k', $difficulties[1]->textContent);
+	}
+
 	public function testTopicsIndexGuestShowsNoSolvedProgress(): void
 	{
 		$contextParams = ['user' => null];

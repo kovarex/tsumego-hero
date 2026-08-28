@@ -168,21 +168,24 @@ class TsumegoFilters
 		$query->conditions[] = '`set`.id IN (' . implode(',', $this->setIDs) . ')';
 	}
 
-	public function addConditionsToQuery(Query $query): void
+	/**
+	 * EXISTS condition for a tsumego belonging to at least one public set (optionally limited to filtered sets).
+	 */
+	private function publicMembershipCondition(): string
 	{
-		$query->query .= ' JOIN set_connection on set_connection.tsumego_id = tsumego.id';
-		$query->query .= ' JOIN `set` on `set`.id = set_connection.set_id';
-		$query->conditions[] = '`set`.public = 1';
-		$this->filterSets($query);
-		$this->filterTags($query);
-		$this->filterRanks($query);
+		$setCondition = '`set`.public = 1';
+		if (!empty($this->setIDs))
+			$setCondition .= ' AND `set`.id IN (' . implode(',', $this->setIDs) . ')';
+		return 'EXISTS (SELECT 1 FROM set_connection sc JOIN `set` ON `set`.id = sc.set_id AND ' . $setCondition . ' WHERE sc.tsumego_id = tsumego.id)';
 	}
 
 	public function calculateCount(): int
 	{
 		$query = new Query('FROM tsumego');
 		$query->selects[] = 'COUNT(DISTINCT tsumego.id) AS total';
-		$this->addConditionsToQuery($query);
+		$query->conditions[] = $this->publicMembershipCondition();
+		$this->filterTags($query);
+		$this->filterRanks($query);
 		return Util::query($query->str())[0]['total'];
 	}
 
