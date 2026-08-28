@@ -10,6 +10,11 @@ class Constants
 
 	public static int $DEFAULT_SET_ORDER = 999;
 
+	public static int $DEFAULT_COLLECTION_SIZE = 200;
+	public static int $MIN_COLLECTION_SIZE = 10;
+	public static int $MAX_COLLECTION_SIZE = 1000;
+	public static int $COLLECTION_SIZE_STEP = 10;
+
 	public static int $LEVEL_MODE = 1;
 	public static int $RATING_MODE = 2;
 	public static int $TIME_MODE = 3;

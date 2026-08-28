@@ -27,6 +27,7 @@ class SetsSelector
 		$query->query .= ' JOIN tag ON tag.id = tc.tag_id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = tc.tsumego_id';
 		$query->conditions[] = $this->publicMembershipCondition('tc.tsumego_id');
+		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->tagIDs))
 			$query->conditions[] = $this->tagMembershipCondition('tc.tsumego_id');
 		if ($rankCondition = $this->rankCondition())
@@ -103,6 +104,7 @@ class SetsSelector
 		$query->query .= ' JOIN set_connection sc ON sc.set_id = s.id';
 		$query->query .= ' JOIN tsumego ON tsumego.id = sc.tsumego_id';
 		$query->conditions[] = 's.public = 1';
+		$query->conditions[] = 'tsumego.deleted IS NULL';
 		if (!empty($this->tsumegoFilters->setIDs))
 			$query->conditions[] = 's.id IN (' . implode(',', $this->tsumegoFilters->setIDs) . ')';
 		if (!empty($this->tsumegoFilters->tagIDs))
@@ -114,8 +116,11 @@ class SetsSelector
 
 		$sets = $this->buildPartitionedSets($rows, 'set_id', 'set_title', 'set_color', 'set_order');
 		usort($sets, function ($a, $b) {
-			if ($a['order'] != $b['order'])
-				return $a['order'] <=> $b['order'];
+			// sets without a curated order sort last, matching displayOrderForSetSql
+			$aOrder = $a['order'] ?? PHP_INT_MAX;
+			$bOrder = $b['order'] ?? PHP_INT_MAX;
+			if ($aOrder != $bOrder)
+				return $aOrder <=> $bOrder;
 			if ($a['total_count'] != $b['total_count'])
 				return $b['total_count'] <=> $a['total_count'];
 			if ($a['partition'] != $b['partition'])

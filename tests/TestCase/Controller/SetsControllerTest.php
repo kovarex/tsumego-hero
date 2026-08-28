@@ -114,6 +114,97 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
 	}
 
+	public function testTopicsIndexSortsNullOrderSetLast(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'ordered set', 'public' => 1, 'order' => 5, 'num' => 1]]]]);
+
+		// a public set with no curated order holding the same tsumego
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => 'unordered set', 'public' => 1, 'order' => null]);
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]);
+
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('ordered set', $collectionTopDivs[0]->textContent);
+		$this->assertSame('unordered set', $collectionTopDivs[1]->textContent);
+	}
+
+	public function testTopicsIndexProblemsFoundCountsAllPublicProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '2']]];
+		// a problem only in a private set is not shown, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'sandbox set', 'public' => 0, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testDifficultyIndexProblemsFoundExcludesProblemsAboveNineDan(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		// rating 2810+ falls above the 9d band, so no difficulty box shows it
+		$contextParams['tsumegos'][] = ['rating' => 2810, 'sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTagsIndexProblemsFoundCountsOnlyTaggedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		// a public problem with no tag is not shown in tags mode, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTopicsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']]];
+		// a deleted problem in the same public set is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+	}
+
+	public function testTagsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		// a deleted problem with the same tag is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+	}
+
 	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
 	{
 		$contextParams = ['user' => ['collection_size' => 10]];

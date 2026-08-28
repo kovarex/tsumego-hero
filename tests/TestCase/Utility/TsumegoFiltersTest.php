@@ -49,4 +49,12 @@ class TsumegoFiltersTest extends CakeTestCase
 		$filters = new TsumegoFilters();
 		$this->assertSame(1000, $filters->collectionSize);
 	}
+
+	public function testEmptyFiltersCalculateCountDoesNotThrow(): void
+	{
+		// empty() is used e.g. by UsersController to count all public problems
+		new ContextPreparator(['tsumego' => ['sets' => [['name' => 'public set', 'num' => '1']]]]);
+		$count = TsumegoFilters::empty()->calculateCount();
+		$this->assertSame(1, $count);
+	}
 }

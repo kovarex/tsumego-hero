@@ -3,6 +3,8 @@
 App::uses('Preferences', 'Utility');
 App::uses('Query', 'Utility');
 App::uses('Rating', 'Utility');
+App::uses('Constants', 'Utility');
+App::uses('SetsController', 'Controller');
 
 class TsumegoFilters
 {
@@ -20,7 +22,7 @@ class TsumegoFilters
 		$this->query = self::processItem('query', 'topics', null, $newQuery);
 		if (!in_array($this->query, ['topics', 'difficulty', 'tags'], true))
 			$this->query = 'topics';
-		$this->collectionSize = max(10, min(1000, (int) self::processItem('collection_size', '200')));
+		$this->collectionSize = max(Constants::$MIN_COLLECTION_SIZE, min(Constants::$MAX_COLLECTION_SIZE, (int) self::processItem('collection_size', (string) Constants::$DEFAULT_COLLECTION_SIZE)));
 		$rawSets = self::processItem('filtered_sets', [], function ($input) {
 			return array_values(array_filter(explode('@', $input)));
 		});
@@ -184,13 +186,33 @@ class TsumegoFilters
 		$query = new Query('FROM tsumego');
 		$query->selects[] = 'COUNT(DISTINCT tsumego.id) AS total';
 		$query->conditions[] = $this->publicMembershipCondition();
+		$query->conditions[] = 'tsumego.deleted IS NULL';
 		$this->filterTags($query);
-		$this->filterRanks($query);
+
+		// Count only the problems the active mode actually displays
+		if ($this->query == 'tags' && empty($this->tagIDs))
+			// tags mode shows only tagged problems unless a specific tag is filtered
+				$query->conditions[] = 'EXISTS (SELECT 1 FROM tag_connection tc WHERE tc.tsumego_id = tsumego.id)';
+
+		if ($this->query == 'difficulty')
+		{
+			// difficulty mode shows no band above 9d, so higher ratings are not reachable
+			if (empty($this->ranks))
+			{
+				$ranks = SetsController::getExistingRanksArray();
+				$query->conditions[] = 'tsumego.rating < ' . RatingBounds::coverRank(end($ranks)['rank'], '15k')->max;
+			}
+			else
+				$this->filterRanks($query);
+		}
+		else
+			$this->filterRanks($query);
+
 		return Util::query($query->str())[0]['total'];
 	}
 
 	public ?string $publishedDate = null;
-	public string $query;
+	public string $query = '';
 	public int $collectionSize = 0;
 	public array $sets = [];
 	public array $setIDs = [];
