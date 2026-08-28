@@ -293,7 +293,7 @@ class AdminGuardTest extends ControllerTestCase
 		$this->assertSame($before + 1, $adminActivity->find('count'));
 	}
 
-	// ── UsersController::showPublishSchedule ──
+	// ── ScheduleController::index ──
 
 	public function testShowPublishScheduleRequiresAdmin()
 	{
@@ -301,7 +301,7 @@ class AdminGuardTest extends ControllerTestCase
 
 		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/users/showPublishSchedule', ['method' => 'get']);
+		$this->testAction('/schedule', ['method' => 'get']);
 	}
 
 	// ── TagsController::edit / editAction ──
