@@ -309,9 +309,9 @@ class UsersControllerTest extends ControllerTestCase
 		ClassRegistry::init('Schedule')->save($scheduleItem);
 
 		$browser = Browser::instance();
-		$browser->get('/users/showPublishSchedule');
+		$browser->get('/schedule');
 		$this->assertTextContains('sandbox set', $browser->getTableCell('.data-table', 1, 1)->getText());
-		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 1)->getText());
+		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 2)->getText());
 	}
 
 	public function testResetOldProgressRemovesOnlyOldStatuses()
