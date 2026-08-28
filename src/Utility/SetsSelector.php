@@ -146,16 +146,6 @@ class SetsSelector
 				return in_array($r['rank'], $this->tsumegoFilters->ranks);
 			}));
 
-		$query = new Query('FROM tsumego');
-		$query->selects[] = 'tsumego.id AS tsumego_id';
-		$query->selects[] = 'tsumego.rating';
-		$query->conditions[] = 'tsumego.deleted IS NULL';
-		$query->conditions[] = $this->publicMembershipCondition('tsumego.id');
-		if (!empty($this->tsumegoFilters->tagIDs))
-			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
-		$query->orderBy[] = 'tsumego.id';
-		$rows = Util::query($query->str());
-
 		// assign each tsumego to a rank band using the same bounds RatingBounds::coverRank uses
 		$bands = [];
 		$rankOrder = 0;
@@ -171,6 +161,42 @@ class SetsSelector
 			];
 			$rankOrder++;
 		}
+
+		$query = new Query('FROM tsumego');
+		$query->selects[] = 'tsumego.id AS tsumego_id';
+		$query->selects[] = 'tsumego.rating';
+		$query->conditions[] = 'tsumego.deleted IS NULL';
+		$query->conditions[] = $this->publicMembershipCondition('tsumego.id');
+		if (!empty($this->tsumegoFilters->tagIDs))
+			$query->conditions[] = $this->tagMembershipCondition('tsumego.id');
+		// restrict to the rating range covered by the bands, so rows that would
+		// never match a band are not transferred; safe because bands are contiguous
+		// and any band left open (min or max null) leaves that side unbounded.
+		$hasOpenLower = false;
+		$hasOpenUpper = false;
+		$minRating = null;
+		$maxRating = null;
+		foreach ($bands as $band)
+		{
+			if ($band['min'] === null)
+				$hasOpenLower = true;
+			elseif ($minRating === null || $band['min'] < $minRating)
+				$minRating = $band['min'];
+			if ($band['max'] === null)
+				$hasOpenUpper = true;
+			elseif ($maxRating === null || $band['max'] > $maxRating)
+				$maxRating = $band['max'];
+		}
+		if ($hasOpenLower)
+			$minRating = null;
+		if ($hasOpenUpper)
+			$maxRating = null;
+		if ($minRating !== null)
+			$query->conditions[] = 'tsumego.rating >= ' . $minRating;
+		if ($maxRating !== null)
+			$query->conditions[] = 'tsumego.rating < ' . $maxRating;
+		$query->orderBy[] = 'tsumego.id';
+		$rows = Util::query($query->str());
 
 		$collectionRows = [];
 		foreach ($rows as $row)
