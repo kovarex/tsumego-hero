@@ -144,9 +144,9 @@ class SetsControllerTest extends TestCaseWithAuth
 			Rating::getRankMiddleRatingFromReadableRank('15k'),
 			Rating::getRankMiddleRatingFromReadableRank('5k'),
 			Rating::getRankMiddleRatingFromReadableRank('5k')] as $i => $rating)
-			$contextParams['tsumegos'] [] = [
-				'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
-				'rating' => $rating];
+				$contextParams['tsumegos'] [] = [
+					'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
+					'rating' => $rating];
 		new ContextPreparator($contextParams);
 		$this->testAction('sets', ['return' => 'view']);
 
