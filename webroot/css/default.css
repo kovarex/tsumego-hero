@@ -5610,7 +5610,6 @@ select.flat-select:hover {
   height: 5px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.15);
-  overflow: hidden;
 }
 .set-progress-fill {
   position: absolute;
@@ -5621,11 +5620,22 @@ select.flat-select:hover {
   border-radius: 3px;
   background-color: #bbbbbb;
   background-image: linear-gradient(#f5f5f5, #9b9b9b);
-  animation: set-progress-grow 0.6s ease-out;
+  animation: set-progress-grow 0.6s ease-out, set-progress-glow 0.5s ease-out 0.6s;
 }
 @keyframes set-progress-grow {
   from {
     width: 0;
+  }
+}
+@keyframes set-progress-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  35% {
+    box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.95);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
 }
 @keyframes set-progress-number-in {
