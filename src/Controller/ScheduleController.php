@@ -170,9 +170,14 @@ LIMIT {$count}");
 
 		// Pre-parse SGF to preview data so the client doesn't need to
 		App::uses('TsumegoButton', 'Utility');
+		$existingNums = ClassRegistry::init('SetConnection')->find('list', [
+			'fields' => ['num', 'num'],
+			'conditions' => ['set_id' => $targetSetId],
+		]);
 		foreach ($candidates as &$c)
 		{
 			$c['preview'] = TsumegoButton::sgfToPreviewData($c['sgf'] ?? '');
+			$c['num_collision'] = isset($existingNums[(int) $c['num']]);
 			unset($c['sgf']);
 		}
 		unset($c);
@@ -215,6 +220,13 @@ LIMIT {$count}");
 				$item['Schedule']['published'] = 1;
 				ClassRegistry::init('Schedule')->save($item);
 			}
+			else
+				CakeLog::warning(sprintf(
+					'Schedule publish failed: entry %d (tsumego %d -> set %d) has no sandbox source',
+					$item['Schedule']['id'],
+					$item['Schedule']['tsumego_id'],
+					$item['Schedule']['set_id']
+				));
 	}
 
 	/**
@@ -273,6 +285,15 @@ LIMIT {$count}");
 			});
 			$keep = array_shift($sandboxConnections);
 			$keep['SetConnection']['set_id'] = $to;
+			// Renumber to the next free slot if the sandbox num is already taken in the target
+			$existingNums = ClassRegistry::init('SetConnection')->find('list', [
+				'fields' => ['num', 'num'],
+				'conditions' => ['set_id' => $to],
+			]);
+			$num = (int) $keep['SetConnection']['num'];
+			while (isset($existingNums[$num]))
+				$num++;
+			$keep['SetConnection']['num'] = $num;
 			ClassRegistry::init('SetConnection')->save($keep);
 			foreach ($sandboxConnections as $sandboxConnection)
 				ClassRegistry::init('SetConnection')->delete($sandboxConnection['SetConnection']['id']);
