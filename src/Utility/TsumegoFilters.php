@@ -8,11 +8,9 @@ App::uses('SetsController', 'Controller');
 
 class TsumegoFilters
 {
-	public function __construct(?string $newQuery = null, bool $empty = false, ?string $publishedDate = null)
+	public function __construct(?string $newQuery = null, ?string $publishedDate = null)
 	{
 		$this->publishedDate = $publishedDate;
-		if ($empty)
-			return;
 		if ($newQuery == 'published')
 		{
 			$this->query = $newQuery;
@@ -55,10 +53,6 @@ class TsumegoFilters
 		}
 	}
 
-	public static function empty()
-	{
-		return new TsumegoFilters(null, true);
-	}
 
 	/**
 	 * Process a preference item with optional transformation and new value override.

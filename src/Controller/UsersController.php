@@ -845,7 +845,7 @@ WHERE time_mode_session.user_id = ?
 GROUP BY DATE(time_mode_session.created)
 ORDER BY category DESC', [$user['User']['id']]));
 
-		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
+		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
 		$canResetOldTsumegoStatuses = Util::getPercent($user['User']['solved'], $tsumegoCount) >= Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED;
 
 		$asCount = count($as);
@@ -1282,7 +1282,7 @@ OFFSET " . $offset, [$userID, $userID]);
 			return $this->redirect('/sets');
 
 		$userId = Auth::getUserID();
-		$tsumegoCount = TsumegoFilters::empty()->calculateCount();
+		$tsumegoCount = ClassRegistry::init('Tsumego')->countPublicProblems();
 		if (Util::getPercent(Auth::getUser()['solved'], $tsumegoCount) < Constants::$MINIMUM_PERCENT_OF_TSUMEGOS_TO_BE_SOLVED_BEFORE_RESET_IS_ALLOWED)
 			return $this->redirect('/users/view/' . $userId);
 
