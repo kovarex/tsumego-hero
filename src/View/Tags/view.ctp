@@ -5,6 +5,7 @@
  * @var array $allTags
  * @var array $tn
  * @var bool $canAddTag
+ * @var bool $canDeleteTag
  */
 
 ?>
