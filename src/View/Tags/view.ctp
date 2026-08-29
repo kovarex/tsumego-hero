@@ -26,7 +26,7 @@
 	<p>Created by <?php echo h($tn['Tag']['user']) ?>.</p>
 	<?php if(Auth::isAdmin()){ ?>
 		<a href="/tags/edit/<?php echo $tn['Tag']['id']; ?>" id="tag-edit">Edit</a>
-		<?php if(Auth::getUserID()==72){ ?>
+		<?php if($canDeleteTag){ ?>
 			|
 			<form method="post" action="/tags/delete/<?php echo $tn['Tag']['id']; ?>" style="display:inline" onsubmit="return confirm('Delete this tag?');">
 				<input type="hidden" name="data[Tag][delete]" value="<?php echo $tn['Tag']['id']; ?>">

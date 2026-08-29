@@ -23,9 +23,16 @@ class TagPolicy extends BasePolicy
 		return static::isAdmin($user);
 	}
 
+	/**
+	 * Deleting a tag name is reserved for (user id 72 = d4rkm4tter),
+	 * not for regular admins.
+	 *
+	 * TODO: replace the hardcoded user id 72 with a dedicated role above admin
+	 * (e.g. "superadmin" / "site owner")
+	 */
 	public static function canDelete($user): bool
 	{
-		return static::isAdmin($user);
+		return static::isAdmin($user) && (int) $user['id'] === 72;
 	}
 
 	public static function canAcceptTagProposal($user): bool

@@ -68,6 +68,7 @@ class TagsController extends AppController
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
+		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
 
 	/**
