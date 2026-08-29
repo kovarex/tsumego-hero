@@ -749,7 +749,7 @@ besogo.makeToolPanel = function (container, editor) {
               );
             }
           });
-          updateFavButton(false); // instant feedback
+          updateFavButton(false);
           Promise.all(promises)
             .then(() => updateFavButton(window.userSets.some(x => x.contains)))
             .catch(err => {
