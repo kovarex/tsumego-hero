@@ -184,7 +184,6 @@ ORDER BY s.order", [Auth::getUserID(), $userId]);
 		$this->render('user_sets');
 	}
 
-	#[HttpPost]
 	public function create()
 	{
 		$this->Authorization->authorize('Set', 'create');

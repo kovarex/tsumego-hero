@@ -4,6 +4,7 @@ App::uses('ForbiddenException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('UnprocessableEntityException', 'Lib/Error');
 
+use App\Attribute\HttpGet;
 use App\Attribute\HttpPost;
 
 /**
@@ -119,6 +120,7 @@ class TsumegoCommentsController extends AppController
 	 * @param int $tsumegoId The tsumego ID
 	 * @return CakeResponse
 	 */
+	#[HttpGet]
 	public function index($tsumegoId)
 	{
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');

@@ -781,4 +781,21 @@ class TagTest extends ControllerTestCase
 		$browser->get('/users/added_tags');
 		$this->assertStringContainsString('proposer', $browser->driver->getPageSource());
 	}
+
+	public function testAdminDeletesTag()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback']]]);
+
+		$tagId = $context->tags[0]['id'];
+		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagId));
+
+		$this->testAction('/tags/delete/' . $tagId, [
+			'method' => 'post',
+			'data' => ['Tag' => ['delete' => $tagId]],
+		]);
+
+		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagId));
+	}
 }

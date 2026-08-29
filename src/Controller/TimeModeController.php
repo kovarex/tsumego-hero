@@ -5,11 +5,8 @@ App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('Play', 'Controller/Component');
 
-use App\Attribute\HttpPost;
-
 class TimeModeController extends AppController
 {
-	#[HttpPost]
 	public function start(): mixed
 	{
 		$timeMode = new TimeMode();
@@ -57,7 +54,6 @@ class TimeModeController extends AppController
 		return null;
 	}
 
-	#[HttpPost]
 	public function skip(): mixed
 	{
 		$timeMode = new TimeMode();

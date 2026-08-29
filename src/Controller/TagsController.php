@@ -195,6 +195,7 @@ class TagsController extends AppController
 	{
 		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
 			throw new NotFoundException('Tag not found');
@@ -216,7 +217,6 @@ class TagsController extends AppController
 
 	public function index() {}
 
-	#[HttpPost]
 	public function acceptTagProposal($tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
@@ -244,7 +244,6 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
-	#[HttpPost]
 	public function rejectTagProposal($tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
