@@ -733,12 +733,36 @@ besogo.makeToolPanel = function (container, editor) {
                   headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
                   body: "tsumego_id=" + tsumegoFileLink
                 })
+                .then(r => {
+                  if (!r.ok)
+                    throw new Error("Remove from favorites failed: " + r.status);
+                  return r.json();
+                })
+                .then(data => {
+                  if (data && data.contains !== undefined)
+                    s.contains = data.contains;
+                })
+                .catch(err => {
+                  s.contains = true;
+                  throw err;
+                })
               );
             }
           });
-          Promise.all(promises).then(() => updateFavButton(false));
+          updateFavButton(false); // instant feedback
+          Promise.all(promises)
+            .then(() => updateFavButton(window.userSets.some(x => x.contains)))
+            .catch(err => {
+              console.error('Failed to update favorites', err);
+              updateFavButton(window.userSets.some(x => x.contains));
+            });
         } else {
           // Add to Favorites set
+          let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
+          if (fav)
+            fav.contains = true;
+          updateFavButton(true);
+
           fetch("/sets/addTsumego/favorites", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
@@ -746,12 +770,25 @@ besogo.makeToolPanel = function (container, editor) {
           })
           .then(r => {
             if (!r.ok)
-              return;
-            let fav = window.userSets && window.userSets.find(s => s.title === "Favorites");
-            if (fav) fav.contains = true;
-            updateFavButton(true);
+              throw new Error("Add to favorites failed: " + r.status);
+            return r.json();
           })
-          .catch(err => console.error('Failed to update favorites', err));
+          .then(data => {
+            if (!data)
+              return;
+            if (fav)
+              fav.contains = true;
+            else if (Array.isArray(window.userSets) && data.set_id)
+              window.userSets.push({ id: data.set_id, title: data.title || "Favorites", contains: true });
+            updateFavButton(window.userSets.some(x => x.contains));
+          })
+          .catch(err => {
+            console.error('Failed to update favorites', err);
+
+            if (fav)
+              fav.contains = false;
+            updateFavButton(window.userSets.some(x => x.contains));
+          });
         }
       });
       container.appendChild(heart[0]);

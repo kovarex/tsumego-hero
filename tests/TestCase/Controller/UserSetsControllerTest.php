@@ -428,6 +428,37 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertNotEmpty($sc);
 	}
 
+	public function testAddTsumegoToFavoritesReturnsSetId(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumego' => ['sgf' => '(;GM[1]FF[4]SZ[19])'],
+		]);
+		$tsumegoId = ClassRegistry::init('Tsumego')->find('first', ['order' => 'id DESC'])['Tsumego']['id'];
+		$this->login('alice');
+
+		$_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
+		try
+		{
+			$this->testAction('/sets/addTsumego/favorites', ['data' => ['tsumego_id' => $tsumegoId], 'method' => 'POST']);
+		}
+		finally
+		{
+			unset($_SERVER['HTTP_X_REQUESTED_WITH']);
+		}
+
+		$this->assertSame(200, $this->controller->response->statusCode());
+		$body = json_decode($this->controller->response->body(), true);
+
+		$set = ClassRegistry::init('Set')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
+		]);
+		$this->assertNotEmpty($set);
+		$this->assertTrue($body['contains']);
+		$this->assertSame((int) $set['Set']['id'], (int) $body['set_id']);
+		$this->assertSame('Favorites', $body['title']);
+	}
+
 	public function testHeartAddDoesNotDuplicateSetConnections(): void
 	{
 		$context = new ContextPreparator(['user' => ['name' => 'alice']]);

@@ -713,7 +713,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			$this->autoRender = false;
 			$this->response->type('application/json');
-			$this->response->body(json_encode(['contains' => true]));
+			// Include the resolved set so the client can keep its set list in
+			// sync when the Favorites set is created on the fly (heart toggle).
+			$this->response->body(json_encode([
+				'contains' => true,
+				'set_id' => $setID,
+				'title' => $set['Set']['title'],
+			]));
 			return;
 		}
 

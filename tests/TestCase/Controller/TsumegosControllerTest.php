@@ -386,9 +386,62 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertCount(0, $fullHearts);
 	}
 
-	public function testCommentCoordinatesHaveHoverSpans()
+	public function testFavoritesHeartTogglesAddAndRemove(): void
 	{
-		// Create a tsumego with a comment containing coordinates
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Heart is rendered for logged-in users
+		$this->assertTrue($browser->idExists('favButton'));
+
+		// First click adds the tsumego to the lazily-created Favorites set
+		$browser->clickId('favButton');
+
+		$favoritesSet = null;
+		$deadline = microtime(true) + 5;
+		while (microtime(true) < $deadline)
+		{
+			$favoritesSet = ClassRegistry::init('Set')->find('first', [
+				'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
+			]);
+			if ($favoritesSet)
+				break;
+			usleep(100000);
+		}
+		$this->assertNotEmpty($favoritesSet, 'First heart click should create the Favorites set');
+
+		$scModel = ClassRegistry::init('SetConnection');
+		$this->assertNotEmpty($scModel->find('first', [
+			'conditions' => ['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId],
+		]), 'First heart click should add the tsumego to Favorites');
+
+		// Let the client process the add response before toggling back off
+		usleep(300000);
+
+		// Second click removes it again
+		$browser->clickId('favButton');
+
+		$removed = false;
+		$deadline = microtime(true) + 5;
+		while (microtime(true) < $deadline)
+		{
+			if ($scModel->find('count', [
+				'conditions' => ['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId],
+			]) === 0)
+			{
+				$removed = true;
+				break;
+			}
+			usleep(100000);
+		}
+		$this->assertTrue($removed, 'Second heart click should remove the tsumego from Favorites');
+	}
+
+	public function testCommentCoordinatesHaveHoverSpans()
+	{		// Create a tsumego with a comment containing coordinates
 		// Admin so comments are visible
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
 
