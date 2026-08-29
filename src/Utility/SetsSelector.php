@@ -32,10 +32,9 @@ class SetsSelector
 			$query->conditions[] = $this->tagMembershipCondition('tc.tsumego_id');
 		if ($rankCondition = $this->rankCondition())
 			$query->conditions[] = $rankCondition;
-		$query->orderBy[] = 'tag.id, tc.tsumego_id';
 		$rows = Util::query($query->str());
 
-		$sets = $this->buildPartitionedSets($rows, 'tag_id', 'tag_name', 'tag_color');
+		$sets = $this->buildPartitionedSets($rows, 'tag_id', 'tag_name', 'tag_color', null, ['tsumego_id']);
 		usort($sets, function ($a, $b) {
 			if ($a['total_count'] != $b['total_count'])
 				return $b['total_count'] <=> $a['total_count'];
@@ -201,7 +200,6 @@ class SetsSelector
 			$query->conditions[] = 'tsumego.rating >= ' . $minRating;
 		if ($maxRating !== null)
 			$query->conditions[] = 'tsumego.rating < ' . $maxRating;
-		$query->orderBy[] = 'tsumego.id';
 		$rows = Util::query($query->str());
 
 		$collectionRows = [];
@@ -222,7 +220,7 @@ class SetsSelector
 				}
 		}
 
-		$sets = $this->buildPartitionedSets($collectionRows, 'rank_label', 'rank_label', 'rank_color', 'rank_order');
+		$sets = $this->buildPartitionedSets($collectionRows, 'rank_label', 'rank_label', 'rank_color', 'rank_order', ['tsumego_id']);
 		usort($sets, function ($a, $b) {
 			if ($a['order'] != $b['order'])
 				return $a['order'] <=> $b['order'];
@@ -249,11 +247,10 @@ class SetsSelector
 	 * Group rows by collection, split each into partitions of the user's collection size,
 	 * and compute per-partition stats (count, rating sum, solved count).
 	 *
-	 * When $itemSortKeys is given, items are sorted within each collection by those row
-	 * fields (e.g. num, tsumego_id) so partitions always hold consecutive problems in the
-	 * canonical order (the same order the /sets/view page uses), regardless of the row
-	 * order the database returns. Callers that leave it empty must supply rows already
-	 * ordered within each collection.
+	 * Items are sorted within each collection by the $itemSortKeys row fields (e.g.
+	 * num, tsumego_id) so partitions always hold consecutive problems in the canonical
+	 * order (the same order the /sets/view page uses), regardless of the row order the
+	 * database returns.
 	 *
 	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
 	 * @param string $idField Row field identifying the collection.
