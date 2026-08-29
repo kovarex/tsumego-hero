@@ -153,8 +153,9 @@ $tomorrow = date('Y-m-d', strtotime('tomorrow'));
 			for (var i = 0; i < data.length; i++) {
 				var c = data[i];
 				var sgfAttr = c.preview ? " data-sgf-preview='" + JSON.stringify(c.preview) + "'" : '';
+				var numAttr = c.num_collision ? ' style="color:#c0392b" title="Number already used in target set - will be renumbered on publish"' : '';
 				html += '<li class="statusN"><a class="tooltip" href="/' + c.sc_id + '" data-tsumego-id="' + c.tsumego_id + '"' + sgfAttr + '>';
-				html += '<div class="setViewButtons1">' + c.num + '</div><div class="setViewButtons2">-</div><div class="setViewButtons3">-</div>';
+				html += '<div class="setViewButtons1"' + numAttr + '>' + c.num + '</div><div class="setViewButtons2">-</div><div class="setViewButtons3">-</div>';
 				html += '<span class="tooltip-box"><div class="tooltip-label statusN">Not visited</div><div class="tooltip-desc">You haven\'t seen this problem yet.</div></span>';
 				html += '</a></li>';
 			}
