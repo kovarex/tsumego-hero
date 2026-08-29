@@ -13,7 +13,7 @@
  */
 ?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
-	<div align="center" class="set-search-menu">
+	<div align="center" class="set-search-menu query-<?php echo h($tsumegoFilters->query); ?>">
 		<div class="set-buttons-left">
 			<div class="set-buttons">
 				<button id="topics-button" class="btn btn-link collapsed set-search" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
@@ -110,207 +110,30 @@
 	else
 		$lightDarkBoxes = '3';
 	foreach ($setsSelector->sets as $i => $set) {
-		if($set['amount'] == 1) {
-			$problems = 'problem';
-			$tilde = '';
-		} else {
-			$problems = 'problems';
-			$tilde = '~';
-		}
-		if ($set['partition'] == -1) {
-			$partition = '';
-			$partitionLink = '';
-		} else {
-			$partition = ' #'.($set['partition']+1);
-			$partitionLink = '/'.($set['partition'] + 1);
-		}
-		if($set['solved_percent'] != 0)
-			$isZero = '';
-		else
-			$isZero = 'display:none;';
-
-		if($lightDark=='light')
+		if ($lightDark == 'light')
 		{
 			$lightDarkBoxes = '3';
 			if ($set['partition'] >= 4)
 				$lightDarkBoxes = '6';
 		}
 		$backgroundImage = 'linear-gradient(rgba(169, 169, 169, 0.'.$lightDarkBoxes.'0), rgba(0, 0, 0, 0.'.$lightDarkBoxes.'5));';
-		$box1unlocked = 'box1default';
 
-		echo '<a href="/sets/view/' . $set['id'] . $partitionLink . '" class="box1link">
-			<div class="box1 box1topic ' . $box1unlocked.' topic-box' . $set['id'] . '"
-				style="background-color:' . $set['color'] . ';background-image: ' . $backgroundImage . '">';
-				if ($set['solved_percent'] >= 100)
-					echo '<div class="collection-completed">completed</div>';
-				echo '<div class="collection-top">' . h($set['name']) . $partition . '</div>';
-				echo '<div class="collection-middle-left">' . $set['amount'] . ' ' . $problems . '</div>';
-				if ($set['difficulty'])
-					echo '<div class="collection-middle-right">' . $tilde . $set['difficulty'] . '</div>';
-				echo '<div class="collection-bottom">
-					<div class="number" id="number' . $i . '">0</div>
-						<div align="left" class="reward-bar-container">
-							<div id="account-bar-wrapper2">
-								<div id="account-bar2">
-									<div id="xp-bar2">
-										<div class="xp-bar-empty"></div>
-										<div id="xp-bar-fill2' . $i . '" class="xp-bar-fill-c4" style="width: 5%; transition: 0.6s;'.$isZero.'">
-											<div id="xp-increase-fx2' . $i . '">
-												<div id="xp-increase-fx-flicker2' . $i . '">
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</a>';
+		echo $this->element('set_card', [
+			'set' => [
+				'id' => $set['id'],
+				'name' => $set['name'],
+				'amount' => $set['amount'],
+				'color' => $set['color'],
+				'difficulty' => $set['difficulty'],
+				'solved' => $set['solved_percent'],
+				'partition' => $set['partition'],
+			],
+			'backgroundImage' => $backgroundImage,
+		]);
 	} ?>
 	</div>
-	<style>
-		<?php if ($tsumegoFilters->query == 'topics') { ?>
-		#topics-button .set-button-text{
-			color:#77c14a;
-		}
-		#set-button-icon-topics i.animate-icon{
-			color:#77c14a;
-		}
-		<?php } else if ($tsumegoFilters->query == 'difficulty') { ?>
-		#difficulty-button .set-button-text{
-			color:#be6cdd;
-		}
-		#set-button-icon-difficulty i.animate-icon{
-			color:#be6cdd;
-		}
-		<?php } else if ($tsumegoFilters->query == 'tags') { ?>
-		#tags-button .set-button-text{
-			color:#d5795a;
-		}
-		#set-button-icon-tags i.animate-icon{
-			color:#d5795a;
-		}
-		<?php } ?>
-		<?php if($lightDark=='light') { ?>
-			<?php if ($tsumegoFilters->query=='topics') { ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.3),
-					rgba(33, 33, 33, 0.35)
-				) !important;
-			}
-			<?php }else{ ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.6),
-					rgba(33, 33, 33, 0.65)
-				) !important;
-			}
-			<?php } ?>
-		<?php }else{ ?>
-			.box1default:hover {
-				background-image: linear-gradient(
-					rgba(200, 200, 200, 0.3),
-					rgba(33, 33, 33, 0.35)
-				) !important;
-			}
-		<?php } ?>
-		.set-search {
-			display: flex;
-			font-weight: 800;
-			padding: 6px 10px;
-			margin: 5px;
-			border-radius: 5px;
-			<?php if($lightDark=='light'){ ?>
-				background: #555;
-				color: #fff;
-			<?php }else{ ?>
-				background: #222;
-				color: #bfc1c4;
-			<?php } ?>
-		}
-		.xp-bar-fill-c4 {
-			position: relative;
-			left: 0;
-			background-color: #bbbbbb;
-			background-image: linear-gradient(#f5f5f5, #9b9b9b);
-			height:5px;
-			border-radius:3px;
-			z-index: 2;
-		}
-		.number {
-			animation: fadeIn 1s ease-in-out;
-		}
-		@keyframes fadeIn {
-			0% {opacity: 0;}
-			100% {opacity: 1;}
-		}
-		@keyframes fadeIn2 {
-			0% {opacity: 0;}
-			100% {opacity: .9;}
-		}
-	</style>
 	<script>
-		<?php if($tsumegoFilters->query == 'topics'){ ?>
-			$("#topics-button").css("border", "1px solid #558a35");
-		<?php }else if($tsumegoFilters->query == 'difficulty'){ ?>
-			$("#difficulty-button").css("border", "1px solid #ac4bd0");
-		<?php }else if($tsumegoFilters->query == 'tags'){ ?>
-			$("#tags-button").css("border", "1px solid #aa5538");
-		<?php } ?>
-		<?php
-		echo 'function animateNumber(index, start, end, duration) {
-				const element = document.getElementById("number" + index);
-				if (!element) {
-					console.warn("Element number" + index + " not found.");
-					return;
-				}
-				const range = end - start;
-				const increment = range / (duration * 60);
-				const decimalIndex = end.toString().indexOf(".");
-			const dx = decimalIndex >= 0 ? end.toString().length - decimalIndex - 1 : 0;
-				let currentNumber = start;
-				const step = () => {
-					let randomDecimal = "";
-					if(dx===1){
-						randomDecimal = "."+Math.floor(Math.random() * 9);
-					}else if(dx===2){
-						randomDecimal = "."+(Math.floor(Math.random() * 90) + 10);
-					}
-					currentNumber += increment;
-					if (currentNumber < end) {
-							element.textContent = Math.floor(currentNumber) + randomDecimal + "%";
-							requestAnimationFrame(step);
-					} else {
-							element.textContent = end + "%";
-					}
-				};
-				requestAnimationFrame(step);
-			}';
 
-		echo 'function animateBar(index, percent){
-				$("#xp-increase-fx2" + index).css("display","inline-block");
-				$("#xp-bar-fill2" + index).css("box-shadow", "-5px 0px 10px #fff inset");
-				$("#xp-bar-fill2" + index).css("width", 0+"%");
-				$("#xp-increase-fx2" + index).hide();
-				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-
-				$("#xp-bar-fill2" + index).css({"width":percent+"%"});
-				$("#xp-bar-fill2" + index).css("-webkit-transition","all 0.6s ease");
-				$("#xp-increase-fx2" + index).fadeIn(0);
-				$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-				setTimeout(function(){
-					$("#xp-increase-fx-flicker2" + index).fadeOut(600);
-					$("#xp-bar-fill2" + index).css({"-webkit-transition":"all 0.6s ease","box-shadow":""});
-				},600);
-			}';
-
-		foreach ($setsSelector->sets as $i => $set) {
-			echo 'animateNumber(' . $i . ', 0, ' . $set['solved_percent'] . ', .6);';
-			echo 'animateBar(' . $i . ', ' . $set['solved_percent'] . ');';
-		}
-		?>
 		let query = <?php echo json_encode($tsumegoFilters->query, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let queryRefresh = <?php echo json_encode($queryRefresh, JSON_HEX_TAG | JSON_UNESCAPED_UNICODE); ?>;
 		let filteredSets = [];

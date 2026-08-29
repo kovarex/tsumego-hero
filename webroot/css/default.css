@@ -1812,11 +1812,6 @@ li a.menuLi {
 	display: inline-block;
 	height: 100%;
 }
-
-#xp-increase-fx2 {
-  position: relative;
-  height: 100%;
-}
 .xp-increase-glow1 {
   position: absolute;
   margin: 0px 0px 0px -2px;
@@ -5561,20 +5556,103 @@ select.flat-select:hover {
   align-items: center;
   padding-right: 4px;
 }
+.btn.set-search {
+  display: flex;
+  font-weight: 800;
+  padding: 6px 10px;
+  margin: 5px;
+  border-radius: 5px;
+  background: #222;
+  color: #bfc1c4;
+}
+[data-theme="light"] .btn.set-search {
+  background: #555;
+  color: #fff;
+}
+.set-search-menu.query-topics #topics-button .set-button-text,
+.set-search-menu.query-topics #set-button-icon-topics i.animate-icon {
+  color: #77c14a;
+}
+.set-search-menu.query-difficulty #difficulty-button .set-button-text,
+.set-search-menu.query-difficulty #set-button-icon-difficulty i.animate-icon {
+  color: #be6cdd;
+}
+.set-search-menu.query-tags #tags-button .set-button-text,
+.set-search-menu.query-tags #set-button-icon-tags i.animate-icon {
+  color: #d5795a;
+}
+.set-search-menu.query-topics #topics-button {
+  border: 1px solid #558a35;
+}
+.set-search-menu.query-difficulty #difficulty-button {
+  border: 1px solid #ac4bd0;
+}
+.set-search-menu.query-tags #tags-button {
+  border: 1px solid #aa5538;
+}
 .set-view-main {
   width: 100%;
   margin-top: 12px;
 }
-.xp-bar-empty {
+.set-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.set-progress-number {
+  font-size: 14px;
+  font-weight: 600;
+  animation: set-progress-number-in 0.6s ease-out;
+}
+.set-progress-track {
   position: relative;
-  left: 0;
-  top: 5px;
   width: 100%;
   height: 5px;
   border-radius: 3px;
-  background: black;
-  z-index: 1;
-  opacity: 0.15;
+  background: rgba(0, 0, 0, 0.15);
+}
+.set-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background-color: #bbbbbb;
+  background-image: linear-gradient(#f5f5f5, #9b9b9b);
+  animation: set-progress-grow 0.6s ease-out;
+}
+.set-progress--complete .set-progress-fill {
+  animation: set-progress-grow 0.6s ease-out, set-progress-glow 0.5s ease-out 0.6s;
+}
+@keyframes set-progress-grow {
+  from {
+    width: 0;
+  }
+}
+@keyframes set-progress-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  35% {
+    box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.95);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+@keyframes set-progress-number-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fadeIn2 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.9;
+  }
 }
 .set-buttons-left,
 .set-buttons-right {
@@ -5662,10 +5740,18 @@ select.flat-select:hover {
   position: relative;
   box-shadow: 2px 2px 4px black;
 }
+.box1:hover,
 .box1default:hover {
   background-image: linear-gradient(
     rgba(200, 200, 200, 0.3),
     rgba(33, 33, 33, 0.35)
+  ) !important;
+}
+[data-theme="light"] .box1:hover,
+[data-theme="light"] .box1default:hover {
+  background-image: linear-gradient(
+    rgba(200, 200, 200, 0.6),
+    rgba(33, 33, 33, 0.65)
   ) !important;
 }
 .box1unlocked:hover {

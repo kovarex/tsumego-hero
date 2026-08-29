@@ -1,5 +1,7 @@
 <?php
 
+use Facebook\WebDriver\WebDriverBy;
+
 App::uses('TestCaseWithAuth', 'TestSuite');
 App::uses('ContextPreparator', 'TestSuite');
 App::uses('ForbiddenException', 'Routing/Error');
@@ -589,6 +591,24 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$this->assertSame(3, $set['amount']);
 		$this->assertSame(67, $set['solved']);
 		$this->assertSame('11k', $set['difficulty']);
+	}
+
+	public function testMineShowsVisibleProgressBar(): void
+	{
+		new ContextPreparator([
+			'user' => ['name' => 'alice'],
+			'tsumegos' => [
+				['status' => 'S', 'sets' => [['name' => 'My Set', 'num' => 1, 'user_id' => 'self', 'public' => 0]]],
+			],
+		]);
+
+		$browser = Browser::instance();
+		$browser->get('sets/mine');
+
+		// The colored fill must actually be visible (not a 0px transparent div)
+		$fill = $browser->driver->findElement(WebDriverBy::cssSelector('.set-progress-fill'));
+		$this->assertSame('5px', $fill->getCSSValue('height'));
+		$this->assertTextContains('width: 100%', $fill->getAttribute('style'));
 	}
 
 	// ── Description sanitization ────────────────────────────────────────
