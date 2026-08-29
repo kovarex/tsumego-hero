@@ -89,7 +89,7 @@
 </td>
        <td class="success small"><div align="right">100.00%</div></td>
        <td class="success small"><div align="right">6&nbsp;/&nbsp;6</div></td>
-       <td class="success small">6</td>
+       <td class="success small">7</td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -167,7 +167,29 @@
       </tr>
 
       <tr>
-       <td class="success">&nbsp;<a href="#26"><abbr title="canDelete($user): bool">canDelete</abbr></a></td>
+       <td class="success">&nbsp;<a href="#33"><abbr title="canDelete($user): bool">canDelete</abbr></a></td>
+       <td class="success big">       <div class="progress">
+         <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
+           <span class="sr-only">100.00% covered (success)</span>
+         </div>
+       </div>
+</td>
+       <td class="success small"><div align="right">100.00%</div></td>
+       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
+       <td class="success big">       <div class="progress">
+         <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
+           <span class="sr-only">100.00% covered (success)</span>
+         </div>
+       </div>
+</td>
+       <td class="success small"><div align="right">100.00%</div></td>
+       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
+       <td class="success small">2</td>
+       <td class="success" colspan="3"></td>
+      </tr>
+
+      <tr>
+       <td class="success">&nbsp;<a href="#38"><abbr title="canAcceptTagProposal($user): bool">canAcceptTagProposal</abbr></a></td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -189,29 +211,7 @@
       </tr>
 
       <tr>
-       <td class="success">&nbsp;<a href="#31"><abbr title="canAcceptTagProposal($user): bool">canAcceptTagProposal</abbr></a></td>
-       <td class="success big">       <div class="progress">
-         <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
-           <span class="sr-only">100.00% covered (success)</span>
-         </div>
-       </div>
-</td>
-       <td class="success small"><div align="right">100.00%</div></td>
-       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
-       <td class="success big">       <div class="progress">
-         <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
-           <span class="sr-only">100.00% covered (success)</span>
-         </div>
-       </div>
-</td>
-       <td class="success small"><div align="right">100.00%</div></td>
-       <td class="success small"><div align="right">1&nbsp;/&nbsp;1</div></td>
-       <td class="success small">1</td>
-       <td class="success" colspan="3"></td>
-      </tr>
-
-      <tr>
-       <td class="success">&nbsp;<a href="#36"><abbr title="canRejectTagProposal($user): bool">canRejectTagProposal</abbr></a></td>
+       <td class="success">&nbsp;<a href="#43"><abbr title="canRejectTagProposal($user): bool">canRejectTagProposal</abbr></a></td>
        <td class="success big">       <div class="progress">
          <div class="progress-bar bg-success" role="progressbar" aria-valuenow="100.00" aria-valuemin="0" aria-valuemax="100" style="width: 100.00%">
            <span class="sr-only">100.00% covered (success)</span>
@@ -263,21 +263,28 @@
     <tr class="covered-by-large-tests popin d-flex"><td  data-title="3 tests cover line 23" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;AdminGuardTest::testTagEditActionRequiresAdmin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyAllowsOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="23" href="#23">23</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
     <tr class=" d-flex"><td  class="col-1 text-right"><a id="24" href="#24">24</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
     <tr class=" d-flex"><td  class="col-1 text-right"><a id="25" href="#25">25</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="26" href="#26">26</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canDelete</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="27" href="#27">27</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
-    <tr class="covered-by-large-tests popin d-flex"><td  data-title="3 tests cover line 28" data-content="&lt;ul&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;AdminGuardTest::testTagDeleteRequiresLogin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;AdminGuardTest::testTagDeleteRequiresAdmin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyAllowsOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="28" href="#28">28</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="29" href="#29">29</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="30" href="#30">30</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="31" href="#31">31</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canAcceptTagProposal</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="32" href="#32">32</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
-    <tr class="covered-by-large-tests popin d-flex"><td  data-title="2 tests cover line 33" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyProposalActionsAllowOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="33" href="#33">33</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="34" href="#34">34</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="35" href="#35">35</a></td><td class="col-11 codeLine"></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="36" href="#36">36</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canRejectTagProposal</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="37" href="#37">37</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
-    <tr class="covered-by-large-tests popin d-flex"><td  data-title="2 tests cover line 38" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyProposalActionsAllowOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="38" href="#38">38</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="39" href="#39">39</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
-    <tr class=" d-flex"><td  class="col-1 text-right"><a id="40" href="#40">40</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="26" href="#26">26</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">/**</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="27" href="#27">27</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Deleting&nbsp;a&nbsp;tag&nbsp;name&nbsp;is&nbsp;reserved&nbsp;for&nbsp;(user&nbsp;id&nbsp;72&nbsp;=&nbsp;d4rkm4tter),</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="28" href="#28">28</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;not&nbsp;for&nbsp;regular&nbsp;admins.</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="29" href="#29">29</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="30" href="#30">30</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;TODO:&nbsp;replace&nbsp;the&nbsp;hardcoded&nbsp;user&nbsp;id&nbsp;72&nbsp;with&nbsp;a&nbsp;dedicated&nbsp;role&nbsp;above&nbsp;admin</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="31" href="#31">31</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;(e.g.&nbsp;&quot;superadmin&quot;&nbsp;/&nbsp;&quot;site&nbsp;owner&quot;)</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="32" href="#32">32</a></td><td class="col-11 codeLine"><span class="comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="33" href="#33">33</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canDelete</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="34" href="#34">34</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="10 tests cover line 35" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;AdminGuardTest::testTagDeleteRequiresLogin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;AdminGuardTest::testTagDeleteRequiresAdmin&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testTagViewSanitizesDescription&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testTagViewRendersHttpReferenceAsLink&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testTagViewRendersNonUrlReferenceAsText&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testTagViewDoesNotLinkifyUnsafeReference&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testOwnerDeletesTag&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;TagTest::testNonOwnerAdminCannotDeleteTag&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagDeleteReservedForSiteOwner&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="35" href="#35">35</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="default">&nbsp;</span><span class="default">&amp;&amp;</span><span class="default">&nbsp;</span><span class="default">(int)</span><span class="default">&nbsp;</span><span class="default">$user</span><span class="keyword">[</span><span class="default">'id'</span><span class="keyword">]</span><span class="default">&nbsp;</span><span class="default">===</span><span class="default">&nbsp;</span><span class="default">72</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="36" href="#36">36</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="37" href="#37">37</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="38" href="#38">38</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canAcceptTagProposal</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="39" href="#39">39</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="2 tests cover line 40" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyProposalActionsAllowOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="40" href="#40">40</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="41" href="#41">41</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="42" href="#42">42</a></td><td class="col-11 codeLine"></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="43" href="#43">43</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">public</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">&nbsp;</span><span class="keyword">function</span><span class="default">&nbsp;</span><span class="default">canRejectTagProposal</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">:</span><span class="default">&nbsp;</span><span class="default">bool</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="44" href="#44">44</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">{</span></td></tr>
+    <tr class="covered-by-large-tests popin d-flex"><td  data-title="2 tests cover line 45" data-content="&lt;ul&gt;&lt;li&gt;merged&lt;/li&gt;&lt;li class=&quot;covered-by-large-tests&quot;&gt;PolicyTest::testTagPolicyProposalActionsAllowOnlyAdmins&lt;/li&gt;&lt;/ul&gt;" data-placement="top" data-html="true" class="col-1 text-right"><a id="45" href="#45">45</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">return</span><span class="default">&nbsp;</span><span class="keyword">static</span><span class="default">::</span><span class="default">isAdmin</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">)</span><span class="keyword">;</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="46" href="#46">46</a></td><td class="col-11 codeLine"><span class="default">&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="keyword">}</span></td></tr>
+    <tr class=" d-flex"><td  class="col-1 text-right"><a id="47" href="#47">47</a></td><td class="col-11 codeLine"><span class="keyword">}</span></td></tr>
 
 </tbody>
 </table>
@@ -288,7 +295,7 @@
     <h4>Legend</h4>
     <p><span class="legend covered-by-small-tests">Covered by small (and larger) tests</span><span class="legend covered-by-medium-tests">Covered by medium (and large) tests</span><span class="legend covered-by-large-tests">Covered by large tests (and tests of unknown size)</span><span class="legend not-covered">Not covered</span><span class="legend not-coverable">Not coverable</span></p>
     <p>
-     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 9.2.32</a> using <a href="https://secure.php.net/" target="_top">PHP 8.4.25</a> at Sat Aug 29 5:56:25 UTC 2026.</small>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 9.2.32</a> using <a href="https://secure.php.net/" target="_top">PHP 8.4.25</a> at Sat Aug 29 12:22:38 UTC 2026.</small>
     </p>
     <a title="Back to the top" id="toplink" href="#">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="0 0 12 16"><path fill-rule="evenodd" d="M12 11L6 5l-6 6h12z"/></svg>
