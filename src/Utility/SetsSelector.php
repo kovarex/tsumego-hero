@@ -111,10 +111,11 @@ class SetsSelector
 			$query->conditions[] = $this->tagMembershipCondition('sc.tsumego_id');
 		if ($rankCondition = $this->rankCondition())
 			$query->conditions[] = $rankCondition;
-		$query->orderBy[] = 's.`order`, s.id, sc.num, sc.tsumego_id';
 		$rows = Util::query($query->str());
 
-		$sets = $this->buildPartitionedSets($rows, 'set_id', 'set_title', 'set_color', 'set_order');
+		// Set cards are ordered in PHP below; items are sorted within each set by
+		// buildPartitionedSets, so this query does not need an ORDER BY.
+		$sets = $this->buildPartitionedSets($rows, 'set_id', 'set_title', 'set_color', 'set_order', ['num', 'tsumego_id']);
 		usort($sets, function ($a, $b) {
 			// sets without a curated order sort last, matching displayOrderForSetSql
 			$aOrder = $a['order'] ?? PHP_INT_MAX;
@@ -248,18 +249,22 @@ class SetsSelector
 	 * Group rows by collection, split each into partitions of the user's collection size,
 	 * and compute per-partition stats (count, rating sum, solved count).
 	 *
-	 * Rows must arrive already ordered so that within a collection they are in the
-	 * canonical problem order (the same order the /sets/view page uses).
+	 * When $itemSortKeys is given, items are sorted within each collection by those row
+	 * fields (e.g. num, tsumego_id) so partitions always hold consecutive problems in the
+	 * canonical order (the same order the /sets/view page uses), regardless of the row
+	 * order the database returns. Callers that leave it empty must supply rows already
+	 * ordered within each collection.
 	 *
 	 * @param array $rows Query rows, each with $idField, $nameField, $colorField, tsumego_id and rating.
 	 * @param string $idField Row field identifying the collection.
 	 * @param string $nameField Row field with the collection display name.
 	 * @param string $colorField Row field with the collection color.
 	 * @param string|null $orderField Optional row field with the collection sort key.
+	 * @param string[] $itemSortKeys Optional row fields to sort items by within each collection.
 	 * @return array[] Collection chunks, each with id, name, color, order, partition, total_count,
 	 *   usage_count, rating_sum and solved_count.
 	 */
-	private function buildPartitionedSets(array $rows, string $idField, string $nameField, string $colorField, ?string $orderField = null): array
+	private function buildPartitionedSets(array $rows, string $idField, string $nameField, string $colorField, ?string $orderField = null, array $itemSortKeys = []): array
 	{
 		$collections = [];
 		foreach ($rows as $row)
@@ -277,6 +282,18 @@ class SetsSelector
 			}
 			$collections[$id]['items'][] = $row;
 		}
+
+		if ($itemSortKeys)
+			foreach ($collections as $id => $collection)
+				usort($collections[$id]['items'], function ($a, $b) use ($itemSortKeys) {
+					foreach ($itemSortKeys as $key)
+					{
+						$cmp = $a[$key] <=> $b[$key];
+						if ($cmp != 0)
+							return $cmp;
+					}
+					return 0;
+				});
 
 		$size = $this->tsumegoFilters->collectionSize;
 		$solved = $this->getSolvedTsumegoIDs();
