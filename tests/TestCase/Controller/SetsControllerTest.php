@@ -216,13 +216,13 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$this->testAction('sets', ['return' => 'view']);
 
-		$this->assertTextContains('animateNumber(0, 0, 100, .6)', $this->view);
-		$this->assertTextContains('animateNumber(1, 0, 50, .6)', $this->view);
-		$this->assertTextContains('animateBar(0, 100)', $this->view);
-		$this->assertTextContains('animateBar(1, 50)', $this->view);
 		$this->assertTextContains('Problems found: 12', $this->view);
 
 		$dom = $this->getStringDom();
+		$fills = $dom->querySelectorAll('.set-progress-fill');
+		$this->assertCount(2, $fills);
+		$this->assertTextContains('width: 100%', $fills[0]->getAttribute('style'));
+		$this->assertTextContains('width: 50%', $fills[1]->getAttribute('style'));
 		$this->assertCount(1, $dom->querySelectorAll('.collection-completed'));
 	}
 
@@ -260,8 +260,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		new ContextPreparator($contextParams);
 		$this->testAction('sets', ['return' => 'view']);
 
-		$this->assertTextContains('animateNumber(0, 0, 0, .6)', $this->view);
 		$dom = $this->getStringDom();
+		$fills = $dom->querySelectorAll('.set-progress-fill');
+		$this->assertCount(1, $fills);
+		$this->assertTextContains('width: 0%', $fills[0]->getAttribute('style'));
 		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
 		$this->assertCount(0, $dom->querySelectorAll('.collection-completed'));
 	}
@@ -1213,8 +1215,8 @@ class SetsControllerTest extends TestCaseWithAuth
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'))[$index]->getText(), $title);
-		$this->assertSame($browser->driver->findElement(WebDriverBy::cssSelector('#number' . $index))->getText(), $percent);
-		$barStyle = $browser->driver->findElement(WebDriverBy::cssSelector('#xp-bar-fill2' . $index))->getAttribute('style');
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[$index]->getText(), $percent);
+		$barStyle = $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-fill'))[$index]->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
 
@@ -1242,7 +1244,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
@@ -1275,7 +1277,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new WebDriverWait($browser->driver, 10, 50); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number0'))->getText() == '33%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[0]->getText() == '33%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
@@ -1310,7 +1312,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
@@ -1347,7 +1349,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElement(WebDriverBy::cssSelector('#number4'))->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
