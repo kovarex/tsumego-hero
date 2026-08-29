@@ -14,15 +14,24 @@ class SetConnection extends AppModel
 	];
 
 	/**
-	 * Ordering that picks a representative set for display: public before
-	 * private before deleted, official (unowned) collections before user-owned
-	 * sets, then curated order ascending (NULLs last), then earliest set, then
-	 * earliest connection. A tsumego may belong to many sets; this is a
-	 * display preference, not an identity.
+	 * Canonical ordering for listing sets: public before private, official
+	 * (unowned) collections before user-owned, then curated order ascending
+	 * (NULLs last), then earliest set. Shared by set listings so the rule
+	 * lives in one place.
+	 */
+	public static function displayOrderForSetSql(string $setAlias): string
+	{
+		return "$setAlias.public DESC, ($setAlias.user_id IS NULL) DESC, ($setAlias.order IS NULL) ASC, $setAlias.order ASC, $setAlias.id ASC";
+	}
+
+	/**
+	 * Ordering that picks a representative set for display: the set-level
+	 * display order, then earliest connection. A tsumego may belong to many
+	 * sets; this is a display preference, not an identity.
 	 */
 	public static function displayOrderSql(string $setAlias, string $connectionAlias): string
 	{
-		return "$setAlias.public DESC, ($setAlias.user_id IS NULL) DESC, ($setAlias.order IS NULL) ASC, $setAlias.order ASC, $setAlias.id ASC, $connectionAlias.id ASC";
+		return self::displayOrderForSetSql($setAlias) . ", $connectionAlias.id ASC";
 	}
 
 	/**

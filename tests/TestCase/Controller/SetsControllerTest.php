@@ -66,6 +66,250 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
 
+	public function testTopicsIndexSplitsCollectionIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'partitioned set', 'num' => $i + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('partitioned set #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('partitioned set #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
+
+		$boxLinks = $dom->querySelectorAll('.box1link');
+		$setId = $context->tsumegos[0]['sets'][0]['id'];
+		$this->assertSame('/sets/view/' . $setId . '/1', $boxLinks[0]->getAttribute('href'));
+		$this->assertSame('/sets/view/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
+	}
+
+	public function testTopicsIndexSmallCollectionShowsSingleBox(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 200]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 3; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'small set', 'num' => $i + 1]]];
+		$context = new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(1, $collectionTopDivs);
+		$this->assertSame('small set', $collectionTopDivs[0]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$this->assertSame('3 problems', $collectionMiddleLeft[0]->textContent);
+
+		$boxLinks = $dom->querySelectorAll('.box1link');
+		$this->assertSame('/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
+	}
+
+	public function testTopicsIndexSortsNullOrderSetLast(): void
+	{
+		$context = new ContextPreparator(['tsumego' => ['sets' => [
+			['name' => 'ordered set', 'public' => 1, 'order' => 5, 'num' => 1]]]]);
+
+		// a public set with no curated order holding the same tsumego
+		$set = ClassRegistry::init('Set');
+		$set->create();
+		$set->save(['title' => 'unordered set', 'public' => 1, 'order' => null]);
+		$connection = ClassRegistry::init('SetConnection');
+		$connection->create();
+		$connection->save(['tsumego_id' => $context->tsumegos[0]['id'], 'set_id' => $set->id, 'num' => 2]);
+
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('ordered set', $collectionTopDivs[0]->textContent);
+		$this->assertSame('unordered set', $collectionTopDivs[1]->textContent);
+	}
+
+	public function testTopicsIndexProblemsFoundCountsAllPublicProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'public set', 'num' => '2']]];
+		// a problem only in a private set is not shown, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'sandbox set', 'public' => 0, 'num' => '1']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testDifficultyIndexProblemsFoundExcludesProblemsAboveNineDan(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '1']]];
+		$contextParams['tsumegos'][] = ['rating' => Rating::getRankMiddleRatingFromReadableRank('15k'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		// rating 2810+ falls above the 9d band, so no difficulty box shows it
+		$contextParams['tsumegos'][] = ['rating' => 2810, 'sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'difficulty';
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTagsIndexProblemsFoundCountsOnlyTaggedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		// a public problem with no tag is not shown in tags mode, so not counted
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '3']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['return' => 'view']);
+		$this->assertTextContains('Problems found: 2', $this->view);
+	}
+
+	public function testTopicsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']]];
+		// a deleted problem in the same public set is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+	}
+
+	public function testTagsIndexExcludesDeletedProblems(): void
+	{
+		$contextParams = ['tsumegos' => []];
+		$contextParams['tsumegos'][] = ['sets' => [['name' => 'set', 'num' => '1']], 'tags' => [['name' => 'atari']]];
+		// a deleted problem with the same tag is neither counted nor shown
+		$contextParams['tsumegos'][] = ['deleted' => date('Y-m-d H:i:s'), 'sets' => [['name' => 'set', 'num' => '2']], 'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+		$_COOKIE['query'] = 'tags';
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('Problems found: 1', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+	}
+
+	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		foreach (array_merge(array_fill(0, 10, 'S'), ['S', 'N']) as $i => $status)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'solved set', 'num' => $i + 1]],
+				'status' => $status];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('animateNumber(0, 0, 100, .6)', $this->view);
+		$this->assertTextContains('animateNumber(1, 0, 50, .6)', $this->view);
+		$this->assertTextContains('animateBar(0, 100)', $this->view);
+		$this->assertTextContains('animateBar(1, 50)', $this->view);
+		$this->assertTextContains('Problems found: 12', $this->view);
+
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-completed'));
+	}
+
+	public function testTopicsIndexShowsDifficultyPerPartition(): void
+	{
+		$contextParams = ['user' => ['collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		foreach (array_merge(
+			array_fill(0, 10, Rating::getRankMiddleRatingFromReadableRank('15k')),
+			[
+				Rating::getRankMiddleRatingFromReadableRank('5k'),
+				Rating::getRankMiddleRatingFromReadableRank('5k')]) as $i => $rating)
+					$contextParams['tsumegos'] [] = [
+						'sets' => [['name' => 'difficulty set', 'num' => $i + 1]],
+						'rating' => $rating];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		// difficulty must be computed per partition, not per whole set:
+		// partition 1 (ten 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
+		$dom = $this->getStringDom();
+		$difficulties = $dom->querySelectorAll('.collection-middle-right');
+		$this->assertCount(2, $difficulties);
+		$this->assertSame('~15k', $difficulties[0]->textContent);
+		$this->assertSame('~5k', $difficulties[1]->textContent);
+	}
+
+	public function testTopicsIndexGuestShowsNoSolvedProgress(): void
+	{
+		$contextParams = ['user' => null];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 2; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'guest set', 'num' => $i + 1]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$this->assertTextContains('animateNumber(0, 0, 0, .6)', $this->view);
+		$dom = $this->getStringDom();
+		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
+		$this->assertCount(0, $dom->querySelectorAll('.collection-completed'));
+	}
+
+	public function testDifficultyIndexSplitsRankIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['query' => 'difficulty', 'collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'rating' => Rating::getRankMiddleRatingFromReadableRank('15k'),
+				'sets' => [['name' => 'set 1', 'num' => $i + 1]]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('15k #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('15k #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
+	}
+
+	public function testTagsIndexSplitsTagIntoPartitionBoxes(): void
+	{
+		$contextParams = ['user' => ['query' => 'tags', 'collection_size' => 10]];
+		$contextParams['tsumegos'] = [];
+		for ($i = 0; $i < 11; $i++)
+			$contextParams['tsumegos'] [] = [
+				'sets' => [['name' => 'set 1', 'num' => $i + 1]],
+				'tags' => [['name' => 'atari']]];
+		new ContextPreparator($contextParams);
+		$this->testAction('sets', ['return' => 'view']);
+
+		$dom = $this->getStringDom();
+		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$this->assertCount(2, $collectionTopDivs);
+		$this->assertSame('atari #1', $collectionTopDivs[0]->textContent);
+		$this->assertSame('atari #2', $collectionTopDivs[1]->textContent);
+
+		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
+		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
+	}
+
 	public function testSetViewRankBased(): void
 	{
 		$contextParams = [];
@@ -310,12 +554,12 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	public function testFullProcessOfPartitionedSetBasedSelection(): void
 	{
-		$contextParams = ['user' => ['collection_size' => 2]];
+		$contextParams = ['user' => ['collection_size' => 10]];
 		$contextParams['tsumegos'] = [];
-		$statuses = ['N', 'N', 'V', 'V'];
+		$statuses = array_merge(array_fill(0, 10, 'N'), ['V']);
 
-		// 4 problems in our set
-		for ($i = 0; $i < 4; $i++)
+		// 11 problems in our set, so it is split into a 10-problem and a 1-problem partition
+		for ($i = 0; $i < 11; $i++)
 		{
 			$contextParams['tsumegos'] [] = [
 				'set_order' => ($i + 1),
@@ -324,13 +568,12 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 
-		// first we select the difficulty of 15k
 		$browser = Browser::instance();
 		$browser->get("sets");
 
 		// we check the set card and clicking
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
 		$collectionTopDivs[0]->click();
@@ -338,8 +581,8 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// now we are viewing the 'test set' and checking the buttons
 
-		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
+		// there should be just the 10 problems of the first partition
+		$buttons = $this->checkSetNavigationButtons($browser, 10, $context, function ($index) {
 			return $index;
 		}, function ($index) {
 			return $index + 1;
@@ -350,7 +593,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// now we are in the problem
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[0]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 10, $context, function ($index) {
 			return $index;
 		}, function ($index) {
 			return $index + 1;
@@ -359,8 +602,8 @@ class SetsControllerTest extends TestCaseWithAuth
 		// clicking on next problem
 		$browser->driver->findElement(WebDriverBy::cssSelector('#besogo-next-button'))->click();
 		$this->assertSame(Util::getMyAddress() . '/' . $context->tsumegos[1]['set-connections'][0]['id'], $browser->driver->getCurrentURL());
-		$this->checkPlayTitle($browser, 'test set #1 2/4');
-		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 2, $context, function ($index) {
+		$this->checkPlayTitle($browser, 'test set #1 2/11');
+		$this->checkNavigationButtonsBeforeAndAfterSolving($browser, 10, $context, function ($index) {
 			return $index;
 		}, function ($index) {
 			return $index + 1;
@@ -369,22 +612,22 @@ class SetsControllerTest extends TestCaseWithAuth
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
-		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 2 problems
+		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$collectionTopDivs[1]->click();
 
 		// now we are in the second partition of the set
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[0]['sets'][0]['id'] . '/2', $browser->driver->getCurrentURL());
 
-		// there should be just 2 of the 4 tsumegos, as we picked collection size of 2
-		$buttons = $this->checkSetNavigationButtons($browser, 2, $context, function ($index) {
-			return $index + 2;
+		// there should be just the 1 problem of the second partition
+		$buttons = $this->checkSetNavigationButtons($browser, 1, $context, function ($index) {
+			return $index + 10;
 		}, function ($index) {
-			return $index + 3;
+			return $index + 11;
 		});
 
 		// clicking to get inside the set to play it
 		$buttons[0]->findElement(WebDriverBy::tagName('a'))->click();
-		$this->checkPlayTitle($browser, 'test set #2 3/4');
+		$this->checkPlayTitle($browser, 'test set #2 11/11');
 	}
 
 	public function testEditTitleFormSavesBaseTitle(): void

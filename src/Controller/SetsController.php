@@ -16,6 +16,8 @@ App::uses('Progress', 'Utility');
 App::uses('SetEditRenderer', 'Utility');
 App::uses('SetImage', 'Utility');
 App::uses('HtmlSanitizer', 'Utility');
+App::uses('Constants', 'Utility');
+App::uses('SetConnection', 'Model');
 
 class SetsController extends AppController
 {
@@ -523,7 +525,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoFilters = new TsumegoFilters();
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			'order' => ['Set.order', 'Set.id'],
+			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
 			'conditions' => ['public' => 1],
 		]) ?: [];
 		foreach ($setsRaw as $set)
@@ -1464,11 +1466,11 @@ WHERE tsumego_status.user_id = ? AND tsumego_status.tsumego_id IN(" . implode(',
 			return $this->redirect('/sets');
 		}
 		$collectionSizeInt = filter_var($collectionSize, FILTER_VALIDATE_INT, [
-			'options' => ['min_range' => 10, 'max_range' => 1000],
+			'options' => ['min_range' => Constants::$MIN_COLLECTION_SIZE, 'max_range' => Constants::$MAX_COLLECTION_SIZE],
 		]);
-		if ($collectionSizeInt === false || $collectionSizeInt % 10 !== 0)
+		if ($collectionSizeInt === false || $collectionSizeInt % Constants::$COLLECTION_SIZE_STEP !== 0)
 		{
-			CookieFlash::set('Collection size must be a multiple of 10 between 10 and 1000', 'error');
+			CookieFlash::set('Collection size must be a multiple of ' . Constants::$COLLECTION_SIZE_STEP . ' between ' . Constants::$MIN_COLLECTION_SIZE . ' and ' . Constants::$MAX_COLLECTION_SIZE, 'error');
 			return $this->redirect('/sets');
 		}
 		Preferences::set('collection_size', $collectionSizeInt);
