@@ -7,6 +7,8 @@ App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
 App::uses('UnauthorizedException', 'Routing/Error');
 
+use App\Attribute\HttpPost;
+
 class SgfController extends AppController
 {
 	public function fetch(int $sgfID)
@@ -27,6 +29,7 @@ class SgfController extends AppController
 		return $this->response;
 	}
 
+	#[HttpPost]
 	public function upload($setConnectionID)
 	{
 		$this->Authorization->authorize('Sgf', 'propose');

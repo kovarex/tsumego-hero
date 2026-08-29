@@ -13,6 +13,9 @@ App::uses('TagProposalsRenderer', 'Utility');
 App::uses('AdminActivityType', 'Model');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
+
+use App\Attribute\HttpPost;
+
 App::uses('SetConnection', 'Model');
 
 class UsersController extends AppController
@@ -1274,10 +1277,9 @@ OFFSET " . $offset, [$userID, $userID]);
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function deleteOldTsumegoStatuses(): mixed
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
 		if (!Auth::isLoggedIn())
 			return $this->redirect('/sets');
 

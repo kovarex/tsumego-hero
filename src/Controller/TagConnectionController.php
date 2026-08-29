@@ -2,8 +2,11 @@
 
 App::uses('ForbiddenException', 'Routing/Error');
 
+use App\Attribute\HttpPost;
+
 class TagConnectionController extends AppController
 {
+	#[HttpPost]
 	public function add($tsumegoID, $tagName)
 	{
 		$this->Authorization->authorize('TagConnection', 'add');
@@ -40,6 +43,7 @@ class TagConnectionController extends AppController
 		return $this->response;
 	}
 
+	#[HttpPost]
 	public function remove($tsumegoID, $tagName)
 	{
 		$tag = ClassRegistry::init('Tag')->findByName($tagName);

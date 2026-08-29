@@ -338,8 +338,47 @@ class AppController extends Controller
 			Util::setCookie('lastVisit', $vs['TsumegoStatus']['tsumego_id']);
 	}
 
+	/**
+	 * Enforce HTTP-method attributes (e.g. #[HttpPost]) on the dispatched action.
+	 * Mirrors CakePHP 5's Cake\Http\Attribute\* so migration is a use-swap: the
+	 * attributes stay, this enforcement method is deleted.
+	 */
+	protected function enforceHttpMethodAttribute(): void
+	{
+		$action = $this->action;
+		if (!is_string($action) || !method_exists($this, $action))
+			return;
+
+		$allowed = [];
+		$reflection = new ReflectionMethod($this, $action);
+		foreach ($reflection->getAttributes() as $attribute)
+		{
+			$method = match ($attribute->getName())
+			{
+				'App\Attribute\HttpGet' => 'GET',
+				'App\Attribute\HttpPost' => 'POST',
+				'App\Attribute\HttpPut' => 'PUT',
+				'App\Attribute\HttpPatch' => 'PATCH',
+				'App\Attribute\HttpDelete' => 'DELETE',
+				default => null,
+			};
+			if ($method)
+				$allowed[] = $method;
+		}
+		if (!$allowed)
+			return;
+
+		if (!in_array($this->request->method(), $allowed, true))
+		{
+			$e = new MethodNotAllowedException();
+			$e->responseHeader('Allow', implode(', ', $allowed));
+			throw $e;
+		}
+	}
+
 	public function beforeFilter(): void
 	{
+		$this->enforceHttpMethodAttribute();
 		$this->loadModel('User');
 		$this->loadModel('Tsumego');
 		$this->loadModel('Set');

@@ -3,6 +3,8 @@
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('HtmlSanitizer', 'Utility');
 
+use App\Attribute\HttpPost;
+
 class TagsController extends AppController
 {
 	public function add()
@@ -12,6 +14,7 @@ class TagsController extends AppController
 		$this->set('allTags', $allTags);
 	}
 
+	#[HttpPost]
 	public function addAction(): CakeResponse
 	{
 		$this->Authorization->authorize('Tag', 'add');
@@ -156,6 +159,7 @@ class TagsController extends AppController
 		return null;
 	}
 
+	#[HttpPost]
 	public function editAction($tagID)
 	{
 		$this->Authorization->authorize('Tag', 'editAction');
@@ -186,6 +190,7 @@ class TagsController extends AppController
 	 * @param string|int $id Tag name ID
 	 * @return void
 	 */
+	#[HttpPost]
 	public function delete($id)
 	{
 		$this->Authorization->authorize('Tag');
@@ -211,6 +216,7 @@ class TagsController extends AppController
 
 	public function index() {}
 
+	#[HttpPost]
 	public function acceptTagProposal($tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
@@ -238,6 +244,7 @@ class TagsController extends AppController
 		return $this->redirect('/users/adminstats');
 	}
 
+	#[HttpPost]
 	public function rejectTagProposal($tagID): CakeResponse
 	{
 		$this->Authorization->authorize('Tag');
