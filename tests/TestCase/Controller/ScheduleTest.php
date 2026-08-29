@@ -450,4 +450,84 @@ class ScheduleTest extends TestCaseWithAuth
 		$this->assertSame(85.5, (float) $tsumego['Tsumego']['userWin']);
 		$this->assertSame(100, (int) $tsumego['Tsumego']['userLoss']);
 	}
+
+	public function testPublishFailedEntryStaysPending(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'existing public', 'num' => 1]]],
+				['sets' => [['name' => 'target set', 'num' => 1]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d')],
+			],
+		]);
+		$this->login('admin');
+
+		ScheduleController::publish();
+
+		// The tsumego has no sandbox source to move from, so the entry stays pending
+		$schedule = ClassRegistry::init('Schedule')->find('first', [
+			'conditions' => ['tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertSame(0, (int) $schedule['Schedule']['published']);
+	}
+
+	public function testPublishRenumbersOnNumCollision(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 5]]],
+			],
+			'schedule' => [
+				['tsumego' => 0, 'set' => 'target set', 'date' => date('Y-m-d')],
+			],
+		]);
+		$this->login('admin');
+
+		$targetSetId = $context->tsumegos[1]['set-connections'][0]['set_id'];
+
+		ScheduleController::publish();
+
+		$nums = ClassRegistry::init('SetConnection')->find('list', [
+			'fields' => ['num', 'num'],
+			'conditions' => ['set_id' => $targetSetId],
+		]);
+		$this->assertCount(2, $nums, 'Both tsumegos should be in the target set');
+		$this->assertSame(2, count(array_unique($nums)), 'No duplicate nums in target set');
+
+		$moved = ClassRegistry::init('SetConnection')->find('first', [
+			'conditions' => ['set_id' => $targetSetId, 'tsumego_id' => $context->tsumegos[0]['id']],
+		]);
+		$this->assertNotSame(5, (int) $moved['SetConnection']['num'], 'Moved problem should be renumbered away from the taken slot');
+	}
+
+	public function testPreviewFlagsNumCollision(): void
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'admin', 'admin' => true],
+			'tsumegos' => [
+				['sets' => [['name' => 'sandbox set', 'num' => 5, 'public' => 0]]],
+				['sets' => [['name' => 'sandbox set', 'num' => 6, 'public' => 0]]],
+				['sets' => [['name' => 'target set', 'num' => 5]]],
+			],
+		]);
+		$this->login('admin');
+
+		$sandboxSetId = $context->tsumegos[0]['set-connections'][0]['set_id'];
+		$targetSetId = $context->tsumegos[2]['set-connections'][0]['set_id'];
+
+		$this->testAction('/schedule/preview', [
+			'method' => 'GET',
+			'data' => ['set_id_from' => $sandboxSetId, 'set_id_to' => $targetSetId, 'count' => 2, 'num' => 0],
+		]);
+
+		$body = json_decode($this->controller->response->body(), true);
+		$this->assertCount(2, $body);
+		$this->assertTrue($body[0]['num_collision'], 'num 5 collides with the target set');
+		$this->assertFalse($body[1]['num_collision'], 'num 6 is free in the target set');
+	}
 }
