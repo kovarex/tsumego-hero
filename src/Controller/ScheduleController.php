@@ -6,6 +6,8 @@ App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('CookieFlash', 'Utility');
 
+use App\Attribute\HttpPost;
+
 class ScheduleController extends AppController
 {
 	public function index(): void
@@ -69,6 +71,7 @@ ORDER BY schedule.date ASC");
 	 * Schedules the next `count` unscheduled problems of the source set that are
 	 * not already in the target set, optionally starting from position `num`.
 	 */
+	#[HttpPost]
 	public function add(): void
 	{
 		$this->Authorization->authorize('Schedule');
@@ -189,6 +192,7 @@ LIMIT {$count}");
 	/**
 	 * Cancel a pending schedule entry. Admin only.
 	 */
+	#[HttpPost]
 	public function cancel($id): void
 	{
 		$this->Authorization->authorize('Schedule');
