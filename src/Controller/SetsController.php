@@ -525,7 +525,6 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$tsumegoFilters = new TsumegoFilters();
 		//setTiles
 		$setsRaw = $this->Set->find('all', [
-			// split the comma-joined canonical order so CakePHP quotes every expression
 			'order' => array_map('trim', explode(',', SetConnection::displayOrderForSetSql('Set'))),
 			'conditions' => ['public' => 1],
 		]) ?: [];
