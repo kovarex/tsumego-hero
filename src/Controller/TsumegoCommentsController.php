@@ -4,6 +4,9 @@ App::uses('ForbiddenException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('UnprocessableEntityException', 'Lib/Error');
 
+use App\Attribute\HttpGet;
+use App\Attribute\HttpPost;
+
 /**
  * Controller for managing tsumego comments (CRUD operations).
  *
@@ -25,11 +28,9 @@ class TsumegoCommentsController extends AppController
 	 *
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function add()
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$this->Authorization->authorize('TsumegoComment', 'add');
 
 		$input = json_decode($this->request->input(), true);
@@ -78,11 +79,9 @@ class TsumegoCommentsController extends AppController
 	 * @param int $id Comment ID to delete
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function delete($id)
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');
 		$comment = $TsumegoComment->findById($id);
 
@@ -121,11 +120,9 @@ class TsumegoCommentsController extends AppController
 	 * @param int $tsumegoId The tsumego ID
 	 * @return CakeResponse
 	 */
+	#[HttpGet]
 	public function index($tsumegoId)
 	{
-		if (!$this->request->is('get'))
-			throw new MethodNotAllowedException();
-
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 
 		// Load issues with comments

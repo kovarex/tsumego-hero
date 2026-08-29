@@ -19,6 +19,8 @@ App::uses('HtmlSanitizer', 'Utility');
 App::uses('Constants', 'Utility');
 App::uses('SetConnection', 'Model');
 
+use App\Attribute\HttpPost;
+
 class SetsController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
@@ -472,6 +474,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		$this->set('setRating', $setRating);
 	}
 
+	#[HttpPost]
 	public function delete($id = null)
 	{
 		$setID = $id ?? ($this->data['Set']['id'] ?? null);
@@ -662,6 +665,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		}
 	}
 
+	#[HttpPost]
 	public function addTsumego($setID)
 	{
 		if ($setID === 'favorites')
@@ -711,7 +715,13 @@ ORDER BY sc.num ASC", [(int) $id]);
 		{
 			$this->autoRender = false;
 			$this->response->type('application/json');
-			$this->response->body(json_encode(['contains' => true]));
+			// Include the resolved set so the client can keep its set list in
+			// sync when the Favorites set is created on the fly (heart toggle).
+			$this->response->body(json_encode([
+				'contains' => true,
+				'set_id' => $setID,
+				'title' => $set['Set']['title'],
+			]));
 			return;
 		}
 
@@ -722,6 +732,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	/**
 	 * Create a new tsumego and add it to a set. Admin only.
 	 */
+	#[HttpPost]
 	public function createAndAddTsumego($setID)
 	{
 		$this->Authorization->authorize('Set');
@@ -806,6 +817,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	/**
 	 * Remove a tsumego from a set.
 	 */
+	#[HttpPost]
 	public function removeTsumego($setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
@@ -838,6 +850,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 	/**
 	 * Swap the order of two adjacent set_connections.
 	 */
+	#[HttpPost]
 	public function reorderTsumego($setID)
 	{
 		$set = ClassRegistry::init('Set')->findById($setID);
@@ -1418,6 +1431,7 @@ ORDER BY sc.num ASC", [(int) $id]);
 		return $ranksArray;
 	}
 
+	#[HttpPost]
 	public function resetProgress(int $setID, int $partition): mixed
 	{
 		$redirectUrl = '/sets/view/' . $setID . '/' . $partition;

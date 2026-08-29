@@ -12,18 +12,19 @@ App::uses('AchievementChecker', 'Utility');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('BadRequestException', 'Routing/Error');
 App::uses('ForbiddenException', 'Routing/Error');
+
+use App\Attribute\HttpPost;
+
 require_once(__DIR__ . "/Component/Play.php");
 
 class TsumegosController extends AppController
 {
 	public $helpers = ['Html', 'Form'];
 
+	#[HttpPost]
 	public function result()
 	{
 		$this->response->type('application/json');
-
-		if (!$this->request->is('post'))
-			throw new BadRequestException('POST required');
 
 		if (!Auth::isLoggedIn())
 			throw new ForbiddenException('Login required');
@@ -502,6 +503,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpPost]
 	public function mergeFinalForm(): mixed
 	{
 		$this->Authorization->authorize('Tsumego');
@@ -559,6 +561,7 @@ class TsumegosController extends AppController
 		return null;
 	}
 
+	#[HttpPost]
 	public function performMerge()
 	{
 		$this->Authorization->authorize('Tsumego');

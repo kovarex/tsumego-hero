@@ -3,6 +3,8 @@
 use Facebook\WebDriver\WebDriverKeys;
 use PHPUnitRetry\RetryTrait;
 
+App::uses('ForbiddenException', 'Routing/Error');
+
 /**
  * Tag editor tests — React component with data-testid selectors.
  *
@@ -780,5 +782,38 @@ class TagTest extends ControllerTestCase
 
 		$browser->get('/users/added_tags');
 		$this->assertStringContainsString('proposer', $browser->driver->getPageSource());
+	}
+
+	public function testOwnerDeletesTag()
+	{
+		$context = new ContextPreparator([
+			'user' => ['name' => 'joshka', 'admin' => true, 'id' => 72],
+			'tags' => [['name' => 'snapback']]]);
+
+		$tagId = $context->tags[0]['id'];
+		$this->assertNotEmpty(ClassRegistry::init('Tag')->findById($tagId));
+
+		$this->testAction('/tags/delete/' . $tagId, [
+			'method' => 'post',
+			'data' => ['Tag' => ['delete' => $tagId]],
+		]);
+
+		$this->assertEmpty(ClassRegistry::init('Tag')->findById($tagId));
+	}
+
+	public function testNonOwnerAdminCannotDeleteTag()
+	{
+		$context = new ContextPreparator([
+			'user' => ['admin' => true],
+			'tags' => [['name' => 'snapback']]]);
+
+		$tagId = $context->tags[0]['id'];
+
+		$this->expectException(ForbiddenException::class);
+
+		$this->testAction('/tags/delete/' . $tagId, [
+			'method' => 'post',
+			'data' => ['Tag' => ['delete' => $tagId]],
+		]);
 	}
 }

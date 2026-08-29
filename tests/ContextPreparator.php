@@ -78,6 +78,9 @@ class ContextPreparator
 		$user['name'] = Util::extract('name', $userInput) ?: 'kovarex';
 		$user['email'] = Util::extract('email', $userInput) ?: 'test@example.com';
 		$user['password_hash'] = '$2y$10$5.F2n794IrgFcLRBnE.rju1ZoJheRr1fVc4SYq5ICeaJG0C800TRG'; // hash of test
+		$id = Util::extract('id', $userInput);
+		if ($id)
+			$user['id'] = (int) $id;
 		$user['isAdmin'] = Util::extract('admin', $userInput) ?? false;
 		$user['rating'] = Util::extract('rating', $userInput) ?: self::$DEFAULT_USER_RATING;
 		$user['premium'] = Util::extract('premium', $userInput) ?: 0;

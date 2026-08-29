@@ -19,11 +19,14 @@ class PolicyTest extends CakeTestCase
 	/**
 	 * Builds an identity array (like Auth::getIdentity() returns) for the given role.
 	 */
-	private function identity($isAdmin, int $premium = 0): ?array
+	private function identity($isAdmin, int $premium = 0, ?int $id = null): ?array
 	{
 		if ($isAdmin === null)
 			return null;
-		return ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
+		$identity = ['isAdmin' => $isAdmin, 'premium' => $premium, 'level' => 1, 'rating' => 1000];
+		if ($id !== null)
+			$identity['id'] = $id;
+		return $identity;
 	}
 
 	public function testAdminPolicyAllowsOnlyAdmins()
@@ -48,12 +51,21 @@ class PolicyTest extends CakeTestCase
 	public function testTagPolicyAllowsOnlyAdmins()
 	{
 		$policy = new TagPolicy();
-		foreach (['canDelete', 'canEdit', 'canEditAction'] as $method)
+		foreach (['canEdit', 'canEditAction'] as $method)
 		{
 			$this->assertTrue($policy->{$method}($this->identity(true)), $method . ' allows admin');
 			$this->assertFalse($policy->{$method}($this->identity(false)), $method . ' blocks regular user');
 			$this->assertFalse($policy->{$method}($this->identity(null)), $method . ' blocks anonymous');
 		}
+	}
+
+	public function testTagDeleteReservedForSiteOwner()
+	{
+		$policy = new TagPolicy();
+		$this->assertTrue($policy->canDelete($this->identity(true, 0, 72)), 'site owner can delete');
+		$this->assertFalse($policy->canDelete($this->identity(true)), 'regular admin blocked');
+		$this->assertFalse($policy->canDelete($this->identity(false)), 'regular user blocked');
+		$this->assertFalse($policy->canDelete($this->identity(null)), 'anonymous blocked');
 	}
 
 	public function testSetPolicyAllowsAdminOrPremium()

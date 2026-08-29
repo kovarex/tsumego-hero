@@ -6,6 +6,8 @@ App::uses('ForbiddenException', 'Routing/Error');
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('UnprocessableEntityException', 'Lib/Error');
 
+use App\Attribute\HttpPost;
+
 /**
  * Controller for managing tsumego issues.
  *
@@ -84,11 +86,9 @@ class TsumegoIssuesController extends AppController
 	 *
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function create()
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$this->Authorization->authorize('TsumegoIssue', 'create');
 
 		// Parse JSON request body
@@ -175,11 +175,9 @@ class TsumegoIssuesController extends AppController
 	 * @param int $id Issue ID
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function close($id)
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
@@ -221,11 +219,9 @@ class TsumegoIssuesController extends AppController
 	 * @param int $id Issue ID
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function reopen($id)
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$TsumegoIssue = ClassRegistry::init('TsumegoIssue');
 		$issue = $TsumegoIssue->findById($id);
 
@@ -254,11 +250,9 @@ class TsumegoIssuesController extends AppController
 	 * @param int $commentId Comment ID to move
 	 * @return CakeResponse|null
 	 */
+	#[HttpPost]
 	public function moveComment($commentId)
 	{
-		if (!$this->request->is('post'))
-			throw new MethodNotAllowedException();
-
 		$this->Authorization->authorize('TsumegoIssue', 'moveComment');
 
 		$TsumegoComment = ClassRegistry::init('TsumegoComment');

@@ -2,6 +2,8 @@
 
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverKeys;
+use Facebook\WebDriver\WebDriverWait;
+use Facebook\WebDriver\Exception\TimeoutException;
 
 App::uses('NotFoundException', 'Routing/Error');
 
@@ -386,9 +388,72 @@ class TsumegosControllerTest extends TestCaseWithAuth
 		$this->assertCount(0, $fullHearts);
 	}
 
-	public function testCommentCoordinatesHaveHoverSpans()
+	public function testFavoritesHeartTogglesAddAndRemove(): void
 	{
-		// Create a tsumego with a comment containing coordinates
+		$context = new ContextPreparator(['tsumego' => 1]);
+		$tsumegoId = $context->tsumegos[0]['id'];
+
+		$browser = Browser::instance();
+		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
+
+		// Heart is rendered for logged-in users
+		$this->assertTrue($browser->idExists('favButton'));
+
+		// First click adds the tsumego to the lazily-created Favorites set.
+		// Wait until the client has registered the new Favorites set, which only
+		// happens after the add request completes - this also guarantees the next
+		// click toggles it back off instead of re-adding (409).
+		$browser->clickId('favButton');
+		$this->waitForClientFavoritesState($browser);
+
+		$favoritesSet = ClassRegistry::init('Set')->find('first', [
+			'conditions' => ['user_id' => $context->user['id'], 'title' => 'Favorites'],
+		]);
+		$this->assertNotEmpty($favoritesSet, 'First heart click should create the Favorites set');
+		$this->assertSame(1, ClassRegistry::init('SetConnection')->find('count', [
+			'conditions' => ['set_id' => $favoritesSet['Set']['id'], 'tsumego_id' => $tsumegoId],
+		]), 'First heart click should add the tsumego to Favorites');
+
+		// Second click removes it again
+		$browser->clickId('favButton');
+		$this->waitForConnectionCount($browser, $favoritesSet['Set']['id'], $tsumegoId, 0,
+			'Second heart click should remove the tsumego from Favorites');
+	}
+
+	private function waitForClientFavoritesState(Browser $browser): void
+	{
+		try
+		{
+			new WebDriverWait($browser->driver, 5, 200)->until(function () use ($browser) {
+				return (bool) $browser->driver->executeScript(
+					'return !!window.userSets && window.userSets.some(s => s.contains);'
+				);
+			});
+		}
+		catch (TimeoutException $e)
+		{
+			$this->fail('First heart click should add the tsumego to Favorites');
+		}
+	}
+
+	private function waitForConnectionCount(Browser $browser, int $setId, int $tsumegoId, int $expected, string $message): void
+	{
+		try
+		{
+			new WebDriverWait($browser->driver, 5, 200)->until(function () use ($setId, $tsumegoId, $expected) {
+				return ClassRegistry::init('SetConnection')->find('count', [
+					'conditions' => ['set_id' => $setId, 'tsumego_id' => $tsumegoId],
+				]) === $expected;
+			});
+		}
+		catch (TimeoutException $e)
+		{
+			$this->fail($message);
+		}
+	}
+
+	public function testCommentCoordinatesHaveHoverSpans()
+	{		// Create a tsumego with a comment containing coordinates
 		// Admin so comments are visible
 		$context = new ContextPreparator(['user' => ['admin' => true], 'tsumego' => 1]);
 

@@ -3,6 +3,8 @@
 App::uses('NotFoundException', 'Routing/Error');
 App::uses('HtmlSanitizer', 'Utility');
 
+use App\Attribute\HttpPost;
+
 class TagsController extends AppController
 {
 	public function add()
@@ -12,6 +14,7 @@ class TagsController extends AppController
 		$this->set('allTags', $allTags);
 	}
 
+	#[HttpPost]
 	public function addAction(): CakeResponse
 	{
 		$this->Authorization->authorize('Tag', 'add');
@@ -65,6 +68,7 @@ class TagsController extends AppController
 		$this->set('allTags', $allTags);
 		$this->set('tn', $tn);
 		$this->set('canAddTag', $this->Authorization->can('Tag', 'add'));
+		$this->set('canDeleteTag', $this->Authorization->can('Tag', 'delete'));
 	}
 
 	/**
@@ -156,6 +160,7 @@ class TagsController extends AppController
 		return null;
 	}
 
+	#[HttpPost]
 	public function editAction($tagID)
 	{
 		$this->Authorization->authorize('Tag', 'editAction');
@@ -186,10 +191,12 @@ class TagsController extends AppController
 	 * @param string|int $id Tag name ID
 	 * @return void
 	 */
+	#[HttpPost]
 	public function delete($id)
 	{
 		$this->Authorization->authorize('Tag');
 		$this->loadModel('Tag');
+		$this->loadModel('TagConnection');
 		$tn = $this->Tag->findById($id);
 		if (!$tn)
 			throw new NotFoundException('Tag not found');

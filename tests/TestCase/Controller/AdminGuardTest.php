@@ -105,7 +105,7 @@ class AdminGuardTest extends ControllerTestCase
 
 		$this->expectException(UnauthorizedException::class);
 
-		$this->testAction('/tags/delete/1', ['method' => 'get']);
+		$this->testAction('/tags/delete/1', ['method' => 'post']);
 	}
 
 	public function testTagDeleteRequiresAdmin()
@@ -117,7 +117,7 @@ class AdminGuardTest extends ControllerTestCase
 
 		$this->expectException(ForbiddenException::class);
 
-		$this->testAction('/tags/delete/' . $context->tags[0]['id'], ['method' => 'get']);
+		$this->testAction('/tags/delete/' . $context->tags[0]['id'], ['method' => 'post']);
 	}
 
 	// ── SetsController::sandbox ──
