@@ -35,7 +35,7 @@ $backgroundImage = $backgroundImage ?? 'linear-gradient(rgba(169, 169, 169, 0.30
 			<div class="collection-middle-right"><?= $tilde ?><?= $set['difficulty'] ?></div>
 		<?php endif; ?>
 		<div class="collection-bottom">
-			<div class="set-progress">
+			<div class="set-progress<?= $percent >= 100 ? ' set-progress--complete' : '' ?>">
 				<div class="set-progress-number" data-target="<?= $percent ?>"><?= $percent ?>%</div>
 				<div class="set-progress-track">
 					<div class="set-progress-fill" style="width: <?= $percent ?>%"></div>
