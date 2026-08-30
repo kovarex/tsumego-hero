@@ -1144,14 +1144,6 @@
 	border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Make Issue button - dark theme */
-
-[data-theme=dark] .tsumego-comment__make-issue-btn
-{
-	background: #c87f0a;
-	border-color: #a66508;
-}
-
 /* Add Comment form - dark theme */
 
 [data-theme=dark] .tsumego-comments__form
