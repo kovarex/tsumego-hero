@@ -169,10 +169,6 @@ body
   border-radius:10px;
 }
 
-.whitebox3 {
-  width: 776px;
-}
-
 .loader-container {
   display: none;
   position: absolute;
@@ -265,11 +261,6 @@ body
   padding: 0;
   margin: 0;
 }
-.endgameValue {
-  position: absolute;
-  left: 696px;
-  top: 57px;
-}
 /* Global element defaults (a, a:hover) moved to base.css (@layer base). */
 
 div.tableLayout {
@@ -337,9 +328,6 @@ li[class^="status"] {
   0% { left: -75%; }
   100% { left: 125%; }
 }
-.scoreTitle {
-  cursor: pointer;
-}
 .outerMenu1 {
   display: table;
   margin: 18px;
@@ -403,13 +391,7 @@ li a.menuLi {
 li a.menuLi.nav__link--active {
   color: var(--color-green);
 }
-#modeboxes2 {
-  width: 85px;
-  display: inline-block;
-  position: relative;
-  left: -11px;
-  top: -13px;
-}
+/* #modeboxes2 removed (dead). */
 #signInMenu {
   padding: 7px 9px 10px 9px;
   margin-top: 22px;
@@ -460,17 +442,7 @@ li a.menuLi.nav__link--active {
   transition: 0.1s ease;
 }
 
-.radio1 {
-  display: inline;
-  width: 0px;
-  height: 0px;
-  padding: 0px;
-  margin: 0px 6px 0px 0px;
-}
-.add-problems-sandbox {
-  float: left;
-  margin-top: 30px;
-}
+/* .add-problems-sandbox removed (dead). */
 /* highscoreTable consolidated into .data-table (components.css). */
 /* dead .color* tier classes (never emitted) removed. */
 /* dead dan-tier color classes removed. */
@@ -670,9 +642,6 @@ li a.menuLi.nav__link--active {
 
 .tag-submit-button {
   display: none;
-}
-.inactiveAdjust {
-  color: #74d13f;
 }
 .buttonx {
   font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
@@ -1091,39 +1060,7 @@ li a.menuLi.nav__link--active {
 .mode-button-disabled:hover img {
   filter: none;
 }
-.time-mode-play {
-  position: absolute;
-  top: 419px;
-  left: 291px;
-  z-index: 1001;
-}
-#time-mode-play-button {
-}
-.time-mode-play-box {
-  position: absolute;
-  top: -267px;
-  left: -77px;
-  width: 217px;
-  height: 308px;
-  background: tomato;
-  cursor: pointer;
-  z-index: 5;
-  border-radius: 26px 26px 26px 26px;
-  -moz-border-radius: 26px 26px 26px 26px;
-  -webkit-border-radius: 26px 26px 26px 26px;
-}
-.modeboxes2 {
-  padding: 206px 20% 2px 23% !important;
-}
-.hoverTable {
-  background-image: url("/img/box6.png");
-  background-repeat: no-repeat;
-  padding: 12px;
-}
-.hoverTable2 {
-  padding: 12px;
-}
-
+/* #time-mode-play-button removed (dead empty rule). */
 .donatorsTable td {
   padding-top: 0;
   padding-bottom: 0;
@@ -1165,10 +1102,6 @@ li a.menuLi.nav__link--active {
   background-image: url("/img/box9.png");
 }
 
-.hoverTable :hover {
-  /*background-image:url('/img/box1.png');
-		background-repeat:no-repeat;*/
-}
 .hand {
   cursor: pointer;
 }
@@ -1292,57 +1225,6 @@ li a.menuLi.nav__link--active {
   background-position: center;
   border-radius: 0 2px 2px 0;
 }
-.thankyou {
-  margin: 250px 0 0 250px;
-  padding: 10px;
-  width: 400px;
-  color: #d19fe4;
-  font-size: 36px;
-  font-weight: 800;
-  color: #60167d;
-  background-color: white;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.thankyou a {
-  font-size: 20px;
-  font-weight: 400;
-}
-.danielml-bg {
-  font-family: helvetica, times new roman;
-  color: white;
-  padding: 10px;
-  margin-bottom: 12px;
-  background-image: url("/img/egcbg.png");
-  background-repeat: repeat;
-  background-position: center center;
-  background-attachment: fixed;
-  -o-background-size: 100% 100%, auto;
-  -moz-background-size: 100% 100%, auto;
-  -webkit-background-size: 100% 100%, auto;
-  background-size: 100% 100%, auto;
-}
-.danielml-bg a {
-  color: white;
-}
-.right .loginwith {
-  display: block;
-  margin-bottom: 40px;
-  font-size: 28px;
-  color: #fff;
-  text-align: center;
-}
-
 .sandboxTable {
   font-size: 16px;
 }
@@ -1429,18 +1311,6 @@ h4 {
   min-height: 100px;
   height: auto;
   float: right;
-  position: relative;
-  padding: 0 10px;
-}
-.homeLeft3 {
-  width: 50%;
-  text-align: justify;
-  position: relative;
-  padding: 0 10px;
-}
-.homeRight3 {
-  width: 50%;
-  text-align: justify;
   position: relative;
   padding: 0 10px;
 }
@@ -1946,34 +1816,6 @@ h4 {
 #customText a {
   color: black;
 }
-.newsdate1 {
-  padding: 8px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  position: absolute;
-  right: 0px;
-  top: 644px;
-}
-.newsdate2 {
-  padding: 8px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  position: absolute;
-  right: 0px;
-  top: 1247px;
-}
 .title4date2 {
   padding: 8px;
   margin-top: 7px;
@@ -2412,9 +2254,6 @@ input.newCheck {
 }
 .tagnames-adminpanel td {
   padding: 8px;
-}
-.g-signin {
-  width: 60%;
 }
 #sandboxLink {
   color: #74d14c;
@@ -2978,10 +2817,6 @@ pre {
   font-size: 15px;
   text-decoration: none;
 }
-.statsText1 {
-  width: 605px;
-  text-align: left;
-}
 #timeMode1,
 #timeMode2,
 #timeMode3 {
@@ -3147,11 +2982,7 @@ nav ul ul ul li {
   font-size: 19px;
   color: #f75959;
 }
-.adminLink2 {
-  font-weight: 800;
-  font-size: 19px;
-  color: #db3e3e;
-}
+/* .adminLink2 removed (layout uses adminLink/adminLink3/additional-adminLink2). */
 .admin-panel-main-page ul li:hover {
   background: #eee;
 }
@@ -3239,19 +3070,6 @@ nav ul ul ul li {
   height: 25px;
   margin: 12px 5px 0 1px;
   cursor: pointer;
-}
-.donate-paypal-right {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  height: 90%;
-}
-.donate-paypal-right-inner {
-  color: black;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 5px;
-  font-size: 14px;
 }
 #author-notice {
   position: absolute;
@@ -3922,11 +3740,6 @@ select.flat-select:hover {
   align-items: center;
   font-weight: 800;
 }
-.top-inactive {
-  color: #525252;
-  cursor: context-menu;
-  user-select: none;
-}
 .box1 .collection-middle-left {
   margin-top: 2px;
   grid-area: collection-middle-left;
@@ -3986,21 +3799,6 @@ ul ul {
 /* .btn-group (unused) removed — see components .btn for the single button base. */
 /* Legacy .btn base removed — the components .btn (components.css) is the single button base. */
 
-.filterLabel1 {
-  color: #323232;
-  text-align: center;
-}
-.filter-group1 {
-  border: 0;
-  margin: 0 0 4px;
-  padding: 0;
-}
-.filter-group2 {
-  border: 0;
-  margin: 0 0 4px;
-  padding: 0;
-}
-
 .statsTable td {
   padding: 6px;
 }
@@ -4012,20 +3810,9 @@ ul ul {
   text-align: center;
 }
 /* moved to components.css (.problem-nav). */
-.pleaseRegisterTable {
-  color: #60167d;
-  background: #74d14c;
-  font-weight: normal;
-  padding: 0px;
-}
-
 .xpDisplayTable {
   text-align: center;
 }
-.upgradeLink {
-  display: none;
-}
-
 .slidecontainer {
   transform: translateY(-10px);
   text-align: center;
@@ -4638,7 +4425,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 /* Theme tokens (:root + [data-theme="dark"]) moved to tokens.css (@layer tokens). */
 
 [data-theme="dark"] {
-  .filterLabel1,
   .timeTableColor11 {
     color: #f0f0f0;
   }
@@ -4662,11 +4448,7 @@ a[data-tsumego-id]:hover .tooltip-desc
   .timeModeTable2 {
     color: black;
   }
-  .adminLink2 {
-    font-weight: 800;
-    font-size: 19px;
-    color: #f75959;
-  }
+  /* dark .adminLink2 removed (dead). */
   .admin-panel-main-page ul li:hover {
     background: linear-gradient(#888787, #666666);
   }
