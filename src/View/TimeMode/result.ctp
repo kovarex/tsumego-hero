@@ -12,8 +12,8 @@
 	<h2>Time Mode Results</h2>
 	<br>
 	<div align="center">
-		<a class="new-button" href="/timeMode/overview">Select</a>
-		<a class="new-button-inactive" href="#">Results</a>
+		<a class="btn" href="/timeMode/overview">Select</a>
+		<a class="btn btn--inactive" href="#">Results</a>
 	</div>
 	<br><br>
 	<?php if($unlock) { ?>

@@ -761,233 +761,12 @@ li a.menuLi.nav__link--active {
   background-color: #737477;
   color: #fff;
 }
-.new-button {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  background-color: #5b5d60;
-  color: #fff;
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button:hover {
-  background-color: #737477;
-  color: #fff;
-}
-#dropdowntable2 .new-button {
-  display: inline-block;
-  color: #74d13f;
-  border-left: 1px solid #222;
-  border-top: 1px solid #222;
-}
-.new-buttonx {
-  color: #74d13f;
-}
-.buttonx-current {
-  background: #8f9092;
-  color: #b0d999;
-}
-.new-buttonx:hover {
-  color: #74d13f;
-}
-.besogo-panels {
-}
-.new-button-default {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  background-image: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.16, rgb(207, 207, 207)),
-    color-stop(0.79, rgb(252, 252, 252))
-  );
-  background-image: -moz-linear-gradient(
-    center bottom,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  background-image: linear-gradient(
-    to top,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  padding: 2px 4px;
-  border: 1px solid #000;
-  color: black;
-  text-decoration: none;
-}
-.new-button-default2 {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  background-image: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.16, rgb(207, 207, 207)),
-    color-stop(0.79, rgb(252, 252, 252))
-  );
-  background-image: -moz-linear-gradient(
-    center bottom,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  background-image: linear-gradient(
-    to top,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  padding: 4px 8px;
-  border: 1px solid #000;
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-.new-button-time {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  background-color: #5b5d60;
-  padding: 8px 10px;
-  margin: 2px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-  color: #74d13f;
-  cursor: pointer;
-}
-.new-button-time:hover {
-  background-color: #737477;
-}
-.new-button-time-inactive {
-  cursor: context-menu;
-  background-color: #8f9092;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: #b0d999;
-  padding: 8px 10px;
-  margin: 2px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button-time-inactive2 {
-  cursor: context-menu;
-  background-color: #b0b0b0;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: #eaeaea;
-  padding: 8px 10px;
-  margin: 2px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button-inactive {
-  cursor: context-menu;
-  background-color: #8f9092;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: #fff;
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
+
+
+
+
+
+
 .tag-submit-button {
   display: none;
 }
@@ -2482,6 +2261,14 @@ input.newCheck {
   color: #74d14c;
   padding: 5px;
   display: none;
+}
+/* Board picker Save button: restore green button look inside the nav
+   (nav a overrides the .btn color/padding otherwise). */
+#dropdowntable2 .btn {
+  display: inline-block;
+  color: #74d13f;
+  border-left: 1px solid #222;
+  border-top: 1px solid #222;
 }
 #dropdown-inner-propagation {
   cursor: context-menu;

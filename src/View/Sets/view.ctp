@@ -160,7 +160,7 @@ if ($tsumegoFilters->query != 'topics')
 				<div align="center">
 				<br><br>
 					<?php
-					echo '<a class="new-button new-buttonx" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
+					echo '<a class="btn" style="top:-16px;position:relative;" href="/' . $startingSetConnectionID . '">Start</a>';
 ?>
 				</div>
 			</td>
@@ -226,9 +226,9 @@ if ($tsumegoFilters->query != 'topics')
 			<div align="center">
 			<br>
 			<br>
-			<a id="numbersButton" class="new-button-time" onclick="d1();">Numbers</a>
-			<a id="ratioButton" class="new-button-time" onclick="d2();">Accuracy</a>
-			<a id="timeButton" class="new-button-time" onclick="d3();">Time</a>
+			<a id="numbersButton" class="btn" onclick="d1();">Numbers</a>
+			<a id="ratioButton" class="btn" onclick="d2();">Accuracy</a>
+			<a id="timeButton" class="btn" onclick="d3();">Time</a>
 			<br>
 			<br>
 			<div id="numbersInfo">
@@ -261,7 +261,7 @@ if ($tsumegoFilters->query != 'topics')
 			<?php
 			if (isset($canEdit) && $canEdit)
 				echo '<tr><td colspan="2" style="text-align:center;padding-top:8px">
-					<a class="new-button" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
+					<a class="btn" href="/sets/edit/' . $set['Set']['id'] . '">Edit Set</a>
 					</td></tr>';
 			?>
 			</tr>
@@ -337,12 +337,9 @@ if ($tsumegoFilters->query != 'tags')
 		$("#msg2x").hide();
 		$("#ratioInfo").hide();
 		$("#timeInfo").hide();
-		$("#numbersButton").addClass("new-button-time-inactive");
-		$("#numbersButton").removeClass("new-button-time");
-		$("#ratioButton").addClass("new-button-time");
-		$("#ratioButton").removeClass("new-button-time-inactive");
-		$("#timeButton").addClass("new-button-time");
-		$("#timeButton").removeClass("new-button-time-inactive");
+		$("#numbersButton").addClass("btn--inactive");
+		$("#ratioButton").removeClass("btn--inactive");
+		$("#timeButton").removeClass("btn--inactive");
 
 		$("#showx").click(function(){
 			if(!msg2selected){
@@ -367,12 +364,9 @@ if ($tsumegoFilters->query != 'tags')
 		});
 
 		function d1(){
-			$("#numbersButton").addClass("new-button-time-inactive");
-			$("#numbersButton").removeClass("new-button-time");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").addClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").fadeIn(250);
 			$("#ratioInfo").hide();
 			$("#timeInfo").hide();
@@ -384,12 +378,9 @@ if ($tsumegoFilters->query != 'tags')
 			$(".setViewTime").css("border", "none");
 		}
 		function d2(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time-inactive");
-			$("#ratioButton").removeClass("new-button-time");
-			$("#timeButton").addClass("new-button-time");
-			$("#timeButton").removeClass("new-button-time-inactive");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").addClass("btn--inactive");
+			$("#timeButton").removeClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").fadeIn(250);
 			$("#timeInfo").hide();
@@ -401,12 +392,9 @@ if ($tsumegoFilters->query != 'tags')
 			$(".setViewTime").css("border", "none");
 		}
 		function d3(){
-			$("#numbersButton").addClass("new-button-time");
-			$("#numbersButton").removeClass("new-button-time-inactive");
-			$("#ratioButton").addClass("new-button-time");
-			$("#ratioButton").removeClass("new-button-time-inactive");
-			$("#timeButton").addClass("new-button-time-inactive");
-			$("#timeButton").removeClass("new-button-time");
+			$("#numbersButton").removeClass("btn--inactive");
+			$("#ratioButton").removeClass("btn--inactive");
+			$("#timeButton").addClass("btn--inactive");
 			$("#numbersInfo").hide();
 			$("#ratioInfo").hide();
 			$("#timeInfo").fadeIn(250);

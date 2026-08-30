@@ -21,6 +21,6 @@
   <br>
   <?php echo $this->Form->end('Delete'); ?>
 	<br>
-	<a class="new-button-default" href="/tags/view/<?php echo $tn['Tag']['id']; ?>">Back</a>
+	<a class="btn" href="/tags/view/<?php echo $tn['Tag']['id']; ?>">Back</a>
 
 </div>

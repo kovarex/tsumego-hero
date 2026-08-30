@@ -247,24 +247,32 @@
 }
 
 /* ── Button ── */
+/* Unified on the site's dominant button look (the green-text grey box that was
+   new-button-time) so the whole site has ONE button style. */
 .btn
 {
 	display: inline-block;
-	padding: var(--space-1) var(--space-3);
-	border: 1px solid var(--current-border-color);
-	border-radius: var(--radius-sm);
-	background: var(--new1-gradient);
-	color: var(--text-color);
+	font-family: "Times New Roman", Times, serif;
+	font-size: 16px;
+	font-weight: 800;
 	text-decoration: none;
-	font-size: var(--font-size-md);
+	text-transform: uppercase;
+	background-color: #5b5d60;
+	color: #74d13f;
+	padding: 8px 10px;
+	margin: 2px;
+	border: 1px solid #333333;
+	border-top-color: #cccccc;
+	border-left-color: #cccccc;
+	border-radius: 9px;
 	cursor: pointer;
-	transition: background 0.2s, color 0.2s;
+	transition: background 0.2s;
 }
 
 .btn:hover
 {
-	background: var(--color-gray-dark);
-	color: var(--color-white);
+	background-color: #737477;
+	color: #74d13f;
 }
 
 .btn--disabled
@@ -275,8 +283,20 @@
 
 .btn--disabled:hover
 {
-	background: var(--new1-gradient);
-	color: var(--text-color);
+	background-color: #5b5d60;
+}
+
+.btn--inactive
+{
+	background-color: #8f9092;
+	color: #b0d999;
+	cursor: not-allowed;
+}
+
+.btn--inactive:hover
+{
+	background-color: #8f9092;
+	color: #b0d999;
 }
 
 .btn--danger
