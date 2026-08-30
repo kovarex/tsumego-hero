@@ -450,31 +450,6 @@
 
 /* Make Issue button for standalone comments */
 
-.tsumego-comment__make-issue-btn
-{
-	background: #f0ad4e;
-	border: 1px solid #c87f0a;
-	color: var(--color-white);
-	font-size: 11px;
-	cursor: pointer;
-	padding: 2px 8px;
-	margin-top: 3px;
-	margin-left: 5px;
-	border-radius: 3px;
-	transition: background 0.15s ease;
-}
-
-.tsumego-comment__make-issue-btn:hover
-{
-	background: #ec971f;
-}
-
-.tsumego-comment__make-issue-btn:disabled
-{
-	opacity: 0.6;
-	cursor: not-allowed;
-}
-
 /* Login prompt */
 
 .tsumego-comments__login-prompt
@@ -576,23 +551,6 @@
 	margin-left: 5px;
 }
 
-.tsumego-comments__submit-btn
-{
-	margin-top: 12px;
-	background: var(--color-blue-accent);
-	color: var(--color-white);
-	border: none;
-	border-radius: 4px;
-	padding: 8px 16px;
-	font-size: 13px;
-	cursor: pointer;
-}
-
-.tsumego-comments__submit-btn:hover
-{
-	background: #3a7bc8;
-}
-
 /* Form buttons container */
 
 .tsumego-comments__form-buttons
@@ -600,23 +558,6 @@
 	margin-top: 12px;
 	display: flex;
 	gap: 8px;
-}
-
-/* Cancel button */
-
-.tsumego-comments__cancel-btn
-{
-	background: var(--surface-hover);
-	border: 1px solid var(--current-border-color);
-	border-radius: 4px;
-	padding: 8px 16px;
-	font-size: 13px;
-	cursor: pointer;
-}
-
-.tsumego-comments__cancel-btn:hover
-{
-	background: #d0d0d0;
 }
 
 /* Move to Issue Dialog */
@@ -1255,30 +1196,6 @@
 [data-theme=dark] .tsumego-comments__position-btn:hover
 {
 	background: #555;
-}
-
-[data-theme=dark] .tsumego-comments__submit-btn
-{
-	background: #4a90d9;
-}
-
-[data-theme=dark] .tsumego-comments__submit-btn:hover
-{
-	background: #5aa0e9;
-}
-
-/* Cancel button - dark theme */
-
-[data-theme=dark] .tsumego-comments__cancel-btn
-{
-	background: #555;
-	border-color: var(--text-softer-color);
-	color: var(--text-color);
-}
-
-[data-theme=dark] .tsumego-comments__cancel-btn:hover
-{
-	background: #666;
 }
 
 /* Go coordinate - dark theme */

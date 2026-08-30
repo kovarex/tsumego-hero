@@ -184,7 +184,7 @@ export function Comment({
 								</button>
 							)}
 							{canMakeIssue && (
-								<button className="tsumego-comment__make-issue-btn" onClick={() => onMakeIssue(comment.id)}>
+								<button className="btn btn--small" onClick={() => onMakeIssue(comment.id)}>
 									📋 Make Issue
 								</button>
 							)}
