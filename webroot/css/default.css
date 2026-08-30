@@ -126,42 +126,6 @@
   top: 150px;
   width: 200px;
 }
-.egc1 {
-  position: absolute;
-  left: 64px;
-  top: 300px;
-  color: #dce1e0;
-  font-size: 34px;
-  font-family: "Exo Regular", sans-serif;
-  cursor: context-menu;
-}
-.egc2 {
-  position: absolute;
-  left: 64px;
-  top: 360px;
-  color: #dce1e0;
-  font-size: 28px;
-  font-family: "Exo Regular", sans-serif;
-}
-.egcLink {
-  color: #dce1e0;
-  text-decoration: none;
-}
-.egcLink:hover {
-  text-decoration: underline;
-}
-.orbitron {
-  font-family: "Orbitron";
-  font-size: 30px;
-  background: black;
-  color: yellow;
-}
-
-@media screen and (max-width: 1210px) {
-  .egc1 {
-    font-size: 28px;
-  }
-}
 
 body
 {
@@ -1587,17 +1551,6 @@ h4 {
   text-decoration: none;
   background-color: #ddd;
   color: #000;
-}
-.title6 {
-  padding: 8px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
 }
 .title4date {
   float: right;
@@ -3093,18 +3046,6 @@ pre {
   font-weight: 800;
   color: blue;
 }
-.newx {
-  padding: 0;
-  margin: 0;
-}
-.newx tr {
-  padding: 0;
-  margin: 0;
-}
-.newx td {
-  padding: 0 2px;
-  margin: 0;
-}
 .thumbs-small {
   position: relative;
   top: 4px;
@@ -3425,48 +3366,6 @@ nav ul ul ul li {
 }
 #levelBarDisplay2text {
   color: #8130a2;
-}
-#chart1,
-#chart11 {
-  max-width: 650px;
-  margin: 12px auto;
-}
-#chart1,
-#chart11,
-.chart-box {
-  padding-top: 20px;
-  padding-left: 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
-}
-#chart2,
-#chart22 {
-  max-width: 650px;
-  margin: 12px auto;
-}
-#chart2,
-#chart22,
-.chart-box {
-  padding-top: 20px;
-  padding-left: 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
-}
-#chart3,
-#chart33 {
-  max-width: 650px;
-  margin: 12px auto;
-}
-#chart3,
-#chart33,
-.chart-box {
-  padding-top: 20px;
-  padding-left: 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
 }
 .h1profile h1,
 .profileTable2 a {
@@ -4006,9 +3905,6 @@ select.flat-select:hover {
     rgba(33, 33, 33, 0.65)
   ) !important;
 }
-.box1unlocked:hover {
-  background-image: url(/img/setButtonUnlockedH.png) !important;
-}
 .box1link {
   text-decoration: none;
 }
@@ -4017,12 +3913,6 @@ select.flat-select:hover {
   grid-template-areas:
     "collection-top collection-top"
     "collection-middle-left collection-middle-right"
-    "collection-bottom collection-bottom";
-}
-.box1difficulty {
-  grid-template-areas:
-    "collection-top collection-top"
-    "collection-middle-left collection-middle-left"
     "collection-bottom collection-bottom";
 }
 .box1 .collection-top {
@@ -4878,22 +4768,9 @@ a[data-tsumego-id]:hover .tooltip-desc
   #levelBarDisplay2text {
     color: #c240f7;
   }
-  .title6 {
-    background-color: #2a2a2a;
-    color: #fff;
-  }
   .homeCenter2 {
     background-color: #2a2a2a;
     color: #fff;
-  }
-  #chart1,
-  .chart-box,
-  #chart2,
-  #chart3,
-  #chart11,
-  #chart22,
-  #chart33 {
-    background: #2a2a2a;
   }
   .apexcharts-menu-item {
     color: black;
