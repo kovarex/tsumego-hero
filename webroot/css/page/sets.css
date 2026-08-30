@@ -383,4 +383,33 @@
 		grid-template-columns: 1fr;
 	}
 }
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .setViewAccuracy {
+	color: #c234ff;
+}
+[data-theme="dark"] .setViewTime {
+	color: #d55e29;
+}
+[data-theme="dark"] #set-size-input {
+	background: #2a2a2a;
+	width: 90px;
+	border: 1px solid #1b1b1b;
+	padding: 5px;
+	border-radius: 4px;
+	color: #bfc1c4;
+	font-size: 16px;
+	font-weight: 800;
+	padding: 6px 10px;
+	margin: 5px;
+}
+[data-theme="dark"] #submit-size-button {
+	border: 1px solid #1b1b1b;
+	background: #2a2a2a;
+}
+[data-theme="dark"] #tags-button:hover,
+[data-theme="dark"] #difficulty-button:hover,
+[data-theme="dark"] #topics-button:hover {
+	background: #333;
+}
 }

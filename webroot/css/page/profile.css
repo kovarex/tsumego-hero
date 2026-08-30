@@ -25,7 +25,6 @@
 }
 .profileTable2 a {
   margin-left: 20px;
-  color: white;
 }
 .h1profile h1,
 .profileTable2 a {
@@ -191,5 +190,11 @@
 .hero-powers__marker--unlocked .hero-powers__level
 {
 	color: #7ab0e0;
+}
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .h1profile h1,
+[data-theme="dark"] .profileTable2 a {
+	color: #fff;
 }
 }

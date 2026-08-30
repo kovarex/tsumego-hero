@@ -117,4 +117,16 @@
 	border: 1px solid #ddd;
 	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
 }
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .timeTableColor11 {
+	color: #f0f0f0;
+	background: linear-gradient(#666, #424242);
+}
+[data-theme="dark"] .timeModeTable2 {
+	color: black;
+}
+[data-theme="dark"] .versionColor a {
+	color: #0066cc;
+}
 }

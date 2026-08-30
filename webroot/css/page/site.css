@@ -453,9 +453,6 @@ h4 {
 #darkButton3,
 .darkButton2 {
   float: left;
-}
-#darkButton2,
-#darkButton3 {
   padding-top: 9px;
   cursor: pointer;
 }
@@ -959,5 +956,48 @@ li {
 figure,
 ul ul {
   margin: 0;
+}
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .whitebox2,
+[data-theme="dark"] .imp {
+	background-color: #2a2a2a;
+}
+[data-theme="dark"] #mostPopularToday {
+	color: #f0f0f0;
+}
+[data-theme="dark"] #status2 font font,
+[data-theme="dark"] .titleDescription1 font {
+	color: grey;
+}
+[data-theme="dark"] .title {
+	color: #fff;
+}
+
+/* Responsive (moved from misc.css). */
+@media (max-width: 1300px) {
+	#heroProfile {
+		left: 935px;
+	}
+	#heroBar {
+		left: 935px;
+	}
+	#heroAchievements {
+		left: 935px;
+	}
+	#heroLogout {
+		left: 935px;
+	}
+	#boardsInMenu {
+		padding-top: 3px;
+		padding-bottom: 3px;
+	}
+	.sound {
+		padding: 0;
+	}
+	li a.menuLi {
+		padding-bottom: 9px;
+		padding-top: 9px;
+	}
 }
 }

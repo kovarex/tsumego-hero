@@ -16,6 +16,5 @@ import './page/timemode.css';
 import './page/admin.css';
 import './page/about.css';
 import './page/auth.css';
-import './page/misc.css';
 // Third-party chart theme (unlayered; only styles apexcharts-* classes).
 import './apexcharts-theme.css';

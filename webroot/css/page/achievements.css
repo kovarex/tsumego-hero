@@ -424,4 +424,25 @@
     opacity: 0.9;
   }
 }
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .achievement1,
+[data-theme="dark"] .achievement2,
+[data-theme="dark"] .achievementSmall {
+	background: linear-gradient(#dfdfdf, #979797);
+}
+[data-theme="dark"] #achievementWrapper font {
+	color: #717171;
+}
+[data-theme="dark"] .achievementColorBlack2,
+[data-theme="dark"] .achievementColorPurple2,
+[data-theme="dark"] .achievementColorGreen2,
+[data-theme="dark"] .achievementColorOrange2,
+[data-theme="dark"] .achievementColorBlue2,
+[data-theme="dark"] .achievementColorDarkblue2,
+[data-theme="dark"] .achievementColorRed2,
+[data-theme="dark"] .achievementColorRating2,
+[data-theme="dark"] .achievementColorTime2 {
+	color: #f0f0f0;
+}
 }

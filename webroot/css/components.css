@@ -1829,9 +1829,6 @@ a[data-tsumego-id]:hover .tooltip-desc
 }
 /* Issue drop overlay - appears over issue during drag */
 
-.tsumego-issue {
-	position: relative;
-}
 .tsumego-issue__drop-overlay {
 	position: absolute;
 	top: 0;
@@ -1952,6 +1949,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 /* Issue Styling - Visual box to separate from regular comments */
 
 .tsumego-issue {
+	position: relative;
 	margin: 20px 14px;
 	padding: 15px;
 	border: 2px solid var(--current-border-color);
@@ -2365,6 +2363,14 @@ a[data-tsumego-id]:hover .tooltip-desc
 }
 [data-theme=dark] .issues-list__empty {
 	color: var(--text-softer-color);
+}
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .deleteComment {
+	color: #f0f0f0;
+}
+[data-theme="dark"] .toast__body {
+	color: black;
 }
 } /* end @layer components */
 

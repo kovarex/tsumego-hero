@@ -71,3 +71,11 @@
 [data-theme="light"] .apexcharts-menu-item {
   color: #373d3f;
 }
+
+.apexcharts-canvas {
+	margin: 0 auto;
+}
+.apexcharts-active {
+	color: black;
+}
+

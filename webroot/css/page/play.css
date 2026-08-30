@@ -806,4 +806,63 @@ h1 {
 [data-theme=dark] .besogo-tree-line {
   stroke: #cccccc;
 }
+
+/* Dark overrides (moved from misc.css). */
+[data-theme="dark"] .besogo-container {
+	background: #2a2a2a;
+}
+[data-theme="dark"] .sandboxTable2time {
+	color: #b9b9b9;
+}
+[data-theme="dark"] #sandbox {
+	color: #f0f0f0;
+	background-color: #5b5d60;
+}
+[data-theme="dark"] #show,
+[data-theme="dark"] #show2,
+[data-theme="dark"] #commentPosition,
+[data-theme="dark"] #show3,
+[data-theme="dark"] .selectable-text {
+	color: #f0f0f0;
+}
+[data-theme="dark"] #theComment {
+	color: black;
+}
+[data-theme="dark"] #levelBarDisplay1 {
+	accent-color: #74d14c;
+}
+[data-theme="dark"] #levelBarDisplay1text {
+	color: #74d14c;
+}
+[data-theme="dark"] #levelBarDisplay2 {
+	accent-color: #c240f7;
+}
+[data-theme="dark"] #levelBarDisplay2text {
+	color: #c240f7;
+}
+[data-theme="dark"] .xpDisplay {
+	align: center;
+	color: #f0f0f0;
+}
+[data-theme="dark"] .solvedXpDisplay {
+	color: #0cbb0c;
+}
+[data-theme="dark"] .goldenTsumegoXpDisplay {
+	color: #0cbb0c;
+}
+[data-theme="dark"] .sprintXpDisplay {
+	color: #72a7f2;
+}
+[data-theme="dark"] #multipleChoiceText,
+[data-theme="dark"] #potionAlerts,
+[data-theme="dark"] #customAlerts {
+	color: black;
+}
+
+/* Responsive (moved from misc.css). */
+@media (max-width: 1300px) {
+	#sandboxLink {
+		top: 68px;
+	}
+}
 }
