@@ -2938,11 +2938,7 @@ input.newCheck {
   border: 1px solid #ea4537;
   margin-right: 1px;
 }
-.tag-list {
-  font-size: 14px;
-  margin-top: 6px;
-  margin-bottom: 3px;
-}
+/* .tag-list removed - only used as a data-testid in React TagEditor, not a class. */
 .add-tag-list,
 .add-tag-list-popular {
   color: #717171;
@@ -2965,15 +2961,7 @@ input.newCheck {
   text-decoration: underline;
   cursor: pointer;
 }
-.is-new-tag {
-  color: #239a52;
-}
-.tag-gives-hint {
-  display: none;
-}
-.tag-comma {
-  display: inline;
-}
+/* Dead tag classes (is-new-tag, tag-gives-hint, tag-comma) removed. */
 #undo-tags-button {
   padding: 0 2px;
   font-size: 11px;
