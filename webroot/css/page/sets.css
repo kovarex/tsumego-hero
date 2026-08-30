@@ -71,6 +71,29 @@
   background: #555;
   color: #fff;
 }
+/* Active filter accent: the set-search-menu gets query-{filter} (from the
+   query cookie) and the matching button text/icon + border is colored. */
+.set-search-menu.query-topics #topics-button .set-button-text,
+.set-search-menu.query-topics #set-button-icon-topics i.animate-icon {
+  color: #77c14a;
+}
+.set-search-menu.query-difficulty #difficulty-button .set-button-text,
+.set-search-menu.query-difficulty #set-button-icon-difficulty i.animate-icon {
+  color: #be6cdd;
+}
+.set-search-menu.query-tags #tags-button .set-button-text,
+.set-search-menu.query-tags #set-button-icon-tags i.animate-icon {
+  color: #d5795a;
+}
+.set-search-menu.query-topics #topics-button {
+  border: 1px solid #558a35;
+}
+.set-search-menu.query-difficulty #difficulty-button {
+  border: 1px solid #ac4bd0;
+}
+.set-search-menu.query-tags #tags-button {
+  border: 1px solid #aa5538;
+}
 .set-view-main {
   width: 100%;
   margin-top: 12px;
