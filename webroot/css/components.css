@@ -577,6 +577,82 @@
 	color: var(--text-softer-color);
 }
 
+/* Filter-tile panel + chips (set picker: sets index/view, play) */
+.dropdown__menu
+{
+	background: #222222;
+	color: white;
+	padding: 10px;
+	border-radius: 5px;
+	max-width: 380px;
+	border: 1px solid black;
+}
+
+.dropdown__tile
+{
+	background-color: #ffffff1a;
+	color: #fff;
+	border-radius: 50px;
+	padding: 4px 8px;
+	margin: 4px;
+	float: left;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+	background-image: linear-gradient(rgba(200, 200, 200, 0.15), rgba(33, 33, 33, 0.2));
+}
+
+.dropdown__tile:hover
+{
+	background-image: linear-gradient(rgba(200, 200, 200, 0.35), rgba(33, 33, 33, 0.4));
+}
+
+.dropdown__tile--green
+{
+	background-color: #558a35;
+}
+
+.dropdown__tile--purple
+{
+	background-color: #ac4bd0;
+}
+
+.dropdown__tile--brown
+{
+	background-color: #aa5538;
+}
+
+.dropdown__tile--muted
+{
+	background-color: #33333388;
+}
+
+[data-theme=dark] .dropdown__tile--muted
+{
+	background-color: #ffffff1a;
+}
+
+.dropdown__tile-actions
+{
+	float: left;
+	width: 100%;
+}
+
+.dropdown__tile-actions__select
+{
+	float: left;
+	font-weight: 800;
+	padding: 5px 9px;
+}
+
+.dropdown__tile-actions__submit
+{
+	float: right;
+	font-weight: 800;
+	padding: 5px 9px;
+	color: white;
+}
+
 /* ── Hint (muted helper text) ── */
 .hint
 {

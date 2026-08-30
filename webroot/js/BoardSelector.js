@@ -87,7 +87,7 @@ class BoardSelector
 		});
 
 		html += "</tr>";
-		html += '<td colSpan="3"><div class="boards-tile tiles-submit-inner-select" id="boards-unselect-all">Unselect all</div></td>';
+		html += '<td colSpan="3"><div class="boards-tile dropdown__tile-actions__select" id="boards-unselect-all">Unselect all</div></td>';
 		return html;
 	}
 
