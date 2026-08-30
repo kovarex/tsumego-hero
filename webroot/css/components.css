@@ -236,31 +236,30 @@
 {
 	background-color: #737477;
 	color: #74d13f;
+	cursor: pointer;
 }
 
 .btn--disabled
 {
 	opacity: 0.5;
-	cursor: not-allowed;
 }
 
 .btn--disabled:hover
 {
 	background-color: #5b5d60;
+	cursor: not-allowed;
 }
 
 .btn--inactive
 {
 	background-color: #8f9092;
 	color: #b0d999;
-	cursor: context-menu;
 }
 
 .btn--inactive:hover
 {
 	background-color: #8f9092;
 	color: #b0d999;
-	cursor: context-menu;
 }
 
 .btn--danger
