@@ -253,13 +253,14 @@
 {
 	background-color: #8f9092;
 	color: #b0d999;
-	cursor: not-allowed;
+	cursor: context-menu;
 }
 
 .btn--inactive:hover
 {
 	background-color: #8f9092;
 	color: #b0d999;
+	cursor: context-menu;
 }
 
 .btn--danger
@@ -1102,6 +1103,7 @@
 	border-radius: 9px;
 	margin: 1px;
 	box-sizing: border-box;
+	background-image: url("/img/viewButton1.png");
 }
 
 .problem-nav__item--current
