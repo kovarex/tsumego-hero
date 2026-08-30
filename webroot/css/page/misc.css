@@ -49,12 +49,6 @@ ul {
     margin-top: 15px;
   }
 }
-@media screen and (max-width: 1230px) {
-}
-@media screen and (max-width: 1160px) {
-}
-@media screen and (max-width: 1130px) {
-}
 /* Feedback family (spinner, skeleton, error-message, error-boundary) moved to
    components.css — @layer components. */
 /* Spinner (small inline variant) moved to components.css — @layer components. */
