@@ -12,30 +12,6 @@ li {
   list-style-type: none;
   float: left;
 }
-li[class^="status"] {
-  font-weight: 700;
-  width: 58px;
-  text-align: center;
-  text-decoration: none;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  background-image: url("/img/viewButton1.png");
-  margin: 1px;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
 /* dropdown-tile + tile-color1-4 moved to components.css (dropdown__tile + modifiers). */
 /* tiles-submit* + dropdown-boxes moved to components.css (dropdown__tile-actions*, dropdown__menu). */
 #dropdown-topics {

@@ -1116,6 +1116,22 @@
 	padding-left: 11px;
 }
 
+/* Base button look (was on the legacy li[class^="status"]; carried over so the
+   problem-status nav keeps its classic 58px two-tone button). */
+.problem-nav__item
+{
+	width: 58px;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+	border: 1px solid #333333;
+	border-top-color: #cccccc;
+	border-left-color: #cccccc;
+	border-radius: 9px;
+	margin: 1px;
+	box-sizing: border-box;
+}
+
 .problem-nav__item--current
 {
 	position: relative;
