@@ -168,3 +168,27 @@
 	color: transparent;
 	text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
 }
+.left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  padding: 40px;
+  padding-top: 20px;
+  width: 345px;
+  height: 450px;
+}
+.right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  box-sizing: border-box;
+  padding: 40px;
+  width: 345px;
+  height: 450px;
+  background-color: black;
+  background-image: url("/img/loginBg3.png");
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 2px 2px 0;
+}

@@ -10,3 +10,10 @@
   max-width: 800px;
 }
 }
+/* .status-label* migrated to .badge--status-* (components.css, @layer components). */
+
+
+
+/* .paginator-* unified into .pagination component (components.css, @layer components). */
+
+.admin-text { color: var(--admin-text-color); }

@@ -429,3 +429,18 @@
 .achievementColorBluex3 { color: #190e66; }
 .achievementColorTeal3 { color: #0e7377; }
 .achievementColorGold3 { color: #685f15; }
+/* Toast (alertBox) moved to components.css — @layer components (.toast). */
+#hpIcon1 {
+  top: 15px;
+  position: relative;
+  width: 40px;
+}
+/* .set-progress* consolidated into .progress--thin (components.css, @layer components). */
+@keyframes fadeIn2 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}

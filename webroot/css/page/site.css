@@ -937,3 +937,27 @@ nav ul ul ul li {
 .grey-link { color: var(--text-softer-color); }
 .grey-text { color: var(--text-softer-color); }
 }
+li {
+  list-style-type: none;
+  float: left;
+}
+/* Toast (.toast) moved to components.css — @layer components. */
+
+/* CookieFlash messages (CakePHP2 flash infrastructure) */
+.alert {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+@charset "UTF-8";
+*,
+:after,
+:before {
+  box-sizing: border-box;
+}
+figure,
+ul ul {
+  margin: 0;
+}
