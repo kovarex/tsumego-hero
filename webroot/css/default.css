@@ -7136,15 +7136,7 @@ ul ul {
   font-size: 12px;
 }
 
-.badge--opened {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.badge--closed {
-  background: #d4edda;
-  color: #155724;
-}
+/* .badge--opened / .badge--closed moved to components.css (@layer components). */
 
 .issues-list__title {
   font-weight: bold;
@@ -7797,22 +7789,14 @@ a[data-tsumego-id]:hover .tooltip-desc
 	transition-delay: 1.2s;
 }
 
-.tooltip-label.statusN,
-.status-label.statusN { background-color: var(--status-n-color); color: #fff; }
-.tooltip-label.statusV,
-.status-label.statusV { background-color: var(--status-v-color); color: #fff; }
-.tooltip-label.statusS,
-.status-label.statusS { background-color: var(--status-s-color); color: #fff; }
-.tooltip-label.statusC,
-.status-label.statusC { background-color: var(--status-c-color); color: #fff; }
-.tooltip-label.statusW,
-.status-label.statusW { background-color: var(--status-w-color); color: #fff; }
-.tooltip-label.statusF,
-.status-label.statusF { background-color: var(--status-f-color); color: #fff; }
-.tooltip-label.statusX,
-.status-label.statusX { background-color: var(--status-x-color); color: #fff; }
-.tooltip-label.statusG,
-.status-label.statusG {
+.tooltip-label.statusN { background-color: var(--status-n-color); color: #fff; }
+.tooltip-label.statusV { background-color: var(--status-v-color); color: #fff; }
+.tooltip-label.statusS { background-color: var(--status-s-color); color: #fff; }
+.tooltip-label.statusC { background-color: var(--status-c-color); color: #fff; }
+.tooltip-label.statusW { background-color: var(--status-w-color); color: #fff; }
+.tooltip-label.statusF { background-color: var(--status-f-color); color: #fff; }
+.tooltip-label.statusX { background-color: var(--status-x-color); color: #fff; }
+.tooltip-label.statusG {
   background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
   color: #3d2e00;
   box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
@@ -7820,8 +7804,7 @@ a[data-tsumego-id]:hover .tooltip-desc
   position: relative;
   overflow: hidden;
 }
-.tooltip-label.statusG::after,
-.status-label.statusG::after {
+.tooltip-label.statusG::after {
   content: "";
   position: absolute;
   top: -50%;
@@ -7833,17 +7816,7 @@ a[data-tsumego-id]:hover .tooltip-desc
   animation: goldenShine 3s ease-in-out infinite;
   pointer-events: none;
 }
-
-.status-label
-{
-	display: inline-block;
-	padding: 4px 14px;
-	font-size: 14px;
-	font-weight: 800;
-	border-radius: 4px;
-	text-align: center;
-	min-width: 100px;
-}
+/* .status-label* migrated to .badge--status-* (components.css, @layer components). */
 
 
 

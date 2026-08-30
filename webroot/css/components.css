@@ -348,6 +348,79 @@
 	border-color: var(--color-blue-dark);
 }
 
+.badge--opened
+{
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.badge--closed
+{
+	background: #d4edda;
+	color: #155724;
+}
+
+/* Status badges (problem status colors, from the --status-*-color tokens) */
+.badge--status-N, .badge--status-V, .badge--status-S, .badge--status-C,
+.badge--status-W, .badge--status-F, .badge--status-X, .badge--status-G
+{
+	padding: 4px 14px;
+	font-size: 14px;
+	font-weight: 800;
+	border-radius: 4px;
+	text-align: center;
+	min-width: 100px;
+	text-transform: none;
+	letter-spacing: normal;
+	border: none;
+	margin-top: 0;
+}
+
+.badge--status-N { background-color: var(--status-n-color); color: #fff; }
+.badge--status-V { background-color: var(--status-v-color); color: #fff; }
+.badge--status-S { background-color: var(--status-s-color); color: #fff; }
+.badge--status-C { background-color: var(--status-c-color); color: #fff; }
+.badge--status-W { background-color: var(--status-w-color); color: #fff; }
+.badge--status-F { background-color: var(--status-f-color); color: #fff; }
+.badge--status-X { background-color: var(--status-x-color); color: #fff; }
+
+.badge--status-G
+{
+	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	color: #3d2e00;
+	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(180, 140, 30, 0.4);
+	position: relative;
+	overflow: hidden;
+}
+
+.badge--status-G::after
+{
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -75%;
+	width: 40%;
+	height: 200%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+	transform: skewX(-25deg);
+	animation: goldenShine 3s ease-in-out infinite;
+	pointer-events: none;
+}
+
+/* ── Tag pill (tag chips; replaces inline-styled React tag pills) ── */
+.tag-pill
+{
+	display: inline-block;
+	margin: 0 6px 4px 0;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 13px;
+	background: var(--info-box-background);
+	color: var(--text-color);
+	border: 1px solid var(--current-border-color);
+}
+
 /* ── Field (inline group of controls) ── */
 .field
 {

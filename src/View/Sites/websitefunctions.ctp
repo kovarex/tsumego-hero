@@ -133,7 +133,7 @@
 		?>
 		<tr>
 			<td>
-				<span class="status-label status<?php echo $status; ?>"><?php echo h($label); ?></span>
+								<span class="badge badge--status-<?php echo $status; ?>"><?php echo h($label); ?></span>
 			</td>
 			<td>
 				<?php echo h($description); ?><br><br>
