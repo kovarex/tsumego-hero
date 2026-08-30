@@ -8,7 +8,15 @@
 
 @layer base
 {
-	/* Element defaults land here as components are lifted out of
-	   the legacy page CSS. Intentionally empty for now: nothing is
-	   added until a component actually relies on it. */
+	/* Element defaults. Moved out of the legacy page CSS so that
+	   components (components layer) can override them cleanly. */
+	a
+	{
+		color: var(--link-color);
+	}
+
+	a:hover
+	{
+		text-decoration: none;
+	}
 }

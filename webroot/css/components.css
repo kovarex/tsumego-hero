@@ -542,6 +542,67 @@
 	cursor: pointer;
 }
 
+/* ── Pagination ── */
+.pagination
+{
+	margin: 15px 0;
+	text-align: center;
+}
+
+.pagination__link
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	border: 1px solid #ccc;
+	text-decoration: none;
+	color: var(--paginator-button-text-color);
+	border-radius: 3px;
+}
+
+.pagination__link:hover
+{
+	text-decoration: underline;
+}
+
+.pagination__link--active
+{
+	display: inline-block;
+	margin: 0 2px;
+	padding: 5px 10px;
+	background: var(--active-paginator-button-background-color);
+	color: var(--active-paginator-button-text-color);
+	border: 1px solid #333;
+	border-radius: 3px;
+}
+
+.pagination__link--disabled
+{
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.pagination__info
+{
+	color: var(--paginator-info-text-color);
+	margin-right: 10px;
+}
+
+.pagination__ellipsis
+{
+	margin: 0 5px;
+	color: var(--paginator-info-text-color);
+}
+
+/* Issues page pagination container (React) */
+.issues-page__pagination
+{
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 20px;
+}
+
 /* ── Data table ── */
 .data-table
 {
