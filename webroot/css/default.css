@@ -5708,69 +5708,8 @@ ul ul {
   clear: both;
 }
 
-.btn-group:after,
-.btn-group:before {
-  content: " ";
-  display: table;
-}
-.btn-group:after {
-  clear: both;
-}
-.btn-group .btn {
-  border-radius: 0;
-  float: left;
-}
-.btn-group .btn:first-child {
-  border-radius: 3px 0 0 3px;
-}
-.btn-group .btn:not(:first-child) {
-  margin-left: -1px;
-}
-.btn-group .btn:last-child {
-  border-radius: 0 3px 3px 0;
-}
-.btn-group label.btn input[type="radio"] {
-  clip: rect(0, 0, 0, 0);
-  pointer-events: none;
-  position: absolute;
-}
-.btn {
-  -webkit-appearance: none;
-  background-color: rgba(52, 73, 94, 0);
-  border: 1px solid #323232;
-  border-radius: 3px;
-  color: #323232;
-  cursor: pointer;
-  display: inline-block;
-  font-size: 1rem;
-  padding: 0.75em 0.8em;
-  text-align: center;
-  transition: 0.2s ease-out;
-}
-
-@media (-moz-touch-enabled: 0), (pointer: fine) {
-  .btn:hover {
-    background-color: #323232;
-    color: #fff;
-    text-decoration: none;
-  }
-}
-
-.btn:focus {
-  box-shadow: 0 0 0 2px rgba(52, 73, 94, 0.4);
-  outline-width: 0;
-}
-.btn.active,
-.btn:active {
-  background-color: #323232;
-  color: #fff;
-}
-.btn:disabled {
-  background-color: rgba(52, 73, 94, 0);
-  color: #323232;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
+/* .btn-group (unused) removed — see components .btn for the single button base. */
+/* Legacy .btn base removed — the components .btn (components.css) is the single button base. */
 
 .filterLabel1 {
   color: #323232;
@@ -6524,36 +6463,8 @@ ul ul {
 }
 
 /* Button styles for issue actions */
-.btn {
-  padding: 5px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.btn--small {
-  padding: 3px 8px;
-  font-size: 11px;
-}
-
-.btn--success {
-  background: #5cb85c;
-  color: white;
-}
-
-.btn--success:hover {
-  background: #449d44;
-}
-
-.btn--warning {
-  background: #f0ad4e;
-  color: white;
-}
-
-.btn--warning:hover {
-  background: #ec971f;
-}
+/* .btn (flat issue-actions base) removed; .btn--small/--success/--warning moved to
+   components.css (@layer components). */
 
 /* Standalone comment styling */
 .tsumego-comment--standalone {
@@ -7293,22 +7204,7 @@ ul ul {
   background: #333;
 }
 
-/* Buttons in dark theme */
-[data-theme=dark] .btn--success {
-  background: #449d44;
-}
-
-[data-theme=dark] .btn--success:hover {
-  background: #398439;
-}
-
-[data-theme=dark] .btn--warning {
-  background: #ec971f;
-}
-
-[data-theme=dark] .btn--warning:hover {
-  background: #d58512;
-}
+/* Buttons in dark theme — moved into components.css (.btn--success/--warning). */
 
 /* Dark theme highlight animation for hash anchor scroll */
 /* Dark mode: white/light highlight on dark background */
@@ -7572,11 +7468,7 @@ ul ul {
 
 /* Pagination dark overrides moved into .pagination component (token-based, auto dark). */
 
-/* Ensure button colors work in dark mode */
-[data-theme=dark] .btn--success,
-[data-theme=dark] .btn--warning {
-  color: white !important;
-}
+/* Ensure button colors work in dark mode — moved into components.css. */
 
 [data-theme=dark] .besogo-tree-line {
   stroke: #cccccc;
@@ -7811,18 +7703,7 @@ a[data-tsumego-id]:hover .tooltip-desc
     background-color: #404040;
     color: #f0f0f0;
   }
-  .btn {
-    color: #8c8c8c;
-  }
-  .btn.active,
-  .btn:active {
-    background-color: #b5b5b5;
-    color: #323232;
-  }
-  .btn:active:hover {
-    background-color: #f0f0f0;
-    color: #323232;
-  }
+  /* Legacy .btn dark overrides removed — components .btn uses tokens (auto dark). */
 
   .setViewAccuracy {
     color: #c234ff;
