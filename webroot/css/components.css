@@ -978,23 +978,6 @@
 	font-size: 14px;
 }
 
-.error-boundary__reload
-{
-	padding: 10px 20px;
-	background: #c33;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 14px;
-	font-weight: bold;
-}
-
-.error-boundary__reload:hover
-{
-	background: #a11;
-}
-
 .error-boundary__details
 {
 	margin-top: 20px;
