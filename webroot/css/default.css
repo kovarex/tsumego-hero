@@ -571,232 +571,13 @@ li a.menuLi {
   float: left;
   margin-top: 30px;
 }
-.highscoreTable {
-  table-layout: auto;
-}
-.highscoreTable th {
-  color: grey;
-  position: sticky;
-  top: 0;
-  background: #fff;
-  z-index: 1;
-}
-.highscoreTable tr {
-}
-.highscoreTable td {
-  padding: 15px;
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
-  background: #fff;
-  color: #222;
-  font-weight: normal;
-}
-.highscoreTable td:first-child {
-  border-radius: 12px 0 0 12px;
-  border-left: 1px solid #ccc;
-}
-.highscoreTable td:last-child {
-  border-radius: 0 12px 12px 0;
-  border-right: 1px solid #ccc;
-}
-.highscoreTable .color1 {
-  background: linear-gradient(#2cfdfe, #6daadd) !important;
-}
-.highscoreTable .color2 {
-  background: linear-gradient(#fcf9b7, #f3da31) !important;
-}
-.highscoreTable .color3 {
-  background: linear-gradient( #eceaea,#939393) !important;
-}
-.highscoreTable .color4 {
-  background: linear-gradient(#fdd5a2, #cd7b41) !important;
-}
-.highscoreTable .color5 {
-  /*101-200*/
-  background-color: #ba84cf;
-}
-.highscoreTable .color6 {
-  /*201-300*/
-  background-color: #cc94e4;
-}
-.highscoreTable .color7 {
-  /*301-400*/
-  background-color: #d1a5e4;
-}
-.highscoreTable .color8 {
-  /*401-500*/
-  background-color: #d5b2e4;
-}
-.highscoreTable .color9 {
-  /*501-600*/
-  background-color: #d2bee2;
-}
-.highscoreTable .color10 {
-  /*601-700*/
-  background-color: #d7c9e2;
-}
-.highscoreTable .color11 {
-  /*701-800*/
-  background-color: #ded9e2;
-}
-.highscoreTable .color12x {
-  /*801-900*/
-  background-color: #ddd;
-}
-.highscoreTable .color13 {
-  /*901-1000*/
-  background-color: #eee;
-}
-.highscoreTable .color99 {
-  /*901-1000*/
-  background-color: #cc94e4;
-  font-weight: 400;
-}
-.highscoreTable .color9d {
-  background-color: #fff;
-  background-image: url("/img/highscore9d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color8d {
-  background-color: #fff;
-  background-image: url("/img/highscore8d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color7d {
-  background-color: #fff;
-  background-image: url("/img/highscore7d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color6d {
-  background-color: #fff;
-  background-image: url("/img/highscore6d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color5d {
-  background-color: #fff;
-  background-image: url("/img/highscore5d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color4d {
-  background-color: #fff;
-  background-image: url("/img/highscore4d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color3d {
-  background-color: #fff;
-  background-image: url("/img/highscore3d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color2d {
-  background-color: #fff;
-  background-image: url("/img/highscore2d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color1d {
-  background-color: #fff;
-  background-image: url("/img/highscore1d.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color1k {
-  background-color: #fff;
-  background-image: url("/img/highscore1k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color2k {
-  background-color: #fff;
-  background-image: url("/img/highscore2k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color3k {
-  background-color: #fff;
-  background-image: url("/img/highscore3k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color4k {
-  background-color: #fff;
-  background-image: url("/img/highscore4k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color5k {
-  background-color: #fff;
-  background-image: url("/img/highscore5k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color6k {
-  background-color: #fff;
-  background-image: url("/img/highscore6k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color7k {
-  background-color: #fff;
-  background-image: url("/img/highscore7k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color8k {
-  background-color: #fff;
-  background-image: url("/img/highscore8k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color9k {
-  background-color: #fff;
-  background-image: url("/img/highscore9k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color10k {
-  background-color: #fff;
-  background-image: url("/img/highscore10k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color11k {
-  background-color: #fff;
-  background-image: url("/img/highscore11k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color12k {
-  background-color: #fff;
-  background-image: url("/img/highscore12k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color13k {
-  background-color: #fff;
-  background-image: url("/img/highscore13k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color14k {
-  background-color: #fff;
-  background-image: url("/img/highscore14k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color15k {
-  background-color: #fff;
-  background-image: url("/img/highscore15k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color16k {
-  background-color: #fff;
-  background-image: url("/img/highscore16k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color17k {
-  background-color: #fff;
-  background-image: url("/img/highscore17k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color18k {
-  background-color: #fff;
-  background-image: url("/img/highscore18k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color19k {
-  background-color: #fff;
-  background-image: url("/img/highscore19k.png");
-  background-repeat: no-repeat;
-}
-.highscoreTable .color20k {
-  background-color: #fff;
-  background-image: url("/img/highscore20k.png");
-  background-repeat: no-repeat;
-}
+/* highscoreTable consolidated into .data-table (components.css). */
+/* dead .color* tier classes (never emitted) removed. */
+/* dead dan-tier color classes removed. */
+/* dead dan-tier color classes removed. */
+/* dead kyu-tier color classes removed. */
+/* dead kyu-tier color classes removed. */
+/* dead kyu-tier color classes removed. */
 
 .timeTableRight {
   border-radius: 0 12px 12px 0;
@@ -3960,48 +3741,7 @@ nav ul .menuIcons1 {
   color: #ff9090 !important;
 }
 
-.color-separator td {
-  font-size: 24px;
-  color: #888;
-  padding: 4px 0;
-  border: none;
-  background: transparent;
-}
-
-.color-self td {
-  font-weight: bold;
-}
-.color-self td:first-child {
-  border-left: 8px solid #4a90d9 !important;
-  border-radius: 12px 0 0 12px;
-  color: #4a90d9;
-  white-space: nowrap;
-}
-
-.highscoreTable a {
-  color: inherit;
-  text-decoration: none;
-}
-.highscoreTable a:hover {
-  text-decoration: underline;
-}
-.highscoreTable tr:nth-child(even) td {
-  background: #f5f5f5;
-}
-
-/* Medal backgrounds for top 3 */
-.medal-gold td {
-  background: linear-gradient(135deg, #c9a14b, #edd478, #bf8f30, #e8cc6e) !important;
-  color: #3d1f00;
-}
-.medal-silver td {
-  background: linear-gradient(135deg, #9e9e9e, #cccccc, #8a8a8a, #c4c4c4) !important;
-  color: #222;
-}
-.medal-bronze td {
-  background: linear-gradient(135deg, #b8783e, #d4a060, #a06530, #c89458) !important;
-  color: #2d1400;
-}
+/* color-separator / color-self / medal-* moved to components.css (data-table__row--*). */
 
 nav a {
   display: block;
@@ -7645,10 +7385,6 @@ a[data-tsumego-id]:hover .tooltip-desc
   .sandboxTable2time {
     color: #b9b9b9;
   }
-  .highscoreTable .color12 {
-    background-color: #404040;
-    color: #f0f0f0;
-  }
   /* Legacy .btn dark overrides removed — components .btn uses tokens (auto dark). */
 
   .setViewAccuracy {
@@ -7672,56 +7408,8 @@ a[data-tsumego-id]:hover .tooltip-desc
   .timeTableColor11 {
     background: linear-gradient(#666, #424242);
   }
-  .highscoreTable {
-    color: black;
-  }
-  .highscoreTable th {
-    background: #2a2a2a;
-  }
-  .highscoreTable td {
-    background: #2a2a2a;
-    color: #ddd;
-    border-color: #444;
-  }
-  .highscoreTable tr:nth-child(even) td {
-    background: #303030;
-  }
-  .medal-gold td {
-    color: #2d1400;
-  }
-  .medal-silver td {
-    color: #1a1a1a;
-  }
-  .medal-bronze td {
-    color: #1a0a00;
-  }
-  .highscoreTable .color1,
-  .highscoreTable .color2,
-  .highscoreTable .color3,
-  .highscoreTable .color4,
-  .highscoreTable .color9d,
-  .highscoreTable .color8d,
-  .highscoreTable .color7d,
-  .highscoreTable .color6d,
-  .highscoreTable .color5d,
-  .highscoreTable .color4d,
-  .highscoreTable .color3d,
-  .highscoreTable .color2d,
-  .highscoreTable .color1d,
-  .highscoreTable .color1k,
-  .highscoreTable .color2k,
-  .highscoreTable .color3k,
-  .highscoreTable .color4k,
-  .highscoreTable .color5k,
-  .highscoreTable .color6k,
-  .highscoreTable .color7k,
-  .highscoreTable .color8k,
-  .highscoreTable .color9k,
-  .highscoreTable .color10k,
-  .highscoreTable .color11k,
-  .highscoreTable .color12k {
-    background-color: #2a2a2a;
-  }
+  /* highscoreTable dark overrides removed - .data-table is token-based (auto dark). */
+  /* dead .color* tier dark overrides removed. */
   .admin-panel {
     background: linear-gradient(#666, #424242);
     color: #f0f0f0 !important;
@@ -7861,9 +7549,6 @@ a[data-tsumego-id]:hover .tooltip-desc
   }
   .title {
     color: #fff;
-  }
-  .highscoreTable a {
-    color: inherit;
   }
 }
 .rank-icon {

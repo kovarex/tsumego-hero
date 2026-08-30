@@ -786,6 +786,47 @@
 	text-decoration: underline;
 }
 
+/* Highscore row states */
+.data-table__row--separator td
+{
+	font-size: 24px;
+	color: #888;
+	padding: 4px 0;
+	border: none;
+	background: transparent;
+}
+
+.data-table__row--self td
+{
+	font-weight: bold;
+}
+
+.data-table__row--self td:first-child
+{
+	border-left: 8px solid #4a90d9;
+	border-radius: 12px 0 0 12px;
+	color: #4a90d9;
+	white-space: nowrap;
+}
+
+.data-table__row--medal-gold td
+{
+	background: linear-gradient(135deg, #c9a14b, #edd478, #bf8f30, #e8cc6e) !important;
+	color: #3d1f00;
+}
+
+.data-table__row--medal-silver td
+{
+	background: linear-gradient(135deg, #9e9e9e, #cccccc, #8a8a8a, #c4c4c4) !important;
+	color: #222;
+}
+
+.data-table__row--medal-bronze td
+{
+	background: linear-gradient(135deg, #b8783e, #d4a060, #a06530, #c89458) !important;
+	color: #2d1400;
+}
+
 /* ── Feedback (spinner, skeleton, error) ── */
 .spinner
 {
