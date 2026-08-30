@@ -414,14 +414,14 @@ class UsersControllerTest extends ControllerTestCase
 		$this->assertTextContains('900.00', $this->view);
 		$this->assertTextNotContains('600.00', $this->view);
 		$this->assertTextNotContains('750.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Slow</a>', $this->view);
+		$this->assertTextContains('btn--inactive">Slow</a>', $this->view);
 		$this->assertTextContains('category=1', $this->view); // Fast link preserves rank
 
 		// Fast/15k: shows 600, not 900 or 750
 		$this->testAction('users/time_mode?category=1&rank=15k', ['return' => 'view']);
 		$this->assertTextContains('600.00', $this->view);
 		$this->assertTextNotContains('900.00', $this->view);
-		$this->assertTextContains('new-button-time-inactive">Fast</a>', $this->view);
+		$this->assertTextContains('btn--inactive">Fast</a>', $this->view);
 
 		// Slow/10k: shows 750, not 900
 		$this->testAction('users/time_mode?category=2&rank=10k', ['return' => 'view']);
