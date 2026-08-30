@@ -5599,58 +5599,7 @@ select.flat-select:hover {
   width: 100%;
   margin-top: 12px;
 }
-.set-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.set-progress-number {
-  font-size: 14px;
-  font-weight: 600;
-  animation: set-progress-number-in 0.6s ease-out;
-}
-.set-progress-track {
-  position: relative;
-  width: 100%;
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.15);
-}
-.set-progress-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 0;
-  border-radius: 3px;
-  background-color: #bbbbbb;
-  background-image: linear-gradient(#f5f5f5, #9b9b9b);
-  animation: set-progress-grow 0.6s ease-out;
-}
-.set-progress--complete .set-progress-fill {
-  animation: set-progress-grow 0.6s ease-out, set-progress-glow 0.5s ease-out 0.6s;
-}
-@keyframes set-progress-grow {
-  from {
-    width: 0;
-  }
-}
-@keyframes set-progress-glow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-  35% {
-    box-shadow: 0 0 16px 4px rgba(255, 255, 255, 0.95);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-@keyframes set-progress-number-in {
-  from {
-    opacity: 0;
-  }
-}
+/* .set-progress* consolidated into .progress--thin (components.css, @layer components). */
 @keyframes fadeIn2 {
   0% {
     opacity: 0;
