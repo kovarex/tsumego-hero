@@ -319,50 +319,26 @@
 
 .btn--success
 {
-	background: #5cb85c;
-	color: white;
+	border-color: var(--color-green-dark);
+	color: var(--color-green);
 }
 
 .btn--success:hover
 {
-	background: #449d44;
+	background: var(--color-green-dark);
+	color: var(--color-green-light);
 }
 
 .btn--warning
 {
-	background: #f0ad4e;
-	color: white;
+	border-color: var(--feedback-warning);
+	color: var(--feedback-warning);
 }
 
 .btn--warning:hover
 {
-	background: #ec971f;
-}
-
-[data-theme=dark] .btn--success
-{
-	background: #449d44;
-}
-
-[data-theme=dark] .btn--success:hover
-{
-	background: #398439;
-}
-
-[data-theme=dark] .btn--warning
-{
-	background: #ec971f;
-}
-
-[data-theme=dark] .btn--warning:hover
-{
-	background: #d58512;
-}
-
-[data-theme=dark] .btn--success,
-[data-theme=dark] .btn--warning
-{
-	color: white !important;
+	background: var(--feedback-warning);
+	color: var(--color-white);
 }
 
 /* ── Sub-navigation ── */
