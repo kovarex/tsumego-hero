@@ -17,7 +17,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/rating', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Row 0 = header, rows 1-3 = users
 		$this->assertGreaterThanOrEqual(4, count($rows));
@@ -61,7 +61,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/highscore', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Header + 4 user rows
 		$this->assertGreaterThanOrEqual(5, count($rows));
@@ -86,7 +86,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/highscore', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		$this->assertRowContains($rows[1], '#1', 'HighLevel');
 		$this->assertRowContains($rows[2], '#2', 'kovarex');
@@ -123,7 +123,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/added_tags', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// Header row + 2 user rows
 		$this->assertGreaterThanOrEqual(3, count($rows));
@@ -159,7 +159,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 		$this->testAction('users/achievements', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$rows = $dom->querySelectorAll('.highscoreTable tr');
+		$rows = $dom->querySelectorAll('.data-table tr');
 
 		// AchieverB has higher total (1+8=9) vs AchieverA (1+5=6)
 		$this->assertGreaterThanOrEqual(3, count($rows));
@@ -252,7 +252,7 @@ class HighscoreTest extends TestCaseWithAuth
 
 	/**
 	 * Self-view with gap works for multiple highscore pages (rating, level).
-	 * User outside top 30 should appear with gap separator and color-self class.
+	 * User outside top 30 should appear with gap separator and data-table__row--self class.
 	 */
 	public function testSelfViewWithGap()
 	{
@@ -270,7 +270,7 @@ class HighscoreTest extends TestCaseWithAuth
 			$this->testAction($url, ['return' => 'view']);
 			$this->assertTextContains('kovarex', $this->view);
 			$this->assertTextContains('⋮', $this->view);
-			$this->assertTextContains('color-self', $this->view);
+			$this->assertTextContains('data-table__row--self', $this->view);
 			$this->assertTextContains('#111', $this->view);
 		}
 	}
@@ -308,7 +308,7 @@ class HighscoreTest extends TestCaseWithAuth
 		$this->testAction('users/rating', ['return' => 'view']);
 		$this->assertTextContains('TopPlayer', $this->view);
 		$this->assertTextContains('SecondPlayer', $this->view);
-		$this->assertTextNotContains('color-self', $this->view);
+		$this->assertTextNotContains('data-table__row--self', $this->view);
 		$this->assertTextNotContains('⋮', $this->view);
 	}
 

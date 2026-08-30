@@ -82,7 +82,7 @@ class UsersControllerTest extends ControllerTestCase
 		$browser->get('users/leaderboard');
 
 		// Ivan detkov is alone in the leaderboard, kovarex has no daily_xp but is shown at bottom
-		$browser->checkTable('.highscoreTable', $this,
+		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
 				['#1', 'Ivan Detkov ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '2', '10'],
@@ -95,7 +95,7 @@ class UsersControllerTest extends ControllerTestCase
 
 		// now kovarex is there (first, since solving gives more xp than Ivan's 10)
 		$browser->get('users/leaderboard');
-		$browser->checkTable('.highscoreTable', $this,
+		$browser->checkTable('.data-table', $this,
 			[
 				['Place', 'Name', 'Premium', 'Solved', 'XP'],
 				['#1', 'kovarex ' . Rating::getReadableRankFromRating(ContextPreparator::$DEFAULT_USER_RATING), '', '1'],
@@ -310,8 +310,8 @@ class UsersControllerTest extends ControllerTestCase
 
 		$browser = Browser::instance();
 		$browser->get('/users/showPublishSchedule');
-		$this->assertTextContains('sandbox set', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
-		$this->assertTextContains('268', $browser->getTableCell('.highscoreTable', 1, 1)->getText());
+		$this->assertTextContains('sandbox set', $browser->getTableCell('.data-table', 1, 1)->getText());
+		$this->assertTextContains('268', $browser->getTableCell('.data-table', 1, 1)->getText());
 	}
 
 	public function testResetOldProgressRemovesOnlyOldStatuses()
