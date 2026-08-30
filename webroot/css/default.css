@@ -907,63 +907,6 @@ li a.menuLi.nav__link--active {
   justify-content: center;
   gap: 16px;
 }
-.mode-button {
-  position: relative;
-  z-index: 0;
-  display: inline-block;
-  line-height: 0;
-  cursor: pointer;
-}
-.mode-button::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 170px;
-  height: 170px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--mode-glow) 0%, transparent 20%);
-  filter: blur(6px);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  pointer-events: none;
-}
-.mode-button img {
-  position: relative;
-  z-index: 1;
-  display: block;
-  transition: filter 0.15s ease;
-}
-.mode-button:hover::before {
-  opacity: 1;
-}
-.mode-button:hover img {
-  filter: brightness(1.45) saturate(1.6);
-}
-.mode-button-level {
-  --mode-glow: #8cff2e;
-}
-.mode-button-rating {
-  --mode-glow: #e05cff;
-}
-.mode-button-time {
-  --mode-glow: #ffa04a;
-}
-.mode-button-achievements {
-  --mode-glow: #4dffe6;
-}
-.mode-button-disabled::before {
-  display: none;
-}
-.mode-button-disabled,
-.mode-button-disabled:hover {
-  cursor: default;
-  filter: grayscale(1) opacity(0.65);
-}
-.mode-button-disabled:hover img {
-  filter: none;
-}
 /* #time-mode-play-button removed (dead empty rule). */
 
 #setElement1 {
