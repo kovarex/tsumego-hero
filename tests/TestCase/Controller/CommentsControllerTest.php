@@ -540,8 +540,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$this->assertCount(0, $browser->getCssSelect('.tsumego-issue'), 'Should have 0 issues initially');
 		$this->assertCount(1, $browser->getCssSelect('.tsumego-comment--standalone'), 'Should have 1 standalone');
 
-		// Find and click the Make Issue button
-		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comment__make-issue-btn'));
+		// Find and click the Make Issue button (uses .btn--small after button unification)
+		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::xpath('//button[contains(normalize-space(.), "Make Issue")]'));
 		$this->assertNotNull($makeIssueBtn, 'Make Issue button should exist');
 		$makeIssueBtn->click();
 
@@ -579,13 +579,13 @@ class CommentsControllerTest extends ControllerTestCase
 		$browser->expandComments();
 		$browser->waitUntilCssSelectorExists('.tsumego-comment--standalone', 5);
 
-		// Make Issue button should exist on standalone comments
-		$standaloneButtons = $browser->getCssSelect('.tsumego-comment--standalone .tsumego-comment__make-issue-btn');
-		$this->assertCount(1, $standaloneButtons, 'Standalone comment should have Make Issue button');
+		// Make Issue button should exist on standalone comments (uses .btn--small)
+		$standaloneMakeIssue = $browser->driver->findElements(WebDriverBy::xpath('.//div[contains(@class, "tsumego-comment--standalone")]//button[contains(normalize-space(.), "Make Issue")]'));
+		$this->assertCount(1, $standaloneMakeIssue, 'Standalone comment should have Make Issue button');
 
 		// Make Issue button should NOT exist on issue comments
-		$issueButtons = $browser->getCssSelect('.tsumego-issue .tsumego-comment__make-issue-btn');
-		$this->assertCount(0, $issueButtons, 'Issue comments should NOT have Make Issue button');
+		$issueMakeIssue = $browser->driver->findElements(WebDriverBy::xpath('.//div[contains(@class, "tsumego-issue")]//button[contains(normalize-space(.), "Make Issue")]'));
+		$this->assertCount(0, $issueMakeIssue, 'Issue comments should NOT have Make Issue button');
 
 		$browser->assertNoErrors();
 	}
@@ -925,8 +925,8 @@ class CommentsControllerTest extends ControllerTestCase
 		$standaloneComments = $browser->getCssSelect('.tsumego-comment--standalone');
 		$this->assertCount(1, $standaloneComments, 'Should have 1 standalone comment');
 
-		// Find and click the Make Issue button
-		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumego-comment--standalone .tsumego-comment__make-issue-btn'));
+		// Find and click the Make Issue button (uses .btn--small after button unification)
+		$makeIssueBtn = $browser->driver->findElement(WebDriverBy::xpath('//button[contains(normalize-space(.), "Make Issue")]'));
 		$this->assertTrue($makeIssueBtn->isDisplayed(), 'Make Issue button should be visible');
 		$this->assertTrue($makeIssueBtn->isEnabled(), 'Make Issue button should be enabled');
 		$makeIssueBtn->click();

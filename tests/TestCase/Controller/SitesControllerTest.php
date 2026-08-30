@@ -293,10 +293,9 @@ class SitesControllerTest extends ControllerTestCase
 		new ContextPreparator();
 		$browser->get('sites/index');
 
-		// Assert: Home link should have the green highlight color
+		// The home link gets the green highlight via the nav__link--active class
 		$pageSource = $browser->driver->getPageSource();
-		// The home link should have style="color:#74d14c;" when on home page
-		$this->assertStringContainsString('style="color:#74d14c;"', $pageSource,
+		$this->assertStringContainsString('class="homeMenuLink nav__link--active"', $pageSource,
 			'Home page should have navigation highlighting');
 	}
 
