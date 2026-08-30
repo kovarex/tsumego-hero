@@ -1,0 +1,14 @@
+/* ══════════════════════════════════════════════════════
+   Base layer — element defaults scoped to the app
+   (body, a, headings, lists, tables, inputs, focus styles).
+   Layer: base (see layers.css for the cascade contract).
+
+   Keep tiny; never style classes here — only elements.
+   ══════════════════════════════════════════════════════ */
+
+@layer base
+{
+	/* Element defaults land here as components are lifted out of
+	   the legacy page CSS. Intentionally empty for now: nothing is
+	   added until a component actually relies on it. */
+}

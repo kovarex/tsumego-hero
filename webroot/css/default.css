@@ -115,6 +115,11 @@
     url("/fonts/Exo-BlackItalic.woff") format("woff");
 }
 
+/* Legacy global sheet — demoted to the page layer. Design-system components
+   (components layer) are authoritative as rules are lifted out of here; this
+   file shrinks to zero over the course of the migration. */
+@layer page {
+
 .egcLogo {
   position: absolute;
   left: 64px;
@@ -8194,60 +8199,7 @@ a[data-tsumego-id]:hover .tooltip-desc
 to { transform: rotate(360deg); }
 }
 
-/* Unified theme: light is default (:root), dark overrides via [data-theme="dark"] */
-:root {
-	--text-color: #222;
-	--text-softer-color: grey;
-	--link-color: #0000EE;
-	--current-border-color: #ccc;
-	--surface-bar: #f5f5f5;
-	--dark-button-icon: url("/img/light-icon1x.png");
-	--new1-gradient: linear-gradient(#fff, #f2f2f2);
-	--title4-gradient: linear-gradient(#e1e1e1, #bdbdbd);
-	--body-background-gradient: linear-gradient(#282828, #424141);
-	--status-s-color: #3ecf78;
-	--status-c-color: #27ae60;
-	--status-f-color: #c63f4d;
-	--status-x-color: #a8323c;
-	--status-w-color: #34cfcc;
-	--status-v-color: #2d98e0;
-	--status-n-color: #7f8287;
-	--status-g-color: #daa520;
-	--status-g-highlight: #f5e080;
-	--paginator-button-text-color: #333;
-	--active-paginator-button-background-color: #333;
-	--active-paginator-button-text-color: #fff;
-	--paginator-info-text-color: #666;
-	--admin-text-color: #1010EE;
-	--info-box-background: #fff;
-}
-
-[data-theme="dark"] {
-	--text-color: #ddd;
-	--text-softer-color: grey;
-	--link-color: #f0f0f0;
-	--current-border-color: #444;
-	--surface-bar: #303030;
-	--dark-button-icon: url("/img/dark-icon1.png");
-	--new1-gradient: linear-gradient(#3c3c3c, #2a2a2a);
-	--title4-gradient: linear-gradient(#737373, #4a4a4a);
-	--body-background-gradient: linear-gradient(#2a2a2a, #111);
-	--status-s-color: #0a4;
-	--status-c-color: #083;
-	--status-f-color: #dd3a4b;
-	--status-x-color: #c72a3b;
-	--status-w-color: #00aeab;
-	--status-v-color: #0088e3;
-	--status-n-color: #444;
-	--status-g-color: #b8860b;
-	--status-g-highlight: #e8c840;
-	--paginator-button-text-color: #ccc;
-	--active-paginator-button-background-color: #ccc;
-	--active-paginator-button-text-color: #000;
-	--paginator-info-text-color: #999;
-	--admin-text-color: #7EE0FF;
-	--info-box-background: #2a2a2a;
-}
+/* Theme tokens (:root + [data-theme="dark"]) moved to tokens.css (@layer tokens). */
 
 [data-theme="dark"] {
   .filterLabel1,
@@ -8553,3 +8505,4 @@ to { transform: rotate(360deg); }
 	font-size: 100px;
 	line-height: 252px;
 }
+} /* end @layer page */

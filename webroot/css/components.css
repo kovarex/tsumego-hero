@@ -17,53 +17,10 @@
      here so the next page can reuse it.
    ══════════════════════════════════════════════════════ */
 
-:root
+/* Design tokens (brand + theme) moved to tokens.css (@layer tokens). */
+
+@layer components
 {
-	/* ── Brand colors (theme-independent accents) ── */
-	--color-green: #74d14c;
-	--color-green-dark: #366421;
-	--color-green-light: #82c95b;
-	--color-purple: #caa8d8;
-	--color-blue: #5b9bd5;
-	--color-blue-dark: #2a6496;
-	--color-red: #d63a49;
-	--color-red-muted: #e07070;
-	--color-yellow: #e6c832;
-	--color-yellow-dark: #b89a1a;
-	--color-red-fill: #e05555;
-	--color-red-fill-dark: #a02020;
-
-
-
-	/* ── Spacing and radius ── */
-	--space-1: 4px;
-	--space-2: 8px;
-	--space-3: 12px;
-	--space-4: 16px;
-	--space-5: 24px;
-	--space-6: 32px;
-	--radius-sm: 4px;
-	--radius-md: 8px;
-	--radius-full: 999px;
-
-	/* ── Typography ── */
-	--font-size-xs: 9px;
-	--font-size-sm: 11px;
-	--font-size-base: 12px;
-	--font-size-md: 13px;
-	--font-size-lg: 15px;
-	--font-weight-normal: 400;
-	--font-weight-bold: 700;
-	--font-weight-heavy: 800;
-
-	/* ── Neutral colors ── */
-	--color-white: #fff;
-	--color-gray-dark: #4a4a4a;
-	--color-red-dark: #8b3a3a;
-	--color-red-darker: #4a2020;
-	--color-red-light: #ff8080;
-}
-
 /* ── Layout objects ── */
 .cluster
 {
@@ -499,6 +456,8 @@
 {
 	text-decoration: underline;
 }
+
+} /* end @layer components */
 
 
 

@@ -4,6 +4,8 @@
    live in components.css (imported globally).
    ══════════════════════════════════════════════════════ */
 
+@layer page
+{
 /* ── Header ── */
 .profile-header
 {
@@ -135,3 +137,4 @@
 {
 	color: #7ab0e0;
 }
+} /* end @layer page */

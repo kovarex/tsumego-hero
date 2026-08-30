@@ -5,6 +5,8 @@
    live in components.css.
    ══════════════════════════════════════════════════════ */
 
+@layer page
+{
 .set-edit
 {
 	max-width: 900px;
@@ -200,3 +202,4 @@
 		grid-template-columns: 1fr;
 	}
 }
+} /* end @layer page */
