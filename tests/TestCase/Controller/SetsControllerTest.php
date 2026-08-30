@@ -336,7 +336,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, '15k');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -350,7 +350,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, '10k');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -393,7 +393,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, 'set 1');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -407,7 +407,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertCount(2, $titleDivs);
 		$this->assertSame($titleDivs[1]->textContent, 'set 2');
 
-		$problemButtons = $dom->querySelectorAll('.setViewButtons1');
+		$problemButtons = $dom->querySelectorAll('.problem-nav__number');
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->textContent, '1');
 
@@ -949,7 +949,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->checkPlayTitle($browser, 'Set A 1/2');
 
 		// Navigation should show 2 buttons (Set A: 1, 2), not 3 (mixing with Set B)
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.tsumegoNavi2 li'));
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('div.problem-nav__inner li'));
 		$this->assertCount(2, $buttons, 'Bug: navigation mixed problems from different sets');
 	}
 
@@ -1215,7 +1215,7 @@ class SetsControllerTest extends TestCaseWithAuth
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'))[$index]->getText(), $title);
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[$index]->getText(), $percent);
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.progress__label'))[$index]->getText(), $percent);
 		$barStyle = $browser->driver->findElements(WebDriverBy::cssSelector('.progress__fill'))[$index]->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
@@ -1244,7 +1244,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.progress__label'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
@@ -1277,7 +1277,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new WebDriverWait($browser->driver, 10, 50); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[0]->getText() == '33%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.progress__label'))[0]->getText() == '33%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
@@ -1312,7 +1312,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.progress__label'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
@@ -1349,7 +1349,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 500); // (driver, timeout, polling interval)
 		$wait->until(function () use ($browser) {
-			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
+			return $browser->driver->findElements(WebDriverBy::cssSelector('.progress__label'))[4]->getText() == '100%';
 		});
 
 		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
@@ -1395,7 +1395,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$collectionTopDivs[0]->click();
 		$this->assertSame(Util::getMyAddress() . '/sets/view/' . $context->tsumegos[1]['set-connections'][0]['set_id'], $browser->driver->getCurrentURL());
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'));
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '777');
 	}
@@ -1408,7 +1408,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser = Browser::instance();
 		$browser->get('/sets/edit/' . $context->tsumegos[0]['set-connections'][0]['set_id']);
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'));
 		$this->assertCount(1, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '1');
 		$browser->clickCssSelect('#TsumegoViewForm input[type="submit"]');
@@ -1416,10 +1416,10 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Wait for the page to reload with the new problem
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function () use ($browser) {
-			return count($browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'))) == 2;
+			return count($browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'))) == 2;
 		});
 
-		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$problemButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'));
 		$this->assertCount(2, $problemButtons);
 		$this->assertSame($problemButtons[0]->getText(), '1');
 		$this->assertSame($problemButtons[1]->getText(), '2');
@@ -1448,7 +1448,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets/view/{$setId}");
 
 		// Completed tab should be active by default - find problem buttons
-		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$buttons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'));
 
 		// Should show problem numbers: 1, 2, 3
 		$this->assertCount(3, $buttons, 'Should have 3 problems in set');
@@ -1457,11 +1457,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('3', trim($buttons[2]->getText()));
 
 		// setViewButtons2 (accuracy) and setViewButtons3 (time) should be hidden
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
 		foreach ($accuracyButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Accuracy buttons should be hidden on Completed tab');
 
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__time'));
 		foreach ($timeButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Time buttons should be hidden on Completed tab');
 	}
@@ -1496,17 +1496,17 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets/view/{$setId}");
 
 		// Find the <li> elements (button containers with status classes)
-		$listItems = $browser->driver->findElements(WebDriverBy::cssSelector('li[class*="status"]'));
+		$listItems = $browser->driver->findElements(WebDriverBy::cssSelector('li.problem-nav__item'));
 		$this->assertCount(3, $listItems, 'Should have 3 problem buttons');
 
 		// Problem 1: Not attempted - should have statusN class
-		$this->assertStringContainsString('statusN', $listItems[0]->getAttribute('class'), 'Problem 1 should have statusN (not attempted)');
+		$this->assertStringContainsString('problem-nav__item--N', $listItems[0]->getAttribute('class'), 'Problem 1 should have statusN (not attempted)');
 
 		// Problem 2: Solved - should have statusS class
-		$this->assertStringContainsString('statusS', $listItems[1]->getAttribute('class'), 'Problem 2 should have statusS (solved)');
+		$this->assertStringContainsString('problem-nav__item--S', $listItems[1]->getAttribute('class'), 'Problem 2 should have statusS (solved)');
 
 		// Problem 3: Failed - should have statusF class
-		$this->assertStringContainsString('statusF', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
+		$this->assertStringContainsString('problem-nav__item--F', $listItems[2]->getAttribute('class'), 'Problem 3 should have statusF (failed)');
 	}
 
 	/**
@@ -1542,12 +1542,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Wait for accuracy buttons to be visible
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
 			return count($buttons) > 0 && $buttons[0]->isDisplayed();
 		});
 
 		// Check accuracy buttons are visible
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
 		$this->assertCount(2, $accuracyButtons);
 
 		// Problem 1 should show "3/1" (3 solved, 1 failed)
@@ -1559,7 +1559,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame('-', trim($accuracyButtons[1]->getText()), 'Problem 2 accuracy should be - (no attempts)');
 
 		// Order numbers and time should be hidden
-		$orderButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons1'));
+		$orderButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__number'));
 		foreach ($orderButtons as $btn)
 			$this->assertFalse($btn->isDisplayed(), 'Order numbers should be hidden on Accuracy tab');
 	}
@@ -1593,11 +1593,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Wait for accuracy buttons to be visible
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
 			return count($buttons) > 0 && $buttons[0]->isDisplayed();
 		});
 
-		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons2'));
+		$accuracyButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__ratio'));
 		$this->assertSame('2/5', trim($accuracyButtons[0]->getText()), 'Two solved attempts (3 + 2 misplays) should show 2/5');
 	}
 
@@ -1637,12 +1637,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		// Wait for time buttons to be visible
 		$wait = new \Facebook\WebDriver\WebDriverWait($browser->driver, 10, 200);
 		$wait->until(function ($driver) {
-			$buttons = $driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+			$buttons = $driver->findElements(WebDriverBy::cssSelector('.problem-nav__time'));
 			return count($buttons) > 0 && $buttons[0]->isDisplayed();
 		});
 
 		// Check time buttons are visible
-		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.setViewButtons3'));
+		$timeButtons = $browser->driver->findElements(WebDriverBy::cssSelector('.problem-nav__time'));
 		$this->assertCount(2, $timeButtons);
 
 		// Problem 1 should show "10s" (minimum/best of 10, 20, 30)

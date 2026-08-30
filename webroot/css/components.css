@@ -1563,6 +1563,10 @@ a[data-tsumego-id]:hover .tooltip-desc
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: 1fr 1fr 1fr;
+	grid-template-areas:
+		"collection-top collection-top"
+		"collection-middle-left collection-middle-right"
+		"collection-bottom collection-bottom";
 	gap: 5px;
 	position: relative;
 	box-shadow: 2px 2px 4px black;

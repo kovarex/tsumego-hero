@@ -64,7 +64,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $today . '"', $source);
 
-		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$buttons = $browser->getCssSelect('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 
@@ -93,7 +93,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Latest additions', $source);
 		$this->assertStringContainsString('<time datetime="' . $pastDate . '"', $source);
 
-		$buttons = $browser->getCssSelect('.setViewButtons1');
+		$buttons = $browser->getCssSelect('.problem-nav__number');
 		$this->assertCount(1, $buttons);
 		$this->assertSame('564', $buttons[0]->getText());
 	}
@@ -187,7 +187,7 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString('Level Evaluation', $source);
 		$this->assertStringContainsString('Set Beginner', $source);
 		$this->assertSame(2, substr_count($source, 'class="scheduleTsumego"'));
-		$this->assertCount(2, $browser->getCssSelect('.setViewButtons1'));
+		$this->assertCount(2, $browser->getCssSelect('.problem-nav__number'));
 	}
 
 	/**

@@ -606,7 +606,7 @@ class UserSetsControllerTest extends TestCaseWithAuth
 		$browser->get('sets/mine');
 
 		// The colored fill must actually be visible (not a 0px transparent div)
-		$fill = $browser->driver->findElement(WebDriverBy::cssSelector('.set-progress-fill'));
+		$fill = $browser->driver->findElement(WebDriverBy::cssSelector('.progress__fill'));
 		$this->assertSame('5px', $fill->getCSSValue('height'));
 		$this->assertTextContains('width: 100%', $fill->getAttribute('style'));
 	}

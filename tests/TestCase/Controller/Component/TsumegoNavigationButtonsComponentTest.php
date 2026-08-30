@@ -21,7 +21,7 @@ class TsumegoNavigationButtonsTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get($context->tsumegos[0]['set-connections'][0]['id']);
-		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.tsumegoNavi2'));
+		$div = $browser->driver->findElement(WebDriverBy::cssSelector('.problem-nav__inner'));
 		$links = $div->findElements(WebDriverBy::tagName('a'));
 
 		// checking that the generated navigation buttons numbers and their links match the expected values
