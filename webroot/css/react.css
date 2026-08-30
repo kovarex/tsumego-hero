@@ -45,14 +45,14 @@
 	font-family: Georgia, serif;
 	font-size: 15px;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-color);
 	cursor: pointer;
 	text-decoration: none;
 }
 
 .tsumego-comments__toggle:hover
 {
-	color: #1e6bb8;
+	color: var(--color-blue-accent);
 }
 
 .tsumego-comments__arrow
@@ -75,8 +75,8 @@
 .tsumego-comments__tab
 {
 	padding: 8px 16px;
-	border: 1px solid #ccc;
-	background: #f5f5f5;
+	border: 1px solid var(--current-border-color);
+	background: var(--surface-bar);
 	cursor: pointer;
 	border-radius: 4px;
 	font-family: Georgia, serif;
@@ -85,28 +85,28 @@
 
 .tsumego-comments__tab.active
 {
-	background: #717171;
-	color: white;
-	border-color: #717171;
+	background: var(--text-softer-color);
+	color: var(--color-white);
+	border-color: var(--text-softer-color);
 }
 
 .tsumego-comments__tab:hover:not(.active)
 {
-	background: #e5e5e5;
+	background: var(--surface-hover);
 }
 
 /* Empty state for COMMENTS tab - no content */
 
 .tsumego-comments__tab--empty
 {
-	color: #999;
-	background: #f0f0f0;
-	border-color: #ddd;
+	color: var(--text-softer-color);
+	background: var(--info-box-background);
+	border-color: var(--current-border-color);
 }
 
 .tsumego-comments__tab--empty:hover
 {
-	background: #e8e8e8;
+	background: var(--surface-hover);
 }
 
 .tsumego-comments__open-badge
@@ -121,9 +121,9 @@
 {
 	margin: 20px 14px;
 	padding: 15px;
-	border: 2px solid #ccc;
+	border: 2px solid var(--current-border-color);
 	border-radius: 8px;
-	background: #fafafa;
+	background: var(--info-box-background);
 }
 
 .tsumego-issue--opened
@@ -165,13 +165,13 @@
 .tsumego-issue--pending
 {
 	opacity: 0.7;
-	border-color: #aaa;
+	border-color: var(--text-softer-color);
 	border-style: dashed;
 }
 
 .tsumego-issue--pending .tsumego-issue__header
 {
-	color: #999;
+	color: var(--text-softer-color);
 }
 
 .tsumego-issue__header
@@ -182,25 +182,25 @@
 	gap: 10px;
 	padding-bottom: 10px;
 	margin-bottom: 10px;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid var(--current-border-color);
 }
 
 .tsumego-issue__title
 {
 	font-weight: bold;
 	font-size: 14px;
-	color: #333;
+	color: var(--text-color);
 }
 
 .tsumego-issue__title a
 {
-	color: #007bff;
+	color: var(--color-blue-accent);
 	text-decoration: none;
 }
 
 .tsumego-issue__title a:hover
 {
-	color: #0056b3;
+	color: var(--color-blue-accent-hover);
 	text-decoration: underline;
 }
 
@@ -226,7 +226,7 @@
 
 .tsumego-issue__meta
 {
-	color: #717171;
+	color: var(--text-softer-color);
 	font-size: 12px;
 	font-style: italic;
 }
@@ -243,7 +243,7 @@
 
 .tsumego-issue__empty
 {
-	color: #999;
+	color: var(--text-softer-color);
 	font-style: italic;
 	padding: 10px;
 }
@@ -253,38 +253,38 @@
 .tsumego-issue__reply-toggle
 {
 	padding: 8px 14px;
-	border-top: 1px dashed #ddd;
+	border-top: 1px dashed var(--current-border-color);
 }
 
 .tsumego-issue__reply-btn
 {
 	background: transparent;
-	border: 1px solid #888;
+	border: 1px solid var(--text-softer-color);
 	border-radius: 4px;
 	padding: 5px 12px;
 	font-size: 12px;
 	cursor: pointer;
-	color: #666;
+	color: var(--text-softer-color);
 }
 
 .tsumego-issue__reply-btn:hover
 {
-	background: #f5f5f5;
-	border-color: #666;
+	background: var(--surface-bar);
+	border-color: var(--text-softer-color);
 }
 
 .tsumego-issue__reply-form
 {
 	padding: 10px 14px;
-	background: #f8f8f8;
-	border-top: 1px solid #eee;
+	background: var(--surface-bar);
+	border-top: 1px solid var(--surface-hover);
 }
 
 .tsumego-issue__reply-form textarea
 {
 	width: 100%;
 	padding: 8px;
-	border: 1px solid #ccc;
+	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
 	font-family: inherit;
 	font-size: 13px;
@@ -310,8 +310,8 @@
 
 .tsumego-issue__reply-actions button[type="submit"]
 {
-	background: #4a90d9;
-	color: white;
+	background: var(--color-blue-accent);
+	color: var(--color-white);
 	border: none;
 }
 
@@ -322,8 +322,8 @@
 
 .tsumego-issue__reply-actions button[type="button"]
 {
-	background: #e0e0e0;
-	border: 1px solid #ccc;
+	background: var(--surface-hover);
+	border: 1px solid var(--current-border-color);
 }
 
 .tsumego-issue__reply-actions button[type="button"]:hover
@@ -340,7 +340,7 @@
 {
 	margin: 10px 14px;
 	padding-bottom: 10px;
-	border-bottom: 1px dotted #ddd;
+	border-bottom: 1px dotted var(--current-border-color);
 }
 
 .tsumego-comment--standalone:last-child
@@ -373,16 +373,16 @@
 .tsumego-comment__time
 {
 	font-size: 11px;
-	color: #999;
+	color: var(--text-softer-color);
 }
 
 /* Go coordinate styling - hover to highlight on board */
 
 .go-coord
 {
-	color: #1e6bb8;
+	color: var(--color-blue-accent);
 	cursor: help;
-	border-bottom: 1px dotted #1e6bb8;
+	border-bottom: 1px dotted var(--color-blue-accent);
 	font-weight: 500;
 	padding: 0 2px;
 	border-radius: 2px;
@@ -417,13 +417,13 @@
 	display: inline-block;
 	margin-top: 5px;
 	font-size: 11px;
-	color: #888 !important;
+	color: var(--text-softer-color) !important;
 	text-decoration: none;
 }
 
 .moveToIssue:hover
 {
-	color: #113cd4 !important;
+	color: var(--color-blue-accent) !important;
 	text-decoration: underline;
 }
 
@@ -432,20 +432,20 @@
 .deleteComment
 {
 	background: transparent;
-	border: 1px solid #d33;
+	border: 1px solid var(--feedback-error);
 	font-size: 11px;
 	cursor: pointer;
 	padding: 2px 6px;
 	margin-top: 3px;
 	border-radius: 3px;
-	color: #c00;
+	color: var(--feedback-error);
 	transition: background-color 0.15s, color 0.15s;
 }
 
 .deleteComment:hover
 {
-	background: #d33;
-	color: #fff;
+	background: var(--feedback-error);
+	color: var(--color-white);
 }
 
 /* Make Issue button for standalone comments */
@@ -454,7 +454,7 @@
 {
 	background: #f0ad4e;
 	border: 1px solid #c87f0a;
-	color: #fff;
+	color: var(--color-white);
 	font-size: 11px;
 	cursor: pointer;
 	padding: 2px 8px;
@@ -481,12 +481,12 @@
 {
 	padding: 15px;
 	text-align: center;
-	color: #717171;
+	color: var(--text-softer-color);
 }
 
 .tsumego-comments__login-prompt a
 {
-	color: #113cd4;
+	color: var(--color-blue-accent);
 }
 
 /* Add Comment form styling */
@@ -495,7 +495,7 @@
 {
 	margin: 20px 14px;
 	padding: 15px;
-	background: #f5f5f5;
+	background: var(--surface-bar);
 	border-radius: 8px;
 }
 
@@ -510,7 +510,7 @@
 	width: 100%;
 	min-height: 80px;
 	padding: 8px;
-	border: 1px solid #ccc;
+	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
 	resize: vertical;
 	font-family: inherit;
@@ -522,7 +522,7 @@
 {
 	text-align: right;
 	font-size: 11px;
-	color: #777;
+	color: var(--text-softer-color);
 	margin-top: 2px;
 	margin-bottom: 8px;
 }
@@ -548,7 +548,7 @@
 .tsumego-comments__position-btn
 {
 	background: transparent;
-	border: 1px solid #999;
+	border: 1px solid var(--text-softer-color);
 	border-radius: 4px;
 	padding: 4px 8px;
 	font-size: 12px;
@@ -560,7 +560,7 @@
 
 .tsumego-comments__position-btn:hover
 {
-	background: #eee;
+	background: var(--surface-hover);
 }
 
 .tsumego-comments__position-indicator
@@ -579,8 +579,8 @@
 .tsumego-comments__submit-btn
 {
 	margin-top: 12px;
-	background: #4a90d9;
-	color: white;
+	background: var(--color-blue-accent);
+	color: var(--color-white);
 	border: none;
 	border-radius: 4px;
 	padding: 8px 16px;
@@ -606,8 +606,8 @@
 
 .tsumego-comments__cancel-btn
 {
-	background: #e0e0e0;
-	border: 1px solid #ccc;
+	background: var(--surface-hover);
+	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
 	padding: 8px 16px;
 	font-size: 13px;
@@ -637,7 +637,7 @@
 
 .tsumego-comments__dialog-content
 {
-	background: white;
+	background: var(--info-box-background);
 	padding: 20px;
 	border-radius: 8px;
 	min-width: 300px;
@@ -653,7 +653,7 @@
 {
 	width: 100%;
 	padding: 8px;
-	border: 1px solid #ccc;
+	border: 1px solid var(--current-border-color);
 	border-radius: 4px;
 	font-size: 13px;
 	margin-bottom: 15px;
@@ -676,15 +676,15 @@
 
 .tsumego-comments__dialog-buttons button[type="submit"]
 {
-	background: #4a90d9;
-	color: white;
+	background: var(--color-blue-accent);
+	color: var(--color-white);
 	border: none;
 }
 
 .tsumego-comments__dialog-buttons button[type="button"]
 {
-	background: #e0e0e0;
-	border: 1px solid #ccc;
+	background: var(--surface-hover);
+	border: 1px solid var(--current-border-color);
 }
 
 /* Remove from Issue link */
@@ -720,7 +720,7 @@
 	display: inline-block;
 	cursor: grab;
 	font-size: 24px;
-	color: #999;
+	color: var(--text-softer-color);
 	user-select: none;
 	padding: 8px 10px;
 	border-radius: 4px;
@@ -729,14 +729,14 @@
 
 .tsumego-comment__drag-handle:hover
 {
-	color: #555;
+	color: var(--text-softer-color);
 	background-color: rgba(0, 0, 0, 0.1);
 }
 
 .tsumego-comment__drag-handle:active
 {
 	cursor: grabbing;
-	color: #333;
+	color: var(--text-color);
 }
 
 /* Comment being dragged */
@@ -781,7 +781,7 @@
 
 .tsumego-issue__drop-overlay span
 {
-	color: #fff;
+	color: var(--color-white);
 	font-weight: bold;
 	font-size: 14px;
 	text-shadow: 0 1px 2px rgba(0,0,0,0.3);
@@ -790,7 +790,7 @@
 .tsumego-issue__drop-overlay--active
 {
 	background: rgba(51, 122, 183, 0.9);
-	border-color: #fff;
+	border-color: var(--color-white);
 }
 
 /* Source issue overlay - different color for return */
@@ -804,7 +804,7 @@
 .tsumego-issue__drop-overlay--source.tsumego-issue__drop-overlay--active
 {
 	background: rgba(200, 127, 10, 0.9);
-	border-color: #fff;
+	border-color: var(--color-white);
 }
 
 .tsumego-dnd__issue-dropzone
@@ -818,12 +818,12 @@
 {
 	margin: 10px 14px;
 	padding: 20px;
-	border: 2px dashed #aaa;
+	border: 2px dashed var(--text-softer-color);
 	border-radius: 8px;
 	text-align: center;
 	font-size: 14px;
-	color: #666;
-	background: #f9f9f9;
+	color: var(--text-softer-color);
+	background: var(--info-box-background);
 	transition: all 0.15s ease;
 }
 
@@ -843,9 +843,9 @@
 
 .tsumego-dnd__dropzone--active
 {
-	border-color: #4a90d9;
+	border-color: var(--color-blue-accent);
 	background: rgba(74, 144, 217, 0.1);
-	color: #333;
+	color: var(--text-color);
 }
 
 .tsumego-dnd__dropzone--standalone.tsumego-dnd__dropzone--active
@@ -866,11 +866,11 @@
 {
 	padding: 12px;
 	margin-bottom: 8px;
-	border: 2px dashed #4a90d9;
+	border: 2px dashed var(--color-blue-accent);
 	border-radius: 6px;
 	text-align: center;
 	font-size: 13px;
-	color: #4a90d9;
+	color: var(--color-blue-accent);
 	background: rgba(74, 144, 217, 0.08);
 }
 
@@ -878,7 +878,7 @@
 
 .tsumego-issue--drop-target
 {
-	border-color: #4a90d9 !important;
+	border-color: var(--color-blue-accent) !important;
 	box-shadow: 0 0 8px rgba(74, 144, 217, 0.3);
 }
 
@@ -912,41 +912,41 @@
 
 [data-theme=light] .tsumego-issue
 {
-	background: #fafafa !important;
-	border-color: #ccc !important;
+	background: var(--info-box-background) !important;
+	border-color: var(--current-border-color) !important;
 }
 
 [data-theme=light] .tsumego-issue__header
 {
-	border-bottom-color: #ddd !important;
+	border-bottom-color: var(--current-border-color) !important;
 }
 
 [data-theme=light] .tsumego-issue__title
 {
-	color: #333 !important;
+	color: var(--text-color) !important;
 }
 
 [data-theme=light] .tsumego-issue__meta
 {
-	color: #666 !important;
+	color: var(--text-softer-color) !important;
 }
 
 [data-theme=light] .tsumego-comments__form
 {
-	background: #f5f5f5 !important;
-	border-color: #ddd !important;
+	background: var(--surface-bar) !important;
+	border-color: var(--current-border-color) !important;
 }
 
 [data-theme=light] .tsumego-comments__form textarea
 {
-	background: #fff !important;
-	color: #333 !important;
-	border-color: #ccc !important;
+	background: var(--info-box-background) !important;
+	color: var(--text-color) !important;
+	border-color: var(--current-border-color) !important;
 }
 
 [data-theme=light] .tsumego-comments__form h4
 {
-	color: #333 !important;
+	color: var(--text-color) !important;
 }
 
 /* =============================================================================
@@ -962,7 +962,7 @@
 
 .issues-page__description
 {
-	color: #666;
+	color: var(--text-softer-color);
 	margin-bottom: 20px;
 }
 
@@ -978,28 +978,28 @@
 	padding: 8px 16px;
 	border-radius: 4px;
 	text-decoration: none;
-	background: #f0f0f0;
-	color: #333;
+	background: var(--surface-hover);
+	color: var(--text-color);
 }
 
 .issues-filter--active
 {
-	background: #007bff;
-	color: white;
+	background: var(--color-blue-accent);
+	color: var(--color-white);
 }
 
 .issues-list__item
 {
-	border: 1px solid #ddd;
+	border: 1px solid var(--current-border-color);
 	border-radius: 8px;
 	padding: 15px;
 	margin-bottom: 15px;
-	background: white;
+	background: var(--info-box-background);
 }
 
 .issues-list__item--opened
 {
-	border-left: 4px solid #dc3545;
+	border-left: 4px solid var(--feedback-error);
 }
 
 .issues-list__item--closed
@@ -1028,26 +1028,26 @@
 .issues-list__title
 {
 	font-weight: bold;
-	color: #007bff;
+	color: var(--color-blue-accent);
 	text-decoration: none;
 }
 
 .issues-list__meta
 {
-	color: #666;
+	color: var(--text-softer-color);
 	font-size: 14px;
 }
 
 .issues-list__meta a
 {
-	color: #007bff;
+	color: var(--color-blue-accent);
 }
 
 .issues-list__preview
 {
 	color: #444;
 	padding: 10px;
-	background: #f8f9fa;
+	background: var(--info-box-background);
 	border-radius: 4px;
 	margin-bottom: 10px;
 }
@@ -1068,7 +1068,7 @@
 
 .issues-list__problem-ref
 {
-	background: #e9ecef;
+	background: var(--surface-hover);
 	padding: 8px 14px;
 	margin: 15px 0 0 0;
 	border-radius: 6px 6px 0 0;
@@ -1078,7 +1078,7 @@
 
 .issues-list__problem-ref a
 {
-	color: #007bff;
+	color: var(--color-blue-accent);
 	text-decoration: none;
 }
 
@@ -1105,7 +1105,7 @@
 
 [data-theme=dark] .tsumego-issue
 {
-	background: linear-gradient(#3a3a3a, #2a2a2a);
+	background: linear-gradient(var(--surface-hover), var(--info-box-background));
 	border-color: #555;
 }
 
@@ -1121,48 +1121,16 @@
 	border-left-color: #5cb85c;
 }
 
-[data-theme=dark] .tsumego-issue__header
-{
-	border-bottom-color: #444;
-}
-
-[data-theme=dark] .tsumego-issue__title
-{
-	color: #f0f0f0;
-}
-
-[data-theme=dark] .tsumego-issue__title a
-{
-	color: #6db3f2;
-}
-
-[data-theme=dark] .tsumego-issue__title a:hover
-{
-	color: #9dd0ff;
-}
-
 [data-theme=dark] .tsumego-issue__badge.status--opened
 {
 	background: #5a2a2a;
-	color: #ff6b6b;
+	color: var(--feedback-error);
 }
 
 [data-theme=dark] .tsumego-issue__badge.status--closed
 {
 	background: #2a4a2a;
 	color: #6bff6b;
-}
-
-[data-theme=dark] .tsumego-issue__meta
-{
-	color: #999;
-}
-
-/* Standalone comments separator */
-
-[data-theme=dark] .tsumego-comment--standalone
-{
-	border-bottom-color: #444;
 }
 
 /* Comments Toggle Header - dark theme */
@@ -1181,7 +1149,7 @@
 
 [data-theme=dark] .tsumego-comments__tab
 {
-	background: #3a3a3a;
+	background: var(--surface-hover);
 	border-color: #555;
 	color: #ccc;
 }
@@ -1189,23 +1157,14 @@
 [data-theme=dark] .tsumego-comments__tab.active
 {
 	background: #555;
-	border-color: #666;
-	color: #fff;
 }
 
 [data-theme=dark] .tsumego-comments__tab:hover:not(.active)
 {
-	background: #444;
+	background: var(--surface-hover-strong);
 }
 
 /* Empty tab dark theme */
-
-[data-theme=dark] .tsumego-comments__tab--empty
-{
-	color: #777;
-	background: #2a2a2a;
-	border-color: #444;
-}
 
 [data-theme=dark] .tsumego-comments__tab--empty:hover
 {
@@ -1235,18 +1194,6 @@
 	}
 }
 
-/* Login prompt */
-
-[data-theme=dark] .tsumego-comments__login-prompt
-{
-	color: #999;
-}
-
-[data-theme=dark] .tsumego-comments__login-prompt a
-{
-	color: #70ddff;
-}
-
 /* Comments inside issues - dark theme */
 
 [data-theme=dark] .tsumego-issue .sandboxComment
@@ -1254,33 +1201,6 @@
 	background: transparent;
 	box-shadow: none;
 	border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Move to Issue link - dark theme */
-
-[data-theme=dark] .moveToIssue
-{
-	color: #888 !important;
-}
-
-[data-theme=dark] .moveToIssue:hover
-{
-	color: #70ddff !important;
-}
-
-/* Delete button - dark theme */
-
-[data-theme=dark] .deleteComment
-{
-	color: #ff6b6b;
-	border-color: #ff6b6b;
-}
-
-[data-theme=dark] .deleteComment:hover
-{
-	background: #ff4444;
-	color: #fff;
-	border-color: #ff4444;
 }
 
 /* Make Issue button - dark theme */
@@ -1291,39 +1211,34 @@
 	border-color: #a66508;
 }
 
-[data-theme=dark] .tsumego-comment__make-issue-btn:hover
-{
-	background: #ec971f;
-}
-
 /* Add Comment form - dark theme */
 
 [data-theme=dark] .tsumego-comments__form
 {
-	background: #3a3a3a;
+	background: var(--surface-hover);
 }
 
 [data-theme=dark] .tsumego-comments__form h4
 {
-	color: #f0f0f0;
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-comments__form textarea
 {
-	background: #2a2a2a;
+	background: var(--info-box-background);
 	border-color: #555;
-	color: #f0f0f0;
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-comments__form textarea:focus
 {
-	border-color: #70ddff;
+	border-color: var(--color-blue-accent);
 	outline: none;
 }
 
 [data-theme=dark] .tsumego-comments__form textarea::placeholder
 {
-	color: #888;
+	color: var(--text-softer-color);
 }
 
 [data-theme=dark] .tsumego-comments__form label
@@ -1333,8 +1248,7 @@
 
 [data-theme=dark] .tsumego-comments__position-btn
 {
-	background: #444;
-	border-color: #666;
+	background: var(--surface-hover-strong);
 	color: #ccc;
 }
 
@@ -1358,8 +1272,8 @@
 [data-theme=dark] .tsumego-comments__cancel-btn
 {
 	background: #555;
-	border-color: #666;
-	color: #f0f0f0;
+	border-color: var(--text-softer-color);
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-comments__cancel-btn:hover
@@ -1368,12 +1282,6 @@
 }
 
 /* Go coordinate - dark theme */
-
-[data-theme=dark] .go-coord
-{
-	color: #6db3f2;
-	border-bottom-color: #6db3f2;
-}
 
 [data-theme=dark] .go-coord:hover
 {
@@ -1385,22 +1293,22 @@
 
 [data-theme=dark] .tsumego-comments__dialog-content
 {
-	background: #3a3a3a;
-	color: #f0f0f0;
+	background: var(--surface-hover);
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-comments__dialog-content select
 {
-	background: #2a2a2a;
+	background: var(--info-box-background);
 	border-color: #555;
-	color: #f0f0f0;
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-comments__dialog-buttons button[type="button"]
 {
 	background: #555;
-	border-color: #666;
-	color: #f0f0f0;
+	border-color: var(--text-softer-color);
+	color: var(--text-color);
 }
 
 /* Remove from Issue link - dark theme */
@@ -1422,48 +1330,41 @@
 	border-top-color: #555;
 }
 
-[data-theme=dark] .tsumego-issue__reply-btn
-{
-	color: #aaa;
-	border-color: #666;
-}
-
 [data-theme=dark] .tsumego-issue__reply-btn:hover
 {
-	background: #444;
-	border-color: #888;
-	color: #ddd;
+	background: var(--surface-hover-strong);
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-issue__reply-form
 {
 	background: #333;
-	border-top-color: #444;
+	border-top-color: var(--surface-hover-strong);
 }
 
 [data-theme=dark] .tsumego-issue__reply-form textarea
 {
-	background: #2a2a2a;
+	background: var(--info-box-background);
 	border-color: #555;
-	color: #f0f0f0;
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-issue__reply-form textarea:focus
 {
-	border-color: #70ddff;
+	border-color: var(--color-blue-accent);
 	outline: none;
 }
 
 [data-theme=dark] .tsumego-issue__reply-form textarea::placeholder
 {
-	color: #888;
+	color: var(--text-softer-color);
 }
 
 [data-theme=dark] .tsumego-issue__reply-actions button[type="button"]
 {
 	background: #555;
-	border-color: #666;
-	color: #f0f0f0;
+	border-color: var(--text-softer-color);
+	color: var(--text-color);
 }
 
 [data-theme=dark] .tsumego-issue__reply-actions button[type="button"]:hover
@@ -1475,28 +1376,21 @@
    Issues Page (/tsumego-issues) - Dark Theme
    ============================================================================= */
 
-[data-theme=dark] .issues-page__description
-{
-	color: #999;
-}
-
 [data-theme=dark] .issues-filter
 {
-	background: #3a3a3a;
 	color: #ccc;
 }
 
 [data-theme=dark] .issues-filter--active
 {
 	background: #007bff;
-	color: white;
 }
 
 [data-theme=dark] .issues-list__item
 {
 	border-color: #555;
-	background: linear-gradient(#3a3a3a, #2a2a2a);
-	color: #f0f0f0;
+	background: linear-gradient(var(--surface-hover), var(--info-box-background));
+	color: var(--text-color);
 }
 
 [data-theme=dark] .issues-list__item--opened
@@ -1504,15 +1398,10 @@
 	border-left-color: #dc3545;
 }
 
-[data-theme=dark] .issues-list__item--closed
-{
-	border-left-color: #28a745;
-}
-
 [data-theme=dark] .badge--opened
 {
 	background: #5a2a2a;
-	color: #ff6b6b;
+	color: var(--feedback-error);
 }
 
 [data-theme=dark] .badge--closed
@@ -1521,28 +1410,22 @@
 	color: #6bff6b;
 }
 
-[data-theme=dark] .issues-list__meta
-{
-	color: #999;
-}
-
 [data-theme=dark] .issues-list__preview
 {
-	background: #2a2a2a;
 	color: #ccc;
 }
 
 [data-theme=dark] .issues-list__empty
 {
-	color: #999;
+	color: var(--text-softer-color);
 }
 
 /* Sandbox comment box (legacy shared: sandbox page + issue comments) */
 .sandboxComment
 {
-	background-color: #ddd;
+	background-color: var(--surface-hover-strong);
 	padding: 14px;
-	box-shadow: 2px 2px #999;
+	box-shadow: 2px 2px var(--text-softer-color);
 	border-radius: 9px;
 }
 

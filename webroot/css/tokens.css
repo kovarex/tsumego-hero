@@ -27,6 +27,13 @@
 		--color-red-fill: #e05555;
 		--color-red-fill-dark: #a02020;
 
+		/* ── Accent / feedback tokens (auto-adapt light ↔ dark) ── */
+		--color-blue-accent: #007bff;
+		--color-blue-accent-hover: #0056b3;
+		--feedback-error: #e03c4b;
+		--surface-hover: #eee;
+		--surface-hover-strong: #ddd;
+
 		/* ── Spacing and radius ── */
 		--space-1: 4px;
 		--space-2: 8px;
@@ -112,5 +119,10 @@
 		--paginator-info-text-color: #999;
 		--admin-text-color: #7EE0FF;
 		--info-box-background: #2a2a2a;
+		--color-blue-accent: #6db3f2;
+		--color-blue-accent-hover: #9dd0ff;
+		--feedback-error: #ff6b6b;
+		--surface-hover: #3a3a3a;
+		--surface-hover-strong: #444;
 	}
 }
