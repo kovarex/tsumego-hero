@@ -1,5 +1,7 @@
 /* Page layer: home.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 .homeLeft {
   text-align: justify;
   padding: 0 3px 0 6px;
@@ -107,19 +109,15 @@
   border: 1px solid #777;
   border-radius: 4px;
 }
-}
 /* ── Mode button (home mode tiles) ── */
-.mode-button
-{
+.mode-button {
 	position: relative;
 	z-index: 0;
 	display: inline-block;
 	line-height: 0;
 	cursor: pointer;
 }
-
-.mode-button::before
-{
+.mode-button::before {
 	content: "";
 	position: absolute;
 	left: 50%;
@@ -134,62 +132,42 @@
 	transition: opacity 0.15s ease;
 	pointer-events: none;
 }
-
-.mode-button img
-{
+.mode-button img {
 	position: relative;
 	z-index: 1;
 	display: block;
 	transition: filter 0.15s ease;
 }
-
-.mode-button:hover::before
-{
+.mode-button:hover::before {
 	opacity: 1;
 }
-
-.mode-button:hover img
-{
+.mode-button:hover img {
 	filter: brightness(1.45) saturate(1.6);
 }
-
-.mode-button-level
-{
+.mode-button-level {
 	--mode-glow: #8cff2e;
 }
-
-.mode-button-rating
-{
+.mode-button-rating {
 	--mode-glow: #e05cff;
 }
-
-.mode-button-time
-{
+.mode-button-time {
 	--mode-glow: #ffa04a;
 }
-
-.mode-button-achievements
-{
+.mode-button-achievements {
 	--mode-glow: #4dffe6;
 }
-
-.mode-button-disabled::before
-{
+.mode-button-disabled::before {
 	display: none;
 }
-
 .mode-button-disabled,
-.mode-button-disabled:hover
-{
+.mode-button-disabled:hover {
 	cursor: default;
 	filter: grayscale(1) opacity(0.65);
 }
-
-.mode-button-disabled:hover img
-{
+.mode-button-disabled:hover img {
 	filter: none;
-@layer page
-{
+}
+
 #recent-achievement-stream {
   font-size: 14px;
   position: absolute;
@@ -372,5 +350,4 @@
   font-family: Helvetica, Times New Roman, verdana;
 }
 
-} /* end @layer page */
 }

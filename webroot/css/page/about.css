@@ -1,5 +1,7 @@
 /* Page layer: about.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 .privacy-policy-list li {
   width: 100%;
 }

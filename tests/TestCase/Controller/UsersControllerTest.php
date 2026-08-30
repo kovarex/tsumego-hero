@@ -182,7 +182,7 @@ class UsersControllerTest extends ControllerTestCase
 			['Completed:', '2 of 2'], // one problem in two sets still counted as one
 			['100%']]);
 
-		$this->assertSame('Reset old progress (1)', $browser->find('#reset-statuses-button')->getText());
+		$this->assertSame('RESET OLD PROGRESS (1)', $browser->find('#reset-statuses-button')->getText());
 
 		// clicking reset removes the status
 		$this->assertNotEmpty(ClassRegistry::init('TsumegoStatus')->find('first', ['conditions' => ['tsumego_id' => $context->tsumegos[1]['id']]]));

@@ -1,5 +1,7 @@
 /* Page layer: play.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 @keyframes blinker {
   50% {
     opacity: 0.4;

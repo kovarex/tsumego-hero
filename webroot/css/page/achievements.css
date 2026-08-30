@@ -1,5 +1,7 @@
 /* Page layer: achievements.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 .achievemetProfileLink {
   position: absolute;
   float: right;
@@ -304,10 +306,8 @@
   font-style: italic;
   margin: 20px 8px;
 }
-}
 /* ── Rarity badge ── */
-.rarity
-{
+.rarity {
 	display: inline-block;
 	padding: 2px 8px;
 	border-radius: var(--radius-full);
@@ -317,33 +317,24 @@
 	letter-spacing: 0.5px;
 	margin-left: var(--space-2);
 }
-
-.rarity--common
-{
+.rarity--common {
 	color: var(--color-green-dark);
 	background: var(--color-green-light);
 }
-
-.rarity--uncommon
-{
+.rarity--uncommon {
 	color: var(--color-blue-dark);
 	background: var(--color-blue);
 }
-
-.rarity--rare
-{
+.rarity--rare {
 	color: var(--color-purple);
 	background: var(--color-blue-dark);
 }
-
-.rarity--ultra-rare
-{
+.rarity--ultra-rare {
 	color: var(--color-yellow);
 	background: var(--color-red);
 }
 /* ── Achievement-completed popup (built by AchievementAlerts.js) ── */
-.achievement-popup
-{
+.achievement-popup {
 	position: fixed;
 	width: 1000px;
 	bottom: 1%;
@@ -378,9 +369,7 @@
 	);
 	border: 1px solid black;
 }
-
-.achievement-popup .alertBanner
-{
+.achievement-popup .alertBanner {
 	border-top-left-radius: 8px;
 	border-top-right-radius: 8px;
 	background: linear-gradient(rgb(100, 100, 100), rgb(36, 36, 36));
@@ -389,30 +378,23 @@
 	width: 100%;
 	font-weight: 800;
 }
-
-.achievement-popup .alertClose
-{
+.achievement-popup .alertClose {
 	float: right;
 	padding: 1px 5px 5px 5px;
 	font-size: 12px;
 }
-
-.achievement-popup .alertText
-{
+.achievement-popup .alertText {
 	display: table;
 	margin: 10px;
 	width: 100%;
 	text-align: center;
 	font-size: 16px;
 }
-
-.achievement-popup #hpIcon1
-{
+.achievement-popup #hpIcon1 {
 	top: 15px;
 	position: relative;
 	width: 40px;
 }
-
 /* Text color per achievement (suffix 3 = popup variant; class built
    dynamically as achievement.color + '3' in AchievementAlerts.js). */
 .achievementColorBlack3 { color: #000; }
@@ -441,4 +423,5 @@
   100% {
     opacity: 0.9;
   }
+}
 }

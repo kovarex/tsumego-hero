@@ -1,5 +1,7 @@
 /* Page layer: site.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 body {
 	font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
 	font-size: 100%;
@@ -934,7 +936,6 @@ nav ul ul ul li {
 }
 .grey-link { color: var(--text-softer-color); }
 .grey-text { color: var(--text-softer-color); }
-}
 li {
   list-style-type: none;
   float: left;
@@ -958,4 +959,5 @@ li {
 figure,
 ul ul {
   margin: 0;
+}
 }

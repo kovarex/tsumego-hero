@@ -1,5 +1,7 @@
 /* Page layer: sets.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 .setViewCompleted {
   color: #45ac6e;
   margin: 2px 9px;
@@ -168,7 +170,6 @@
   margin: 5px auto;
   width: 1228px;
 }
-}
 /* dropdown-tile + tile-color1-4 moved to components.css (dropdown__tile + modifiers). */
 /* tiles-submit* + dropdown-boxes moved to components.css (dropdown__tile-actions*, dropdown__menu). */
 #dropdown-topics {
@@ -178,6 +179,7 @@
   left: 37px;
   max-width: 900px;
   z-index: 100;
+}
 /* ══════════════════════════════════════════════════════
    Sets pages (create/edit UI)
    Page-specific layout only. Reusable components
@@ -185,8 +187,7 @@
    live in components.css.
    ══════════════════════════════════════════════════════ */
 
-@layer page
-{
+
 .set-edit
 {
 	max-width: 900px;
@@ -382,5 +383,4 @@
 		grid-template-columns: 1fr;
 	}
 }
-} /* end @layer page */
 }

@@ -1,5 +1,7 @@
 /* Page layer: timemode.css (split from default.css). */
-@layer page {
+
+@layer page
+{
 .timeTableMiddle {
   border-top: 1px solid black;
   border-bottom: 1px solid black;
