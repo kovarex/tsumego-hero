@@ -244,11 +244,6 @@ body
   text-decoration: underline;
   cursor: pointer;
 }
-
-.sandboxComment2 {
-  position: absolute;
-  right: 0;
-}
 .sandboxTable2 {
   padding: 0;
   margin: 0;
@@ -262,13 +257,6 @@ body
   margin: 0;
 }
 /* Global element defaults (a, a:hover) moved to base.css (@layer base). */
-
-div.tableLayout {
-  background-color: #e6e6e6;
-  padding: 5px;
-  -moz-border-radius: 20px;
-  border-radius: 20px;
-}
 /* th/td element padding defaults moved to base.css (@layer base) so component
    table rules (data-table, stat) can override them. */
 ul {
@@ -279,13 +267,6 @@ ul {
 li {
   list-style-type: none;
   float: left;
-}
-
-li.setElement {
-  width: 333px;
-  height: 200px;
-  text-align: center;
-  background-color: grey;
 }
 
 li[class^="status"] {
@@ -642,20 +623,6 @@ li a.menuLi.nav__link--active {
 
 .tag-submit-button {
   display: none;
-}
-.buttonx {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  line-height: 20px;
-  height: 37px;
-  width: 37px;
-  text-decoration: none;
-  text-transform: uppercase;
-  color: #ffffff;
-  background-repeat: no-repeat;
 }
 #sandbox {
   color: black;
@@ -1147,75 +1114,6 @@ li a.menuLi.nav__link--active {
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
-.left2 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  padding: 40px;
-  padding-top: 20px;
-  width: 450px;
-  height: 670px;
-}
-.right2 {
-  position: absolute;
-  top: 0;
-  right: 0;
-  box-sizing: border-box;
-  padding: 30px;
-  width: 450px;
-  height: 670px;
-  background-color: white;
-  background-image: url("/img/loginBg4.png");
-  background-size: cover;
-  background-position: center;
-  border-radius: 0 2px 2px 0;
-}
-.left4 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  padding: 40px;
-  padding-top: 20px;
-  width: 0px;
-  height: 670px;
-}
-.right4 {
-  position: absolute;
-  top: 0;
-  right: 0;
-  box-sizing: border-box;
-  padding: 30px;
-  width: 450px;
-  height: 1970px;
-  background-color: white;
-  background-image: url("/img/loginBg4.png");
-  background-size: contain;
-  background-position: center;
-  background-repeat: yes;
-  border-radius: 0 2px 2px 0;
-}
-.right2a {
-  padding: 5px;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.75);
-}
-.right3 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  padding: 0;
-  width: 900px;
-  height: 670px;
-  background-color: white;
-  background-image: url("/img/loginBg4.png");
-  background-size: cover;
-  background-position: center;
-  border-radius: 0 2px 2px 0;
-}
 .sandboxTable {
   font-size: 16px;
 }
@@ -1226,11 +1124,6 @@ li a.menuLi.nav__link--active {
   vertical-align: text-top;
 }
 /* .sandboxComment moved to components.css (shared: sandbox page + issue comments). */
-
-.sandboxCommentSpace {
-  background-color: #fff;
-  margin-bottom: 10px;
-}
 
 h1 {
   font-family: Georgia;
@@ -2375,10 +2268,6 @@ input:checked + .mode-slider:before {
 .mode-slider.round:before {
   border-radius: 50%;
 }
-.midLongName1 {
-  font-size: 44px !important;
-  white-space: nowrap;
-}
 .mid h2 {
   font-family: "Roboto", sans-serif;
   font-weight: 900;
@@ -2785,10 +2674,6 @@ pre {
   font-weight: 800;
   color: blue;
 }
-.thumbs-small {
-  position: relative;
-  top: 4px;
-}
 
 #newMenu {
   display: inline-block;
@@ -3083,44 +2968,11 @@ nav ul ul ul li {
 .profileTable2 a {
   color: black;
 }
-select.flat-select {
-  -moz-appearance: none;
-  -webkit-appearance: none;
-  appearance: none;
-  border: 0 none;
-  border-radius: 3px;
-  color: #fff;
-  font-family: arial, tahoma;
-  font-size: 16px;
-  font-weight: bold;
-  outline: 0 none;
-  height: 33px;
-  padding: 5px 20px 5px 10px;
-  text-align: center;
-  text-indent: 0.01px;
-  text-overflow: "";
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-  transition: all 0.3s ease 0s;
-  width: auto;
-  -webkit-transition: 0.3s ease all;
-  -moz-transition: 0.3s ease all;
-  -ms-transition: 0.3s ease all;
-  -o-transition: 0.3s ease all;
-  transition: 0.3s ease all;
-}
-select.flat-select:focus,
-select.flat-select:hover {
-  border: 0;
-  outline: 0;
-}
 .apexcharts-canvas {
   margin: 0 auto;
 }
 .apexcharts-active {
   color: black;
-}
-.revelation-anchor {
-  cursor: context-menu;
 }
 #modeSelector {
   width: 9px;
@@ -3344,7 +3196,6 @@ select.flat-select:hover {
   text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
 }
 
-.box.shuffle-item,
 .box:first-child {
   margin-left: 0;
 }
@@ -3376,13 +3227,6 @@ ul ul {
 
 .statsTable td {
   padding: 6px;
-}
-.gameInfo {
-  font-size: 18px;
-  font-weight: 400;
-}
-.gameInfo td {
-  text-align: center;
 }
 /* moved to components.css (.problem-nav). */
 .xpDisplayTable {
