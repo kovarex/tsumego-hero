@@ -27,7 +27,7 @@ export function IssueSkeleton()
 			</div>
 
 			{/* Issue comments (2-3 nested comments) */}
-			<div style={{ paddingLeft: '20px', borderLeft: '2px solid #e0e0e0' }}>
+			<div style={{ paddingLeft: '20px', borderLeft: '2px solid var(--current-border-color)' }}>
 				<CommentSkeleton />
 				<CommentSkeleton />
 			</div>

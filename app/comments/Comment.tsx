@@ -32,7 +32,6 @@ function CoordSpan({ coord }: { coord: string })
 			className="go-coord"
 			data-coord={coord}
 			title="Hover to highlight on board"
-			style={{ cursor: 'pointer', textDecoration: 'underline' }}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 		>

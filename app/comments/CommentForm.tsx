@@ -122,7 +122,7 @@ export function CommentForm({
 				<div
 					className="tsumego-comments__char-counter"
 					style={{
-						color: form.text.length > 1950 ? '#d9534f' : form.text.length > 1800 ? '#f0ad4e' : '#777'
+						color: form.text.length > 1950 ? 'var(--feedback-error)' : form.text.length > 1800 ? 'var(--feedback-warning)' : 'var(--text-softer-color)'
 					}}
 				>
 					<span>{form.text.length}</span> / <span>2000</span> characters

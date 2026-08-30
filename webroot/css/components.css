@@ -495,6 +495,23 @@
 	border: 1px solid var(--current-border-color);
 }
 
+.tag-pill a
+{
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.tag-pill__remove
+{
+	margin-left: var(--space-1);
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--text-softer-color);
+	cursor: pointer;
+	font-size: var(--font-size-md);
+}
+
 /* ── Field (inline group of controls) ── */
 .field
 {
