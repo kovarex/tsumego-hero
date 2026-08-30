@@ -1,5 +1,3 @@
-/* Page layer: auth.css (split from default.css). */
-
 @layer page
 {
 #login-box {
@@ -68,77 +66,6 @@
 }
 [data-theme=dark] .signin {
 	background: #515151;
-}
-/* ── Set card (set collection tiles) ── */
-.set-card__link {
-	text-decoration: none;
-}
-.set-card {
-	width: 225px;
-	height: 150px;
-	background-color: #111;
-	margin: 10px;
-	padding: 10px;
-	border-radius: 10px;
-	color: white;
-	font-size: 18px;
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr 1fr;
-	grid-template-areas:
-		"collection-top collection-top"
-		"collection-middle-left collection-middle-right"
-		"collection-bottom collection-bottom";
-	gap: 5px;
-	position: relative;
-	box-shadow: 2px 2px 4px black;
-}
-.set-card:hover {
-	background-image: linear-gradient(
-		rgba(200, 200, 200, 0.3),
-		rgba(33, 33, 33, 0.35)
-	) !important;
-}
-[data-theme="light"] .set-card:hover {
-	background-image: linear-gradient(
-		rgba(200, 200, 200, 0.6),
-		rgba(33, 33, 33, 0.65)
-	) !important;
-}
-.set-card__top {
-	grid-area: collection-top;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-weight: 800;
-}
-.set-card__middle-left {
-	margin-top: 2px;
-	grid-area: collection-middle-left;
-}
-.set-card__middle-right {
-	margin-top: 2px;
-	grid-area: collection-middle-right;
-}
-.set-card__bottom {
-	font-size: 14px;
-	grid-area: collection-bottom;
-	align-self: end;
-}
-.set-card__completed {
-	animation: fadeIn2 1s ease-in-out;
-	position: absolute;
-	top: 87px;
-	left: 0;
-	right: 0;
-	margin-inline: auto;
-	width: fit-content;
-	text-transform: uppercase;
-	font-size: 15px;
-	font-weight: 800;
-	letter-spacing: 0.06em;
-	color: transparent;
-	text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
 }
 .left {
   position: absolute;

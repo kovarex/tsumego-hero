@@ -115,6 +115,6 @@
     url("/fonts/Exo-BlackItalic.woff") format("woff");
 }
 
-/* Legacy global sheet — demoted to the page layer. Design-system components
+/* Legacy global sheet - demoted to the page layer. Design-system components
    (components layer) are authoritative as rules are lifted out of here; this
    file shrinks to zero over the course of the migration. */

@@ -72,9 +72,6 @@ body {
 .loader-text {
   animation: blinker 1.5s linear infinite;
 }
-/* moved to components.css (.problem-nav). */
-
-/* moved to components.css (.problem-nav). */
 
 @keyframes goldenShine {
   0% { left: -75%; }
@@ -114,12 +111,6 @@ li a.menuLi {
   font-weight: 700;
   line-height: 20px;
   cursor: pointer;
-}
-#leaderboard-menu {
-  margin-top: 0;
-}
-#sandbox-menu {
-  margin-top: 0;
 }
 #refreshLinkToSandbox {
   margin-top: 0;
@@ -254,24 +245,6 @@ li a.menuLi.nav__link--active {
 }
 #account-bar-xp p {
   position: relative;
-}
-#bar-0 {
-  float: left;
-  margin-left: 36px;
-}
-#bar-1 {
-  float: left;
-  margin: 0;
-}
-#bar-2 {
-  float: left;
-  margin: 0;
-  font-family: Arial;
-}
-#bar-3 {
-  float: left;
-  margin: 0;
-  font-family: Arial;
 }
 #account-bar-user,
 #account-bar-user2 {
@@ -421,9 +394,6 @@ h4 {
 #darkButton {
   cursor: pointer;
 }
-.co-table tr td {
-  vertical-align: top;
-}
 .title4 {
 	padding: 8px;
 	margin-top: 6px;
@@ -476,8 +446,7 @@ h4 {
   padding: 8px 15px 0px;
   cursor: pointer;
 }
-/* dropdown-button/overlay/inner + :checked rules moved to components.css
-   (dropdown__trigger / dropdown__overlay / dropdown__menu). Nav positioning: */
+/* Board picker dropdown menu positioning */
 .board-picker .dropdown__menu {
   width: 700px;
   left: 114px;
@@ -613,23 +582,6 @@ input.newCheck {
 #leaderboardLink li a {
   color: #74d14c;
 }
-#leaderboardLink2 {
-  color: rgba(0, 0, 0, 0);
-  position: absolute;
-  left: 684px;
-  width: 166px;
-  height: 20px;
-  top: 68px;
-  display: block;
-  background-color: rgba(0, 0, 0, 0);
-  padding: 3px 0px 1px 5px;
-  font-family: Georgia;
-  letter-spacing: 1px;
-  font-size: 24px;
-  font-weight: 400;
-  z-index: 6;
-  cursor: pointer;
-}
 #status h2,
 #status h3,
 #status2 h3 {
@@ -640,12 +592,10 @@ pre {
   font-size: 18px;
   color: white;
 }
-/* moved to components.css (.problem-nav). */
 #time-mode-countdown {
   font-size: 21px;
   font-weight: 800;
 }
-/* Toast internals (banner/close/body/toggle) moved to components.css — @layer components (.toast__*). */
 .clear1 {
   clear: both;
 }
@@ -696,17 +646,12 @@ nav ul .menuIcons1 {
 .menuIcons2 {
   padding: 5px 12px;
 }
-#mostPopularToday {
-  color: #f0f0f0;
-  font-weight: 800;
-}
 .historyLink {
   color: #c63c3c !important;
 }
 .historyLink2 {
   color: #ff9090 !important;
 }
-/* color-separator / color-self / medal-* moved to components.css (data-table__row--*). */
 
 nav a {
   display: block;
@@ -812,10 +757,6 @@ nav ul ul ul li {
 .modeSelectorInLevelBar {
   background-image: linear-gradient(#bd73d9, #9d31be);
 }
-/* .btn-group (unused) removed — see components .btn for the single button base. */
-/* Legacy .btn base removed — the components .btn (components.css) is the single button base. */
-
-/* moved to components.css (.problem-nav). */
 .xpDisplayTable {
   text-align: center;
 }
@@ -832,12 +773,10 @@ nav ul ul ul li {
 	width:30px;
 }
 .grey-link { color: var(--text-softer-color); }
-.grey-text { color: var(--text-softer-color); }
 li {
   list-style-type: none;
   float: left;
 }
-/* Toast (.toast) moved to components.css — @layer components. */
 
 /* CookieFlash messages (CakePHP2 flash infrastructure) */
 .alert {
@@ -861,9 +800,6 @@ ul ul {
 /* Dark overrides (moved from misc.css). */
 [data-theme="dark"] .whitebox2 {
 	background-color: #2a2a2a;
-}
-[data-theme="dark"] #mostPopularToday {
-	color: #f0f0f0;
 }
 [data-theme="dark"] #status2 font font,
 [data-theme="dark"] .titleDescription1 font {

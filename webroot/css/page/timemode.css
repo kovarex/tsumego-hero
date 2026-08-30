@@ -12,36 +12,6 @@
   border-top: 1px solid black;
   border-bottom: 1px solid black;
 }
-.timeTableColor1 {
-  background: linear-gradient(#d07e5a, #9f5231);
-}
-.timeTableColor2 {
-  background: linear-gradient(#d7845f, #a45533);
-}
-.timeTableColor3 {
-  background: linear-gradient(#dd8761, #ae5a36);
-}
-.timeTableColor4 {
-  background: linear-gradient(#e18a63, #bf653e);
-}
-.timeTableColor5 {
-  background: linear-gradient(#ec926a, #ce6f46);
-}
-.timeTableColor6 {
-  background: linear-gradient(#ffa177, #db764a);
-}
-.timeTableColor7 {
-  background: linear-gradient(#f9ab88, #ea7f50);
-}
-.timeTableColor8 {
-  background: linear-gradient(#f4ba9f, #e8875d);
-}
-.timeTableColor9 {
-  background: linear-gradient(#ecbfaa, #e38c66);
-}
-.timeTableColor10 {
-  background: linear-gradient(#eacbbd, #d2967c);
-}
 .timeTableColor11 {
   font-weight: 800;
   background: linear-gradient(#ddd, #999);

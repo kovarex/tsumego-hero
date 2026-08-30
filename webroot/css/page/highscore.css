@@ -1,0 +1,14 @@
+/* Page layer: highscore.css (split from default.css).
+   Highscore / leaderboard / rating page specifics.
+   NOTE: the highscore tables themselves are .data-table (components.css);
+   the top-nav leaderboard dropdowns (#leaderboardLink*) live in site.css
+   (they are site chrome, not highscore-page styles). */
+@layer page
+{
+.highscore
+{
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 40px;
+}
+}

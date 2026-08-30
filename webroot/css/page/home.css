@@ -1,5 +1,3 @@
-/* Page layer: home.css (split from default.css). */
-
 @layer page
 {
 .homeLeft {
@@ -215,6 +213,18 @@
   color: #ffffff;
 }
 
+/* User / achievement links emitted by React RecentAchievements.tsx */
+
+#recent-achievement-stream .recent-achievement-user-link,
+#recent-achievement-stream .recent-achievement-achievement-link {
+  color: #dcdcdc;
+}
+
+#recent-achievement-stream .recent-achievement-user-link:hover,
+#recent-achievement-stream .recent-achievement-achievement-link:hover {
+  color: #ffffff;
+}
+
 #recent-achievement-stream .recent-achievement-time {
   color: #dcdcdc;
   font-size: 12px;
@@ -351,7 +361,7 @@
 }
 
 
-/* Dark overrides (moved from misc.css). */
+/* Dark overrides. */
 [data-theme="dark"] .scheduleTsumego {
 	color: #f0f0f0 !important;
 }

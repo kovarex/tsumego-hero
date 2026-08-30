@@ -292,11 +292,6 @@ h1 {
 .eloTooltip:hover .eloTooltiptext {
   visibility: visible;
 }
-.highscore {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom:40px;
-}
 .mode1 {
   padding-bottom: 9px;
 }
@@ -533,10 +528,6 @@ h1 {
 #besogo-tsumegoPlayTool-rButton {
   background-color: #5b5d60 !important;
   cursor: pointer;
-}
-.besogo-tsumegoPlayTool-rButton2 {
-  background-color: green !important;
-  cursor: context-menu;
 }
 .imageContainer1 {
   float: left;
