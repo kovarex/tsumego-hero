@@ -2203,9 +2203,6 @@ input.newCheck {
   border-top-left-radius: 20px;
   box-shadow: 2px 2px 4px black;
 }
-.userstatsstbale th {
-  text-align: left;
-}
 .mode1 {
   padding-bottom: 9px;
 }
@@ -3225,9 +3222,6 @@ ul ul {
 /* .btn-group (unused) removed — see components .btn for the single button base. */
 /* Legacy .btn base removed — the components .btn (components.css) is the single button base. */
 
-.statsTable td {
-  padding: 6px;
-}
 /* moved to components.css (.problem-nav). */
 .xpDisplayTable {
   text-align: center;

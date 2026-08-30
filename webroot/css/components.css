@@ -820,6 +820,11 @@
 	background: var(--surface-bar);
 }
 
+.data-table--compact td
+{
+	padding: 6px;
+}
+
 .data-table a
 {
 	color: inherit;
