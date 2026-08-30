@@ -181,8 +181,8 @@ echo ViteManifest::legacyScript('legacy');
 			$aboutA = '';
 
 			$_page = $_page ?? '';
-			if($_page == 'home') $homeA = 'style="color:#74d14c;"';
-			else if($_page == 'set') $collectionsA = 'style="color:#74d14c;"';
+			if($_page == 'home') $homeA = 'nav__link--active';
+			else if($_page == 'set') $collectionsA = 'nav__link--active';
 			else if($_page=='play' || $_page=='level mode' || $_page=='rating mode' || $_page=='time mode'){
 				$refreshLinkToStart = 'id="refreshLinkToStart"';
 				$refreshLinkToSets = 'id="refreshLinkToSets"';
@@ -190,23 +190,23 @@ echo ViteManifest::legacyScript('legacy');
 				$refreshLinkToLeaderboard = 'id="refreshLinkToLeaderboard"';
 				$refreshLinkToSandbox = 'id="refreshLinkToSandbox"';
 				$refreshLinkToDiscuss = 'id="refreshLinkToDiscuss"';
-				if($_page == 'level mode') $levelModeA = 'style="color:#74d14c;"';
-				else if($_page == 'rating mode') $ratingModeA = 'style="color:#74d14c;"';
-				else if($_page == 'time mode') $timeModeA = 'style="color:#74d14c;"';
-				} else if ($_page == 'highscore') $highscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'discuss') $discussA = 'style="color:#74d14c;"';
-			else if($_page == 'sandbox') $sandboxA = 'style="color:#74d14c;"';
-			else if($_page == 'leaderboard') $leaderboardA = 'style="color:#74d14c;"';
-			else if($_page == 'websitefunctions') $websitefunctionsA = 'style="color:#74d14c;"';
-			else if($_page == 'gotutorial') $gotutorialA = 'style="color:#74d14c;"';
-			else if($_page == 'about') $aboutA = 'style="color:#74d14c;"';
-			else if($_page == 'levelHighscore') $levelHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'timeHighscore') $timeHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'tagHighscore') $tagHighscoreA = 'style="color:#74d14c;"';
-			else if($_page == 'favs') $refreshLinkToFavs = 'style="color:#74d14c;"';
+				if($_page == 'level mode') $levelModeA = 'nav__link--active';
+				else if($_page == 'rating mode') $ratingModeA = 'nav__link--active';
+				else if($_page == 'time mode') $timeModeA = 'nav__link--active';
+				} else if ($_page == 'highscore') $highscoreA = 'nav__link--active';
+			else if($_page == 'discuss') $discussA = 'nav__link--active';
+			else if($_page == 'sandbox') $sandboxA = 'nav__link--active';
+			else if($_page == 'leaderboard') $leaderboardA = 'nav__link--active';
+			else if($_page == 'websitefunctions') $websitefunctionsA = 'nav__link--active';
+			else if($_page == 'gotutorial') $gotutorialA = 'nav__link--active';
+			else if($_page == 'about') $aboutA = 'nav__link--active';
+			else if($_page == 'levelHighscore') $levelHighscoreA = 'nav__link--active';
+			else if($_page == 'ratingHighscore') $ratingHighscoreA = 'nav__link--active';
+			else if($_page == 'achievementHighscore') $achievementHighscoreA = 'nav__link--active';
+			else if($_page == 'timeHighscore') $timeHighscoreA = 'nav__link--active';
+			else if($_page == 'dailyHighscore') $dailyHighscoreA = 'nav__link--active';
+			else if($_page == 'tagHighscore') $tagHighscoreA = 'nav__link--active';
+			else if($_page == 'favs') $refreshLinkToFavs = 'nav__link--active';
 
 			if(Auth::isLoggedIn()){
 				if(!Auth::isAdmin())
@@ -226,21 +226,21 @@ echo ViteManifest::legacyScript('legacy');
 			<div id="newMenu">
 				<nav>
 					<ul>
-						<?php echo '<li><a class="homeMenuLink" href="/" '.$refreshLinkToStart.' '.$homeA.'>Home</a>';
+						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
 						echo '<ul class="newMenuLi1">';
-						echo '<li><a id="tutorialLink" href="/sites/websitefunctions" '.$websitefunctionsA.'>Functions & Modes</a></li>';
-						echo '<li><a id="tutorialLink" href="/sites/gotutorial" '.$gotutorialA.'>Go Rules</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
 						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a href="/sites/about" '.$aboutA.'>About</a></li>';
+						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
-						echo '<li><a '.$refreshLinkToSets.' '.$collectionsA.' href="/sets">Collections</a>';
+						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections</a>';
 						if(Auth::isLoggedIn()){
 							echo '<ul class="newMenuLi2">';
 							echo '<li><a href="/sets/mine">My Sets</a></li>';
-							echo '<li><a '.$refreshLinkToFavs.' href="/sets/view/favorites">Favorites</a></li>';
+							echo '<li><a class="'.$refreshLinkToFavs.'" href="/sets/view/favorites">Favorites</a></li>';
 							if(Auth::hasPremium() || Auth::isAdmin())
-								echo '<li><a '.$refreshLinkToSandbox.' '.$sandboxA.' href="/sets/sandbox">Sandbox</a></li>';
+								echo '<li><a '.$refreshLinkToSandbox.' class="'.$sandboxA.'" href="/sets/sandbox">Sandbox</a></li>';
 							if(Auth::isAdmin()){
 								echo '<li><a class="adminLink" href="/users/adminstats">Activities</a></li>';
 									echo '<li><a class="adminLink" href="/tsumego-issues">Issues</a></li>';
@@ -256,25 +256,25 @@ echo ViteManifest::legacyScript('legacy');
 						}
 						$sessionLastVisit = (int)($_COOKIE['lastVisit'] ?? 15352);
 						echo '</li>';
-						echo '<li><a class="homeMenuLink" '.$playA.' href="/tsumegos/play/'.$lv.'">Play</a>';
+						echo '<li><a class="homeMenuLink '.$playA.'" href="/tsumegos/play/'.$lv.'">Play</a>';
 						echo '<ul class="newMenuLi3">';
-						echo '<li><a href="/tsumegos/play/'.$sessionLastVisit.'?mode=1" '.$levelModeA.'>Level</a></li>';
+						echo '<li><a class="'.$levelModeA.'" href="/tsumegos/play/'.$sessionLastVisit.'?mode=1">Level</a></li>';
 						if(Auth::isLoggedIn()){
-							echo '<li><a href="/ratingMode" '.$ratingModeA.'>Rating</a></li>';
-							echo '<li><a href="/timeMode/overview" '.$timeModeA.'>Time</a></li>';
+							echo '<li><a class="'.$ratingModeA.'" href="/ratingMode">Rating</a></li>';
+							echo '<li><a class="'.$timeModeA.'" href="/timeMode/overview">Time</a></li>';
 						}
 								echo '</ul>';
-						echo '<li><a '.$refreshLinkToHighscore.' '.$highscoreA.' href="/users/'.$highscoreLink.'">Highscore</a>';
+						echo '<li><a '.$refreshLinkToHighscore.' class="'.$highscoreA.'" href="/users/'.$highscoreLink.'">Highscore</a>';
 						echo '<ul class="newMenuLi4">';
-						echo '<li><a id="tutorialLink" href="/users/highscore" '.$levelHighscoreA.'>Level Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/rating" '.$ratingHighscoreA.'>Rating Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/achievements" '.$achievementHighscoreA.'>Achievement Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/added_tags" '.$tagHighscoreA.'>Tag Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/leaderboard" '.$dailyHighscoreA.'>Daily Highscore</a></li>';
-						echo '<li><a id="tutorialLink" href="/users/time_mode" '.$timeHighscoreA.'>Time Mode Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$levelHighscoreA.'" href="/users/highscore">Level Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$ratingHighscoreA.'" href="/users/rating">Rating Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$achievementHighscoreA.'" href="/users/achievements">Achievement Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$tagHighscoreA.'" href="/users/added_tags">Tag Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$dailyHighscoreA.'" href="/users/leaderboard">Daily Highscore</a></li>';
+						echo '<li><a id="tutorialLink" class="'.$timeHighscoreA.'" href="/users/time_mode">Time Mode Highscore</a></li>';
 						echo '</ul>';
 						if(Auth::isLoggedIn())
-							echo '<li><a  '.$refreshLinkToDiscuss.'  '.$discussA.'href="/comments'.$discussFilter.'">Discuss</a></li>';
+							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
 						else
 							echo '<li><a style="color:#aaa;">Discuss</a></li>';
 						if(Auth::isLoggedIn())
@@ -322,9 +322,9 @@ echo ViteManifest::legacyScript('legacy');
 			<?php
 			$currentPage = '';
 			if($_page == 'login')
-				$currentPage = 'style="color:#74d14c;" ';
+				$currentPage = 'nav__link--active ';
 			if(!Auth::isLoggedIn())
-				echo '<li><a class="menuLi" id="signInMenu" '.$currentPage.'href="/users/login">Sign In</a></li>';
+				echo '<li><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></li>';
 			?>
 		</div>
 

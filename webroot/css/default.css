@@ -503,6 +503,11 @@ li a.menuLi {
   background-color: grey;
   color: #74d14c;
 }
+/* Active nav link (was inline style="color:#74d14c;" in the layout) */
+.nav__link--active,
+li a.menuLi.nav__link--active {
+  color: var(--color-green);
+}
 #modeboxes2 {
   width: 85px;
   display: inline-block;
