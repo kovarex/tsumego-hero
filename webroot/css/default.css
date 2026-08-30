@@ -719,24 +719,6 @@ li a.menuLi.nav__link--active {
   height: 25px;
   margin: 12px 5px 0 1px;
 }
-.button1 {
-  font-family: Georgia, sans-serif;
-  padding: 15px 15px 15px 15px;
-  font-size: 19px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  line-height: 20px;
-  height: 37px;
-  width: 37px;
-  background-image: url("/img/button9.png");
-  background-repeat: no-repeat;
-  text-decoration: none;
-  color: #74d14c;
-}
-.button1:hover {
-  background-image: url("/img/button10x.png");
-}
 .main-page {
   padding: 8px 11px !important;
 }
@@ -811,69 +793,6 @@ li a.menuLi.nav__link--active {
 .new-button:hover {
   background-color: #737477;
   color: #fff;
-}
-.new-button-red {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  background-color: #d23232;
-  color: #fff;
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button-red:hover {
-  background-color: #d27070;
-  color: #fff;
-}
-.new-button-red-inactive {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  background-color: #d27070;
-  color: #fff;
-  padding: 10px 13px;
-  margin: 5px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-  cursor: context-menu;
 }
 #dropdowntable2 .new-button {
   display: inline-block;
@@ -1039,39 +958,6 @@ li a.menuLi.nav__link--active {
   border-top-right-radius: 9px;
   border-top-left-radius: 9px;
 }
-.new-button2 {
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  background-color: #5b5d60;
-  color: #fff;
-  padding: 10px 40px;
-  margin: 5px;
-  border-top: 1px solid #cccccc;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button2:hover {
-  background-color: #737477;
-  color: #fff;
-}
 .new-button-inactive {
   cursor: context-menu;
   background-color: #8f9092;
@@ -1088,59 +974,6 @@ li a.menuLi.nav__link--active {
   border-right: 1px solid #333333;
   border-bottom: 1px solid #333333;
   border-left: 1px solid #cccccc;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button-inactive2 {
-  cursor: context-menu;
-  background-color: #fff;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: #fff;
-  padding: 10px 57px;
-  margin: 5px;
-  text-transform: uppercase;
-  -moz-border-radius-bottomleft: 9px;
-  -moz-border-radius-bottomright: 9px;
-  border-radius-bottomleft: 9px;
-  border-radius-bottomright: 9px;
-  -moz-border-radius-bottomright: 9px;
-  -moz-border-radius-bottomleft: 9px;
-  border-bottom-right-radius: 9px;
-  border-bottom-left-radius: 9px;
-  -moz-border-radius-topright: 9px;
-  -moz-border-radius-topleft: 9px;
-  border-top-right-radius: 9px;
-  border-top-left-radius: 9px;
-}
-.new-button-inactive3 {
-  opacity: 0;
-  cursor: context-menu;
-  background-color: #fff;
-  font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  text-decoration: none;
-  color: #fff;
-  padding: 10px 57px;
-  margin: 5px;
   text-transform: uppercase;
   -moz-border-radius-bottomleft: 9px;
   -moz-border-radius-bottomright: 9px;
@@ -1174,64 +1007,6 @@ li a.menuLi.nav__link--active {
   text-transform: uppercase;
   color: #ffffff;
   background-repeat: no-repeat;
-}
-.button2 {
-  padding: 15px 21px 15px 21px;
-  text-transform: uppercase;
-  background-image: url("/img/bu2.png");
-}
-.button2:hover {
-  text-transform: uppercase;
-  background-image: url("/img/bu2x.png");
-}
-.button2y {
-  text-transform: uppercase;
-  padding: 15px 21px 15px 21px;
-  background-image: url("/img/bu2y.png");
-  cursor: context-menu;
-}
-.button3 {
-  text-transform: uppercase;
-  padding: 15px 21px 15px 21px;
-  background-image: url("/img/bu3.png");
-}
-.button3:hover {
-  text-transform: uppercase;
-  background-image: url("/img/bu3x.png");
-}
-.button4 {
-  padding: 15px 15px 15px 12px;
-  background-image: url("/img/bu4.png");
-}
-.button4:hover {
-  background-image: url("/img/bu4x.png");
-}
-.button4y {
-  padding: 15px 15px 15px 12px;
-  background-image: url("/img/bu4y.png");
-  cursor: context-menu;
-}
-.button5 {
-  padding: 15px 21px 15px 15px;
-  margin: 0 0 0 4px;
-  background-image: url("/img/bu4.png");
-}
-.button5:hover {
-  background-image: url("/img/bu4x.png");
-}
-.button5y {
-  padding: 15px 21px 15px 15px;
-  background-image: url("/img/bu4y.png");
-  cursor: context-menu;
-}
-.button6 {
-  text-transform: uppercase;
-  padding: 15px 61px 15px 21px;
-  background-image: url("/img/bu4.png");
-}
-.button6:hover {
-  text-transform: uppercase;
-  background-image: url("/img/bu4x.png");
 }
 #sandbox {
   color: black;
@@ -3829,65 +3604,6 @@ nav ul ul ul li {
   height: 25px;
   margin: 12px 5px 0 1px;
   cursor: pointer;
-}
-.default-submit-button {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  background-image: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.16, rgb(207, 207, 207)),
-    color-stop(0.79, rgb(252, 252, 252))
-  );
-  background-image: -moz-linear-gradient(
-    center bottom,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  background-image: linear-gradient(
-    to top,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  padding: 3px;
-  color: black;
-  border: 1px solid #676774;
-  text-decoration: none;
-  cursor: pointer;
-}
-.default-submit-button:hover {
-  background-image: none;
-  background-color: #d0d0d7;
-}
-.default-submit-button-inactive {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  background-image: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.16, rgb(207, 207, 207)),
-    color-stop(0.79, rgb(252, 252, 252))
-  );
-  background-image: -moz-linear-gradient(
-    center bottom,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  background-image: linear-gradient(
-    to top,
-    rgb(207, 207, 207) 16%,
-    rgb(252, 252, 252) 79%
-  );
-  padding: 3px;
-  color: #2b2b2b;
-  border: 1px solid #676774;
-  text-decoration: none;
-  background: #6c6c6c;
-  cursor: context-menu;
 }
 .donate-paypal-right {
   display: flex;
