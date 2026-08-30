@@ -749,15 +749,6 @@ li a.menuLi.nav__link--active {
   line-height: 22px;
   text-decoration: underline;
 }
-.titleBy {
-  font-size: 16px;
-  font-style: italic;
-  margin-top: 7px;
-  margin-bottom: 7px;
-}
-.titleFooter {
-  font-size: 14px;
-}
 
 #playTitle {
   font-size: 20px;
@@ -1332,17 +1323,6 @@ h4 {
   color: #fff;
   padding: 8px 0 0 14px;
 }
-.newstable1 tr td {
-  vertical-align: top;
-  padding: 8px;
-}
-.newstable2 tr td {
-  vertical-align: top;
-  padding: 8px;
-}
-.newstable1 {
-  margin: 0px;
-}
 .gradient-heading {
   display: inline-block;
   font-size: 1.2rem;
@@ -1367,16 +1347,6 @@ h4 {
   text-align: center;
   color: #888;
 }
-.title3 {
-  padding: 0px;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  font-size: 20px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 800;
-  line-height: 20px;
-}
 .title4
 {
 	padding: 8px;
@@ -1392,35 +1362,6 @@ h4 {
 	border-radius: 4px 4px 0 0;
 	border: 1px solid #777;
 	color: var(--text-color);
-}
-.title4x {
-  float: left;
-  width: 63%;
-  white-space: nowrap;
-}
-.title4xx {
-  padding: 8px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  background: lightgrey;
-}
-.title5 {
-  padding: 8px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  background-color: #ddd;
-  color: #000;
 }
 .title4date {
   float: right;
@@ -1816,20 +1757,6 @@ h4 {
 #customText a {
   color: black;
 }
-.title4date2 {
-  padding: 8px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  position: absolute;
-  right: 270px;
-  top: 11px;
-}
 .title4date3 {
   padding: 8px;
   margin-top: 7px;
@@ -1843,18 +1770,6 @@ h4 {
   position: absolute;
   right: 0;
   top: 0;
-}
-.title4right {
-  text-align: right;
-}
-.title-date {
-  position: absolute;
-  right: 19px;
-  top: -1px;
-  font-weight: bold;
-  color: #bcbcbcff;
-  text-align:right;
-  width:200px;
 }
 .new1
 {
@@ -2459,17 +2374,6 @@ input:checked + .mode-slider:before {
 }
 .mode-slider.round:before {
   border-radius: 50%;
-}
-.uotd {
-  width: 610px;
-  height: 164px;
-  margin: 0;
-  position: relative;
-  float: left;
-}
-.uotdmargin {
-  margin: 0;
-  height: 160px;
 }
 .midLongName1 {
   font-size: 44px !important;
@@ -3142,16 +3046,6 @@ nav ul ul ul li {
 #besogo-review-button:hover {
   background-color: #cc6464 !important;
 }
-.quote1 {
-  width: 455px;
-  height: 49px;
-}
-.quote1a {
-  float: left;
-  padding: 0 5px;
-}
-.quote1b {
-}
 
 #commentPosition {
   margin-top: 10px;
@@ -3245,327 +3139,8 @@ select.flat-select:hover {
   background-image: linear-gradient(#bd73d9, #9d31be);
 }
 
-.uotd1 {
-  background: url(/img/uotd1.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid1 h2 {
-  color: #fff;
-}
-.uotd2 {
-  background: url(/img/uotd2.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid2 h2 {
-  color: #fff;
-}
-.uotd3 {
-  background: url(/img/uotd3.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid3 h2 {
-  color: #fff;
-}
-.uotd4 {
-  background: url(/img/uotd4.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid4 h2 {
-  color: #fff;
-}
-.uotd5 {
-  background: url(/img/uotd5.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid5 h2 {
-  color: #fff;
-}
-.uotd6 {
-  background: url(/img/uotd6.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid6 h2 {
-  color: #fff;
-}
-.uotd7 {
-  background: url(/img/uotd7.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid7 h2 {
-  color: #45bfd0;
-}
-.uotd8 {
-  background: url(/img/uotd8.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid8 h2 {
-  color: white;
-}
-.uotd9 {
-  background: url(/img/uotd9.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid9 h2 {
-  color: #383838;
-  margin: 0 0 0 60px !important;
-}
-.uotd10 {
-  background: url(/img/uotd10.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid10 h2 {
-  color: #fff;
-}
-.uotd11 {
-  background: url(/img/uotd11.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid11 h2 {
-  color: #fff;
-}
-.uotd12 {
-  background: url(/img/uotd12.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid12 h2 {
-  color: #fff;
-}
-.uotd13 {
-  background: url(/img/uotd13.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid13 h2 {
-  color: #fff;
-}
-.uotd14 {
-  background: url(/img/uotd14.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid14 h2 {
-  color: #fff;
-}
-.uotd15 {
-  background: url(/img/uotd15.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid15 h2 {
-  color: #fff;
-}
-.uotd16 {
-  background: url(/img/uotd16.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid16 h2 {
-  color: #2c1b52;
-}
-.uotd17 {
-  background: url(/img/uotd17.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid17 h2 {
-  color: #fff;
-}
-.uotd18 {
-  background: url(/img/uotd18.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid18 h2 {
-  color: #7fccc6;
-}
-.uotd19 {
-  background: url(/img/uotd19.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid19 h2 {
-  color: #fff;
-}
-.uotd20 {
-  background: url(/img/uotd20.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid20 h2 {
-  color: #fff;
-}
-.uotd21 {
-  background: url(/img/uotd21.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid21 h2 {
-  color: #fff;
-}
-.uotd22 {
-  background: url(/img/uotd22.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid22 h2 {
-  color: #fff;
-}
-.uotd23 {
-  background: url(/img/uotd23.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid23 h2 {
-  color: #ffcf60;
-}
-.uotd24 {
-  background: url(/img/uotd24.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid24 h2 {
-  color: #ffedc3;
-}
-.uotd25 {
-  background: url(/img/uotd25.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid25 h2 {
-  color: #6f988f;
-}
-.uotd26 {
-  background: url(/img/uotd26.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid26 h2 {
-  color: #4d83c3;
-}
-.uotd27 {
-  background: url(/img/uotd27.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid27 h2 {
-  color: #de3c3c;
-}
-.uotd28 {
-  background: url(/img/uotd28.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid28 h2 {
-  color: #0b918d;
-}
-.uotd29 {
-  background: url(/img/uotd29.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid29 h2 {
-  color: #02aa92;
-}
-.uotd30 {
-  background: url(/img/uotd30.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid30 h2 {
-  color: #0098c9;
-}
-.uotd31 {
-  background: url(/img/uotd31.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid31 h2 {
-  color: #fff;
-}
-.uotd32 {
-  background: url(/img/uotd32.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid32 h2 {
-  color: #45bfd0;
-}
-.uotd33 {
-  background: url(/img/uotd33.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid33 h2 {
-  color: #383838;
-}
-.uotd34 {
-  background: url(/img/uotd34.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid34 h2 {
-  color: #fff;
-}
-.uotd35 {
-  background: url(/img/uotd35.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid35 h2 {
-  color: #fff;
-}
-.uotd36 {
-  background: url(/img/uotd36.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid36 h2 {
-  color: #fff;
-}
-.uotd37 {
-  background: url(/img/uotd37.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid37 h2 {
-  color: #f0bb2b;
-}
-.uotd38 {
-  background: url(/img/uotd38.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid38 h2 {
-  color: #fc8f93;
-}
-.uotd39 {
-  background: url(/img/uotd39.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid39 h2 {
-  color: #fff;
-}
-.uotd40 {
-  background: url(/img/uotd40.png);
-  background-size: 99%;
-  background-repeat: no-repeat;
-}
-.mid40 h2 {
-  color: #ffcf60;
-}
+
+
 
 /* Dead strength-box tiers (box000-box975, box000sa-box975sa, box100, box100sa) removed. */
 .set-search-menu {
