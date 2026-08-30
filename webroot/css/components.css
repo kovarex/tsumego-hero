@@ -577,8 +577,46 @@
 	color: var(--text-softer-color);
 }
 
-/* Filter-tile panel + chips (set picker: sets index/view, play) */
+/* ── Dropdown trigger / overlay / menu (checkbox-hack + JS toggled popover) ── */
+.dropdown__trigger
+{
+	cursor: pointer;
+}
+
+.dropdown__overlay
+{
+	display: none;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
 .dropdown__menu
+{
+	background: var(--surface-bar);
+	border: var(--current-border-color) solid 1px;
+	border-radius: 3px;
+	position: absolute;
+	opacity: 0;
+	display: none;
+	transition: opacity 0.3s, visibility 0.3s;
+}
+
+.dropdown__open:checked ~ .dropdown__menu
+{
+	opacity: 1;
+	visibility: visible;
+}
+
+.dropdown__open:checked ~ .dropdown__overlay
+{
+	display: block;
+}
+
+/* Filter-tile panel (set picker: sets index/view, play) */
+.dropdown__menu--filters
 {
 	background: #222222;
 	color: white;
@@ -586,6 +624,8 @@
 	border-radius: 5px;
 	max-width: 380px;
 	border: 1px solid black;
+	opacity: 1;
+	transition: none;
 }
 
 .dropdown__tile

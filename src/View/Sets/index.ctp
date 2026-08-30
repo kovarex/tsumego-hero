@@ -24,7 +24,7 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-topics" class="dropdown__menu">
+				<div align="left" id="dropdown-topics" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($setTiles); $i++){
 							if($setTiles[$i] != '[continuation]')
@@ -48,7 +48,7 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-difficulty" class="dropdown__menu">
+				<div align="left" id="dropdown-difficulty" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($difficultyTiles); $i++){
 							if($difficultyTiles[$i] != '[continuation]')
@@ -72,7 +72,7 @@
 							<i class="animate-icon fa fa-chevron-down" aria-hidden="true"></i>
 					</div>
 				</button>
-				<div align="left" id="dropdown-tags" class="dropdown__menu">
+				<div align="left" id="dropdown-tags" class="dropdown__menu dropdown__menu--filters">
 					<?php
 						for($i=0; $i<count($tagTiles); $i++){
 							if($tagTiles[$i] != '[continuation]')

@@ -293,12 +293,12 @@ echo ViteManifest::legacyScript('legacy');
 						?>
 						<li class="menuIcons1">
 								<div class="board-picker" id="check3">
-								<label for="dropdown-1" id="boardsInMenu" class="dropdown-button">
+								<label for="dropdown-1" id="boardsInMenu" class="dropdown__trigger">
 									<img id="boardsButtonImage" src="/img/boards-icon1.png" width="25px">
 								</label>
-								<input class="dropdown-open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
-								<label for="dropdown-1" class="dropdown-overlay"></label>
-								<div class="dropdown-inner" id="dropdown-inner-propagation">
+								<input class="dropdown__open" type="checkbox" id="dropdown-1" style="display:none;" onchange="check1()">
+								<label for="dropdown-1" class="dropdown__overlay"></label>
+								<div class="dropdown__menu" id="dropdown-inner-propagation">
 									<table id="dropdowntable" border="0"></table>
 									<br>
 									<div id="dropdowntable2" align="center">
@@ -514,14 +514,14 @@ echo ViteManifest::legacyScript('legacy');
 		if(document.getElementById("dropdown-1").checked == true){
 			document.getElementById("dropdowntable").style.display = "inline-block";
 			document.getElementById("dropdowntable2").style.display = "inline-block";
-			$(".dropdown-inner").css("opacity", "1");
-			$(".dropdown-inner").css("display", "inline-block");
+			$(".dropdown__menu").css("opacity", "1");
+			$(".dropdown__menu").css("display", "inline-block");
 	}
 		if(document.getElementById("dropdown-1").checked == false){
 			document.getElementById("dropdowntable").style.display = "none";
 			document.getElementById("dropdowntable2").style.display = "none";
-			$(".dropdown-inner").css("opacity", "0");
-			$(".dropdown-inner").css("display", "none");
+			$(".dropdown__menu").css("opacity", "0");
+			$(".dropdown__menu").css("display", "none");
 	}
 	}
 	$("#check3").click(function(e){

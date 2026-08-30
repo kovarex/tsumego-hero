@@ -2688,37 +2688,11 @@ h4 {
   padding: 8px 15px 0px;
   cursor: pointer;
 }
-.dropdown-button {
-  cursor: pointer;
-}
-.dropdown-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-.dropdown-inner {
-  background: var(--surface-bar);
-  border: var(--current-border-color) solid 1px;
-  border-radius: 3px;
-  position: absolute;
+/* dropdown-button/overlay/inner + :checked rules moved to components.css
+   (dropdown__trigger / dropdown__overlay / dropdown__menu). Nav positioning: */
+.board-picker .dropdown__menu {
   width: 700px;
-  opacity: 0;
-  display: none;
-  transition: opacity 0.3s, visibility 0.3s;
   left: 114px;
-}
-
-.dropdown-hover:hover .dropdown-inner,
-.dropdown-open:checked ~ .dropdown-inner {
-  opacity: 100;
-  visibility: visible;
-}
-.dropdown-hover:hover .dropdown-overlay,
-.dropdown-open:checked ~ .dropdown-overlay {
-  display: block;
 }
 .sound {
   display: inline;
