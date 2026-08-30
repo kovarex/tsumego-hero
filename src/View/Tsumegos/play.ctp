@@ -267,8 +267,8 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	?>
 
 <?php if (isset($tsumegoButtons)) { ?>
-	<div class="tsumegoNavi1">
-		<div class="tsumegoNavi2">
+	<div class="problem-nav">
+		<div class="problem-nav__inner">
 			<?php
 			foreach ($tsumegoButtons as $index => $tsumegoButton) {
 				$tsumegoButton->render($index, $fav);
@@ -697,7 +697,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		// The navigation buttons don't exist in all of the modes
 		if (!current)
 			return;
-		current.parentElement.parentElement.className = 'status' + status + ' statusCurrent';
+		current.parentElement.parentElement.className = 'problem-nav__item problem-nav__item--' + status + ' problem-nav__item--current';
 	}
 
 	<?php
@@ -1023,7 +1023,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	if(Auth::isInLevelMode()){
 	}elseif(Auth::isInRatingMode()){
 		echo '
-			$(".tsumegoNavi1").hide();
+			$(".problem-nav").hide();
 			$(".tsumegoNavi-middle").hide();
 			$(".tsumegoNavi-middle2").show();
 			$(".mode1").css({"padding-top":"8px"});

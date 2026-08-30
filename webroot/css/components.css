@@ -1136,6 +1136,185 @@
 	text-align: center;
 }
 
+/* ── Problem-status navigation (play, set view, duplicatesearch, comments) ── */
+.problem-nav
+{
+	width: 100%;
+}
+
+.problem-nav__inner
+{
+	width: 818px;
+	height: 50px;
+	padding-top: 10px;
+	margin: 0 auto;
+	padding-left: 11px;
+}
+
+.problem-nav__item--current
+{
+	position: relative;
+	border: 3px solid var(--current-border-color);
+}
+
+.problem-nav__item--current::before
+{
+	content: "";
+	position: absolute;
+	inset: -5px;
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+.problem-nav__item--N
+{
+	background-color: var(--status-n-color);
+}
+
+.problem-nav__item--N:hover
+{
+	background-color: #a6a9b0;
+}
+
+.problem-nav__item--V
+{
+	background-color: var(--status-v-color);
+}
+
+.problem-nav__item--V:hover
+{
+	background-color: #74b5e0;
+}
+
+.problem-nav__item--S
+{
+	background-color: var(--status-s-color);
+}
+
+.problem-nav__item--S:hover
+{
+	background-color: #5cd98a;
+}
+
+.problem-nav__item--C
+{
+	background-color: var(--status-c-color);
+}
+
+.problem-nav__item--C:hover
+{
+	background-color: #6be39a;
+}
+
+.problem-nav__item--W
+{
+	background-color: var(--status-w-color);
+}
+
+.problem-nav__item--W:hover
+{
+	background-color: #7acfcd;
+}
+
+.problem-nav__item--F
+{
+	background-color: var(--status-f-color);
+}
+
+.problem-nav__item--F:hover
+{
+	background-color: #e09da4;
+}
+
+.problem-nav__item--X
+{
+	background-color: var(--status-x-color);
+}
+
+.problem-nav__item--X:hover
+{
+	background-color: #eaa8ae;
+}
+
+@keyframes goldenShineSweep
+{
+	0% { background-position: 150% 0, 0 0; }
+	100% { background-position: -50% 0, 0 0; }
+}
+
+.problem-nav__item--G
+{
+	background:
+		linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 58%, transparent 70%),
+		linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
+	background-size: 250% 100%, 100% 100%;
+	background-position: 150% 0, 0 0;
+	animation: goldenShineSweep 3s ease-in-out infinite;
+}
+
+.problem-nav__item--G:hover
+{
+	background:
+		linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%, transparent 70%),
+		linear-gradient(135deg, var(--status-g-highlight), #fff8c0, var(--status-g-highlight));
+	background-size: 250% 100%, 100% 100%;
+	background-position: 150% 0, 0 0;
+	animation: goldenShineSweep 1.5s ease-in-out infinite;
+}
+
+.problem-nav__item--G a
+{
+	color: #4a3500;
+}
+
+.problem-nav__item--G a:hover
+{
+	color: #4a3500;
+}
+
+.problem-nav__ratio
+{
+	display: none;
+}
+
+.problem-nav__time
+{
+	display: none;
+}
+
+.preview-zoomed .problem-nav__number,
+.preview-zoomed .problem-nav__ratio,
+.preview-zoomed .problem-nav__time,
+.preview-zoomed .tooltip-label,
+.preview-zoomed .tooltip-desc
+{
+	display: none;
+}
+
+.preview-zoomed .problem-nav__item
+{
+	width: 130px;
+	height: 110px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-image: none;
+	border: 1px solid #444;
+	margin: 2px;
+}
+
+.preview-zoomed .problem-nav__inner
+{
+	height: auto;
+	width: auto;
+	max-width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	justify-content: center;
+	padding: 4px;
+}
+
 } /* end @layer components */
 
 

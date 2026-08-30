@@ -365,76 +365,13 @@ li[class^="status"] {
 	height: 1px;
 }
 
-li.statusCurrent { 
-  position: relative;
-  border: 3px solid var(--current-border-color); 
-}
-li.statusCurrent::before
-{
-	content: "";
-	position: absolute;
-	inset: -5px;
-	border-radius: 9px;
-	pointer-events: none;
-}
+/* moved to components.css (.problem-nav). */
 
-li.statusN { background-color: var(--status-n-color); }
-li.statusN:hover { background-color: #a6a9b0; }
-
-li.statusV { background-color: var(--status-v-color); }
-li.statusV:hover { background-color: #74b5e0; }
-
-li.statusS { background-color: var(--status-s-color); }
-li.statusS:hover { background-color: #5cd98a; }
-
-li.statusC { background-color: var(--status-c-color); }
-li.statusC:hover { background-color: #6be39a; }
-
-li.statusW { background-color: var(--status-w-color); }
-li.statusW:hover { background-color: #7acfcd; }
-
-li.statusF { background-color: var(--status-f-color); }
-li.statusF:hover { background-color: #e09da4; }
-
-li.statusX { background-color: var(--status-x-color); }
-li.statusX:hover { background-color: #eaa8ae; }
-
-li.statusG {
-  background:
-    linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 58%, transparent 70%),
-    linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
-  background-size: 250% 100%, 100% 100%;
-  background-position: 150% 0, 0 0;
-  animation: goldenShineSweep 3s ease-in-out infinite;
-}
-li.statusG:hover {
-  background:
-    linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%, transparent 70%),
-    linear-gradient(135deg, var(--status-g-highlight), #fff8c0, var(--status-g-highlight));
-  background-size: 250% 100%, 100% 100%;
-  background-position: 150% 0, 0 0;
-  animation: goldenShineSweep 1.5s ease-in-out infinite;
-}
-
-@keyframes goldenShineSweep {
-  0% { background-position: 150% 0, 0 0; }
-  100% { background-position: -50% 0, 0 0; }
-}
+/* moved to components.css (.problem-nav). */
 
 @keyframes goldenShine {
   0% { left: -75%; }
   100% { left: 125%; }
-}
-
-li.statusG a { color: #4a3500; }
-li.statusG a:hover { color: #4a3500; }
-
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 5px 5px;
-  text-decoration: none;
 }
 .scoreTitle {
   cursor: pointer;
@@ -3033,12 +2970,7 @@ pre {
   font-size: 18px;
   color: white;
 }
-.setViewButtons2 {
-  display: none;
-}
-.setViewButtons3 {
-  display: none;
-}
+/* moved to components.css (.problem-nav). */
 #time-mode-countdown {
   font-size: 21px;
   font-weight: 800;
@@ -4866,16 +4798,7 @@ ul ul {
 .gameInfo td {
   text-align: center;
 }
-.tsumegoNavi1 {
-  width: 100%;
-}
-.tsumegoNavi2 {
-  width: 818px;
-  height: 50px;
-  padding-top: 10px;
-  margin: 0 auto;
-  padding-left: 11px;
-}
+/* moved to components.css (.problem-nav). */
 .pleaseRegisterTable {
   color: #60167d;
   background: #74d14c;
@@ -5391,43 +5314,12 @@ ul ul {
 	pointer-events: auto;
 }
 
-.preview-zoomed .setViewButtons1,
-.preview-zoomed .setViewButtons2,
-.preview-zoomed .setViewButtons3,
-.preview-zoomed .tooltip-label,
-.preview-zoomed .tooltip-desc
-{
-	display: none;
-}
-
-.preview-zoomed li[class^="status"]
-{
-	width: 130px;
-	height: 110px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background-image: none;
-	border: 1px solid #444;
-	margin: 2px;
-}
+/* moved to components.css (.problem-nav). */
 
 .preview-zoomed .tooltip-box svg
 {
 	max-width: 120px;
 	max-height: 100px;
-}
-
-.preview-zoomed .tsumegoNavi2
-{
-	height: auto;
-	width: auto;
-	max-width: 100%;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 2px;
-	justify-content: center;
-	padding: 4px;
 }
 
 .preview-zoomed .set-view-main

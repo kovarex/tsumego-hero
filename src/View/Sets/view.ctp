@@ -370,9 +370,9 @@ if ($tsumegoFilters->query != 'tags')
 			$("#numbersInfo").fadeIn(250);
 			$("#ratioInfo").hide();
 			$("#timeInfo").hide();
-			$(".setViewButtons1").fadeIn(200);
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").hide();
+			$(".problem-nav__number").fadeIn(200);
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "1px solid #45ac6e");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "none");
@@ -384,9 +384,9 @@ if ($tsumegoFilters->query != 'tags')
 			$("#numbersInfo").hide();
 			$("#ratioInfo").fadeIn(250);
 			$("#timeInfo").hide();
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").fadeIn(200);
-			$(".setViewButtons3").hide();
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").fadeIn(200);
+			$(".problem-nav__time").hide();
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "1px solid #722394");
 			$(".setViewTime").css("border", "none");
@@ -398,9 +398,9 @@ if ($tsumegoFilters->query != 'tags')
 			$("#numbersInfo").hide();
 			$("#ratioInfo").hide();
 			$("#timeInfo").fadeIn(250);
-			$(".setViewButtons1").hide();
-			$(".setViewButtons2").hide();
-			$(".setViewButtons3").fadeIn(200);
+			$(".problem-nav__number").hide();
+			$(".problem-nav__ratio").hide();
+			$(".problem-nav__time").fadeIn(200);
 			$(".setViewCompleted").css("border", "none");
 			$(".setViewAccuracy").css("border", "none");
 			$(".setViewTime").css("border", "1px solid #b34717");

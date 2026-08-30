@@ -16,7 +16,7 @@ class TsumegoButton
 
 	public function render()
 	{
-		$num = '<div class="setViewButtons1"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
+		$num = '<div class="problem-nav__number"' . ($this->isCurrentlyOpened ? ' id="currentNavigationButton"' : '') . '>' . $this->order . '</div>';
 
 		// Calculate accuracy (performance) as percentage
 		if (empty($this->performance))
@@ -33,14 +33,14 @@ class TsumegoButton
 			$num2 = '-';
 		else
 			$num2 = $persormanceS . '/' . $persormanceF;
-		$num2 = '<div class="setViewButtons2">' . $num2 . '</div>';
+		$num2 = '<div class="problem-nav__ratio">' . $num2 . '</div>';
 
 		// Calculate time
 		if ($this->seconds == 0 || $this->seconds == '')
 			$num3 = '-';
 		else
 			$num3 = $this->seconds . 's';
-		$num3 = '<div class="setViewButtons3">' . $num3 . '</div>';
+		$num3 = '<div class="problem-nav__time">' . $num3 . '</div>';
 
 		$sgfAttr = '';
 		if ($this->sgf !== '')
@@ -54,7 +54,7 @@ class TsumegoButton
 			}
 		}
 
-		echo '<li class="status' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' statusCurrent' : '') . '">';
+		echo '<li class="problem-nav__item problem-nav__item--' . ($this->status ?: 'N') . ($this->isCurrentlyOpened ? ' problem-nav__item--current' : '') . '">';
 		$status = $this->status ?: 'N';
 		$label = TsumegoStatus::label($status);
 		$description = TsumegoStatus::description($status);
