@@ -309,17 +309,6 @@ h1 {
   left: 38px;
   width: 200px;
 }
-.mid p {
-  font-family: "Roboto", sans-serif;
-  font-weight: 900;
-  margin: 0 0 0 70px;
-  position: absolute;
-  top: 75%;
-  left: 49%;
-  font-size: 14px;
-  transform: translate(-50%, -50%);
-  line-height: 42px;
-}
 .besogo-board {
   width: 50%;
   margin: 0 315px;

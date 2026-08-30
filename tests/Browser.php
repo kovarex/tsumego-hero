@@ -467,7 +467,7 @@ class Browser
 	public function dismissAchievementPopups(): void
 	{
 		$this->driver->executeScript(
-			"document.querySelectorAll('.achievement-popup').forEach(function (el) { el.style.display = 'none'; });"
+			"document.querySelectorAll('.toast--achievement').forEach(function (el) { el.style.display = 'none'; });"
 		);
 	}
 

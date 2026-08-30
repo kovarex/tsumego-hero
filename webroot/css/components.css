@@ -1064,6 +1064,15 @@
 	text-align: center;
 }
 
+/* Achievement-completed popup (built by AchievementAlerts.js). Reuses the
+   .toast base; the color-3 text variants live in page/achievements.css. */
+.toast--achievement #hpIcon1
+{
+	top: 15px;
+	position: relative;
+	width: 40px;
+}
+
 /* ── Problem-status navigation (play, set view, duplicatesearch, comments) ── */
 .problem-nav
 {
