@@ -4,6 +4,7 @@ import './layers.css';
 import './tokens.css';
 import './base.css';
 import './components.css';
+import './react.css';
 // Page layer: legacy global sheet + page-specific rules (shrinks to zero over time).
 import './default.css';
 import './home-themes.css';
