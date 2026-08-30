@@ -2806,76 +2806,6 @@ nav ul ul ul li {
   margin: 5px auto;
   width: 1228px;
 }
-.box1 {
-  width: 225px;
-  height: 150px;
-  background-color: #111;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  color: white;
-  font-size: 18px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-  gap: 5px;
-  position: relative;
-  box-shadow: 2px 2px 4px black;
-}
-.box1:hover,
-.box1default:hover {
-  background-image: linear-gradient(
-    rgba(200, 200, 200, 0.3),
-    rgba(33, 33, 33, 0.35)
-  ) !important;
-}
-[data-theme="light"] .box1:hover,
-[data-theme="light"] .box1default:hover {
-  background-image: linear-gradient(
-    rgba(200, 200, 200, 0.6),
-    rgba(33, 33, 33, 0.65)
-  ) !important;
-}
-.box1link {
-  text-decoration: none;
-}
-.box1topic,
-.box1 .collection-top {
-  grid-area: collection-top;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 800;
-}
-.box1 .collection-middle-left {
-  margin-top: 2px;
-  grid-area: collection-middle-left;
-}
-.box1 .collection-middle-right {
-  margin-top: 2px;
-  grid-area: collection-middle-right;
-}
-.box1 .collection-bottom {
-  font-size: 14px;
-  grid-area: collection-bottom;
-  align-self: end;
-}
-.box1 .collection-completed {
-  animation: fadeIn2 1s ease-in-out;
-  position: absolute;
-  top: 87px;
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  width: fit-content;
-  text-transform: uppercase;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: transparent;
-  text-shadow: 0 0 0.08em rgba(229, 229, 229, 0.7);
-}
-
 .box:first-child {
   margin-left: 0;
 }
@@ -3204,12 +3134,6 @@ ul ul {
   #difficulty-button:hover,
   #topics-button:hover {
     background: #333;
-  }
-  .box1default:hover {
-    background-image: linear-gradient(
-      rgba(200, 200, 200, 0.3),
-      rgba(33, 33, 33, 0.35)
-    ) !important;
   }
   .xpDisplay {
     align: center;
