@@ -50,18 +50,18 @@ class SetsControllerTest extends TestCaseWithAuth
 		$_COOKIE['filtered_ranks'] = '15k';
 		$this->testAction('sets', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '15k');
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertCount(1, $collectionMiddleLeft);
 		$this->assertSame($collectionMiddleLeft[0]->textContent, '1 problem'); // the sandbox problem isn't included
 
 		$_COOKIE['filtered_ranks'] = '10k';
 		$this->testAction('sets', ['return' => 'view']);
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->textContent, '10k');
 	}
@@ -77,16 +77,16 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('partitioned set #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('partitioned set #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 
-		$boxLinks = $dom->querySelectorAll('.box1link');
+		$boxLinks = $dom->querySelectorAll('.set-card__link');
 		$setId = $context->tsumegos[0]['sets'][0]['id'];
 		$this->assertSame('/sets/view/' . $setId . '/1', $boxLinks[0]->getAttribute('href'));
 		$this->assertSame('/sets/view/' . $setId . '/2', $boxLinks[1]->getAttribute('href'));
@@ -103,14 +103,14 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame('small set', $collectionTopDivs[0]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertSame('3 problems', $collectionMiddleLeft[0]->textContent);
 
-		$boxLinks = $dom->querySelectorAll('.box1link');
+		$boxLinks = $dom->querySelectorAll('.set-card__link');
 		$this->assertSame('/sets/view/' . $context->tsumegos[0]['sets'][0]['id'], $boxLinks[0]->getAttribute('href'));
 	}
 
@@ -130,7 +130,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('ordered set', $collectionTopDivs[0]->textContent);
 		$this->assertSame('unordered set', $collectionTopDivs[1]->textContent);
@@ -185,8 +185,8 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
-		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
-		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
 	}
 
 	public function testTagsIndexExcludesDeletedProblems(): void
@@ -201,8 +201,8 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$this->assertTextContains('Problems found: 1', $this->view);
 		$dom = $this->getStringDom();
-		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
-		$this->assertSame('1 problem', $dom->querySelectorAll('.collection-middle-left')[0]->textContent);
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertSame('1 problem', $dom->querySelectorAll('.set-card__middle-left')[0]->textContent);
 	}
 
 	public function testTopicsIndexShowsSolvedPercentPerPartition(): void
@@ -219,11 +219,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertTextContains('Problems found: 12', $this->view);
 
 		$dom = $this->getStringDom();
-		$fills = $dom->querySelectorAll('.set-progress-fill');
+		$fills = $dom->querySelectorAll('.progress__fill');
 		$this->assertCount(2, $fills);
 		$this->assertTextContains('width: 100%', $fills[0]->getAttribute('style'));
 		$this->assertTextContains('width: 50%', $fills[1]->getAttribute('style'));
-		$this->assertCount(1, $dom->querySelectorAll('.collection-completed'));
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__completed'));
 	}
 
 	public function testTopicsIndexShowsDifficultyPerPartition(): void
@@ -244,7 +244,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		// difficulty must be computed per partition, not per whole set:
 		// partition 1 (ten 15k problems) shows 15k, partition 2 (two 5k) shows 5k.
 		$dom = $this->getStringDom();
-		$difficulties = $dom->querySelectorAll('.collection-middle-right');
+		$difficulties = $dom->querySelectorAll('.set-card__middle-right');
 		$this->assertCount(2, $difficulties);
 		$this->assertSame('~15k', $difficulties[0]->textContent);
 		$this->assertSame('~5k', $difficulties[1]->textContent);
@@ -261,11 +261,11 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$fills = $dom->querySelectorAll('.set-progress-fill');
+		$fills = $dom->querySelectorAll('.progress__fill');
 		$this->assertCount(1, $fills);
 		$this->assertTextContains('width: 0%', $fills[0]->getAttribute('style'));
-		$this->assertCount(1, $dom->querySelectorAll('.collection-top'));
-		$this->assertCount(0, $dom->querySelectorAll('.collection-completed'));
+		$this->assertCount(1, $dom->querySelectorAll('.set-card__top'));
+		$this->assertCount(0, $dom->querySelectorAll('.set-card__completed'));
 	}
 
 	public function testDifficultyIndexSplitsRankIntoPartitionBoxes(): void
@@ -280,12 +280,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('15k #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('15k #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
@@ -302,12 +302,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->testAction('sets', ['return' => 'view']);
 
 		$dom = $this->getStringDom();
-		$collectionTopDivs = $dom->querySelectorAll('.collection-top');
+		$collectionTopDivs = $dom->querySelectorAll('.set-card__top');
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame('atari #1', $collectionTopDivs[0]->textContent);
 		$this->assertSame('atari #2', $collectionTopDivs[1]->textContent);
 
-		$collectionMiddleLeft = $dom->querySelectorAll('.collection-middle-left');
+		$collectionMiddleLeft = $dom->querySelectorAll('.set-card__middle-left');
 		$this->assertSame('10 problems', $collectionMiddleLeft[0]->textContent);
 		$this->assertSame('1 problem', $collectionMiddleLeft[1]->textContent);
 	}
@@ -518,7 +518,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$this->assertSame($browser->driver->manage()->getCookieNamed('filtered_ranks')->getValue(), '15k');
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$collectionTopDivs[0]->click();
@@ -574,7 +574,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$browser->get("sets");
 
 		// we check the set card and clicking
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$this->assertSame($collectionTopDivs[0]->getText(), 'test set #1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'test set #2');
@@ -613,7 +613,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// now we go back to the sets selection and we visit the second partition of the set
 		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs); // 2 partitions of 10 and 1 problems
 		$collectionTopDivs[1]->click();
 
@@ -695,7 +695,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// we open sets, and since we filtered 15k and 1d, this is the sets we should see
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
@@ -736,7 +736,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// now we go to visit the 1d section, so back to sets
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
@@ -791,14 +791,14 @@ class SetsControllerTest extends TestCaseWithAuth
 		// we open sets, we filtered 15k and 1d, but query by sets, so we should see:
 		// all 3 sets with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 		$this->assertSame($collectionTopDivs[2]->getText(), 'set 3');
 
 		// with 2 problems each as the 5d problems should be already filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__middle-left'));
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -876,14 +876,14 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		// all 3 ranks with
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '15k');
 		$this->assertSame($collectionTopDivs[1]->getText(), '1d');
 		$this->assertSame($collectionTopDivs[2]->getText(), '5d');
 
 		// with 2 problems each as the set 1 problems should already be filtered out
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__middle-left'));
 		$this->assertCount(3, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '2 problems');
@@ -976,12 +976,12 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser->get('sets');
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), '10k');
 
 		// the problem is in 2 sets, but it shouldn't matter in this view and should show just 1 problem
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__middle-left'));
 		$this->assertCount(1, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '1 problem');
 
@@ -1069,7 +1069,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$context = new ContextPreparator($contextParams);
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(3, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'snapback');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'atari');
@@ -1098,7 +1098,7 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'atari');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'empty triangle');
@@ -1163,12 +1163,12 @@ class SetsControllerTest extends TestCaseWithAuth
 		$context = new ContextPreparator($contextParams);
 		$browser = Browser::instance();
 		$browser->get("sets");
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'set 1');
 		$this->assertSame($collectionTopDivs[1]->getText(), 'set 2');
 
-		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-middle-left'));
+		$collectionMiddleLeftDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__middle-left'));
 		$this->assertCount(2, $collectionMiddleLeftDivs);
 		$this->assertSame($collectionMiddleLeftDivs[0]->getText(), '2 problems');
 		$this->assertSame($collectionMiddleLeftDivs[1]->getText(), '1 problem');
@@ -1214,9 +1214,9 @@ class SetsControllerTest extends TestCaseWithAuth
 
 	private function checkSetFinishedPercent($browser, $index, $title, $percent): void
 	{
-		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'))[$index]->getText(), $title);
+		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'))[$index]->getText(), $title);
 		$this->assertSame($browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[$index]->getText(), $percent);
-		$barStyle = $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-fill'))[$index]->getAttribute('style');
+		$barStyle = $browser->driver->findElements(WebDriverBy::cssSelector('.progress__fill'))[$index]->getAttribute('style');
 		$this->assertTextContains('width: ' . $percent, $barStyle);
 	}
 
@@ -1247,7 +1247,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'set 1', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'set 2', '25%');
@@ -1280,7 +1280,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[0]->getText() == '33%';
 		});
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(2, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'partitioned set #1', '33%');
 		$this->checkSetFinishedPercent($browser, 1, 'partitioned set #2', '66%');
@@ -1315,7 +1315,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, 'atari', '0%');
 		$this->checkSetFinishedPercent($browser, 1, 'bambule', '25%');
@@ -1352,7 +1352,7 @@ class SetsControllerTest extends TestCaseWithAuth
 			return $browser->driver->findElements(WebDriverBy::cssSelector('.set-progress-number'))[4]->getText() == '100%';
 		});
 
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(5, $collectionTopDivs);
 		$this->checkSetFinishedPercent($browser, 0, '15k', '0%');
 		$this->checkSetFinishedPercent($browser, 1, '10k', '25%');
@@ -1374,7 +1374,7 @@ class SetsControllerTest extends TestCaseWithAuth
 
 		$browser = Browser::instance();
 		$browser->get('sets');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'public set');
 		$this->assertSame('Problems found: 1', $browser->find('#problems-found')->getText());
@@ -1389,7 +1389,7 @@ class SetsControllerTest extends TestCaseWithAuth
 				['sets' => [['name' => 'private set', 'public' => 0, 'num' => '777']]]]]);
 		$browser = Browser::instance();
 		$browser->get('sets/sandbox');
-		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.collection-top'));
+		$collectionTopDivs = $browser->driver->findElements(WebDriverBy::cssSelector('.set-card__top'));
 		$this->assertCount(1, $collectionTopDivs);
 		$this->assertSame($collectionTopDivs[0]->getText(), 'private set');
 		$collectionTopDivs[0]->click();
