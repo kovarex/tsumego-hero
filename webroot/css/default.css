@@ -120,12 +120,6 @@
    file shrinks to zero over the course of the migration. */
 @layer page {
 
-.egcLogo {
-  position: absolute;
-  left: 64px;
-  top: 150px;
-  width: 200px;
-}
 
 body
 {
@@ -318,13 +312,6 @@ li[class^="status"] {
   z-index: 50;
   width: 900px;
 }
-.outerMenu1adjust1 {
-  left: 281px;
-  width: 800px;
-}
-.outerMenu1adjust2 {
-  left: 283px;
-}
 .outerMenu2 {
   display: table;
   margin: 0 auto;
@@ -485,36 +472,6 @@ li a.menuLi.nav__link--active {
 }
 .versionColor {
   background: linear-gradient(#ddd, #999);
-}
-.admin-panel {
-  background-color: #eaeaea;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid black;
-}
-.admin-panel td {
-  vertical-align: top;
-}
-.admin-panel-main-page {
-  position: absolute;
-  top: 5px;
-  left: 538px;
-}
-.admin-panel-main-page ul li {
-  padding: 3px;
-  margin-top: 7px;
-  margin-bottom: 0px;
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
-  text-decoration: none;
-  border-radius: 4px 4px 0 0;
-  border: 1px solid #777;
-}
-.admin-panel-main-page ul li:hover {
-  background: linear-gradient(#8a8a8a, #595959);
 }
 .adminpanel-table-text {
   max-width: 350px;
@@ -943,17 +900,6 @@ li a.menuLi.nav__link--active {
   border-radius: 5px;
   -webkit-filter: blur(5px);
 }
-.xp-increase-glow4 {
-  position: absolute;
-  margin: 0px 0px 0px -2px;
-  left: 0px;
-  top: 0px;
-  background: #c2001b;
-  width: 5px;
-  height: 100%;
-  border-radius: 0px;
-  -webkit-filter: blur(2px);
-}
 .mode-select-box {
   display: flex;
   flex-direction: row;
@@ -1019,10 +965,6 @@ li a.menuLi.nav__link--active {
   filter: none;
 }
 /* #time-mode-play-button removed (dead empty rule). */
-.donatorsTable td {
-  padding-top: 0;
-  padding-bottom: 0;
-}
 
 #setElement1 {
   background-image: url("/img/box10.png");
@@ -1208,13 +1150,6 @@ h4 {
 .homeCenter2 {
   width: 100%;
   text-align: justify;
-}
-.homeCenter3 {
-  width: 50%;
-  text-align: justify;
-  background-color: #2a2a2a;
-  color: #fff;
-  padding: 8px 0 0 14px;
 }
 .gradient-heading {
   display: inline-block;
@@ -2017,15 +1952,6 @@ input.newCheck {
   border: 1px solid #ea4537;
   margin-right: 1px;
 }
-.google-profile-image-large {
-  position: relative;
-  top: 4px;
-  border-radius: 50%;
-  width: 23px;
-  height: 23px;
-  border: 1px solid #ea4537;
-  margin-right: 1px;
-}
 /* .tag-list removed - only used as a data-testid in React TagEditor, not a class. */
 .add-tag-list {
   color: #717171;
@@ -2059,9 +1985,6 @@ input.newCheck {
 .existing-tags-list {
   padding: 20px;
   text-align: center;
-}
-.tagnames-adminpanel td {
-  padding: 8px;
 }
 #sandboxLink {
   color: #74d14c;
@@ -2131,9 +2054,6 @@ input.newCheck {
   margin: 0;
   white-space: nowrap;
 }
-.contentOnTop td {
-  vertical-align: top;
-}
 .tooltip {
   text-decoration: none;
   position: relative;
@@ -2175,9 +2095,6 @@ input.newCheck {
 }
 .curl-table .x td {
   font-weight: 800;
-}
-.scontainer {
-  counter-reset: boxes;
 }
 .box {
   position: relative;
@@ -2589,15 +2506,6 @@ pre {
   float: left;
   margin: 15px;
 }
-.imageContainerText1 {
-  position: relative;
-  top: -48px;
-  left: 17px;
-  color: #efefef;
-  font-weight: 800;
-  font-size: 15px;
-  text-decoration: none;
-}
 .imageContainerText2 {
   position: relative;
   top: -48px;
@@ -2769,9 +2677,6 @@ nav ul ul ul li {
   color: #f75959;
 }
 /* .adminLink2 removed (layout uses adminLink/adminLink3/additional-adminLink2). */
-.admin-panel-main-page ul li:hover {
-  background: #eee;
-}
 .adminLink3 {
   cursor: pointer;
 }
@@ -3151,12 +3056,6 @@ nav ul ul ul li {
   text-decoration: none;
 }
 .box1topic,
-.box1tag {
-  grid-template-areas:
-    "collection-top collection-top"
-    "collection-middle-left collection-middle-right"
-    "collection-bottom collection-bottom";
-}
 .box1 .collection-top {
   grid-area: collection-top;
   display: flex;
@@ -3205,18 +3104,6 @@ nav ul ul ul li {
 figure,
 ul ul {
   margin: 0;
-}
-.scontainer {
-  padding-left: 3.5%;
-  padding-right: 3.5%;
-}
-.scontainer:after,
-.scontainer:before {
-  content: " ";
-  display: table;
-}
-.scontainer:after {
-  clear: both;
 }
 
 /* .btn-group (unused) removed — see components .btn for the single button base. */
@@ -3293,337 +3180,6 @@ ul ul {
 .commentBox2 {
   color: var(--admin-text-color);
 }
-.img-10small,
-.img-11small,
-.img-12small,
-.img-13small,
-.img-14small,
-.img-15small,
-.img-16small,
-.img-17small,
-.img-18small,
-.img-19small,
-.img-1small,
-.img-20small,
-.img-21small,
-.img-22small,
-.img-23small,
-.img-24small,
-.img-25small,
-.img-26small,
-.img-27small,
-.img-28small,
-.img-29small,
-.img-2small,
-.img-30small,
-.img-31small,
-.img-32small,
-.img-33small,
-.img-34small,
-.img-35small,
-.img-36small,
-.img-37small,
-.img-38small,
-.img-39small,
-.img-3small,
-.img-40small,
-.img-41small,
-.img-42small,
-.img-43small,
-.img-44small,
-.img-45small,
-.img-46small,
-.img-47small,
-.img-48small,
-.img-49small,
-.img-4small,
-.img-50small,
-.img-51small,
-.img-52small,
-.img-53small,
-.img-54small,
-.img-5small,
-.img-6small,
-.img-7small,
-.img-8small,
-.img-9small {
-  display: inline-block;
-  background: url("/img/allSmall.png") no-repeat;
-  overflow: hidden;
-  text-indent: -9999px;
-  text-align: left;
-}
-
-.img-10small {
-  background-position: -0px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-11small {
-  background-position: -19px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-12small {
-  background-position: -38px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-13small {
-  background-position: -57px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-14small {
-  background-position: -76px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-15small {
-  background-position: -95px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-16small {
-  background-position: -114px -0px;
-  width: 19px;
-  height: 19px;
-}
-.img-17small {
-  background-position: -0px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-18small {
-  background-position: -19px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-19small {
-  background-position: -38px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-1small {
-  background-position: -57px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-20small {
-  background-position: -76px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-21small {
-  background-position: -95px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-22small {
-  background-position: -114px -19px;
-  width: 19px;
-  height: 19px;
-}
-.img-23small {
-  background-position: -0px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-24small {
-  background-position: -19px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-25small {
-  background-position: -38px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-26small {
-  background-position: -57px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-27small {
-  background-position: -76px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-28small {
-  background-position: -95px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-29small {
-  background-position: -114px -38px;
-  width: 19px;
-  height: 19px;
-}
-.img-2small {
-  background-position: -0px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-30small {
-  background-position: -19px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-31small {
-  background-position: -38px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-32small {
-  background-position: -57px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-33small {
-  background-position: -76px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-34small {
-  background-position: -95px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-35small {
-  background-position: -114px -57px;
-  width: 19px;
-  height: 19px;
-}
-.img-36small {
-  background-position: -0px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-37small {
-  background-position: -19px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-38small {
-  background-position: -38px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-39small {
-  background-position: -57px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-3small {
-  background-position: -76px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-40small {
-  background-position: -95px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-41small {
-  background-position: -114px -76px;
-  width: 19px;
-  height: 19px;
-}
-.img-42small {
-  background-position: -0px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-43small {
-  background-position: -19px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-44small {
-  background-position: -38px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-45small {
-  background-position: -57px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-46small {
-  background-position: -76px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-47small {
-  background-position: -95px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-48small {
-  background-position: -114px -95px;
-  width: 19px;
-  height: 19px;
-}
-.img-49small {
-  background-position: -0px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-4small {
-  background-position: -19px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-50small {
-  background-position: -38px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-51small {
-  background-position: -57px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-52small {
-  background-position: -76px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-53small {
-  background-position: -95px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-54small {
-  background-position: -114px -114px;
-  width: 19px;
-  height: 19px;
-}
-.img-5small {
-  background-position: -0px -133px;
-  width: 19px;
-  height: 19px;
-}
-.img-6small {
-  background-position: -19px -133px;
-  width: 19px;
-  height: 19px;
-}
-.img-7small {
-  background-position: -38px -133px;
-  width: 19px;
-  height: 19px;
-}
-.img-8small {
-  background-position: -57px -133px;
-  width: 19px;
-  height: 19px;
-}
-.img-9small {
-  background-position: -76px -133px;
-  width: 19px;
-  height: 19px;
-}
 
 @media screen and (max-width: 1300px) {
   #heroProfile {
@@ -3656,10 +3212,6 @@ ul ul {
     width: 348px;
     height: 244px;
     margin-top: 15px;
-  }
-  .scontainer {
-    padding-left: 0;
-    padding-right: 0;
   }
 }
 
@@ -3862,9 +3414,6 @@ a[data-tsumego-id]:hover .tooltip-desc
     color: black;
   }
   /* dark .adminLink2 removed (dead). */
-  .admin-panel-main-page ul li:hover {
-    background: linear-gradient(#888787, #666666);
-  }
   /* dark .sandboxComment moved to components.css. */
 
   .sandboxTable2time {
@@ -3878,37 +3427,23 @@ a[data-tsumego-id]:hover .tooltip-desc
   .setViewTime {
     color: #d55e29;
   }
-  .admin-panel,
-  .selectable-text,
-  .admin-panel font {
+  .selectable-text {
     color: #717171;
   }
   #sandbox {
     color: #f0f0f0;
     background-color: #5b5d60;
   }
-  .userstatsstbale a {
-    color: #f0f0f0 !important;
-  }
   .timeTableColor11 {
     background: linear-gradient(#666, #424242);
   }
   /* highscoreTable dark overrides removed - .data-table is token-based (auto dark). */
   /* dead .color* tier dark overrides removed. */
-  .admin-panel {
-    background: linear-gradient(#666, #424242);
-    color: #f0f0f0 !important;
-  }
   #show,
   #show2,
   #commentPosition,
   #show3,
-  .selectable-text,
-  .admin-panel #show2,
-  .admin-panel #show3,
-  .admin-panel #show4,
-  .admin-panel #show5,
-  .admin-panel font {
+  .selectable-text {
     color: #f0f0f0;
   }
   .achievement1,
