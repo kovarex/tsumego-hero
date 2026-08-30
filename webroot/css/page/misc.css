@@ -1,0 +1,325 @@
+/* Page layer: misc.css (split from default.css). */
+@layer page {
+/* Global element defaults (a, a:hover) moved to base.css (@layer base). */
+/* th/td element padding defaults moved to base.css (@layer base) so component
+   table rules (data-table, stat) can override them. */
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+li {
+  list-style-type: none;
+  float: left;
+}
+li[class^="status"] {
+  font-weight: 700;
+  width: 58px;
+  text-align: center;
+  text-decoration: none;
+  border-top: 1px solid #cccccc;
+  border-right: 1px solid #333333;
+  border-bottom: 1px solid #333333;
+  border-left: 1px solid #cccccc;
+  background-image: url("/img/viewButton1.png");
+  margin: 1px;
+  -moz-border-radius-bottomleft: 9px;
+  -moz-border-radius-bottomright: 9px;
+  border-radius-bottomleft: 9px;
+  border-radius-bottomright: 9px;
+  -moz-border-radius-bottomright: 9px;
+  -moz-border-radius-bottomleft: 9px;
+  border-bottom-right-radius: 9px;
+  border-bottom-left-radius: 9px;
+  -moz-border-radius-topright: 9px;
+  -moz-border-radius-topleft: 9px;
+  border-top-right-radius: 9px;
+  border-top-left-radius: 9px;
+}
+/* dropdown-tile + tile-color1-4 moved to components.css (dropdown__tile + modifiers). */
+/* tiles-submit* + dropdown-boxes moved to components.css (dropdown__tile-actions*, dropdown__menu). */
+#dropdown-topics {
+  display: none;
+  position: absolute;
+  top: 61px;
+  left: 37px;
+  max-width: 900px;
+  z-index: 100;
+}
+.left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  padding: 40px;
+  padding-top: 20px;
+  width: 345px;
+  height: 450px;
+}
+.right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  box-sizing: border-box;
+  padding: 40px;
+  width: 345px;
+  height: 450px;
+  background-color: black;
+  background-image: url("/img/loginBg3.png");
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 2px 2px 0;
+}
+/* Toast (alertBox) moved to components.css — @layer components (.toast). */
+#hpIcon1 {
+  top: 15px;
+  position: relative;
+  width: 40px;
+}
+/* Toast (.toast) moved to components.css — @layer components. */
+
+/* CookieFlash messages (CakePHP2 flash infrastructure) */
+.alert {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+.apexcharts-canvas {
+  margin: 0 auto;
+}
+.apexcharts-active {
+  color: black;
+}
+/* .set-progress* consolidated into .progress--thin (components.css, @layer components). */
+@keyframes fadeIn2 {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+@charset "UTF-8";
+*,
+:after,
+:before {
+  box-sizing: border-box;
+}
+figure,
+ul ul {
+  margin: 0;
+}
+@media screen and (max-width: 1300px) {
+  #heroProfile {
+    left: 935px;
+  }
+  #heroBar {
+    left: 935px;
+  }
+  #heroAchievements {
+    left: 935px;
+  }
+  #heroLogout {
+    left: 935px;
+  }
+  #boardsInMenu {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .sound {
+    padding: 0;
+  }
+  li a.menuLi {
+    padding-bottom: 9px;
+    padding-top: 9px;
+  }
+  #sandboxLink {
+    top: 68px;
+  }
+  .box {
+    width: 348px;
+    height: 244px;
+    margin-top: 15px;
+  }
+}
+@media screen and (max-width: 1230px) {
+}
+@media screen and (max-width: 1160px) {
+}
+@media screen and (max-width: 1130px) {
+}
+/* .status-label* migrated to .badge--status-* (components.css, @layer components). */
+
+
+
+/* .paginator-* unified into .pagination component (components.css, @layer components). */
+
+.admin-text { color: var(--admin-text-color); }
+/* Feedback family (spinner, skeleton, error-message, error-boundary) moved to
+   components.css — @layer components. */
+/* Spinner (small inline variant) moved to components.css — @layer components. */
+
+/* Theme tokens (:root + [data-theme="dark"]) moved to tokens.css (@layer tokens). */
+
+[data-theme="dark"] {
+  .timeTableColor11 {
+    color: #f0f0f0;
+  }
+  .whitebox2,
+  .imp {
+    background-color: #2a2a2a;
+  }
+  .deleteComment {
+    color: #f0f0f0;
+  }
+  .besogo-container {
+    background-color: #2a2a2a;
+  }
+  #mostPopularToday {
+    color: #f0f0f0;
+  }
+  #multipleChoiceText,
+  #potionAlerts,
+  #customAlerts,
+  .toast__body,
+  .timeModeTable2 {
+    color: black;
+  }
+  /* dark .adminLink2 removed (dead). */
+  /* dark .sandboxComment moved to components.css. */
+
+  .sandboxTable2time {
+    color: #b9b9b9;
+  }
+  /* Legacy .btn dark overrides removed — components .btn uses tokens (auto dark). */
+
+  .setViewAccuracy {
+    color: #c234ff;
+  }
+  .setViewTime {
+    color: #d55e29;
+  }
+  .selectable-text {
+    color: #717171;
+  }
+  #sandbox {
+    color: #f0f0f0;
+    background-color: #5b5d60;
+  }
+  .timeTableColor11 {
+    background: linear-gradient(#666, #424242);
+  }
+  /* highscoreTable dark overrides removed - .data-table is token-based (auto dark). */
+  /* dead .color* tier dark overrides removed. */
+  #show,
+  #show2,
+  #commentPosition,
+  #show3,
+  .selectable-text {
+    color: #f0f0f0;
+  }
+  .achievement1,
+  .achievement2,
+  .achievementSmall {
+    background: linear-gradient(#dfdfdf, #979797);
+  }
+  .versionColor a {
+    color: #0066cc;
+  }
+ 
+  #status2 font font,
+  .titleDescription1 font {
+    color: grey;
+  }
+  #achievementWrapper font {
+    color: #717171;
+  }
+  .achievementColorBlack2,
+  .achievementColorPurple2,
+  .achievementColorGreen2,
+  .achievementColorOrange2,
+  .achievementColorBlue2,
+  .achievementColorDarkblue2,
+  .achievementColorRed2,
+  .achievementColorRating2,
+  .achievementColorTime2 {
+    color: #f0f0f0;
+  }
+  .besogo-container {
+    background: #2a2a2a;
+  }
+  #theComment {
+    color: black;
+  }
+  .scheduleTsumego {
+    color: #f0f0f0 !important;
+  }
+  #levelBarDisplay1 {
+    accent-color: #74d14c;
+  }
+  #levelBarDisplay1text {
+    color: #74d14c;
+  }
+  #levelBarDisplay2 {
+    accent-color: #c240f7;
+  }
+  #levelBarDisplay2text {
+    color: #c240f7;
+  }
+  .homeCenter2 {
+    background-color: #2a2a2a;
+    color: #fff;
+  }
+  .apexcharts-menu-item {
+    color: black;
+  }
+  .apexcharts-title-text {
+    color: #fff;
+  }
+  .h1profile h1,
+  .profileTable2 a {
+    color: #fff;
+  }
+  /* dropdown-boxes dark override moved to components.css (dropdown__menu). */
+  #set-size-input {
+    background: #2a2a2a;
+    width: 90px;
+    border: 1px solid #1b1b1b;
+    padding: 5px;
+    border-radius: 4px;
+    color: #bfc1c4;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 6px 10px;
+    margin: 5px;
+  }
+  #submit-size-button {
+    border: 1px solid #1b1b1b;
+    background: #2a2a2a;
+  }
+  /* tile-color4 dark override moved to components.css (dropdown__tile--muted). */
+  #tags-button:hover,
+  #difficulty-button:hover,
+  #topics-button:hover {
+    background: #333;
+  }
+  .xpDisplay {
+    align: center;
+    color: #f0f0f0;
+  }
+  .solvedXpDisplay {
+    color: #0cbb0c;
+  }
+  .goldenTsumegoXpDisplay {
+    color: #0cbb0c;
+  }
+  .sprintXpDisplay {
+    color: #72a7f2;
+  }
+  .title {
+    color: #fff;
+  }
+}
+}

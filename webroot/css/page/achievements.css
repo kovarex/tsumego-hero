@@ -1,0 +1,309 @@
+/* Page layer: achievements.css (split from default.css). */
+@layer page {
+.achievemetProfileLink {
+  position: absolute;
+  float: right;
+  top: 38px;
+  right: 38px;
+}
+.achievemetIndexLink {
+  position: absolute;
+  float: left;
+  top: 38px;
+  left: 28px;
+}
+.achievement {
+  float: left;
+  width: 33%;
+  opacity: 0.5;
+  color: white;
+  border: 1px solid black;
+}
+.achievementSmall {
+  float: left;
+  border: 1px solid black;
+  width: 175px;
+  height: 200px;
+  margin: 15px;
+  box-shadow: 5px 5px 8px black;
+  background: linear-gradient(
+    180deg,
+    rgb(99.608% 99.608% 99.608%) 0%,
+    rgb(99.607% 99.607% 99.607%) 6.25%,
+    rgb(99.6% 99.6% 99.6%) 12.5%,
+    rgb(99.571% 99.571% 99.571%) 18.75%,
+    rgb(99.49% 99.49% 99.49%) 25%,
+    rgb(99.32% 99.32% 99.32%) 31.25%,
+    rgb(99.011% 99.011% 99.011%) 37.5%,
+    rgb(98.502% 98.502% 98.502%) 43.75%,
+    rgb(97.721% 97.721% 97.721%) 50%,
+    rgb(96.585% 96.585% 96.585%) 56.25%,
+    rgb(95% 95% 95%) 62.5%,
+    rgb(92.862% 92.862% 92.862%) 68.75%,
+    rgb(90.054% 90.054% 90.054%) 75%,
+    rgb(86.448% 86.448% 86.448%) 81.25%,
+    rgb(81.907% 81.907% 81.907%) 87.5%,
+    rgb(76.282% 76.282% 76.282%) 93.75%,
+    rgb(69.412% 69.412% 69.412%) 100%
+  );
+
+  -moz-border-radius-bottomleft: 20px;
+  -moz-border-radius-bottomright: 20px;
+  border-radius-bottomleft: 20px;
+  border-radius-bottomright: 20px;
+  -moz-border-radius-bottomright: 20px;
+  -moz-border-radius-bottomleft: 20px;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  -moz-border-radius-topright: 20px;
+  -moz-border-radius-topleft: 20px;
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+}
+.achievement1 {
+  float: left;
+  border: 1px solid black;
+  width: 220px;
+  height: 241px;
+  margin: 15px;
+  box-shadow: 2px 2px 4px black;
+
+  background: linear-gradient(
+    0deg,
+    rgb(0% 0% 0% / 0.3) 0%,
+    rgb(44.897% 44.897% 44.897% / 0.4232177734375) 6.25%,
+    rgb(59.989% 59.989% 59.989% / 0.5310546875) 12.5%,
+    rgb(69.948% 69.948% 69.948% / 0.6245361328125) 18.75%,
+    rgb(77.216% 77.216% 77.216% / 0.7046874999999999) 25%,
+    rgb(82.734% 82.734% 82.734% / 0.7725341796874999) 31.25%,
+    rgb(86.99% 86.991% 86.99% / 0.8291015625) 37.5%,
+    rgb(90.281% 90.281% 90.281% / 0.8754150390625) 43.75%,
+    rgb(92.807% 92.807% 92.807% / 0.9124999999999999) 50%,
+    rgb(94.712% 94.712% 94.712% / 0.9413818359374999) 56.25%,
+    rgb(96.112% 96.112% 96.112% / 0.9630859375) 62.5%,
+    rgb(97.098% 97.098% 97.098% / 0.9786376953125) 68.75%,
+    rgb(97.752% 97.752% 97.752% / 0.9890625) 75%,
+    rgb(98.145% 98.145% 98.145% / 0.9953857421874999) 81.25%,
+    rgb(98.347% 98.347% 98.347% / 0.9986328124999999) 87.5%,
+    rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
+    rgb(98.431% 98.431% 98.431%) 100%
+  );
+  -moz-border-radius-bottomleft: 20px;
+  -moz-border-radius-bottomright: 20px;
+  border-radius-bottomleft: 20px;
+  border-radius-bottomright: 20px;
+  -moz-border-radius-bottomright: 20px;
+  -moz-border-radius-bottomleft: 20px;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  -moz-border-radius-topright: 20px;
+  -moz-border-radius-topleft: 20px;
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+}
+.achievementColorBlack:hover,
+.achievementColorPurple:hover,
+.achievementColorGreen:hover,
+.achievementColorOrange:hover,
+.achievementColorDarkblue:hover,
+.achievementColorRed:hover,
+.achievementColorRating:hover,
+.achievementColorTime:hover,
+.achievementColorBlue:hover,
+.achievementColorBluex:hover,
+.achievementColorTeal:hover,
+.achievementColorGold:hover {
+  box-shadow: 5px 5px 8px black;
+  left: -1px;
+  top: -1px;
+}
+.achievementColorGray {
+  color: #808080;
+  box-shadow: 1px 1px 2px black !important;
+}
+.achievementColorGray2 {
+  color: #808080;
+}
+.achievementColorBlack,
+.achievementColorBlack2 {
+  position: relative;
+  top: 0;
+  left: 0;
+  color: #000;
+}
+.achievementColorPurple,
+.achievementColorPurple2 {
+  position: relative;
+  top: 0;
+  left: 0;
+  color: #be00cf;
+}
+.achievementColorGreen,
+.achievementColorGreen2 {
+  position: relative;
+  top: 0;
+  left: 0;
+  color: #008c15;
+}
+.achievementColorOrange,
+.achievementColorOrange2 {
+  position: relative;
+  top: 0;
+  left: 0;
+  color: #d16133;
+}
+.achievementColorBlue,
+.achievementColorBlue2 {
+  color: #4e28c9;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorDarkblue,
+.achievementColorDarkblue2 {
+  color: #023fce;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorRed,
+.achievementColorRed2 {
+  color: #e61313;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorRating,
+.achievementColorRating2 {
+  color: #9c28c7;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorTime,
+.achievementColorTime2 {
+  color: #e84908;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorBluex,
+.achievementColorBluex2 {
+  color: #190e66;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorTeal,
+.achievementColorTeal2 {
+  color: #0e7377;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievementColorGold,
+.achievementColorGold2 {
+  color: #685f15;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+.achievement2 {
+  border: 1px solid black;
+  width: 220px;
+  height: 241px;
+  margin: 15px;
+  box-shadow: 5px 5px 8px black;
+  background: linear-gradient(
+    0deg,
+    rgb(0% 0% 0% / 0.3) 0%,
+    rgb(44.897% 44.897% 44.897% / 0.4232177734375) 6.25%,
+    rgb(59.989% 59.989% 59.989% / 0.5310546875) 12.5%,
+    rgb(69.948% 69.948% 69.948% / 0.6245361328125) 18.75%,
+    rgb(77.216% 77.216% 77.216% / 0.7046874999999999) 25%,
+    rgb(82.734% 82.734% 82.734% / 0.7725341796874999) 31.25%,
+    rgb(86.99% 86.991% 86.99% / 0.8291015625) 37.5%,
+    rgb(90.281% 90.281% 90.281% / 0.8754150390625) 43.75%,
+    rgb(92.807% 92.807% 92.807% / 0.9124999999999999) 50%,
+    rgb(94.712% 94.712% 94.712% / 0.9413818359374999) 56.25%,
+    rgb(96.112% 96.112% 96.112% / 0.9630859375) 62.5%,
+    rgb(97.098% 97.098% 97.098% / 0.9786376953125) 68.75%,
+    rgb(97.752% 97.752% 97.752% / 0.9890625) 75%,
+    rgb(98.145% 98.145% 98.145% / 0.9953857421874999) 81.25%,
+    rgb(98.347% 98.347% 98.347% / 0.9986328124999999) 87.5%,
+    rgb(98.421% 98.421% 98.421% / 0.9998291015625) 93.75%,
+    rgb(98.431% 98.431% 98.431%) 100%
+  );
+  -moz-border-radius-bottomleft: 20px;
+  -moz-border-radius-bottomright: 20px;
+  border-radius-bottomleft: 20px;
+  border-radius-bottomright: 20px;
+  -moz-border-radius-bottomright: 20px;
+  -moz-border-radius-bottomleft: 20px;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  -moz-border-radius-topright: 20px;
+  -moz-border-radius-topleft: 20px;
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
+}
+.achievementWrapper {
+  height: 600px;
+  width: 100%;
+}
+#achievementWrapper {
+}
+.acTitle {
+  height: 60px;
+}
+.acTitle h1 {
+  padding: 12px 6px;
+  font-weight: bold;
+}
+.acTitle2 b {
+  font-size: 19px;
+}
+.acTitle2 h1 {
+  padding: 12px 6px;
+  font-weight: bold;
+  color: inherit !important;
+}
+.achievementSmall .acTitle2 {
+  margin: 20px 8px;
+}
+.acImg {
+  height: 70px;
+}
+.acImg img {
+  width: 70px;
+  position: relative;
+  top: -3px;
+}
+.acImgXp {
+  position: relative;
+  top: -8px;
+  font-size: 13px;
+}
+.acImgXp2 {
+  position: relative;
+  font-size: 14px;
+  color: #555;
+  top: -51px;
+  left: -1px;
+  font-weight: 800;
+}
+.acDesc {
+  padding: 15px 5px;
+  height: 64px;
+  font-weight: bold;
+}
+.acDate {
+  font-style: italic;
+  padding: 8px 5px;
+  font-size: 14px;
+}
+.acDate2 {
+  font-style: italic;
+  margin: 20px 8px;
+}
+}

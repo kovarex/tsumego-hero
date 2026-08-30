@@ -1,0 +1,22 @@
+/* Page layer: auth.css (split from default.css). */
+@layer page {
+#login-box {
+  position: relative;
+  margin: 5% auto;
+  width: 690px;
+  height: 450px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+#login-box2 {
+  position: relative;
+  margin: 5% auto;
+  margin-bottom: 25px;
+  width: 900px;
+  height: 670px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+}

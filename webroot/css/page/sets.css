@@ -1,0 +1,148 @@
+/* Page layer: sets.css (split from default.css). */
+@layer page {
+.setViewCompleted {
+  color: #45ac6e;
+  margin: 2px 9px;
+  border: 1px solid #45ac6e;
+  padding: 3px;
+  display: inline-block;
+}
+.setViewAccuracy {
+  color: #722394;
+  margin: 2px 9px;
+  padding: 3px;
+  display: inline-block;
+}
+.setViewTime {
+  color: #b34717;
+  margin: 2px 9px;
+  padding: 3px;
+  display: inline-block;
+}
+#dropdown-difficulty {
+  display: none;
+  position: absolute;
+  top: 61px;
+  left: 141px;
+  z-index: 100;
+}
+#dropdown-tags {
+  display: none;
+  position: absolute;
+  top: 61px;
+  left: 265px;
+  max-width: 597px;
+  z-index: 100;
+}
+.set-button-icon {
+  padding-left: 5px;
+}
+.animate-icon {
+  transition: 0.4s;
+}
+.rotateArrow {
+  transform: rotate(180deg);
+}
+/* Dead tag classes (is-new-tag, tag-gives-hint, tag-comma) removed. */
+#undo-tags-button {
+  padding: 0 2px;
+  font-size: 11px;
+  cursor: pointer;
+}
+/* Dead strength-box tiers (box000-box975, box000sa-box975sa, box100, box100sa) removed. */
+.set-search-menu {
+  margin: 5px 23px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 4px;
+}
+.btn.set-search {
+  display: flex;
+  font-weight: 800;
+  padding: 6px 10px;
+  margin: 5px;
+  border-radius: 5px;
+  background: #222;
+  color: #bfc1c4;
+}
+[data-theme="light"] .btn.set-search {
+  background: #555;
+  color: #fff;
+}
+.set-view-main {
+  width: 100%;
+  margin-top: 12px;
+}
+.set-buttons-left,
+.set-buttons-right {
+  display: flex;
+}
+.filters-outer {
+  position: relative;
+  top: -5px;
+}
+.active-tiles-container {
+  margin-left: 24px;
+  width: 100%;
+}
+.tiles-view {
+  margin: 0;
+}
+#submit-size-button {
+  border: 1px solid #1b1b1b;
+  background: #555555;
+}
+#submit-size-button:disabled {
+  background: #fff;
+  color: #fff;
+}
+#set-size-input {
+  background: #555555;
+  width: 90px;
+  border: 1px solid #1b1b1b;
+  padding: 5px;
+  border-radius: 4px;
+  color: #bfc1c4;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 6px 10px;
+  margin: 5px;
+}
+#topics-button {
+  border: 1px solid #1b1b1b;
+}
+#difficulty-button {
+  border: 1px solid #1b1b1b;
+}
+#tags-button {
+  border: 1px solid #1b1b1b;
+}
+#tile-topics-submit {
+  color: #77c14a;
+  border: 1px solid #558a35;
+}
+#tile-difficulty-submit {
+  border: 1px solid #ac4bd0;
+  color: #be6cdd;
+}
+#tile-tags-submit {
+  border: 1px solid #aa5538;
+  color: #d56a46;
+}
+#tags-button:hover,
+#difficulty-button:hover,
+#topics-button:hover {
+  background: #444;
+}
+.set-index {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: left;
+  align-items: center;
+  margin: 5px auto;
+  width: 1228px;
+}
+}

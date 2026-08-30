@@ -1,0 +1,110 @@
+/* Page layer: home.css (split from default.css). */
+@layer page {
+.homeLeft {
+  text-align: justify;
+  padding: 0 3px 0 6px;
+  width: 638px;
+  overflow: hidden;
+}
+.homeRight {
+  float: right;
+  text-align: justify;
+  padding: 0 6px 0 3px;
+  width: 638px;
+}
+.homeLeft2 {
+  width: 50%;
+  text-align: justify;
+  min-height: 100px;
+  height: auto;
+  float: left;
+  position: relative;
+  padding: 0 10px;
+}
+.homeRight2 {
+  width: 50%;
+  text-align: justify;
+  min-height: 100px;
+  height: auto;
+  float: right;
+  position: relative;
+  padding: 0 10px;
+}
+.homeCenter {
+  width: 750px;
+  text-align: justify;
+}
+.homeCenter2 {
+  width: 100%;
+  text-align: justify;
+}
+.gradient-heading {
+  display: inline-block;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: linear-gradient(to left, #008e59, #3cc895);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.scheduleTsumego {
+  display: block;
+  clear: both;
+  color: #f0f0f0;
+}
+.new1 {
+	background: var(--new1-gradient);
+	border-radius: 0 0 4px 4px;
+	border-bottom: 1px solid #777;
+	border-left: 1px solid #777;
+	border-right: 1px solid #777;
+	padding: 8px;
+	color: var(--text-color);
+}
+.new-tsumego-box {
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  border: 1px solid #777;
+  padding: 8px;
+  height:175px;
+  margin-top:6px;
+}
+.homeLeft .new-tsumego-box {
+  background-image: url("/img/mode-select-bg-left.png");
+}
+.homeRight .new-tsumego-box {
+  background-image: url("/img/mode-select-bg-right.png");
+  background-size: 100% 100%;
+  min-height: 175px;
+  height: auto;
+  display: flow-root;
+}
+.achievement-quote-pick {
+  width:629px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+.quote-pick-wrapper {
+  display:flex;
+  justify-content: space-between;
+  position:relative;
+  width:629px;
+  margin-top: 6px;
+}
+.user-pick-all {
+  position: absolute;
+  width: 312px;
+  padding: 10px;
+  font-size: 20px;
+  cursor: context-menu;
+}
+.quote-pick-1 {
+  width:312px;
+  border: 1px solid #777;
+  border-radius: 4px;
+}
+}

@@ -1,0 +1,12 @@
+/* Page layer: admin.css (split from default.css). */
+@layer page {
+.adminpanel-table-text {
+  max-width: 350px;
+}
+.adminpanel-link {
+  white-space: nowrap;
+}
+.duplicateTable {
+  max-width: 800px;
+}
+}

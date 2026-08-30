@@ -5,8 +5,19 @@ import './tokens.css';
 import './base.css';
 import './components.css';
 import './react.css';
-// Page layer: legacy global sheet + page-specific rules (shrinks to zero over time).
-import './default.css';
+// Page layer: page-specific rules split by feature (shrinks to zero over time).
+import './page/fonts.css';
+import './page/site.css';
+import './page/play.css';
+import './page/home.css';
+import './page/sets.css';
+import './page/profile.css';
+import './page/achievements.css';
+import './page/timemode.css';
+import './page/admin.css';
+import './page/about.css';
+import './page/auth.css';
+import './page/misc.css';
 import './home-themes.css';
 import './profile.css';
 import './sets.css';

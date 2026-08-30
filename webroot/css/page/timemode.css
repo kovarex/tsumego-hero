@@ -1,0 +1,118 @@
+/* Page layer: timemode.css (split from default.css). */
+@layer page {
+.timeTableMiddle {
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+}
+.timeTableLeft {
+  border-radius: 12px 0 0 12px;
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+}
+.timeTableColor1 {
+  background: linear-gradient(#d07e5a, #9f5231);
+}
+.timeTableColor2 {
+  background: linear-gradient(#d7845f, #a45533);
+}
+.timeTableColor3 {
+  background: linear-gradient(#dd8761, #ae5a36);
+}
+.timeTableColor4 {
+  background: linear-gradient(#e18a63, #bf653e);
+}
+.timeTableColor5 {
+  background: linear-gradient(#ec926a, #ce6f46);
+}
+.timeTableColor6 {
+  background: linear-gradient(#ffa177, #db764a);
+}
+.timeTableColor7 {
+  background: linear-gradient(#f9ab88, #ea7f50);
+}
+.timeTableColor8 {
+  background: linear-gradient(#f4ba9f, #e8875d);
+}
+.timeTableColor9 {
+  background: linear-gradient(#ecbfaa, #e38c66);
+}
+.timeTableColor10 {
+  background: linear-gradient(#eacbbd, #d2967c);
+}
+.timeTableColor11 {
+  font-weight: 800;
+  background: linear-gradient(#ddd, #999);
+}
+.versionColor {
+  background: linear-gradient(#ddd, #999);
+}
+.timeModeTable {
+  width: 900px;
+}
+.timeModeTable2 .timeModeTable2td {
+  text-align: right;
+}
+.tScoreTitle {
+  padding: 5px;
+  -moz-border-radius-bottomleft: 7px;
+  -moz-border-radius-bottomright: 7px;
+  border-radius-bottomleft: 7px;
+  border-radius-bottomright: 7px;
+  -moz-border-radius-bottomright: 7px;
+  -moz-border-radius-bottomleft: 7px;
+  border-bottom-right-radius: 7px;
+  border-bottom-left-radius: 7px;
+  -moz-border-radius-topright: 7px;
+  -moz-border-radius-topleft: 7px;
+  border-top-right-radius: 7px;
+  border-top-left-radius: 7px;
+  border: 1px solid #889188;
+  cursor: pointer;
+}
+.tScoreTitle1 {
+  background-image: linear-gradient(#d0f4d0, #7af47a);
+}
+.tScoreTitle1:hover {
+  background-image: linear-gradient(#a6f4a6, #3df43d);
+}
+.tScoreTitle2 {
+  background-image: linear-gradient(#e8adb2, #e87983);
+}
+.tScoreTitle2:hover {
+  background-image: linear-gradient(#e89098, #e8717d);
+}
+.timeModeTable3 {
+  border: 1px solid #889188;
+  padding: 5px;
+  -moz-border-radius-bottomleft: 7px;
+  -moz-border-radius-bottomright: 7px;
+  border-radius-bottomleft: 7px;
+  border-radius-bottomright: 7px;
+  -moz-border-radius-bottomright: 7px;
+  -moz-border-radius-bottomleft: 7px;
+  border-bottom-right-radius: 7px;
+  border-bottom-left-radius: 7px;
+  -moz-border-radius-topright: 7px;
+  -moz-border-radius-topleft: 7px;
+  border-top-right-radius: 7px;
+  border-top-left-radius: 7px;
+}
+#timeMode1,
+#timeMode2,
+#timeMode3 {
+  margin: 0 25px;
+}
+.timeModeIcons {
+  position: relative;
+  top: 4px;
+}
+.timeGraph {
+	max-width: 650px;
+	margin: 12px auto;
+	padding-top: 20px;
+	padding-left: 10px;
+	border: 1px solid #ddd;
+	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
+}
+}
