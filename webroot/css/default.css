@@ -316,12 +316,8 @@ div.tableLayout {
   -moz-border-radius: 20px;
   border-radius: 20px;
 }
-th {
-  padding: 11px;
-}
-td {
-  padding: 3px;
-}
+/* th/td element padding defaults moved to base.css (@layer base) so component
+   table rules (data-table, stat) can override them. */
 ul {
   list-style-type: none;
   margin: 0;

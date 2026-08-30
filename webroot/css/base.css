@@ -19,4 +19,14 @@
 	{
 		text-decoration: none;
 	}
+
+	th
+	{
+		padding: 11px;
+	}
+
+	td
+	{
+		padding: 3px;
+	}
 }
