@@ -32,6 +32,7 @@
 		--color-blue-accent-hover: #0056b3;
 		--feedback-error: #e03c4b;
 		--feedback-warning: #f0ad4e;
+		--surface-danger: #fee;
 		--surface-hover: #eee;
 		--surface-hover-strong: #ddd;
 
@@ -124,6 +125,7 @@
 		--color-blue-accent-hover: #9dd0ff;
 		--feedback-error: #ff6b6b;
 		--feedback-warning: #c87f0a;
+		--surface-danger: #3a2020;
 		--surface-hover: #3a3a3a;
 		--surface-hover-strong: #444;
 	}

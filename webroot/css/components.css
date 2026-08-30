@@ -925,8 +925,8 @@
 {
 	padding: 20px;
 	margin: 20px 14px;
-	background: #fee;
-	border: 2px solid #fcc;
+	background: var(--surface-danger);
+	border: 2px solid var(--feedback-error);
 	border-radius: 8px;
 	text-align: center;
 }
@@ -934,24 +934,8 @@
 .error-message p
 {
 	margin: 0 0 15px 0;
-	color: #c33;
+	color: var(--feedback-error);
 	font-size: 14px;
-}
-
-.error-message button
-{
-	padding: 8px 16px;
-	background: #c33;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 13px;
-}
-
-.error-message button:hover
-{
-	background: #a11;
 }
 
 .error-boundary
