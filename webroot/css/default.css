@@ -365,51 +365,6 @@ li a.menuLi.nav__link--active {
   margin-top: 22px;
   width: 115px;
 }
-.signin input {
-  display: block;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  padding: 4px;
-  width: 220px;
-  height: 32px;
-  border: none;
-  border-bottom: 1px solid #aaa;
-  font-family: Georgia, sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  transition: 0.2s ease;
-}
-.signin input:focus {
-  border-bottom: 2px solid #d19fbb;
-  color: #74d14c;
-  background-color: #1f1f1f;
-  transition: 0.2s ease;
-}
-.signin input[type="submit"] {
-  margin-top: 28px;
-  width: 120px;
-  height: 32px;
-  background: #404040;
-  border: none;
-  border-radius: 2px;
-  color: #fff;
-  font-family: Georgia, sans-serif;
-  font-weight: 500;
-  transition: 0.1s ease;
-  cursor: pointer;
-}
-.signin input[type="submit"]:hover,
-.signin input[type="submit"]:focus {
-  opacity: 0.7;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  transition: 0.1s ease;
-}
-.signin input[type="submit"]:active {
-  opacity: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  transition: 0.1s ease;
-}
-
 /* .add-problems-sandbox removed (dead). */
 /* highscoreTable consolidated into .data-table (components.css). */
 /* dead .color* tier classes (never emitted) removed. */
@@ -3177,9 +3132,6 @@ ul ul {
   #status2 font font,
   .titleDescription1 font {
     color: grey;
-  }
-  .signin {
-    background: #515151;
   }
   #achievementWrapper font {
     color: #717171;

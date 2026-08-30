@@ -1484,6 +1484,66 @@ a[data-tsumego-id]:hover .tooltip-desc
 	filter: none;
 }
 
+/* ── Auth form (login / register / password pages) ── */
+.signin input
+{
+	display: block;
+	box-sizing: border-box;
+	margin-bottom: 20px;
+	padding: 4px;
+	width: 220px;
+	height: 32px;
+	border: none;
+	border-bottom: 1px solid #aaa;
+	font-family: Georgia, sans-serif;
+	font-weight: 400;
+	font-size: 15px;
+	transition: 0.2s ease;
+}
+
+.signin input:focus
+{
+	border-bottom: 2px solid #d19fbb;
+	color: #74d14c;
+	background-color: #1f1f1f;
+	transition: 0.2s ease;
+}
+
+.signin input[type="submit"]
+{
+	margin-top: 28px;
+	width: 120px;
+	height: 32px;
+	background: #404040;
+	border: none;
+	border-radius: 2px;
+	color: #fff;
+	font-family: Georgia, sans-serif;
+	font-weight: 500;
+	transition: 0.1s ease;
+	cursor: pointer;
+}
+
+.signin input[type="submit"]:hover,
+.signin input[type="submit"]:focus
+{
+	opacity: 0.7;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+	transition: 0.1s ease;
+}
+
+.signin input[type="submit"]:active
+{
+	opacity: 1;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	transition: 0.1s ease;
+}
+
+[data-theme=dark] .signin
+{
+	background: #515151;
+}
+
 } /* end @layer components */
 
 
