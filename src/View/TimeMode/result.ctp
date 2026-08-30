@@ -18,10 +18,10 @@
 	<br><br>
 	<?php if($unlock) { ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off">
-		<div class="alertBox alertInfo" id="time-rank-unlock-alert">
-			<div class="alertBanner" align="center">Unlocked<span class="alertClose">x</span></div>
-			<span class="alertText">
+		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off">
+		<div class="toast" id="time-rank-unlock-alert">
+			<div class="toast__banner" align="center">Unlocked<span class="toast__close">x</span></div>
+			<span class="toast__body">
 		<a style="color:black;text-decoration:none;" href="/timeMode/overview"><img id="hpIcon1" src="/img/rankButton<?php echo $unlock['rank']; ?>.png">
 		  You unlocked the <?php echo $unlock['rank'];?> <?php echo $unlock['category']; ?> rank.
 		</a><br>
@@ -131,12 +131,12 @@
 			$("#xp-bar-fill").css("width", barPercent);
 
 			<?php if($unlock){ ?>
-			$(".alertBox").fadeIn(500);
+			$(".toast").fadeIn(500);
 			<?php } ?>
 		});
 
 		$("#alertCheckbox").change(function() {
-			$(".alertBox").fadeOut(500);
+			$(".toast").fadeOut(500);
 		});
 
 	</script>

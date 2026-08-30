@@ -550,13 +550,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		?>
 	<?php if(!is_null($t['Tsumego']['semeaiType']) && $t['Tsumego']['semeaiType'] != 0 || $tv!=null&&$tv['TsumegoVariant']['type']=='multiple_choice'){ ?>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="alertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="multipleChoiceAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="alertCheckbox" autocomplete="off" />
+		<div class="toast" id="multipleChoiceAlerts">
+		<div class="toast__banner">
 		Infomation
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText2">
+		<span class="toast__body toast__body--left">
 		<div id="multipleChoiceText"></div>
 		<div class="clear1"></div>
 		</span>
@@ -564,13 +564,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		</label>
 	<?php }else{ ?>
 		<label>
-			<input type="checkbox" class="alertCheckbox1" id="potionAlertCheckbox" autocomplete="off" />
-			<div class="alertBox alertInfo" id="potionAlerts">
-			<div class="alertBanner" align="center">
+			<input type="checkbox" class="toast__toggle" id="potionAlertCheckbox" autocomplete="off" />
+			<div class="toast" id="potionAlerts">
+			<div class="toast__banner" align="center">
 			Hero Power
-			<span class="alertClose">x</span>
+			<span class="toast__close">x</span>
 		</div>
-			<span class="alertText">
+			<span class="toast__body">
 	<?php
 			echo '<img id="hpIcon1" src="/img/hp5.png">
 			You found a potion, your hearts have been restored.<br>'
@@ -579,13 +579,13 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					</div>
 		</label>
 		<label>
-		<input type="checkbox" class="alertCheckbox1" id="customAlertCheckbox" autocomplete="off" />
-		<div class="alertBox alertInfo" id="customAlerts">
-		<div class="alertBanner">
+		<input type="checkbox" class="toast__toggle" id="customAlertCheckbox" autocomplete="off" />
+		<div class="toast" id="customAlerts">
+		<div class="toast__banner">
 		Message
-		<span class="alertClose">x</span>
+		<span class="toast__close">x</span>
 		</div>
-		<span class="alertText3">
+		<span class="toast__body toast__body--wide">
 		<div id="customText"></div>
 		<div class="clear1"></div>
 		</span>
@@ -1704,10 +1704,10 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		$('#customText').html(message);
 		$("#customAlerts").fadeIn(500);
 		if (color==='red')
-			$(".alertBanner").addClass("alertBannerIncorrect");
+			$(".toast__banner").addClass("toast__banner--error");
 		else
-			$(".alertBanner").addClass("alertBannerCorrect");
-		$(".alertBanner").html(topic+"<span class=\"alertClose\">x</span>");
+			$(".toast__banner").addClass("toast__banner--success");
+		$(".toast__banner").html(topic+"<span class=\"toast__close\">x</span>");
 	}
 
 	function resetParameters(isAtStart)
