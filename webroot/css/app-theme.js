@@ -4,7 +4,11 @@ import './layers.css';
 import './tokens.css';
 import './base.css';
 import './components.css';
-import './react.css';
+// React feature components (comments/issues/dnd) - same components layer as
+// components.css so React UI keeps identical priority.
+import './react/comments.css';
+import './react/issues.css';
+import './react/dnd.css';
 // Page layer: page-specific rules split by feature (shrinks to zero over time).
 import './page/fonts.css';
 import './page/site.css';
