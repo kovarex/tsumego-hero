@@ -19,7 +19,9 @@
   margin: 20px 0;
   border-radius: 6px;
   align-self: center;
-  width: 1050px;
+  width: 100%;
+  max-width: 1050px;
+  box-sizing: border-box;
 }
 .timeline__event:nth-child(2n + 1) {
   flex-direction: row-reverse;
@@ -72,7 +74,8 @@
               0 18px 36px -18px rgba(0,0,0,0.3),
               0 -12px 36px -8px rgba(0,0,0,0.025);
   background: var(--info-box-background);
-  width: 684px;
+  flex: 1 1 0;
+  min-width: 0;
   border-radius: 6px;
 }
 .timeline__event__date {
@@ -144,5 +147,20 @@
 }
 .curl-table .x td {
   font-weight: 800;
+}
+
+/* Timeline stacks: icon above content below 64rem (1024px). The alternating
+   row-reverse (odd events) is disabled so every card reads icon-then-content. */
+@media (width < 64rem)
+{
+	.timeline__event {
+		flex-direction: column;
+	}
+	.timeline__event:nth-child(2n + 1) {
+		flex-direction: column;
+	}
+	.timeline__event__icon {
+		margin: 0 0 12px;
+	}
 }
 }

@@ -10,6 +10,14 @@
 {
 	/* Element defaults. Moved out of the legacy page CSS so that
 	   components (components layer) can override them cleanly. */
+	html
+	{
+		/* Prevent iOS Safari from auto-inflating text when rotating;
+		   keeps layout/typography consistent on phones. */
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
+
 	a
 	{
 		color: var(--link-color);
@@ -18,6 +26,17 @@
 	a:hover
 	{
 		text-decoration: none;
+	}
+
+	/* Fluid media: never let an image/video overflow the viewport.
+	   height:auto keeps the aspect ratio when the width shrinks (prevents CLS
+	   when explicit dimensions are set elsewhere). */
+	img,
+	picture,
+	video
+	{
+		max-width: 100%;
+		height: auto;
 	}
 
 	th

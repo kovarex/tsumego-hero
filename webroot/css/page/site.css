@@ -2,7 +2,7 @@
 {
 body {
 	font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-	font-size: 100%;
+	font-size: clamp(16px, 0.9rem + 0.5vw, 18px);
 	margin: 0;
 	text-align: justify;
 	background: var(--body-background-gradient);
@@ -10,13 +10,19 @@ body {
 	background-position: center center;
 	background-attachment: fixed;
 	color: var(--text-color);
+	/* Respect notched/rounded phones: pull content in from the safe area.
+	   env() is 0 on non-notch devices, so this is a no-op there. */
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
 }
 #container {
   position: relative;
   margin: auto;
   padding-top: 5px;
   width: 100%;
-  min-width: 1100px;
+  min-width: 0;
   max-width: 1300px;
 }
 .accessList {
@@ -28,9 +34,18 @@ body {
   margin: auto;
   color: white;
   font-weight: bold;
+  /* Reserve header space so the absolutely-positioned logo/nav don't overlap
+     the content below. The old outerMenu2 (height:65px) did this implicitly. */
+  height: 65px;
+}
+@media (width < 64rem) {
+  .whitebox1 {
+    height: 56px;
+  }
 }
 .whitebox2 {
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
   position: relative;
   margin: auto;
   padding: 0;
@@ -39,6 +54,7 @@ body {
   border: 2px solid black;
   box-shadow: 10px 10px 15px black;
   border-radius:10px;
+  box-sizing: border-box;
 }
 .loader-container {
   display: none;
@@ -75,7 +91,7 @@ body {
   0% { left: -75%; }
   100% { left: 125%; }
 }
-.outerMenu1 {
+.site-nav {
   display: table;
   margin: 18px;
   position: absolute;
@@ -84,18 +100,17 @@ body {
   z-index: 50;
   width: 900px;
 }
-.outerMenu2 {
-  display: table;
-  margin: 0 auto;
-  height: 65px;
-}
-.outerMenu3 {
+.site-nav__signin {
   display: table;
   margin: 0 auto;
   position: absolute;
   left: 1170px;
   width: 130px;
-  top: -8px;
+  top: 22px;
+}
+/* Account links in the drawer are mobile-only; desktop uses the hover account-bar. */
+.site-nav__account {
+  display: none;
 }
 li a.menuLi {
   font-family: Georgia;
@@ -127,8 +142,28 @@ li a.menuLi.nav__link--active {
 }
 #signInMenu {
   padding: 7px 9px 10px 9px;
-  margin-top: 22px;
+  margin-top: 0;
   width: 115px;
+}
+/* The sign-in link lives in a <div class="site-nav__signin">, not an <li>, so the
+   `li a.menuLi` rule doesn't reach it. Apply the same top-level menu look here so
+   it matches the nav items (purple, Georgia, no underline) instead of defaulting
+   to a browser-blue underlined link. */
+.site-nav__signin a.menuLi,
+.site-nav__signin #signInMenu {
+  font-family: Georgia;
+  letter-spacing: 1px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 20px;
+  color: #d19fe4;
+  text-decoration: none;
+  padding: 7px 9px 10px 9px;
+  cursor: pointer;
+}
+.site-nav__signin a.menuLi:hover {
+  background-color: grey;
+  color: #74d14c;
 }
 .additional-adminLink {
   display: none;
@@ -194,8 +229,11 @@ li a.menuLi.nav__link--active {
 #account-bar-wrapper {
   position: absolute;
   top: -31px;
-  left: 1130px;
-  width: 140px;
+  /* Right-anchor to the container instead of a hard-coded left:1130px, so the
+     widget no longer overflows on narrower windows. */
+  right: 0;
+  left: auto;
+  width: 160px;
   cursor: context-menu;
   background-color: white;
 }
@@ -359,22 +397,22 @@ li a.menuLi.nav__link--active {
   vertical-align: top;
 }
 h2 {
-  font-size: 26px;
+  font-size: clamp(22px, 1.1rem + 1vw, 28px);
   font-style: normal;
   font-variant: normal;
   font-weight: 600;
-  line-height: 19.8px;
+  line-height: 1.2;
 }
 h3 {
   font-family: Times New Roman, verdana, helvetica, arial, sans-serif;
-  font-size: 18px;
+  font-size: clamp(16px, 0.9rem + 0.6vw, 20px);
   font-style: normal;
   font-variant: normal;
   font-weight: 400;
-  line-height: 19.8px;
+  line-height: 1.2;
 }
 h4 {
-  font-size: 20px;
+  font-size: clamp(17px, 1rem + 0.5vw, 21px);
   font-weight: 600;
   margin-bottom: 10px;
   margin-top: 0px;
@@ -427,8 +465,7 @@ h4 {
 }
 #logo1:hover {
   background-color: grey;
-}
-.board-picker {
+}.board-picker {
   display: inline-block;
   font-family: Georgia;
   letter-spacing: 1px;
@@ -478,7 +515,8 @@ input.newCheck {
 #heroProfile {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 54px;
   background: linear-gradient(#808080, #464646);
@@ -498,7 +536,8 @@ input.newCheck {
 #heroBar {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 82px;
   background: linear-gradient(#808080, #464646);
@@ -518,7 +557,8 @@ input.newCheck {
 #heroAchievements {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 110px;
   background: linear-gradient(#808080, #464646);
@@ -538,7 +578,8 @@ input.newCheck {
 #heroLogout {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 138px;
   background: linear-gradient(#808080, #464646);
@@ -680,8 +721,11 @@ nav ul ul ul li {
   top: -60px;
   left: 170px;
 }
+/* Home submenu: widen to fit the longest item ("Functions & Modes") at the
+   standard nav font so the text doesn't overflow. Other submenus are 169/159px;
+   this one is a touch wider because its labels are the longest. */
 .newMenuLi1 li {
-  width: 118px;
+  width: 185px;
 }
 .newMenuLi2 li {
   width: 169px;
@@ -740,7 +784,8 @@ nav ul ul ul li {
   height: 13px;
   position: absolute;
   top: 41px;
-  left: 1145px;
+  right: 136px;
+  left: auto;
   border-bottom-left-radius: 4px;
   border-top-right-radius: 2px;
   cursor: pointer;
@@ -804,18 +849,22 @@ ul ul {
 }
 
 /* Responsive */
-@media (max-width: 1300px) {
+@media (width < 81.25rem) {
 	#heroProfile {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroBar {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroAchievements {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroLogout {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#boardsInMenu {
 		padding-top: 3px;
@@ -824,6 +873,278 @@ ul ul {
 	li a.menuLi {
 		padding-bottom: 9px;
 		padding-top: 9px;
+	}
+}
+
+/* Logo: same lockup on all breakpoints. Desktop keeps the original 55px height
+   (the base.css img{height:auto} rule would otherwise let it render at natural
+   size); on mobile it is scaled down to fit the header bar beside the hamburger. */
+#logo1 {
+	height: 55px;
+	width: auto;
+}
+@media (width < 64rem) {
+	#logo1 {
+		height: 40px;
+		width: auto;
+	}
+}
+
+/* Mobile nav: a compact header bar (logo + hamburger) and a drawer that
+   replaces the desktop absolute-positioned mega-menu. Hybrid pattern: core
+   destinations stay reachable without hiding everything behind a menu. */
+.nav-toggle {
+	display: none;
+}
+.nav-toggle-btn {
+	display: none;
+}
+@media (width < 64rem) {
+	/* Header bar: logo on the left, hamburger on the right. */
+	.whitebox1 {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		min-height: 56px;
+	}
+	#logo1 {
+		display: inline;
+		position: static;
+		height: 40px;
+		width: auto;
+		margin: 0;
+		padding: 0;
+	}
+	.nav-toggle-btn {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		padding: 8px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	.nav-toggle-btn span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		/* The header sits on the dark body gradient in BOTH themes, so the bars
+		   must stay light or they'd vanish (e.g. black-on-dark in light mode). */
+		background: #ddd;
+		border-radius: 2px;
+	}
+	.site-nav__signin {
+		display: none;
+	}
+	/* Sign In for logged-out users appears at the top of the drawer (like the
+	   logged-in account block). The absolute desktop .site-nav__signin is hidden
+	   above; this reuses .site-nav__account so it matches the account styling. */
+	.site-nav__signin-drawer {
+		display: block;
+	}
+	/* When logged out the disabled Discuss link is pointless on a phone; keep it
+	   only on desktop. */
+	.discuss-disabled {
+		display: none;
+	}
+	/* Drawer: hidden by default, opens when the checkbox is checked. */
+	.site-nav {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 1000;
+		width: min(80vw, 360px);
+		height: 100vh;
+		overflow-y: auto;
+		margin: 0;
+		padding: 16px 12px;
+		background: #1d1d1d;
+		box-shadow: 2px 0 12px rgba(0,0,0,0.5);
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+	}
+	.nav-toggle:checked ~ .site-nav {
+		transform: translateX(0);
+	}
+	/* Keep the hamburger above the drawer so it can be used to close it. */
+	.nav-toggle-btn {
+		position: relative;
+		z-index: 1001;
+	}
+	/* Stack the mega-menu vertically instead of absolute hover columns. */
+	.site-nav #newMenu,
+	.site-nav nav,
+	.site-nav nav ul,
+	.site-nav nav ul li {
+		width: 100%;
+		position: static;
+		display: block;
+		float: none;
+		text-align: left;
+	}
+	.site-nav nav ul li {
+		border: none;
+		background: none;
+	}
+	.site-nav nav a {
+		padding: 10px 8px;
+		font-size: 18px;
+		color: #d6a2ec;
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		text-align: left;
+		white-space: nowrap;
+	}
+	/* Keep submenus expanded (Home/Collections/Play) so their items are visible;
+	   only Highscore's submenu is collapsed to keep the drawer compact.
+	   On mobile the informational Home links (Functions & Modes, Go Rules, About)
+	   are not important to tap, so only Forums stays in the drawer; the full set
+	   is reachable on desktop hover. */
+	.site-nav nav ul ul {
+		position: static;
+		display: block;
+		padding-left: 24px;
+	}
+	.site-nav nav ul ul.newMenuLi4 {
+		display: none;
+	}
+	/* Keep only Forums in the Home submenu on mobile; the informational links
+	   (Functions & Modes, Go Rules, About) aren't important to tap on a phone.
+	   Use the explicit .newMenuLi1-forum hook rather than :first-child, which
+	   breaks if the submenu items are reordered. */
+	.site-nav nav ul ul.newMenuLi1 li {
+		display: none;
+	}
+	.site-nav nav ul ul.newMenuLi1 li.newMenuLi1-forum {
+		display: list-item;
+	}
+	.site-nav nav ul ul li a {
+		font-size: 16px;
+	}
+	/* Icon row (sound / board / dark) sits side by side on one line. */
+	.site-nav nav ul {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.site-nav nav ul > li:not(.menuIcons1) {
+		flex: 1 0 100%;
+	}
+	.site-nav nav ul > li.menuIcons1 {
+		flex: 0 0 33.333%;
+		height: auto;
+		padding: 0;
+	}
+	.site-nav nav ul > li.menuIcons1 > a,
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 48px;
+		padding: 0 8px;
+		box-sizing: border-box;
+		text-align: center;
+	}
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		position: relative;
+	}
+	/* The board picker dropdown is position:absolute; on mobile keep it in-flow. */
+	.site-nav nav ul > li.menuIcons1 .dropdown__menu {
+		position: static;
+		width: 100%;
+		max-width: 100%;
+		display: none;
+	}
+	/* Account access at the top of the drawer (desktop uses the hover
+	   account-bar; on mobile that bar is off-screen so we show these instead).
+	   The divider sits BELOW the account block (after Sign Out), not above it,
+	   and there is no empty space above the username. */
+	.site-nav__account {
+		display: block;
+		padding: 0 0 8px;
+		border-bottom: 1px solid #3a3a3a;
+		margin-bottom: 8px;
+	}
+	.site-nav__account-user {
+		font-size: 16px;
+		padding: 8px 8px 0;
+		color: #fff;
+	}
+	.site-nav__account-user a {
+		color: #74d14c;
+		text-decoration: none;
+	}
+	.site-nav__account-links ul {
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+	.site-nav__account-links li a {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 10px 8px;
+		font-size: 18px;
+		color: #d6a2ec;
+		text-align: left;
+	}
+	/* Hide the desktop floating account bar + hover dropdowns on mobile. */
+	#account-bar-wrapper,
+	#heroProfile,
+	#heroBar,
+	#heroAchievements,
+	#heroLogout,
+	#modeSelector {
+		display: none !important;
+	}
+}
+
+/* Touch polish
+   Coarse pointer = a finger/touch primary input. Hover states don't exist on
+   touch (the first tap triggers hover, the second activates), so we drop the
+   sticky-hover artifacts and give interactive elements a comfortable minimum
+   tap size. This is scoped to touch devices only; mouse/keyboard keep the
+   hover affordances. */
+@media (pointer: coarse)
+{
+	/* Links and buttons become easier to hit without growing the layout. */
+	a,
+	button,
+	.btn,
+	input[type="submit"],
+	input[type="button"],
+	.menuLi,
+	.selectable-text,
+	.problem-nav__item {
+		-webkit-tap-highlight-color: transparent;
+	}
+}
+
+/* On touch (no hover), a tap sticks the hover style until the user taps
+   elsewhere - this reads as a lingering "active" state. Reset those hover
+   looks to the idle state so a tap behaves like a tap. */
+@media (hover: none)
+{
+	.menuLi:hover,
+	.site-nav__signin a.menuLi:hover,
+	.footerLinks a:hover,
+	#logo1:hover,
+	#newMenu li:hover,
+	.btn:hover,
+	.problem-nav__item--N:hover,
+	.problem-nav__item--V:hover,
+	.problem-nav__item--S:hover,
+	.problem-nav__item--C:hover,
+	.problem-nav__item--W:hover,
+	.problem-nav__item--F:hover,
+	.problem-nav__item--X:hover {
+		background-color: inherit;
+		color: inherit;
+		text-decoration: none;
 	}
 }
 }

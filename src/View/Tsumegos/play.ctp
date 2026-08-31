@@ -131,14 +131,17 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 	if ($nothingInRange != false)
 		echo '<div align="center" style="color:red;font-weight:800;">'.$nothingInRange.'</div>';
 	?>
-	<table width="100%" border="0">
+	<table width="100%" border="0" class="play-header-table">
 	<tr>
 	<td align="center" width="29%">
 		<div id="health">
 			<?php
 			if (Auth::isLoggedIn())
+			{
+				echo '<span id="health-counter" class="health-counter">' . (int)Auth::getRemainingHealth() . ' / ' . (int)$maxHealth . '</span>';
 				for ($i = 0; $i < $maxHealth; $i++)
 					echo '<img title="Heart" id="heart'.$i.'">';
+			}
 			?>
 		</div>
 	</td>
@@ -1355,6 +1358,9 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 			el.src = "/img/" + (full ? fullHeart : emptyHeart) + ".png";
 			el.title = full ? "Heart" : "Empty Heart";
 		}
+		var counter = document.getElementById("health-counter");
+		if (counter)
+			counter.textContent = currentHealth + " / " + maxHealth;
 	}
 	redrawHearts();
 

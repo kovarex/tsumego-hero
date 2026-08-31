@@ -1,43 +1,10 @@
 @layer page
 {
-.homeLeft {
-  text-align: justify;
-  padding: 0 3px 0 6px;
-  width: 638px;
-  overflow: hidden;
-}
-.homeRight {
-  float: right;
-  text-align: justify;
-  padding: 0 6px 0 3px;
-  width: 638px;
-}
-.homeLeft2 {
-  width: 50%;
-  text-align: justify;
-  min-height: 100px;
-  height: auto;
-  float: left;
-  position: relative;
-  padding: 0 10px;
-}
-.homeRight2 {
-  width: 50%;
-  text-align: justify;
-  min-height: 100px;
-  height: auto;
-  float: right;
-  position: relative;
-  padding: 0 10px;
-}
-.homeCenter {
-  width: 750px;
-  text-align: justify;
-}
-.homeCenter2 {
-  width: 100%;
-  text-align: justify;
-}
+/* The two-column layout for the home page is provided by the generic .split
+   composition object in composition.css (source order: modes first, news
+   second). No text-align: justify - it is a readability anti-pattern (creates
+   uneven 'rivers' of whitespace, especially bad in narrow mobile columns) and
+   it is a content style, so it does not belong on a layout object. */
 .gradient-heading {
   display: inline-block;
   font-size: 1.2rem;
@@ -72,10 +39,12 @@
   height:175px;
   margin-top:6px;
 }
-.homeLeft .new-tsumego-box {
+/* Box art is a content modifier, not a positional descendant selector.
+   The modes box carries the left art, the news box carries the right. */
+.new-tsumego-box--modes {
   background-image: url("/img/mode-select-bg-left.png");
 }
-.homeRight .new-tsumego-box {
+.new-tsumego-box--news {
   background-image: url("/img/mode-select-bg-right.png");
   background-size: 100% 100%;
   min-height: 175px;
@@ -83,7 +52,8 @@
   display: flow-root;
 }
 .achievement-quote-pick {
-  width:629px;
+  width: 100%;
+  max-width: 629px;
   border: 1px solid #777;
   border-radius: 4px;
   margin-top: 6px;
@@ -92,20 +62,26 @@
   display:flex;
   justify-content: space-between;
   position:relative;
-  width:629px;
+  width: 100%;
+  max-width: 629px;
   margin-top: 6px;
 }
 .user-pick-all {
   position: absolute;
-  width: 312px;
+  right: 0;
+  width: 100%;
+  max-width: 312px;
   padding: 10px;
   font-size: 20px;
   cursor: context-menu;
+  box-sizing: border-box;
 }
 .quote-pick-1 {
-  width:312px;
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid #777;
   border-radius: 4px;
+  height: auto;
 }
 /* ── Mode button (home mode tiles) ── */
 .mode-button {
@@ -166,12 +142,30 @@
 	filter: none;
 }
 
+/* The achievement rows overlay the .achievement-quote-pick image ("the box").
+   The panel is relative; the image is the background; the stream is centered
+   over it. */
+.achievements-panel {
+  position: relative;
+  margin-top: 6px;
+}
+.achievements-panel .achievement-quote-pick {
+  display: block;
+  width: 100%;
+  max-width: 629px;
+  margin: 0;
+  height: auto;
+}
 #recent-achievement-stream {
-  font-size: 14px;
   position: absolute;
-  top: 280px;
-  left: 90px;
-  width: 460px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  max-width: 460px;
+  max-height: 100%;
+  overflow-y: auto;
+  font-size: 14px;
 }
 
 #recent-achievement-stream .recent-achievement-row {
@@ -360,13 +354,59 @@
   font-family: Helvetica, Times New Roman, verdana;
 }
 
+/* Anchor the label to the wrapper's right edge rather than the per-quote
+   left offsets, which pushed it past the wrapper on narrower windows. */
+.user-pick-all {
+  left: auto;
+  right: 0;
+}
+
 
 /* Dark overrides. */
 [data-theme="dark"] .scheduleTsumego {
 	color: #f0f0f0 !important;
 }
-[data-theme="dark"] .homeCenter2 {
-	background-color: #2a2a2a;
-	color: #fff;
+
+/* Mobile-first: single column below 64rem, then widen. Column stacking is
+   handled by the .split object in composition.css; here we only make the
+   inner feed/cards fluid. */
+@media (width < 64rem)
+{
+	.quote-pick-wrapper,
+	.achievement-quote-pick {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.user-pick-all,
+	.quote-pick-1 {
+		width: 100%;
+		max-width: 312px;
+		box-sizing: border-box;
+	}
+	.quote-pick-wrapper {
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px;
+	}
+	/* The user-of-the-day label is absolutely positioned over the image on
+	   desktop; on mobile let it flow so it doesn't overflow the viewport. */
+	.user-pick-all {
+		position: static;
+		width: 100%;
+		max-width: none;
+		text-align: center;
+		margin-top: 8px;
+	}
+	.new-tsumego-box {
+		height: auto;
+	}
+	.mode-select-box {
+		flex-wrap: wrap;
+	}
+	/* The achievements stream stays centered over the .achievement-quote-pick
+	   image (the panel is relative). Only the label flows. */
+	.achievements-panel .achievement-quote-pick {
+		width: 100%;
+	}
 }
 }

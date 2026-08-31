@@ -427,4 +427,41 @@ class SitesControllerTest extends ControllerTestCase
 		$this->assertStringContainsString("label: 'Problems'", $pageSource, 'Problems dataset should exist');
 		$this->assertStringContainsString("label: 'Users'", $pageSource, 'Users dataset should exist');
 	}
+
+	/**
+	 * A logged-in user sees their account block (name + Sign Out) in the nav and
+	 * no Sign In link, and Discuss is a real link.
+	 */
+	public function testLoggedInNavShowsAccountAndNoSignIn()
+	{
+		new ContextPreparator(['user' => ['name' => 'testuser']]);
+
+		$browser = Browser::instance();
+		$browser->get('/');
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('site-nav__account', $pageSource, 'Logged-in nav should have an account block');
+		$this->assertStringContainsString('users/logout', $pageSource, 'Logged-in account block should offer Sign Out');
+		$this->assertStringNotContainsString('site-nav__signin-drawer', $pageSource, 'Logged-in nav should not show a Sign In drawer block');
+		$this->assertStringNotContainsString('class="discuss-disabled"', $pageSource, 'Logged-in nav should not show the disabled Discuss link');
+	}
+
+	/**
+	 * A logged-out user sees a Sign In link in the nav (both the desktop block and
+	 * the drawer entry) and a disabled Discuss link, and no account block.
+	 */
+	public function testLoggedOutNavShowsSignInAndDisabledDiscuss()
+	{
+		new ContextPreparator(['user' => null]);
+
+		$browser = Browser::instance();
+		$browser->getAnonymous('/');
+
+		$pageSource = $browser->driver->getPageSource();
+		$this->assertStringContainsString('site-nav__signin-drawer', $pageSource, 'Logged-out nav should show a Sign In drawer block');
+		$this->assertStringContainsString('site-nav__signin', $pageSource, 'Logged-out nav should show the desktop Sign In block');
+		$this->assertStringContainsString('id="signInMenu"', $pageSource, 'Logged-out nav should render the Sign In link');
+		$this->assertStringContainsString('class="discuss-disabled"', $pageSource, 'Logged-out nav should show the disabled Discuss link');
+		$this->assertStringNotContainsString('users/logout', $pageSource, 'Logged-out nav should not offer Sign Out');
+	}
 }

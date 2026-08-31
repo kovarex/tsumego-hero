@@ -87,12 +87,19 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 <?php
 echo $this->Html->charset();
 ?>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>
 <?php echo $_title ?? 'Tsumego Hero'; ?>
 </title>
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
+<meta name="theme-color" content="#282828">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tsumego">
+<link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
 // Open Graph meta tags. Controllers may set a richer $og array
 // (see src/View/Elements/open_graph_meta.ctp); otherwise a generic default is used.
@@ -137,7 +144,33 @@ echo ViteManifest::legacyScript('legacy');
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="typeof logoHover==='function'&&logoHover(this)" onmouseout="typeof logoNoHover==='function'&&logoNoHover(this)" height="55px">
 			</a>
 		</div>
-		<div class="outerMenu1">
+		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
+			<span></span><span></span><span></span>
+		</label>
+		<div class="site-nav">
+			<?php
+			// Account access at the top of the drawer (logged-in). The username
+			// links to the profile; only Sign Out is listed as a separate action.
+			if (Auth::isLoggedIn()):
+			?>
+			<div class="site-nav__account">
+				<div class="site-nav__account-user">
+					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['name']); ?></a>
+				</div>
+				<nav class="site-nav__account-links">
+					<ul>
+						<li><a href="/users/logout">Sign Out</a></li>
+					</ul>
+				</nav>
+			</div>
+			<?php else: ?>
+			<div class="site-nav__account site-nav__signin-drawer">
+				<div class="site-nav__account-user">
+					<a href="/users/login">Sign In</a>
+				</div>
+			</div>
+			<?php endif; ?>
 				<?php
 			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 
@@ -228,9 +261,9 @@ echo ViteManifest::legacyScript('legacy');
 					<ul>
 						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
 						echo '<ul class="newMenuLi1">';
-						echo '<li><a id="tutorialLink" class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
-						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
+						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
+						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
+						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
 						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
@@ -276,7 +309,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn())
 							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
 						else
-							echo '<li><a style="color:#aaa;">Discuss</a></li>';
+							echo '<li class="discuss-disabled"><a style="color:#aaa;">Discuss</a></li>';
 						if(Auth::isLoggedIn())
 							if(Auth::getUser()['sound'] == 'off')
 								$soundButtonImageValue = 'sound-icon2.png';
@@ -314,20 +347,14 @@ echo ViteManifest::legacyScript('legacy');
 					</ul>
 				</nav>
 			</div>
-			</div>
-		<div class="outerMenu2">
-			<li><a></a></li>
-			</div>
-		<div class="outerMenu3">
-			<?php
-			$currentPage = '';
-			if($_page == 'login')
-				$currentPage = 'nav__link--active ';
-			if(!Auth::isLoggedIn())
-				echo '<li><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></li>';
-			?>
 		</div>
-
+		<?php
+		$currentPage = '';
+		if($_page == 'login')
+			$currentPage = 'nav__link--active ';
+		if(!Auth::isLoggedIn())
+			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
+		?>
 		</div>
 			<?php AccountWidget::render($timeMode); ?>
 	<div width="100%" align="left" class="whitebox2">
@@ -651,13 +678,5 @@ echo ViteManifest::legacyScript('legacy');
 // React app bundle
 echo ViteManifest::script('app');
 ?>
-
-		<?php
-if(!Auth::isLoggedIn())
-	echo '<style>.outerMenu1{left: 224px;}</style>';
-	?>
 </body>
-
 </html>
-
-<head>

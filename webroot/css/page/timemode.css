@@ -18,7 +18,8 @@
   background: linear-gradient(#ddd, #999);
 }
 .timeModeTable {
-  width: 900px;
+  width: 100%;
+  max-width: 900px;
 }
 .timeModeTable2 .timeModeTable2td {
   text-align: right;

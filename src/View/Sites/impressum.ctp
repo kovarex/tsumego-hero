@@ -3,7 +3,8 @@
  * @var View $this
  */
 ?>
-	<div class="homeLeft2">
+	<div class="split">
+	<div>
 		<p class="title4">Legal Notice</p>
 		<br>
 		<h4>Legal Notice</h4>
@@ -24,7 +25,7 @@
 		<br><br><br>
 	</div>
 	
-	<div class="homeRight2">
+	<div>
 		<p class="title4">&nbsp;&nbsp;&nbsp;</p>
 		<p class="title4date3">
 		&nbsp;
@@ -36,4 +37,5 @@
 		<h4>Data Protection</h4>
 
 		The use of our website is generally possible without providing personal data. Insofar as personal data (e.g., name, address, or email addresses) is collected on our website, this is always done on a voluntary basis, where possible. This data will not be passed on to third parties without your express consent. Please note that data transmission over the Internet (e.g., when communicating by email) can have security vulnerabilities. Complete protection of data against access by third parties is not possible. The use of contact details published within the scope of the legal notice by third parties for sending unsolicited advertising and informational materials is hereby expressly prohibited. The operators of these pages expressly reserve the right to take legal action in the event of unsolicited advertising, such as spam emails.	
+	</div>
 	</div>

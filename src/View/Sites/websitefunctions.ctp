@@ -6,50 +6,8 @@
 	<div align="center">
 	<h2>Functions and Modes</h2>
 	</div>
-	<div class="homeRight">
-
-		<p class="title4">Time Mode</p>
-		<div class="new1">
-			In the time mode, you are challenged with 10 problems of a selected rank. If you solve enough of them correctly,
-			you unlock the next rank. All problems are categorized into ranks from 15 kyu to 5 dan. You start at problems of the
-			rank 15 kyu and unlock a stronger rank upon passing the current rank.<br><br>
-			<b>Select page</b><br><br>
-			<img src="/img/mf-time3.png" width="100%">
-			<br><br>
-			The icon on the bottom left shows your best attempt. It shows your best score and if you passed or failed.
-			The icon on the right shows how many problems on that rank are in the database.
-			<br><br>
-			Select between 3 categories:<br>
-			• Slow: 4 Minutes per problem, 8/10 to pass<br>
-			• Fast: 1 Minute per problem, 8/10 to pass<br>
-			• Blitz: 30 Seconds per problem, 8/10 to pass<br>
-			<br>
-			<b>Problem page</b><br><br>
-			After a category is selected, it is time to solve the problems.
-			<br><br>
-
-			<img src="/img/mf-time2.png" width="100%">
-			<br><br>
-
-			<b>(1) Number of problems in current session</b><br><br>
-			The numbers show how many problems you solved in this session and how many problems are overall in this session.<br><br>
-
-			<b>(2) Countdown</b><br><br>
-			A countdown is shown on the upper left. When it runs out before solving,
-			you failed the problem.
-
-			<br><br>
-			<b>Results page</b><br><br>
-			<img src="/img/mf-time4.png" width="100%">
-			<br><br>
-
-			On the results page, you have your attempts listed. For each rank in each category, your best
-			attempt is shown. The possible range of points for each problem is 0 to 100. A faster solving time gets more points and a failed attempt always gives 0 points.
-			<br><br>
-		</div>
-	</div>
-
-	<div class="homeLeft">
+	<div class="split">
+		<div>
 		<p class="title4">Level Mode</p>
 		<div class="new1">
 		The level mode is the default mode for selecting collections and problems. Based on the difficulty of the problem, a certain amount of
@@ -172,6 +130,49 @@
 			can go to the problem to try it again.<br><br>
 		</div>
 		<br><br><br>
+	</div>
+	<div>
+
+		<p class="title4">Time Mode</p>
+		<div class="new1">
+			In the time mode, you are challenged with 10 problems of a selected rank. If you solve enough of them correctly,
+			you unlock the next rank. All problems are categorized into ranks from 15 kyu to 5 dan. You start at problems of the
+			rank 15 kyu and unlock a stronger rank upon passing the current rank.<br><br>
+			<b>Select page</b><br><br>
+			<img src="/img/mf-time3.png" width="100%">
+			<br><br>
+			The icon on the bottom left shows your best attempt. It shows your best score and if you passed or failed.
+			The icon on the right shows how many problems on that rank are in the database.
+			<br><br>
+			Select between 3 categories:<br>
+			• Slow: 4 Minutes per problem, 8/10 to pass<br>
+			• Fast: 1 Minute per problem, 8/10 to pass<br>
+			• Blitz: 30 Seconds per problem, 8/10 to pass<br>
+			<br>
+			<b>Problem page</b><br><br>
+			After a category is selected, it is time to solve the problems.
+			<br><br>
+
+			<img src="/img/mf-time2.png" width="100%">
+			<br><br>
+
+			<b>(1) Number of problems in current session</b><br><br>
+			The numbers show how many problems you solved in this session and how many problems are overall in this session.<br><br>
+
+			<b>(2) Countdown</b><br><br>
+			A countdown is shown on the upper left. When it runs out before solving,
+			you failed the problem.
+
+			<br><br>
+			<b>Results page</b><br><br>
+			<img src="/img/mf-time4.png" width="100%">
+			<br><br>
+
+			On the results page, you have your attempts listed. For each rank in each category, your best
+			attempt is shown. The possible range of points for each problem is 0 to 100. A faster solving time gets more points and a failed attempt always gives 0 points.
+			<br><br>
+		</div>
+	</div>
 	</div>
 
 
