@@ -10,6 +10,12 @@ body {
 	background-position: center center;
 	background-attachment: fixed;
 	color: var(--text-color);
+	/* Respect notched/rounded phones: pull content in from the safe area.
+	   env() is 0 on non-notch devices, so this is a no-op there. */
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
 }
 #container {
   position: relative;

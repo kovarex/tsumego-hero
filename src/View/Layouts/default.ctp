@@ -87,13 +87,19 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version());
 <?php
 echo $this->Html->charset();
 ?>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>
 <?php echo $_title ?? 'Tsumego Hero'; ?>
 </title>
 <meta name="description" content="Interactive tsumego database. Solve go problems, get stronger, level up, have fun.">
 <meta name="keywords" content="tsumego, problems, puzzles, baduk, weiqi, tesuji, life and death, solve, solving, hero, go, in-seong, level" >
 <meta name="Author" content="Joschka Zimdars">
+<meta name="theme-color" content="#282828">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tsumego">
+<link rel="apple-touch-icon" href="/pwa/icon-192.png">
 <?php
 // Open Graph meta tags. Controllers may set a richer $og array
 // (see src/View/Elements/open_graph_meta.ctp); otherwise a generic default is used.
