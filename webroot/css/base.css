@@ -10,6 +10,14 @@
 {
 	/* Element defaults. Moved out of the legacy page CSS so that
 	   components (components layer) can override them cleanly. */
+	html
+	{
+		/* Prevent iOS Safari from auto-inflating text when rotating;
+		   keeps layout/typography consistent on phones. */
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
+
 	a
 	{
 		color: var(--link-color);

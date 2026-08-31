@@ -369,4 +369,56 @@
 	background-color: #2a2a2a;
 	color: #fff;
 }
+
+/* Mobile-first: single column below 64rem (1024px), then widen.
+   Uses range syntax (2026) — narrow screens first, add layout as width grows. */
+@media (width < 64rem)
+{
+	.homeLeft,
+	.homeRight {
+		width: 100%;
+		float: none;
+		box-sizing: border-box;
+		padding: 0 8px;
+	}
+	.homeLeft2,
+	.homeRight2 {
+		width: 100%;
+		float: none;
+		box-sizing: border-box;
+		padding: 0 8px;
+	}
+	.homeCenter {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.quote-pick-wrapper,
+	.achievement-quote-pick {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.user-pick-all,
+	.quote-pick-1 {
+		width: 100%;
+		max-width: 312px;
+		box-sizing: border-box;
+	}
+	.quote-pick-wrapper {
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px;
+	}
+	.new-tsumego-box {
+		height: auto;
+	}
+	.mode-select-box {
+		flex-wrap: wrap;
+	}
+	#recent-achievement-stream {
+		position: static;
+		width: 100%;
+		max-width: 460px;
+		margin-top: 8px;
+	}
+}
 }

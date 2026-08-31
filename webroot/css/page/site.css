@@ -16,7 +16,7 @@ body {
   margin: auto;
   padding-top: 5px;
   width: 100%;
-  min-width: 1100px;
+  min-width: 0;
   max-width: 1300px;
 }
 .accessList {
@@ -30,7 +30,8 @@ body {
   font-weight: bold;
 }
 .whitebox2 {
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
   position: relative;
   margin: auto;
   padding: 0;
@@ -39,6 +40,7 @@ body {
   border: 2px solid black;
   box-shadow: 10px 10px 15px black;
   border-radius:10px;
+  box-sizing: border-box;
 }
 .loader-container {
   display: none;
@@ -427,8 +429,7 @@ h4 {
 }
 #logo1:hover {
   background-color: grey;
-}
-.board-picker {
+}.board-picker {
   display: inline-block;
   font-family: Georgia;
   letter-spacing: 1px;
@@ -824,6 +825,16 @@ ul ul {
 	li a.menuLi {
 		padding-bottom: 9px;
 		padding-top: 9px;
+	}
+}
+
+/* Mobile: shrink the logo so it doesn't crowd the nav.
+   The logo image is icon + text (662x170); scaling keeps it recognizable. */
+@media (width < 64rem) {
+	#logo1 {
+		height: 40px;
+		width: auto;
+		padding: 2px;
 	}
 }
 }
