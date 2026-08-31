@@ -158,6 +158,12 @@ echo ViteManifest::legacyScript('legacy');
 					</ul>
 				</nav>
 			</div>
+			<?php else: ?>
+			<div class="site-nav__account site-nav__signin-drawer">
+				<div class="site-nav__account-user">
+					<a href="/users/login">Sign In</a>
+				</div>
+			</div>
 			<?php endif; ?>
 				<?php
 			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
@@ -249,7 +255,10 @@ echo ViteManifest::legacyScript('legacy');
 					<ul>
 						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
 						echo '<ul class="newMenuLi1">';
-						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
+						echo '<li><a class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
+						echo '<li><a class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
+						echo '<li class="newMenuLi1-forum"><a id="forumLink" href="/forums">Forums</a></li>';
+						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
 						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections</a>';
@@ -294,7 +303,7 @@ echo ViteManifest::legacyScript('legacy');
 						if(Auth::isLoggedIn())
 							echo '<li><a  '.$refreshLinkToDiscuss.'  class="'.$discussA.'" href="/comments'.$discussFilter.'">Discuss</a></li>';
 						else
-							echo '<li><a style="color:#aaa;">Discuss</a></li>';
+							echo '<li class="discuss-disabled"><a style="color:#aaa;">Discuss</a></li>';
 						if(Auth::isLoggedIn())
 							if(Auth::getUser()['sound'] == 'off')
 								$soundButtonImageValue = 'sound-icon2.png';

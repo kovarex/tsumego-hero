@@ -31,47 +31,8 @@ if($set['Set']['id'] == 11969 || $set['Set']['id'] == 29156 || $set['Set']['id']
 
 ?>
 </script>
-	<div class="homeRight">
-		<p class="title4">Problems</p>
-		<div class="showFilters">
-			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
-		</div>
-		<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
-		<div id="msgFilters">
-			<div class="active-tiles-container tiles-view"></div>
-		</div>
-		<div class="set-view-main">
-		<?php
-	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
-	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
-	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
-	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
-		$beta2 = false;
-	else $beta2 = true;
-if(Auth::getUserID() == 72)
-	$beta2 = false;
-
-if(!$beta2)
-	foreach ($tsumegoButtons as $tsumegoButton)
-		$tsumegoButton->render();
-
-$totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
-if ($totalPages > 1):
-	$currentPage = $partition + 1;
-	?>
-	<div style="clear:both;display:block;width:100%;margin:12px 0;text-align:center">
-<?php for ($p = 1; $p <= $totalPages; $p++): ?>
-<?php if ($p === $currentPage): ?>
-		<strong><?php echo $p; ?></strong>
-<?php else: ?>
-		<a href="/sets/view/<?php echo $set['Set']['id'] . ($p > 1 ? '/' . $p : ''); ?>"><?php echo $p; ?></a>
-<?php endif; ?>
-<?php endfor; ?>
-	</div>
-<?php endif; ?>
-	</div>
-	</div>
-	<div class="homeLeft">
+	<div class="split">
+		<div>
 		<?php echo '<p class="title4">' . h($setTitle) . '</p>';?>
 		<div class="new1">
 		<table border="0" width="100%">
@@ -271,6 +232,47 @@ if ($tsumegoFilters->query != 'topics')
 		</div>
 		<?php if(!$isFav) echo '<br><br><br><br><br>'; ?>
 		<br><br>
+	</div>
+	<div>
+		<p class="title4">Problems</p>
+		<div class="showFilters">
+			<a id="showFilters" class="selectable-text">Filters<img id="greyArrowFilter" src="/img/greyArrow1.png"></a>
+		</div>
+		<label style="vertical-align:middle;margin-left:12px;cursor:pointer;font-size:12px;color:#888" title="Toggle board previews"><input type="checkbox" id="preview-zoom-slider" style="vertical-align:middle;margin-right:2px">🔍 Preview</label>
+		<div id="msgFilters">
+			<div class="active-tiles-container tiles-view"></div>
+		</div>
+		<div class="set-view-main">
+		<?php
+	if($set['Set']['id'] != 58 && $set['Set']['id'] != 62 && $set['Set']['id'] != 91 && $set['Set']['id'] != 72 && $set['Set']['id'] != 73 && $set['Set']['id'] != 74
+	&& $set['Set']['id'] != 75 && $set['Set']['id'] != 76 && $set['Set']['id'] != 77 && $set['Set']['id'] != 78 && $set['Set']['id'] != 79 && $set['Set']['id'] != 80
+	&& $set['Set']['id'] != 51 && $set['Set']['id'] != 56 && $set['Set']['id'] != 57 && $set['Set']['id'] != 119
+	&& $set['Set']['id'] != 119 && $set['Set']['id'] != 126 && $set['Set']['id'] != 129 && $set['Set']['id'] != 134 && $set['Set']['id'] != 135)
+		$beta2 = false;
+	else $beta2 = true;
+if(Auth::getUserID() == 72)
+	$beta2 = false;
+
+if(!$beta2)
+	foreach ($tsumegoButtons as $tsumegoButton)
+		$tsumegoButton->render();
+
+$totalPages = (int) ceil($tsumegoButtons->highestTsumegoOrder / $tsumegoFilters->collectionSize);
+if ($totalPages > 1):
+	$currentPage = $partition + 1;
+	?>
+	<div style="clear:both;display:block;width:100%;margin:12px 0;text-align:center">
+<?php for ($p = 1; $p <= $totalPages; $p++): ?>
+<?php if ($p === $currentPage): ?>
+		<strong><?php echo $p; ?></strong>
+<?php else: ?>
+		<a href="/sets/view/<?php echo $set['Set']['id'] . ($p > 1 ? '/' . $p : ''); ?>"><?php echo $p; ?></a>
+<?php endif; ?>
+<?php endfor; ?>
+	</div>
+<?php endif; ?>
+	</div>
+	</div>
 	</div>
 	<div style="clear:both;"></div>
 

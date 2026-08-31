@@ -100,7 +100,7 @@ body {
   position: absolute;
   left: 1170px;
   width: 130px;
-  top: -8px;
+  top: 22px;
 }
 /* Account links in the drawer are mobile-only; desktop uses the hover account-bar. */
 .site-nav__account {
@@ -136,8 +136,28 @@ li a.menuLi.nav__link--active {
 }
 #signInMenu {
   padding: 7px 9px 10px 9px;
-  margin-top: 22px;
+  margin-top: 0;
   width: 115px;
+}
+/* The sign-in link lives in a <div class="site-nav__signin">, not an <li>, so the
+   `li a.menuLi` rule doesn't reach it. Apply the same top-level menu look here so
+   it matches the nav items (purple, Georgia, no underline) instead of defaulting
+   to a browser-blue underlined link. */
+.site-nav__signin a.menuLi,
+.site-nav__signin #signInMenu {
+  font-family: Georgia;
+  letter-spacing: 1px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 20px;
+  color: #d19fe4;
+  text-decoration: none;
+  padding: 7px 9px 10px 9px;
+  cursor: pointer;
+}
+.site-nav__signin a.menuLi:hover {
+  background-color: grey;
+  color: #74d14c;
 }
 .additional-adminLink {
   display: none;
@@ -688,8 +708,11 @@ nav ul ul ul li {
   top: -60px;
   left: 170px;
 }
+/* Home submenu: widen to fit the longest item ("Functions & Modes") at the
+   standard nav font so the text doesn't overflow. Other submenus are 169/159px;
+   this one is a touch wider because its labels are the longest. */
 .newMenuLi1 li {
-  width: 118px;
+  width: 185px;
 }
 .newMenuLi2 li {
   width: 169px;
@@ -890,10 +913,23 @@ ul ul {
 		display: block;
 		height: 3px;
 		width: 100%;
-		background: var(--text-color);
+		/* The header sits on the dark body gradient in BOTH themes, so the bars
+		   must stay light or they'd vanish (e.g. black-on-dark in light mode). */
+		background: #ddd;
 		border-radius: 2px;
 	}
 	.site-nav__signin {
+		display: none;
+	}
+	/* Sign In for logged-out users appears at the top of the drawer (like the
+	   logged-in account block). The absolute desktop .site-nav__signin is hidden
+	   above; this reuses .site-nav__account so it matches the account styling. */
+	.site-nav__signin-drawer {
+		display: block;
+	}
+	/* When logged out the disabled Discuss link is pointless on a phone; keep it
+	   only on desktop. */
+	.discuss-disabled {
 		display: none;
 	}
 	/* Drawer: hidden by default, opens when the checkbox is checked. */
@@ -946,7 +982,10 @@ ul ul {
 		white-space: nowrap;
 	}
 	/* Keep submenus expanded (Home/Collections/Play) so their items are visible;
-	   only Highscore's submenu is collapsed to keep the drawer compact. */
+	   only Highscore's submenu is collapsed to keep the drawer compact.
+	   On mobile the informational Home links (Functions & Modes, Go Rules, About)
+	   are not important to tap, so only Forums stays in the drawer; the full set
+	   is reachable on desktop hover. */
 	.site-nav nav ul ul {
 		position: static;
 		display: block;
@@ -954,6 +993,16 @@ ul ul {
 	}
 	.site-nav nav ul ul.newMenuLi4 {
 		display: none;
+	}
+	/* Keep only Forums in the Home submenu on mobile; the informational links
+	   (Functions & Modes, Go Rules, About) aren't important to tap on a phone.
+	   Use the explicit .newMenuLi1-forum hook rather than :first-child, which
+	   breaks if the submenu items are reordered. */
+	.site-nav nav ul ul.newMenuLi1 li {
+		display: none;
+	}
+	.site-nav nav ul ul.newMenuLi1 li.newMenuLi1-forum {
+		display: list-item;
 	}
 	.site-nav nav ul ul li a {
 		font-size: 16px;

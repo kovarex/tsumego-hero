@@ -41,22 +41,32 @@
    once there's room. Source order = visual priority (primary first). */
 .split
 {
-	display: grid;
-	grid-template-columns: 1fr;
+	display: flex;
+	flex-wrap: wrap;
 	gap: var(--space-3);
+	align-items: start;
 }
 
+/* Algorithmic split (Every Layout): each child wants at least 30rem, so the
+   columns sit side by side when there is room and wrap to one column when there
+   is not. No breakpoint, no container query, context-independent. */
 .split > *
 {
+	flex: 1 1 30rem;
 	min-width: 0;
 }
 
-@media (width >= 64rem)
+/* Asymmetric split: a wide main column + a narrower sidebar.
+   First child = main (2fr), second child = sidebar (1fr). Source order still
+   drives visual priority. Use instead of the default 50/50 when one column is
+   the primary content (e.g. a problem list) and the other is supporting info. */
+.split--sidebar > *:first-child
 {
-	.split
-	{
-		grid-template-columns: 1fr 1fr;
-		align-items: start;
-	}
+	flex: 2 1 30rem;
+}
+
+.split--sidebar > *:last-child
+{
+	flex: 1 1 30rem;
 }
 }

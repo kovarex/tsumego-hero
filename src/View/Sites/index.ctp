@@ -24,8 +24,8 @@ $this->start('script');
 $this->end();
 ?>
 	<div class="split">
-			<div class="homeLeft">
-				<div class="new-tsumego-box mode-select-box">
+			<div>
+				<div class="new-tsumego-box new-tsumego-box--modes mode-select-box">
 				<?php
 					$loggedIn = Auth::isLoggedIn();
 					$lastVisit = (int)($_COOKIE['lastVisit'] ?? Constants::$DEFAULT_TSUMEGO_ID);
@@ -483,8 +483,8 @@ $this->end();
 
 
 				</div>
-			<div class="homeRight">
-				<div class="new-tsumego-box">
+			<div>
+				<div class="new-tsumego-box new-tsumego-box--news">
 					<?php
 					if (!empty((array)$tsumegoButtonsOfPublishedTsumegos))
 					{
@@ -775,7 +775,6 @@ $this->end();
 
 		<br>
 		<div style="clear:both;"></div>
-	</div>
 
 	<script>
 		let highestLeft = <?php echo $highestLeft; ?>;

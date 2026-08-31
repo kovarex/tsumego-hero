@@ -12,11 +12,8 @@
  * @var TagProposalsRenderer $tagProposalsRenderer
  */
 
-	echo '<div class="homeRight" style="width:40%">';
-	$adminActivityRenderer->render();
-	echo '</div>';
-
-	echo '<div class="homeLeft" style="text-align:left;border-right:1px solid #a0a0a0;width:60%">';
+	echo '<div class="split split--sidebar">';
+	echo '<div style="text-align:left;border-right:1px solid #a0a0a0">';
 		$sgfProposalsRenderer->render();
 		$tagProposalsRenderer->render();
 		if($requestDeletion!=null){
@@ -31,9 +28,12 @@
 			echo '</table><hr>';
 		}
 		$tagConnectionProposalsRenderer->render();
-
 	echo '</div>';
-	echo '<div style="clear:both;"></div>';
+
+	echo '<div>';
+	$adminActivityRenderer->render();
+	echo '</div>';
+	echo '</div>';
 ?>
 
 <script>
