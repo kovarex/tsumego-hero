@@ -497,8 +497,10 @@ $this->end();
 						{
 							echo '<a class="scheduleTsumego" href="/sets/view/'.$setID.'"><b>'
 								.$setButtons[0]->setTitle . ' - '.count($setButtons).' problems</b></a><br>';
+							echo '<div class="problem-nav__buttons">';
 							foreach ($setButtons as $index => $tsumegoButton)
 								$tsumegoButton->render($index);
+							echo '</div>';
 						}
 					}
 					?>

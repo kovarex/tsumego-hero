@@ -33,6 +33,15 @@
 	box-sizing: border-box;
 }
 
+/* A wrapping row of problem-status buttons; `.problem-nav__item` no longer
+   floats, so a flex container is required to lay them out in a row. */
+.problem-nav__buttons
+{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+}
+
 /* Base button look: the problem-status nav keeps its classic 58px two-tone button. */
 .problem-nav__item
 {

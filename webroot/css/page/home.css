@@ -68,6 +68,7 @@
 }
 .user-pick-all {
   position: absolute;
+  right: 0;
   width: 100%;
   max-width: 312px;
   padding: 10px;
@@ -353,16 +354,22 @@
   font-family: Helvetica, Times New Roman, verdana;
 }
 
+/* Anchor the label to the wrapper's right edge rather than the per-quote
+   left offsets, which pushed it past the wrapper on narrower windows. */
+.user-pick-all {
+  left: auto;
+  right: 0;
+}
+
 
 /* Dark overrides. */
 [data-theme="dark"] .scheduleTsumego {
 	color: #f0f0f0 !important;
 }
 
-/* Mobile-first: single column below 64rem (1024px), then widen.
-   Uses range syntax (2026) — narrow screens first, add layout as width grows.
-   The .split (composition.css) owns the column stacking; here we only make
-   the inner feed/cards fluid. */
+/* Mobile-first: single column below 64rem, then widen. Column stacking is
+   handled by the .split object in composition.css; here we only make the
+   inner feed/cards fluid. */
 @media (width < 64rem)
 {
 	.quote-pick-wrapper,

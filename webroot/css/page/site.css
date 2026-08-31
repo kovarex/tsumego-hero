@@ -229,8 +229,11 @@ li a.menuLi.nav__link--active {
 #account-bar-wrapper {
   position: absolute;
   top: -31px;
-  left: 1130px;
-  width: 140px;
+  /* Right-anchor to the container instead of a hard-coded left:1130px, so the
+     widget no longer overflows on narrower windows. */
+  right: 0;
+  left: auto;
+  width: 160px;
   cursor: context-menu;
   background-color: white;
 }
@@ -512,7 +515,8 @@ input.newCheck {
 #heroProfile {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 54px;
   background: linear-gradient(#808080, #464646);
@@ -532,7 +536,8 @@ input.newCheck {
 #heroBar {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 82px;
   background: linear-gradient(#808080, #464646);
@@ -552,7 +557,8 @@ input.newCheck {
 #heroAchievements {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 110px;
   background: linear-gradient(#808080, #464646);
@@ -572,7 +578,8 @@ input.newCheck {
 #heroLogout {
   color: #74d14c;
   position: absolute;
-  left: 1145px;
+  right: 0;
+  left: auto;
   width: 144px;
   top: 138px;
   background: linear-gradient(#808080, #464646);
@@ -777,7 +784,8 @@ nav ul ul ul li {
   height: 13px;
   position: absolute;
   top: 41px;
-  left: 1145px;
+  right: 136px;
+  left: auto;
   border-bottom-left-radius: 4px;
   border-top-right-radius: 2px;
   cursor: pointer;
@@ -841,18 +849,22 @@ ul ul {
 }
 
 /* Responsive */
-@media (max-width: 1300px) {
+@media (width < 81.25rem) {
 	#heroProfile {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroBar {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroAchievements {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#heroLogout {
-		left: 935px;
+		right: 0;
+		left: auto;
 	}
 	#boardsInMenu {
 		padding-top: 3px;
@@ -1091,7 +1103,7 @@ ul ul {
 	}
 }
 
-/* ── Touch polish ──
+/* Touch polish
    Coarse pointer = a finger/touch primary input. Hover states don't exist on
    touch (the first tap triggers hover, the second activates), so we drop the
    sticky-hover artifacts and give interactive elements a comfortable minimum
@@ -1113,7 +1125,7 @@ ul ul {
 }
 
 /* On touch (no hover), a tap sticks the hover style until the user taps
-   elsewhere — this reads as a lingering "active" state. Reset those hover
+   elsewhere - this reads as a lingering "active" state. Reset those hover
    looks to the idle state so a tap behaves like a tap. */
 @media (hover: none)
 {

@@ -225,9 +225,11 @@ h1 {
   height: 70vh;
 }
 .tags-content {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   margin: 0 auto;
   padding: 20px;
+  box-sizing: border-box;
   text-align: left;
 }
 .existing-tags-list {
@@ -835,7 +837,7 @@ h1 {
 }
 
 /* Responsive */
-@media (max-width: 1300px) {
+@media (width < 81.25rem) {
 	#sandboxLink {
 		top: 68px;
 	}

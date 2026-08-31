@@ -17,20 +17,24 @@
 	<tr>
 		<td>Occurances:</td>
 		<td>
+		<div class="problem-nav__buttons">
 		<?php
 			foreach ($masterTsumegoButtons as $masterTsumegoButton)
 				$masterTsumegoButton->render();
 		?>
+		</div>
 		</td>
 	</tr>
 	<tr><td colspan="2"><h2>Slave tsumego</h2></td></tr>
 	<tr>
 		<td>Occurances:</td>
 		<td>
+		<div class="problem-nav__buttons">
 		<?php
 			foreach ($slaveTsumegoButtons as $slaveTsumegoButton)
 				$slaveTsumegoButton->render();
 		?>
+		</div>
 		</td>
 	</tr>
 	</table>

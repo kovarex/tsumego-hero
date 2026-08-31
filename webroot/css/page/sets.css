@@ -369,7 +369,7 @@
 	font-size: var(--font-size-sm);
 }
 
-@media (max-width: 700px)
+@media (width < 43.75rem)
 {
 	.set-edit__grid
 	{
