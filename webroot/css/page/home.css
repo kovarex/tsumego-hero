@@ -12,7 +12,7 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   font-weight: 600;
-  background: linear-gradient(to left, #008e59, #3cc895);
+  background: var(--gradient-heading);
   color: transparent;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -20,21 +20,21 @@
 .scheduleTsumego {
   display: block;
   clear: both;
-  color: #f0f0f0;
+  color: var(--color-white);
 }
 .new1 {
 	background: var(--new1-gradient);
 	border-radius: 0 0 4px 4px;
-	border-bottom: 1px solid #777;
-	border-left: 1px solid #777;
-	border-right: 1px solid #777;
+	border-bottom: 1px solid var(--surface-border-muted);
+	border-left: 1px solid var(--surface-border-muted);
+	border-right: 1px solid var(--surface-border-muted);
 	padding: 8px;
 	color: var(--text-color);
 }
 .new-tsumego-box {
   background-repeat: no-repeat;
   border-radius: 4px;
-  border: 1px solid #777;
+  border: 1px solid var(--surface-border-muted);
   padding: 8px;
   height:175px;
   margin-top:6px;
@@ -54,7 +54,7 @@
 .achievement-quote-pick {
   width: 100%;
   max-width: 629px;
-  border: 1px solid #777;
+  border: 1px solid var(--surface-border-muted);
   border-radius: 4px;
   margin-top: 6px;
 }
@@ -79,7 +79,7 @@
 .quote-pick-1 {
   flex: 1 1 0;
   min-width: 0;
-  border: 1px solid #777;
+  border: 1px solid var(--surface-border-muted);
   border-radius: 4px;
   height: auto;
 }
@@ -119,16 +119,16 @@
 	filter: brightness(1.45) saturate(1.6);
 }
 .mode-button-level {
-	--mode-glow: #8cff2e;
+	--mode-glow: var(--mode-glow-level);
 }
 .mode-button-rating {
-	--mode-glow: #e05cff;
+	--mode-glow: var(--mode-glow-rating);
 }
 .mode-button-time {
-	--mode-glow: #ffa04a;
+	--mode-glow: var(--mode-glow-time);
 }
 .mode-button-achievements {
-	--mode-glow: #4dffe6;
+	--mode-glow: var(--mode-glow-achievements);
 }
 .mode-button-disabled::before {
 	display: none;
@@ -174,7 +174,7 @@
   padding: 5px 5px;
   box-sizing: border-box;
   background-color: rgba(0, 0, 0, 0.45);
-  color: #f5f5f5;
+  color: var(--color-white);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
 }
@@ -199,28 +199,28 @@
 }
 
 #recent-achievement-stream .recent-achievement-message a {
-  color: #dcdcdc;
+  color: var(--text-on-dark);
   text-decoration: underline;
 }
 
 #recent-achievement-stream .recent-achievement-message a:hover {
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 /* User / achievement links emitted by React RecentAchievements.tsx */
 
 #recent-achievement-stream .recent-achievement-user-link,
 #recent-achievement-stream .recent-achievement-achievement-link {
-  color: #dcdcdc;
+  color: var(--text-on-dark);
 }
 
 #recent-achievement-stream .recent-achievement-user-link:hover,
 #recent-achievement-stream .recent-achievement-achievement-link:hover {
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 #recent-achievement-stream .recent-achievement-time {
-  color: #dcdcdc;
+  color: var(--text-on-dark);
   font-size: 12px;
   margin-left: 12px;
   white-space: nowrap;
@@ -237,28 +237,28 @@
 
 
 .user-pick-q01 {
-  color: white !important;
+  color: var(--color-white) !important;
   left: 316px;
   top: 172px;
   font-family: Comic Sans MS, Times New Roman, verdana;
 }
 
 .user-pick-q02 {
-  color: #fdfdfd !important;
+  color: var(--color-white) !important;
   left: 316px;
   top: 106px;
   font-family: Impact, Times New Roman, verdana;
 }
 
 .user-pick-q03 {
-  color: #e05d8f !important;
+  color: var(--stat-pink) !important;
   left: 316px;
   top: 89px;
   font-family: Lucida Console, Times New Roman, verdana;
 }
 
 .user-pick-q04 {
-  color: #fdfdfe !important;
+  color: var(--color-white) !important;
   left: 316px;
   top: 189px;
   font-weight: bold;
@@ -266,7 +266,7 @@
 }
 
 .user-pick-q05 {
-  color: #fdfdfe !important;
+  color: var(--color-white) !important;
   left: 316px;
   top: 121px;
   font-size: 22px !important;
@@ -275,7 +275,7 @@
 }
 
 .user-pick-q06 {
-  color: #ad935e !important;
+  color: var(--stat-brown) !important;
   left: 316px;
   top: 151px;
   font-weight: bold;
@@ -283,7 +283,7 @@
 }
 
 .user-pick-q07 {
-  color: #fce1c2 !important;
+  color: var(--stat-peach) !important;
   left: 342px;
   top: 113px;
   font-weight: bold;
@@ -291,7 +291,7 @@
 }
 
 .user-pick-q08 {
-  color: black !important;
+  color: var(--color-black) !important;
   left: 300px;
   top: 22px;
   font-weight: bold;
@@ -299,14 +299,14 @@
 }
 
 .user-pick-q09 {
-  color: white !important;
+  color: var(--color-white) !important;
   left: 318px;
   top: 53px;
   font-family: Helvetica, Times New Roman, verdana;
 }
 
 .user-pick-q10 {
-  color: #fed487 !important;
+  color: var(--stat-gold) !important;
   left: 317px;
   top: 153px;
   font-weight: bold;
@@ -314,7 +314,7 @@
 }
 
 .user-pick-q11 {
-  color: #fbcc5f !important;
+  color: var(--stat-yellow) !important;
   left: 321px;
   top: 125px;
   font-size: 15px;
@@ -322,7 +322,7 @@
 }
 
 .user-pick-q12 {
-  color: #b83330 !important;
+  color: var(--stat-red) !important;
   left: 321px;
   top: 145px;
   font-family: Helvetica, Times New Roman, verdana;
@@ -364,7 +364,7 @@
 
 /* Dark overrides. */
 [data-theme="dark"] .scheduleTsumego {
-	color: #f0f0f0 !important;
+	color: var(--link-color) !important;
 }
 
 /* Mobile-first: single column below 64rem, then widen. Column stacking is

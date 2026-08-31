@@ -54,9 +54,9 @@
 	font-weight: 700;
 	text-align: center;
 	text-decoration: none;
-	border: 1px solid #333333;
-	border-top-color: #cccccc;
-	border-left-color: #cccccc;
+	border: 1px solid var(--surface-border-strong);
+	border-top-color: var(--current-border-color);
+	border-left-color: var(--current-border-color);
 	border-radius: 9px;
 	margin: 1px;
 	height: 32px;
@@ -109,7 +109,7 @@
 
 .problem-nav__item--N:hover
 {
-	background-color: #a6a9b0;
+	background-color: var(--nav-hover-gray);
 }
 
 .problem-nav__item--V
@@ -119,7 +119,7 @@
 
 .problem-nav__item--V:hover
 {
-	background-color: #74b5e0;
+	background-color: var(--nav-hover-blue);
 }
 
 .problem-nav__item--S
@@ -129,7 +129,7 @@
 
 .problem-nav__item--S:hover
 {
-	background-color: #5cd98a;
+	background-color: var(--nav-hover-green);
 }
 
 .problem-nav__item--C
@@ -139,7 +139,7 @@
 
 .problem-nav__item--C:hover
 {
-	background-color: #6be39a;
+	background-color: var(--nav-hover-green2);
 }
 
 .problem-nav__item--W
@@ -149,7 +149,7 @@
 
 .problem-nav__item--W:hover
 {
-	background-color: #7acfcd;
+	background-color: var(--nav-hover-teal);
 }
 
 .problem-nav__item--F
@@ -159,7 +159,7 @@
 
 .problem-nav__item--F:hover
 {
-	background-color: #e09da4;
+	background-color: var(--nav-hover-rose);
 }
 
 .problem-nav__item--X
@@ -169,7 +169,7 @@
 
 .problem-nav__item--X:hover
 {
-	background-color: #eaa8ae;
+	background-color: var(--nav-hover-rose2);
 }
 
 @keyframes goldenShineSweep
@@ -192,7 +192,7 @@
 {
 	background:
 		linear-gradient(115deg, transparent 30%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%, transparent 70%),
-		linear-gradient(135deg, var(--status-g-highlight), #fff8c0, var(--status-g-highlight));
+		linear-gradient(135deg, var(--status-g-highlight), var(--gold-sheen), var(--status-g-highlight));
 	background-size: 250% 100%, 100% 100%;
 	background-position: 150% 0, 0 0;
 	animation: goldenShineSweep 1.5s ease-in-out infinite;
@@ -200,12 +200,12 @@
 
 .problem-nav__item--G a
 {
-	color: #4a3500;
+	color: var(--gold-ink);
 }
 
 .problem-nav__item--G a:hover
 {
-	color: #4a3500;
+	color: var(--gold-ink);
 }
 
 .problem-nav__ratio
@@ -235,7 +235,7 @@
 	align-items: center;
 	justify-content: center;
 	background-image: none;
-	border: 1px solid #444;
+	border: 1px solid var(--surface-border-strong);
 	margin: 2px;
 }
 
@@ -316,7 +316,7 @@
 	opacity: 0;
 	padding: 4px 6px;
 	font-size: 10px;
-	color: #ddd;
+	color: var(--text-on-dark);
 	text-align: center;
 	max-width: 180px;
 	transition: opacity 0.3s ease;
@@ -342,17 +342,17 @@ a[data-tsumego-id]:hover .tooltip-desc
 	transition-delay: 1.2s;
 }
 
-.tooltip-label.statusN { background-color: var(--status-n-color); color: #fff; }
-.tooltip-label.statusV { background-color: var(--status-v-color); color: #fff; }
-.tooltip-label.statusS { background-color: var(--status-s-color); color: #fff; }
-.tooltip-label.statusC { background-color: var(--status-c-color); color: #fff; }
-.tooltip-label.statusW { background-color: var(--status-w-color); color: #fff; }
-.tooltip-label.statusF { background-color: var(--status-f-color); color: #fff; }
-.tooltip-label.statusX { background-color: var(--status-x-color); color: #fff; }
+.tooltip-label.statusN { background-color: var(--status-n-color); color: var(--color-white); }
+.tooltip-label.statusV { background-color: var(--status-v-color); color: var(--color-white); }
+.tooltip-label.statusS { background-color: var(--status-s-color); color: var(--color-white); }
+.tooltip-label.statusC { background-color: var(--status-c-color); color: var(--color-white); }
+.tooltip-label.statusW { background-color: var(--status-w-color); color: var(--color-white); }
+.tooltip-label.statusF { background-color: var(--status-f-color); color: var(--color-white); }
+.tooltip-label.statusX { background-color: var(--status-x-color); color: var(--color-white); }
 .tooltip-label.statusG
 {
 	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
-	color: #3d2e00;
+	color: var(--medal-gold-fg);
 	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
 	border: 1px solid rgba(180, 140, 30, 0.4);
 	position: relative;

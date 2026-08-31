@@ -1,20 +1,22 @@
 /* ══════════════════════════════════════════════════════
-   Shared design tokens and UI components
+   Design-system UI components
    Imported globally via app-theme.js.
 
+   Cascade (layers.css, order = priority, last wins):
+   tokens -> base -> composition -> utilities -> components -> page
+
    Philosophy:
-   - Tokens → Components → Page composition → State/theme
-   - Raw values (colors, spacing) live ONLY in tokens.
-   - Components are semantic and reusable (used 2-5×).
-     Modifiers encode state/variant, not visual values.
-   - Page-specific rules stay in page CSS files.
+   - Raw values (colors, spacing, radii, type) live ONLY in tokens.css.
+   - base = element defaults; composition = layout objects;
+     utilities = 1-rule helpers; page = page-specific rules.
+     THIS FILE = semantic, reusable components (used 2-5×),
+     where modifiers encode state/variant, not visual values.
    - BEM naming: block__element--modifier (see getbem.com).
      Exception: structural HTML elements (td, th, tr, li)
      scoped to a block may use element selectors.
    - IDs are JS hooks only, never styled.
-   - When adding a new class, ask: "Can an existing
-     component or modifier handle this?" If not, add it
-     here so the next page can reuse it.
+   - Before adding a class, ask "Can an existing component or modifier
+     handle this?" If not, add it to the owning layer above.
    ══════════════════════════════════════════════════════ */
 
 @layer components
@@ -152,8 +154,8 @@
 	height: 100%;
 	min-width: 0;
 	border-radius: 3px;
-	background-color: #bbbbbb;
-	background-image: linear-gradient(#f5f5f5, #9b9b9b);
+	background-color: var(--progress-thin-fill);
+	background-image: var(--progress-thin-gradient);
 	animation: progress-grow 0.6s ease-out;
 }
 
@@ -190,13 +192,13 @@
 	font-weight: 800;
 	text-decoration: none;
 	text-transform: uppercase;
-	background-color: #5b5d60;
-	color: #74d13f;
+	background-color: var(--surface-button);
+	color: var(--color-green);
 	padding: 8px 10px;
 	margin: 2px;
-	border: 1px solid #333333;
-	border-top-color: #cccccc;
-	border-left-color: #cccccc;
+	border: 1px solid var(--surface-border-strong);
+	border-top-color: var(--current-border-color);
+	border-left-color: var(--current-border-color);
 	border-radius: 9px;
 	cursor: pointer;
 	transition: background 0.2s;
@@ -204,8 +206,8 @@
 
 .btn:hover
 {
-	background-color: #737477;
-	color: #74d13f;
+	background-color: var(--surface-button-hover);
+	color: var(--color-green);
 	cursor: pointer;
 }
 
@@ -216,20 +218,20 @@
 
 .btn--disabled:hover
 {
-	background-color: #5b5d60;
+	background-color: var(--surface-button);
 	cursor: not-allowed;
 }
 
 .btn--inactive
 {
-	background-color: #8f9092;
-	color: #b0d999;
+	background-color: var(--surface-button-inactive);
+	color: var(--text-button-inactive);
 }
 
 .btn--inactive:hover
 {
-	background-color: #8f9092;
-	color: #b0d999;
+	background-color: var(--surface-button-inactive);
+	color: var(--text-button-inactive);
 }
 
 .btn--danger
@@ -347,18 +349,18 @@
 	margin-top: 0;
 }
 
-.badge--status-N { background-color: var(--status-n-color); color: #fff; }
-.badge--status-V { background-color: var(--status-v-color); color: #fff; }
-.badge--status-S { background-color: var(--status-s-color); color: #fff; }
-.badge--status-C { background-color: var(--status-c-color); color: #fff; }
-.badge--status-W { background-color: var(--status-w-color); color: #fff; }
-.badge--status-F { background-color: var(--status-f-color); color: #fff; }
-.badge--status-X { background-color: var(--status-x-color); color: #fff; }
+.badge--status-N { background-color: var(--status-n-color); color: var(--color-white); }
+.badge--status-V { background-color: var(--status-v-color); color: var(--color-white); }
+.badge--status-S { background-color: var(--status-s-color); color: var(--color-white); }
+.badge--status-C { background-color: var(--status-c-color); color: var(--color-white); }
+.badge--status-W { background-color: var(--status-w-color); color: var(--color-white); }
+.badge--status-F { background-color: var(--status-f-color); color: var(--color-white); }
+.badge--status-X { background-color: var(--status-x-color); color: var(--color-white); }
 
 .badge--status-G
 {
 	background: linear-gradient(135deg, var(--status-g-color), var(--status-g-highlight), var(--status-g-color));
-	color: #3d2e00;
+	color: var(--gold-ink);
 	box-shadow: 0 1px 4px rgba(218, 165, 32, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 	border: 1px solid rgba(180, 140, 30, 0.4);
 	position: relative;
@@ -453,6 +455,34 @@
 	border: 1px solid var(--current-border-color);
 	border-radius: var(--radius-sm);
 	padding: var(--space-2);
+}
+
+/* ── Color input (raw <input type="color">, set color picker) ── */
+.color-input
+{
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 2px solid var(--current-border-color);
+	border-radius: var(--radius-full);
+	cursor: pointer;
+	background: none;
+}
+
+/* ── Preview toggle (label + checkbox that shows/hides a panel) ── */
+.preview-toggle
+{
+	cursor: pointer;
+	font-size: var(--font-size-sm);
+	color: var(--text-softer-color);
+	margin-left: var(--space-3);
+	vertical-align: middle;
+}
+
+.preview-toggle input
+{
+	vertical-align: middle;
+	margin-right: 2px;
 }
 
 /* ── Color swatches (preset color picker) ── */
@@ -552,20 +582,20 @@
 /* Filter-tile panel (set picker: sets index/view, play) */
 .dropdown__menu--filters
 {
-	background: #222222;
-	color: white;
+	background: var(--surface-ink);
+	color: var(--color-white);
 	padding: 10px;
 	border-radius: 5px;
 	max-width: 380px;
-	border: 1px solid black;
+	border: 1px solid var(--color-black);
 	opacity: 1;
 	transition: none;
 }
 
 .dropdown__tile
 {
-	background-color: #ffffff1a;
-	color: #fff;
+	background-color: var(--surface-translucent);
+	color: var(--color-white);
 	border-radius: 50px;
 	padding: 4px 8px;
 	margin: 4px;
@@ -583,17 +613,17 @@
 
 .dropdown__tile--green
 {
-	background-color: #558a35;
+	background-color: var(--color-tile-green);
 }
 
 .dropdown__tile--purple
 {
-	background-color: #ac4bd0;
+	background-color: var(--color-tile-purple);
 }
 
 .dropdown__tile--brown
 {
-	background-color: #aa5538;
+	background-color: var(--color-tile-brown);
 }
 
 .dropdown__tile--muted
@@ -601,9 +631,14 @@
 	background-color: #33333388;
 }
 
+.dropdown__tile--context
+{
+	cursor: context-menu;
+}
+
 [data-theme=dark] .dropdown__tile--muted
 {
-	background-color: #ffffff1a;
+	background-color: var(--surface-translucent);
 }
 
 .dropdown__tile-actions
@@ -624,7 +659,7 @@
 	float: right;
 	font-weight: 800;
 	padding: 5px 9px;
-	color: white;
+	color: var(--color-white);
 }
 
 /* ── Hint (muted helper text) ── */
@@ -658,7 +693,7 @@
 	display: inline-block;
 	margin: 0 2px;
 	padding: 5px 10px;
-	border: 1px solid #ccc;
+	border: 1px solid var(--current-border-color);
 	text-decoration: none;
 	color: var(--paginator-button-text-color);
 	border-radius: 3px;
@@ -676,7 +711,7 @@
 	padding: 5px 10px;
 	background: var(--active-paginator-button-background-color);
 	color: var(--active-paginator-button-text-color);
-	border: 1px solid #333;
+	border: 1px solid var(--surface-border-strong);
 	border-radius: 3px;
 }
 
@@ -754,7 +789,7 @@
 .data-table__row--separator td
 {
 	font-size: 24px;
-	color: #888;
+	color: var(--text-softer-color);
 	padding: 4px 0;
 	border: none;
 	background: transparent;
@@ -767,28 +802,28 @@
 
 .data-table__row--self td:first-child
 {
-	border-left: 8px solid #4a90d9;
+	border-left: 8px solid var(--color-blue);
 	border-radius: 12px 0 0 12px;
-	color: #4a90d9;
+	color: var(--color-blue);
 	white-space: nowrap;
 }
 
 .data-table__row--medal-gold td
 {
-	background: linear-gradient(135deg, #c9a14b, #edd478, #bf8f30, #e8cc6e) !important;
-	color: #3d1f00;
+	background: var(--medal-gold-gradient) !important;
+	color: var(--medal-gold-fg);
 }
 
 .data-table__row--medal-silver td
 {
-	background: linear-gradient(135deg, #9e9e9e, #cccccc, #8a8a8a, #c4c4c4) !important;
-	color: #222;
+	background: var(--medal-silver-gradient) !important;
+	color: var(--medal-silver-fg);
 }
 
 .data-table__row--medal-bronze td
 {
-	background: linear-gradient(135deg, #b8783e, #d4a060, #a06530, #c89458) !important;
-	color: #2d1400;
+	background: var(--medal-bronze-gradient) !important;
+	color: var(--medal-bronze-fg);
 }
 
 /* ── Feedback (spinner, skeleton, error) ── */
@@ -798,7 +833,7 @@
 	width: 14px;
 	height: 14px;
 	border: 2px solid rgba(255, 255, 255, 0.3);
-	border-top-color: white;
+	border-top-color: var(--color-white);
 	border-radius: 50%;
 	animation: spin 0.6s linear infinite;
 	margin-right: 6px;
@@ -825,9 +860,9 @@
 {
 	background: linear-gradient(
 		90deg,
-		#f0f0f0 25%,
-		#e0e0e0 50%,
-		#f0f0f0 75%
+		var(--surface-hover) 25%,
+		var(--surface-hover-strong) 50%,
+		var(--surface-hover) 75%
 	);
 	background-size: 200% 100%;
 	animation: skeleton-shimmer 1.5s infinite;
@@ -861,8 +896,8 @@
 {
 	padding: 30px;
 	margin: 20px 14px;
-	background: #fee;
-	border: 3px solid #c33;
+	background: var(--surface-danger);
+	border: 3px solid var(--feedback-error);
 	border-radius: 8px;
 	text-align: center;
 }
@@ -870,14 +905,14 @@
 .error-boundary__content h3
 {
 	margin: 0 0 10px 0;
-	color: #c33;
+	color: var(--feedback-error);
 	font-size: 18px;
 }
 
 .error-boundary__content p
 {
 	margin: 0 0 20px 0;
-	color: #666;
+	color: var(--text-softer-color);
 	font-size: 14px;
 }
 
@@ -886,15 +921,15 @@
 	margin-top: 20px;
 	text-align: left;
 	padding: 10px;
-	background: #fff;
-	border: 1px solid #ddd;
+	background: var(--color-white);
+	border: 1px solid var(--surface-hover-strong);
 	border-radius: 4px;
 }
 
 .error-boundary__details summary
 {
 	cursor: pointer;
-	color: #666;
+	color: var(--text-softer-color);
 	font-size: 12px;
 	padding: 5px;
 }
@@ -903,12 +938,12 @@
 {
 	margin: 10px 0 0 0;
 	padding: 10px;
-	background: #f5f5f5;
-	border: 1px solid #ddd;
+	background: var(--surface-bar);
+	border: 1px solid var(--surface-hover-strong);
 	border-radius: 4px;
 	overflow-x: auto;
 	font-size: 11px;
-	color: #c33;
+	color: var(--feedback-error);
 }
 
 .loading
@@ -952,7 +987,7 @@
 		rgb(76.282% 76.282% 76.282%) 93.75%,
 		rgb(69.412% 69.412% 69.412%) 100%
 	);
-	border: 1px solid black;
+	border: 1px solid var(--color-black);
 }
 
 /* Hidden checkbox that dismisses the toast when checked (label wraps both). */
@@ -1025,6 +1060,6 @@
 }
 
 [data-theme="dark"] .toast__body {
-	color: black;
+	color: var(--color-black);
 }
 } /* end @layer components */

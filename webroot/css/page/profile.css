@@ -38,12 +38,12 @@
 	line-height: 76px;
 	text-align: center;
 	letter-spacing: -1px;
-	background: linear-gradient(to bottom, #55595D 0%, #B0B5BA 25%, #FFF 45%, #FFF 55%, #B0B5BA 75%, #55595D 100%);
+	background: var(--rank-icon-gradient);
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	filter: drop-shadow(0 1.5px 2.5px rgba(0,0,0,0.45));
-	-webkit-text-stroke: 0.3px #2D3033;
+	-webkit-text-stroke: 0.3px var(--rank-icon-stroke);
 }
 .rank-icon-large {
 	width: 182px;
@@ -157,7 +157,7 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	background: #444;
+	background: var(--surface-border-strong);
 	border: 2px solid var(--border);
 	margin: 0 auto 2px;
 }
@@ -187,12 +187,12 @@
 
 .hero-powers__marker--unlocked .hero-powers__level
 {
-	color: #7ab0e0;
+	color: var(--color-blue);
 }
 
 /* Dark overrides */
 [data-theme="dark"] .h1profile h1,
 [data-theme="dark"] .profileTable2 a {
-	color: #fff;
+	color: var(--color-white);
 }
 }

@@ -323,14 +323,14 @@
 			drawActiveTiles(true);
 		});
 		function handleTiles(name, query, select){
-			let color = "#ffffff1a";
+			let color = "var(--surface-translucent)";
 			if(select){
 				if(query === "topics"){
-					color = "#558a35";
+					color = "var(--color-tile-green)";
 				}else if(query === "difficulty"){
-					color = "#ac4bd0";
+					color = "var(--color-tile-purple)";
 				}else if(query === "tags"){
-					color = "#aa5538";
+					color = "var(--color-tile-brown)";
 				}
 			}
 			let position = -1;
@@ -736,7 +736,7 @@
 				activeTopicTiles = allTopicTiles;
 				activeTopicIds = allTopicIds;
 				for(let i=0;i<allTopicTiles.length;i++)
-					$("#tile-topics"+i).css("background", "#558a35");
+					$("#tile-topics"+i).css("background", "var(--color-tile-green)");
 				for(let i=0;i<tileTopicsBool.length;i++)
 					tileTopicsBool[i] = true;
 			}
@@ -759,7 +759,7 @@
 				activeDifficultyTiles = allDifficultyTiles;
 				activeDifficultyIds = allDifficultyIds;
 				for(let i=0;i<allDifficultyTiles.length;i++)
-					$("#tile-difficulty"+i).css("background", "#ac4bd0");
+					$("#tile-difficulty"+i).css("background", "var(--color-tile-purple)");
 				for(let i=0;i<tileDifficultyBool.length;i++)
 					tileDifficultyBool[i] = true;
 			}
@@ -782,7 +782,7 @@
 				activeTagTiles = allTagTiles;
 				activeTagIds = allTagIds;
 				for(let i=0;i<allTagTiles.length;i++)
-					$("#tile-tags"+i).css("background", "#aa5538");
+					$("#tile-tags"+i).css("background", "var(--color-tile-brown)");
 				for(let i=0;i<tileTagsBool.length;i++)
 					tileTagsBool[i] = true;
 			}

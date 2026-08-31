@@ -6,7 +6,7 @@
   width: 100%;
   max-width: 690px;
   height: 450px;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 900px;
   height: 670px;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 2px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
@@ -30,26 +30,26 @@
 	width: 220px;
 	height: 32px;
 	border: none;
-	border-bottom: 1px solid #aaa;
+	border-bottom: 1px solid var(--text-softer-color);
 	font-family: Georgia, sans-serif;
 	font-weight: 400;
 	font-size: 15px;
 	transition: 0.2s ease;
 }
 .signin input:focus {
-	border-bottom: 2px solid #d19fbb;
-	color: #74d14c;
-	background-color: #1f1f1f;
+	border-bottom: 2px solid var(--auth-accent);
+	color: var(--color-green);
+	background-color: var(--color-black);
 	transition: 0.2s ease;
 }
 .signin input[type="submit"] {
 	margin-top: 28px;
 	width: 120px;
 	height: 32px;
-	background: #404040;
+	background: var(--color-gray-dark);
 	border: none;
 	border-radius: 2px;
-	color: #fff;
+	color: var(--color-white);
 	font-family: Georgia, sans-serif;
 	font-weight: 500;
 	transition: 0.1s ease;
@@ -67,7 +67,7 @@
 	transition: 0.1s ease;
 }
 [data-theme=dark] .signin {
-	background: #515151;
+	background: var(--surface-dark);
 }
 .left {
   position: absolute;

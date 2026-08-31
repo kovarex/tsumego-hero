@@ -10,7 +10,7 @@
  */
 
 	
-	if($noIndex) echo '<div align="center"><a style="color:black;text-decoration:none;" href="/users/userstats/">back</a></div>';
+	if($noIndex) echo '<div align="center"><a class="link-plain" href="/users/userstats/">back</a></div>';
 	
 	
 	if($uid==99){
@@ -65,7 +65,7 @@
 		<th>lvl</th>
 		<th>time spent</th>
 		<th>xp gain</th>
-		<th style="text-align:right">tsumego</th>
+		<th class="text-right">tsumego</th>
 		<th></th>
 		<th>tsumego-id</th>
 		<th>date/time</th>
@@ -80,10 +80,10 @@
 					echo $i+1;
 				echo '</td>';
 				echo '<td>';
-					echo '<a style="color:black;" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_id'].'</a>';
+					echo '<a class="link-plain" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.$ur[$i]['TsumegoAttempt']['user_id'].'</a>';
 				echo '</td>';
-				echo '<td style="text-align:center">';
-				echo '<a style="color:black;text-decoration:none;" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
+				echo '<td class="text-center">';
+				echo '<a class="link-plain" href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
 				echo '</td>';
 				echo '<td>';
 					echo 'lvl '. $ur[$i]['TsumegoAttempt']['level'];
@@ -94,7 +94,7 @@
 				echo '<td>';
 					echo '+'.$ur[$i]['TsumegoAttempt']['gain'].' ('.$ur[$i]['TsumegoAttempt']['tsumego_xp'].')';
 				echo '</td>';
-				echo '<td style="text-align:right">';
+				echo '<td class="text-right">';
 					if(strlen($ur[$i]['TsumegoAttempt']['set_name'])>=30) $ur[$i]['TsumegoAttempt']['set_name'] = substr($ur[$i]['TsumegoAttempt']['set_name'], 0, 30);
 					echo h($ur[$i]['TsumegoAttempt']['set_name']);
 				echo '</td>';
@@ -102,7 +102,7 @@
 					echo $ur[$i]['TsumegoAttempt']['tsumego_num'];
 				echo '</td>';
 				echo '<td>';
-					echo 'id <a style="color:black;" target="_blank"
+					echo 'id <a class="link-plain" target="_blank"
 					href="/tsumegos/play/'.$ur[$i]['TsumegoAttempt']['tsumego_id'].'">
 					'. $ur[$i]['TsumegoAttempt']['tsumego_id'].'</a>';
 				echo '</td>';
@@ -140,8 +140,8 @@
 						echo '<td>';
 							echo $ur[$i]['TsumegoAttempt']['user_id'];
 						echo '</td>';
-						echo '<td style="text-align:center">';
-							echo '<a style="color:black;text-decoration:none;" 
+						echo '<td class="text-center">';
+							echo '<a class="link-plain" 
 						href="/users/userstats/'.$ur[$i]['TsumegoAttempt']['user_id'].'">'.h($ur[$i]['TsumegoAttempt']['user_name']).'</a>';
 						echo '</td>';
 						echo '<td>';
@@ -154,7 +154,7 @@
 							echo '+'.$ur[$i]['TsumegoAttempt']['gain'].' ('.$ur[$i]['TsumegoAttempt']['tsumego_xp'].')';
 							$penalty += $ur[$i]['TsumegoAttempt']['gain'];
 						echo '</td>';
-						echo '<td style="text-align:right">';
+						echo '<td class="text-right">';
 							if(strlen($ur[$i]['TsumegoAttempt']['set_name'])>=30) $ur[$i]['TsumegoAttempt']['set_name'] = substr($ur[$i]['TsumegoAttempt']['set_name'], 0, 30);
 							echo h($ur[$i]['TsumegoAttempt']['set_name']);
 						echo '</td>';
@@ -162,7 +162,7 @@
 							echo $ur[$i]['TsumegoAttempt']['tsumego_num'];
 						echo '</td>';
 						echo '<td>';
-							echo 'id <a style="color:black;text-decoration:none;" target="_blank"
+							echo 'id <a class="link-plain" target="_blank"
 							href="/tsumegos/play/'.$ur[$i]['TsumegoAttempt']['tsumego_id'].'">
 							'. $ur[$i]['TsumegoAttempt']['tsumego_id'].'</a>';
 						echo '</td>';

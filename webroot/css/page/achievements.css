@@ -118,92 +118,92 @@
   top: -1px;
 }
 .achievementColorGray {
-  color: #808080;
-  box-shadow: 1px 1px 2px black !important;
+  color: var(--ach-gray);
+  box-shadow: 1px 1px 2px var(--color-black) !important;
 }
 .achievementColorGray2 {
-  color: #808080;
+  color: var(--ach-gray);
 }
 .achievementColorBlack,
 .achievementColorBlack2 {
   position: relative;
   top: 0;
   left: 0;
-  color: #000;
+  color: var(--ach-black);
 }
 .achievementColorPurple,
 .achievementColorPurple2 {
   position: relative;
   top: 0;
   left: 0;
-  color: #be00cf;
+  color: var(--ach-purple);
 }
 .achievementColorGreen,
 .achievementColorGreen2 {
   position: relative;
   top: 0;
   left: 0;
-  color: #008c15;
+  color: var(--ach-green);
 }
 .achievementColorOrange,
 .achievementColorOrange2 {
   position: relative;
   top: 0;
   left: 0;
-  color: #d16133;
+  color: var(--ach-orange);
 }
 .achievementColorBlue,
 .achievementColorBlue2 {
-  color: #4e28c9;
+  color: var(--ach-blue);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorDarkblue,
 .achievementColorDarkblue2 {
-  color: #023fce;
+  color: var(--ach-darkblue);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorRed,
 .achievementColorRed2 {
-  color: #e61313;
+  color: var(--ach-red);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorRating,
 .achievementColorRating2 {
-  color: #9c28c7;
+  color: var(--ach-rating);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorTime,
 .achievementColorTime2 {
-  color: #e84908;
+  color: var(--ach-time);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorBluex,
 .achievementColorBluex2 {
-  color: #190e66;
+  color: var(--ach-bluex);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorTeal,
 .achievementColorTeal2 {
-  color: #0e7377;
+  color: var(--ach-teal);
   position: relative;
   top: 0;
   left: 0;
 }
 .achievementColorGold,
 .achievementColorGold2 {
-  color: #685f15;
+  color: var(--ach-gold);
   position: relative;
   top: 0;
   left: 0;
@@ -285,7 +285,7 @@
 .acImgXp2 {
   position: relative;
   font-size: 14px;
-  color: #555;
+  color: var(--color-gray-dark);
   top: -51px;
   left: -1px;
   font-weight: 800;
@@ -334,18 +334,18 @@
 /* Text color per achievement (suffix 3 = popup variant; class built
    dynamically as achievement.color + '3' in AchievementAlerts.js).
    The popup itself reuses .toast (components.css, .toast--achievement). */
-.achievementColorBlack3 { color: #000; }
-.achievementColorPurple3 { color: #be00cf; }
-.achievementColorGreen3 { color: #008c15; }
-.achievementColorOrange3 { color: #d16133; }
+.achievementColorBlack3 { color: var(--ach-black); }
+.achievementColorPurple3 { color: var(--ach-purple); }
+.achievementColorGreen3 { color: var(--ach-green); }
+.achievementColorOrange3 { color: var(--ach-orange); }
 .achievementColorBlue3,
 .achievementColorDarkblue3,
 .achievementColorRating3,
-.achievementColorTime3 { color: #4e28c9; }
-.achievementColorRed3 { color: #e61313; }
-.achievementColorBluex3 { color: #190e66; }
-.achievementColorTeal3 { color: #0e7377; }
-.achievementColorGold3 { color: #685f15; }
+.achievementColorTime3 { color: var(--ach-blue); }
+.achievementColorRed3 { color: var(--ach-red); }
+.achievementColorBluex3 { color: var(--ach-bluex); }
+.achievementColorTeal3 { color: var(--ach-teal); }
+.achievementColorGold3 { color: var(--ach-gold); }
 #hpIcon1 {
   top: 15px;
   position: relative;
@@ -364,10 +364,10 @@
 [data-theme="dark"] .achievement1,
 [data-theme="dark"] .achievement2,
 [data-theme="dark"] .achievementSmall {
-	background: linear-gradient(#dfdfdf, #979797);
+	background: var(--ach-silver-gradient);
 }
 [data-theme="dark"] #achievementWrapper font {
-	color: #717171;
+	color: var(--text-softer-color);
 }
 [data-theme="dark"] .achievementColorBlack2,
 [data-theme="dark"] .achievementColorPurple2,
@@ -378,6 +378,6 @@
 [data-theme="dark"] .achievementColorRed2,
 [data-theme="dark"] .achievementColorRating2,
 [data-theme="dark"] .achievementColorTime2 {
-	color: #f0f0f0;
+	color: var(--color-white);
 }
 }

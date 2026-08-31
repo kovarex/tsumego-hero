@@ -6,16 +6,16 @@
 }
 .timeTableLeft {
   border-radius: 12px 0 0 12px;
-  border-left: 1px solid black;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
+  border-left: 1px solid var(--color-black);
+  border-top: 1px solid var(--color-black);
+  border-bottom: 1px solid var(--color-black);
 }
 .timeTableColor11 {
   font-weight: 800;
-  background: linear-gradient(#ddd, #999);
+  background: var(--time-table-gradient);
 }
 .versionColor {
-  background: linear-gradient(#ddd, #999);
+  background: var(--time-table-gradient);
 }
 .timeModeTable {
   width: 100%;
@@ -38,23 +38,23 @@
   -moz-border-radius-topleft: 7px;
   border-top-right-radius: 7px;
   border-top-left-radius: 7px;
-  border: 1px solid #889188;
+  border: 1px solid var(--time-border);
   cursor: pointer;
 }
 .tScoreTitle1 {
-  background-image: linear-gradient(#d0f4d0, #7af47a);
+  background-image: var(--time-title1-gradient);
 }
 .tScoreTitle1:hover {
-  background-image: linear-gradient(#a6f4a6, #3df43d);
+  background-image: var(--time-title1-gradient-hover);
 }
 .tScoreTitle2 {
-  background-image: linear-gradient(#e8adb2, #e87983);
+  background-image: var(--time-title2-gradient);
 }
 .tScoreTitle2:hover {
-  background-image: linear-gradient(#e89098, #e8717d);
+  background-image: var(--time-title2-gradient-hover);
 }
 .timeModeTable3 {
-  border: 1px solid #889188;
+  border: 1px solid var(--time-border);
   padding: 5px;
   -moz-border-radius-bottomleft: 7px;
   -moz-border-radius-bottomright: 7px;
@@ -83,19 +83,19 @@
 	margin: 12px auto;
 	padding-top: 20px;
 	padding-left: 10px;
-	border: 1px solid #ddd;
+	border: 1px solid var(--surface-hover-strong);
 	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
 }
 
 /* Dark overrides */
 [data-theme="dark"] .timeTableColor11 {
-	color: #f0f0f0;
-	background: linear-gradient(#666, #424242);
+	color: var(--color-white);
+	background: var(--time-dark-gradient);
 }
 [data-theme="dark"] .timeModeTable2 {
-	color: black;
+	color: var(--color-black);
 }
 [data-theme="dark"] .versionColor a {
-	color: #0066cc;
+	color: var(--color-blue-accent);
 }
 }

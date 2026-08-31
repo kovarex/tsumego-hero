@@ -36,7 +36,7 @@
   content: "";
   width: 2px;
   height: 100%;
-  background: #f6a4ec;
+  background: var(--about-pink);
   position: absolute;
   top: 0%;
   left: 50%;
@@ -48,7 +48,7 @@
   content: "";
   width: 100%;
   height: 2px;
-  background: #f6a4ec;
+  background: var(--about-pink);
   position: absolute;
   right: 0;
   z-index: -1;
@@ -62,7 +62,7 @@
   text-transform: uppercase;
   font-weight: 600;
   display:inline-block;
-  background: linear-gradient(to left, #81479a, #c099d0);
+  background: var(--about-purple-gradient);
   letter-spacing: 1.5px;
   color: transparent;
   -webkit-background-clip: text;
@@ -104,13 +104,13 @@
   flex-basis: 60%;
 }
 .timeline__event--type2 .timeline__event__title {
-  background: linear-gradient(to left, #4348ac, #9799c0);
+  background: var(--about-blue-gradient);
   color: transparent;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .timeline__event--type3 .timeline__event__title {
-  background: linear-gradient(to left, #008e59, #3cc895);
+  background: var(--gradient-heading);
   color: transparent;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -142,7 +142,7 @@
   border-radius: 50%;
   width: 16px;
   height: 16px;
-  border: 1px solid #ea4537;
+  border: 1px solid var(--about-red);
   margin-right: 1px;
 }
 .curl-table .x td {
