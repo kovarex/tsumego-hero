@@ -1945,15 +1945,15 @@ class SetsControllerTest extends TestCaseWithAuth
 			'Play title should not render for non-premium user');
 	}
 
-        /**
-         * The set-title heading carries the .set-view-title class (see Sets/view.ctp).
-         * Return its text.
-         *
-         * @param mixed $browser Browser instance
-         */
-        private function getSetTitle($browser): string
-        {
-                $titles = $browser->driver->findElements(WebDriverBy::cssSelector('.set-view-title'));
-                return $titles ? $titles[0]->getText() : '';
-        }
+	/**
+	 * The set-title heading carries the .set-view-title class (see Sets/view.ctp).
+	 * Return its text.
+	 *
+	 * @param mixed $browser Browser instance
+	 */
+	private function getSetTitle($browser): string
+	{
+		$titles = $browser->driver->findElements(WebDriverBy::cssSelector('.set-view-title'));
+		return $titles ? $titles[0]->getText() : '';
+	}
 }
