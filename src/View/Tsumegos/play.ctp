@@ -1767,7 +1767,7 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 		{
 			$sStatusB = '';
 			$sStatusW = '';
-			if (in_array($t['Tsumego']['semeaiType'], [1, 2, 3]))
+			if (in_array($t['Tsumego']['semeaiType'], [1, 2, 3, 4]))
 			{
 				[$sStatusB, $sStatusW] = Util::calculateLibertyStatus(
 					$multipleChoiceSquares,
@@ -1776,11 +1776,6 @@ if ($checkBSize != 19 || $t['Tsumego']['set_id'] == 239
 					$t['Tsumego']['maxLib'],
 					$t['Tsumego']['libertyCount'],
 					$t['Tsumego']['variance']);
-			}
-			else if($t['Tsumego']['semeaiType'] == 4)
-			{
-				$sStatusB = rand(0,$t['Tsumego']['variance']);
-				$sStatusW = rand(0,$t['Tsumego']['variance']);
 			}
 			else if($t['Tsumego']['semeaiType'] == 5)
 			{
