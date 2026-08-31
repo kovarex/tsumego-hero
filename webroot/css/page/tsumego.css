@@ -19,8 +19,7 @@
 	padding-left: 11px;
 }
 
-/* Base button look (was on the legacy li[class^="status"]; carried over so the
-   problem-status nav keeps its classic 58px two-tone button). */
+/* Base button look: the problem-status nav keeps its classic 58px two-tone button. */
 .problem-nav__item
 {
 	width: 58px;

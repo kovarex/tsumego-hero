@@ -190,7 +190,7 @@
 	color: #7ab0e0;
 }
 
-/* Dark overrides (moved from misc.css). */
+/* Dark overrides */
 [data-theme="dark"] .h1profile h1,
 [data-theme="dark"] .profileTable2 a {
 	color: #fff;

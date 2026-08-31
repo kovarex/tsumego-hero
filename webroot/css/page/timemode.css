@@ -1,5 +1,3 @@
-/* Page layer: timemode.css (split from default.css). */
-
 @layer page
 {
 .timeTableMiddle {
@@ -88,7 +86,7 @@
 	box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark overrides (moved from misc.css). */
+/* Dark overrides */
 [data-theme="dark"] .timeTableColor11 {
 	color: #f0f0f0;
 	background: linear-gradient(#666, #424242);

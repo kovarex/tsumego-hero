@@ -17,8 +17,6 @@
      here so the next page can reuse it.
    ══════════════════════════════════════════════════════ */
 
-/* Design tokens (brand + theme) moved to tokens.css (@layer tokens). */
-
 @layer components
 {
 /* ── Card ── */

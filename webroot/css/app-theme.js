@@ -1,12 +1,12 @@
 // CSS barrel for the main app theme bundle.
-// Layer order is set once in layers.css — import order between layers doesn't matter.
+// Layer order is set once in layers.css - import order between layers doesn't matter.
 import './layers.css';
 import './tokens.css';
 import './base.css';
 import './composition.css';
 import './utilities.css';
 import './components.css';
-// Page layer: page-specific rules split by feature (shrinks to zero over time).
+// Page layer: page-specific rules split by feature.
 import './page/fonts.css';
 import './page/site.css';
 import './page/play.css';

@@ -1,5 +1,3 @@
-/* Page layer: sets.css (split from default.css). */
-
 @layer page
 {
 .setViewCompleted {
@@ -45,13 +43,11 @@
 .rotateArrow {
   transform: rotate(180deg);
 }
-/* Dead tag classes (is-new-tag, tag-gives-hint, tag-comma) removed. */
 #undo-tags-button {
   padding: 0 2px;
   font-size: 11px;
   cursor: pointer;
 }
-/* Dead strength-box tiers (box000-box975, box000sa-box975sa, box100, box100sa) removed. */
 .set-search-menu {
   margin: 5px 23px;
   display: flex;
@@ -170,8 +166,6 @@
   margin: 5px auto;
   width: 1228px;
 }
-/* dropdown-tile + tile-color1-4 moved to components.css (dropdown__tile + modifiers). */
-/* tiles-submit* + dropdown-boxes moved to components.css (dropdown__tile-actions*, dropdown__menu). */
 #dropdown-topics {
   display: none;
   position: absolute;
@@ -378,7 +372,7 @@
 	}
 }
 
-/* Dark overrides (moved from misc.css). */
+/* Dark overrides */
 [data-theme="dark"] .setViewAccuracy {
 	color: #c234ff;
 }

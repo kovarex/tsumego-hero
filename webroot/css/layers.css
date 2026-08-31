@@ -12,6 +12,6 @@
    - composition: layout objects (.cluster, .stack, .grid, .split, …)
    - utilities:   tiny single-purpose helpers (.text-muted, .mt-2, …)
    - components:  semantic BEM blocks — THE design system
-   - page:        legacy + page-specific rules (shrinks to zero)
+   - page:        legacy + page-specific rules
    ══════════════════════════════════════════════════════ */
 @layer tokens, base, composition, utilities, components, page;

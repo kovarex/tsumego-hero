@@ -1,5 +1,3 @@
-/* Page layer: play.css (split from default.css). */
-
 @layer page
 {
 @keyframes blinker {
@@ -19,8 +17,6 @@
   vertical-align: top;
   color: #5e5e5e;
 }
-/* Legacy .deleteComment color rule removed — component base (components.css) wins. */
-
 #showx3,
 #showx4,
 #openSgfLink,
@@ -61,15 +57,6 @@
 	width: 10px;
 	height: 1px;
 }
-/* .add-problems-sandbox removed (dead). */
-/* highscoreTable consolidated into .data-table (components.css). */
-/* dead .color* tier classes (never emitted) removed. */
-/* dead dan-tier color classes removed. */
-/* dead dan-tier color classes removed. */
-/* dead kyu-tier color classes removed. */
-/* dead kyu-tier color classes removed. */
-/* dead kyu-tier color classes removed. */
-
 .timeTableRight {
   border-radius: 0 12px 12px 0;
   border-right: 1px solid black;
@@ -209,8 +196,6 @@
 .sandboxTable td {
   vertical-align: text-top;
 }
-/* .sandboxComment moved to components.css (shared: sandbox page + issue comments). */
-
 h1 {
   font-family: Georgia;
   letter-spacing: 1px;
@@ -220,7 +205,6 @@ h1 {
   font-weight: 400;
   line-height: 19.8px;
 }
-/* .tag-list removed - only used as a data-testid in React TagEditor, not a class. */
 .add-tag-list {
   color: #717171;
   font-size: 14px;
@@ -777,17 +761,11 @@ h1 {
    Tsumego Comments & Issues Styling
    ============================================================================= */
 
-/* React comments/issues styles moved to components.css (@layer components). */
-
-/* Pagination dark overrides moved into .pagination component (token-based, auto dark). */
-
-/* Ensure button colors work in dark mode — moved into components.css. */
-
 [data-theme=dark] .besogo-tree-line {
   stroke: #cccccc;
 }
 
-/* Dark overrides (moved from misc.css). */
+/* Dark overrides */
 [data-theme="dark"] .besogo-container {
 	background: #2a2a2a;
 }
@@ -839,7 +817,7 @@ h1 {
 	color: black;
 }
 
-/* Responsive (moved from misc.css). */
+/* Responsive */
 @media (max-width: 1300px) {
 	#sandboxLink {
 		top: 68px;
