@@ -28,6 +28,17 @@
 		text-decoration: none;
 	}
 
+	/* Fluid media: never let an image/video overflow the viewport.
+	   height:auto keeps the aspect ratio when the width shrinks (prevents CLS
+	   when explicit dimensions are set elsewhere). */
+	img,
+	picture,
+	video
+	{
+		max-width: 100%;
+		height: auto;
+	}
+
 	th
 	{
 		padding: 11px;

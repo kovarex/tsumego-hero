@@ -28,6 +28,14 @@ body {
   margin: auto;
   color: white;
   font-weight: bold;
+  /* Reserve header space so the absolutely-positioned logo/nav don't overlap
+     the content below. The old outerMenu2 (height:65px) did this implicitly. */
+  height: 65px;
+}
+@media (width < 64rem) {
+  .whitebox1 {
+    height: 56px;
+  }
 }
 .whitebox2 {
   width: 100%;
@@ -77,7 +85,7 @@ body {
   0% { left: -75%; }
   100% { left: 125%; }
 }
-.outerMenu1 {
+.site-nav {
   display: table;
   margin: 18px;
   position: absolute;
@@ -86,18 +94,17 @@ body {
   z-index: 50;
   width: 900px;
 }
-.outerMenu2 {
-  display: table;
-  margin: 0 auto;
-  height: 65px;
-}
-.outerMenu3 {
+.site-nav__signin {
   display: table;
   margin: 0 auto;
   position: absolute;
   left: 1170px;
   width: 130px;
   top: -8px;
+}
+/* Account links in the drawer are mobile-only; desktop uses the hover account-bar. */
+.site-nav__account {
+  display: none;
 }
 li a.menuLi {
   font-family: Georgia;
@@ -828,13 +835,204 @@ ul ul {
 	}
 }
 
-/* Mobile: shrink the logo so it doesn't crowd the nav.
-   The logo image is icon + text (662x170); scaling keeps it recognizable. */
+/* Logo: same lockup on all breakpoints. Desktop keeps the original 55px height
+   (the base.css img{height:auto} rule would otherwise let it render at natural
+   size); on mobile it is scaled down to fit the header bar beside the hamburger. */
+#logo1 {
+	height: 55px;
+	width: auto;
+}
 @media (width < 64rem) {
 	#logo1 {
 		height: 40px;
 		width: auto;
-		padding: 2px;
+	}
+}
+
+/* Mobile nav: a compact header bar (logo + hamburger) and a drawer that
+   replaces the desktop absolute-positioned mega-menu. Hybrid pattern: core
+   destinations stay reachable without hiding everything behind a menu. */
+.nav-toggle {
+	display: none;
+}
+.nav-toggle-btn {
+	display: none;
+}
+@media (width < 64rem) {
+	/* Header bar: logo on the left, hamburger on the right. */
+	.whitebox1 {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 8px 12px;
+		min-height: 56px;
+	}
+	#logo1 {
+		display: inline;
+		position: static;
+		height: 40px;
+		width: auto;
+		margin: 0;
+		padding: 0;
+	}
+	.nav-toggle-btn {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		padding: 8px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	.nav-toggle-btn span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		background: var(--text-color);
+		border-radius: 2px;
+	}
+	.site-nav__signin {
+		display: none;
+	}
+	/* Drawer: hidden by default, opens when the checkbox is checked. */
+	.site-nav {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 1000;
+		width: min(80vw, 360px);
+		height: 100vh;
+		overflow-y: auto;
+		margin: 0;
+		padding: 16px 12px;
+		background: #1d1d1d;
+		box-shadow: 2px 0 12px rgba(0,0,0,0.5);
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+	}
+	.nav-toggle:checked ~ .site-nav {
+		transform: translateX(0);
+	}
+	/* Keep the hamburger above the drawer so it can be used to close it. */
+	.nav-toggle-btn {
+		position: relative;
+		z-index: 1001;
+	}
+	/* Stack the mega-menu vertically instead of absolute hover columns. */
+	.site-nav #newMenu,
+	.site-nav nav,
+	.site-nav nav ul,
+	.site-nav nav ul li {
+		width: 100%;
+		position: static;
+		display: block;
+		float: none;
+		text-align: left;
+	}
+	.site-nav nav ul li {
+		border: none;
+		background: none;
+	}
+	.site-nav nav a {
+		padding: 10px 8px;
+		font-size: 18px;
+		color: #d6a2ec;
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		text-align: left;
+		white-space: nowrap;
+	}
+	/* Keep submenus expanded (Home/Collections/Play) so their items are visible;
+	   only Highscore's submenu is collapsed to keep the drawer compact. */
+	.site-nav nav ul ul {
+		position: static;
+		display: block;
+		padding-left: 24px;
+	}
+	.site-nav nav ul ul.newMenuLi4 {
+		display: none;
+	}
+	.site-nav nav ul ul li a {
+		font-size: 16px;
+	}
+	/* Icon row (sound / board / dark) sits side by side on one line. */
+	.site-nav nav ul {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.site-nav nav ul > li:not(.menuIcons1) {
+		flex: 1 0 100%;
+	}
+	.site-nav nav ul > li.menuIcons1 {
+		flex: 0 0 33.333%;
+		height: auto;
+		padding: 0;
+	}
+	.site-nav nav ul > li.menuIcons1 > a,
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 48px;
+		padding: 0 8px;
+		box-sizing: border-box;
+		text-align: center;
+	}
+	.site-nav nav ul > li.menuIcons1 .board-picker {
+		position: relative;
+	}
+	/* The board picker dropdown is position:absolute; on mobile keep it in-flow. */
+	.site-nav nav ul > li.menuIcons1 .dropdown__menu {
+		position: static;
+		width: 100%;
+		max-width: 100%;
+		display: none;
+	}
+	/* Account access at the top of the drawer (desktop uses the hover
+	   account-bar; on mobile that bar is off-screen so we show these instead).
+	   The divider sits BELOW the account block (after Sign Out), not above it,
+	   and there is no empty space above the username. */
+	.site-nav__account {
+		display: block;
+		padding: 0 0 8px;
+		border-bottom: 1px solid #3a3a3a;
+		margin-bottom: 8px;
+	}
+	.site-nav__account-user {
+		font-size: 16px;
+		padding: 8px 8px 0;
+		color: #fff;
+	}
+	.site-nav__account-user a {
+		color: #74d14c;
+		text-decoration: none;
+	}
+	.site-nav__account-links ul {
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+	.site-nav__account-links li a {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 10px 8px;
+		font-size: 18px;
+		color: #d6a2ec;
+		text-align: left;
+	}
+	/* Hide the desktop floating account bar + hover dropdowns on mobile. */
+	#account-bar-wrapper,
+	#heroProfile,
+	#heroBar,
+	#heroAchievements,
+	#heroLogout,
+	#modeSelector {
+		display: none !important;
 	}
 }
 }

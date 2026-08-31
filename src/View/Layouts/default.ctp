@@ -138,7 +138,27 @@ echo ViteManifest::legacyScript('legacy');
 				<img id="logo1" alt="Tsumego Hero" title="Tsumego Hero" src="/img/tsumegoHero1.png" onmouseover="typeof logoHover==='function'&&logoHover(this)" onmouseout="typeof logoNoHover==='function'&&logoNoHover(this)" height="55px">
 			</a>
 		</div>
-		<div class="outerMenu1">
+		<input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true">
+		<label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
+			<span></span><span></span><span></span>
+		</label>
+		<div class="site-nav">
+			<?php
+			// Account access at the top of the drawer (logged-in). The username
+			// links to the profile; only Sign Out is listed as a separate action.
+			if (Auth::isLoggedIn()):
+			?>
+			<div class="site-nav__account">
+				<div class="site-nav__account-user">
+					<a href="/users/view/<?php echo Auth::getUserID(); ?>"><?php echo h(Auth::getUser()['name']); ?></a>
+				</div>
+				<nav class="site-nav__account-links">
+					<ul>
+						<li><a href="/users/logout">Sign Out</a></li>
+					</ul>
+				</nav>
+			</div>
+			<?php endif; ?>
 				<?php
 			$lv = (int)($_COOKIE['lastVisit'] ?? 15352);
 
@@ -229,10 +249,7 @@ echo ViteManifest::legacyScript('legacy');
 					<ul>
 						<?php echo '<li><a class="homeMenuLink '.$homeA.'" href="/" '.$refreshLinkToStart.'>Home</a>';
 						echo '<ul class="newMenuLi1">';
-						echo '<li><a id="tutorialLink" class="'.$websitefunctionsA.'" href="/sites/websitefunctions">Functions & Modes</a></li>';
-						echo '<li><a id="tutorialLink" class="'.$gotutorialA.'" href="/sites/gotutorial">Go Rules</a></li>';
 						echo '<li><a id="forumLink" href="/forums">Forums</a></li>';
-						echo '<li><a class="'.$aboutA.'" href="/sites/about">About</a></li>';
 						echo '</ul>';
 						echo '</li>';
 						echo '<li><a '.$refreshLinkToSets.' class="'.$collectionsA.'" href="/sets">Collections</a>';
@@ -315,20 +332,14 @@ echo ViteManifest::legacyScript('legacy');
 					</ul>
 				</nav>
 			</div>
-			</div>
-		<div class="outerMenu2">
-			<li><a></a></li>
-			</div>
-		<div class="outerMenu3">
-			<?php
-			$currentPage = '';
-			if($_page == 'login')
-				$currentPage = 'nav__link--active ';
-			if(!Auth::isLoggedIn())
-				echo '<li><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></li>';
-			?>
 		</div>
-
+		<?php
+		$currentPage = '';
+		if($_page == 'login')
+			$currentPage = 'nav__link--active ';
+		if(!Auth::isLoggedIn())
+			echo '<div class="site-nav__signin"><a class="menuLi '.$currentPage.'" id="signInMenu" href="/users/login">Sign In</a></div>';
+		?>
 		</div>
 			<?php AccountWidget::render($timeMode); ?>
 	<div width="100%" align="left" class="whitebox2">
@@ -653,12 +664,4 @@ echo ViteManifest::legacyScript('legacy');
 echo ViteManifest::script('app');
 ?>
 
-		<?php
-if(!Auth::isLoggedIn())
-	echo '<style>.outerMenu1{left: 224px;}</style>';
-	?>
-</body>
 
-</html>
-
-<head>

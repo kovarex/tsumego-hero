@@ -1,16 +1,17 @@
 @layer page
 {
+/* The two-column layout is provided by the .split composition object in
+   composition.css (source order: .homeLeft/modes first, .homeRight/news second).
+   Here we only style the content inside each column. */
 .homeLeft {
   text-align: justify;
   padding: 0 3px 0 6px;
-  width: 638px;
-  overflow: hidden;
+  min-width: 0;
 }
 .homeRight {
-  float: right;
   text-align: justify;
   padding: 0 6px 0 3px;
-  width: 638px;
+  min-width: 0;
 }
 .homeLeft2 {
   width: 50%;
@@ -83,7 +84,8 @@
   display: flow-root;
 }
 .achievement-quote-pick {
-  width:629px;
+  width: 100%;
+  max-width: 629px;
   border: 1px solid #777;
   border-radius: 4px;
   margin-top: 6px;
@@ -92,20 +94,25 @@
   display:flex;
   justify-content: space-between;
   position:relative;
-  width:629px;
+  width: 100%;
+  max-width: 629px;
   margin-top: 6px;
 }
 .user-pick-all {
   position: absolute;
-  width: 312px;
+  width: 100%;
+  max-width: 312px;
   padding: 10px;
   font-size: 20px;
   cursor: context-menu;
+  box-sizing: border-box;
 }
 .quote-pick-1 {
-  width:312px;
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid #777;
   border-radius: 4px;
+  height: auto;
 }
 /* ── Mode button (home mode tiles) ── */
 .mode-button {
@@ -166,12 +173,30 @@
 	filter: none;
 }
 
+/* The achievement rows overlay the .achievement-quote-pick image ("the box").
+   The panel is relative; the image is the background; the stream is centered
+   over it. */
+.achievements-panel {
+  position: relative;
+  margin-top: 6px;
+}
+.achievements-panel .achievement-quote-pick {
+  display: block;
+  width: 100%;
+  max-width: 629px;
+  margin: 0;
+  height: auto;
+}
 #recent-achievement-stream {
-  font-size: 14px;
   position: absolute;
-  top: 280px;
-  left: 90px;
-  width: 460px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  max-width: 460px;
+  max-height: 100%;
+  overflow-y: auto;
+  font-size: 14px;
 }
 
 #recent-achievement-stream .recent-achievement-row {
@@ -371,16 +396,11 @@
 }
 
 /* Mobile-first: single column below 64rem (1024px), then widen.
-   Uses range syntax (2026) — narrow screens first, add layout as width grows. */
+   Uses range syntax (2026) — narrow screens first, add layout as width grows.
+   The .split (composition.css) owns the column stacking; here we only make
+   the inner feed/cards fluid. */
 @media (width < 64rem)
 {
-	.homeLeft,
-	.homeRight {
-		width: 100%;
-		float: none;
-		box-sizing: border-box;
-		padding: 0 8px;
-	}
 	.homeLeft2,
 	.homeRight2 {
 		width: 100%;
@@ -408,17 +428,25 @@
 		justify-content: center;
 		gap: 8px;
 	}
+	/* The user-of-the-day label is absolutely positioned over the image on
+	   desktop; on mobile let it flow so it doesn't overflow the viewport. */
+	.user-pick-all {
+		position: static;
+		width: 100%;
+		max-width: none;
+		text-align: center;
+		margin-top: 8px;
+	}
 	.new-tsumego-box {
 		height: auto;
 	}
 	.mode-select-box {
 		flex-wrap: wrap;
 	}
-	#recent-achievement-stream {
-		position: static;
+	/* The achievements stream stays centered over the .achievement-quote-pick
+	   image (the panel is relative). Only the label flows. */
+	.achievements-panel .achievement-quote-pick {
 		width: 100%;
-		max-width: 460px;
-		margin-top: 8px;
 	}
 }
 }
